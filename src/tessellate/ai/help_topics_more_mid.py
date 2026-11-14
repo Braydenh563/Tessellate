@@ -1196,7 +1196,7 @@ MID_TOPICS.extend(
                 "greyed and the line beside it goes there), and input() reads its "
                 "lines from the panel's Input box. HTML, CSS (over a sample page), "
                 "SVG and a p5.js sketch (New from a template, p5.js sketch) show as "
-                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (Tab and the arrows move; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
+                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (see the CSV grid topic; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
                 "tests (describe, it and expect in JavaScript or TypeScript; "
                 "unittest or test_ functions in Python) runs its tests, each "
                 "listed with its time and a failure underlined on its line; Run "
@@ -1209,6 +1209,27 @@ MID_TOPICS.extend(
                 "a .py file and JavaScript for the rest, Up recalling the last. "
                 "Debug (F5) steps "
                 "JavaScript, TypeScript and Python; see the debugger."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L328 and L-documents-39: the csv and tsv grid (documents-csvgrid.js), in the words of its buttons and menu rows.
+        {
+            "id": "csv-grid",
+            "keywords": (
+                "csv grid", "grid", "csv", "tsv", "table editor", "sort a column", "sort the file",
+                "filter rows", "header row", "resize a column", "paste cells", "paste into a table",
+            ),
+            "body": (
+                "Grid edits a CSV or TSV as cells: Tab and the arrows move, Enter goes down, "
+                "Add and Delete row and column act on the cell you are in, and Ctrl+Z undoes. "
+                "A column's name sorts the view (A to Z, Z to A, then the file's own order) "
+                "and never changes the file; the column's ⋯ menu has Sort the file, which "
+                "rewrites the rows and can be undone. Filters adds a box under each name that "
+                "hides the rows without that text; they stay in the file. Header row says "
+                "whether row 1 is the header, kept for this document. Drag a column's edge to "
+                "resize it, or focus the edge and press Left or Right (Home resets it); widths "
+                "are not saved. Pasting tabbed text fills cells from the one you are in, adding "
+                "rows and columns as needed, as one undo step."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

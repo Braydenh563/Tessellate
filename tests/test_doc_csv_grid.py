@@ -33,6 +33,10 @@ const out = cases.map((c) => {
   const model = parse(c.text, c.delim || ",");
   if (c.op === "parse") return { rows: model.rows.map((r) => r.cells.map((x) => x.text)), eol: model.eol };
   if (c.op === "title") return delimiterOf(c.text, c.title);
+  if (c.op === "order") return viewOrder(model, c.header, c.sort, c.filters);
+  if (c.op === "sortFile") return applyChanges(c.text, sortFile(model, c.text, c.header, c.sort));
+  if (c.op === "paste") return applyChanges(c.text, pasteBlock(model, c.targets, c.c, clipRows(c.clip)));
+  if (c.op === "clip") return clipRows(c.text);
   const args = c.args || [];
   return applyChanges(c.text, ops[c.op](model, ...args));
 });
@@ -149,3 +153,87 @@ def test_a_cell_is_a_touch_target_by_its_height_not_its_min_height():
     css = (ROOT / "frontend" / "css" / "doc-csv-grid-lazy.css").read_text(encoding="utf-8")
     coarse = css.split("@media (pointer: coarse)", 1)[1]
     assert "block-size: var(--target-min)" in coarse and "min-block-size" not in coarse
+
+
+TEXT = "name,n,city\r\ndelta,10,Oslo\r\nalpha,2,Rome\r\ncharlie,33,Oslo\r\nbravo,,Paris"
+
+
+def test_the_view_sorts_and_filters_without_touching_the_file():
+    """L-documents-39: a view order is a list of file row indices; the header row stays on top, blanks sort last."""
+    got = _run(
+        [
+            {"op": "order", "text": TEXT, "header": True, "sort": None, "filters": {}},
+            {"op": "order", "text": TEXT, "header": True, "sort": {"c": 1, "dir": 1}, "filters": {}},
+            {"op": "order", "text": TEXT, "header": True, "sort": {"c": 1, "dir": -1}, "filters": {}},
+            {"op": "order", "text": TEXT, "header": True, "sort": None, "filters": {"2": "OSL"}},
+            {"op": "order", "text": TEXT, "header": True, "sort": {"c": 0, "dir": -1}, "filters": {"2": "oslo", "0": "c"}},
+            {"op": "order", "text": TEXT, "header": False, "sort": {"c": 0, "dir": 1}, "filters": {}},
+            {"op": "order", "text": "", "header": True, "sort": None, "filters": {}},
+        ]
+    )
+    assert got[0] == [0, 1, 2, 3, 4]
+    assert got[1] == [0, 2, 1, 3, 4]  # 2, 10, 33 by value (not "10" before "2"), the blank last
+    assert got[2] == [0, 3, 1, 2, 4]  # descending keeps the blank last
+    assert got[3] == [0, 1, 3]
+    assert got[4] == [0, 3]
+    assert got[5] == [2, 4, 3, 1, 0]  # no header: every row sorts, the first line too
+    assert got[6] == []
+
+
+def test_sort_the_file_rewrites_only_the_row_order():
+    got = _run(
+        [
+            {"op": "sortFile", "text": TEXT, "header": True, "sort": {"c": 0, "dir": 1}},
+            {"op": "sortFile", "text": TEXT, "header": True, "sort": {"c": 1, "dir": -1}},
+            {"op": "sortFile", "text": "a,1\nb,2\n", "header": False, "sort": {"c": 0, "dir": 1}},
+            {"op": "sortFile", "text": '"x, y",2\n"a ""q""",1\n', "header": False, "sort": {"c": 1, "dir": 1}},
+        ]
+    )
+    assert got[0] == "name,n,city\r\nalpha,2,Rome\r\nbravo,,Paris\r\ncharlie,33,Oslo\r\ndelta,10,Oslo"
+    assert got[1] == "name,n,city\r\ncharlie,33,Oslo\r\ndelta,10,Oslo\r\nalpha,2,Rome\r\nbravo,,Paris"
+    assert got[2] == "a,1\nb,2\n"  # already in order: the file is not rewritten
+    assert got[3] == '"a ""q""",1\n"x, y",2\n'  # quoted rows move whole, with their own quoting
+
+
+def test_pasting_a_block_overwrites_grows_rows_and_columns_and_keeps_the_rest():
+    text = "h1,h2,h3\n1,2,3\n4,5"
+    got = _run(
+        [
+            {"op": "clip", "text": "a\tb\r\nc\td\r\n"},
+            {"op": "clip", "text": '"x\ty"\t"l1\nl2"\n'},
+            # 3x2 at row 1, column 1: rows 1 and 2 exist, the third is new
+            {"op": "paste", "text": text, "targets": [1, 2], "c": 1, "clip": "a\tb\nc\td\ne\tf"},
+            # starts at the last column: the row grows two columns, the short row is padded with delimiters
+            {"op": "paste", "text": text, "targets": [2], "c": 3, "clip": "x\ty"},
+            {"op": "paste", "text": text + "\n", "targets": [1], "c": 0, "clip": "p\nq\nr"},
+            {"op": "paste", "text": "", "targets": [], "c": 0, "clip": "a\tb\nc\td"},
+            {"op": "paste", "text": "only", "targets": [0], "c": 0, "clip": "a\tb"},
+            {"op": "paste", "text": "a\n", "targets": [0, 1], "c": 0, "clip": "x\ny"},
+        ]
+    )
+    assert got[0] == [["a", "b"], ["c", "d"]]
+    assert got[1] == [["x\ty", "l1\nl2"]]
+    assert got[2] == "h1,h2,h3\n1,a,b\n4,c,d\n,e,f"
+    assert got[3] == "h1,h2,h3\n1,2,3\n4,5,,x,y"
+    assert got[4] == "h1,h2,h3\np,2,3\n4,5\nq\nr\n"
+    assert got[5] == "a,b\nc,d\n"
+    assert got[6] == "a,b"
+    assert got[7] == "x\ny\n"
+
+
+def test_the_grid_has_sort_filter_header_resize_and_paste_wired_in_the_recipes():
+    """L-documents-39: the column menu is `kebabMenu`, the sort is a view until "Sort the file", every file write is one
+    transaction with an Undo, widths are view state (never written), and a resize has a keyboard path."""
+    assert "kebabMenu(" in JS and "ph-dots" not in JS
+    #: Every change to the file goes through `structural` or `write`: one `dispatch`, so Ctrl+Z takes it back whole.
+    assert JS.count("docCmView.dispatch(") == 1
+    assert "structural(changes, null, `File sorted by" in JS and "structural(pasteBlock(" in JS
+    assert 'toastAction(message, "Undo"' in JS
+    #: The header choice is the only thing kept, per document; widths, sort and filters are not.
+    assert JS.count("prefs.set(") == 1 and "HEADER_KEY" in JS
+    #: A separator you can focus: Left, Right and Home, as well as the drag.
+    assert 'setAttribute("role", "separator")' in JS and '"ArrowRight"' in JS and '"Home"' in JS
+    css = (ROOT / "frontend" / "css" / "doc-csv-grid-lazy.css").read_text(encoding="utf-8")
+    coarse = css.split("@media (pointer: coarse)", 1)[1]
+    for selector in (".csv-grid-sort", ".csv-grid-filter", ".csv-grid-grip"):
+        assert selector in coarse, selector

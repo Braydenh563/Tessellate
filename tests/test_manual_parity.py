@@ -750,8 +750,14 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     from tessellate.ai import help_topics_more_mid as topics
 
     text = " ".join(str(topic) for topic in vars(topics).values() if isinstance(topic, (list, dict, str)))
-    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes"):
+    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes", "Sort the file", "Filters adds a box", "Header row says", "Drag a column's edge", "Pasting tabbed text"):
         assert word in text, word
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+    #: L-documents-39: the new controls are named in the dock's help too, in the words the buttons carry.
+    for label in ("Header row", "Filters", "Sort the file A to Z", "Sort the file Z to A"):
+        assert f'"{label}"' in js, label
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    for word in ("Sort the file", "Filters adds a box", "Header row says", "Drag the edge of a column", "Pasting text with tabs"):
+        assert word in html, word

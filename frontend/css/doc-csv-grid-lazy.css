@@ -82,6 +82,71 @@
   font-size: var(--text-sm);
 }
 
+/* The controls row over each column: its name (a sort button), the column's menu, an optional filter box and the grip
+   that resizes it. It sticks at the top; the header row sticks right under it (`render` sets its `inset-block-start` to that row's height). */
+.csv-grid-ctl,
+.csv-grid-corner {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  min-inline-size: 7rem;
+  max-inline-size: 24rem;
+  padding: var(--space-1) var(--space-2);
+  border-inline-end: 1px solid var(--border);
+  border-block-end: 1px solid var(--border);
+  background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
+  font-weight: 600;
+  text-align: start;
+}
+
+.csv-grid-corner {
+  inset-inline-start: 0;
+  min-inline-size: 2.5rem;
+  z-index: 2;
+}
+
+.csv-grid-ctl-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.csv-grid-sort {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  justify-content: flex-start;
+  gap: var(--space-1);
+}
+
+.csv-grid-sort-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.csv-grid-filter {
+  inline-size: 100%;
+  margin-block-start: var(--space-1);
+  box-sizing: border-box;
+}
+
+.csv-grid-grip {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--space-2);
+  cursor: col-resize;
+  touch-action: none;
+  border-radius: var(--radius-sm);
+}
+
+.csv-grid-grip:hover,
+.csv-grid-grip:focus-visible,
+.csv-grid-grip.dragging {
+  background: var(--accent);
+  outline: none;
+}
+
 /* A phone: the four buttons are icons (their titles name them), so the bar stays one row, and a cell is a touch target. */
 @media (max-width: 599.98px) {
   .csv-grid-bar .toolbar-word {
@@ -98,5 +163,20 @@
 
   .csv-grid-num {
     min-inline-size: var(--target-min);
+  }
+
+  /* The sort button, the column menu, the filter box and the grip are touch targets too. */
+  .csv-grid-sort,
+  .csv-grid-ctl .kebab-opener,
+  .csv-grid-filter {
+    block-size: var(--target-min);
+  }
+
+  .csv-grid-ctl .kebab-opener {
+    min-inline-size: var(--target-min);
+  }
+
+  .csv-grid-grip {
+    inline-size: var(--target-min);
   }
 }
