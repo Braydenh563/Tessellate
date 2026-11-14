@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents status bar: the caret position, the goal and the suggestions chip give way with an ellipsis (the file type keeps its place), so the bar is no longer 80px wider than its box at 320 to 820
 - The documents dictionary dialog is built on its first open, not parsed at boot: the boot page is back under its element cap after the base merge.
 - The first Settings open no longer lays its window out to draw your face: the face is drawn on idle (L-world-class-37).
 - Restore drain tests no longer time the wall clock: a zero wait proves a stream or long poll does not hold a restore (L-world-class-38).

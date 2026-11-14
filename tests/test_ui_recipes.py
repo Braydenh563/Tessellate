@@ -7903,3 +7903,13 @@ def test_a_confirmations_decline_is_the_quiet_text_action_not_a_bordered_ghost()
     body = m.group(1)
     assert re.search(r"border:\s*0", body) and "background: transparent" in body and "color: var(--accent-text)" in body
     assert re.search(r"\.tool-confirm \.row > button\.ghost:is\(:hover, :focus-visible\):not\(:disabled\) \{\s*background: var\(--hover-veil\)", css)
+
+
+def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
+    """L-world-class-36: #doc-statusbar was 80px over at 320 to 820 (overlap.js)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    m = re.search(r"\.doc-statusbar > #doc-caret,\s*\.doc-statusbar > \.doc-statusbar-button \{([^}]*)\}", css)
+    assert m and "min-width: 0" in m.group(1) and "overflow: hidden" in m.group(1)
+    assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
+    assert re.search(r"\.doc-statusbar-button > span \{[^}]*text-overflow: ellipsis", css)
+    assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.doc-statusbar > \.doc-statusbar-button \{\s*flex-shrink: 1;", css)
