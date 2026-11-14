@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10907, test files 2845, tests 22450, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22451, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -13434,7 +13434,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_documents` | src/tessellate/api/routes_documents.py:391 |
 |  | GET | `list_duplicates` | src/tessellate/api/routes_duplicates.py:78 |
 |  | GET | `list_entities` | src/tessellate/api/routes_entities.py:68 |
-|  | GET | `list_entries` | src/tessellate/api/routes_entries.py:1819 |
+|  | GET | `list_entries` | src/tessellate/api/routes_entries.py:1832 |
 |  | GET | `list_facts` | src/tessellate/api/routes_learned.py:188 |
 |  | GET | `list_questions` | src/tessellate/api/routes_questions.py:26 |
 |  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:517 |
@@ -13453,7 +13453,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_category` | src/tessellate/api/routes_categories.py:154 |
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:618 |
 |  | POST | `create_document` | src/tessellate/api/routes_documents.py:499 |
-|  | POST | `create_entry` | src/tessellate/api/routes_entries.py:971 |
+|  | POST | `create_entry` | src/tessellate/api/routes_entries.py:984 |
 |  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:553 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:54 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:201 |
@@ -13528,7 +13528,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:82 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
 | `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1812 |
-| `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:1998 |
+| `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2011 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
 | `/check` | GET | `check_for_update` | src/tessellate/api/routes_update.py:601 |
@@ -13557,12 +13557,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:134 |
 | `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:54 |
 | `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:456 |
-| `/count` | GET | `count_entries` | src/tessellate/api/routes_entries.py:1985 |
+| `/count` | GET | `count_entries` | src/tessellate/api/routes_entries.py:1998 |
 | `/counts` | GET | `counts` | src/tessellate/api/routes_questions.py:45 |
 | `/counts` | GET | `reminder_counts` | src/tessellate/api/routes_reminders.py:257 |
-| `/daily` | GET | `daily_journal` | src/tessellate/api/routes_entries.py:1128 |
-| `/daily/{day}` | GET | `daily_note` | src/tessellate/api/routes_entries.py:1174 |
-| `/daily/{day}` | POST | `open_daily_note` | src/tessellate/api/routes_entries.py:1190 |
+| `/daily` | GET | `daily_journal` | src/tessellate/api/routes_entries.py:1141 |
+| `/daily/{day}` | GET | `daily_note` | src/tessellate/api/routes_entries.py:1187 |
+| `/daily/{day}` | POST | `open_daily_note` | src/tessellate/api/routes_entries.py:1203 |
 | `/day` | GET | `day_digest_lines` | src/tessellate/api/routes_insights.py:436 |
 | `/delete` | POST | `delete_model` | src/tessellate/api/routes_models.py:1371 |
 | `/delete` | POST | `delete_tag` | src/tessellate/api/routes_tags.py:95 |
@@ -13614,8 +13614,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:165 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:76 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:204 |
-| `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:2963 |
-| `/extract/preview` | POST | `extract_preview` | src/tessellate/api/routes_entries.py:2917 |
+| `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:2976 |
+| `/extract/preview` | POST | `extract_preview` | src/tessellate/api/routes_entries.py:2930 |
 | `/extras` | GET | `list_extras` | src/tessellate/api/routes_settings_extras.py:19 |
 | `/extras/bulk` | POST | `bulk_extras` | src/tessellate/api/routes_settings_extras.py:54 |
 | `/extras/{extra_id}/install` | POST | `install_extra` | src/tessellate/api/routes_settings_extras.py:63 |
@@ -13695,7 +13695,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:671 |
 | `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:564 |
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:156 |
-| `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1663 |
+| `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1676 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1030 |
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1665 |
 | `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1679 |
@@ -13739,7 +13739,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/logs/lag` | POST | `record_lag` | src/tessellate/api/routes_lag.py:35 |
 | `/logs/stats` | GET | `server_log_stats` | src/tessellate/api/routes_settings_logs.py:120 |
 | `/logs/stream` | GET | `stream_server_logs` | src/tessellate/api/routes_settings_logs.py:148 |
-| `/make-all-private` | POST | `make_all_private` | src/tessellate/api/routes_entries.py:2549 |
+| `/make-all-private` | POST | `make_all_private` | src/tessellate/api/routes_entries.py:2562 |
 | `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:447 |
 | `/maps/from-notes` | POST | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:259 |
 | `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:475 |
@@ -13786,7 +13786,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1746 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
-| `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:1973 |
+| `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:1986 |
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:114 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:164 |
 | `/near/{entry_id}` | GET | `near` | src/tessellate/api/routes_resurface.py:155 |
@@ -13828,7 +13828,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/provider` | POST | `set_provider` | src/tessellate/api/routes_models.py:1201 |
 | `/pull` | POST | `pull_model` | src/tessellate/api/routes_models.py:1405 |
 | `/put` | POST | `put` | src/tessellate/api/routes_origin_handoff.py:51 |
-| `/query` | GET | `query_entries` | src/tessellate/api/routes_entries.py:1717 |
+| `/query` | GET | `query_entries` | src/tessellate/api/routes_entries.py:1730 |
 | `/read` | GET | `read_text` | src/tessellate/api/routes_read.py:36 |
 | `/read` | POST | `read` | src/tessellate/api/routes_editor.py:34 |
 | `/read/acts` | GET | `act_rows` | src/tessellate/api/routes_read.py:158 |
@@ -13868,7 +13868,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2197 |
 | `/recycle-bin/empty` | POST | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2156 |
 | `/redo` | POST | `redo` | src/tessellate/api/routes_learned_audit.py:60 |
-| `/reference-counts` | GET | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2060 |
+| `/reference-counts` | GET | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2073 |
 | `/reindex` | POST | `rebuild_search_index` | src/tessellate/api/routes_models.py:1331 |
 | `/releases` | GET | `list_releases` | src/tessellate/api/routes_update.py:652 |
 | `/remarks` | GET | `remarks` | src/tessellate/api/routes_insights.py:465 |
@@ -13894,7 +13894,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sample-notebook` | POST | `add_sample_notebook` | src/tessellate/api/routes_help.py:140 |
 | `/sampling` | GET | `sampling_settings` | src/tessellate/api/routes_models.py:816 |
 | `/sampling` | PUT | `save_sampling_settings` | src/tessellate/api/routes_models.py:864 |
-| `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2045 |
+| `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2058 |
 | `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:874 |
 | `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:872 |
 | `/sketches` | POST | `create_sketch` | src/tessellate/api/wb_items.py:139 |
@@ -13929,7 +13929,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:46 |
 | `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2223 |
 | `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:610 |
-| `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1498 |
+| `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1511 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:878 |
 | `/suggestions` | GET | `suggestions` | src/tessellate/api/routes_chat.py:121 |
 | `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:245 |
@@ -14072,21 +14072,21 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:104 |
 | `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:183 |
 | `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:216 |
-| `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2376 |
-| `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2110 |
-| `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2290 |
-| `/{entry_id}/archive` | POST | `archive_entry` | src/tessellate/api/routes_entries.py:2404 |
+| `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2389 |
+| `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2123 |
+| `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2303 |
+| `/{entry_id}/archive` | POST | `archive_entry` | src/tessellate/api/routes_entries.py:2417 |
 | `/{entry_id}/backlinks` | GET | `entry_backlinks` | src/tessellate/api/routes_mentions.py:159 |
 | `/{entry_id}/bookmarks` | GET | `entry_bookmarks` | src/tessellate/api/routes_entries_relations.py:681 |
 | `/{entry_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_entries_relations.py:696 |
 | `/{entry_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_entries_relations.py:706 |
 | `/{entry_id}/connections` | GET | `entry_connections` | src/tessellate/api/routes_entries_links.py:46 |
-| `/{entry_id}/context` | POST | `add_context` | src/tessellate/api/routes_entries.py:1587 |
-| `/{entry_id}/export.md` | GET | `export_entry` | src/tessellate/api/routes_entries.py:2196 |
-| `/{entry_id}/filing` | GET | `filing_status` | src/tessellate/api/routes_entries.py:1396 |
-| `/{entry_id}/filing` | POST | `decide_filing` | src/tessellate/api/routes_entries.py:1274 |
-| `/{entry_id}/filing/stop` | POST | `stop_filing_one` | src/tessellate/api/routes_entries.py:1255 |
-| `/{entry_id}/generate-title` | POST | `generate_entry_title` | src/tessellate/api/routes_entries.py:2593 |
+| `/{entry_id}/context` | POST | `add_context` | src/tessellate/api/routes_entries.py:1600 |
+| `/{entry_id}/export.md` | GET | `export_entry` | src/tessellate/api/routes_entries.py:2209 |
+| `/{entry_id}/filing` | GET | `filing_status` | src/tessellate/api/routes_entries.py:1409 |
+| `/{entry_id}/filing` | POST | `decide_filing` | src/tessellate/api/routes_entries.py:1287 |
+| `/{entry_id}/filing/stop` | POST | `stop_filing_one` | src/tessellate/api/routes_entries.py:1268 |
+| `/{entry_id}/generate-title` | POST | `generate_entry_title` | src/tessellate/api/routes_entries.py:2606 |
 | `/{entry_id}/history` | GET | `entry_history` | src/tessellate/api/routes_entries_history.py:83 |
 | `/{entry_id}/history/{revision_id}/restore` | POST | `restore_revision` | src/tessellate/api/routes_entries_history.py:230 |
 | `/{entry_id}/links` | POST | `create_link` | src/tessellate/api/routes_entries_links.py:82 |
@@ -14095,19 +14095,19 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/links/{link_id}/generate-reason` | POST | `generate_link_reason_endpoint` | src/tessellate/api/routes_entries_links.py:161 |
 | `/{entry_id}/links/{link_id}/reason` | PUT | `update_link_reason` | src/tessellate/api/routes_entries_links.py:142 |
 | `/{entry_id}/mentions/link` | POST | `link_mention` | src/tessellate/api/routes_mentions.py:175 |
-| `/{entry_id}/privacy` | POST | `set_entry_privacy` | src/tessellate/api/routes_entries.py:2564 |
-| `/{entry_id}/purge` | DELETE | `purge_entry` | src/tessellate/api/routes_entries.py:2423 |
+| `/{entry_id}/privacy` | POST | `set_entry_privacy` | src/tessellate/api/routes_entries.py:2577 |
+| `/{entry_id}/purge` | DELETE | `purge_entry` | src/tessellate/api/routes_entries.py:2436 |
 | `/{entry_id}/reevaluate` | POST | `reevaluate_entry` | src/tessellate/api/routes_entries_reevaluate.py:55 |
 | `/{entry_id}/references` | GET | `entry_references` | src/tessellate/api/routes_entries_history.py:37 |
 | `/{entry_id}/related` | GET | `related_entries` | src/tessellate/api/routes_entries_relations.py:631 |
-| `/{entry_id}/remove-title` | POST | `remove_entry_title` | src/tessellate/api/routes_entries.py:2656 |
-| `/{entry_id}/restore` | POST | `restore_entry` | src/tessellate/api/routes_entries.py:2397 |
+| `/{entry_id}/remove-title` | POST | `remove_entry_title` | src/tessellate/api/routes_entries.py:2669 |
+| `/{entry_id}/restore` | POST | `restore_entry` | src/tessellate/api/routes_entries.py:2410 |
 | `/{entry_id}/restore/{event_id}` | POST | `restore_event` | src/tessellate/api/routes_entries_history.py:166 |
-| `/{entry_id}/suggested-tags` | POST | `answer_suggested_tags` | src/tessellate/api/routes_entries.py:1562 |
+| `/{entry_id}/suggested-tags` | POST | `answer_suggested_tags` | src/tessellate/api/routes_entries.py:1575 |
 | `/{entry_id}/then-and-now` | GET | `then_and_now` | src/tessellate/api/routes_entries_history.py:45 |
 | `/{entry_id}/then-and-now` | POST | `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:70 |
-| `/{entry_id}/unarchive` | POST | `unarchive_entry` | src/tessellate/api/routes_entries.py:2415 |
-| `/{entry_id}/wiki-rename` | POST | `wiki_rename` | src/tessellate/api/routes_entries.py:2362 |
+| `/{entry_id}/unarchive` | POST | `unarchive_entry` | src/tessellate/api/routes_entries.py:2428 |
+| `/{entry_id}/wiki-rename` | POST | `wiki_rename` | src/tessellate/api/routes_entries.py:2375 |
 | `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:421 |
 | `/{fact_id}` | GET | `get_fact` | src/tessellate/api/routes_learned.py:383 |
 | `/{fact_id}` | PATCH | `patch_fact` | src/tessellate/api/routes_learned.py:391 |
@@ -14138,7 +14138,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10907)
+## Backend modules (10908)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22134,62 +22134,62 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `patch_entity` | src/tessellate/api/routes_entities.py:184 |
 | `undo_merge_route` | src/tessellate/api/routes_entities.py:229 |
 
-### src/tessellate/api/routes_entries.py (120)
+### src/tessellate/api/routes_entries.py (121)
 
 | Name | File:line |
 |---|---|
-| `DailyDayOut` | src/tessellate/api/routes_entries.py:1067 |
-| `DailyJournalOut` | src/tessellate/api/routes_entries.py:1072 |
-| `ExtractCommitBody` | src/tessellate/api/routes_entries.py:2955 |
-| `ExtractLinkIn` | src/tessellate/api/routes_entries.py:2945 |
-| `ExtractNoteIn` | src/tessellate/api/routes_entries.py:2934 |
-| `ExtractPreviewBody` | src/tessellate/api/routes_entries.py:2908 |
-| `FilingDecisionBody` | src/tessellate/api/routes_entries.py:1268 |
-| `FilingStopBody` | src/tessellate/api/routes_entries.py:1251 |
-| `ImproveBody` | src/tessellate/api/routes_entries.py:1653 |
-| `LinkBody` | src/tessellate/api/routes_entries.py:2449 |
-| `LinkPatchBody` | src/tessellate/api/routes_entries.py:2490 |
-| `LinkReasonBody` | src/tessellate/api/routes_entries.py:2506 |
-| `MakeAllPrivateBody` | src/tessellate/api/routes_entries.py:2545 |
-| `PrivacyBody` | src/tessellate/api/routes_entries.py:2513 |
-| `SuggestTagsBody` | src/tessellate/api/routes_entries.py:1487 |
-| `SuggestedTagsBody` | src/tessellate/api/routes_entries.py:1539 |
-| `WikiRenameIn` | src/tessellate/api/routes_entries.py:2358 |
+| `DailyDayOut` | src/tessellate/api/routes_entries.py:1080 |
+| `DailyJournalOut` | src/tessellate/api/routes_entries.py:1085 |
+| `ExtractCommitBody` | src/tessellate/api/routes_entries.py:2968 |
+| `ExtractLinkIn` | src/tessellate/api/routes_entries.py:2958 |
+| `ExtractNoteIn` | src/tessellate/api/routes_entries.py:2947 |
+| `ExtractPreviewBody` | src/tessellate/api/routes_entries.py:2921 |
+| `FilingDecisionBody` | src/tessellate/api/routes_entries.py:1281 |
+| `FilingStopBody` | src/tessellate/api/routes_entries.py:1264 |
+| `ImproveBody` | src/tessellate/api/routes_entries.py:1666 |
+| `LinkBody` | src/tessellate/api/routes_entries.py:2462 |
+| `LinkPatchBody` | src/tessellate/api/routes_entries.py:2503 |
+| `LinkReasonBody` | src/tessellate/api/routes_entries.py:2519 |
+| `MakeAllPrivateBody` | src/tessellate/api/routes_entries.py:2558 |
+| `PrivacyBody` | src/tessellate/api/routes_entries.py:2526 |
+| `SuggestTagsBody` | src/tessellate/api/routes_entries.py:1500 |
+| `SuggestedTagsBody` | src/tessellate/api/routes_entries.py:1552 |
+| `WikiRenameIn` | src/tessellate/api/routes_entries.py:2371 |
 | `_LateFiling` | src/tessellate/api/routes_entries.py:444 |
-| `_add_referenced` | src/tessellate/api/routes_entries.py:2733 |
-| `_add_wiki_outgoing` | src/tessellate/api/routes_entries.py:2766 |
-| `_after_content_edit` | src/tessellate/api/routes_entries.py:2241 |
+| `_add_referenced` | src/tessellate/api/routes_entries.py:2746 |
+| `_add_wiki_outgoing` | src/tessellate/api/routes_entries.py:2779 |
+| `_after_content_edit` | src/tessellate/api/routes_entries.py:2254 |
 | `_already_delivered` | src/tessellate/api/routes_entries.py:793 |
 | `_apply_flags` | src/tessellate/api/routes_entries.py:834 |
-| `_attached_documents` | src/tessellate/api/routes_entries.py:2725 |
+| `_attached_documents` | src/tessellate/api/routes_entries.py:2738 |
 | `_attachment_outs` | src/tessellate/api/routes_entries.py:220 |
-| `_boards_of` | src/tessellate/api/routes_entries.py:2797 |
-| `_cheer_note_count` | src/tessellate/api/routes_entries.py:965 |
-| `_choices_filled` | src/tessellate/api/routes_entries.py:1333 |
-| `_composed_title` | src/tessellate/api/routes_entries.py:2637 |
-| `_connected_files` | src/tessellate/api/routes_entries.py:2874 |
-| `_connection_cue` | src/tessellate/api/routes_entries.py:2681 |
-| `_connection_label` | src/tessellate/api/routes_entries.py:2856 |
-| `_content_change` | src/tessellate/api/routes_entries.py:2225 |
-| `_daily_date` | src/tessellate/api/routes_entries.py:1082 |
-| `_daily_note` | src/tessellate/api/routes_entries.py:1120 |
-| `_daily_notes` | src/tessellate/api/routes_entries.py:1096 |
+| `_boards_of` | src/tessellate/api/routes_entries.py:2810 |
+| `_cheer_note_count` | src/tessellate/api/routes_entries.py:978 |
+| `_choices_filled` | src/tessellate/api/routes_entries.py:1346 |
+| `_composed_title` | src/tessellate/api/routes_entries.py:2650 |
+| `_connected_files` | src/tessellate/api/routes_entries.py:2887 |
+| `_connection_cue` | src/tessellate/api/routes_entries.py:2694 |
+| `_connection_label` | src/tessellate/api/routes_entries.py:2869 |
+| `_content_change` | src/tessellate/api/routes_entries.py:2238 |
+| `_daily_date` | src/tessellate/api/routes_entries.py:1095 |
+| `_daily_note` | src/tessellate/api/routes_entries.py:1133 |
+| `_daily_notes` | src/tessellate/api/routes_entries.py:1109 |
 | `_date_outs` | src/tessellate/api/routes_entries.py:187 |
 | `_decide_filing` | src/tessellate/api/routes_entries.py:844 |
-| `_discard_tags` | src/tessellate/api/routes_entries.py:1550 |
+| `_discard_tags` | src/tessellate/api/routes_entries.py:1563 |
 | `_embed_and_tidy` | src/tessellate/api/routes_entries.py:574 |
 | `_embed_entry_in_background` | src/tessellate/api/routes_entries.py:731 |
 | `_engine_tags` | src/tessellate/api/routes_entries.py:324 |
 | `_existing_entry` | src/tessellate/api/routes_entries.py:398 |
 | `_file_entry_in_background` | src/tessellate/api/routes_entries.py:610 |
 | `_file_entry_now` | src/tessellate/api/routes_entries.py:418 |
-| `_filed_by` | src/tessellate/api/routes_entries.py:1453 |
-| `_filing_similar` | src/tessellate/api/routes_entries.py:1324 |
-| `_filing_why` | src/tessellate/api/routes_entries.py:1382 |
+| `_filed_by` | src/tessellate/api/routes_entries.py:1466 |
+| `_filing_similar` | src/tessellate/api/routes_entries.py:1337 |
+| `_filing_why` | src/tessellate/api/routes_entries.py:1395 |
 | `_find_near_duplicate` | src/tessellate/api/routes_entries.py:380 |
 | `_finish_new_entry` | src/tessellate/api/routes_entries.py:891 |
-| `_first_line` | src/tessellate/api/routes_entries.py:1091 |
-| `_heading_count` | src/tessellate/api/routes_entries.py:1782 |
+| `_first_line` | src/tessellate/api/routes_entries.py:1104 |
+| `_heading_count` | src/tessellate/api/routes_entries.py:1795 |
 | `_json_tags` | src/tessellate/api/routes_entries.py:233 |
 | `_keep_suggestions` | src/tessellate/api/routes_entries.py:292 |
 | `_kept_private` | src/tessellate/api/routes_entries.py:263 |
@@ -22197,67 +22197,68 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_mark_filing_failed` | src/tessellate/api/routes_entries.py:598 |
 | `_mark_new_entry` | src/tessellate/api/routes_entries.py:818 |
 | `_new_note_text` | src/tessellate/api/routes_entries.py:875 |
-| `_note_total` | src/tessellate/api/routes_entries.py:958 |
-| `_offered_categories` | src/tessellate/api/routes_entries.py:1347 |
+| `_note_total` | src/tessellate/api/routes_entries.py:971 |
+| `_offered_categories` | src/tessellate/api/routes_entries.py:1360 |
 | `_open_suggestions` | src/tessellate/api/routes_entries.py:241 |
 | `_preview` | src/tessellate/api/routes_entries.py:90 |
-| `_previewed` | src/tessellate/api/routes_entries.py:1793 |
+| `_previewed` | src/tessellate/api/routes_entries.py:1806 |
 | `_process_committed_media` | src/tessellate/api/routes_entries.py:405 |
 | `_queue_embedding` | src/tessellate/api/routes_entries.py:759 |
 | `_queue_filing` | src/tessellate/api/routes_entries.py:771 |
-| `_readable` | src/tessellate/api/routes_entries.py:2536 |
+| `_readable` | src/tessellate/api/routes_entries.py:2549 |
 | `_reasons_for` | src/tessellate/api/routes_entries.py:282 |
-| `_refuse_while_sealed` | src/tessellate/api/routes_entries.py:2188 |
+| `_refuse_while_sealed` | src/tessellate/api/routes_entries.py:2201 |
 | `_remember_delivery` | src/tessellate/api/routes_entries.py:810 |
 | `_settle_filed_entry` | src/tessellate/api/routes_entries.py:542 |
-| `_starts_sealed` | src/tessellate/api/routes_entries.py:947 |
-| `_stored_connections` | src/tessellate/api/routes_entries.py:2694 |
-| `_stored_form` | src/tessellate/api/routes_entries.py:2523 |
+| `_starts_sealed` | src/tessellate/api/routes_entries.py:960 |
+| `_stored_connections` | src/tessellate/api/routes_entries.py:2707 |
+| `_stored_form` | src/tessellate/api/routes_entries.py:2536 |
 | `_tag_reasons` | src/tessellate/api/routes_entries.py:268 |
-| `_tag_vocabulary` | src/tessellate/api/routes_entries.py:1475 |
+| `_tag_vocabulary` | src/tessellate/api/routes_entries.py:1488 |
+| `_tidy_in_background` | src/tessellate/api/routes_entries.py:947 |
 | `_to_out` | src/tessellate/api/routes_entries.py:103 |
 | `_to_out_bulk` | src/tessellate/api/routes_entries.py:338 |
-| `_wiki_link_targets_of` | src/tessellate/api/routes_entries.py:2819 |
-| `_wiki_rename` | src/tessellate/api/routes_entries.py:2276 |
-| `add_context` | src/tessellate/api/routes_entries.py:1588 |
-| `answer_suggested_tags` | src/tessellate/api/routes_entries.py:1563 |
-| `archive_entry` | src/tessellate/api/routes_entries.py:2405 |
-| `check_link_props` | src/tessellate/api/routes_entries.py:2474 |
-| `count_entries` | src/tessellate/api/routes_entries.py:1986 |
-| `create_entry` | src/tessellate/api/routes_entries.py:972 |
-| `daily_journal` | src/tessellate/api/routes_entries.py:1129 |
-| `daily_note` | src/tessellate/api/routes_entries.py:1175 |
-| `decide_filing` | src/tessellate/api/routes_entries.py:1275 |
-| `delete_entry` | src/tessellate/api/routes_entries.py:2377 |
-| `entry_changes` | src/tessellate/api/routes_entries.py:1999 |
-| `entry_reference_counts` | src/tessellate/api/routes_entries.py:2061 |
-| `export_entry` | src/tessellate/api/routes_entries.py:2197 |
-| `extract_commit` | src/tessellate/api/routes_entries.py:2964 |
-| `extract_preview` | src/tessellate/api/routes_entries.py:2918 |
-| `filing_status` | src/tessellate/api/routes_entries.py:1397 |
-| `generate_entry_title` | src/tessellate/api/routes_entries.py:2594 |
-| `get_entry` | src/tessellate/api/routes_entries.py:2111 |
-| `improve_writing` | src/tessellate/api/routes_entries.py:1664 |
-| `list_entries` | src/tessellate/api/routes_entries.py:1820 |
-| `make_all_private` | src/tessellate/api/routes_entries.py:2550 |
-| `most_accessed` | src/tessellate/api/routes_entries.py:1974 |
-| `open_daily_note` | src/tessellate/api/routes_entries.py:1191 |
-| `purge_entry` | src/tessellate/api/routes_entries.py:2424 |
-| `query_entries` | src/tessellate/api/routes_entries.py:1718 |
+| `_wiki_link_targets_of` | src/tessellate/api/routes_entries.py:2832 |
+| `_wiki_rename` | src/tessellate/api/routes_entries.py:2289 |
+| `add_context` | src/tessellate/api/routes_entries.py:1601 |
+| `answer_suggested_tags` | src/tessellate/api/routes_entries.py:1576 |
+| `archive_entry` | src/tessellate/api/routes_entries.py:2418 |
+| `check_link_props` | src/tessellate/api/routes_entries.py:2487 |
+| `count_entries` | src/tessellate/api/routes_entries.py:1999 |
+| `create_entry` | src/tessellate/api/routes_entries.py:985 |
+| `daily_journal` | src/tessellate/api/routes_entries.py:1142 |
+| `daily_note` | src/tessellate/api/routes_entries.py:1188 |
+| `decide_filing` | src/tessellate/api/routes_entries.py:1288 |
+| `delete_entry` | src/tessellate/api/routes_entries.py:2390 |
+| `entry_changes` | src/tessellate/api/routes_entries.py:2012 |
+| `entry_reference_counts` | src/tessellate/api/routes_entries.py:2074 |
+| `export_entry` | src/tessellate/api/routes_entries.py:2210 |
+| `extract_commit` | src/tessellate/api/routes_entries.py:2977 |
+| `extract_preview` | src/tessellate/api/routes_entries.py:2931 |
+| `filing_status` | src/tessellate/api/routes_entries.py:1410 |
+| `generate_entry_title` | src/tessellate/api/routes_entries.py:2607 |
+| `get_entry` | src/tessellate/api/routes_entries.py:2124 |
+| `improve_writing` | src/tessellate/api/routes_entries.py:1677 |
+| `list_entries` | src/tessellate/api/routes_entries.py:1833 |
+| `make_all_private` | src/tessellate/api/routes_entries.py:2563 |
+| `most_accessed` | src/tessellate/api/routes_entries.py:1987 |
+| `open_daily_note` | src/tessellate/api/routes_entries.py:1204 |
+| `purge_entry` | src/tessellate/api/routes_entries.py:2437 |
+| `query_entries` | src/tessellate/api/routes_entries.py:1731 |
 | `recordings_for` | src/tessellate/api/routes_entries.py:363 |
-| `remove_entry_title` | src/tessellate/api/routes_entries.py:2657 |
-| `restore_entry` | src/tessellate/api/routes_entries.py:2398 |
+| `remove_entry_title` | src/tessellate/api/routes_entries.py:2670 |
+| `restore_entry` | src/tessellate/api/routes_entries.py:2411 |
 | `retry_stand_ins` | src/tessellate/api/routes_entries.py:697 |
-| `seed_example_entries` | src/tessellate/api/routes_entries.py:2046 |
-| `set_entry_privacy` | src/tessellate/api/routes_entries.py:2565 |
+| `seed_example_entries` | src/tessellate/api/routes_entries.py:2059 |
+| `set_entry_privacy` | src/tessellate/api/routes_entries.py:2578 |
 | `stand_ins_waiting` | src/tessellate/api/routes_entries.py:689 |
-| `stop_all_filing` | src/tessellate/api/routes_entries.py:1296 |
-| `stop_filing` | src/tessellate/api/routes_entries.py:1222 |
-| `stop_filing_one` | src/tessellate/api/routes_entries.py:1256 |
-| `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1499 |
-| `unarchive_entry` | src/tessellate/api/routes_entries.py:2416 |
-| `update_entry` | src/tessellate/api/routes_entries.py:2291 |
-| `wiki_rename` | src/tessellate/api/routes_entries.py:2363 |
+| `stop_all_filing` | src/tessellate/api/routes_entries.py:1309 |
+| `stop_filing` | src/tessellate/api/routes_entries.py:1235 |
+| `stop_filing_one` | src/tessellate/api/routes_entries.py:1269 |
+| `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1512 |
+| `unarchive_entry` | src/tessellate/api/routes_entries.py:2429 |
+| `update_entry` | src/tessellate/api/routes_entries.py:2304 |
+| `wiki_rename` | src/tessellate/api/routes_entries.py:2376 |
 
 ### src/tessellate/api/routes_entries_history.py (7)
 
@@ -28084,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22450)
+## Tests (22451)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30576,7 +30577,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_this_week_1778.py | 5 |
 | tests/test_throw_surfaces_1667.py | 5 |
 | tests/test_tidy.py | 28 |
-| tests/test_tidy_auto_after_save_l392.py | 1 |
+| tests/test_tidy_auto_after_save_l392.py | 2 |
 | tests/test_tidy_categories.py | 5 |
 | tests/test_tidy_ui.py | 13 |
 | tests/test_tie_chip_b9.py | 5 |

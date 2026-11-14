@@ -935,13 +935,26 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # content may already be encrypted at rest, and this is the plaintext
     # that was actually just submitted, before that happens.
     _process_committed_media(session, body.content)
-    # Filed on the request: Tidy's switched-on reviews run here, as the
+    # Filed on the request: Tidy's switched-on reviews run after it, as the
     # background pass runs them for a deferred note (L392: only that pass
-    # called them, so a note filed with no model never did). Never raises.
+    # called them, so a note filed with no model never did). Off the request
+    # and in their own session (review 5899359161): inline, a failing review
+    # rolled back the request's session and the save waited on every review.
     if not defer:
-        from tessellate.entry import tidy
+        jobs.future("tidy", _tidy_in_background, session.info.get("workspace_id") or "default")
 
-        tidy.run_automatic(session)
+
+def _tidy_in_background(workspace_id: str) -> None:
+    """Tidy's switched-on reviews for a note filed on its request, in the note's space."""
+    from tessellate.core.database import impersonate_workspace
+    from tessellate.entry import tidy
+
+    try:
+        with deps.get_db().session() as session:
+            with impersonate_workspace(session, workspace_id):
+                tidy.run_automatic(session)
+    except Exception:
+        logger.warning("automatic tidy after a save failed", exc_info=True)
 
 
 def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:

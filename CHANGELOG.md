@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A save no longer runs Tidy's switched-on reviews on its own request: they run after it in their own session, so a failing review cannot roll back the save (review 5899359161).
 - Overdue batch moves, ticks and bins try every reminder; one refusal no longer stops the reload or the Undo, which covers only the rows that changed, and the menu toasts if its tools cannot load (review 5899359161).
 - On Windows the tray menu is rebuilt on the tray's own thread, so a snooze ending while the menu is open cannot pull it away (review 5899359161).
 - Boot CSS is back under its cap: duplicate declarations the merge brought are gone and 48 Library-only rules load with the Library (L-ui-modernisation-47).
