@@ -520,7 +520,7 @@
   function atlasTailFrame(tail, now) {
     tail.raf = 0;
     const { box, spec } = tail;
-    if (!box.isConnected) return;
+    if (!box.isConnected || tail.held) return;
     //: `data-atlas-hidden`: a hidden window, or the app locked (atlas.js).
     const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !document.documentElement.hasAttribute("data-atlas-hidden");
     //: The rings' and the planets' loops run and rest with it (`atlasRingLoops`).
@@ -635,6 +635,21 @@
     } else if (live) tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
     else tail.at = 0;
   }
+  //: **The desk frames hold the tail at one moment** (L-ui-modernisation-151, scripts/render_desk_frames.js): drawn at
+  //: phase `w` of one beat of the sway act, the loop held from then on (two captures of a frame were 2,340 to 3,823 px
+  //: apart below the waist), the rest's sway and the breath cancelled. Returns the breath's swell for the capture's own.
+  atlasTailFrame.hold = (tail, w) => {
+    tail.held = true;
+    clearTimeout(tail.raf);
+    cancelAnimationFrame(tail.raf);
+    tail.raf = 0;
+    for (const a of tail.svg?.getAnimations?.() || []) a.cancel();
+    tail.sway = null;
+    tail.resting = false;
+    atlasBreathFrame(tail.box, false);
+    atlasTailDraw(tail, (s) => atlasTailBend(s, ATLAS_TAIL_ACTS.sway, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+    return ATLAS_BREATH_SWELL;
+  };
   const ATLAS_TAIL_CALM_MS = 66;
   function atlasTailCalm(tail, box) {
     return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");

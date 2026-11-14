@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2790, CSS sections 528, backend routes 714, backend modules 10913, test files 2870, tests 22558, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2790, CSS sections 528, backend routes 714, backend modules 10914, test files 2872, tests 22574, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -2075,24 +2075,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:925 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:940 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:831 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:859 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1470 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1445 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:846 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:874 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1485 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1460 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:639 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:758 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:654 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:773 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:145 |
 | `atlasTailFrame` | frontend/js/atlas-life.js:520 |
 | `atlasTailKit` | frontend/js/atlas-life.js:256 |
 | `atlasTailPick` | frontend/js/atlas-life.js:457 |
-| `atlasTailRest` | frontend/js/atlas-life.js:721 |
+| `atlasTailRest` | frontend/js/atlas-life.js:736 |
 | `atlasTailShape` | frontend/js/atlas-life.js:223 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:736 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:751 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -14142,7 +14142,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10913)
+## Backend modules (10914)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25448,28 +25448,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_for_tests` | src/tessellate/core/origin.py:71 |
 | `run_deferred` | src/tessellate/core/origin.py:58 |
 
-### src/tessellate/core/overlay/behaviour.py (35)
+### src/tessellate/core/overlay/behaviour.py (36)
 
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:425 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:911 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:939 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:472 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:842 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:870 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:625 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:690 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:904 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:898 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:932 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:926 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:313 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:612 |
 | `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:346 |
 | `cell` | src/tessellate/core/overlay/behaviour.py:103 |
 | `curve` | src/tessellate/core/overlay/behaviour.py:455 |
+| `flow_baked` | src/tessellate/core/overlay/behaviour.py:770 |
 | `idle_tier` | src/tessellate/core/overlay/behaviour.py:411 |
 | `mood_of` | src/tessellate/core/overlay/behaviour.py:378 |
 | `phase_of` | src/tessellate/core/overlay/behaviour.py:338 |
@@ -25482,8 +25483,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:821 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:829 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:849 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:857 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:416 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:461 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
@@ -28104,7 +28105,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22558)
+## Tests (22574)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28910,6 +28911,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desk_fit_set_size_1107.py | 2 |
+| tests/test_desk_frames_hold_l_ui_151.py | 12 |
 | tests/test_desk_frames_pose_arrangement_l_ui_57.py | 6 |
 | tests/test_desk_handle_cursor_1107.py | 3 |
 | tests/test_desk_look_1107.py | 11 |
@@ -29294,6 +29296,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 17 |
+| tests/test_flow_baked_shear_l_ui_150.py | 4 |
 | tests/test_flow_lean_l_ui_103.py | 3 |
 | tests/test_flow_pose_1683b.py | 7 |
 | tests/test_flow_reach_l_ui_100.py | 3 |
@@ -31403,13 +31406,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-ui-modernisation-69) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:609 |
+| Needs hardware | docs/roadmap/LEDGER.md:611 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:528 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:602 |
+| Owner calls | docs/roadmap/LEDGER.md:604 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:533 |
@@ -31584,7 +31587,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:778 |
+| Plan session briefs | docs/roadmap/LEDGER.md:780 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31638,25 +31641,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:794 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:878 |
+| chat | docs/roadmap/LEDGER.md:796 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:880 |
 | documents | docs/roadmap/LEDGER.md:332 |
-| documents | docs/roadmap/LEDGER.md:818 |
-| general | docs/roadmap/LEDGER.md:599 |
+| documents | docs/roadmap/LEDGER.md:820 |
+| general | docs/roadmap/LEDGER.md:601 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:782 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:890 |
+| graph | docs/roadmap/LEDGER.md:784 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:892 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:348 |
-| mindmap | docs/roadmap/LEDGER.md:830 |
-| timeline | docs/roadmap/LEDGER.md:362 |
-| timeline | docs/roadmap/LEDGER.md:854 |
+| mindmap | docs/roadmap/LEDGER.md:832 |
+| timeline | docs/roadmap/LEDGER.md:364 |
+| timeline | docs/roadmap/LEDGER.md:856 |
 | ui-modernisation | docs/roadmap/LEDGER.md:351 |
-| ui-modernisation | docs/roadmap/LEDGER.md:842 |
+| ui-modernisation | docs/roadmap/LEDGER.md:844 |
 | whiteboard | docs/roadmap/LEDGER.md:286 |
-| whiteboard | docs/roadmap/LEDGER.md:806 |
-| world-class | docs/roadmap/LEDGER.md:364 |
-| world-class | docs/roadmap/LEDGER.md:866 |
+| whiteboard | docs/roadmap/LEDGER.md:808 |
+| world-class | docs/roadmap/LEDGER.md:366 |
+| world-class | docs/roadmap/LEDGER.md:868 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |
