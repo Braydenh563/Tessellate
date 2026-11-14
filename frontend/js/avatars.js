@@ -4402,8 +4402,10 @@
     //: Standing, the tail is tested down to the soles and no further: it
     //: curls 6px under them (companionchat.js) onto the floor it stands on,
     //: and counted, that floor's own controls were hit (the status bar's
-    //: buttons start 4.9px under it: 19 of 31 stands along the bar "hit").
-    if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? 0 : 4) });
+    //: buttons start 4.9px under it: 19 of 31 stands along the bar "hit"). Short of the soles by the
+    //: hit test's 4px gap (L-ui-modernisation-98): the buttons now start 3.9px under them, and every stand
+    //: over the bar's right-hand buttons "hit", so a toss there came down on a seat 250 to 320px back.
+    if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? -4 : 4) });
     return shape;
   }
 
