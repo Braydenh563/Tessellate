@@ -97,7 +97,7 @@ function atlasMicroMay(box) {
 //: Plays `frames` on `el`, in place of whatever else moves that property
 //: (never added to it: `composite: "add"` is not the compositor's).
 function atlasMicroPlay(el, frames, ms) {
-  el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
+  return el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
 }
 //: A function property, not a global: the shared scope has a cap on names (`tests/test_global_scope_ratchet.py`).
 //: The pointer a look may take: none with Faces follow the pointer off (round 5: a pointer merely passing is not
@@ -250,8 +250,21 @@ function atlasMicroDo(kind, box) {
     const ears = [...box.querySelectorAll(".atl-ear")];
     const ear = ears[Math.floor(Math.random() * ears.length)];
     if (!ear) return;
-    ear.style.transformBox = "fill-box";
-    ear.style.transformOrigin = "50% 90%";
+    //: The flick tips about the ear's root (`fill-box`, 50% 90%) only while it plays: the ear's own pivot
+    //: (atlasPivot, ATLAS_GEO.ear) comes back when the last flick ends, or every later mood's turn of the ear
+    //: pivoted 35 to 47 px elsewhere (L-ui-modernisation-171).
+    const flick = () => {
+      ear.atlFlickRest ??= [ear.style.transformBox || "", ear.style.transformOrigin || ""];
+      ear.style.transformBox = "fill-box";
+      ear.style.transformOrigin = "50% 90%";
+      const an = (ear.atlFlickLast = atlasMicroPlay(ear, frames, ms));
+      const back = () => {
+        if (ear.atlFlickLast !== an || !ear.atlFlickRest) return;
+        [ear.style.transformBox, ear.style.transformOrigin] = ear.atlFlickRest;
+        ear.atlFlickRest = null;
+      };
+      an?.finished?.then(back, back);
+    };
     //: **The flick replaces the crest's `transform`** (audit 1101, row 17's
     //: leftover): it added an individual `rotate` over it (`composite: "add"`),
     //: which is the main thread's, so each flick put the figure's loops back
@@ -262,8 +275,8 @@ function atlasMicroDo(kind, box) {
     const a = Number((sign * (3.5 + Math.random() * 2)).toFixed(1));
     const ms = 220 + Math.random() * 160;
     const frames = [turn(0), { ...turn(a), offset: 0.35 }, turn(0)];
-    atlasMicroPlay(ear, frames, ms);
-    if (Math.random() < 0.3) setTimeout(() => atlasMicroPlay(ear, frames, ms), ms + 90);
+    flick();
+    if (Math.random() < 0.3) setTimeout(flick, ms + 90);
     return;
   }
   if (kind === "blink") {

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
+- Companion: an ear flick gives the ear its own pivot back when it ends, so a later mood's turn of the ear no longer pivots 35 to 47 px elsewhere (L-ui-modernisation-171).
 
 - The desk companion counts each frame's baked lean inside its 4 degree cap: a clamp per pose family keeps torso to hem at 3.84 to 3.95 degrees with the bake (was 4.22 on the stand, 3.22 to 4.40 unbaked across the new frames) (L-ui-modernisation-150)
 - Styles: 85 more Library-only rules moved from the boot sheets to library-lazy.css, computed styles unchanged in light and dark at 1280 and 390 including the board and map views (L-ui-modernisation-51); 98 of 231 stay on the row.
