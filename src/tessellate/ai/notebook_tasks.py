@@ -1,9 +1,9 @@
-"""Counts of things still to do (composer work list, INBOX 1026c).
+"""Counts of the open items (composer work list, INBOX 1026c).
 
 "How many reminders do I have", "how many reminders this week", "how many open
 tasks", "how many unticked items": the notebook's own figures, never a search
 for the word "reminders". An open item is an unticked checklist box in a live
-note; an open reminder is one not yet done. The time word ("this week") is
+note; an open reminder is one not yet completed. The time word ("this week") is
 read by `ai/recognise.py` (`ahead_window`); this module reads no date."""
 
 from __future__ import annotations

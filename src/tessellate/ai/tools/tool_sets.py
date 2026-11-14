@@ -228,7 +228,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
             "same kind of",
             # What the notebook's shape gets called when somebody asks about
             # it. "orphan" and "cluster" are the words the answer uses, so they
-            # are also the words the follow-up question uses.
+            # are also the words the next question uses.
             "structure", "shape", "cluster", "orphan", "unconnected",
             "disconnected", "isolated", "web", "map of",
             # "how are these two related" and its phrasings. `path_between` is

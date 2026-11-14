@@ -1,5 +1,5 @@
 """Laying out the answer by its shape: the opening, the lead, the other
-notes, a timeline, a comparison, a broad summary, what is still open, the
+notes, a timeline, a comparison, a broad summary, what is left unticked, the
 newest.
 
 Moved whole from `composer.py` (audit AR3, gods-1101): the code is unchanged,
@@ -927,7 +927,7 @@ def _body(
     return lead
 
 
-#: "what is still open on the harbor launch", "whats left to do for X",
+#: The open-items ask on one subject, as in "whats left to do for X",
 #: "what do I still need to do for X" (ledger row 444).
 _STILL_OPEN = lazy_compile(
     r"^(?:what(?:'s|s| is| are)?|which)(?: things?| items?| tasks?)?(?: is| are)?(?: still)? "
@@ -940,7 +940,7 @@ _STILL_OPEN = lazy_compile(
 
 
 def _notes_named_by(views: list[NoteView], wanted: set[str], names: set[str] = frozenset()) -> list[NoteView]:
-    """The notes a "still open" question names, best-ranked first."""
+    """The notes an open-items question names, best-ranked first."""
 
     def titled(v: NoteView) -> set[str]:
         return {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
@@ -993,7 +993,7 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:
-    """"Two of three items are still open on Harbor launch:", then each."""
+    """The count line for one note's open items (two of three), then each."""
     still = [s for s in tasks if not s.done]
     total = len(tasks)
     if not still:

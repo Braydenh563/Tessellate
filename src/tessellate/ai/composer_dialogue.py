@@ -116,7 +116,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
     return out[:3]
 
 
-# --- a follow-up, read against the turn before ----------------------------------
+# --- a spoken reference, read against the turn before ----------------------------------
 
 _MORE = lazy_compile(
     r"^\s*(?:tell me more|more|go on|continue|keep going|say more|what else|anything else|and|more please|"
@@ -314,7 +314,7 @@ def _spoken_turns(history: list[dict] | None) -> list[dict]:
 
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
-    follow-up that only means something against the turn before (INBOX 725,
+    request that only means something against the turn before (INBOX 725,
     6). None for a question that stands on its own, or with no turn before.
 
     - "Tell me more" is the earlier question again, quoting what it did not.
@@ -1006,7 +1006,7 @@ def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
 
 
 #: The question's own words inside or at the edge of a subject span: "book am I reading" holds
-#: "am I", "left on my todo list" starts with a state word and "on my" (L125).
+#: "am I", "left on my to-do list" starts with a state word and "on my" (L125).
 _SPAN_VERB = re.compile(r"\b(?:am|is|are|do|does|did|have|has|was|were|will|can|could|would)\s+(?:i|we|you)\s+", re.I)
 _SPAN_EDGE = re.compile(r"^(?:(?:left|on|in|my|the|of|about|for)\s+)+", re.I)
 

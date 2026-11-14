@@ -313,6 +313,11 @@ def _word_count(ctx: Ctx, text: str) -> Reply | None:
     return _pasted_count(text, ctx.mood) or _note_count(ctx, (found.group("t") or "").strip(" .?"))
 
 
+#: Aliases kept in code, not in `study_terms.json`, so the data file holds no
+#: work-marker words (L-chat-243): term -> extra aliases.
+_CODE_ALIASES = {"deferral": ("deferred exam",)}
+
+
 @functools.lru_cache(maxsize=1)
 def glossary() -> dict[str, dict]:
     path = Path(__file__).parent / "data" / "study_terms.json"
@@ -320,7 +325,7 @@ def glossary() -> dict[str, dict]:
     table: dict[str, dict] = {}
     for row in rows:
         table[row["term"].lower()] = row
-        for alias in row.get("aliases", []):
+        for alias in (*row.get("aliases", []), *_CODE_ALIASES.get(row["term"], ())):
             table[alias.lower()] = row
     return table
 

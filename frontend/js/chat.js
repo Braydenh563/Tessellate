@@ -47,7 +47,7 @@ const MSG_ACTIONS_VISIBLE = 5;
 //: and one sent to the finder cost 2.2 s of search at 20,000 characters. Each
 //: route's cap is here, and a request clips to it before it is sent.
 //: `cap` is `search/query.py`'s `QUESTION_CAP` (a test holds them equal): the
-//: most of a question any search, warm or follow-up reads. The chat send
+//: most of a question any search reads, warm or not. The chat send
 //: itself keeps its own 20,000 (`chatTooLong`): the model gets the whole
 //: question. `warmMax`: the warm (`/search/warm`) is for a sentence typed on
 //: a pause; a pasted passage is not worth a vector made ahead of Enter, so it
@@ -66,7 +66,7 @@ function clipFor(route, text) {
 }
 
 //: **Work that follows an answer waits for the answer's frame** (audit 1031
-//: AI9): the quick-access lists, the follow-up chips and the reminder offer
+//: AI9): the quick-access lists, the suggested-question chips and the reminder offer
 //: started in the same task that painted the last token, so the first frame
 //: after the answer carried them too (a 4x phone send: 922 ms in 9 long tasks).
 //: The browser's idle time, and no later than a second and a half; without
@@ -675,7 +675,7 @@ function webPageMarkdown(page) {
 //: One page at a time, like a selection: a citation is "this, about which I
 //: am about to ask", not a collection.
 let attachedWebPage = null;
-//: The page the last answer cited, for a follow-up about it (`webFollowUp`).
+//: The page the last answer cited, for a spoken ask about that page (`webFollowUp`).
 //: A field rather than a top-level `let` (the global-scope ratchet): it was
 //: taken out as "never read" while chat-attach.js still read it, so every
 //: Chat send threw a ReferenceError (found by Brief 67's sweep).

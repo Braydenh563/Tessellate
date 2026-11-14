@@ -47,7 +47,7 @@ from tessellate.core.database import Category, Document, Entry, EntryLink, Entry
 from tessellate.entry import manager
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
-#: nobody reads in a chat bubble, and the follow-up question ("show me all of
+#: nobody reads in a chat bubble, and the next question ("show me all of
 #: them") has the Library for an answer.
 TOP_N = 10
 

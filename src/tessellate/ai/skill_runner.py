@@ -170,7 +170,7 @@ class Verification:
     one check made against the notebook rather than against the transcript.
 
     `ok` is False for a run that stopped early even when the skill declares no
-    postcondition: a run that did four of its nine steps has not done the job,
+    postcondition: a run that did four of its nine steps has not finished the job,
     whatever the notebook says, and reporting that as verified would be the
     same silent tick one level up.
     """
@@ -1079,7 +1079,7 @@ def _stop_reason(run: _RunState, seen: _Seen, answer: str):
         #: re-plan: a rewritten step is not a cheaper one, it is another turn.
         return "stalled", run.out_of_budget, "", False
     if seen.ran_out:
-        # **Stalled, not done.** The runner could only see that the turn
+        # **Stalled, unfinished.** The runner could only see that the turn
         # produced text, and the "I ran out of rounds" notice is text, so a step
         # cut off mid-job was ticked green and the next ran on half-finished
         # work. `stopped_at` is what Resume picks up from.
@@ -1652,7 +1652,7 @@ def _close_run(
         # is the one case where offering the button would be a lie.
         "undo_available": all(change.get("undo") for change in run.changes),
         # The ids the run gathered, so whatever picks it up next, a Resume, a
-        # follow-up question, Phase C's run view: can talk about "those notes"
+        # later question, Phase C's run view: can talk about "those notes"
         # with the same precision the steps did.
         "state": run.known,
         # What the run spent against each cap (Phase E, decision 3), so a

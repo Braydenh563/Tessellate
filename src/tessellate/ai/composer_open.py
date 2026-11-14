@@ -7,7 +7,7 @@ asked with a note open used to search the whole notebook, so every note gave
 the same reply. Here the open note answers, in a sentence or two of its own
 words, chosen for what was asked:
 
-- `left`: the checklist items still open, else the sentences that say what to
+- `left`: the checklist items not yet ticked, else the sentences that say what to
   do ("Book the tram pass before we go.");
 - `when`: the sentences that carry a date, not every date in the note;
 - `who`: the people the note names;
@@ -60,7 +60,7 @@ _KINDS: tuple[tuple[str, re.Pattern], ...] = (
         r"\bwhat\s+(?:do|should|must|can|could)\s+i\s+(?:still\s+)?(?:do|need to|have to)\b|"
         r"\bwhat(?:'s| is)\s+next\b|\bnext steps?\b|\bto-?dos?\b|\baction items?\b|\bremaining tasks?\b|"
         r"\bwhat\s+(?:do|should)\s+i\s+do\b|\bwhat\s+(?:is\s+)?still\s+outstanding\b|"
-        #: "what is not done yet", "how many are left", "what's unpacked" (audit 1030 Z33).
+        #: "what is not finished yet", "how many are left", "what's unpacked" (audit 1030 Z33).
         r"\bwhat(?:'s| is| are)\s+(?:not\s+(?:done|finished|ticked|checked|packed|complete\w*)|un(?:done|ticked|checked|packed|finished|complete\w*))\b|"
         r"\bhow\s+many\b[^?]*\b(?:left|remaining|open|to\s+go)\b", re.I)),
     ("done", lazy_compile(

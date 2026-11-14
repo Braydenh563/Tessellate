@@ -275,7 +275,7 @@ _METADATA_WORDS = frozenset(
 
 
 #: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
-#: "what is not done" and "why did I not go" are not.
+#: "what is not ticked" and "why did I not go" are not.
 _WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without|anything|everything)\b", re.I)
 #: "not tagged work": the word left out is a tag, read on the note's filing as well as its words (CHAT_PLAN U10).
 _TAGGED = re.compile(r"^(?:tagged|filed)(?:\s+(?:with|under|as))?\s+(?:the\s+)?(?:tag\s+)?#?", re.I)

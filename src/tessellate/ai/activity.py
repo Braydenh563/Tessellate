@@ -471,7 +471,7 @@ _CHECK_ITEM = re.compile(r"^\s*[-*+]\s+\[(?P<box>[ xX])\]\s+(?P<item>.+?)\s*$")
 
 
 def _checklist_gist(body: str) -> str:
-    """A checklist said in words, not as its markdown (R9-16): "oat milk, garlic and lemons still open",
+    """A checklist said in words, not as its markdown (R9-16): its unticked items by name,
     or "all four done"; "" when the body is not made of checklist lines."""
     lines = [ln for ln in body.splitlines() if ln.strip()]
     found = [_CHECK_ITEM.match(ln) for ln in lines]

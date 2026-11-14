@@ -383,7 +383,7 @@ _LIST_LINE = lazy_compile(r"(?:[-*+]|\d{1,3}[.)])\s|\[[ xX]\]")
 def only_list_question(question: str, notes: list[dict]) -> str:
     """"what is on my list" when exactly one note is a list (a title, up to two
     lines of intro, then two or more items) is asked of that note by name:
-    "What is in Todo?" (L-chat-14). The question as typed otherwise."""
+    "What is in Packing?" (L-chat-14). The question as typed otherwise."""
     from tessellate.ai import composer_frame
 
     if not _MY_LIST.match(" ".join((question or "").split()).strip(" ?.!")):

@@ -23,7 +23,6 @@
       "milestone",
       "sprint planning",
       "to-do",
-      "todo",
       "task list",
       "finish by",
       "project",
@@ -118,7 +117,6 @@
       "standup notes",
       "daily standup",
       "team meeting",
-      "follow-up meeting",
       "meeting outcomes",
       "discussion points",
       "attendees",
@@ -3850,7 +3848,6 @@
       "course transfer",
       "academic transcript",
       "special consideration",
-      "deferred exam",
       "academic appeal",
       "credit transfer",
       "advanced standing"
@@ -6694,7 +6691,6 @@
       "client record",
       "customer record",
       "client request",
-      "customer follow-up",
       "client onboarding",
       "customer onboarding"
     ],
@@ -6828,8 +6824,7 @@
       "professional contact",
       "networking contact",
       "professional introduction",
-      "business introduction",
-      "contact follow-up"
+      "business introduction"
     ],
     "Correspondence & Messages": [
       "personal correspondence",
@@ -6877,7 +6872,6 @@
       "link collection"
     ],
     "Questions & Problems": [
-      "open question",
       "unanswered question",
       "questions to ask",
       "problem statement",
@@ -6964,12 +6958,9 @@
     ],
     "Reminders & Follow-Ups": [
       "remind me",
-      "follow-up reminder",
       "remember to",
       "reminder note",
-      "follow-up task",
-      "check back",
-      "follow-up date"
+      "check back"
     ],
     "Questions for Professionals": [
       "questions for doctor",

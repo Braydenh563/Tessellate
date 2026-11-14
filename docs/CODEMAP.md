@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11065, test files 2882, tests 22735, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11066, test files 2883, tests 22740, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -14153,7 +14153,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11065)
+## Backend modules (11066)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15209,7 +15209,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_countdown` | src/tessellate/ai/composer_calc.py:233 |
 | `_countdown_words` | src/tessellate/ai/composer_calc.py:228 |
 | `_day_question` | src/tessellate/ai/composer_calc.py:182 |
-| `_define` | src/tessellate/ai/composer_calc.py:328 |
+| `_define` | src/tessellate/ai/composer_calc.py:333 |
 | `_gap_words` | src/tessellate/ai/composer_calc.py:214 |
 | `_long` | src/tessellate/ai/composer_calc.py:146 |
 | `_n` | src/tessellate/ai/composer_calc.py:70 |
@@ -15228,8 +15228,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_tip` | src/tessellate/ai/composer_calc.py:114 |
 | `_weekday_of` | src/tessellate/ai/composer_calc.py:173 |
 | `_word_count` | src/tessellate/ai/composer_calc.py:309 |
-| `answer` | src/tessellate/ai/composer_calc.py:346 |
-| `glossary` | src/tessellate/ai/composer_calc.py:317 |
+| `answer` | src/tessellate/ai/composer_calc.py:351 |
+| `glossary` | src/tessellate/ai/composer_calc.py:322 |
 
 ### src/tessellate/ai/composer_calendar.py (3)
 
@@ -20349,60 +20349,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `todo_note` | src/tessellate/ai/task_acts.py:745 |
 | `undo_step` | src/tessellate/ai/task_acts.py:732 |
 
-### src/tessellate/ai/taxonomy.py (50)
+### src/tessellate/ai/taxonomy.py (51)
 
 | Name | File:line |
 |---|---|
-| `__getattr__` | src/tessellate/ai/taxonomy.py:137 |
-| `_analyze_topics` | src/tessellate/ai/taxonomy.py:213 |
-| `_bundled_entities` | src/tessellate/ai/taxonomy.py:345 |
-| `_children` | src/tessellate/ai/taxonomy.py:124 |
-| `_data` | src/tessellate/ai/taxonomy.py:66 |
-| `_filing_data` | src/tessellate/ai/taxonomy.py:515 |
-| `_fold_plurals` | src/tessellate/ai/taxonomy.py:619 |
-| `_functional` | src/tessellate/ai/taxonomy.py:93 |
-| `_hits` | src/tessellate/ai/taxonomy.py:538 |
-| `_keyword_index` | src/tessellate/ai/taxonomy.py:161 |
-| `_labels` | src/tessellate/ai/taxonomy.py:644 |
-| `_name_topics` | src/tessellate/ai/taxonomy.py:650 |
-| `_normalize_term` | src/tessellate/ai/taxonomy.py:451 |
-| `_occupation_data` | src/tessellate/ai/taxonomy.py:302 |
-| `_occupation_processor` | src/tessellate/ai/taxonomy.py:307 |
-| `_pack_weights` | src/tessellate/ai/taxonomy.py:590 |
-| `_parent_topics` | src/tessellate/ai/taxonomy.py:669 |
+| `__getattr__` | src/tessellate/ai/taxonomy.py:166 |
+| `_analyze_topics` | src/tessellate/ai/taxonomy.py:242 |
+| `_bundled_entities` | src/tessellate/ai/taxonomy.py:374 |
+| `_children` | src/tessellate/ai/taxonomy.py:153 |
+| `_data` | src/tessellate/ai/taxonomy.py:95 |
+| `_filing_data` | src/tessellate/ai/taxonomy.py:544 |
+| `_fold_plurals` | src/tessellate/ai/taxonomy.py:648 |
+| `_functional` | src/tessellate/ai/taxonomy.py:122 |
+| `_hits` | src/tessellate/ai/taxonomy.py:567 |
+| `_keyword_index` | src/tessellate/ai/taxonomy.py:190 |
+| `_labels` | src/tessellate/ai/taxonomy.py:673 |
+| `_name_topics` | src/tessellate/ai/taxonomy.py:679 |
+| `_normalize_term` | src/tessellate/ai/taxonomy.py:480 |
+| `_occupation_data` | src/tessellate/ai/taxonomy.py:331 |
+| `_occupation_processor` | src/tessellate/ai/taxonomy.py:336 |
+| `_pack_weights` | src/tessellate/ai/taxonomy.py:619 |
+| `_parent_topics` | src/tessellate/ai/taxonomy.py:698 |
 | `_read` | src/tessellate/ai/taxonomy.py:61 |
-| `_related` | src/tessellate/ai/taxonomy.py:562 |
-| `_weak_terms` | src/tessellate/ai/taxonomy.py:102 |
-| `_with_related` | src/tessellate/ai/taxonomy.py:571 |
-| `analyze_note` | src/tessellate/ai/taxonomy.py:408 |
-| `audit_taxonomy` | src/tessellate/ai/taxonomy.py:284 |
-| `build_alias_index` | src/tessellate/ai/taxonomy.py:467 |
-| `category_groups` | src/tessellate/ai/taxonomy.py:106 |
-| `children_of` | src/tessellate/ai/taxonomy.py:132 |
-| `context_rules` | src/tessellate/ai/taxonomy.py:441 |
-| `extract_categories` | src/tessellate/ai/taxonomy.py:204 |
-| `extract_dynamic_categories` | src/tessellate/ai/taxonomy.py:270 |
-| `extract_entities` | src/tessellate/ai/taxonomy.py:356 |
-| `extract_keywords` | src/tessellate/ai/taxonomy.py:199 |
-| `extract_occupations` | src/tessellate/ai/taxonomy.py:325 |
-| `functional_categories` | src/tessellate/ai/taxonomy.py:88 |
-| `functional_priority` | src/tessellate/ai/taxonomy.py:84 |
-| `get_keyword_processor` | src/tessellate/ai/taxonomy.py:172 |
-| `get_taxonomy_processor` | src/tessellate/ai/taxonomy.py:180 |
-| `merge_reviewed_topic_terms` | src/tessellate/ai/taxonomy.py:486 |
-| `merge_taxonomy` | src/tessellate/ai/taxonomy.py:457 |
-| `name_topics` | src/tessellate/ai/taxonomy.py:634 |
-| `normalize_text` | src/tessellate/ai/taxonomy.py:153 |
-| `parent_of` | src/tessellate/ai/taxonomy.py:117 |
-| `purpose_hits` | src/tessellate/ai/taxonomy.py:532 |
-| `reload_taxonomy` | src/tessellate/ai/taxonomy.py:432 |
-| `reset_taxonomy_processors` | src/tessellate/ai/taxonomy.py:188 |
-| `sensitive_topics` | src/tessellate/ai/taxonomy.py:519 |
-| `strong_topics` | src/tessellate/ai/taxonomy.py:602 |
-| `taxonomy_map` | src/tessellate/ai/taxonomy.py:77 |
-| `topic_hits` | src/tessellate/ai/taxonomy.py:524 |
-| `topic_weights` | src/tessellate/ai/taxonomy.py:583 |
-| `weak_terms` | src/tessellate/ai/taxonomy.py:97 |
+| `_related` | src/tessellate/ai/taxonomy.py:591 |
+| `_weak_terms` | src/tessellate/ai/taxonomy.py:131 |
+| `_with_related` | src/tessellate/ai/taxonomy.py:600 |
+| `analyze_note` | src/tessellate/ai/taxonomy.py:437 |
+| `audit_taxonomy` | src/tessellate/ai/taxonomy.py:313 |
+| `build_alias_index` | src/tessellate/ai/taxonomy.py:496 |
+| `category_groups` | src/tessellate/ai/taxonomy.py:135 |
+| `children_of` | src/tessellate/ai/taxonomy.py:161 |
+| `context_rules` | src/tessellate/ai/taxonomy.py:470 |
+| `extract_categories` | src/tessellate/ai/taxonomy.py:233 |
+| `extract_dynamic_categories` | src/tessellate/ai/taxonomy.py:299 |
+| `extract_entities` | src/tessellate/ai/taxonomy.py:385 |
+| `extract_keywords` | src/tessellate/ai/taxonomy.py:228 |
+| `extract_occupations` | src/tessellate/ai/taxonomy.py:354 |
+| `facet_actions` | src/tessellate/ai/taxonomy.py:84 |
+| `functional_categories` | src/tessellate/ai/taxonomy.py:117 |
+| `functional_priority` | src/tessellate/ai/taxonomy.py:113 |
+| `get_keyword_processor` | src/tessellate/ai/taxonomy.py:201 |
+| `get_taxonomy_processor` | src/tessellate/ai/taxonomy.py:209 |
+| `merge_reviewed_topic_terms` | src/tessellate/ai/taxonomy.py:515 |
+| `merge_taxonomy` | src/tessellate/ai/taxonomy.py:486 |
+| `name_topics` | src/tessellate/ai/taxonomy.py:663 |
+| `normalize_text` | src/tessellate/ai/taxonomy.py:182 |
+| `parent_of` | src/tessellate/ai/taxonomy.py:146 |
+| `purpose_hits` | src/tessellate/ai/taxonomy.py:561 |
+| `reload_taxonomy` | src/tessellate/ai/taxonomy.py:461 |
+| `reset_taxonomy_processors` | src/tessellate/ai/taxonomy.py:217 |
+| `sensitive_topics` | src/tessellate/ai/taxonomy.py:548 |
+| `strong_topics` | src/tessellate/ai/taxonomy.py:631 |
+| `taxonomy_map` | src/tessellate/ai/taxonomy.py:106 |
+| `topic_hits` | src/tessellate/ai/taxonomy.py:553 |
+| `topic_weights` | src/tessellate/ai/taxonomy.py:612 |
+| `weak_terms` | src/tessellate/ai/taxonomy.py:126 |
 
 ### src/tessellate/ai/tensions.py (25)
 
@@ -28337,7 +28338,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22735)
+## Tests (22740)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30535,6 +30536,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_relation_types_kg3.py | 11 |
 | tests/test_relations_kg2.py | 15 |
 | tests/test_release_smoke_step.py | 21 |
+| tests/test_relocated_phrases.py | 5 |
 | tests/test_remark_enter_1102.py | 8 |
 | tests/test_reminder_audio_deferred.py | 4 |
 | tests/test_reminder_calendar_links.py | 8 |
@@ -31646,14 +31648,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:703 |
+| Needs hardware | docs/roadmap/LEDGER.md:702 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:688 |
+| Owner calls | docs/roadmap/LEDGER.md:687 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31834,7 +31836,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:891 |
+| Plan session briefs | docs/roadmap/LEDGER.md:890 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31888,25 +31890,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:907 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:991 |
-| documents | docs/roadmap/LEDGER.md:272 |
-| documents | docs/roadmap/LEDGER.md:931 |
-| general | docs/roadmap/LEDGER.md:647 |
+| chat | docs/roadmap/LEDGER.md:906 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:990 |
+| documents | docs/roadmap/LEDGER.md:271 |
+| documents | docs/roadmap/LEDGER.md:930 |
+| general | docs/roadmap/LEDGER.md:646 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:895 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1003 |
+| graph | docs/roadmap/LEDGER.md:894 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1002 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:288 |
-| mindmap | docs/roadmap/LEDGER.md:943 |
-| timeline | docs/roadmap/LEDGER.md:409 |
-| timeline | docs/roadmap/LEDGER.md:967 |
-| ui-modernisation | docs/roadmap/LEDGER.md:292 |
-| ui-modernisation | docs/roadmap/LEDGER.md:955 |
-| whiteboard | docs/roadmap/LEDGER.md:225 |
-| whiteboard | docs/roadmap/LEDGER.md:919 |
-| world-class | docs/roadmap/LEDGER.md:411 |
-| world-class | docs/roadmap/LEDGER.md:979 |
+| mindmap | docs/roadmap/LEDGER.md:287 |
+| mindmap | docs/roadmap/LEDGER.md:942 |
+| timeline | docs/roadmap/LEDGER.md:408 |
+| timeline | docs/roadmap/LEDGER.md:966 |
+| ui-modernisation | docs/roadmap/LEDGER.md:291 |
+| ui-modernisation | docs/roadmap/LEDGER.md:954 |
+| whiteboard | docs/roadmap/LEDGER.md:224 |
+| whiteboard | docs/roadmap/LEDGER.md:918 |
+| world-class | docs/roadmap/LEDGER.md:410 |
+| world-class | docs/roadmap/LEDGER.md:978 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

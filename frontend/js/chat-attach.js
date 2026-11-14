@@ -1,5 +1,5 @@
 // chat-attach.js: extract notes, attaching notes and images, the attach button,
-// follow-up chips, the answer timer. Moved out of app.js on 2026-09-26 as one
+// suggested-question chips (`.followups`), the answer timer. Moved out of app.js on 2026-09-26 as one
 // contiguous range (INBOX 426 cc, docs/roadmap/agent-remaining/appjs-split.md).
 // A classic script sharing app.js's globals, loaded in app.js's old order;
 // nothing in an earlier file calls into it while the page loads

@@ -270,7 +270,7 @@ def set_state(session: Session, question: DerivedFact, state: str, entry_id: int
 
 
 def open_note_ids(session: Session, limit: int = ASK_SCOPE_NOTES) -> list[int]:
-    """The newest notes that still hold an open question, for the Ask scope."""
+    """The newest notes that still hold an unanswered question, for the Ask scope."""
     ids: list[int] = []
     for item in listing(session, state="open", limit=10_000)["items"]:
         if item["entry_id"] not in ids:

@@ -420,7 +420,7 @@ def plan_of(members, lead):  # noqa: ANN001
     dated = sorted((v for v in members if v.written and v is not lead), key=lambda v: (v.written, v.id))
     made = plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) - (lead is not None) else None
     #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
-    #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
+    #: told some of them as "More loosely related" or "More from X" (INBOX 1743, second round).
     if made is None or (len(dated) < PLAIN_NOTES and not _would_fill(dated)):
         return None
     if lead is not None and lead.written:

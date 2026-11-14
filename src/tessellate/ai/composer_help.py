@@ -43,7 +43,7 @@ _CARRIES_ON = lazy_compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
 def _may_name_a_tool(question: str, words: list[str]) -> bool:
     """Short enough, and not a follow-on or a length control ("tell me more",
     "shorter", "and last week?"), which is about the answer before, never a
-    tool: the Follow-up trail's help line says "tell me more" in its own words."""
+    tool: the help topic for where a suggested question came from says "tell me more" in its own words."""
     return bool(words) and len(words) <= _FEATURE_WORDS and not (
         _MORE.match(question) or length_wish(question) or _CARRIES_ON.match(question)
     )
@@ -64,7 +64,7 @@ def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     #: where" is a lost key, not the keyboard shortcuts (test_composer_eval_741).
     #: Outside the line's own examples: "who is Sam" is a person, not the
     #: Names tool whose help line quotes "Sam" and "Sam Lee" as its example;
-    #: "what about running?" is a follow-up, not the Follow-up trail topic
+    #: "what about running?" is a next question, not the topic about where a suggested question came from,
     #: that gives it in brackets as one.
     line = re.sub(r"\"[^\"]*\"|“[^”]*”|‘[^’]*’|\([^)]*\)", " ", best[0])
     wanted = absent or [w for w in words if len(w) >= 4]

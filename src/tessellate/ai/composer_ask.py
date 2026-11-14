@@ -721,7 +721,7 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
         #: "the Porto and Lisbon notes": one "notes" names every side.
         shared = bool(raw) and raw[-1].rpartition(" ")[2].casefold() in _NOTES_NOUNS
         sides = [_bare_side(side, shared_noun=shared) for side in raw]
-        #: "Todo" is a note's name here, though the parser reads it as the command (L-chat-6).
+        #: The `_TODO_NAMES` are a note's name here, though the parser reads them as the command (L-chat-6).
         sides = [side for side in sides if subject_terms(side) or side.casefold().strip() in _TODO_NAMES]
         if len(sides) >= composer_sides.MIN_SIDES:
             return None if _one_category(tuple(sides)) else tuple(sides[: composer_sides.MAX_SIDES])
