@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The build workflows install holidays, inflect and rapidfuzz, and the recognise import lint allows the lazily imported holidays package.
 - Chat audit rows L245, L252 and L253 closed with their test evidence; sub-items with no recoverable input are recorded as moot.
 - Composer libraries: holidays gives Easter, Good Friday, Boxing Day and Thanksgiving their dates, inflect handles plurals and a/an, rapidfuzz ranks near-miss object names; each has its THIRD_PARTY line (L-chat-64).
 - Chat evals: the loose-ends fixture is now half short jottings and half long writing (35 each, four planted loose ends in each), as decision 27 says; the real-model run is still to do (L-chat-176).
