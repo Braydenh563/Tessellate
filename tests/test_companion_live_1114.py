@@ -98,6 +98,7 @@ def test_the_follow_loop_looks_seldom_when_still_and_once_a_frame_when_woken(liv
 def test_a_click_in_the_large_view_costs_setatlasmood_under_22ms_at_4x(live: dict) -> None:
     """L131, L147. The row measured 22 to 44 ms in the call; its blend now waits for a clean frame."""
     click = live["click"]
+    assert click["landed"] >= 2, f"clicks reached the figure: {click}"
     assert click["calls"] >= 2 and click["rate"] == 4
     assert click["medianMs"] < 22
 

@@ -158,22 +158,29 @@ const SPY = () => {
 
   // L131/L147: a click on Atlas in the large view, at RATE x CPU: the call's own cost and the main thread after it.
   await page.evaluate(() => openNameMarkViewer('Atlas'));
-  await sleep(2500);
+  // The viewer is open when its figure is laid out, not after a fixed sleep a loaded machine can miss.
+  await page.waitForFunction(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); return f && f.getBoundingClientRect().width > 0; }, null, { timeout: 30000 });
+  await sleep(500);
   await page.evaluate(() => {
     window.__mood = [];
     const orig = window.setAtlasMood;
     window.setAtlasMood = function (...a) { const t = performance.now(); const r = orig.apply(this, a); window.__mood.push(performance.now() - t); return r; };
   });
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: RATE });
+  let landed = 0;
   for (let i = 0; i < 12; i += 1) {
     // Where the figure is now, and only if it is what a click there would reach (a dialog or the companion may be over it).
-    const head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); return f.contains(top) || top?.closest?.('.nm-viewer-figure') ? [x, y] : null; });
-    if (head) await page.mouse.click(head[0], head[1]);
+    let head = null;
+    for (let tries = 0; tries < 10 && !head; tries += 1) {
+      head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); return f.contains(top) || top?.closest?.('.nm-viewer-figure') ? [x, y] : null; });
+      if (!head) await sleep(300);
+    }
+    if (head) { landed += 1; await page.mouse.click(head[0], head[1]); }
     await sleep(1700);
   }
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   const mood = (await page.evaluate(() => window.__mood)).sort((a, b) => a - b);
-  out.click = { calls: mood.length, medianMs: +(mood[Math.floor(mood.length / 2)] || 0).toFixed(2), maxMs: +(mood[mood.length - 1] || 0).toFixed(2), rate: RATE };
+  out.click = { landed, calls: mood.length, medianMs: +(mood[Math.floor(mood.length / 2)] || 0).toFixed(2), maxMs: +(mood[mood.length - 1] || 0).toFixed(2), rate: RATE };
   console.log(JSON.stringify(out));
   await browser.close();
 })().catch((e) => { console.error(e.stack || e); process.exit(1); });
