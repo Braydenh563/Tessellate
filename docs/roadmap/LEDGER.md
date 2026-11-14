@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 0 | 96 | 172 | 10 | 59 | 268 |
+| chat | 0 | 104 | 172 | 2 | 59 | 276 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 377 | 470 | 241 | 10 | 183 | 1088 |
+| all | 377 | 478 | 241 | 2 | 183 | 1096 |
 
 ## graph
 
@@ -761,14 +761,14 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
-- [ ] **L-chat-46** `chat` owner-call, S: Approve the act archive and unarchive for Agent mode and Chat ("archive the old trip notes"), inverse of each other. From L735 draft 2026-11-14. Evidence: ai/acts.py has no archive verb; notes archive from the menu only
-- [ ] **L-chat-47** `chat` owner-call, S: Approve the act reschedule ("move the dentist reminder to Friday 9"), with the old time as its undo. From L735 draft 2026-11-14. Evidence: ai/acts.py has no reschedule verb; snooze moves by a span only
-- [ ] **L-chat-48** `chat` owner-call, M: Approve the act tag_many ("tag everything from March with spring"), confirmed with the count first, one undo for the batch. From L735 draft 2026-11-14. Evidence: no multi-note tag verb; tag acts one note at a time
-- [ ] **L-chat-49** `chat` owner-call, S: Approve the act make_board ("start a board for the kitchen"), reading the board it made back as its answer. From L735 draft 2026-11-14. Evidence: ai/acts.py has create_category but no board verb besides board_card
-- [ ] **L-chat-50** `chat` owner-call, M: Approve the skill Prepare for a meeting: notes on the people and topic, open reminders, a short agenda drafted into a new note. From L735 draft 2026-11-14. Evidence: skills.py BUILTIN_SKILLS has 22 skills; none prepares a meeting
-- [ ] **L-chat-51** `chat` owner-call, M: Approve the skill Monthly look back: what was written, spent and finished, as one note with the numbers cited. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Summarise my week; no month view over money or reminders
-- [ ] **L-chat-52** `chat` owner-call, S: Approve the skill Archive stale notes: lists untouched notes past a span the person names, archives only the ones ticked. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Find notes worth combining; nothing about stale notes
-- [ ] **L-chat-53** `chat` owner-call, M: Approve the skill Everything about a person: their entity page, linked notes and open reminders in one reading note. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Catch up on a topic; none gathers a person
+- [ ] **L-chat-46** `chat` open, S: Build the act archive and unarchive for Agent mode and Chat ("archive the old trip notes"), inverse of each other. From L735 draft 2026-11-14. Evidence: ai/acts.py has no archive verb; notes archive from the menu only Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-47** `chat` open, S: Build the act reschedule ("move the dentist reminder to Friday 9"), with the old time as its undo. From L735 draft 2026-11-14. Evidence: ai/acts.py has no reschedule verb; snooze moves by a span only Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-48** `chat` open, M: Build the act tag_many ("tag everything from March with spring"), confirmed with the count first, one undo for the batch. From L735 draft 2026-11-14. Evidence: no multi-note tag verb; tag acts one note at a time Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-49** `chat` open, S: Build the act make_board ("start a board for the kitchen"), reading the board it made back as its answer. From L735 draft 2026-11-14. Evidence: ai/acts.py has create_category but no board verb besides board_card Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-50** `chat` open, M: Build the skill Prepare for a meeting: notes on the people and topic, open reminders, a short agenda drafted into a new note. From L735 draft 2026-11-14. Evidence: skills.py BUILTIN_SKILLS has 22 skills; none prepares a meeting Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-51** `chat` open, M: Build the skill Monthly look back: what was written, spent and finished, as one note with the numbers cited. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Summarise my week; no month view over money or reminders Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-52** `chat` open, S: Build the skill Archive stale notes: lists untouched notes past a span the person names, archives only the ones ticked. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Find notes worth combining; nothing about stale notes Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
+- [ ] **L-chat-53** `chat` open, M: Build the skill Everything about a person: their entity page, linked notes and open reminders in one reading note. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Catch up on a topic; none gathers a person Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
 
 ## Needs hardware
 
