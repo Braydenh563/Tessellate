@@ -283,7 +283,7 @@ HELP_TOPICS: list[dict] = [
             "in the title moves to the body. The Library list's ... menu has Suggest a name. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
             "commenting, in a monospace face. Insert opens the / menu (Image opens a "
-            'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
+            'file picker; its Edit group tightens or summarises the selected words and continues a list, with no model, and Undo puts the original back). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
             "a spellchecker can't catch. The menu's Map the headings turns its "
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
             "Flowchart, or any Mermaid diagram: sequence, class, state, entity relationship, Gantt, pie, "

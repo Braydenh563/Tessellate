@@ -582,6 +582,31 @@ function editorApplyNamed(textarea, kind) {
   editorApplyAction(textarea, (typeof MD_ACTIONS === "object" && MD_ACTIONS[kind]) || {});
 }
 
+//: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
+//: continue the list the caret ends. The route (`POST /read/edit`) only takes from
+//: the text it is given. A textarea takes the result as typed text, so the browser's
+//: own Undo puts the original back in one step; CodeMirror gets a transaction.
+async function editorNoModelEdit(textarea, op) {
+  const from = textarea.selectionStart;
+  const to = textarea.selectionEnd;
+  const value = String(textarea.value || "");
+  const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
+  if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
+  const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
+  if (!got) return;
+  const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
+  if (got.same) return toast(nothing, "info");
+  const text = op === "continue" ? `\n${got.text}` : got.text;
+  if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
+    editorSplice(textarea, from, op === "continue" ? from : to, text, null);
+    return;
+  }
+  textarea.focus();
+  textarea.setSelectionRange(from, op === "continue" ? from : to);
+  if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, op === "continue" ? from : to, text, null);
+  editorNotifyHost(textarea);
+}
+
 //: **Put one block on a line of its own.**
 //:
 //: A board object is a block construct: `renderNoteText` and `renderMarkdown`
@@ -826,7 +851,7 @@ function skillCommands() {
 //: properties block, a block reference, an anchored comment, the document
 //: AI); every block that renders in a note is offered in a note.
 const EDITOR_GROUP_ORDER = [
-  "Recent", "Basic", "Structure", "Callouts", "Media", "Embeds", "Advanced", "AI", "Templates",
+  "Recent", "Basic", "Structure", "Callouts", "Media", "Embeds", "Advanced", "Edit", "AI", "Templates",
 ];
 
 //: How many recent blocks lead the menu, and how many are remembered.
@@ -1008,7 +1033,10 @@ function editorBlockRows(context) {
   add({ id: "comment", group: "Advanced", icon: "ph:eye-slash", label: "Private comment", about: "Kept in the file, never shown", keys: "%% %%", keywords: ["comment", "private", "hidden", "note to self"], run: (t) => editorApplyNamed(t, "comment") });
   if (inDocument) {
     add({ id: "remind", group: "Advanced", icon: "ph:bell", label: "Remind me about this", about: "Opens this document when due", keys: "", keywords: ["remind", "reminder", "follow up"], run: () => (currentDoc?.id ? ensureModule("library").then((ok) => ok && remindAbout({ title: currentDoc.title || "this document", documentId: currentDoc.id })) : toast("Save the document first.", "info")) });
-    add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
+    add({ id: "edit-tighten", group: "Edit", icon: "ph:scissors", label: "Tighten the selection", about: "Wordy phrases and fillers out, nothing added; Undo puts it back", keywords: ["tighten", "shorten", "concise", "wordy", "edit"], run: (t) => editorNoModelEdit(t, "tighten") });
+  add({ id: "edit-summarise", group: "Edit", icon: "ph:text-align-left", label: "Summarise the selection", about: "Its first and last sentence in place of the whole; Undo puts it back", keywords: ["summarise", "summarize", "summary", "shorten", "edit"], run: (t) => editorNoModelEdit(t, "summarise") });
+  add({ id: "edit-continue", group: "Edit", icon: "ph:list-plus", label: "Continue the list", about: "The next line of the list the caret ends, with days, months and counting filled in", keywords: ["continue", "list", "next", "more", "edit"], run: (t) => editorNoModelEdit(t, "continue") });
+  add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
   }
   const now = new Date();
   const date = stampDate(now);

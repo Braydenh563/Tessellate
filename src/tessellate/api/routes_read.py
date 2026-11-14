@@ -227,3 +227,20 @@ def answer_flashcards(title: str = Query("Answer", max_length=200), text: str = 
 
     deck = study.cards(text)
     return {"count": len(deck), "text": composer_study.deck_text_titled(title.strip() or "Answer", deck) if deck else ""}
+
+
+class EditBody(BaseModel):
+    op: str = Field(pattern="^(tighten|summarise|continue)$")
+    text: str = Field(max_length=20000)
+
+
+@router.post("/read/edit")
+def edit_selection(body: EditBody) -> dict:
+    """A document edit with no model (CHAT_PLAN B26): the text tightened, summarised or its list
+    continued, written nowhere. `same` is true when the edit changes nothing, so the page says so
+    and leaves the document alone; the page applies a change as one undoable edit."""
+    from tessellate.ai import composer_edit
+
+    work = {"tighten": composer_edit.tighten, "summarise": composer_edit.summarise, "continue": composer_edit.continue_list}[body.op]
+    made = work(body.text)
+    return {"text": made, "same": not made.strip() or (body.op != "continue" and made.strip() == body.text.strip())}

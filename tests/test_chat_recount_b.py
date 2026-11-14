@@ -163,3 +163,30 @@ def test_autofill_is_composed_before_any_model_l174():
     #: The route reads by rule and only then asks a model.
     route = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api" / "routes_reminders.py").read_text(encoding="utf-8")
     assert route.index("reminder_parser.read_by_rule(body.text") < route.index("reminder_parser.parse_reminder(")
+
+
+def test_document_edits_with_no_model_l162(client):
+    from tessellate.ai import composer_edit
+
+    tight = composer_edit.tighten("In order to start, we basically need to take into account the budget.")
+    assert tight == "To start, we need to consider the budget."
+    assert composer_edit.tighten("```\nin order to\n```") == "```\nin order to\n```"
+    text = "The garden needs work. Beds first. Then the shed. Then the fence line. Finally the gate."
+    assert composer_edit.summarise(text) == "The garden needs work. Finally the gate."
+    assert composer_edit.continue_list("1. Monday\n2. Tuesday") == "3. Wednesday"
+    assert composer_edit.continue_list("- [ ] buy milk") == "- [ ] "
+    assert composer_edit.continue_list("2\n4") == ""
+    assert composer_edit.continue_list("- 2\n- 4") == "- 6"
+    got = client.post("/read/edit", json={"op": "tighten", "text": "In order to win."}).json()
+    assert got == {"text": "To win.", "same": False}
+    assert client.post("/read/edit", json={"op": "tighten", "text": "Already short."}).json()["same"] is True
+    assert client.post("/read/edit", json={"op": "nope", "text": "x"}).status_code == 422
+
+
+def test_the_editor_offers_the_no_model_edits_with_undo_l162():
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+    body = js[js.index("async function editorNoModelEdit") : js.index("//: **Put one block on a line of its own.**")]
+    assert '"/read/edit"' in body and 'execCommand("insertText"' in body and "editorSplice(" in body
+    for command in ("edit-tighten", "edit-summarise", "edit-continue"):
+        assert f'id: "{command}"' in js
+    assert '"Advanced", "Edit", "AI"' in js
