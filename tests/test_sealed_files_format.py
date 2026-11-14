@@ -56,7 +56,7 @@ def test_a_whole_file_reads_and_each_kind_of_damage_is_refused(keyed, tmp_path):
     # Cut back to a frame boundary: the old last frame is not flagged final.
     path.write_bytes(good[: starts[2]])
     _damaged(path)
-    # A partial trailing frame.
+    # Cut inside the last frame: the last whole frame is not flagged final.
     path.write_bytes(good[:-10])
     _damaged(path)
     # A middle frame dropped.
@@ -190,3 +190,25 @@ def test_a_full_sealed_read_streams_frame_by_frame(keyed, tmp_path):
     with pytest.raises(sealed_files.SealedDamaged):
         sealed_files.iter_plain(path)
 
+
+
+def test_a_stream_opened_before_an_append_drains_its_snapshot(keyed, tmp_path):
+    path = tmp_path / "a.bin"
+    data = _three_frames(path)
+    total, body = sealed_files.open_plain(path)
+    assert total == len(data)
+    sealed_files.append(path, b"grown after the stream began", sealed=True)
+    out = b"".join(body)
+    assert out == data and len(out) == total
+    assert sealed_files.read(path) == data + b"grown after the stream began"
+
+
+def test_a_partial_frame_left_by_a_crash_mid_append_still_reads(keyed, tmp_path):
+    path = tmp_path / "a.bin"
+    sealed_files.append(path, b"saved ", sealed=True)
+    sealed_files.append(path, b"audio", sealed=True)
+    with open(path, "ab") as fh:
+        fh.write(b"\x00\x00\x01\x00half a frame")
+    assert sealed_files.read(path) == b"saved audio"
+    assert sealed_files.plain_size(path) == len(b"saved audio")
+    assert sealed_files.read_range(path, 2, 7) == b"ved au"
