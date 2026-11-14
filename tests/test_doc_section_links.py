@@ -36,7 +36,7 @@ DOC = (
 def _run(body: str) -> object:
     text = (JS / "documents-sections.js").read_text(encoding="utf-8")
     region = text[text.index("// DOC-SECTIONS-BEGIN") : text.index("// DOC-SECTIONS-END")]
-    script = "(() => {\n" + region + "\nglobalThis.s = { parse, graph, layout };\n})();\nconst s = globalThis.s;\n" + body
+    script = "(() => {\n" + region + "\nglobalThis.s = { parse, graph, layout, pickBlock };\n})();\nconst s = globalThis.s;\n" + body
     out = subprocess.run(["node", "-"], input=script, capture_output=True, text=True, timeout=60)
     assert out.returncode == 0, out.stderr[-600:]
     return json.loads(out.stdout.strip().splitlines()[-1])
@@ -120,3 +120,44 @@ def test_the_guide_has_a_topic_and_a_lead_for_sections() -> None:
     assert "document-sections" in topics and len(topics["document-sections"]["body"]) < 1900
     assert "[[#^" in topics["document-sections"]["body"] and "Section links" in topics["document-sections"]["body"]
     assert "document-sections" in help_leads.TOPIC_LEADS
+
+
+@node
+def test_a_section_is_the_last_read_block_stamped_at_or_before_its_line() -> None:
+    # L-documents-114: the title the preview prepends is the shift; no block before the line is -1.
+    got = _run(
+        'console.log(JSON.stringify([s.pickBlock(["2","4","8"], 2, 3), s.pickBlock(["2","4","8"], 2, 0),'
+        ' s.pickBlock(["2","4","8"], 2, 99), s.pickBlock(["2","4","8"], 0, 1), s.pickBlock([], 0, 5)]))'
+    )
+    assert got == [1, 0, 2, -1, -1]
+
+
+def test_a_link_or_node_pressed_in_read_stays_in_read_and_rings_the_block() -> None:
+    # L-documents-114: no switch to Live from Read; the rendered block gets the jump-to ring.
+    sections = (JS / "documents-sections.js").read_text(encoding="utf-8")
+    assert 'setDocView("live")' not in sections
+    assert "flashRevealed(el)" in sections and "readBlock(" in sections
+    # Outside Read the block reference's own reveal still selects the block.
+    assert "return docRevealBlock(id);" in sections
+
+
+def test_hover_and_focus_peek_both_sections_without_moving_the_caret() -> None:
+    # L-documents-115: a marker class on the rendered blocks and a decoration on the lines; no selection dispatch.
+    sections = (JS / "documents-sections.js").read_text(encoding="utf-8")
+    peek = sections[sections.index("function peek(ids)") : sections.index("//: Hover and focus on one element")]
+    assert "selection" not in peek and "scrollIntoView" not in peek and ".focus(" not in peek
+    for event in ("mouseenter", "mouseleave", "focusin", "focusout"):
+        assert f'"{event}"' in sections
+    # A row, an edge and a node all peek.
+    assert sections.count("peekOn(") == 4  # the definition and the three callers
+    css = (ROOT / "frontend" / "css" / "doc-graph-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index("#doc-preview .dsec-peek") :]
+    rule = rule[: rule.index("}")]
+    assert "outline: 2px solid var(--accent)" in rule and "animation" not in rule and ".cm-line.dsec-peek" in rule
+
+
+def test_the_guide_says_hover_shows_both_sections_and_read_stays_read() -> None:
+    from tessellate.ai import help_chat
+
+    body = {t["id"]: t for t in help_chat.HELP_TOPICS}["document-sections"]["body"]
+    assert "hover" in body.lower() and "Read" in body and len(body) < 1900

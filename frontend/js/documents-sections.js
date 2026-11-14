@@ -120,6 +120,20 @@
       return { x: cx + rx * Math.cos(angle), y: cy + ry * Math.sin(angle) };
     });
   }
+
+  //: **`pickBlock(stamps, shift, line)`**: which Read block a section is. `stamps` are the rendered blocks' `data-src-line`
+  //: in order; the block holding a line is the last one stamped at or before it (the title and properties the preview
+  //: prepends or removes are `shift`). -1 when there is none.
+  function pickBlock(stamps, shift, line) {
+    let hit = -1;
+    for (let i = 0; i < stamps.length; i++) {
+      const at = Number(stamps[i]) - shift;
+      if (!Number.isFinite(at)) continue;
+      if (at > line) break;
+      hit = i;
+    }
+    return hit;
+  }
   // DOC-SECTIONS-END
 
   const SVG = "http://www.w3.org/2000/svg";
@@ -132,10 +146,89 @@
   const cut = (text, n) => (text.length > n ? `${text.slice(0, n - 1).trimEnd()}…` : text);
   const currentText = () => docText();
 
-  //: Go to a section. Through the block reference's own reveal, so a node, a link in the text and a row in the outline
-  //: all land the same way: the block selected, scrolled to, in Live.
+  //: Read has no caret to put on a block, so Read stays Read: the rendered block is scrolled into view and ringed with the
+  //: jump-to ring (`flashRevealed`, which respects reduced motion). Live and the source keep `docRevealBlock`'s selection.
+  function readBlock(section) {
+    const preview = document.getElementById("doc-preview");
+    if (!preview || !section) return null;
+    const kids = [...preview.children];
+    const at = pickBlock(kids.map((el) => el.dataset.srcLine), docPreviewLineShift, section.start);
+    return at < 0 ? null : kids[at];
+  }
+
+  const inRead = () => typeof docView !== "undefined" && docView === "rendered";
+
+  //: Go to a section. A node, a row in the outline and a link all land the same way: in Read, the block ringed where it
+  //: stands; elsewhere through the block reference's own reveal (the block selected, scrolled to).
   function reveal(id) {
+    if (inRead()) {
+      const section = parse(currentText()).sections.find((s) => s.id === id);
+      const el = readBlock(section);
+      if (el) {
+        flashRevealed(el);
+        return true;
+      }
+    }
     return docRevealBlock(id);
+  }
+
+  //: **Peek** (L-documents-115): the sections a row or an edge joins, marked while the pointer or focus is on it, and
+  //: nothing moves: not the caret, the selection or the scroll. Read marks the rendered blocks (`.dsec-peek`); Live and the
+  //: source mark the lines, through one state field added to the view the first time it is asked.
+  let peekEffect = null;
+  let peekField = null;
+  const wired = new WeakSet();
+  function peekExtension(CM) {
+    if (peekField) return peekField;
+    const { StateField, StateEffect } = CM.state;
+    const { Decoration, EditorView } = CM.view;
+    peekEffect = StateEffect.define();
+    peekField = StateField.define({
+      create: () => Decoration.none,
+      update(value, tr) {
+        for (const effect of tr.effects) {
+          if (!effect.is(peekEffect)) continue;
+          const doc = tr.state.doc;
+          const lines = new Set();
+          for (const range of effect.value) {
+            const to = Math.min(range.to, doc.length);
+            for (let n = doc.lineAt(Math.min(range.from, doc.length)).number; n <= doc.lineAt(to).number; n++) lines.add(doc.line(n).from);
+          }
+          return Decoration.set([...lines].sort((a, b) => a - b).map((from) => Decoration.line({ class: "dsec-peek" }).range(from)));
+        }
+        return tr.docChanged ? Decoration.none : value;
+      },
+      provide: (field) => EditorView.decorations.from(field),
+    });
+    return peekField;
+  }
+
+  function peek(ids) {
+    const model = parse(currentText());
+    const sections = ids.map((id) => model.sections.find((s) => s.id === id)).filter(Boolean);
+    const preview = document.getElementById("doc-preview");
+    for (const el of preview?.querySelectorAll(".dsec-peek") || []) el.classList.remove("dsec-peek");
+    const view = typeof docCmView !== "undefined" ? docCmView : null;
+    const CM = window.CM6;
+    if (view && CM) {
+      const field = peekExtension(CM);
+      if (!wired.has(view)) {
+        wired.add(view);
+        view.dispatch({ effects: CM.state.StateEffect.appendConfig.of(field) });
+      }
+      view.dispatch({ effects: peekEffect.of(sections.map((s) => ({ from: s.from, to: s.to }))) });
+    }
+    if (inRead()) for (const s of sections) readBlock(s)?.classList.add("dsec-peek");
+  }
+
+  //: Hover and focus on one element peek the sections it joins; leaving clears it.
+  function peekOn(el, ids) {
+    const on = () => peek(ids);
+    const off = () => peek([]);
+    el.addEventListener("mouseenter", on);
+    el.addEventListener("mouseleave", off);
+    el.addEventListener("focusin", on);
+    el.addEventListener("focusout", off);
   }
 
   //: **`fill(figure, source)`**: the graph of this document's labelled sections. `title: ...` in the fence is its caption.
@@ -176,6 +269,7 @@
       //: Stops short of the node's box, so the arrow head is seen.
       const trim = Math.min(len / 3, 22 + Math.abs(dx / len) * 34);
       svgEl("line", { x1: a.x, y1: a.y, x2: b.x - (dx / len) * trim, y2: b.y - (dy / len) * trim, "marker-end": `url(#${markerId})` }, g);
+      peekOn(g, [edge.from, edge.to]);
       const label = svgEl("title", {}, g);
       label.textContent = `${edge.from} to ${edge.to}${edge.reason ? `: ${edge.reason}` : ""}`;
       if (edge.reason) {
@@ -193,6 +287,7 @@
       const text = svgEl("text", { x: p.x, y: p.y + 4, "text-anchor": "middle" }, g);
       text.textContent = name;
       const go = () => reveal(node.id);
+      peekOn(g, [node.id]);
       g.addEventListener("click", go);
       g.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
@@ -233,7 +328,13 @@
     const target = byId.get(link.to);
     const source = byId.get(link.from);
     if (!target) return reveal(link.to);
-    if (typeof docView !== "undefined" && docView === "rendered") setDocView("live");
+    if (inRead()) {
+      //: Read stays Read: the target is scrolled to and ringed; the section it is written in stays marked by the row's peek.
+      const el = readBlock(target);
+      if (!el) return reveal(link.to);
+      flashRevealed(el);
+      return true;
+    }
     const view = typeof docCmView !== "undefined" ? docCmView : null;
     const CM = window.CM6;
     if (!view || !CM || !source || source === target) return reveal(link.to);
@@ -269,11 +370,12 @@
       button.append(words);
       if (link.reason) button.append(Object.assign(document.createElement("span"), { className: "doc-sectionlink-why", textContent: link.reason }));
       button.title = link.reason ? `${from} to ${to}: ${link.reason}` : `${from} to ${to}`;
+      peekOn(button, [link.from, link.to].filter(Boolean));
       button.addEventListener("click", () => showLink(link));
       li.append(button);
       list.append(li);
     }
   }
 
-  Object.assign(docMathRender.sections, { parse, graph, layout, fill, renderLinks, showLink });
+  Object.assign(docMathRender.sections, { parse, graph, layout, pickBlock, fill, renderLinks, showLink, peek });
 })();

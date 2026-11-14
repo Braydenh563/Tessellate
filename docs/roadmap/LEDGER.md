@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 9 | 2 | 0 | 1 | 11 |
+| documents | 0 | 7 | 2 | 0 | 1 | 9 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 525 | 126 | 2 | 153 | 1053 |
+| all | 402 | 523 | 126 | 2 | 153 | 1051 |
 
 ## graph
 
@@ -292,8 +292,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-104** `documents` partly, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile; documents side built behind boardInstance stub, 2349346a1; waits on #223's instance API Left for the wiring step: a card that CodeMirror removes is noticed only on the next doc-shown, doc-saved or board-edited (no MutationObserver, test_frontend_wake_sources), so the embed widget's destroy hook should end its instance; help and manual parity move then.
 - [ ] **L-documents-106** `documents` open, M: L-documents-83 remainder: 1440 cold open still about 1,145 ms median; the warm file overlaps the fetches, what is left is the bundle's script run (documents.js, library.js 50 to 70 ms each) and CodeMirror's 140 ms evaluate; next: one served concatenation of the bundle, and a quiet box to measure. From agent cold83-1410. Evidence: frontend/js/documents-warm.js; waterfall after: bundle arrives about 330 ms, its 35 scripts run until about 600 ms (main thread, load 4 to 12), editor then mounts about 1,100 ms
 - [ ] **L-documents-112** `documents` open, S: Remeasure adding a block to a 40-block flowchart on a quiet box; under 50 ms per task or split the work. From L893 sweep 2026-11-14. Evidence: dgm40.js at 390: adding a block to a 40-block flowchart gave long tasks of 114 and 115 ms and a 483 ms repaint, on a box running four agents; 12 blocks gave 50 and 73 ms
-- [ ] **L-documents-114** `documents` open, S: A section link or graph node pressed in Read scrolls and highlights the block in Read instead of switching to Live. From L-documents-49 leftover, 2026-11-14. Evidence: docRevealBlock switches Read to Live before selecting (documents-blockref.js); Read has no in-place block highlight
-- [ ] **L-documents-115** `documents` open, S: Hovering a Section links row or a graph edge highlights both sections without moving the caret. From L-documents-49 leftover, 2026-11-14. Evidence: renderLinks rows in documents-sections.js have click only; no hover or focus preview
 - [ ] **L-documents-116** `documents` open, M: Split the rest of documents.js into wrapped pieces after winning back boot gzip (about 5 bytes per new bundle entry); the shared lets assigned from outside need accessors first. From L-documents-107 remainder. Evidence: documents.js 9,569 lines after the scroll and status cut; boot gzip 250,448 against 250,450 so every further bundle entry (about 5 bytes) needs bytes won back first; seams still unwrapped: toolbar 6598-ish (692 lines, load-time statements), AI edit and history (180, docAiController let assigned outside), code gutter (142, docTabEscapes let), live table filter and select (242), block refs and live extensions (285, docPrintComments let), Check with AI (143, load-time renderDocTools)
 
 ## mindmap
