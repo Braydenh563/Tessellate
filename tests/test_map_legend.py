@@ -2,6 +2,7 @@
 map-level theme switch, listing the main branches' colours and only the markers
 the map uses."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from tessellate.api.wb_board import _clean_theme
 from tessellate.api.wb_model import MAP_LEVEL_THEME_FIELDS
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_legend_is_a_map_level_boolean_theme_field():

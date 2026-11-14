@@ -5,6 +5,7 @@ exported as bare words (SVG, PNG and PDF all read the same SVG): the board's
 background rect was the only `<rect>`, and the table was not in the file at all.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 
 
@@ -101,4 +102,4 @@ def test_a_sticky_with_the_fold_off_or_a_plain_box_draws_none():
 
 def test_a_picture_is_clipped_to_the_corners_it_is_drawn_with():
     body = WB[WB.index('if (obj.kind === "image" && obj.data.url) {') :][:1400]
-    assert "wbSvgBoxRadii(" in body and "<clipPath" in body and 'clip-path="url(#' in body
+    assert "look.radii(" in body and "wbSvgBoxRadii(" in WB[WB.index("function wbExportLook("):][:9000] and "<clipPath" in body and 'clip-path="url(#' in body

@@ -8,6 +8,7 @@
    The shaft now stops at the shape's far edge.
 """
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -17,7 +18,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 LIB = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
 
 

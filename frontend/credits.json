@@ -79,6 +79,11 @@
      "source": "https://github.com/arnog/mathlive"
     },
     {
+     "name": "perfect-freehand",
+     "licence": "MIT",
+     "source": "https://github.com/steveruizok/perfect-freehand"
+    },
+    {
      "name": "Mammoth",
      "licence": "BSD-2-Clause",
      "source": "https://github.com/mwilliamson/mammoth.js"

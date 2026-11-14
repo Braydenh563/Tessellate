@@ -13,7 +13,7 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 from tests.test_map_radial_roots_1108 import _functions
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -28,7 +28,7 @@ function wbMapGapBreadth() { return 16; }
 
 
 def _overlaps(nodes: list[dict]) -> int:
-    source = (JS_DIR / "whiteboard-map.js").read_text(encoding="utf-8")
+    source = frontend_text("whiteboard-map.js")
     body = f"""
 const NODES = {json.dumps(nodes)};
 const byId = new Map(NODES.map((n) => [n.id, n]));

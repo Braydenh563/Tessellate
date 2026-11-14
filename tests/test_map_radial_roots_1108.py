@@ -17,7 +17,7 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -44,7 +44,7 @@ def _functions(source: str) -> str:
 
 
 def _positions(nodes: list[dict]) -> dict:
-    source = (JS_DIR / "whiteboard-map.js").read_text(encoding="utf-8")
+    source = frontend_text("whiteboard-map.js")
     body = f"""
 const NODES = {json.dumps(nodes)};
 const byId = new Map(NODES.map((n) => [n.id, n]));

@@ -62,13 +62,19 @@ def recount(text: str) -> str:
     return text
 
 
+def taken_ids(plan: str, *texts: str) -> set[int]:
+    """Every number used for this plan's rows, open (LEDGER) or closed (HISTORY): a closed id is never reissued."""
+    pat = re.compile(rf"\*\*L-{re.escape(plan)}-(\d+)\*\*")
+    return {int(m.group(1)) for text in texts for m in pat.finditer(text)}
+
+
+def next_id(plan: str, ledger_text: str, history_text: str) -> str:
+    return f"L-{plan}-{max(taken_ids(plan, ledger_text, history_text), default=0) + 1}"
+
+
 def add(a: argparse.Namespace) -> str:
     text = LEDGER.read_text(encoding="utf-8")
-    #: HISTORY too: a done row's id is still cited from code comments and
-    #: commits, so it is never handed out again (2026-11-13: L-timeline-1 was).
-    seen = text + (HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else "")
-    taken = [int(m.group(1)) for m in re.finditer(rf"\*\*L-{re.escape(a.plan)}-(\d+)\*\*", seen)]
-    rid = f"L-{a.plan}-{max(taken, default=0) + 1}"
+    rid = next_id(a.plan, text, HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else "")
     title = a.title.strip().rstrip(".")
     line = f"- [ ] **{rid}** `{a.plan}` {a.status}, {a.size}: {title}. From {a.src}." + (f" Evidence: {a.evidence}" if a.evidence else "")
     head = {"owner-call": "## Owner calls", "blocked-hardware": "## Needs hardware"}.get(a.status, f"## {a.plan}")

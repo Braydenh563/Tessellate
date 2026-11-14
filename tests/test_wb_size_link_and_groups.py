@@ -1,5 +1,6 @@
 """The W/H link and grouped multi-part elements (INBOX 1307, 1308)."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -31,7 +32,7 @@ def test_a_placed_multi_part_element_is_one_group(ai_client) -> None:
 
 def test_sort_branches_is_a_recorded_map_command() -> None:
     cmd = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
-    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     for row in ("sort-az", "sort-za"):
         line = next(x for x in cmd.splitlines() if f'{{ id: "{row}"' in x)
         assert 'surface: "map"' in line and 'needs: "topic"' in line and "wbMapSortChildren" in line
@@ -42,7 +43,7 @@ def test_ctrl_enter_chains_a_sticky():
     """WHITEBOARD_PLAN gap row 6 (INBOX 1308): Ctrl+Enter in a sticky starts the
     next beside it, same paper and size (measured: 310, 514, 718 at y 230).
     Not Tab, which indents a sticky's lines."""
-    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     assert 'event.key === "Enter" && (event.ctrlKey || event.metaKey) && wbIsSticky(d)' in js
     assert "wbCreateSticky(0, 0, { x: d.x + d.width + 24, y: d.y, w: d.width, h: d.height }, d)" in js
     assert "bg: paper.bg || WB_STICKY_PAPERS[0].value" in js

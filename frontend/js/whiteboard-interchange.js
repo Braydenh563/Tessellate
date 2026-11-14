@@ -36,6 +36,27 @@ const WB_MERMAID_SHAPES = {
 function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, frameOf = null) {
   //: Words safe inside a node or edge label: quotes, brackets and the bar would end it early.
   const safeWords = (text) => String(text || "").replace(/["[\](){}|<>#;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || " ";
+  const graph = wbBoardToMermaid.graph(state, cardTitle, frameOf);
+  const line = (n) => {
+    const [open, close] = WB_MERMAID_SHAPES[n.shape];
+    return `${n.id}${open}"${safeWords(n.words)}"${close}`;
+  };
+  const lines = ["flowchart TD"];
+  let f = 0;
+  for (const { title, nodes } of graph.frames.values()) {
+    f += 1;
+    lines.push(`  subgraph f${f} ["${safeWords(title)}"]`, ...nodes.map((n) => `    ${line(n)}`), "  end");
+  }
+  lines.push(...graph.loose.map((n) => `  ${line(n)}`));
+  for (const e of graph.edges) lines.push(`  ${e.from} ${e.arrow ? "-->" : "---"}${e.label ? `|${safeWords(e.label)}|` : ""} ${e.to}`);
+  return lines.join("\n") + "\n";
+}
+
+//: The board's joined things as one plain graph both text writers (Mermaid, PlantUML) format: every connector whose
+//: two ends are a shape, a text box or a card, and the things it joins, in the order met. `nodes` are `{id: "n1",
+//: words, shape: rect|diamond|circle, frame}`; `frames` a Map of frame id to `{title, nodes}` (the framed ones,
+//: in the order met); `loose` the unframed; `edges` `{from, to, arrow, label, dashed}`. Pure: reads `state`.
+wbBoardToMermaid.graph = function (state, cardTitle = (node) => `Note ${node.entry_id}`, frameOf = null) {
   const ids = new Map();
   const loose = [];
   const framed = new Map();
@@ -59,14 +80,14 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
       words = data.label || "";
       shape = data.shape === "diamond" ? "diamond" : data.shape === "circle" ? "circle" : "rect";
     }
-    const [open, close] = WB_MERMAID_SHAPES[shape];
     const frame = frameOf ? frameOf(kind, item) : null;
+    const made = { id, words, shape, frame: frame ? frame.id : null };
     let bucket = loose;
     if (frame) {
-      if (!framed.has(frame.id)) framed.set(frame.id, { title: frame.title, lines: [] });
-      bucket = framed.get(frame.id).lines;
+      if (!framed.has(frame.id)) framed.set(frame.id, { title: frame.title, nodes: [] });
+      bucket = framed.get(frame.id).nodes;
     }
-    bucket.push(`${id}${open}"${safeWords(words)}"${close}`);
+    bucket.push(made);
     return id;
   };
   const find = (kind, id) => (state[{ node: "nodes", object: "objects", sketch: "sketches" }[kind]] || []).find((i) => i.id === id);
@@ -82,19 +103,11 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
     const s = find(sKind, data.sourceId), t = find(tKind, data.targetId);
     if (!s || !t) continue;
     const a = declare(sKind, s), b = declare(tKind, t);
-    const arrow = (data.endCap && data.endCap !== "none") || data.endStyle === "end" || data.endStyle === "both" ? "-->" : "---";
-    const label = data.label ? `|${safeWords(data.label)}|` : "";
-    edges.push(`  ${a} ${arrow}${label} ${b}`);
+    const arrow = (data.endCap && data.endCap !== "none") || data.endStyle === "end" || data.endStyle === "both";
+    edges.push({ from: a, to: b, arrow: Boolean(arrow), label: data.label || "", dashed: Boolean(data.dash && data.dash !== "solid") });
   }
-  const lines = ["flowchart TD"];
-  let f = 0;
-  for (const { title, lines: inside } of framed.values()) {
-    f += 1;
-    lines.push(`  subgraph f${f} ["${safeWords(title)}"]`, ...inside.map((l) => `    ${l}`), "  end");
-  }
-  lines.push(...loose.map((l) => `  ${l}`), ...edges);
-  return lines.join("\n") + "\n";
-}
+  return { loose, frames: framed, edges };
+};
 
 //: Rows by depth from the nodes nothing points at (a cycle's entry is its
 //: first node), in the order met; then each node's centre in board units,
@@ -527,7 +540,7 @@ function wbDrawioText(value, html = true) {
 //: draw.io's ends to the board's (decision 3's caps row).
 const WB_DRAWIO_CAPS = { classic: "arrow", block: "arrow", open: "arrow", openThin: "arrow", classicThin: "arrow", blockThin: "arrow", oval: "circle", ERone: "er-one-only", ERmandOne: "er-one", ERmany: "er-many", ERoneToMany: "er-one-many", ERzeroToOne: "er-zero-one", ERzeroToMany: "er-zero-many", cross: "cross", openAsync: "half-arrow", async: "half-arrow", doubleBlock: "double-arrow" };
 //: Style keys with no counterpart here, counted in the import's report.
-const WB_DRAWIO_DROPPED = ["sketch", "glass", "comic", "shadow", "rotation", "image", "gradientColor"];
+const WB_DRAWIO_DROPPED = ["sketch", "glass", "comic"];
 
 //: A vertex's look in the board's keys: stroke, fill, width (draw.io 1 is
 //: the board's 2), dash, label colour, size and weight.
@@ -546,12 +559,52 @@ function wbDrawioLook(s) {
   if (Number(s.fontSize) > 0) look.label_size = Math.round(Number(s.fontSize));
   look.width = Math.max(1, Math.round((Number(s.strokeWidth) || 1) * 2));
   if (s.dashed === "1") look.dash = "dashed";
+  //: A gradient needs the fill it starts from; draw.io's direction is the board's (`gradientDirection` south by default).
+  if (look.fill && hex(s.gradientColor)) look.gradient = { to: hex(s.gradientColor), dir: { south: "s", north: "n", east: "e", west: "w", radial: "radial" }[s.gradientDirection] || "s" };
+  //: draw.io's shadow is a soft drop two across and three down.
+  if (s.shadow === "1") Object.assign(look, { shadow: true, shadow_x: 2, shadow_y: 3, shadow_blur: 4 });
   return look;
 }
+
+//: **A shape's own connection points in a draw.io style** (a property of `wbDrawioStyle`, to add no global) (`points=[[x,y,perimeter,dx,dy],...]`, L-whiteboard-13): the two
+//: fractions of the box, whether the point slides to the outline, and a pixel offset from there. They are the shape's
+//: `ports` (the name is the board's own and has no place in the style). `read` is bounded as the server bounds them.
+wbDrawioStyle.points = {
+  MAX: 64,
+  OFFSET: 2000,
+  read(style) {
+    let list = null;
+    try { list = JSON.parse(style?.points); } catch { return []; }
+    if (!Array.isArray(list)) return [];
+    const round = (n) => Math.round(n * 1e4) / 1e4;
+    const out = [];
+    for (const q of list) {
+      if (!Array.isArray(q) || !Number.isFinite(q[0]) || !Number.isFinite(q[1]) || Math.abs(q[0]) > 4 || Math.abs(q[1]) > 4) continue;
+      const port = { x: round(q[0]), y: round(q[1]) };
+      if (Number(q[2]) === 1) port.perimeter = true;
+      for (const [key, i] of [["dx", 3], ["dy", 4]]) {
+        const n = Number(q[i]);
+        if (Number.isFinite(n) && n !== 0) port[key] = round(Math.max(-wbDrawioStyle.points.OFFSET, Math.min(wbDrawioStyle.points.OFFSET, n)));
+      }
+      out.push(port);
+      if (out.length >= wbDrawioStyle.points.MAX) break;
+    }
+    return out;
+  },
+  write(ports) {
+    const list = (Array.isArray(ports) ? ports : []).filter((q) => Number.isFinite(q?.x) && Number.isFinite(q?.y)).slice(0, wbDrawioStyle.points.MAX);
+    if (!list.length) return "";
+    return `points=${JSON.stringify(list.map((q) => [q.x, q.y, q.perimeter ? 1 : 0, Number(q.dx) || 0, Number(q.dy) || 0]))};`;
+  },
+};
 
 //: What a vertex is drawn as, from its style: the kinds the board has a
 //: path for, else a box (counted when its shape was something else).
 function wbDrawioShape(s) {
+  //: cylinder3, cube, step, umlActor...: the JS-drawn kinds of whiteboard-shape-table.js, drawn again at any size.
+  //: The shape table loads after this file and is absent where this half runs alone (node tests), so it is looked up, not assumed.
+  const drawn = (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.fromDrawio(s);
+  if (drawn) return drawn;
   const kind = s.shape || s._kind || "";
   if (kind === "ellipse" || s.ellipse === "1") return "ellipse";
   if (kind === "rhombus") return "diamond";
@@ -587,17 +640,28 @@ function wbDrawioPlan(cells) {
       edgeLabels.set(parent.id, wbDrawioText(c.value, s.html !== "0"));
       continue;
     }
+    const ownPicture = s.shape === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(s.image || "");
+    //: A picture that travels inside the file (`data:image/png,<base64>`, draw.io writes no `;base64`) is uploaded to this notebook on the way in; an outside address never is.
+    const inline = s.shape === "image" ? /^data:(image\/(?:png|jpeg|gif|webp|svg\+xml)),([A-Za-z0-9+/=]{1,8000000})$/.exec(s.image || "") : null;
+    const turn = wbDrawioStyle.more.rotation(s);
     for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0") drop(k);
     if (s._kind === "group") continue;
     const at = origin(c.id);
     const box = { x: at.x, y: at.y, w: Math.max(1, Number(c.geo?.width) || 0), h: Math.max(1, Number(c.geo?.height) || 0) };
     const label = wbDrawioText(c.value, s.html !== "0");
-    if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
-    else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) } });
+    if (ownPicture) {
+      //: Only a picture already on this notebook comes back; an outside address would make the board call out.
+      const border = /^#[0-9a-f]{6}$/i.test(s.imageBorder || "") ? { border_color: s.imageBorder.toLowerCase(), border_width: Math.max(1, Math.min(40, Math.round(Number(s.strokeWidth) || 1))) } : {};
+      items.push({ id: c.id, kind: "image", ...box, url: s.image, look: border, ...(turn ? { rotation: turn } : {}) });
+    } else if (inline) {
+      items.push({ id: c.id, kind: "image", ...box, url: null, inline: { mime: inline[1], base64: inline[2] }, look: {}, ...(turn ? { rotation: turn } : {}) });
+    } else if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
+    else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) }, ...(turn ? { rotation: turn } : {}) });
     else {
       const shape = wbDrawioShape(s);
       if (shape === "rect" && (s.shape || (s._kind && !["rounded", "whiteSpace", "html"].includes(s._kind)))) drop(`shape ${s.shape || s._kind}`);
-      items.push({ id: c.id, kind: "shape", ...box, shape, label, look: wbDrawioLook(s) });
+      const ports = wbDrawioStyle.points.read(s);
+      items.push({ id: c.id, kind: "shape", ...box, shape, label, look: wbDrawioLook(s), ...(ports.length ? { ports } : {}), ...(turn ? { rotation: turn } : {}) });
     }
   }
   for (const c of cells) {
@@ -608,6 +672,9 @@ function wbDrawioPlan(cells) {
     if (s.edgeStyle === "orthogonalEdgeStyle" || s.edgeStyle === "elbowEdgeStyle") data.route = "elbow";
     if (s.edgeStyle === "entityRelationEdgeStyle") data.route = "er";
     if (s.edgeStyle === "isometricEdgeStyle") data.route = "iso";
+    //: draw.io's edge shapes (`shape=` on an edge) are the board's connector shapes (`shape` on a link).
+    const edgeShape = { link: "double", arrow: "block", flexArrow: "flex", taperedArrow: "tapered", pipe: "pipe", wire: "wire" }[s.shape];
+    if (edgeShape) data.shape = edgeShape;
     const end = s.endArrow ?? "classic";
     if (end !== "none" && end !== "") data.endCap = WB_DRAWIO_CAPS[end] || "arrow";
     if (s.startArrow && s.startArrow !== "none") data.startCap = WB_DRAWIO_CAPS[s.startArrow] || "arrow";
@@ -627,8 +694,6 @@ function wbDrawioPlan(cells) {
   return { items, links, dropped };
 }
 
-//: The board's end marks to draw.io's (the import's table, turned round).
-const WB_DRAWIO_CAPS_OUT = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
 const WB_DRAWIO_SHAPES_OUT = { circle: "ellipse", diamond: "rhombus", triangle: "triangle", rect: "rounded=0" };
 
 //: **A board as a `.drawio` file** (OPEN 807: the import had no way back).
@@ -646,6 +711,8 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
   const hex = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v.toLowerCase() : null);
   //: A fill or a line under 100% says so, as draw.io's own percentages.
   const opacityKeys = (d) => `${hex(d.fill) && d.fillOpacity != null && d.fillOpacity < 1 ? `fillOpacity=${Math.round(d.fillOpacity * 100)};` : ""}${d.opacity != null && d.opacity < 1 ? `strokeOpacity=${Math.round(d.opacity * 100)};` : ""}`;
+  //: The board's gradient and shadow as draw.io's keys (the reader's table, turned round).
+  const paintKeys = (d) => `${hex(d.fill) && hex(d.gradient?.to) ? `gradientColor=${hex(d.gradient.to)};gradientDirection=${{ s: "south", n: "north", e: "east", w: "west", radial: "radial" }[d.gradient.dir] || "south"};` : ""}${d.shadow ? "shadow=1;" : ""}`;
   const skipped = {};
   const skip = (what) => { skipped[what] = (skipped[what] || 0) + 1; };
   const ids = new Map();
@@ -667,12 +734,23 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
   for (const o of objects) {
     const d = o.data || {};
     const b = { x: o.x || 0, y: o.y || 0, w: o.width || 160, h: o.height || 60 };
+    //: A card, text box or picture turns about its centre; a drawn shape has its turn in its path.
+    const turn = Number(o.rotation) ? `rotation=${Math.round(Number(o.rotation) * 100) / 100};` : "";
     if (o.kind === "frame") vertex(`object:${o.id}`, "swimlane;startSize=30;html=0;whiteSpace=wrap;", d.content || "Frame", b);
     else if (o.kind === "text") {
       const filled = hex(d.bg) || hex(d.border_color);
       const look = font(d.font_size, d.bold, d.italic, d.underline, d.color);
-      if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};${d.bg_alpha != null && d.bg_alpha < 1 ? `fillOpacity=${Math.round(d.bg_alpha * 100)};` : ""}` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
-      else vertex(`object:${o.id}`, `text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
+      if (filled) vertex(`object:${o.id}`, `${turn}rounded=0;whiteSpace=wrap;html=0;${paintKeys({ fill: d.bg, shadow: d.shadow, gradient: d.gradient })}${hex(d.bg) ? `fillColor=${hex(d.bg)};${d.bg_alpha != null && d.bg_alpha < 1 ? `fillOpacity=${Math.round(d.bg_alpha * 100)};` : ""}` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
+      else vertex(`object:${o.id}`, `${turn}text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
+    } else if (o.kind === "table" && Array.isArray(d.cells) && d.cells.length) {
+      //: A table is its cells, one vertex each (a merged cell as one spanning its rows and columns), so the file draws it as the board does.
+      for (const cell of wbTableRules.wbTableCellBoxes(o, b.w, b.h)) {
+        const fill = cell.head ? "#eef1f6" : cell.stripe ? "#f4f6fa" : "#ffffff";
+        vertex(`object:${o.id}:${cell.r}:${cell.c}`, `rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;fillColor=${fill};strokeColor=#9aa3b5;${cell.head ? "fontStyle=1;" : ""}`, cell.text, { x: b.x + cell.x, y: b.y + cell.y, w: cell.w, h: cell.h });
+      }
+    } else if (o.kind === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(d.url || "")) {
+      //: A picture of this notebook's: its address and its border (draw.io's `imageBorder` and `strokeWidth`).
+      vertex(`object:${o.id}`, `${turn}shape=image;html=0;aspect=fixed;image=${d.url};${hex(d.border_color) && d.border_width > 0 ? `imageBorder=${hex(d.border_color)};strokeWidth=${Math.round(d.border_width)};` : ""}`, "", b);
     } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
     else skip("other items");
   }
@@ -685,17 +763,21 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     if (!d) continue;
     if (String(d.type || "").startsWith("link-")) { links.push([sk, d]); continue; }
     const closed = typeof d.d === "string" && /[Zz]\s*$/.test(d.d.trim());
-    if (typeof d.d !== "string" || !(WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
+    //: A table shape (cylinder, cube, step...) goes out under its draw.io `shape=` word, open sub-paths and all.
+    const drawn = d.shapeKind ? (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.toDrawio(d.shapeKind) || "" : "";
+    if (typeof d.d !== "string" || !(drawn || WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
     const bb = bounds("sketch", sk);
     if (!bb) { skip("drawn lines"); continue; }
-    if (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed)) skip("shapes drawn as boxes");
-    const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
+    if (!drawn && (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed))) skip("shapes drawn as boxes");
+    const shape = drawn ? drawn.replace(/;$/, "") : WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
     const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
     vertex(`sketch:${sk.id}`,
-      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
+      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}${paintKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${wbDrawioStyle.points.write(d.ports)}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
       d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
   }
-  for (const [sk, d] of links) {
+  for (const [sk, stored] of links) {
+    //: draw.io has no end on an edge's line, so an end on a connector goes out as the free point it resolves to now.
+    const d = (typeof wbFmtState === "undefined" ? null : wbFmtState.linkEdge)?.pinned(stored) ?? stored;
     const ref = (side) => {
       const id = ids.get(`${d[`${side}Kind`] || "node"}:${d[`${side}Id`]}`);
       return id ? ` ${side}="${id}"` : "";
@@ -708,11 +790,14 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
     //: A .drawio edge carries one value here; the second label (`label2`) has no cell of its own to ride, so the notice names it.
     if (d.label2) skip("second connector labels");
-    const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
+    //: The board's end marks to draw.io's (the import's table, turned round).
+    const capsOut = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
+    const capOf = (cap, flag) => (cap && cap !== "none" ? capsOut[cap] || "classic" : flag ? "classic" : "none");
     const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
     const start = capOf(d.startCap, d.endStyle === "both");
     const way = Array.isArray(d.points) && !["elbow", "er", "iso"].includes(d.route) ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
-    const style = `${{ elbow: "edgeStyle=orthogonalEdgeStyle;", er: "edgeStyle=entityRelationEdgeStyle;", iso: "edgeStyle=isometricEdgeStyle;" }[d.route] || ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
+    const edgeShape = { double: "link", block: "arrow", flex: "flexArrow", tapered: "taperedArrow", pipe: "pipe", wire: "wire" }[d.shape];
+    const style = `${edgeShape ? `shape=${edgeShape};` : ""}${{ elbow: "edgeStyle=orthogonalEdgeStyle;", er: "edgeStyle=entityRelationEdgeStyle;", iso: "edgeStyle=isometricEdgeStyle;" }[d.route] || ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
       `${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}strokeWidth=${Math.max(1, Math.round((Number(d.width) || 2) / 2))};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}`;
     cells.push(`<mxCell id="c${++n}" value="${esc(d.label || "")}" style="${style}" edge="1" parent="1"${ref("source")}${ref("target")}>` +
       `<mxGeometry relative="1" as="geometry">${point("source")}${point("target")}${way}</mxGeometry></mxCell>`);
@@ -740,6 +825,319 @@ function wbDrawioPath(shape, x, y, w, h) {
   }
   return `M ${x} ${y} L ${x + w} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z`;
 }
+
+//: **draw.io beyond a single file** (a property of `wbDrawioStyle`, to add no global): a turn, a picture inside
+//: a file, a library file (`mxlibrary`), the CSV import, and a plan as a library entry. Each is pure but the
+//: ones that read XML or upload, which `wbDrawioCells` and the notebook's media route do.
+wbDrawioStyle.more = {
+  //: A turn in degrees from a style (`rotation=`), clockwise as the board's: 0 when absent or whole turns.
+  rotation(s) {
+    const deg = Number(s.rotation);
+    return Number.isFinite(deg) && deg % 360 !== 0 ? Math.round((((deg % 360) + 360) % 360) * 100) / 100 : 0;
+  },
+  //: A path of M, L, C and Z turned `deg` clockwise about a centre.
+  turn(d, deg, cx, cy) {
+    const rad = (deg * Math.PI) / 180, cos = Math.cos(rad), sin = Math.sin(rad);
+    const round = (n) => Math.round(n * 100) / 100;
+    const nums = String(d).match(/[MLCZ]|-?\d*\.?\d+/g) || [];
+    const out = [];
+    for (let i = 0; i < nums.length; i++) {
+      if (/[MLCZ]/.test(nums[i])) { out.push(nums[i]); continue; }
+      const x = Number(nums[i]) - cx, y = Number(nums[++i]) - cy;
+      out.push(round(cx + x * cos - y * sin), round(cy + x * sin + y * cos));
+    }
+    return out.join(" ");
+  },
+  //: A shape's `sketch` data at `dx, dy`: its path (turned when it has a turn), its look, label and ports.
+  shapeData(item, dx, dy, ink) {
+    const own = (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.shapePathAt(item.shape, item.x + dx, item.y + dy, item.w, item.h);
+    const path = own || wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h);
+    const data = {
+      d: item.rotation ? wbDrawioStyle.more.turn(path, item.rotation, item.x + dx + item.w / 2, item.y + dy + item.h / 2) : path,
+      shape: item.rotation ? "custom" : item.shape === "ellipse" ? "circle" : item.shape === "diamond" ? "diamond" : item.shape === "rect" ? "rect" : "custom", color: ink, ...item.look,
+    };
+    if (own) {
+      data.shapeKind = item.shape;
+      data.label_area = wbFmtState.shapeTable.area(item.shape);
+      if (item.rotation) delete data.shapeKind; //: a turned outline is only stretched, never drawn again
+    }
+    if (item.label) data.label = item.label;
+    if (item.ports?.length) data.ports = item.ports;
+    return data;
+  },
+  //: A picture inside a `.drawio` file, uploaded to this notebook as board-only media (as a pasted picture is); its address, or null.
+  //: An SVG one is drawn to a PNG first: the upload takes no `.svg` (a script could ride in one), so it would be lost.
+  async picture({ mime, base64 }, box = { w: 256, h: 256 }) {
+    try {
+      let file = new Blob([Uint8Array.from(atob(base64), (ch) => ch.charCodeAt(0))], { type: mime });
+      if (mime === "image/svg+xml") file = await wbDrawioStyle.more.svgToPng(file, box);
+      if (!file) return null;
+      const ext = file.type.slice(6).replace("jpeg", "jpg");
+      const form = new FormData();
+      form.append("file", new File([file], `drawio-picture.${ext}`, { type: file.type }));
+      form.append("board", "true");
+      return (await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: form }))?.url || null;
+    } catch {
+      return null;
+    }
+  },
+  //: An SVG picture as a PNG at twice its box on the board (the SVG may carry no size of its own), or null.
+  async svgToPng(svg, { w, h }) {
+    const width = Math.round(Math.max(1, w) * 2), height = Math.round(Math.max(1, h) * 2);
+    if (width * height > 64e6) return null;
+    const url = URL.createObjectURL(svg);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const canvas = Object.assign(document.createElement("canvas"), { width, height });
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      return await new Promise((done) => canvas.toBlob(done, "image/png"));
+    } catch {
+      return null;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  },
+  //: draw.io's packing of XML: URI-encoded, deflated raw, base64.
+  async inflate(packed) {
+    const bytes = Uint8Array.from(atob(String(packed).trim()), (ch) => ch.charCodeAt(0));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return decodeURIComponent(await new Response(stream).text());
+  },
+  async deflate(xml) {
+    const stream = new Blob([encodeURIComponent(xml)]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    let bin = "";
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin);
+  },
+
+  //: A plan as a library entry's payload (the board's own element format): item boxes from the plan's
+  //: top-left, shapes as drawings, links between the items they join. A picture inside the file has no
+  //: notebook address to keep and a connector with a loose end joins nothing, so both are counted in `skipped`.
+  payload(plan) {
+    if (!plan.items.length) return null;
+    const box = {
+      minX: Math.min(...plan.items.map((i) => i.x)), minY: Math.min(...plan.items.map((i) => i.y)),
+      maxX: Math.max(...plan.items.map((i) => i.x + i.w)), maxY: Math.max(...plan.items.map((i) => i.y + i.h)),
+    };
+    box.w = box.maxX - box.minX;
+    box.h = box.maxY - box.minY;
+    const keys = new Map();
+    const items = [];
+    let skipped = 0;
+    for (const [i, it] of plan.items.entries()) {
+      const key = `d${i}`;
+      const x = Math.round(it.x - box.minX), y = Math.round(it.y - box.minY);
+      const turn = it.rotation ? { rotation: it.rotation } : {};
+      if (it.kind === "frame") items.push({ key, kind: "object", type: "frame", data: { content: it.label || "Frame" }, x, y, w: it.w, h: it.h, z: -1 });
+      else if (it.kind === "text") items.push({ key, kind: "object", type: "text", data: { content: it.label || "", ...it.look }, x, y, w: it.w, h: it.h, z: i + 1, ...turn });
+      else if (it.kind === "image") {
+        if (!it.url) { skipped += 1; continue; }
+        items.push({ key, kind: "object", type: "image", data: { url: it.url, ...it.look }, x, y, w: it.w, h: it.h, z: i + 1, ...turn });
+      } else items.push({ key, kind: "sketch", data: wbDrawioStyle.more.shapeData(it, -box.minX, -box.minY, "ink"), z: i + 1 });
+      keys.set(it.id, key);
+    }
+    const links = [];
+    for (const l of plan.links) {
+      if (!keys.has(l.source) || !keys.has(l.target)) { skipped += 1; continue; }
+      const data = { type: l.type, color: "ink", ...l.data };
+      if (data.points) data.points = data.points.map((p) => ({ x: p.x - box.minX, y: p.y - box.minY }));
+      links.push({ from: keys.get(l.source), to: keys.get(l.target), data });
+    }
+    return { payload: { box: { w: Math.max(1, Math.round(box.w)), h: Math.max(1, Math.round(box.h)) }, items, links }, skipped };
+  },
+
+  //: **`mxlibrary`** (a draw.io shape library): `<mxlibrary>[{"xml", "w", "h", "title"}]</mxlibrary>`, each `xml`
+  //: plain or packed. `read` is the entries (null when the text is not one); `body` is the board library's own
+  //: import body, every entry through the same cell reader and planner a `.drawio` file takes.
+  mxlibrary: {
+    LIMIT: 500,
+    read(text) {
+      const m = /<mxlibrary[^>]*>([\s\S]*?)<\/mxlibrary>/i.exec(String(text || ""));
+      if (!m) return null;
+      const body = m[1].replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+      let list = null;
+      try { list = JSON.parse(body); } catch { return null; }
+      if (!Array.isArray(list)) return null;
+      return list.slice(0, wbDrawioStyle.more.mxlibrary.LIMIT).map((e) => ({ xml: typeof e?.xml === "string" ? e.xml : "", title: String(e?.title || "").slice(0, 80) }));
+    },
+    async body(text, name = "draw.io library") {
+      const entries = wbDrawioStyle.more.mxlibrary.read(text);
+      if (!entries) return null;
+      const items = [];
+      let skipped = 0;
+      for (const [i, e] of entries.entries()) {
+        let made = null;
+        try {
+          const xml = e.xml.trimStart().startsWith("<") ? e.xml : await wbDrawioStyle.more.inflate(e.xml);
+          const read = e.xml ? await wbDrawioCells(xml) : null;
+          made = read ? wbDrawioStyle.more.payload(wbDrawioPlan(read.cells)) : null;
+        } catch {
+          made = null;
+        }
+        if (!made) { skipped += 1; continue; }
+        skipped += made.skipped;
+        items.push({ kind: "element", name: e.title || `Shape ${i + 1}`, tags: ["draw.io"], payload: made.payload });
+      }
+      return { body: { format: "memorymap-library", version: 1, library: { name: String(name).slice(0, 80) }, items }, skipped };
+    },
+    //: A library's items (the export route's JSON) as an `mxlibrary` file, each through the cell writer. Items
+    //: with no shapes in them (styles, palettes, branches) are left out and counted.
+    async write(lib) {
+      const entries = [];
+      let left = 0;
+      for (const it of lib.items || []) {
+        const p = it.payload;
+        if (!["element", "shape", "preset"].includes(it.kind) || !Array.isArray(p?.items) || !p.items.length) { left += 1; continue; }
+        const at = new Map();
+        const state = { objects: [], sketches: [], nodes: [] };
+        const boxes = new Map();
+        for (const [i, item] of p.items.entries()) {
+          if (item.kind === "object") {
+            state.objects.push({ id: i, kind: item.type, x: item.x, y: item.y, width: item.w, height: item.h, z: item.z, rotation: item.rotation, data: item.data || {} });
+            at.set(item.key, ["object", i]);
+          } else {
+            const row = { id: i, data: JSON.stringify(item.data || {}) };
+            const nums = /[Aa]/.test(item.data?.d || "") ? [] : (String(item.data?.d || "").match(/-?\d*\.?\d+/g) || []).map(Number);
+            const xs = nums.filter((_, n) => n % 2 === 0), ys = nums.filter((_, n) => n % 2 === 1);
+            boxes.set(row, xs.length && ys.length ? { minX: Math.min(...xs), minY: Math.min(...ys), maxX: Math.max(...xs), maxY: Math.max(...ys) } : { minX: 0, minY: 0, maxX: p.box.w, maxY: p.box.h });
+            state.sketches.push(row);
+            at.set(item.key, ["sketch", i]);
+          }
+        }
+        let n = state.sketches.length + state.objects.length;
+        for (const l of p.links || []) {
+          const a = at.get(l.from), b = at.get(l.to);
+          if (a && b) state.sketches.push({ id: ++n + 1000, data: JSON.stringify({ ...l.data, sourceKind: a[0], sourceId: a[1], targetKind: b[0], targetId: b[1] }) });
+        }
+        const out = wbBoardToDrawio(state, { title: it.name, box: (_, row) => boxes.get(row) || null });
+        const model = /<mxGraphModel[\s\S]*<\/mxGraphModel>/.exec(out.xml)?.[0];
+        if (!model) { left += 1; continue; }
+        entries.push({ xml: await wbDrawioStyle.more.deflate(model), w: Math.round(p.box.w), h: Math.round(p.box.h), aspect: "fixed", title: String(it.name || "Shape").slice(0, 80) });
+      }
+      const json = JSON.stringify(entries).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return { xml: `<mxlibrary>${json}</mxlibrary>\n`, count: entries.length, left };
+    },
+  },
+
+  //: **draw.io's CSV import** (`# label:`, `# style:`, `# connect:` and the rest above a table with a header
+  //: row). Each row is a vertex whose label and style are templates over its columns (`%name%`), each
+  //: `connect` line joins rows by a column that holds the other row's value, and `layout` places them with the
+  //: board's flow layout (the Mermaid import's) or a grid when it names none. Same cells as a file's, so the
+  //: planner and the placer are the `.drawio` ones.
+  csv: {
+    //: A directive is `# key: value`, or `## key: value`; the file is CSV when one of these comes first.
+    DIRECTIVE: /^\s*#{1,2}\s*(label|style|parentstyle|stylename|styles|identity|parent|namespace|connect|width|height|padding|ignore|nodespacing|levelspacing|edgespacing|layout|link|labelname|labels|left|top)\s*:\s*(.*)$/i,
+    is(text) {
+      const first = String(text || "").slice(0, 4000).split(/\r?\n/).find((l) => l.trim());
+      return Boolean(first && wbDrawioStyle.more.csv.DIRECTIVE.test(first));
+    },
+    //: Directives in order, and the table's records (quotes may hold commas, quotes and line breaks).
+    split(text) {
+      const directives = [], table = [];
+      let row = [], field = "", quoted = false, lineStart = true;
+      const src = String(text || "").replace(/^﻿/, "");
+      for (let i = 0; i < src.length; i += 1) {
+        const ch = src[i];
+        if (lineStart && !quoted && ch === "#") {
+          let end = src.indexOf("\n", i);
+          if (end < 0) end = src.length;
+          const m = wbDrawioStyle.more.csv.DIRECTIVE.exec(src.slice(i, end).replace(/\r$/, ""));
+          if (m) directives.push([m[1].toLowerCase(), m[2].trim()]);
+          i = end;
+          continue;
+        }
+        lineStart = false;
+        if (quoted) {
+          if (ch === '"' && src[i + 1] === '"') { field += '"'; i += 1; } else if (ch === '"') quoted = false; else field += ch;
+        } else if (ch === '"' && !field) quoted = true;
+        else if (ch === ",") { row.push(field); field = ""; } else if (ch === "\n" || ch === "\r") {
+          if (ch === "\r" && src[i + 1] === "\n") i += 1;
+          row.push(field);
+          field = "";
+          if (row.some((v) => v.trim())) table.push(row);
+          row = [];
+          lineStart = true;
+        } else field += ch;
+      }
+      row.push(field);
+      if (row.some((v) => v.trim())) table.push(row);
+      return { directives, table };
+    },
+    //: The cells (as `wbDrawioModelCells` makes them) for CSV text, `dropped` (what has no counterpart) and the layout used.
+    read(text) {
+      const { directives, table } = wbDrawioStyle.more.csv.split(text);
+      if (table.length < 2) return null;
+      const dir = (key) => directives.filter((d) => d[0] === key).map((d) => d[1]);
+      const one = (key, otherwise = "") => dir(key)[0] ?? otherwise;
+      const head = table[0].map((h) => h.trim());
+      const rows = table.slice(1).map((r) => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? "").trim()])));
+      const dropped = {};
+      const fill = (tpl, row) => String(tpl).replace(/%(\w+)%/g, (m, k) => (k in row ? row[k] : m)).replace(/%%/g, "%");
+      const styleMap = (() => { try { return JSON.parse(one("styles", "{}")) || {}; } catch { return {}; } })();
+      const styleName = one("stylename");
+      const baseStyle = one("style", "whiteSpace=wrap;html=1;");
+      const labelTpl = one("label", `%${head[0]}%`);
+      for (const k of ["parent", "parentstyle"]) if (one(k)) dropped[`csv ${k}`] = 1;
+      const gapX = Math.max(10, Number(one("nodespacing")) || 40), gapY = Math.max(10, Number(one("levelspacing")) || 100);
+      const wantW = Number(one("width")), wantH = Number(one("height"));
+      const identity = one("identity");
+      const nodes = rows.map((row, i) => {
+        const id = `csv${i}`;
+        const value = fill(labelTpl, row);
+        const plain = wbDrawioText(value, true);
+        const lines = plain.split("\n");
+        const w = wantW > 0 ? wantW : Math.max(90, Math.min(280, Math.max(...lines.map((l) => l.length)) * 8 + 30));
+        const h = wantH > 0 ? wantH : Math.max(48, lines.length * 20 + 24);
+        const extra = styleName && styleMap[row[styleName]] ? String(styleMap[row[styleName]]) : "";
+        return { id, row, value, w, h, style: `${fill(baseStyle, row)}${extra && !/;$/.test(fill(baseStyle, row)) ? ";" : ""}${extra}` };
+      });
+      //: Edges: a row's `from` column holds values (comma separated) of other rows' `to` column.
+      const edges = [];
+      for (const raw of dir("connect")) {
+        let rule = null;
+        try { rule = JSON.parse(raw); } catch { dropped["csv connect not JSON"] = (dropped["csv connect not JSON"] || 0) + 1; continue; }
+        const to = rule.to === "id" && identity ? identity : rule.to;
+        if (!rule.from || !to) continue;
+        for (const n of nodes) {
+          for (const ref of String(n.row[rule.from] ?? "").split(",").map((v) => v.trim()).filter(Boolean)) {
+            for (const other of nodes) {
+              if (other === n || other.row[to] !== ref) continue;
+              const [source, target] = rule.invert ? [other, n] : [n, other];
+              edges.push({ id: `csve${edges.length}`, source: source.id, target: target.id, value: rule.label ? fill(rule.label, n.row) : "", style: String(rule.style || "endArrow=classic;") });
+            }
+          }
+        }
+      }
+      //: Placement: the board's flow layout for the flow and tree names, a grid for none.
+      const named = one("layout", "auto").toLowerCase();
+      const flow = { horizontalflow: "LR", horizontaltree: "LR", verticalflow: "TB", verticaltree: "TB" }[named];
+      const pos = new Map();
+      if (flow || (!["auto", "none", ""].includes(named) && edges.length)) {
+        if (!flow) dropped[`layout ${named}`] = 1;
+        const wide = Math.max(...nodes.map((n) => n.w));
+        const high = Math.max(...nodes.map((n) => n.h));
+        const graph = { dir: flow || "TB", nodes: nodes.map((n) => ({ id: n.id, h: n.h })), edges: edges.map((e) => ({ from: e.source, to: e.target })) };
+        const place = wbMermaidLayout(graph, { w: wide, h: high, gapX: flow === "LR" ? wide + gapY : wide + gapX, gapY: flow === "LR" ? high + gapX : high + gapY });
+        for (const n of nodes) { const c = place.get(n.id); pos.set(n.id, { x: c.x - n.w / 2, y: c.y - n.h / 2 }); }
+      } else {
+        if (!["auto", "none", ""].includes(named)) dropped[`layout ${named}`] = 1;
+        const across = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
+        const wide = Math.max(...nodes.map((n) => n.w)), high = Math.max(...nodes.map((n) => n.h));
+        nodes.forEach((n, i) => pos.set(n.id, { x: (i % across) * (wide + gapX), y: Math.floor(i / across) * (high + gapX) }));
+      }
+      const cells = [{ id: "0" }, { id: "1", parent: "0" }];
+      for (const n of nodes) {
+        const p = pos.get(n.id);
+        cells.push({ id: n.id, parent: "1", vertex: true, value: n.value, style: n.style, geo: { x: p.x, y: p.y, width: n.w, height: n.h } });
+      }
+      for (const e of edges) cells.push({ id: e.id, parent: "1", edge: true, source: e.source, target: e.target, value: e.value, style: e.style, geo: {} });
+      return { cells, dropped, layout: named, rows: nodes.length };
+    },
+  },
+};
 
 //: The rows inside an SVG that carries them, or null.
 function wbBoardRowsFromSvg(text) {
@@ -778,12 +1176,7 @@ function wbExportRows(scope) {
     }
   }
   if (onlyKeys) {
-    const kept = new Set(rows.filter((r) => !r.link).map((r) => `${r.kind}:${r.id}`));
-    return rows.filter((r) => {
-      if (!r.link) return true;
-      const d = JSON.parse(r.payload.data);
-      return kept.has(`${d.sourceKind || "node"}:${d.sourceId}`) && kept.has(`${d.targetKind || "node"}:${d.targetId}`);
-    });
+    return wbFmtState.linkEdge.keptRows(rows);
   }
   return rows;
 }
@@ -810,15 +1203,22 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
       remap.set(`${row.kind}:${row.id}`, created.id);
       made += 1;
     }
-    for (const row of rows.filter((r) => r.link)) {
-      const data = JSON.parse(row.payload.data);
-      const s = remap.get(`${data.sourceKind || "node"}:${data.sourceId}`), t = remap.get(`${data.targetKind || "node"}:${data.targetId}`);
-      if (s == null || t == null) continue;
-      data.sourceId = s;
-      data.targetId = t;
-      if (Array.isArray(data.points)) data.points = data.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
-      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
-      wbState.sketches.push(link);
+    //: Connectors rejoin in passes, so one that hangs on another connector (whiteboard-link-edge.js) finds it made.
+    let waiting = rows.filter((r) => r.link);
+    for (let pass = 0; pass < 5 && waiting.length; pass += 1) {
+      const later = [];
+      for (const row of waiting) {
+        const data = wbFmtState.linkEdge.place(JSON.parse(row.payload.data), remap, dx, dy);
+        if (!data) {
+          later.push(row);
+          continue;
+        }
+        const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
+        wbState.sketches.push(link);
+        remap.set(`sketch:${row.id}`, link.id);
+      }
+      if (later.length === waiting.length) break;
+      waiting = later;
     }
   });
   renderWhiteboardNow();
@@ -829,16 +1229,19 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
 //: A Mermaid flowchart, state or class diagram onto this board: shapes and
 //: elbow connectors laid out by depth, centred in the view, one undo step.
 //: A sequence diagram has its own drawing (`wbImportMermaidSequence`).
-async function wbImportMermaid(source, at = wbViewCentre()) {
-  const kind = wbMermaidKind(source) || "flowchart";
+//: `parsed` is a graph the server already read from GraphML, Miro or PlantUML (`{nodes, edges, subgraphs, skipped}`);
+//: it is drawn the same way. A graph the file placed itself (`positioned`: Miro and yEd keep where each shape was)
+//: keeps those places, centred on `at`; any other is laid out in rows.
+async function wbImportMermaid(source, at = wbViewCentre(), parsed = null) {
+  const kind = parsed ? "flowchart" : wbMermaidKind(source) || "flowchart";
   if (kind === "sequence") return wbImportMermaidSequence(source, at);
-  const graph = kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : diagramModel.parse(source) || { nodes: [], edges: [] };
+  const graph = parsed || (kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : diagramModel.parse(source) || { nodes: [], edges: [] });
   if (!graph.nodes.length) {
     toast("No diagram found. Start with a line like: flowchart TD, stateDiagram, classDiagram or sequenceDiagram", "info");
     return 0;
   }
-  const place = wbMermaidLayout(graph);
-  const look = wbMermaidLayout.look(graph);
+  const place = graph.positioned ? wbMermaidLayout.positioned(graph) : wbMermaidLayout(graph);
+  const look = graph.positioned ? { nodes: new Map(), edges: new Map() } : wbMermaidLayout.look(graph);
   const ink = window.currentStrokeColor && /^#[0-9a-f]{6}$/i.test(window.currentStrokeColor) ? window.currentStrokeColor : "#335599";
   const ids = new Map();
   const frameIds = new Map();
@@ -851,7 +1254,7 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     }
     for (const n of graph.nodes) {
       const c = place.get(n.id);
-      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink, look.nodes.get(n.id));
+      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink, n.fill ? { ...(look.nodes.get(n.id) || {}), fill: n.fill, fillOpacity: 1 } : look.nodes.get(n.id));
       wbState.sketches.push(made);
       ids.set(n.id, made.id);
     }
@@ -879,6 +1282,20 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
   return graph.nodes.length;
 }
 
+//: Where a file that kept its own places puts each shape: the centre of each box, the whole centred on 0, and the
+//: file's frames (Miro's) as boxes round what they held. Same shape as `wbMermaidLayout`'s answer (a Map of id to
+//: centre, with `frames`).
+wbMermaidLayout.positioned = function (graph) {
+  const boxes = graph.nodes.map((n) => ({ id: n.id, cx: n.x + (graph.centred ? 0 : (n.w || 160) / 2), cy: n.y + (graph.centred ? 0 : (n.h || 70) / 2), w: n.w || 160, h: n.h || 70 }));
+  const frames = [...(graph.frames || [])].map((f) => ({ ...f, w: f.w, h: f.h }));
+  const xs = [...boxes.flatMap((b) => [b.cx - b.w / 2, b.cx + b.w / 2]), ...frames.flatMap((f) => [f.x, f.x + f.w])];
+  const ys = [...boxes.flatMap((b) => [b.cy - b.h / 2, b.cy + b.h / 2]), ...frames.flatMap((f) => [f.y, f.y + f.h])];
+  const midX = xs.length ? (Math.min(...xs) + Math.max(...xs)) / 2 : 0, midY = ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : 0;
+  const out = new Map(boxes.map((b) => [b.id, { x: b.cx - midX, y: b.cy - midY }]));
+  out.frames = frames.map((f) => ({ id: f.id, title: f.title, x: f.x - midX, y: f.y - midY, w: f.w, h: f.h }));
+  return out;
+};
+
 //: A cap this board draws: a mark it has no drawing for (a board from
 //: before the triangle and diamond ends) falls back to the arrow.
 function wbMermaidCap(kind) {
@@ -890,7 +1307,7 @@ function wbMermaidCap(kind) {
 //: tall as its text (a class with its members).
 async function wbMermaidPlaceNode(n, cx, cy, ink, look = null) {
   const dot = n.shape === "start" || n.shape === "end";
-  const w = dot ? 28 : 160, h = dot ? 28 : n.h || 70;
+  const w = dot ? 28 : n.w || 160, h = dot ? 28 : n.h || 70;
   const x = cx - w / 2, y = cy - h / 2;
   const r = 14;
   const d = n.shape === "diamond"
@@ -916,8 +1333,9 @@ async function wbMermaidPlaceNode(n, cx, cy, ink, look = null) {
 //: between lifelines one row down from the last (a message to itself a
 //: loop out to the right), a note a sticky across the lifelines it is
 //: over, a block's opening line a text label. One undo step.
-async function wbImportMermaidSequence(source, at = wbViewCentre()) {
-  const seq = wbMermaidSequenceParse(source);
+//: `parsed` is a sequence the server already read (`{participants, steps, skipped}`, PlantUML's), drawn the same way.
+async function wbImportMermaidSequence(source, at = wbViewCentre(), parsed = null) {
+  const seq = parsed || wbMermaidSequenceParse(source);
   if (!seq.participants.length) {
     toast("No participants found. Start with a line like: sequenceDiagram", "info");
     return 0;
@@ -1043,10 +1461,7 @@ async function wbDrawioCells(text) {
     if (own || !diagram) return own || null;
     const packed = diagram.textContent.trim();
     if (!packed) return null;
-    const bytes = Uint8Array.from(atob(packed), (ch) => ch.charCodeAt(0));
-    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
-    const inflated = await new Response(stream).text();
-    return xml(decodeURIComponent(inflated)).getElementsByTagName("mxGraphModel")[0] || null;
+    return xml(await wbDrawioStyle.more.inflate(packed)).getElementsByTagName("mxGraphModel")[0] || null;
   };
   const all = [];
   for (const [i, diagram] of (diagrams.length ? diagrams : [null]).entries()) {
@@ -1093,13 +1508,19 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
     const made = await wbCreateObject("frame", { content: f.label || "Lane" }, Math.round(f.x + dx), Math.round(f.y + dy), Math.round(f.w), Math.round(f.h));
     if (made) ids.set(f.id, ["object", made.id]);
   }
+  for (const item of plan.items.filter((i) => i.kind === "image")) {
+    const url = item.url || (item.inline ? await wbDrawioStyle.more.picture(item.inline, item) : null);
+    //: A picture that would not upload is named in the import's report, never dropped silently.
+    if (!url) { plan.dropped.pictures = (plan.dropped.pictures || 0) + 1; plan.unplaced = (plan.unplaced || 0) + 1; continue; }
+    const made = await wbCreateObject("image", { url, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(20, item.w)), Math.round(Math.max(20, item.h)), undefined, item.rotation ? { rotation: item.rotation } : null);
+    if (made) ids.set(item.id, ["object", made.id]);
+  }
   for (const item of plan.items.filter((i) => i.kind === "text")) {
-    const made = await wbCreateObject("text", { content: item.label, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(40, item.w)), Math.round(Math.max(24, item.h)));
+    const made = await wbCreateObject("text", { content: item.label, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(40, item.w)), Math.round(Math.max(24, item.h)), undefined, item.rotation ? { rotation: item.rotation } : null);
     if (made) ids.set(item.id, ["object", made.id]);
   }
   for (const item of plan.items.filter((i) => i.kind === "shape")) {
-    const data = { d: wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h), shape: item.shape === "ellipse" ? "circle" : item.shape === "diamond" ? "diamond" : item.shape === "rect" ? "rect" : "custom", color: ink, ...item.look };
-    if (item.label) data.label = item.label;
+    const data = wbDrawioStyle.more.shapeData(item, dx, dy, ink);
     const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
     wbState.sketches.push(made);
     ids.set(item.id, ["sketch", made.id]);
@@ -1119,8 +1540,7 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
 }
 
 //: Room round a page inside its frame, and between two page frames.
-const WB_DRAWIO_PAGE_PAD = 48;
-const WB_DRAWIO_PAGE_GAP = 160;
+const WB_DRAWIO_PAGE = { pad: 48, gap: 160 };
 
 //: A `.drawio` file onto this board, centred in the view, one undo step:
 //: swimlanes as frames, text as text boxes, the rest as shapes with their
@@ -1132,10 +1552,10 @@ const WB_DRAWIO_PAGE_GAP = 160;
 //: pages are its frames (WHITEBOARD_PLAN decision 22): the Pages tab lists
 //: them, Present walks them, and the whole file stays one board and one Undo
 //: step. A one-page file comes in as before, with no frame round it.
-async function wbImportDrawio(text, at = wbViewCentre()) {
+async function wbImportDrawio(text, at = wbViewCentre(), csv = null) {
   let read = null;
   try {
-    read = await wbDrawioCells(text);
+    read = csv ? { all: [{ name: "CSV", cells: csv.cells }] } : await wbDrawioCells(text);
   } catch {
     read = null;
   }
@@ -1144,14 +1564,15 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
     return 0;
   }
   const pages = read.all.map((page) => ({ ...page, plan: wbDrawioPlan(page.cells) })).filter((page) => page.plan.items.length);
+  for (const [k, n] of Object.entries(csv?.dropped || {})) pages[0].plan.dropped[k] = (pages[0].plan.dropped[k] || 0) + n;
   if (!pages.length) {
     toast("That draw.io file has no shapes to bring in.", "info");
     return 0;
   }
   const framed = pages.length > 1;
-  const pad = framed ? WB_DRAWIO_PAGE_PAD : 0;
+  const pad = framed ? WB_DRAWIO_PAGE.pad : 0;
   for (const page of pages) page.box = wbDrawioBox(page.plan);
-  const rowW = pages.reduce((sum, page) => sum + page.box.w + pad * 2, 0) + WB_DRAWIO_PAGE_GAP * (pages.length - 1);
+  const rowW = pages.reduce((sum, page) => sum + page.box.w + pad * 2, 0) + WB_DRAWIO_PAGE.gap * (pages.length - 1);
   const rowH = Math.max(...pages.map((page) => page.box.h + pad * 2));
   const ink = window.currentStrokeColor && /^#[0-9a-f]{6}$/i.test(window.currentStrokeColor) ? window.currentStrokeColor : "#335599";
   let left = at[0] - rowW / 2;
@@ -1163,11 +1584,11 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
           Math.round(page.box.w + pad * 2), Math.round(page.box.h + pad * 2));
       }
       await wbDrawioPlace(page.plan, left + pad - page.box.minX, top + pad - page.box.minY, ink);
-      left += page.box.w + pad * 2 + WB_DRAWIO_PAGE_GAP;
+      left += page.box.w + pad * 2 + WB_DRAWIO_PAGE.gap;
     }
   });
   renderWhiteboardNow();
-  const items = pages.reduce((n, page) => n + page.plan.items.length, 0);
+  const items = pages.reduce((n, page) => n + page.plan.items.length - (page.plan.unplaced || 0), 0);
   const links = pages.reduce((n, page) => n + page.plan.links.length, 0);
   const dropped = {};
   for (const page of pages) for (const [k, n] of Object.entries(page.plan.dropped)) dropped[k] = (dropped[k] || 0) + n;
@@ -1180,7 +1601,22 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
 }
 
 async function wbImportText(text) {
+  if (wbDrawioStyle.more.csv.is(text)) {
+    const csv = wbDrawioStyle.more.csv.read(text);
+    if (!csv) {
+      toast("That draw.io CSV has a header row and no rows under it.", "info");
+      return 0;
+    }
+    return wbImportDrawio(text, wbViewCentre(), csv);
+  }
+  if (/<mxlibrary[\s>]/i.test(text)) {
+    await wbLibImportFile(new File([text], "draw.io library.xml", { type: "text/xml" }));
+    return 0;
+  }
   if (/<mxfile[\s>]|<mxGraphModel[\s>]|content="&lt;mxfile/i.test(text)) return wbImportDrawio(text);
+  //: GraphML, Miro JSON and PlantUML are read by the server (whiteboard-convert.js).
+  const other = wbFmtState.convert?.sniff(text);
+  if (other) return wbFmtState.convert.run({ format: other, content: text });
   const rows = /<svg[\s>]/i.test(text) ? wbBoardRowsFromSvg(text) : null;
   if (/<svg[\s>]/i.test(text) && !rows) {
     toast("That SVG was not exported from a board here, so it has no board inside it. Insert it as a picture instead.", "info");
@@ -1198,6 +1634,19 @@ onDomReady(() => {
     const chosen = file.files?.[0];
     file.value = "";
     if (!chosen) return;
+    //: A PNG exported with "Include a copy of the diagram" carries its board in a chunk.
+    if (chosen.type === "image/png" || /\.png$/i.test(chosen.name)) {
+      const rows = wbFmtState.exporters.rowsOf(new Uint8Array(await chosen.arrayBuffer()));
+      dialog.close();
+      if (rows) await wbImportBoardRows(rows);
+      else toast("That PNG has no board inside it. Export a PNG with Include a copy of the diagram on, or insert it as a picture.", "info");
+      return;
+    }
+    if (/\.emf$/i.test(chosen.name)) {
+      dialog.close();
+      await wbFmtState.convert.importEmf(chosen);
+      return;
+    }
     const text = await chosen.text();
     dialog.close();
     await wbImportText(text);
@@ -1451,3 +1900,201 @@ async function wbDiagramToShapes(d, source) {
     if (made) await wbDeleteObject(d);
   });
 }
+
+//: **A PDF written here, not by the browser's print window** (LEDGER L270).
+//: The old export opened Print and left the page size, the orientation and
+//: the page count to whatever the print dialog chose, so a board came out as
+//: one shrunken page. This writes the file itself: `wbPdf.plan` decides the
+//: pages (fit on one, one per frame, or tiled across several), `wbExportPdf`
+//: (whiteboard.js) draws each page from the export SVG as a JPEG, and
+//: `wbPdf.build` wraps the JPEGs in a minimal PDF 1.4 (catalog, page tree, and
+//: per page a page, a content stream and a DCT image, then an xref table). No
+//: library: nothing vendored writes PDF, and a page of one picture is a dozen
+//: lines of structure.
+const wbPdf = (() => {
+  //: Every paper size, in points (short side, long side), A4 the fallback: the one table the PDF export, the board's
+  //: paper setting and the page view all read.
+  const SIZES = { a4: [595.28, 841.89], a3: [841.89, 1190.55], letter: [612, 792], legal: [612, 1008] };
+  const MM = 72 / 25.4;
+  //: A paper's short and long side in points: a known size, or a board's custom one (`paper_w`, `paper_h`, millimetres).
+  function sideOf(size, custom) {
+    if (size === "custom" && custom?.paper_w > 0 && custom?.paper_h > 0) {
+      return [custom.paper_w * MM, custom.paper_h * MM].sort((a, b) => a - b);
+    }
+    return SIZES[size] || SIZES.a4;
+  }
+  const MARGIN = 28;
+  const TILE_SCALE = 0.75;
+  const MAX_PAGES = 40;
+
+  //: A board's page in board units (96 to the inch; the table is in points): its paper and orientation, A4 portrait
+  //: when it sets none. Page view draws these frames.
+  function pagePx(bg = {}) {
+    const [short, long] = sideOf(bg.paper, bg);
+    const [w, h] = bg.orientation === "landscape" ? [long, short] : [short, long];
+    return [Math.round((w * 96) / 72), Math.round((h * 96) / 72)];
+  }
+
+  //: The pages for a board: `bounds` is the export's viewBox ({x, y, w, h}),
+  //: `frames` the frames to give a page each ({x, y, width, height}). Every page
+  //: has its size in points, the part of the board it shows (`crop`, board
+  //: units) and where that sits on the page (`place`, points, from the top-left).
+  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit", custom = null }) {
+    const [short, long] = sideOf(size, custom);
+    const pageFor = (w, h) => {
+      const landscape = orientation === "landscape" || (orientation === "auto" && w > h);
+      return landscape ? [long, short] : [short, long];
+    };
+    const clip = (r) => {
+      const x = Math.max(bounds.x, r.x), y = Math.max(bounds.y, r.y);
+      const w = Math.min(bounds.x + bounds.w, r.x + r.w) - x, h = Math.min(bounds.y + bounds.h, r.y + r.h) - y;
+      return w > 0 && h > 0 ? { x, y, w, h } : null;
+    };
+    const fitPage = (crop) => {
+      const [pw, ph] = pageFor(crop.w, crop.h);
+      const cw = pw - 2 * MARGIN, ch = ph - 2 * MARGIN;
+      const k = Math.min(cw / crop.w, ch / crop.h);
+      const w = crop.w * k, h = crop.h * k;
+      return { page: [pw, ph], crop, place: { x: (pw - w) / 2, y: (ph - h) / 2, w, h } };
+    };
+    if (layout === "frames") {
+      //: Reading order: rows of frames top to bottom, each row left to right.
+      const crops = frames
+        .map((f) => clip({ x: f.x - 12, y: f.y - 28, w: f.width + 24, h: f.height + 40 }))
+        .filter(Boolean)
+        .sort((a, b) => (Math.abs(a.y - b.y) > 40 ? a.y - b.y : a.x - b.x));
+      if (crops.length) return crops.slice(0, MAX_PAGES).map(fitPage);
+    }
+    if (layout === "tiles") {
+      const [pw, ph] = pageFor(bounds.w, bounds.h);
+      const cw = pw - 2 * MARGIN, ch = ph - 2 * MARGIN;
+      let scale = TILE_SCALE;
+      while (Math.ceil((bounds.w * scale) / cw) * Math.ceil((bounds.h * scale) / ch) > MAX_PAGES) scale *= 0.8;
+      const tw = cw / scale, th = ch / scale;
+      const pages = [];
+      for (let y = bounds.y; y < bounds.y + bounds.h - 0.5; y += th) {
+        for (let x = bounds.x; x < bounds.x + bounds.w - 0.5; x += tw) {
+          const crop = { x, y, w: Math.min(tw, bounds.x + bounds.w - x), h: Math.min(th, bounds.y + bounds.h - y) };
+          pages.push({ page: [pw, ph], crop, place: { x: MARGIN, y: MARGIN, w: crop.w * scale, h: crop.h * scale } });
+        }
+      }
+      return pages;
+    }
+    return [fitPage({ ...bounds })];
+  }
+
+  //: The file: `pages` are `{page: [w, h], place: {x, y, w, h}, image: {jpeg: Uint8Array, w, h}}`.
+  function build(pages) {
+    const enc = new TextEncoder();
+    const chunks = [];
+    const offsets = [];
+    let length = 0;
+    const put = (part) => {
+      const bytes = typeof part === "string" ? enc.encode(part) : part;
+      chunks.push(bytes);
+      length += bytes.length;
+    };
+    const num = (n) => String(Math.round(n * 100) / 100);
+    const object = (id, ...parts) => {
+      offsets[id] = length;
+      put(`${id} 0 obj\n`);
+      for (const part of parts) put(part);
+      put("\nendobj\n");
+    };
+    put("%PDF-1.4\n");
+    object(1, "<< /Type /Catalog /Pages 2 0 R >>");
+    object(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + 3 * i} 0 R`).join(" ")}] /Count ${pages.length} >>`);
+    pages.forEach((p, i) => {
+      const id = 3 + 3 * i;
+      const [w, h] = p.page;
+      const { x, y, w: pw, h: ph } = p.place;
+      const draw = `q ${num(pw)} 0 0 ${num(ph)} ${num(x)} ${num(h - y - ph)} cm /Im0 Do Q`;
+      object(id, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(w)} ${num(h)}] /Resources << /XObject << /Im0 ${id + 2} 0 R >> >> /Contents ${id + 1} 0 R >>`);
+      object(id + 1, `<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`);
+      object(id + 2, `<< /Type /XObject /Subtype /Image /Width ${p.image.w} /Height ${p.image.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.image.jpeg.length} >>\nstream\n`, p.image.jpeg, "\nendstream");
+    });
+    const total = 3 + 3 * pages.length;
+    const xref = length;
+    put(`xref\n0 ${total}\n0000000000 65535 f \n`);
+    for (let id = 1; id < total; id++) put(`${String(offsets[id]).padStart(10, "0")} 00000 n \n`);
+    put(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    const out = new Uint8Array(length);
+    let at = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, at);
+      at += chunk.length;
+    }
+    return out;
+  }
+
+  //: The choices the export dialog offers, and the last ones made.
+  const CHOICES = {
+    size: [{ value: "a4", label: "A4" }, { value: "a3", label: "A3" }, { value: "letter", label: "Letter" }, { value: "legal", label: "Legal" }],
+    orientation: [
+      { value: "auto", label: "Auto", title: "Landscape for a wide board, portrait for a tall one" },
+      { value: "portrait", label: "Portrait" },
+      { value: "landscape", label: "Landscape" },
+    ],
+    layout: [
+      { value: "fit", label: "One page", title: "The whole export scaled onto one page" },
+      { value: "frames", label: "Per frame", title: "One page for each frame, in reading order" },
+      { value: "tiles", label: "Tiled", title: "Full-size pages side by side across the board" },
+    ],
+  };
+  function savedChoice() {
+    const saved = prefs.json("wb-export-pdf", {});
+    const pick = (key, fallback) => (CHOICES[key].some((o) => o.value === saved[key]) ? saved[key] : fallback);
+    return { size: pick("size", "a4"), orientation: pick("orientation", "auto"), layout: pick("layout", "fit") };
+  }
+
+  //: The export dialog's starting point: the board's own paper and direction when it sets them (Format > Board), else
+  //: the last choice made here. A custom paper carries its millimetres along for the plan.
+  function boardChoice(bg, saved) {
+    const out = { ...saved };
+    if (bg.paper) {
+      out.size = bg.paper;
+      if (bg.paper === "custom") out.custom = { paper_w: bg.paper_w, paper_h: bg.paper_h };
+    }
+    if (bg.orientation) out.orientation = bg.orientation;
+    return out;
+  }
+
+  function saveChoice(choice) {
+    try {
+      const { size, orientation, layout } = choice;
+      prefs.set("wb-export-pdf", JSON.stringify({ size, orientation, layout }));
+    } catch {
+      // Private mode: the choice holds for this export.
+    }
+  }
+
+  //: The frames that get a page in "Per frame": those in the export's scope.
+  function framesIn(scope, bounds) {
+    const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
+    return (wbState.objects || []).filter((f) =>
+      f.kind === "frame" && !wbItemHidden("object", f) &&
+      (!onlyKeys || onlyKeys.has(wbMultiKey("object", f.id))) &&
+      f.x < bounds.x + bounds.w && f.x + f.width > bounds.x && f.y < bounds.y + bounds.h && f.y + f.height > bounds.y);
+  }
+
+  //: The pages of a PDF, drawn from the export SVG: each page is the same
+  //: picture with its viewBox moved to that page's part of the board.
+  async function pictures(scope, choice) {
+    const { svg } = wbBuildExportSvg(scope);
+    const box = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg);
+    const bounds = { x: Number(box[1]), y: Number(box[2]), w: Number(box[3]), h: Number(box[4]) };
+    const pages = [];
+    const inlined = await wbInlineSvgImages(svg);
+    for (const p of plan({ bounds, frames: framesIn(scope, bounds), ...choice })) {
+      //: About 216 dpi on paper, held to what a canvas will hold.
+      const w = Math.min(3000, Math.max(1, Math.round(p.place.w * 3)));
+      const h = Math.max(1, Math.round((w * p.place.h) / p.place.w));
+      const crop = inlined.replace(/viewBox="[^"]*"/, `viewBox="${p.crop.x} ${p.crop.y} ${p.crop.w} ${p.crop.h}"`);
+      const blob = await wbRasterizeSvg(crop, w, h, "image/jpeg", 0.92);
+      pages.push({ ...p, image: { jpeg: new Uint8Array(await blob.arrayBuffer()), w, h } });
+    }
+    return pages;
+  }
+
+  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice, boardChoice, SIZES, pagePx };
+})();

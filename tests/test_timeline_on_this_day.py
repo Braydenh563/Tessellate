@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from tessellate.core.database import Entry
+from tests._app_js import frontend_text
 
 
 def _at(session, client, text, when):
@@ -67,8 +68,7 @@ def test_the_years_are_one_select_in_the_strip_head_not_a_row_of_chips():
     without them."""
     from pathlib import Path
 
-    from tests._app_js import frontend_text
-
+    
     html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
     head = html[html.index('class="timeline-daystrip-head"') :]
     head = head[: head.index('id="timeline-daystrip-days"')]

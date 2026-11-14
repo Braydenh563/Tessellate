@@ -1,11 +1,12 @@
 """W19 C15: a connector's label has its own size, colour, bold and chip (audit t20#12)."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 FMT = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 

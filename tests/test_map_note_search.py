@@ -4,9 +4,9 @@ Driven in Chromium 2026-11-10: a map topic "Alpha" given the note "Remember the 
 (`wbSearchTextFor` returned "alpha" before and "alpha\\nremember the zebra crossing" after).
 """
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_an_object_search_text_ends_with_its_note():

@@ -13,6 +13,8 @@ fake transport (CLAUDE.md section 4).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
+
 
 def _branch(client):
     board = client.post("/whiteboard/boards", json={"name": "Trip", "type": "map"}).json()
@@ -83,7 +85,7 @@ def test_the_map_puts_the_summary_into_the_topics_note():
     from pathlib import Path
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    mapjs = (js / "whiteboard-map.js").read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     body = mapjs[mapjs.index("async function wbMapSummariseBranch(node)") :]
     body = body[: body.index("\n}\n")]
     assert "/summary`, { method: \"POST\" }" in body and "wbMapOpenNote(node.id)" in body

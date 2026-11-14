@@ -34,7 +34,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 from tests import _js_scope
-from tests._app_js import with_pieces
+from tests._app_js import with_pieces, frontend_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -456,6 +456,9 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "whiteboard-convert.js:cvKeepEmf": "inverse: files the original EMF on a new note of its own; the note is an ordinary one and deleting it goes to the Recycle bin",
+    "whiteboard-config.js:cfgImportText": "read: the POST only checks the file and stores nothing; what it applies goes through wbSetBackground (one Undo) and wbLibCreate (a bin call)",
+    "whiteboard-convert.js:cvRun": "read: the POST only reads the file into a graph and stores nothing; the placing goes through wbImportMermaid, which is one Undo",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
@@ -492,6 +495,8 @@ EXEMPT: dict[str, str] = {
     "account-recovery.js:onclick": "inverse: restoring a backup on the lock screen snapshots the empty notebook first (POST /backups/restore), and that snapshot is the way back; there is no session to hold an Undo",
     "settings-health.js:onclick": "job: the data folder check only makes missing folders again and lists missing files; it deletes and overwrites nothing",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
+    "whiteboard-interchange.js:picture": "board: stores a picture read out of a .drawio file; the import that places it is one undo step and the file is unused if that is undone",
+    "whiteboard-library-more.js:splitLink": "board: runs only inside the library drop's wbRecordGesture (whiteboard-library.js wbLibPlace, through wbFmtState.libraryMore), so the split is the drop's one Undo step",
     "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",
@@ -501,7 +506,7 @@ EXEMPT: dict[str, str] = {
     "meetings.js:startRecordingTranscription": "job: starts or stops work or a model; deletes no user data",
     "meetings.js:stopRecordingTranscription": "job: starts or stops work or a model; deletes no user data",
     "whiteboard-map.js:wbMapExpandFromNote": "read: asks which headings and links to offer; the add is wbMapAddChosenBranches, one Undo step",
-    "whiteboard-map.js:wbMapSuggestBranches": "read: asks which notes to offer as branches; the add is wbMapAddChosenBranches, one Undo step",
+    "whiteboard-map-marks.js:wbMapSuggestBranches": "read: asks which notes to offer as branches; the add is wbMapAddChosenBranches, one Undo step",
     "settings-controls.js:(anonymous /auth/pin)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/pin/forget)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:makeMaintenanceShortcut": "job: starts or stops work or a model; deletes no user data",
@@ -548,10 +553,12 @@ EXEMPT: dict[str, str] = {
     "documents.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
     "dashboard.js:(anonymous /recordings/recover)": "job: starts or stops work or a model; deletes no user data",
     "app.js:(anonymous path)": "read: the api.upload shorthand itself; each caller is scanned as its own site",
-    "whiteboard.js:wbPlaceUploadedImage": "board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
-    "whiteboard.js:wbApplyHistoryEntry": "inverse: applies the board history's own undo and redo",
+    "whiteboard-pdf.js:upload": "board: the PDF is placed by wbCreateObject inside one wbRecordGesture, so Undo takes the pages back; the file stays on disk like a placed picture",
+    "whiteboard.js:wbPlaceUploadedImage":"board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
+    "whiteboard-textedit.js:wbApplyHistoryEntry": "inverse: applies the board history's own undo and redo",
+    "whiteboard.js:openWhiteboardBoard": "board: the bind sync moves cards to match notes edited elsewhere, the notes' state, not a user edit to undo",
     "whiteboard.js:initWhiteboard": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
-    "whiteboard-map.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
+    "whiteboard-map-strip.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
     "library-links.js:refresh": "job: fetches the page again and refills its icon and excerpt; nothing the person wrote changes",
     "meetings.js:recordingMenu": "job: Label speakers by voice is a background run on the card, asked first when it would replace names",
@@ -743,17 +750,18 @@ EXEMPT: dict[str, str] = {
     "vault-unlock.js:unlockPrivateNotes": "auth: sign-in, recovery or lock; no user data",
     "whiteboard-history.js:build": "board: board snapshot list, the board's version history",
     "whiteboard-history.js:wbSnapshotRow": "board: board snapshot list, the board's version history",
-    "whiteboard-map.js:wbMapSummariseBranch": "read: asks the model for a summary",
-    "whiteboard.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
+    "whiteboard-map-marks.js:wbMapSummariseBranch": "read: asks the model for a summary",
+    "whiteboard-export.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
     "whiteboard.js:wbPaintStickyDates": "read: reads dates out of sticky text",
     "whiteboard.js:wbSaveManyBatch": "board: low-level board save of a selection in one request; its callers push wbPushUndo, as they did around the per-item saves it replaced",
     "whiteboard.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
-    "whiteboard.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-sketch-text.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
     "documents-languagetool.js:ask": "read: sends a document's paragraphs to the local grammar checker; shows matches, writes nothing",
     "whiteboard-format.js:(anonymous /media/upload)": "board: Replace picture uploads the file; the address swap is wbFmtApply's one board Undo step",
+    "whiteboard-effects.js:uploadPicture": "board: Picture fill uploads the file; the address swap is wbFmtApply's one board Undo step",
     "answer-kit.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
 }
 
@@ -889,7 +897,7 @@ def test_ctrl_z_belongs_to_a_board_only_while_the_board_is_showing():
 
 
 def test_a_history_remap_translates_each_id_once():
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     remap = board[board.index("function wbRemapUndoIds("):][:3500]
     assert "wbRemapSeen" in remap and "once(" in remap, (
         "items brought back reuse the ids just deleted (8 comes back as 9 and 9 as 8); "

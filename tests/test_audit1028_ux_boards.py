@@ -1,5 +1,6 @@
 """Audit 1028 board and mind map UI rows: U12, U14 to U17, U21 to U28, U30, B12."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -7,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = ROOT / "frontend" / "css"
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 MISC = (CSS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 # The boot stylesheets are at their gzip cap (tests/test_boot_budget.py): these rows' rules are lazy.
 LAZY = (CSS / "library-lazy.css").read_text(encoding="utf-8")
@@ -59,7 +60,7 @@ def test_delete_stands_apart_from_undo_and_redo_in_the_dock_but_not_in_the_side_
 
 # U24 ------------------------------------------------------------------------
 
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_a_topic_inside_the_slide_margin_of_the_edge_is_revealed_not_left_there():

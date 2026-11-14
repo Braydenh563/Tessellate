@@ -26,8 +26,15 @@ from tessellate.core.database import WhiteboardObject
 #: resolving well outside the media folder. Matching the exact shape
 #: `upload_media` produces (a uuid4 hex plus a short suffix) closes it at the
 #: door; the purge (`manager`) checks containment again.
-MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
-_APP_ROUTE_LINK = re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
+#:
+#: **And it ends in a picture or PDF suffix** (L-whiteboard-39): `/media/` serves only `MEDIA_SUFFIXES`
+#: (`routes_files.py`, no `.svg`), so a `/media/x.svg` object could never draw; it is refused here too, so
+#: no SVG image object exists to be recoloured. `tests/test_wb_no_svg_images.py` keeps the two lists equal.
+MEDIA_PICTURE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".ico", ".pdf")
+MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}(?:" + "|".join(re.escape(s) for s in MEDIA_PICTURE_SUFFIXES) + ")$")
+#: One rendered page of an uploaded PDF (`GET /media/pdf-page/{name}/{n}`), the picture a PDF placed as pages shows.
+PDF_PAGE_URL_RE = re.compile(r"^/media/pdf-page/[A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf/\d{1,3}$")
+_APP_ROUTE_LINK =re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
 
 #: A sketch is a path list, not an image. Big enough for a page of scribble,
 #: small enough that a runaway client can't fill the disk one PUT at a time.
@@ -356,6 +363,53 @@ _PATH_RE = re.compile(r"^[MmLlHhVvCcSsQqTtAaZz0-9eE.,+\-\s]*$")
 _COLOUR_RE = re.compile(r"^[#A-Za-z0-9(),.%\s/-]{0,60}$")
 _SKETCH_NUMBERS = {"width": (0, 400), "opacity": (0, 1)}
 _SKETCH_COLOURS = ("color", "fill", "label_color")
+#: A tag is a word or two; an item holds a handful. Objects and sketches share the bounds.
+MAX_TAG_CHARS = 40
+MAX_TAGS_PER_ITEM = 20
+
+
+def _bad_tags(tags: object) -> bool:
+    return not (
+        isinstance(tags, list) and len(tags) <= MAX_TAGS_PER_ITEM
+        and all(isinstance(t, str) and 1 <= len(t) <= MAX_TAG_CHARS for t in tags)
+    )
+
+
+#: A shape's own connection points (draw.io's `points`): up to 64, each two fractions of the box (a little past the edge is
+#: allowed), an optional pixel offset, the flag that holds it on the outline and a name.
+_MAX_PORTS = 64
+_PORT_FRACTION = 4
+_PORT_OFFSET = 2000
+
+
+def _number(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and abs(value) < 1e9
+
+
+def _bad_port(port: object) -> bool:
+    """A port that is not `{x, y}` fractions with optional pixel offsets, a perimeter flag and a short name."""
+    if not isinstance(port, dict) or "x" not in port or "y" not in port:
+        return True
+    if not all(_number(port[k]) and abs(port[k]) <= _PORT_FRACTION for k in ("x", "y")):
+        return True
+    if not all(_number(port[k]) and abs(port[k]) <= _PORT_OFFSET for k in ("dx", "dy") if k in port):
+        return True
+    if "perimeter" in port and not isinstance(port["perimeter"], bool):
+        return True
+    return "name" in port and not (isinstance(port["name"], str) and len(port["name"]) <= 80)
+
+
+def _bad_ports(ports: object) -> bool:
+    return not isinstance(ports, list) or len(ports) > _MAX_PORTS or any(_bad_port(p) for p in ports)
+
+
+def _bad_effect(parsed: dict) -> str | None:
+    """The first of a sketch's finishing effects that is not a value the page can draw: a picture fill is a saved media
+    address and nothing else (an image object's rule), glass and the label's shadow are plain on or off."""
+    fill_image = parsed.get("fill_image")
+    if fill_image is not None and not (isinstance(fill_image, str) and MEDIA_URL_RE.match(fill_image)):
+        return "fill_image"
+    return next((key for key in ("glass", "label_shadow") if key in parsed and not isinstance(parsed[key], bool)), None)
 
 
 def _bad_sketch_field(parsed: dict) -> str | None:
@@ -363,6 +417,8 @@ def _bad_sketch_field(parsed: dict) -> str | None:
     path = parsed.get("d")
     if path is not None and not (isinstance(path, str) and _PATH_RE.match(path)):
         return "d"
+    if bad := _bad_effect(parsed):
+        return bad
     for key in _SKETCH_COLOURS:
         value = parsed.get(key)
         if value is not None and not (isinstance(value, str) and _COLOUR_RE.match(value) and "url(" not in value.lower()):
@@ -384,7 +440,11 @@ def check_sketch_data(data: str) -> str:
         raise Said("This drawing is nested too deeply to save.") from exc
     except ValueError:
         return data
-    bad = _bad_sketch_field(parsed) if isinstance(parsed, dict) else None
+    bad = None
+    if isinstance(parsed, dict):
+        bad = "ports" if "ports" in parsed and _bad_ports(parsed["ports"]) else _bad_sketch_field(parsed)
+        if not bad and "tags" in parsed and _bad_tags(parsed["tags"]):
+            bad = "tags"
     if bad:
         raise Said(f"The drawing's {bad} is not something the board can draw.")
     return data
@@ -407,6 +467,37 @@ class WhiteboardSketchOut(WhiteboardSketchBase):
     z: StoredLayer = 0
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TableMerge(BaseModel):
+    """One merged table cell: the cell at (r, c) spanning rs rows and cs columns."""
+
+    r: StrictInt = Field(ge=0, lt=MAX_TABLE_ROWS)
+    c: StrictInt = Field(ge=0, lt=MAX_TABLE_COLS)
+    rs: StrictInt = Field(ge=1, le=MAX_TABLE_ROWS)
+    cs: StrictInt = Field(ge=1, le=MAX_TABLE_COLS)
+
+
+_RESERVED_BINDS = frozenset({"title", "tags", "id"})
+
+
+class FrameBinds(BaseModel):
+    """A frame bound to one note property (L-whiteboard-12): a card dropped
+    inside writes `value` to its note's `property`; one field per frame."""
+
+    #: A name the properties block can hold as a key: a letter first, then
+    #: letters, digits, spaces, `_` or `-`, one line.
+    property: str = Field(min_length=1, max_length=60, pattern=r"^[A-Za-z][A-Za-z0-9 _-]*$")
+    value: str = Field(min_length=1, max_length=300, pattern=r"^[^\r\n]+$")
+
+    @field_validator("property")
+    @classmethod
+    def _not_reserved(cls, name: str) -> str:
+        """`title` is lifted into the note's first line (`properties.lift_title`)
+        and `tags` is the note's tag list: a frame must not rewrite either."""
+        if name.strip().lower() in _RESERVED_BINDS:
+            raise ValueError(f"A frame cannot bind {name}; pick another property.")
+        return name.strip()
 
 
 class WhiteboardObjectData(BaseModel):
@@ -440,12 +531,31 @@ class WhiteboardObjectData(BaseModel):
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
     col_widths: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=20)
+    #: A table's row heights, the same kind of weights (one per row, mean 1).
+    row_heights: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=50)
+    #: **Merged cells**: each `{r, c, rs, cs}` is the cell at row r, column c
+    #: spanning rs rows and cs columns (`_require_table_merges` keeps them inside
+    #: the grid and apart). `stripes` tints every other body row.
+    merges: list[TableMerge] | None = Field(default=None, max_length=200)
+    stripes: bool | None = None
+    #: A frame marked as a lane keeps what it holds in a column (`stack`; whiteboard-layouts-more.js).
+    stack: bool | None = None
+    #: **A PDF on the board** (L-whiteboard-2): the uploaded file an image object's page (or a card) opens, written
+    #: `/media/<name>.pdf` so the media sweep (`media_gc.referenced_names`) sees the file is in use.
+    pdf: str | None = Field(default=None, pattern=r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf$")
+    pdf_name: str | None = Field(default=None, max_length=200)
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[
         Annotated[str, StringConstraints(pattern=r"^[A-Za-z][\w .-]{0,39}$")],
         Annotated[str, StringConstraints(max_length=200)],
     ] | None = Field(default=None, max_length=30)
+    #: **Tags** (WHITEBOARD_PLAN structure rows): short words on an item, filtered by in the find bar
+    #: (`wbFmtState.structure`). A sketch's own JSON carries the same list (`_bad_sketch_field`).
+    tags: list[Annotated[str, StringConstraints(min_length=1, max_length=MAX_TAG_CHARS)]] | None = Field(default=None, max_length=MAX_TAGS_PER_ITEM)
+    #: A folded frame (`collapsed`, below, also a map branch's flag) keeps its height from before the fold here, so
+    #: Expand puts it back; the items wholly inside that full box are out of sight while it is folded.
+    fold_h: int | None = Field(default=None, ge=20, le=4000)
     #: The named layer it is on (canvasdepth); the board's settings hold them.
     #: `""` is "on no layer, said on purpose": an item brought back by Undo
     #: says it so it does not land on the current layer (`_on_current_layer`).
@@ -491,6 +601,9 @@ class WhiteboardObjectData(BaseModel):
     bg_alpha: float | None = Field(default=None, ge=0, le=1)
     line_alpha: float | None = Field(default=None, ge=0, le=1)
     border_color: str | None = Field(default=None, max_length=20)
+    #: A picture's border width in pixels (the Format panel's Border; its colour is `border_color`).
+    #: Absent or 0 is no border.
+    border_width: int | None = Field(default=None, ge=0, le=40)
     #: How the text sits in its box, and whether it is shown as rendered
     #: markdown: asked for directly ("text alignment, font size etc", "rendered
     #: md which is togglable in text boxes and sticky notes"). A field the
@@ -509,6 +622,9 @@ class WhiteboardObjectData(BaseModel):
     #: tab; INBOX 1510(a)). Absent is left to right and solid.
     text_dir: str | None = Field(default=None, pattern="^(rtl|vertical)$")
     text_alpha: float | None = Field(default=None, ge=0.1, le=1)
+    #: A soft shadow under the words alone (the Format panel's Text shadow; a shape keeps its own as `label_shadow` in
+    #: its sketch JSON). Stored only when on.
+    text_shadow: bool | None = None
     md: bool | None = None
     #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
     #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the
@@ -628,6 +744,8 @@ class WhiteboardObjectData(BaseModel):
     #: and the words over it. Content, like `note`.
     boundary: str | None = Field(default=None, pattern="^(rounded|dashed|cloud)$")
     boundary_label: str | None = Field(default=None, max_length=80)
+    #: **A frame's binding to a note property** (L-whiteboard-12, `FrameBinds`).
+    binds: FrameBinds | None = None
     #: **A boundary round a lasso'd set** (MINDMAP_PLAN 12.2 item 1): the ids of
     #: the topics it encloses, kept on the first of them beside `boundary`. Absent,
     #: the boundary is the topic's branch, as before.
@@ -983,9 +1101,22 @@ def _require_table_cells(cells: list[list[str]] | None) -> None:
         )
 
 
+def _require_table_merges(data: WhiteboardObjectData) -> None:
+    """Merges lie inside the grid, span more than one cell and never overlap; row heights are one per row."""
+    rows, cols = len(data.cells), len(data.cells[0])
+    if data.row_heights is not None and len(data.row_heights) != rows:
+        raise HTTPException(status_code=422, detail="A table needs one height for each of its rows.")
+    taken: set[tuple[int, int]] = set()
+    for m in data.merges or []:
+        spots = {(r, c) for r in range(m.r, m.r + m.rs) for c in range(m.c, m.c + m.cs)}
+        if m.r + m.rs > rows or m.c + m.cs > cols or len(spots) < 2 or spots & taken:
+            raise HTTPException(status_code=422, detail="A merged cell has to lie inside the table, cover two cells or more and not overlap another.")
+        taken |= spots
+
+
 def _require_object_data(body: WhiteboardObjectBase) -> None:
     if body.kind == "image":
-        if not body.data.url or not MEDIA_URL_RE.match(body.data.url):
+        if not body.data.url or not (MEDIA_URL_RE.match(body.data.url) or PDF_PAGE_URL_RE.match(body.data.url)):
             raise HTTPException(
                 status_code=422,
                 detail="An image has to be one that was uploaded to Tessellate first.",
@@ -1000,6 +1131,7 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
             raise HTTPException(status_code=422, detail="A table needs one width for each of its columns.")
+        _require_table_merges(body.data)
     elif body.kind in MAP_REFERENCE_KINDS and body.data.ref_id is None:
         # A reference node with nothing to reference is the map equivalent of
         # a card pointing at note 9999 (this module's own opening comment): it

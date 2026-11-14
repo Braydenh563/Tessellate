@@ -7,11 +7,12 @@ second; the item stays under the pointer) was a one-off sweep, retired with
 INBOX 1556 to hold the scratchpad cap. These pin the wiring it depended on.
 """
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _section() -> str:

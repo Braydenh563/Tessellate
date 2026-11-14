@@ -1,6 +1,7 @@
 """Align to a key object (INBOX 1313, plan row 3): the key's box is the
 reference and the key stays put."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -9,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

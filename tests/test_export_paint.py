@@ -17,8 +17,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parent.parent
-JS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
+JS = "\n".join(unwrapped(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
 
 
 def _body(name: str) -> str:
@@ -31,7 +33,10 @@ def _body(name: str) -> str:
 
 def test_the_export_reads_the_paint_on_screen() -> None:
     body = _body("wbBuildExportSvg")
-    assert body.count("wbExportPaint(") >= 3, "cards and topics take their paint from the live element"
+    look = _body("wbExportLook")
+    #: L272: the reads moved into `wbExportLook`; the builder asks it.
+    assert look.count("wbExportPaint(") >= 3, "cards and topics take their paint from the live element"
+    assert "look.card(" in body and "look.topic(" in body, "the builder takes that paint from the look"
     assert 'fill="#ffffffee"' not in body and 'fill="#ffffffcc"' not in body, (
         "a hard-coded white fill is the light theme's look, painted into every theme"
     )
@@ -53,7 +58,8 @@ def test_the_background_rect_reads_the_chosen_board_colour() -> None:
     is where the picker's `--wb-board-bg` custom property lands. Kept here so
     a rewrite of the builder cannot go back to a hard-coded background."""
     body = _body("wbBuildExportSvg")
-    assert "getComputedStyle(container).backgroundColor" in body
+    assert "getComputedStyle(container).backgroundColor" in _body("wbExportLook")
+    assert "look.background" in body
     assert re.search(r'fill="\$\{bgColor\}"', body), "the background rect must paint bgColor, not a constant"
 
 

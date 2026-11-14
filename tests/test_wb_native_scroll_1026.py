@@ -8,12 +8,13 @@ scrolls the canvas. Pinned here as source because the behaviour needs a
 browser; the sweep measures it in one.
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def _fn(text: str, name: str) -> str:

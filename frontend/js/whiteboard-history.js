@@ -210,6 +210,29 @@
   //: Put the board, or only what was selected, back as it was at the moment
   //: shown: one request, then the board read afresh inside a recorded gesture,
   //: so the whole restore is one Undo step (`wbRecordGesture`).
+  //: "What changed" (L-whiteboard-11): the sentence about this version against
+  //: now. The guard above refuses writes while the past shows, and this POST
+  //: only reads, so it goes through the real `apiJson`.
+  async function wbHistNarrate() {
+    const moment = wbHistMoment();
+    if (!moment) {
+      toast("This is the board as it is now, so there is nothing to compare it with.");
+      return;
+    }
+    const button = document.getElementById("wb-history-narrate");
+    if (button) button.disabled = true;
+    try {
+      const call = wbHist.realApi || apiJson;
+      const told = await call(`/whiteboard/history/${moment.id}/narrate?board_id=${wbHist.boardId ?? 0}`, { method: "POST" });
+      toast(told.summary);
+      wbAnnounce(told.summary);
+    } catch (error) {
+      toast(error.message || "The change could not be put into words.", true);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   async function wbHistRestore(onlySelection) {
     const moment = wbHistMoment();
     if (!moment || wbHist.shown !== moment.id) return;
@@ -291,6 +314,7 @@
     const button = event.target.closest?.(`#${WB_HIST_BAR} button`);
     if (!button || !wbHist.open || button.disabled) return;
     if (button.id === "wb-history-end") wbCloseHistory();
+    else if (button.id === "wb-history-narrate") wbHistNarrate();
     else if (button.id === "wb-history-restore") wbHistRestore(false);
     else if (button.id === "wb-history-restore-selection") wbHistRestore(true);
   });
@@ -311,6 +335,50 @@
 
   const wbElsewhere = { busy: false, pending: null, timer: 0, tab: Math.random().toString(36).slice(2), channel: null };
 
+  //: **The items a history step names**, as the board's own row keys (`kind:id`), read off any entry shape: a plain step
+  //: (`kind`, `id`, `oldId`), a branch (`rows`), a list (`ids`), the links with it, or a batch of those. A step that names
+  //: nothing readable (a stored call, a note's) gives an empty set and is never dropped.
+  function wbEntryKeys(entry, keys = new Set()) {
+    if (!entry) return keys;
+    if (entry.action === "batch") {
+      for (const inner of entry.entries || []) wbEntryKeys(inner, keys);
+      return keys;
+    }
+    const kind = entry.kind;
+    if (kind) {
+      for (const id of [entry.id, entry.oldId, entry.parentId]) if (id != null) keys.add(`${kind}:${id}`);
+      for (const id of entry.ids || []) keys.add(`${kind}:${id}`);
+      for (const row of entry.rows || []) if (row?.id != null) keys.add(`${kind}:${row.id}`);
+    }
+    for (const link of entry.links || []) if (link?.id != null) keys.add(`sketch:${link.id}`);
+    return keys;
+  }
+
+  //: **An external change dropped only the steps that would clobber it** (LEDGER L274, WHITEBOARD_PLAN decision 17: the event
+  //: log is long memory). Undoing an older step writes that step's whole earlier row back, so one that names an item the
+  //: agent or the other tab has since changed would undo their work with it. Those steps leave both stacks; every other
+  //: step stays, and so does the change itself (`keep`). Returns how many went.
+  function wbDropStaleSteps(before, after, keep) {
+    const touched = new Set();
+    for (const [key, row] of after) {
+      const was = before.get(key);
+      if (!was || was.json !== row.json || was.parent !== row.parent) touched.add(key);
+    }
+    for (const key of before.keys()) if (!after.has(key)) touched.add(key);
+    if (!touched.size) return 0;
+    let dropped = 0;
+    for (const stack of [wbUndoStack, wbRedoStack]) {
+      for (let i = stack.length - 1; i >= 0; i -= 1) {
+        if (stack[i] === keep) continue;
+        const keys = wbEntryKeys(stack[i]);
+        if (![...keys].some((key) => touched.has(key))) continue;
+        stack.splice(i, 1);
+        dropped += 1;
+      }
+    }
+    return dropped;
+  }
+
   //: Reads the open board afresh as one Undo step, labelled by `source`.
   //: Resolves with the number of items the change touched (0 when the board
   //: was already current, or not the board named, or History is showing).
@@ -327,6 +395,7 @@
       const top = wbUndoStack[wbUndoStack.length - 1];
       //: The write came past this tab's `api`, so its read cache never heard.
       clearApiCache();
+      const rowsBefore = wbBoardRows();
       await wbRecordGesture(async () => {
         await fetchWhiteboardState();
       });
@@ -334,8 +403,10 @@
       if (entry && entry !== top) {
         count = entry.action === "batch" ? entry.entries.length : 1;
         entry.label = `${source} changed ${count} ${count === 1 ? "item" : "items"}`;
+        const dropped = wbDropStaleSteps(rowsBefore, wbBoardRows(), entry);
+        wbUpdateUndoRedoButtons();
         renderWhiteboardNow();
-        const said = `${entry.label} on this board. Ctrl+Z takes it back.`;
+        const said = `${entry.label} on this board. Ctrl+Z takes it back.${dropped ? ` ${dropped} earlier ${dropped === 1 ? "step" : "steps"} on the same ${dropped === 1 ? "item" : "items"} left the history.` : ""}`;
         wbAnnounce(said);
         toast(said);
       }
