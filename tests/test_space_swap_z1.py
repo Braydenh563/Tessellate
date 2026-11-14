@@ -93,6 +93,7 @@ EXEMPT = {
     "webEngineInfo": "the web search engine, per notebook",
     "featureAiTools": "feature list, per notebook",
     "quickEditing": "a flag",
+    "backendFieldsDirty": "a flag: the person is typing a model address, so the status poll leaves the field alone",
     "docPyStdlibLoad": "a download state",
     "docVariantFor": "a document's variant key, cleared with the document",
     "docFocusSavedWatch": "a flag",
