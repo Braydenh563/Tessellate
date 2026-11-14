@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Note menu: grouped Atlas, structure, share and export, then archive and bin, eight rows at the top instead of ten (L-world-class-129, decision 64).
 - Dashboard: a Category mix widget draws the category counts as a pie, through the chart recipe's new pie kind; a slice opens its notes (L-world-class-179).
 - Dashboard: the Reminders widget draws its text as inline Markdown, and note rows drop a task's box with its bullet; 0 raw bold, link or box tokens across 35 widgets (L-world-class-178).
 - Shortcuts sheet: the "t then" rows are drawn from the chord tables, so all 17 keys show (10 were typed by hand) (L-world-class-120).

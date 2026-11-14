@@ -95,7 +95,7 @@ HELP_TOPICS: list[dict] = [
             "model, Chat also acts (remind me to..., pin or delete the X note), with Undo. "
             "An answer can end with an offer as a link, or a chart (see Offers and charts in an answer). "
             "A note's "
-            "... menu, under AI actions, has Explain this note: read aloud, then what it links to "
+            "... menu, under Atlas, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
             "(a toggle in Chat) lets the assistant use its tools to search, link, "
             "tag, organise and create; changing or removing asks first, "
@@ -1971,7 +1971,7 @@ HELP_TOPICS.extend(
             "body": (
                 "Mind maps live in the Library, under Boards & maps; New's arrow, then Mind "
                 "map, opens Untitled map N with its central topic ready to type over "
-                "(what you type names the map too). A note's ⋮ menu, under AI actions, Make a mind map, "
+                "(what you type names the map too). A note's ⋮ menu, under Atlas, Make a mind map, "
                 "builds one from that note: its title in the centre, its headings and "
                 "lists as branches. In Chat, an answer's Mind map this and the chat menu's "
                 "Make a mind map of this chat do the same for the answer or the whole "

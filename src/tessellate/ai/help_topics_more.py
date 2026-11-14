@@ -434,7 +434,7 @@ MORE_TOPICS: list[dict] = [
             "opens a map you type into (Tab adds a child, Enter a sibling), and its "
             "templates, Trip plan among them, start you with branches in place. "
             "Insert, Diagram, Mermaid diagram on a board takes a few lines of text and draws a "
-            "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under AI actions, "
+            "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under Atlas, "
             "Make a mind map, builds a map from that note's headings and lists. "
             "The Writing room's diagram needs a model for anything beyond a rule-made "
             "flowchart, timeline or mind map. "

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10882, test files 2780, tests 22303, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10882, test files 2781, tests 22306, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -5128,11 +5128,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `fillEntryMenu` | frontend/js/entry-menu.js:8 |
-| `generateEntryTitle` | frontend/js/entry-menu.js:501 |
-| `inlineActionIs` | frontend/js/entry-menu.js:541 |
-| `removeEntryTitle` | frontend/js/entry-menu.js:526 |
-| `toggleEntryPrivacy` | frontend/js/entry-menu.js:458 |
-| `translateNoteInDesk` | frontend/js/entry-menu.js:551 |
+| `generateEntryTitle` | frontend/js/entry-menu.js:514 |
+| `inlineActionIs` | frontend/js/entry-menu.js:554 |
+| `removeEntryTitle` | frontend/js/entry-menu.js:539 |
+| `toggleEntryPrivacy` | frontend/js/entry-menu.js:471 |
+| `translateNoteInDesk` | frontend/js/entry-menu.js:564 |
 
 ### frontend/js/extra-notice.js (13)
 
@@ -28038,7 +28038,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22303)
+## Tests (22306)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29794,6 +29794,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_note_link_chips.py | 2 |
 | tests/test_note_lock_toggle_1110.py | 3 |
 | tests/test_note_making.py | 1 |
+| tests/test_note_menu_groups_129.py | 3 |
 | tests/test_note_meta_line.py | 5 |
 | tests/test_note_offer_calendar.py | 3 |
 | tests/test_note_offers.py | 10 |

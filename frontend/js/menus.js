@@ -1357,7 +1357,7 @@ function buildMenuItemButton(item) {
   return button;
 }
 
-// At most one grouped flyout (AI actions / Connect / Add) is ever open at
+// At most one grouped flyout (Atlas / Connect / Add / Share and export) is ever open at
 // once, on any note card: `openActionMenu` already guarantees at most one
 // top-level kebab is open on the page, and only one of its own groups can
 // be expanded at a time. A single reference here is enough to close a
@@ -1371,7 +1371,7 @@ let openGroupSubmenu = null;
 //: group then opens as a level of its own in the same menu, with a back row.
 const SUBMENU_STACK = "(max-width: 819.98px), (hover: none)";
 
-// A grouped trigger ("AI actions ›") that opens a side flyout of its own items,
+// A grouped trigger ("Atlas ›") that opens a side flyout of its own items,
 // to cut a 15-item flat list down to something scannable. Hover (150 ms), a
 // click, Right arrow or Enter opens it; Left arrow or Escape closes it back to
 // the row. Where `SUBMENU_STACK` matches it is a nested level instead (the
