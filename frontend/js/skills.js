@@ -157,6 +157,9 @@ function syncSkillVerifyRow() {
 // the values it asked for, not a prompt assembled here. The mode a skill runs
 // in is settled in `startSkill`, which both entry points go through.
 function runSkill(skill) {
+  //: The menu greys these rows, but the dashboard chip, the Library card and a
+  //: nudge reach here too (L-chat-184), so the gate is on the run itself.
+  if (aiIsOff() && !skill.composer) return toast("Unavailable while no model is connected: this skill writes in its own words. Connect one in Settings, Models.", "info");
   if ((skill.inputs || []).length) {
     askSkillInputs(skill, (values) => startSkill(skill, values));
     return;

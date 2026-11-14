@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11346, test files 2961, tests 23131, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11346, test files 2962, tests 23136, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -628,54 +628,54 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
-| `askSkillInputs` | frontend/js/skills.js:217 |
-| `batchArchive` | frontend/js/skills.js:1096 |
-| `batchDelete` | frontend/js/skills.js:1139 |
-| `batchEach` | frontend/js/skills.js:1063 |
-| `batchExport` | frontend/js/skills.js:1133 |
-| `batchFavourite` | frontend/js/skills.js:1090 |
-| `batchMove` | frontend/js/skills.js:1041 |
-| `batchNoun` | frontend/js/skills.js:1086 |
-| `batchPublish` | frontend/js/skills.js:1107 |
-| `batchPut` | frontend/js/skills.js:1082 |
-| `batchSelection` | frontend/js/skills.js:1035 |
-| `batchTag` | frontend/js/skills.js:1055 |
-| `blobToBase64` | frontend/js/skills.js:841 |
-| `buildSkillsPanel` | frontend/js/skills.js:428 |
+| `askSkillInputs` | frontend/js/skills.js:220 |
+| `batchArchive` | frontend/js/skills.js:1099 |
+| `batchDelete` | frontend/js/skills.js:1142 |
+| `batchEach` | frontend/js/skills.js:1066 |
+| `batchExport` | frontend/js/skills.js:1136 |
+| `batchFavourite` | frontend/js/skills.js:1093 |
+| `batchMove` | frontend/js/skills.js:1044 |
+| `batchNoun` | frontend/js/skills.js:1089 |
+| `batchPublish` | frontend/js/skills.js:1110 |
+| `batchPut` | frontend/js/skills.js:1085 |
+| `batchSelection` | frontend/js/skills.js:1038 |
+| `batchTag` | frontend/js/skills.js:1058 |
+| `blobToBase64` | frontend/js/skills.js:844 |
+| `buildSkillsPanel` | frontend/js/skills.js:431 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:790 |
-| `downloadBlob` | frontend/js/skills.js:878 |
-| `downloadFromApi` | frontend/js/skills.js:857 |
-| `downloadJson` | frontend/js/skills.js:756 |
-| `enterSelectMode` | frontend/js/skills.js:1005 |
-| `exitSelectMode` | frontend/js/skills.js:1023 |
-| `fillBatchCategories` | frontend/js/skills.js:978 |
-| `fillBatchMore` | frontend/js/skills.js:1113 |
-| `fillSkillSelect` | frontend/js/skills.js:373 |
-| `healthFacts` | frontend/js/skills.js:780 |
+| `desktopShell` | frontend/js/skills.js:793 |
+| `downloadBlob` | frontend/js/skills.js:881 |
+| `downloadFromApi` | frontend/js/skills.js:860 |
+| `downloadJson` | frontend/js/skills.js:759 |
+| `enterSelectMode` | frontend/js/skills.js:1008 |
+| `exitSelectMode` | frontend/js/skills.js:1026 |
+| `fillBatchCategories` | frontend/js/skills.js:981 |
+| `fillBatchMore` | frontend/js/skills.js:1116 |
+| `fillSkillSelect` | frontend/js/skills.js:376 |
+| `healthFacts` | frontend/js/skills.js:783 |
 | `inputsToText` | frontend/js/skills.js:45 |
-| `loadChatSkills` | frontend/js/skills.js:299 |
+| `loadChatSkills` | frontend/js/skills.js:302 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:615 |
-| `markOtherDevice` | frontend/js/skills.js:806 |
-| `onOtherDevice` | frontend/js/skills.js:823 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:831 |
-| `renderChatNudge` | frontend/js/skills.js:658 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:618 |
+| `markOtherDevice` | frontend/js/skills.js:809 |
+| `onOtherDevice` | frontend/js/skills.js:826 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:834 |
+| `renderChatNudge` | frontend/js/skills.js:661 |
 | `renderSkillToolPicker` | frontend/js/skills.js:84 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `resetChatNudge` | frontend/js/skills.js:726 |
+| `resetChatNudge` | frontend/js/skills.js:729 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:894 |
-| `saveSkillList` | frontend/js/skills.js:744 |
+| `saveFile` | frontend/js/skills.js:897 |
+| `saveSkillList` | frontend/js/skills.js:747 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:625 |
-| `skillPacePill` | frontend/js/skills.js:513 |
-| `skillSummary` | frontend/js/skills.js:731 |
+| `skillMatchingDraft` | frontend/js/skills.js:628 |
+| `skillPacePill` | frontend/js/skills.js:516 |
+| `skillSummary` | frontend/js/skills.js:734 |
 | `startEditingSkill` | frontend/js/skills.js:51 |
-| `startSkill` | frontend/js/skills.js:167 |
+| `startSkill` | frontend/js/skills.js:170 |
 | `stopEditingSkill` | frontend/js/skills.js:69 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:954 |
+| `updateBatchCount` | frontend/js/skills.js:957 |
 
 ### frontend/js/shell-reminders.js (50)
 
@@ -2814,12 +2814,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chatGhostAccept` | frontend/js/chat-ghost.js:71 |
-| `chatGhostHide` | frontend/js/chat-ghost.js:40 |
-| `chatGhostPlace` | frontend/js/chat-ghost.js:45 |
+| `chatGhostAccept` | frontend/js/chat-ghost.js:75 |
+| `chatGhostHide` | frontend/js/chat-ghost.js:44 |
+| `chatGhostPlace` | frontend/js/chat-ghost.js:49 |
 | `chatGhostPool` | frontend/js/chat-ghost.js:9 |
 | `chatGhostRest` | frontend/js/chat-ghost.js:25 |
-| `openChatGhost` | frontend/js/chat-ghost.js:83 |
+| `openChatGhost` | frontend/js/chat-ghost.js:87 |
 
 ### frontend/js/chat-private.js (5)
 
@@ -28796,7 +28796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23131)
+## Tests (23136)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31241,6 +31241,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_skill_composer.py | 11 |
 | tests/test_skill_evals.py | 3 |
 | tests/test_skill_fixtures.py | 11 |
+| tests/test_skill_gating_lchat184.py | 5 |
 | tests/test_skill_normalise_paths.py | 6 |
 | tests/test_skill_run_undo.py | 5 |
 | tests/test_skill_runner_paths.py | 3 |
