@@ -85,8 +85,8 @@ def _by_words(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
 MODEL_SECONDS = 45.0
 
 
-def bounded_chat(label: str, messages: list[dict]) -> dict:
-    """The utility model's reply within `MODEL_SECONDS`; raises TimeoutError
+def bounded_chat(label: str, messages: list[dict], seconds: float | None = None) -> dict:
+    """The utility model's reply within `seconds` (default `MODEL_SECONDS`); raises TimeoutError
     past it (the caller then falls back to the words rule).
 
     `utility_model()` is not local only: the provider can be an
@@ -100,7 +100,7 @@ def bounded_chat(label: str, messages: list[dict]) -> dict:
         with egress.purpose(label):
             return provider.chat(model, messages)
 
-    return jobs.future("board-ai", call).result(timeout=MODEL_SECONDS)
+    return jobs.future("board-ai", call).result(timeout=seconds or MODEL_SECONDS)
 
 
 def _ask_model(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:

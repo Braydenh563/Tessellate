@@ -711,7 +711,7 @@
     box.textContent = "Reading the versions…";
     try {
       const got = await apiJson(`/documents/${currentDoc.id}/revisions/summary`, { method: "POST", readOnly: true });
-      box.textContent = got.summary;
+      box.textContent = got.reason === "timeout" ? `The model took too long, so these are the counts. ${got.summary}` : got.summary;
       box.title = got.source === "model" ? "Written by the local model from the changed lines" : "Counted from the changed lines; no model wrote this";
     } catch (error) {
       box.textContent = error.message || "Couldn't read the history.";

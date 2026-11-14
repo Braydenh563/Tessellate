@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Streams: the document check (Check with AI) and the weekly digest now stop the model when the tab closes or Stop is pressed, like the drafts and Guide (L-documents-96, async `stop_when_gone`); Format declines a result over the 500,000-character save limit and says so, leaving the text as written.
+- History summary: the slow local model gets 150 s for this one call (other callers keep 45 s), and a timeout says "The model took too long, so these are the counts." (L-documents-97).
 - Chat: the file picker offers Stylus files (.styl), which import already reads (L-documents-76 added the type on one side only).
 - Documents list: the page card's cover is found by a linear scan instead of a pattern that slowed to quadratic time on a long run of "![" (CodeQL 2305); a test counts the characters scanned.
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.

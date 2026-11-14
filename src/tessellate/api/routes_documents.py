@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
+from tessellate.api.chat_agent import stop_when_gone
 from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
@@ -1237,8 +1238,9 @@ def ai_check(
         ):
             yield json.dumps(event) + "\n"
 
+    stop = activity.StopEvent()
     return StreamingResponse(
-        activity.tracked_stream("generation", "Reviewing a document", lines(), stopped_line=activity.STOPPED_DONE),
+        stop_when_gone(stop, activity.tracked_stream("generation", "Reviewing a document", lines(), stop_event=stop, stopped_line=activity.STOPPED_DONE)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )

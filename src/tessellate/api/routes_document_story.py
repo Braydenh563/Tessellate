@@ -36,6 +36,8 @@ STEP_LINES = 8
 LINE_CHARS = 140
 #: The whole prompt's share of changed text; later steps give way first.
 BUDGET_CHARS = 5000
+#: A cold first call to the 1.5B local model passed bounded_chat's 45 s (L-documents-97); only this call waits longer.
+SUMMARY_SECONDS = 150.0
 SUMMARY_CHARS = 900
 _HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$")
 
@@ -132,6 +134,7 @@ def _ask_model(steps: list[dict]) -> str:
     reply = bounded_chat(
         "Summarising a document's history",
         [{"role": "system", "content": system}, {"role": "user", "content": _prompt(steps)}],
+        seconds=SUMMARY_SECONDS,
     )
     return str(reply.get("content") or "").strip()[:SUMMARY_CHARS]
 
@@ -160,6 +163,8 @@ def revisions_summary(document_id: int, db: Session = Depends(get_session)) -> d
         return {**out, "summary": plain, "source": "words", "reason": "offline"}
     try:
         text = _ask_model(changed)
+    except TimeoutError:
+        return {**out, "summary": plain, "source": "words", "reason": "timeout"}
     except Exception:
         logging.getLogger("tessellate.documents").warning("History summary: the model failed", exc_info=True)
         return {**out, "summary": plain, "source": "words", "reason": "failed"}
