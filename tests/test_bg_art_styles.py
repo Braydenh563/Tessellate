@@ -183,6 +183,8 @@ def test_the_art_pauses_when_hidden_unfocused_or_covered():
     text = BG_ART.read_text(encoding="utf-8")
     assert 'document.addEventListener("visibilitychange"' in text
     assert 'window.addEventListener("blur"' in text
+    # L-world-class-111: unfocused for five seconds, not thirty.
+    assert "const BG_ART_BLUR_MS = 5000;" in text and "}, BG_ART_BLUR_MS);" in text
     assert "function bgArtCovered()" in text
     apply = text[text.index("function bgArtApplyPause()") :]
     apply = apply[: apply.index("\n}\n")]

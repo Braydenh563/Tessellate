@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Background art pauses 5 seconds after the window loses focus, not 30 (L-world-class-111).
 - Companion: the 20-second calm pause sets its class on each Atlas figure instead of the whole page, which halves the at-rest restyle (L-world-class-126; graph and companion at rest measured 0 long tasks in 3 s at 1x).
 - Graph: Gravity and Spread now shape the Tree and Radial layouts, and Spread the Arc; Link force and the other layouts stay dimmed with their reason (L-world-class-175).
 - Note menu: grouped Atlas, structure, share and export, then archive and bin, eight rows at the top instead of ten (L-world-class-129, decision 64).
