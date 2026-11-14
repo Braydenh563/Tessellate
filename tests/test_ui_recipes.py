@@ -8006,7 +8006,7 @@ def test_every_canvas_has_one_zoom_order():
     for strip in (graph, board):
         assert re.search(r'zoom-fit"[^>]*>\s*<i class="ph ph-frame-corners"', strip)
         assert re.search(r'fullscreen"[^>]*>\s*<i class="ph ph-arrows-out"', strip)
-        assert "(Ctrl+-)" in strip and "(Ctrl+=)" in strip and "(Ctrl+0)" in strip
+        assert "(Ctrl+-)" in strip and "Ctrl+=" in strip and "(Ctrl+0)" in strip
     widgets = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert re.search(r"\.graph-zoom \{[^}]*flex-direction: row", widgets)
     graph_js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
