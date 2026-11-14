@@ -3046,3 +3046,17 @@ header#top-bar[data-scrolled="1"],
     );
   }
 }
+
+/* Ask below 600px (INBOX 1843, L228); its answer head and records row are in ask-compose-lazy.css. */
+@media (max-width: 599.98px) {
+  .ask-composer .ask-controls {
+    flex: 1 1 100%;
+  }
+  .ask-composer .ask-controls .select-shell {
+    flex: 1 1 auto;
+    min-width: 7.5rem;
+  }
+  .ask-composer .ask-controls #ask-btn {
+    flex: 1 1 100%;
+  }
+}

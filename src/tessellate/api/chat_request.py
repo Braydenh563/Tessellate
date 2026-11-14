@@ -500,13 +500,8 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     if composer_digest_sentences.about_this(body.question):
         if _apply_open_this(session, body):
             return
-    elif body.open_note_id and composer_open.kind(body.question):
-        #: "What's left to do?" with a note open is about that note (the
-        #: 22-10 bug doc: Ask gave one reply for every note), unless the
-        #: question names something the note does not hold.
-        opened = _attached_notes(session, [body.open_note_id])
-        if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
-            body.note_ids = [body.open_note_id]
+    elif body.open_note_id and (composer_open.kind(body.question) or composer_open.subjectless(body.question)):
+        _apply_open_note_ask(session, body)
     else:
         names = categories_repo.names(session)
         named = composer_digest_sentences.named_category(body.question, names)
@@ -514,6 +509,23 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = _category_note_ids(session, named)
     if body.note_ids:
         body.attached_notes_only = True
+
+
+def _apply_open_note_ask(session: Session, body: ChatRequest) -> None:
+    """"What's left to do?" with a note open is about that note (the 22-10 bug
+    doc: Ask gave one reply for every note), unless the question names
+    something the note does not hold. A question with no subject at all ("what
+    should I know") is read as "summarise this" on the first turn (L228)."""
+    opened = _attached_notes(session, [body.open_note_id])
+    if not opened:
+        return
+    if composer_open.kind(body.question):
+        if composer_open.reads_note(body.question, {"content": opened[0].content}):
+            body.note_ids = [body.open_note_id]
+    else:
+        body.note_ids = [body.open_note_id]
+        if not body.history:
+            body.question, body.raw_question = "summarise this", None
 
 
 def _apply_open_this(session: Session, body: ChatRequest) -> bool:
