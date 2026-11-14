@@ -18,7 +18,11 @@ def surface_word(question: str) -> str:
         return ""
     named = {w[:5] for w in re.findall(r"[a-z]{3,}", f"{topics[0].get('id', '')} {help_chat.topic_title(topics[0])}".lower())}
     #: Only the first word after the frame names the part: "the zorblax code" is a thing in the notes, not Code files.
-    first = next((w for w in re.findall(r"[a-z]{3,}", question[framed.end():].lower()) if w not in _FILLER), "")
+    words = re.findall(r"[a-z]{3,}", question[framed.end():].lower())
+    first = next((w for w in words if w not in _FILLER), "")
+    #: "the table number" asks a note for its number (composer_property), not the Table feature of the whiteboard.
+    if first and words[words.index(first) + 1 : words.index(first) + 2] == ["number"]:
+        return ""
     return first if first[:5] in named else ""
 
 
