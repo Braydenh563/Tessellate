@@ -1209,7 +1209,7 @@
         here: () => meetingTake.id === saved.id && !$("meeting-overlay").classList.contains("hidden") && $("meeting-card").dataset.state === "transcribing",
         done: async (run) => {
           const body = await apiJson(`/recordings/${saved.id}/transcript`).catch(() => ({ segments: [] }));
-          const text = body.segments.map((seg) => seg.text).join(" ").trim();
+          const text = (body.lines || body.segments.map((seg) => seg.text).join(" ")).trim(); //: timed lines, so the note keeps when each thing was said (L578)
           if (!text) {
             setMeetingState("saved");
             return meetingSay(`Nothing was heard in that recording. The ${length} of audio is kept in Recordings.`);
@@ -2264,7 +2264,7 @@
       await startRecordingTranscription(rec, {
         done: async () => {
           const body = await apiJson(`/recordings/${rec.id}/transcript`).catch(() => ({ segments: [] }));
-          const text = body.segments.map((seg) => seg.text).join(" ").trim();
+          const text = (body.lines || body.segments.map((seg) => seg.text).join(" ")).trim(); //: timed lines, so the note keeps when each thing was said (L578)
           if (!text) return toast(`Nothing was heard in “${rec.title || "Recording"}”.`, "info");
           const made = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: `${rec.title || "Recording"}\n\n${text}`, defer_filing: true }) });
           const binned = meetingBinPair("note", made.id);

@@ -455,7 +455,7 @@ def read_transcript(recording_id: int, session: Session = Depends(get_session)) 
     """The transcript's lines with their times, each one a moment the player
     seeks to."""
     _row, segments = _segments_of(session, recording_id)
-    return {"segments": segments, "speakers": any(seg["speaker"] for seg in segments)}
+    return {"segments": segments, "speakers": any(seg["speaker"] for seg in segments), "lines": transcript.to_lines(segments)}
 
 
 @router.post("/recordings/{recording_id}/speakers")
