@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11368, test files 2971, tests 23169, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11368, test files 2972, tests 23176, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -14548,7 +14548,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_TurnPlan` | src/tessellate/ai/agent_turn.py:378 |
 | `_TurnState` | src/tessellate/ai/agent_turn.py:730 |
-| `_cleared_page` | src/tessellate/ai/agent_turn.py:1190 |
+| `_cleared_page` | src/tessellate/ai/agent_turn.py:1194 |
 | `_clip_strings` | src/tessellate/ai/agent_turn.py:808 |
 | `_composition_tokens` | src/tessellate/ai/agent_turn.py:514 |
 | `_copies_what_was_read` | src/tessellate/ai/agent_turn.py:309 |
@@ -14575,11 +14575,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_tool_event` | src/tessellate/ai/agent_turn.py:1036 |
 | `_tool_events` | src/tessellate/ai/agent_turn.py:1106 |
 | `_whole_card` | src/tessellate/ai/agent_turn.py:1130 |
-| `all_it_names` | src/tessellate/ai/agent_turn.py:1164 |
+| `all_it_names` | src/tessellate/ai/agent_turn.py:1168 |
 | `build_agent_messages` | src/tessellate/ai/agent_turn.py:156 |
-| `claimed_act_events` | src/tessellate/ai/agent_turn.py:1149 |
 | `from_outside` | src/tessellate/ai/agent_turn.py:1124 |
 | `recovery_for` | src/tessellate/ai/agent_turn.py:239 |
+| `unrun_act_events` | src/tessellate/ai/agent_turn.py:1149 |
 
 ### src/tessellate/ai/anchor_acts.py (3)
 
@@ -28828,7 +28828,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23169)
+## Tests (23176)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28842,7 +28842,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 19 |
 | tests/test_act_card_reopen.py | 24 |
-| tests/test_act_claim_guard_1114.py | 4 |
+| tests/test_act_claim_guard_1114.py | 6 |
 | tests/test_act_phrasings_1030.py | 2 |
 | tests/test_activity.py | 10 |
 | tests/test_activity_drag_lchat13.py | 6 |
@@ -29184,6 +29184,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_maps_l112.py | 2 |
 | tests/test_chat_measures_l219.py | 3 |
 | tests/test_chat_metadata.py | 10 |
+| tests/test_chat_model_evals.py | 5 |
 | tests/test_chat_new_chat_row.py | 2 |
 | tests/test_chat_no_model_tools_l110.py | 2 |
 | tests/test_chat_no_model_utilities_l230.py | 2 |
