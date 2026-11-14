@@ -98,6 +98,8 @@ EXPECTED = {
         '(body && body.message) || "No other wordings came back for that one."',
         '"Nothing to discuss yet."',
         '"Nothing to check yet."',
+    ],
+    'documents-dictionary.js': [
         '"One word at a time: letters, with an apostrophe or hyphen inside."',
         '"No words found in that file. One word per line."',
         '"The dictionary is empty, so there is nothing to export."',
@@ -254,6 +256,8 @@ FAULTS = {
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
