@@ -191,6 +191,22 @@ jobs:
         working-directory: tests-e2e
         run: npx playwright test specs/budgets.spec.js --project=notebook --workers=1
 
+      # H9 (WORLD_CLASS_PLAN): what the app costs to start, from a real
+      # browser on a fresh notebook (scripts parsed, KB over the wire, repeated
+      # fetches, page errors, first paint). Fails on a page error or a crash;
+      # the numbers go to the job summary, they are not yet a threshold
+      # (tests/test_boot_budget.py holds the byte caps).
+      - name: Run the boot sweep (boottime.js)
+        run: |
+          mkdir -p "$RUNNER_TEMP/boot-data"
+          PYTHONPATH=src TESSELLATE_NO_AUTO_INSTALL=1 TESSELLATE_DATA_DIR="$RUNNER_TEMP/boot-data" \
+            nohup python -m uvicorn tessellate.api.app:create_app --factory --port 8791 > "$RUNNER_TEMP/boot-server.log" 2>&1 &
+          for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8791/ && break; sleep 1; done
+          BASE=http://127.0.0.1:8791 SCRATCH="$RUNNER_TEMP" FIRST_PAINT_RUNS=3 NODE_PATH="$PWD/tests-e2e/node_modules" \
+            node scratchpad/ui-sweeps/boottime.js | tee "$RUNNER_TEMP/boottime.txt"
+          { echo '### boottime.js'; echo '```'; cat "$RUNNER_TEMP/boottime.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          grep -Eq '^pageerrors +0 ' "$RUNNER_TEMP/boottime.txt"
+
       - name: Upload the report on failure
         if: failure()
         uses: actions/upload-artifact@v7

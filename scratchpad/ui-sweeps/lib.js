@@ -1,4 +1,7 @@
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+// The dev box has Playwright globally; CI (the e2e job's boot sweep) has it in tests-e2e/node_modules.
+let chromium;
+try { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')); }
+catch (e) { ({ chromium } = require('@playwright/test')); }
 const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
 const PW = 'testpassword123';

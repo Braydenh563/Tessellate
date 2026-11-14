@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: the e2e job runs scratchpad/ui-sweeps/boottime.js on a fresh notebook and fails on a page error; the numbers go to the job summary (L-world-class-92).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
 - Undo: every preference written outside Settings (dock switches, saved lists, dictionary words) now reaches the one history and Ctrl+Z; 31 of 287 undo-coverage exemptions removed (L-world-class-31).
