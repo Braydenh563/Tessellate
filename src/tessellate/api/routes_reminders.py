@@ -6,6 +6,7 @@ nothing runs in the cloud.
 
 from __future__ import annotations
 
+import threading
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
@@ -824,16 +825,27 @@ def reminder_outcome(
     through `update_entry`, so a private note needs its space unlocked and
     the edit is in the note's history like any other."""
     from tessellate.api import routes_entries
+    from tessellate.api.edit_conflicts import content_hash
     from tessellate.api.schemas import EntryUpdate
 
     reminder = _writable(session, reminder_id)
-    entry = reminder_repo.its_note(session, reminder)
-    if entry is None or entry.is_deleted or entry.is_board:
-        raise HTTPException(status_code=400, detail="This reminder is not about a note.")
-    content = readable_content(entry).rstrip()
     line = f"Outcome of {' '.join(reminder.text.split())}: {body.text}"
-    routes_entries.update_entry(entry.id, EntryUpdate(content=f"{content}\n\n{line}"), response, session, None)
+    #: Read and written under one lock, from a fresh read (review): two
+    #: outcomes at once both read the old text and the second save dropped
+    #: the first's line. `base_hash` also refuses an ordinary edit that lands
+    #: between the read and the write, rather than overwriting it.
+    with _outcome_lock:
+        session.expire_all()
+        entry = reminder_repo.its_note(session, reminder)
+        if entry is None or entry.is_deleted or entry.is_board:
+            raise HTTPException(status_code=400, detail="This reminder is not about a note.")
+        content = readable_content(entry).rstrip()
+        update = EntryUpdate(content=f"{content}\n\n{line}", base_hash=content_hash(readable_content(entry)))
+        routes_entries.update_entry(entry.id, update, response, session, None)
     return {"entry_id": entry.id, "line": line}
+
+
+_outcome_lock = threading.Lock()
 
 
 @router.get("/{reminder_id}/brief")
