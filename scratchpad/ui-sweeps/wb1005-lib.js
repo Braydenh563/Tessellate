@@ -11,7 +11,7 @@ async function openBoard(opts = {}) {
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(700);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function", null, { timeout: 30000 });
   // The library's scripts load lazily; on a loaded machine 1.2 s is not always enough.
   await page.waitForFunction(() => typeof initWhiteboard === "function", null, { timeout: Number(process.env.BOOT_MS || 30000) });
   await page.evaluate(async () => {

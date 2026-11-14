@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 90 | 36 | 0 | 18 | 256 |
+| world-class | 130 | 88 | 36 | 0 | 18 | 254 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 482 | 107 | 2 | 129 | 1142 |
+| all | 553 | 480 | 107 | 2 | 129 | 1140 |
 
 ## graph
 
@@ -475,8 +475,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
-- [ ] **L549** `world-class` open, S: Replace fixed 1.2 s whiteboard bundle wait in sweeps. From OPEN.md:3478. Evidence: Script hygiene; only op5-1005.js and mapviewmenu.js wait for the function.
-- [ ] **L550** `world-class` open, S: pickers.js throws pickNotesDialog not defined; segbars.js reads #graph-layout as seg. From OPEN.md:3530. Evidence: pickers.js, segbars.js still in scratchpad/ui-sweeps; script repair not recorded.
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L558** `world-class` open, M: Voice: move failure toasts in the 112 other JS files holding their own strings. From OPEN.md:1259. Evidence: Row left: surface by surface (decision 55); only library.js, whiteboard.js, whiteboard-map.js moved.
