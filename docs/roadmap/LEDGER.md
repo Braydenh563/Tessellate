@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 12 | 1 | 0 | 1 | 13 |
+| documents | 0 | 11 | 1 | 0 | 1 | 12 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 528 | 125 | 2 | 153 | 1055 |
+| all | 402 | 527 | 125 | 2 | 153 | 1054 |
 
 ## graph
 
@@ -294,9 +294,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-104** `documents` open, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile
 - [ ] **L-documents-106** `documents` open, M: L-documents-83 remainder: 1440 cold open still about 1,145 ms median; the warm file overlaps the fetches, what is left is the bundle's script run (documents.js, library.js 50 to 70 ms each) and CodeMirror's 140 ms evaluate; next: one served concatenation of the bundle, and a quiet box to measure. From agent cold83-1410. Evidence: frontend/js/documents-warm.js; waterfall after: bundle arrives about 330 ms, its 35 scripts run until about 600 ms (main thread, load 4 to 12), editor then mounts about 1,100 ms
 - [ ] **L-documents-107** `documents` open, M: Split what remains of documents.js (10,133 lines) further, and win back boot gzip: the base is 250,689 against the 250,450 cap and L335's twelve bundle entries add 73 bytes. From L335. Evidence: documents.js still 10,133 lines after the L335 split; the remaining core (open, list, state, toolbar wiring) has no clean section seam left without moving shared lets
-- [ ] **L-documents-110** `documents` open, M: Slim LanguageTool's language folders to English plus what its language identifier needs, or measure the disk claim. From agent py23 2026-11-14. Evidence: extras/languagetool is 392 MB on disk vs ~190 MB claimed; org/ is all languages
-- [ ] **L-documents-111** `documents` open, M: Drive a document's grammar pass in the page with LanguageTool installed (merge with Harper, first-check wait). From agent py23 2026-11-14. Evidence: POST /grammar/languagetool checked at route level (7.0 s first, 175 ms next); the page's merge with Harper not driven in a browser
 - [ ] **L-documents-112** `documents` open, S: Remeasure adding a block to a 40-block flowchart on a quiet box; under 50 ms per task or split the work. From L893 sweep 2026-11-14. Evidence: dgm40.js at 390: adding a block to a 40-block flowchart gave long tasks of 114 and 115 ms and a 483 ms repaint, on a box running four agents; 12 blocks gave 50 and 73 ms
+- [ ] **L-documents-113** `documents` open, S: Draw Harper's findings first in the note editor and whiteboard grammar passes too, as the document does. From L-documents-111 agent 2026-11-14. Evidence: documents-prose.js now draws Harper's underlines first and lets LanguageTool join (12.3 s cold start measured); the note editor and whiteboard callers of docGrammarAsk still wait for LanguageTool
 
 ## mindmap
 
