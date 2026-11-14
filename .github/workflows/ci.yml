@@ -211,7 +211,7 @@ jobs:
     # The ui sweeps (scratchpad/ui-sweeps) ran only through a local
     # `gate.sh --sweeps`; the steady ones and deepflows.js now run on every
     # push against fresh notebooks (L-general-20). The list is in
-    # scripts/ci_sweeps.sh; a repaired sweep joins it (L-general-47).
+    # scripts/ci_sweeps.sh; a repaired sweep joins it (L-ui-modernisation-75).
     name: UI sweeps (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 30

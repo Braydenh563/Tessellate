@@ -102,7 +102,7 @@ def test_the_two_totals_say_what_each_covers():
 
 
 def test_files_nothing_uses_are_counted_in_about_and_deleted_only_when_asked():
-    # L-general-46: the background pass never deletes uploads (a gallery-only picture is wanted).
+    # L-ui-modernisation-74: the background pass never deletes uploads (a gallery-only picture is wanted).
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]

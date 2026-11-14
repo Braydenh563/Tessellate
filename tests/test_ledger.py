@@ -113,3 +113,22 @@ def test_the_counts_table_has_one_row_per_plan():
     """A union merge once left 38 `| all |` rows, which flooded orient.sh past its 40 lines."""
     names = [m.group(1) for m in ledger.COUNT.finditer(TEXT)]
     assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
+
+
+def test_a_plan_with_nothing_open_counts_zero_in_its_plan_file():
+    """The "Plan file open" column is carried by hand; graph kept 15 after its plan closed.
+
+    A plan with no LEDGER rows and no open-work line in its plan file has
+    nothing open there, so its count must be 0.
+    """
+    import open_scan
+
+    counts = ledger.table(TEXT)
+    stale = {}
+    for plan, owned in open_scan.OWNERS.items():
+        plan_file = owned[0]
+        if any(p == plan for _, p, _ in ledger.rows(TEXT)) or open_scan.hits([plan_file]):
+            continue
+        if counts[plan][0]:
+            stale[plan] = counts[plan][0]
+    assert not stale, stale

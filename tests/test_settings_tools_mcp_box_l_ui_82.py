@@ -1,4 +1,4 @@
-"""Source text: L-general-54, deepflows settings: "Let that app add and change
+"""Source text: L-ui-modernisation-82, deepflows settings: "Let that app add and change
 notes" went back to off after a reload. Measured: `/preferences` said
 `mcp_writes_enabled: true` and the box in Tools read false, because only
 `renderAutonomousSettings` (Background tasks, Web search) filled it. Tools now

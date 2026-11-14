@@ -1,4 +1,4 @@
-"""Source text: the project site (docs/index.html) is static marketing copy, so its claims can only be compared, as text, with the code and README that make them true (L-general-44)."""
+"""Source text: the project site (docs/index.html) is static marketing copy, so its claims can only be compared, as text, with the code and README that make them true (L-ui-modernisation-72)."""
 
 from __future__ import annotations
 

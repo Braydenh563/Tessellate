@@ -53,7 +53,7 @@ def test_the_row_at_rest_is_quiet_text_with_no_field_look():
 
 
 def test_the_row_controls_are_pinned_to_the_body_control_height():
-    """Unslop 24: the row was 36.4 and the picture button 28. L-general-52 put
+    """Unslop 24: the row was 36.4 and the picture button 28. L-ui-modernisation-80 put
     the 44px touch floor under the body height, so the pin is the larger of the two."""
     rule = _rule(CSS, ".capture-bar-row .capture-bar-input,\n.capture-bar-row .capture-bar-icon")
     assert "height: max(var(--control-h-body), var(--target-min))" in rule

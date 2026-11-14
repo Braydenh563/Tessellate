@@ -121,7 +121,7 @@ const DASH_WIDGETS = {
   //: Brief 89 (statistics row 2): Screen Time's weekly report, drawn by
   //: statistics.js, which also holds the page it opens.
   week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week.", render: (body) => renderWeekWidget(body) },
-  //: L-general-40: the share of each category as a donut, beside the Categories widget's counts.
+  //: L-ui-modernisation-68: the share of each category as a donut, beside the Categories widget's counts.
   pie: { title: "ph:chart-pie Notes by category", description: "A donut of your notes by category, the five biggest and the rest.", render: (body) => renderCategoriesWidget.pie(body) },
   pace: { title: "ph:chart-line-up Writing pace", description: "How many words you have written each day this fortnight.", render: renderPaceWidget },
 };
@@ -2511,7 +2511,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    //: A task's `[ ]` or `[x]` goes with its bullet (L-general-39: "[ ] buy bread" read literally).
+    //: A task's `[ ]` or `[x]` goes with its bullet (L-ui-modernisation-67: "[ ] buy bread" read literally).
     const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|(?:[-*+]|\d+\.)\s+(?:\[[ xX]\]\s+)?)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
@@ -3225,7 +3225,7 @@ async function renderRandomShuffle(body) {
     // paragraph early, which drops the styling this class carries.
     const text = document.createElement("div");
     text.className = "random-note";
-    //: renderMarkdown has no `[[...]]`; the list rows unwrap it the same way (L-general-39).
+    //: renderMarkdown has no `[[...]]`; the list rows unwrap it the same way (L-ui-modernisation-67).
     renderMarkdown(text, truncateMarkdownSafe(stripFrontmatter(note.content).replace(/\[\[([^[\]]{1,120})\]\]/g, "$1"), 239));
     body.appendChild(text);
 
@@ -4288,7 +4288,7 @@ function renderOnThisDayWidget(body) {
 //: of bars in a widget column is a picket fence.
 const DASH_PACE_DAYS = 14;
 
-//: The pie widget (L-general-40). SVG circles with a dash per slice, so no
+//: The pie widget (L-ui-modernisation-68). SVG circles with a dash per slice, so no
 //: path maths; colours set through the CSSOM (`style.stroke`), which the CSP
 //: allows where a `style` attribute is refused. The legend is the Categories
 //: widget's own share rows (`.cat-row`), each bar in its slice's colour.

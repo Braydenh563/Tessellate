@@ -1,6 +1,6 @@
 """Source text: the ui sweeps drive the companion's internals from outside
 avatars.js, whose file is an IIFE now; they reach them through `nmb`, so the
-handles have to exist (L-general-47)."""
+handles have to exist (L-ui-modernisation-75)."""
 
 from pathlib import Path
 

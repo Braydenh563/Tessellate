@@ -95,7 +95,7 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
     #: A board's background image lives in its settings (WHITEBOARD_PLAN
     #: decision 24, FEAT-06): before this, setting one made the upload an
     #: orphan, and "clean up orphaned media" deleted it.
-    #: A binned note counts (L-general-46): the bin restores it with its pictures.
+    #: A binned note counts (L-ui-modernisation-74): the bin restores it with its pictures.
     for entry in session.scalars(select(Entry).where(_could_name_a_file(Entry.board_settings))):
         referenced.update(referenced_names(entry.board_settings or ""))
 
@@ -111,7 +111,7 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
         referenced.update(referenced_names(manager_text.readable_content(entry)))
 
     #: An older version of a note or document can be restored, picture and all
-    #: (L-general-46), so what a revision shows is in use too. Read as stored:
+    #: (L-ui-modernisation-74), so what a revision shows is in use too. Read as stored:
     #: a sealed column reads "" while locked, which would pass for "no picture".
     for column in (Document.content, DocumentRevision.content, EntryRevision.content):
         raw = type_coerce(column, Text)
@@ -169,7 +169,7 @@ def _board_uses(session: Session, note) -> None:  # noqa: ANN001
         for name in referenced_names(obj.data):
             note(name, "board", obj.board_id, "Whiteboard")
 
-    #: A binned note counts (L-general-46): the bin restores it with its pictures.
+    #: A binned note counts (L-ui-modernisation-74): the bin restores it with its pictures.
     for entry in session.scalars(select(Entry).where(_could_name_a_file(Entry.board_settings))):
         for name in referenced_names(entry.board_settings or ""):
             note(name, "board", entry.id, "Board background")

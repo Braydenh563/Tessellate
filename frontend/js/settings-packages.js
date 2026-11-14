@@ -75,7 +75,7 @@
       $("voice-model-state")?.classList.toggle("hidden", !voiceExtra?.installed);
       //: A fresh read, not the cached one: other surfaces leave `prefsCache` holding a few keys
       //: (desk-companion.js). And Skip silence's row shows with or without the voice extra, so it
-      //: is painted either way: it read the markup's default over the notebook's (L-general-54).
+      //: is painted either way: it read the markup's default over the notebook's (L-ui-modernisation-82).
       prefsCache = (await apiJson("/preferences").catch(() => null)) || prefsCache;
       $("voice-skip-silence").checked = prefsCache?.voice_skip_silence ?? true;
       if (voiceExtra?.installed) {

@@ -34,7 +34,7 @@ def test_the_menu_moves_ticks_or_bins_them_all_with_one_undo():
         assert label in body
     # One Undo per batch, never one per reminder: every choice, Delete all
     # too (restore back, drop again), goes through run()'s one pushUndo, so
-    # Ctrl+Z reaches a binned batch (L-general-63, undo coverage); the node
+    # Ctrl+Z reaches a binned batch (L-ui-modernisation-89, undo coverage); the node
     # test below drives it.
     assert body.count("pushUndo(") == 1
     assert "run((m) => `Moved ${m} to the bin`, drop, restore," in body

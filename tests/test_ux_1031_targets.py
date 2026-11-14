@@ -45,7 +45,7 @@ def test_show_more_the_rail_menus_and_the_board_grips_meet_the_floor():
     assert "min-height: var(--target-min)" in _rule("#entry-list .entry-more,\n#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > .entry-more")
     assert "min-block-size: var(--target-min)" in re.search(r"\n\.card-open \{([^}]*)\}", CSS).group(1)
     # The coarse block that holds the board grips, found by its selector rather than
-    # by being the file's last coarse block (L-general-52 appended another after it).
+    # by being the file's last coarse block (L-ui-modernisation-80 appended another after it).
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     grips = next(b for b in lazy.split("@media (pointer: coarse)")[1:] if b.lstrip(" {\n").startswith(".wb-resize-handle"))
     assert "border: var(--space-3) solid transparent" in grips.split("\n}\n")[0]

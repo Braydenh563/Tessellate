@@ -823,7 +823,7 @@
     renderAutonomousReview();
   });
 
-  //: Discard the whole pass (L-general-45): every row's own Undo, last change
+  //: Discard the whole pass (L-ui-modernisation-73): every row's own Undo, last change
   //: first, so an edit made twice goes back through its middle state.
   $("autonomous-review-undo-all")?.addEventListener("click", async () => {
     const undos = [...document.querySelectorAll("#autonomous-review-list [data-change-undo]")].reverse();
@@ -3721,7 +3721,7 @@
     clearSkeletons(list);
     prefsCache = prefs;
     //: `#pref-mcp-writes` sits here (Other apps) and was filled only by `renderAutonomousSettings`,
-    //: so after a reload it read off over a preference that was on (L-general-54, deepflows).
+    //: so after a reload it read off over a preference that was on (L-ui-modernisation-82, deepflows).
     $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
     renderToolFocus(prefs.tool_focus || "auto");
     renderSmallModelMode(prefs.small_model_mode || "auto");

@@ -1,5 +1,5 @@
 """Source text: the background librarian's review is Settings DOM a browser
-presses; the source pins the whole-pass discard (L-general-45).
+presses; the source pins the whole-pass discard (L-ui-modernisation-73).
 
 A true dry run cannot be had (`ai/autonomous.py` `_last_pass`: the model picks
 each call from the last result), so the pass is reviewed after: each change

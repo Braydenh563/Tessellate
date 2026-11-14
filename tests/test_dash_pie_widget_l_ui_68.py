@@ -1,5 +1,5 @@
 """Source text: the dashboard's pie widget draws in a browser; the source pins
-its registry entry, its data and its accessible name (L-general-40).
+its registry entry, its data and its accessible name (L-ui-modernisation-68).
 
 Notes by category as a donut: the five biggest categories and Other, each
 slice in the category's own dot colour, a share bar per slice under it that
