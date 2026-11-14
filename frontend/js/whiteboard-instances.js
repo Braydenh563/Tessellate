@@ -256,8 +256,13 @@
 
   //: **The mount API** (L-documents-104): a board inside `host`, an empty element
   //: the caller owns. Resolves once the board is read and drawn.
+  //: One run of initWhiteboard for every embed made before the page board was
+  //: ever opened: it binds the board's handlers through `on`, so an embed made
+  //: without waiting for it would be a board that cannot be edited (L-whiteboard-63).
+  let embedBoardInit = null;
   async function createEmbed(host, boardId, opts = {}) {
     const editable = opts.editable === true;
+    await (embedBoardInit ??= window.initWhiteboard?.());
     const box = document.createElement("div");
     box.className = editable ? "whiteboard-container wb-embed" : "whiteboard-container wb-embed wb-embed-readonly";
     box.tabIndex = 0;

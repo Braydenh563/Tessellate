@@ -780,3 +780,30 @@ I.activate(emb);
 out.embed = I.query("#wb-html-layer .wb-map-text").name;
 """)
     assert out["page"] == {"sel": "#wb-html-layer .wb-map-text", "in": "page"} and out["embed"] == "html"
+
+def test_an_embed_made_before_init_whiteboard_is_editable_at_once():
+    """L-whiteboard-63: create() awaits initWhiteboard, so the board's handlers are
+    already bound to the embed when the promise resolves."""
+    out = _run("""
+let inited = false;
+wbInitialized = false;
+window.initWhiteboard = async function () {
+  if (wbInitialized) return;
+  wbInitialized = true;
+  await new Promise((r) => setTimeout(r, 5));
+  I.on("pointerdown", () => log.push(["pointerdown"]));
+  I.on("wheel", () => {}, { passive: false }, true);
+  inited = true;
+};
+(async () => {
+const host = fakeEl("div", "host");
+const e = await window.wbInstance.create(host, 5, { editable: true });
+out.afterCreate = { inited, bound: e.instance.listeners.map((l) => l[1]) };
+const r = await window.wbInstance.create(fakeEl("div", "h2"), 5, {});
+out.second = { inited, bound: r.instance.listeners.map((l) => l[1]) };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["afterCreate"] == {"inited": True, "bound": ["pointerdown", "wheel"]}, out
+    assert out["second"]["bound"] == ["wheel"]
