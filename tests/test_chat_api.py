@@ -1,6 +1,6 @@
 """The /chat endpoint end-to-end over HTTP (with the AI faked so it runs
 offline: the real-model run happens manually with Ollama installed): the
-dad-joke "done when" test, suggestions, and follow-up conversation memory."""
+dad-joke "done when" test, suggestions, and conversation memory across turns."""
 
 from __future__ import annotations
 
@@ -191,7 +191,7 @@ def test_suggestions_ignore_uncategorised(client):
     assert client.get("/chat/suggestions").json() == _starters()
 
 
-# --- follow-up conversation memory ----------------------------------------------
+# --- conversation memory across turns-------------------------------------------
 
 
 def test_build_messages_replays_history():

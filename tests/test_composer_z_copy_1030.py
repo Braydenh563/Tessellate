@@ -68,7 +68,7 @@ def ask(client, session, monkeypatch):
 def test_z50_a_name_a_note_holds_is_a_note_lookup(ask, question):
     said, events = ask(question)
     assert "reporting in" not in said and "assistant" not in said.lower(), said
-    #: The note is named in the answer or in its follow-up chips: since INBOX
+    #: The note is named in the answer or in its next-step chips: since INBOX
     #: 1466 the offer "Next, I can open “Project Atlas”" is the chip
     #: "Open “Project Atlas”", not a closing line.
     chips = [a for e in events if e.get("type") == "grounding" for a in e.get("next") or []]

@@ -1,4 +1,4 @@
-"""Five classes the fourth composer agent left open (composer5-1031, the
+"""Five classes the fourth composer agent left unfixed (composer5-1031, the
 owner's standing order: fix the class, test it over many phrasings).
 
 1. A comparison ranks every side it names (two to six), not the first two.

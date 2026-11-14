@@ -82,7 +82,7 @@ def ask(client, session, monkeypatch):
     def go(question: str, history: list | None = None) -> str:
         out = _ask(client, question, notes_only=True, answer_from="notes", history=history or [])
         text = out["text"]
-        #: The next step is the follow-up chips now (INBOX 1466), not a last line.
+        #: The next step is the next-step chips now (INBOX 1466), not a last line.
         go.chips = "\n".join((out.get("grounding") or [{}])[0].get("next") or [])
         if _DUMP:
             with open(_DUMP, "a", encoding="utf-8") as fh:

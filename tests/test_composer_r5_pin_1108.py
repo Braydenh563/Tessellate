@@ -1,4 +1,4 @@
-"""Composer round 5, 2026-11-08 (pin): rows of audits 1107 (D, E, R3) that round 4 left open. Every
+"""Composer round 5, 2026-11-08 (pin): rows of audits 1107 (D, E, R3) that round 4 left unfixed. Every
 question runs through `/chat/stream` with no model and a fixed clock, because the seams these
 rows share (the pool the route builds, the act cues, the history) sit in front of the composer."""
 

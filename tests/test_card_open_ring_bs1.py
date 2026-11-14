@@ -1,4 +1,4 @@
-"""BS1 follow-up: a focused `.card-open` is ringed by its card, and the sweep knows.
+"""BS1, second pass: a focused `.card-open` is ringed by its card, and the sweep knows.
 
 focusring.js reported `strong.library-card-title.card-open` as a stop with no
 ring because it read the title, whose own outline is none by design

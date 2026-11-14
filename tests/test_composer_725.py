@@ -291,7 +291,7 @@ def test_a_question_that_stands_alone_is_left_alone(question):
 
 def test_a_composed_answers_next_questions_are_drawn_as_its_chips():
     """The composed answer's `next` rides on its grounding event and is drawn
-    by the follow-up strips that already exist, in Ask and in Chat, with no
+    by the next-step strips that already exist, in Ask and in Chat, with no
     model call for them."""
     from pathlib import Path
 

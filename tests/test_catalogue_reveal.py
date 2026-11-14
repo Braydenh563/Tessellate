@@ -290,11 +290,11 @@ def test_every_target_names_a_control_that_exists():
             if element.group(1) not in ids:
                 wrong.append(f"{key}: #{element.group(1)} is in no element in index.html")
         elif "sel" in keys:
-            built = re.search(r'\bbuilt:\s*"([^"]+)"', obj)
-            if not built:
+            maker = re.search(r'\bbuilt:\s*"([^"]+)"', obj)
+            if not maker:
                 wrong.append(f"{key}: a selector needs `built:` naming what makes it")
-            elif built.group(1) not in functions:
-                wrong.append(f"{key}: built by {built.group(1)!r}, defined nowhere")
+            elif maker.group(1) not in functions:
+                wrong.append(f"{key}: built by {maker.group(1)!r}, defined nowhere")
         else:
             wrong.append(f"{key}: names no control (el, or sel with built)")
         for pane in re.findall(r'\bsettings:\s*"([^"]+)"', obj):

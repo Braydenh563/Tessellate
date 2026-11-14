@@ -20,7 +20,7 @@ This holds what was verified as a regression test, on the theory that
 "list items after a heading" was simply undertested before, not that a
 fix landed here: if either the live/reopened grounding equality or the
 frontend's own marker placement for this shape ever regresses, this is
-what catches it. The report's own root cause remains open; the most
+what catches it. The report's own root cause is LEDGER L-chat-11; the most
 likely next step is the actual saved turn's stored `grounding`/
 `raw_result_ids` from the owner's own notebook, which nothing here has
 access to.
