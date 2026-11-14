@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8828, frontend ids 2825, CSS sections 525, backend routes 717, backend modules 10966, test files 2819, tests 22727, plan headings 691, app scripts 29, boot scripts 38, script files 346.
+Counts: frontend functions 8827, frontend ids 2825, CSS sections 525, backend routes 717, backend modules 10966, test files 2819, tests 22728, plan headings 691, app scripts 29, boot scripts 38, script files 346.
 
-## Frontend functions (8828)
+## Frontend functions (8827)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -8985,33 +8985,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stop` | frontend/js/whiteboard-ink-replay.js:26 |
 | `strokes` | frontend/js/whiteboard-ink-replay.js:23 |
 
-### frontend/js/whiteboard-instances.js (23)
+### frontend/js/whiteboard-instances.js (22)
 
 | Name | File:line |
 |---|---|
-| `activateInstance` | frontend/js/whiteboard-instances.js:103 |
-| `activeContainer` | frontend/js/whiteboard-instances.js:179 |
-| `activeLayer` | frontend/js/whiteboard-instances.js:183 |
-| `bindBoard` | frontend/js/whiteboard-instances.js:152 |
-| `bindOne` | frontend/js/whiteboard-instances.js:141 |
-| `createEmbed` | frontend/js/whiteboard-instances.js:259 |
-| `drawEmbed` | frontend/js/whiteboard-instances.js:247 |
+| `activateInstance` | frontend/js/whiteboard-instances.js:105 |
+| `activeContainer` | frontend/js/whiteboard-instances.js:181 |
+| `activeLayer` | frontend/js/whiteboard-instances.js:185 |
+| `bindBoard` | frontend/js/whiteboard-instances.js:154 |
+| `bindOne` | frontend/js/whiteboard-instances.js:143 |
+| `createEmbed` | frontend/js/whiteboard-instances.js:266 |
+| `drawEmbed` | frontend/js/whiteboard-instances.js:254 |
 | `dropBoardCaches` | frontend/js/whiteboard-instances.js:92 |
-| `embedFor` | frontend/js/whiteboard-instances.js:164 |
-| `embedSkeleton` | frontend/js/whiteboard-instances.js:213 |
+| `embedFor` | frontend/js/whiteboard-instances.js:166 |
+| `embedSkeleton` | frontend/js/whiteboard-instances.js:215 |
 | `instanceZoom` | frontend/js/whiteboard-instances.js:42 |
-| `mountInstance` | frontend/js/whiteboard-instances.js:124 |
+| `mountInstance` | frontend/js/whiteboard-instances.js:126 |
 | `newInstance` | frontend/js/whiteboard-instances.js:26 |
-| `notifyChanged` | frontend/js/whiteboard-instances.js:201 |
-| `pageWake` | frontend/js/whiteboard-instances.js:234 |
-| `pageWakeListeners` | frontend/js/whiteboard-instances.js:235 |
-| `queryEvery` | frontend/js/whiteboard-instances.js:196 |
-| `queryOne` | frontend/js/whiteboard-instances.js:193 |
+| `notifyChanged` | frontend/js/whiteboard-instances.js:203 |
+| `queryEvery` | frontend/js/whiteboard-instances.js:198 |
+| `queryOne` | frontend/js/whiteboard-instances.js:195 |
 | `restoreGlobals` | frontend/js/whiteboard-instances.js:76 |
-| `scoped` | frontend/js/whiteboard-instances.js:192 |
+| `routeToBoard` | frontend/js/whiteboard-instances.js:242 |
+| `scoped` | frontend/js/whiteboard-instances.js:194 |
 | `stashGlobals` | frontend/js/whiteboard-instances.js:64 |
-| `unbindInstance` | frontend/js/whiteboard-instances.js:157 |
-| `unmountInstance` | frontend/js/whiteboard-instances.js:169 |
+| `unbindInstance` | frontend/js/whiteboard-instances.js:159 |
+| `unmountInstance` | frontend/js/whiteboard-instances.js:171 |
 
 ### frontend/js/whiteboard-interchange.js (50)
 
@@ -28743,7 +28742,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22727)
+## Tests (22728)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31404,7 +31403,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_ink_recognise.py | 8 |
 | tests/test_wb_ink_replay.py | 4 |
 | tests/test_wb_inline_format_k24.py | 6 |
-| tests/test_wb_instances.py | 20 |
+| tests/test_wb_instances.py | 21 |
 | tests/test_wb_interchange.py | 13 |
 | tests/test_wb_keep_ratio.py | 3 |
 | tests/test_wb_key_object.py | 4 |

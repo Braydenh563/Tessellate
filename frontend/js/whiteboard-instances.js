@@ -1,7 +1,7 @@
 (() => {
   // whiteboard-instances.js: board state per instance (L-whiteboard-53, for L-documents-104).
   // Wrapped: two names on `window`, `wbInstances` (the board side) and `wbInstance` (the mount API documents
-  // builds to, L-documents-104); nothing here runs at load but the page instance's creation.
+  // builds to, L-documents-104); nothing here runs at load but the page instance's creation and the event router.
   //
   //: **The board's globals keep meaning "the active board".** `wbState`,
   //: `currentBoardId`, `wbSelectedItem`, `wbMultiSelection`, `wbUndoStack`,
@@ -96,6 +96,8 @@
     Object.assign(wbBoardBgCache, { sig: "", pass: false });
     wbNavState.stale = true;
     wbLinkParseCache.clear();
+    //: The canvas's screen box: a key or a paste routed to another board has no press to drop it first.
+    wbClearCanvasRectCache();
   }
 
   //: Returns the outgoing board's nudge save (wbCancelBoardTimers), called while
@@ -229,17 +231,22 @@
     box.append(base, html, overlay);
   }
 
-  //: The page board becomes active again when it is touched or focused; bound
-  //: while any embed exists and removed with the last one.
-  const pageWake = () => activateInstance(wbInstances.page);
-  function pageWakeListeners(on) {
-    const el = document.getElementById(PAGE_CONTAINER);
-    if (!el) return;
-    for (const type of ["pointerdown", "focusin", "wheel"]) {
-      if (on) el.addEventListener(type, pageWake, { capture: true, passive: true });
-      else el.removeEventListener(type, pageWake, { capture: true });
-    }
+  //: **Every board event finds its own board first** (L-whiteboard-62). Window and document
+  //: listeners (keys, paste, the drags' window halves, the menus' outside clicks) read the
+  //: live globals, so the board an event starts on is made live before any of them runs: one
+  //: window capture listener, registered at load ahead of every board file after this one,
+  //: activates the embed the target is in, or the page board for its own view and toolbar.
+  //: Only the events that start something: a move or a lift during a drag stays with the
+  //: board the drag began on, and so does a wheel turned while a button is held.
+  const ROUTED = ["pointerdown", "mousedown", "touchstart", "contextmenu", "dblclick", "wheel", "keydown", "focusin", "paste", "drop"];
+  function routeToBoard(event) {
+    if (event.type === "wheel" && event.buttons) return;
+    const target = event.target;
+    const onPageView = document.getElementById(PAGE_CONTAINER)?.contains?.(target) || target?.closest?.("#library-view-whiteboard");
+    const inst = embedFor(target) || (onPageView ? page : null);
+    if (inst) activateInstance(inst);
   }
+  for (const type of ROUTED) window.addEventListener(type, routeToBoard, { capture: true, passive: true });
 
   //: Draws `inst` with its globals live, then gives them back. The render's
   //: page-wide chrome (the empty hint, the count, the navigator, the outline) is
@@ -266,12 +273,9 @@
     box.setAttribute("aria-label", "Board");
     embedSkeleton(box);
     host.append(box);
-    if (list.length === 1) pageWakeListeners(true);
     const inst = mountInstance(box, boardId, editable);
     box.setAttribute("data-wb-embed", String(inst.key));
     inst.destroyed = false;
-    const wake = () => activateInstance(inst);
-    for (const type of ["pointerdown", "focusin"]) box.addEventListener(type, wake, { capture: true, passive: true });
 
     async function reloadEmbed() {
       const url = boardId ? `/whiteboard/?board_id=${boardId}` : "/whiteboard/";
@@ -290,11 +294,9 @@
     function destroyEmbed() {
       if (inst.destroyed) return;
       inst.destroyed = true;
-      for (const type of ["pointerdown", "focusin"]) box.removeEventListener(type, wake, { capture: true });
       unmountInstance(inst);
       inst.changeFns.clear();
       box.remove();
-      if (list.length === 1) pageWakeListeners(false);
     }
 
     try {
