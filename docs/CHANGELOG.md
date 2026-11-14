@@ -6,6 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
+- The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).
+- Tag chips on note cards say in their hover how many notes carry the tag, counted from the notes already loaded (L-world-class-47).
+- Failure toasts in 78 more files say it in the app's one voice (Couldn't X: why), 262 calls (L-world-class-42; the last 16 are L-world-class-140).
+- Meeting cards no longer count a template's blank `- ` and `- [ ] ` lines as decisions or open actions (L-world-class-48).
+- Errors: the last 19 failure toasts that offered only Open the logs now offer a fix of their own (Try again, Copy the answer, Reload the list); the cap is 0 (L-world-class-43).
 - Docs: WORLD_CLASS_PLAN recounted; built blocks moved to HISTORY, every open item is a LEDGER row (L-world-class-60 to 135), plan file open 0.
 - Search: matrix products run on one BLAS thread (GET /search at 5,000 notes p50 76-102 to 22 ms); tag reasons clean a note once (L635, L-world-class-20).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).

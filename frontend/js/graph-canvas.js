@@ -5244,7 +5244,7 @@
     const write = pinned
       ? apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins: saved.map((c) => ({ id: c.id, x: c.after.x, y: c.after.y })) }) })
       : Promise.all(saved.map((c) => graphPinSave(c.id, null, null)));
-    if (saved.length) write.catch(() => toast("The pins were not saved.", true));
+    if (saved.length) write.catch(() => toast("The pins were not saved.", true, { action: ["Try again", () => gcPinSelection(s, pinned)] }));
     const words = nounCount(changes.length, "note");
     graphPinStep(pinned ? `Pinned ${words}` : `Unpinned ${words}`, changes);
     toast(pinned ? `Pinned ${words}.` : `Unpinned ${words}.`);
@@ -5370,7 +5370,7 @@
         body: JSON.stringify({ name, note_ids: [...ids], edges, root_id: picked }),
       }).catch(() => null);
       if (!board?.id) {
-        toast("Couldn't create the map.");
+        toast(voiceLine("failed", { what: "create the map" }));
         return;
       }
       pushBinPairUndo(`Made the mind map “${name}”`, `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => (typeof refreshBoardList === "function" ? refreshBoardList() : null));
@@ -5882,7 +5882,7 @@
       toastAction(`Wrote “${node.preview}”.`, "Open", () => flashEntry(created.id), { go: { open: "entry", id: created.id } });
       await renderGraph();
     } catch (error) {
-      toast(error.message || "Couldn't write that note.", true);
+      toast(error.message || voiceLine("failed", { what: "write that note" }), true);
     }
   }
 

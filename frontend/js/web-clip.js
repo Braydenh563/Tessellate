@@ -203,7 +203,7 @@
         body: JSON.stringify({ blocks: blocks.slice(0, 2500) }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't analyse this page.");
+      toast(error.message || voiceLine("failed", { what: "analyse this page" }));
       return;
     }
     if (webReaderPage !== page) return;

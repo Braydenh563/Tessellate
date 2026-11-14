@@ -134,7 +134,7 @@
       const result = await apiJson(`/activity/${encodeURIComponent(id)}/stop`, { method: "POST" });
       toast(result.detail || (result.stopped ? "Stopping." : "It had already finished."), "info");
     } catch (e) {
-      toastAction(`Couldn't stop that job: ${e.message}`, "Try again", () => stopActivityJob(id));
+      toastAction(voiceLine("failed", { what: "stop that job", why: e.message }), "Try again", () => stopActivityJob(id));
     }
     renderActivity();
   }
@@ -144,7 +144,7 @@
       const result = await apiJson("/activity/model/stop", { method: "POST" });
       toast(result.detail, "info");
     } catch (e) {
-      toastAction(`Couldn't stop the model: ${e.message}`, "Try again", stopActivityModel);
+      toastAction(voiceLine("failed", { what: "stop the model", why: e.message }), "Try again", stopActivityModel);
     }
     renderActivity();
   }

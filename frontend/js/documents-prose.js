@@ -3476,7 +3476,7 @@ async function docEditorPaste(view) {
         await action.undo();
       }, { also: { label: "Open", run: () => flashEntry(chosen.id) } });
     } catch (error) {
-      toast(error.message || "Couldn't save that to a note.", true);
+      toast(error.message || voiceLine("failed", { what: "save that to a note" }), true);
     }
   }
 

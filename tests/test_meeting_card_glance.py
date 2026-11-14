@@ -53,6 +53,7 @@ def _glance(content: str, types=("Meeting",), **props):
         "const clockOptions = () => ({ hour12: false });\n"
         + _block(REMINDERS, "function stripFrontmatter(text) {", "\n}\n")
         + _block(CARDS, "const MEETING_GLANCE_SECTIONS = {", "};\n")
+        + _block(CARDS, "const MEETING_EMPTY_ITEM =", ";\n")
         + _block(CARDS, "function meetingGlance(entry) {", "\n}\n")
         + "\nconst [content, types, props] = JSON.parse(process.argv[1]);\n"
         "process.stdout.write(JSON.stringify(meetingGlance({ content, properties: { type: types, ...props } })));\n"
@@ -75,6 +76,17 @@ def test_a_finished_list_says_so_and_an_empty_meeting_says_nothing_yet():
     done = "## Action items\n- [x] one\n- [x] two\n"
     assert _glance(done) == [{"label": "Actions", "text": "all 2 done"}]
     assert _glance("# Standup\n\n## Agenda\n\n## Notes\n\n## Decisions\n\n## Action items\n") == [{"label": "", "text": "Nothing written yet."}]
+
+
+def test_blank_list_placeholders_are_not_decisions_or_actions():
+    """L-world-class-48: a template's empty `- ` and `- [ ] ` lines counted as 1 decision and 1 open action."""
+    blank = "## Decisions\n- \n-\n\n## Action items\n- [ ] \n- [ ]\n* [x] \n1. \n"
+    assert _glance(blank) == [{"label": "", "text": "Nothing written yet."}]
+    mixed = "## Decisions\n- \n- ship it\n\n## Action items\n- [ ] \n- [ ] call Priya\n"
+    assert _glance(mixed) == [
+        {"label": "Decisions", "text": "1: ship it"},
+        {"label": "Open actions", "text": "1: call Priya"},
+    ]
 
 
 def test_only_a_meeting_gets_one():

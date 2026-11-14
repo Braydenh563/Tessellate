@@ -69,7 +69,7 @@
   async function attachFromLibrary(entry) {
     const images = await apiJson("/media", { silent: true }).catch(() => null);
     if (!images) {
-      toast("Couldn't load the Library gallery.", true, { action: ["Try again", () => attachFromLibrary(entry)] });
+      toast(voiceLine("failed", { what: "load the Library gallery" }), true, { action: ["Try again", () => attachFromLibrary(entry)] });
       return;
     }
     if (!images.length) {
@@ -157,7 +157,7 @@
             { content: nextContent }
           );
         } catch (error) {
-          toast(error.message || "Couldn't attach that file.", true);
+          toast(error.message || voiceLine("failed", { what: "attach that file" }), true);
         }
       });
       const cap = document.createElement("figcaption");

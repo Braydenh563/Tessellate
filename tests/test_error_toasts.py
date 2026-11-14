@@ -49,7 +49,7 @@ EXPECTED = {
         '`Describing a file needs the local AI. ${AI_OFFLINE_HINT}.`',
     ],
     'capture-ask.js': [
-        '"Couldn\'t read the clipboard, so that part of the template is empty."',
+        'voiceLine("failed", { what: "read the clipboard", why: "that part of the template is empty" })',
     ],
     'companion-menu.js': [
         '"Give the companion a name first."',
@@ -141,7 +141,7 @@ EXPECTED = {
         '"Restart isn\'t available in this build, close and reopen Tessellate by hand."',
     ],
     'settings-models.js': [
-        '"Couldn\'t copy it from here."',
+        'voiceLine("failed", { what: "copy it from here" })',
         '`${state.installed} is in use for ${state.roles.join(" and ")}. Choose another model there first.`',
     ],
     'settings-packages.js': [
@@ -153,7 +153,7 @@ EXPECTED = {
         '"Only images can be attached to a chat message right now."',
     ],
     'quick-note.js': [
-        '"Couldn\'t read the clipboard here. Paste into Capture instead."',
+        'voiceLine("failed", { what: "read the clipboard here", why: "paste into Capture instead" })',
         '"There is no text on the clipboard to save."',
     ],
     'settings.js': [
@@ -176,7 +176,7 @@ EXPECTED = {
         '"Type a tag to add, or tick one to remove."',
     ],
     'usage-ledger.js': [
-        '"Couldn\'t copy here. Select the command and copy it."',
+        'voiceLine("failed", { what: "copy here", why: "select the command and copy it" })',
     ],
     'whiteboard-interchange.js': [
         '"That SVG was not exported from a board here, so it has no board inside it. Insert it as a picture instead."',
@@ -221,10 +221,10 @@ FAULTS = {
         'err?.message || "The picture could not be saved to the Library."': 'the Save to Library request failed (the server gave no message)',
     },
     'entity-page.js': {
-        '"Couldn\'t load the people and things in your notes. Try again."': 'the entities request failed',
+        'voiceLine("failed", { what: "load the people and things in your notes" })': 'the entities request failed',
     },
     'media.js': {
-        '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
+        'voiceLine("failed", { what: "open the sketch pad" })': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
     },
     'statistics.js': {
         'voiceLine("failed", { what: "open that" })': 'opening what a chart point or tile counts failed',
@@ -235,26 +235,26 @@ FAULTS = {
         '"Can\'t reach the Tessellate server. Is it running?"': 'network failure: the server cannot be reached',
     },
     'chat-turn.js': {
-        '"Couldn\'t save this chat turn."': 'saving a chat turn failed after the model answered: lost data',
-        '"Couldn\'t delete that message."': 'delete request failed',
+        'voiceLine("failed", { what: "save this chat turn" })': 'saving a chat turn failed after the model answered: lost data',
+        'voiceLine("failed", { what: "delete that message" })': 'delete request failed',
     },
     'chat-attach.js': {
-        '"Couldn\'t delete this chat."': 'delete request failed',
+        'voiceLine("failed", { what: "delete this chat" })': 'delete request failed',
     },
     'documents-code.js': {
         '"Emmet could not be loaded, so nothing was wrapped."': 'the Emmet module failed to load: a broken asset',
     },
     'documents-history.js': {
-        '"Couldn\'t open that version."': 'fetching a saved version failed',
+        'voiceLine("failed", { what: "open that version" })': 'fetching a saved version failed',
     },
     'documents.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
+        'voiceLine("failed", { what: "open that document", why: "the one on screen is unchanged" })': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
+        'voiceLine("failed", { what: "upload that picture", why: "add its address by hand" })': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
@@ -272,36 +272,36 @@ FAULTS = {
         '`${nounCount(failed, "bookmark")} couldn\'t be deleted.`': 'a bulk delete partly failed',
     },
     'lightbox-view.js': {
-        '"Couldn\'t save that file."': 'saving the file failed',
+        'voiceLine("failed", { what: "save that file" })': 'saving the file failed',
     },
     'lightbox-actions.js': {
-        '"Couldn\'t load the Library gallery."': 'loading the gallery failed',
+        'voiceLine("failed", { what: "load the Library gallery" })': 'loading the gallery failed',
     },
     'gesture-kit.js': {
-        '"Couldn\'t read this note."': 'reading a note failed',
+        'voiceLine("failed", { what: "read this note" })': 'reading a note failed',
     },
     'note-properties.js': {
-        '"Couldn\'t read this note\'s properties."': "reading a note's properties failed",
+        'voiceLine("failed", { what: "read this note\'s properties" })': "reading a note's properties failed",
     },
     'settings-controls.js': {
         '"The last review was not cleared. Try again."': 'the clear-review request failed',
         '"The dashboard greeting was not saved. Try again."': 'the preferences write failed',
-        '"Couldn\'t reset those settings."': 'resetting settings failed',
-        '(status && status.textContent) || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
-        'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",
+        'voiceLine("failed", { what: "reset those settings" })': 'resetting settings failed',
+        '(status && status.textContent) || voiceLine("failed", { what: "apply the update" })': "the update step failed; the text is the step's own error",
+        'status.textContent || voiceLine("failed", { what: "install that version" })': "the install step failed; the text is the step's own error",
         'wentAway ? "The app hasn\'t come back yet. Start it again by hand." : "The app didn\'t restart. Close and reopen it by hand."': "the restart did not happen or the app did not return; Try again restarts it",
     },
     'settings-health.js': {
-        '"Couldn\'t save that setting."': 'saving a setting failed',
-        '"Couldn\'t reset that setting."': 'resetting a setting failed',
+        'voiceLine("failed", { what: "save that setting" })': 'saving a setting failed',
+        'voiceLine("failed", { what: "reset that setting" })': 'resetting a setting failed',
     },
     'shell-reminders.js': {
-        '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
-        "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
-        "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
+        'voiceLine("failed", { what: "load your reminders" })': 'the reminders request failed before clearing the done ones',
+        "voiceLine(\"failed\", { what: `delete ${left.length} of the reminders` })": 'a bulk delete partly failed',
+        "voiceLine(\"failed\", { what: `bring back ${left.length} of the reminders` })": 'a bulk restore partly failed',
     },
     'update-dialogs.js': {
-        'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
+        'text.textContent || voiceLine("failed", { what: "apply the update" })': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
         'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
@@ -459,7 +459,7 @@ def test_report_this_has_one_home_and_the_helper_gates_it():
 #: Logs, where the why is written), because no retry or alternative fits the
 #: call site yet. A ratchet: it only shrinks. Every other literal fault passes
 #: `{ action: [label, fn] }` of its own.
-LOGS_ACTION_CAP = 20
+LOGS_ACTION_CAP = 0
 
 
 def test_every_error_toast_offers_one_action():
