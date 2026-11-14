@@ -402,14 +402,12 @@ async def _route(  # noqa: ANN001, PLR0913
         conn.close()
 
 
-async def _port_step(sock, gate, reopen, port, server, held=None):  # noqa: ANN001, PLR0913
+async def _port_step(sock, gate, reopen, port, server):  # noqa: ANN001, PLR0913
     """Close the port when the gate shuts, bind it again when it opens.
     Returns (sock, verdict): "go" to accept, "continue" to try again, "break" to stop."""
     if gate is not None and not gate():
         if sock is not None:
             log.info("Other devices: this network is not allowed; the LAN port is closed.")
-            #: Before the close: the pending accept's reader names the fd.
-            _drop_accept(held if held is not None else {})
             sock.close()
             sock = None
             dropped = drop_connections(server)
@@ -431,37 +429,29 @@ async def _port_step(sock, gate, reopen, port, server, held=None):  # noqa: ANN0
     return sock, "go"
 
 
-def _drop_accept(held: dict) -> None:
-    """Stop the pending accept (the port closed, or the server is going)."""
-    task = held.pop("task", None)
-    if task is not None and not task.done():
-        task.cancel()
-
-
-async def _accept(loop, sock, held: dict):  # noqa: ANN001
+async def _accept(loop, sock):  # noqa: ANN001
     """The next allowed connection as (conn, addr), or None to look again.
 
-    One `sock_accept` stays pending in `held` across the 0.5 s ticks: a tick
-    stops waiting for it, never cancels it. Cancelling it under `wait_for`
-    could drop a connection accepted in the same loop turn, closed unread, so
-    the client saw a reset in its handshake and nothing was logged
-    (L-world-class-240)."""
-    if held.get("sock") is not sock:
-        _drop_accept(held)
-        held["sock"] = sock
-    task = held.get("task")
-    if task is None:
-        task = held["task"] = asyncio.ensure_future(loop.sock_accept(sock))
-    done, _ = await asyncio.wait({task}, timeout=0.5)
-    if not done:
-        return None
-    held.pop("task", None)
-    try:
-        conn, addr = task.result()
-    except (OSError, asyncio.CancelledError) as exc:
-        log.debug("LAN accept failed: %s", exc)
-        await asyncio.sleep(0.1)
-        return None
+    The non-blocking socket is asked directly, every 50 ms for one 0.5 s tick.
+    No accept is ever pending when a tick ends, so none can be cancelled: a
+    `sock_accept` cancelled under `wait_for` could drop a connection accepted
+    in the same loop turn, closed unread, and the client saw a reset in its
+    handshake with nothing logged (L-world-class-240). A connection not yet
+    taken waits in the kernel's backlog, never in this process."""
+    deadline = loop.time() + 0.5
+    while True:
+        try:
+            conn, addr = sock.accept()
+            break
+        except (BlockingIOError, InterruptedError):
+            if loop.time() >= deadline:
+                return None
+            await asyncio.sleep(0.05)
+        except OSError as exc:
+            log.debug("LAN accept failed: %s", exc)
+            await asyncio.sleep(0.1)
+            return None
+    conn.setblocking(False)
     if not client_allowed(addr[0] if addr else None):
         log.info("Refused a connection from %s: not an address on this network.", addr[0] if addr else "?")
         with contextlib.suppress(OSError):
@@ -511,7 +501,6 @@ async def serve(  # noqa: PLR0913
     if sock is not None:
         sock.setblocking(False)
     pending: set[asyncio.Task] = set()
-    held: dict = {}
     watch = {"refreshed": -REFRESH_SECONDS, "addresses": None}
 
     def look_again() -> None:
@@ -538,12 +527,12 @@ async def serve(  # noqa: PLR0913
             if loop.time() - looked >= ADDRESS_SECONDS:
                 looked = loop.time()
                 await loop.run_in_executor(None, look_again)
-            sock, verdict = await _port_step(sock, gate, reopen, port, server, held)
+            sock, verdict = await _port_step(sock, gate, reopen, port, server)
             if verdict == "break":
                 break
             if verdict == "continue":
                 continue
-            accepted = await _accept(loop, sock, held)
+            accepted = await _accept(loop, sock)
             if accepted is None:
                 continue
             conn, addr = accepted
@@ -552,7 +541,6 @@ async def serve(  # noqa: PLR0913
             pending.add(task)
             task.add_done_callback(pending.discard)
     finally:
-        _drop_accept(held)
         if sock is not None:
             sock.close()
         server.should_exit = True

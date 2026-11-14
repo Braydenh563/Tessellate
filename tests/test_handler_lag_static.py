@@ -29,7 +29,9 @@ def test_meaning_text_is_memoized():
 def test_settings_find_caches_row_text_and_warms_idle():
     src = read("settings-find.js")
     assert "row.said ??=" in src
-    assert "function settingRowsWarm" in src and '"focus"' in src
+    #: Focus on the search box starts the warm; delegated (`focusin`) because the
+    #: Settings body can be parsed after this file loads.
+    assert "function settingRowsWarm" in src and '"focusin"' in src and '"settings-search"' in src
 
 
 def test_filter_settings_defers_pane_build():

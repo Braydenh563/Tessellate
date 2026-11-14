@@ -41,9 +41,14 @@ def stats(session: Session = Depends(get_session)) -> dict:
     # both out (a board is an Entry row, MINDMAP_PLAN §2), and the owner asked
     # "do I have 29, 30 or 31 notes?" when this said one number and the list
     # another. Measured again after boards: dashboard 75, list 40.
-    total = session.scalar(
-        select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-    )
+    #: The count and the oldest day in one statement (same filter): Ask's as-of
+    #: slider spans from the oldest note (L-world-class-352), inside the route's
+    #: statement budget (tests/test_perf_budget.py).
+    total, oldest = session.execute(
+        select(func.count(Entry.id), func.min(Entry.created_at)).where(
+            Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
+        )
+    ).one()
     by_category = categories_repo.note_counts(
         session, Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
     )
@@ -68,12 +73,6 @@ def stats(session: Session = Depends(get_session)) -> dict:
         if 0 <= offset < ACTIVITY_DAYS:
             per_day[ACTIVITY_DAYS - 1 - offset] += 1
 
-    #: Ask's as-of slider spans from here (L-world-class-352); a bare min over the day column.
-    oldest = session.scalar(
-        select(func.min(Entry.created_at)).where(
-            Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
-        )
-    )
     return {
         "total_entries": total or 0,
         "oldest_day": oldest.date().isoformat() if oldest else None,

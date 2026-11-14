@@ -6,7 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- LAN port: one accept stays pending across the 0.5 s ticks instead of being cancelled by a timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240).
+- LAN port: the accept loop asks the non-blocking socket directly every 50 ms instead of a `sock_accept` cancelled by a 0.5 s timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240). No task is left pending, so the background registry stays as it was.
+- Dashboard stats: the note count and the oldest day come from one statement, so `/insights/stats` is back inside its budget of 6 (CI 5753bea0, test_perf_budget; L-world-class-352's slider field kept).
+- Settings search: the first-focus warm listens for `focusin` on the document, so it works when the Settings body is parsed after settings-find.js loads (CI 5753bea0, test_help_emphasis).
 
 - Settings is quicker on a slow machine: the Appearance pane reads its default swatch colour a frame after it shows, and the background warm-up of the graph files waits for an idle moment and counts clicks as input. At 4x CPU, median of 5: Settings data 192 to 107 ms, preferences 103 to 81, account 111 to 84 (L-world-class-355 stays open; the search box first key is L-world-class-359).
 - Boot long tasks at 4x CPU, medians of 5 runs (`bootlongtasks.js` now prints per-item medians): the font probe waits for the first frame (settings.js eval 61 ms to under 30), the first clock paint is its own task (shell-reminders.js eval 85 ms to gone; the page's first Intl call stays a 57 ms task of its own), each Atlas look is built on its first read and warmed in its own task (atlas.js eval 86 to 41 ms), and the dashboard draws in three tasks (the notes response task 118 to 44 ms). L-world-class-354 stays open.

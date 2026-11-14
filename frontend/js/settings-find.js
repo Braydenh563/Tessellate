@@ -131,7 +131,14 @@
     if (window.requestIdleCallback) requestIdleCallback(next, { timeout: 500 });
     else setTimeout(next, 50);
   }
-  $("settings-search")?.addEventListener("focus", () => settingRowsWarm(), { once: true });
+  //: Delegated, not bound: the Settings body may be parsed after this file
+  //: loads (idle parse), so the box need not exist yet.
+  let settingRowsWarmed = false;
+  document.addEventListener("focusin", (e) => {
+    if (settingRowsWarmed || e.target?.id !== "settings-search") return;
+    settingRowsWarmed = true;
+    settingRowsWarm();
+  });
 
   let settingVocabCache = null;
   //: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
