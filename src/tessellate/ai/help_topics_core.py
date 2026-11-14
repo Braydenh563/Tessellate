@@ -1590,7 +1590,7 @@ HELP_TOPICS.extend(
                 "the recent searches in every search box, the saved previews, the "
                 "Guide's conversation and the suggestions you dismissed, each with "
                 "an Undo for ten seconds. Under the dismissed suggestions, Review them "
-                "one by one lists each with its own Restore, which offers just that one again. Every setting you change is undoable too, from "
+                "one by one lists each with its own Restore, which offers just that one again. Every setting you change, here or from a switch in the dock, is undoable too, from "
                 "the toast, Ctrl+Z and Recent changes in the same section (the last twenty)."
             ),
             "badge": {"label": "Models", "section": "models"},

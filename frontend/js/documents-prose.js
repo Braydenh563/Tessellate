@@ -392,6 +392,7 @@ async function docLinkOfferIgnore(name) {
   const save = async (names) => {
     prefsCache = await apiJson("/preferences", {
       method: "PUT",
+      noHistory: true,
       body: JSON.stringify({ link_offer_ignored: names }),
     }).catch(() => prefsCache);
     renderDocProse();

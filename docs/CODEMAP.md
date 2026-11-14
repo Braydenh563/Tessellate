@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8506, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11023, test files 2836, tests 22535, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11023, test files 2836, tests 22536, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8506)
+## Frontend functions (8507)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -904,25 +904,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2867 |
-| `aiIsOff` | frontend/js/status.js:2134 |
-| `aiOffGlyph` | frontend/js/status.js:2506 |
-| `aiOfflineDismissed` | frontend/js/status.js:2307 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2303 |
-| `aiStatusState` | frontend/js/status.js:2392 |
+| `agentModeAvailable` | frontend/js/status.js:2866 |
+| `aiIsOff` | frontend/js/status.js:2133 |
+| `aiOffGlyph` | frontend/js/status.js:2505 |
+| `aiOfflineDismissed` | frontend/js/status.js:2306 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2302 |
+| `aiStatusState` | frontend/js/status.js:2391 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1659 |
 | `armReminderTimer` | frontend/js/status.js:534 |
 | `askNotificationPermission` | frontend/js/status.js:396 |
 | `boardHistoryActive` | frontend/js/status.js:1624 |
 | `checkDueReminders` | frontend/js/status.js:600 |
-| `closeModelGate` | frontend/js/status.js:2153 |
+| `closeModelGate` | frontend/js/status.js:2152 |
 | `closeNotifications` | frontend/js/status.js:368 |
-| `dismissAiOffline` | frontend/js/status.js:2315 |
+| `dismissAiOffline` | frontend/js/status.js:2314 |
 | `dismissToast` | frontend/js/status.js:962 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2577 |
-| `embeddingToastDue` | frontend/js/status.js:2583 |
+| `embeddingProblemDetail` | frontend/js/status.js:2576 |
+| `embeddingToastDue` | frontend/js/status.js:2582 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
 | `insightLine` | frontend/js/status.js:1541 |
@@ -931,28 +931,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `insightVerdicts` | frontend/js/status.js:1518 |
 | `integrityWords` | frontend/js/status.js:1343 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1976 |
+| `jobsRunning` | frontend/js/status.js:1975 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3131 |
-| `lastAnswerLine` | frontend/js/status.js:2528 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3130 |
+| `lastAnswerLine` | frontend/js/status.js:2527 |
 | `loadMostUsed` | frontend/js/status.js:1839 |
 | `loadRecentQuestions` | frontend/js/status.js:1811 |
 | `lockFieldWants` | frontend/js/status.js:1018 |
 | `noteDamagedNotebook` | frontend/js/status.js:1347 |
 | `noteServerDown` | frontend/js/status.js:1403 |
 | `noteServerUp` | frontend/js/status.js:1412 |
-| `noticeTaskTransitions` | frontend/js/status.js:3236 |
+| `noticeTaskTransitions` | frontend/js/status.js:3235 |
 | `notificationsMuted` | frontend/js/status.js:722 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:477 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2593 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2592 |
 | `offerUndo` | frontend/js/status.js:1566 |
 | `openLanPanel` | frontend/js/status.js:673 |
-| `openModelGate` | frontend/js/status.js:2163 |
+| `openModelGate` | frontend/js/status.js:2162 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:3337 |
+| `paintPrivacyChip` | frontend/js/status.js:3336 |
 | `paintReminderList` | frontend/js/status.js:569 |
-| `paintStatusItem` | frontend/js/status.js:2649 |
+| `paintStatusItem` | frontend/js/status.js:2648 |
 | `paintTitle` | frontend/js/status.js:510 |
 | `paintUndoDoor` | frontend/js/status.js:1761 |
 | `performRedo` | frontend/js/status.js:1680 |
@@ -967,28 +967,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1599 |
 | `pushUndo` | frontend/js/status.js:1477 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3150 |
-| `refreshModelStatus` | frontend/js/status.js:2004 |
-| `refreshPrivacyChip` | frontend/js/status.js:3351 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3149 |
+| `refreshModelStatus` | frontend/js/status.js:2003 |
+| `refreshPrivacyChip` | frontend/js/status.js:3350 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2330 |
-| `renderAiPill` | frontend/js/status.js:2536 |
-| `renderChatModeSeg` | frontend/js/status.js:2895 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2329 |
+| `renderAiPill` | frontend/js/status.js:2535 |
+| `renderChatModeSeg` | frontend/js/status.js:2894 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2964 |
-| `renderStatusBar` | frontend/js/status.js:2698 |
+| `renderSettings` | frontend/js/status.js:2963 |
+| `renderStatusBar` | frontend/js/status.js:2697 |
 | `renderUndoBar` | frontend/js/status.js:1743 |
-| `renderWebSearchToggle` | frontend/js/status.js:2875 |
+| `renderWebSearchToggle` | frontend/js/status.js:2874 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
 | `resetStatusCadence` | frontend/js/status.js:1927 |
 | `retryServerNow` | frontend/js/status.js:1453 |
 | `sayChatModelChosen` | frontend/js/status.js:1890 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1427 |
 | `scheduleUndoBar` | frontend/js/status.js:1735 |
-| `setChatMode` | frontend/js/status.js:2941 |
+| `setChatMode` | frontend/js/status.js:2940 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
@@ -996,17 +996,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1943 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1587 |
-| `showAgentNoModelHint` | frontend/js/status.js:2936 |
+| `showAgentNoModelHint` | frontend/js/status.js:2935 |
 | `showServerDownBanner` | frontend/js/status.js:1386 |
-| `startPrivacyChip` | frontend/js/status.js:3361 |
+| `startPrivacyChip` | frontend/js/status.js:3360 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1641 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2374 |
-| `syncModelGatedControls` | frontend/js/status.js:2189 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2373 |
+| `syncModelGatedControls` | frontend/js/status.js:2188 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3211 |
+| `taskKey` | frontend/js/status.js:3210 |
 | `toast` | frontend/js/status.js:1175 |
 | `toastAction` | frontend/js/status.js:1319 |
 | `toastActionButton` | frontend/js/status.js:1299 |
@@ -1024,29 +1024,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2841 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2840 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1169 |
 | `whenText` | frontend/js/status.js:1157 |
-| `withoutEndStop` | frontend/js/status.js:2573 |
+| `withoutEndStop` | frontend/js/status.js:2572 |
 
 ### frontend/js/ai-tools.js (30)
 
 | Name | File:line |
 |---|---|
 | `applyFeatureModel` | frontend/js/ai-tools.js:359 |
-| `applyPalette` | frontend/js/ai-tools.js:995 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:929 |
+| `applyPalette` | frontend/js/ai-tools.js:996 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:930 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:353 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:396 |
 | `featureModelRow` | frontend/js/ai-tools.js:335 |
 | `featureModelState` | frontend/js/ai-tools.js:343 |
 | `fillModelSelect` | frontend/js/ai-tools.js:60 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:964 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:965 |
 | `mirroredUiKeys` | frontend/js/ai-tools.js:742 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:215 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:950 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:951 |
 | `renderAutonomousModelPicker` | frontend/js/ai-tools.js:532 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:140 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:93 |
@@ -1056,13 +1056,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:260 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:283 |
 | `saveUiState` | frontend/js/ai-tools.js:800 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:877 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:878 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:430 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
 | `uiStateFingerprint` | frontend/js/ai-tools.js:789 |
 | `uiStatePayload` | frontend/js/ai-tools.js:776 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:918 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:845 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:919 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:846 |
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:495 |
 | `wireReindexButton` | frontend/js/ai-tools.js:554 |
 
@@ -1377,137 +1377,137 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3902 |
-| `activityUndoControl` | frontend/js/dashboard.js:4000 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3909 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3983 |
-| `afterFrames` | frontend/js/dashboard.js:2021 |
-| `applyDashDensity` | frontend/js/dashboard.js:1303 |
-| `cachedGreetingPhrase` | frontend/js/dashboard.js:327 |
-| `closeFeatures` | frontend/js/dashboard.js:1606 |
-| `dashActionRow` | frontend/js/dashboard.js:3692 |
-| `dashActivityItems` | frontend/js/dashboard.js:3813 |
-| `dashContinueNote` | frontend/js/dashboard.js:1452 |
-| `dashCustomiseItems` | frontend/js/dashboard.js:1501 |
-| `dashDensity` | frontend/js/dashboard.js:1171 |
-| `dashDensityChosen` | frontend/js/dashboard.js:1177 |
+| `activityActorName` | frontend/js/dashboard.js:3903 |
+| `activityUndoControl` | frontend/js/dashboard.js:4001 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3910 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3984 |
+| `afterFrames` | frontend/js/dashboard.js:2022 |
+| `applyDashDensity` | frontend/js/dashboard.js:1304 |
+| `cachedGreetingPhrase` | frontend/js/dashboard.js:328 |
+| `closeFeatures` | frontend/js/dashboard.js:1607 |
+| `dashActionRow` | frontend/js/dashboard.js:3693 |
+| `dashActivityItems` | frontend/js/dashboard.js:3814 |
+| `dashContinueNote` | frontend/js/dashboard.js:1453 |
+| `dashCustomiseItems` | frontend/js/dashboard.js:1502 |
+| `dashDensity` | frontend/js/dashboard.js:1172 |
+| `dashDensityChosen` | frontend/js/dashboard.js:1178 |
 | `dashDragOverCard` | frontend/js/dashboard.js:23 |
-| `dashEmpty` | frontend/js/dashboard.js:3745 |
-| `dashEntries` | frontend/js/dashboard.js:502 |
-| `dashFillingSkeleton` | frontend/js/dashboard.js:2032 |
-| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2080 |
-| `dashGlanceFacts` | frontend/js/dashboard.js:622 |
-| `dashGridShape` | frontend/js/dashboard.js:1821 |
+| `dashEmpty` | frontend/js/dashboard.js:3746 |
+| `dashEntries` | frontend/js/dashboard.js:503 |
+| `dashFillingSkeleton` | frontend/js/dashboard.js:2033 |
+| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2081 |
+| `dashGlanceFacts` | frontend/js/dashboard.js:623 |
+| `dashGridShape` | frontend/js/dashboard.js:1822 |
 | `dashLayout` | frontend/js/dashboard.js:187 |
-| `dashLineDraw` | frontend/js/dashboard.js:516 |
-| `dashMarkMenu` | frontend/js/dashboard.js:1271 |
-| `dashMeetingWhen` | frontend/js/dashboard.js:716 |
-| `dashMoreItems` | frontend/js/dashboard.js:1469 |
-| `dashReminders` | frontend/js/dashboard.js:482 |
-| `dashStatsButton` | frontend/js/dashboard.js:2384 |
-| `dashStreak` | frontend/js/dashboard.js:2372 |
-| `dashTensionRow` | frontend/js/dashboard.js:4204 |
-| `dashWidgetRow` | frontend/js/dashboard.js:2136 |
-| `dashWidgetToggle` | frontend/js/dashboard.js:2110 |
-| `dashWidgetsSummary` | frontend/js/dashboard.js:2248 |
-| `dashboardGreetingText` | frontend/js/dashboard.js:307 |
-| `dashboardMarkSeed` | frontend/js/dashboard.js:1207 |
-| `fallbackGreetingPhrase` | frontend/js/dashboard.js:275 |
-| `featureRow` | frontend/js/dashboard.js:1618 |
-| `featuresPaint` | frontend/js/dashboard.js:1636 |
-| `fetchDashGraph` | frontend/js/dashboard.js:462 |
-| `fetchDashStats` | frontend/js/dashboard.js:437 |
-| `firstNoteImage` | frontend/js/dashboard.js:2466 |
-| `focusChime` | frontend/js/dashboard.js:3445 |
-| `focusRing` | frontend/js/dashboard.js:3379 |
-| `focusStep` | frontend/js/dashboard.js:3519 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3361 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3466 |
-| `focusTimerTick` | frontend/js/dashboard.js:3434 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3368 |
-| `generateDigest` | frontend/js/dashboard.js:2731 |
-| `greetingBlock` | frontend/js/dashboard.js:266 |
-| `greetingCacheSlot` | frontend/js/dashboard.js:314 |
-| `loadDigestCache` | frontend/js/dashboard.js:2717 |
-| `miniEntryList` | frontend/js/dashboard.js:2503 |
-| `mountWidgetBody` | frontend/js/dashboard.js:1739 |
-| `moveDashWidget` | frontend/js/dashboard.js:2117 |
-| `noteRowFile` | frontend/js/dashboard.js:2498 |
-| `noteRowImage` | frontend/js/dashboard.js:2483 |
-| `noteSkillRun` | frontend/js/dashboard.js:1035 |
-| `openAskFromDashboard` | frontend/js/dashboard.js:941 |
-| `openFeatures` | frontend/js/dashboard.js:1591 |
-| `paintDashClock` | frontend/js/dashboard.js:403 |
-| `paintDashEmblem` | frontend/js/dashboard.js:1233 |
-| `paintDashFace` | frontend/js/dashboard.js:1220 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3162 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3403 |
-| `quickLinkButton` | frontend/js/dashboard.js:1371 |
-| `quickTintColours` | frontend/js/dashboard.js:1365 |
-| `quickTintKey` | frontend/js/dashboard.js:1354 |
-| `quickTints` | frontend/js/dashboard.js:1421 |
-| `recentSkillLinks` | frontend/js/dashboard.js:1106 |
-| `refreshAiGreeting` | frontend/js/dashboard.js:347 |
-| `refreshArtForTheme` | frontend/js/dashboard.js:2349 |
-| `refreshDashWidgets` | frontend/js/dashboard.js:1796 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3826 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3766 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4068 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:3061 |
-| `renderDashGlance` | frontend/js/dashboard.js:733 |
-| `renderDashMore` | frontend/js/dashboard.js:1561 |
-| `renderDashSubmessage` | frontend/js/dashboard.js:518 |
-| `renderDashWidgetsList` | frontend/js/dashboard.js:2277 |
-| `renderDashboard` | frontend/js/dashboard.js:1825 |
-| `renderDashboardGreeting` | frontend/js/dashboard.js:576 |
-| `renderDigestWidget` | frontend/js/dashboard.js:2790 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:4031 |
-| `renderFeatures` | frontend/js/dashboard.js:1670 |
-| `renderFirstStepsLazy` | frontend/js/dashboard.js:1724 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3529 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2945 |
-| `renderMostLinkedWidget` | frontend/js/dashboard.js:2637 |
-| `renderMostOpenedWidget` | frontend/js/dashboard.js:2600 |
-| `renderMostUsedWidget` | frontend/js/dashboard.js:2626 |
-| `renderNameNudge` | frontend/js/dashboard.js:797 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4262 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4337 |
-| `renderPinnedWidget` | frontend/js/dashboard.js:2595 |
-| `renderQuestionsWidget` | frontend/js/dashboard.js:2686 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2895 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3134 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3217 |
-| `renderRecentNotesWidget` | frontend/js/dashboard.js:2656 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2907 |
-| `renderReviewWidget` | frontend/js/dashboard.js:2605 |
-| `renderStatsWidget` | frontend/js/dashboard.js:2422 |
-| `renderStreakWidget` | frontend/js/dashboard.js:2390 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3321 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4142 |
-| `renderTopTagsWidget` | frontend/js/dashboard.js:2665 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4094 |
+| `dashLineDraw` | frontend/js/dashboard.js:517 |
+| `dashMarkMenu` | frontend/js/dashboard.js:1272 |
+| `dashMeetingWhen` | frontend/js/dashboard.js:717 |
+| `dashMoreItems` | frontend/js/dashboard.js:1470 |
+| `dashReminders` | frontend/js/dashboard.js:483 |
+| `dashStatsButton` | frontend/js/dashboard.js:2385 |
+| `dashStreak` | frontend/js/dashboard.js:2373 |
+| `dashTensionRow` | frontend/js/dashboard.js:4205 |
+| `dashWidgetRow` | frontend/js/dashboard.js:2137 |
+| `dashWidgetToggle` | frontend/js/dashboard.js:2111 |
+| `dashWidgetsSummary` | frontend/js/dashboard.js:2249 |
+| `dashboardGreetingText` | frontend/js/dashboard.js:308 |
+| `dashboardMarkSeed` | frontend/js/dashboard.js:1208 |
+| `fallbackGreetingPhrase` | frontend/js/dashboard.js:276 |
+| `featureRow` | frontend/js/dashboard.js:1619 |
+| `featuresPaint` | frontend/js/dashboard.js:1637 |
+| `fetchDashGraph` | frontend/js/dashboard.js:463 |
+| `fetchDashStats` | frontend/js/dashboard.js:438 |
+| `firstNoteImage` | frontend/js/dashboard.js:2467 |
+| `focusChime` | frontend/js/dashboard.js:3446 |
+| `focusRing` | frontend/js/dashboard.js:3380 |
+| `focusStep` | frontend/js/dashboard.js:3520 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3362 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3467 |
+| `focusTimerTick` | frontend/js/dashboard.js:3435 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3369 |
+| `generateDigest` | frontend/js/dashboard.js:2732 |
+| `greetingBlock` | frontend/js/dashboard.js:267 |
+| `greetingCacheSlot` | frontend/js/dashboard.js:315 |
+| `loadDigestCache` | frontend/js/dashboard.js:2718 |
+| `miniEntryList` | frontend/js/dashboard.js:2504 |
+| `mountWidgetBody` | frontend/js/dashboard.js:1740 |
+| `moveDashWidget` | frontend/js/dashboard.js:2118 |
+| `noteRowFile` | frontend/js/dashboard.js:2499 |
+| `noteRowImage` | frontend/js/dashboard.js:2484 |
+| `noteSkillRun` | frontend/js/dashboard.js:1036 |
+| `openAskFromDashboard` | frontend/js/dashboard.js:942 |
+| `openFeatures` | frontend/js/dashboard.js:1592 |
+| `paintDashClock` | frontend/js/dashboard.js:404 |
+| `paintDashEmblem` | frontend/js/dashboard.js:1234 |
+| `paintDashFace` | frontend/js/dashboard.js:1221 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3163 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3404 |
+| `quickLinkButton` | frontend/js/dashboard.js:1372 |
+| `quickTintColours` | frontend/js/dashboard.js:1366 |
+| `quickTintKey` | frontend/js/dashboard.js:1355 |
+| `quickTints` | frontend/js/dashboard.js:1422 |
+| `recentSkillLinks` | frontend/js/dashboard.js:1107 |
+| `refreshAiGreeting` | frontend/js/dashboard.js:348 |
+| `refreshArtForTheme` | frontend/js/dashboard.js:2350 |
+| `refreshDashWidgets` | frontend/js/dashboard.js:1797 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3827 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3767 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4069 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:3062 |
+| `renderDashGlance` | frontend/js/dashboard.js:734 |
+| `renderDashMore` | frontend/js/dashboard.js:1562 |
+| `renderDashSubmessage` | frontend/js/dashboard.js:519 |
+| `renderDashWidgetsList` | frontend/js/dashboard.js:2278 |
+| `renderDashboard` | frontend/js/dashboard.js:1826 |
+| `renderDashboardGreeting` | frontend/js/dashboard.js:577 |
+| `renderDigestWidget` | frontend/js/dashboard.js:2791 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:4032 |
+| `renderFeatures` | frontend/js/dashboard.js:1671 |
+| `renderFirstStepsLazy` | frontend/js/dashboard.js:1725 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3530 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2946 |
+| `renderMostLinkedWidget` | frontend/js/dashboard.js:2638 |
+| `renderMostOpenedWidget` | frontend/js/dashboard.js:2601 |
+| `renderMostUsedWidget` | frontend/js/dashboard.js:2627 |
+| `renderNameNudge` | frontend/js/dashboard.js:798 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4263 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4338 |
+| `renderPinnedWidget` | frontend/js/dashboard.js:2596 |
+| `renderQuestionsWidget` | frontend/js/dashboard.js:2687 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2896 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3135 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3218 |
+| `renderRecentNotesWidget` | frontend/js/dashboard.js:2657 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2908 |
+| `renderReviewWidget` | frontend/js/dashboard.js:2606 |
+| `renderStatsWidget` | frontend/js/dashboard.js:2423 |
+| `renderStreakWidget` | frontend/js/dashboard.js:2391 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3322 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4143 |
+| `renderTopTagsWidget` | frontend/js/dashboard.js:2666 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4095 |
 | `saveDashLayout` | frontend/js/dashboard.js:220 |
-| `saveQuickAccess` | frontend/js/dashboard.js:1409 |
-| `saveQuickTints` | frontend/js/dashboard.js:1426 |
-| `setFocusTimer` | frontend/js/dashboard.js:3508 |
-| `sizeDashWidgetSpan` | frontend/js/dashboard.js:853 |
-| `sizeDashWidgets` | frontend/js/dashboard.js:857 |
-| `skillRunTimes` | frontend/js/dashboard.js:1026 |
-| `startDashClock` | frontend/js/dashboard.js:376 |
-| `startFocusTimer` | frontend/js/dashboard.js:3489 |
-| `stopArt` | frontend/js/dashboard.js:2346 |
-| `stopDashClock` | frontend/js/dashboard.js:371 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3498 |
-| `streamDigest` | frontend/js/dashboard.js:2750 |
-| `todayStamp` | frontend/js/dashboard.js:2713 |
-| `toggleDashWidgetHidden` | frontend/js/dashboard.js:240 |
-| `toggleDashWidgetWide` | frontend/js/dashboard.js:248 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3119 |
-| `undoActorFrom` | frontend/js/dashboard.js:3927 |
-| `watchDashWidgets` | frontend/js/dashboard.js:888 |
-| `wireDashDensity` | frontend/js/dashboard.js:1339 |
-| `withDisplayName` | frontend/js/dashboard.js:290 |
-| `withoutLeadingEmoji` | frontend/js/dashboard.js:1092 |
+| `saveQuickAccess` | frontend/js/dashboard.js:1410 |
+| `saveQuickTints` | frontend/js/dashboard.js:1427 |
+| `setFocusTimer` | frontend/js/dashboard.js:3509 |
+| `sizeDashWidgetSpan` | frontend/js/dashboard.js:854 |
+| `sizeDashWidgets` | frontend/js/dashboard.js:858 |
+| `skillRunTimes` | frontend/js/dashboard.js:1027 |
+| `startDashClock` | frontend/js/dashboard.js:377 |
+| `startFocusTimer` | frontend/js/dashboard.js:3490 |
+| `stopArt` | frontend/js/dashboard.js:2347 |
+| `stopDashClock` | frontend/js/dashboard.js:372 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3499 |
+| `streamDigest` | frontend/js/dashboard.js:2751 |
+| `todayStamp` | frontend/js/dashboard.js:2714 |
+| `toggleDashWidgetHidden` | frontend/js/dashboard.js:241 |
+| `toggleDashWidgetWide` | frontend/js/dashboard.js:249 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3120 |
+| `undoActorFrom` | frontend/js/dashboard.js:3928 |
+| `watchDashWidgets` | frontend/js/dashboard.js:889 |
+| `wireDashDensity` | frontend/js/dashboard.js:1340 |
+| `withDisplayName` | frontend/js/dashboard.js:291 |
+| `withoutLeadingEmoji` | frontend/js/dashboard.js:1093 |
 
 ### frontend/js/timeline.js (79)
 
@@ -4317,25 +4317,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docAccessFindings` | frontend/js/documents-prose.js:920 |
-| `docApplyWholeText` | frontend/js/documents-prose.js:2769 |
-| `docBulletRetype` | frontend/js/documents-prose.js:2211 |
+| `docAccessFindings` | frontend/js/documents-prose.js:921 |
+| `docApplyWholeText` | frontend/js/documents-prose.js:2770 |
+| `docBulletRetype` | frontend/js/documents-prose.js:2212 |
 | `docCheckLinkText` | frontend/js/documents-prose.js:186 |
-| `docCopyFormatted` | frontend/js/documents-prose.js:2812 |
-| `docDateText` | frontend/js/documents-prose.js:2632 |
-| `docEaseLabel` | frontend/js/documents-prose.js:2721 |
-| `docEditorMenuItems` | frontend/js/documents-prose.js:3504 |
-| `docEditorPaste` | frontend/js/documents-prose.js:3415 |
-| `docEmojiList` | frontend/js/documents-prose.js:1620 |
-| `docEmojiMatches` | frontend/js/documents-prose.js:1631 |
-| `docFenceCloseIndent` | frontend/js/documents-prose.js:2220 |
-| `docFillDate` | frontend/js/documents-prose.js:1547 |
-| `docFillGhost` | frontend/js/documents-prose.js:1737 |
-| `docFillOptions` | frontend/js/documents-prose.js:1671 |
-| `docFillSig` | frontend/js/documents-prose.js:1604 |
-| `docFillTable` | frontend/js/documents-prose.js:1564 |
-| `docFillToc` | frontend/js/documents-prose.js:1578 |
-| `docFillToken` | frontend/js/documents-prose.js:1652 |
+| `docCopyFormatted` | frontend/js/documents-prose.js:2813 |
+| `docDateText` | frontend/js/documents-prose.js:2633 |
+| `docEaseLabel` | frontend/js/documents-prose.js:2722 |
+| `docEditorMenuItems` | frontend/js/documents-prose.js:3505 |
+| `docEditorPaste` | frontend/js/documents-prose.js:3416 |
+| `docEmojiList` | frontend/js/documents-prose.js:1621 |
+| `docEmojiMatches` | frontend/js/documents-prose.js:1632 |
+| `docFenceCloseIndent` | frontend/js/documents-prose.js:2221 |
+| `docFillDate` | frontend/js/documents-prose.js:1548 |
+| `docFillGhost` | frontend/js/documents-prose.js:1738 |
+| `docFillOptions` | frontend/js/documents-prose.js:1672 |
+| `docFillSig` | frontend/js/documents-prose.js:1605 |
+| `docFillTable` | frontend/js/documents-prose.js:1565 |
+| `docFillToc` | frontend/js/documents-prose.js:1579 |
+| `docFillToken` | frontend/js/documents-prose.js:1653 |
 | `docGrammarAsk` | frontend/js/documents-prose.js:100 |
 | `docGrammarEnabled` | frontend/js/documents-prose.js:59 |
 | `docGrammarFail` | frontend/js/documents-prose.js:65 |
@@ -4346,110 +4346,110 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docGrammarRequest` | frontend/js/documents-prose.js:335 |
 | `docGrammarSend` | frontend/js/documents-prose.js:110 |
 | `docGrammarWhy` | frontend/js/documents-prose.js:82 |
-| `docHeadingRows` | frontend/js/documents-prose.js:2614 |
-| `docInCodeAt` | frontend/js/documents-prose.js:2255 |
-| `docIsoDay` | frontend/js/documents-prose.js:1537 |
-| `docLinkOfferAsk` | frontend/js/documents-prose.js:426 |
-| `docLinkOfferCurrent` | frontend/js/documents-prose.js:463 |
+| `docHeadingRows` | frontend/js/documents-prose.js:2615 |
+| `docInCodeAt` | frontend/js/documents-prose.js:2256 |
+| `docIsoDay` | frontend/js/documents-prose.js:1538 |
+| `docLinkOfferAsk` | frontend/js/documents-prose.js:427 |
+| `docLinkOfferCurrent` | frontend/js/documents-prose.js:464 |
 | `docLinkOfferEnabled` | frontend/js/documents-prose.js:377 |
-| `docLinkOfferFindings` | frontend/js/documents-prose.js:412 |
+| `docLinkOfferFindings` | frontend/js/documents-prose.js:413 |
 | `docLinkOfferIgnore` | frontend/js/documents-prose.js:389 |
 | `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:381 |
 | `docLinkOfferQuiet` | frontend/js/documents-prose.js:365 |
-| `docLinkOfferRequest` | frontend/js/documents-prose.js:451 |
-| `docListEnter` | frontend/js/documents-prose.js:2128 |
-| `docListExitText` | frontend/js/documents-prose.js:2205 |
-| `docListFenceExtensions` | frontend/js/documents-prose.js:2443 |
-| `docLorem` | frontend/js/documents-prose.js:1525 |
-| `docMinutesLabel` | frontend/js/documents-prose.js:2715 |
-| `docNumberHeadings` | frontend/js/documents-prose.js:2594 |
-| `docOpenStatistics` | frontend/js/documents-prose.js:2748 |
-| `docPairBackspace` | frontend/js/documents-prose.js:2113 |
-| `docPairInput` | frontend/js/documents-prose.js:2073 |
-| `docPasteChipClose` | frontend/js/documents-prose.js:3067 |
-| `docPasteChipKey` | frontend/js/documents-prose.js:3134 |
-| `docPasteChipMenu` | frontend/js/documents-prose.js:3119 |
-| `docPasteChipPlace` | frontend/js/documents-prose.js:3079 |
-| `docPasteChoose` | frontend/js/documents-prose.js:3099 |
-| `docPasteFence` | frontend/js/documents-prose.js:2959 |
-| `docPasteGuessLang` | frontend/js/documents-prose.js:2949 |
-| `docPasteIsLinewise` | frontend/js/documents-prose.js:3212 |
-| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3207 |
-| `docPasteMatch` | frontend/js/documents-prose.js:2968 |
-| `docPasteMenuOpen` | frontend/js/documents-prose.js:3127 |
-| `docPasteOffer` | frontend/js/documents-prose.js:3154 |
-| `docPasteOfferRich` | frontend/js/documents-prose.js:3268 |
-| `docPasteOfferTable` | frontend/js/documents-prose.js:3280 |
-| `docPasteSpecial` | frontend/js/documents-prose.js:3301 |
-| `docPasteSpecialApply` | frontend/js/documents-prose.js:3285 |
-| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3325 |
-| `docPasteTextVariants` | frontend/js/documents-prose.js:3195 |
-| `docPasteTransform` | frontend/js/documents-prose.js:3005 |
-| `docPasteUrlEvent` | frontend/js/documents-prose.js:3218 |
-| `docPasteVariant` | frontend/js/documents-prose.js:3063 |
-| `docPasteWrite` | frontend/js/documents-prose.js:3182 |
-| `docPlainText` | frontend/js/documents-prose.js:2641 |
-| `docProseExtras` | frontend/js/documents-prose.js:476 |
-| `docProseFillExtensions` | frontend/js/documents-prose.js:2482 |
-| `docProseFillOn` | frontend/js/documents-prose.js:2241 |
-| `docProseGhostPlugin` | frontend/js/documents-prose.js:2338 |
-| `docProseGhostSet` | frontend/js/documents-prose.js:2323 |
-| `docProseInputHandler` | frontend/js/documents-prose.js:2271 |
-| `docProsePairKeymap` | frontend/js/documents-prose.js:2384 |
+| `docLinkOfferRequest` | frontend/js/documents-prose.js:452 |
+| `docListEnter` | frontend/js/documents-prose.js:2129 |
+| `docListExitText` | frontend/js/documents-prose.js:2206 |
+| `docListFenceExtensions` | frontend/js/documents-prose.js:2444 |
+| `docLorem` | frontend/js/documents-prose.js:1526 |
+| `docMinutesLabel` | frontend/js/documents-prose.js:2716 |
+| `docNumberHeadings` | frontend/js/documents-prose.js:2595 |
+| `docOpenStatistics` | frontend/js/documents-prose.js:2749 |
+| `docPairBackspace` | frontend/js/documents-prose.js:2114 |
+| `docPairInput` | frontend/js/documents-prose.js:2074 |
+| `docPasteChipClose` | frontend/js/documents-prose.js:3068 |
+| `docPasteChipKey` | frontend/js/documents-prose.js:3135 |
+| `docPasteChipMenu` | frontend/js/documents-prose.js:3120 |
+| `docPasteChipPlace` | frontend/js/documents-prose.js:3080 |
+| `docPasteChoose` | frontend/js/documents-prose.js:3100 |
+| `docPasteFence` | frontend/js/documents-prose.js:2960 |
+| `docPasteGuessLang` | frontend/js/documents-prose.js:2950 |
+| `docPasteIsLinewise` | frontend/js/documents-prose.js:3213 |
+| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3208 |
+| `docPasteMatch` | frontend/js/documents-prose.js:2969 |
+| `docPasteMenuOpen` | frontend/js/documents-prose.js:3128 |
+| `docPasteOffer` | frontend/js/documents-prose.js:3155 |
+| `docPasteOfferRich` | frontend/js/documents-prose.js:3269 |
+| `docPasteOfferTable` | frontend/js/documents-prose.js:3281 |
+| `docPasteSpecial` | frontend/js/documents-prose.js:3302 |
+| `docPasteSpecialApply` | frontend/js/documents-prose.js:3286 |
+| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3326 |
+| `docPasteTextVariants` | frontend/js/documents-prose.js:3196 |
+| `docPasteTransform` | frontend/js/documents-prose.js:3006 |
+| `docPasteUrlEvent` | frontend/js/documents-prose.js:3219 |
+| `docPasteVariant` | frontend/js/documents-prose.js:3064 |
+| `docPasteWrite` | frontend/js/documents-prose.js:3183 |
+| `docPlainText` | frontend/js/documents-prose.js:2642 |
+| `docProseExtras` | frontend/js/documents-prose.js:477 |
+| `docProseFillExtensions` | frontend/js/documents-prose.js:2483 |
+| `docProseFillOn` | frontend/js/documents-prose.js:2242 |
+| `docProseGhostPlugin` | frontend/js/documents-prose.js:2339 |
+| `docProseGhostSet` | frontend/js/documents-prose.js:2324 |
+| `docProseInputHandler` | frontend/js/documents-prose.js:2272 |
+| `docProsePairKeymap` | frontend/js/documents-prose.js:2385 |
 | `docProseRemap` | frontend/js/documents-prose.js:306 |
-| `docProseToolExtensions` | frontend/js/documents-prose.js:1460 |
-| `docReadAloudExtension` | frontend/js/documents-prose.js:1416 |
-| `docReadAloudNext` | frontend/js/documents-prose.js:1345 |
-| `docReadAloudSentences` | frontend/js/documents-prose.js:1268 |
-| `docReadAloudStart` | frontend/js/documents-prose.js:1325 |
-| `docReadAloudStop` | frontend/js/documents-prose.js:1394 |
-| `docReadAloudVoice` | frontend/js/documents-prose.js:1305 |
-| `docRunTextTool` | frontend/js/documents-prose.js:2780 |
-| `docSentenceCase` | frontend/js/documents-prose.js:2539 |
-| `docSmartPasteEvent` | frontend/js/documents-prose.js:3237 |
-| `docSmartPunct` | frontend/js/documents-prose.js:1754 |
-| `docSmartPunctOn` | frontend/js/documents-prose.js:2248 |
-| `docSortLines` | frontend/js/documents-prose.js:2557 |
-| `docSpeakable` | frontend/js/documents-prose.js:1248 |
-| `docStatistics` | frontend/js/documents-prose.js:2686 |
-| `docStatsRows` | frontend/js/documents-prose.js:2726 |
+| `docProseToolExtensions` | frontend/js/documents-prose.js:1461 |
+| `docReadAloudExtension` | frontend/js/documents-prose.js:1417 |
+| `docReadAloudNext` | frontend/js/documents-prose.js:1346 |
+| `docReadAloudSentences` | frontend/js/documents-prose.js:1269 |
+| `docReadAloudStart` | frontend/js/documents-prose.js:1326 |
+| `docReadAloudStop` | frontend/js/documents-prose.js:1395 |
+| `docReadAloudVoice` | frontend/js/documents-prose.js:1306 |
+| `docRunTextTool` | frontend/js/documents-prose.js:2781 |
+| `docSentenceCase` | frontend/js/documents-prose.js:2540 |
+| `docSmartPasteEvent` | frontend/js/documents-prose.js:3238 |
+| `docSmartPunct` | frontend/js/documents-prose.js:1755 |
+| `docSmartPunctOn` | frontend/js/documents-prose.js:2249 |
+| `docSortLines` | frontend/js/documents-prose.js:2558 |
+| `docSpeakable` | frontend/js/documents-prose.js:1249 |
+| `docStatistics` | frontend/js/documents-prose.js:2687 |
+| `docStatsRows` | frontend/js/documents-prose.js:2727 |
 | `docStructuralBlank` | frontend/js/documents-prose.js:207 |
 | `docStructuralMask` | frontend/js/documents-prose.js:197 |
-| `docSuggestActive` | frontend/js/documents-prose.js:996 |
-| `docSuggestAll` | frontend/js/documents-prose.js:1165 |
-| `docSuggestApply` | frontend/js/documents-prose.js:1123 |
-| `docSuggestCodeMask` | frontend/js/documents-prose.js:672 |
-| `docSuggestEdit` | frontend/js/documents-prose.js:750 |
-| `docSuggestExtensions` | frontend/js/documents-prose.js:1029 |
-| `docSuggestFindingFor` | frontend/js/documents-prose.js:862 |
-| `docSuggestForRead` | frontend/js/documents-prose.js:844 |
-| `docSuggestMenu` | frontend/js/documents-prose.js:1134 |
-| `docSuggestMenuItems` | frontend/js/documents-prose.js:881 |
-| `docSuggestModes` | frontend/js/documents-prose.js:988 |
-| `docSuggestNext` | frontend/js/documents-prose.js:1180 |
-| `docSuggestNormalize` | frontend/js/documents-prose.js:714 |
-| `docSuggestParse` | frontend/js/documents-prose.js:690 |
-| `docSuggestResolve` | frontend/js/documents-prose.js:826 |
-| `docSuggestResolveAll` | frontend/js/documents-prose.js:832 |
-| `docSyllables` | frontend/js/documents-prose.js:2666 |
-| `docTitleCase` | frontend/js/documents-prose.js:2525 |
-| `docTopWords` | frontend/js/documents-prose.js:2674 |
-| `docTurnInto` | frontend/js/documents-prose.js:3372 |
-| `docTurnIntoLines` | frontend/js/documents-prose.js:3357 |
-| `docTurnIntoMenu` | frontend/js/documents-prose.js:3393 |
-| `docUniqueLines` | frontend/js/documents-prose.js:2563 |
-| `noteGrammarMenu` | frontend/js/documents-prose.js:603 |
-| `noteGrammarPlugin` | frontend/js/documents-prose.js:522 |
-| `pasteClean` | frontend/js/documents-prose.js:2853 |
-| `pasteGrid` | frontend/js/documents-prose.js:2891 |
-| `pasteLines` | frontend/js/documents-prose.js:2862 |
-| `pasteOutline` | frontend/js/documents-prose.js:2909 |
-| `pasteParseDelimited` | frontend/js/documents-prose.js:2868 |
-| `pasteStripMark` | frontend/js/documents-prose.js:2901 |
-| `pasteUrl` | frontend/js/documents-prose.js:2857 |
-| `renderDocReadAloudState` | frontend/js/documents-prose.js:1402 |
-| `renderDocSuggestState` | frontend/js/documents-prose.js:1199 |
-| `setDocSuggestMode` | frontend/js/documents-prose.js:1001 |
+| `docSuggestActive` | frontend/js/documents-prose.js:997 |
+| `docSuggestAll` | frontend/js/documents-prose.js:1166 |
+| `docSuggestApply` | frontend/js/documents-prose.js:1124 |
+| `docSuggestCodeMask` | frontend/js/documents-prose.js:673 |
+| `docSuggestEdit` | frontend/js/documents-prose.js:751 |
+| `docSuggestExtensions` | frontend/js/documents-prose.js:1030 |
+| `docSuggestFindingFor` | frontend/js/documents-prose.js:863 |
+| `docSuggestForRead` | frontend/js/documents-prose.js:845 |
+| `docSuggestMenu` | frontend/js/documents-prose.js:1135 |
+| `docSuggestMenuItems` | frontend/js/documents-prose.js:882 |
+| `docSuggestModes` | frontend/js/documents-prose.js:989 |
+| `docSuggestNext` | frontend/js/documents-prose.js:1181 |
+| `docSuggestNormalize` | frontend/js/documents-prose.js:715 |
+| `docSuggestParse` | frontend/js/documents-prose.js:691 |
+| `docSuggestResolve` | frontend/js/documents-prose.js:827 |
+| `docSuggestResolveAll` | frontend/js/documents-prose.js:833 |
+| `docSyllables` | frontend/js/documents-prose.js:2667 |
+| `docTitleCase` | frontend/js/documents-prose.js:2526 |
+| `docTopWords` | frontend/js/documents-prose.js:2675 |
+| `docTurnInto` | frontend/js/documents-prose.js:3373 |
+| `docTurnIntoLines` | frontend/js/documents-prose.js:3358 |
+| `docTurnIntoMenu` | frontend/js/documents-prose.js:3394 |
+| `docUniqueLines` | frontend/js/documents-prose.js:2564 |
+| `noteGrammarMenu` | frontend/js/documents-prose.js:604 |
+| `noteGrammarPlugin` | frontend/js/documents-prose.js:523 |
+| `pasteClean` | frontend/js/documents-prose.js:2854 |
+| `pasteGrid` | frontend/js/documents-prose.js:2892 |
+| `pasteLines` | frontend/js/documents-prose.js:2863 |
+| `pasteOutline` | frontend/js/documents-prose.js:2910 |
+| `pasteParseDelimited` | frontend/js/documents-prose.js:2869 |
+| `pasteStripMark` | frontend/js/documents-prose.js:2902 |
+| `pasteUrl` | frontend/js/documents-prose.js:2858 |
+| `renderDocReadAloudState` | frontend/js/documents-prose.js:1403 |
+| `renderDocSuggestState` | frontend/js/documents-prose.js:1200 |
+| `setDocSuggestMode` | frontend/js/documents-prose.js:1002 |
 
 ### frontend/js/documents-replace.js (9)
 
@@ -7497,7 +7497,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `waitForRestart` | frontend/js/settings-controls.js:1810 |
 | `wireLearnedSection` | frontend/js/settings-controls.js:4972 |
 
-### frontend/js/settings-data.js (52)
+### frontend/js/settings-data.js (53)
 
 | Name | File:line |
 |---|---|
@@ -7528,7 +7528,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
 | `renderSettingsClear` | frontend/js/settings-data.js:758 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1313 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1329 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
 | `restoreGuideTurns` | frontend/js/settings-data.js:938 |
@@ -7543,15 +7543,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsClearCount` | frontend/js/settings-data.js:720 |
 | `settingsClearDone` | frontend/js/settings-data.js:890 |
 | `settingsHistoryAdd` | frontend/js/settings-data.js:1157 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1173 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1188 |
 | `settingsHistoryEntry` | frontend/js/settings-data.js:1138 |
 | `settingsHistoryFind` | frontend/js/settings-data.js:1168 |
 | `settingsHistoryLoad` | frontend/js/settings-data.js:1127 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1265 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1279 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1281 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1295 |
 | `settingsHistorySave` | frontend/js/settings-data.js:1131 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1248 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1264 |
 | `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
+| `settingsRepaintDock` | frontend/js/settings-data.js:1176 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
 ### frontend/js/settings-find.js (36)
@@ -28288,7 +28289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22535)
+## Tests (22536)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30859,7 +30860,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ui_targets_1029b.py | 9 |
 | tests/test_undo_bin.py | 24 |
 | tests/test_undo_contract.py | 3 |
-| tests/test_undo_coverage.py | 9 |
+| tests/test_undo_coverage.py | 10 |
 | tests/test_undo_fresh_read_restores_model_l517.py | 3 |
 | tests/test_undo_store.py | 5 |
 | tests/test_undo_store_lazy.py | 2 |
@@ -31549,14 +31550,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:599 |
+| Needs hardware | docs/roadmap/LEDGER.md:598 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:592 |
+| Owner calls | docs/roadmap/LEDGER.md:591 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31737,7 +31738,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:733 |
+| Plan session briefs | docs/roadmap/LEDGER.md:732 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31791,25 +31792,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:749 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:833 |
+| chat | docs/roadmap/LEDGER.md:748 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:832 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:773 |
-| general | docs/roadmap/LEDGER.md:551 |
+| documents | docs/roadmap/LEDGER.md:772 |
+| general | docs/roadmap/LEDGER.md:550 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:737 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:845 |
+| graph | docs/roadmap/LEDGER.md:736 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:844 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:785 |
+| mindmap | docs/roadmap/LEDGER.md:784 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:809 |
+| timeline | docs/roadmap/LEDGER.md:808 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:797 |
+| ui-modernisation | docs/roadmap/LEDGER.md:796 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:761 |
+| whiteboard | docs/roadmap/LEDGER.md:760 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:821 |
+| world-class | docs/roadmap/LEDGER.md:820 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

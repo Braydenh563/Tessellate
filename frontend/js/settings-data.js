@@ -1170,6 +1170,21 @@ function settingsHistoryFind(change) {
 }
 
 //: Reapply one side of a change: "old" is Undo, "new" is Redo.
+//: The dock's own switches (chat mode, Web, mute) are drawn from what they last
+//: wrote, so an Undo or Redo of one repaints them; every other control is drawn
+//: from the saved value when its pane opens.
+function settingsRepaintDock(body) {
+  if ("tools_enabled" in body) {
+    $("tools-toggle").checked = body.tools_enabled === true;
+    renderChatModeSeg();
+  }
+  if ("web_search_enabled" in body) renderWebSearchToggle();
+  if ("notifications_muted_except_reminders" in body) {
+    renderNotifMuteToggle();
+    renderNotificationBadge();
+  }
+}
+
 async function settingsHistoryApply(change, side) {
   const kept = settingsHistoryFind(change) || change;
   const held = kept.big ? settingsHistoryBigKept.get(kept.id) : null;
@@ -1185,7 +1200,8 @@ async function settingsHistoryApply(change, side) {
         else body[c.key] = c[side];
       }
       if (unset.length) body.unset = unset;
-      prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify(body) });
+      prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify(body) });
+      settingsRepaintDock(body);
       //: The avatar look is also held in memory, and every later autosave sends
       //: that copy: left stale, the next unrelated change put the undone look back.
       if ("avatar_style" in body || unset.includes("avatar_style")) {

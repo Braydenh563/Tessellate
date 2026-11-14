@@ -130,19 +130,23 @@ console.log(JSON.stringify({ n: added.length, kind: added[0].kind, changes: adde
     assert got["words"] == "Density: comfortable to compact and 1 more"
 
 
-def test_nothing_is_noted_when_settings_is_closed_or_on_the_first_answer() -> None:
+def test_a_change_is_noted_with_settings_closed_but_not_on_the_first_answer_or_a_read_or_nohistory() -> None:
+    """L-world-class-31: the dock's switches and the lists kept outside Settings are
+    changes too (this was "nothing is noted when Settings is closed")."""
     out = _run(
         """
 await answer("PUT", { a: 1 });   // no earlier answer: nothing to diff against
 open = false;
-await answer("PUT", { a: 2 });   // Settings closed
+await answer("PUT", { a: 2 });   // Settings closed: still a change
+answers.push({ a: 3 });
+await apiJson("/preferences", { method: "PUT", noHistory: true });   // a write with its own Undo
 open = true;
-await answer("GET", { a: 3 });   // a read is not a change
+await answer("GET", { a: 4 });   // a read is not a change
 await tick();
 console.log(added.length);
 """
     )
-    assert out == "0"
+    assert out == "1"
 
 
 def test_a_slider_is_one_change_whose_way_back_is_its_first_value() -> None:
@@ -250,7 +254,7 @@ const calls = [];
 let busy = false, prefsCache = null;
 const settingsHistoryBigKept = new Map();
 const settingsHistoryFind = () => null, settingsHistoryLoad = () => [], settingsHistorySave = () => {};
-const renderSettingsHistory = () => {}, settingsModalOpen = () => false;
+const renderSettingsHistory = () => {}, settingsModalOpen = () => false, settingsRepaintDock = () => {};
 const apiJson = async (path, o) => JSON.parse(o.body);
 let held = null, repainted = 0;
 const setOwnNameMarkStyle = (s) => { held = s; };

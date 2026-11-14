@@ -222,6 +222,7 @@ async function saveDashLayout(layout) {
   const was = prefsCache;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
+    noHistory: true,
     body: JSON.stringify({ dashboard_layout: layout }),
   }).catch(() => prefsCache);
   //: The dashboard's layout is a step on the stack (L696): Ctrl+Z puts it back.
@@ -1409,7 +1410,7 @@ function quickLinkButton(link, tint = "") {
 async function saveQuickAccess(ids) {
   const before = Array.isArray(prefsCache?.dashboard_quick_access) ? prefsCache.dashboard_quick_access : [];
   const was = prefsCache;
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
   if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(ids)) {
     pushRequestUndo("Quick access", "/preferences", "PUT", { dashboard_quick_access: before }, { dashboard_quick_access: ids }, async () => {
       prefsCache = await apiJson("/preferences").catch(() => prefsCache);
@@ -1426,7 +1427,7 @@ function quickTints() {
 async function saveQuickTints(tints) {
   const before = quickTints();
   const was = prefsCache;
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
   if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(tints)) {
     pushRequestUndo("Quick access colours", "/preferences", "PUT", { dashboard_quick_tints: before }, { dashboard_quick_tints: tints }, async () => {
       prefsCache = await apiJson("/preferences").catch(() => prefsCache);

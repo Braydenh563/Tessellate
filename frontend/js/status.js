@@ -1951,11 +1951,10 @@ function settingsOpen() {
 // change, so no control has to remember: every `/preferences` answer passes the
 // wrapper below (the last one kept as text, so a PUT can be diffed against it),
 // and ai-tools.js reports a look key. All the rest (the diff, the list, the
-// Undo) is the lazy settings-data.js, loaded only when a change is made while
-// Settings is open: the boot scripts are at their gzip cap, and `apiJson` is
+// Undo) is the lazy settings-data.js, loaded on the first change: the boot scripts are at their gzip cap, and `apiJson` is
 // wrapped here rather than edited at its twenty callers.
 let settingsPrefsLast = null;
-//: `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
+//: A write with `noHistory` keeps its own Undo or is a setup step. `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
 //: not noted again.
 let settingsHistoryBusy = false;
 {
@@ -1965,7 +1964,7 @@ let settingsHistoryBusy = false;
     if (path === "/preferences") {
       const was = settingsPrefsLast;
       settingsPrefsLast = JSON.stringify(data);
-      if (was && options.method === "PUT" && !settingsHistoryBusy && settingsOpen()) {
+      if (was && options.method === "PUT" && !settingsHistoryBusy && !options.noHistory) {
         ensureModule("settingsData").then(() => settingsPrefsSeen(JSON.parse(was), data));
       }
     }

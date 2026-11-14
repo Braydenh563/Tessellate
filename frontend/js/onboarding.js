@@ -273,7 +273,7 @@ onboardingRun.renderPrefs = async () => {
     select.addEventListener("change", async () => {
       const value = choice.key === "before_includes_day" ? select.value === "yes" : select.value;
       try {
-        const saved = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ [choice.key]: value }) });
+        const saved = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ [choice.key]: value }) });
         if (typeof prefsCache !== "undefined") prefsCache = saved;
       } catch (error) {
         toast(error.message || "Couldn't save that setting.", true);
@@ -565,6 +565,7 @@ async function maybeShowConsoleViewIntro() {
   try {
     prefsCache = await apiJson("/preferences", {
       method: "PUT",
+      noHistory: true,
       body: JSON.stringify({
         show_console_on_startup: wantsDevView,
         console_view_intro_seen: true,

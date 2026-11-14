@@ -818,6 +818,7 @@ function saveUiState() {
     // worked locally; a toast about it would be noise about a copy.
     apiJson("/preferences", {
       method: "PUT",
+      noHistory: true,
       body: JSON.stringify({ ui_state: state }),
       silent: true,
     })
