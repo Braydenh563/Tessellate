@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - The speculative warm test proves the background load without a wall-clock bound (2026-11-14).
 - Chat scope: thirteen open_scan hits that were history or decisions reworded (2026-11-14).
 - The NDJSON stream reader loads on first use (ndjson-read.js), bringing the boot scripts back under the gzip cap (2026-11-14).
+- Desk companion: new frame set shipped (canvas 290x308 and 269x308), feminine idle seam 1.9x the median step with the strict xfail removed, rest-feet, sit and hang registration in render_desk_frames.py, highlights gain 1.1 saturation, geometry tests re-registered (L150, 2026-11-14).
 - Docs: 17 open-reading comments in the Ask, capture, reply and skills scripts reworded (feature words, not open work); the Ask foot announces suggested questions (2026-11-14).
 - Fix flake: companion live click test waits for the viewer and retries a covered click, and says how many clicks landed (2026-11-14).
 - Overlay: each throw has its own wall and ceiling give (the bounce damp varies 25% either way from its own random stream) (L148, 2026-11-14).
