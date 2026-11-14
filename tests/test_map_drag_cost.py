@@ -248,6 +248,10 @@ def test_a_rigid_link_moves_by_its_group_and_is_written_once_at_the_end() -> Non
     save = WB[start:WB.index("\n}\n", start)]
     assert "origin.rigidAt" in save and 'rigid.group.removeAttribute("transform")' in save
     assert "rigid.at(" in save
+    # The pick-up does not tokenise 300 paths: a text test decides, and a
+    # slice is compiled on each move, the rest at the drop.
+    assert "origin.compileRigid = " in capture and "pointsOnly.test(" in capture
+    assert "compiling-- > 0" in apply and "origin.compileRigid(rigid)" in save
 
 
 def test_the_translator_offsets_every_point_and_refuses_what_is_not_a_point_list(tmp_path) -> None:
