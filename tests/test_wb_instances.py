@@ -628,3 +628,63 @@ process.stdout.write(JSON.stringify(wbInvZoomRules().split("\\n")));
     assert 'box.setAttribute("data-wb-embed", String(inst.key));' in SRC
     opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
     assert 'const zoom = wbInstances.layer("wb-zoom-group");' in opts
+
+
+def _wb_functions(*names: str) -> str:
+    """whiteboard.js's own text for each named top-level function or const."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    parts = []
+    for name in names:
+        at = re.search(rf"^(?:async function|function|const) {name}\b", wb, re.M).start()
+        end = wb.index("\n}\n", at) + 3 if not wb.startswith("const", at) else wb.index(";\n", at) + 2
+        parts.append(wb[at:end])
+    return "\n".join(parts)
+
+
+def test_a_multi_row_save_goes_to_the_board_it_started_on():
+    """L-whiteboard-57: a nudge save of several rows awaits a topic still being
+    created, then saves the rest; another board activated in between (a gesture
+    on an embed, which flushes the nudge and swaps the globals) must not take the
+    later rows, nor reload in the outgoing board's place when the batch fails."""
+    fns = _wb_functions("wbSaveNode", "wbSaveMany", "WB_SAVE_MANY_MAX", "wbSaveManyBatch", "wbSaveRow")
+    out = _run(fns + """
+const puts = [], reloads = [];
+let release, failBatch = false;
+const gate = new Promise((r) => { release = r; });
+apiJson = async (url, opts) => {
+  if (opts?.method === "PUT") {
+    puts.push({ url, body: JSON.parse(opts.body) });
+    if (failBatch && url.endsWith("save-many")) throw new Error("409");
+    return {};
+  }
+  return { nodes: [], sketches: [], objects: [] };
+};
+async function wbSaveObject(d) { await gate; puts.push({ url: "object " + d.id, board: window.currentBoardId }); }
+async function wbSaveSketchProps() {}
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); }
+function recordBrowserLog() {}
+const WB_KIND_INFO = { node: { list: "nodes", payload: (n) => ({ x: n.x }) }, object: { list: "objects", payload: (o) => ({ x: o.x }) } };
+(async () => {
+const embed = I.mount(fakeEl("div", "box"), 5);
+const creating = { id: 20, _creating: true };
+const saving = wbSaveMany([{ kind: "object", item: creating }, { kind: "node", item: { id: 7, entry_id: 3, x: 1, y: 2 } }]);
+I.activate(embed);
+out.mid = window.currentBoardId;
+release();
+await saving;
+out.puts = puts;
+failBatch = true;
+I.activate(I.page);
+const batch = wbSaveMany([{ kind: "node", item: { id: 8, x: 1 } }, { kind: "object", item: { id: 9, x: 2 } }]);
+I.activate(embed);
+out.batchOk = await batch;
+out.reloads = reloads;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["mid"] == 5
+    node_put = next(p for p in out["puts"] if p["url"] == "/whiteboard/nodes/7")
+    assert node_put["body"]["board_id"] == 1, out["puts"]
+    #: The failed batch belonged to the page board; the embed now live is not reloaded in its place.
+    assert out["batchOk"] is False and out["reloads"] == [], out["reloads"]

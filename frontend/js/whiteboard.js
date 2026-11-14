@@ -13826,14 +13826,15 @@ async function wbFitToText(el) {
   toast("Sized to its text.");
 }
 
-async function wbSaveNode(node) {
+//: `boardId` is read when the save starts: a caller that awaited first (wbSaveMany) passes the one it began on.
+async function wbSaveNode(node, boardId = window.currentBoardId ?? null) {
   delete node._unsaved;
   try {
     const saved = await apiJson(`/whiteboard/nodes/${node.id}`, {
       method: "PUT",
       body: JSON.stringify({
         entry_id: node.entry_id,
-        board_id: node.board_id ?? window.currentBoardId ?? null,
+        board_id: node.board_id ?? boardId,
         x: node.x, y: node.y, z: node.z,
         width: node.width ?? null, height: node.height ?? null,
         rotation: node.rotation ?? null,
@@ -13893,6 +13894,11 @@ async function wbSaveObject(d) {
 //: body plus its id (`PUT /whiteboard/items/save-many`, one transaction, all
 //: or nothing). One item, or a topic still being created, goes the old way.
 async function wbSaveMany(rows) {
+  //: **The board is the one the save began on** (L-whiteboard-57): a nudge burst is
+  //: flushed as another board instance goes live (wbInstances.activate), so after
+  //: the first await `currentBoardId` and the reload below are that board's.
+  const inst = wbInstances.active;
+  const boardId = window.currentBoardId ?? null;
   //: An item twice (width then height on one card) is one row: the server
   //: refuses a batch that names an id twice.
   const seen = new Set();
@@ -13903,23 +13909,24 @@ async function wbSaveMany(rows) {
     return true;
   });
   const waiting = rows.filter((r) => r.item?._creating);
-  for (const { kind, item } of waiting) await wbSaveRow(kind, item);
+  for (const { kind, item } of waiting) await wbSaveRow(kind, item, boardId);
   if (ready.length < 2) {
-    for (const { kind, item } of ready) await wbSaveRow(kind, item);
+    for (const { kind, item } of ready) await wbSaveRow(kind, item, boardId);
     return true;
   }
   //: The route takes at most 5,000 of a kind a request; a larger selection
   //: goes in slices of that size (each slice all or nothing, like move-many).
   for (let at = 0; at < ready.length; at += WB_SAVE_MANY_MAX) {
-    if (!(await wbSaveManyBatch(ready.slice(at, at + WB_SAVE_MANY_MAX)))) return false;
+    if (!(await wbSaveManyBatch(ready.slice(at, at + WB_SAVE_MANY_MAX), inst))) return false;
   }
   return true;
 }
 
 const WB_SAVE_MANY_MAX = 5000;
 
-//: One `save-many` request. False (after reloading the board) when it fails.
-async function wbSaveManyBatch(slice) {
+//: One `save-many` request. False (after reloading the board) when it fails;
+//: a board no longer live is not reloaded in the live one's place.
+async function wbSaveManyBatch(slice, inst = wbInstances.active) {
   const body = { nodes: [], sketches: [], objects: [] };
   for (const { kind, item } of slice) body[WB_KIND_INFO[kind].list].push({ id: item.id, ...WB_KIND_INFO[kind].payload(item) });
   try {
@@ -13927,15 +13934,16 @@ async function wbSaveManyBatch(slice) {
     return true;
   } catch {
     recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
+    if (wbInstances.active !== inst) return false;
     await fetchWhiteboardState();
     wbScheduleRender();
     return false;
   }
 }
 
-function wbSaveRow(kind, item) {
+function wbSaveRow(kind, item, boardId) {
   if (kind === "sketch") return wbSaveSketchProps(item, {});
-  return kind === "node" ? wbSaveNode(item) : wbSaveObject(item);
+  return kind === "node" ? wbSaveNode(item, boardId) : wbSaveObject(item);
 }
 
 //: A sketch's `d` written into its data without saving it (a group drag's end).

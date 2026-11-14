@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: a multi-row save keeps the board it began on, so a board embed going live mid-save no longer takes its later rows or its stale reload (L-whiteboard-57).
 - Boards: each board keeps its own inverse zoom, so a zoomed embed no longer resizes the page board's grips, and the page view draws into the active board (L-whiteboard-56).
 - Code: the board looks up its layers and items inside the active board (L-whiteboard-55): `wbInstances.query` and `queryAll` search the live container and read an embed's layer ids as its `data-wb-layer`, so export, record, search and 90 other `#wb-html-layer .wb-object`-style lookups never find another board's cards. Tests: tests/test_wb_instances.py (2 new)
 - Code: editing inside an embedded board (L-whiteboard-54): initWhiteboard binds its container listeners through `wbInstances.on`, so the page board and every embed get their own copy, each making its instance live before it runs; a read-only embed gets only the pan and zoom ones, destroy() unbinds them, and keys and paste go to the embed holding the focus. Tests: tests/test_wb_instances.py (3 new)
