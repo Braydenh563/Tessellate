@@ -22,7 +22,7 @@ def test_the_toolbar_is_one_nowrap_dock_with_the_controls_in_order():
     # kind bar (a diagram in a document only), so the buttons are the same and one control sits before the menu.
     assert "actions.append(suggest, ...hist, ...[diagramModel.kindbar?.expand(S)].filter(Boolean), h.more(S))" in build
     assert 'bar.dataset.dockName = "diagram"' in build and 'setAttribute("role", "toolbar")' in build
-    # The eight tiles and the four direction buttons are not built any more.
+    # The eight tiles and the four direction buttons were removed.
     assert "library.build(" not in BUILDER and "for (const [dir, arrow, name] of DIRS)" not in BUILDER
 
 

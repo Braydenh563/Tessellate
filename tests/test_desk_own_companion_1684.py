@@ -39,7 +39,7 @@ class FakePage:
     """The app window's side of `capture.fetch_frames`: loads late, draws one frame per two polls."""
 
     def __init__(self, names=None, loads_after=1, bad=None):
-        self.todo = list(names or capture.CAPTURED)
+        self.queue = list(names or capture.CAPTURED)
         self.loads_after, self.bad = loads_after, bad
         self.polls = 0
         self.stopped = False
@@ -49,7 +49,7 @@ class FakePage:
             self.loads_after -= 1
             return "ready" if self.loads_after < 0 else "loading"
         if script == capture.START_SCRIPT:
-            return str(len(self.todo))
+            return str(len(self.queue))
         if script == capture.STOP_SCRIPT:
             self.stopped = True
             return "ok"
@@ -59,9 +59,9 @@ class FakePage:
             return "wait"
         if self.bad == "error":
             return json.dumps({"error": "stand: the figure would not draw"})
-        if not self.todo:
+        if not self.queue:
             return json.dumps({"done": True})
-        name = self.todo.pop(0)
+        name = self.queue.pop(0)
         return json.dumps({"name": name, "png": "not base64!" if self.bad == name else figure_png(name)})
 
 
