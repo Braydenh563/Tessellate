@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Social turns read right: "that worked" and "it works" are gladness, "wrong again" and "still wrong" frustration, "you are brilliant" praise, and "briefly" alone asks for a shorter answer (chat row L-chat-22).
+- Review 5899348594 (1, 2): an anchored reminder narrows by name in SQL before its 500-row cap, and reads `now` and each row as the writer's wall clock, so a zoned clock (Brisbane) no longer raises (`tests/test_review_5899348594.py`).
 - CodeQL 2291: the Guide's sum reader trims with string ops and has no overlapping runs, so a long run of tabs returns at once (`tests/test_guide_sum_redos_2291.py`).
 - Composer evals L-chat-22: the recall (30), social (80), out-of-domain (30) and Guide how-to (40) sets, with floor tests; recall and social meet their floors, out-of-domain and Guide are ratchets on rows L-chat-40 and L-chat-41.
 - Chat row L-chat-22: `windows_1010.json`, 60 time phrases (with "since March", "the week before last", "on 3 March" read as past and "last friday" as the past Friday) read against their own clocks, exact 60 of 60; floor in `tests/test_composer_eval_1113.py`.

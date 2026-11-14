@@ -53,14 +53,20 @@ def settle(session: Session, parsed: dict, now: datetime) -> dict:
     anchor = parsed["anchor"]
     what = anchor["what"].casefold()
     offset = timedelta(minutes=anchor["minutes"])
+    #: One convention: `EntryDate.at` is the writer's wall clock with no zone
+    #: (`entry/manager.py`), so `now` and each row are read that way before they meet.
+    now = now.replace(tzinfo=None)
+    #: The name narrows in SQL before the cap (a coarse substring, `\` escaping
+    #: `%` and `_`); the word-boundary check below then reads what is left.
+    like = "%" + what.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
     #: A private note and a board never anchor a reminder (Chat does not read them), and only a time still ahead is read.
     rows = session.execute(
         select(EntryDate.at, Entry.content).join(Entry, Entry.id == EntryDate.entry_id)
-        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False), EntryDate.at > now + offset)
+        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False), EntryDate.at > now + offset, Entry.content.ilike(like, escape="\\"))
         .order_by(EntryDate.at).limit(_LOOKED_AT)
     ).all()
     named = re.compile(rf"(?<!\w){re.escape(what)}(?!\w)")
-    #: Wall-clock times, as the person typed them: the stored zone is not part of "3pm".
+    #: The column type hands rows back tagged UTC; the clock is still the writer's wall clock.
     ahead = [at.replace(tzinfo=None) for at, content in rows if at.replace(tzinfo=None) - offset > now and named.search((content or "").casefold())]
     if not ahead:
         return {**parsed, "ask": f"I found no time for “{anchor['what']}” in your notes. When is it, so I can set the reminder against it?"}
