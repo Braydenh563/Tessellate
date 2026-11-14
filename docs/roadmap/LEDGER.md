@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 126 | 2 | 59 | 201 |
+| chat | 0 | 75 | 124 | 2 | 59 | 199 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 195 | 2 | 183 | 1003 |
+| all | 359 | 449 | 193 | 2 | 183 | 1001 |
 
 ## graph
 
@@ -76,8 +76,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14)
 - [ ] **L-chat-66** `chat` partly, S: U3: taxonomy concept sets not verified. From CHAT_PLAN.md:1213. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_tables.py:801, :1294 VERB_NOUN_PAIRS Measured 2026-11-14: verb-noun pairs and repair are covered by the U1/U3 probes (tests/test_uax_probes_u_1114.py); the concept sets (sport, food, travel as one term) are not: 'gym' does not find a note that says only 'swimming'. Remaining step: a small concept table in composer_tables.py read by _fit_terms.
 - [ ] **L-chat-70** `chat` partly, S: U8: pronoun-by-type references unverified. From CHAT_PLAN.md:1218. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869 class Dialogue Measured 2026-11-14: 'she' and 'he' bind through page-echoed frames (person) only; 'there' and 'then' carry no place or day from the previous answer. Remaining step: add place and day to the Dialogue frame in composer_dialogue.py and read them in follow_on.
-- [ ] **L-chat-73** `chat` partly, S: U11: over-time and superlative compares not found (guess). From CHAT_PLAN.md:1221. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_body.py:481 _compare_lead Measured 2026-11-14: 'compare this month with last month' has no per-window reader; _compare_lead (composer_body.py) compares two named things only. Remaining step: a window pair in composer_notes._window and a count per window.
-- [ ] **L-chat-84** `chat` partly, S: A7: see U11. From CHAT_PLAN.md:1240. Evidence: Recount 2026-11-14 (audit, verify in code first): see U11 Follows L-chat-73 (U11): the window-pair compare closes both.
 - [ ] **L-chat-92** `chat` partly, S: A15: six rules not all verified. From CHAT_PLAN.md:1248. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_voice.py:481 _patterns Measured 2026-11-14: recurrence (tests/test_uax_probes_a_1114.py::test_a15) is built and dated; streak, drift, contrast, load, time of day, first and last mention, co-occurrence and silence are not asked of the composer. Remaining step: one reader per rule in composer_voice._patterns, each with a measured dated line.
 - [ ] **L-chat-93** `chat` partly, S: A16: one Measure shape not found. From CHAT_PLAN.md:1249. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/notebook_stats.py Measured 2026-11-14: counts print as lines (test_a16) but no Measure(kind, value, derived_from) type exists; notebook_stats.StatAnswer.facts is the nearest. Remaining step: add Measure in notebook_stats, have the 15 handlers return it, and the eval re-derive from derived_from.
 - [ ] **L-chat-99** `chat` open, S: A23: entity card aggregate (guess from absence). From CHAT_PLAN.md:1256. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'tell me about Priya' gives the three sentences that name her and the note count (A10), but no first and last mention date and no related entities by co-occurrence. Remaining step: an entity-card block in composer_notes (first and last dated mention, count, top 2 sentences, co-occurring names).

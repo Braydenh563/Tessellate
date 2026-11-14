@@ -221,3 +221,29 @@ def test_u14_factgraph_modes_are_read_by_the_composer():
     assert factgraph.sentence_mode("If it rains I would go.") == "conditional"
     assert factgraph.sentence_mode("I might go.") == "hypothetical"
     assert factgraph.sentence_mode("I went to the gym.") == "asserted"
+
+
+# --- U11 and A7: comparisons over time and the busiest period -----------------------------------------
+
+def _stat(session, question: str) -> str:
+    from datetime import datetime, timezone
+
+    from tessellate.ai import notebook_stats
+
+    seed.seed(session)
+    now = datetime(2026, 10, 31, 11, 30, tzinfo=timezone.utc)
+    said = notebook_stats.answer(question, session, now=now)
+    return said.text if said else ""
+
+
+@pytest.mark.parametrize("question", ["compare this month with last month", "did I write more this month than last month", "this month versus last month"])
+def test_u11_two_windows_are_counted_with_both_numbers(session, question):
+    assert _stat(session, question) == "You wrote 36 notes this month and 6 last month.", question
+
+
+def test_u11_one_window_after_than_is_set_against_the_current_one(session):
+    assert _stat(session, "am I writing more than last month") == "You wrote 36 notes this month and 6 last month."
+
+
+def test_u11_the_busiest_month_is_the_one_with_most_notes(session):
+    assert _stat(session, "which month did I write the most") == "You wrote the most in October 2026: 36 notes."

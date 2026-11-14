@@ -244,6 +244,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         #: matcher rather than by reading the code.
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
+        or re.search(r"\b(?:compare|versus|vs\.?)\b.*\b(?:this|last|previous)\s+(?:week|month|year)\b", text)
         or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
         or stats_is_subject(text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
@@ -304,6 +305,10 @@ def _answer(message: str, session: Session) -> StatAnswer | None:
     if not text or not looks_like_a_question_about_the_notebook(text):
         return None
 
+    from tessellate.ai import notebook_compare
+
+    if compared := notebook_compare.answer(text, session, _now()):
+        return compared
     for ask, reader in _FIRST_RULES:
         if ask(text):
             return reader(session)
