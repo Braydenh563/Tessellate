@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Live captions listen through an AudioWorklet instead of the deprecated ScriptProcessorNode, loaded from the app's own origin so the security policy is unchanged.
 - Translate this has a pair registry and a language picker that appears once a second pair is installed; only English to Spanish is downloadable so far.
 - Checked that stopping live captions with the audio switch on attaches the audio as a recording linked to the note.
 - A note can embed a recording with `![[Name]]` and link it with `[[Name]]`, by the name the Library shows; the recorder's file answers both, so the boot files only name it (L579)
