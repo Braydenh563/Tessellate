@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the bust avatar now carries the mood cue (flame, heart, drops, ink marks), so close moods read apart: the closest pair of 17 is 11.5 at 104 px (was 0.0, smirk and worried), 5.5 at 28 px (was 0.59) and 4.0 at 20 px (was 3.2), mean RGB difference (L135)
 - Desk renderer: it finishes again (the dropped tumble capture is back), the tail is driven through `atlasTailFrame.kit`, the orbit rings are pinned and the figure's fit scale is held at 1 (half the takes had come out at 0.75); a full re-render measures the feminine idle wrap at 1.9 times the median step, but the set is not shipped yet because 20 tests tied to the old frames' registration need their anchors moved (L150, remaining step on the row)
 - Atlas: the dress and the trail carry a fine weave of 18 extra specks (11 to 29 on hers, 10 to 28 on his, measured), and the wisps and glints hold at rest (browser: paused under is-calm) (L742).
 - Atlas: covering its eyes now puts its hands over its face (a copy of each arm on the front layer for the act; 130 pixels of the figure change, L175), and groom, sniff and shake stay with the generated faces (L746).

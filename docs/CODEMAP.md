@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8499, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11018, test files 2839, tests 22582, plan headings 692, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8499, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11018, test files 2839, tests 22583, plan headings 692, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8499)
 
@@ -28264,7 +28264,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22582)
+## Tests (22583)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28372,7 +28372,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_crest_1696.py | 2 |
 | tests/test_atlas_daylife_1719.py | 2 |
 | tests/test_atlas_desk_acts_1696.py | 14 |
-| tests/test_atlas_draw_rows.py | 13 |
+| tests/test_atlas_draw_rows.py | 14 |
 | tests/test_atlas_e3_1111.py | 3 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
 | tests/test_atlas_fade_1107.py | 5 |

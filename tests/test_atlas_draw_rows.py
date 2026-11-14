@@ -234,3 +234,10 @@ def test_desk_renderer_captures_every_frame_at_full_size_l150():
     assert '#nm-buddy .nm-buddy-face { scale: 1 !important; transition: none !important; }' in js
     life = (ROOT / "frontend/js/atlas-life.js").read_text(encoding="utf-8")
     assert "atlasTailFrame.kit = {" in life and "if (atlasTailFrame.kit.hold === tail) return;" in life
+
+
+def test_the_bust_carries_the_mood_cue_so_close_moods_read_apart_l135():
+    """At 104 px smirk and worried differed by 0.0 and sad and shy by 0.09 (mean RGB difference of the two avatars;
+    median pair 29.8), at 28 px curious and thinking by 0.59: the bust drew no cue (only the head and tiny levels did)."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    assert re.search(r'if \(tiny \|\| level === "head" \|\| level === "bust"\) atlasCue\(sway, tiny\);', atlas)

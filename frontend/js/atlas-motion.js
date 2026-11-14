@@ -686,7 +686,7 @@ function atlasRigFrame(rig, now) {
       for (const p of arm.paths) p.setAttribute("d", d);
       const handT = atlasArmHand(arm.geo, bend, wrist);
       arm.hand?.setAttribute("transform", handT);
-      for (const h of arm.cloneHands) h.setAttribute("transform", handT);
+      for (const h of arm.cloneHands || []) h.setAttribute("transform", handT);
       arm.drawn = [bend, wrist];
     }
     if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, arm.side, +j.sh.x.toFixed(2), +j.el.x.toFixed(2), +j.wr.x.toFixed(2)]);

@@ -2400,7 +2400,7 @@ function atlasHead(parent, id, level, look, hairAt = null) {
     }
   }
   if (!tiny) atlasExtras(sway);
-  if (tiny || level === "head") atlasCue(sway, tiny);
+  if (tiny || level === "head" || level === "bust") atlasCue(sway, tiny);
   //: Thinking, a hand at the chin (the reference sheet): drawn here, over
   //: the head, because the body's own arm is drawn under it; the CSS shows
   //: it and hides the resting right arm while Atlas thinks.
