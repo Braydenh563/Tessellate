@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Chat: the help-popover sweep opens a closed fold and waits out the smooth scroll (146 popovers, 0 findings); the money meta payload is pinned (400 rows, 425 KB for 450 notes) (L134, L248)
 Chat: the typed yes forms, the Ask answerer setting, one assistant name on reply chips, hidden match percents, a scrolling sources grid, SearXNG auto retry, the tools engine shown with no model, and proofs for starters, the silent probe, checkpoint refetch and Guide ranking (L715 to L737, L166, L167, L118, L128, L130, L196, L198)
 - Chat: Agent stays available with the server up but no model when Needle is installed; a failed web search goes again once by itself when SearXNG answers; the sources list scrolls in the bubble; controls only a model can serve follow model_ready (L166, L167, L-chat-20, L730, L128; L118 and L119 proved built).
 - Chat: any form of yes (yeah, yep, sure, ok, go ahead) takes up an offer; the answer label reads Atlas's assistant, from your notes, or Atlas, <model>; found notes show no match percent while the answer is written; Settings, Models picks who answers plain Ask; decision 38 verbs, confirm, undo and web tool pinned (L715, L728, L729, L736, L737).
