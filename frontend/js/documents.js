@@ -6364,12 +6364,12 @@ function docBlockDocumentText(doc) {
 //: fetched on first use. Each name is a stand-in that the piece's function of the same name replaces on load.
 async function docCopyBlockRef() {
   if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", docCopyBlockRef] });
-  return docCopyBlockRef();
+  return docBlockrefPiece.docCopyBlockRef();
 }
 
 async function docRevealBlock(blockId) {
   if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", () => docRevealBlock(blockId)] });
-  return docRevealBlock(blockId);
+  return docBlockrefPiece.docRevealBlock(blockId);
 }
 
 //: **True only while a print is being prepared** (`exportDocumentPdf`), which
@@ -14971,12 +14971,12 @@ function docFindingIsPassage(finding) {
 //: use. Each is a stand-in the piece's function of the same name replaces on load, so a caller awaits it.
 async function docFindingAnswerRows(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docFindingAnswerRows(...args)] }), [];
-  return docFindingAnswerRows(...args);
+  return docSuggestPiece.docFindingAnswerRows(...args);
 }
 
 async function docSuggestAnswers(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docSuggestAnswers(...args)] }), document.createDocumentFragment();
-  return docSuggestAnswers(...args);
+  return docSuggestPiece.docSuggestAnswers(...args);
 }
 
 //: **The popup, the translate hand-off, Discuss in chat and the AI review** are
@@ -14985,22 +14985,22 @@ async function docSuggestAnswers(...args) {
 //: again after the fetch reaches the real one. Nothing reads their return.
 async function openDocSuggest(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => openDocSuggest(...args)] });
-  return openDocSuggest(...args);
+  return docSuggestPiece.openDocSuggest(...args);
 }
 
 async function docTranslatePassage(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docTranslatePassage(...args)] });
-  return docTranslatePassage(...args);
+  return docSuggestPiece.docTranslatePassage(...args);
 }
 
 async function docAiDiscussInChat(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docAiDiscussInChat(...args)] });
-  return docAiDiscussInChat(...args);
+  return docSuggestPiece.docAiDiscussInChat(...args);
 }
 
 async function docAiReview(...args) {
   if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docAiReview(...args)] });
-  return docAiReview(...args);
+  return docSuggestPiece.docAiReview(...args);
 }
 
 //: **A popup placed in viewport coordinates has to live in the viewport's own

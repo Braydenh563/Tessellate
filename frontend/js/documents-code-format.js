@@ -603,5 +603,7 @@
   }
 
   //: What the stand-in in documents-code.js is replaced by.
-  Object.assign(window, { docFormatCode });
+  //: One name in the shared scope: documents.js keeps a stand-in per function
+  //: (same name), which calls through this once the file is in.
+  Object.assign(window, { docCodeFormatPiece: { docFormatCode } });
 })();

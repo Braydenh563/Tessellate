@@ -406,5 +406,7 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docFindingAnswerRows, docSuggestAnswers });
+  //: One name in the shared scope: documents.js keeps a stand-in per function
+  //: (same name), which calls through this once the file is in.
+  Object.assign(window, { docSuggestPiece: { openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docFindingAnswerRows, docSuggestAnswers } });
 })();

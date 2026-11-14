@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the block-reference, suggestion and code-format pieces each export one object, so no name is declared in two scripts (test_s66; global names 7,406 to 7,379).
 - Documents: an opt-in Vim keymap for the code and document editors (Vim keys in the ... menu, off by default and remembered): `@replit/codemirror-vim` 6.4.0 (MIT) is its own lazy file, `vim.min.js` (124,464 bytes, 39,576 gzipped), fetched only when the setting is on and built against the editor bundle's own `CM6`, so `codemirror.min.js` is unchanged; the bar shows NORMAL, INSERT or VISUAL. Measured in the app: Escape then `dd` deletes a line with it on and types `dd` with it off (L-documents-41).
 - Documents, Debug: class getters and setters and private members (#x fields, methods and accessors) are now lowered for the stepper, each stepped against node's output; an object literal's accessor and `#x in o` are still named (L-documents-37). The claim-check linear-time test proves linearity by growth ratio, not a wall bound (L-documents-45).
 - Documents: the dictionary sheet, the links panel's rows, the word popup with Translate, Discuss in chat and the AI review, and Copy link to block are four lazy pieces (documents.js 16,769 to 16,199 lines, 261,826 to 254,407 gzipped bytes); the attach-a-bookmark picker no longer leaves an Escape listener on the page each time it is reopened (L327).

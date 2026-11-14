@@ -5788,7 +5788,7 @@ function docTreeHasJsx(CM, state) {
 //: anything was done (documents-code-format.js; this stand-in is replaced by the function of that name on load).
 async function docFormatCode(...args) {
   if (!(await lazyScript("/js/documents-code-format.js"))) return toast("The formatter could not be loaded.", true, { action: ["Try again", () => docFormatCode(...args)] });
-  return docFormatCode(...args);
+  return docCodeFormatPiece.docFormatCode(...args);
 }
 
 // --- Quick fixes -------------------------------------------------------------
