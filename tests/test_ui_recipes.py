@@ -3133,6 +3133,7 @@ PILL_CONTROLS = {
     ".chat-dock-controls .chat-dock-more>button": "the chat composer's row is pills",
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
+    ".chat-dock-controls .seg>button": "the same segments in the strip's family rule (L-world-class-250)",
     ".chat-context-pill": "the context meter in the chat composer's row",
     ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
     ".minimised-pill-x": "the round x inside that pill",
@@ -5805,6 +5806,35 @@ def test_a_bar_has_one_select_one_filter_trigger_and_one_view_order() -> None:
     for seg in re.findall(r'<div class="seg[^"]*"[^>]*>(.*?)</div>', html, re.S):
         if "ph-rows" in seg and "ph-squares-four" in seg:
             assert seg.index("ph-rows") < seg.index("ph-squares-four"), "a view switch is list, then grid"
+
+
+def test_the_chat_strip_is_one_pill_family() -> None:
+    """DESIGN.md, Bar controls (L-world-class-250): Chat, the busiest screen,
+    counted 12 control recipes, three of them pills in one row (the chips,
+    the chosen Ask | Agent segment on a fill with no edge, the other on
+    none) and the Ask Atlas offer on a hairline with no ground. Each segment
+    is a chip now, the well behind them stepped back, and the offer rests on
+    the chip's ground and lifts to the chip's accent."""
+    rules: dict[str, str] = {}
+    for sel, body in _rules(_css_all()):
+        key = " ".join(sel.split())
+        rules[key] = rules.get(key, "") + body
+    family = next(
+        (body for sel, body in rules.items()
+         if ".chat-dock-controls>.chat-tool-group>button" in sel and ".chat-dock-controls .seg>button" in sel
+         and "border-radius" in body),
+        None,
+    )
+    assert family, "the strip's family rule must name the mode segments beside the chips"
+    for decl in ("border-radius: var(--radius-pill)", "border: 1px solid transparent", "background: var(--chip-bg)"):
+        assert decl in family, decl
+    assert "background: none" in rules.get(".chat-dock-controls .seg", ""), "the well behind the segments draws no second ground"
+    unchosen = rules.get('.chat-dock-controls .seg>button:not(.active, [aria-pressed="true"])', "")
+    assert "background: var(--chip-bg)" in unchosen, "an unchosen segment rests on the chip ground"
+    offer = rules.get(".help-atlas > .atlas-suggest", "")
+    assert "background: var(--chip-bg)" in offer and "border: 1px solid transparent" in offer
+    lift = rules.get(".help-atlas > .atlas-suggest:hover, .help-atlas > .atlas-suggest:focus-visible", "")
+    assert "border-color: var(--accent)" in lift and "background: var(--accent-soft)" in lift
 
 
 def test_the_documents_assistant_is_one_composer_at_one_height() -> None:

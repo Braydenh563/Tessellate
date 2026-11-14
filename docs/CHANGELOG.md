@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: the strip's Ask | Agent segments are chips of the strip's own pill family (one ground, one 1px edge; the chosen one keeps its sliding fill) and the Ask Atlas offer rests on the chip ground and lifts to the chip accent; `scratchpad/audit/recipes.js` reads the largest corner, so a split button's caret is no recipe of its own. Chat 12 to 8 control recipes at 1440 in light and dark, every other tab unchanged (L-world-class-250).
 - Autocorrect: the reminder edit form, the Atlas help chat, the editor ask and rewrite lines, the draft refine line, a bookmark title and note, a new memory and the skill and template descriptions now correct typos with the same undo underline as the note boxes (reminders and magic add already did; driven in the app: "teh " becomes "the " in each; L-world-class-1).
 - Audit A8: the other three items re-measured at 1440x900 and 390x844 and all pass (graph options panel 520 in 520, Notes sidebar 726 in 726, every segmented track on the radius table) (L-world-class-77).
 - Settings: the three pane titles that read off the shared 17px indent are by design and now pinned by `tests/test_settings_heading_indent.py` (Models clipped to 1px, Help topic heads on the card edge, the profile name beside its avatar at 68.8px) (L-world-class-260).

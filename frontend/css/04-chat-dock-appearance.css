@@ -1081,7 +1081,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 .chat-dock-controls select,
 .chat-dock-controls>.chat-tool-group>button,
 .chat-dock-controls .chat-dock-more>button,
-.chat-dock-controls .seg {
+.chat-dock-controls .seg>button {
   border-radius: var(--radius-pill);
   /* The `.seg` choice-control recipe (a tinted well, no edge), not the card
      one -- see `.segmented-control` in 03-dashboard-widgets.css. */
@@ -1089,6 +1089,23 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   background: var(--chip-bg);
   box-shadow: none;
   overflow: hidden;
+}
+
+/* **Ask | Agent are two chips of the strip's family** (L-world-class-250):
+   the well drew a second ground and no edge around segments that drew none,
+   so the busiest screen counted three pill recipes in one row (the chips,
+   the chosen segment, the other one). The well steps back; each segment
+   takes the chip's edge and ground, and the chosen one keeps the strip's
+   sliding fill (08-consistency.css, `.has-glide`), so the chosen look and
+   its per-palette colours are unchanged. Lint: `tests/test_ui_recipes.py`
+   (`test_the_chat_strip_is_one_pill_family`). */
+.chat-dock-controls .seg {
+  gap: var(--space-1);
+  background: none;
+}
+
+.chat-dock-controls .seg>button:not(.active, [aria-pressed="true"]) {
+  background: var(--chip-bg);
 }
 
 .chat-dock-controls select {
@@ -1116,6 +1133,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 .chat-dock-controls select:hover,
 .chat-dock-controls>.chat-tool-group>button:hover,
 .chat-dock-controls .chat-dock-more>button:hover,
+.chat-dock-controls .seg>button:not(.active, [aria-pressed="true"]):is(:hover, :focus-visible),
 .chat-dock-controls select:is(:focus-visible, :has(:focus-visible)),
 .chat-dock-controls>.chat-tool-group>button:is(:focus-visible, :has(:focus-visible)),
 .chat-dock-controls .chat-dock-more>button:is(:focus-visible, :has(:focus-visible)) {

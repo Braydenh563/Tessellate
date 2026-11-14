@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 126 | 29 | 3 | 10 | 155 |
+| world-class | 0 | 125 | 29 | 3 | 10 | 154 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 515 | 100 | 5 | 121 | 987 |
+| all | 372 | 514 | 100 | 5 | 121 | 986 |
 
 ## graph
 
@@ -606,7 +606,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
 - [ ] **L-world-class-231** `world-class` open, S: Reproduce the 486 ms first document open at 2,000 notes and profile it before choosing a warm. From L-world-class-40, 2026-11-14. Evidence: Cold probe (fresh page each, Documents tab idle 6.5 s, 6 docs of 80 sections, 1440 wide): openDocument first call 35, 49, 46, 39 ms, second call 53 to 81 ms, so the 486 ms first open does not reproduce without the 2,000-note data; the cost is the data size, not a cold compile a warm can remove. Needs a profile at 2,000 notes before any third warm is written.
 - [ ] **L-world-class-232** `world-class` open, M: Move the next closed-surface rule blocks out of the boot stylesheets into their bundles' lazy sheets (Skills tab, run list, space dialogs, Connections dialog). From L-world-class-71, 2026-11-14. Evidence: L-world-class-71 moved only the OCR workspace's own rules (40 rules, 18 KB, boot CSS gzip 181,064 to 180,504). Still eager in the boot sheets: the Skills tab block (07, about 270 lines), the run list, the whiteboard and timeline blocks that only their bundles draw, the space dialogs and the Connections dialog. Each move needs the computed-style diff of the built surface (scratchpad probe: every property of every element, three widths, 0 different) and exclusion of any rule that shares a selector or a tie with a boot rule.
-- [ ] **L-world-class-250** `world-class` open, M: Busiest screen (Chat) down to 8 control recipes: one pill family for the composer chips and the mode switch, the atlas-suggest chip on one ground, the sidebar search on the field recipe. From WORLD_CLASS_PLAN.md:696 (recipe-count gate). Evidence: scratchpad/audit/recipes.js COARSE=1 at 1440: Chat 12 (target 8), Notes 7, Library 6; fine metric Chat 24
 
 ## general
 

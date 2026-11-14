@@ -2057,9 +2057,12 @@ summary > .ph-lead,
   height: auto;
   min-height: var(--target-min);
   padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-pill);
-  background: transparent;
+  /* The chip's ground at rest and the chip's accent under the pointer, the
+     Chat strip's family (L-world-class-250): it was a hairline on nothing
+     that took the chip's ground only on hover, two grounds for one chip. */
+  background: var(--chip-bg);
   box-shadow: none;
   color: var(--ink);
   font-size: var(--text-sm);
@@ -2072,7 +2075,8 @@ summary > .ph-lead,
 }
 .help-atlas > .atlas-suggest:hover,
 .help-atlas > .atlas-suggest:focus-visible {
-  background: var(--chip-bg);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 /* On a phone the offer takes a button's corner, not the pill (INBOX 464
    (16)): a question that wraps inside a pill is a two-line capsule (Chat's
