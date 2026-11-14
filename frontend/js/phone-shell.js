@@ -1803,11 +1803,10 @@ function echoSettingsPaneTitle(select) {
   //: Written only when it changes: a remove and add on every call was two class mutations a key that marked the pane
   //: stale for the search index (L-world-class-359).
   const head = !select.value.includes("#") && document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
-  const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  const want = head && !head.closest("summary") && head.textContent.trim().toLowerCase() === shown && head;
+  const want = head && !head.closest("summary") && head.textContent.trim().toLowerCase() === select.selectedOptions[0]?.textContent.trim().toLowerCase() && head;
   const old = document.querySelector("#settings-modal h3.jump-echo");
   if (old !== want) old?.classList.remove("jump-echo");
-  want?.classList.toggle("jump-echo", true);
+  want && want.classList.toggle("jump-echo", true);
 }
 
 function buildSettingsJumpList() {

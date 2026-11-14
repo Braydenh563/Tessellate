@@ -113,7 +113,7 @@ def test_settings_search_warms_rows_and_vocab_before_the_first_key():
 def test_pane_title_echo_writes_only_on_change():
     # Removing and re-adding the class on every key dirtied the pane for the search index.
     body = read("phone-shell.js").split("function echoSettingsPaneTitle", 1)[1][:900]
-    assert 'toggle("jump-echo", true)' in body
+    assert 'want && want.classList.toggle("jump-echo", true)' in body  # want can be false, and false?.x is not nullish
 
 
 def test_chat_model_panel_does_not_build_a_surface():
