@@ -269,6 +269,12 @@ def app_state(tmp_path, monkeypatch):
     # "Installing ... (needle)" in `/tasks`.
     extras.reset_for_tests()
     deps.init_app_state(data_dir=tmp_path / "data")
+    # The last confirmed card's Undo is process-global: a card a test confirmed
+    # answered the next test's bare "undo" ("Undone: add the note ..."), so the
+    # keys line it asserts depended on what ran before it.
+    from tessellate.ai import consent_store
+
+    consent_store.reset_for_tests()
     # A sign-in from a new device on the network is held up to 45 s for this
     # computer's Allow. No test answers it unless it means to, so each one
     # that reached the hold sat out the whole wait (47 s for the IPv6 throttle

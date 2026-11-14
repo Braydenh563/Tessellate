@@ -1,0 +1,78 @@
+{
+ "skill": "Archive stale notes",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "nothing-old",
+   "notebook": [
+    {
+     "content": "Dentist on Thursday",
+     "category": "Health",
+     "tags": []
+    },
+    {
+     "content": "Sourdough starter fed",
+     "category": "Cooking",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "archived"
+    ]
+   },
+   "inputs": {
+    "span": "3 months"
+   }
+  },
+  {
+   "id": "one-span",
+   "notebook": [
+    {
+     "content": "Boiler service due in spring",
+     "category": "Home",
+     "tags": []
+    },
+    {
+     "content": "Ideas for the garden shed",
+     "category": "Garden",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "archive"
+    ]
+   },
+   "inputs": {
+    "span": "90 days"
+   }
+  },
+  {
+   "id": "a-year",
+   "notebook": [
+    {
+     "content": "Old gym plan",
+     "category": "Health",
+     "tags": []
+    },
+    {
+     "content": "Passport renewal checklist",
+     "category": "Travel",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "archive"
+    ]
+   },
+   "inputs": {
+    "span": "a year"
+   }
+  }
+ ]
+}

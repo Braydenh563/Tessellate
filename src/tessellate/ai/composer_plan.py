@@ -780,13 +780,15 @@ def _subject_stems(text: str, win) -> set[str]:  # noqa: ANN001
 
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     win = window(text, today)
+    #: A bare "coming up" names no day: it is the one default window (Z27), though `window` reads it as seven days.
+    bare = bool(win and win[2] == "coming up")
     leftover = _subject_stems(text, win)
     kind = {k for k in leftover if k in _KIND_STEMS}
     if kind and leftover == kind and not ctx.open_ids:
         return _kind_due(ctx, kind, today)
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
-    return _due(ctx, win or ahead_default(today))
+    return _due(ctx, ahead_default(today) if bare else win or ahead_default(today))
 
 
 # --- what is left ----------------------------------------------------------------------

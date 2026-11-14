@@ -283,6 +283,10 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     "tag_note": (),
     "pin_note": (),
     "archive_note": (),
+    "find_stale_notes": (_N("notes"),),
+    "get_person_page": (_N("mentioned_in"),),
+    # Month figures are counts and a list of bare ids; the sentence names them.
+    "count_month_figures": (),
     "link_notes": (),
     "unlink_notes": (),
     "delete_note": (),

@@ -340,6 +340,10 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("compress_chat", r"\b(?:compress|shorten|condense) (?:this|the) (?:chat|conversation)\b"),
     ("make_plan", r"\bmake (?:me )?a plan\b|\bplan (?:the steps|out)\b"),
     ("search_chat_history", r"\b(?:earlier|previous|past|last|old) (?:chat|conversation)s?\b|\bwhat did we (?:talk|chat) about\b"),
+    #: The look-back tools (skill-only, so they have no model-facing name): reached by their own words here.
+    ("find_stale_notes", r"\bstale notes\b|\bnotes (?:i|that i) (?:haven't|have not|have never|didn't) (?:touched|opened|edited|looked at)\b|\buntouched for\b"),
+    ("count_month_figures", r"\b(?:month(?:'s)? figures|figures for (?:last|this) month|monthly look ?back)\b"),
+    ("get_person_page", r"\b(?:person|people) page\b|\bpage for (?:the person|my (?:friend|colleague|manager|mum|mom|dad|sister|brother))\b"),
     ("find_contradictions", r"\bcontradict|\bdisagree\b|\binconsisten"),
     ("check_learned", r"\b(?:check|audit|clean up|re-?read)\b.*\bwhat (?:you|it|atlas) (?:have |has |had )?learned\b|\bcheck what it learned\b"),
     ("audit_link_reasons", r"\b(?:audit|check|fix)\b.*\blink reasons?\b"),

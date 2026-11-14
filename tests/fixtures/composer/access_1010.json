@@ -2,6 +2,10 @@
   "about": "CHAT_PLAN decision 59, step 1 (access, Brief 84): one typed sentence per tool in ai/tools and per act in the registry, each read with no model by reading.read (tools) and acts.parse (acts). tests/test_atlas_access.py.",
   "now": "2026-10-10T10:00:00",
   "tools": {
+    "archive_note": "archive the gym note",
+    "find_stale_notes": "show me my stale notes",
+    "count_month_figures": "give me last month's figures",
+    "get_person_page": "open the person page for Priya",
     "create_category": "make a new category called Garden",
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
@@ -77,6 +81,11 @@
     "map_from_note": "turn the garden note into a mind map"
   },
   "acts": {
+    "archive": "archive the old trip notes",
+    "unarchive": "unarchive the trip notes",
+    "reschedule": "move the dentist reminder to Friday at 9",
+    "tag_many": "tag everything from March with spring",
+    "make_board": "start a board for the kitchen",
     "create_category": "make a category called Travel",
     "run_skill": "run the daily review skill",
     "delete_category": "delete the category Travel",

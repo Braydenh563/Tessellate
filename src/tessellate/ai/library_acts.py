@@ -75,7 +75,8 @@ def read(text: str, one_target) -> dict | None:  # noqa: ANN001
 # --- plan -------------------------------------------------------------------------------
 
 
-def _title(entry) -> str:  # noqa: ANN001
+def _shown_name(entry) -> str:  # noqa: ANN001
+    """A note as a card names it: the one reader (`composer_frame.note_title`), cut short, with the caller's own "Untitled"."""
     from tessellate.ai.composer_frame import note_title
 
     return note_title(entry.content, size=48) or "Untitled note"
@@ -90,7 +91,7 @@ def _by_words(session: Session, parsed: dict, c: dict) -> list:
     query = select(Entry).where(Entry.is_deleted.is_(False), Entry.is_private.is_(False), Entry.is_board.is_(False)).order_by(Entry.id.desc())
     rows = [e for e in session.scalars(query) if all(re.search(rf"\b{re.escape(w)}", f"{e.content or ''} {e.tags or ''}".lower()) for w in words)]
     if parsed.get("single") and len(rows) > 1:
-        titled = [e for e in rows if all(re.search(rf"\b{re.escape(w)}", _title(e).lower()) for w in words)]
+        titled = [e for e in rows if all(re.search(rf"\b{re.escape(w)}", _shown_name(e).lower()) for w in words)]
         rows = titled if len(titled) == 1 else rows
     return rows
 
@@ -122,7 +123,7 @@ def _archive_label(shown: list, parsed: dict, archive: bool) -> str:
     lead = "Archive" if archive else "Bring back"
     tail = "" if archive else " from the Archive"
     if len(shown) == 1:
-        return f"{lead} the note “{_title(shown[0])}”{tail}"
+        return f"{lead} the note “{_shown_name(shown[0])}”{tail}"
     of = "you attached" if parsed.get("these") else f"about “{parsed.get('about') or 'those notes'}”"
     return f"{lead} {len(shown)} notes {of}{tail}"
 
@@ -133,12 +134,12 @@ def _plan_archive(session: Session, parsed: dict, note_ids: list[int] | None, c:
     if not rows:
         return _nothing_to_archive(session, parsed, note_ids, c, archive)
     if parsed.get("single") and len(rows) > 1:
-        return {"line": "Which one: " + " or ".join(f"“{_title(e)}”" for e in rows[:3]) + "?"}
+        return {"line": "Which one: " + " or ".join(f"“{_shown_name(e)}”" for e in rows[:3]) + "?"}
     shown = rows[:_MAX_NOTES]
     label = _archive_label(shown, parsed, archive)
     step = {"name": "archive_note", "arguments": {"note_ids": [e.id for e in shown], "archived": archive}}
     more = f" That is {_MAX_NOTES} of {len(rows)}; say it again for the rest." if len(rows) > _MAX_NOTES else ""
-    return {"line": c["confirm"](label) + more, "card": c["card"](label, [step], [], [_title(e) for e in shown])}
+    return {"line": c["confirm"](label) + more, "card": c["card"](label, [step], [], [_shown_name(e) for e in shown])}
 
 
 def _month_back(today: date, month: int) -> date:
@@ -196,7 +197,7 @@ def _plan_tag_many(session: Session, parsed: dict, c: dict) -> dict:
     label = f"Tag {len(shown)} note{'' if len(shown) == 1 else 's'} {said} {tags}"
     step = {"name": "tag_note", "arguments": {"note_ids": [e.id for e in shown], "add": parsed["tags"]}}
     more = f" That is {_MAX_NOTES} of {len(rows)}; say it again for the rest." if len(rows) > _MAX_NOTES else ""
-    return {"line": c["confirm"](label) + more, "card": c["card"](label, [step], [], [_title(e) for e in shown])}
+    return {"line": c["confirm"](label) + more, "card": c["card"](label, [step], [], [_shown_name(e) for e in shown])}
 
 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None, c: dict) -> dict:
@@ -222,7 +223,7 @@ def board_readback(session: Session, board_id: int | None) -> str:
     cards = session.scalar(select(func.count()).select_from(WhiteboardNode).where(WhiteboardNode.board_id == board.id)) or 0
     shapes = session.scalar(select(func.count()).select_from(WhiteboardObject).where(WhiteboardObject.board_id == board.id)) or 0
     holds = "nothing on it yet" if not (cards or shapes) else f"{cards} card{'' if cards == 1 else 's'} and {shapes} shape{'' if shapes == 1 else 's'}"
-    return f"I read it back: the board “{_title(board)}” is there, with {holds}. Open it from Library, Boards and maps."
+    return f"I read it back: the board “{_shown_name(board)}” is there, with {holds}. Open it from Library, Boards and maps."
 
 
 def with_readbacks(session: Session, summary: str, done: list[tuple[str, dict, dict]]) -> str:

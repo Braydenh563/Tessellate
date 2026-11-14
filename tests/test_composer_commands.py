@@ -99,8 +99,8 @@ TABLE: list[tuple[str, str | None, dict]] = [
     ("summarise my gym notes", "summarise", {"about": "gym"}),
     ("open settings", "navigate", {"surface": "settings"}),
     ("go to the graph", "navigate", {"surface": "graph"}),
-    # Decision 42: archiving stays a UI action.
-    ("archive the gym note", None, {}),
+    # Intent moved (L-chat-46, f07a696ef): decision 42 kept archiving a UI action; archive is now an act (card, Confirm, Undo).
+    ("archive the gym note", "archive", {"about": "gym"}),
     # Look-alikes: questions about acts, never acts.
     ("how do I delete a note?", None, {}),
     ("did I pin the dentist note?", None, {}),

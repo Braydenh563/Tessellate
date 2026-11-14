@@ -108,7 +108,8 @@ def test_with_a_model_in_agent_mode_the_agent_takes_the_act(ai_client, fake_olla
 def test_the_capability_line_names_only_what_runs():
     for verb in ("set a reminder", "tag notes", "pin, link, rename or delete a note"):
         assert verb in commands.CAPABILITY_LINE
-    assert "archive" not in commands.CAPABILITY_LINE
+    # Intent moved (L-chat-46, f07a696ef): archive is an act now, so the line names it; the rule is that every verb it names runs.
+    assert "archive notes" in commands.CAPABILITY_LINE
 
 
 def test_delete_all_notes_about_names_every_match(client, session):

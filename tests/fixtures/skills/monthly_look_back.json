@@ -1,0 +1,78 @@
+{
+ "skill": "Monthly look back",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "last-month",
+   "notebook": [
+    {
+     "content": "Shipped the onboarding redesign",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Spent 40 on train tickets",
+     "category": "Money",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "note"
+    ]
+   },
+   "inputs": {
+    "month": "last month"
+   }
+  },
+  {
+   "id": "named-month",
+   "notebook": [
+    {
+     "content": "Planted the tomatoes out",
+     "category": "Garden",
+     "tags": []
+    },
+    {
+     "content": "Spent 12 on seeds",
+     "category": "Money",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "note"
+    ]
+   },
+   "inputs": {
+    "month": "March"
+   }
+  },
+  {
+   "id": "this-month",
+   "notebook": [
+    {
+     "content": "Signed the lease on the new flat",
+     "category": "Home",
+     "tags": []
+    },
+    {
+     "content": "Dentist on Thursday",
+     "category": "Health",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "note"
+    ]
+   },
+   "inputs": {
+    "month": "this month"
+   }
+  }
+ ]
+}
