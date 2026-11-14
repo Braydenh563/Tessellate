@@ -44,7 +44,7 @@ def test_a_cancelled_draft_stream_stops_the_model(monkeypatch):
     monkeypatch.setattr(routes_drafts.deps, "get_ollama", lambda: model)
     monkeypatch.setattr(
         routes_drafts.deps, "get_model_manager",
-        lambda: type("M", (), {"for_feature": lambda self, f: self, "chat_model": lambda self: "m"})(),
+        type("M", (), {"for_feature": lambda self, f: self, "chat_model": lambda self: "m"}),  # the class: calling it makes the manager
     )
     body = routes_drafts.ComposeBody(thoughts="bread")
 

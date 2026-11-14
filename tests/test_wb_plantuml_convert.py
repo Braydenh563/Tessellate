@@ -76,3 +76,19 @@ def test_the_dialog_routes_converted_files_and_emf_is_never_read_as_text():
     convert = frontend_text("whiteboard-convert.js")
     assert '"/whiteboard/convert"' in convert and "wbImportMermaid(null, at, got.graph)" in convert and "wbImportMermaidSequence(null, at, got.sequence)" in convert
     assert ".emf" in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+
+
+def test_block_comments_come_out_in_one_pass_and_read_as_before():
+    """CodeQL 2306: `re.sub(r"/'.*?'/", ...)` rescanned from every `/'`, so `/'` and many `a/'` went quadratic.
+    The scan is `str.find` forward only; it reads every case as the regex did, an unclosed `/'` left as written."""
+    import ast
+    import re
+    from pathlib import Path
+
+    from tessellate.api.wb_convert import _drop_block_comments
+
+    for text in ["a /' c '/ b /' d '/ e", "x /' y", "/''/z", "'/ /' q '/ r", "a\n/' multi\nline '/\nb", "/'" + "a/'" * 50]:
+        assert _drop_block_comments(text) == re.sub(r"/'.*?'/", "", text, flags=re.S), text
+    src = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api" / "wb_convert.py").read_text(encoding="utf-8")
+    patterns = [n.value for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Constant) and isinstance(n.value, str) and "/'" in n.value and ".*?" in n.value]
+    assert not patterns, patterns

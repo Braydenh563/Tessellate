@@ -118,7 +118,8 @@ def _gml_box(geo, node: dict) -> None:
             y=float(geo.get("y", 0)),
         )
     except (TypeError, ValueError):
-        pass
+        #: A box with no size, or a size that is not a number, keeps the default box the caller gave it.
+        return
 
 
 class _GraphML:
@@ -430,19 +431,22 @@ def _name(raw: str) -> str:
 
 
 def _drop_block_comments(text: str) -> str:
-    """`/' ... '/` comments out, by a linear scan: a lazy regex over a pasted file backtracks on many `a/'` runs (CodeQL)."""
+    """PlantUML's `/' ... '/` comments out, in one pass (CodeQL 2306: a lazy regex rescans from every `/'`).
+
+    An unclosed `/'` is left as written, as the regex it replaces left it."""
     out: list[str] = []
-    i = 0
+    at = 0
     while True:
-        start = text.find("/'", i)
+        start = text.find("/'", at)
         if start < 0:
-            out.append(text[i:])
+            out.append(text[at:])
             return "".join(out)
+        out.append(text[at:start])
         end = text.find("'/", start + 2)
-        out.append(text[i:start])
         if end < 0:
+            out.append(text[start:])
             return "".join(out)
-        i = end + 2
+        at = end + 2
 
 
 def _pu_lines(text: str) -> list[str]:

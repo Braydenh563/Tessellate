@@ -1,11 +1,11 @@
 """The board's finishing effects (LEDGER L-whiteboard-37, 38, 40 and 47): text shadow, glass, a picture as a shape's fill,
 a mirror for a sticky, a picture or a frame, frame opacity and a status bar. `whiteboard-effects.js` is run in node for its
 pure parts; the drawn half is measured by `scratchpad/ui-sweeps/wbeffects.js`."""
+
 from __future__ import annotations
 
 import json
 import shutil
-from pathlib import Path
 import subprocess
 
 import pytest
@@ -125,7 +125,9 @@ def test_flip_is_on_notes_pictures_and_frames_and_a_frame_takes_opacity():
 
 
 def test_a_flipped_note_turns_the_card_not_the_words():
-    css = Path("frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert '.wb-object-text.wb-sticky[data-flip~="x"]::after' in css
     # Nothing in the paint touches the text's own transform.
     src = frontend_text("whiteboard-effects.js")

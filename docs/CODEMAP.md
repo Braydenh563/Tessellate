@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22904, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22905, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
 ## Frontend functions (8945)
 
@@ -24707,42 +24707,42 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Activity` | src/tessellate/api/wb_convert.py:745 |
-| `_ClassDiagram` | src/tessellate/api/wb_convert.py:496 |
-| `_GraphML` | src/tessellate/api/wb_convert.py:124 |
-| `_Sequence` | src/tessellate/api/wb_convert.py:659 |
+| `_Activity` | src/tessellate/api/wb_convert.py:749 |
+| `_ClassDiagram` | src/tessellate/api/wb_convert.py:500 |
+| `_GraphML` | src/tessellate/api/wb_convert.py:125 |
+| `_Sequence` | src/tessellate/api/wb_convert.py:663 |
 | `_cap` | src/tessellate/api/wb_convert.py:44 |
 | `_check_counts` | src/tessellate/api/wb_convert.py:52 |
-| `_dict` | src/tessellate/api/wb_convert.py:248 |
-| `_drop_block_comments` | src/tessellate/api/wb_convert.py:432 |
+| `_dict` | src/tessellate/api/wb_convert.py:249 |
+| `_drop_block_comments` | src/tessellate/api/wb_convert.py:433 |
 | `_gml_box` | src/tessellate/api/wb_convert.py:112 |
 | `_gml_data` | src/tessellate/api/wb_convert.py:96 |
 | `_gml_inner` | src/tessellate/api/wb_convert.py:85 |
 | `_gml_keys` | src/tessellate/api/wb_convert.py:77 |
 | `_graph` | src/tessellate/api/wb_convert.py:60 |
 | `_local` | src/tessellate/api/wb_convert.py:66 |
-| `_miro_box` | src/tessellate/api/wb_convert.py:252 |
-| `_miro_edge` | src/tessellate/api/wb_convert.py:288 |
-| `_miro_geometry` | src/tessellate/api/wb_convert.py:275 |
-| `_miro_group` | src/tessellate/api/wb_convert.py:308 |
-| `_miro_items` | src/tessellate/api/wb_convert.py:319 |
-| `_miro_sort` | src/tessellate/api/wb_convert.py:333 |
-| `_name` | src/tessellate/api/wb_convert.py:428 |
-| `_plain` | src/tessellate/api/wb_convert.py:238 |
-| `_positioned` | src/tessellate/api/wb_convert.py:219 |
-| `_pu_activity` | src/tessellate/api/wb_convert.py:898 |
-| `_pu_class` | src/tessellate/api/wb_convert.py:572 |
-| `_pu_elements` | src/tessellate/api/wb_convert.py:585 |
-| `_pu_lines` | src/tessellate/api/wb_convert.py:448 |
-| `_pu_sequence` | src/tessellate/api/wb_convert.py:729 |
+| `_miro_box` | src/tessellate/api/wb_convert.py:253 |
+| `_miro_edge` | src/tessellate/api/wb_convert.py:289 |
+| `_miro_geometry` | src/tessellate/api/wb_convert.py:276 |
+| `_miro_group` | src/tessellate/api/wb_convert.py:309 |
+| `_miro_items` | src/tessellate/api/wb_convert.py:320 |
+| `_miro_sort` | src/tessellate/api/wb_convert.py:334 |
+| `_name` | src/tessellate/api/wb_convert.py:429 |
+| `_plain` | src/tessellate/api/wb_convert.py:239 |
+| `_positioned` | src/tessellate/api/wb_convert.py:220 |
+| `_pu_activity` | src/tessellate/api/wb_convert.py:902 |
+| `_pu_class` | src/tessellate/api/wb_convert.py:576 |
+| `_pu_elements` | src/tessellate/api/wb_convert.py:589 |
+| `_pu_lines` | src/tessellate/api/wb_convert.py:452 |
+| `_pu_sequence` | src/tessellate/api/wb_convert.py:733 |
 | `_refuse` | src/tessellate/api/wb_convert.py:40 |
-| `convert` | src/tessellate/api/wb_convert.py:980 |
-| `detect` | src/tessellate/api/wb_convert.py:968 |
-| `inspect_emf` | src/tessellate/api/wb_convert.py:938 |
-| `parse_graphml` | src/tessellate/api/wb_convert.py:183 |
-| `parse_miro` | src/tessellate/api/wb_convert.py:360 |
-| `parse_plantuml` | src/tessellate/api/wb_convert.py:911 |
-| `plantuml_kind` | src/tessellate/api/wb_convert.py:466 |
+| `convert` | src/tessellate/api/wb_convert.py:984 |
+| `detect` | src/tessellate/api/wb_convert.py:972 |
+| `inspect_emf` | src/tessellate/api/wb_convert.py:942 |
+| `parse_graphml` | src/tessellate/api/wb_convert.py:184 |
+| `parse_miro` | src/tessellate/api/wb_convert.py:361 |
+| `parse_plantuml` | src/tessellate/api/wb_convert.py:915 |
+| `plantuml_kind` | src/tessellate/api/wb_convert.py:470 |
 
 ### src/tessellate/api/wb_export.py (17)
 
@@ -29032,7 +29032,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22904)
+## Tests (22905)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31770,7 +31770,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_pixels.py | 4 |
 | tests/test_wb_place_box.py | 5 |
 | tests/test_wb_place_ghost.py | 2 |
-| tests/test_wb_plantuml_convert.py | 5 |
+| tests/test_wb_plantuml_convert.py | 6 |
 | tests/test_wb_ports.py | 7 |
 | tests/test_wb_ports_drawio.py | 15 |
 | tests/test_wb_ports_more.py | 14 |
@@ -32305,14 +32305,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:714 |
+| Needs hardware | docs/roadmap/LEDGER.md:713 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:707 |
+| Owner calls | docs/roadmap/LEDGER.md:706 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32491,7 +32491,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:878 |
+| Plan session briefs | docs/roadmap/LEDGER.md:877 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32547,25 +32547,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:894 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:978 |
+| chat | docs/roadmap/LEDGER.md:893 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:977 |
 | documents | docs/roadmap/LEDGER.md:285 |
-| documents | docs/roadmap/LEDGER.md:918 |
-| general | docs/roadmap/LEDGER.md:666 |
+| documents | docs/roadmap/LEDGER.md:917 |
+| general | docs/roadmap/LEDGER.md:665 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:882 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:990 |
+| graph | docs/roadmap/LEDGER.md:881 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:989 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:308 |
-| mindmap | docs/roadmap/LEDGER.md:930 |
-| timeline | docs/roadmap/LEDGER.md:428 |
-| timeline | docs/roadmap/LEDGER.md:954 |
-| ui-modernisation | docs/roadmap/LEDGER.md:311 |
-| ui-modernisation | docs/roadmap/LEDGER.md:942 |
+| mindmap | docs/roadmap/LEDGER.md:307 |
+| mindmap | docs/roadmap/LEDGER.md:929 |
+| timeline | docs/roadmap/LEDGER.md:427 |
+| timeline | docs/roadmap/LEDGER.md:953 |
+| ui-modernisation | docs/roadmap/LEDGER.md:310 |
+| ui-modernisation | docs/roadmap/LEDGER.md:941 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:906 |
-| world-class | docs/roadmap/LEDGER.md:430 |
-| world-class | docs/roadmap/LEDGER.md:966 |
+| whiteboard | docs/roadmap/LEDGER.md:905 |
+| world-class | docs/roadmap/LEDGER.md:429 |
+| world-class | docs/roadmap/LEDGER.md:965 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
