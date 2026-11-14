@@ -125,11 +125,12 @@
  "whiteboard-library.js::raf": 2,
  "whiteboard-map.js::mutation-observer": 2,
  "whiteboard-map.js::raf": 1,
+ "whiteboard-navigator.js::raf": 1,
  "whiteboard-present.js::raf": 1,
  "whiteboard-toolbar.js::mutation-observer": 1,
  "whiteboard-toolbar.js::raf": 1,
  "whiteboard.js::mutation-observer": 1,
- "whiteboard.js::raf": 20,
+ "whiteboard.js::raf": 19,
  "whiteboard.js::resize-observer": 3,
  "wiring.js::mutation-observer": 1
 }

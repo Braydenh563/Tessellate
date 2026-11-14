@@ -754,7 +754,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbSaveMapBulkMove": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
-    "whiteboard.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
+    "whiteboard-sketch-text.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
     "documents-languagetool.js:ask": "read: sends a document's paragraphs to the local grammar checker; shows matches, writes nothing",
     "whiteboard-format.js:(anonymous /media/upload)": "board: Replace picture uploads the file; the address swap is wbFmtApply's one board Undo step",
     "answer-kit.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
