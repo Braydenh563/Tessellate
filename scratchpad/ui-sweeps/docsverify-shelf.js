@@ -1,5 +1,6 @@
 // L892: the diagram shelf at 390 with touch emulation: which tiles show, their size, that none runs past
-// the window, the caret menu listing the rest, and the fold button.
+// the window, the caret menu listing the rest, the fold button, and a touch hold-and-drag of a tile
+// onto the picture (L-documents-72).
 //   BASE=http://127.0.0.1:8817 node scratchpad/ui-sweeps/docsverify-shelf.js
 process.env.BASE ||= "http://127.0.0.1:8817";
 process.env.SCRATCH ||= require("os").tmpdir();
@@ -67,6 +68,36 @@ const SRC = {
       ok(`[${kind}] its rows are 44 tall and in the window`, menu.n > 0 && menu.minH >= 44 && menu.inView, menu);
       await page.keyboard.press("Escape");
       await page.waitForTimeout(300);
+    }
+    // L-documents-72: hold a tile and drag it onto the picture with real touch events (CDP
+    // Input.dispatchTouchEvent: pointerType "touch", the 350 ms hold, then moves), so the gesture
+    // code runs as a finger drives it. Only real-finger jitter is not reproduced.
+    const before = await page.evaluate(() => document.querySelectorAll(".dgm-dialog .dgm-block").length);
+    const pts = await page.evaluate(() => {
+      const t = [...document.querySelectorAll(".dgm-dialog .dgm-shelf .dgm-tile")].find((e) => getComputedStyle(e).display !== "none");
+      const p = document.querySelector(".dgm-dialog .dgm-picture");
+      if (!t || !p) return null;
+      const a = t.getBoundingClientRect(), b = p.getBoundingClientRect();
+      return { x0: a.left + a.width / 2, y0: a.top + a.height / 2, x1: b.left + b.width / 2, y1: b.top + b.height * 0.6 };
+    });
+    ok(`[${kind}] a shown tile and the picture to drop on`, !!pts, pts);
+    if (pts) {
+      const cdp = await page.context().newCDPSession(page);
+      const touch = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y, id: 1, radiusX: 8, radiusY: 8, force: 1 }] });
+      await touch("touchStart", pts.x0, pts.y0);
+      await page.waitForTimeout(500);
+      const armed = await page.evaluate(() => document.documentElement.classList.contains("obj-dragging"));
+      for (let i = 1; i <= 12; i += 1) {
+        await touch("touchMove", pts.x0 + ((pts.x1 - pts.x0) * i) / 12, pts.y0 + ((pts.y1 - pts.y0) * i) / 12);
+        await page.waitForTimeout(30);
+      }
+      const ghost = await page.evaluate(() => !!document.querySelector(".obj-ghost, [class*='obj-ghost']"));
+      await touch("touchEnd", pts.x1, pts.y1);
+      await page.waitForTimeout(800);
+      const after = await page.evaluate(() => ({ n: document.querySelectorAll(".dgm-dialog .dgm-block").length, dragging: document.documentElement.classList.contains("obj-dragging") }));
+      console.log(`[${kind}] hold-drag`, JSON.stringify({ before, armed, ghost, after }));
+      ok(`[${kind}] the hold lifts the tile (obj-dragging after 500 ms, a ghost while moving)`, armed && ghost, { armed, ghost });
+      ok(`[${kind}] dropped on the picture it adds one block, and the drag ends`, after.n === before + 1 && !after.dragging, [before, after]);
     }
     // the fold button
     const fold = await page.evaluate(() => { const b = document.querySelector(".dgm-dialog .dgm-shelf-toggle").getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
