@@ -82,16 +82,18 @@ def kind(question: str, result: dict, notes: list[dict]) -> str:
         return "act"
     if ("phrase", "utility_weather") in (result.get("parts") or []) or result.get("text") == PHRASES["utility_weather"]:
         return "world"
+    return "world" if _about_the_world(asked, result, notes) else ""
+
+
+def _about_the_world(asked: str, result: dict, notes: list[dict]) -> bool:
+    """A question about the world: in no one's own words, naming none of the notebook's nouns, and
+    with a typed name the notes shown lack, a who-did verb unsaid, or a world topic and nothing found."""
     if result.get("shape") == "utility" or _PERSONAL.search(asked) or _NOTEBOOK.search(asked) or not _QUESTION.match(asked):
-        return ""
+        return False
     shown = _shown_text(result, notes)
-    unnamed = [n for n in _names(asked) if n not in shown]
-    if _verb_unsaid(result, asked, shown):
-        return "world"
-    #: A name the notes shown do not hold, or a topic only the world knows, with nothing shown or only a decoy.
-    if unnamed or (_WORLD_TOPIC.search(asked) and not result.get("grounding")):
-        return "world"
-    return ""
+    if _verb_unsaid(result, asked, shown) or any(n not in shown for n in _names(asked)):
+        return True
+    return bool(_WORLD_TOPIC.search(asked)) and not result.get("grounding")
 
 
 def framed(question: str, result: dict, notes: list[dict]) -> dict:
