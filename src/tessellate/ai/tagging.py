@@ -29,6 +29,7 @@ and "university" (the Study bug). Measured on `tests/fixtures/tagging/`
 from __future__ import annotations
 
 import json
+import logging
 import re
 from dataclasses import dataclass
 
@@ -360,6 +361,7 @@ def _offered_again() -> dict:
 
         value = deps.get_config().get_preference(PREF_OFFERED_AGAIN, {})
     except Exception:  # noqa: BLE001 - no config (a script, a test without app state): none forgiven
+        logging.getLogger(__name__).debug("_offered_again: no config (a script, a test without app state): none forgiven", exc_info=True)
         return {}
     return value if isinstance(value, dict) else {}
 

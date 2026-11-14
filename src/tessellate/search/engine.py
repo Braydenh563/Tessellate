@@ -515,6 +515,7 @@ def _backend_id() -> str | None:
         embeddings = deps.get_embeddings()
         return embeddings.backend_id() if embeddings.is_ready() else None
     except Exception:  # noqa: BLE001  # a bare-session script with no app state
+        logger.debug("_backend_id: a bare-session script with no app state", exc_info=True)
         return None
 
 
@@ -1662,6 +1663,7 @@ def _cosine_scores(session: Session, subject: str, rows: list[dict]) -> dict[int
 
         vector = deps.get_embeddings().embed_text(subject)
     except Exception:  # noqa: BLE001  # an embedding failure must not fail a search
+        logger.debug("_cosine_scores: an embedding failure must not fail a search", exc_info=True)
         return {}
     if vector is None:
         return {}

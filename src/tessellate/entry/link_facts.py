@@ -13,6 +13,7 @@ Imports nothing that imports `manager`, for the reason `link_wording` gives.
 from __future__ import annotations
 
 import json
+import logging
 import threading
 
 from sqlalchemy import func, select
@@ -105,4 +106,5 @@ def reason_for(session: Session, source_id: int, target_id: int) -> str | None:
             return None
         return link_wording.specific_reason(pair[source_id], pair[target_id], counts(session))
     except Exception:  # noqa: BLE001  # a wording failure falls back to the generic reason
+        logging.getLogger(__name__).debug("reason_for: a wording failure falls back to the generic reason", exc_info=True)
         return None

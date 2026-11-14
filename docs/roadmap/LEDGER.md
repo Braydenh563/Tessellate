@@ -15,9 +15,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 100 | 29 | 0 | 0 | 129 |
+| world-class | 0 | 97 | 29 | 0 | 0 | 126 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 490 | 100 | 2 | 111 | 962 |
+| all | 372 | 487 | 100 | 2 | 111 | 959 |
+
+## graph
+
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -538,12 +541,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-114** `world-class` open, M: Help accordion: name its thirteen details, move them to the recipe family, lint that every id has a Guide topic. From WORLD_CLASS_PLAN.md:2952. Evidence: no accordion-to-Guide lint in tests (grep 'accordion' hits only settings tests)
 - [ ] **L-world-class-115** `world-class` open, S: Capture: hold staged pictures and files while offline. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'staged pictures and files cannot be held offline'
 - [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
-- [ ] **L-world-class-119** `world-class` open, M: Import: write a 5,000-note import in batches, not one commit per note. From WORLD_CLASS_PLAN.md:3602. Evidence: 5,000-note write 45.9 s, one commit per note (:3602)
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
-- [ ] **L-world-class-122** `world-class` open, M: Ratchet the silent broad excepts to zero (decision 57). From WORLD_CLASS_PLAN.md:3728. Evidence: tests/test_no_silent_except.py SEED holds 60 handlers; decision 57 says to 0
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
-- [ ] **L-world-class-125** `world-class` open, S: Query plans at 5,000 notes and resident memory on a populated notebook. From WORLD_CLASS_PLAN.md:3769. Evidence: WORLD_CLASS_PLAN.md:3769 'Not measured: query plans at 5,000 notes'; :3766 populated notebook
 - [ ] **L-world-class-131** `world-class` open, M: Move the popups to the kind 27.2's table rules (decision 63). From WORLD_CLASS_PLAN.md:3839. Evidence: frontend/index.html: 10 of the table's sheets and panels are still <dialog> (space-create, doc-storage, quick-note, doc-history, ...)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
@@ -557,8 +557,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
-- [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
 - [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
@@ -576,6 +574,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-365** `world-class` open, S: Boot: first Intl call floor 57 ms at 4x. From L-world-class-354/355 measurement, 2026-11-14. Evidence: firstClockPaint is a 57 ms task: any first Intl call costs 47-69 ms at 4x (ICU load); a platform floor unless the first clock paint avoids Intl.
 - [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one carries the sealed bytes as they are; a generated recording (recording_make.save_generated), an import and the live-caption PCM spool (captions.begin) are written plain until the next unlock seals them (tests/test_sealed_readers.py PLAIN_WRITES)
 - [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
+- [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
+- [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 
 ## general
 

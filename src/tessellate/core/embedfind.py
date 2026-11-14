@@ -188,6 +188,7 @@ def _ollama_rows(ollama) -> list[dict]:  # noqa: ANN001
             return []
         models = ollama.list_models() or []
     except Exception:  # noqa: BLE001  # Ollama down or odd is "nothing found", never an error
+        logger.debug("_ollama_rows: Ollama down or odd is 'nothing found', never an error", exc_info=True)
         return []
     rows = []
     for model in models:

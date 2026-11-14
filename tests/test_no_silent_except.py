@@ -6,13 +6,10 @@ into silence, the shape behind "a feature that never ran once". Ruff's BLE001
 already makes every broad handler carry a reason; this finds the ones that
 say nothing at all.
 
-The seed is the 21 handlers found on 2026-10-10, plus the 39 that return a
-fallback (`return ""`, `[]`, `False`) seeded 2026-11-12 (L797), keyed by file, enclosing
-function and position in that function so an edit elsewhere in the file does
-not move the key. A handler not in the seed fails the test; a seeded handler
-that now logs, narrows or is gone fails it too, so the list only shrinks.
-Fix one by logging with the reason and the way out, or by catching the
-named exception, then delete its line below.
+The seed was 60 handlers (21 found 2026-10-10, 39 fallbacks seeded 2026-11-12)
+and is now empty: every handler logs at debug with the reason and the way
+out, or catches the named exceptions. Keys, when one ever returns, are file,
+enclosing function and position in that function. Never add an exemption.
 """
 
 from __future__ import annotations
@@ -28,69 +25,8 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 #: own `_log*` helpers and the audit log.
 _LOG_NAMES = {"debug", "info", "warning", "warn", "error", "exception", "critical", "log", "log_action"}
 
-SEED = frozenset(
-    """
-src/tessellate/__main__.py::_bootloader_splash::1
-src/tessellate/__main__.py::_password_exists::1
-src/tessellate/__main__.py::_window_class_name::1
-src/tessellate/ai/agent_turn.py::_names_an_existing_category::1
-src/tessellate/ai/commands.py::_voice::1
-src/tessellate/ai/composer_web.py::can_start_here::1
-src/tessellate/ai/embeddings.py::_backfill_missing::1
-src/tessellate/ai/embeddings.py::_notebook_has_notes::1
-src/tessellate/ai/facts.py::runner_enabled::1
-src/tessellate/ai/margin.py::_date_card::1
-src/tessellate/ai/model_manager.py::_is_app_client::1
-src/tessellate/ai/model_manager.py::_is_app_pair::1
-src/tessellate/ai/needle_provider.py::_Engine._error::1
-src/tessellate/ai/needle_provider.py::voice_now::1
-src/tessellate/ai/provider.py::Provider.sampling_overrides::1
-src/tessellate/ai/skills.py::small_class::1
-src/tessellate/ai/tagging.py::_offered_again::1
-src/tessellate/ai/tools/tool_schema.py::with_relation_types::1
-src/tessellate/ai/tools/tool_web.py::prefetch_web.one::1
-src/tessellate/ai/utilities.py::_zone_cities::1
-src/tessellate/ai/utilities.py::web_on::1
-src/tessellate/ai/vision_ocr.py::pdf_reader_or_none::1
-src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store::1
-src/tessellate/api/app.py::_has_password::1
-src/tessellate/api/app.py::out_of_space_body::1
-src/tessellate/api/chat_attach.py::_attachment_readings::1
-src/tessellate/api/chat_said.py::_in_notes.holds::1
-src/tessellate/api/chat_turn.py::_insight_level::1
-src/tessellate/api/chat_turn.py::_meaning_loading::1
-src/tessellate/api/chat_web.py::_search_service::1
-src/tessellate/api/chat_web.py::_web_allowed::1
-src/tessellate/api/chat_web.py::_web_pref_on::1
-src/tessellate/api/routes_chat.py::_answer_voice::1
-src/tessellate/api/routes_chat.py::_composer_embed::1
-src/tessellate/api/routes_chat.py::_meaning_off::1
-src/tessellate/api/routes_models.py::_tools_engine::1
-src/tessellate/api/routes_vision.py::_meaning_alike::1
-src/tessellate/core/activity.py::Job.request_stop::1
-src/tessellate/core/desk_companion.py::_screen_area::1
-src/tessellate/core/docview.py::_docx_part::1
-src/tessellate/core/egress.py::_hook::1
-src/tessellate/core/embedfind.py::_ollama_rows::1
-src/tessellate/core/embedmodels.py::_in_use::1
-src/tessellate/core/instance_lock.py::focus::1
-src/tessellate/core/instance_lock.py::pid_alive::1
-src/tessellate/core/lanlive.py::supervise.look::1
-src/tessellate/core/logbuffer.py::NoiseFilter.filter::1
-src/tessellate/core/ocr.py::extract_and_store::1
-src/tessellate/core/ocr.py::saved_language::1
-src/tessellate/core/overlay/win32.py::_cloaked::1
-src/tessellate/core/security.py::_notebook_has_password::1
-src/tessellate/core/webclip.py::_read::1
-src/tessellate/entry/app_import.py::read_evernote::1
-src/tessellate/entry/link_facts.py::reason_for::1
-src/tessellate/search/chunks.py::current::1
-src/tessellate/search/chunks.py::meaning_scorer::1
-src/tessellate/search/engine.py::_backend_id::1
-src/tessellate/search/engine.py::_cosine_scores::1
-src/tessellate/search/search_manager.py::_named_category::1
-""".split()
-)
+#: Zero since L-world-class-122 (decision 57): every broad handler logs, narrows or re-raises.
+SEED: frozenset[str] = frozenset()
 
 
 def _says_something(body: list[ast.stmt]) -> bool:

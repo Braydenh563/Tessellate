@@ -286,6 +286,7 @@ def saved_language() -> str:
     try:
         value = str(config.get_preference(LANGUAGE_PREFERENCE, "") or "")
     except Exception:  # noqa: BLE001  # settings not readable: the default
+        logger.debug("saved_language: settings not readable: the default", exc_info=True)
         return ""
     return value if _LANGUAGE_PATTERN.match(value) else ""
 
@@ -1098,6 +1099,7 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
         if deps.get_model_manager().resolve_vision_model(deps.get_ollama()):
             return
     except Exception:  # noqa: BLE001  # no backend reachable: Tesseract is the reader
+        logger.debug("extract_and_store: no backend reachable: Tesseract is the reader", exc_info=True)
         pass
     text = extract_text(image_path)
     if not text:

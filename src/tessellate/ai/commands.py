@@ -27,6 +27,7 @@ turn goes on to the composer.
 
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass, field
 from collections import deque
@@ -1827,6 +1828,7 @@ def _voice() -> str:
 
         value = deps.get_config().get_preference("composer_voice", "natural")
     except Exception:  # noqa: BLE001  # no preference is the default voice
+        logging.getLogger(__name__).debug("_voice: no preference is the default voice", exc_info=True)
         return "natural"
     return "professional" if value in ("professional", "plain") else "natural"
 

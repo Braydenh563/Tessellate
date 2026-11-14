@@ -1184,6 +1184,7 @@ def out_of_space_body(wanted: int | None = None) -> dict:
     try:
         data_dir = str(deps.get_config().data_dir)
     except Exception:  # noqa: BLE001  # pragma: no cover - only before the config exists
+        logging.getLogger(__name__).debug("out_of_space_body: only before the config exists", exc_info=True)
         pass
     free = diskspace.free_bytes(data_dir) if data_dir else None
     where = f" Your notebook is in {data_dir}." if data_dir else ""
@@ -1406,6 +1407,7 @@ def _has_password() -> bool:
         with deps.get_db().session() as session:
             return session.scalar(select(User.id)) is not None
     except Exception:  # noqa: BLE001  # nothing to wait for is the old behaviour
+        logging.getLogger(__name__).debug("_has_password: nothing to wait for is the old behaviour", exc_info=True)
         return False
 
 

@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import logging
 import posixpath
 import re
 import zipfile
@@ -331,6 +332,7 @@ def read_evernote(files: list[tuple[str, bytes]]) -> ReadResult:
         try:
             root = ElementTree.fromstring(data)
         except Exception as exc:  # noqa: BLE001  # defusedxml refuses entities by raising
+            logging.getLogger(__name__).debug("read_evernote: defusedxml refuses entities by raising", exc_info=True)
             result.skipped.append(f"{name}: not a readable Evernote export ({type(exc).__name__})")
             continue
         notebook = posixpath.splitext(posixpath.basename(name))[0]

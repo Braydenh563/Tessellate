@@ -324,6 +324,7 @@ async def supervise(listener: Listener, *, wanted, should_exit) -> None:  # noqa
         try:
             return bool(wanted())
         except Exception:  # noqa: BLE001  # an unreadable answer is "no"
+            log.debug("look: an unreadable answer is 'no'", exc_info=True)
             return False
 
     try:
