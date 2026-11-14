@@ -59,7 +59,19 @@ def test_ai_is_off_when_no_model_can_answer_not_only_when_the_server_is_down():
     from tests._app_js import app_js_text
 
     code = app_js_text()
-    body = code[code.index("function aiIsOff() {"):]
+    body = code[code.index("function aiIsOff("):]
     body = body[: body.index("\n}\n")]
     assert "ollama_running === false" in body
     assert "model_ready === false" in body and "tools_engine" in body
+
+
+def test_server_up_with_no_model_still_reports_the_tools_engine(ai_client, fake_ollama, monkeypatch):
+    """L166: Agent greyed when the server was up but no model was installed, though Needle could run it."""
+    from tessellate.api import routes_models
+
+    monkeypatch.setattr(routes_models, "_tools_engine", lambda: "needle")
+    fake_ollama.installed = []
+    body = _status(ai_client)
+    assert body["ollama_running"] is True and body["model_ready"] is False and body["tools_engine"] == "needle"
+    fake_ollama.installed = [{"name": body["chat_model"] or "x", "size": 1}]
+    assert _status(ai_client)["tools_engine"] is None

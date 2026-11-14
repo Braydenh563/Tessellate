@@ -2133,10 +2133,12 @@ const AI_OFFLINE_HINT = "Connect a model in Settings";
 //: INBOX 778: a reachable server with no chat model installed answers
 //: nothing). `model_ready` is the server's own verdict; the Needle engine
 //: (`tools_engine`) answers without one, so it keeps the gate open.
-function aiIsOff() {
-  if (!modelStatus) return false;
-  if (modelStatus.ollama_running === false) return true;
-  return modelStatus.model_ready === false && !modelStatus.tools_engine;
+//: `strict` (L128): no model can write a reply, the Needle engine not holding it open, for a control only a model can
+//: serve (Tag with Atlas, the merge assist, the nudge): `ollama_running` alone is true for a server with nothing installed.
+function aiIsOff(strict = false, status = modelStatus) {
+  if (!status) return false;
+  if (status.ollama_running === false) return true;
+  return status.model_ready === false && (strict || !status.tools_engine);
 }
 
 //: **Why this restores rather than enables.** The status poll runs this every
@@ -2189,7 +2191,7 @@ onSurface("chat", () => { syncModelGatedControls(); renderChatActiveModelBadge()
 onSurface("notes", syncModelGatedControls);
 onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
-  const off = status ? status.ollama_running === false : false;
+  const off = aiIsOff(true, status);
   for (const control of document.querySelectorAll("[data-needs-model]")) {
     const reason = control.dataset.needsModel;
     if (off) {

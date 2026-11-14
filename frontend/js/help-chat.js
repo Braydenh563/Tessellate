@@ -542,17 +542,9 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
   const list = $("help-chat-messages");
   const toBottom = () => keepAtBottom(list);
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
   let text = "";
   let done = null;
-  //: `raw`, not `line`: that name is the progress line above, and a string
-  //: shadowing it threw on the first delta ("Something went wrong").
-  const take = (raw) => {
-    if (!raw.trim()) return;
-    let event;
-    try { event = JSON.parse(raw); } catch { return; }
+  const take = (event) => {
     if (event.type === "thinking") {
       think.hidden = false;
       line?.setPhase("thinking");
@@ -570,15 +562,7 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     }
     toBottom();
   };
-  while (true) {
-    const chunk = await reader.read();
-    if (chunk.done) break;
-    buffered += decoder.decode(chunk.value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop() || "";
-    for (const raw of lines) take(raw);
-  }
-  take(buffered);
+  await api.ndjson(response, take, { label: "Guide stream" });
   line?.remove();
   return {
     content: done?.content || text,

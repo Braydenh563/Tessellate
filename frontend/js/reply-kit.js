@@ -1771,9 +1771,9 @@
     if (composed) {
       return help
         ? ["From the help", "No model answered: this is the app's own help for what you asked", "help"]
-        : ["From your notes", "Answered from your notes with no model: every sentence comes from a note", "notes"];
+        : ["Atlas's assistant, from your notes", "Atlas's assistant answered from your notes with no model: every sentence comes from a note", "notes"];
     }
-    if (model) return [model, `Answered by ${model}`];
+    if (model) return [`Atlas, ${model}`, `Atlas answered with ${model}`];
     if (engine) return ["Composer", "The app answered this itself, with no model", "engine"];
     return null;
   }

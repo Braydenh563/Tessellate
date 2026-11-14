@@ -322,6 +322,19 @@
       return row;
     }
     const absent = info?.state === "absent";
+    //: **The search runs itself once the engine answers** (L167 and L-chat-20, "a button to auto retry when searxng or
+    //: another engine is available"): started here, from Settings or from a terminal, the same search goes again once,
+    //: and the line says so. A press that already retried (`retried`) is not retried twice.
+    let retried = false;
+    const retry = () => {
+      if (retried) return;
+      retried = true;
+      if (onRunning) onRunning();
+      else {
+        line.textContent = "SearXNG is running. Ask again and web search will use it.";
+        row.querySelector(".searxng-start")?.remove();
+      }
+    };
     const start = smallButton(
       absent ? "ph:download-simple Install SearXNG" : "ph:play Start SearXNG",
       absent ? "Install SearXNG here and start it" : "Start the local SearXNG instance",
@@ -346,15 +359,25 @@
             return;
           }
         }
-        if (onRunning) onRunning();
-        else {
-          say("SearXNG is running. Ask again and web search will use it.");
-          start.remove();
-        }
+        retry();
       }
     );
+    start.classList.add("searxng-start");
     row.append(line, start);
+    watchSearxngReady(row, retry);
     return row;
+  }
+
+  //: Asks the status route every four seconds while `row` is on the page (a row drawn and gone, a new question, ends it)
+  //: and calls `ready` once, when the engine runs and answers; gives up after ten minutes.
+  function watchSearxngReady(row, ready) {
+    const step = async (waited) => {
+      if (waited > 600000 || !row.isConnected) return;
+      const now = await apiJson("/websearch/searxng/status", { silent: true }).catch(() => null);
+      if (now?.state === "running" && now.responding && row.isConnected) return ready();
+      setTimeout(() => step(waited + 4000), 4000);
+    };
+    setTimeout(() => step(4000), 4000);
   }
 
   //: True once the managed SearXNG answers, false after ten minutes or when the
