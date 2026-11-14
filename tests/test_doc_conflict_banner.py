@@ -35,6 +35,7 @@ let docs = [currentDoc];
 let docDirty = true, docEditSeq = 0, docConflictOpen = false, docSaveTimer = null, docConflictPending = null;
 const docSaveQueue = { inFlight: null, again: null };
 const docsMadeThisSession = new Set(); // documents.js state docSaveOnce reads since audit 1028 U38
+const document = { dispatchEvent() {} }; // a save announces "doc-saved" for query blocks (L-documents-43)
 function renderDocComments() {} // the comments panel (documents-comments.js): what a save sends beside the text
 const reloads = [], sentThreads = [{ id: "t1" }];
 renderDocComments.threads = () => sentThreads;

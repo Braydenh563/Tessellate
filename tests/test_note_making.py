@@ -14,12 +14,13 @@ from tests._app_js import app_js_text
 
 def test_every_new_note_entry_point_goes_through_one_function():
     code = app_js_text()
-    start = code[code.index("function startNewNote() {"):]
+    start = code[code.index("function startNewNote("):]
     start = start[: start.index("\n}\n")]
     assert 'showNotesSection("capture")' in start
     assert "mountNoteSurfaceNow(box)" in start
     assert ".catch(() => {})" in start, "a failed editor bundle fetch must not be an unhandled rejection"
-    assert '$("notes-new-note").addEventListener("click", () => startNewNote());' in code
+    #: The Notes tab's own New makes a note whatever the writing style (L-documents-48).
+    assert '$("notes-new-note").addEventListener("click", () => startNewNote(1));' in code
     assert "newNote: () => startNewNote()," in code
     # Nothing else focuses the capture box directly: it is hidden whenever
     # Capture is not the section showing.
