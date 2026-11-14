@@ -78,6 +78,9 @@
       rulersDrawn = false;
       return;
     }
+    //: **The page board's only** (L-whiteboard-60): an embed is a small board inside a document, with no room for a
+    //: 20px strip on two sides, so a frame from its zoom leaves the page's rulers on the page board's transform.
+    if (wbInstances.active !== wbInstances.page) return;
     rulersDrawn = true;
     const tf = t || d3.zoomTransform(host);
     const width = host.clientWidth, height = host.clientHeight;

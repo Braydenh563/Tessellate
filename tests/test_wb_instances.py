@@ -26,6 +26,8 @@ SRC = (JS / "whiteboard-instances.js").read_text(encoding="utf-8")
 
 STUBS = r"""
 const window = globalThis;
+const winListeners = [];
+window.addEventListener = (type, fn, opts) => winListeners.push([type, fn, opts]);
 const log = [];
 const node = (name) => ({ name, __zoom: { x: 0, y: 0, k: 1 }, querySelector: (sel) => ({ sel, in: name }) });
 let focused = null;
@@ -39,7 +41,12 @@ function fakeEl(tag, name) {
     remove() { if (this.parent) { this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = null; } },
     addEventListener(type, fn) { this.listeners.push([type, fn]); },
     removeEventListener(type, fn) { const i = this.listeners.findIndex((l) => l[0] === type && l[1] === fn); if (i >= 0) this.listeners.splice(i, 1); },
-    fire(type) { for (const [t, fn] of [...this.listeners]) if (t === type) fn({ type }); },
+    //: Dispatched as a browser does: the window's capture listeners first (the instance router, L-whiteboard-62).
+    fire(type, extra = {}) {
+      const event = { type, target: this, ...extra };
+      for (const [t, fn] of [...winListeners]) if (t === type) fn(event);
+      for (const [t, fn] of [...this.listeners]) if (t === type) fn(event);
+    },
     querySelector(sel) {
       const want = /data-wb-layer="([^"]+)"/.exec(sel)?.[1];
       const walk = (e) => { for (const c of e.children) { if (c.attrs["data-wb-layer"] === want) return c; const r = walk(c); if (r) return r; } return null; };
@@ -91,6 +98,10 @@ let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
 let wbRedoStack = [];
 let wbHistoryBoard = null;
 window.currentBoardId = 1;
+window.currentTool = "draw";
+//: whiteboard.js's tool switch; an activation repaints the toolbar through it without a stroke being dropped.
+const toolSyncs = [];
+let wbSelectToolRef = { swap: (tool) => toolSyncs.push([tool, window.currentBoardId]) };
 let wbRenderQueued = false, wbRenderFrame = 0, wbInitialized = true;
 const renders = [];
 function wbScheduleRender() { log.push(["schedule", window.currentBoardId]); }
@@ -111,6 +122,8 @@ const wbItemElIndex = { count: 4 };
 const wbBoardBgCache = { sig: "s", pass: true };
 const wbNavState = { stale: false };
 const wbLinkParseCache = new Map([["y", 1]]);
+let rectDrops = 0;
+function wbClearCanvasRectCache() { rectDrops += 1; }
 //: The board's own undo, its shape: it pops the active stack, pushes redo and
 //: edits the active state, all through the globals.
 function undo() {
@@ -397,10 +410,11 @@ process.stdout.write(JSON.stringify(out));
 process.exit(0);
 })();
 """)
-    assert out["pageListenersWhileEmbeds"] == 3
+    #: No wake listener on the page or a box: one window router does it (L-whiteboard-62).
+    assert out["pageListenersWhileEmbeds"] == 0
     assert out["calls"] == 1 and out["focused"]
     assert out["host"] == 0 and out["boxListeners"] == 0 and out["zoomOff"] and out["active"]
-    assert out["listed"] == 2 and out["pageListenersAfterOne"] == 3
+    assert out["listed"] == 2 and out["pageListenersAfterOne"] == 0
     assert out["pageListenersAfterAll"] == 0 and out["end"] == {"list": 1, "other": 0}
 
 
@@ -522,13 +536,13 @@ process.exit(0);
 })();
 """)
     assert out["classes"] == ["whiteboard-container wb-embed", "whiteboard-container wb-embed wb-embed-readonly"]
-    #: Editable: its three handlers plus the two wake listeners; read-only: the wheel pan and the two wakes.
-    assert out["counts"] == {"a": 5, "r": 3, "aBound": 3, "rBound": 1}
+    #: Editable: its three handlers; read-only: the wheel pan. Waking is the window router's (L-whiteboard-62).
+    assert out["counts"] == {"a": 3, "r": 1, "aBound": 3, "rBound": 1}
     assert out["readOnly"] == {"saves": 0, "changes": 0, "seen": [["wheel", 5, "div"]], "objects": 1, "live": True}
     #: Any plain drag pans a read-only board; the wheel keeps the page's own rule.
     assert out["filter"] == [False, True, False, True, True]
-    #: The page's three plus the late one; the embeds' wake listeners on the page while they live.
-    assert out["late"] == [6, 3, 3 + 1 + 3]
+    #: The page's three plus the late one.
+    assert out["late"] == [4, 1, 3 + 1]
     assert out["after"] == {"a": 0, "r": 0, "aBound": 0, "page": 4}
 
 
@@ -762,3 +776,140 @@ out.page = wbUndoStack.map((e) => e.id);
     assert out["embed"] == [51], out
     #: The page's first read started its board's history afresh (the stub's step 10 was no board's).
     assert out["page"] == [11], out
+
+
+def test_window_events_go_to_the_board_they_happen_on():
+    """L-whiteboard-62: a window or document listener reads the board the event belongs to.
+    The router is a window capture listener registered at load, so it runs before any board
+    handler on the window, the document or the boards' own containers."""
+    out = _run(_EDITING + """
+(async () => {
+const host = fakeEl("div", "host");
+const a = await window.wbInstance.create(host, 5, { editable: true });
+const box = a.instance.container;
+const inner = fakeEl("div", "card");
+box.append(inner);
+out.routed = winListeners.filter((l) => l[2] && l[2].capture).map((l) => l[0]).sort();
+const heard = [];
+const later = (e) => heard.push([e.type, window.currentBoardId]);
+for (const type of ["pointerdown", "keydown", "contextmenu", "paste"]) window.addEventListener(type, later, true);
+inner.fire("pointerdown");
+PAGE_EL.fire("contextmenu");
+inner.fire("keydown");
+const elsewhere = fakeEl("div", "document-text");
+elsewhere.fire("paste");
+out.heard = heard;
+out.rectDrops = rectDrops;
+//: A wheel with a button held is a stroke still going on: it never swaps boards under it.
+I.activate(I.page);
+inner.fire("wheel", { buttons: 1 });
+out.wheelHeld = I.active === I.page;
+inner.fire("wheel", { buttons: 0 });
+out.wheelFree = I.active === a.instance;
+a.destroy();
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["routed"] == sorted(["contextmenu", "dblclick", "drop", "focusin", "keydown", "mousedown", "paste", "pointerdown", "touchstart", "wheel"])
+    #: A paste from outside every board leaves the board that was live (here the embed, after its keydown).
+    assert out["heard"] == [["pointerdown", 5], ["contextmenu", 1], ["keydown", 5], ["paste", 5]]
+    assert out["wheelHeld"] and out["wheelFree"]
+    #: Each swap drops the canvas box cached for the board that was live: the first draw (in and out), pointerdown, contextmenu, keydown.
+    assert out["rectDrops"] == 5
+
+
+def test_each_board_keeps_its_own_tool():
+    """L-whiteboard-61: a tool picked in an embed is the embed's; the page board keeps its own,
+    and each swap repaints the toolbar and cursor through the tool switch in its quiet form."""
+    out = _run("""
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.embedStarts = window.currentTool;
+window.currentTool = "rect";
+I.activate(I.page);
+out.pageKept = window.currentTool;
+I.activate(B);
+out.embedKept = window.currentTool;
+I.activate(I.page);
+out.syncs = toolSyncs;
+""")
+    assert out["embedStarts"] == "pan" and out["pageKept"] == "draw" and out["embedKept"] == "rect"
+    assert out["syncs"] == [["pan", 7], ["draw", 1], ["rect", 7], ["draw", 1]]
+
+
+def test_the_quiet_tool_switch_drops_no_stroke_and_shows_no_hint():
+    """An activation can come mid-stroke (an embed's reload draws it with its globals live):
+    the swap form repaints the toolbar and the cursor, and leaves the gesture and the hint alone."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    swap = wb[wb.index("  wbSelectToolRef = Object.assign(selectWbTool, {"):][:200]
+    assert "window.currentTool = tool;\n      showWbTool(tool);\n    }," in swap
+    shown = wb[wb.index("  function showWbTool(tool) {"):wb.index("  wbSelectToolRef = Object.assign(")]
+    assert "updateWbCursor();" in shown and 'b.classList.toggle("active", b.dataset.tool === tool)' in shown
+    for gone in ("wbAbandonStroke", "wbDropLostGesture", "toolHint", "call(wbZoom)"):
+        assert gone not in shown, gone
+
+
+def test_page_only_chrome_is_never_drawn_for_an_embed():
+    """L-whiteboard-60: the rulers and the map rings belong to the page board's view. An embed
+    (a small board in a document) has neither: the rulers keep drawing the page board's
+    transform while an embed pans, and a ring asked for in an embed opens nothing, so a
+    topic's right-click falls back to the plain menu."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const made = [];
+const els = {};
+function el(id) {
+  return { id, attrs: {}, kids: [], clientWidth: 800, clientHeight: 600, checked: false,
+    setAttribute(k, v) { this.attrs[k] = v; if (k === "id") els[v] = this; }, append(...k) { this.kids.push(...k); made.push(...k); },
+    replaceChildren(...k) { this.kids = k; }, addEventListener() {}, remove() { delete els[this.attrs.id]; } };
+}
+els["whiteboard-container"] = el("whiteboard-container");
+els["wb-view-rulers"] = el("wb-view-rulers");
+const document = {
+  getElementById: (id) => els[id] || null,
+  createElementNS: (ns, tag) => { const e = el(null); e.tag = tag; return e; },
+  querySelectorAll: () => [],
+};
+const pageT = { x: 0, y: 0, k: 1 };
+const d3 = { zoomTransform: () => pageT };
+const prefs = { get: () => "on", set() {} };
+const wbFmtState = {};
+let wireFn = null;
+const onSurface = (s, fn) => { wireFn = fn; };
+const wbInstances = { page: {}, active: null };
+wbInstances.active = wbInstances.page;
+"""
+    body = r"""
+wireFn();
+const top = () => els["wb-ruler-top"];
+const d0 = top().kids[0].attrs.d;
+wbInstances.active = { container: {} };
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dEmbed = top().kids[0].attrs.d;
+wbInstances.active = wbInstances.page;
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dPage = top().kids[0].attrs.d;
+process.stdout.write(JSON.stringify({ same: d0 === dEmbed, moved: dPage !== d0, rulers: made.filter((e) => /wb-ruler/.test(e.attrs.id || "")).length }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    assert out == {"same": True, "moved": True, "rulers": 2}
+    #: The three rings: each opener asks whether the page board is live before it places anything.
+    guard = "if (!wbInstances.onPage) return"
+    for path, fn in (("whiteboard-map.js", "function wbOpenMapRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapLinkRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapCrossLinkRadial(")):
+        text = (JS / path).read_text(encoding="utf-8")
+        at = text.index(fn)
+        assert guard in text[at:at + 300], (path, fn)
+    out2 = _run("""
+const B = I.mount(node("embed"), 7);
+out.page = I.onPage;
+I.activate(B);
+out.embed = I.onPage;
+""")
+    assert out2 == {"page": True, "embed": False}

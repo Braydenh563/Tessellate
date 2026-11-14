@@ -7389,11 +7389,6 @@ async function initWhiteboard() {
     window.currentTool = tool;
     //: A link tool's anchor dots belong to that tool (INBOX 573).
     if (!String(tool).startsWith("link-") && !wbLinkDragActive) wbClearAnchorHints();
-    if (toolGroup) {
-      toolGroup.querySelectorAll("button[data-tool]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.tool === tool);
-      });
-    }
     // The zoom behaviour stays attached for every tool. It used to be
     // detached for all but Pan so a drag could not fight drawing, but
     // `wbZoomFilter` (top of file) now makes that decision per event, and
@@ -7402,6 +7397,20 @@ async function initWhiteboard() {
     // and switching back. That was a large part of the reported "constantly
     // having to switch between tools".
     d3.select(wbInstances.container()).call(wbZoom).on("dblclick.zoom", null);
+    showWbTool(tool);
+    wbFmtState.hints?.toolHint(tool);
+  }
+
+  //: What a tool switch shows: the rail's mark, the shape toggle, the cursor, the status and the
+  //: context bar. Also run alone, as `wbSelectToolRef.swap`, when a board instance goes live with
+  //: its own tool (L-whiteboard-61): a stroke or a drag still going on is left alone (an embed's
+  //: reload swaps boards for its draw, mid-stroke included), and no first-use hint is shown.
+  function showWbTool(tool) {
+    if (toolGroup) {
+      toolGroup.querySelectorAll("button[data-tool]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tool === tool);
+      });
+    }
     // The toggle shows whichever shape is actually active (and reads as
     // "on" the same way any other tool button does) instead of a fixed
     // icon: picking "circle" from the menu should look exactly like
@@ -7418,14 +7427,18 @@ async function initWhiteboard() {
     wbRefreshArrowStyleControlRef?.();
     wbToolsOpenerSyncRef?.();
     updateWbCursor();
-    wbFmtState.hints?.toolHint(tool);
     wbFmtState.effects?.refreshStatus();
     // The properties panel now also carries the style a drawing tool will
     // use, so a tool switch has to reopen/close it, see its own comment.
     wbUpdateContextBar();
   }
 
-  wbSelectToolRef = selectWbTool;
+  wbSelectToolRef = Object.assign(selectWbTool, {
+    swap(tool) {
+      window.currentTool = tool;
+      showWbTool(tool);
+    },
+  });
 
   if (toolGroup) {
     toolGroup.addEventListener("click", (e) => {

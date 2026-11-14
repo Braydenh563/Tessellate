@@ -4671,6 +4671,8 @@ let wbMapStripSyncing = false;
 let wbMapRadialFor = null;
 
 function wbOpenMapRadial(node) {
+  //: The ring lives in the page board's view (L-whiteboard-60): in an embed the plain menu opens instead.
+  if (!wbInstances.onPage) return false;
   const ring = document.getElementById("wb-map-radial");
   const container = wbInstances.container();
   const host = document.getElementById("library-view-whiteboard");
