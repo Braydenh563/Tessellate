@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8793, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2811, tests 22638, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8793, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2811, tests 22639, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
 ## Frontend functions (8793)
 
@@ -28591,7 +28591,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22638)
+## Tests (22639)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31260,7 +31260,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_laser.py | 7 |
 | tests/test_wb_layer_and_hollow_ends.py | 3 |
 | tests/test_wb_layer_order.py | 4 |
-| tests/test_wb_layouts_more.py | 17 |
+| tests/test_wb_layouts_more.py | 18 |
 | tests/test_wb_library_more.py | 13 |
 | tests/test_wb_library_scroll.py | 1 |
 | tests/test_wb_line_ends.py | 5 |
