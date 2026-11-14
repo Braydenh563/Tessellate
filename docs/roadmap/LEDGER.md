@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 94 | 38 | 0 | 18 | 262 |
+| world-class | 130 | 93 | 38 | 0 | 18 | 261 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 486 | 109 | 2 | 129 | 1148 |
+| all | 553 | 485 | 109 | 2 | 129 | 1147 |
 
 ## graph
 
@@ -526,7 +526,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L622** `world-class` open, L: Build one LEDGER.md with per-plan tags and paste-in briefs; delete retired agent-remaining/roadmap files and unused code files. From INBOX.md:1784. Evidence: docs/roadmap/LEDGER.md does not exist; ~580 agent-remaining files still present; owner-ordered work for this PR
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
-- [ ] **L626** `world-class` open, L: Apply the tag: filter before the 200 keyword candidates cut in search/engine.py. From OPEN.md:867; OPEN.md:3738. Evidence: search/engine.py:1339-1345 filters rows after retrieval
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
