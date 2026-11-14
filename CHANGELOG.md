@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the flagged-word menu opened by a long press has 44 px rows under a coarse pointer (they measured 28 px at 390; L881, scratchpad/ui-sweeps/docsverify-suggest.js).
 - Documents, Debug: the breakpoint lane under a finger is the 44 px touch floor wide (it measured 14 px at 390: the coarse 1.5rem lost to the editor theme 0.875rem on specificity); a tap sets the breakpoint (L886, scratchpad/ui-sweeps/docsverify-lane.js).
 - Documents, Debug: class getters and setters and private members (#x fields, methods and accessors) are now lowered for the stepper, each stepped against node's output; an object literal's accessor and `#x in o` are still named (L-documents-37). The claim-check linear-time test proves linearity by growth ratio, not a wall bound (L-documents-45).
 - Documents: the dictionary sheet, the links panel's rows, the word popup with Translate, Discuss in chat and the AI review, and Copy link to block are four lazy pieces (documents.js 16,769 to 16,199 lines, 261,826 to 254,407 gzipped bytes); the attach-a-bookmark picker no longer leaves an Escape listener on the page each time it is reopened (L327).

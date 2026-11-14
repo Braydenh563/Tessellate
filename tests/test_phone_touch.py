@@ -151,3 +151,11 @@ def test_ocr_source_chip_ellipsises_on_a_phone():
     css = _read("css/library-lazy.css")
     assert re.search(r"\.sheet-card-page \.ocr-source \{[^}]*white-space: nowrap", css)
     assert re.search(r"\.sheet-card-page \.ocr-source > \.ph-text \{[^}]*text-overflow: ellipsis", css)
+
+
+def test_the_flagged_word_menu_rows_take_the_touch_floor_under_a_finger():
+    """L881: a long press on a flagged word at 390 opened a menu of 28px rows
+    (docsverify-suggest.js); under a coarse pointer each row is `--target-min` tall."""
+    css = _read("css/05-sidebars-themes.css")
+    at = css.index("@media (pointer: coarse) {\n  .doc-suggest-menu .doc-suggest-item")
+    assert "min-height: var(--target-min);" in css[at : css.index("}\n}", at)]

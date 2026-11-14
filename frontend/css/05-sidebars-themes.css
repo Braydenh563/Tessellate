@@ -5242,6 +5242,13 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-color: var(--accent);
   background: var(--chip-bg);
 }
+/* A candidate under a finger is the touch floor tall: the rows measured 28px at 390
+   with touch emulation (docsverify-suggest.js, a long press on a flagged word). */
+@media (pointer: coarse) {
+  .doc-suggest-menu .doc-suggest-item {
+    min-height: var(--target-min);
+  }
+}
 /* The first candidate is the one Enter and a double-click take, so it reads
    as the answer and the rest as the alternatives. Weight only: a second
    colour here would compete with the accent the hovered row already uses. */
