@@ -39,7 +39,9 @@ from .engine_consts import (
 )
 
 
-#: Each throw's own give: BOUNCE_DAMP scaled by up to this much either way, drawn at the release from its own stream (L148).
+#: Each throw's own give: BOUNCE_DAMP scaled down by up to this much, drawn at the release from its own stream (L148).
+#: Only down: a livelier wall bounce sends a walker into a longer stumble that stands past the feet bound (1.632 s at
+#: +25% against 1.6, tests/test_overlay_land_1683.py).
 BOUNCE_SPREAD = 0.25
 
 class FlightMixin:
@@ -479,7 +481,7 @@ class FlightMixin:
         self.wall, self.wob, self.air_t0 = 0, 0.0, self.now
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0
-        self.bounce_k = BOUNCE_DAMP * (1.0 + BOUNCE_SPREAD * (2.0 * self.var_rng.random() - 1.0))
+        self.bounce_k = BOUNCE_DAMP * (1.0 - BOUNCE_SPREAD * self.var_rng.random())
         if abs(vx) > 1:
             self.facing = 1 if vx > 0 else -1
         self._enter("fly", self.now)
