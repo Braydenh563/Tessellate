@@ -56568,6 +56568,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-world-class-374** `world-class` open, M: Graph zoom in title names Ctrl+Plus too. From ux audit 1024/1440/390. Evidence: index.html:4820, title Zoom in (Ctrl+=) Built: index.html title, help_topics_core.py graph topic, tests/test_doc_dock_sizes_l370.py
 - [x] **L-world-class-373** `world-class` open, M: Graph zoom buttons 33.6px at 1440 against the 32px token formula. From ux audit 1024/1440/390. Evidence: 02-chat-graph.css:1092, 10-responsive.css:1055 Built: not a bug: 33.6 is 2rem at a 105% root font (probe 32 at 16px, 33.59 at 16.8px); no px override found, pinned by tests/test_doc_dock_sizes_l370.py
 - [x] **L-world-class-372** `world-class` open, M: Collapsed icon buttons in the doc dock are 28x32 beside 32x32. From ux audit 1024/1440/390. Evidence: library-lazy.css:8073, #doc-format-show #doc-ai #doc-code-snippets-open at 1024, snippets at 1440 Built: library-lazy.css flex-basis max(control-h, target-min), tests/test_doc_dock_sizes_l370.py; 28x32 to 32x32 at 1024 and 1440
 - [x] **L-world-class-371** `world-class` open, M: Doc dock padding differs from the writing-room dock on a phone. From ux audit 1024/1440/390. Evidence: 10-responsive.css:2344, 4px at 390 vs 8px 9.6px Built: 10-responsive.css phone override removed, tests/test_doc_dock_sizes_l370.py; padding 4px to 8px 9.6px at 390

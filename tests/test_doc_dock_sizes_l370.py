@@ -55,3 +55,12 @@ def test_graph_zoom_buttons_follow_the_control_token_with_no_px_override_373():
     for name in sorted(p.name for p in CSS_DIR.glob("*.css")):
         for m in re.finditer(r"[^{}]*graph-zoom[^{}]*\{([^}]*)\}", _css(name)):
             assert not re.search(r"(?:width|height):\s*\d+(?:\.\d+)?px", m.group(1)), name
+
+
+def test_graph_zoom_in_title_names_ctrl_plus_374():
+    html = Path("frontend/index.html").read_text(encoding="utf-8")
+    assert 'id="graph-zoom-in" class="icon-only graph-zoom-btn" title="Zoom in (Ctrl+Plus or Ctrl+=)"' in html
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph"))
+    assert "Ctrl+Plus" in body and "Ctrl+0" in body

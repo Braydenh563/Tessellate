@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 114 | 29 | 0 | 0 | 143 |
+| world-class | 0 | 113 | 29 | 0 | 0 | 142 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 503 | 100 | 2 | 111 | 975 |
+| all | 372 | 502 | 100 | 2 | 111 | 974 |
 
 ## chat
 
@@ -592,7 +592,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-358** `world-class` open, S: Documents dock joins the dock grammar lint (data-dock-name): the filled Run closes the row and the view chevron leaves the icon run. From L-world-class-351. Evidence: index.html:5088 dock doc-dock has no data-dock-name; joining tests/test_dock_grammar.py ON_THE_GRAMMAR needs the filled #doc-code-run last (the kebab #doc-dock-menu follows it) and the #doc-view-menu chevron out of the icon run (it sits between the seg and the worded Formatting and AI edit)
 - [ ] **L-world-class-354** `world-class` open, M: Boot long tasks measured here under 50 ms (L971 follow-on). From BACKLOG.md L971 (hub 2026-11-14). Evidence: Hub: record a Chromium Performance trace at dashboard boot here; fix or measure the three long tasks of w34-fix2-1111.md (boot forced layout, canvas pointerout, most-accessed render) against 50 ms. Only the owner-browser run stays in BACKLOG. Measured here 2026-11-14 (scratchpad/ui-sweeps/bootlongtasks.js): 1x CPU no long task over 50 ms. 4x CPU worst of 3 was 133-203 ms; fixed the usage-ledger top-level `$()` that built the Settings surface at boot (151-186 ms gone, tests/test_handler_lag_static.py). Still over 50 ms at 4x, left open: first Intl init in shell-reminders.js (69 ms, forced 67), settings.js eval (71 ms), atlas.js eval and step (101-103 ms), notes-list.js response render (204 ms with this notebook), app.js json then (83 ms). The three L971 tasks themselves (boot forced layout, canvas pointerout, most-accessed render) are each under 50 ms at 1x.
 - [ ] **L-world-class-355** `world-class` open, M: Settings keydown, chat pointerover, tab click handlers under 100 ms here (L982 follow-on). From BACKLOG.md L982 (hub 2026-11-14). Evidence: Hub: measure Settings pane keydown (was 285 ms), chat pointerover (411 ms), tab clicks (304-352 ms) here with the lag reporter or a PerformanceObserver; fix anything over 100 ms. Only the Windows re-measure stays in BACKLOG. Measured here 2026-11-14 at 4x (scratchpad/ui-sweeps/handlerlag.js, verdict on the handler): 29 of 31 items under 100 ms; chat hover 3 ms (was 411), 6 of 7 tab presses 18-28 ms, Settings nav keys 44-96 ms, graph hover 95 ms. Fixed: Settings search typing (meaning text memo, idle row index, debounced pane switch: 281 to 104 ms). Still over: dashboard tab press 109 ms (phone-shell.js onclick, forced layout 33 ms), Settings Data pane first show 240 ms (graph.js eval lands in the key, forced 81 ms), Settings Account first show 138 ms (forced 76 ms), search box first key 104 ms.
-- [ ] **L-world-class-374** `world-class` open, M: Graph zoom in title names Ctrl+Plus too. From ux audit 1024/1440/390. Evidence: index.html:4820, title Zoom in (Ctrl+=)
 
 ## general
 
