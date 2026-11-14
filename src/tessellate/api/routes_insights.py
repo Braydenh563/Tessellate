@@ -509,7 +509,11 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
     counts = {
         date.fromisoformat(d): n
-        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
+        for d, n in session.execute(
+            #: The range lets `ix_entries_created_order` serve the day filter, which on its own
+            #: is `date()` of every note's column: a SCAN of the table at 5,000 notes (L-world-class-125).
+            select(day, func.count()).where(*shown, Entry.created_at >= datetime.combine(today - timedelta(days=1), datetime.min.time()), day.in_(asked)).group_by(day)
+        ).all()
     }
     notes = voice.as_notes(session, rows)
     line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)

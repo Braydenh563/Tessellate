@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 104 | 29 | 0 | 0 | 133 |
+| world-class | 0 | 105 | 29 | 0 | 0 | 134 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 494 | 100 | 2 | 111 | 966 |
+| all | 372 | 495 | 100 | 2 | 111 | 967 |
 
 ## graph
 
@@ -551,7 +551,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
-- [ ] **L-world-class-125** `world-class` open, S: Query plans at 5,000 notes and resident memory on a populated notebook. From WORLD_CLASS_PLAN.md:3769. Evidence: WORLD_CLASS_PLAN.md:3769 'Not measured: query plans at 5,000 notes'; :3766 populated notebook
 - [ ] **L-world-class-131** `world-class` open, M: Move the popups to the kind 27.2's table rules (decision 63). From WORLD_CLASS_PLAN.md:3839. Evidence: frontend/index.html: 10 of the table's sheets and panels are still <dialog> (space-create, doc-storage, quick-note, doc-history, ...)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
@@ -583,6 +582,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-364** `world-class` open, S: Boot: pure style-recalc and ParseHTML long tasks. From L-world-class-354/355 measurement, 2026-11-14. Evidence: Boot long tasks with no script (UpdateLayoutTree or ParseHTML, 40-98 ms at 4x) remain; find the selectors or markup size behind them (Chromium trace).
 - [ ] **L-world-class-365** `world-class` open, S: Boot: first Intl call floor 57 ms at 4x. From L-world-class-354/355 measurement, 2026-11-14. Evidence: firstClockPaint is a 57 ms task: any first Intl call costs 47-69 ms at 4x (ICU load); a platform floor unless the first clock paint avoids Intl.
 - [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one carries the sealed bytes as they are; a generated recording (recording_make.save_generated), an import and the live-caption PCM spool (captions.begin) are written plain until the next unlock seals them (tests/test_sealed_readers.py PLAIN_WRITES)
+- [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
+- [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 
 ## general
 
