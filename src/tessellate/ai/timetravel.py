@@ -149,6 +149,10 @@ def end_of_day(day, zone) -> datetime:  # noqa: ANN001
 _SAID = re.compile(r"\bwhat\s+(?:did|does|do|was|were)\s+(?:my|the|our|that|this)\s+[\w' -]{2,40}?\s+(?:say|said|read|state|stated|look(?:ed)? like|contain|include)\b", re.I)
 
 
+#: Single words that name a past day and never a topic ("what did my plan say yesterday").
+_ONE_WORD_DAYS = frozenset({"yesterday"})
+
+
 def as_of_in(question: str, now: datetime) -> date | None:
     """The day a "what did my plan say last month" question asks the notebook as of: the last day of the
     past window it names (`recognise`). None for a question that is not about what a note's text said
@@ -159,8 +163,10 @@ def as_of_in(question: str, now: datetime) -> date | None:
         return None
     today = now.date()
     #: One time word ("Christmas") reads as a day but is the topic; "last month", "in March" and "3 weeks ago" are two or more.
+    #: "Yesterday" is the one word that is only ever a day (`_ONE_WORD_DAYS`).
     for found in recognise.recognise(question, now=now, tense="past"):
-        if found.rank or found.kind not in ("date", "range") or len((found.text or "").split()) < 2:
+        said = (found.text or "").strip().lower()
+        if found.rank or found.kind not in ("date", "range") or (len(said.split()) < 2 and said not in _ONE_WORD_DAYS):
             continue
         last = found.value[1] if found.kind == "range" else found.value
         if isinstance(last, date) and last < today:

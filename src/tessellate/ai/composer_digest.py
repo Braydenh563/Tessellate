@@ -40,7 +40,7 @@ from tessellate.ai import composer, composer_doings, composer_done, composer_fra
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_notime, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_aliases, composer_assign, composer_chip_subject, composer_overview
-from tessellate.ai import composer_close, composer_jokes, composer_select
+from tessellate.ai import composer_close, composer_entity, composer_jokes, composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser, recognise_questions
@@ -681,6 +681,8 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
         #: stood behind sentences taken from several notes).
         out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})
     out.lines.append(" ".join(told))
+    if line := composer_entity.card(name, found, today):
+        out.closing.append(line)
 
 
 def _who_found(name: str, views) -> list:  # noqa: ANN001
@@ -743,6 +745,8 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
         out.lines.append(role or PHRASES["who_once"].format(name=_name_said(name), day=_day(view.written, today), fact=fact))
         if not role:
             out.closing.append(PHRASES["only_names"].format(name=_name_said(name, first=not name.lower().startswith("my "))))
+            if line := composer_entity.card(name, found, today):
+                out.closing.append(line)
     else:
         _who_many(out, name, found, today)
         return True

@@ -95,7 +95,6 @@ def test_a6_from_when_to_when_gives_the_span_and_the_count_of_the_dated_notes(as
 
 
 def test_a17_then_and_now_quotes_the_old_claim_and_the_current_one(client, session, monkeypatch):
-    from tessellate.core.database import Entry
     from tessellate.entry import manager
 
     seed.seed(session)

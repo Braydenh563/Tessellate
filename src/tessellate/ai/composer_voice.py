@@ -41,6 +41,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import composer
+from tessellate.ai import scheduled_acts
 from tessellate.ai import composer_quote
 from tessellate.ai import composer_read
 from tessellate.ai.composer import NoteView, Sentence, _Answer, read_note
@@ -575,7 +576,9 @@ def remarks(
     views = _views(notes)
     by_id = {v.id: v for v in views}
     out: list[dict] = []
-    out += _due(reminders or [], by_id, today)
+    #: A repeating act reminder is answered once a day in place of its plain due line (X15, `scheduled_acts`).
+    acts = scheduled_acts.lines(reminders or [], notes, today)
+    out += _due([r for r in reminders or [] if r.get("id") not in {a["reminder_id"] for a in acts}], by_id, today) + acts
     out += _on_this_day(views, today)
     for nid in (resurfaced or [])[:PER_KIND]:
         if nid in by_id:

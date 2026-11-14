@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: the eight voice-pattern readers answer streak, drift, contrast, load, time of day, first and last mention, co-occurrence and silence questions with dated lines, an entity card (first and last mention, names beside) closes a who answer, the concept table now feeds title and tag finding, every stated count carries a recountable query, note templates fill {date}, {weekday}, {week}, {title} and {n} and select the first leftover slot, "every day" acts and one proactive line a day are built, "yesterday" alone reads as of that day, and an answer's place now survives the frame round trip (L-chat-66, 70, 92, 93, 99, 105, 106).
 - Companion: L180 closed; the enlarged view and framed Atlas clip are pinned by a test (INBOX 1840).
 
 - Chat acts: a model reply that claims an act ("I've created a new board") with no tool call, to a sentence the act registry reads, is replaced by that act's Confirm card (L114, tests/test_act_claim_guard_1114.py).

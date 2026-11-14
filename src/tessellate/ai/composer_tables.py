@@ -1281,6 +1281,12 @@ CONCEPTS: dict[str, tuple[str, ...]] = {
     "travel": ("flight", "hotel", "airport", "train", "itinerary", "passport", "trip", "holiday"),
     "pet": ("dog", "cat", "puppy", "kitten", "hamster", "rabbit"),
     "drink": ("coffee", "tea", "wine", "beer", "juice", "water"),
+    "music": ("guitar", "piano", "song", "album", "concert", "band", "playlist", "drums", "violin"),
+    "money": ("rent", "salary", "budget", "savings", "invoice", "tax", "loan", "mortgage"),
+    "health": ("doctor", "dentist", "medicine", "pills", "vaccine", "checkup", "physio", "prescription"),
+    "family": ("mum", "dad", "sister", "brother", "aunt", "uncle", "cousin", "grandma", "grandad"),
+    "transport": ("bus", "train", "tram", "taxi", "bike", "metro", "commute", "ferry"),
+    "clothes": ("jacket", "shoes", "jeans", "shirt", "dress", "coat", "boots", "scarf"),
 }
 
 #: The verb a person asks with and the noun a note is written with ("when do I
@@ -1628,6 +1634,10 @@ INSIGHT_TEMPLATES: dict[str, str] = {
     "drift": "Since {since}, no later note picks up {plan}. It may still be open.",
     "contrast": "On {first} you wrote {before}; on {last}, {after_said}. You may have changed your mind.",
     "load": "The week of {week} had {count} notes against a usual {usual}; a busy week.",
+    "time_of_day": "Of your {subject} notes, {count} of {total} say {when}.",
+    "span": "You first wrote about {subject} on {first} and last on {last}, {count} notes in all.",
+    "together": "Your notes about {subject} also name {other} in {count} of them.",
+    "silence": "Nothing about {subject} since {last}.",
 }
 INSIGHT_HEDGES: dict[str, str] = {
     "hobby": "that may be a hobby forming",
@@ -1641,7 +1651,7 @@ INSIGHT_SLOTS: dict[str, str] = {
     "count": "count", "weeks": "count", "usual": "count",
     "since": "date", "first": "date", "last": "date", "week": "date",
     "subject": "subject", "plan": "span", "before": "span", "after_said": "span",
-    "after": "clause", "hedge": "hedge",
+    "after": "clause", "hedge": "hedge", "total": "count", "other": "subject", "when": "word",
 }
 
 #: Who it is and what it does are said as Atlas's assistant (CHAT_PLAN decision 36,
