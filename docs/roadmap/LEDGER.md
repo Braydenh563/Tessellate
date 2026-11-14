@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 128 | 29 | 3 | 10 | 157 |
+| world-class | 0 | 127 | 29 | 3 | 10 | 156 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 517 | 100 | 5 | 121 | 989 |
+| all | 372 | 516 | 100 | 5 | 121 | 988 |
 
 ## graph
 
@@ -542,7 +542,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
-- [ ] **L-world-class-76** `world-class` open, S: Decide app-wide undo across a reload (recommendation: keep it session-only and say so in Help). From WORLD_CLASS_PLAN.md:802. Evidence: undo-store.js persists boards and documents only; 'by design' at :802 has no owner decision
 - [ ] **L-world-class-77** `world-class` open, S: Re-measure A8's other three items from the 2026-09-13 audit. From WORLD_CLASS_PLAN.md:764. Evidence: WORLD_CLASS_PLAN.md:764 'the other three A8 items were not re-measured'; HISTORY.md:6447
 - [ ] **L-world-class-79** `world-class` open, M: Move the model downloads, the scheduler, SearXNG and update threads onto the pool (F7). From WORLD_CLASS_PLAN.md:862. Evidence: tests/test_flaw_class_lints.py ratchet; 26 thread sites at :3775
 - [ ] **L-world-class-80** `world-class` open, S: One renderer in the Files card reading GET /files/readings (F10). From WORLD_CLASS_PLAN.md:864. Evidence: GET /files/readings exists (F10 view); the Files card does not read it (:864)

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Help: the Guide's Undo and the bin topic says the app's own Undo lasts for the session (a board, mind map and document keep theirs across a reload); the decision is INBOX 1812 (L-world-class-76).
 - Notes: pasting HTML (a heading, a list, a link) into the capture box or the quick note now becomes Markdown through the document's own converter; Ctrl+Shift+V pastes plain (L-world-class-50).
 - Start-up: the icon font is a subset (Phosphor.woff2 147,380 to 57,824 bytes, 628 names) as the boot face, with the full font (Phosphor-full.woff2) as the second face of the `.ph` stack, fetched only when an icon outside the subset is drawn; `python scripts/subset_phosphor.py` rebuilds it; the document HTML export embeds the full font (L-world-class-70, INBOX 1811).
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
