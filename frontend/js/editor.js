@@ -1001,6 +1001,8 @@ function editorBlockRows(context) {
   if (inDocument) {
     add({ id: "blockref", group: "Embeds", icon: "ph:link-simple", label: "Link to this block", about: "Copies [[Title#^id]] for this paragraph", keys: "#^", keywords: ["block", "reference", "anchor", "paragraph", "permalink", "copy link", "^"], run: (t) => editorApplyNamed(t, "blockref") });
     add({ id: "syncedcopy", group: "Embeds", icon: "ph:copy", label: "Copy as synced block", about: "Copies ![[Title#^id]] for this paragraph; paste it in another document", keys: "![[#^]]", keywords: ["synced", "block", "transclude", "embed", "copy", "paragraph", "mirror", "^"], run: (t) => editorApplyNamed(t, "syncedcopy") });
+    //: D14: a document under this one, linked here (documents-subpages.js, loaded with the Library).
+    add({ id: "subpage", group: "Embeds", icon: "ph:file-plus", label: "Sub-page", about: "A new document under this one, linked here", keys: "", keywords: ["subpage", "child", "nested", "page"], run: (t) => window.docSubpagesPiece?.slash(t) });
     add({ id: "syncedpaste", group: "Embeds", icon: "ph:clipboard-text", label: "Paste synced block", about: "Shows the paragraph you last copied as a synced block, editable here", keys: "![[#^]]", keywords: ["synced", "block", "paste", "insert", "embed", "transclude", "paragraph"], run: (t) => editorApplyNamed(t, "syncedpaste") });
   }
 

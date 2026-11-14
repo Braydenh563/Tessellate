@@ -1773,6 +1773,10 @@ class Document(Base, WorkspaceMixin):
     #: double-click or drag, and had nowhere to keep it). Additive.
     graph_pin_x: Mapped[float | None] = mapped_column(Float, default=None)
     graph_pin_y: Mapped[float | None] = mapped_column(Float, default=None)
+    #: The document this one is a sub-page of (DOCUMENTS_PLAN D14); null is the
+    #: top level. A plain integer, not a foreign key: a purge lifts the children
+    #: first (`entry/bin.purge_document`), and the cycle check is the route's.
+    parent_id: Mapped[int | None] = mapped_column(Integer, default=None)
     #: Sealed under the vault key, as a private note is (INBOX 1727): only a
     #: document in a private space is, and `sealed_by_space` says so.
     is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")

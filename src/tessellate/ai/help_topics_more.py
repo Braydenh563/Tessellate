@@ -1966,7 +1966,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2999,6 +2999,28 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Copy as synced block"}
+
+#: DOCUMENTS_PLAN D14 (L-documents-44): sub-pages, the Library's tree and the head's breadcrumb (documents-subpages.js).
+MORE_TOPICS.append({
+    "id": "document-subpages",
+    "keywords": (
+        "sub-page", "sub-pages", "subpage", "child page", "nested pages", "page tree", "move under",
+        "new sub-page", "parent document", "breadcrumb", "/subpage",
+    ),
+    "body": (
+        "A document can sit under another one. In the Library's Documents list, a document's ... menu has New sub-page "
+        "(a document under it, opened at once) and Move under (pick the document to put it under; "
+        "Move to the top level takes it out again). In a document, type /subpage: it makes a sub-page and puts a link to it where you "
+        "typed. A document with sub-pages has a small arrow before it in the list: press it to show or hide the pages "
+        "under it (the list starts with them hidden, and remembers which you opened). A search shows its matches as a "
+        "flat list. At the top of a sub-page, its parents are shown after Documents: press one to open it. A page cannot "
+        "go under itself or one of its own sub-pages. Deleting a document moves its sub-pages to the bin with it, and "
+        "restoring it brings them back; deleting it for good leaves its sub-pages at the top level. Each move and each "
+        "new sub-page can be undone."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-subpages"] = {"title": "Sub-pages", "path": "Library tab, Documents, a document's ... menu, New sub-page or Move under; type /subpage in a document"}
 
 #: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
 MORE_TOPICS.append({

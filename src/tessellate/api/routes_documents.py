@@ -77,6 +77,8 @@ class DocumentBody(BaseModel):
     #: type is refused, 422 naming the valid ones: it used to become markdown
     #: unseen, so `exe` and `../../etc` were stored as `md` (audit 1031 DC8).
     file_type: str = Field(default=filetypes.DEFAULT_FILE_TYPE, max_length=40)
+    #: Made as a sub-page of this document (D14, `/subpage` and the kebab's New sub-page).
+    parent_id: int | None = None
 
     @field_validator("file_type")
     @classmethod
@@ -110,6 +112,9 @@ class DocumentPatch(BaseModel):
     #: `threads_hash` of the list this edit started from, so a save over
     #: threads another window has since changed is refused with 409 as text is.
     base_threads_hash: str | None = Field(default=None, max_length=64)
+    #: Move under this document (D14); null is the top level. Only when the
+    #: body names it (`model_fields_set`): an autosave never moves a page.
+    parent_id: int | None = None
 
     @field_validator("file_type")
     @classmethod
@@ -244,6 +249,8 @@ def _summary(document: Document) -> dict:
         # anything at all, and the editor picks its whole mode from this.
         "file_type": filetypes.normalise(document.file_type),
         "archived_at": document.archived_at.isoformat() if document.archived_at else None,
+        #: The Library draws the tree from this (D14); null is the top level.
+        "parent_id": document.parent_id,
         # The frontmatter's keys and values, so the Library can filter on a
         # property without a request per document (DOCUMENTS_PLAN Phase 3 item
         # 4's second clause). It rides on the summary rather than on `_full`
@@ -264,7 +271,24 @@ def _full(document: Document, session: Session | None = None) -> dict:
     }
     if session is not None:
         body["notes"] = _linked_notes(session, document.id)
+        #: The breadcrumb in the document head, root first (D14).
+        body["parents"] = [{"id": p.id, "title": p.title} for p in document_repo.parents(session, document)]
     return body
+
+
+#: Said when a move would make a loop (D14): the person's words, not the graph's.
+CYCLE = "A page cannot go under itself or one of its own sub-pages."
+
+
+def _parent_or_refuse(session: Session, document_id: int | None, parent_id: int | None) -> int | None:
+    """The parent a create or a move names, checked: it exists, is not in the
+    bin, and is not the document or one of its own sub-pages."""
+    if parent_id is None:
+        return None
+    DOCUMENTS.writable(session, parent_id)
+    if document_id is not None and document_repo.would_cycle(session, document_id, parent_id):
+        raise HTTPException(status_code=409, detail=CYCLE)
+    return parent_id
 
 
 def _linked_notes(session: Session, document_id: int) -> list[dict]:
@@ -525,12 +549,14 @@ def documents_outline(session: Session = Depends(get_session)) -> list[dict]:
 def create_document(
     body: DocumentBody, session: Session = Depends(get_session)
 ) -> dict:
+    parent_id = _parent_or_refuse(session, None, body.parent_id)
     document = document_repo.create(
         session,
         title=body.title.strip() or "Untitled",
         content=body.content,
         file_type=filetypes.normalise(body.file_type),
     )
+    document.parent_id = parent_id
     log_action(session, "created", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     _process_committed_media(session, document.content)
@@ -765,6 +791,8 @@ def update_document(
         current_threads=document.threads,
         new_threads=None if body.threads is None else docthreads.dump(body.threads),
     )
+    if "parent_id" in body.model_fields_set:
+        document.parent_id = _parent_or_refuse(session, document.id, body.parent_id)
     if body.title is not None:
         document.title = body.title.strip() or document.title
     content_changed = body.content is not None and body.content != document.content
@@ -819,6 +847,11 @@ def delete_document(document_id: int, session: Session = Depends(get_session)) -
     the app deleted outright, and its Undo made a new document with a new id."""
     document = _existing(session, document_id)
     document.deleted_at = utcnow()
+    #: Its sub-pages go with it, stamped with the same moment, which is how a
+    #: restore knows them from a page binned on its own earlier (D14).
+    for child in document_repo.subtree(session, document.id):
+        if child.deleted_at is None:
+            child.deleted_at = document.deleted_at
     log_action(session, "deleted", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {"deleted": True, "binned": True}
