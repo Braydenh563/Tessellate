@@ -1746,7 +1746,7 @@ const lazyTabsReady = new Set();
 // check below already uses for a lazy tab that was never visited.
 function hasUnsavedWork() {
   if (typeof docDirty !== "undefined" && docDirty) return true;
-  if (noteFormDirty && editingId !== null) return true;
+  if (noteFormDirty && appState.get("note") !== null) return true;
   //: Not the capture box: its text survives a tab switch (the box stays in
   //: the page) and a reload (the draft in localStorage), so leaving loses
   //: nothing, and asking "Leave without saving?" on every tab switch while a

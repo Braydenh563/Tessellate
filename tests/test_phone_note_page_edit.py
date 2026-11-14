@@ -31,6 +31,7 @@ def _run(setup: str, call: str, may_close: bool = True) -> dict:
     script = f"""
 const order = [];
 let editingId = null, noteFormDirty = false, noteFormDraft = null;
+const appState = {{ get: () => editingId }}; const setEditingNote = (id) => {{ editingId = id; }};
 let focusTagsAfterRender = null, focusBodyAfterRender = null;
 const requestAnimationFrame = (fn) => fn();
 const scrollEditingEntryIntoView = () => order.push('scroll');

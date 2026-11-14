@@ -5088,7 +5088,7 @@ Link to another note with [[its first few words]]."></textarea>
              · **Fewer things.** The two exports and the delete moved into one
                kebab. They are the three least-used controls here and they
                were taking a third of the bar. -->
-        <div class="row space-between dock doc-dock">
+        <div class="row space-between dock doc-dock" data-dock-name="documents">
           <!-- Name and type together, because they are the same statement
                about the document: what it is called and what it is. Moved
                off the action row, which is about what you can *do*, and
@@ -5223,17 +5223,10 @@ Link to another note with [[its first few words]]."></textarea>
                  Shown for that type only (syncDocFileType); every edit is a change to the editor's own text. -->
             <button id="doc-csv-grid" class="ghost small hidden" type="button" aria-pressed="false"
               title="Edit this file as a table of cells" aria-label="Grid"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Grid</span></button>
-            <!-- Run (INBOX 404, Brief 69): a code document in the sandbox
-                 through the one run protocol (run-core.js), its output in a
-                 panel under the editor. Shown for the types that run or
-                 preview (DOC_RUN_KINDS, syncDocFileType). The bar's one
-                 filled action (INBOX 803): a code file is for running. -->
-            <button id="doc-code-run" class="small hidden" type="button"
-              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" aria-label="Run"><i class="ph ph-play ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Run</span></button>
             <!-- A .py document before Python is installed: Run is disabled
                  and this one line says what it needs and goes there
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
-            <button id="doc-code-run-why" class="linklike small hidden" type="button"
+            <button id="doc-code-run-why" class="ghost linklike small hidden" type="button"
               title="Install Python in Settings, Packages, to run Python files">Install Python in Settings, Packages</button>
             <!-- The code panel's ways in (INBOX 788): the Assistant is a code
                  file's (`.doc-code-only`, hidden for prose by library-lazy.css);
@@ -5286,7 +5279,7 @@ Link to another note with [[its first few words]]."></textarea>
             <button type="button" id="doc-focus-toggle" class="ghost small icon-only doc-focus-toggle"
               title="Focus mode: hide everything but the page (F11)" aria-pressed="false"
               aria-label="Focus mode: hide everything but the page (F11)"><i class="ph ph-corners-out" aria-hidden="true"></i></button>
-            <details class="doc-dock-menu" id="doc-dock-menu">
+            <details class="doc-dock-menu dock-menu dock-more" id="doc-dock-menu">
               <summary class="ghost small icon-button doc-dock-menu-btn"
                 title="More actions for this document"
                 aria-label="More actions for this document"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -5485,6 +5478,14 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Delete this document"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete document</button>
               </div>
             </details>
+            <!-- Run (INBOX 404, Brief 69): a code document in the sandbox
+                 through the one run protocol (run-core.js), its output in a
+                 panel under the editor. Shown for the types that run or
+                 preview (DOC_RUN_KINDS, syncDocFileType). The bar's one
+                 filled action (INBOX 803): a code file is for running. It
+                 closes the row, after the more menu (L-world-class-358). -->
+            <button id="doc-code-run" class="small hidden" type="button"
+              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" aria-label="Run"><i class="ph ph-play ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Run</span></button>
           </span>
         </div>
         <!-- Formatting without remembering the syntax. Everything here is

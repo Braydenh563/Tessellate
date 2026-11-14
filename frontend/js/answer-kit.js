@@ -30,7 +30,7 @@ function askOpenContext() {
     return out;
   }
   const notesShowing = !$("tab-notes")?.classList.contains("hidden");
-  const note = editingId || (notesShowing && activeCategory ? null : lastOpenedEntryId);
+  const note = appState.get("note") || (notesShowing && activeCategory ? null : lastOpenedEntryId);
   if (note) out.open_note_id = note;
   if (activeCategory) out.open_category = activeCategory;
   return out;

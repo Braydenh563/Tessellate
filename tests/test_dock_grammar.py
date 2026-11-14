@@ -114,6 +114,8 @@ ON_THE_GRAMMAR = {
     # The OCR workspace's tools (INBOX 717): View, then Read, one row that
     # folds what does not fit into its own menu, the first dock in a dialog.
     "ocr",
+    # The Documents editor's bar (L-world-class-358): the filled Run closes the row.
+    "documents",
 }
 
 
@@ -345,15 +347,16 @@ def test_segments_in_a_zone_carry_an_icon_per_option(seg):
         # them, and the runtime shape is gated by a sweep instead:
         # `scratchpad/ui-sweeps/timelinedock.js` asserts one row, the icons,
         # the `aria-pressed` per segment and the 44px target at 390.
+        #: documents.js joined for the Documents dock's diagram segment, built in docDiagramSeg.
         #: app.js and timeline.js joined: the Timeline tab, whose kind filter
         #: is the case above, was split out of app.js into timeline.js.
         app = "\n".join(
             frontend_text(name)
-            for name in ("app.js", "timeline.js")
+            for name in ("app.js", "timeline.js", "documents.js")
         )
         assert seg.id and f'"{seg.id}"' in app, (
             f"{seg.dock}:{seg.id}: a segment with no options and nothing in "
-            "app.js or timeline.js that builds them"
+            "app.js, timeline.js or documents.js that builds them"
         )
         return
     assert seg.with_icon >= seg.options, (

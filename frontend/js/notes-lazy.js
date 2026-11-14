@@ -159,7 +159,7 @@ async function refreshNoteSearchWhy() {
   // note" on a note linked to something nobody is reading. On card view the
   // last card clicked or focused counts (L709, the owner 2026-11-12).
   const open =
-    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null) || Number($("entry-list")?.dataset.lastCard) || null;
+    appState.get("note") || (expandedRows.size === 1 ? [...expandedRows][0] : null) || Number($("entry-list")?.dataset.lastCard) || null;
   let body;
   try {
     // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search

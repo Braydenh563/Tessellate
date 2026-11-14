@@ -38,7 +38,7 @@ const EDITOR_SURFACES = {
   "entry-content": "note",
   //: The note *edit* form (note-edit-panels.js's `renderEditForm`), which had none of this
   //: until now: the one editing surface in the app with no "/" menu, no
-  //: toolbar and no selection bar. One id, because `editingId` allows exactly
+  //: toolbar and no selection bar. One id, because the note slice (`appState.get("note")`) allows exactly
   //: one open edit form at a time.
   "entry-edit-content": "note",
   //: The capture bar's card and the quick note (audit 1031 N9, N50): the two
@@ -2312,8 +2312,8 @@ function selectionContextSource(surfaceId) {
   }
   if (surfaceId === "entry-edit-content") {
     const entry =
-      typeof allEntries !== "undefined" && typeof editingId !== "undefined"
-        ? allEntries.find((e) => e.id === editingId)
+      typeof allEntries !== "undefined"
+        ? allEntries.find((e) => e.id === appState.get("note"))
         : null;
     return {
       title: entry ? noteLabel(entry, 40) : "this note",

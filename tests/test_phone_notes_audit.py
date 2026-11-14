@@ -111,7 +111,7 @@ def test_the_command_palette_carries_the_notes_rows():
     go = _function(_js_scope.unwrapped(_read("app-palette.js")), "paletteGoToCategory")
     assert '$("category-list")' in go and ".click()" in go
     hand = _function(_js_scope.unwrapped(_read("app-palette.js")), "paletteNotesInHand")
-    for source in ("selectedIds", "notePageOpenId", "editingId", "overlayReturnFocus"):
+    for source in ("selectedIds", "notePageOpenId", "appState.get(\"note\")", "overlayReturnFocus"):
         assert source in hand
     # Both sheets load on first use, so the palette may call them at boot.
     app = _read("app.js")

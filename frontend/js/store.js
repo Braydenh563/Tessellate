@@ -69,6 +69,15 @@ function publishNotes(list) {
   appState.set("notes", list);
 }
 
+//: **The note slice** (F12, L-world-class-357): the id of the note whose
+//: inline edit form is open, or null. It replaces the `editingId` global:
+//: `setEditingNote` is the one writer (openNoteEditor, the closes, the space
+//: swap), readers use `appState.get("note")` or `appState.subscribe("note", fn)`.
+appState.set("note", null);
+function setEditingNote(id) {
+  if (appState.get("note") !== id) appState.set("note", id);
+}
+
 //: **The reminders slice** (F12, L-world-class-81): the open reminders, whole.
 //: Its one writer is this read, shared: a caller within `maxAgeMs` of the last
 //: one joins it, so the dashboard's three readers, the bell and the lock screen

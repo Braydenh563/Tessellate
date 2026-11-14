@@ -32,7 +32,7 @@ def test_has_unsaved_work_reads_the_three_existing_flags() -> None:
     body = _function(app, "hasUnsavedWork")
     assert "docDirty" in body
     assert "noteFormDirty" in body
-    assert 'editingId !== null' in body
+    assert 'appState.get("note") !== null' in body
     # The capture box is deliberately not asked about: its text survives a
     # tab switch and a reload (its localStorage draft), so leaving loses
     # nothing (decided 2026-09-27, after a prompt on every switch).

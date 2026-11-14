@@ -319,7 +319,7 @@ def test_python_without_the_runtime_shows_run_disabled_with_one_line():
     """DOCUMENTS_PLAN 25 row 2: Run stays on the toolbar for a .py document,
     disabled, and the one line beside it opens Settings, Packages."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    assert '<button id="doc-code-run-why" class="linklike small hidden" type="button"' in html
+    assert '<button id="doc-code-run-why" class="ghost linklike small hidden" type="button"' in html
     assert ">Install Python in Settings, Packages</button>" in html
     docs = _js("documents.js")
     assert '$("doc-code-run-why")?.addEventListener("click", () => docRunOpenPythonExtra());' in docs

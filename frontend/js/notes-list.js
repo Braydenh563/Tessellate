@@ -37,7 +37,7 @@ function foldNoteToolbarForFirstPaint() {
 onSurface("notes", foldNoteToolbarForFirstPaint);
 
 //: Read by navigation.js's `hasUnsavedWork` (WORLD_CLASS_PLAN 22.1 item 4).
-//: `editingId` alone says a form is *open*, not that anything in it has
+//: the note slice (`appState.get("note")`) alone says a form is *open*, not that anything in it has
 //: changed; comparing every field back to `entry` at guard time would need
 //: the same `entry` object this closure already has, so it is cheaper and
 //: less to keep in step to set this once, here, than to reconstruct it from
@@ -55,7 +55,7 @@ let noteFormDraft = null;
 //: Ask before throwing away a form with changes in it. Answers true when it
 //: is fine to leave (nothing changed, or the person agreed).
 async function noteFormMayClose() {
-  if (editingId === null || !noteFormDirty) return true;
+  if (appState.get("note") === null || !noteFormDirty) return true;
   return confirmDialog("Discard your changes to this note?", { confirmLabel: "Discard" });
 }
 
@@ -111,14 +111,14 @@ function restoreNoteControl(held) {
 //: Every "edit this note" goes through here, so a form with changes is
 //: never swapped for another note's without asking.
 async function openNoteEditor(id, { focusTags = false } = {}) {
-  if (editingId !== null && editingId !== id && !(await noteFormMayClose())) return false;
-  if (editingId !== id) {
+  if (appState.get("note") !== null && appState.get("note") !== id && !(await noteFormMayClose())) return false;
+  if (appState.get("note") !== id) {
     noteFormDirty = false;
     noteFormDraft = null;
     //: The copy kept on this device goes with it (note-edit-panels.js).
     if (typeof forgetNoteEditLocally === "function") forgetNoteEditLocally();
   }
-  editingId = id;
+  setEditingNote(id);
   //: **On a phone the note page is put away first.** Tapping a note opens it
   //: as a full-page sheet (`openNotePage`, phone-shell.js) and its Edit button
   //: lands here, but the form is drawn into the list, which is behind that
@@ -1975,7 +1975,7 @@ function notesScroller(list) {
 window.addEventListener("resize", () => (notesScroller.kept = null), { passive: true });
 
 const NOTE_WINDOW_FIRST = 12;
-const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
+const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === appState.get("note")
   || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
 
 function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
@@ -2336,7 +2336,7 @@ function resetNoteList(list) {
   //: The rows built now are where the reader is: the redraw builds them again.
   const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
   if (noteEngine.jumpId != null) keep.add(noteEngine.jumpId);
-  if (editingId != null) keep.add(editingId);
+  if (appState.get("note") != null) keep.add(appState.get("note"));
   clearTimeout(rowEnterTimer);
   rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
   list.replaceChildren();
@@ -2557,7 +2557,7 @@ function initEntryListKeyboardNav() {
 
     if (event.target === current && (event.key === "Delete" || event.key === "F2")) {
       const entry = allEntries.find((e) => e.id === Number(current.dataset.id));
-      if (!entry || editingId === entry.id) return;
+      if (!entry || appState.get("note") === entry.id) return;
       event.preventDefault();
       const next = items[index + 1] || items[index - 1];
       if (event.key === "F2") openNoteEditor(entry.id);
@@ -3209,7 +3209,7 @@ async function refreshEntries(ids) {
   let total;
   try {
     //: A note being edited is read whole, the rest as a preview (a row with `content_truncated` holds a part: `fullEntry`).
-    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(editingId) ? "" : "&preview=300"}`);
+    const response = await api(`/entries?ids=${wanted.join(",")}${wanted.includes(appState.get("note")) ? "" : "&preview=300"}`);
     rows = await response.json();
     total = Number(response.headers.get("X-Total-Count"));
   } catch {
@@ -3271,7 +3271,7 @@ async function followNoteChanges() {
     if (first) return;
     //: More than one answer holds: an empty patch is `refreshEntries`'s full read.
     if (body.more) return void refreshEntries([]);
-    const ids = body.ids.filter((id) => id !== editingId && noteChanges.seen.get(id) !== body.stamps[id]);
+    const ids = body.ids.filter((id) => id !== appState.get("note") && noteChanges.seen.get(id) !== body.stamps[id]);
     if (noteChanges.seen.size > 500) noteChanges.seen.clear();
     for (const id of body.ids) noteChanges.seen.set(id, body.stamps[id]);
     //: Battery: four empty answers in a row slow the ask to 30 s; a change or a return to the tab restores 15 s.
@@ -3592,8 +3592,8 @@ function notesRailHiddenByChoice() {
 //: jump that has just landed are both things the render is the first to know
 //: about, and neither has a hook of its own in this file.
 function notesRailSync() {
-  if (editingId != null && editingId !== notesRailSeenEditing) notesRailId = editingId;
-  notesRailSeenEditing = editingId;
+  if (appState.get("note") != null && appState.get("note") !== notesRailSeenEditing) notesRailId = appState.get("note");
+  notesRailSeenEditing = appState.get("note");
   const opened = typeof lastOpenedEntryId === "number" ? lastOpenedEntryId : null;
   if (opened != null && opened !== notesRailSeenOpened) notesRailId = opened;
   notesRailSeenOpened = opened;

@@ -577,7 +577,7 @@ const CARD_KINDS = {
       smallButton("ph:pencil-simple Edit", "Open this note with the editor on", () => {
         //: The same two steps the note list's own Edit does, in the order that
         //: works from here: `flashEntry` switches tab and re-renders, and
-        //: `editingId` is what that render reads to open the editor. Set it
+        //: the note slice (`appState.get("note")`) is what that render reads to open the editor. Set it
         //: first and the jump would clear it.
         flashEntry(item.id);
         openNoteEditor(item.id);

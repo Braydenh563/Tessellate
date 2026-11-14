@@ -16,7 +16,7 @@ const { boot } = require('./lib.js');
       const id = (await api('/entries?limit=5')).map?.((e) => e.id)?.[0] ?? null;
       const first = document.querySelector('#notes-list li[data-id], .note-card[data-id], li[data-id]');
       const entryId = Number(first?.dataset.id);
-      editingId = entryId; await loadEntries?.();
+      setEditingNote(entryId); await loadEntries?.();
       await new Promise((r) => setTimeout(r, 600));
       const src = document.getElementById('note-toolbar');
       const clone = document.querySelector('.note-edit-toolbar');
@@ -27,7 +27,7 @@ const { boot } = require('./lib.js');
         cloneBtnPressed: clone?.querySelector('.doc-toolbar-collapse')?.getAttribute('aria-pressed'),
         cloneShells: clone?.querySelectorAll('.select-shell').length, srcShells: src.querySelectorAll('.select-shell').length, cloneToolsCount: clone?.querySelectorAll('.doc-toolbar-tools').length,
       };
-      editingId = null; await loadEntries?.();
+      setEditingNote(null); await loadEntries?.();
       return out;
     }, collapsed);
   }
