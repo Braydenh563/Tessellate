@@ -39,6 +39,9 @@ const FRAMES = [
   { name: "hop", pose: "stand", classes: ["nmb-act-hop"], at: 0.3 },
   //: The rig's own hanging pose: both arms raised to an edge above it.
   { name: "hang", pose: "hang", classes: [] },
+  //: A throw's mid-spin: the startled pose turned about its middle (the rig has
+  //: no tumble of its own, so this one is a transform of an existing pose).
+  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
   //: INBOX 1710 (W31 E2), the app's three acts the desk had no picture of: the lower wisp let down over an
   //: edge and swung (`act.dangle`, `kick0` and `kick1` for `act.kick_legs`: the hem thrown forward and back,
   //: the app's `atl-lower-flick`), and the hang with one hand let go (`act.hang_one_hand`, `nmb-act-onehand`:

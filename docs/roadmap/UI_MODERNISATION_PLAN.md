@@ -226,7 +226,8 @@ survive its archiving; the numbering is that file's.
    them, and per-frame streams blinked (INBOX 1670). The variation inside
    a pose stays live on `behaviour.Flow` (5 to 9 s holds eased over 2.4 s,
    FLOW_POSE and FLOW_LOWER, within 4 degrees of the torso, row 103).
-   Measured numbers are on the row's HISTORY entry. The frames are per
+   Measured numbers are on the row; shipping the frames is
+   L-ui-modernisation-152 (a full render fails 39 tests). The frames are per
    look, not themed: one capture per look serves both themes.
 
 ## Phases 0 to 6: built

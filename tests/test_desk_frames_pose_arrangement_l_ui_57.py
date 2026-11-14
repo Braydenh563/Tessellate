@@ -49,6 +49,18 @@ def test_source_text_every_capture_draws_the_figure_at_its_own_size() -> None:
     assert 'k !== "--nmb-scale"' in RENDER
 
 
+def test_source_text_every_shipped_frame_has_a_capture() -> None:
+    """Source text: "Render the ... variants into the desk companion's frames": a full render needs every frame the
+    loader reads; `tumble` (the spin frames' base) fell out of the capture list in PR 216 and the render stopped at it."""
+    from tessellate.core.overlay import sprites
+
+    names = set(re.findall(r'name: "([a-z_0-9]+)"', RENDER))
+    generated = re.compile(r"(walk|wave|idle)\d+")
+    assert "...Array.from({ length: 12 }, (_, i) => ({ name: `walk${i}`" in RENDER
+    missing = [n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES and n not in names and not generated.fullmatch(n)]
+    assert missing == []
+
+
 def test_source_text_the_pose_boxes_keep_their_arrangement() -> None:
     """Source text: "no shipped PNG carries the variants": the per-frame reset clears the loop boxes, never the rig's pose boxes."""
     reset = next(line for line in RENDER.splitlines() if 'el.style.removeProperty("transform"); el.style.removeProperty("transform-origin")' in line)
