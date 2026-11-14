@@ -63,11 +63,11 @@ rebuilt existing work here.
 - **Boards have a preview renderer** (`_board_preview`, `_preview_items` in
   `routes_whiteboard.py`) and a Library "Boards & maps" sub-tab that lists and
   manages them, plus duplicate.
-- **A Concept Map feature exists** (task #7, "Build the authored mindmap"),
-  reachable from the Graph tab's toolbar. Its learnability is a known open item
-  (task #103). **Read what it does before designing a second one**, the
-  likeliest right answer is that "mindmap" and "concept map" become one feature,
-  not two.
+- **A Concept Map feature existed** (task #7, "Build the authored mindmap"),
+  reachable from the Graph tab's toolbar, and its learnability was an open
+  item then (task #103). Settled: "mind map" and "concept map" became one
+  feature, named "mind map" everywhere a person reads (Brief 78, built
+  2026-10-10, `tests/test_terms.py`).
 - **The graph already renders note-to-note structure** (`frontend/js/graph.js`),
   and the Library already has a Boards & maps sub-tab (the user's own preferred
   home for this).
@@ -525,7 +525,7 @@ tabs when the panel reaches maps, so one place per action is kept.
 - **The empty map says how to start.** One line under the templates card, gone
   on the first topic added and never shown again.
 
-## 13. The map, read against its six complaints: measured 2026-09-21, phases open
+## 13. The map, read against its six complaints: measured 2026-09-21, phases built
 
 The owner, INBOX 305: "the mindmap needs A LOT of improving. Tools and
 utilities are really awkward to use and dont show themselves how id expect,
