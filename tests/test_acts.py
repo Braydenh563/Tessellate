@@ -6,13 +6,14 @@ previewed through it and never runs on its own word."""
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
 import pytest
 from sqlalchemy import select
 
-from tessellate.ai import acts, commands, help_chat
-from tessellate.core.database import Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode
+from tessellate.ai import acts, board_acts, commands, help_chat
+from tessellate.core.database import Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -51,11 +52,17 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
 
     made = tuple(sorted(c.name for c in session.scalars(select(Category)))) if categories else ()
     #: The surface acts (L-chat-26): documents, saved skills and the cards on the board.
+    live = {None, *(e.id for e in session.scalars(select(Entry).where(Entry.is_board.is_(True), Entry.deleted_at.is_(None))))}
     surfaces = (
         tuple(sorted((d.title, d.content) for d in session.scalars(select(Document)))),
         #: By name: Undo saves the skill again with its defaults filled in.
         tuple(sorted(str(s.get("name")) for s in deps.get_config().get_preference("skills", []))),
         tuple(sorted(n.entry_id for n in session.scalars(select(WhiteboardNode)))),
+        #: The board acts (L-chat-60): every item's place and words, sketches and links included.
+        tuple(sorted((n.entry_id, n.x, n.y) for n in session.scalars(select(WhiteboardNode)))),
+        #: A binned map keeps its nodes (the bin keeps the whole map), so only a live board's items count; a path's numbers read as numbers.
+        tuple(sorted((o.board_id, o.kind, o.data, o.x, o.y, o.parent_id or 0) for o in session.scalars(select(WhiteboardObject)) if o.board_id in live)),
+        tuple(sorted((s.board_id or 0, re.sub(r"(\d+)\.0\b", r"\1", s.data)) for s in session.scalars(select(WhiteboardSketch)) if s.board_id in live)),
         #: A suggested preference (remember, L114) is a row that waits for an answer; its Undo drops it.
         tuple(sorted(p.content for p in session.scalars(select(UserPreference)))),
     )
@@ -82,8 +89,13 @@ _BEFORE = {
     "merge_categories": ("move the gym note to Work", "move the running note to Job"),
     #: Notes come out of the Archive only once they are in it (L-chat-46).
     "unarchive": ("archive the trip notes",),
+    #: Board acts (L-chat-60): an item to move, reword, take off or connect, and the map's nodes.
+    "board_move": ("draw a rectangle that says Launch on the whiteboard",), "board_words": ("draw a rectangle that says Launch on the whiteboard",),
+    "board_remove": ("draw a rectangle that says Launch on the whiteboard",),
+    "board_link": ("put the boiler note on the whiteboard", "put the gym log note on the whiteboard"),
 }
-_PAGE_SIDE = frozenset({"set_theme"})
+#: A check of what it learned retires only what no longer holds, and a fresh seed holds nothing stale (tests/test_board_acts_1114.py runs it on a stale claim).
+_PAGE_SIDE = frozenset({"set_theme", "check_learned"})
 #: A category row is made again by Undo with a new id, so these compare the categories by name.
 _BY_NAME = frozenset({"delete_category", "merge_categories"})
 
@@ -114,6 +126,11 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         for entry in session.scalars(select(Entry)):
             entry.created_at = datetime(2026, 3, 12, 9, 0)
         session.commit()
+    if act.intent in ("map_node", "map_link"):
+        from tessellate.ai import tools
+
+        made = tools.execute_tool(session, "create_mindmap", {"title": "Trips", "root_text": "Paris"})
+        tools.execute_tool(session, "add_map_node", {"board_id": made["board_id"], "text": "Rome", "parent_id": made["root_id"]})
     if act.intent == "to_reminders":
         manager.create_entry(session, "# Action items\n\n- [ ] book the venue\n- [ ] email the caterer\n")
         session.commit()
@@ -159,14 +176,16 @@ def test_the_capability_line_is_the_registry_said():
     line = acts.capability_line()
     assert line == commands.CAPABILITY_LINE
     for act in acts.ACTS.values():
-        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append"):
+        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append", *board_acts.INTENTS):
             assert act.verb in line or act.label in line, act.label
+    #: The board acts are said as a group (L-chat-60), as the object acts are.
+    assert all(word in line for word in ("whiteboard", "mind map", "write a document", "save a skill", "what it learned"))
 
 
 def test_the_guide_topic_is_generated_from_the_registry():
-    topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "chat-acts")
+    body = " ".join(t["body"] for t in help_chat.HELP_TOPICS if t["id"] in ("chat-acts", "chat-acts-boards"))
     for act in acts.ACTS.values():
-        assert act.example in topic["body"]
+        assert act.example in body
     assert help_chat.topics_for("what can chat do with no model")[0]["id"] == "chat-acts"
 
 

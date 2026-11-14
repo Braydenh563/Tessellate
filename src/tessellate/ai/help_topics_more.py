@@ -1993,7 +1993,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "chat-acts-boards", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -2644,6 +2644,12 @@ def _act_topic() -> dict:
     return act_registry.guide_topic()
 
 
+def _act_boards_topic() -> dict:
+    from tessellate.ai import act_registry
+
+    return act_registry.guide_topic_boards()
+
+
 MORE_TOPICS.append({
     "id": "find-a-place",
     "title": "Finding where something is",
@@ -2671,6 +2677,8 @@ MORE_TOPICS.append({
 TOPIC_META["nicknames"] = {"title": "Calling Atlas by any name", "path": "Chat tab"}
 MORE_TOPICS.append(_act_topic())
 TOPIC_META["chat-acts"] = {"title": "Things Chat does for you", "path": "Chat tab"}
+MORE_TOPICS.append(_act_boards_topic())
+TOPIC_META["chat-acts-boards"] = {"title": "Boards, maps and documents by sentence", "path": "Chat tab"}
 MORE_TOPICS.append({
     "id": "tasks",
     "title": "Tasks in Chat",

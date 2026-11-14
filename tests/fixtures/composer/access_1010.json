@@ -125,6 +125,18 @@
     "set_theme": "switch to dark mode",
     "similar": "find notes similar to the boiler note",
     "counter": "add 1 to coffee",
-    "remember": "remember that I prefer short answers"
+    "remember": "remember that I prefer short answers",
+    "board_shape": "draw a rectangle that says Launch on the whiteboard",
+    "board_library": "put a decision symbol from the library on the whiteboard",
+    "board_link": "connect the Boiler service card to the Gym log card on the whiteboard",
+    "board_move": "move the Launch shape on the whiteboard to the right",
+    "board_words": "change the Launch shape on the whiteboard to say Ship it",
+    "board_remove": "take the Launch shape off the whiteboard",
+    "map_node": "add the node Beach under Paris on the Trips mind map",
+    "map_link": "link Paris to Rome on the Trips mind map",
+    "make_diagram": "draw a diagram of Trips with Paris, Rome and Oslo",
+    "make_document": "write a document called Harbor report: Findings for the harbor",
+    "make_skill": "save a skill called Weekly tidy that tidies my notes",
+    "check_learned": "check what you have learned"
   }
 }
