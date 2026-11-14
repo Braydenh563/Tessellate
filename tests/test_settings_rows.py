@@ -125,7 +125,6 @@ NO_ROW = {
     # Chosen where the work is, not in Settings.
     "active_persona": "the chat's persona picker",
     "dashboard_persona": "the dashboard's persona picker",
-    "response_mode": "the chat's mode picker",
     "spelling_variant": "the document editor's writing panel",
     "grammar_check": "the document editor's writing panel",
     "prose_kinds_off": "the document editor's writing panel",
