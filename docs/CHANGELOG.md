@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
+- Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
 - Mind map plan closed: L-mindmap-13 (Tab to an editable new topic) closed at the measured median with its restyle profile recorded; the plan's last stale "left open" line (L-mindmap-14, built) corrected.
 - Map: a branch's Export opens the export dialog headed "Export this branch", not "Export this board" (L267).
 - Map: the tidy measures every topic in one walk when its size cache is cold, not one query and layout read per topic (3 to 6 ms of a 41-topic Tab at 6x, now about 2.5).

@@ -825,6 +825,7 @@ TAIL_TOPICS.extend(
                 "flag, a start day, a due day (and time) and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both; "
                 "a topic's menu, Audio note attaches a recording, its mic mark plays it; "
+                "Topics from a recording turns a transcribed recording into topics, one per line; "
                 "View, Filter by marker dims every topic "
                 "without the markers or labels you press, and View, Dim all but the selected branch "
                 "dims everything outside the selected branch and its path to "

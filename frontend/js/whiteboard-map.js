@@ -5271,6 +5271,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:crosshair Focus on this branch", () => wbMapSetFocus(node.id));
     row("This topic", "ph:flag Markers on this topic…", () => wbMapOpenMarkers(node.id));
     row("This topic", "ph:microphone Audio note: pick a recording…", () => wbMapLazy.pickAudio(node));
+    row("This topic", "ph:waveform Topics from a recording's transcript…", () => wbMapLazy.topicsFromRecording(node));
     row("This topic", "ph:image Picture from a link…", () => wbMapLazy.imageFromLink(node));
     row("This topic", "ph:copy-simple Copy this topic's shape", () => wbMapLazy.copyShape(node));
     row("This topic", "ph:clipboard Paste the copied shape onto this topic", () => wbMapLazy.pasteShape(node));

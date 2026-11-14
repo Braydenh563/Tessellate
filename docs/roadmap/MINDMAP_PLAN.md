@@ -453,9 +453,12 @@ the study mode measured on a 40-node map.
 
 ### 12.4 Out of the map's scope (decided)
 
-Real-time collaboration, cloud sync, voice-to-map and AI image generation
-in nodes are outside an offline, local map; a request for one is a BACKLOG
-row, not plan work.
+Real-time collaboration and cloud sync are out by ARCHITECTURE decision 1
+("Offline-first, always"). AI image generation in nodes is moot by fact: no
+local image runtime ships, and torch is barred (CLAUDE.md section 7). Voice
+to map, reopened 2026-11-14 (only a session line kept it out), is built:
+Topics from a recording (`wbMapTopicsFromRecording`) turns a transcript into
+a branch, one topic per line.
 
 ### 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night)
 
