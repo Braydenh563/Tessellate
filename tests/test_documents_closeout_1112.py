@@ -1,4 +1,6 @@
-"""Pins for LEDGER rows found already built on 2026-11-12 (documents closeout): each one fails if the behaviour goes."""
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+Pins for LEDGER rows found already built on 2026-11-12 (documents closeout): each one fails if the behaviour goes."""
 
 from __future__ import annotations
 

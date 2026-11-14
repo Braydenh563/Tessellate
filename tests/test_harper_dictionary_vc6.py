@@ -1,4 +1,6 @@
-"""VC6: Harper's own dictionary, kept-dismissed findings and all five dialects.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+VC6: Harper's own dictionary, kept-dismissed findings and all five dialects.
 
 The real worker, run in node on the vendored binary (the driver of
 `test_prose_tools.py`, with the person's own words and ignored list added).

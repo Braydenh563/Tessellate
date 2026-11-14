@@ -1,4 +1,6 @@
-"""L-documents-7: at 480 px or less the diagram builder's dock is one row.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L-documents-7: at 480 px or less the diagram builder's dock is one row.
 
 Direction, Ask for a change and Redo fold into the dock's ... menu (Undo, the blocks list, Add and the
 menu stay), so five or six targets of 44 px or more share one row. The fold is a CSS rule for the

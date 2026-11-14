@@ -1,4 +1,6 @@
-"""INBOX 827 L3 to L6: the Links tab's look, card, folders and views (`library-links.js`).
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+INBOX 827 L3 to L6: the Links tab's look, card, folders and views (`library-links.js`).
 
 Static checks of what the sweeps measured at 1440 and 390 (`l36*.js`: a chosen colour tints the mark and
 the row in every palette, the card is two clamped lines and a reading column of 448px at 16px on 25.6px,

@@ -1,4 +1,6 @@
-"""The Timeline calendar's head is one row at one control height.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+The Timeline calendar's head is one row at one control height.
 
 The owner, 2026-11-12, from a screenshot: "these two elements arent aligned in
 the timeline". Add sat 4px below the Month/Week/Day strip and 4.4px shorter

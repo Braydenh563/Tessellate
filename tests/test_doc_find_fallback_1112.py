@@ -1,4 +1,6 @@
-"""L341: the fallback find bar (no editor engine) keeps All documents and Replace in all."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L341: the fallback find bar (no editor engine) keeps All documents and Replace in all."""
 
 from __future__ import annotations
 

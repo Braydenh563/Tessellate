@@ -1,4 +1,6 @@
-"""LEDGER L752 (owner decided 2026-11-12): the Console keeps its own worker,
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+LEDGER L752 (owner decided 2026-11-12): the Console keeps its own worker,
 and the panel help and the Guide say it runs apart from the page."""
 from pathlib import Path
 from tessellate.ai.help_topics_more import TOPIC_META as T

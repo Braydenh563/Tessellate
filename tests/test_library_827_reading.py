@@ -1,4 +1,6 @@
-"""INBOX 827 L1 and L2: the Files row's reading column, and the Recordings empty state.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+INBOX 827 L1 and L2: the Files row's reading column, and the Recordings empty state.
 
 Static checks of what the sweep measured (`l12.js` at 1440: column 448px = 50vh cap, 16px type on a
 25.6px line, a Page N mark per page, find at 112 matches, a transparent summary; the empty state

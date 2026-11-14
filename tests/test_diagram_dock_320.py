@@ -1,4 +1,6 @@
-"""The diagram builder's dock is one row at 320 px too, with 44 px targets.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+The diagram builder's dock is one row at 320 px too, with 44 px targets.
 
 At 390 the kind button (sample and caret), Add, the blocks list, Undo and the menu fit one row;
 at 320 they need 280 px against 270, so the dock took a second row (110 px tall, measured with

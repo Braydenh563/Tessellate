@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 6 | 1 | 0 | 20 | 103 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 441 | 130 | 2 | 182 | 1124 |
+| general | 0 | 11 | 3 | 0 | 0 | 14 |
+| all | 553 | 440 | 130 | 2 | 182 | 1123 |
 
 ## graph
 
@@ -613,7 +613,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-55** `general` open, M: Companion prefers a window bar over a free dock perch on Library, boards and tab switches; decide app or sweep, then close L-general-52. From L-general-52 perchall. Evidence: scratchpad/ui-sweeps/perchall.js 1440x900: 14 FAIL, all 'window bar while a panel was free' (library tabs, whiteboard, mind map, tab switches); companion rests on status-bar or top-bar hang while a dock perch is free; 131s, so not CI-stable
 - [ ] **L-general-56** `general` open, M: Tour sweeps, anchorsmotion and fontmatrix still failing or over 300s after the L-general-53 repairs. From L-general-53. Evidence: tour.js: doors and the welcome hand-off now pass, then it runs past 400s at nine sizes (8456 lines) with FAILs left: 'with no map, Mind maps is one card on New mind map' at 1440x900 and 1184x760, '#tab-bar target is inside the window' at 1184x760 (top -2), and 390 'welcome boards count 4/4/3, 3 shown'; toursteps.js: over 300s; anchorsmotion.js: graph popup 135px (1440x900) and 85px (1440x600) from its anchor against a 16 limit, row menu 14px against 4 at 1440x600, note kebab 3px apart between reduced and full motion at 1440x600, 161s; fontmatrix.js at 390: a 1px run in a note paragraph ('as well, and' after a board link) and the 'Install' button 2px past its padding
 - [ ] **L-general-57** `general` open, M: Map View menu height, theme dialog fit and map perf budgets still failing after the L-general-49 repairs. From L-general-49. Evidence: mapviewmenu.js: the map's View menu is 587px (25 rows, columns 452 and 572) against a 450 ceiling, the board's is 427px, so the Map group (9 rows) wants a submenu and the columns a rebalance; maptheme.js: the theme dialog is 924px tall in a 900px window and scrolls (23 of 24 pass); mapperf.js: worst zoom frame 100ms at 200 topics and 667ms at 500, and open to painted 1238ms at 500, against 50ms and 1s on this runner (36 of 39, 78s)
-- [ ] **L-general-66** `general` open, S: Give 16 base tests (test_board_affinity, test_map_*, test_timeline_cal_head_align and others) a real Source text docstring. From merge of base 2026-11-13. Evidence: tests/test_source_text_docstrings.py lists them on the merged head
 
 ## Owner calls
 

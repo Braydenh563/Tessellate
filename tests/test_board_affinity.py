@@ -1,4 +1,6 @@
-"""The affinity sort (the features audit, Phase G; WHITEBOARD_PLAN decision 36's
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+The affinity sort (the features audit, Phase G; WHITEBOARD_PLAN decision 36's
 sibling): a board's stickies grouped into named themes, each shown with the
 notes in the notebook that back it. `POST /whiteboard/boards/{board}/affinity`
 writes nothing; the board draws the accepted groups as frames in one Undo

@@ -1,4 +1,6 @@
-"""Harper on map topic labels (MINDMAP_PLAN VC12): a label with an agreement
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+Harper on map topic labels (MINDMAP_PLAN VC12): a label with an agreement
 error wears a mark, its suggestion is a topic-menu row applied as one Undo
 step, and a drag (pointer down) makes no lint call. Measured live in
 Chromium (`He have a plan` flagged, "Use “He has a plan”" one Undo step, 0

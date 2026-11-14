@@ -1,4 +1,6 @@
-"""The gap audit's topic tools (MINDMAP_PLAN rows 5 to 8, 9, 12): the pure parts
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+The gap audit's topic tools (MINDMAP_PLAN rows 5 to 8, 9, 12): the pure parts
 run in node, and the doors are checked where a person finds them."""
 
 import json

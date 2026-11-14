@@ -1,4 +1,6 @@
-"""L-mindmap-12: a fishbone's line to a main topic's 2nd and later causes
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L-mindmap-12: a fishbone's line to a main topic's 2nd and later causes
 stays left of the causes above it (node `vm`, the layout and anchor functions)."""
 
 from __future__ import annotations
