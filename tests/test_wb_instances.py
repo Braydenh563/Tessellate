@@ -97,6 +97,7 @@ const wbMultiSelection = new Set(["object:10", "node:1"]);
 let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
 let wbRedoStack = [];
 let wbHistoryBoard = null;
+const wbFmtState = { opts: null };
 window.currentBoardId = 1;
 window.currentTool = "draw";
 //: whiteboard.js's tool switch; an activation repaints the toolbar through it without a stroke being dropped.
@@ -913,3 +914,52 @@ I.activate(B);
 out.embed = I.onPage;
 """)
     assert out2 == {"page": True, "embed": False}
+
+
+def test_the_board_options_view_is_kept_per_instance():
+    """L-whiteboard-67: the unit the fields and rulers show and the page view's key are the
+    options file's own state; they swap with the board, so an embed's units and page frames
+    never change the page board's."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const document = { getElementById: () => null, querySelectorAll: () => [], createElementNS: () => ({}) };
+const wbFmtState = {};
+const onSurface = () => {};
+const wbInstances = { page: {}, active: null };
+"""
+    body = r"""
+const o = wbFmtState.opts;
+const first = o.view();
+const was = o.view({ unit: "mm", pagesKey: "k" });
+const mm = o.view();
+const shown = o.show(96);
+o.view(first);
+process.stdout.write(JSON.stringify({ first, was, mm, shown, after: o.show(96), back: o.view() }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    base = {"unit": "px", "pagesKey": ""}
+    assert out == {"first": base, "was": base, "mm": {"unit": "mm", "pagesKey": "k"}, "shown": "25.4", "after": "96", "back": base}
+    #: The instances swap it with the other globals; a board never shown starts on pixels.
+    out2 = _run("""
+const calls = [];
+let live = { unit: "cm", pagesKey: "page" };
+wbFmtState.opts = { view: (next) => { const was = live; if (next) live = next; calls.push(next ? ["set", next.unit] : ["get"]); return was; } };
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.inEmbed = live;
+live = { unit: "mm", pagesKey: "emb" };
+I.activate(I.page);
+out.onPage = live;
+I.activate(B);
+out.backInEmbed = live;
+""")
+    assert out2["inEmbed"] == {"unit": "px", "pagesKey": ""}
+    assert out2["onPage"] == {"unit": "cm", "pagesKey": "page"}
+    assert out2["backInEmbed"] == {"unit": "mm", "pagesKey": "emb"}
+
