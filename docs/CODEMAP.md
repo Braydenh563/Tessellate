@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10894, test files 2775, tests 22298, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10900, test files 2776, tests 22304, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -14124,7 +14124,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10894)
+## Backend modules (10900)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15827,7 +15827,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_asked` | src/tessellate/ai/composer_each.py:14 |
 | `answer` | src/tessellate/ai/composer_each.py:24 |
 
-### src/tessellate/ai/composer_empty.py (21)
+### src/tessellate/ai/composer_empty.py (23)
 
 | Name | File:line |
 |---|---|
@@ -15840,17 +15840,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_filtered` | src/tessellate/ai/composer_empty.py:33 |
 | `_in_passing` | src/tessellate/ai/composer_empty.py:355 |
 | `_leads` | src/tessellate/ai/composer_empty.py:349 |
-| `_modifies` | src/tessellate/ai/composer_empty.py:371 |
+| `_modifies` | src/tessellate/ai/composer_empty.py:404 |
 | `_named` | src/tessellate/ai/composer_empty.py:362 |
 | `_nothing` | src/tessellate/ai/composer_empty.py:242 |
 | `_nothing_parts` | src/tessellate/ai/composer_empty.py:280 |
 | `_nothing_planned` | src/tessellate/ai/composer_empty.py:202 |
+| `_reserving` | src/tessellate/ai/composer_empty.py:391 |
 | `_says` | src/tessellate/ai/composer_empty.py:308 |
+| `_unknown_person` | src/tessellate/ai/composer_empty.py:377 |
 | `_unsaid` | src/tessellate/ai/composer_empty.py:340 |
 | `_window_voice` | src/tessellate/ai/composer_empty.py:195 |
 | `empty_window` | src/tessellate/ai/composer_empty.py:211 |
 | `stray_match` | src/tessellate/ai/composer_empty.py:313 |
-| `stray_reply` | src/tessellate/ai/composer_empty.py:378 |
+| `stray_reply` | src/tessellate/ai/composer_empty.py:411 |
 | `window_said` | src/tessellate/ai/composer_empty.py:79 |
 
 ### src/tessellate/ai/composer_epoch.py (4)
@@ -16421,15 +16423,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `phrase_options` | src/tessellate/ai/composer_phrases.py:281 |
 
-### src/tessellate/ai/composer_plan.py (61)
+### src/tessellate/ai/composer_plan.py (64)
 
 | Name | File:line |
 |---|---|
 | `Event` | src/tessellate/ai/composer_plan.py:114 |
 | `_add_months` | src/tessellate/ai/composer_plan.py:162 |
 | `_anchor` | src/tessellate/ai/composer_plan.py:279 |
-| `_answer_text` | src/tessellate/ai/composer_plan.py:950 |
-| `_asks_due` | src/tessellate/ai/composer_plan.py:919 |
+| `_answer_text` | src/tessellate/ai/composer_plan.py:980 |
+| `_asks_due` | src/tessellate/ai/composer_plan.py:949 |
 | `_bounded` | src/tessellate/ai/composer_plan.py:184 |
 | `_busiest` | src/tessellate/ai/composer_plan.py:594 |
 | `_chip_title` | src/tessellate/ai/composer_plan.py:530 |
@@ -16438,38 +16440,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_dated_phrase` | src/tessellate/ai/composer_plan.py:202 |
 | `_days_away` | src/tessellate/ai/composer_plan.py:433 |
 | `_due` | src/tessellate/ai/composer_plan.py:493 |
-| `_due_reply` | src/tessellate/ai/composer_plan.py:761 |
+| `_due_reply` | src/tessellate/ai/composer_plan.py:780 |
 | `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:667 |
 | `_grouped` | src/tessellate/ai/composer_plan.py:445 |
 | `_habit_events` | src/tessellate/ai/composer_plan.py:475 |
 | `_item_chips` | src/tessellate/ai/composer_plan.py:517 |
-| `_kind_due` | src/tessellate/ai/composer_plan.py:739 |
-| `_left` | src/tessellate/ai/composer_plan.py:840 |
+| `_kind_due` | src/tessellate/ai/composer_plan.py:747 |
+| `_kind_stems` | src/tessellate/ai/composer_plan.py:741 |
+| `_left` | src/tessellate/ai/composer_plan.py:859 |
 | `_long` | src/tessellate/ai/composer_plan.py:154 |
+| `_meetings_ahead` | src/tessellate/ai/composer_plan.py:758 |
 | `_merge` | src/tessellate/ai/composer_plan.py:410 |
 | `_name` | src/tessellate/ai/composer_plan.py:146 |
 | `_next_reminder` | src/tessellate/ai/composer_plan.py:565 |
-| `_not_done_later` | src/tessellate/ai/composer_plan.py:806 |
+| `_not_done_later` | src/tessellate/ai/composer_plan.py:825 |
 | `_not_due` | src/tessellate/ai/composer_plan.py:350 |
-| `_not_reminded` | src/tessellate/ai/composer_plan.py:834 |
+| `_not_reminded` | src/tessellate/ai/composer_plan.py:853 |
 | `_note_days` | src/tessellate/ai/composer_plan.py:362 |
 | `_note_events_of` | src/tessellate/ai/composer_plan.py:391 |
 | `_nothing_due` | src/tessellate/ai/composer_plan.py:554 |
-| `_open_reminders` | src/tessellate/ai/composer_plan.py:823 |
-| `_open_tasks` | src/tessellate/ai/composer_plan.py:797 |
+| `_open_reminders` | src/tessellate/ai/composer_plan.py:842 |
+| `_open_tasks` | src/tessellate/ai/composer_plan.py:816 |
 | `_overdue` | src/tessellate/ai/composer_plan.py:541 |
 | `_plain` | src/tessellate/ai/composer_plan.py:286 |
 | `_plan` | src/tessellate/ai/composer_plan.py:646 |
 | `_plan_window` | src/tessellate/ai/composer_plan.py:711 |
 | `_range_words` | src/tessellate/ai/composer_plan.py:464 |
 | `_reminder_events` | src/tessellate/ai/composer_plan.py:257 |
-| `_reminder_line` | src/tessellate/ai/composer_plan.py:828 |
+| `_reminder_line` | src/tessellate/ai/composer_plan.py:847 |
 | `_sentence_case` | src/tessellate/ai/composer_plan.py:356 |
 | `_sentence_day` | src/tessellate/ai/composer_plan.py:290 |
 | `_short` | src/tessellate/ai/composer_plan.py:158 |
 | `_spread_line` | src/tessellate/ai/composer_plan.py:621 |
 | `_stems` | src/tessellate/ai/composer_plan.py:406 |
-| `_subject_stems` | src/tessellate/ai/composer_plan.py:750 |
+| `_subject_stems` | src/tessellate/ai/composer_plan.py:769 |
 | `_task_groups` | src/tessellate/ai/composer_plan.py:602 |
 | `_task_lines` | src/tessellate/ai/composer_plan.py:638 |
 | `_tasks` | src/tessellate/ai/composer_plan.py:579 |
@@ -16477,11 +16481,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_units` | src/tessellate/ai/composer_plan.py:611 |
 | `_until` | src/tessellate/ai/composer_plan.py:681 |
 | `_until_source` | src/tessellate/ai/composer_plan.py:675 |
-| `_when_is` | src/tessellate/ai/composer_plan.py:864 |
-| `_when_reply` | src/tessellate/ai/composer_plan.py:888 |
-| `_written_from` | src/tessellate/ai/composer_plan.py:898 |
+| `_when_is` | src/tessellate/ai/composer_plan.py:883 |
+| `_when_reply` | src/tessellate/ai/composer_plan.py:907 |
+| `_written_from` | src/tessellate/ai/composer_plan.py:917 |
 | `ahead_default` | src/tessellate/ai/composer_plan.py:731 |
-| `answer` | src/tessellate/ai/composer_plan.py:934 |
+| `answer` | src/tessellate/ai/composer_plan.py:964 |
+| `asks_schedule` | src/tessellate/ai/composer_plan.py:944 |
 | `events` | src/tessellate/ai/composer_plan.py:426 |
 | `lookback` | src/tessellate/ai/composer_plan.py:248 |
 | `note_events` | src/tessellate/ai/composer_plan.py:397 |
@@ -20070,61 +20075,62 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tag_words` | src/tessellate/ai/tagging.py:111 |
 | `turned_down` | src/tessellate/ai/tagging.py:332 |
 
-### src/tessellate/ai/task_acts.py (51)
+### src/tessellate/ai/task_acts.py (52)
 
 | Name | File:line |
 |---|---|
-| `_already_ticked` | src/tessellate/ai/task_acts.py:508 |
-| `_ask` | src/tessellate/ai/task_acts.py:462 |
-| `_cancel_form` | src/tessellate/ai/task_acts.py:337 |
-| `_candidates` | src/tessellate/ai/task_acts.py:418 |
-| `_checklist_items` | src/tessellate/ai/task_acts.py:115 |
-| `_checklist_lines` | src/tessellate/ai/task_acts.py:444 |
-| `_checklist_title_items` | src/tessellate/ai/task_acts.py:127 |
-| `_complete_rest` | src/tessellate/ai/task_acts.py:204 |
-| `_deed_rest` | src/tessellate/ai/task_acts.py:245 |
-| `_each_label` | src/tessellate/ai/task_acts.py:604 |
-| `_each_steps` | src/tessellate/ai/task_acts.py:609 |
-| `_kind_of` | src/tessellate/ai/task_acts.py:308 |
-| `_match` | src/tessellate/ai/task_acts.py:539 |
-| `_name` | src/tessellate/ai/task_acts.py:458 |
-| `_named` | src/tessellate/ai/task_acts.py:695 |
-| `_names_in` | src/tessellate/ai/task_acts.py:566 |
-| `_not_ticked` | src/tessellate/ai/task_acts.py:533 |
-| `_on_note` | src/tessellate/ai/task_acts.py:496 |
-| `_plan_each` | src/tessellate/ai/task_acts.py:626 |
-| `_reminders` | src/tessellate/ai/task_acts.py:430 |
-| `_snooze_split` | src/tessellate/ai/task_acts.py:376 |
-| `_split_kind` | src/tessellate/ai/task_acts.py:291 |
-| `_stems` | src/tessellate/ai/task_acts.py:414 |
-| `_subject_checklist` | src/tessellate/ai/task_acts.py:142 |
+| `_already_ticked` | src/tessellate/ai/task_acts.py:525 |
+| `_ask` | src/tessellate/ai/task_acts.py:479 |
+| `_cancel_form` | src/tessellate/ai/task_acts.py:354 |
+| `_candidates` | src/tessellate/ai/task_acts.py:435 |
+| `_checklist_items` | src/tessellate/ai/task_acts.py:132 |
+| `_checklist_lines` | src/tessellate/ai/task_acts.py:461 |
+| `_checklist_title_items` | src/tessellate/ai/task_acts.py:144 |
+| `_complete_rest` | src/tessellate/ai/task_acts.py:221 |
+| `_deed_rest` | src/tessellate/ai/task_acts.py:262 |
+| `_each_label` | src/tessellate/ai/task_acts.py:621 |
+| `_each_steps` | src/tessellate/ai/task_acts.py:626 |
+| `_kind_of` | src/tessellate/ai/task_acts.py:325 |
+| `_match` | src/tessellate/ai/task_acts.py:556 |
+| `_name` | src/tessellate/ai/task_acts.py:475 |
+| `_named` | src/tessellate/ai/task_acts.py:712 |
+| `_names_in` | src/tessellate/ai/task_acts.py:583 |
+| `_not_ticked` | src/tessellate/ai/task_acts.py:550 |
+| `_on_note` | src/tessellate/ai/task_acts.py:513 |
+| `_plan_each` | src/tessellate/ai/task_acts.py:643 |
+| `_reminders` | src/tessellate/ai/task_acts.py:447 |
+| `_snooze_split` | src/tessellate/ai/task_acts.py:393 |
+| `_split_kind` | src/tessellate/ai/task_acts.py:308 |
+| `_stems` | src/tessellate/ai/task_acts.py:431 |
+| `_subject_checklist` | src/tessellate/ai/task_acts.py:159 |
 | `_task_body` | src/tessellate/ai/task_acts.py:58 |
-| `_task_found` | src/tessellate/ai/task_acts.py:315 |
-| `_the_names` | src/tessellate/ai/task_acts.py:599 |
+| `_task_found` | src/tessellate/ai/task_acts.py:332 |
+| `_the_names` | src/tessellate/ai/task_acts.py:616 |
 | `_unquote` | src/tessellate/ai/task_acts.py:54 |
-| `_without_line` | src/tessellate/ai/task_acts.py:660 |
-| `counted_from` | src/tessellate/ai/task_acts.py:796 |
-| `item_in` | src/tessellate/ai/task_acts.py:816 |
-| `items_in` | src/tessellate/ai/task_acts.py:804 |
-| `note_called` | src/tessellate/ai/task_acts.py:172 |
-| `ordinal_of` | src/tessellate/ai/task_acts.py:786 |
-| `pick` | src/tessellate/ai/task_acts.py:476 |
-| `pick_each` | src/tessellate/ai/task_acts.py:575 |
-| `plan_cancel` | src/tessellate/ai/task_acts.py:653 |
-| `plan_complete` | src/tessellate/ai/task_acts.py:635 |
-| `plan_into_list` | src/tessellate/ai/task_acts.py:182 |
-| `plan_snooze` | src/tessellate/ai/task_acts.py:667 |
-| `plan_task_line` | src/tessellate/ai/task_acts.py:753 |
-| `plan_uncomplete` | src/tessellate/ai/task_acts.py:645 |
-| `read_add` | src/tessellate/ai/task_acts.py:89 |
-| `read_cancel` | src/tessellate/ai/task_acts.py:354 |
-| `read_checklist_note` | src/tessellate/ai/task_acts.py:155 |
-| `read_complete` | src/tessellate/ai/task_acts.py:252 |
-| `read_snooze` | src/tessellate/ai/task_acts.py:391 |
-| `read_uncomplete` | src/tessellate/ai/task_acts.py:278 |
-| `run_step` | src/tessellate/ai/task_acts.py:703 |
-| `todo_note` | src/tessellate/ai/task_acts.py:743 |
-| `undo_step` | src/tessellate/ai/task_acts.py:730 |
+| `_verb_first` | src/tessellate/ai/task_acts.py:99 |
+| `_without_line` | src/tessellate/ai/task_acts.py:677 |
+| `counted_from` | src/tessellate/ai/task_acts.py:813 |
+| `item_in` | src/tessellate/ai/task_acts.py:833 |
+| `items_in` | src/tessellate/ai/task_acts.py:821 |
+| `note_called` | src/tessellate/ai/task_acts.py:189 |
+| `ordinal_of` | src/tessellate/ai/task_acts.py:803 |
+| `pick` | src/tessellate/ai/task_acts.py:493 |
+| `pick_each` | src/tessellate/ai/task_acts.py:592 |
+| `plan_cancel` | src/tessellate/ai/task_acts.py:670 |
+| `plan_complete` | src/tessellate/ai/task_acts.py:652 |
+| `plan_into_list` | src/tessellate/ai/task_acts.py:199 |
+| `plan_snooze` | src/tessellate/ai/task_acts.py:684 |
+| `plan_task_line` | src/tessellate/ai/task_acts.py:770 |
+| `plan_uncomplete` | src/tessellate/ai/task_acts.py:662 |
+| `read_add` | src/tessellate/ai/task_acts.py:105 |
+| `read_cancel` | src/tessellate/ai/task_acts.py:371 |
+| `read_checklist_note` | src/tessellate/ai/task_acts.py:172 |
+| `read_complete` | src/tessellate/ai/task_acts.py:269 |
+| `read_snooze` | src/tessellate/ai/task_acts.py:408 |
+| `read_uncomplete` | src/tessellate/ai/task_acts.py:295 |
+| `run_step` | src/tessellate/ai/task_acts.py:720 |
+| `todo_note` | src/tessellate/ai/task_acts.py:760 |
+| `undo_step` | src/tessellate/ai/task_acts.py:747 |
 
 ### src/tessellate/ai/taxonomy.py (50)
 
@@ -28047,7 +28053,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22298)
+## Tests (22304)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28695,11 +28701,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1110.py | 7 |
 | tests/test_composer_social_1420.py | 14 |
-| tests/test_composer_stray_gate_1114.py | 6 |
+| tests/test_composer_stray_gate_1114.py | 7 |
 | tests/test_composer_streak_1029.py | 13 |
 | tests/test_composer_stress_1030.py | 15 |
 | tests/test_composer_study_1025.py | 20 |
 | tests/test_composer_subject_1029.py | 11 |
+| tests/test_composer_subject_word_1114.py | 5 |
 | tests/test_composer_suggest_2210.py | 13 |
 | tests/test_composer_summaries_1029b.py | 17 |
 | tests/test_composer_sums_1108.py | 5 |
@@ -31248,14 +31255,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:750 |
+| Needs hardware | docs/roadmap/LEDGER.md:747 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:743 |
+| Owner calls | docs/roadmap/LEDGER.md:740 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31435,7 +31442,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:938 |
+| Plan session briefs | docs/roadmap/LEDGER.md:935 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31489,25 +31496,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:954 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1038 |
-| documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:978 |
-| general | docs/roadmap/LEDGER.md:702 |
+| chat | docs/roadmap/LEDGER.md:951 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1035 |
+| documents | docs/roadmap/LEDGER.md:326 |
+| documents | docs/roadmap/LEDGER.md:975 |
+| general | docs/roadmap/LEDGER.md:699 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:942 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1050 |
+| graph | docs/roadmap/LEDGER.md:939 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1047 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:990 |
-| timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:1014 |
-| ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1002 |
-| whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:966 |
-| world-class | docs/roadmap/LEDGER.md:467 |
-| world-class | docs/roadmap/LEDGER.md:1026 |
+| mindmap | docs/roadmap/LEDGER.md:342 |
+| mindmap | docs/roadmap/LEDGER.md:987 |
+| timeline | docs/roadmap/LEDGER.md:462 |
+| timeline | docs/roadmap/LEDGER.md:1011 |
+| ui-modernisation | docs/roadmap/LEDGER.md:345 |
+| ui-modernisation | docs/roadmap/LEDGER.md:999 |
+| whiteboard | docs/roadmap/LEDGER.md:281 |
+| whiteboard | docs/roadmap/LEDGER.md:963 |
+| world-class | docs/roadmap/LEDGER.md:464 |
+| world-class | docs/roadmap/LEDGER.md:1023 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

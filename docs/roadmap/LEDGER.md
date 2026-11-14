@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 195 | 60 | 2 | 59 | 431 |
+| chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
-| timeline | 0 | 2 | 0 | 0 | 0 | 2 |
+| timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 502 | 567 | 129 | 2 | 183 | 1198 |
+| all | 502 | 564 | 129 | 2 | 183 | 1195 |
 
 ## graph
 
@@ -277,7 +277,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 
@@ -461,8 +460,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
 
 ## timeline
-- [ ] **L-timeline-10** `timeline` open, S: Act reader: 'on my to do list, i need cleaning added' adds a task, not the stray Dentist note. From L-timeline-9 coverage agent, 2026-11-14. Evidence: tests/fixtures/composer/phrasing_1111.json todo class; reply quotes the Dentist 'clean' note
-- [ ] **L-timeline-11** `timeline` open, S: 'share my meeting schedule with me' is offered a new meeting; answer what is scheduled instead. From L-timeline-9 coverage agent, 2026-11-14. Evidence: tests/test_phrasing_real_1111.py meeting_schedule class; reply is 'I can start a meeting'
 
 ## world-class
 

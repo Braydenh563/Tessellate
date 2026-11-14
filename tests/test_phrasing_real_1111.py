@@ -76,16 +76,9 @@ def test_the_phrasings_name_nobody_and_carry_no_digits():
             assert 2 <= len(phrase.split()) <= 14 and "\n" not in phrase, (name, phrase)
 
 
-SUBJECT_WORD = "The word the notes share is what a note is about (the Meeting with Priya; a note on a book), and nothing in the notes says whether Priya is the boss or that 'book' means to reserve, so the nearest note is still quoted."
-
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
-#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (the 4 xfails).
-XFAIL = {
-    "i want to book tickets for an event.": SUBJECT_WORD,
-    "when is the meeting with my boss scheduled for": SUBJECT_WORD,
-    "when is that meeting with my boss": SUBJECT_WORD,
-    "share my meeting schedule with me": SUBJECT_WORD,
-}
+#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (all pass; a phrase found failing is added here with its reason).
+XFAIL: dict[str, str] = {}
 
 
 def _cases():

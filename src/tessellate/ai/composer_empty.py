@@ -368,6 +368,39 @@ def _named(stray: list[str]) -> list[str]:
     return [w for w in stray if w.lower() not in WORDS and _stem(w) not in WORDS and not _NOT_A_NOUN.search(w)]
 
 
+#: "my boss", "my landlord": a person named by who they are to the asker.
+_RELATION = re.compile(
+    r"\bmy (boss|manager|supervisor|mum|mom|mother|dad|father|wife|husband|partner|girlfriend|boyfriend|sister|brother|son|daughter|"
+    r"teacher|tutor|coach|doctor|landlord|landlady|colleague|coworker|neighbou?r|aunt|uncle|cousin|grandma|grandpa|flatmate|roommate)\b", re.I)
+
+
+def _unknown_person(question: str, views: list[NoteView]) -> list[str]:
+    """"the meeting with my boss" when no note says who the boss is: the meeting note on the shared word is not
+    known to be that meeting, so the person is said to be missing (CHAT_PLAN item 3, SUBJECT_WORD)."""
+    found = _RELATION.search(question or "")
+    if not found:
+        return []
+    word = found.group(1).lower()
+    return [] if any(_says(_stem(word), word, v.words | v.title_words | v.filed_words) for v in views) else [word]
+
+
+#: "i want to book tickets", "book a table": book as in reserve, never the book a note is about.
+_RESERVE = re.compile(r"(?:^|\b(?:to|you|please|me|let's|lets)\s+)(book|reserve)\s+(?:me\s+)?(?:an?|some|the|two|three|four)?\s*[a-z]", re.I)
+
+
+def _reserving(question: str, terms: list[str], views: list[NoteView]) -> list[str]:
+    """The things a booking asks for ("tickets", "event"), when no note says any of them; [] otherwise."""
+    found = _RESERVE.search(" ".join((question or "").split()))
+    if not found:
+        return []
+    verb = _stem(found.group(1).lower())
+    rest = [t for t in dict.fromkeys(terms) if len(t) >= 2 and _stem(t) != verb and topic_word(t)]
+    held = [v.words | v.title_words | v.filed_words for v in views]
+    if not rest or any(_says(_stem(t), t, words) for t in rest for words in held):
+        return []
+    return rest
+
+
 def _modifies(word: str, question: str, terms: list[str]) -> bool:
     """One word no note holds, set just before a word one does ("the spare
     key"), says which of it: a half answer, not a stray."""
@@ -384,6 +417,8 @@ def stray_reply(out: _Answer, question: str, shape: str, terms: list[str], views
     have I saved about lectures"), is not a topic the notes lack."""
     if not chosen or said:
         return None
+    if person := _unknown_person(question, views) or _reserving(question, terms, views):
+        return _nothing(shape, unsure, voice, person, out)
     stray = [w for w in stray_match(terms, views) if topic_word(w) and w.lower() not in _RECALL_VERBS and not _act_verb(w)]
     if not stray or (len(stray) == 1 and _modifies(stray[0], question, terms)):
         return None

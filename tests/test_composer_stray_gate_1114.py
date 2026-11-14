@@ -75,3 +75,16 @@ def test_a_plural_meeting_ask_reads_as_an_event_question():
     assert event_window_asked("are there interviews on Friday") == "on Friday"
     assert event_window_asked("do I have any classes this week") == "this week"
     assert lead("are there interviews on Friday", "") == "No interview is written for Friday."
+
+
+def test_a_to_do_add_said_verb_last_adds_the_task():
+    # L-timeline-10: "on my to do list, i need cleaning added" fell through to a search and quoted a note on "clean".
+    from datetime import datetime
+
+    from tessellate.ai import commands
+
+    now = datetime(2026, 11, 14, 9)
+    for said in ("on my to do list, i need cleaning added", "i need cleaning added to my to do list"):
+        found = commands.read(said, now)
+        assert found and found["intent"] == "reminder" and found["task"], said
+        assert found["text"] == "Cleaning" and found["on_list"] == "cleaning" and found["asked"] == said, found
