@@ -290,15 +290,9 @@ L_NAMES = [
 ]
 
 
-#: Cases still failing, each a strict xfail: a fix that makes one pass fails
-#: the run until its id is taken out of this set (INBOX 1357 baseline: 35 of
-#: 77 passing before any fix).
-OPEN: set[str] = set()
-
-
+#: INBOX 1357 baseline: 35 of 77 passing before any fix; every case passes now.
 def _p(cls: str, turns: tuple, must, never, ident: str):  # noqa: ANN001, ANN202
-    marks = [pytest.mark.xfail(strict=True, reason="INBOX 1357 open")] if ident in OPEN else []
-    return pytest.param(cls, turns, must, never, id=ident, marks=marks)
+    return pytest.param(cls, turns, must, never, id=ident)
 
 
 def _cases():

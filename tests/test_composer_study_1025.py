@@ -32,11 +32,11 @@ DATABASES = (
     "# Lecture 6: Databases\n\nA **primary key** is a column that uniquely identifies each row. **Normalisation**: removing repeated data across tables.\n\n"
     "## Joins\n\nAn inner join keeps rows that match in both tables.\n\n- [ ] Read chapter 4\n- [ ] Finish the lab sheet\n"
 )
-TODO = "# Errands\n\n- [ ] Book the tram pass\n- [ ] Buy a notebook\n- [x] Pay rent\n\nDentist booked for Friday 23 October.\n"
+TODO_NOTE = "# Errands\n\n- [ ] Book the tram pass\n- [ ] Buy a notebook\n- [x] Pay rent\n\nDentist booked for Friday 23 October.\n"
 NOTES = [
     (LECTURE, dt.datetime(2026, 10, 20, 9)),
     (DATABASES, dt.datetime(2026, 10, 19, 9)),
-    (TODO, dt.datetime(2026, 10, 18, 9)),
+    (TODO_NOTE, dt.datetime(2026, 10, 18, 9)),
     ("# Dentist\n\nCheck-up booked for the 21st.", dt.datetime(2026, 10, 14, 9)),
     ("# COMP2001 Assignment 2\n\nAssignment 2 is due Friday.\n\n## Method\n\nThe model weights[^1] are trained on lecture data.\n\n[^1]: A weight is a number the model learns.", dt.datetime(2026, 10, 21, 9, 50)),
     ("# COMP2001 Lecture 3\n\n## Search\n\nBreadth first search visits the nearest nodes first.", dt.datetime(2026, 10, 21, 9, 55)),

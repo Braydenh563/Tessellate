@@ -323,8 +323,8 @@ def test_a_result_card_keeps_its_reason_and_ends_with_its_date():
 
 
 def test_a_notes_questions_are_on_its_card_and_grouped():
-    """INBOX 745 (c). Measured: the lease note's card reads "1 open question"
-    (115 px), the shed note's "2 open questions"; pressing one shows only its
+    """INBOX 745 (c). Measured: the lease note's card shows its question count
+    (115 px, one for the lease note, two for the shed note); pressing one shows only its
     questions with "Show every note's"; the list has a 40 px heading per note
     (a plain labelled button, no icon-only box). Backend: test_questions_own."""
     lst = frontend_text("notes-list.js")

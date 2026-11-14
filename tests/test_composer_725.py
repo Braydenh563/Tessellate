@@ -383,7 +383,7 @@ def test_days_until_something_no_note_dates_is_not_counted():
     ["what is still open on the harbor launch", "whats left to do for harbor", "wat's stil open on the harbor launch", "what do i still need to do for the harbor launch"],
 )
 def test_what_is_still_open_lists_the_unticked_items(question):
-    """Row 444 (P16): "what is still open on X" quoted the whole checklist
+    """Row 444 (P16): asking which items on X are unticked quoted the whole checklist
     and ended "None of these notes say anything about “open”"; it says how
     many are open and lists only those."""
     from datetime import date

@@ -2,7 +2,7 @@
 connections" named untitled notes by a cut phrase ("here are some
 refined"), doubled an article ("the the The Complete Social Skills
 Guide"), kept a title's colon ("the Ice Breakers:"), let markdown through
-("the Follow-Up**"), said a heading as a sentence ("After making an initial
+(a heading name with its closing **), said a heading as a sentence ("After making an initial
 connection."), clipped a diary sentence into a wrong meaning ("I had work
 today and a friend") and put the citation before an emoticon ("bit9 :(")."""
 

@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 0 | 1 | 0 | 0 | 1 |
+| graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
@@ -17,10 +17,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 535 | 567 | 130 | 2 | 183 | 1232 |
+| all | 535 | 567 | 129 | 2 | 183 | 1231 |
 
 ## graph
-- [ ] **L-graph-19** `graph` partly, M: Sweep the 211 unowned open_scan hits in tests/test_[a-c]* to zero: reword, log or build each. From hub 2026-11-14 12:32Z, open_scan over tests/test_[a-c]*. Evidence: 211 hits listed 2026-11-14; b7248254 rewords 39 comments and renames 2 code names (173 left, nearly all fixture string literals); strict xfails at pa_1112:76 and r1_dates_1107:65 already rows L-chat-9 and L-chat-10
 
 ## chat
 
