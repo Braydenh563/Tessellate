@@ -602,12 +602,6 @@ def remarks(
 # --- the dashboard ----------------------------------------------------------------
 
 
-def _draw(seed: int, slot: str, n: int) -> int:
-    """A stable index below `n` for this seed and slot: slots draw
-    independently, so the openings and the tails mix."""
-    return int.from_bytes(hashlib.sha1(f"{seed}:{slot}".encode()).digest()[:4], "big") % n
-
-
 def today_line(
     notes: list[dict], *, today: date, seed: int = 0, counts: dict[date, int] | None = None
 ) -> dict | None:
@@ -623,7 +617,10 @@ def today_line(
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
-    _today_opening(v, dated, today, _draw(seed, "open", 6), counts or {})
+    #: The seed steps through the true openers in order, so two draws in a
+    #: row never say the same one (B41, "no repeat in 20 asks"): a hash drew
+    #: the same of six four times in twenty.
+    _today_opening(v, dated, today, seed, counts or {})
     return v.done("today")
 
 

@@ -163,3 +163,26 @@ def act_rows() -> dict:
     from tessellate.ai import acts
 
     return {"rows": acts.palette_rows(), "capability": acts.capability_line()}
+
+
+@router.get("/read/act")
+def act_preview(
+    q: str = Query("", max_length=MAX_CHARS),
+    tz_offset_minutes: int = Query(0, ge=-14 * 60, le=14 * 60),
+    now: str = Query("", max_length=40),
+    session: Session = Depends(get_session),
+) -> dict:
+    """What a typed sentence would do as an act, written nowhere (CHAT_PLAN B24:
+    "remind me Tuesday 9am lecture" in the palette shows its card before Chat
+    runs it). `act` is None for a sentence that is not an act, or one that
+    still lacks its time (Chat asks that, once); the line is the one Chat
+    would say, the label the card's, and the steps are counted, never run."""
+    from tessellate.ai import acts
+
+    clock = _clock(tz_offset_minutes, now).replace(tzinfo=None)
+    parsed = acts.parse(q, clock, [])
+    if parsed is None or (parsed["intent"] == "reminder" and not parsed.get("time_given") and not parsed.get("on_list")):
+        return {"act": None}
+    planned = acts.preview(session, parsed, None)
+    card = planned.get("card") or {}
+    return {"act": {"intent": parsed["intent"], "line": planned.get("line") or "", "label": card.get("label") or "", "steps": len(card.get("steps") or [])}}

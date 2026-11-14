@@ -971,7 +971,10 @@ HELP_TOPICS: list[dict] = [
             "(Ctrl/Cmd+Shift+A): this one runs fixed commands, that one "
             "answers and acts on an open-ended request. Typed as a "
             'reminder ("remind me friday 9 dentist"), its first row is '
-            "that reminder, with its chips under the box."
+            "that reminder, with its chips under the box. A typed act "
+            '("merge these notes") gets a row that shows what it would do '
+            "before you run it. In the Today digest, the counts in each "
+            "sentence are links to the notes they count."
         ),
         "badge": {"label": "Keyboard shortcuts", "section": "shortcuts"},
     },

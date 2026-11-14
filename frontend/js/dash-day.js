@@ -77,20 +77,34 @@
     li.dataset.kind = line.kind;
     li.dataset.part = line.part;
     const text = String(line.text || "");
-    const name = line.part === "quiet" ? String(line.category || "") : "";
-    if (!name || !text.startsWith(name)) {
+    //: Every counted phrase opens the list it counted (B23: "every number links
+    //: to its list"); the sentence around it stays text (INBOX 904 B83), so the
+    //: link is the words that hold the number, never the row.
+    const spans = [];
+    for (const phrase of line.links || []) {
+      const at = text.toLowerCase().indexOf(String(phrase).toLowerCase());
+      if (at !== -1 && !spans.some((s) => at < s.end && at + phrase.length > s.at)) spans.push({ at, end: at + phrase.length });
+    }
+    spans.sort((a, b) => a.at - b.at);
+    if (!spans.length) {
       li.textContent = text;
       return li;
     }
-    const link = document.createElement("a");
-    link.href = "#";
-    link.className = "digest-day-open";
-    link.textContent = name;
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      opens.quiet(line);
-    });
-    li.append(link, document.createTextNode(text.slice(name.length)));
+    let from = 0;
+    for (const { at, end } of spans) {
+      li.appendChild(document.createTextNode(text.slice(from, at)));
+      const link = document.createElement("a");
+      link.href = "#";
+      link.className = "digest-day-open";
+      link.textContent = text.slice(at, end);
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        opens[line.part](line);
+      });
+      li.appendChild(link);
+      from = end;
+    }
+    li.appendChild(document.createTextNode(text.slice(from)));
     return li;
   }
 
