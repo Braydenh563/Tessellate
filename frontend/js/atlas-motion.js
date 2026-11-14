@@ -535,6 +535,16 @@ atlasRigWake.look.soon = (rig, ms) => {
   rig.looking = true;
   setTimeout(atlasRigWake.look, ms, rig);
 };
+//: The walk's arm swing as offsets to the shoulder and elbow (degrees): 1.3 strides a second, 9 degrees
+//: on the masculine look and 6 on the feminine, the two arms half a stride apart (L82: measured over a
+//: held walk the raise stays within 4.6 to 21.4 of hanging, never across the body). The elbow only ever
+//: bends further (0 to 0.6 of the swing), so the hand's arc stays below the shoulder.
+atlasRigFrame.walkSwing = function (side, look, now) {
+  const ph = (now / 1000) * 2 * Math.PI * 1.3 + (side === "r" ? 0 : Math.PI);
+  const amp = look === "masculine" ? 9 : 6;
+  return [amp * Math.sin(ph), amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5];
+};
+
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
@@ -607,10 +617,9 @@ function atlasRigFrame(rig, now) {
     let sh = shT;
     if (walking && Math.abs(((((raise + 180) % 360) + 360) % 360) - 180) < 35) {
       //: Counter-phase: the right arm forward while the left is back.
-      const ph = (now / 1000) * 2 * Math.PI * 1.3 + (arm.side === "r" ? 0 : Math.PI);
-      const amp = rig.look === "masculine" ? 9 : 6;
-      sh += amp * Math.sin(ph);
-      elT += amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5;
+      const swing = atlasRigFrame.walkSwing(arm.side, rig.look, now);
+      sh += swing[0];
+      elT += swing[1];
     }
     if (toss?.hold?.[arm.side]) {
       sh = -toss.hold[arm.side] * arm.sgn;

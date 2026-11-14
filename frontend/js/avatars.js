@@ -2884,9 +2884,9 @@
       nameMarkReact(el.matches(".name-mark") ? el : part(".name-mark"));
     } else if (act === "wave") {
       part(".nmb-arm-r")?.animate([
-        { rotate: "0deg" }, { rotate: "-120deg", offset: 0.25 }, { rotate: "-100deg", offset: 0.4 },
-        { rotate: "-125deg", offset: 0.55 }, { rotate: "-105deg", offset: 0.7 }, { rotate: "0deg" },
-      ], { duration: 1600, easing: "ease-in-out" });
+        { rotate: "0deg" }, { rotate: "-120deg", offset: 0.31 }, { rotate: "-100deg", offset: 0.42 },
+        { rotate: "-125deg", offset: 0.53 }, { rotate: "-105deg", offset: 0.64 }, { rotate: "0deg" },
+      ], { duration: 3000, easing: "ease-in-out" });
     }
   }
   //: The pointer onto a large face: it notices (a blink), at most once in
@@ -3129,8 +3129,8 @@
     yawn: { ms: 2200, w: 0, cool: 40000, poses: ["stand", "sit", "hang", "float", "lean"] },
     nap: { ms: 30000, w: 0, cool: 150000, poses: ["stand", "sit", "hang", "float", "lean"] },
     hop: { ms: 800, w: 0.5, cool: 20000, poses: ["stand", "float"] },
-    wave: { ms: 1500, w: 1, cool: 30000, poses: ["stand", "sit", "float", "lean"] },
-    scratch: { ms: 2600, w: 1, cool: 30000, poses: ["stand", "sit", "hang", "lean"] },
+    wave: { ms: 2600, w: 1, cool: 30000, poses: ["stand", "sit", "float", "lean"] },
+    scratch: { ms: 3200, w: 1, cool: 30000, poses: ["stand", "sit", "hang", "lean"] },
     dangle: { ms: 6000, w: 5, cool: 5000, poses: ["sit"], legs: "out" },
     kick: { ms: 1600, w: 2, cool: 12000, poses: ["sit"], legs: "out" },
     peek: { ms: 14000, w: 2, cool: 70000, poses: ["sit", "stand"], edge: "top" },
@@ -3175,7 +3175,7 @@
     bell: { ms: 3000, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     carry: { ms: 2400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     lantern: { ms: 3000, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
-    hide: { ms: 2400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
+    hide: { ms: 3600, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     wiggle: { ms: 1400, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
     //: Pleased with a piece of work the app finished (`nameMarkBuddyWork`).
     nod: { ms: 1200, w: 0, cool: 0, poses: ["stand", "sit", "hang", "float", "lean"] },
@@ -6633,6 +6633,28 @@
     float: { arm: [[0.25, -12], [0.6, 30], [0.86, 8]], lower: [[0.3, 10], [0.72, 6], [0.9, -3]] },
     cue: { arm: [[0.4, 20]] },
   };
+  //: **No generic arm turns faster than the Atlas rig's cap** (L83; `ATLAS_RIG_MAX_SPEED` is 200 a second at the
+  //: fastest, an ease-in-out segment's fastest moment is 1.55 times its mean, so 129 a second mean). The CSS
+  //: keyframes of a wave, a scratch and a hide are paced to it (a wave's lift was 408 a second, a hide's 352);
+  //: a gesture's `[offset, degrees]` frames, whose length is the caller's, give up angle instead of time: each
+  //: step, and the return to rest, is cut to what the cap allows in its share of `ms`.
+  const NMB_ARM_MEAN_SPEED = 129;
+  function nmbArmKeys(frames, ms) {
+    const room = (from, to) => (NMB_ARM_MEAN_SPEED * (to - from) * ms) / 1000;
+    let at = 0;
+    let off = 0;
+    const out = frames.map(([o, deg]) => {
+      const d = Math.max(at - room(off, o), Math.min(at + room(off, o), deg));
+      [off, at] = [o, d];
+      return [o, Math.round(d * 10) / 10];
+    });
+    for (let i = out.length - 1; i >= 0; i -= 1) {
+      const [o] = out[i];
+      const cap = room(o, i === out.length - 1 ? 1 : out[i + 1][0]) + (i === out.length - 1 ? 0 : Math.abs(out[i + 1][1]));
+      if (Math.abs(out[i][1]) > cap) out[i][1] = Math.sign(out[i][1]) * Math.round(cap * 10) / 10;
+    }
+    return out;
+  }
   function nameMarkBuddyLimbs(buddy, kind, ms = 0, delay = 0, way = 1) {
     for (const anim of nmb.limbAnims || []) anim.cancel();
     nmb.limbAnims = [];
@@ -6645,7 +6667,7 @@
         nmb.limbAnims.push(el.animate(list.map(([offset, deg, sy]) => (sy ? { offset, rotate: `${deg * m}deg`, scale: `1 ${sy}` } : { offset, rotate: `${deg * m}deg` })), timing));
       }
     };
-    part(".nmb-arm", move.arm, (el) => (el.classList.contains("nmb-arm-r") ? -1 : 1));
+    part(".nmb-arm", move.arm && nmbArmKeys(move.arm, ms), (el) => (el.classList.contains("nmb-arm-r") ? -1 : 1));
     //: Atlas's legs are two `<svg>` roots (`nmb-leg atl-layer`), on which
     //: `rotate` and `scale` are never composited: its boxes (`.atl-lw-leg-*`,
     //: atlas.js) take the gesture and the roots are left to the pose.

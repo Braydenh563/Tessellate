@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the walk's arm swing is one function (`atlasWalkSwing`), measured 4.6 to 21.4 degrees from hanging and never across the body (L82); the moods sweep sets its look through prefs again (L749).
+- Companion: generic faces' wave, scratch and hide keep under the Atlas rig's arm speed (a wave's lift was 408 degrees a second, now 125; hide 352 to 128), the viewer's wave and leap, glide and float arm frames likewise (L83); a Settings deep link to a control clipped above its scroller now scrolls to it (L85).
 - Chat: a joke is said from the top matching record and the note it names; listed jokes are quoted, not run together (L-chat-19).
 - Chat: the utilities eval is built (120 rows exact, 20 hostile sums refused); sums now read "1,000", "mod", "7!" and numbers in words, and "how many weeks until" answers in weeks (L-chat-22).
 - Chat: the Guide with no model opens on the topic's first step (help_1010 0.55 to 1.0, L-chat-41); person_shift_1010 eval, 100 pairs exact, fixes "Sam and I was", "between you and me" and "Your sister ... we" (L-chat-22).

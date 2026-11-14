@@ -6214,12 +6214,12 @@ body .chip.item-label,
     &:is(.nmb-act-swing, [data-pose="hang"].nmb-act-cheer) .nm-buddy-char { animation: nmb-swing 2.6s ease-in-out; }
     &:is(.nmb-act-swing, [data-pose="hang"].nmb-act-cheer) .nmb-leg-l { animation: nmb-kick 0.65s ease-in-out 4 alternate; }
     &:is(.nmb-act-swing, [data-pose="hang"].nmb-act-cheer) .nmb-leg-r { animation: nmb-kick 0.65s ease-in-out -0.65s 4 alternate; }
-    &.nmb-act-wave .nmb-arm-r { animation: nmb-wave 1.5s ease-in-out; }
+    &.nmb-act-wave .nmb-arm-r { animation: nmb-wave 2.6s ease-in-out; }
     /* Its variants (avatars.js, `NMB_VARIANTS`): a wave with both hands, or
        with a little hop; a hop that is a skip to one side or a spin; a
        stretch leaning over; a nap curled small or tipped on its side; a
        shrug with a head tilt; a face palm with both hands. */
-    &.nmb-act-wave[data-variant="1"] .nm-figure .nmb-arm-l { animation: nmb-wave-l 1.5s ease-in-out; }
+    &.nmb-act-wave[data-variant="1"] .nm-figure .nmb-arm-l { animation: nmb-wave-l 2.6s ease-in-out; }
     &.nmb-act-wave[data-variant="2"] .nm-buddy-char { animation: nmb-hop 0.75s var(--ease-out) 0.2s; }
     /* Atlas's own wave, for its short arm (atl-buddy-wave), and hers beside
        her head. Here rather than beside the arm's resting angle further
@@ -6243,19 +6243,19 @@ body .chip.item-label,
     &:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-buddy-z i:nth-child(3) { animation-delay: 1.73s; }
     &.nmb-act-dangle .nmb-leg-l { animation: nmb-dangle 1.5s ease-in-out 4 alternate; }
     &.nmb-act-dangle .nmb-leg-r { animation: nmb-dangle 1.5s ease-in-out -1.5s 4 alternate; }
-    &.nmb-act-scratch .nmb-arm-r { animation: nmb-scratch 2.6s ease-in-out; }
+    &.nmb-act-scratch .nmb-arm-r { animation: nmb-scratch 3.2s ease-in-out; }
     /* Atlas scratches with its own swing, for the same reason as its wave. */
     &.nmb-act-scratch .atl-figure .nmb-arm-r { animation: atl-buddy-scratch 2.6s ease-in-out; }
     /* Round 5. Covers its eyes (a private note opened): both arms up over
        its face and the eyes shut behind them. Petted: a happy wiggle. */
     /* Hanging, its hands hold on: only its eyes shut. */
-    &.nmb-act-hide:not([data-pose="hang"]) .nmb-arm-l { animation: nmb-hide-l 2.4s ease-in-out; }
-    &.nmb-act-hide:not([data-pose="hang"]) .nmb-arm-r { animation: nmb-hide-r 2.4s ease-in-out; }
-    &.nmb-act-hide .name-mark .nm-eyes { animation: nmb-hide-eyes 2.4s ease-in-out; }
+    &.nmb-act-hide:not([data-pose="hang"]) .nmb-arm-l { animation: nmb-hide-l 3.6s ease-in-out; }
+    &.nmb-act-hide:not([data-pose="hang"]) .nmb-arm-r { animation: nmb-hide-r 3.6s ease-in-out; }
+    &.nmb-act-hide .name-mark .nm-eyes { animation: nmb-hide-eyes 3.6s ease-in-out; }
     &.nmb-act-wiggle .nm-buddy-char { animation: nmb-wiggle 1.2s ease-in-out; }
     &.nmb-act-nod .nm-buddy-head { animation: nmb-nod-yes 0.3s ease-in-out 4 alternate; }
     &.nmb-act-onehand .nm-buddy-char { animation: nmb-onehand 4.2s ease-in-out; }
-    &.nmb-act-onehand .nmb-arm-r { animation: nmb-wave 1.4s ease-in-out 3; }
+    &.nmb-act-onehand .nmb-arm-r { animation: nmb-wave 2.6s ease-in-out; }
     &.nmb-act-feet .nm-buddy-char { animation: nmb-feet 7s ease-in-out; }
     &.nmb-act-sloth .nm-buddy-char { animation: nmb-sloth 9s ease-in-out; }
     &[data-pose="hang"].nmb-sleep .nm-buddy-char { animation: nmb-sloth 9s ease-in-out infinite; }
@@ -6344,14 +6344,14 @@ body .chip.item-label,
    frame, atlas669-clicks.js). With no 0% or 100% the stylesheet starts
    and ends each from the arm's own transform, whatever the pose or mood. */
 @keyframes nmb-hide-l {
-  18%, 82% { transform: rotate(-152deg); }
+  33%, 67% { transform: rotate(-152deg); }
 }
 @keyframes nmb-hide-r {
-  18%, 82% { transform: rotate(152deg); }
+  33%, 67% { transform: rotate(152deg); }
 }
 @keyframes nmb-hide-eyes {
   0%, 100% { scale: 1 1; }
-  18%, 82% { scale: 1 0.12; }
+  33%, 67% { scale: 1 0.12; }
 }
 /* **A poke's wiggle swings, it does not snap** (INBOX 669, the owner:
    "when I click atlas, it often starts tilting to the left then just snaps
@@ -6365,8 +6365,8 @@ body .chip.item-label,
   74% { transform: rotate(-2deg); }
 }
 @keyframes nmb-scratch {
-  15%, 35%, 55%, 75% { transform: rotate(-150deg); }
-  25%, 45%, 65% { transform: rotate(-138deg); }
+  38%, 50%, 62% { transform: rotate(-150deg); }
+  44%, 56% { transform: rotate(-138deg); }
 }
 @keyframes nmb-onehand {
   0%, 100% { rotate: 0deg; }
@@ -6486,8 +6486,8 @@ body .chip.item-label,
   75% { rotate: 3deg; }
 }
 @keyframes nmb-wave-l {
-  16%, 48%, 80% { transform: rotate(98deg); }
-  32%, 64% { transform: rotate(128deg); }
+  30%, 50%, 70% { transform: rotate(98deg); }
+  40%, 60% { transform: rotate(128deg); }
 }
 @keyframes nmb-skip {
   0%, 100% { transform: translate(0, 0); }
@@ -6505,8 +6505,8 @@ body .chip.item-label,
   45%, 60% { transform: rotate(-7deg) scale(0.98, 1.05); }
 }
 @keyframes nmb-wave {
-  16%, 48%, 80% { transform: rotate(-98deg); }
-  32%, 64% { transform: rotate(-128deg); }
+  30%, 50%, 70% { transform: rotate(-98deg); }
+  40%, 60% { transform: rotate(-128deg); }
 }
 @keyframes nmb-dot {
   0%, 100% { opacity: 0.35; transform: translateY(0); }

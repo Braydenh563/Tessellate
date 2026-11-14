@@ -835,7 +835,16 @@ function flashRevealed(target) {
   //: page under a resting pointer, and the hover that follows closed a menu
   //: group the reveal had just opened (measured on the phone's note sheet).
   const box = shown.getBoundingClientRect();
-  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
+  //: **In view means inside the box that scrolls it, not only the window** (L85: Settings at 390 has its head and
+  //: section strip above the scrolling card, 174px down; a control at 148 passed `top >= 0`, so the link "landed
+  //: under the head" and never scrolled). The window's edge stays the bound where the page itself scrolls.
+  const clip = nearestScrollParent(shown);
+  const edge = clip && clip !== document.documentElement && clip !== document.body ? clip.getBoundingClientRect() : null;
+  const inView =
+    box.top >= Math.max(0, edge?.top ?? 0) &&
+    box.left >= 0 &&
+    box.bottom <= Math.min(window.innerHeight, edge?.bottom ?? Infinity) &&
+    box.right <= window.innerWidth;
   //: Inside an open menu only the menu's own list scrolls: a scroll of the
   //: page closes every open menu (`closeActionMenusOnScroll`), which took the
   //: document's Export group away the moment it was ringed on a phone.
