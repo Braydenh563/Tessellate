@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8496, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10882, test files 2779, tests 22300, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10882, test files 2779, tests 22300, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
-## Frontend functions (8496)
+## Frontend functions (8495)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7182,7 +7182,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyStatsPanel` | frontend/js/reply-kit.js:262 |
 | `replyTimelinePanel` | frontend/js/reply-kit.js:296 |
 
-### frontend/js/reveal-targets.js (24)
+### frontend/js/reveal-targets.js (23)
 
 | Name | File:line |
 |---|---|
@@ -7191,11 +7191,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `foldedText` | frontend/js/reveal-targets.js:638 |
 | `markNotePassage` | frontend/js/reveal-targets.js:667 |
 | `notePassageFor` | frontend/js/reveal-targets.js:624 |
-| `openShortcuts` | frontend/js/reveal-targets.js:813 |
+| `openShortcuts` | frontend/js/reveal-targets.js:780 |
 | `packagesNoticeOpen` | frontend/js/reveal-targets.js:702 |
 | `packagesNoticeTarget` | frontend/js/reveal-targets.js:688 |
 | `passageRange` | frontend/js/reveal-targets.js:653 |
-| `renderChordShortcutRows` | frontend/js/reveal-targets.js:785 |
 | `renderShortcutList` | frontend/js/reveal-targets.js:710 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
 | `revealBoardsGallery` | frontend/js/reveal-targets.js:541 |
