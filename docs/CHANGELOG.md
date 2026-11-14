@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- MCP: tests pin that an outside agent never runs a destructive tool, with writes on or off, and that a note survives a delete_note sent by name (L-world-class-12).
 - Private spaces: links, recordings (title and transcript) and the text read from files and pictures are sealed with the space and kept out of search, and deleting a locked space asks for the password instead of stopping at an error (L697).
 - Library: Read again on an uploaded PDF reads its text layer, or its pages with OCR when it is a scan, instead of refusing with 415; without the PDF viewer extra it says so (L631).
 - Start-up: the agent module loads on first use instead of at import, so a cold import no longer pulls the chat agent stack; wall import time is unchanged at about 2.2 s, the rest is the composer regex tables (L678).

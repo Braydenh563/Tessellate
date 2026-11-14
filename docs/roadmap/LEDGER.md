@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 65 | 33 | 0 | 19 | 228 |
+| world-class | 130 | 64 | 33 | 0 | 19 | 227 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 459 | 104 | 2 | 130 | 1116 |
+| all | 553 | 458 | 104 | 2 | 130 | 1115 |
 
 ## graph
 
@@ -549,7 +549,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
 - [ ] **L-world-class-7** `world-class` open, S: Measure footnotes, Mermaid and rich paste in the note composers. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:966. Evidence: docRichPasteEvent is wired only in documents-view.js:313; the capture-stage paste handler takes only files, so rich paste in note composers was never measured or fixed
 - [ ] **L-world-class-9** `world-class` open, S: Re-run the Settings prose length metric. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:442. Evidence: Open line in the plan's prose a session could miss. Measurement promised in D13 never re-run after the copy pass.
-- [ ] **L-world-class-12** `world-class` open, M: Run MCP tool tests and confirm outside agents' destructive calls. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:800. Evidence: Open line in the plan's prose a session could miss. Section 8 table row left open (also at 1796).
 - [ ] **L-world-class-13** `world-class` open, S: Sweep the five whiteboard menus. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:986. Evidence: Open line in the plan's prose a session could miss. Hand-off to other plans that no LEDGER row records (the SVG graph flag part is stale).
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
