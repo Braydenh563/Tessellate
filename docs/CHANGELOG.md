@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).
+- Tag chips on note cards say in their hover how many notes carry the tag, counted from the notes already loaded (L-world-class-47).
 - Failure toasts in 78 more files say it in the app's one voice (Couldn't X: why), 262 calls (L-world-class-42; the last 16 are L-world-class-140).
 - Meeting cards no longer count a template's blank `- ` and `- [ ] ` lines as decisions or open actions (L-world-class-48).
 - Errors: the last 19 failure toasts that offered only Open the logs now offer a fix of their own (Try again, Copy the answer, Reload the list); the cap is 0 (L-world-class-43).
