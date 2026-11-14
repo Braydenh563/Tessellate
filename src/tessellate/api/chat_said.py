@@ -34,6 +34,7 @@ from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import reminders as reminder_repo
+from tessellate.repo import visible_notes
 from tessellate.core.logbuffer import safe_value
 
 
@@ -772,16 +773,15 @@ def _says_cannot(text: str) -> bool:
 def _open_title(session: Session, body: ChatRequest) -> str:
     """The title of the plain note or document open, "" for anything else: a
     private, binned or board note is never named (composer_aware's rule)."""
-    from tessellate.ai.tools._common import _visible
 
     if body.screen and body.screen.open_doc_id:
         doc_title = documents_repo.title_of(session, body.screen.open_doc_id)
         if doc_title and doc_title.strip():
             return doc_title.strip()
     if body.open_note_id:
-        row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
-        if row:
-            return composer_read._title(str(row[0] or ""))[0].strip()[:60]
+        content = visible_notes.content_of(session, body.open_note_id)
+        if content is not None:
+            return composer_read._title(content)[0].strip()[:60]
     return ""
 
 
@@ -848,7 +848,6 @@ def _cited_ids(result: dict) -> list[tuple[str, int]]:
 
 def _cited_titles(session: Session, result: dict) -> list[str]:
     """The titles of the notes an answer drew on, in the order it cited them."""
-    from tessellate.ai.tools._common import _visible
 
     titles: list[str] = []
     for kind, nid in _cited_ids(result)[:3]:
@@ -856,8 +855,8 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             doc_title = documents_repo.title_of(session, nid)
             title = realise.cut_title(doc_title.strip(), 60) if doc_title is not None else ""
         else:
-            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = _closing_name(str(row[0] or "")) if row else ""
+            content = visible_notes.content_of(session, nid)
+            title = _closing_name(content) if content is not None else ""
         if title:
             titles.append(title)
     return titles
@@ -865,13 +864,12 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
 
 def _cited_bodies(session: Session, result: dict) -> list[tuple[str, str]]:
     """(title, text) of the notes an answer drew on, for Detailed's supporting sentences."""
-    from tessellate.ai.tools._common import _visible
 
     out: list[tuple[str, str]] = []
     for kind, nid in _cited_ids(result)[:3]:
-        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first() if kind != "document" else None
-        if row and (title := _closing_name(str(row[0] or ""))):
-            out.append((title, str(row[0] or "")))
+        content = visible_notes.content_of(session, nid) if kind != "document" else None
+        if content is not None and (title := _closing_name(content)):
+            out.append((title, content))
     return out
 
 
@@ -888,7 +886,6 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     """The notes linked to the ones an answer cited, not cited themselves
     (INBOX 1466): the related row under a composed answer, which a model's
     answer has no use for (it reads the notes it is given and says the rest)."""
-    from tessellate.ai.tools._common import _visible
 
     cited = {nid for kind, nid in _cited_ids(result) if kind == "entry"}
     if not cited:
@@ -901,9 +898,9 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
                 found.append(other)
     items: list[dict] = []
     for nid in found:
-        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-        if row and len(items) < _RELATED_LIMIT:
-            items.append({"kind": "note", "id": nid, "label": _closing_name(str(row[0] or "")) or "Untitled note"})
+        content = visible_notes.content_of(session, nid)
+        if content is not None and len(items) < _RELATED_LIMIT:
+            items.append({"kind": "note", "id": nid, "label": _closing_name(content) or "Untitled note"})
     return items
 
 
@@ -913,12 +910,11 @@ _CHECKLIST = re.compile(r"^\s*[-*+] \[[ xX]\]", re.M)
 def _first_cited_has_list(session: Session, result: dict) -> bool:
     """Whether the first note an answer cited keeps a checklist: "What is left
     in it" is a question only such a note answers (audit 1031 C47)."""
-    from tessellate.ai.tools._common import _visible
 
     for kind, nid in _cited_ids(result)[:1]:
         if kind != "document":
-            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            return bool(row and _CHECKLIST.search(str(row[0] or "")))
+            content = visible_notes.content_of(session, nid)
+            return bool(content is not None and _CHECKLIST.search(content))
     return False
 
 

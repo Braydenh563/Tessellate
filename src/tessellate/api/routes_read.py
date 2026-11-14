@@ -202,15 +202,15 @@ def find_answer(
     the best-matching notes, with the notes it came from. `answer` is None for
     words to find, or when the notes hold nothing to quote."""
     from tessellate.ai import composer_voice
-    from tessellate.core.database import Entry
+    from tessellate.repo import visible_notes
     from tessellate.search import engine
 
     if not composer_voice.asks(q):
         return {"answer": None}
     hits = engine.search(session, q, limit=8, kinds=["note"])
     ids = [h.ref_id for h in hits if h.kind == "note"]
-    rows = {e.id: e for e in session.query(Entry).filter(Entry.id.in_(ids)).all()} if ids else {}
-    notes = [{"id": i, "content": rows[i].content or "", "written": rows[i].created_at} for i in ids if i in rows]
+    rows = visible_notes.written(session, ids) if ids else {}
+    notes = [{"id": i, "content": rows[i][0], "written": rows[i][1]} for i in ids if i in rows]
     if not notes:
         return {"answer": None}
     said = composer_voice.one_line(q, notes, today=_clock(tz_offset_minutes, now).date())

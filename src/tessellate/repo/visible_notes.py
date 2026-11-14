@@ -39,3 +39,16 @@ def by_ids(session: Session, ids: Iterable[int]) -> list:
 def recent(session: Session, *, limit: int) -> list:
     """(id, content) of the newest visible notes: what an overview with no topic tells."""
     return session.execute(select(Entry.id, Entry.content).where(*_visible()).order_by(Entry.id.desc()).limit(limit)).all()
+
+
+def content_of(session: Session, note_id: int) -> str | None:
+    """The text of one visible note (not a board either: the note tools' floor), or None."""
+    return session.scalar(
+        select(Entry.content).where(Entry.id == note_id, *_visible(), Entry.is_board == False)  # noqa: E712
+    )
+
+
+def written(session: Session, ids: Iterable[int]) -> dict[int, tuple[str, object]]:
+    """`{id: (content, created_at)}` for the visible notes among `ids`, for a quoted answer's sources."""
+    rows = session.execute(select(Entry.id, Entry.content, Entry.created_at).where(Entry.id.in_(list(ids)), *_visible()))
+    return {row.id: (row.content or "", row.created_at) for row in rows}
