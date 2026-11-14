@@ -105,4 +105,4 @@ def test_a_request_no_tool_fits_gets_the_composers_line(fake_engine):  # noqa: F
     from tessellate.ai import needle_provider
 
     reply = needle_provider.NeedleProvider().chat_tools("any", [{"role": "user", "content": "tell me a joke"}], TOOLS)
-    assert reply["tool_calls"] == [] and "model" in reply["content"] and "reminders" in reply["content"]
+    assert reply["tool_calls"] == [] and "model" in reply["content"] and "remind" in reply["content"]  # "remind" or "reminders": both frames say what offline can do
