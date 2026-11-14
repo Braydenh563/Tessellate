@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8504, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2831, tests 22505, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8504, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2831, tests 22506, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8504)
 
@@ -28271,7 +28271,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22505)
+## Tests (22506)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28713,7 +28713,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_throw_smooth.py | 17 |
 | tests/test_companion_tickle_boop_1108.py | 6 |
 | tests/test_companion_tiers_1107.py | 3 |
-| tests/test_companion_toggle.py | 3 |
+| tests/test_companion_toggle.py | 4 |
 | tests/test_companion_touch_1111.py | 6 |
 | tests/test_companion_travel.py | 21 |
 | tests/test_companion_typing_wake.py | 3 |
