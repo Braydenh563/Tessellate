@@ -335,7 +335,7 @@ def test_a_resize_before_the_first_board_open_does_not_read_the_unbuilt_canvas()
 
 def test_unlocking_does_not_build_the_notes_pane_to_look_at_its_strip():
     """audit 1030 Y5: `resetNavigationToDefaults` runs from `lockOpened` and asked `$("notes-subtabs")`, which builds
-    the Notes template (about 1,000 nodes) on every unlock. A strip that is not in the page is not built, so there
+    the Notes template (about 1,000 nodes) on every unlock. A strip that is not in the page is not made, so there
     is nothing to put back on its front page: the question is `getElementById`, which builds nothing."""
     nav = _src("navigation.js")
     body = nav[nav.index("function resetNavigationToDefaults() {") :][:1400]

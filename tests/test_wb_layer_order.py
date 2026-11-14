@@ -1,4 +1,4 @@
-"""F2, draw.io's layer rows that were still open: a layer's menu brings the whole layer to the front or sends it to
+"""F2, draw.io's last layer rows, built: a layer's menu brings the whole layer to the front or sends it to
 the back (its items keep their order among themselves) and duplicates it onto a layer of its own.
 
 The module runs in node against a stand-in for the board's lists; the board's own stacking functions are cut out of

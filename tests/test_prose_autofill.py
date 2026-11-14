@@ -176,8 +176,8 @@ def test_table_NxM_is_columns_by_rows_with_the_first_header_chosen() -> None:
 
 @node
 def test_todo_callout_and_hr_write_their_markdown() -> None:
-    todo, callout, hr = run([["options", "todo", ""], ["options", "callout", ""], ["options", "hr", ""]])
-    assert todo == [["todo", "A task to tick", "- [ ] ", None]]
+    task, callout, hr = run([["options", "todo", ""], ["options", "callout", ""], ["options", "hr", ""]])
+    assert task == [["todo", "A task to tick", "- [ ] ", None]]
     assert [r[2] for r in callout] == ["> [!note]\n> ", "> [!tip]\n> ", "> [!warning]\n> "]
     assert hr[0][2] == "---\n"
 

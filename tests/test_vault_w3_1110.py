@@ -1,4 +1,4 @@
-"""W3 (1110): the vault side doors still open at the audit's last pass.
+"""W3 (1110): the vault side doors found at the audit's last pass.
 
 A11: a link to a private note was accepted by the API while the vault was
 locked (the chip then carried the note's presence). A13: the vault open or

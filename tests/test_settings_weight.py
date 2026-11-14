@@ -41,7 +41,7 @@ def test_the_changelog_renders_when_opened_not_when_settings_opens():
     assert 'addEventListener("toggle"' in body, (
         "the changelog must render on the fold's toggle, not on every Settings open"
     )
-    # The render call must be inside the deferred painter, not at top level.
+    # The render call must be inside the delayed painter, not at top level.
     paint_at = body.index("const paint")
     assert body.index("renderMarkdown(") > paint_at, (
         "renderMarkdown still runs eagerly, that is the 21,452 words this guards"
@@ -50,7 +50,7 @@ def test_the_changelog_renders_when_opened_not_when_settings_opens():
 
 def test_the_fetch_stays_eager_because_it_decides_visibility():
     """A packaged build may not ship the changelog file, and a disclosure that
-    opens onto nothing is worse than none. Only the render is deferred."""
+    opens onto nothing is worse than none. Only the render waits."""
     body = _load_changelog_source()
     assert 'apiJson("/changelog"' in body
     assert 'fold.classList.add("hidden")' in body
