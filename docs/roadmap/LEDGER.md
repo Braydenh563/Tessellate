@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 78 | 31 | 2 | 59 | 285 |
+| chat | 176 | 77 | 30 | 2 | 59 | 283 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 452 | 100 | 2 | 183 | 1105 |
+| all | 553 | 451 | 99 | 2 | 183 | 1103 |
 
 ## graph
 
@@ -40,7 +40,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L129** `chat` open, M: Fix avatars.js dashboard/Library timer forced layout and nameMarkBuddyKeepUp cost. From OPEN.md:4424; OPEN.md:4426; INBOX.md:1716. Evidence: No commit or CHANGELOG line names 1667l; timer not re-measured
 - [ ] **L131** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:1083. Evidence: setAtlasMood still in atlas.js; no optimisation commit found
 - [ ] **L132** `chat` open, M: Atlas tail script-drawn 15 draws a second at rest; verify subtle animations cheap. From OPEN.md:1087; OPEN.md:1091. Evidence: atlas-life.js:542 atlasTailRest compositor rest for held states; tail still script-drawn in live acts
-- [ ] **L133** `chat` open, M: Measure learning loop past a test-sized notebook. From OPEN.md:1937. Evidence: No large-notebook measure found; O(notes) pass
 - [ ] **L135** `chat` open, M: Atlas faces at 104/28/20 px do not read as different moods; add cue on figure. From OPEN.md:1070; OPEN.md:1088; OPEN.md:2872; OPEN.md:3764. Evidence: Needs a design/human-rater read of the face sheet; no fix commit found
 - [ ] **L136** `chat` open, M: Chest breath writes torso scale 2.5x/s; settle cost in rest and large view. From OPEN.md:1069; OPEN.md:2869; OPEN.md:1247. Evidence: atlas-life.js atlasBreathFrame still runs on the resting beat (:547); composited rewrite not found
 - [ ] **L137** `chat` open, M: Large view whole-body moves (nmb-hop) move head 2.2x faster than rest; slow them. From OPEN.md:1242; OPEN.md:3492. Evidence: Row says decision needed on slowing; nmb-hop animations unchanged (08-consistency.css:6192).
@@ -109,7 +108,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L238** `chat` partly, M: pointerup 320 ms on button.nm-buddy-face. From INBOX.md:1726. Evidence: 36ecedeb1 band under html: Blend 822-1315 to 136-226 ms; event timing still noisy 40-350 ms
 - [ ] **L241** `chat` partly, M: Name rules 5 and 4 wired only for first hello and dashboard; Guide profile topic lacks 'call me Sam'; no 20-turn eval. From ledger-1112 P27.
 - [ ] **L245** `chat` partly, M: Per-letter recheck; chip code and 'Something sometime' magic add not examined. From ledger-1112 G14.
-- [ ] **L248** `chat` partly, M: chat_pool.py _raw_results uncapped; re-measure composer digest lines on 500 notes. From ledger-1112 P6.
 - [ ] **L249** `chat` partly, L: Finish composer as a smart chatbot after atlas (INBOX 895 part 2). From OPEN.md:583. Evidence: Composer work shipped (CHANGELOG:293, typo_context.py) but no entry names a smart-chatbot step; unclear if complete
 - [ ] **L250** `chat` partly, L: Make composer run skills well. From INBOX.md:904 B69. Evidence: OPEN O7 holds the quality bar; composer acts exist (ai/parity_acts.py, compleft-1110)
 - [ ] **L251** `chat` partly, L: Masculine Atlas redesign: head, eyes, shoulder join and body shape (owner call on direction). From OPEN.md:4323; OPEN.md:4349; OPEN.md:4390; OPEN.md:4391 (+2). Evidence: W34 owner-call (design), w34-unv1-1111.md.
