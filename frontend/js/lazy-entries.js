@@ -323,8 +323,12 @@ function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
   const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
+  //: Calm is asked again in an idle slot, just before the file: a file's eval
+  //: is 50 to 200 ms at 4x CPU, and one that started as a pane opened landed
+  //: inside its first show (graph.js in Settings -> Data, L-world-class-355).
+  const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 0));
   const warmNext = () =>
-    Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
+    Date.now() < calmAt ? setTimeout(warmNext, 600) : idle(() => (Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600))));
   const warm = (event) => {
     //: Typing the password is not the person arriving: the lock screen is over
     //: the page until they are in.
@@ -332,7 +336,8 @@ function warmLibraryAfterInput() {
     calmAt || setTimeout(warmNext);
     calmAt = Date.now() + 2500;
   };
-  for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
+  //: `click` too: a screen reader's activation is a click with no pointerdown.
+  for (const type of ["pointerdown", "keydown", "click"]) window.addEventListener(type, warm, { capture: true, passive: true });
 }
 warmLibraryAfterInput();
 

@@ -94,8 +94,13 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-startClockTicker();
-tickClocks();
+//: **The first paint is a task of its own** (L-world-class-354): it is the
+//: page's first Intl call, about 50 ms of ICU set-up at 4x CPU that no
+//: formatter choice avoids, and inside this file's eval it made one 94 ms
+//: task of the two. `startClockTicker` paints as it starts.
+setTimeout(function firstClockPaint() {
+  startClockTicker();
+}, 0);
 
 window.addEventListener("resize", () => {
   //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and

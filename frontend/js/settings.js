@@ -2570,8 +2570,14 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
 //: Re-measured only when the font or the loaded faces change (INBOX 1415).
-const labelOptics = { key: "" };
+//: **Not before the first frame** (L-world-class-354): the probe's
+//: getBoundingClientRect was the document's first full layout, forced inside
+//: this file's eval (75 of its 99 ms at 4x CPU). Until the first frame has
+//: painted a call does nothing; the frame's own layout is then done, and the
+//: probe costs only itself.
+const labelOptics = { key: "", booted: false };
 function measureLabelOptics() {
+  if (!labelOptics.booted) return;
   const key = `${document.documentElement.dataset.font}${document.fonts?.size}${document.fonts?.status}`;
   if (key === labelOptics.key) return;
   labelOptics.key = key;
@@ -2607,7 +2613,10 @@ function measureLabelOptics() {
   document.documentElement.style.setProperty("--ph-cap-dy", String(Math.round(dy * 1000) / 1000));
 }
 
-measureLabelOptics();
+afterFrames(() => setTimeout(function labelOpticsFirst() {
+  labelOptics.booted = true;
+  measureLabelOptics();
+}, 0), 1);
 document.fonts?.ready?.then(measureLabelOptics);
 
 //: Zoom alone, so a keypress writes one property (INBOX 1415).
@@ -2882,7 +2891,15 @@ function renderAppearance() {
     //: Default is no accent at all, the palette's own: the swatch shows
     //: that, not a fixed hex (owner, 2026-10-12: "the selected one should
     //: match the default colour").
-    button.style.background = accent.name === "indigo" ? themeDefaultAccent() || accent.swatch : accent.swatch;
+    //: The default swatch's colour is a page-wide style read with the accent
+    //: lifted; inside the first show it settled the style of the pane the
+    //: press had just shown (90 of 250 ms at 4x CPU, L-world-class-355). So
+    //: the last colour read (or the stock one) now, the theme's own a frame on.
+    button.style.background = accent.swatch;
+    if (accent.name === "indigo") {
+      button.style.background = themeDefaultAccent.kept?.value || accent.swatch;
+      afterFrames(() => setTimeout(() => (button.style.background = themeDefaultAccent() || accent.swatch)), 1);
+    }
     button.title = accent.label;
     button.setAttribute("aria-label", `${accent.label} accent`);
     // A custom colour wins, so no preset shows as active while it's set.

@@ -1816,11 +1816,20 @@ async function renderDashboard({ refresh = false } = {}) {
   //: The catalogue (app-features.js) loads beside the preferences, for Quick access.
   lazyScript("/js/app-features.js");
   await loadPreferences().catch(() => null);
+  //: A task boundary: `scheduler.yield` where the browser has it (the
+  //: continuation runs ahead of other queued tasks), else a 0 ms timer.
+  const dashYield = () => (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
   renderDashboardGreeting();
+  //: Three tasks, not one (L-world-class-354): the greeting, the menus and
+  //: the grid were 74 ms of one 119 ms boot microtask at 4x CPU. The grid
+  //: below is rebuilt without a pause from `replaceChildren` on, so two
+  //: renders that overlap here still leave one set of cards.
+  await dashYield();
   renderQuickLinks();
   renderDashMore();
   wireDashDensity();
   renderFirstStepsLazy();
+  await dashYield();
   const grid = $("dash-grid");
   const layout = dashLayout();
   const shape = dashGridShape(layout);

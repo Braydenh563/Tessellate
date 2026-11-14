@@ -99,6 +99,16 @@ async function oneRun(browser, rate, traceFile) {
     const bigLoaf = pick.loaf.filter((f) => f.d > BAR && !tasks.some(({ l }) => l === f));
     console.log(`boot forced style+layout (sum over frames): ${Math.round(forced)} ms; frames over ${BAR} ms with no long task: ${bigLoaf.length}`);
     for (const f of bigLoaf) console.log(`  frame ${Math.round(f.d)} ms at ${Math.round(f.s)}: ${attribute(f)}`);
+    //: Per item, the median over the runs (a script's longest LoAF entry in each run, 0 when absent):
+    //: variance is about 40 ms at 4x, so one run's number is not a verdict on one item.
+    const per = new Map();
+    runs.forEach((r, i) => { for (const f of r.loaf) for (const x of f.scripts) {
+      const k = `${x.src.replace(/^https?:\/\/[^/]+\//, '')}:${/^https?:/.test(x.inv || '') ? 'eval' : (x.fn || x.inv || x.type)}`;
+      const row = per.get(k) || Array(runs.length).fill(0); row[i] = Math.max(row[i], x.d); per.set(k, row);
+    } });
+    const med = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+    console.log(`median of the per-run longest long task: ${Math.round(med(runs.map(worst)))} ms; scripts with a median over 30 ms:`);
+    for (const [k, row] of [...per].map(([k, r]) => [k, r]).sort((a, b) => med(b[1]) - med(a[1]))) if (med(row) > 30) console.log(`  ${med(row) > BAR ? 'OVER' : 'under'} ${Math.round(med(row))} ms median (${row.map(Math.round).join(', ')}) ${k}`);
     const ev = pick.event.filter((e) => e.proc > 100);
     for (const e of ev) console.log(`${e.d > 100 ? 'FAIL' : 'PASS'} event ${e.n} ${Math.round(e.d)} ms (handler ${Math.round(e.proc)}) on ${e.t}`);
     if (ev.length) failed += ev.length;
