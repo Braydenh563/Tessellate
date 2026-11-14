@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Shortcuts sheet: the "t then" rows are drawn from the chord tables, so all 17 keys show (10 were typed by hand) (L-world-class-120).
 - Site: the page now says what the README says: with no model notes file by their words and Atlas answers with citations; all six graph layouts named (L-world-class-187).
 - Status dot: a test drives both red paths (server stops answering, search model fails) through the real state function (L-world-class-184).
 - Filing: a test pins that "ai is cool" is never filed or offered under Sketches on the words path (L-world-class-186).

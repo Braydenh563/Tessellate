@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10882, test files 2774, tests 22287, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8496, frontend ids 2781, CSS sections 524, backend routes 712, backend modules 10882, test files 2778, tests 22298, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
-## Frontend functions (8495)
+## Frontend functions (8496)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7182,19 +7182,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyStatsPanel` | frontend/js/reply-kit.js:262 |
 | `replyTimelinePanel` | frontend/js/reply-kit.js:296 |
 
-### frontend/js/reveal-targets.js (23)
+### frontend/js/reveal-targets.js (24)
 
 | Name | File:line |
 |---|---|
 | `buildShortcutList` | frontend/js/reveal-targets.js:722 |
-| `flashRevealed` | frontend/js/reveal-targets.js:826 |
+| `flashRevealed` | frontend/js/reveal-targets.js:860 |
 | `foldedText` | frontend/js/reveal-targets.js:638 |
 | `markNotePassage` | frontend/js/reveal-targets.js:667 |
 | `notePassageFor` | frontend/js/reveal-targets.js:624 |
-| `openShortcuts` | frontend/js/reveal-targets.js:780 |
+| `openShortcuts` | frontend/js/reveal-targets.js:813 |
 | `packagesNoticeOpen` | frontend/js/reveal-targets.js:702 |
 | `packagesNoticeTarget` | frontend/js/reveal-targets.js:688 |
 | `passageRange` | frontend/js/reveal-targets.js:653 |
+| `renderChordShortcutRows` | frontend/js/reveal-targets.js:785 |
 | `renderShortcutList` | frontend/js/reveal-targets.js:710 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
 | `revealBoardsGallery` | frontend/js/reveal-targets.js:541 |
@@ -10003,7 +10004,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openReminders` | frontend/sw.js:181 |
 | `storable` | frontend/sw.js:65 |
 
-## Frontend ids (2780)
+## Frontend ids (2781)
 
 Every `id="..."` in `frontend/index.html`, sorted by id.
 
@@ -11971,6 +11972,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `shadow-intensity-value` | frontend/index.html:12166 |
 | `shortcut-head-whiteboard` | frontend/index.html:16070 |
 | `shortcut-list` | frontend/index.html:16021 |
+| `shortcut-list-chord` | frontend/index.html:16053 |
 | `shortcut-list-documents` | frontend/index.html:16066 |
 | `shortcut-list-documents-note` | frontend/index.html:16067 |
 | `shortcut-list-settings` | frontend/index.html:12931 |
@@ -28035,7 +28037,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22287)
+## Tests (22298)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28080,6 +28082,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ai_mindmap_tools.py | 20 |
 | tests/test_ai_name.py | 9 |
 | tests/test_ai_reach.py | 19 |
+| tests/test_ai_status_error_reachable.py | 5 |
 | tests/test_ai_whiteboard_tools.py | 27 |
 | tests/test_aifix_1031_copy.py | 19 |
 | tests/test_aifix_1031_routes.py | 15 |
@@ -29022,6 +29025,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_docs_perf_1030.py | 11 |
 | tests/test_docs_qw_1102.py | 16 |
 | tests/test_docs_site.py | 11 |
+| tests/test_docs_site_matches_readme.py | 3 |
 | tests/test_docs_ui_1030.py | 2 |
 | tests/test_doctor_offline.py | 4 |
 | tests/test_document_archive.py | 5 |
@@ -29168,6 +29172,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_files_row_summary.py | 11 |
 | tests/test_filetypes.py | 14 |
 | tests/test_filing_accuracy.py | 5 |
+| tests/test_filing_ai_is_cool.py | 1 |
 | tests/test_filing_certainty.py | 18 |
 | tests/test_filing_decision.py | 9 |
 | tests/test_filing_evidence_wired.py | 6 |
@@ -30310,6 +30315,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_shell_zoom_1111.py | 4 |
 | tests/test_shortcut_chip_pencil.py | 3 |
 | tests/test_shortcut_hints.py | 9 |
+| tests/test_shortcut_sheet_chord_rows.py | 2 |
 | tests/test_shortcuts_focus_s58.py | 1 |
 | tests/test_sidebar_head_1311.py | 2 |
 | tests/test_sidebar_peek_head.py | 2 |

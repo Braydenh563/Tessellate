@@ -777,6 +777,39 @@ function buildShortcutList(list) {
   listFilter(list, { label: "Filter shortcuts" })?.refresh();
 }
 
+//: **The "t then" rows come from the chord's own tables** (L-world-class-120:
+//: "the sheet must be generated from the table"). They were typed into the
+//: sheet and listed ten of the chord's keys after the tables had grown to
+//: seventeen; `TAB_JUMP_KEYS` and `CHORD_ACTIONS` are what the keyboard and
+//: the chord guide read, so a key added there is on the sheet too.
+function renderChordShortcutRows(list) {
+  if (!list || typeof TAB_JUMP_KEYS === "undefined" || typeof CHORD_ACTIONS === "undefined") return;
+  const actions = Object.entries(CHORD_ACTIONS);
+  const groups = [
+    ["Go to", Object.entries(TAB_JUMP_KEYS).map(([key, tab]) => [key, tab[0].toUpperCase() + tab.slice(1)]).concat(actions.filter(([, a]) => a.group === "go").map(([key, a]) => [key, a.label]))],
+    ["Do", actions.filter(([, a]) => a.group !== "go").map(([key, a]) => [key, a.label])],
+  ];
+  list.replaceChildren();
+  for (const [verb, rows] of groups) {
+    const li = document.createElement("li");
+    const keys = document.createElement("span");
+    keys.className = "shortcut-keys";
+    const first = document.createElement("kbd");
+    first.textContent = "t";
+    keys.append(first, " then ");
+    rows.forEach(([key], n) => {
+      if (n) keys.append("/");
+      const kbd = document.createElement("kbd");
+      kbd.textContent = key;
+      keys.append(kbd);
+    });
+    const what = document.createElement("span");
+    what.textContent = `${verb}: ${rows.map(([, label]) => label).join(" / ")}`;
+    li.append(keys, what);
+    list.append(li);
+  }
+}
+
 function openShortcuts() {
   surfaceBuild("shortcuts");
   capturingShortcut = null;
@@ -787,6 +820,7 @@ function openShortcuts() {
   //: same table so the two cannot disagree"). documents.js is lazily loaded,
   //: so the section says where its contents are rather than sitting empty
   //: when this dialog is opened before that bundle has ever been fetched.
+  renderChordShortcutRows($("shortcut-list-chord"));
   ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
   const editorList = $("shortcut-list-documents");
   const editorNote = $("shortcut-list-documents-note");
