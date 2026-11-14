@@ -606,6 +606,8 @@ HELP_TOPICS: list[dict] = [
         "id": "storage",
         "keywords": (
             "backup",
+            "auto backup",
+            "backup setting",
             "storage",
             "data dir",
             "where is my",

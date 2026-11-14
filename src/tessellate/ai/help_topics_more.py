@@ -1079,7 +1079,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "lock",
         "keywords": (
-            "auto-lock", "auto lock", "change my password", "reset password",
+            "auto-lock", "auto lock", "lock timeout", "lock setting", "change my password", "reset password",
             "other devices", "on my phone", "another computer", "sessions",
             "lock everywhere", "re-encrypt", "new key", "rotate key",
             "recovery key", "make a recovery key",

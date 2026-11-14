@@ -70,6 +70,8 @@ class Due:
     reminder_id: int
     text: str
     early: bool
+    #: Why it matters: the note the reminder is attached to (CHAT_PLAN 6); "" for none.
+    about: str = ""
 
 
 def _naive_utc(value: datetime) -> datetime:
@@ -97,7 +99,11 @@ def shown_text(session, reminder) -> str:  # noqa: ANN001
 
 
 def due_now(
-    reminders, fired: set[str], now: datetime, private_spaces: frozenset[str] = frozenset()  # noqa: ANN001
+    reminders,  # noqa: ANN001
+    fired: set[str],
+    now: datetime,
+    private_spaces: frozenset[str] = frozenset(),
+    titles: dict[int, str] | None = None,
 ) -> tuple[list[Due], datetime | None]:
     """What to announce at `now` (naive UTC), and the next time anything is due.
 
@@ -114,7 +120,9 @@ def due_now(
                 upcoming.append(at)
             elif key not in fired and now - at <= LOOKBACK:
                 text = PRIVATE_REMINDER if getattr(reminder, "workspace_id", None) in private_spaces else reminder.text
-                fresh.append(Due(key, reminder.id, text, early))
+                private = text == PRIVATE_REMINDER
+                about = "" if private else (titles or {}).get(getattr(reminder, "entry_id", None) or 0, "")
+                fresh.append(Due(key, reminder.id, text, early, about))
     return fresh, min(upcoming, default=None)
 
 
@@ -272,6 +280,18 @@ def _open_reminders(session) -> list:  # noqa: ANN001
     return list(session.scalars(select(Reminder).where(Reminder.done.is_(False)).order_by(Reminder.due_at)))
 
 
+def _entry_titles(session, reminders) -> dict[int, str]:  # noqa: ANN001
+    """The titles of the notes open reminders hang on, for the "About" line."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import Entry
+
+    ids = {r.entry_id for r in reminders if getattr(r, "entry_id", None)}
+    if not ids:
+        return {}
+    return {e.id: e.title for e in session.scalars(select(Entry).where(Entry.id.in_(ids))) if e.title}
+
+
 def _notebook_open(session) -> bool:  # noqa: ANN001
     """Signed in (or no password yet): a locked notebook shows no reminder text."""
     from tessellate.api import routes_auth
@@ -356,7 +376,8 @@ class ReminderNotifier:
             from tessellate.entry import private_space
 
             hidden = frozenset(private_space.private_space_ids(session))
-            fresh, upcoming = due_now(_open_reminders(session), self.store.as_set(), now, hidden)
+            open_now = _open_reminders(session)
+            fresh, upcoming = due_now(open_now, self.store.as_set(), now, hidden, _entry_titles(session, open_now))
         finally:
             session.close()
         if fresh:
@@ -383,7 +404,8 @@ class ReminderNotifier:
         if len(fresh) == 1:
             due = fresh[0]
             title = "Coming up" if due.early else "Reminder"
-            self.post(title, due.text, None if due.early else due.reminder_id)
+            body = f"{due.text}\nAbout {due.about}" if due.about and due.about != due.text else due.text
+            self.post(title, body, None if due.early else due.reminder_id)
         else:
             self.post(APP_NAME, f"{len(fresh)} reminders are due", None)
 

@@ -111,6 +111,11 @@ for _loose in ("tell", "need to", "so", "ask for", "stuff"):
 _SLANG_RE = re.compile(r"(?<![\w'])(" + "|".join(re.escape(s) for s in sorted(_SLANG, key=len, reverse=True)) + r")(?![\w'])", re.I)
 
 
+#: Typed shorthand spelt out by the light rewrite (decision 23: "b4" is "before").
+_SHORT = {"b4": "before", "w/o": "without", "w/": "with", "pls": "please", "thx": "thanks"}
+_SHORT_RE = re.compile(r"(?<![\w/])(" + "|".join(re.escape(k) for k in sorted(_SHORT, key=len, reverse=True)) + r")(?![\w])", re.I)
+
+
 def _like(word: str, made: str) -> str:
     """`made` in the case `word` was typed in."""
     if word.isupper() and len(word) > 1:
@@ -129,6 +134,7 @@ def same(a: str, b: str) -> bool:
 
 
 def _fix_line(line: str) -> str:
+    line = _SHORT_RE.sub(lambda m: _like(m.group(1), _SHORT[m.group(1).lower()]), line)
     line = _NAME_RE.sub(lambda m: m.group(1).capitalize(), line)
     line = _APOSTROPHE_RE.sub(lambda m: _like(m.group(1), _APOSTROPHES[m.group(1).lower()]), line)
     return _DOUBLED.sub(lambda m: m.group(1), line)
