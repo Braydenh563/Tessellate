@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The desk companion's lower streams still trail a fast move but bend at most 4 degrees off the torso (3.5 to 3.7 on a hard-turn run, were 4.1 to 4.9; the 6 px clamp reached 7.2 to 7.7) (L-ui-modernisation-103)
 - The desk companion looks up, or settles with its eyes shut, every 20 to 40 seconds while it reads, writes or knits, instead of holding one picture for minutes (L-ui-modernisation-99, partly)
 - The desk companion's lower wisps and nebula streams sway further at rest, about 2.4 degrees at their tips (were 1.5), and a posed lean stays under 4 degrees (L-ui-modernisation-100)
 - The companion keeps to a sliding panel instead of trailing it by a frame: it leads by the panel's measured speed up to the slide's end, and a slide that starts slow is found at once (L-ui-modernisation-94).
