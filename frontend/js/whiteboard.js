@@ -19166,6 +19166,7 @@ async function initWhiteboard() {
     port.drag = null;
     wbLinkDragActive = false;
     wbClearAnchorHints();
+    wbFmtState.linkEdge?.cue(null);
   };
   containerEl.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
@@ -19207,6 +19208,7 @@ async function initWhiteboard() {
     const hit = wbLinkCandidateAt(x, y, drag.kind, drag.item.id);
     if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
     else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
+    wbFmtState.linkEdge?.cue(hit ? null : [x, y]);
   });
   containerEl.addEventListener("pointermove", (e) => {
     const drag = port.drag;
@@ -21851,9 +21853,11 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
             const hit = hoveredItemAt(live.x, live.y);
             if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], live.x, live.y));
             else wbClearAnchorHints();
+            wbFmtState.linkEdge?.cue(hit ? null : [live.x, live.y], sketch.id);
           })
           .on("end", async () => {
             wbClearAnchorHints();
+            wbFmtState.linkEdge?.cue(null);
             const before = WB_KIND_INFO.sketch.payload(sketch);
             const hit = hoveredItemAt(live.x, live.y);
             const partial = {};

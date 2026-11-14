@@ -42,7 +42,7 @@ const wbSaveSketchProps = async (sketch, partial) => {
   sketch.data = JSON.stringify(parsed);
 };
 const d3 = { zoomTransform: () => ({ k: 1 }) };
-const document = { getElementById: () => ({}) };
+var document = { getElementById: () => ({}) };
 const add = (id, data) => sketches.push({ id, data: JSON.stringify({ type: 'link-straight', ...data }) });
 const dataOf = (id) => JSON.parse(sketches.find((s) => s.id === id).data);
 const L = () => wbFmtState.linkEdge;
@@ -230,3 +230,33 @@ def test_the_interchange_goes_through_the_edge_rules():
     source = frontend_text("whiteboard-interchange.js")
     assert "wbFmtState.linkEdge.keptRows(rows)" in source and "wbFmtState.linkEdge.place(" in source
     assert "?.pinned(stored)" in source, "the draw.io writer reads each connector through the pin"
+
+
+def test_dragging_an_end_over_a_connector_lights_it_and_letting_go_takes_the_cue_away():
+    got = _run(
+        """
+        const made = new Map();
+        const el = (tag) => ({ tag, attrs: {}, kids: [], setAttribute(k, v) { this.attrs[k] = v; }, append(...n) { this.kids.push(...n); }, appendChild(n) { this.kids.push(n); },
+          get firstElementChild() { return this.kids[0]; }, get lastElementChild() { return this.kids[this.kids.length - 1]; }, remove() { made.delete(this.attrs.id); } });
+        const zoom = el('g');
+        document = { getElementById: (id) => (id === 'wb-overlay-zoom-group' ? zoom : made.get(id) || null), createElementNS: (ns, tag) => {
+          const n = el(tag); const set = n.setAttribute.bind(n); n.setAttribute = (k, v) => { set(k, v); if (k === 'id') made.set(v, n); }; return n; } };
+        add(1, { sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 100, y: 0 } });
+        const over = L().cue([25, 4]);
+        const layer = made.get('wb-edge-cue');
+        const lit = layer && { d: layer.kids[0].attrs.d, cx: layer.kids[1].attrs.cx, stroke: layer.kids[0].attrs.stroke };
+        const own = L().cue([25, 4], 1);
+        const gone = !made.get('wb-edge-cue');
+        L().cue([25, 4]);
+        L().cue(null);
+        return { over: over && over.id, lit, own, gone, after: !made.get('wb-edge-cue') };
+        """
+    )
+    assert got["over"] == 1 and got["lit"]["d"] == "M 0 0 L 100 0" and got["lit"]["cx"] == "25" and got["lit"]["stroke"] == "var(--accent)"
+    assert got["own"] is None and got["gone"] is True, "the connector being re-ended is never lit"
+    assert got["after"] is True, "letting go takes the cue away"
+
+
+def test_the_cue_is_wired_into_both_end_drags():
+    board = frontend_text("whiteboard.js")
+    assert board.count("wbFmtState.linkEdge?.cue(") == 4, "the port drag and the end handle, each lit on the way and cleared at the end"

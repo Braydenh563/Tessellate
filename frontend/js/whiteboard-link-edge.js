@@ -169,6 +169,45 @@
     }
   }
 
+  //: The hover cue while an end is dragged: the connector it would attach to is lit in the accent (a wider stroke under
+  //: its own line) with a dot where the end would sit, the way a port is lit for a shape (`wbShowAnchorHints`). `at` is
+  //: the board point under the pointer, or null to take the cue away; `skipId` is the connector being re-ended.
+  //: Returns the hit, so a caller can tell whether the cue is showing.
+  function cue(at, skipId = null) {
+    const NS = "http://www.w3.org/2000/svg";
+    let layer = document.getElementById("wb-edge-cue");
+    const hit = at ? hitAt(at[0], at[1], skipId) : null;
+    if (!hit) {
+      layer?.remove();
+      return null;
+    }
+    const zoomGroup = document.getElementById("wb-overlay-zoom-group");
+    if (!zoomGroup) return hit;
+    if (!layer) {
+      layer = document.createElementNS(NS, "g");
+      layer.setAttribute("id", "wb-edge-cue");
+      layer.setAttribute("pointer-events", "none");
+      const line = document.createElementNS(NS, "path");
+      line.setAttribute("fill", "none");
+      line.setAttribute("stroke", "var(--accent)");
+      line.setAttribute("stroke-opacity", "0.35");
+      line.setAttribute("stroke-width", "8");
+      line.setAttribute("stroke-linecap", "round");
+      const dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("r", "6");
+      dot.setAttribute("fill", "var(--accent)");
+      dot.setAttribute("stroke", "var(--accent)");
+      layer.append(line, dot);
+      zoomGroup.appendChild(layer);
+    }
+    const parsed = wbParsedLink(wbLinkItem("sketch", hit.id));
+    const d = parsed ? lineD(parsed) : null;
+    layer.firstElementChild.setAttribute("d", d || "");
+    layer.lastElementChild.setAttribute("cx", String(hit.x));
+    layer.lastElementChild.setAttribute("cy", String(hit.y));
+    return hit;
+  }
+
   //: Pure (node-tested): the rows of an export narrowed to a selection. `rows` are `wbExportRows` rows (links carry
   //: `link: true` and their data as JSON in `payload.data`). A connector stays when each end is joined to a kept item,
   //: hangs on a kept connector, or is a free end, and at least one end is joined or hangs; a chain of connectors on
@@ -233,5 +272,5 @@
     return out;
   }
 
-  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, keptRows, place, ENDS };
+  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, keptRows, place, cue, ENDS };
 })();
