@@ -15189,7 +15189,8 @@ function docFindingLine(finding, variant = "row") {
   const line = document.createElement("span");
   line.className = `doc-finding-line doc-finding-line-${variant}`;
   const dot = document.createElement("span");
-  dot.className = `doc-finding-dot doc-finding-dot-${docFindingKind(finding)}`;
+  dot.className = "doc-finding-dot";
+  dot.classList.add(`doc-finding-dot-${docFindingKind(finding)}`);
   dot.setAttribute("aria-hidden", "true");
   const words = document.createElement("span");
   words.className = "doc-finding-words";

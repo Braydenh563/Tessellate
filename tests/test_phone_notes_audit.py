@@ -99,11 +99,12 @@ def test_the_command_palette_carries_the_notes_rows():
     ):
         assert label in rows, label
     # The palette's row shape (`docPaletteCommands`): group, label, run.
-    #: Six, then three more for Tidy (INBOX 691): the reviews, and two by name.
-    assert rows.count("group: ") == rows.count("run: ") == 9
+    #: Six, then three more for Tidy (INBOX 691): the reviews, and two by name;
+    #: then two for the note in hand (L693): ask Atlas about it, file it again.
+    assert rows.count("group: ") == rows.count("run: ") == 11
     # Every run waits for Enter's keypress to finish, or a sheet that focuses
     # its first row takes that keypress as a press on the row.
-    assert rows.count("run: paletteLater(") == 9
+    assert rows.count("run: paletteLater(") == 11
     assert "filterNotesByTag(tag)" in rows
     assert "chooseNoteCategory(ids," in rows and "openManageCategories()" in rows
     assert "openBulkTags(ids)" in rows and "openTagsSheet()" in rows
