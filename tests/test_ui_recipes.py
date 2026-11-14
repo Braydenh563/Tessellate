@@ -6310,7 +6310,7 @@ _SURFACE_BOUND = {
 _ROWS_BOUND = {
     "chat-edit.js": ".msg-edit textarea",
     "gesture-kit.js": ".answer-editor textarea",
-    "whiteboard.js": ".wb-comments-box",
+    "whiteboard-comments.js": ".wb-comments-box",
 }
 
 
@@ -6446,7 +6446,7 @@ PANEL_FIXED_JS = {
     "whiteboard-export.js": "the export dialog, moved from whiteboard.js with its anchored panel",
     "whiteboard-format.js": "an anchored panel",
     "whiteboard-map.js": "anchored map panels",
-    "whiteboard.js": "anchored board panels",
+    "whiteboard-comments.js": "anchored board panels",
 }
 
 

@@ -12,6 +12,10 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-frames.js", //: After whiteboard.js: frame creation, painting and turning; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-comments.js", //: After whiteboard.js: item comments and links; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-locks.js", //: After whiteboard.js: locks, hidden items and keep-ratio; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
     //: The New board dialog and every template's picture (INBOX 715).

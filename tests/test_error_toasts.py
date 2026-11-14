@@ -194,6 +194,9 @@ EXPECTED = {
         '"A summary covers topics side by side under one parent."',
         '"That time has gone: pick a later due date for a reminder."',
     ],
+    'whiteboard-comments.js': [
+        '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
+    ],
     'whiteboard-export.js': [
         '"There is nothing in the outline to build."',
         '"That file is empty."',
@@ -201,7 +204,6 @@ EXPECTED = {
     ],
     'whiteboard.js': [
         '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
-        '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
         '"The default board cannot change kind. Make a new board to start a mind map."',
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
