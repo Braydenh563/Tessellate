@@ -1,5 +1,5 @@
-// chat-ghost.js: grey ghost text in the chat box (decision 69, L-chat-141), preloaded
-// with the quickNote bundle. No model, nothing fetched: tags, titles and recent
+// chat-ghost.js: grey ghost text in the chat box, the capture bar, the capture card's body and
+// the quick note (decision 69, L-chat-141, L-chat-156), preloaded with the quickNote bundle. No model, nothing fetched: tags, titles and recent
 // searches; Tab or Right takes it, typing or Escape drops it ("Suggest as you type").
 (() => {
   const CHAT_GHOST_MIN = 3;
@@ -36,6 +36,10 @@
     }
     return "";
   }
+
+  //: The boxes that complete. The ghost sits inside a dialog or the capture card when the box is in
+  //: one: a modal's top layer hides a span appended to the body (measured, L-chat-156).
+  const CHAT_GHOST_BOXES = "#chat-input, #quick-note-text, #capture-card-body, .capture-bar-input";
 
   function chatGhostHide() {
     chatGhost.rest = "";
@@ -82,29 +86,34 @@
 
   function openChatGhost(input) {
     if (chatGhost.input === input) return chatGhostPlace();
+    chatGhost.el?.remove();
     chatGhost.input = input;
     chatGhost.el = document.createElement("span");
     chatGhost.el.className = "search-suggest-ghost chat-ghost hidden";
     chatGhost.el.setAttribute("aria-hidden", "true");
-    document.body.append(chatGhost.el);
-    input.addEventListener("input", chatGhostPlace);
-    input.addEventListener("click", chatGhostPlace);
-    input.addEventListener("blur", chatGhostHide);
-    input.addEventListener("keydown", (event) => {
+    (input.closest("dialog, .capture-card") || document.body).append(chatGhost.el);
+    if (input.dataset.ghostWired) return chatGhostPlace();
+    input.dataset.ghostWired = "1";
+    //: A box that is not the open one has no ghost to place, so its listeners ignore it.
+    const mine = (fn) => (event) => chatGhost.input === input && fn(event);
+    input.addEventListener("input", mine(chatGhostPlace));
+    input.addEventListener("click", mine(chatGhostPlace));
+    input.addEventListener("blur", mine(chatGhostHide));
+    input.addEventListener("keydown", mine((event) => {
       if (event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Tab" || event.key === "ArrowRight") chatGhostAccept(event);
       else if (event.key === "Escape" && chatGhost.rest) {
         event.stopPropagation();
         chatGhostHide();
       }
-    }, true);
+    }), true);
     chatGhostPlace();
   }
 
   //: No exports: the module opens itself on the box's focus (preloaded with the quickNote bundle, app.js).
   document.addEventListener("focusin", (event) => {
-    if (event.target.id === "chat-input") openChatGhost(event.target);
+    if (event.target.matches?.(CHAT_GHOST_BOXES)) openChatGhost(event.target);
   });
-  if (document.activeElement?.id === "chat-input") openChatGhost(document.activeElement);
+  if (document.activeElement?.matches?.(CHAT_GHOST_BOXES)) openChatGhost(document.activeElement);
   if (typeof window.__chatGhostTest === "object") window.__chatGhostTest.rest = chatGhostRest;
 })();
