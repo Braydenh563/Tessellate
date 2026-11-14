@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8507, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11059, test files 2875, tests 22691, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8507, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11060, test files 2875, tests 22693, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8507)
 
@@ -14152,7 +14152,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11059)
+## Backend modules (11060)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18711,30 +18711,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `offer` | src/tessellate/ai/needle_control.py:60 |
 | `validate` | src/tessellate/ai/needle_control.py:104 |
 
-### src/tessellate/ai/needle_provider.py (20)
+### src/tessellate/ai/needle_provider.py (21)
 
 | Name | File:line |
 |---|---|
-| `NeedleProvider` | src/tessellate/ai/needle_provider.py:363 |
+| `NeedleProvider` | src/tessellate/ai/needle_provider.py:374 |
 | `_Engine` | src/tessellate/ai/needle_provider.py:104 |
-| `_calls_before` | src/tessellate/ai/needle_provider.py:309 |
-| `_cleaned_arguments` | src/tessellate/ai/needle_provider.py:275 |
-| `_cleaned_calls` | src/tessellate/ai/needle_provider.py:255 |
-| `_date_fact` | src/tessellate/ai/needle_provider.py:197 |
+| `_calls_before` | src/tessellate/ai/needle_provider.py:320 |
+| `_cleaned_arguments` | src/tessellate/ai/needle_provider.py:286 |
+| `_cleaned_calls` | src/tessellate/ai/needle_provider.py:266 |
+| `_date_fact` | src/tessellate/ai/needle_provider.py:202 |
+| `_engine_calls` | src/tessellate/ai/needle_provider.py:260 |
 | `_folder` | src/tessellate/ai/needle_provider.py:93 |
-| `_get_engine` | src/tessellate/ai/needle_provider.py:164 |
+| `_get_engine` | src/tessellate/ai/needle_provider.py:169 |
 | `_load_library` | src/tessellate/ai/needle_provider.py:99 |
-| `_names_a_tool` | src/tessellate/ai/needle_provider.py:246 |
-| `_said_by_one` | src/tessellate/ai/needle_provider.py:339 |
-| `_said_by_tools` | src/tessellate/ai/needle_provider.py:288 |
-| `_text` | src/tessellate/ai/needle_provider.py:186 |
-| `_usable_schemas` | src/tessellate/ai/needle_provider.py:355 |
+| `_names_a_tool` | src/tessellate/ai/needle_provider.py:251 |
+| `_said_by_one` | src/tessellate/ai/needle_provider.py:350 |
+| `_said_by_tools` | src/tessellate/ai/needle_provider.py:299 |
+| `_text` | src/tessellate/ai/needle_provider.py:191 |
+| `_usable_schemas` | src/tessellate/ai/needle_provider.py:366 |
 | `library_name` | src/tessellate/ai/needle_provider.py:84 |
-| `loaded` | src/tessellate/ai/needle_provider.py:175 |
-| `request_of` | src/tessellate/ai/needle_provider.py:240 |
-| `reset_for_tests` | src/tessellate/ai/needle_provider.py:181 |
-| `shortlist` | src/tessellate/ai/needle_provider.py:213 |
-| `voice_now` | src/tessellate/ai/needle_provider.py:328 |
+| `loaded` | src/tessellate/ai/needle_provider.py:180 |
+| `request_of` | src/tessellate/ai/needle_provider.py:245 |
+| `reset_for_tests` | src/tessellate/ai/needle_provider.py:186 |
+| `shortlist` | src/tessellate/ai/needle_provider.py:218 |
+| `voice_now` | src/tessellate/ai/needle_provider.py:339 |
 
 ### src/tessellate/ai/neighbours.py (3)
 
@@ -24992,73 +24993,73 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BulkState` | src/tessellate/core/extras.py:1190 |
-| `Bundle` | src/tessellate/core/extras.py:1054 |
+| `BulkState` | src/tessellate/core/extras.py:1191 |
+| `Bundle` | src/tessellate/core/extras.py:1055 |
 | `Extra` | src/tessellate/core/extras.py:363 |
-| `InstallState` | src/tessellate/core/extras.py:1142 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2379 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:2205 |
-| `_busy` | src/tessellate/core/extras.py:1954 |
-| `_canonical` | src/tessellate/core/extras.py:1493 |
-| `_claim` | src/tessellate/core/extras.py:1942 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1670 |
-| `_dispatch` | src/tessellate/core/extras.py:1960 |
-| `_extra_size` | src/tessellate/core/extras.py:1031 |
-| `_finish_bulk` | src/tessellate/core/extras.py:2258 |
-| `_forget_footprints` | src/tessellate/core/extras.py:1373 |
+| `InstallState` | src/tessellate/core/extras.py:1143 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2380 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:2206 |
+| `_busy` | src/tessellate/core/extras.py:1955 |
+| `_canonical` | src/tessellate/core/extras.py:1494 |
+| `_claim` | src/tessellate/core/extras.py:1943 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1671 |
+| `_dispatch` | src/tessellate/core/extras.py:1961 |
+| `_extra_size` | src/tessellate/core/extras.py:1032 |
+| `_finish_bulk` | src/tessellate/core/extras.py:2259 |
+| `_forget_footprints` | src/tessellate/core/extras.py:1374 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:259 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1758 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1731 |
-| `_install_refusal` | src/tessellate/core/extras.py:2039 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1688 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1759 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1732 |
+| `_install_refusal` | src/tessellate/core/extras.py:2040 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1689 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:195 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2294 |
-| `_no_build` | src/tessellate/core/extras.py:1409 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2295 |
+| `_no_build` | src/tessellate/core/extras.py:1410 |
 | `_pip_base_command` | src/tessellate/core/extras.py:316 |
 | `_pip_platforms` | src/tessellate/core/extras.py:280 |
 | `_pip_reason` | src/tessellate/core/extras.py:102 |
 | `_python_candidates` | src/tessellate/core/extras.py:171 |
-| `_read_footprint` | src/tessellate/core/extras.py:1328 |
-| `_release_captions_helper` | src/tessellate/core/extras.py:2031 |
-| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1498 |
-| `_requirement_name` | src/tessellate/core/extras.py:1487 |
-| `_requirements_path` | src/tessellate/core/extras.py:1656 |
-| `_roll_back` | src/tessellate/core/extras.py:1699 |
-| `_run_bulk` | src/tessellate/core/extras.py:2168 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:2232 |
-| `_run_download_install` | src/tessellate/core/extras.py:1886 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1928 |
-| `_run_install` | src/tessellate/core/extras.py:1799 |
-| `_run_single` | src/tessellate/core/extras.py:1981 |
-| `_run_uninstall` | src/tessellate/core/extras.py:1565 |
+| `_read_footprint` | src/tessellate/core/extras.py:1329 |
+| `_release_captions_helper` | src/tessellate/core/extras.py:2032 |
+| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1499 |
+| `_requirement_name` | src/tessellate/core/extras.py:1488 |
+| `_requirements_path` | src/tessellate/core/extras.py:1657 |
+| `_roll_back` | src/tessellate/core/extras.py:1700 |
+| `_run_bulk` | src/tessellate/core/extras.py:2169 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:2233 |
+| `_run_download_install` | src/tessellate/core/extras.py:1887 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:1929 |
+| `_run_install` | src/tessellate/core/extras.py:1800 |
+| `_run_single` | src/tessellate/core/extras.py:1982 |
+| `_run_uninstall` | src/tessellate/core/extras.py:1566 |
 | `_spell_pack_extras` | src/tessellate/core/extras.py:434 |
-| `_status_row` | src/tessellate/core/extras.py:1268 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:2198 |
+| `_status_row` | src/tessellate/core/extras.py:1269 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:2199 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:245 |
-| `bulk` | src/tessellate/core/extras.py:1392 |
-| `bulk_label` | src/tessellate/core/extras.py:2162 |
-| `bulk_status` | src/tessellate/core/extras.py:1377 |
-| `bundles` | src/tessellate/core/extras.py:1297 |
-| `cancel` | src/tessellate/core/extras.py:1434 |
-| `current` | src/tessellate/core/extras.py:1430 |
-| `download_mb` | src/tessellate/core/extras.py:1040 |
-| `download_ready` | src/tessellate/core/extras.py:2391 |
+| `bulk` | src/tessellate/core/extras.py:1393 |
+| `bulk_label` | src/tessellate/core/extras.py:2163 |
+| `bulk_status` | src/tessellate/core/extras.py:1378 |
+| `bundles` | src/tessellate/core/extras.py:1298 |
+| `cancel` | src/tessellate/core/extras.py:1435 |
+| `current` | src/tessellate/core/extras.py:1431 |
+| `download_mb` | src/tessellate/core/extras.py:1041 |
+| `download_ready` | src/tessellate/core/extras.py:2392 |
 | `find_system_python` | src/tessellate/core/extras.py:133 |
-| `footprint` | src/tessellate/core/extras.py:1305 |
+| `footprint` | src/tessellate/core/extras.py:1306 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:223 |
-| `install_blocking` | src/tessellate/core/extras.py:2352 |
-| `installed_bytes` | src/tessellate/core/extras.py:1358 |
-| `is_installed` | src/tessellate/core/extras.py:1221 |
-| `legacy_engine` | src/tessellate/core/extras.py:2090 |
-| `on_release` | src/tessellate/core/extras.py:2025 |
-| `removal_locked` | src/tessellate/core/extras.py:1396 |
-| `remove` | src/tessellate/core/extras.py:2052 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:2101 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2343 |
-| `start` | src/tessellate/core/extras.py:1988 |
-| `start_bulk` | src/tessellate/core/extras.py:2114 |
-| `status` | src/tessellate/core/extras.py:1249 |
-| `unavailable_reason` | src/tessellate/core/extras.py:1413 |
+| `install_blocking` | src/tessellate/core/extras.py:2353 |
+| `installed_bytes` | src/tessellate/core/extras.py:1359 |
+| `is_installed` | src/tessellate/core/extras.py:1222 |
+| `legacy_engine` | src/tessellate/core/extras.py:2091 |
+| `on_release` | src/tessellate/core/extras.py:2026 |
+| `removal_locked` | src/tessellate/core/extras.py:1397 |
+| `remove` | src/tessellate/core/extras.py:2053 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:2102 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2344 |
+| `start` | src/tessellate/core/extras.py:1989 |
+| `start_bulk` | src/tessellate/core/extras.py:2115 |
+| `status` | src/tessellate/core/extras.py:1250 |
+| `unavailable_reason` | src/tessellate/core/extras.py:1414 |
 
 ### src/tessellate/core/filetypes.py (6)
 
@@ -28330,7 +28331,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22691)
+## Tests (22693)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29489,7 +29490,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_1030.py | 17 |
 | tests/test_extras_bundles.py | 30 |
 | tests/test_extras_desktop_locked.py | 5 |
-| tests/test_extras_download.py | 26 |
+| tests/test_extras_download.py | 27 |
 | tests/test_extras_inplace_progress.py | 5 |
 | tests/test_f13_ek_1110.py | 4 |
 | tests/test_f7_pool_moves.py | 3 |
@@ -30113,7 +30114,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_nav_overlay_entries.py | 6 |
 | tests/test_ndjson_one_reader_l170.py | 2 |
 | tests/test_needle_control_1026.py | 9 |
-| tests/test_needle_provider.py | 17 |
+| tests/test_needle_provider.py | 18 |
 | tests/test_needle_shortlist.py | 3 |
 | tests/test_neighbours_1018.py | 9 |
 | tests/test_nested_interactive.py | 12 |
@@ -31632,14 +31633,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:744 |
+| Needs hardware | docs/roadmap/LEDGER.md:746 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:729 |
+| Owner calls | docs/roadmap/LEDGER.md:731 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31820,7 +31821,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:932 |
+| Plan session briefs | docs/roadmap/LEDGER.md:934 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31874,25 +31875,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:948 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1032 |
-| documents | docs/roadmap/LEDGER.md:313 |
-| documents | docs/roadmap/LEDGER.md:972 |
-| general | docs/roadmap/LEDGER.md:688 |
+| chat | docs/roadmap/LEDGER.md:950 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1034 |
+| documents | docs/roadmap/LEDGER.md:315 |
+| documents | docs/roadmap/LEDGER.md:974 |
+| general | docs/roadmap/LEDGER.md:690 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:936 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1044 |
+| graph | docs/roadmap/LEDGER.md:938 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1046 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:329 |
-| mindmap | docs/roadmap/LEDGER.md:984 |
-| timeline | docs/roadmap/LEDGER.md:450 |
-| timeline | docs/roadmap/LEDGER.md:1008 |
-| ui-modernisation | docs/roadmap/LEDGER.md:333 |
-| ui-modernisation | docs/roadmap/LEDGER.md:996 |
-| whiteboard | docs/roadmap/LEDGER.md:266 |
-| whiteboard | docs/roadmap/LEDGER.md:960 |
-| world-class | docs/roadmap/LEDGER.md:452 |
-| world-class | docs/roadmap/LEDGER.md:1020 |
+| mindmap | docs/roadmap/LEDGER.md:331 |
+| mindmap | docs/roadmap/LEDGER.md:986 |
+| timeline | docs/roadmap/LEDGER.md:452 |
+| timeline | docs/roadmap/LEDGER.md:1010 |
+| ui-modernisation | docs/roadmap/LEDGER.md:335 |
+| ui-modernisation | docs/roadmap/LEDGER.md:998 |
+| whiteboard | docs/roadmap/LEDGER.md:268 |
+| whiteboard | docs/roadmap/LEDGER.md:962 |
+| world-class | docs/roadmap/LEDGER.md:454 |
+| world-class | docs/roadmap/LEDGER.md:1022 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

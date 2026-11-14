@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The needle engine is cactus_runtime 4.1.0 (cactus_ C API, suppressed calls read, Windows wheels included): 40-case bench 0.85 to 0.875 tool accuracy, p50 67.9 s to 12.4 s (2026-11-14).
 - The speculative warm test proves the background load without a wall-clock bound (2026-11-14).
 - Chat scope: thirteen open_scan hits that were history or decisions reworded (2026-11-14).
 - The NDJSON stream reader loads on first use (ndjson-read.js), bringing the boot scripts back under the gzip cap (2026-11-14).
