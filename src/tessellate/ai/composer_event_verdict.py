@@ -65,7 +65,7 @@ def apply(question: str, reply: dict | None, today: date) -> dict | None:
 
 
 #: Words that make "are we meeting on Tuesday" a question about the day, not about a named thing.
-_GENERIC = frozenset("are we am i will do have is there be an a the any meeting meetings meet meeting call calls sync catch up catch-up".split())
+_GENERIC = frozenset("are we am i will do have is there be an a the any meeting meetings meet meeting call calls sync catch up catch-up go going to".split())
 _MEETING = re.compile(r"\b(?:meeting|meetings|sync|call|catch-?up|stand-?up|1:1|interview)\b", re.I)
 
 
