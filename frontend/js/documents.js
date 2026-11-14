@@ -8847,7 +8847,27 @@ function noteSurfaceExtensions(CM, host, options) {
   //: `readOnly` only refuses the person's input.
   host.noteReadOnlyExtensions = (on) => (on ? [CM.state.EditorState.readOnly.of(true), CM.view.EditorView.editable.of(false)] : []);
   host.noteReadOnlySlot = new CM.state.Compartment();
+  //: **Find and replace inside a note** (L-world-class-127): the edit form's
+  //: box and the graph's note popup carry the document's own search panel, so
+  //: Ctrl+F finds in the note being written rather than the page around it,
+  //: and Ctrl+H opens on the replace field (the document's chord). A capture
+  //: box is a line or two and keeps the page find.
+  const finds = host.id === "entry-edit-content" || host.id === "graph-popup-content";
+  const findKeys = finds
+    ? [
+        {
+          key: "Mod-h",
+          run: (view) => {
+            CM.search.openSearchPanel(view);
+            view.dom.querySelector(".cm-search input[name=replace]")?.focus();
+            return true;
+          },
+        },
+        ...CM.search.searchKeymap,
+      ]
+    : [];
   return [
+    ...(finds ? [CM.search.search({ top: true })] : []),
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
@@ -8888,6 +8908,7 @@ function noteSurfaceExtensions(CM, host, options) {
       //: the one card being edited.
       ...(Array.isArray(host.noteSurfaceKeys) ? host.noteSurfaceKeys : []),
       ...noteSurfaceKeymap(host),
+      ...findKeys,
       ...CM.commands.historyKeymap,
       ...CM.commands.defaultKeymap,
     ]),
@@ -8915,9 +8936,10 @@ function noteSurfaceName(host) {
 //: `doc-content`, so Ctrl+B in a note would have emboldened a word in
 //: whatever document was last open, and Ctrl+S would have saved it. The
 //: helpers underneath all take a box id or a surface already, so this is the
-//: same four actions with this box named. Ctrl+S and Ctrl+F are deliberately
-//: absent: a note has no find panel and saving one is the form's business,
-//: which the app's own global chord already handles.
+//: same four actions with this box named. Ctrl+S is deliberately absent:
+//: saving a note is the form's business, which the app's own global chord
+//: already handles. Ctrl+F is the search panel's, on the boxes that carry one
+//: (`noteSurfaceExtensions`).
 function noteSurfaceKeymap(host) {
   const surface = () => noteSurfaceFor(host) || textareaSurface(host);
   return [

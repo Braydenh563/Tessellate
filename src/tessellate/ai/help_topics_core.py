@@ -533,7 +533,7 @@ HELP_TOPICS: list[dict] = [
             "Cmd works in place of Ctrl. A button with a "
             "shortcut shows it in its tooltip, in your own binding. Everywhere: Ctrl+K "
             "the command palette, Ctrl+P find anything, Ctrl+F find on this "
-            "page, / jump to search (the chat box on Chat), Ctrl+Z undo, "
+            "page (inside a note you are editing, in that note), / jump to search (the chat box on Chat), Ctrl+Z undo, "
             "Ctrl+Shift+Z redo (on a phone, More then Commands opens the "
             "palette), Alt+Left and Alt+Right back and forward, a double-click "
             "on Notes or Library in the top bar back to its first sub-tab, Ctrl+, "
