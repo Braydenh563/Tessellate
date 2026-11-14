@@ -44,3 +44,14 @@ def test_collapsed_doc_dock_icons_are_as_wide_as_the_row_is_tall_372():
     css = _css("library-lazy.css")
     assert "flex: 0 0 var(--target-min);" not in css[css.index("container: docdock") :]
     assert css.count("flex: 0 0 max(var(--control-h), var(--target-min));") >= 3
+
+
+def test_graph_zoom_buttons_follow_the_control_token_with_no_px_override_373():
+    """33.6px at 1440 is 2rem under a larger text size, not a 34px literal:
+    the only size rules are the token formula and the phone floor."""
+    base = _rule(_css("02-chat-graph.css"), ".graph-zoom-btn")
+    assert "width: max(var(--control-h-lg), var(--target-min))" in base
+    assert "height: max(var(--control-h-lg), var(--target-min))" in base
+    for name in sorted(p.name for p in CSS_DIR.glob("*.css")):
+        for m in re.finditer(r"[^{}]*graph-zoom[^{}]*\{([^}]*)\}", _css(name)):
+            assert not re.search(r"(?:width|height):\s*\d+(?:\.\d+)?px", m.group(1)), name
