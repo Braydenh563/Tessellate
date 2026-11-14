@@ -24,6 +24,14 @@ def test_source_text_the_capture_pins_the_rig_to_its_still_path() -> None:
     assert 'rig.lower.state = ""' in RENDER
 
 
+def test_source_text_the_streams_redraw_is_held_at_its_drawn_shapes() -> None:
+    """Source text: "the same every run": the streams' own redraw (`atlasRigLower.morph`, INBOX 1709) runs from a clock that
+    starts at random, so the capture stops it and puts the drawn shapes back (1,800 to 4,400 px apart below the waist)."""
+    assert "clearTimeout(m.timer); m.timer = 0;" in RENDER
+    assert "real.morph.rest(rig.lower);" in RENDER
+    assert "atlasRigLower.morph.rest = (low) => {" in LIFE
+
+
 def test_source_text_the_still_path_is_the_first_row_and_no_drift() -> None:
     """Source text: "the app's first authored row": not live, the rig picks row 0 and runs no drift path; the wrap reaches
     the rig only through the window binding atlas-motion.js calls."""

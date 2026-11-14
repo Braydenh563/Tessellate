@@ -183,6 +183,10 @@ async function steadyShot(page, file, clip) {
         window.atlasRigLower = Object.assign((rig, now, live, buddy) => real(rig, now, false, buddy), real);
         const rig = [...clone.querySelectorAll("*")].map((el) => el.atlasRig).find((r) => r && r.lower);
         if (rig) { rig.lower.state = ""; rig.lower.last = {}; }
+        //: The streams' own redraw (`atlasRigLower.morph`, INBOX 1709) bends every path from a clock that starts at random: held at
+        //: the drawn shapes, or two captures of one frame differ by 1,800 to 4,400 px below the waist. The desk bends them itself.
+        const m = rig && rig.lower.morph;
+        if (m) { clearTimeout(m.timer); m.timer = 0; if (typeof atlasTailCalm === "function" && atlasTailCalm.rest) atlasTailCalm.rest.wake.delete(m.wake); real.morph.rest(rig.lower); }
       }
       new MutationObserver(() => {
         for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n) && !(n === "data-side" && window.__keepSide)) clone.removeAttribute(n);
