@@ -265,7 +265,7 @@ def _note_summary(
     session: Session, entry: Entry, chars: int = PREVIEW_CHARS, dates: list | None = None
 ) -> dict:
     """What the model gets back about a note, enough to talk about it
-    and to reference it in follow-up tool calls.
+    and to reference it in later tool calls.
 
     `dates` lets a caller looping over many rows (`list_notes`,
     `_summarize_notes`) pass in a pre-fetched, batched lookup instead of

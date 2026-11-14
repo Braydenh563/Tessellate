@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 class Helpers(NamedTuple):
     """What `commands.py` lends the planners: its card, confirm line, note
-    item and title, and the "Not done" line."""
+    item and title, and the `commands.not_done` line."""
 
     card: object
     confirm: object

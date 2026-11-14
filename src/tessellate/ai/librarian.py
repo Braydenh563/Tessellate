@@ -110,7 +110,7 @@ SYSTEM_PROMPT = f"{DEFAULT_PERSONA} {GROUNDING}"
 # `GROUNDING` alone produces a perfectly grounded answer in the wrong *shape*:
 # it ends "Would you like me to…", because that is what a chat assistant does
 # and nothing had told this surface it isn't one. The results panel beside the
-# answer already offers every follow-up the user could want, opening a note,
+# answer already offers every next step the user could want, opening a note,
 # a similar note, the note's own links: so an offer to do more here is a
 # question the UI has already answered, taking up the space the overview
 # should be using.
@@ -306,7 +306,7 @@ def length_hint(mode: str | None) -> str:
     return presets.resolve(mode).length_hint
 
 
-# Follow-up memory (Round 1): keep the conversation short enough that a
+# Memory of earlier turns (Round 1): keep the conversation short enough that a
 # small local model never runs out of context. Only recent turns matter,
 # and a long past answer gets clipped.
 MAX_HISTORY_TURNS = 4
@@ -335,7 +335,7 @@ def history_messages(history: list[dict] | None) -> list[dict]:
     """The recent turns as chat messages, oldest first.
 
     One clipping rule for every chat path, conversational, grounded and
-    agent: so a follow-up behaves the same wherever it lands: old answers
+    agent: so a later question behaves the same wherever it lands: old answers
     are clipped hard, the latest one travels nearly whole (see
     LAST_ANSWER_CHARS).
     """
@@ -753,7 +753,7 @@ def build_messages(
     `history` is prior [{"question", "answer"}] turns, replayed as
     user/assistant messages so follow-ups ("and what about…") keep
     context. The freshly retrieved `notes` still ground the current
-    answer, so a follow-up searches the notebook anew.
+    answer, so a later question searches the notebook anew.
 
     `budget` is what stops this prompt overrunning the model's window.
     ``ai/context.py`` was written for exactly this and then only ever wired

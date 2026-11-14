@@ -1262,7 +1262,7 @@ def _put_back(value, pairs: list[tuple[str, str, bool]]):  # noqa: ANN001, ANN20
 def _as_typed(found: dict, text: str, fixed: str, fixes: list) -> dict:
     """The person's own words back in the act (audit 1028 E9, 1029 C40):
     "delte my uni note" names their category Uni, not "university", and "add
-    uni fees to the todo list" writes "Uni fees". The speller served the verb."""
+    uni fees to the to-do list" writes "Uni fees". The speller served the verb."""
     pairs = _respellings(text, fixed, fixes)
     if not pairs:
         return found
@@ -1591,7 +1591,7 @@ def _skipped_said(skip: dict) -> str:
 
 
 def not_done(skipped: list[dict]) -> str:
-    """"Not done: note 12 (it is private)." for the notes a change left."""
+    """One line naming each note a change left, with why ("note 12 (it is private)")."""
     if not skipped:
         return ""
     said = [_skipped_said(s) for s in skipped]
@@ -1688,7 +1688,7 @@ def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) 
     """The plan that appends a task to a note called that ("add milk to my
     to-do list"), or None when no note is."""
     if parsed.get("on_list") and not parsed.get("time_given"):
-        #: "add buy stamps to my todo": a line on the note called that, or one offered (R3-33).
+        #: "add buy stamps to my to-do": a line on the note called that, or one offered (R3-33).
         return task_acts.plan_task_line(session, parsed, _card, lambda note: note_title(note.content, size=48), _confirm)
     #: "add milk to my to-do list" when a note is called that: the note
     #: gets the line, as before tasks were acts (E10).
@@ -1894,7 +1894,7 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
         #: its label is a card that waits for Confirm or a typed yes, said as one.
         planned["line"] = _confirm(card["label"])
     if parsed.get("leftover") and planned.get("card"):
-        #: A second request on the end of a rename is said back, not done or dropped.
+        #: A second request on the end of a rename is said back, neither carried out nor dropped.
         planned = {**planned, "line": f"{planned['line']} Then say “{parsed['leftover']}” and I will plan that next."}
     return planned
 
@@ -2178,7 +2178,7 @@ def _the_list_note(session: Session, parsed: dict, note_ids: list[int] | None, q
 
 def _new_list_offer(session: Session, parsed: dict) -> dict | None:
     """One rule for every list add (the owner's Q6): it asks first. "add milk to the shopping list" with no such
-    note offers to make that note with the item on it, as a missing todo note does (`task_acts.plan_task_line`);
+    note offers to make that note with the item on it, as a missing to-do note does (`task_acts.plan_task_line`);
     None when the place is no list or some note answers to it (the question of which one stands)."""
     listed = _LIST_NAME.match((parsed.get("about") or "").strip())
     if not listed or _notes_about(session, parsed["about"], False):
@@ -2363,7 +2363,7 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
 def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a confirmed card's steps: {"summary", "undo", "open"?, "ok"}.
 
-    Every step is tried even when one fails, and each failure is a "Not done"
+    Every step is tried even when one fails, and each failure is a `not_done` entry
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """

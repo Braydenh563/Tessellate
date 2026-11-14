@@ -762,7 +762,7 @@ def _prompt_for(
         )
     #: A greeting, thanks, "who are you" or "that didn't help" matches no
     #: topic, and the rule above then had the model say it was not sure
-    #: (INBOX 1414 follow-up). The offline reply is the model's brief.
+    #: (INBOX 1414, second round). The offline reply is the model's brief.
     social = social_reply(question)
     if social:
         messages.append(
@@ -908,7 +908,7 @@ def _beyond(question: str) -> dict:
 
 
 def social_reply(question: str) -> dict | None:
-    """The Guide's reply to a greeting, thanks, complaint or open question
+    """The Guide's reply to a greeting, thanks, complaint or free-form question
     about itself, or None for a question about the app."""
     text = (question or "").strip()
     if _GREETING.match(text):
@@ -1077,7 +1077,7 @@ def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | Non
 
 def with_asks(reply: dict) -> dict:
     """`reply` with every question its text suggests as a chip that asks the
-    Guide (INBOX 1497: "if it suggests a follow up question, I want a button
+    Guide (INBOX 1497: "if it suggests a next question, I want a button
     to one click ask"). The sentence may stay; the chip is the action. A reply
     that already carries its own asks (what to ask in Chat) is left alone."""
     from tessellate.ai import ask_chips

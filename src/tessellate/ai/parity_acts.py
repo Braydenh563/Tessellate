@@ -248,7 +248,7 @@ def _source_note(session: Session, parsed: dict, note_ids: list[int] | None, hel
         return helpers["resolve_one"](session, None, note_ids, True, None)
     about = re.sub(r"\s+note$", "", src, flags=re.I)
     found = helpers["resolve_one"](session, about, note_ids, False, None)
-    #: The speller reads "todo" as "to do" before this sees it; a note titled Todo (or To-do) is looked up as typed.
+    #: The speller reads the one-word spelling as "to do" before this sees it; a note with the one-word or hyphenated title is looked up as typed.
     for spelling in ("todo", "to-do"):
         if found[0] is None and re.search(r"\bto do\b", about, re.I):
             found = helpers["resolve_one"](session, re.sub(r"\bto do\b", spelling, about, flags=re.I), note_ids, False, None)

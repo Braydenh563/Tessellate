@@ -32,7 +32,7 @@ _INTENT = re.compile(
     r")\b",
     re.IGNORECASE,
 )
-#: A nudge with no "I": "must book the venue", "need to call", "todo: ..." at the
+#: A nudge with no "I": "must book the venue", "need to call", a bare to-do marker at the
 #: head of a sentence (G10). "must have been" is a guess about the past, not a task.
 _BARE_HEAD = re.compile(
     r"^(?:must(?!\s+(?:have|be|not)\b)|need to(?!\s+know\b)|have to|to-?do\s*:|todo\s*:)\s*",

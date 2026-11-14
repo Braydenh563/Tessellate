@@ -9,7 +9,7 @@ on your own.
 This is the same idea for the turn you just read: two or three short questions
 the answer itself opens up, offered as chips under it.
 
-Three rules shape the whole module, and all three exist because a bad follow-up
+Three rules shape the whole module, and all three exist because a bad suggested question
 is worse than none:
 
 - **It never blocks the answer.** Generating these is a second model call. It
@@ -112,7 +112,7 @@ def _clean(line: str) -> str:
     if not text or _PREAMBLE.match(text):
         return ""
     # Question-shaped or request-shaped. Without one of these, headings
-    # ("Follow-up questions"), sign-offs and stray commentary all pass, and a
+    # (a "questions" heading), sign-offs and stray commentary all pass, and a
     # chip that is neither does not belong under an answer.
     if not (text.endswith("?") or _IMPERATIVE.match(text)):
         return ""
@@ -158,7 +158,7 @@ def suggest_followups(
     model_manager: ModelManager,
     ollama: OllamaClient,
 ) -> list[str]:
-    """Follow-up questions for one answered turn, or ``[]``.
+    """The suggested questions for one answered turn, or ``[]``.
 
     ``[]`` on every failure path, offline, transport error, an unusable
     reply: because there is no honest error state for this. A row of chips

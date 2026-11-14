@@ -62,7 +62,7 @@ class Known:
 
 
 def known(session) -> Known:  # noqa: ANN001
-    """The verdicts on notes the person can still open (`facts._visible`)."""
+    """The verdicts on notes the person can reach (`facts._visible`)."""
     from sqlalchemy import select
 
     from tessellate.ai import facts

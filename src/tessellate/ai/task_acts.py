@@ -99,7 +99,7 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     found = reminder(f"remind me to {words} {tail}".strip())
     if not found:
         return None
-    #: "to my todo" names a list, so a task without a time is a line on it (R3-33).
+    #: a to-do list named after "to my" names a list, so a task without a time is a line on it (R3-33).
     return {**found, "task": True, "asked": text, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
@@ -276,9 +276,9 @@ _MARK_UNDONE = re.compile(rf"^(?:mark|set|flag)\s+(?P<rest>.+?)\s+(?:as |to be |
 
 
 def read_uncomplete(text: str) -> dict | None:
-    """The done task a sentence reopens ("untick bread", "mark the passport as
-    not done"), as {"intent": "uncomplete", "about", "kind"?}, or None. Read
-    before `read_complete`, whose "mark X ... done" would take "not done" as
+    """The done task a sentence reopens ("untick bread", or a mark with a negated state
+    ), as {"intent": "uncomplete", "about", "kind"?}, or None. Read
+    before `read_complete`, whose "mark X ... done" would take the negation as
     the end of the name."""
     found = _UNTICK.match(text.strip()) or _MARK_UNDONE.match(text.strip())
     if not found:
@@ -738,12 +738,12 @@ def undo_step(name: str, args: dict) -> dict | None:
 
 
 
-#: A note a "todo" is added to: its title, as a person names the list.
+#: A note a to-do item is added to: its title, as a person names the list.
 _TODO_TITLE = re.compile(r"^(?:my |the )?(?:to-?do|to do|tasks?|check-?list)(?: list)?s?$", re.IGNORECASE)
 
 
 def todo_note(session: Session):  # noqa: ANN201
-    """The newest note called todo, to-do, tasks or checklist, or None."""
+    """The newest note titled by one of `_TODO_TITLE`'s names, or None."""
     from tessellate.core.database import Entry
 
     rows = session.scalars(
@@ -753,7 +753,7 @@ def todo_note(session: Session):  # noqa: ANN201
 
 
 def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict:  # noqa: ANN001
-    """"add buy stamps to my todo": a checklist line on the note called todo,
+    """The add-to-my-to-do ask: a checklist line on the to-do note,
     run at once with Undo; no such note is offered, never a reminder time asked
     (R3-33). `card` is `commands._card`, `confirm` its Confirm line."""
     from tessellate.ai import act_steps

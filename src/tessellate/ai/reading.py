@@ -220,7 +220,7 @@ def tool_of(text: str, reading: Reading) -> str | None:
 def _resolving(body):  # noqa: ANN001, ANN202
     """`body` (the one reading), with the tool the reading reaches named
     (`tool_of`). With `context["turns"]` (the chat's last turns, {"text",
-    "objects"?}), a spoken follow-up ("and delete it", "same for Tuesday",
+    "objects"?}), a spoken reference ("and delete it", "same for Tuesday",
     "the other one") is read as the sentence it stands for (`follow`), and
     says so (decision 59, steps 1 and 3)."""
 
@@ -377,13 +377,13 @@ def repair(reading: Reading | None, *, error: str | None = None, composed: str |
     return Repair("no_match", lead + commands.CAPABILITY_LINE)
 
 
-#: The reading without the follow-up step, for the turns a follow-up leans on.
+#: The reading without the reference step, for the turns a reference leans on.
 _read = read.__wrapped__
 
 
 # --- spoken follow-ups over the last turns (decision 59, step 3; decision 58's context) ----
 
-#: How many turns back a follow-up may lean (decision 58: the last five).
+#: How many turns back a spoken reference may lean (decision 58: the last five).
 FOLLOW_TURNS = 5
 
 #: "undo that" right after a tick (composer-r6 E7): the tick taken back, in words.
@@ -401,7 +401,7 @@ _TOO = r"^(?:and |also )?(?:the )?(?P<x>.+?)(?: note)? (?:too|as well)$"
 _OWN_SUBJECT = r"\b(?:about|called|named|titled|regarding|concerning)\s+\S"
 
 
-#: The verbs a follow-up says about the note just answered with (audit 1029
+#: The verbs a spoken reference says about the note just answered with (audit 1029
 #: C44): "open it", "tell me more about that", "remind me about it".
 _REFER_HEAD = (r"(?:delete|bin|pin|unpin|open|show(?: me)?|summari[sz]e|rename|move|tag|untag|read|explain|link|unlink|compare|"
                r"tell me more about|more about|remind me about|what(?:'s| is) in|what does)")
@@ -528,28 +528,28 @@ def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
     line about the keys)."""
     from tessellate.ai import commands
 
-    done = commands.read(str(turn.get("text") or ""), now)
-    inverse = _INVERSE.get(done["intent"]) if done else None
+    ran = commands.read(str(turn.get("text") or ""), now)
+    inverse = _INVERSE.get(ran["intent"]) if ran else None
     try:
-        said = inverse(done) if inverse else _put_back(done)
+        said = inverse(ran) if inverse else _put_back(ran)
     except KeyError:
         said = None
     return (said, "undo") if said else None
 
 
-def _put_back(done: dict | None) -> str | None:
+def _put_back(ran: dict | None) -> str | None:
     """A rename or a move said back as the sentence that restores the old title or category: the old value
     is not in the sentence typed, so it comes from the log of Undo steps the cards kept (L-chat-29, 33)."""
     from tessellate.ai import consent_store
 
-    if not done or done["intent"] not in ("rename", "move"):
+    if not ran or ran["intent"] not in ("rename", "move"):
         return None
-    named = {w for w in re.findall(r"[a-z0-9]+", str(done.get("about") or "").lower()) if w not in ("note", "the", "my")}
+    named = {w for w in re.findall(r"[a-z0-9]+", str(ran.get("about") or "").lower()) if w not in ("note", "the", "my")}
     for kept in consent_store.undo_log():  # newest first: the last act, then the ones before it, across a restart
         words = set(re.findall(r"[a-z0-9]+", str(kept["title"]).lower()))
-        if done.get("note_id") not in (None, kept["note_id"]) or (not done.get("note_id") and not named <= words):
+        if ran.get("note_id") not in (None, kept["note_id"]) or (not ran.get("note_id") and not named <= words):
             continue
-        if done["intent"] == "move":
+        if ran["intent"] == "move":
             return f"move note {kept['note_id']} to {kept['category'] or 'Uncategorised'}"
         return f"rename note {kept['note_id']} to {kept['title']}"
     return None
@@ -593,7 +593,7 @@ def _day_phrase(new, old) -> str:  # noqa: ANN001
 
 
 def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str] | None:
-    """A spoken follow-up resolved against the last `FOLLOW_TURNS` turns
+    """A spoken reference resolved against the last `FOLLOW_TURNS` turns
     (each {"text", "objects"?}, oldest first): (the sentence it stands for,
     the kind: "again", "other", "pronoun", "date", "subject"), or None for a
     sentence that stands on its own. Dates are `recognise` spans, never read
