@@ -61,6 +61,8 @@ PHRASES: dict[str, str] = {
     "closest_a": "The closest your notes come is this: ",
     "closest_b": "Nothing here says it outright. The nearest is: ",
     "going_by": "Going by your notes",
+    "not_that": "Not that I can see, but a note says: ",
+    "only_plan": "Only as a plan: ",
     # A question that could mean two notes: answered by the likelier, then
     # asked which was meant.
     "clarify_a": "Did you mean ",

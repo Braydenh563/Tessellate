@@ -318,6 +318,13 @@ def _mode(sentence: str, local_start: int, quoted: list) -> str:
     return "asserted"
 
 
+def sentence_mode(sentence: str) -> str:
+    """The assertion mode of a whole sentence, for a reader that answers yes or no from it."""
+    if any(w.strip(",.") in _NEGATORS for w in sentence.lower().split()):
+        return "negated"
+    return "conditional" if _IF.search(sentence) else "hypothetical" if _HEDGES.search(sentence) else "asserted"
+
+
 def _object(sentence: str, start: int) -> tuple[int, str]:
     """An event's object: the words after the verb up to a time or place
     phrase or a clause break; a bare "to the gym" after a motion verb when

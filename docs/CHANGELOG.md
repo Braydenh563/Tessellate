@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat composer: a negated sentence opens a yes or no as "Not that I can see, but a note says:" and a plan as "Only as a plan:" (2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).
 - Chat plan: tag my gym notes #fitness and save the summary as a note are read as acts; X and C probes close eight rows (2026-11-14).
 - Chat plan: Answering probes A1 to A23 added; eleven rows closed on them, the rest carry their measured failure (2026-11-14).

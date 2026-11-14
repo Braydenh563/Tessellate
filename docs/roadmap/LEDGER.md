@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 135 | 2 | 59 | 210 |
+| chat | 0 | 75 | 133 | 2 | 59 | 208 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 204 | 2 | 183 | 1012 |
+| all | 359 | 449 | 202 | 2 | 183 | 1010 |
 
 ## graph
 
@@ -77,8 +77,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-66** `chat` partly, S: U3: taxonomy concept sets not verified. From CHAT_PLAN.md:1213. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_tables.py:801, :1294 VERB_NOUN_PAIRS Measured 2026-11-14: verb-noun pairs and repair are covered by the U1/U3 probes (tests/test_uax_probes_u_1114.py); the concept sets (sport, food, travel as one term) are not: 'gym' does not find a note that says only 'swimming'. Remaining step: a small concept table in composer_tables.py read by _fit_terms.
 - [ ] **L-chat-70** `chat` partly, S: U8: pronoun-by-type references unverified. From CHAT_PLAN.md:1218. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869 class Dialogue Measured 2026-11-14: 'she' and 'he' bind through page-echoed frames (person) only; 'there' and 'then' carry no place or day from the previous answer. Remaining step: add place and day to the Dialogue frame in composer_dialogue.py and read them in follow_on.
 - [ ] **L-chat-73** `chat` partly, S: U11: over-time and superlative compares not found (guess). From CHAT_PLAN.md:1221. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_body.py:481 _compare_lead Measured 2026-11-14: 'compare this month with last month' has no per-window reader; _compare_lead (composer_body.py) compares two named things only. Remaining step: a window pair in composer_notes._window and a count per window.
-- [ ] **L-chat-76** `chat` partly, S: U14: yes/no reading of mode unverified. From CHAT_PLAN.md:1224. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/factgraph.py:45 MODES, :317 hypothetical Measured 2026-11-14: compose('did I go to the gym') with the note 'If it rains I would go to the gym instead.' answers 'Your notes say this: If it rains you would go to the gym instead.'; with 'I did not go to the gym on Monday.' it quotes the negation as the lead. factgraph.MODES is read by no composer*.py. Remaining step: in composer_body._opener_options (yesno branch) take the sentence's factgraph mode and open 'Not that I can see, but a note says:' for negated and 'Only as a plan:' for hypothetical/conditional; test first in tests/test_uax_probes_u_1114.py.
-- [ ] **L-chat-81** `chat` partly, S: A4: see U14. From CHAT_PLAN.md:1237. Evidence: Recount 2026-11-14 (audit, verify in code first): see U14 Follows L-chat-76 (U14): the mode gate in the yesno opener closes both.
 - [ ] **L-chat-83** `chat` partly, S: A6: span line unverified. From CHAT_PLAN.md:1239. Evidence: Recount 2026-11-14 (audit, verify in code first): composer timeline (_timeline) Measured 2026-11-14: 'from when to when did I write about the garden' answers one note with its age; no 'from March to September, 9 notes' line exists. Remaining step: in composer_notes add a measured span line (first and last dated note, count) to the topic and status shapes when 3 or more dated notes match; test first.
 - [ ] **L-chat-84** `chat` partly, S: A7: see U11. From CHAT_PLAN.md:1240. Evidence: Recount 2026-11-14 (audit, verify in code first): see U11 Follows L-chat-73 (U11): the window-pair compare closes both.
 - [ ] **L-chat-88** `chat` partly, S: A11: as-of from a parameter only (plan). From CHAT_PLAN.md:1244. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/timetravel.py Measured 2026-11-14: 'what changed this week' is answered from note dates (ten notes made, grouped by day), but as_of still comes from the request parameter in routes_chat, not from 'what did my plan say last month'. Remaining step: read the window through recognise_windows in routes_chat and pass it as as_of to timetravel.rewind.

@@ -188,3 +188,36 @@ def test_u15_why_takes_the_because_sentence_and_how_keeps_the_order():
     assert "because your knee hurt" in why, why
     how = composer.compose("how do I make the bread", notes, today=TODAY688)["text"]
     assert how.index("Mix the flour") < how.index("Rest for an hour") < how.index("Bake at 230C"), how
+
+
+# --- U14 and A4: a negated or hypothetical sentence never answers a yes/no as asserted ---------------
+
+def _yesno(note: str, question: str = "did I go to the gym") -> str:
+    from tessellate.ai import composer
+
+    return composer.compose(question, [_note(1, f"# Week\n\n{note}", 3)], today=TODAY688)["text"]
+
+
+def test_u14_a_negated_sentence_opens_as_not_that_i_can_see():
+    said = _yesno("I did not go to the gym on Monday.")
+    assert said.startswith("Not that I can see, but a note says:"), said
+
+
+def test_u14_a_hypothetical_sentence_opens_as_only_a_plan():
+    said = _yesno("If it rains I would go to the gym instead.")
+    assert said.startswith("Only as a plan:"), said
+    assert _yesno("I might go to the gym later.").startswith("Only as a plan:")
+
+
+def test_u14_an_asserted_sentence_keeps_its_going_by_opener():
+    said = _yesno("I went to the gym on Monday.")
+    assert not said.startswith(("Not that I can see", "Only as a plan")), said
+
+
+def test_u14_factgraph_modes_are_read_by_the_composer():
+    from tessellate.ai import factgraph
+
+    assert factgraph.sentence_mode("I did not go to the gym.") == "negated"
+    assert factgraph.sentence_mode("If it rains I would go.") == "conditional"
+    assert factgraph.sentence_mode("I might go.") == "hypothetical"
+    assert factgraph.sentence_mode("I went to the gym.") == "asserted"
