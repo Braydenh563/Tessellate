@@ -172,7 +172,7 @@ const SPY = () => {
     // Where the figure is now, and only if it is what a click there would reach (a dialog or the companion may be over it).
     let head = null;
     for (let tries = 0; tries < 10 && !head; tries += 1) {
-      head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); if (f.contains(top) || top?.closest?.('.nm-viewer-figure')) return [x, y]; window.__blocked = (top ? top.tagName + '#' + top.id + '.' + String(top.className).slice(0, 60) : 'none') + ' @' + Math.round(x) + ',' + Math.round(y) + ' fig ' + Math.round(r.width) + 'x' + Math.round(r.height); return null; });
+      head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); if (f.contains(top) || top?.closest?.('.nm-viewer-figure')) return [x, y]; window.__blocked = (top ? [top, top.parentElement, top.parentElement?.parentElement].map((e) => e ? e.tagName + '#' + e.id + '.' + String(e.className).slice(0, 40) : '').join(' < ') + ' text=' + (top.textContent || '').slice(0, 30) : 'none') + ' @' + Math.round(x) + ',' + Math.round(y) + ' fig ' + Math.round(r.width) + 'x' + Math.round(r.height); return null; });
       if (!head) await sleep(300);
     }
     if (head) { landed += 1; await page.mouse.click(head[0], head[1]); }
