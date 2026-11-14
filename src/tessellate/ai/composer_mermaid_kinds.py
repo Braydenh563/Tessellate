@@ -50,17 +50,12 @@ def _title(rows: list[tuple[str, int, bool, str]]) -> str:
     return head
 
 
-def _items(text: str, lines) -> list[str]:  # noqa: ANN001
-    from tessellate.ai import composer_mermaid as cm
-
-    return cm.steps(text) or [w for k, d, _n, w in lines if k == "item" and d == 1]
+def _items(lines: list, steps: list[str]) -> list[str]:
+    return steps or [w for k, d, _n, w in lines if k == "item" and d == 1]
 
 
-def gantt(text: str, today: date) -> str | None:
-    from tessellate.ai import composer_mermaid as cm
-
-    lines = cm._lines(text)
-    items = _items(text, lines)
+def gantt(text: str, lines: list, steps: list[str], today: date) -> str | None:
+    items = _items(lines, steps)
     if len(items) < 2:
         return None
     iso = _ISO.search(text or "")
@@ -80,10 +75,7 @@ def gantt(text: str, today: date) -> str | None:
     return "\n".join(out) + "\n"
 
 
-def pie(text: str) -> str | None:
-    from tessellate.ai import composer_mermaid as cm
-
-    lines = cm._lines(text)
+def pie(text: str, lines: list, steps: list[str]) -> str | None:
     slices = []
     for kind, _d, _n, words in lines:
         if kind == "heading":
@@ -105,10 +97,8 @@ def pie(text: str) -> str | None:
     return "\n".join([head, *(f'    "{name}" : {value}' for name, value in slices[:MAX_ROWS])]) + "\n"
 
 
-def state(text: str) -> str | None:
-    from tessellate.ai import composer_mermaid as cm
-
-    items = _items(text, cm._lines(text))
+def state(text: str, lines: list, steps: list[str]) -> str | None:
+    items = _items(lines, steps)
     if len(items) < 2:
         return None
     names = [_plain(i) or f"State {n}" for n, i in enumerate(items[:MAX_ROWS], 1)]
@@ -118,13 +108,11 @@ def state(text: str) -> str | None:
     return "\n".join(out) + "\n"
 
 
-def _sections(text: str) -> tuple[list[tuple[str, list[str]]], list[tuple[str, str, str]]]:
+def _sections(lines: list) -> tuple[list[tuple[str, list[str]]], list[tuple[str, str, str]]]:
     """([(name, members)], [(from, verb, to)]): a heading with its bullets, or "Name: a, b" lines; and "A has many B"."""
-    from tessellate.ai import composer_mermaid as cm
-
     found: list[tuple[str, list[str]]] = []
     links: list[tuple[str, str, str]] = []
-    for kind, _d, _n, words in cm._lines(text):
+    for kind, _d, _n, words in lines:
         if kind == "heading":
             found.append((words, []))
         elif kind == "item" and found:
@@ -153,8 +141,8 @@ def _member(words: str) -> str:
     return f"{_plain(typed.group(1), 30)}: {_plain(typed.group(2), 20)}" if typed and _plain(typed.group(1), 30) and _plain(typed.group(2), 20) else _plain(words, 40)
 
 
-def klass(text: str) -> str | None:
-    found, links = _sections(text)
+def klass(text: str, lines: list, steps: list[str]) -> str | None:
+    found, links = _sections(lines)
     named = [(_ident(name), members) for name, members in found if _ident(name)]
     if len(named) < 2 and not (named and named[0][1]):
         return None
@@ -186,8 +174,8 @@ def _norm(word: str) -> str:
     return {"integer": "int", "bool": "boolean", "text": "string"}.get(word.lower(), word.lower())
 
 
-def er(text: str) -> str | None:
-    found, links = _sections(text)
+def er(text: str, lines: list, steps: list[str]) -> str | None:
+    found, links = _sections(lines)
     named = [(_ident(name).upper(), members) for name, members in found if _ident(name)]
     if len(named) < 2 and not (named and named[0][1]):
         return None

@@ -26,6 +26,8 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai.composer_ask import user_today
+
 MAX_NODES = 16
 #: The most of a note the line readers look at: a diagram shows 16 boxes, and the cap bounds every pattern's work (CodeQL, PR 234).
 INPUT_CHARS = 50_000
@@ -488,14 +490,16 @@ _SAID = {"flowchart": "a flowchart", "timeline": "a timeline", "mindmap": "a min
 def _kind(shape: str, text: str, today: date) -> Diagram | None:
     from tessellate.ai import composer_mermaid_kinds as kinds
 
-    source = kinds.gantt(text, today) if shape == "gantt" else getattr(kinds, {"class": "klass"}.get(shape, shape))(text)
+    # The readers are passed in, so the kinds module never imports this one (no cycle).
+    read = (text, _lines(text), steps(text))
+    source = kinds.gantt(*read, today) if shape == "gantt" else getattr(kinds, {"class": "klass"}.get(shape, shape))(*read)
     return Diagram(shape, source, source.count("\n") - 1) if source else None
 
 
 def _drawn(text: str, want: str | None, today: date | None = None) -> tuple[Diagram | None, str]:
     """The diagram of the shape asked for, else the first shape the text has."""
     if want in _NEEDS:
-        made = _kind(want, text, today or date.today())
+        made = _kind(want, text, today or user_today())
         if made is not None:
             return made, ""
         wished = want
