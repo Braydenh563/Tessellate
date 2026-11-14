@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 144 | 29 | 3 | 10 | 173 |
+| world-class | 0 | 143 | 29 | 3 | 10 | 172 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 535 | 100 | 5 | 121 | 1040 |
+| all | 405 | 534 | 100 | 5 | 121 | 1039 |
 
 ## graph
 
@@ -577,7 +577,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
 - [ ] **L-world-class-97** `world-class` open, S: Leave guard for a board mid-drag (22.1.4). From WORLD_CLASS_PLAN.md:2264. Evidence: WORLD_CLASS_PLAN.md:2264 'a board mid-drag, which has no such flag yet'
-- [ ] **L-world-class-99** `world-class` open, S: Queue or refuse a write while the server is unreachable, with the banner's message (22.1.6). From WORLD_CLASS_PLAN.md:2275. Evidence: WORLD_CLASS_PLAN.md:2275 'queuing or refusing a write ... while it is up' left
 - [ ] **L-world-class-101** `world-class` open, S: First run: a prompt to choose a backup folder (22.1.8). From WORLD_CLASS_PLAN.md:2280. Evidence: WORLD_CLASS_PLAN.md:2283 'a first-run prompt to choose a backup folder'
 - [ ] **L-world-class-102** `world-class` open, S: Audit Ctrl+S and Ctrl+Z in every editor and dialog. From WORLD_CLASS_PLAN.md:2290. Evidence: WORLD_CLASS_PLAN.md:2290 'not audited'
 - [ ] **L-world-class-103** `world-class` open, M: Right-click, and a hold on touch, on every card and row. From WORLD_CLASS_PLAN.md:2292. Evidence: 38 contextmenu sites, not every card (:2292)

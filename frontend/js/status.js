@@ -1383,14 +1383,16 @@ const SERVER_DOWN_RETRY_MIN_MS = 3000;
 const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
+//: Answers the banner's words, which `api()` also gives a write it refuses while this is up (L-world-class-99).
 function showServerDownBanner() {
-  if (serverDownNote && serverDownNote.isConnected) return; // already up
+  const message = "Can't reach Tessellate. Retrying…";
+  if (serverDownNote && serverDownNote.isConnected) return message; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent = "Can't reach Tessellate. Retrying…";
+  text.textContent = message;
   const button = document.createElement("button");
   button.className = "small toast-action";
   button.textContent = "Retry";
@@ -1398,6 +1400,7 @@ function showServerDownBanner() {
   note.append(text, toastActions(button), toastCloseButton(note, null));
   toastStack(box, () => box.appendChild(note));
   serverDownNote = note;
+  return message;
 }
 
 function noteServerDown() {

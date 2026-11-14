@@ -2000,12 +2000,7 @@ mobile first, as the owner's web design class teaches. Measured with
    chat mid-stream (2026-10-11, `chatMidStream`). Left: a board mid-drag, which
    has no such flag yet: LEDGER L-world-class-97.
 5. ~~**Two windows, one note.**~~ Built 2026-09-27 for the note form and the document editor, and 2026-11-14 for the lightbox file text, the graph's tag edit and the card's Remove image (HISTORY.md, "Moved from the plans, 2026-11-14 (22.1 items 5, 6, 8)").
-6. **The server can go away.** Built 2026-09-27: a persistent banner
-   ("Can't reach MemoryMap. Retrying...") with a Retry action, raised by
-   `api()`'s own network-error catch and cleared by the next successful
-   request or a backoff poll against `/health` (HISTORY.md, "Moved from the
-   plans, 2026-09-27"). Left: queuing or refusing a write with the same
-   message while it is down: LEDGER L-world-class-99.
+6. ~~**The server can go away.**~~ Built 2026-09-27 (the banner) and 2026-11-14 (a write is refused with the banner's message while it is up; HISTORY.md, "Moved from the plans, 2026-11-14 (22.1 items 5, 6, 8)").
 7. ~~**No screen-reader pass, ever.**~~ **Built apart from a real screen reader:** one `<main id="app-main">` (was three), the axe-core sweep (`scratchpad/ui-sweeps/axe.js`, run by `all.sh` when axe-core is at `AXE_JS`; 0 findings at 1440 in both themes), the main landmark, separator values and editor names fixed by it (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)"). **Not verified:** no session has driven the app with an actual screen reader. A real screen reader: LEDGER L-world-class-100 (hardware).
 8. **Data safety is there but hidden.** Backups exist
    (`routes_backups.py`), revisions exist (`EntryRevision`), export exists,

@@ -371,6 +371,13 @@ async function api(path, options = {}) {
     fetchOptions.signal = fetchOptions.signal || controller.signal;
   }
   let response;
+  //: A write while the banner is up is refused, with its words, not sent (22.1 item 6): a TypeError, as a dropped
+  //: connection is, so held notes still queue. Reads, sign-in and `/health` go on (how the app sees the server return).
+  //: `serverUnreachable` (status.js) is read last: a request made at load, before that file runs, never gets to it.
+  if (fetchOptions.method && !/^(GET|HEAD)$/.test(fetchOptions.method) && !readOnly && !path.startsWith("/auth/") && !path.startsWith("/health") && serverUnreachable) {
+    retryServerNow();
+    throw new TypeError(showServerDownBanner());
+  }
   //: Rule 4: a network-level failure of a read (GET, HEAD) retries itself
   //: twice, 300 then 600 ms apart, before anything is said; `api.retries`
   //: counts them. A write is never resent: it may have arrived.
@@ -416,7 +423,7 @@ async function api(path, options = {}) {
       noteServerDown();
     }
     //: "Failed to fetch" and its kin go to the log above; the toast gets a sentence.
-    if (networkErr instanceof TypeError) networkErr.message = "Tessellate is not answering. Is it still running?";
+    if (networkErr instanceof TypeError) networkErr.message = showServerDownBanner();
     throw networkErr;
   } finally {
     if (timer) clearTimeout(timer);
