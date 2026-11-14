@@ -891,69 +891,6 @@
    in 00-tokens-shell.css. A row of chips that each rise 2px with a shadow was
    the other half of the "pills" tell (INBOX 394 h), and the cards above had
    already given up the lift for the reason their own comment gives. */
-/* ======================= SKILLS TAB ======================= */
-/* Columns dealt by script in reading order (library.js `renderSkillCards`,
-   INBOX 450), each a stack on the grid's own gap, so a card is as tall as
-   its own content and no taller: a grid row stretched a short card's row to
-   its tallest neighbour and left the gap under it. */
-.skills-grid {
-  display: flex;
-  gap: var(--space-5);
-  margin-top: var(--space-6);
-  /* Each column sizes to its own cards: opening one card's steps grows that
-     card and its column, never a neighbour (the reason the grid once had
-     `align-items: start`, which still left the row's height behind). */
-  align-items: flex-start;
-}
-.skill-card {
-  --skill-fact-h: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--inner);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
-}
-@media (hover: hover) {
-  .skill-card:hover,
-  .skill-card:is(:focus-visible, :has(:focus-visible)) {
-    border-color: var(--accent);
-  }
-}
-.skill-card-header {
-  display: flex;
-  justify-content: space-between;
-}
-.skill-card-title {
-  margin: 0;
-  font-weight: 600;
-}
-/* Which kind of skill this is. "Yours" rather than "Custom": the distinction
-   that matters to a reader is whether they can edit it. */
-.skill-badge {
-  flex: 0 0 auto;
-}
-/* **What running this will actually do**, steps, tools, inputs. The card
-   used to carry a name and a description and nothing else, which is not
-   enough to decide whether to let something edit your notebook. */
-.skill-card-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-.skill-fact {
-  font-size: var(--text-xs);
-}
-/* Both margins were for a search box that sat on its own between two cards.
-   It is in the Skills dock now, where `.dock`'s own gaps place it and
-   `.dock input` zeroes the margin, so only the width behaviour is left to
-   say: search takes the leftover width, the same as every other dock's. */
-.skills-search {
-  margin: 0;
-}
 textarea.drag-over {
   border-color: var(--accent);
   background-color: var(--inner);

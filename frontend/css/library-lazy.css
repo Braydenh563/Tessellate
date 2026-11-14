@@ -13,6 +13,181 @@
    with belong here: new surfaces (a map's outline and markers, a picture's
    grip in Live, the print step), not overrides of boot rules. */
 
+/* --- the Skills tab, moved from 07-whiteboard-misc.css and 08-consistency.css (L-world-class-232): the
+   rules only a skill card draws, in the order the boot sheets had them (07, then 08), ahead of this file's own
+   rules as they were ahead of them in the cascade --- */
+
+/* ======================= SKILLS TAB ======================= */
+/* Columns dealt by script in reading order (library.js `renderSkillCards`,
+   INBOX 450), each a stack on the grid's own gap, so a card is as tall as
+   its own content and no taller: a grid row stretched a short card's row to
+   its tallest neighbour and left the gap under it. */
+.skills-grid {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  /* Each column sizes to its own cards: opening one card's steps grows that
+     card and its column, never a neighbour (the reason the grid once had
+     `align-items: start`, which still left the row's height behind). */
+  align-items: flex-start;
+}
+.skill-card {
+  --skill-fact-h: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--inner);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
+}
+@media (hover: hover) {
+  .skill-card:hover,
+  .skill-card:is(:focus-visible, :has(:focus-visible)) {
+    border-color: var(--accent);
+  }
+}
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+}
+.skill-card-title {
+  margin: 0;
+  font-weight: 600;
+}
+/* Which kind of skill this is. "Yours" rather than "Custom": the distinction
+   that matters to a reader is whether they can edit it. */
+.skill-badge {
+  flex: 0 0 auto;
+}
+/* **What running this will actually do**, steps, tools, inputs. The card
+   used to carry a name and a description and nothing else, which is not
+   enough to decide whether to let something edit your notebook. */
+.skill-card-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.skill-fact {
+  font-size: var(--text-xs);
+}
+/* Both margins were for a search box that sat on its own between two cards.
+   It is in the Skills dock now, where `.dock`'s own gaps place it and
+   `.dock input` zeroes the margin, so only the width behaviour is left to
+   say: search takes the leftover width, the same as every other dock's. */
+.skills-search {
+  margin: 0;
+}
+/* **One row of facts, one height, one baseline** (INBOX 450). Every fact in
+   the row, the plain chips ("Reads only", "1 input") and the two toggles
+   ("3 steps", "4 tools"), is a `--skill-fact-h` box with its words centred,
+   so the row has one top, one bottom and one baseline. Before, a 20px chip
+   stood beside 22px `<details>` whose summaries sat 2px lower, and an open
+   one put its list inside the row and pushed the next fact under it. The
+   toggles are buttons now (library.js) and open a panel below the row.
+   One step of padding a side and the row's own gap, so the four facts a
+   card can carry fit a 311px card on one line. */
+.skill-card .skill-card-facts > :is(.chip, button).skill-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--skill-fact-h);
+  min-height: var(--skill-fact-h);
+  margin: 0;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+/* The caret says which way it will go, by turning, never by colour alone. */
+.skill-card .skill-fact-toggle > .ph-trail {
+  margin-inline-start: 0;
+  transition: rotate var(--ui-base) var(--ease-out);
+}
+.skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+}
+/* What a toggle opens: the card's full width, under the row. The panel adds
+   no box of its own; the list inside is the steps' bordered panel or the
+   tools' row of code chips. */
+.skill-fact-panel > .skill-fact-list {
+  margin: 0;
+}
+/* A tool is an identifier: a code chip, every one the same height on the
+   same line, starting at the card's content edge. */
+.skill-fact-list-tools {
+  align-items: center;
+  padding: 0;
+}
+.skill-fact-list-tools .skill-tool-token {
+  display: inline-flex;
+  align-items: center;
+  height: var(--skill-fact-h);
+  padding-block: 0;
+  line-height: 1;
+}
+/* "Never run." / "Last run ..." is a sentence about the card, not a control
+   on it. A fill and a radius made it the fourth box in a row of three. */
+.skill-card-when {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+}
+/* **The card's gap is its only rhythm** (INBOX 437 (4); DESIGN.md, "zero the
+   margins, not just the heights"). The card is a flex column on one gap,
+   but the title kept an 8px bottom margin inside its head, the description
+   a paragraph's 12px each side and the run line 11.2px each side, so the
+   steps between the parts ran 28, 20, 19 and 27px for no reason a reader
+   could see. The footer keeps its own hairline and the space above it. */
+.skill-card .skill-card-header > .skill-card-title,
+.skill-card > .skill-card-desc,
+.skill-card > .skill-card-when {
+  margin: 0;
+}
+/* The card's own "Built-in" marker is the same fact the persona list states,
+   so it says it the same way. `--accent-soft` is this app's *selected* tone
+   (DESIGN.md), and nothing about a built-in skill is selected. */
+.skill-card .chip.skill-builtin,
+.skill-card-header .chip:not(.skill-fact) {
+  background: var(--chip-bg);
+  color: var(--muted);
+  font-weight: 500;
+}
+/* 11. A skill card (findings 15 to 17). The title was `--text-md`, the same
+       size as the description under it and smaller than the card titles
+       everywhere else in the Library; it is a card title now. "Built-in"
+       was a pill on every card, the same weight as the title beside it, for
+       a fact that is true of most of them: it is a small label in muted ink,
+       and "Yours" keeps the accent, since that is the one worth seeing. */
+.skill-card-title {
+  font-size: var(--text-body);
+}
+.skill-card-header {
+  align-items: baseline;
+  gap: var(--space-3);
+}
+/* 13. A skill card's title is an `h3` inside a `.card`, so the eyebrow
+       recipe (`.card h3`) set it at 12px muted: measured 12px where the
+       title of every other Library card is 16px. (The Contents jump chips
+       this item also styled went with INBOX 496.) */
+.skill-card .skill-card-title {
+  color: var(--ink);
+  font-size: var(--text-body);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library
    bundle's own classes, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
