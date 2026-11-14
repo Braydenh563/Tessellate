@@ -775,7 +775,10 @@ FLOW_FIELDS = 5
 TAIL_Q = 8.0  # `behaviour.TAIL_Q`: steps a px in a tail view
 FLOW_WAIST = 0.5
 FLOW_CORE = (0.3, 0.6)
-FLOW_RIBBON = 0.8
+#: The ribbon is a share of the strand's lead, so it was 0.8 at `FLOW_TIP` 2.2 and is 0.5 at 3.5: the same px, since above the
+#: waist it bends the torso's edge (test_flow_1683's torso check, 15 of 255 at 2.2, 24 at 3.5 with 0.8, 16 with 0.5;
+#: L-ui-modernisation-100).
+FLOW_RIBBON = 0.5
 FLOW_Q = 8.0
 FLOW_GLINT = 0.30
 

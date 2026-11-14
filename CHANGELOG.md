@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The desk companion's lower wisps and nebula streams sway further at rest, about 2.4 degrees at their tips (were 1.5), and a posed lean stays under 4 degrees (L-ui-modernisation-100)
 - The companion keeps to a sliding panel instead of trailing it by a frame: it leads by the panel's measured speed up to the slide's end, and a slide that starts slow is found at once (L-ui-modernisation-94).
 - Atlas with following off no longer glances at the pointer, a stand over the bar's right-hand buttons no longer drops it on a far seat, and the interaction sweep passes 5 of 5 (L-ui-modernisation-98).
 - Atlas takes a face it has a mood for (L-ui-modernisation-101): a pet's happy, love, laughing and surprised now show on Atlas the quiet way, excited as delighted, and a face it has no mood for is passed over rather than read as calm; probe101 at 4x CPU: 0 of 6 faces taken before, 5 of 6 after at 2 to 10 ms each (tests/test_atlas_named_face_l_ui_101.py).

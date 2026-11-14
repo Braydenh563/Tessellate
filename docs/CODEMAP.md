@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2789, CSS sections 525, backend routes 714, backend modules 10908, test files 2864, tests 22528, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2789, CSS sections 525, backend routes 714, backend modules 10908, test files 2865, tests 22531, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -25450,16 +25450,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:425 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:905 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:906 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:472 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:836 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:837 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:625 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:690 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:898 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:892 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:899 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:893 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:313 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:612 |
@@ -25478,8 +25478,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:815 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:823 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:816 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:824 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:416 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:461 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
@@ -25739,28 +25739,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:113 |
 | `SpriteSet` | src/tessellate/core/overlay/sprites.py:256 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:943 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:946 |
 | `_drawn_box` | src/tessellate/core/overlay/sprites.py:219 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:872 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:831 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:820 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:783 |
-| `_star` | src/tessellate/core/overlay/sprites.py:937 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:891 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:875 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:834 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:823 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:786 |
+| `_star` | src/tessellate/core/overlay/sprites.py:940 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:894 |
 | `capped_pose` | src/tessellate/core/overlay/sprites.py:147 |
 | `captured_root` | src/tessellate/core/overlay/sprites.py:184 |
 | `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:208 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:128 |
-| `effect` | src/tessellate/core/overlay/sprites.py:1010 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:788 |
+| `effect` | src/tessellate/core/overlay/sprites.py:1013 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:791 |
 | `frames_dir` | src/tessellate/core/overlay/sprites.py:192 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:930 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:933 |
 | `graded` | src/tessellate/core/overlay/sprites.py:240 |
 | `look_for` | src/tessellate/core/overlay/sprites.py:199 |
-| `mix` | src/tessellate/core/overlay/sprites.py:911 |
+| `mix` | src/tessellate/core/overlay/sprites.py:914 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:225 |
-| `squashed` | src/tessellate/core/overlay/sprites.py:987 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:867 |
+| `squashed` | src/tessellate/core/overlay/sprites.py:990 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:870 |
 | `tapered` | src/tessellate/core/overlay/sprites.py:163 |
 
 ### src/tessellate/core/overlay/standing.py (1)
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22528)
+## Tests (22531)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29275,6 +29275,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 17 |
 | tests/test_flow_pose_1683b.py | 7 |
+| tests/test_flow_reach_l_ui_100.py | 3 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
@@ -31419,7 +31420,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1234 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:42 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:44 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4055 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3125 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1714 |
