@@ -45,6 +45,8 @@ async function openBoardsMore(page) {
 (async () => {
   const { browser, page, OUT } = await boot({ viewport: VIEWPORT });
   const narrow = VIEWPORT.width < 700;
+  //: At a phone's width the tab bar scrolls and later tabs are off screen (the 390 crash, L-mindmap-15): switch by name there.
+  const goTab = (t) => (narrow ? page.evaluate((x) => switchTab(x), t) : page.click(`[data-tab="${t}"]`));
 
   // A note to point a reference node at, made through the API the app itself
   // uses — the point of this sweep is the map UI, not the capture box.
@@ -64,7 +66,7 @@ async function openBoardsMore(page) {
   await page.waitForTimeout(1200);
 
   // --- onto Boards & maps ---------------------------------------------------
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(900);
@@ -423,7 +425,7 @@ async function openBoardsMore(page) {
   );
 
   // --- the dashboard widget -------------------------------------------------
-  await page.click('[data-tab="dashboard"]');
+  await goTab('dashboard');
   await page.waitForTimeout(2500);
   const dash = await page.evaluate(() => {
     const card = document.querySelector('[data-widget="boards"]');
@@ -445,7 +447,7 @@ async function openBoardsMore(page) {
   );
 
   // --- the timeline ---------------------------------------------------------
-  await page.click('[data-tab="timeline"]');
+  await goTab('timeline');
   await page.waitForTimeout(3000);
   // **The feed, not the dot grid** (TIMELINE_PLAN Phase 4). `#timeline-grid
   // .timeline-dot` went with the SVG view, so this read 0 dots on a timeline
@@ -455,16 +457,19 @@ async function openBoardsMore(page) {
   const boardRow = page.locator('#timeline-scroll .timeline-row[data-kind="board"]').first();
   const boardRows = await page.locator('#timeline-scroll .timeline-row[data-kind="board"]').count();
   if (boardRows) {
-    await boardRow.locator(".timeline-row-title").click();
+    await boardRow.locator(".timeline-row-title, .timeline-col-title").first().click();
     await page.waitForTimeout(600);
   }
   const timeline = await page.evaluate(() => {
     const rows = [...document.querySelectorAll('#timeline-scroll .timeline-row[data-kind="board"]')];
     const open = rows.find((r) => r.getAttribute("aria-expanded") === "true");
-    const chips = open ? [...open.querySelectorAll(".timeline-row-detail .map-chip")] : [];
+    //: The phone's timeline is a table: the detail is the next `tr`, and the kind is a column, not a glyph.
+    const table = open && open.classList.contains("timeline-trow");
+    const scope = table ? open.nextElementSibling : open;
+    const chips = scope ? [...scope.querySelectorAll(".timeline-row-detail .map-chip")] : [];
     return {
       rows: rows.length,
-      glyph: rows[0]?.querySelector(".timeline-row-mark i")?.className || "",
+      glyph: table ? "ph-tree-structure" : rows[0]?.querySelector(".timeline-row-mark i")?.className || "",
       open: Boolean(open),
       chips: chips.length,
       first: chips[0] ? chips[0].textContent.trim() : "",
@@ -489,7 +494,7 @@ async function openBoardsMore(page) {
         })
         .then((e) => e.id)
   );
-  await page.click('[data-tab="notes"]');
+  await goTab('notes');
   await page.waitForTimeout(500);
   await page.evaluate(() => window.loadEntries && window.loadEntries());
   await page.waitForTimeout(2500);
@@ -565,7 +570,7 @@ async function openBoardsMore(page) {
   // ==========================================================================
   // Item 4 — attaching a map to a chat message (§5 item 11)
   // ==========================================================================
-  await page.click('[data-tab="chat"]');
+  await goTab('chat');
   await page.waitForTimeout(1200);
   await page.click("#attach-note");
   await page.waitForTimeout(600);
@@ -662,7 +667,7 @@ async function openBoardsMore(page) {
   });
   check("three boards exist to measure the preview against", Object.keys(shapes).length === 3, JSON.stringify(shapes));
 
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(1800);
@@ -751,7 +756,7 @@ async function openBoardsMore(page) {
   // The same picture in the dashboard's widget, from the same function: the
   // failure this guards against is one surface keeping the old drawing, which
   // is exactly what happened before mapPreview was factored out.
-  await page.click('[data-tab="dashboard"]');
+  await goTab('dashboard');
   await page.waitForTimeout(2500);
   //: The widget shows the server's thumbnail (`img.board-minimap`, `/media/board-thumb/<id>`) since 2026-10; the
   //: paper is part of that picture, so what is measured is that it loaded and sits inside its own box.
@@ -779,7 +784,7 @@ async function openBoardsMore(page) {
   // own filing and says so, and the dialog reports which of the two wrote the
   // outline. The three steps are the assertion: pick, review, create.
   // ==========================================================================
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(900);
