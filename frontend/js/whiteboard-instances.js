@@ -331,6 +331,8 @@
   const wbInstances = {
     page, list, mount: mountInstance, unmount: unmountInstance, activate: activateInstance, container: activeContainer, layer: activeLayer, query: queryOne, queryAll: queryEvery, changed: notifyChanged, on: bindBoard, embedFor,
     get active() { return active; },
+    //: The page board is live: its view's own chrome (the rulers, the map rings) is drawn for it only (L-whiteboard-60).
+    get onPage() { return active === page; },
   };
 
   //: The file's surface: what other files call.

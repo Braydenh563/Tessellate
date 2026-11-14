@@ -849,3 +849,67 @@ def test_the_quiet_tool_switch_drops_no_stroke_and_shows_no_hint():
     for gone in ("wbAbandonStroke", "wbDropLostGesture", "toolHint", "call(wbZoom)"):
         assert gone not in shown, gone
 
+
+def test_page_only_chrome_is_never_drawn_for_an_embed():
+    """L-whiteboard-60: the rulers and the map rings belong to the page board's view. An embed
+    (a small board in a document) has neither: the rulers keep drawing the page board's
+    transform while an embed pans, and a ring asked for in an embed opens nothing, so a
+    topic's right-click falls back to the plain menu."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const made = [];
+const els = {};
+function el(id) {
+  return { id, attrs: {}, kids: [], clientWidth: 800, clientHeight: 600, checked: false,
+    setAttribute(k, v) { this.attrs[k] = v; if (k === "id") els[v] = this; }, append(...k) { this.kids.push(...k); made.push(...k); },
+    replaceChildren(...k) { this.kids = k; }, addEventListener() {}, remove() { delete els[this.attrs.id]; } };
+}
+els["whiteboard-container"] = el("whiteboard-container");
+els["wb-view-rulers"] = el("wb-view-rulers");
+const document = {
+  getElementById: (id) => els[id] || null,
+  createElementNS: (ns, tag) => { const e = el(null); e.tag = tag; return e; },
+  querySelectorAll: () => [],
+};
+const pageT = { x: 0, y: 0, k: 1 };
+const d3 = { zoomTransform: () => pageT };
+const prefs = { get: () => "on", set() {} };
+const wbFmtState = {};
+let wireFn = null;
+const onSurface = (s, fn) => { wireFn = fn; };
+const wbInstances = { page: {}, active: null };
+wbInstances.active = wbInstances.page;
+"""
+    body = r"""
+wireFn();
+const top = () => els["wb-ruler-top"];
+const d0 = top().kids[0].attrs.d;
+wbInstances.active = { container: {} };
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dEmbed = top().kids[0].attrs.d;
+wbInstances.active = wbInstances.page;
+wbFmtState.opts.drawRulers({ x: 333, y: 41, k: 3 });
+const dPage = top().kids[0].attrs.d;
+process.stdout.write(JSON.stringify({ same: d0 === dEmbed, moved: dPage !== d0, rulers: made.filter((e) => /wb-ruler/.test(e.attrs.id || "")).length }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    assert out == {"same": True, "moved": True, "rulers": 2}
+    #: The three rings: each opener asks whether the page board is live before it places anything.
+    guard = "if (!wbInstances.onPage) return"
+    for path, fn in (("whiteboard-map.js", "function wbOpenMapRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapLinkRadial("), ("whiteboard-map-waypoints.js", "function wbOpenMapCrossLinkRadial(")):
+        text = (JS / path).read_text(encoding="utf-8")
+        at = text.index(fn)
+        assert guard in text[at:at + 300], (path, fn)
+    out2 = _run("""
+const B = I.mount(node("embed"), 7);
+out.page = I.onPage;
+I.activate(B);
+out.embed = I.onPage;
+""")
+    assert out2 == {"page": True, "embed": False}

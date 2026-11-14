@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
 - Boards: each board instance keeps its own tool, so a tool picked in an embedded board leaves the page board's tool, toolbar mark and cursor as they were; a swap repaints the toolbar without dropping a stroke (L-whiteboard-61).
 - Boards: window and document board listeners act on the board the event happened on: one window capture router makes the embed or the page board live before any of them runs, and a swap drops the cached canvas box (L-whiteboard-62).
 - Boards: each board instance keeps its own undo history key, so Ctrl+Z in an embedded board takes back its own step and the page board keeps its own (found driving L-whiteboard-54).

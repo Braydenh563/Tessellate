@@ -235,6 +235,8 @@
   }
 
   function wbOpenMapLinkRadial(childId, clientX, clientY) {
+    //: The page board's view holds the ring (L-whiteboard-60); an embed's line opens none.
+    if (!wbInstances.onPage) return false;
     const ring = document.getElementById("wb-map-link-radial");
     const host = document.getElementById("library-view-whiteboard");
     const index = wbMapIndex();
@@ -256,6 +258,7 @@
   //: one door every right-click and hold goes through (`wbOpenContextMenuFor`)
   //: can fall back to the board's flat menu for a link that is not one.
   function wbOpenMapCrossLinkRadial(sketchId, clientX, clientY) {
+    if (!wbInstances.onPage) return false;
     const info = wbMapCrossLinkInfo(sketchId);
     const ring = document.getElementById("wb-map-link-radial");
     const host = document.getElementById("library-view-whiteboard");
