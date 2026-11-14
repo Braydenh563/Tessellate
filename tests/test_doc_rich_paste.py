@@ -62,3 +62,12 @@ def test_emphasis_kept_only_in_a_span_style_is_a_rich_paste_unless_it_is_code():
     # Both paste handlers ask the one question.
     prose = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
     assert "docHtmlIsRich(html)" in DOCS and "docHtmlIsRich(html)" in prose
+
+
+def test_a_word_paste_drops_its_style_block_before_parsing():
+    """L890: Word's clipboard HTML opens with `<style><!-- p.MsoNormal ... --></style>`. Parsed with
+    DOMParser, an inline `<style>` element is refused by the page's CSP: one console error per Word
+    paste (hw890.js, 4 of 5 pastes). The block is cut from the text first, as `style=` attributes are."""
+    start = DOCS.index("function docHtmlToMarkdown(")
+    body = DOCS[start : DOCS.index("new DOMParser()", start)]
+    assert r"/<style[\s\S]*?<\/style\s*>/gi" in body

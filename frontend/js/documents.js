@@ -5326,7 +5326,9 @@ function docHtmlToMarkdown(html) {
   //: even in a parsed, inert document (a console error per attribute, and
   //: the value never reaches `el.style`), and the two it matters for are
   //: read from the text below.
-  const source = String(html || "").replace(/(<[^>]*?\s)style\s*=/gi, "$1data-mm-style=");
+  //: A `<style>` block goes too (Word opens every copy with one): an inline style element is refused
+  //: by the CSP the same way, and its rules would style nothing in an inert document anyway (L890).
+  const source = String(html || "").replace(/<style[\s\S]*?<\/style\s*>/gi, "").replace(/(<[^>]*?\s)style\s*=/gi, "$1data-mm-style=");
   const doc = new DOMParser().parseFromString(source, "text/html");
   const safeUrl = (url) => {
     const value = String(url || "").trim();
