@@ -23,6 +23,9 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-sketch-text.js", //: After whiteboard.js: text in shapes and connector labels; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-textedit.js", //: After whiteboard.js: the text box and sticky editor; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-ctxmenu.js", //: After whiteboard.js: the right-click menu for a selection; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-place.js", //: After whiteboard.js: paste, placement and clone-and-connect; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-stacking.js", //: After whiteboard.js: stacking order, layer order and bulk move; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-bar.js", //: After whiteboard.js: the selection bar and context strip; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
     //: The New board dialog and every template's picture (INBOX 715).
