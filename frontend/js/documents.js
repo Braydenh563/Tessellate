@@ -7025,7 +7025,7 @@ function mdLinePrefixEdit(block, kind) {
 function docImagePick(box, boxId) {
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = "image/*";
+  input.accept = "image/*,video/mp4,video/webm,.mp4,.webm";
   input.addEventListener("change", () => {
     const file = input.files && input.files[0];
     if (file) docImageUpload(box, boxId, file);
@@ -7562,6 +7562,13 @@ function docExportClean(root) {
 }
 
 docExportClean.figures = (root) => {
+  //: A video is a player on screen and a line of text in a file or on paper: no poster, only its name.
+  for (const box of [...root.querySelectorAll(".doc-video")]) {
+    const note = document.createElement("p");
+    note.className = "doc-export-missing";
+    note.textContent = box.querySelector(".doc-video-name")?.textContent || "Video";
+    box.replaceWith(note);
+  }
   for (const swatch of [...root.querySelectorAll(".dg-swatch")]) {
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     bar.setAttribute("class", "dg-swatch");

@@ -281,7 +281,7 @@ HELP_TOPICS: list[dict] = [
             "in the title moves to the body. The Library list's ... menu has Suggest a name. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
             "commenting, in a monospace face. Insert opens the / menu (Image opens a "
-            'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
+            'file picker; it takes MP4 or WebM video as a player). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
             "a spellchecker can't catch. The menu's Map the headings turns its "
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
             "Flowchart, or any Mermaid diagram: sequence, class, state, ER, Gantt, pie, "
@@ -294,8 +294,7 @@ HELP_TOPICS: list[dict] = [
             "and in the graph popup, drag the corner of a picture to resize it (or "
             "Tab to the corner and use the arrow keys), and its align button puts it "
             "left, centre or right. A note card and the timeline's note view have "
-            "the same align button (and the corner, apart from a card's small "
-            "thumbnails); a picture set in one place looks the same in all. "
+            "the same align button and corner; a picture set in one place looks the same in all. "
             "The status bar counts characters, words, lines and reading time as "
             "the note composer does (an emoji is one character); a code file "
             "shows lines, characters and the language instead; past 200 lines the "
@@ -1875,8 +1874,8 @@ HELP_TOPICS.extend(
                 "output in a panel under the editor; F5 debugs it (the Debugging "
                 "code topic: F9 a breakpoint, F10 steps over, F11 while debugging "
                 "steps in (Focus mode otherwise), Shift+F11 steps out, Shift+F5 "
-                "stops); Stop ends it, and the panel's top edge drags its height "
-                "(kept for each tab). Blocks fold from the "
+                "stops); Stop ends it, and the panel's top edge drags its height. "
+                "Blocks fold from the "
                 "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+. toggles one, Ctrl+Alt+[ "
                 "and Ctrl+Alt+] all of them). "
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "

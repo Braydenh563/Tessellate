@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: video in a document (L-documents-68): the image picker takes MP4 and WebM, `![name](/media/x.mp4)` draws a `<video controls preload="metadata">` in Live and Read from this origin only (`media-src 'self' blob:`, nothing external), the header sniff refuses text named like a video, and a Range request answers 206 so a seek is not a refetch; print and the HTML export keep a `Video: name` line, no poster. Measured in Chromium on a 4 s WebM: readyState 4, duration 4, a probe of bytes 1000-1999 returned 206 with `bytes 1000-1999/21277`, 0 CSP console errors; print hid the player and showed the name line.
 - Help: the JSON schema checks topic is listed under Documents with its title and lead (L-documents-42 follow-up).
 - Writing room: the Earlier drafts foot height is reset inside the existing 72rem one-column query instead of a new 72.01rem breakpoint, which failed test_the_breakpoints_only_shrink.
 - Documents: a Copy button on fenced code in Live view (L-documents-65): a CodeMirror widget laid over the block's first code line (absolute, so the 8px fence rows stay 7.4px), hover or focus on desktop and always shown on touch with a 44px hit area; not reachable by the arrow keys (0 of 18) and not part of Ctrl+A copy; it copies the code without the fences.

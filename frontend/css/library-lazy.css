@@ -623,6 +623,23 @@ textarea.has-gutter {
   visibility: hidden;
 }
 
+/* A video in a document (`![name](/media/x.mp4)`, image-layout.js `imageLayout.video`): the browser's own controls, no wider
+   than the column. The name line is for paper and exports (09-editor.css), not the screen. */
+.doc-video {
+  display: block;
+  margin: var(--space-2) 0;
+  max-width: 100%;
+}
+.doc-video video {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.doc-video-name {
+  display: none;
+}
+
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
 .doc-embed-recording {
   display: flex;
