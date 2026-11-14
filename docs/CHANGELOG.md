@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: "show my notes as a table" draws the newest notes as a table, and a find ask no longer matches a note on a lone year or number beside other words (L-chat-253, L-chat-254).
 - Chat: "what is the bin" and "what can the reminders tab do" are answered from Help, not by the bin and reminders readers (L-chat-256, L-chat-257).
 - Atlas cost, measured in a real browser at 4x CPU (L232, L233, L238): a class change on the buddy restyles 113 to 166 elements (was 1,244), a mood change is 3 to 5 restyles, and a click's handlers run in 0.1 to 7.6 ms; `tests/test_atlas_cost_live_1114.py` keeps those budgets.
 - Chat verify-d batch: Save power (the battery preference) now keeps chat, suggestions and short background calls from waking a model and says so in one line; the dashboard day digest rewords its count lines with a running model only where every number and link survives (quotes never); every failure toast in the app is said through the one voice table (205 literals moved onto `voiceLine`); the README has a provider compatibility table; the one-reader ratchet is at 0 (age questions moved into the recogniser); chat answers "documents about X", "boards from June" and "files named Y" from the engine; once a week the dashboard offers one feature unused for 90 days.

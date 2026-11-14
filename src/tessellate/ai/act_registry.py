@@ -402,7 +402,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("create_document", r"\bwrite (?:a|me a) (?:document|report|essay|write-up)\b"),
     ("search_files", r"\bin my files\b|\b(?:my|the) (?:photos|scans|attachments|pdfs)\b"),
     ("read_file", r"\bread the .+ file\b|\btext in the .+ file\b"),
-    ("list_notes", r"^(?:list|show)(?: me)? (?:all )?my notes[?.]?$"),
+    ("list_notes", r"^(?:list|show)(?: me)? (?:all )?my notes(?: (?:as|in) (?:a )?table(?: form)?)?[?.]?$"),
     ("search_help", r"^how (?:do|can) i\b|^where (?:is|do i find)\b"),
 )
 
