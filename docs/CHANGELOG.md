@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Router: a pasted #/Manual or #/Statistics opens at load in either case, and the address reads lowercase, #/manual and #/statistics (L-world-class-74).
 - Clocks: the status chip's timers and stopwatches ride the one shared second tick; the four one-second clocks are one wake and utility-tools.js has no interval of its own (L-world-class-93).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
 - The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).

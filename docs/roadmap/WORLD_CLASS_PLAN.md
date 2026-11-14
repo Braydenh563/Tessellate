@@ -797,7 +797,7 @@ Rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33 above are built and
 | Notes, documents, chats, boards | each open object is a step | `#/notes/12`, `#/docs/7`, `#/chat/45`, `#/library/board/3` | matches | the board and document histories persist in IndexedDB (`undo-store.js`); the app-wide stack (`status.js` `undoStack`, 50 steps) is never cleared by navigation, and a board or document that is open takes Ctrl+Z first (`surfaceHistory`) |
 | Settings opened by a notice (`go: {settings, focus}`) | yes | `#/settings/<section>` | matches | yes; the focused control is inside the scroller on the phone sheet (4 of 4 targets, 390x700: top 406 to 597 of 158 to 671) |
 
-Open, as LEDGER rows: a pasted `#/Manual` or `#/Statistics` honoured at load, with a lowercase address (L-world-class-74); Back with a sheet over Settings at 390 and on a phone (L-world-class-75); undo across a reload (L-world-class-76; the app-wide stack is session-only by design, `undo-store.js`).
+Open, as LEDGER rows: Back with a sheet over Settings at 390 and on a phone (L-world-class-75); undo across a reload (L-world-class-76; the app-wide stack is session-only by design, `undo-store.js`).
 
 The 2026-09-08 week table that stood here is superseded by the list above
 (its rows are either built or carried into it) and moved to HISTORY.md, "Moved from the plans, 2026-09-24".
