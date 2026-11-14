@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8800, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2812, tests 22672, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8800, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2812, tests 22673, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
 ## Frontend functions (8800)
 
@@ -8535,6 +8535,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `flipObjects` | frontend/js/whiteboard-effects.js:134 |
 | `flipWord` | frontend/js/whiteboard-effects.js:111 |
+| `fxSync` | frontend/js/whiteboard-effects.js:206 |
+| `fxValue` | frontend/js/whiteboard-effects.js:198 |
 | `keepShadow` | frontend/js/whiteboard-effects.js:18 |
 | `make` | frontend/js/whiteboard-effects.js:30 |
 | `mirrorShift` | frontend/js/whiteboard-effects.js:113 |
@@ -8546,11 +8548,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paintTextShadow` | frontend/js/whiteboard-effects.js:22 |
 | `refreshStatus` | frontend/js/whiteboard-effects.js:185 |
 | `statusParts` | frontend/js/whiteboard-effects.js:176 |
-| `sync` | frontend/js/whiteboard-effects.js:206 |
 | `textShadowStyle` | frontend/js/whiteboard-effects.js:13 |
 | `toolName` | frontend/js/whiteboard-effects.js:180 |
 | `uploadPicture` | frontend/js/whiteboard-effects.js:218 |
-| `value` | frontend/js/whiteboard-effects.js:198 |
 | `wire` | frontend/js/whiteboard-effects.js:235 |
 
 ### frontend/js/whiteboard-export-more.js (16)
@@ -8849,7 +8849,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listEntries` | frontend/js/whiteboard-label-rich.js:27 |
 | `mark` | frontend/js/whiteboard-label-rich.js:104 |
 | `paint` | frontend/js/whiteboard-label-rich.js:111 |
-| `sync` | frontend/js/whiteboard-label-rich.js:232 |
+| `richSync` | frontend/js/whiteboard-label-rich.js:232 |
 
 ### frontend/js/whiteboard-label.js (12)
 
@@ -24271,8 +24271,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `BoardConfig` | src/tessellate/api/wb_config.py:77 |
 | `ConfigPalette` | src/tessellate/api/wb_config.py:57 |
-| `_sentence` | src/tessellate/api/wb_config.py:125 |
-| `check_config` | src/tessellate/api/wb_config.py:131 |
+| `_refusal` | src/tessellate/api/wb_config.py:125 |
+| `check_config` | src/tessellate/api/wb_config.py:134 |
 
 ### src/tessellate/api/wb_convert.py (35)
 
@@ -28598,7 +28598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22672)
+## Tests (22673)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31198,7 +31198,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_colour_palettes.py | 3 |
 | tests/test_wb_colour_popover_1685.py | 11 |
 | tests/test_wb_commands.py | 8 |
-| tests/test_wb_config.py | 5 |
+| tests/test_wb_config.py | 6 |
 | tests/test_wb_connector_shapes.py | 9 |
 | tests/test_wb_connector_spacing.py | 7 |
 | tests/test_wb_context_menu_place.py | 4 |

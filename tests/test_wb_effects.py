@@ -66,7 +66,7 @@ def test_glass_is_a_shape_field_next_to_shadow():
     html = frontend_text("index.html")
     assert html.index('id="wb-fmt-shadow"') < html.index('id="wb-fmt-glass"') < html.index('id="wb-fmt-help-box"')
     assert "<b>Glass</b>" in html
-    assert 'box.checked = value(sharing[0], field) === true' in frontend_text("whiteboard-effects.js")
+    assert 'box.checked = fxValue(sharing[0], field) === true' in frontend_text("whiteboard-effects.js")
 
 
 def test_glass_is_stored_only_as_a_flag():

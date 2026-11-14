@@ -195,7 +195,7 @@
 
   // --- The panel's own controls --------------------------------------------------------------------------------
   //: Read by `wbFmtValue` for the panel's rows; a text box's words and a shape's label are both "the words".
-  function value(entry, field) {
+  function fxValue(entry, field) {
     const raw = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
     if (field === "tshadow") return raw[entry.kind === "sketch" ? "label_shadow" : "text_shadow"] === true;
     if (field === "glass") return raw.glass === true;
@@ -203,16 +203,16 @@
     return null;
   }
   //: Keeps the switches in step with the selection (called from the panel's sync with the fields it shows).
-  function sync(takes, sharing) {
-    const mixed = (field) => new Set(sharing.map((e) => JSON.stringify(value(e, field)))).size > 1;
+  function fxSync(takes, sharing) {
+    const mixed = (field) => new Set(sharing.map((e) => JSON.stringify(fxValue(e, field)))).size > 1;
     for (const [id, field] of [["wb-fmt-tshadow", "tshadow"], ["wb-fmt-glass", "glass"]]) {
       const box = document.getElementById(id);
       if (!takes.has(field) || !box || document.activeElement === box) continue;
-      box.checked = value(sharing[0], field) === true;
+      box.checked = fxValue(sharing[0], field) === true;
       box.indeterminate = mixed(field);
     }
     const clear = document.getElementById("wb-fmt-fillimg-clear");
-    if (clear && takes.has("fillimg")) clear.disabled = !sharing.some((e) => value(e, "fillimg"));
+    if (clear && takes.has("fillimg")) clear.disabled = !sharing.some((e) => fxValue(e, "fillimg"));
   }
 
   async function uploadPicture(file) {
@@ -261,5 +261,5 @@
   }
   onSurface("board", wire);
 
-  wbFmtState.effects = { keepShadow, textShadowStyle, paintTextShadow, paintShape, paintObject, flipWord, mirrorShift, flipObjects, statusParts, refreshStatus, value, sync };
+  wbFmtState.effects = { keepShadow, textShadowStyle, paintTextShadow, paintShape, paintObject, flipWord, mirrorShift, flipObjects, statusParts, refreshStatus, value: fxValue, sync: fxSync };
 })();

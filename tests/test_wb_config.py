@@ -52,6 +52,20 @@ def test_a_bad_configuration_is_refused_with_a_sentence(mutate):
     assert err.value.status_code == 422 and err.value.detail
 
 
+def test_the_sentence_is_ours_and_never_echoes_the_file():
+    """Our validators' sentences reach the toast; the file's own values and the library's words do not."""
+    for mutate, said in [
+        (lambda c: c.update(version=99), "another version of the app"),
+        (lambda c: c["board"].update(zzz_secret_key=1), "does not read."),
+        (lambda c: c.update(palettes="not a list"), wb_config.WRONG_KIND),
+    ]:
+        cfg = json.loads(json.dumps(GOOD))
+        mutate(cfg)
+        with pytest.raises(HTTPException) as err:
+            _check(cfg)
+        assert said in err.value.detail and "99" not in err.value.detail and "zzz" not in err.value.detail
+
+
 def test_not_json_and_oversized_are_refused():
     with pytest.raises(HTTPException) as err:
         wb_config.check_config("{nope")

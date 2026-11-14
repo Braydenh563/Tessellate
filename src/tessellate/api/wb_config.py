@@ -70,7 +70,7 @@ class ConfigPalette(BaseModel):
     def _hex(cls, value: list[str]) -> list[str]:
         for colour in value:
             if not isinstance(colour, str) or not BOARD_BG_COLOR_RE.match(colour):
-                raise ValueError("A palette colour is #rrggbb")
+                raise ValueError("Each palette colour is a six digit colour code, such as #3366ff.")
         return list(dict.fromkeys(c.lower() for c in value))
 
 
@@ -87,16 +87,14 @@ class BoardConfig(BaseModel):
     @classmethod
     def _ours(cls, value: str) -> str:
         if value != CONFIG_FORMAT:
-            raise ValueError("That is not a Tessellate board configuration file")
+            raise ValueError("That is not a Tessellate board configuration file.")
         return value
 
     @field_validator("version")
     @classmethod
     def _known_version(cls, value: int) -> int:
         if value != CONFIG_VERSION:
-            raise ValueError(
-                f"This configuration is version {value}; this app reads version {CONFIG_VERSION}"
-            )
+            raise ValueError("This configuration was saved by another version of the app, so it is not read here.")
         return value
 
     @field_validator("board")
@@ -104,13 +102,11 @@ class BoardConfig(BaseModel):
     def _board(cls, value: dict) -> dict:
         unknown = sorted(set(value) - set(BOARD_FIELDS))
         if unknown:
-            raise ValueError(
-                "The board section has a setting this app does not read: " + ", ".join(unknown[:3])
-            )
+            raise ValueError("The board section has a setting this app does not read.")
         try:
             checked = BoardBackground(**value)
         except ValidationError as exc:
-            raise ValueError(exc.errors()[0]["msg"]) from exc
+            raise ValueError("The board section has a value this app cannot use.") from exc
         return checked.model_dump(exclude_none=True)
 
     @field_validator("shape_libraries_off")
@@ -118,14 +114,21 @@ class BoardConfig(BaseModel):
     def _sets(cls, value: list[str]) -> list[str]:
         for key in value:
             if not isinstance(key, str) or not _SET_KEY.match(key):
-                raise ValueError("A shape library is named by its set key")
+                raise ValueError("A shape library is named by its set key.")
         return list(dict.fromkeys(value))
 
 
-def _sentence(text: str) -> str:
-    """A validator's message as a sentence for a toast: the library's "Value error, " lead off, a full stop on."""
-    text = text.removeprefix("Value error, ").strip()
-    return text if text.endswith((".", "?")) else text + "."
+#: For a part with the wrong kind of value: the validation library's own words are not ours to show.
+WRONG_KIND = "That file is not a board configuration: one of its parts holds the wrong kind of value."
+
+
+def _refusal(exc: ValidationError) -> str:
+    """The sentence for a toast: one of this module's own ValueError sentences, or WRONG_KIND."""
+    first = exc.errors()[0]
+    reason = first.get("ctx", {}).get("error")
+    if first.get("type") != "value_error" or not isinstance(reason, ValueError):
+        return WRONG_KIND
+    return str(reason)
 
 
 def check_config(text: str) -> dict:
@@ -141,5 +144,5 @@ def check_config(text: str) -> dict:
     try:
         config = BoardConfig(**raw)
     except ValidationError as exc:
-        raise HTTPException(status_code=422, detail=_sentence(exc.errors()[0]["msg"])) from exc
+        raise HTTPException(status_code=422, detail=_refusal(exc)) from exc
     return config.model_dump()

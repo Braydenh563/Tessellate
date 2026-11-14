@@ -54,6 +54,7 @@ ALLOWED = {
     "library.js:<top>": _NEW,
     "entry-card.js:renderInlineAction": _NEW,
     "media.js:saveSketch": _NEW,
+    "whiteboard-convert.js:cvKeepEmf": "a new note made to hold an imported EMF file, its text only the file's name",
     "meetings.js:saveVoiceNoteText": _NEW,
     "meetings.js:transcribeRecording": _NEW,
     "note-properties.js:openNoteTypesSheet": _NEW,

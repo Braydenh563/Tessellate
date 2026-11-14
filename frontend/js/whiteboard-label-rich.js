@@ -229,7 +229,7 @@
   }
 
   //: The Format panel's Rich text tick, from the selected shapes (Mixed when they differ).
-  function sync(shapes) {
+  function richSync(shapes) {
     const box = document.getElementById("wb-fmt-lmd");
     if (!box || !shapes.length) return;
     const rich = shapes.map((entry) => isRich(wbFmtSketch(entry)));
@@ -249,5 +249,5 @@
   WB_SKETCH_RESET_KEYS.push(KEY);
   onSurface("board", bind);
 
-  wbFmtState.richLabel = { cleanHref, isRich, listDepths, indentItems, inert, mark, paint, sync, linesOf, exportInto, KEY };
+  wbFmtState.richLabel = { cleanHref, isRich, listDepths, indentItems, inert, mark, paint, sync: richSync, linesOf, exportInto, KEY };
 })();

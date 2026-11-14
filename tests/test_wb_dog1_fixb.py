@@ -94,6 +94,8 @@ def _bound(expr: str, hits: dict):
         f"const HITS = {json.dumps(hits)};"
         "function wbArrowCandidateAt(x, y) { const h = HITS[x > 300 ? 'to' : 'from']; return h ? [h.kind, { id: h.id }] : null; }"
         "function wbNearestAnchor() { return { x: 1, y: 0.5 }; }"
+        #: No connector under a free end (L-whiteboard-43 asks wbFmtState.linkEdge first).
+        "const wbFmtState = {};"
     )
     script = stubs + _function("wbBoundArrowData") + f"console.log(JSON.stringify({expr}));"
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
