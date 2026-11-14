@@ -37,7 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import address, composer_retry, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
-from tessellate.ai import consent, consent_store, recognise
+from tessellate.ai import consent, consent_store, recognise, timetravel
 from tessellate.ai import (
     acts,
     context,
@@ -1916,7 +1916,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         # preference is accounted for and an unset flag cannot land a
         # Request turn in the chip row.
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
-        as_of=None if req.skill else req.body.as_of,
+        as_of=None if req.skill else req.body.as_of or timetravel.as_of_in(req.question or "", user_now(deps.get_config())),
         locale=req.body.locale,
         skip_search=early is not None,
         composed=_app_answers(req, req.ollama.is_running()), widen=req.body.attempt,

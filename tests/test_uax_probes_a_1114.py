@@ -120,3 +120,16 @@ def test_a18_a_topic_count_inside_a_window_counts_the_window(client, session):
     assert this_month.text == "1 note is tagged gym this month.", this_month.text
     assert notebook_stats.answer("how many gym notes", session, now=now).text == "2 notes are tagged gym."
     assert "Health" in notebook_stats.answer("how many health notes in September", session, now=now).text
+
+
+def test_a11_the_window_a_what_did_it_say_question_names_is_the_as_of_day(client, session, monkeypatch):
+    from tessellate.ai import timetravel
+    from tests._seed_1031c import NOW
+
+    assert timetravel.as_of_in("what did my gym plan say last month", NOW).isoformat() == "2026-09-30"
+    assert timetravel.as_of_in("what did my plan read in March", NOW).isoformat() == "2026-03-31"
+    assert timetravel.as_of_in("what did I write last month", NOW) is None  # a note's date, not its text then
+    assert timetravel.as_of_in("what did my plan say next month", NOW) is None
+    seed.seed(session)
+    _, events = seed.asker(client, monkeypatch)("what did my gym plan say last month")
+    assert next(e for e in events if e.get("type") == "meta")["as_of"] == "2026-09-30"

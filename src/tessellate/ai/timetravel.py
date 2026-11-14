@@ -27,8 +27,9 @@ text matches the question, then ranks the then-texts by the same words.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -143,6 +144,27 @@ def end_of_day(day, zone) -> datetime:  # noqa: ANN001
     from datetime import time as clock
 
     return datetime.combine(day, clock(23, 59, 59), zone or timezone.utc)
+
+
+_SAID = re.compile(r"\bwhat\s+(?:did|does|do|was|were)\s+(?:my|the|our|that|this)\s+[\w' -]{2,40}?\s+(?:say|said|read|state|stated|look(?:ed)? like|contain|include)\b", re.I)
+
+
+def as_of_in(question: str, now: datetime) -> date | None:
+    """The day a "what did my plan say last month" question asks the notebook as of: the last day of the
+    past window it names (`recognise`). None for a question that is not about what a note's text said
+    ("what did I write last month" asks for notes by their dates) or a window that is not past."""
+    from tessellate.ai import recognise
+
+    if not _SAID.search(question or ""):
+        return None
+    today = now.date()
+    for found in recognise.recognise(question, now=now, tense="past"):
+        if found.rank or found.kind not in ("date", "range"):
+            continue
+        last = found.value[1] if found.kind == "range" else found.value
+        if isinstance(last, date) and last < today:
+            return last
+    return None
 
 
 def day_words(day) -> str:  # noqa: ANN001
