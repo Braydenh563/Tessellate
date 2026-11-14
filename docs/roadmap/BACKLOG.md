@@ -378,6 +378,7 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
 
 ---
 
