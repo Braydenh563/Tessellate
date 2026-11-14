@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 35 | 0 | 19 | 229 |
+| world-class | 130 | 63 | 35 | 0 | 19 | 228 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 456 | 106 | 2 | 130 | 1115 |
+| all | 553 | 455 | 106 | 2 | 130 | 1114 |
 
 ## graph
 
@@ -501,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
-- [ ] **L630** `world-class` open, L: Re-run ocrflow.js against new .ocr-engine host and #ocr-more dock-menu section. From OPEN.md:838; OPEN.md:3534. Evidence: ocrflow.js:29,41 vs index.html:9732 hidden dock-menu section; not re-run
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L633** `world-class` open, L: Build a per-site retry for the toast(e.message, true) calls (plainHttpError gives the why, no retry param exists). From OPEN.md:1397; OPEN.md:3665. Evidence: status.js:1085 plainHttpError gives the why; per-site retry not built (no retry param found)
