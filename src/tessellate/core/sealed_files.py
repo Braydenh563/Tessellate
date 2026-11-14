@@ -37,7 +37,7 @@ import shutil
 import struct
 import tempfile
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -419,10 +419,13 @@ def unseal(path: Path) -> bool:
         return True
 
 
-def _tmp_root() -> Path:
-    from tessellate.core import deps
+#: Set by `deps` (as `board_thumbs.data_dir_source` is), so this module never
+#: imports `deps` and stays out of its import cycle.
+data_dir_source: Callable[[], Path] = lambda: Path(".")  # noqa: E731
 
-    root = deps.get_config().data_dir / "tmp"
+
+def _tmp_root() -> Path:
+    root = data_dir_source() / "tmp"
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     return root
 

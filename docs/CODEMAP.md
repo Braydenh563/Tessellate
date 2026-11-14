@@ -24481,44 +24481,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `MultipleWorkersError` | src/tessellate/core/deps.py:44 |
-| `_RequestGate` | src/tessellate/core/deps.py:510 |
-| `_counted_session` | src/tessellate/core/deps.py:580 |
-| `_embedding_model_in_use` | src/tessellate/core/deps.py:388 |
+| `_RequestGate` | src/tessellate/core/deps.py:511 |
+| `_counted_session` | src/tessellate/core/deps.py:581 |
+| `_embedding_model_in_use` | src/tessellate/core/deps.py:389 |
 | `_init_app_state` | src/tessellate/core/deps.py:182 |
-| `_on_space_row_change` | src/tessellate/core/deps.py:412 |
-| `_open_session` | src/tessellate/core/deps.py:597 |
-| `_refuse_unknown_space` | src/tessellate/core/deps.py:499 |
+| `_on_space_row_change` | src/tessellate/core/deps.py:413 |
+| `_open_session` | src/tessellate/core/deps.py:598 |
+| `_refuse_unknown_space` | src/tessellate/core/deps.py:500 |
 | `_requested_worker_count` | src/tessellate/core/deps.py:48 |
 | `_reset_app_state` | src/tessellate/core/deps.py:275 |
-| `_seal_private_spaces` | src/tessellate/core/deps.py:470 |
-| `_space_known` | src/tessellate/core/deps.py:429 |
-| `_still_sealed` | src/tessellate/core/deps.py:449 |
-| `_watch_spaces` | src/tessellate/core/deps.py:416 |
-| `brief_session` | src/tessellate/core/deps.py:586 |
+| `_seal_private_spaces` | src/tessellate/core/deps.py:471 |
+| `_space_known` | src/tessellate/core/deps.py:430 |
+| `_still_sealed` | src/tessellate/core/deps.py:450 |
+| `_watch_spaces` | src/tessellate/core/deps.py:417 |
+| `brief_session` | src/tessellate/core/deps.py:587 |
 | `build_llm_client` | src/tessellate/core/deps.py:118 |
-| `clear_index_stale` | src/tessellate/core/deps.py:731 |
-| `forget_space_ids` | src/tessellate/core/deps.py:408 |
+| `clear_index_stale` | src/tessellate/core/deps.py:732 |
+| `forget_space_ids` | src/tessellate/core/deps.py:409 |
 | `get_config` | src/tessellate/core/deps.py:328 |
-| `get_db` | src/tessellate/core/deps.py:338 |
-| `get_embeddings` | src/tessellate/core/deps.py:382 |
-| `get_model_manager` | src/tessellate/core/deps.py:376 |
-| `get_ollama` | src/tessellate/core/deps.py:365 |
-| `get_or_404` | src/tessellate/core/deps.py:632 |
-| `get_session` | src/tessellate/core/deps.py:574 |
-| `index_stale_notes` | src/tessellate/core/deps.py:736 |
+| `get_db` | src/tessellate/core/deps.py:339 |
+| `get_embeddings` | src/tessellate/core/deps.py:383 |
+| `get_model_manager` | src/tessellate/core/deps.py:377 |
+| `get_ollama` | src/tessellate/core/deps.py:366 |
+| `get_or_404` | src/tessellate/core/deps.py:633 |
+| `get_session` | src/tessellate/core/deps.py:575 |
+| `index_stale_notes` | src/tessellate/core/deps.py:737 |
 | `init_app_state` | src/tessellate/core/deps.py:176 |
-| `mark_index_stale` | src/tessellate/core/deps.py:709 |
+| `mark_index_stale` | src/tessellate/core/deps.py:710 |
 | `override_ai` | src/tessellate/core/deps.py:316 |
-| `peek_config` | src/tessellate/core/deps.py:355 |
-| `peek_db` | src/tessellate/core/deps.py:344 |
+| `peek_config` | src/tessellate/core/deps.py:356 |
+| `peek_db` | src/tessellate/core/deps.py:345 |
 | `refuse_multiple_workers` | src/tessellate/core/deps.py:86 |
 | `register_cache_reset` | src/tessellate/core/deps.py:263 |
 | `reload_db` | src/tessellate/core/deps.py:239 |
 | `reload_llm_client` | src/tessellate/core/deps.py:291 |
-| `requests_in_flight` | src/tessellate/core/deps.py:570 |
+| `requests_in_flight` | src/tessellate/core/deps.py:571 |
 | `reset_app_state` | src/tessellate/core/deps.py:269 |
-| `store_quietly` | src/tessellate/core/deps.py:658 |
-| `store_quietly_many` | src/tessellate/core/deps.py:685 |
+| `store_quietly` | src/tessellate/core/deps.py:659 |
+| `store_quietly_many` | src/tessellate/core/deps.py:686 |
 
 ### src/tessellate/core/desk_companion.py (47)
 
@@ -26433,7 +26433,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rewrite` | src/tessellate/core/sealed_files.py:386 |
 | `_size` | src/tessellate/core/sealed_files.py:303 |
 | `_stream` | src/tessellate/core/sealed_files.py:236 |
-| `_tmp_root` | src/tessellate/core/sealed_files.py:422 |
+| `_tmp_root` | src/tessellate/core/sealed_files.py:427 |
 | `_whole` | src/tessellate/core/sealed_files.py:140 |
 | `_write_new_sealed` | src/tessellate/core/sealed_files.py:313 |
 | `append` | src/tessellate/core/sealed_files.py:280 |
@@ -26444,12 +26444,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `plain_size` | src/tessellate/core/sealed_files.py:261 |
 | `read` | src/tessellate/core/sealed_files.py:252 |
 | `read_range` | src/tessellate/core/sealed_files.py:269 |
-| `readable` | src/tessellate/core/sealed_files.py:431 |
+| `readable` | src/tessellate/core/sealed_files.py:434 |
 | `seal` | src/tessellate/core/sealed_files.py:402 |
 | `seal_bytes` | src/tessellate/core/sealed_files.py:194 |
-| `sweep_leftovers` | src/tessellate/core/sealed_files.py:453 |
+| `sweep_leftovers` | src/tessellate/core/sealed_files.py:456 |
 | `unseal` | src/tessellate/core/sealed_files.py:412 |
-| `wanted` | src/tessellate/core/sealed_files.py:468 |
+| `wanted` | src/tessellate/core/sealed_files.py:471 |
 
 ### src/tessellate/core/secrets_store.py (6)
 
