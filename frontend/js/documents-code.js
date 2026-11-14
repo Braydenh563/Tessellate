@@ -367,7 +367,7 @@ function docCodeLintSource(CM) {
         try {
           found = await DOC_LINT_CONFIG.jsonSchema.diagnostics(CM, state);
         } catch {
-          found = [{ from: 0, to: 0, severity: "info", source: "Schema", message: "Could not read the schema, so the keys were not checked." }];
+          found = [{ from: 0, to: 0, severity: "info", source: "Schema", message: "Couldn't read the schema, so the keys were not checked." }];
         }
       }
       if (found.length && found[0].source !== "Schema") {

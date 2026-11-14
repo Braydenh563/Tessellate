@@ -42,7 +42,8 @@ def test_u8_a_blank_document_opens_in_edit_without_changing_the_stored_view():
 def test_u10_image_opens_a_picker_and_uploads_to_the_media_store():
     assert 'if (action.custom === "image") {\n    docImagePick(box, boxId);' in DOCS_JS
     pick = _fn("docImagePick")
-    assert 'type = "file"' in pick and 'accept = "image/*"' in pick
+    # The picker takes a video too since L-documents-68 (a player from this origin).
+    assert 'type = "file"' in pick and 'accept = "image/*,video/mp4,video/webm,.mp4,.webm"' in pick
     upload = _fn("docImageUpload")
     assert '"/media/upload"' in upload and "authHeaders()" in upload
     # The old stub is the fallback when the upload fails.

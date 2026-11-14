@@ -35,9 +35,13 @@ def test_a_topic_holds_a_recording_id_checked_and_kept_by_a_look_reset(client):
 
 
 def test_no_upload_route_takes_audio_for_a_topic():
-    from tessellate.api.routes_files import MEDIA_SUFFIXES
+    from tessellate.api.routes_files import MEDIA_SUFFIXES, VIDEO_TYPES
 
-    assert not {".wav", ".mp3", ".m4a", ".webm", ".ogg"} & set(MEDIA_SUFFIXES)
+    # .webm is also the video container a document embeds since L-documents-68,
+    # and it is served as video/webm, never as an audio type; the audio-only
+    # suffixes stay out, and the map topic still uploads nothing.
+    assert not {".wav", ".mp3", ".m4a", ".ogg", ".oga", ".opus", ".flac", ".aac"} & set(MEDIA_SUFFIXES)
+    assert VIDEO_TYPES[".webm"] == "video/webm"
     assert "/media/upload" not in AUDIO and "FormData" not in AUDIO
 
 

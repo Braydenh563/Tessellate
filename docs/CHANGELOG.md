@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Diagram: a per-edge label position is not built by decision (INBOX 1811); the source stays plain Mermaid.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
