@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot JS: the chat rename and the new-reminder sheet moved into the lazy chat-edit.js and reminder-edit.js, fetched on first use; boot gzip 250,689 down to 250,374, back under the ratchet (L-documents-105).
 - Chat: the file picker offers Stylus files (.styl), which import already reads (L-documents-76 added the type on one side only).
 - Documents: sub-pages (DOCUMENTS_PLAN D14, L-documents-44). A document can sit under another (`documents.parent_id`, migration b6d2f8a4c1e9); the server refuses a loop with a sentence. The Library's Documents list is a tree, collapsed by default with a disclosure per parent; the row menu has New sub-page, Move under and Move to the top level, `/subpage` makes a child and links it, and a sub-page's parents show after Documents in its bar. Binning a parent bins its subtree and restore brings it back; purging lifts the children to the top level.
 - Documents list: the page card's cover is found by a linear scan instead of a pattern that slowed to quadratic time on a long run of "![" (CodeQL 2305); a test counts the characters scanned.

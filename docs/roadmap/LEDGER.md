@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 1 | 0 | 0 | 0 | 31 |
-| documents | 0 | 23 | 1 | 0 | 7 | 24 |
+| documents | 0 | 22 | 1 | 0 | 7 | 23 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 465 | 540 | 125 | 2 | 159 | 1130 |
+| all | 465 | 539 | 125 | 2 | 159 | 1129 |
 
 ## graph
 
@@ -307,7 +307,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-102** `documents` open, M: Diagram mouse-pan at 1440 and 4x CPU is p50 10 to 17 ms and p95 24 to 43 ms against 16: layout is 0 and script about 1 ms a frame, the rest is raster of a 9679 px wide SVG picture (try a lower-resolution raster while panning or tile the picture); measure with scratchpad/ui-sweeps/diagram-pan-latency.js. From dgm1305 agent 2026-11-14.
 - [ ] **L-documents-103** `documents` open, S: Sub-pages follow-ups: phone breadcrumb shows only the nearest parent, sync carries parent_id by uuid, Move under picker leaves out the page and its sub-pages. From L-documents-44 remainder. Evidence: sweep 390: breadcrumb nav 49px wide for two crumbs (ellipsis); sync_extras does not carry parent_id; Move under picker lists the page's own sub-pages (server refuses with 409)
 - [ ] **L-documents-104** `documents` open, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile
-- [ ] **L-documents-105** `documents` open, S: Boot JS gzip 239 bytes over the ratchet after the documents and whiteboard-split merge: win the bytes back. From merge 91c8ad036 (agent/d11-1340). Evidence: tests/test_static_compression.py::test_the_app_scripts_stay_under_the_ratchet: 250689 gzip bytes against 250450 after merging claude/documents-plan-2 with the whiteboard L286 split (5a2b73aef); lazy-entries.js boards list grew 3696 to 3936 gzip bytes; each side was under the cap alone; L-documents-11 adds 0 boot bytes
 
 ## mindmap
 

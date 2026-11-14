@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8940, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11000, test files 2841, tests 22871, plan headings 690, app scripts 29, boot scripts 38, script files 353.
+Counts: frontend functions 8942, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11000, test files 2841, tests 22871, plan headings 690, app scripts 29, boot scripts 38, script files 353.
 
-## Frontend functions (8940)
+## Frontend functions (8942)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1140,38 +1140,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `askAtlasAbout` | frontend/js/wiring.js:127 |
-| `chatRecallStep` | frontend/js/wiring.js:716 |
-| `clearDueNudges` | frontend/js/wiring.js:1403 |
+| `chatRecallStep` | frontend/js/wiring.js:695 |
+| `clearDueNudges` | frontend/js/wiring.js:1359 |
 | `closeGlobalFind` | frontend/js/wiring.js:554 |
-| `copyWebLink` | frontend/js/wiring.js:1346 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:834 |
+| `copyWebLink` | frontend/js/wiring.js:1325 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:813 |
 | `escapeForFind` | frontend/js/wiring.js:324 |
 | `globalFindClearHighlights` | frontend/js/wiring.js:376 |
 | `globalFindRun` | frontend/js/wiring.js:387 |
 | `globalFindShowActive` | frontend/js/wiring.js:459 |
 | `globalFindStep` | frontend/js/wiring.js:472 |
 | `globalFindWalkableRoot` | frontend/js/wiring.js:357 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:918 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:897 |
 | `initHelpToggles` | frontend/js/wiring.js:138 |
-| `noteSourceOn` | frontend/js/wiring.js:786 |
-| `nudgeDueShown` | frontend/js/wiring.js:1407 |
+| `noteSourceOn` | frontend/js/wiring.js:765 |
+| `nudgeDueShown` | frontend/js/wiring.js:1363 |
 | `openGlobalFind` | frontend/js/wiring.js:478 |
-| `openReminderCompose` | frontend/js/wiring.js:1362 |
-| `openWebPageExternally` | frontend/js/wiring.js:1341 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:840 |
+| `openReminderCompose` | frontend/js/wiring.js:1342 |
+| `openWebPageExternally` | frontend/js/wiring.js:1320 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:819 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:643 |
-| `renderPlanToggle` | frontend/js/wiring.js:1186 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1018 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:939 |
-| `setNoteSource` | frontend/js/wiring.js:804 |
+| `renameCurrentConversation` | frontend/js/wiring.js:644 |
+| `renderPlanToggle` | frontend/js/wiring.js:1165 |
+| `setFullscreenSurface` | frontend/js/wiring.js:997 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:918 |
+| `setNoteSource` | frontend/js/wiring.js:783 |
 | `settingsSectionContaining` | frontend/js/wiring.js:370 |
-| `startNewNote` | frontend/js/wiring.js:1078 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:794 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1129 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1113 |
-| `toggleWebSearch` | frontend/js/wiring.js:1221 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1024 |
+| `startNewNote` | frontend/js/wiring.js:1057 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:773 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1108 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1092 |
+| `toggleWebSearch` | frontend/js/wiring.js:1200 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1003 |
 
 ### frontend/js/settings-wiring.js (46)
 
@@ -2765,7 +2765,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `importChatDocuments` | frontend/js/chat-docs.js:41 |
 | `keepUnreadableChatFile` | frontend/js/chat-docs.js:12 |
 
-### frontend/js/chat-edit.js (7)
+### frontend/js/chat-edit.js (8)
 
 | Name | File:line |
 |---|---|
@@ -2775,6 +2775,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `questionForBubble` | frontend/js/chat-edit.js:288 |
 | `regenerateFrom` | frontend/js/chat-edit.js:188 |
 | `regenerateLast` | frontend/js/chat-edit.js:262 |
+| `renameConversationNow` | frontend/js/chat-edit.js:301 |
 | `showCopyFallback` | frontend/js/chat-edit.js:141 |
 
 ### frontend/js/chat-private.js (5)
@@ -7298,11 +7299,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reminderFormClear` | frontend/js/quickadd.js:518 |
 | `reminderFormError` | frontend/js/quickadd.js:508 |
 
-### frontend/js/reminder-edit.js (3)
+### frontend/js/reminder-edit.js (4)
 
 | Name | File:line |
 |---|---|
 | `buildSelect` | frontend/js/reminder-edit.js:9 |
+| `reminderComposeOpen` | frontend/js/reminder-edit.js:158 |
 | `reminderEditForm` | frontend/js/reminder-edit.js:22 |
 | `snoozeReminderTo` | frontend/js/reminder-edit.js:134 |
 

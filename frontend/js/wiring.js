@@ -640,29 +640,8 @@ onSurface("chat", () => {
 //: not be renamed out from under them three seconds later.
 let chatPendingTitle = null;
 
-async function renameCurrentConversation() {
-  if (!chatConv) return;
-  const current = $("chat-title").textContent;
-  const next = await promptTitle("Rename this conversation", current);
-  if (!next || next === current) return;
-  if (chatConv.id === null) {
-    chatPendingTitle = next;
-    $("chat-title").textContent = next;
-    toast("Named. It is saved with your first message.");
-    return;
-  }
-  try {
-    await apiJson(`/conversations/${chatConv.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ title: next }),
-    });
-    $("chat-title").textContent = next;
-    chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
-    loadConversationList();
-  } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
-  }
-}
+//: The body is in chat-edit.js (lazy), fetched on the first rename (the gzip ratchet).
+const renameCurrentConversation = () => lazyScript("/js/chat-edit.js").then(() => renameConversationNow());
 
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
@@ -1359,32 +1338,9 @@ async function copyWebLink(url, button) {
 const REMINDER_SHEET = "(max-width: 1099.98px)";
 let reminderComposeSheetClose = null;
 
+//: The sheet itself is in reminder-edit.js (lazy), fetched on the first press (the gzip ratchet).
 function openReminderCompose() {
-  const form = $("reminder-compose");
-  if (!form) return;
-  // The sentence box: its times need no model (UX-01).
-  const field = () => $("reminder-magic") || $("reminder-text");
-  if (!window.matchMedia(REMINDER_SHEET).matches) {
-    field()?.focus();
-    return;
-  }
-  if (reminderComposeSheetClose) return;
-  const home = form.parentElement;
-  const next = form.nextElementSibling;
-  reminderComposeSheetClose = openSheet({
-    label: "New reminder",
-    name: "reminder-compose",
-    returnFocus: $("reminders-new"),
-    build: (card) => {
-      card.classList.add("reminder-compose-card");
-      card.appendChild(form);
-    },
-    onClose: () => {
-      reminderComposeSheetClose = null;
-      home.insertBefore(form, next && next.parentElement === home ? next : null);
-    },
-  });
-  field()?.focus();
+  return lazyScript("/js/reminder-edit.js").then(() => reminderComposeOpen());
 }
 
 // Nudges: adjusting an existing time is far quicker than retyping one.
