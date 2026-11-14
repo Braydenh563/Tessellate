@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 49 | 1 | 0 | 4 | 70 |
+| documents | 20 | 48 | 1 | 0 | 4 | 69 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 604 | 129 | 2 | 167 | 1236 |
+| all | 503 | 603 | 129 | 2 | 167 | 1235 |
 
 ## graph
 
@@ -352,7 +352,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-56** `documents` open, M: Sequence diagram autonumber, box, create/destroy, rect colour (1679 gap 2). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-kinds.js:218 returns null for box, create, destroy; autonumber and rect open in Source
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
 - [ ] **L-documents-58** `documents` open, M: Diagram per-edge label position and link animation (1679 gap 4). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: curve style built (W18 R13); no id@ animation or label position in diagram-*.js
-- [ ] **L-documents-59** `documents` open, S: Markdown strings and br in a diagram name (1679 gap 5). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: documents-mermaid.js:102 keeps a markdown string; no editing
 - [ ] **L-documents-60** `documents` open, S: Flowchart sub-direction inside a subgraph (1679 gap 6). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: direction is a kept line, documents-mermaid.js:54
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function

@@ -204,6 +204,7 @@
         const plain = /^[A-Za-z0-9_][\w-]*$/.test(g.id);
         const line = plain && g.title !== g.id ? `subgraph ${g.id} ["${dgmEscape(g.title)}"]` : `subgraph ${g.id}`;
         rows.push({ depth, line, unit: { t: "s", i } });
+        if (/^(?:TD|BT|LR|RL)$/.test(g.dir)) rows.push({ depth: depth + 1, line: `direction ${g.dir}`, unit: null });
         emit(g.id, depth + 1);
         rows.push({ depth, line: "end", unit: null });
       });
@@ -291,7 +292,10 @@
     };
     for (const s of statements.slice(at)) {
       const sub = /^subgraph\s+(.+)$/.exec(s);
-      if (DGM_KEPT.test(s)) keep(s);
+      //: `direction` inside a subgraph is that group's own flow; at the top it stays a kept line.
+      const way = open.length && /^direction\s+(TD|TB|BT|LR|RL)$/i.exec(s);
+      if (way) m.subgraphs.find((g) => g.id === open[open.length - 1]).dir = way[1].toUpperCase().replace("TB", "TD");
+      else if (DGM_KEPT.test(s)) keep(s);
       else if (sub) {
         const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
         if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);

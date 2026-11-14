@@ -317,6 +317,11 @@
         group: "edit",
       });
     }
+    if (!isNode) {
+      const g = diagramOps.group(S.m, diagramOps.split(key)[1]);
+      const turn = (dir) => () => (dir ? (g.dir = dir) : delete g.dir, commit(S, dir ? `${g.title} flows ${DIRS.find(([d]) => d === dir)[2].toLowerCase()}.` : `${g.title} follows the diagram's direction.`));
+      items.push({ label: "ph:arrows-out-line-horizontal Direction", items: [...DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: turn(d) })), { label: "Same as the diagram", run: turn("") }], group: "edit" });
+    }
     items.push(
       { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
       { label: "ph:arrow-down Move down", run: () => stepBlock(S, key, 1), group: "move" },

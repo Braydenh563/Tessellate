@@ -2894,10 +2894,11 @@ TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and
 MORE_TOPICS.append({
     "id": "diagram-styling",
     "keywords": (
-        "diagram markdown text", "diagram line break", "diagram bold name", "br in a diagram",
+        "diagram markdown text", "diagram line break", "group direction", "subgraph direction", "diagram bold name", "br in a diagram",
     ),
     "body": (
-        "A block's menu has Markdown text, which draws **bold** and *italic* in its name; write <br/> in a name for a line break."
+        "A block's menu has Markdown text, which draws **bold** and *italic* in its name; write <br/> in a name for a line break. "
+        "A group's menu has Direction: its blocks flow that way inside it (Mermaid ignores it when a block in the group is joined to one outside)."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

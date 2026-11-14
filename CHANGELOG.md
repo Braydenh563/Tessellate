@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a `direction` line inside a subgraph is the group's own direction, shown in the group's menu (Direction) and written back in place; at the top level it stays a kept line (L-documents-60, tests/test_diagram_subgraph_direction_l_documents_60.py; measured in the app: a 3-box group stacked at x 894 / y 397, 465, 533 flowed at y 465 / x 718, 894, 1070 after Left to right).
 - Documents: a markdown string (`A["`**bold**`"]`) and a `<br/>` in a diagram node name are the node's own text and a Markdown text switch in the block menu, not locked lines; a newline in a name is written as `<br/>` (L-documents-59, tests/test_diagram_markdown_l_documents_59.py; measured in the app: 3 block rows for the 3 nodes, a bold and an italic tspan, 2 tspans for the `<br/>` name).
 - Help: the JSON schema checks topic is listed under Documents with its title and lead (L-documents-42 follow-up).
 - Writing room: the Earlier drafts foot height is reset inside the existing 72rem one-column query instead of a new 72.01rem breakpoint, which failed test_the_breakpoints_only_shrink.

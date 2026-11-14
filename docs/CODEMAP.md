@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2774, tests 22299, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2775, tests 22302, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8520)
 
@@ -3232,13 +3232,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:345 |
-| `beginEdit` | frontend/js/diagram-builder.js:387 |
+| `addBlock` | frontend/js/diagram-builder.js:350 |
+| `beginEdit` | frontend/js/diagram-builder.js:392 |
 | `blockEl` | frontend/js/diagram-builder.js:39 |
 | `blockItems` | frontend/js/diagram-builder.js:302 |
 | `blockKeys` | frontend/js/diagram-builder.js:141 |
 | `buildBlock` | frontend/js/diagram-builder.js:209 |
-| `buildPalette` | frontend/js/diagram-builder.js:551 |
+| `buildPalette` | frontend/js/diagram-builder.js:556 |
 | `buildRow` | frontend/js/diagram-builder.js:222 |
 | `commit` | frontend/js/diagram-builder.js:44 |
 | `drawPicture` | frontend/js/diagram-builder.js:59 |
@@ -3246,34 +3246,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `groupGlyph` | frontend/js/diagram-builder.js:280 |
 | `icon` | frontend/js/diagram-builder.js:143 |
 | `joinChip` | frontend/js/diagram-builder.js:285 |
-| `joinPick` | frontend/js/diagram-builder.js:513 |
-| `joins` | frontend/js/diagram-builder.js:509 |
-| `kindOf` | frontend/js/diagram-builder.js:650 |
-| `menuAt` | frontend/js/diagram-builder.js:493 |
-| `more` | frontend/js/diagram-builder.js:530 |
-| `mount` | frontend/js/diagram-builder.js:553 |
+| `joinPick` | frontend/js/diagram-builder.js:518 |
+| `joins` | frontend/js/diagram-builder.js:514 |
+| `kindOf` | frontend/js/diagram-builder.js:655 |
+| `menuAt` | frontend/js/diagram-builder.js:498 |
+| `more` | frontend/js/diagram-builder.js:535 |
+| `mount` | frontend/js/diagram-builder.js:558 |
 | `nameOf` | frontend/js/diagram-builder.js:37 |
-| `nameOnPicture` | frontend/js/diagram-builder.js:369 |
-| `nestBlock` | frontend/js/diagram-builder.js:425 |
-| `onKey` | frontend/js/diagram-builder.js:447 |
+| `nameOnPicture` | frontend/js/diagram-builder.js:374 |
+| `nestBlock` | frontend/js/diagram-builder.js:430 |
+| `onKey` | frontend/js/diagram-builder.js:452 |
 | `reconcile` | frontend/js/diagram-builder.js:133 |
-| `refreshMore` | frontend/js/diagram-builder.js:542 |
-| `relabel` | frontend/js/diagram-builder.js:373 |
-| `removeBlock` | frontend/js/diagram-builder.js:433 |
+| `refreshMore` | frontend/js/diagram-builder.js:547 |
+| `relabel` | frontend/js/diagram-builder.js:378 |
+| `removeBlock` | frontend/js/diagram-builder.js:438 |
 | `render` | frontend/js/diagram-builder.js:93 |
 | `say` | frontend/js/diagram-builder.js:30 |
-| `select` | frontend/js/diagram-builder.js:331 |
+| `select` | frontend/js/diagram-builder.js:336 |
 | `shapeButton` | frontend/js/diagram-builder.js:188 |
 | `shapeGlyph` | frontend/js/diagram-builder.js:149 |
 | `shapeItems` | frontend/js/diagram-builder.js:157 |
 | `shapeRow` | frontend/js/diagram-builder.js:170 |
-| `show` | frontend/js/diagram-builder.js:660 |
-| `stepBlock` | frontend/js/diagram-builder.js:423 |
+| `show` | frontend/js/diagram-builder.js:665 |
+| `stepBlock` | frontend/js/diagram-builder.js:428 |
 | `stops` | frontend/js/diagram-builder.js:121 |
-| `styleDo` | frontend/js/diagram-builder.js:515 |
-| `suggest` | frontend/js/diagram-builder.js:503 |
-| `suggestMenu` | frontend/js/diagram-builder.js:521 |
-| `sync` | frontend/js/diagram-builder.js:625 |
+| `styleDo` | frontend/js/diagram-builder.js:520 |
+| `suggest` | frontend/js/diagram-builder.js:508 |
+| `suggestMenu` | frontend/js/diagram-builder.js:526 |
+| `sync` | frontend/js/diagram-builder.js:630 |
 | `titleOf` | frontend/js/diagram-builder.js:36 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -4282,31 +4282,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chooseDiagram` | frontend/js/documents-mermaid.js:512 |
+| `chooseDiagram` | frontend/js/documents-mermaid.js:516 |
 | `dgmChain` | frontend/js/documents-mermaid.js:153 |
 | `dgmDecode` | frontend/js/documents-mermaid.js:67 |
 | `dgmEscape` | frontend/js/documents-mermaid.js:72 |
-| `dgmFence` | frontend/js/documents-mermaid.js:337 |
-| `dgmFront` | frontend/js/documents-mermaid.js:256 |
-| `dgmLift` | frontend/js/documents-mermaid.js:322 |
+| `dgmFence` | frontend/js/documents-mermaid.js:341 |
+| `dgmFront` | frontend/js/documents-mermaid.js:257 |
+| `dgmLift` | frontend/js/documents-mermaid.js:326 |
 | `dgmLink` | frontend/js/documents-mermaid.js:137 |
-| `dgmParse` | frontend/js/documents-mermaid.js:263 |
-| `dgmPrint` | frontend/js/documents-mermaid.js:235 |
+| `dgmParse` | frontend/js/documents-mermaid.js:264 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:236 |
 | `dgmRef` | frontend/js/documents-mermaid.js:120 |
 | `dgmRows` | frontend/js/documents-mermaid.js:194 |
 | `dgmShapeText` | frontend/js/documents-mermaid.js:104 |
 | `dgmStatements` | frontend/js/documents-mermaid.js:83 |
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:185 |
-| `dgmTint` | frontend/js/documents-mermaid.js:230 |
+| `dgmTint` | frontend/js/documents-mermaid.js:231 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:530 |
-| `diagramMadeKnown` | frontend/js/documents-mermaid.js:523 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:375 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:384 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:365 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:357 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:505 |
-| `wireToolbarRoving` | frontend/js/documents-mermaid.js:593 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:534 |
+| `diagramMadeKnown` | frontend/js/documents-mermaid.js:527 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:379 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:388 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:369 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:361 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:509 |
+| `wireToolbarRoving` | frontend/js/documents-mermaid.js:597 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -28092,7 +28092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22299)
+## Tests (22302)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28970,6 +28970,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_source_wrap_l304.py | 3 |
 | tests/test_diagram_spacing.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
+| tests/test_diagram_subgraph_direction_l_documents_60.py | 3 |
 | tests/test_diagram_suggest.py | 22 |
 | tests/test_diagram_template_replace.py | 3 |
 | tests/test_diagram_touch.py | 7 |
@@ -31292,14 +31293,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1238 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:787 |
+| Needs hardware | docs/roadmap/LEDGER.md:786 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:780 |
+| Owner calls | docs/roadmap/LEDGER.md:779 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31479,7 +31480,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:959 |
+| Plan session briefs | docs/roadmap/LEDGER.md:958 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31533,25 +31534,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:975 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1059 |
+| chat | docs/roadmap/LEDGER.md:974 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1058 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:999 |
-| general | docs/roadmap/LEDGER.md:739 |
+| documents | docs/roadmap/LEDGER.md:998 |
+| general | docs/roadmap/LEDGER.md:738 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:963 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1071 |
+| graph | docs/roadmap/LEDGER.md:962 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1070 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:380 |
-| mindmap | docs/roadmap/LEDGER.md:1011 |
-| timeline | docs/roadmap/LEDGER.md:501 |
-| timeline | docs/roadmap/LEDGER.md:1035 |
-| ui-modernisation | docs/roadmap/LEDGER.md:384 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1023 |
+| mindmap | docs/roadmap/LEDGER.md:379 |
+| mindmap | docs/roadmap/LEDGER.md:1010 |
+| timeline | docs/roadmap/LEDGER.md:500 |
+| timeline | docs/roadmap/LEDGER.md:1034 |
+| ui-modernisation | docs/roadmap/LEDGER.md:383 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1022 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:987 |
-| world-class | docs/roadmap/LEDGER.md:503 |
-| world-class | docs/roadmap/LEDGER.md:1047 |
+| whiteboard | docs/roadmap/LEDGER.md:986 |
+| world-class | docs/roadmap/LEDGER.md:502 |
+| world-class | docs/roadmap/LEDGER.md:1046 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
