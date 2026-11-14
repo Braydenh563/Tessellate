@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11039, test files 2854, tests 22611, plan headings 691, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11039, test files 2855, tests 22612, plan headings 691, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8498)
 
@@ -19505,35 +19505,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_anchor_day` | src/tessellate/ai/recognise_questions.py:459 |
+| `_anchor_day` | src/tessellate/ai/recognise_questions.py:464 |
 | `_count` | src/tessellate/ai/recognise_questions.py:48 |
 | `_months_back` | src/tessellate/ai/recognise_questions.py:40 |
 | `_range_count` | src/tessellate/ai/recognise_questions.py:168 |
 | `_range_for` | src/tessellate/ai/recognise_questions.py:179 |
 | `_span_days` | src/tessellate/ai/recognise_questions.py:57 |
 | `capitalise_names` | src/tessellate/ai/recognise_questions.py:286 |
-| `dated_sentence` | src/tessellate/ai/recognise_questions.py:404 |
-| `day_offset` | src/tessellate/ai/recognise_questions.py:466 |
-| `days_apart` | src/tessellate/ai/recognise_questions.py:543 |
-| `days_question` | src/tessellate/ai/recognise_questions.py:322 |
+| `dated_sentence` | src/tessellate/ai/recognise_questions.py:409 |
+| `day_offset` | src/tessellate/ai/recognise_questions.py:471 |
+| `days_apart` | src/tessellate/ai/recognise_questions.py:548 |
+| `days_question` | src/tessellate/ai/recognise_questions.py:326 |
 | `days_since` | src/tessellate/ai/recognise_questions.py:68 |
-| `distances` | src/tessellate/ai/recognise_questions.py:520 |
-| `event_window_asked` | src/tessellate/ai/recognise_questions.py:508 |
-| `is_duration_of_doing` | src/tessellate/ai/recognise_questions.py:315 |
+| `distances` | src/tessellate/ai/recognise_questions.py:525 |
+| `event_window_asked` | src/tessellate/ai/recognise_questions.py:513 |
+| `is_duration_of_doing` | src/tessellate/ai/recognise_questions.py:319 |
 | `is_lately` | src/tessellate/ai/recognise_questions.py:203 |
-| `logged_day` | src/tessellate/ai/recognise_questions.py:391 |
-| `months_named` | src/tessellate/ai/recognise_questions.py:525 |
-| `offset_question` | src/tessellate/ai/recognise_questions.py:332 |
+| `logged_day` | src/tessellate/ai/recognise_questions.py:396 |
+| `months_named` | src/tessellate/ai/recognise_questions.py:530 |
+| `offset_question` | src/tessellate/ai/recognise_questions.py:336 |
 | `question_day` | src/tessellate/ai/recognise_questions.py:219 |
 | `question_range` | src/tessellate/ai/recognise_questions.py:207 |
 | `says_ahead` | src/tessellate/ai/recognise_questions.py:250 |
 | `says_past` | src/tessellate/ai/recognise_questions.py:274 |
-| `set_for_later` | src/tessellate/ai/recognise_questions.py:361 |
-| `shift_day` | src/tessellate/ai/recognise_questions.py:446 |
-| `since_question` | src/tessellate/ai/recognise_questions.py:416 |
-| `states_its_date` | src/tessellate/ai/recognise_questions.py:425 |
-| `told_as_past` | src/tessellate/ai/recognise_questions.py:369 |
-| `without_event_window_tail` | src/tessellate/ai/recognise_questions.py:501 |
+| `set_for_later` | src/tessellate/ai/recognise_questions.py:366 |
+| `shift_day` | src/tessellate/ai/recognise_questions.py:451 |
+| `since_question` | src/tessellate/ai/recognise_questions.py:421 |
+| `states_its_date` | src/tessellate/ai/recognise_questions.py:430 |
+| `told_as_past` | src/tessellate/ai/recognise_questions.py:374 |
+| `without_event_window_tail` | src/tessellate/ai/recognise_questions.py:506 |
 
 ### src/tessellate/ai/recognise_reminders.py (17)
 
@@ -28289,7 +28289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22611)
+## Tests (22612)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29469,6 +29469,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_filetypes.py | 14 |
 | tests/test_filing_accuracy.py | 5 |
 | tests/test_filing_certainty.py | 18 |
+| tests/test_filing_certainty_evals.py | 1 |
 | tests/test_filing_decision.py | 9 |
 | tests/test_filing_evidence_wired.py | 6 |
 | tests/test_filing_held_out_c.py | 2 |

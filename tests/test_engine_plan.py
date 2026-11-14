@@ -145,6 +145,9 @@ def test_a_tag_keeps_the_answer_to_its_notes():
         ("how many days since 1 March", "Sunday 1 March 2026 was 219 days ago."),
         ("what day is 25 December", "25 December 2026 is a Friday."),
         ("what date is it in 3 weeks", "3 weeks from today is Tuesday 27 October 2026."),
+        ("what is the date in 10 days", "10 days from today is Friday 16 October 2026."),
+        ("10 days from today", "10 days from today is Friday 16 October 2026."),
+        ("what was the date 2 weeks ago", "2 weeks ago is Tuesday 22 September 2026."),
         ("5 kg to miles", "Kilograms and miles measure different things (mass and length), so one does not convert to the other."),
     ],
 )

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "what is the date in 10 days" and "10 days from today" are answered by the date utility, not read as general knowledge or a note search; the model panel no longer shows "Family [object Object]" for llama-server's catalogue (L215, L724).
 - Guide: the where-question lead check is linear on runs of tabs (CodeQL 2296).
 - Chat: notes joined by neither link nor tag are themed by their category, never by one on every note or one the question names (L102).
 - Chat: a typo is read by the notebook's own word pairs ("oat diary" is "oat dairy" when the notes write it), and the no-model tools (sums, conversions, dates, the week, reminders, contradictions, the bin) and the all-matches list are pinned by tests (L222, L230, L110, L121, L212, L218).
