@@ -651,3 +651,32 @@ function renderQuickLinks() {
   box.replaceChildren(group);
   window.edgeFadeWire?.(row);
 }
+
+//: **A row's one line of what it does.** Its own `about` first; then the
+//: line "Tools and features" already writes for the same place (the rows
+//: share their `reveal` with `featureCatalog`, so the two lists cannot
+//: describe one control two ways); then the shortcut registry's label.
+function paletteAbouts() {
+  const abouts = new Map();
+  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
+  for (const group of catalog) {
+    for (const item of group.items || []) {
+      if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
+    }
+  }
+  return abouts;
+}
+
+function paletteRowParts(match, abouts) {
+  const { icon, text } = richPickerSplitLabel(match.label);
+  const chordLabel = match.chord && typeof shortcuts !== "undefined" ? shortcuts[match.chord]?.label : "";
+  return {
+    icon: icon || "ph:dot-outline",
+    //: Atlas's own face stands in its tile (the owner: "find anything
+    //: search" should have the avatar too).
+    face: match.mark === "atlas" && typeof atlasAvatar === "function" ? atlasAvatar(20) : null,
+    label: text,
+    about: match.about || abouts.get(match.reveal) || chordLabel || "",
+    keys: paletteKeys(match),
+  };
+}

@@ -849,7 +849,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerPaintTitle` | frontend/js/router.js:166 |
 | `routerRestore` | frontend/js/router.js:245 |
 
-### frontend/js/settings-panes.js (30)
+### frontend/js/settings-panes.js (28)
 
 | Name | File:line |
 |---|---|
@@ -873,10 +873,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:773 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:789 |
 | `nudgeZoom` | frontend/js/settings-panes.js:892 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1013 |
 | `paletteCaughtNow` | frontend/js/settings-panes.js:990 |
 | `paletteKeys` | frontend/js/settings-panes.js:999 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1024 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `reportTimezone` | frontend/js/settings-panes.js:544 |
 | `savePrefs` | frontend/js/settings-panes.js:666 |
@@ -1890,14 +1888,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `verificationRow` | frontend/js/answer-kit.js:2919 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1664 |
 
-### frontend/js/app-features.js (10)
+### frontend/js/app-features.js (12)
 
 | Name | File:line |
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:225 |
 | `notificationsUnreadSaid` | frontend/js/app-features.js:299 |
+| `paletteAbouts` | frontend/js/app-features.js:659 |
 | `paletteCommands` | frontend/js/app-features.js:306 |
+| `paletteRowParts` | frontend/js/app-features.js:670 |
 | `popupToolMaths` | frontend/js/app-features.js:256 |
 | `quickAccessCurrent` | frontend/js/app-features.js:623 |
 | `quickAccessItems` | frontend/js/app-features.js:614 |

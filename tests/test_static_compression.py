@@ -168,6 +168,8 @@ PIECE_CAP = 32_000
 #: 2026-11-13, L610 and L611, -185 (250,429 to 250,244): `askAtlasAboutNote` into the lazy
 #: entry-menu.js and `updateProfileCount` into the lazy settings-prefs.js, each beside its one
 #: caller; the chord guide was already lazy (bundle `chordGuide`). The cap did not move.
+#: 2026-11-14, -263 (250,517 to 250,254): `paletteAbouts` and `paletteRowParts` from settings-panes.js into
+#: the lazy app-features.js, which the palette's bundle and Quick access both load before any caller. The cap did not move.
 TOTAL_CAP = 250_450
 
 
