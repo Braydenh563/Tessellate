@@ -6917,6 +6917,8 @@ function wbApplySelectionHighlight() {
   }
 }
 
+//: Never moves focus: a map add (`wbMapAddChild`) opens the new topic's editor
+//: first and selects it after, so a focus here would take the typing away.
 function selectWbItem(kind, id) {
   if (kind !== "node" || id !== wbAddGate.cardRetypeId) wbAddGate.cardRetypeId = null;
   wbSelectedItem = { kind, id };
