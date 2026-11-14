@@ -1174,12 +1174,8 @@ function settingsHistoryFind(change) {
 //: wrote, so an Undo or Redo of one repaints them; every other control is drawn
 //: from the saved value when its pane opens.
 async function settingsHistoryApply(change, side) {
-<<<<<<< HEAD
   //: Nested, not shared: only an Undo here repaints the dock (the global-scope ratchet).
   function settingsRepaintDock(body) {
-=======
-  const settingsRepaintDock = (body) => {
->>>>>>> worktree-agent-a5d5731699c46d25a
     if ("tools_enabled" in body) {
       $("tools-toggle").checked = body.tools_enabled === true;
       renderChatModeSeg();
@@ -1189,11 +1185,7 @@ async function settingsHistoryApply(change, side) {
       renderNotifMuteToggle();
       renderNotificationBadge();
     }
-<<<<<<< HEAD
   }
-=======
-  };
->>>>>>> worktree-agent-a5d5731699c46d25a
   const kept = settingsHistoryFind(change) || change;
   const held = kept.big ? settingsHistoryBigKept.get(kept.id) : null;
   if (held) Object.assign(kept, held);
