@@ -88,7 +88,7 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     bm1005-mapmulti.js check 5: Alt+1 1 topic shown, Alt+2 5, Alt+3 all 6,
     one Ctrl+Z puts the folds back; 1440 light and 390 dark."""
     board = frontend_text("whiteboard.js")
-    mapjs = frontend_text("whiteboard-map.js")
+    mapjs = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     assert "async function wbMapFoldToLevel(level)" in mapjs
     assert '"wbMapFoldToLevel"' in board[board.index("const WB_RECORDED = [") :][:900]
     assert "/^Digit[1-9]$/.test(e.code) && wbIsMap()" in board

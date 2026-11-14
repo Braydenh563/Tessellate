@@ -10,7 +10,7 @@ from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP = frontend_text("whiteboard-map.js")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 WB = frontend_text("whiteboard.js")
 
 

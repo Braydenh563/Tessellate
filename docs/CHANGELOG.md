@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: the map's Undo-recorded commands (add, fold, tidy, layout, theme, cross-link edits) moved out of whiteboard-map.js into the wrapped whiteboard-map-record.js (1,200 lines), each bound once through `wbRecorded`, so a call from inside the file and a call through `window` both record one Undo step; the shared global scope has 17 fewer names (L-whiteboard-49)
 - Whiteboard: an image object must name a picture or PDF upload (a `/media/x.svg` address is refused), and `tests/test_wb_no_svg_images.py` proves no SVG reaches a board by any route (L-whiteboard-39 stays moot)
 - Whiteboard: a rich shape label exports as drawn words in SVG, PNG and PDF; a connector hung on another connector survives board and draw.io export, and lights the connector it will join while you drag its end.
 - Whiteboard: Format panel gains Text shadow, Glass, Picture fill (a saved image clipped to a drawn shape), Flip for stickies, pictures and frames (a sticky's words stay readable), frame Opacity, and a View menu Status bar (zoom, tool, selection count; off by default).

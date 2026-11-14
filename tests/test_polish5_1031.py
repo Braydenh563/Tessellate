@@ -42,7 +42,7 @@ def test_the_boards_picker_face_runs_to_two_lines_on_a_phone():
 def test_a_spilling_tidy_fits_the_map_on_desktop_and_frames_only_a_narrow_canvas():
     # Review finding: wbMapTidy called wbFrameMapOnOpen, which on desktop jumps
     # a large map to its root at 1:1 instead of fitting it.
-    src = _src("whiteboard-map.js")
+    src = _src("whiteboard-map.js") + _src("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     tidy = src[src.index("async function wbMapTidy(") :]
     tidy = tidy[: tidy.index("\n}\n")]
     assert "wbFrameSpilledMap()" in tidy and "wbFrameMapOnOpen" not in tidy

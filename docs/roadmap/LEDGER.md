@@ -279,8 +279,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 
 ## whiteboard
-
-- [ ] **L-whiteboard-49** `whiteboard` open, M: Carve the Undo-recorded map commands out of whiteboard-map.js after moving the recorder wrap into a registry. From L286 (D24) remainder. Evidence: whiteboard.js 15,907 and whiteboard-map.js 7,732 lines; global names 7,180. Left: the WB_RECORDED functions (whiteboard-map.js 800-1630 and 4130-6750 areas) and the history/undo block cannot move into a wrapped file until wbRecordGesture wraps by name inside the file, not by replacing window[name]; the 10,000-line onDomReady body in whiteboard.js holds one function.
+- [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
 
 ## documents
 

@@ -42,7 +42,7 @@ function wbMapSubtree(index, id) {
 
 
 def _run(body: str):
-    source = frontend_text("whiteboard-map.js")
+    source = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     match = re.search(r"^function wbMapFreshPlace\(row, parent\) \{.*?^\}", source, re.S | re.M)
     assert match, "wbMapFreshPlace is gone from whiteboard-map.js"
     out = subprocess.run(["node", "-e", STUBS + match.group(0) + body], capture_output=True, text=True, check=True).stdout

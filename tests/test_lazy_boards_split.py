@@ -29,7 +29,7 @@ JS = FRONTEND / "js"
 
 BOARD_FILES = [
     "whiteboard-map.js", "whiteboard-map-strip.js", "whiteboard-map-waypoints.js", "whiteboard-map-marks.js",
-    "whiteboard-map-edges.js", "whiteboard-map-notes.js", "whiteboard-map-look.js", "whiteboard-map-more.js",
+    "whiteboard-map-edges.js", "whiteboard-map-notes.js", "whiteboard-map-look.js", "whiteboard-map-record.js", "whiteboard-map-more.js",
     "whiteboard.js", "whiteboard-export.js", "whiteboard-present.js", "whiteboard-frames.js",
     "whiteboard-comments.js", "whiteboard-locks.js", "whiteboard-search.js", "whiteboard-connectors.js",
     "whiteboard-arrange.js", "whiteboard-navigator.js", "whiteboard-sketch-text.js", "whiteboard-textedit.js",
