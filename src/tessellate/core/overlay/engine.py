@@ -1130,8 +1130,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
         if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
             self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
             return
-        if self._away() and self.perch is None:
-            self._go_home(now)
+        if self._gap_or_home(now):
             return
         self._tell_mind(now, idle)
         self._perform(self._pick_act(now, idle), now)
@@ -1166,9 +1165,12 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
     def _begin_spell(self, now: float) -> None:
         """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
         it where it is when that is spot enough."""
-        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
-        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
+        used = pr.used_by_kind(self.spells, now)  # INBOX 1834: each kind held to its share of a while
+        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]], used)
+        length = min(pr.length_of(self.rng, name), pr.left_of(name, used))
+        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": length}
         spot = self._spell_spot(now)
+        self._note_far(spot, now)
         if spot is not None and abs(spot[0] - self.x) > SPELL_MOVE * self._scale():
             self._go(spot, "spell", now)
         else:
@@ -1184,7 +1186,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
             # so the first spell took it back there in a puff, seconds after it arrived
             return self._clear_of_caret(self.home_x, self.ground_y(m), SPELL_ROOM * self.size[1])
         side = tv.nearest_edge(self.x, m.area, self.size[0])
-        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65:
+        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65 and self._far_ok(now):
             side = -side
         x = tv.edge_x(side, m.area, self.size[0], self.rng.uniform(6.0, tv.EDGE_ZONE * 0.8) * k)
         if self.home_x is not None and tv.nearest_edge(self.home_x, m.area, self.size[0]) == side:
@@ -1402,7 +1404,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return up or self._no_spell()
+            return up or self._spell_shut(now)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:
@@ -1433,6 +1435,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
             self._note_dest("window" if act == "climb" else "hang")
         if act != "spell":
             self.spell = None
+        self.spell_gap = act == "spell"  # the next thing is a short act at the spell's spot (`_spell_gap_act`)
         if act == "spell":
             self._begin_spell(now)
         elif act == "stroll":
