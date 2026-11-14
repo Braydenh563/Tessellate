@@ -160,7 +160,7 @@ def test_a_change_to_a_lane_and_its_stacking_are_one_undo_step():
     gesture = src[src.index("async function wbRecordGesture") :].split("\n}\n")[0]
     assert "wbBoardState.lane?.settleNow()" in gesture
     fmt = frontend_text("whiteboard-format.js")
-    assert 'frame: ["pad", "stack", "collapse", "geometry", "props", "tags"]' in fmt and 'on("wb-fmt-stack", "change"' in fmt
+    assert 'frame: ["alpha", "pad", "stack", "collapse", "flip", "geometry", "props", "tags"]' in fmt and 'on("wb-fmt-stack", "change"' in fmt
 
 
 def test_the_guide_names_the_layouts() -> None:

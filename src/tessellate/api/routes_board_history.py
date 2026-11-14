@@ -46,6 +46,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
+from tessellate.repo import whiteboard as whiteboard_repo
 from tessellate.core.deps import get_session
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
@@ -425,7 +426,7 @@ def narrate_change(event_id: int, board_id: int | None = None, against: int | No
     board_id = _board_param(board_id)
     _require_board(db, board_id)
     for wanted in (event_id, against):
-        if wanted is not None and db.get(AuditLog, wanted) is None:
+        if wanted is not None and whiteboard_repo.audit_event(db, wanted) is None:
             raise HTTPException(status_code=404, detail="That version could not be found.")
     current = _current_rows(db, board_id)
     logs = _board_events(db, board_id, current)

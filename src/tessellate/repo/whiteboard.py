@@ -104,3 +104,10 @@ def entry(db: Session, entry_id: int) -> Entry | None:
 def entries(db: Session, ids: list[int]) -> list[Entry]:
     """The notes behind these cards."""
     return list(db.scalars(select(Entry).where(Entry.id.in_(ids))).all()) if ids else []
+
+
+def audit_event(db: Session, event_id: int):
+    """One audit-log row by id, or None (the board history's narrate route)."""
+    from tessellate.core.database import AuditLog
+
+    return db.get(AuditLog, event_id)

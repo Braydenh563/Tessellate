@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8792, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10964, test files 2810, tests 22634, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8792, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2810, tests 22634, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
 ## Frontend functions (8792)
 
@@ -14112,14 +14112,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:401 |
-| `/history` | GET | `board_history` | src/tessellate/api/routes_board_history.py:279 |
+| `/history` | GET | `board_history` | src/tessellate/api/routes_board_history.py:280 |
 | `/history` | GET | `tidy_history` | src/tessellate/api/routes_tidy.py:55 |
-| `/history/snapshots` | GET | `list_snapshots` | src/tessellate/api/routes_board_history.py:339 |
-| `/history/snapshots` | POST | `save_snapshot` | src/tessellate/api/routes_board_history.py:354 |
-| `/history/snapshots/{snapshot_id}` | DELETE | `delete_snapshot` | src/tessellate/api/routes_board_history.py:380 |
-| `/history/{event_id}` | GET | `board_at` | src/tessellate/api/routes_board_history.py:393 |
-| `/history/{event_id}/narrate` | POST | `narrate_change` | src/tessellate/api/routes_board_history.py:415 |
-| `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:571 |
+| `/history/snapshots` | GET | `list_snapshots` | src/tessellate/api/routes_board_history.py:340 |
+| `/history/snapshots` | POST | `save_snapshot` | src/tessellate/api/routes_board_history.py:355 |
+| `/history/snapshots/{snapshot_id}` | DELETE | `delete_snapshot` | src/tessellate/api/routes_board_history.py:381 |
+| `/history/{event_id}` | GET | `board_at` | src/tessellate/api/routes_board_history.py:394 |
+| `/history/{event_id}/narrate` | POST | `narrate_change` | src/tessellate/api/routes_board_history.py:416 |
+| `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:572 |
 | `/image` | POST | `fetch_topic_image` | src/tessellate/api/routes_webclip.py:90 |
 | `/images` | GET | `list_images` | src/tessellate/api/wb_boards.py:247 |
 | `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:125 |
@@ -14571,7 +14571,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10964)
+## Backend modules (10965)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22023,36 +22023,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `RestoreBody` | src/tessellate/api/routes_board_history.py:450 |
-| `SnapshotBody` | src/tessellate/api/routes_board_history.py:319 |
-| `_begins` | src/tessellate/api/routes_board_history.py:164 |
-| `_board_events` | src/tessellate/api/routes_board_history.py:106 |
-| `_board_param` | src/tessellate/api/routes_board_history.py:76 |
-| `_board_settings` | src/tessellate/api/routes_board_history.py:324 |
-| `_current_rows` | src/tessellate/api/routes_board_history.py:89 |
-| `_drop_orphaned_links` | src/tessellate/api/routes_board_history.py:526 |
-| `_is_delete` | src/tessellate/api/routes_board_history.py:172 |
-| `_link_data` | src/tessellate/api/routes_board_history.py:459 |
-| `_link_ends` | src/tessellate/api/routes_board_history.py:455 |
-| `_moments` | src/tessellate/api/routes_board_history.py:242 |
-| `_names_board` | src/tessellate/api/routes_board_history.py:81 |
-| `_remove_gone` | src/tessellate/api/routes_board_history.py:470 |
-| `_repoint` | src/tessellate/api/routes_board_history.py:562 |
-| `_repoint_link` | src/tessellate/api/routes_board_history.py:541 |
-| `_require_board` | src/tessellate/api/routes_board_history.py:271 |
-| `_restore_one` | src/tessellate/api/routes_board_history.py:494 |
-| `_restore_order` | src/tessellate/api/routes_board_history.py:485 |
-| `_row_out` | src/tessellate/api/routes_board_history.py:299 |
-| `_snapshot_board` | src/tessellate/api/routes_board_history.py:332 |
-| `_state_of` | src/tessellate/api/routes_board_history.py:98 |
-| `_states_at` | src/tessellate/api/routes_board_history.py:177 |
-| `board_at` | src/tessellate/api/routes_board_history.py:394 |
-| `board_history` | src/tessellate/api/routes_board_history.py:280 |
-| `delete_snapshot` | src/tessellate/api/routes_board_history.py:381 |
-| `list_snapshots` | src/tessellate/api/routes_board_history.py:340 |
-| `narrate_change` | src/tessellate/api/routes_board_history.py:416 |
-| `restore_board` | src/tessellate/api/routes_board_history.py:572 |
-| `save_snapshot` | src/tessellate/api/routes_board_history.py:355 |
+| `RestoreBody` | src/tessellate/api/routes_board_history.py:451 |
+| `SnapshotBody` | src/tessellate/api/routes_board_history.py:320 |
+| `_begins` | src/tessellate/api/routes_board_history.py:165 |
+| `_board_events` | src/tessellate/api/routes_board_history.py:107 |
+| `_board_param` | src/tessellate/api/routes_board_history.py:77 |
+| `_board_settings` | src/tessellate/api/routes_board_history.py:325 |
+| `_current_rows` | src/tessellate/api/routes_board_history.py:90 |
+| `_drop_orphaned_links` | src/tessellate/api/routes_board_history.py:527 |
+| `_is_delete` | src/tessellate/api/routes_board_history.py:173 |
+| `_link_data` | src/tessellate/api/routes_board_history.py:460 |
+| `_link_ends` | src/tessellate/api/routes_board_history.py:456 |
+| `_moments` | src/tessellate/api/routes_board_history.py:243 |
+| `_names_board` | src/tessellate/api/routes_board_history.py:82 |
+| `_remove_gone` | src/tessellate/api/routes_board_history.py:471 |
+| `_repoint` | src/tessellate/api/routes_board_history.py:563 |
+| `_repoint_link` | src/tessellate/api/routes_board_history.py:542 |
+| `_require_board` | src/tessellate/api/routes_board_history.py:272 |
+| `_restore_one` | src/tessellate/api/routes_board_history.py:495 |
+| `_restore_order` | src/tessellate/api/routes_board_history.py:486 |
+| `_row_out` | src/tessellate/api/routes_board_history.py:300 |
+| `_snapshot_board` | src/tessellate/api/routes_board_history.py:333 |
+| `_state_of` | src/tessellate/api/routes_board_history.py:99 |
+| `_states_at` | src/tessellate/api/routes_board_history.py:178 |
+| `board_at` | src/tessellate/api/routes_board_history.py:395 |
+| `board_history` | src/tessellate/api/routes_board_history.py:281 |
+| `delete_snapshot` | src/tessellate/api/routes_board_history.py:382 |
+| `list_snapshots` | src/tessellate/api/routes_board_history.py:341 |
+| `narrate_change` | src/tessellate/api/routes_board_history.py:417 |
+| `restore_board` | src/tessellate/api/routes_board_history.py:573 |
+| `save_snapshot` | src/tessellate/api/routes_board_history.py:356 |
 
 ### src/tessellate/api/routes_board_library.py (80)
 
@@ -28169,10 +28169,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/repo/voice.py:37 |
 | `this_day_before` | src/tessellate/repo/voice.py:41 |
 
-### src/tessellate/repo/whiteboard.py (9)
+### src/tessellate/repo/whiteboard.py (10)
 
 | Name | File:line |
 |---|---|
+| `audit_event` | src/tessellate/repo/whiteboard.py:109 |
 | `board_cards` | src/tessellate/repo/whiteboard.py:76 |
 | `board_nodes` | src/tessellate/repo/whiteboard.py:94 |
 | `board_objects` | src/tessellate/repo/whiteboard.py:71 |
