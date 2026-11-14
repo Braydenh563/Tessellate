@@ -505,46 +505,6 @@ api.epoch = 0;
 // F5 (tests/test_no_bare_fetch.py)
 api.upload = (path, body, options) => api(path, { method: "POST", body, ...options });
 api.stream = api;
-//: **The one NDJSON stream reader** (L170): Ask, Chat, the Guide, the digest and the writing desk each
-//: kept their own `getReader` loop, five copies of the same split on newlines. `onEvent` gets each
-//: parsed line; a line that does not parse is logged and skipped, so one bad frame cannot lose an answer
-//: that is half written. `idleMs` rejects with `idleMessage` when nothing at all arrives for that long
-//: (a stalled backend has nothing else to catch it) and cancels the fetch.
-api.ndjson = async (response, onEvent, { idleMs = 0, idleMessage = "The stream stopped responding.", label = "Stream" } = {}) => {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
-  const take = (raw) => {
-    if (!raw.trim()) return;
-    let event;
-    try {
-      event = JSON.parse(raw);
-    } catch {
-      recordBrowserLog("WARN", [`[${label}] Unparseable line: ${raw.slice(0, 80)}`]);
-      return;
-    }
-    return onEvent(event);
-  };
-  const next = () => {
-    if (!idleMs) return reader.read();
-    let timer;
-    const idle = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("stream_idle_timeout")), idleMs); });
-    return Promise.race([reader.read(), idle]).catch((err) => {
-      if (err.message !== "stream_idle_timeout") throw err;
-      reader.cancel().catch(() => {});
-      throw new Error(idleMessage);
-    }).finally(() => clearTimeout(timer));
-  };
-  for (;;) {
-    const { done, value } = await next();
-    if (done) break;
-    buffered += decoder.decode(value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop();
-    for (const line of lines) take(line);
-  }
-  take(buffered);
-};
 
 // --- reading a paged list endpoint whole ---------------------------------------
 //
@@ -1583,6 +1543,8 @@ const LAZY_MODULES = {
   settingsData: ["/js/settings-data.js"],
   settingsUi: ["/js/meaning.js", "/js/settings-find.js", "/js/settings-models.js"],
   tagSuggest: ["/js/tag-suggest.js"],
+  //: The NDJSON stream reader (L170): only a streamed answer needs it, so it is not boot code.
+  ndjson: ["/js/ndjson-read.js"],
   //: meaning.js first: the suggestions take its words for what was typed (L199, Brief 86).
   searchSuggest: ["/js/meaning.js", "/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.

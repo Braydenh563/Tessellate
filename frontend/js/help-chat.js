@@ -562,6 +562,7 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     }
     toBottom();
   };
+  await ensureModule("ndjson");
   await api.ndjson(response, take, { label: "Guide stream" });
   line?.remove();
   return {

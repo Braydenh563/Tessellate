@@ -181,6 +181,7 @@ async function streamDraft(body, signal, onEvent) {
       recordBrowserLog("WARN", [`[Draft stream] A handler threw on a ${event?.type} line: ${err?.message}`]);
     }
   };
+  await ensureModule("ndjson");
   await api.ndjson(response, safely, { label: "Draft stream" });
 }
 

@@ -1,4 +1,4 @@
-"""L170: one NDJSON reader (`api.ndjson`, app.js) for Ask, Chat, the Guide, the digest and the writing desk.
+"""L170: one NDJSON reader (`api.ndjson`, ndjson-read.js, loaded on first use) for Ask, Chat, the Guide, the digest and the writing desk.
 
 The real helper runs in node against a stream that splits a line across two
 chunks, carries a bad line and ends without a newline, and against one that
@@ -43,7 +43,7 @@ const stream = (chunks, hang = false) => {
 
 
 def _helper() -> str:
-    text = (JS / "app.js").read_text(encoding="utf-8")
+    text = (JS / "ndjson-read.js").read_text(encoding="utf-8")
     start = text.index("api.ndjson = async")
     return text[start : text.index("\n};\n", start) + 4]
 
@@ -60,4 +60,4 @@ def test_the_reader_joins_split_lines_skips_a_bad_one_and_gives_up_on_silence():
 @pytest.mark.parametrize("name", CONSUMERS)
 def test_a_consumer_has_no_reader_of_its_own(name):
     text = (JS / name).read_text(encoding="utf-8")
-    assert "api.ndjson(" in text and "getReader()" not in text and not re.search(r"decoder\.decode\(", text)
+    assert 'await ensureModule("ndjson");' in text and "api.ndjson(" in text and "getReader()" not in text and not re.search(r"decoder\.decode\(", text)

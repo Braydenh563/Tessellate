@@ -1233,6 +1233,7 @@ async function streamChatEvents({
   //: only for a hang inside that one socket call; anything that stalls it before or between chunks
   //: has nothing to catch it. `STREAM_IDLE_TIMEOUT_MS` is longer than the backend's own 120s per
   //: chunk, so a real recovery message from it always wins; this is for when nothing ever arrives.
+  await ensureModule("ndjson");
   await api.ndjson(response, (event) => {
       if (event.type === "meta") onMeta(event);
       //: The first byte the server flushes, before retrieval (routes_chat.py,

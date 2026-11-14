@@ -17,7 +17,7 @@
 // second of main thread idle, over the page with it off.
 const fs = require('fs');
 const os = require('os');
-const { boot, setBuddy } = require('./lib.js');
+const { boot } = require('./lib.js');
 const KINDS = (process.env.KINDS || 'off,me,atlas').split(',');
 const TAB = process.env.TAB || 'dashboard';
 const OUT = process.env.OUT || `${os.tmpdir()}/companion-perf.json`;
@@ -110,8 +110,8 @@ async function idleRun() {
       localStorage.removeItem('nm-buddy-spots');
       if (st === 'appreduce') { localStorage.setItem('motion', 'reduced'); document.documentElement.dataset.motion = 'reduced'; }
       if (st === 'animoff') { localStorage.setItem('avatar-motion', 'off'); document.documentElement.dataset.avatarMotion = 'off'; }
+      prefs.set('avatar-buddy', k); syncNameMarkBuddy();
     }, [kind, state || '']);
-    await setBuddy(page, kind);
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);
     // Headless Chromium keeps a page in the background visible, so the
@@ -153,7 +153,8 @@ async function idleRun() {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
-    await setBuddy(page, kind);
+    await page.evaluate((k) => { prefs.set('avatar-buddy', k); syncNameMarkBuddy(); }, kind);
+    await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);
     const idle = await phase(page, cdp, browser, `${kind}-idle`, () => page.waitForTimeout(MS));

@@ -2717,6 +2717,7 @@ async function streamDigest(onDelta) {
   let text = "";
   let cacheable = true;
   // NDJSON: one JSON object per line, same shape as the chat stream.
+  await ensureModule("ndjson");
   await api.ndjson(response, (event) => {
       if (event.type === "answer") {
         text += event.delta;

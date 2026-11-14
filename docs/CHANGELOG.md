@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The NDJSON stream reader loads on first use (ndjson-read.js), bringing the boot scripts back under the gzip cap (2026-11-14).
 - Docs: 17 open-reading comments in the Ask, capture, reply and skills scripts reworded (feature words, not open work); the Ask foot announces suggested questions (2026-11-14).
 - Fix flake: companion live click test waits for the viewer and retries a covered click, and says how many clicks landed (2026-11-14).
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
