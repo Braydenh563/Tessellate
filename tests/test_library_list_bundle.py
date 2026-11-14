@@ -29,8 +29,9 @@ def test_the_library_tab_takes_the_list_bundle():
     assert 'library: "libraryList"' in APP and 'documents: "library"' in APP
     modules = _table("LAZY_MODULES")
     #: The list's own stylesheet rides with it (library-lazy.css's header).
+    #: library-links.js (the Links tab's folders and cards) is list-only too.
     #: undo-store.js since DX11 (audit 1102): a purge from the list forgets the item's stored history.
-    assert re.search(r'libraryList: \[("/css/library-lazy\.css", )?("/js/undo-store\.js", )?"/js/library\.js"\]', modules)
+    assert re.search(r'libraryList: \[("/css/library-lazy\.css", )?("/js/undo-store\.js", )?"/js/library\.js"(, "/js/library-links\.js")?\]', modules)
     library = re.search(r"\n  library: \[(.*?)\]", modules, re.S).group(1)
     assert '"/js/library.js"' in library, "the whole surface still includes the list"
 

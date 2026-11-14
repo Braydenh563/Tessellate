@@ -46,6 +46,17 @@ def table(text: str) -> dict[str, tuple[int, ...]]:
 
 
 def recount(text: str) -> str:
+    #: One row per plan: a union merge of two branches' tables once stacked 38 `| all |` rows.
+    seen: set[str] = set()
+    kept = []
+    for line in text.split("\n"):
+        m = COUNT.match(line)
+        if m and m.group(1) in seen:
+            continue
+        if m:
+            seen.add(m.group(1))
+        kept.append(line)
+    text = "\n".join(kept)
     for p, v in table(text).items():
         text = re.sub(rf"^\| {re.escape(p)} \|( \d+ \|){{6}}$", f"| {p} | " + " | ".join(map(str, v)) + " |", text, flags=re.M)
     return text
@@ -53,8 +64,9 @@ def recount(text: str) -> str:
 
 def add(a: argparse.Namespace) -> str:
     text = LEDGER.read_text(encoding="utf-8")
-    #: Closed rows move to HISTORY, so their ids are still taken (L-chat-25 was handed out twice).
-    seen = text + HISTORY.read_text(encoding="utf-8")
+    #: HISTORY too: a done row's id is still cited from code comments and
+    #: commits, so it is never handed out again (2026-11-13: L-timeline-1 was).
+    seen = text + (HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else "")
     taken = [int(m.group(1)) for m in re.finditer(rf"\*\*L-{re.escape(a.plan)}-(\d+)\*\*", seen)]
     rid = f"L-{a.plan}-{max(taken, default=0) + 1}"
     title = a.title.strip().rstrip(".")

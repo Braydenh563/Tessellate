@@ -280,7 +280,8 @@ def test_the_template_dialog_is_the_dialog_of_choices_recipe_with_one_filled_but
     code = SUGGEST.read_text(encoding="utf-8")
     for fragment in ("doc-template-choice", 'role", "radiogroup"', '"radio"', "aria-checked", "doc-template-body", "doc-template-preview", "space-dialog-actions", "dialogHead("):
         assert fragment in code, fragment
-    assert code.count('go.classList.add("accent")') == 1 and "ghost" in code
+    #: Intent unchanged, the file gained the sheet of diagrams (R12), a second dialog of choices with its one filled button.
+    assert code.count('go.classList.add("accent")') == 2 and "ghost" in code
     # Choosing is not making: a double click or Enter uses the row, a click only chooses.
     assert 'addEventListener("dblclick", use)' in code and 'addEventListener("click", () => choose(t))' in code
 
@@ -306,5 +307,6 @@ def test_the_template_picker_filters_and_the_door_offers_the_existing_diagrams()
     assert 'listFilter(list, { label: "Search the templates"' in suggest
     embed = (ROOT / "frontend" / "js" / "diagram-embed.js").read_text(encoding="utf-8")
     assert "existing" in embed and "Open an existing diagram" in embed
+    #: Intent unchanged, the list moved (R12): the open-an-existing button asks the sheet, which lists the mmd documents (diagram-suggest.js).
     mermaid = (ROOT / "frontend" / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
-    assert 'file_type === "mmd"' in mermaid and "pickerDialog(" in mermaid
+    assert 'file_type === "mmd"' in suggest and "chooseDiagram({ fresh: false })" in mermaid

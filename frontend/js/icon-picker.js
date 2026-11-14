@@ -65,7 +65,7 @@
       "face_screaming_in_fear=\u{1F631},shocked_face_with_exploding_head=\u{1F92F}," +
       "face_with_open_mouth_and_cold_sweat=\u{1F630},overheated_face=\u{1F975},freezing_face=\u{1F976}," +
       "face_with_uneven_eyes_and_wavy_mouth=\u{1F974},tired_face=\u{1F62B},yawning_face=\u{1F971}," +
-      "face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
+      "confounded_face=\u{1F616},face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
       "money_mouth_face=\u{1F911},skull=\u{1F480},pile_of_poo=\u{1F4A9},clown_face=\u{1F921}," +
       "ghost=\u{1F47B},extraterrestrial_alien=\u{1F47D},robot_face=\u{1F916}," +
       "see_no_evil_monkey=\u{1F648},hear_no_evil_monkey=\u{1F649},speak_no_evil_monkey=\u{1F64A},"],
