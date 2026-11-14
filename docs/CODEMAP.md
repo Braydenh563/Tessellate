@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2790, CSS sections 526, backend routes 714, backend modules 10909, test files 2868, tests 22551, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2790, CSS sections 526, backend routes 714, backend modules 10913, test files 2870, tests 22556, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -14140,7 +14140,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10909)
+## Backend modules (10913)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25519,13 +25519,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:116 |
+| `Engine` | src/tessellate/core/overlay/engine.py:117 |
 
 ### src/tessellate/core/overlay/engine_beats.py (1)
 
 | Name | File:line |
 |---|---|
-| `BeatsMixin` | src/tessellate/core/overlay/engine_beats.py:15 |
+| `BeatsMixin` | src/tessellate/core/overlay/engine_beats.py:18 |
 
 ### src/tessellate/core/overlay/engine_consts.py (10)
 
@@ -25565,6 +25565,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `InputMixin` | src/tessellate/core/overlay/engine_input.py:30 |
+
+### src/tessellate/core/overlay/engine_nap.py (1)
+
+| Name | File:line |
+|---|---|
+| `NapMixin` | src/tessellate/core/overlay/engine_nap.py:12 |
 
 ### src/tessellate/core/overlay/engine_roam.py (1)
 
@@ -25662,15 +25668,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `top_edges` | src/tessellate/core/overlay/perches.py:32 |
 | `tuck_spots` | src/tessellate/core/overlay/perches.py:82 |
 
-### src/tessellate/core/overlay/presence.py (5)
+### src/tessellate/core/overlay/presence.py (8)
 
 | Name | File:line |
 |---|---|
 | `Spell` | src/tessellate/core/overlay/presence.py:17 |
 | `_span` | src/tessellate/core/overlay/presence.py:29 |
-| `length_of` | src/tessellate/core/overlay/presence.py:64 |
-| `pick_spell` | src/tessellate/core/overlay/presence.py:51 |
-| `spells_for` | src/tessellate/core/overlay/presence.py:46 |
+| `left_of` | src/tessellate/core/overlay/presence.py:76 |
+| `length_of` | src/tessellate/core/overlay/presence.py:99 |
+| `open_spells` | src/tessellate/core/overlay/presence.py:80 |
+| `pick_spell` | src/tessellate/core/overlay/presence.py:85 |
+| `spells_for` | src/tessellate/core/overlay/presence.py:48 |
+| `used_by_kind` | src/tessellate/core/overlay/presence.py:64 |
 
 ### src/tessellate/core/overlay/props.py (33)
 
@@ -28093,7 +28102,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22551)
+## Tests (22556)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30013,6 +30022,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_deskframes_1696.py | 3 |
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_doing_1718.py | 4 |
+| tests/test_overlay_drift_reach_l_ui_140.py | 1 |
 | tests/test_overlay_e3_1111.py | 14 |
 | tests/test_overlay_edge_squash_1111.py | 5 |
 | tests/test_overlay_edges_1107.py | 20 |
@@ -30043,6 +30053,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_mood_1108.py | 12 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_nap_1683u.py | 7 |
+| tests/test_overlay_nap_trip_l_ui_104.py | 2 |
 | tests/test_overlay_pace_1683.py | 5 |
 | tests/test_overlay_palette_1724.py | 2 |
 | tests/test_overlay_parity_1683.py | 29 |
@@ -30074,7 +30085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_size_review_1107.py | 10 |
 | tests/test_overlay_slow_tick_1108.py | 2 |
 | tests/test_overlay_smooth_1670.py | 11 |
-| tests/test_overlay_spell_beats_l_ui_99.py | 4 |
+| tests/test_overlay_spell_beats_l_ui_99.py | 6 |
 | tests/test_overlay_spin_1683.py | 12 |
 | tests/test_overlay_spin_1696.py | 4 |
 | tests/test_overlay_sprites.py | 17 |
@@ -31390,13 +31401,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-ui-modernisation-69) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:611 |
+| Needs hardware | docs/roadmap/LEDGER.md:609 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:528 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:604 |
+| Owner calls | docs/roadmap/LEDGER.md:602 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:533 |
@@ -31431,7 +31442,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:233 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1234 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:45 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:40 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4055 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3125 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1714 |
@@ -31571,7 +31582,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:780 |
+| Plan session briefs | docs/roadmap/LEDGER.md:778 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31625,25 +31636,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:796 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:880 |
+| chat | docs/roadmap/LEDGER.md:794 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:878 |
 | documents | docs/roadmap/LEDGER.md:331 |
-| documents | docs/roadmap/LEDGER.md:820 |
-| general | docs/roadmap/LEDGER.md:601 |
+| documents | docs/roadmap/LEDGER.md:818 |
+| general | docs/roadmap/LEDGER.md:599 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:784 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:892 |
+| graph | docs/roadmap/LEDGER.md:782 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:890 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:347 |
-| mindmap | docs/roadmap/LEDGER.md:832 |
-| timeline | docs/roadmap/LEDGER.md:363 |
-| timeline | docs/roadmap/LEDGER.md:856 |
+| mindmap | docs/roadmap/LEDGER.md:830 |
+| timeline | docs/roadmap/LEDGER.md:361 |
+| timeline | docs/roadmap/LEDGER.md:854 |
 | ui-modernisation | docs/roadmap/LEDGER.md:350 |
-| ui-modernisation | docs/roadmap/LEDGER.md:844 |
+| ui-modernisation | docs/roadmap/LEDGER.md:842 |
 | whiteboard | docs/roadmap/LEDGER.md:285 |
-| whiteboard | docs/roadmap/LEDGER.md:808 |
-| world-class | docs/roadmap/LEDGER.md:365 |
-| world-class | docs/roadmap/LEDGER.md:868 |
+| whiteboard | docs/roadmap/LEDGER.md:806 |
+| world-class | docs/roadmap/LEDGER.md:363 |
+| world-class | docs/roadmap/LEDGER.md:866 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |

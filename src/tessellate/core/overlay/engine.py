@@ -103,6 +103,7 @@ from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
+from .engine_nap import NapMixin
 from .engine_roam import RoamMixin
 from .engine_touch import TouchMixin
 
@@ -113,7 +114,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -1129,8 +1130,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
         if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
             self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
             return
-        if self._away() and self.perch is None:
-            self._go_home(now)
+        if self._gap_or_home(now):
             return
         self._tell_mind(now, idle)
         self._perform(self._pick_act(now, idle), now)
@@ -1165,9 +1165,12 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
     def _begin_spell(self, now: float) -> None:
         """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
         it where it is when that is spot enough."""
-        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
-        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
+        used = pr.used_by_kind(self.spells, now)  # INBOX 1834: each kind held to its share of a while
+        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]], used)
+        length = min(pr.length_of(self.rng, name), pr.left_of(name, used))
+        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": length}
         spot = self._spell_spot(now)
+        self._note_far(spot, now)
         if spot is not None and abs(spot[0] - self.x) > SPELL_MOVE * self._scale():
             self._go(spot, "spell", now)
         else:
@@ -1183,7 +1186,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
             # so the first spell took it back there in a puff, seconds after it arrived
             return self._clear_of_caret(self.home_x, self.ground_y(m), SPELL_ROOM * self.size[1])
         side = tv.nearest_edge(self.x, m.area, self.size[0])
-        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65:
+        if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65 and self._far_ok(now):
             side = -side
         x = tv.edge_x(side, m.area, self.size[0], self.rng.uniform(6.0, tv.EDGE_ZONE * 0.8) * k)
         if self.home_x is not None and tv.nearest_edge(self.home_x, m.area, self.size[0]) == side:
@@ -1401,7 +1404,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
         if act == "hang" and self._dest_repeats("hang"):
             return True
         if act == "spell":
-            return up or self._no_spell()
+            return up or self._spell_shut(now)
         return act == "stroll" and up
 
     def _no_spell(self) -> bool:
@@ -1432,6 +1435,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
             self._note_dest("window" if act == "climb" else "hang")
         if act != "spell":
             self.spell = None
+        self.spell_gap = act == "spell"  # the next thing is a short act at the spell's spot (`_spell_gap_act`)
         if act == "spell":
             self._begin_spell(now)
         elif act == "stroll":
@@ -1523,39 +1527,6 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
             self._enter("stand", now)
             return True
         return self.state in self._FREE
-
-    def _nap(self, now: float) -> None:
-        if self.perch is not None and not self.reduced and self.gait == "walk":
-            self.nap_after_land = True  # it never sleeps on a window: down first, then to sleep
-            self._leave_perch(now, hop=False)
-            return
-        self.perch = None
-        self.spell = None
-        self.follow_until = self.follow_close_until = 0.0
-        self.relocate_at = None
-        if self.reduced:
-            self._enter("sit", now)
-            return
-        self.nap_req = True
-        spot = self._nap_spot()
-        if spot is not None and self.gait == "walk":
-            self._go(spot, "nap", now, plain=True)  # to a corner first, on foot
-            return
-        self._settle_to_sleep(now)
-
-    def _nap_spot(self) -> tuple[float, float] | None:
-        """Where a nap is taken: out of the middle third, by the nearer edge; None when it is there already."""
-        m = self.current_monitor()
-        x = tv.out_of_middle(self.x, m.area, self.size[0])
-        if abs(x - self.x) < 12 * self._scale():
-            return None
-        return x, self.ground_y(m)
-
-    def _settle_to_sleep(self, now: float) -> None:
-        """A turn (to face the way it came, tail to the room) and a curl, then asleep."""
-        if self.metrics:
-            self._face(-self.facing, now)
-        self._enter("sleep", now)
 
     def _wake_up(self, now: float) -> None:
         if not self.reduced:
@@ -2558,7 +2529,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
         pace = self._brake(now, dt) if self._yields(now, math.cos(self.heading) * 90 * scale) else self._pace(now, dist)
         if pace <= 0.0:
             return
-        self._drift_move(m, FLOAT_SPEED * scale * pace * dt)
+        self._drift_move(m, min(dist, FLOAT_SPEED * scale * pace * dt))  # never past the goal: it stepped over and back (L-ui-140)
         if abs(math.cos(self.heading)) > 0.5:
             self._face(1 if math.cos(self.heading) > 0 else -1, now)
         if wandering and now >= self.state_until:

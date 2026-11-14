@@ -7,6 +7,9 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The desk companion does something short where it is between two long pastimes, keeps each pastime to its share of the while, and reads a map by day, so no picture fills over 40% of an hour and no pastime over 20% (L-ui-modernisation-99)
+- A floating desk companion no longer gets stuck stepping back and forth beside its goal at the end of a fast glide (L-ui-modernisation-140)
+- The desk companion's own naps end after a few minutes with a stretch, so it no longer sleeps 40 to 68% of an hour while the person is about (L-ui-modernisation-104)
 - The desk frame capture draws each pose's own lower body, tail, hair and nebula the same every run (51 of 51 parts agree, were a random variant 3,900 to 7,800 px apart) and captures the tumble again; the shipped frames wait on L-ui-modernisation-152 (L-ui-modernisation-57, partly)
 - The desk companion's lower streams still trail a fast move but bend at most 4 degrees off the torso (3.5 to 3.7 on a hard-turn run, were 4.1 to 4.9; the 6 px clamp reached 7.2 to 7.7) (L-ui-modernisation-103)
 - A fishbone map no longer draws a rib behind a cause box after a full tidy: causes hang from their column's right edge and a rib leaves the spine within half an indent of its own corner, so maplayouts.js goes 39/40 to 40/40 on a 200-topic map (L-ui-modernisation-105)
