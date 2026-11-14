@@ -2185,7 +2185,12 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // The picture may have been paged away from while this was in flight.
     if (forIndex !== index) return;
 
-    const readings = lightboxReadingsFor(row);
+    //: The two stored readings come from `GET /files/readings` (F10), so the
+    //: panel and the search index agree; the row is the fallback if it fails.
+    const stored = row.id ? await apiJson(`/files/readings?source=upload&id=${row.id}`).catch(() => null) : null;
+    if (forIndex !== index) return;
+    const of = (kind) => (Array.isArray(stored) ? stored : []).find((r) => r.kind === kind && !r.page);
+    const readings = lightboxReadingsFor(stored ? { vision_ocr_text: of("vision")?.text, vision_ocr_model: of("vision")?.model, ocr_text: of("ocr")?.text } : row);
     if (!item.caption && row.caption) item.caption = row.caption;
     if (row.id && !item.metaId) item.metaId = row.id;
     if (!item.text) {

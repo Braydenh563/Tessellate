@@ -9492,7 +9492,7 @@ Link to another note with [[its first few words]]."></textarea>
            a finished run still reachable, and, like the job slot above, it
            appears only once there is something to show. -->
       <button id="status-activity" class="status-item hidden" type="button"></button>
-      <span id="power-saver-indicator" class="chip warning hidden" title="Battery-efficient mode is on: background AI tasks and heavy graph work are paused, and the moving pictures stop. Settings, Background tasks has the switch."><i class="ph ph-battery-full ph-lead" aria-hidden="true"></i> Saver On</span>
+      <span id="power-saver-indicator" class="chip warning chip-interactive hidden" tabindex="0" title="Battery-efficient mode is on: background AI tasks and heavy graph work are paused, and the moving pictures stop. Settings, Background tasks has the switch."><i class="ph ph-battery-full ph-lead" aria-hidden="true"></i> Saver On</span>
       <!-- Offline badge. Tessellate works offline by design, that is the whole
            point of it: so this is not an error state and must not read as one.
            What it tells you is narrower and genuinely useful: the two things
@@ -9502,7 +9502,7 @@ Link to another note with [[its first few words]]."></textarea>
            `role="status"` so a screen reader hears it when it appears; the
            markup for it was missing entirely while app.js already had the
            online/offline listeners, so the feature could never show. -->
-      <span id="offline-indicator" class="chip warning hidden" role="status"
+      <span id="offline-indicator" class="chip warning chip-interactive hidden" tabindex="0" role="status"
         title="No internet connection: web search and any cloud model are unavailable. Your notes and local AI are unaffected."><i class="ph ph-wifi-slash ph-lead" aria-hidden="true"></i>Offline</span>
     </span>
     <span class="status-spacer"></span>

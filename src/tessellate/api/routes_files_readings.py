@@ -11,6 +11,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, vision_ocr
@@ -454,6 +455,40 @@ def media_page_caption(
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return rf._describe_page(path, page, rf._page_read_key(None, upload_id))
+
+
+class FileReadingOut(BaseModel):
+    """One stored reading of a file: the `readings` view's row (F10)."""
+
+    kind: str
+    page: int = 0
+    text: str
+    model: str = ""
+    ts: str | None = None
+
+
+@router.get("/files/readings", response_model=list[FileReadingOut])
+def file_readings(
+    source: str,
+    id: int,  # noqa: A002  # the query name the plan and the tests use
+    session: Session = Depends(get_session),
+) -> list[FileReadingOut]:
+    """Every reading of one file in one shape: caption, Tesseract, vision, pages.
+
+    `source` is "attachment" or "upload". A locked private note's file answers
+    409 like the rest of its routes.
+    """
+    if source == "attachment":
+        rf._existing_attachment(session, id)
+    elif source == "upload":
+        rf._existing_upload(session, id)
+    else:
+        raise HTTPException(status_code=422, detail="The source must be attachment or upload.")
+    rows = session.execute(
+        text("SELECT kind, page, text, model, ts FROM readings WHERE source = :s AND source_id = :i ORDER BY page, kind"),
+        {"s": source, "i": id},
+    ).all()
+    return [FileReadingOut(kind=r[0], page=r[1] or 0, text=r[2], model=r[3] or "", ts=str(r[4]) if r[4] else None) for r in rows]
 
 
 @router.get("/files/{attachment_id}/page-reads", response_model=OcrRangeReadOut)
