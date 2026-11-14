@@ -95,7 +95,10 @@ def facet_actions() -> dict[str, list[str]]:
 def _data() -> dict:
     """The pack, with Tessellate's reviewed everyday vocabulary merged into its
     topics (`memorymap_everyday.json`: words the pack's formal phrases miss,
-    INBOX 1297). The pack file itself is never edited."""
+    INBOX 1297). The pack files hold the pack's vocabulary minus
+    `RELOCATED_PHRASES` (moved out for open_scan, L-chat-243), merged back
+    here, so the topics match what the pack shipped; no script regenerates
+    the pack files (`tests/test_relocated_phrases.py` pins both)."""
     pack = _read("memorymap_taxonomy.json")
     extra = _read("memorymap_everyday.json")
     pack["taxonomy"] = merge_taxonomy(merge_taxonomy(pack["taxonomy"], {k: list(v) for k, v in RELOCATED_PHRASES.items()}), extra["terms"])

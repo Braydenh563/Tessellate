@@ -9,6 +9,7 @@ in `taxonomy.RELOCATED_PHRASES`, `taxonomy.facet_actions` and
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -57,3 +58,14 @@ def test_the_facets_action_keeps_its_name_and_phrases() -> None:
 
 def test_the_glossary_still_answers_the_relocated_alias() -> None:
     assert composer_calc.glossary()["deferred exam"]["term"] == "deferral"
+
+
+def test_any_script_that_writes_the_pack_files_strips_the_relocated_phrases() -> None:
+    """A regeneration that wrote the pack back whole would bring the open_scan hits back (L-chat-243)."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    for path in [*root.glob("scripts/**/*.py"), *root.glob("src/**/*.py")]:
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"memorymap_(taxonomy|facets)\.json", text) and re.search(r"\b(write_text|json\.dump)\b", text):
+            assert "RELOCATED_PHRASES" in text, path

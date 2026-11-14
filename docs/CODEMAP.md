@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11078, test files 2893, tests 22788, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11078, test files 2893, tests 22789, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8510)
 
@@ -20367,57 +20367,57 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `__getattr__` | src/tessellate/ai/taxonomy.py:166 |
-| `_analyze_topics` | src/tessellate/ai/taxonomy.py:242 |
-| `_bundled_entities` | src/tessellate/ai/taxonomy.py:374 |
-| `_children` | src/tessellate/ai/taxonomy.py:153 |
+| `__getattr__` | src/tessellate/ai/taxonomy.py:169 |
+| `_analyze_topics` | src/tessellate/ai/taxonomy.py:245 |
+| `_bundled_entities` | src/tessellate/ai/taxonomy.py:377 |
+| `_children` | src/tessellate/ai/taxonomy.py:156 |
 | `_data` | src/tessellate/ai/taxonomy.py:95 |
-| `_filing_data` | src/tessellate/ai/taxonomy.py:544 |
-| `_fold_plurals` | src/tessellate/ai/taxonomy.py:648 |
-| `_functional` | src/tessellate/ai/taxonomy.py:122 |
-| `_hits` | src/tessellate/ai/taxonomy.py:567 |
-| `_keyword_index` | src/tessellate/ai/taxonomy.py:190 |
-| `_labels` | src/tessellate/ai/taxonomy.py:673 |
-| `_name_topics` | src/tessellate/ai/taxonomy.py:679 |
-| `_normalize_term` | src/tessellate/ai/taxonomy.py:480 |
-| `_occupation_data` | src/tessellate/ai/taxonomy.py:331 |
-| `_occupation_processor` | src/tessellate/ai/taxonomy.py:336 |
-| `_pack_weights` | src/tessellate/ai/taxonomy.py:619 |
-| `_parent_topics` | src/tessellate/ai/taxonomy.py:698 |
+| `_filing_data` | src/tessellate/ai/taxonomy.py:547 |
+| `_fold_plurals` | src/tessellate/ai/taxonomy.py:651 |
+| `_functional` | src/tessellate/ai/taxonomy.py:125 |
+| `_hits` | src/tessellate/ai/taxonomy.py:570 |
+| `_keyword_index` | src/tessellate/ai/taxonomy.py:193 |
+| `_labels` | src/tessellate/ai/taxonomy.py:676 |
+| `_name_topics` | src/tessellate/ai/taxonomy.py:682 |
+| `_normalize_term` | src/tessellate/ai/taxonomy.py:483 |
+| `_occupation_data` | src/tessellate/ai/taxonomy.py:334 |
+| `_occupation_processor` | src/tessellate/ai/taxonomy.py:339 |
+| `_pack_weights` | src/tessellate/ai/taxonomy.py:622 |
+| `_parent_topics` | src/tessellate/ai/taxonomy.py:701 |
 | `_read` | src/tessellate/ai/taxonomy.py:61 |
-| `_related` | src/tessellate/ai/taxonomy.py:591 |
-| `_weak_terms` | src/tessellate/ai/taxonomy.py:131 |
-| `_with_related` | src/tessellate/ai/taxonomy.py:600 |
-| `analyze_note` | src/tessellate/ai/taxonomy.py:437 |
-| `audit_taxonomy` | src/tessellate/ai/taxonomy.py:313 |
-| `build_alias_index` | src/tessellate/ai/taxonomy.py:496 |
-| `category_groups` | src/tessellate/ai/taxonomy.py:135 |
-| `children_of` | src/tessellate/ai/taxonomy.py:161 |
-| `context_rules` | src/tessellate/ai/taxonomy.py:470 |
-| `extract_categories` | src/tessellate/ai/taxonomy.py:233 |
-| `extract_dynamic_categories` | src/tessellate/ai/taxonomy.py:299 |
-| `extract_entities` | src/tessellate/ai/taxonomy.py:385 |
-| `extract_keywords` | src/tessellate/ai/taxonomy.py:228 |
-| `extract_occupations` | src/tessellate/ai/taxonomy.py:354 |
+| `_related` | src/tessellate/ai/taxonomy.py:594 |
+| `_weak_terms` | src/tessellate/ai/taxonomy.py:134 |
+| `_with_related` | src/tessellate/ai/taxonomy.py:603 |
+| `analyze_note` | src/tessellate/ai/taxonomy.py:440 |
+| `audit_taxonomy` | src/tessellate/ai/taxonomy.py:316 |
+| `build_alias_index` | src/tessellate/ai/taxonomy.py:499 |
+| `category_groups` | src/tessellate/ai/taxonomy.py:138 |
+| `children_of` | src/tessellate/ai/taxonomy.py:164 |
+| `context_rules` | src/tessellate/ai/taxonomy.py:473 |
+| `extract_categories` | src/tessellate/ai/taxonomy.py:236 |
+| `extract_dynamic_categories` | src/tessellate/ai/taxonomy.py:302 |
+| `extract_entities` | src/tessellate/ai/taxonomy.py:388 |
+| `extract_keywords` | src/tessellate/ai/taxonomy.py:231 |
+| `extract_occupations` | src/tessellate/ai/taxonomy.py:357 |
 | `facet_actions` | src/tessellate/ai/taxonomy.py:84 |
-| `functional_categories` | src/tessellate/ai/taxonomy.py:117 |
-| `functional_priority` | src/tessellate/ai/taxonomy.py:113 |
-| `get_keyword_processor` | src/tessellate/ai/taxonomy.py:201 |
-| `get_taxonomy_processor` | src/tessellate/ai/taxonomy.py:209 |
-| `merge_reviewed_topic_terms` | src/tessellate/ai/taxonomy.py:515 |
-| `merge_taxonomy` | src/tessellate/ai/taxonomy.py:486 |
-| `name_topics` | src/tessellate/ai/taxonomy.py:663 |
-| `normalize_text` | src/tessellate/ai/taxonomy.py:182 |
-| `parent_of` | src/tessellate/ai/taxonomy.py:146 |
-| `purpose_hits` | src/tessellate/ai/taxonomy.py:561 |
-| `reload_taxonomy` | src/tessellate/ai/taxonomy.py:461 |
-| `reset_taxonomy_processors` | src/tessellate/ai/taxonomy.py:217 |
-| `sensitive_topics` | src/tessellate/ai/taxonomy.py:548 |
-| `strong_topics` | src/tessellate/ai/taxonomy.py:631 |
-| `taxonomy_map` | src/tessellate/ai/taxonomy.py:106 |
-| `topic_hits` | src/tessellate/ai/taxonomy.py:553 |
-| `topic_weights` | src/tessellate/ai/taxonomy.py:612 |
-| `weak_terms` | src/tessellate/ai/taxonomy.py:126 |
+| `functional_categories` | src/tessellate/ai/taxonomy.py:120 |
+| `functional_priority` | src/tessellate/ai/taxonomy.py:116 |
+| `get_keyword_processor` | src/tessellate/ai/taxonomy.py:204 |
+| `get_taxonomy_processor` | src/tessellate/ai/taxonomy.py:212 |
+| `merge_reviewed_topic_terms` | src/tessellate/ai/taxonomy.py:518 |
+| `merge_taxonomy` | src/tessellate/ai/taxonomy.py:489 |
+| `name_topics` | src/tessellate/ai/taxonomy.py:666 |
+| `normalize_text` | src/tessellate/ai/taxonomy.py:185 |
+| `parent_of` | src/tessellate/ai/taxonomy.py:149 |
+| `purpose_hits` | src/tessellate/ai/taxonomy.py:564 |
+| `reload_taxonomy` | src/tessellate/ai/taxonomy.py:464 |
+| `reset_taxonomy_processors` | src/tessellate/ai/taxonomy.py:220 |
+| `sensitive_topics` | src/tessellate/ai/taxonomy.py:551 |
+| `strong_topics` | src/tessellate/ai/taxonomy.py:634 |
+| `taxonomy_map` | src/tessellate/ai/taxonomy.py:109 |
+| `topic_hits` | src/tessellate/ai/taxonomy.py:556 |
+| `topic_weights` | src/tessellate/ai/taxonomy.py:615 |
+| `weak_terms` | src/tessellate/ai/taxonomy.py:129 |
 
 ### src/tessellate/ai/tensions.py (25)
 
@@ -28352,7 +28352,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22788)
+## Tests (22789)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30559,7 +30559,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_relation_types_kg3.py | 11 |
 | tests/test_relations_kg2.py | 15 |
 | tests/test_release_smoke_step.py | 21 |
-| tests/test_relocated_phrases.py | 5 |
+| tests/test_relocated_phrases.py | 6 |
 | tests/test_remark_enter_1102.py | 8 |
 | tests/test_reminder_audio_deferred.py | 4 |
 | tests/test_reminder_calendar_links.py | 8 |
@@ -31714,7 +31714,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1234 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:144 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:145 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4070 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3125 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1696 |
