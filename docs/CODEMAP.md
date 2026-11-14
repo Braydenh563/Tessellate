@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11018, test files 2838, tests 22569, plan headings 691, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11018, test files 2839, tests 22571, plan headings 691, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8498)
 
@@ -18102,7 +18102,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `own_topic` | src/tessellate/ai/guide_lead.py:60 |
 | `place_last` | src/tessellate/ai/guide_lead.py:358 |
 | `related_titles` | src/tessellate/ai/guide_lead.py:341 |
-| `short_opening` | src/tessellate/ai/guide_lead.py:363 |
+| `short_opening` | src/tessellate/ai/guide_lead.py:364 |
 | `state_line` | src/tessellate/ai/guide_lead.py:332 |
 | `subject_of` | src/tessellate/ai/guide_lead.py:86 |
 | `yes_no` | src/tessellate/ai/guide_lead.py:258 |
@@ -28263,7 +28263,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22569)
+## Tests (22571)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29611,6 +29611,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
 | tests/test_guide_lead_1110.py | 12 |
+| tests/test_guide_lead_linear.py | 2 |
 | tests/test_guide_leads_1110.py | 3 |
 | tests/test_guide_off_topic_tab_l227.py | 1 |
 | tests/test_guide_offline_l38.py | 8 |

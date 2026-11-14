@@ -351,13 +351,14 @@ _HOW_OR_WHERE = re.compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how
 _SHORT_VERB = re.compile(r"\b(?:is|are|keeps?|has|have|lets?|needs?|works?)\b")
 #: "Where do my notifications go", "where is my data stored": about what happens, not a place to open, so the topic's own sentence leads and the place follows it.
 _PLACE_LAST = re.compile(
-    r"^\s*where (?:do|does|will) .{2,40}\b(?:go|end up|show up|appear|live)\s*\W*$|^\s*where (?:is|are) .{2,40}\b(?:stored|saved|kept)\s*\W*$", re.I
+    r"^where (?:do|does|will) .{2,40}\b(?:go|end up|show up|appear|live)\W*$|^where (?:is|are) .{2,40}\b(?:stored|saved|kept)\W*$", re.I
 )
 
 
 def place_last(question: str) -> bool:
     """Whether the lead sentence comes before "It's in ..." for this where-question."""
-    return bool(_PLACE_LAST.match(question or ""))
+    #: Stripped first and one `\W*` at the end (not `\s*\W*`, which overlap): linear on a run of tabs (CodeQL 2296).
+    return bool(_PLACE_LAST.match((question or "").strip()))
 
 
 def short_opening(question: str, topic: dict) -> str:
