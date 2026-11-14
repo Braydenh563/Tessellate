@@ -15,7 +15,7 @@ def test_the_sliced_parse_gives_the_same_document_as_one_parse() -> None:
         + "const doc = await new Promise((done, fail) => nmb.cat.slice(text, done, fail));"
         "console.log(JSON.stringify({same: JSON.stringify(doc) === JSON.stringify(JSON.parse(text)), n: doc.entries.length}));"
     )
-    assert out == {"same": True, "n": 322}  # intent moved: E3, E5 and I21 (int.catch_midair) added entries
+    assert out == {"same": True, "n": 323}  # intent moved: E3, E5, I21 (int.catch_midair) and L-chat-7 (react.writing_stretch) added entries
 
 
 def test_the_parse_is_cut_into_slices_of_forty_entries() -> None:
@@ -25,7 +25,7 @@ def test_the_parse_is_cut_into_slices_of_forty_entries() -> None:
         "const doc = await new Promise((done, fail) => nmb.cat.slice(text, done, fail));"
         "console.log(JSON.stringify({ticks, n: doc.entries.length}));"
     )
-    assert out == {"ticks": 8, "n": 322}  # intent moved: E3, E5 and I21 (int.catch_midair) added entries
+    assert out == {"ticks": 8, "n": 323}  # intent moved: E3, E5, I21 (int.catch_midair) and L-chat-7 (react.writing_stretch) added entries
 
 
 def test_a_text_that_is_not_cut_by_lines_is_parsed_whole() -> None:
