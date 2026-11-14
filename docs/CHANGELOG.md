@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat with no model: "a joke about cows" and "something funny about cats" are small talk (a canned reply and "I have none about cows", never a notes search); the dates utility reads number words ("what day is it gonna be in twenty-one days") and the "calender" slip; an event with a clock time and no verb ("lunch with my friend at noon today") is offered as a reminder. 7 strict xfails in test_phrasing_real_1111 removed (L-timeline-9, part).
 - Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
 - Tests: the data folder self-check test counts its work (at most 5 queries, 2 directory listings, no file check per attachment) instead of timing it (a 50 ms bound failed at 140.6 ms on CI, 2026-11-14).
 - Tests: the background warm-up test checks order, not time: the load is held open by an event until the request has returned (a 50 ms bound failed at 74 ms on CI, 2026-11-14).
