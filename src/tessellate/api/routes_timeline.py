@@ -22,6 +22,8 @@ it will slot into: one more `group` value.
 
 from __future__ import annotations
 
+import logging
+
 import base64
 import binascii
 from datetime import datetime, timedelta, timezone
@@ -818,7 +820,8 @@ def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN
         return flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
     except FutureTimeout:
         return ""
-    except Exception:  # noqa: BLE001  # a failed call is the composer's turn
+    except Exception as exc:  # noqa: BLE001  # a failed call is the composer's turn
+        logging.getLogger(__name__).info("span digest: the model call failed (%s); the composer writes it", exc)
         return ""
 
 
