@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the hide act shuts its lids over the arms' own 3.6 seconds (33% to 67%), not 2.4 (L175, part)
 - Atlas: the walk's arm swing is one function (`atlasWalkSwing`), measured 4.6 to 21.4 degrees from hanging and never across the body (L82); the moods sweep sets its look through prefs again (L749).
 - Companion: generic faces' wave, scratch and hide keep under the Atlas rig's arm speed (a wave's lift was 408 degrees a second, now 125; hide 352 to 128), the viewer's wave and leap, glide and float arm frames likewise (L83); a Settings deep link to a control clipped above its scroller now scrolls to it (L85).
 - Chat: a joke is said from the top matching record and the note it names; listed jokes are quoted, not run together (L-chat-19).

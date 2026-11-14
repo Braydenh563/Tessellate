@@ -6839,10 +6839,10 @@ body .chip.item-label,
    matches the generic one's specificity, `:root ... #nm-buddy`, six
    classes, and comes later). */
 :root #nm-buddy.nmb-act-hide .nm-atlas.atl-figure .name-mark .nm-eyes { animation: none; }
-#nm-buddy.nmb-act-hide .atl-layer-lids { animation: atl-lids-hide 2.4s ease-in-out; }
+#nm-buddy.nmb-act-hide .atl-layer-lids { animation: atl-lids-hide 3.6s ease-in-out; }
 @keyframes atl-lids-hide {
   0%, 100% { opacity: 0; }
-  18%, 82% { opacity: 1; }
+  33%, 67% { opacity: 1; }
 }
 #nm-buddy:is(.nmb-attend, .nmb-watch) .atl-layer-lids { rotate: calc(var(--nmb-hx) * 5deg); }
 /* Atlas's eyes on what it looks at, as the faces' are (`--nmb-ex`,

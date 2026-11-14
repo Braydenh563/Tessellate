@@ -146,3 +146,15 @@ const make = (top) => {
 for (const top of [148, 300, 790]) flashRevealed(make(top));
 console.log(JSON.stringify(calls));""")
     assert [c[0] for c in out] == [148, 790], "clipped above and below the scroller are brought into view; 300 is left alone"
+
+
+def test_atlas_lids_hide_runs_with_the_arms_l175():
+    """L175: the lids shut over 2.4s (18% to 82%) while the arms took 3.6s (33% to 67%), so the eyes were shut
+    before the hands came up and open again before they came down."""
+    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    arms = re.search(r"\.nmb-arm-l \{ animation: nmb-hide-l ([\d.]+)s", css).group(1)
+    lids = re.search(r"\.atl-layer-lids \{ animation: atl-lids-hide ([\d.]+)s", css).group(1)
+    assert lids == arms == "3.6"
+    arm_keys = re.search(r"@keyframes nmb-hide-l \{\s*([\d%, ]+) \{", css).group(1)
+    lid_keys = re.search(r"@keyframes atl-lids-hide \{.*?\n\s*([\d%, ]+) \{ opacity: 1", css, re.S).group(1)
+    assert arm_keys.replace(" ", "") == lid_keys.replace(" ", "") == "33%,67%"
