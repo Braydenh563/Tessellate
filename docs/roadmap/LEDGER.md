@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 66 | 29 | 0 | 5 | 225 |
+| world-class | 130 | 65 | 29 | 0 | 5 | 224 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 458 | 100 | 2 | 116 | 1111 |
+| all | 553 | 457 | 100 | 2 | 116 | 1110 |
 
 ## graph
 
@@ -538,7 +538,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-31** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
 - [ ] **L-world-class-47** `world-class` open, S: Tag chips on note cards say how many notes carry the tag. From L573 split 2026-11-14. Evidence: Note-card tag chips carry no usage count (notes-list.js tag chips; library.js:11931 counts bookmark tags only); recommendation: the count as the chip's title, not visible text, to keep cards quiet
-- [ ] **L-world-class-48** `world-class` open, S: meetingGlance counts empty list placeholders as decisions and actions. From agent L662. Evidence: meetingGlance in entry-card.js counts empty placeholder lines like '- ' and '- [ ] ' as decisions and open actions
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50. 2026-11-14 attempt (probe 8801, small data, noisy): two warms tried and not kept, no gain. Hover on the Library tab starting the paced warm at 150 ms gaps: first open median 457 ms without, 455 with. Mounting the CodeMirror view in idle after loadCodeMirror: 220/214/225 ms without, 204/290/246 with. After 5 s idle the first open is ~220 ms against ~100 for the second, so what remains is first-call compile and IC warm-up, not a bundle or the view mount
 - [ ] **L-world-class-42** `world-class` open, M: Voice: move failure toasts in the remaining JS files onto voiceLine, surface by surface. From L558. Evidence: frontend/js: statistics, shell-reminders, space-swap, chat-edit, meetings moved; the rest still hold literal copy
 - [ ] **L-world-class-44** `world-class` open, M: Extend toastactions.js to lazy-loaded surfaces (library, whiteboard, documents) after opening them. From L616. Evidence: scratchpad/ui-sweeps/toastactions.js drives 3 of 3 eager surfaces; wbLibExport, wbOpenHistory, attachBookmarkToDocument are lazy-loaded and not yet driven

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8506, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11023, test files 2835, tests 22533, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8506, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11023, test files 2835, tests 22534, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8506)
 
@@ -5124,17 +5124,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `entryItem` | frontend/js/entry-card.js:214 |
-| `entryOverflowMenu` | frontend/js/entry-card.js:1411 |
-| `favouriteButton` | frontend/js/entry-card.js:1314 |
-| `meetingGlance` | frontend/js/entry-card.js:34 |
-| `noteMetaMore` | frontend/js/entry-card.js:1376 |
-| `noteReviewActions` | frontend/js/entry-card.js:1280 |
-| `notesSpanSpaces` | frontend/js/entry-card.js:1394 |
-| `publishDraft` | frontend/js/entry-card.js:1465 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1350 |
-| `renderInlineAction` | frontend/js/entry-card.js:98 |
-| `searchHighlightTerms` | frontend/js/entry-card.js:1404 |
+| `entryItem` | frontend/js/entry-card.js:217 |
+| `entryOverflowMenu` | frontend/js/entry-card.js:1414 |
+| `favouriteButton` | frontend/js/entry-card.js:1317 |
+| `meetingGlance` | frontend/js/entry-card.js:36 |
+| `noteMetaMore` | frontend/js/entry-card.js:1379 |
+| `noteReviewActions` | frontend/js/entry-card.js:1283 |
+| `notesSpanSpaces` | frontend/js/entry-card.js:1397 |
+| `publishDraft` | frontend/js/entry-card.js:1468 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1353 |
+| `renderInlineAction` | frontend/js/entry-card.js:101 |
+| `searchHighlightTerms` | frontend/js/entry-card.js:1407 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
 ### frontend/js/entry-menu.js (7)
@@ -28288,7 +28288,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22533)
+## Tests (22534)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29969,7 +29969,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_media_process.py | 17 |
 | tests/test_media_size.py | 3 |
 | tests/test_media_size_backfill.py | 3 |
-| tests/test_meeting_card_glance.py | 5 |
+| tests/test_meeting_card_glance.py | 6 |
 | tests/test_meeting_notes.py | 15 |
 | tests/test_meeting_rules_81.py | 12 |
 | tests/test_meeting_undo.py | 2 |
@@ -31548,14 +31548,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:599 |
+| Needs hardware | docs/roadmap/LEDGER.md:598 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:592 |
+| Owner calls | docs/roadmap/LEDGER.md:591 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31736,7 +31736,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:733 |
+| Plan session briefs | docs/roadmap/LEDGER.md:732 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31790,25 +31790,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:749 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:833 |
+| chat | docs/roadmap/LEDGER.md:748 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:832 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:773 |
-| general | docs/roadmap/LEDGER.md:551 |
+| documents | docs/roadmap/LEDGER.md:772 |
+| general | docs/roadmap/LEDGER.md:550 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:737 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:845 |
+| graph | docs/roadmap/LEDGER.md:736 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:844 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:785 |
+| mindmap | docs/roadmap/LEDGER.md:784 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:809 |
+| timeline | docs/roadmap/LEDGER.md:808 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:797 |
+| ui-modernisation | docs/roadmap/LEDGER.md:796 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:761 |
+| whiteboard | docs/roadmap/LEDGER.md:760 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:821 |
+| world-class | docs/roadmap/LEDGER.md:820 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

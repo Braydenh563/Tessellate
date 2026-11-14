@@ -31,6 +31,8 @@ const MEETING_GLANCE_SECTIONS = {
   "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", todo: "actions", "next steps": "actions",
 };
 
+const MEETING_EMPTY_ITEM = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]*)?(?:\[[ xX]\][ \t]*)?$/;
+
 function meetingGlance(entry) {
   const types = (entry?.properties?.type || []).map((value) => String(value).toLowerCase());
   if (!types.includes("meeting")) return null;
@@ -42,7 +44,8 @@ function meetingGlance(entry) {
       current = MEETING_GLANCE_SECTIONS[heading[1].toLowerCase()] || "";
       continue;
     }
-    if (current && sections[current] && line.trim()) sections[current].push(line);
+    //: A bare "- " or "- [ ] " is a list's blank placeholder, not a decision or an action.
+    if (current && sections[current] && !MEETING_EMPTY_ITEM.test(line)) sections[current].push(line);
   }
   const plain = (line) => line.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+(?:\[[ xX]\][ \t]*)?/, "").trim();
   const rows = [];
