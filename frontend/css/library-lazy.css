@@ -754,6 +754,692 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
   border-bottom-color: var(--accent);
 }
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+/* Room for it, always, reserved rather than taken, or every title reflows the
+   moment the pointer arrives. */
+.library-card-top:where(:not(.row)) {
+  display: flex;
+  align-items: baseline;
+  column-gap: var(--space-3);
+}
+
+.library-card-top:where(:not(.row, :is(.persona-row, .skill-row))) {
+  row-gap: var(--space-3);
+}
+
+@media (max-width: 819.98px) {
+.library-card-top:where(:not(.card, .layout>*, .library-card-tick, .library-filters > *)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-card-top:where(:not(.card, .layout>*, .library-card-tick)) {
+  min-width: 0;
+}
+}
+
+.library-card-top:where(:not(.card)) {
+  padding-right: var(--space-8);
+}
+
+/* **A fixed track, not a percentage.** Reported with a screenshot: "the
+   middle content in the library lines view isnt aligned." `flex: 1 1 40%`
+   on both halves makes each row's split depend on *its own* content, so the
+   preview column started at a different x on every single row, the
+   alignment failure DESIGN.md's CARP section is about, repeated once per
+   item down the whole list.
+   A fixed basis means every title occupies the same width and every preview
+   therefore begins on the same edge, which is the entire point of a list
+   view. `min-width: 0` so a long title ellipsises inside its track instead
+   of pushing it wider and taking the alignment with it. */
+.library-list .library-card-top {
+  flex: 0 0 22rem;
+  min-width: 0;
+}
+
+@media (hover: hover) {
+.library-list .library-card-top:where(:not(.library-card .library-card-top, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  padding-right: 0;
+}
+}
+
+@media (hover: none) {
+.library-list .library-card-top:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  padding-right: 0;
+}
+}
+
+@media (hover: hover) {
+.library-list .library-card-menu:where(:not(.library-card .library-card-tick)) {
+  position: static;
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.library-list .library-card-menu {
+  position: static;
+  opacity: 1;
+}
+}
+
+/* (`.menu-flip-left`/`.menu-flip-up` lived here. They flipped this menu
+   between two *fixed anchors* on its offset parent, which was the best a
+   clipped absolute element could do; `placeMenu` positions the fixed menu
+   freely against the viewport now and both classes had no remaining
+   setter.) */
+.library-image-menu-item {
+  text-align: left;
+  width: 100%;
+}
+
+@media (max-width: 819.98px) {
+.library-image-menu-item:where(:not(.library-filters > *)) {
+  white-space: nowrap;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-menu-item {
+  white-space: nowrap;
+}
+}
+
+/* One block per claim about the picture: a label, the value, the byline.
+   Before this the tile stacked three unlabelled paragraphs, a description,
+   an offline transcription and an AI transcription, and a reader could not
+   tell which empty-state belonged to which value. Reported as text that
+   "is below that selectable box and not editable". */
+.library-image-fields {
+  display: flex;
+  flex-direction: column;
+  column-gap: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.library-image-fields:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-4);
+}
+
+.library-image-fields:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: var(--space-4);
+}
+
+@media (max-width: 819.98px) {
+.library-image-fields:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: var(--space-4);
+}
+}
+
+@media (min-width: 820px) {
+.library-image-fields {
+  padding-left: var(--space-4);
+}
+}
+
+/* **Provenance is a byline, not two pills** (INBOX 56). The three model
+   badges that used to live here (`.library-image-caption-badge`,
+   `.library-image-vision-ocr-badge`, `.library-image-ocr-badge`) were
+   bordered, filled pills sitting in the middle of the card beside the "Used
+   in" chips, which are buttons: the same shape for a thing you press and a
+   thing you read. One muted line at the foot says both, in the smallest type
+   on the card, and the pills and their rules are gone rather than restyled. */
+.library-image-provenance {
+  margin: 0;
+  padding-right: var(--space-4);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.library-image-provenance:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: var(--space-4);
+}
+
+@media (max-width: 819.98px) {
+.library-image-provenance:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: var(--space-4);
+}
+}
+
+@media (min-width: 820px) {
+.library-image-provenance {
+  padding-left: var(--space-4);
+}
+}
+
+.library-image-provenance:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-xs);
+}
+
+/* **Two type sizes on a picture card, not three.** Measured at 1440 on the
+   seeded gallery: the filename on the photograph was 13.6px, the description
+   12px (from a `text-sm` utility on the element) and the count and the fold
+   11.2px, which is three of the scale's adjacent steps inside 2.4px. DESIGN.md
+   names that exact failure ("two things that are almost the same size, next to
+   each other, is what reads as unconsidered"). The name of a picture and the
+   sentence about it are the card's prose and share one size; the facts line
+   under them is `--text-xs` and is the only other size on the card. */
+.library-image-caption {
+  cursor: text;
+  /* A pasted URL or a long slash-run ("make/manage/delete/access") has no
+     break opportunity, so it ran straight through the tile's edge: 
+     reported with a screenshot. This also repairs the clamp beside it: a
+     line that cannot wrap cannot be line-clamped either, so the same
+     unbreakable string defeated "Show more" as well as the card boundary. */
+  overflow-wrap: anywhere;
+}
+
+.library-image-caption:where(:not(.field)) {
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.library-image-caption:where(:not(.card, .field)) {
+  margin-bottom: 0;
+}
+
+.library-image-caption:where(:not(.text-sm, :is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-md);
+}
+
+.library-image-caption:where(:not(.card, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: var(--space-3);
+}
+
+.library-image-caption:where(:not(.card)) {
+  padding-right: 0;
+}
+
+@media (max-width: 819.98px) {
+.library-image-caption:where(:not(.card, .sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-caption:where(:not(.card)) {
+  padding-left: 0;
+}
+}
+
+/* A vision model's verbatim transcription of text found in the image
+   ("extractor mode"), same box shape as .library-image-caption, but never
+   click-to-edit (there is nothing to type by hand here) and hidden
+   entirely until a read has actually happened, unlike the caption's
+   always-visible "Add a caption…" placeholder. */
+.library-image-vision-ocr {
+  overflow-wrap: anywhere;
+}
+
+.library-image-vision-ocr:where(:not(.field, .notice)) {
+  margin: 0;
+}
+
+.library-image-vision-ocr:where(:not(.notice, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: var(--space-3);
+}
+
+.library-image-vision-ocr:where(:not(.notice)) {
+  padding-right: 0;
+}
+
+@media (max-width: 819.98px) {
+.library-image-vision-ocr:where(:not(.notice, .sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-vision-ocr:where(:not(.notice)) {
+  padding-left: 0;
+}
+}
+
+@media (max-width: 819.98px) {
+.library-image-vision-ocr:where(:not(.library-filters > *)) {
+  white-space: pre-wrap;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-vision-ocr {
+  white-space: pre-wrap;
+}
+}
+
+/* The incremental renderer's chunk marker. Zero height, no list marker, no
+   part in layout: it exists only to be watched by an IntersectionObserver,
+   and `aria-hidden` plus no `data-id` keeps it out of the keyboard walk and
+   the accessibility tree. */
+.list-window-sentinel {
+  height: 0;
+  margin: 0;
+  padding-right: 0;
+  border: 0;
+  list-style: none;
+}
+
+.list-window-sentinel:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.list-window-sentinel:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.list-window-sentinel {
+  padding-left: 0;
+}
+}
+
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+.bookmark-main {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 819.98px) {
+.bookmark-main:where(:not(.library-filters > *)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.bookmark-main {
+  min-width: 0;
+}
+}
+
+/* The facts line of a row, which is the same object as a Files row's and is
+   styled by the rule they share (`.library-file-meta`, 07-whiteboard-misc.css).
+   All it needs here is to stay on one line: a long note is a fact about the
+   link, not a paragraph the list has to make room for. Two classes, because
+   the shared rule loads later at the same weight and its `wrap` won: on a
+   phone "example.com ·" and "Reading" broke onto two lines, the dot left at
+   the end of the first (INBOX 437 (4)). A fact gives way by ellipsis, the
+   site first. */
+@media (max-width: 819.98px) {
+.library-file-meta.bookmark-meta:where(:not(.chat-context-pop > .row, .library-head > .row)) {
+  flex-wrap: nowrap;
+}
+}
+
+@media (min-width: 820px) {
+.library-file-meta.bookmark-meta:where(:not(.chat-context-pop > .row)) {
+  flex-wrap: nowrap;
+}
+}
+
+.library-file-meta.bookmark-meta:where(:not(.dash-body .row, .tool-touched .chip)) {
+  overflow-x: hidden;
+}
+
+.library-file-meta.bookmark-meta:where(:not(.tool-touched .chip)) {
+  overflow-y: hidden;
+}
+
+.library-file-meta.bookmark-meta:where(:not(.answer-foot-bar > .msg-meta > *, .tool-touched .chip)) {
+  white-space: nowrap;
+}
+
+/* The details panel a row opens in place: it spans the row's grid under the
+   title, and stays out of the way of the controls above it. */
+.bookmark-detail {
+  grid-column: 2 / -1;
+  flex-direction: column;
+  column-gap: var(--space-2);
+  padding-right: 0;
+}
+
+.bookmark-detail:where(:not(.menu-wrap)) {
+  display: flex;
+}
+
+.bookmark-detail:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.bookmark-detail:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-1);
+}
+
+@media (max-width: 819.98px) {
+.bookmark-detail:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.bookmark-detail {
+  padding-left: 0;
+}
+}
+
+/* One line, never two: the last fact gives way first. */
+@media (max-width: 819.98px) {
+.library-file-meta.contents-meta:where(:not(.chat-context-pop > .row, .library-head > .row)) {
+  flex-wrap: nowrap;
+}
+}
+
+@media (min-width: 820px) {
+.library-file-meta.contents-meta:where(:not(.chat-context-pop > .row)) {
+  flex-wrap: nowrap;
+}
+}
+
+@media (max-width: 819.98px) {
+.library-file-meta.contents-meta:where(:not(.graph-popup-filed > .chip, .library-head > .row, .log-list .what)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-file-meta.contents-meta:where(:not(.graph-popup-filed > .chip, .log-list .what)) {
+  min-width: 0;
+}
+}
+
+.library-file-meta.contents-meta:where(:not(.dash-body .row, .tool-touched .chip)) {
+  overflow-x: hidden;
+}
+
+.library-file-meta.contents-meta:where(:not(.tool-touched .chip)) {
+  overflow-y: hidden;
+}
+
+.library-file-meta.contents-meta:where(:not(.answer-foot-bar > .msg-meta > *, .tool-touched .chip)) {
+  white-space: nowrap;
+}
+
+@media (max-width: 819.98px) {
+.bookmark-actions:where(:not(.library-filters > *)) {
+  flex-shrink: 0;
+}
+}
+
+@media (min-width: 820px) {
+.bookmark-actions {
+  flex-shrink: 0;
+}
+}
+
+/* from 04-chat-dock-appearance.css (L-ui-modernisation-51) */
+.doc-list-top {
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-3);
+}
+
+.doc-list-top:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-3);
+}
+
+@media (max-width: 819.98px) {
+.doc-list-top:where(:not(.doc-list-tick, .library-filters > *)) {
+  flex: 0 0 auto;
+}
+}
+
+@media (min-width: 820px) {
+.doc-list-top:where(:not(.doc-list-tick)) {
+  flex: 0 0 auto;
+}
+}
+
+.doc-list-icon {
+  color: var(--muted);
+}
+
+@media (max-width: 819.98px) {
+.doc-list-icon:where(:not(.library-filters > *)) {
+  flex: 0 0 auto;
+}
+}
+
+@media (min-width: 820px) {
+.doc-list-icon {
+  flex: 0 0 auto;
+}
+}
+
+.doc-list-icon:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-size: var(--text-h2);
+}
+
+/* Set by app.js the moment a person drags #doc-content's native resize
+   handle. Without it #doc-panes keeps flex-growing to fill .doc-main at its
+   pre-resize height regardless of the textarea now being shorter, and the
+   freed space is trapped between the textarea and .doc-hint instead of
+   showing up at the bottom of the card. See that listener for why this can't
+   just be a CSS rule. */
+@media (max-width: 1099.98px) {
+#doc-panes.doc-panes-manual:where(:not(#tab-chat>.layout, #tab-library .library-filters > *, #tab-timeline>.card, .command-palette-foot > :is(#command-palette-stop, #command-palette-menu), .graph-legend-row #graph-legend > *)) {
+  flex: 0 1 auto;
+}
+}
+
+@media (min-width: 1100px) {
+#doc-panes.doc-panes-manual:where(:not(#tab-chat>.layout, #tab-timeline>.card, .command-palette-foot > :is(#command-palette-stop, #command-palette-menu), .graph-legend-row #graph-legend > *)) {
+  flex: 0 1 auto;
+}
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+/* More pressed: the strip wraps, as the expanded mode does, and the folded
+   tools are back in their own places, with their own menus. */
+@media (max-width: 819.98px) {
+.doc-toolbar.is-more-open:where(:not(.chat-context-pop > .row, .library-head > .row)) {
+  flex-wrap: wrap;
+}
+}
+
+@media (min-width: 820px) {
+.doc-toolbar.is-more-open:where(:not(.chat-context-pop > .row)) {
+  flex-wrap: wrap;
+}
+}
+
+.doc-prose-panel.doc-prose-right {
+  max-height: none;
+}
+
+@media (max-width: 599.98px) {
+.doc-prose-panel.doc-prose-right:where(:not(.library-head > .row)) {
+  flex: 0 0 var(--doc-prose-w);
+}
+}
+
+@media (min-width: 600px) and (max-width: 819.98px) {
+.doc-prose-panel.doc-prose-right:where(:not(.capture-commit-row > :not(.capture-space-hint), .library-head > .row)) {
+  flex: 0 0 var(--doc-prose-w);
+}
+}
+
+@media (min-width: 820px) {
+.doc-prose-panel.doc-prose-right:where(:not(.capture-commit-row > :not(.capture-space-hint))) {
+  flex: 0 0 var(--doc-prose-w);
+}
+}
+
+.doc-prose-panel.doc-prose-right:where(:not(.ocr-head .icon-only, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  width: var(--doc-prose-w);
+}
+
+.doc-prose-panel.doc-prose-right:where(:not(.activity-running .pop-card-body > *, .doc-col > :first-child, .doc-template-page :is(.md-h1, .md-h2, .md-h3), .reminder-when>.row, .searxng-host .row, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+}
+
+.doc-prose-panel.doc-prose-right:has(.doc-prose-row[aria-current]) {
+  flex: 0 0 var(--doc-prose-w);
+  max-height: none;
+  margin-top: 0;
+}
+
+.doc-prose-panel.doc-prose-right:has(.doc-prose-row[aria-current]):where(:not(.doc-prose-rowhead .doc-prose-act.ghost.small)) {
+  width: var(--doc-prose-w);
+}
+
+@media (max-width: 819.98px) {
+.doc-finding-line-head .doc-finding-why:where(:not(.doc-layout > :not(.sidebar-panel))) {
+  grid-column: 2;
+}
+}
+
+@media (min-width: 820px) {
+.doc-finding-line-head .doc-finding-why {
+  grid-column: 2;
+}
+}
+
+@media (max-width: 599.98px) {
+.doc-prose-empty .muted:where(:not(.dgm-card-two > .dgm-grip, .dgm-card-two > .dgm-label, .dgm-card-two > .dgm-meta, .dgm-card-two > :is(i, .dgm-shape), .doc-layout > :not(.sidebar-panel))) {
+  grid-column: 2;
+}
+}
+
+@media (min-width: 600px) and (max-width: 819.98px) {
+.doc-prose-empty .muted:where(:not(.calc-pane.is-sci > *, .dgm-card-two > .dgm-grip, .dgm-card-two > .dgm-label, .dgm-card-two > .dgm-meta, .dgm-card-two > :is(i, .dgm-shape), .doc-layout > :not(.sidebar-panel))) {
+  grid-column: 2;
+}
+}
+
+@media (min-width: 820px) {
+.doc-prose-empty .muted:where(:not(.calc-pane.is-sci > *, .dgm-card-two > .dgm-grip, .dgm-card-two > .dgm-label, .dgm-card-two > .dgm-meta, .dgm-card-two > :is(i, .dgm-shape))) {
+  grid-column: 2;
+}
+}
+
+.doc-prose-empty .muted:where(:not(.agent-ask .muted, .calc-log .calc-log-note, .calc-log-toggle .calc-log-count, .clock-only .clock-time, .dgm-dialog .dgm-titlebar, .dgm-panehead .dgm-head-all, .dialog-head .pop-glyph, .doc-template-page :is(.md-h2, .md-h3), .dock .seg, .inbox-status.job-line, .library-head .seg, .link-suggestion-facts > .link-suggestion-why, .msg-role > .msg-actions, .ocr-head .checkbox-label, .ocr-head .seg, .pop-card .pop-card-title, .provider-option .muted, .quick-manage-foot .quick-manage-count, .settings-nav-groups-head .linklike, .tidy-nav .tidy-title, .web-fold .web-reader-title, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  font-size: var(--text-xs);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* **`text-overflow` has to go on the text, not on the chip.** Reported: "the
+   text in the used in tokens are cut off", with a screenshot of a chip whose
+   label was sliced at *both* ends, "ome ideas for features I h".
+   `.chip` is `inline-flex`, and `text-overflow` does nothing on a flex
+   container: its children are flex items, so the label was never a line box
+   that could ellipsise. It just got clipped by `overflow: hidden` instead,
+   and clipped symmetrically, which is the same shape as the bug the Timeline's
+   old note cards had, a centred child losing an equal slice off each side
+   rather than ending in an ellipsis.
+   `setLabel` already wraps the text in `.ph-text` (app.js), so the fix is to
+   put the rule where the text actually is, and to stop the icon shrinking
+   with it. */
+.library-image-usage-chip > .ph-text:where(:not(.menu-item .ph-text)) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 819.98px) {
+.library-image-usage-chip > .ph-text:where(:not(.library-head > .row, .menu-item .ph-text)) {
+  min-width: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-image-usage-chip > .ph-text:where(:not(.menu-item .ph-text)) {
+  min-width: 0;
+}
+}
+
+@media (max-width: 819.98px) {
+.library-read-badge:where(:not(.library-filters > *)) {
+  /* The number is the point, "Read · 1,240 words" says what came out, where
+     "Read" alone only says a job finished, so it must not be clipped away by
+     the tile's own width. It wraps rather than truncating. */
+  white-space: normal;
+}
+}
+
+@media (min-width: 820px) {
+.library-read-badge {
+  /* The number is the point, "Read · 1,240 words" says what came out, where
+     "Read" alone only says a job finished, so it must not be clipped away by
+     the tile's own width. It wraps rather than truncating. */
+  white-space: normal;
+}
+}
+
+/* The numbers keep their width: only the text box gives way (owner,
+   0.3.32: a preview beside the box crushed the column to a sliver). */
+@media (max-width: 819.98px) {
+.gutter-wrap > .doc-gutter:where(:not(.library-head > .row)) {
+  flex: 0 0 auto;
+}
+}
+
+@media (min-width: 820px) {
+.gutter-wrap > .doc-gutter {
+  flex: 0 0 auto;
+}
+}
+
+/* Both of these buttons are also slots on the node's ring, and they sit inside
+   the ring's own circle. While the ring is open it is the one place those two
+   actions are offered, rather than a second pair of small round buttons under
+   it (INBOX 114, "fix the look of the mindmap item radial"). */
+.wb-map-node.wb-radial-open .wb-map-actions {
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+.wb-map-node.wb-radial-open .wb-map-actions:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 0;
+}
+}
+
+@media (hover: none) {
+.wb-map-node.wb-radial-open .wb-map-actions {
+  opacity: 0;
+}
+}
+
+@media (hover: hover) {
+.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:disabled:where(:not(:is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 0.4;
+}
+}
+
+@media (hover: none) {
+.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:disabled {
+  opacity: 0.4;
+}
+}
+
+/* **Superseded 2026-09-23 by the owner** (MINDMAP_PLAN decisions): "these
+   links I drew using the cross-link tools are different from the ones between
+   the other mind map nodes ... I want them to be the same". The half of the
+   above that stands is "the map's own ink, not the pen's": a cross-link now
+   takes the branch's colour, shape, weight and taper from the renderer
+   (`wbMapCrossLinkLook` in whiteboard.js), so this rule only has to stop
+   the stroke width and paint the attributes carry from being overridden,
+   and it no longer dashes or mutes the line. */
+@media (hover: hover) {
+.sketch-group.wb-map-crosslink .sketch-path:where(:not(:is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark))) {
+  opacity: 1;
+}
+}
+
+@media (hover: none) {
+.sketch-group.wb-map-crosslink .sketch-path {
+  opacity: 1;
+}
+}
+
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
    name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 /* --- moved from the boot sheets for L-ui-modernisation-47 (the same test as L459, boot order kept) --- */
@@ -1538,6 +2224,158 @@ button.outline-twist:focus-visible:where(:not(.code-block code :is(.tok-atom, .t
 .library-create-sub {
   margin: var(--space-2) 0 0;
   font-size: var(--text-sm);
+}
+
+/* from 06-timeline-dialogs.css (L-ui-modernisation-51) */
+/* The kinds, as rich picker rows (rich-picker.js): the list's own inset is
+   the card's padding already, so the rows sit flush with the title. */
+.library-create-list {
+  margin: var(--space-3) calc(var(--space-2) * -1) 0;
+  padding-right: 0;
+}
+
+.library-create-list:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.library-create-list:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 820px) {
+.library-create-list {
+  padding-left: 0;
+}
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* Reported with a screenshot of three tiles side by side: the chips sat
+   hard against the DESCRIPTION label under them, and started a whole
+   `--space-4` to the left of it, the usage row had vertical rhythm but no
+   horizontal padding, while `.library-image-fields` below it (00-tokens-
+   shell.css) is inset on both sides. Two different left edges inside one
+   card reads as a mistake even when nothing is technically broken, so this
+   matches that inset and adds the missing gap underneath. */
+.library-image-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  /* Was `--space-2`, and reported as no gap at all: this section sits under
+     the fields' own badges, and a rule with a top border needs enough room
+     above it to read as a divider rather than as an underline on the badge
+     immediately before it. */
+  margin-top: var(--space-4);
+  padding-right: var(--space-4);
+  margin-bottom: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.library-image-usage:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-2);
+  padding-bottom: 0;
+}
+
+@media (max-width: 819.98px) {
+.library-image-usage:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: var(--space-4);
+}
+}
+
+@media (min-width: 820px) {
+.library-image-usage {
+  padding-left: var(--space-4);
+}
+}
+
+@media (max-width: 819.98px) {
+.wb-topbar .wb-more-wrap:where(:not(.wb-topbar .wb-more-wrap, :is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  display: none;
+}
+}
+
+@media (min-width: 820px) {
+.wb-topbar .wb-more-wrap:where(:not(:is( .action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .library-image-menu-list, .wb-board-menu ) :is( .menu-item, .doc-dock-menu-item, .nav-history-item, .library-image-menu-item, .action-menu-item, .wb-menu-item, .select-option ))) {
+  display: none;
+}
+}
+
+/* **A gutter numbers a box, so a hidden box has no numbers.** Reported (INBOX
+   119, with a screenshot): "when I press preview in the capture a thought
+   formatting toolbar and possibly other places with the toolbar as well, the
+   top of the line numbers can still be hidden and is just a little dot above
+   the text panel."
+   The two preview toggles hide the textarea (`setEntryPreview` in the capture
+   composer, `setView` in the note edit form) and show a rendered panel in its
+   place. The gutter is the textarea's *sibling*, not its child, so nothing
+   hid it, and it kept whatever height the last sync gave it: measured on
+   :8895, 1440x900 dark, a 27.2x21.2px tinted box at y=281.4 with the preview
+   panel starting at 309 in Capture, and the same box at y=278.6 against a
+   panel at 306.1 in the note edit form. That is the dot in the screenshot.
+   Here rather than in either toggle, because the rule is about the pair and
+   not about one surface's button: any textarea that mounts a gutter and is
+   then hidden, by these two toggles or by a third written later, drops its
+   numbers with it. The documents editor is already right for the same reason
+   read the other way round: it hides `#doc-source-wrap`, the gutter and the
+   box together, so the gutter can never be left behind on its own. */
+@media (max-width: 599.98px) {
+.gutter-wrap:has(> textarea.hidden) > .doc-gutter:where(:not(.advanced-css > summary:not(.icon-only):not(.icon-button), .dock[data-dock-name="library-boards"] .dock-identity > h2, .settings-fold > summary:not(.icon-only):not(.icon-button), .settings-group > summary:not(.icon-only):not(.icon-button), .task-log > summary:not(.icon-only):not(.icon-button))) {
+  display: none;
+}
+}
+
+@media (min-width: 600px) {
+.gutter-wrap:has(> textarea.hidden) > .doc-gutter:where(:not(.advanced-css > summary:not(.icon-only):not(.icon-button), .settings-fold > summary:not(.icon-only):not(.icon-button), .settings-group > summary:not(.icon-only):not(.icon-button), .task-log > summary:not(.icon-only):not(.icon-button))) {
+  display: none;
+}
+}
+
+/* "Never run." / "Last run ..." is a sentence about the card, not a control
+   on it. A fill and a radius made it the fourth box in a row of three. */
+.skill-card-when {
+  padding-right: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+}
+
+.skill-card-when:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (max-width: 599.98px) {
+.skill-card-when:where(:not(.sidebar-panel ~ :where(.tab-main, .doc-main, .notes-rail))) {
+  padding-left: 0;
+}
+}
+
+@media (min-width: 600px) {
+.skill-card-when {
+  padding-left: 0;
+}
+}
+
+/* from 09-editor.css (L-ui-modernisation-51) */
+.doc-margin-cards {
+  display: grid;
+  gap: var(--space-2);
+  --doc-margin-offset: 0px;
+}
+
+@media (max-width: 1099.98px) {
+.doc-margin-cards:where(:not(.doc-margin-cards)) {
+  margin-top: var(--doc-margin-offset);
+}
+}
+
+@media (min-width: 1100px) {
+.doc-margin-cards {
+  margin-top: var(--doc-margin-offset);
+}
 }
 
 /* A choice is read in full: at 390 five of the seven descriptions ended in

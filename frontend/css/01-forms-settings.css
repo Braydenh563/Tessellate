@@ -2433,10 +2433,6 @@ button:not(.ghost) > .spinner {
   color: var(--accent-text);
   font-size: var(--text-md);
 }
-.bookmark-main {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
 /* The title is the row, and a row is not a paragraph with a hyperlink in it:
    at rest it is body ink at the one control label size, and the underline and
    the accent arrive with the pointer. Measured before: an underlined 16px
@@ -2459,19 +2455,6 @@ button:not(.ghost) > .spinner {
   color: var(--accent-text);
   text-decoration: underline;
 }
-/* The facts line of a row, which is the same object as a Files row's and is
-   styled by the rule they share (`.library-file-meta`, 07-whiteboard-misc.css).
-   All it needs here is to stay on one line: a long note is a fact about the
-   link, not a paragraph the list has to make room for. Two classes, because
-   the shared rule loads later at the same weight and its `wrap` won: on a
-   phone "example.com ·" and "Reading" broke onto two lines, the dot left at
-   the end of the first (INBOX 437 (4)). A fact gives way by ellipsis, the
-   site first. */
-.library-file-meta.bookmark-meta {
-  flex-wrap: nowrap;
-  overflow: hidden;
-  white-space: nowrap;
-}
 
 /* The dot makes the mark a positioned box, which paints over the tick that
    shares its grid cell (the tick takes the mark's place on hover, 08-
@@ -2488,15 +2471,6 @@ button:not(.ghost) > .spinner {
 }
 .bookmark-count:empty {
   display: none;
-}
-/* The details panel a row opens in place: it spans the row's grid under the
-   title, and stays out of the way of the controls above it. */
-.bookmark-detail {
-  grid-column: 2 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-2) 0 var(--space-1);
 }
 .bookmark-row.is-open {
   background: var(--surface-2);
@@ -2621,14 +2595,6 @@ button:not(.ghost) > .spinner {
   font-size: var(--text-body);
 }
 
-/* One line, never two: the last fact gives way first. */
-.library-file-meta.contents-meta {
-  flex-wrap: nowrap;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 /* The focused item must be findable without the pointer. */
 .contents-outline [role="treeitem"]:focus-visible {
   outline: 2px solid var(--accent);
@@ -2639,9 +2605,6 @@ button:not(.ghost) > .spinner {
 }
 .contents-summary {
   margin: var(--space-3) 0 0;
-}
-.bookmark-actions {
-  flex-shrink: 0;
 }
 /* Settings sections: a second row of controls below an existing one that
    needs a little breathing room from it, `.row`'s own gap applies *within*

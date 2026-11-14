@@ -4074,13 +4074,6 @@ span > .chip {
   background: var(--accent-soft);
 }
 
-.doc-list-top {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 0 0 auto;
-}
-
 /* Same hover/focus reveal as `.menu-wrap.library-card-menu`
    (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
    column of dots competing with the titles beside them. `hover: none`
@@ -4097,12 +4090,6 @@ span > .chip {
 .doc-list-item:focus-visible .doc-list-menu,
 .doc-list-item:focus-within .doc-list-menu {
   opacity: 1;
-}
-
-.doc-list-icon {
-  flex: 0 0 auto;
-  font-size: var(--text-h2);
-  color: var(--muted);
 }
 
 .doc-list-title {
@@ -4206,16 +4193,6 @@ span > .chip {
   margin: 0 auto;
   width: 100%;
   padding: 1.5rem var(--doc-gutter);
-}
-
-/* Set by app.js the moment a person drags #doc-content's native resize
-   handle. Without it #doc-panes keeps flex-growing to fill .doc-main at its
-   pre-resize height regardless of the textarea now being shorter, and the
-   freed space is trapped between the textarea and .doc-hint instead of
-   showing up at the bottom of the card. See that listener for why this can't
-   just be a CSS rule. */
-#doc-panes.doc-panes-manual {
-  flex: 0 1 auto;
 }
 
 /* Same default-<p>-margin fix as .doc-hint below, this is the other half of

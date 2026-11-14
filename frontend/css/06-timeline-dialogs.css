@@ -1282,13 +1282,6 @@
   width: min(30rem, 96vw);
 }
 
-/* The kinds, as rich picker rows (rich-picker.js): the list's own inset is
-   the card's padding already, so the rows sit flush with the title. */
-.library-create-list {
-  margin: var(--space-3) calc(var(--space-2) * -1) 0;
-  padding: 0;
-}
-
 /* --- the Ask box explaining itself (§35A) ----------------------------------
    Shown when someone types a greeting into a box that searches notes. It is
    styled as a prompt, NOT as an answer or an error: the first version put a

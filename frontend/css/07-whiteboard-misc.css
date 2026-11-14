@@ -5854,27 +5854,6 @@ rect.board-minimap-card,
    caption competing with the real one. It wraps rather than scrolls, because
    unlike the collapsed note row's chip lane this is the last row of a card
    with room below it. */
-/* Reported with a screenshot of three tiles side by side: the chips sat
-   hard against the DESCRIPTION label under them, and started a whole
-   `--space-4` to the left of it, the usage row had vertical rhythm but no
-   horizontal padding, while `.library-image-fields` below it (00-tokens-
-   shell.css) is inset on both sides. Two different left edges inside one
-   card reads as a mistake even when nothing is technically broken, so this
-   matches that inset and adds the missing gap underneath. */
-.library-image-usage {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  /* Was `--space-2`, and reported as no gap at all: this section sits under
-     the fields' own badges, and a rule with a top border needs enough room
-     above it to read as a divider rather than as an underline on the badge
-     immediately before it. */
-  margin-top: var(--space-4);
-  padding: var(--space-2) var(--space-4) 0;
-  margin-bottom: var(--space-3);
-  border-top: 1px solid var(--border);
-}
 /* A chip that goes somewhere. Capped so one long note title cannot push the
    rest of the row out of the card, with the full text still in the title. */
 /* The tile's own tick. Top-left, over the thumbnail, the same corner (and
@@ -5898,24 +5877,6 @@ rect.board-minimap-card,
 body.library-media-selecting
   .library-image-tile:has(> .library-image-frame) > .library-tile-tick {
   opacity: 1;
-}
-/* **`text-overflow` has to go on the text, not on the chip.** Reported: "the
-   text in the used in tokens are cut off", with a screenshot of a chip whose
-   label was sliced at *both* ends, "ome ideas for features I h".
-   `.chip` is `inline-flex`, and `text-overflow` does nothing on a flex
-   container: its children are flex items, so the label was never a line box
-   that could ellipsise. It just got clipped by `overflow: hidden` instead,
-   and clipped symmetrically, which is the same shape as the bug the Timeline's
-   old note cards had, a centred child losing an equal slice off each side
-   rather than ending in an ellipsis.
-   `setLabel` already wraps the text in `.ph-text` (app.js), so the fix is to
-   put the rule where the text actually is, and to stop the icon shrinking
-   with it. */
-.library-image-usage-chip > .ph-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
 }
 
 .menu-item .ph-text {
@@ -7497,12 +7458,6 @@ button.connection-row:is(:hover, :focus-visible) {
   border-radius: var(--radius-strip);
   background: var(--inner);
 }
-.library-read-badge {
-  /* The number is the point, "Read · 1,240 words" says what came out, where
-     "Read" alone only says a job finished, so it must not be clipped away by
-     the tile's own width. It wraps rather than truncating. */
-  white-space: normal;
-}
 /* The usage row was written as a *section* of the image card: a rule above
    it, an inset, and rhythm on both sides. On one line beside the meta strip
    that rule becomes a 333px hairline hanging in the middle of the row, and
@@ -8415,9 +8370,6 @@ button.connection-row:is(:hover, :focus-visible) {
      account for, which is exactly how far it overlapped the top bar. */
   margin: 0;
 }
-.wb-topbar .wb-more-wrap {
-  display: none;
-}
 @media (max-width: 819.98px) {
   /* Search and Overview are also switches in the View menu; the two icons
      and their divider are what pushed the bar onto a third row. */
@@ -9138,32 +9090,6 @@ header#top-bar > #tab-bar {
    note edit form can carry one: the gutter takes the textarea's own metrics
    through the CSSOM at mount, and a numbered box stops soft-wrapping so the
    numbers stay true. */
-/* The numbers keep their width: only the text box gives way (owner,
-   0.3.32: a preview beside the box crushed the column to a sliver). */
-.gutter-wrap > .doc-gutter {
-  flex: 0 0 auto;
-}
-/* **A gutter numbers a box, so a hidden box has no numbers.** Reported (INBOX
-   119, with a screenshot): "when I press preview in the capture a thought
-   formatting toolbar and possibly other places with the toolbar as well, the
-   top of the line numbers can still be hidden and is just a little dot above
-   the text panel."
-   The two preview toggles hide the textarea (`setEntryPreview` in the capture
-   composer, `setView` in the note edit form) and show a rendered panel in its
-   place. The gutter is the textarea's *sibling*, not its child, so nothing
-   hid it, and it kept whatever height the last sync gave it: measured on
-   :8895, 1440x900 dark, a 27.2x21.2px tinted box at y=281.4 with the preview
-   panel starting at 309 in Capture, and the same box at y=278.6 against a
-   panel at 306.1 in the note edit form. That is the dot in the screenshot.
-   Here rather than in either toggle, because the rule is about the pair and
-   not about one surface's button: any textarea that mounts a gutter and is
-   then hidden, by these two toggles or by a third written later, drops its
-   numbers with it. The documents editor is already right for the same reason
-   read the other way round: it hides `#doc-source-wrap`, the gutter and the
-   box together, so the gutter can never be left behind on its own. */
-.gutter-wrap:has(> textarea.hidden) > .doc-gutter {
-  display: none;
-}
 /* **And once the box is an editor view, the whole numbered area goes.** The
    note surface (`mountNoteSurface`) moves the textarea inside
    `.note-surface` as an invisible mirror, so the `>` rule above stopped
@@ -9520,14 +9446,6 @@ input[type="file"] {
   opacity: 1;
   pointer-events: auto;
 }
-/* Both of these buttons are also slots on the node's ring, and they sit inside
-   the ring's own circle. While the ring is open it is the one place those two
-   actions are offered, rather than a second pair of small round buttons under
-   it (INBOX 114, "fix the look of the mindmap item radial"). */
-.wb-map-node.wb-radial-open .wb-map-actions {
-  opacity: 0;
-  pointer-events: none;
-}
 /* **The topic's resize grip, on its own bottom right corner** (INBOX 610:
    "resizing the mindmap nodes, resizing the text" was "unintuitive"). It was
    a row of two 16px glyphs floating outside the top left, "Aa" and an arrow,
@@ -9849,9 +9767,6 @@ input[type="file"] {
 #wb-map-reset:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
 }
-.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:disabled {
-  opacity: 0.4;
-}
 
 /* The rows themselves stand on the same height as a menu item, so a label
    row and a shortcut row are one rhythm down the menu. */
@@ -10095,17 +10010,6 @@ input[type="file"] {
    attribute stays on the row (an ordinary board still draws it, and a map
    turned back into a board gets it back); on a map this rule wins, because a
    CSS declaration beats the presentation attribute the renderer writes. */
-/* **Superseded 2026-09-23 by the owner** (MINDMAP_PLAN decisions): "these
-   links I drew using the cross-link tools are different from the ones between
-   the other mind map nodes ... I want them to be the same". The half of the
-   above that stands is "the map's own ink, not the pen's": a cross-link now
-   takes the branch's colour, shape, weight and taper from the renderer
-   (`wbMapCrossLinkLook` in whiteboard.js), so this rule only has to stop
-   the stroke width and paint the attributes carry from being overridden,
-   and it no longer dashes or mutes the line. */
-.sketch-group.wb-map-crosslink .sketch-path {
-  opacity: 1;
-}
 /* --- the Library on a phone (BACKLOG §116.1 item 3) -------------------------
    Measured at 390px with the session's phone probes: the eight sub-tabs
    wrapped to four rows (161px), the Everything filter chips to five rows
@@ -15915,15 +15819,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 
 .ph-caret-down {
   --ph-ink-dy: 0.035em;
-}
-
-/* "Never run." / "Last run ..." is a sentence about the card, not a control
-   on it. A fill and a radius made it the fourth box in a row of three. */
-.skill-card-when {
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
 }
 
 .dash-widget-row-cluster {

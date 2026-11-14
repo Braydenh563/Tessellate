@@ -2201,15 +2201,6 @@ button.scroll-row-arrow[hidden] {
     opacity: 1;
   }
 }
-/* Room for it, always, reserved rather than taken, or every title reflows the
-   moment the pointer arrives. */
-.library-card-top {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  min-width: 0;
-  padding-right: var(--space-8);
-}
 
 .library-card-title {
   /* Two lines, then ellipsis. One line loses too many document titles; three
@@ -2305,21 +2296,6 @@ button.scroll-row-arrow[hidden] {
 #library-boards-grid:not(.library-list) > .library-card {
   margin-bottom: 0;
 }
-/* **A fixed track, not a percentage.** Reported with a screenshot: "the
-   middle content in the library lines view isnt aligned." `flex: 1 1 40%`
-   on both halves makes each row's split depend on *its own* content, so the
-   preview column started at a different x on every single row, the
-   alignment failure DESIGN.md's CARP section is about, repeated once per
-   item down the whole list.
-   A fixed basis means every title occupies the same width and every preview
-   therefore begins on the same edge, which is the entire point of a list
-   view. `min-width: 0` so a long title ellipsises inside its track instead
-   of pushing it wider and taking the alignment with it. */
-.library-list .library-card-top {
-  flex: 0 0 22rem;
-  min-width: 0;
-  padding-right: 0;
-}
 /* An audit-log entry's own preview can run to the full 400-char budget
    (routes_library.py's ACTIVITY_DETAIL_CHARS) and, unlike every other kind
    here, has nowhere else to read the rest, the grid view already shows it
@@ -2334,10 +2310,6 @@ button.scroll-row-arrow[hidden] {
   height: 2.2rem;
   flex: 0 0 auto;
   order: 1;
-}
-.library-list .library-card-menu {
-  position: static;
-  opacity: 1;
 }
 .library-empty {
   margin: var(--space-6) 0 0;
@@ -2447,16 +2419,6 @@ button.scroll-row-arrow[hidden] {
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   box-shadow: var(--glass-shadow);
-}
-/* (`.menu-flip-left`/`.menu-flip-up` lived here. They flipped this menu
-   between two *fixed anchors* on its offset parent, which was the best a
-   clipped absolute element could do; `placeMenu` positions the fixed menu
-   freely against the viewport now and both classes had no remaining
-   setter.) */
-.library-image-menu-item {
-  text-align: left;
-  width: 100%;
-  white-space: nowrap;
 }
 /* **Visible before you hover it.** Reported: "there is no elipse button on
    files in the files library subtab", there is, on every tile, and it was at
@@ -2689,17 +2651,6 @@ button.scroll-row-arrow[hidden] {
    `.library-image-caption-clamped` is present, and whiteboard.js toggles it
    off/on with a "Show more"/"Show less" button for a caption long enough to
    need one. */
-/* One block per claim about the picture: a label, the value, the byline.
-   Before this the tile stacked three unlabelled paragraphs, a description,
-   an offline transcription and an AI transcription, and a reader could not
-   tell which empty-state belonged to which value. Reported as text that
-   "is below that selectable box and not editable". */
-.library-image-fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: 0 var(--space-4) var(--space-4);
-}
 
 /* The two blocks that moved inside the fold were written as sections of the
    card's outside: a rule above the usage chips, an inset on the byline. In
@@ -2733,42 +2684,8 @@ button.scroll-row-arrow[hidden] {
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--accent) 70%, transparent);
 }
-/* **Provenance is a byline, not two pills** (INBOX 56). The three model
-   badges that used to live here (`.library-image-caption-badge`,
-   `.library-image-vision-ocr-badge`, `.library-image-ocr-badge`) were
-   bordered, filled pills sitting in the middle of the card beside the "Used
-   in" chips, which are buttons: the same shape for a thing you press and a
-   thing you read. One muted line at the foot says both, in the smallest type
-   on the card, and the pills and their rules are gone rather than restyled. */
-.library-image-provenance {
-  margin: 0;
-  padding: 0 var(--space-4) var(--space-4);
-  font-size: var(--text-xs);
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
 .library-image-provenance.hidden {
   display: none;
-}
-/* **Two type sizes on a picture card, not three.** Measured at 1440 on the
-   seeded gallery: the filename on the photograph was 13.6px, the description
-   12px (from a `text-sm` utility on the element) and the count and the fold
-   11.2px, which is three of the scale's adjacent steps inside 2.4px. DESIGN.md
-   names that exact failure ("two things that are almost the same size, next to
-   each other, is what reads as unconsidered"). The name of a picture and the
-   sentence about it are the card's prose and share one size; the facts line
-   under them is `--text-xs` and is the only other size on the card. */
-.library-image-caption {
-  margin: 0;
-  font-size: var(--text-md);
-  padding: 0 0 var(--space-3);
-  cursor: text;
-  /* A pasted URL or a long slash-run ("make/manage/delete/access") has no
-     break opportunity, so it ran straight through the tile's edge: 
-     reported with a screenshot. This also repairs the clamp beside it: a
-     line that cannot wrap cannot be line-clamped either, so the same
-     unbreakable string defeated "Show more" as well as the card boundary. */
-  overflow-wrap: anywhere;
 }
 /* **An opened caption grows the card by a bounded amount** (INBOX 174, with
    the fixed picture above): "Show more" used to let a long caption take the
@@ -2869,17 +2786,6 @@ button.scroll-row-arrow[hidden] {
   font: inherit;
   color: var(--ink);
   resize: none;
-}
-/* A vision model's verbatim transcription of text found in the image
-   ("extractor mode"), same box shape as .library-image-caption, but never
-   click-to-edit (there is nothing to type by hand here) and hidden
-   entirely until a read has actually happened, unlike the caption's
-   always-visible "Add a caption…" placeholder. */
-.library-image-vision-ocr {
-  margin: 0;
-  padding: 0 0 var(--space-3);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .library-image-vision-ocr.hidden {
   display: none;
@@ -3835,17 +3741,6 @@ button.small.icon-button,
 summary.small.icon-only,
 summary.small.icon-button {
   padding-inline: 0.3em;
-}
-/* The incremental renderer's chunk marker. Zero height, no list marker, no
-   part in layout: it exists only to be watched by an IntersectionObserver,
-   and `aria-hidden` plus no `data-id` keeps it out of the keyboard walk and
-   the accessibility tree. */
-.list-window-sentinel {
-  height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  list-style: none;
 }
 /* --- back / forward through pages --------------------------------------------
    In the status bar, immediately before undo/redo. Asked for specifically to
