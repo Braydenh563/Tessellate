@@ -35,7 +35,7 @@ DEFAULT_HOUR = 9
 #: ended it at its own first line, so the lines of a code block were offered.
 _QUOTED = re.compile(r"```.*?(?:```|\Z)|`[^`\n]*`|\"[^\"\n]*\"|“[^“”\n]*”|^[ \t]*>.*$", re.S | re.M)
 _NUM = r"\d+(?:\.\d+)?"
-_SUM = re.compile(rf"(?<![\w.])({_NUM}(?:\s*[-+*/×x]\s*{_NUM})+)\s*=\s*(-?{_NUM})?(?![\w.])")
+_SUM = re.compile(rf"(?<![\w.])({_NUM}(?:\s*[-+*/×x]\s*{_NUM})+)\s*(?P<eq>=)\s*(?P<ans>-?{_NUM})?(?![\w.])")
 #: A "Total:" line under a column of amounts (OPEN 1100): each line above it,
 #: back to a blank line, ends in an amount, with an optional currency sign.
 #: The amount may be left off ("Total:" and nothing after): the offer then writes it.
@@ -119,9 +119,9 @@ def _sum_offer(found: re.Match, worked: float, said: str | None, bare: bool) -> 
     right = arithmetic.spoken(worked).replace(",", "")
     expr = re.sub(r"\s+", " ", found.group(1))
     if said is not None:
-        start, end, replace = found.start(2), found.end(2), right
+        start, end, replace = found.start("ans"), found.end("ans"), right
     else:
-        start = end = found.end(1) if bare else found.end()
+        start = end = found.end(1) if bare else found.end("eq")
         replace = f" = {right}" if bare else f" {right}"
     return {
         "kind": "sum", "start": start, "end": end, "said": said or "",
@@ -143,7 +143,7 @@ def _sums(text: str, quoted: list) -> list[dict]:
         except arithmetic.NotArithmetic:
             continue
         bare = found.re is _BARE_SUM
-        said = None if bare else found.group(2)
+        said = None if bare else found.group("ans")
         if said is None or abs(float(said) - worked) >= 1e-9:
             out.append(_sum_offer(found, worked, said, bare))
     return out
