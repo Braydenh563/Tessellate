@@ -45,7 +45,7 @@ _COUNTED = re.compile(
 )
 _REFERS = re.compile(r"\b(?:this|that|these|those|it|them|the answer|above)\b", re.I)
 _LINE = re.compile(r"\b(?:line|trend)\b", re.I)
-_PIE = re.compile(r"\bpie\b", re.I)
+_KIND = re.compile(r"\b(pie|area|scatter|histogram|table)\b", re.I)
 
 _UNITS = {
     "km": "km", "kms": "km", "kilometres": "km", "kilometers": "km", "mi": "miles", "mile": "miles", "miles": "miles",
@@ -187,9 +187,9 @@ def _subject_words(question: str) -> list[str]:
 
 
 def _chart_answer(rows: list, title: str, question: str) -> dict:
-    kind = "line" if _LINE.search(question) else "bar"
-    pie = " A pie chart is not drawn here; the bars show the same shares." if _PIE.search(question) else ""
-    lead = f"Here are your {len(rows)} values as a {kind} chart.{pie}"
+    named = _KIND.search(question)
+    kind = named.group(1).lower() if named else "line" if _LINE.search(question) else "bar"
+    lead = f"Here are your {len(rows)} values as a {kind} chart."
     return {"text": f"{lead}\n\n{_fence(title or 'Chart', kind, rows)}\n\n{_KEEP}", "grounding": [], "answered": True, "shape": "chart", "next": []}
 
 

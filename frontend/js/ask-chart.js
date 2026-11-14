@@ -109,7 +109,58 @@
     return Math.max(320, Math.min(1400, Math.round(measured)));
   }
 
+  //: A histogram is bars of how many values fall in each equal-width range (L-chat-252); the table
+  //: under it says the same, so the ranges are its rows.
+  function askChartBinned(chart) {
+    const values = chart.rows.map((row) => row.value);
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    const count = Math.max(1, Math.min(12, Math.ceil(Math.sqrt(values.length))));
+    const step = (high - low) / count || 1;
+    const bins = Array.from({ length: count }, (_, i) => ({ label: `${+(low + step * i).toFixed(2)} to ${+(low + step * (i + 1)).toFixed(2)}`, value: 0 }));
+    for (const value of values) bins[Math.min(count - 1, Math.floor((value - low) / step))].value += 1;
+    return { ...chart, kind: "bar", rows: bins, columns: ["Range", "Values"] };
+  }
+
+  //: A pie: one slice per row, its share of the total, the legend beside it. Each slice is a mark of its
+  //: own (`.ask-chart-pt`), so the tooltip, the arrow keys and the table work as on a bar.
+  function askChartPie(chart, width) {
+    const total = chart.rows.reduce((sum, row) => sum + row.value, 0) || 1;
+    const radius = ASK_CHART_H / 2 - 12;
+    const cx = radius + 12;
+    const cy = ASK_CHART_H / 2;
+    const svg = askChartSvgEl("svg", { viewBox: `0 0 ${width} ${ASK_CHART_H}`, class: "ask-chart-svg", role: chart.interactive ? "group" : "img" });
+    svg.setAttribute("aria-label", `${chart.title}, as a pie chart; the table below has the numbers`);
+    let angle = -Math.PI / 2;
+    chart.rows.forEach((row, i) => {
+      const sweep = (row.value / total) * Math.PI * 2;
+      const [x1, y1, x2, y2] = [Math.cos(angle), Math.sin(angle), Math.cos(angle + sweep), Math.sin(angle + sweep)].map((n, k) => (k % 2 ? cy : cx) + n * radius);
+      angle += sweep;
+      const d = sweep >= Math.PI * 2 - 1e-6 ? `M${cx - radius},${cy}a${radius},${radius} 0 1,0 ${radius * 2},0a${radius},${radius} 0 1,0 ${-radius * 2},0Z` : `M${cx},${cy}L${x1.toFixed(2)},${y1.toFixed(2)}A${radius},${radius} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2.toFixed(2)},${y2.toFixed(2)}Z`;
+      const slice = askChartSvgEl("path", { d, class: `ask-chart-slice ask-chart-slice-${i % 6}` });
+      const share = `${Math.round((row.value / total) * 100)}%`;
+      if (i < 10) {
+        const key = askChartSvgEl("text", { x: cx + radius + 24, y: 24 + i * 18, class: "ask-chart-axis" });
+        key.textContent = `${askChartFit(askChartLabel(chart, row.label), width - cx - radius - 90)}, ${share}`;
+        const swatch = askChartSvgEl("rect", { x: cx + radius + 8, y: 14 + i * 18, width: 10, height: 10, rx: 2, class: `ask-chart-slice ask-chart-slice-${i % 6}` });
+        svg.append(swatch, key);
+      }
+      if (!chart.interactive) {
+        const tip = askChartSvgEl("title");
+        tip.textContent = `${row.label}: ${row.value} (${share})`;
+        slice.appendChild(tip);
+        svg.appendChild(slice);
+        return;
+      }
+      const group = askChartSvgEl("g", { class: "ask-chart-pt", tabindex: i === 0 ? 0 : -1, role: chart.onPick ? "button" : "img", "aria-label": `${row.label}: ${row.value}, ${share}`, "data-i": i });
+      group.appendChild(slice);
+      svg.appendChild(group);
+    });
+    return svg;
+  }
+
   function askChartSvg(chart, width = ASK_CHART_W) {
+    if (chart.kind === "pie") return askChartPie(chart, width);
     const rows = chart.rows;
     const max = Math.max(1, ...rows.map((r) => r.value));
     const ticks = askChartTicks(max);
@@ -119,7 +170,7 @@
     const plotH = ASK_CHART_H - pt - pb;
     const y = (value) => pt + plotH - (value / top) * plotH;
     const svg = askChartSvgEl("svg", { viewBox: `0 0 ${width} ${ASK_CHART_H}`, class: "ask-chart-svg", role: chart.interactive ? "group" : "img" });
-    svg.setAttribute("aria-label", `${chart.title}, as a ${chart.kind === "bar" ? "bar" : "line"} chart; the table below has the numbers`);
+    svg.setAttribute("aria-label", `${chart.title}, as a ${chart.kind} chart; the table below has the numbers`);
     for (const tick of ticks) {
       svg.appendChild(askChartSvgEl("line", { x1: pl, x2: width - pr, y1: y(tick), y2: y(tick), class: "ask-chart-grid" }));
       const text = askChartSvgEl("text", { x: pl - 6, y: y(tick) + 4, "text-anchor": "end", class: "ask-chart-axis" });
@@ -134,15 +185,20 @@
     const isBar = chart.kind === "bar";
     const every = Math.max(1, Math.ceil(rows.length / Math.floor(plotW / (isBar ? 36 : 54))));
     const barW = Math.max(2, Math.min(48, slot * 0.7));
-    if (!isBar) {
-      const points = rows.map((row, i) => `${(pl + slot * i + slot / 2).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
+    //: A scatter puts each mark at its label's number (the x), the others in equal slots.
+    const xs = rows.map((row, i) => (chart.kind === "scatter" && Number.isFinite(Number(row.label)) ? Number(row.label) : i));
+    const [xLow, xHigh] = chart.kind === "scatter" ? [Math.min(...xs), Math.max(...xs)] : [0, Math.max(1, rows.length - 1)];
+    const xAt = (i) => (chart.kind === "scatter" ? pl + 8 + ((xs[i] - xLow) / (xHigh - xLow || 1)) * (plotW - 16) : pl + slot * i + slot / 2);
+    if (chart.kind === "line" || chart.kind === "area") {
+      const points = rows.map((row, i) => `${xAt(i).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
+      if (chart.kind === "area") svg.appendChild(askChartSvgEl("polygon", { points: `${xAt(0).toFixed(1)},${pt + plotH} ${points} ${xAt(rows.length - 1).toFixed(1)},${pt + plotH}`, class: "ask-chart-area" }));
       svg.appendChild(askChartSvgEl("polyline", { points, class: "ask-chart-line" }));
     }
     rows.forEach((row, i) => {
-      const cx = pl + slot * i + slot / 2;
-      if (i % every === 0) {
+      const cx = xAt(i);
+      if (i % every === 0 && (chart.kind !== "scatter" || i === 0 || i === rows.length - 1)) {
         const text = askChartSvgEl("text", { x: cx, y: ASK_CHART_H - pb + 16, "text-anchor": "middle", class: "ask-chart-axis" });
-        text.textContent = askChartFit(askChartLabel(chart, row.label), slot * every - 6);
+        text.textContent = askChartFit(askChartLabel(chart, row.label), chart.kind === "scatter" ? 80 : slot * every - 6);
         svg.appendChild(text);
       }
       const mark = isBar
@@ -173,6 +229,7 @@
   function askChartTable(chart) {
     const wrap = document.createElement("details");
     wrap.className = "ask-chart-numbers";
+    wrap.open = chart.kind === "table";
     const summary = document.createElement("summary");
     summary.textContent = "The numbers";
     const table = document.createElement("table");
@@ -302,6 +359,7 @@
     //: not only the Statistics page's (the owner, 2026-11-12: "I cant
     //: interact with or see the values"); only `onPick` makes a mark a button.
     chart = { ...chart, interactive: true };
+    if (chart.kind === "histogram") chart = askChartBinned(chart);
     const head = document.createElement("div");
     head.className = "ask-chart-head";
     const title = document.createElement("strong");
@@ -312,14 +370,15 @@
     const source = chart.source || "from your notes";
     if (chart.total != null) total.textContent = `${chart.total.toLocaleString()} in all, ${source}`;
     else total.textContent = source[0].toUpperCase() + source.slice(1);
-    const svg = askChartSvg(chart);
+    const svg = chart.kind === "table" ? null : askChartSvg(chart);
     const save = smallButton("ph:download-simple Save as PNG", "Save this chart as a picture", () =>
       askChartPng(host.querySelector(".ask-chart-svg"), chart.title).catch((error) => toast(error.message, true))
     );
     save.classList.add("quiet");
-    head.append(title, total, save);
-    host.replaceChildren(head, svg, ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
+    head.append(title, total, ...(svg ? [save] : []));
+    host.replaceChildren(head, ...(svg ? [svg] : []), ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
     host.classList.remove("hidden");
+    if (!svg) return;
     if (chart.interactive) askChartWire(host, chart);
     else askChartFollow(host, chart);
   }
@@ -423,7 +482,7 @@
         const head = line.match(/^(title|kind)\s*:\s*(.+)$/i);
         if (head) {
           if (head[1].toLowerCase() === "title") chart.title = head[2].trim().slice(0, 80);
-          else chart.kind = /^line/i.test(head[2]) ? "line" : "bar";
+          else chart.kind = (head[2].trim().toLowerCase().match(/^(line|area|pie|scatter|histogram|table)/) || ["", "bar"])[1];
           continue;
         }
         const cells = line.split(/[,;\t]/).length > 1 ? line.split(/[,;\t]/) : line.split(/\s+(?=\S+$)/);
@@ -453,6 +512,7 @@
       const name = chart.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "chart";
       const svgButton = smallButton("ph:download-simple Save as SVG", "Save this chart as an SVG file", async () => {
         const svg = host.querySelector(".ask-chart-svg");
+        if (!svg) return;
         await saveFile(`${name}.svg`, new Blob([askChartSvgText(svg)], { type: "image/svg+xml" })).catch((error) => toast(error.message, true));
       });
       const csvButton = smallButton("ph:download-simple Save as CSV", "Save these numbers as a CSV file", () =>
@@ -460,7 +520,7 @@
       );
       svgButton.classList.add("quiet");
       csvButton.classList.add("quiet");
-      head?.append(svgButton, csvButton);
+      head?.append(...(host.querySelector(".ask-chart-svg") ? [svgButton] : []), csvButton);
       return true;
     },
     //: The maker: a sheet with the paste box, Bar or Line, the live chart, and Add to note
@@ -493,7 +553,7 @@
             }
             return chartMaker.parse(source);
           };
-          for (const [key, name] of [["bar", "Bar"], ["line", "Line"]]) {
+          for (const [key, name] of [["bar", "Bar"], ["line", "Line"], ["area", "Area"], ["pie", "Pie"], ["scatter", "Scatter"], ["histogram", "Histogram"], ["table", "Table"]]) {
             const button = document.createElement("button");
             button.type = "button";
             button.textContent = name;

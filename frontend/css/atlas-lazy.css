@@ -1154,7 +1154,7 @@
 #nm-buddy:is(.nmb-act-dinner, .nmb-act-bubbles, .nmb-act-knit) .nm-atlas .atl-iris { translate: none; }
 .nm-atlas .atl-ds-spoon { fill: none; stroke: var(--atl-gold-line); stroke-width: 1; stroke-linecap: round; }
 .nm-atlas .atl-ds-ring { fill: none; stroke: var(--atl-gold-line); stroke-width: 0.7; }
-.nm-atlas .atl-ds-bubble { fill: color-mix(in oklab, var(--atl-glow-c) 18%, transparent); stroke: var(--atl-glow-c); stroke-width: 0.45; opacity: 0.8; transform-box: fill-box; transform-origin: center; }
+.nm-atlas .atl-ds-bubbles .atl-ds-bubble { fill: color-mix(in oklab, var(--atl-glow-c) 18%, transparent); stroke: var(--atl-glow-c); stroke-width: 0.45; opacity: 0.8; transform-box: fill-box; transform-origin: center; }
 .nm-atlas .atl-ds-yarn { fill: none; stroke: var(--atl-lilac); stroke-width: 0.9; stroke-linecap: round; transform-box: fill-box; transform-origin: 100% 0; }
 /* Dinner: the bowl held low in the left hand, the spoon in the right, the head bowed to it. */
 #nm-buddy.nmb-act-dinner .atl-figure .nmb-arm-r { transform: rotate(-34deg); }
@@ -1227,3 +1227,13 @@
   & #nm-buddy.nmb-act-knit .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
   & #nm-buddy.nmb-act-knit .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
 }
+
+/* **A desk prop reads against the body** (L-chat-246; the rule `08-consistency.css` gives the worn props).
+   atlasprops.js read these at 1.4 to 2.5 to 1 against the pale blue body in both looks (the sheet is the
+   same in both): a dark keyline under each fill, the line-art strokes in navy, and the three small glyphs at
+   14px or more. Every prop is then 3 to 1 or more. */
+.nm-atlas :is(.atl-prop-bag, .atl-ds-mat, .atl-ds-pillow, .atl-ds-can, .atl-ds-piece, .atl-ds-twinkle, .atl-ds-gear-disc, .atl-ds-gear-tooth, .atl-ds-mote, .atl-ds-pot, .atl-ds-pot-rim, .atl-ds-snack, .atl-ds-chip) { stroke: var(--atl-navy); stroke-width: 0.7; stroke-linejoin: round; paint-order: stroke fill; }
+.nm-atlas :is(.atl-ds-rod, .atl-ds-spanner, .atl-ds-spanner-jaw, .atl-ds-spoon, .atl-ds-can-spout, .atl-nap-z) { stroke: var(--atl-navy); }
+.nm-atlas .atl-ds-fold { opacity: 0.85; }
+.nm-atlas :is(.nmp-note, .nmp-gear, .nmp-piece) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.5; }
+.nm-atlas :is(.nmp-snack, .nmp-napz) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.3; }

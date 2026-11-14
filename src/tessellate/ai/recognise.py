@@ -290,7 +290,9 @@ _NEIGHBOUR_DAY = lazy_compile(
     r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
     r"|^(?:what(?:'s| is| will| would)?\s+)?(?:the\s+)?(?:date\s+(?:will\s+)?(?:be\s+)?(?:for\s+)?(?P<f>tomorrow|yesterday)|(?P<g>tomorrow|yesterday)'?s?\s+date"
     r"|(?:(?:what\s+)?(?:will\s+)?the\s+)?date\s+(?:will\s+)?be\s+(?P<h>tomorrow|yesterday)|(?P<i>tomorrow|yesterday),?\s+what\s+(?:will\s+)?the\s+date\s+(?:be|was)"
-    r"|day\s+(?:is\s+it\s+)?(?:gonna\s+be\s+)?(?P<j>tomorrow|yesterday))$",
+    r"|day\s+(?:is\s+it\s+)?(?:gonna\s+be\s+)?(?P<j>tomorrow|yesterday))$"
+    #: "calender says tomorrow is" (CLINC150, misspelt): the lead-in of the date question, said without its end.
+    r"|^calend[ae]r says (?P<k>tomorrow|yesterday) is$",
     re.I,
 )
 

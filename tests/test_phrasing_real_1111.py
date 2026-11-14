@@ -76,19 +76,8 @@ def test_the_phrasings_name_nobody_and_carry_no_digits():
             assert 2 <= len(phrase.split()) <= 14 and "\n" not in phrase, (name, phrase)
 
 
-DATE = "The misspelt 'calender' lead-in with a trailing 'is' is no question the dates utility reads."
-MEETING_TODAY = (
-    "A meeting ask with no named thing is read as 'what is on today' and led by a verdict; the notebook's only meeting "
-    "note is quoted under 'No, not today'. Whether that quote is a stray note is the owner's call."
-)
-BARE_EVENT = "A bare statement of an event has no verb to say what to do with it: it is neither a reminder nor a question."
-
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
-XFAIL = {
-    "calender says tomorrow is": DATE,
-    "do i have any meeting to go to today": MEETING_TODAY,
-    "lunch with my friend at noon today": BARE_EVENT,
-}
+XFAIL: dict[str, str] = {}
 
 
 def _cases():
@@ -109,3 +98,13 @@ def test_real_phrasing(client, notebook, name, kind, phrase):
     text = _ask(client, phrase)["text"]
     problem = _judge(kind, text) if kind != "notes" else ("empty" if not text.strip() else None)
     assert not problem, f"{name} | {phrase} | {problem} | {text[:120]!r}"
+
+
+def test_the_three_old_xfails_are_read_by_their_own_rules():
+    from tessellate.ai import composer_calendar, composer_event_verdict, recognise
+
+    assert recognise.neighbour_day("calender says tomorrow is") == "tomorrow"
+    assert recognise.neighbour_day("calendar says yesterday is") == "yesterday"
+    assert composer_calendar.restate("lunch with my friend at noon today") == "remind me to lunch with my friend at noon today"
+    assert composer_calendar.restate("do we have lunch at noon today") == "do we have lunch at noon today"
+    assert composer_event_verdict.day_question("do i have any meeting to go to today") == "what is on today"

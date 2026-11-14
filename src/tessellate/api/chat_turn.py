@@ -534,6 +534,17 @@ def _uncut(title: str) -> str:
     return title.rstrip("…. ").lower()
 
 
+def _find_act_facts(req: _StreamRequest, prepared: dict, planned) -> list[dict]:
+    """A find said as an act ("find my gym notes", L-chat-239): its rows are facts the model words under
+    the figure check, as a list is; no model, or the Ask box, keeps the act's own path."""
+    from tessellate.ai import acts
+
+    if prepared["intent"] != intent.ACT or req.body.notes_only:
+        return []
+    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
+    return list(planned(req, parsed)) if parsed and parsed["intent"] == "find" else []
+
+
 def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     """Whether a model writes this turn from the engine's exact answer (CHAT_PLAN
     decision 75; the owner, 2026-10-27: "why is it responding as the composer

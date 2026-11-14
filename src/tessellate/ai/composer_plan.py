@@ -970,7 +970,11 @@ def answer(ctx: Ctx) -> Reply | None:
     if day := composer_event_verdict.day_question(text):
         #: "are we meeting on Tuesday" asks of the day: its list, led by Yes or by what is missing.
         reply = _answer_text(ctx, day)
-        return reply and Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}", reply.offer, reply.asks)
+        #: No list for the day (the plan leaves "today" to the notes written today) is no meeting, said so: a quoted
+        #: note about another day would be a stray (L-chat-250).
+        if reply is None:
+            return Reply(composer_event_verdict.lead(text, ""))
+        return Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}", reply.offer, reply.asks)
     #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
     return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)
 

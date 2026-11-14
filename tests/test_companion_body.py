@@ -180,6 +180,21 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     assert "nameMarkBuddyNameProps(buddy, face);" in AV
 
 
+LAZY_CSS = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
+
+
+def test_atlas_desk_props_have_a_keyline_and_the_small_ones_are_scaled() -> None:
+    # L-chat-246: atlasprops.js (light and dark, one sheet) read 18 of 30 props under 3 to 1 or under 14px, 1 to
+    # 2.5 to 1 for the desk props; after, 0 of 30, every prop 4.02 to 1 or more and 14px or more in both themes.
+    rule = LAZY_CSS[LAZY_CSS.index("/* **A desk prop reads against the body**") :]
+    for cls in (".atl-ds-mat", ".atl-ds-pillow", ".atl-ds-can", ".atl-ds-piece", ".atl-ds-twinkle", ".atl-ds-gear-disc", ".atl-ds-mote", ".atl-ds-snack", ".atl-prop-bag"):
+        assert cls in rule, cls
+    assert "stroke: var(--atl-navy); stroke-width: 0.7;" in rule and "paint-order: stroke fill;" in rule
+    assert ".atl-ds-rod" in rule and ".atl-nap-z" in rule and ".atl-ds-fold { opacity: 0.85; }" in rule
+    for small in (".nmp-note", ".nmp-gear", ".nmp-piece", ".nmp-snack", ".nmp-napz"):
+        assert small in rule, small
+
+
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
 
 
