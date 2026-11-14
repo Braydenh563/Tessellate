@@ -142,6 +142,9 @@ _QUESTION_RANGES: list[tuple[str, object]] = [
         r"eleven|twelve|few|couple of)\s+(day|week|fortnight|month|year)s?",
         "back",
     ),
+    #: The first or last seven days of a month ("the start of the month", "the end of last month").
+    (r"\b(?:at\s+)?the\s+(?:start|beginning)\s+of\s+(?:the|this)\s+month\b", "month_start"),
+    (r"\b(?:at\s+)?the\s+end\s+of\s+last\s+month\b", "last_month_end"),
     #: "last week" is the week before this one, Monday to Sunday, as everywhere else (the owner's Q24); "past week" rolls.
     (r"(?:in|over|during)?\s*(?:the\s+)?last\s+week\b(?!\s+of\b)", "last_week"),
     (r"(?:in|over|during)?\s*(?:the\s+)?past\s+(week)\b", "back"),
@@ -195,6 +198,12 @@ def _range_for(kind: str, match: re.Match, today: date) -> tuple[date, date]:
         return monday, monday + timedelta(days=6)
     if kind == "this_month":
         return today.replace(day=1), today
+    if kind == "month_start":
+        first = today.replace(day=1)
+        return first, first + timedelta(days=6)
+    if kind == "last_month_end":
+        last = today.replace(day=1) - timedelta(days=1)
+        return last - timedelta(days=6), last
     if kind == "this_year":
         return today.replace(month=1, day=1), today
     return today - timedelta(days=RECENT_DAYS), today  # "recent"

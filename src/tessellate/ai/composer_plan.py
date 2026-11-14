@@ -85,6 +85,7 @@ _LEFT = re.compile(
     r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items)"
     #: "what tasks do I have", "what needs doing", "my tasks" (R9-8).
     r"|what\s+(?:tasks?|to-?dos?|chores|jobs)\s+(?:do i have|have i got|are there|are open|are left)(?:\s+(?:open|left|outstanding|to do))?"
+    r"|which\s+(?:of\s+)?(?:my\s+)?(?:tasks|to-?dos|items|chores)\s+(?:are|is)\s+(?:still\s+)?(?:open|left|outstanding|unfinished|undone)"
     r"|what\s+needs\s+(?:doing|to be done|done)|(?:show|list)\s+(?:me\s+)?my\s+(?:tasks|to-?dos)|my\s+(?:tasks|to-?dos))\W*$", re.I)
 _WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 #: The other ways to ask when a thing is: "what date is my exam", "when do I
@@ -230,6 +231,9 @@ def _dated_phrase(phrase: str, low: str, today: date) -> tuple[date, date] | Non
     return gone[:2] if (today - gone[1]).days < (ahead[0] - today).days else ahead[:2]
 
 
+_COMING_UP = re.compile(r"\bcoming\s+up\b|\bon\s+the\s+horizon\b", re.I)
+
+
 def window(question: str, today: date) -> tuple[date, date, str] | None:
     """(first day, last day, how it was said) for the time a question names: the
     one reader every date shape uses. A window ahead is cut at today (the past
@@ -239,6 +243,9 @@ def window(question: str, today: date) -> tuple[date, date, str] | None:
     span = _unit_span(low, today) or _bounded(low, today)
     if span:
         return span
+    #: A bare "what is coming up" names no day: the next seven.
+    if _COMING_UP.search(low) and not when_words.find(low):
+        return today, today + timedelta(days=6), "coming up"
     for _s, _e, phrase in when_words.find(low):
         #: "anything about Christmas" is a topic to search, not a day to list.
         found = None if recognise.a_topic_phrase(low, phrase, holiday=False) else _dated_phrase(phrase, low, today)
