@@ -61,7 +61,7 @@ def _rows(source: str, start: int) -> list[str]:
 
 
 def _doc_command_rows() -> list[str]:
-    source = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    source = (FRONTEND / "js" / "documents-commands.js").read_text(encoding="utf-8")
     at = source.index("const DOC_COMMANDS = [")
     return _rows(source, at)
 

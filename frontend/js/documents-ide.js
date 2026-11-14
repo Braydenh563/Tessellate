@@ -339,18 +339,9 @@
       event.preventDefault();
       const startY = event.clientY;
       const start = dom.getBoundingClientRect().height;
-      document.body.classList.add("resizing-sidebar");
       //: Dragging up (a negative delta) makes it taller: the panel grows away
       //: from its bottom edge, which stays put.
-      const move = (e) => docIdeRunApply(dom, start - (e.clientY - startY));
-      const stop = () => {
-        document.body.classList.remove("resizing-sidebar");
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", stop);
-        view.requestMeasure();
-      };
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", stop);
+      trackSeparatorValue.drag((e) => docIdeRunApply(dom, start - (e.clientY - startY)), () => view.requestMeasure());
     });
     handle.addEventListener("keydown", (event) => {
       const step = event.shiftKey ? 64 : 16;

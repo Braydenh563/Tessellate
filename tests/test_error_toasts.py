@@ -89,8 +89,12 @@ EXPECTED = {
     ],
     'documents.js': [
         '`${what} is not available here.`',
-        '"That section cannot go inside itself."',
         '"Full screen is not available in this window."',
+    ],
+    'documents-commands.js': [
+        '"That section cannot go inside itself."',
+    ],
+    'documents-prose-check.js': [
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',
     ],
@@ -269,16 +273,24 @@ FAULTS = {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
-        '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-cm-load.js': {
+        '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-links-panels.js': {
+        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-block-ids.js': {
+        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-suggest-panel.js': {
+        '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',

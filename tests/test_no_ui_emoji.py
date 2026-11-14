@@ -87,7 +87,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "has no Phosphor font, never drawn in the app",
         ),
     ],
-    "frontend/js/documents.js": [
+    "frontend/js/documents-richpaste.js": [
         (
             "const DOC_RICH_TAGS",
             "the bullet marks a pasted Word paragraph starts with, matched to read it as "

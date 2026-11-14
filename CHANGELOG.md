@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- L335 (D24, brief 45 part 2): documents.js split along its section seams, 16,081 to 10,133 lines, into twelve wrapped pieces (prose check, suggest panel, commands, templates, CodeMirror loading, table menu, preview, edit keys, rich paste, block ids, links panels, save) that load before it; the shared scope drops from 7,153 to 7,028 names, and seven duplicate blocks fold (155 to 148, 2,802 to 2,672 duplicated lines). No behaviour change; the library bundle list grows by twelve entries (boot gzip +73 bytes, on a base already 239 over the cap).
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Documents: a paste from Word no longer logs a CSP error (its `<style>` block is cut before parsing); `hw890.js` pastes Word-shaped HTML (headings, mso-list bullets and numbers, a table, o:p noise, a script) at 1440 and at 390 with touch (L890).

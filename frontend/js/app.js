@@ -1664,6 +1664,19 @@ const LAZY_MODULES = {
     "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
+    //: Wrapped pieces of documents.js (L335), before it: each only declares, and documents.js calls them (at load too).
+    "/js/documents-prose-check.js",
+    "/js/documents-suggest-panel.js",
+    "/js/documents-commands.js",
+    "/js/documents-templates.js",
+    "/js/documents-cm-load.js",
+    "/js/documents-tablemenu.js",
+    "/js/documents-preview.js",
+    "/js/documents-edit-keys.js",
+    "/js/documents-richpaste.js",
+    "/js/documents-block-ids.js",
+    "/js/documents-links-panels.js",
+    "/js/documents-save.js",
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.

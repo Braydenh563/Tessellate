@@ -29,7 +29,7 @@ HARPER = FRONTEND / "vendor" / "harper"
 #: "Add to dictionary" row both menus draw, so the one-literal check still sees it.
 DOCUMENTS = "\n".join(
     (FRONTEND / "js" / name).read_text(encoding="utf-8")
-    for name in ("documents.js", "documents-view.js", "documents-prose.js", "documents-spell.js", "documents-suggest.js")
+    for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-view.js", "documents-prose.js", "documents-spell.js", "documents-suggest.js")
 )
 WORKER = (FRONTEND / "js" / "harper-worker.js").read_text(encoding="utf-8")
 

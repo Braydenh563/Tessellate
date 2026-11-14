@@ -7,6 +7,7 @@ then lost them. These run the real saveDocument/docSaveOnce under node with
 a PUT the test releases by hand.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -24,7 +25,7 @@ def _function(source: str, head: str) -> str:
 
 
 def _run(steps: str) -> dict:
-    source = DOCS.read_text(encoding="utf-8")
+    source = frontend_text("documents.js")
     body = "\n".join(
         _function(source, head) for head in ("async function saveDocument(", "async function docSaveOnce(")
     )

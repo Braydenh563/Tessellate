@@ -12,7 +12,7 @@ from tests._app_js import JS_DIR, app_js_text, frontend_text
 
 def _js(name: str) -> str:
     """A lazy bundle's file, which `app_js_text()` (the boot scripts) does not hold."""
-    return frontend_text(name) if name.startswith("whiteboard") else (JS_DIR / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") or name == "documents.js" else (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def _between(text: str, start: str, end: str) -> str:

@@ -5,6 +5,7 @@ server that answers 409 until told otherwise. The modal stole the focus in the
 middle of a sentence; now only a save asked for by hand (or Resolve) opens it.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -23,7 +24,7 @@ def _function(source: str, head: str) -> str:
 
 
 def _run(steps: str) -> dict:
-    source = DOCS.read_text(encoding="utf-8")
+    source = frontend_text("documents.js")
     body = "\n".join(
         _function(source, head)
         for head in ("async function saveDocument(", "async function docSaveOnce(", "async function docResolveConflict(")
@@ -159,6 +160,6 @@ def test_a_save_by_hand_with_no_conflict_still_goes_straight_through():
 
 
 def test_leaving_a_conflicted_document_asks_and_typing_keeps_the_banner():
-    source = DOCS.read_text(encoding="utf-8")
+    source = frontend_text("documents.js")
     assert "saveDocument({ silent: !docConflictPending })" in _function(source, "async function openDocument(")
     assert "if (docConflictPending?.id === currentDoc.id) return;" in _function(source, "function markDocDirty(")

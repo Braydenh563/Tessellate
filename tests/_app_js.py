@@ -90,6 +90,8 @@ MOVED_OUT = {
     #: The board's two big files hand sections to `whiteboard-<topic>.js` pieces (L286); a test that means "the board's
     #: code" reads these names through `frontend_text`, so a section can move without an edit in 240 tests.
     "whiteboard.js": ("whiteboard-export.js", "whiteboard-present.js", "whiteboard-frames.js", "whiteboard-comments.js", "whiteboard-locks.js", "whiteboard-search.js", "whiteboard-connectors.js", "whiteboard-arrange.js", "whiteboard-navigator.js", "whiteboard-sketch-text.js", "whiteboard-textedit.js", "whiteboard-ctxmenu.js", "whiteboard-place.js", "whiteboard-stacking.js", "whiteboard-bar.js"),
+    #: documents.js hands sections to wrapped `documents-<topic>.js` pieces loaded before it (L335).
+    "documents.js": ("documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js",),
     "whiteboard-map.js": ("whiteboard-map-strip.js", "whiteboard-map-waypoints.js", "whiteboard-map-marks.js", "whiteboard-map-edges.js", "whiteboard-map-notes.js", "whiteboard-map-look.js"),
 }
 
@@ -164,8 +166,8 @@ def stand_ins_source() -> str:
 #: own text (`docLivePlugin`, `docCmTheme`; audit 1031 DC13): a test that means
 #: "the documents editor's code" reads them joined, so a piece moving between
 #: these files does not move its tests.
-DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-spell.js", "documents-languagetool.js", "documents-outline.js", "documents-callouts.js", "documents-view.js", "documents-dictionary.js", "documents-backlinks.js", "documents-suggest.js", "documents-blockref.js", "documents-code-format.js", "documents-json-schema.js")
+DOCUMENTS_PIECES = ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-spell.js", "documents-languagetool.js", "documents-outline.js", "documents-callouts.js", "documents-view.js", "documents-dictionary.js", "documents-backlinks.js", "documents-suggest.js", "documents-blockref.js", "documents-code-format.js", "documents-json-schema.js")
 
 
 def documents_text() -> str:
-    return "\n".join((JS_DIR / name).read_text(encoding="utf-8") for name in DOCUMENTS_PIECES)
+    return "\n".join(unwrapped((JS_DIR / name).read_text(encoding="utf-8")) for name in DOCUMENTS_PIECES)

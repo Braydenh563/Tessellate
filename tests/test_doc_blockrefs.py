@@ -14,6 +14,7 @@ regenerated for a block that has one.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -31,7 +32,7 @@ SYNCED_JS = ROOT / "frontend" / "js" / "documents-synced.js"
 
 
 def blockref_source() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start = text.find(BEGIN)
     stop = text.find(END)
     assert start != -1, f"{BEGIN} marker is missing from documents.js"
@@ -301,7 +302,7 @@ def test_block_uses_ignores_its_own_text_and_an_untitled_document(client) -> Non
 
 
 def test_a_block_is_copied_as_an_embed_and_pasted_by_the_slash_menu() -> None:
-    js = DOCUMENTS_JS.read_text(encoding="utf-8")
+    js = frontend_text("documents.js")
     piece = (ROOT / "frontend" / "js" / "documents-blockref.js").read_text(encoding="utf-8")
     editor = (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
     # One id, written once into the block; the embed is the same reference with a bang, kept for the paste in another document.
