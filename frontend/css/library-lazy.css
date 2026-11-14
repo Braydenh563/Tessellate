@@ -13,6 +13,36 @@
    with belong here: new surfaces (a map's outline and markers, a picture's
    grip in Live, the print step), not overrides of boot rules. */
 
+/* --- moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal
+   specificity, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
+
+/* From 08-consistency.css */
+.doc-dock-identity {
+  --identity-h: var(--control-h-lg);
+}
+.doc-view-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* "How to edit" holds four one-word modes (Live, Source, Split, Plain), 113px
+   of content in the 15rem every dock list starts at: a menu twice as wide as
+   anything in it reads as a panel with nothing in it (menus.js, the only
+   menu past 2x). The floor it gets is the width of its longest row plus air,
+   not a new size of its own. */
+.doc-view-menu > .doc-dock-menu-list {
+  min-width: 10rem;
+}
+/* Focus mode opens the documents sidebar whole as its own panel, folded on
+   the page or not; its rows are where they belong there. */
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > * {
+  transform: none;
+}
+#doc-bookmarks-wrap:has(> .doc-outline:empty) {
+  padding-block: var(--ring-room);
+  margin-top: calc(var(--space-3) - var(--ring-room));
+}
+
 /* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library
    bundle's own classes, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
