@@ -647,33 +647,6 @@
     display: none;
   }
 }
-/* A tree label sits *beside* its node rather than under it, so it needs a
-   thinner halo: a 3px stroke on text that starts 7px from the circle eats
-   into the node itself. The anchor is set in JS as an inline style, because
-   `.graph-node text` sets `text-anchor: middle` and a stylesheet rule beats
-   the presentation attribute it would otherwise be. */
-.graph-node text.graph-label-tree {
-  font-size: var(--text-sm);
-  /* A tree label lies *along* the edge running to its children, so the halo
-     is doing real work here: it has to be wide enough to cover the line in
-     the gaps between glyphs, and opaque. `--card` is 55% white: the dashes
-     of a thread edge showed straight through it and the label came out
-     looking struck through. */
-  stroke: var(--modal-bg);
-  stroke-width: 5px;
-}
-/* Category headings label the branch they open, so they carry the weight, 
-   and now a colour of their own, so they read as a different kind of label
-   at a glance rather than just a bigger/bolder note preview (user request:
-   bold alone wasn't enough to tell a category from a note in the arc view). */
-.graph-node text.graph-label-group {
-  font-size: var(--text-base);
-  font-weight: 600;
-  fill: var(--accent);
-}
-:root[data-mode="dark"] .graph-node text.graph-label-group {
-  fill: var(--accent);
-}
 /* The notes a document draws on, beside its outline. The row is the note plus
    a detach button, so the two can't run into each other on a long preview. */
 #doc-notes li {
@@ -3332,29 +3305,6 @@
 .node-card.wb-selected {
   border-color: transparent;
 }
-.wb-card-content {
-  font-size: var(--text-lg);
-  line-height: 1.4;
-  /* **A flex item will not shrink below its own content unless it is told
-     it may.** `.wb-card` is a column flex container, and a placed note
-     carries the height the person dragged it to as an inline style. A flex
-     item's `min-height` defaults to `auto`, which resolves to its content's
-     height, so the text won a fight with a box that had a definite size:
-     the paragraphs were laid out past the card's own border, and with
-     nothing clipping them they were painted over the board.
-     Reported as "when I expand the size of notes in the whiteboard and
-     mindmap, the text goes out of the panel border" (INBOX 238). Measured
-     before the fix: a 324-character note in a 320x120 card rendered a
-     215px-tall content block, 112px of it below the card's bottom edge; a
-     408-character note in a 320x160 card spilled 254px.
-     `min-height: 0` lets the item shrink to the box, `overflow: hidden`
-     clips what does not fit. Both belong here rather than on `.wb-card`
-     itself: the eight resize handles and the rotate stem are absolutely
-     positioned children that sit *outside* the card's edge on purpose, and
-     clipping at the card would take them with it. */
-  min-height: 0;
-  overflow: hidden;
-}
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id
    /entry.thumb_url/entry.attachments at all: libraryCard() (library.js) and
@@ -3363,20 +3313,6 @@
    sibling, inheriting .wb-card's own padding rather than bleeding to the
    card's edge: simplest fix, and consistent with how the card's text
    content is already inset the same way. */
-/* **It scales with the card, whole** (INBOX 825 item 3): the card's width,
-   its own ratio, never cropped; at most 60% of a card that has a height, so
-   the note's words keep the rest. */
-.wb-card-thumb {
-  width: 100%;
-  height: auto;
-  max-height: 60%;
-  min-height: 0;
-  flex-shrink: 0;
-  object-fit: contain;
-  object-position: left top;
-  border-radius: var(--radius-sm);
-  display: block;
-}
 /* Reported: an attached note showed "a cut-off version" with no way to see
    the rest. The card now renders the whole note (see renderWhiteboard in
    app.js) and only clamps past a height cap, with a Show more/less toggle
@@ -3384,28 +3320,6 @@
    with nothing pointing at what was missing. Line-count rather than a pixel
    max-height for the same reason `.entry-clamped` uses it: it scales with
    the reading-size setting instead of pinning a font-independent height. */
-/* The collapsed state. The clipping itself is `.wb-card-content`'s job
-   above, since the card's own height is what the text has to fit inside;
-   this adds the cap for the other case, a card that has never been
-   resized and so has no definite height of its own to be clipped by.
-   Eight lines, which is what the `-webkit-line-clamp: 8` this replaces
-   showed, written as a height so that it composes with the card's box
-   instead of competing with it. The old rule could not: `-webkit-line-clamp`
-   counts lines in one inline formatting context, and this element holds
-   rendered markdown, so a note of five paragraphs was eight *paragraphs*
-   tall, not eight lines, and a card sized to hold four of them showed the
-   other four over the board.
-   `.wb-card-content-capped` is added by `renderWhiteboard` only for a card
-   with no stored height, because that is the only case this cap is for. A
-   card the person dragged to 700px is already telling the text how much
-   room it has, and capping it at eight lines as well would leave five
-   hundred pixels of empty card under a "Show more" that hides nothing. */
-.wb-card-content.wb-card-content-clamped.wb-card-content-capped {
-  max-height: calc(1.4em * 8);
-}
-.wb-card-more {
-  align-self: flex-start;
-}
 aside[data-resizable="1"] {
   position: relative;
 }

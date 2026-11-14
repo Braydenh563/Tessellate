@@ -6379,7 +6379,7 @@ def test_every_note_editor_says_how_it_is_bounded() -> None:
         "NOTE_SURFACES changed: place the new editor in _SURFACE_BOUND and make sure its foot "
         "cannot be pushed out of view (DESIGN.md, 'A growing field is capped')"
     )
-    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8")
+    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8") + (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")  # L-ui-modernisation-31
     assert "max-height: 18rem" in sized and "max-height: 22rem" in sized  # size: inline / box
 
 
@@ -6432,7 +6432,9 @@ def test_the_present_bar_caption_is_a_page_picker():
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+        ROOT / "frontend" / "css" / "library-lazy.css"
+    ).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
     assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body

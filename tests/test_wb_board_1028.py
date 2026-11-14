@@ -12,7 +12,7 @@ JS = ROOT / "frontend" / "js"
 WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
 MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-MISC = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+MISC = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + LAZY  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
 
 
 def _function(source: str, name: str) -> str:

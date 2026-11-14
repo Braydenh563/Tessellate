@@ -229,45 +229,6 @@
   stroke-width: 1.2;
   stroke: var(--accent);
 }
-/* A manual link is clickable (opens the management panel); a documented
-   reason gets its own visible weight, not just a hover tooltip, asked for
-   directly ("a visual way to see the reasons for each connection"). */
-.graph-edge-manageable {
-  cursor: pointer;
-}
-.graph-edge-reasoned {
-  stroke: var(--accent);
-  stroke-opacity: 0.8;
-  stroke-width: 2.2;
-}
-/* A `contradicts` link: the one type that means "these are at odds" rather
-   than "these belong together", produced by the Tensions review. Dashed as
-   well as coloured on purpose: colour alone would not separate it for anyone
-   who cannot tell it from the accent, and on a dense graph the dash is the
-   part that reads at a glance. Placed after `.graph-edge-reasoned` because
-   these links always carry a reason and would otherwise be overridden by it. */
-.graph-edge-contradicts {
-  stroke: var(--error);
-  stroke-opacity: 0.85;
-  stroke-width: 2.2;
-  stroke-dasharray: 6 4;
-}
-/* The invisible, much wider click target laid over each thin visible edge, 
-   reported directly: "the links are hard to click on". `stroke: transparent`
-   still hit-tests (unlike `fill: none` with no stroke at all), and only a
-   link edge (`.graph-edge-manageable`) actually wants a pointer/click; every
-   other kind stays pointer-events:none so it can't steal a click meant for
-   whatever's underneath it. */
-.graph-edge-hit {
-  fill: none;
-  stroke: transparent;
-  stroke-width: 14;
-  pointer-events: none;
-}
-.graph-edge-hit.graph-edge-manageable {
-  pointer-events: stroke;
-  cursor: pointer;
-}
 .graph-link-peek > p {
   margin: 0;
 }
@@ -292,31 +253,6 @@
 }
 .graph-link-panel-arrow {
   font-size: var(--text-sm);
-}
-/* --- a traced path (§9) -----------------------------------------------------
-   Drawn as its own layer rather than by highlighting the edges underneath.
-   Two reasons, and the second is the one that decided it: a step may be a
-   *shared tag*, which the map draws no line for at all, so highlighting
-   existing edges would show a chain with gaps in it, in exactly the places the
-   explanation is most needed. And a path is a different kind of thing from a
-   connection: it is an answer to a question, so it sits on top. */
-.graph-path-line {
-  stroke: var(--accent);
-  stroke-width: 4;
-  stroke-opacity: 0.85;
-  stroke-linecap: round;
-  fill: none;
-  pointer-events: none;
-}
-/* The routes you are not reading. Thin and faint enough to read as context
-   rather than as the answer, and still visible enough to be worth drawing, 
-   a route at 0.2 opacity is a route nobody notices, which is the same as not
-   drawing it. Dashed as well as faint, because colour alone is not a signal
-   everyone can use. */
-.graph-path-line.is-dimmed {
-  stroke-width: 2;
-  stroke-opacity: 0.42;
-  stroke-dasharray: 6 5;
 }
 /* The switcher above the path. `role="tablist"` in the markup, so these are
    tabs and read as a choice between views of one thing, which is what they

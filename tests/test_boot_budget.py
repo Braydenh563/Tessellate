@@ -89,7 +89,11 @@ BOOT_JS_CAP = 448_400
 #: 2026-11-12, UI plan 13b, decision 19: 10-responsive.css's component rules
 #: moved beside their components; 10 keeps the shell bands. Measured 164,254;
 #: the cap holds (a margin of 46) and is not raised.
-BOOT_CSS_CAP = 164_300
+#: 2026-11-14, UI plan 13b, L-ui-modernisation-30 and -31: 16 dead names and
+#: 148 more Library-only rules (a cascade check against every later boot rule
+#: and every lazy sheet, then a same-DOM computed-style A/B) left the boot.
+#: Measured 160,279 (was 164,254); the cap is that plus 521, and comes down.
+BOOT_CSS_CAP = 160_800
 
 
 def _served_gzip(url: str) -> int:

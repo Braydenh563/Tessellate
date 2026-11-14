@@ -329,14 +329,6 @@
   display: none;
 }
 
-.doc-prop-key {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* The chip's own remove button, and the row's: the app's icon-only ghost, at
    the size a chip can carry. */
 .doc-prop-btn {
@@ -469,50 +461,6 @@
    is moved into the sheet's card and sheds the popover it is elsewhere; its
    rows take the card's width at the band's 44px floor, and its hairlines
    between groups stay. */
-
-.cm-md-task-hit::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 0;
-  width: var(--target-min);
-  /* The line's height, and never under the 24px a target needs (audit 1102
-     DX21: 1.6em is 23.5px at the editor's size). */
-  height: max(1.6em, 24px);
-  transform: translateY(-50%);
-}
-
-/* **One task box, drawn once, for the note editor and the document editor**
-   (INBOX 710: "the rendering of the selection tick boxes is different on the
-   notes to the document editor"). Both mount the same CodeMirror live view
-   (`docLiveExtensions`, one `DocTaskWidget`), and the same input drew two
-   ways: native and 15px in a document, but in a note's edit form, which is an
-   `.entry-list` row, the list's own tick rule (07-whiteboard-misc.css) made
-   it a 28px outlined slab. That rule now skips `.cm-md-task`, and this is the
-   look for both: the text's size, the app's tick (muted outline, accent fill
-   and a drawn checkmark when done, the square radius every other tick has),
-   so the two editors can only differ if this rule does. */
-.cm-md-task-hit > .cm-md-task {
-  appearance: none;
-  -webkit-appearance: none;
-  position: relative;
-  width: 1.1em;
-  height: 1.1em;
-  min-width: 0;
-  min-height: 0;
-  /* Room before the task's words (the owner, 2026-10-06: "no gap next to
-     radio button on document templates"). */
-  margin: 0 var(--space-2) 0 0;
-  vertical-align: top;
-  cursor: pointer;
-  border: 1px solid var(--muted);
-  border-radius: calc(var(--radius) * 0.4);
-  background: transparent;
-  box-shadow: none;
-  transition:
-    background var(--ui-fast) var(--ease-out),
-    border-color var(--ui-fast) var(--ease-out);
-}
 
 .cm-md-figure-left,
 .cm-md-figure-center,
@@ -852,18 +800,6 @@
   padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
-/* A note that runs long scrolls inside its own box rather than pushing the
-   save button off the screen. */
-.note-surface-inline .cm-editor .cm-scroller {
-  min-height: 5rem;
-  max-height: 18rem;
-}
-
-.note-surface-box .cm-editor .cm-scroller {
-  min-height: 9rem;
-  max-height: 22rem;
-}
-
 /* --- Phase 11 item 12: a dock's head is one row on a phone --------------------
    A phone's navigation bar is one row: the way back or the drawer at the
    leading edge, the title, and at most three icons at the trailing edge,
@@ -894,7 +830,6 @@
      toggle is not on the page (the opener in the head stands for it), so the
      lane was 42px of nothing before the opener. */
 }
-
 
 .chat-dock-more-model > .select-shell > .select-opener {
   max-width: 100%;
@@ -1068,31 +1003,6 @@
   min-height: var(--target-min);
 }
 
-/* **A box the page was stretching keeps its height when the engine arrives**
-   (INBOX 240). `mountNoteSurface` stamps this class when the textarea it is
-   wrapping was a growing item of a flex parent, which the wrapper then has to
-   be instead: see that function's comment for the 330.3px to 146px the two
-   Writing Room boxes lost without it.
-
-   The three rules below are the same idea at each level: the wrapper grows,
-   the editor fills the wrapper, and the scroller stops holding a height of its
-   own. `min-height: 0` on the first two because a flex item's default
-   `min-height: auto` refuses to shrink below its content, which is what turns
-   a long note into a column that pushes its own footer off the page instead of
-   scrolling. These have to sort after the two blocks above (same specificity,
-   and `.note-surface-box` is on the same element), so they stay here. */
-.note-surface-stretch {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.note-surface-stretch .cm-editor {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
 /* Laid over the view rather than hidden: same box, no ink, no pointer, out of
    the tab order (the mount sets `tabindex="-1"` as well, because a stylesheet
    cannot). */
@@ -1107,7 +1017,6 @@
   pointer-events: none;
   resize: none;
 }
-
 
 /* =============================================================================
    On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet)
@@ -1234,19 +1143,6 @@
    the block's top edge it lay over the line above and the words below, so it
    now stands up the block's right side in the room
    `#doc-preview` keeps for it on a device that can hover (the bar is hover-only). */
-.doc-block-bar {
-  position: fixed;
-  z-index: 55;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--card);
-  box-shadow: var(--shadow-sm);
-}
 
 /* The margin reader (WORLD_CLASS_PLAN I2, margin-reader.js): a column to the
    right of the editor, inside `.doc-source-wrap`'s flex row, holding at most

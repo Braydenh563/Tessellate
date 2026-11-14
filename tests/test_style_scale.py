@@ -796,11 +796,15 @@ def test_the_nested_surfaces_are_concentric():
 #: (L-ui-modernisation-3: the board menus, the floating panel's select, the
 #: help toggles, the lightbox arrows), and the ceilings drop to what is
 #: served, which had slack in eight sheets: 296 to 264.
+#: 2026-11-14: 148 Library-only boot rules moved to library-lazy.css (UI plan
+#: 13b, L-ui-modernisation-31) and their literals went with them: 02 34 to 33,
+#: 06 23 to 22, 07 62 to 57, 09 7 to 3, library-lazy 22 to 30 (264 to 261; the
+#: rules from 00, which this count skips, stayed in boot).
 LITERAL_HEIGHTS = {
-    "01-forms-settings.css": 25, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 18,
-    "04-chat-dock-appearance.css": 23, "05-sidebars-themes.css": 32, "06-timeline-dialogs.css": 23,
-    "07-whiteboard-misc.css": 62, "09-editor.css": 7,
-    "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
+    "01-forms-settings.css": 25, "02-chat-graph.css": 33, "03-dashboard-widgets.css": 18,
+    "04-chat-dock-appearance.css": 23, "05-sidebars-themes.css": 32, "06-timeline-dialogs.css": 22,
+    "07-whiteboard-misc.css": 57, "09-editor.css": 3,
+    "library-lazy.css": 30, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
     "inbox-lazy.css": 1, "chord-guide-lazy.css": 3, "characters-lazy.css": 12,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
@@ -879,14 +883,17 @@ COLOUR_HOMES = {"00-tokens-shell.css", "05-sidebars-themes.css"}
 #: The literals still outside them, per file, as Brief 57 left them: a ratchet
 #: that only goes down. A file not named here may hold none.
 COLOUR_LITERALS_LEFT = {
-    "02-chat-graph.css": 45,
+    #: 2026-11-14, L-ui-modernisation-31: Library-only rules moved to
+    #: library-lazy.css with their literals: 02 45 to 34, 06 23 to 9,
+    #: library-lazy 31 to 32 (158 to 134 in all; one came from 05, a colour file).
+    "02-chat-graph.css": 34,
     #: 08 dissolved (UI plan 13b, 2026-11-12): its 58 moved with their rules,
     #: 23 into the two colour files, 28 to the faces, five to 07 (the Ring room
     #: section), one each to 02 and 04.
     "characters-lazy.css": 28,
     "07-whiteboard-misc.css": 5,
-    "library-lazy.css": 31,
-    "06-timeline-dialogs.css": 23,
+    "library-lazy.css": 32,
+    "06-timeline-dialogs.css": 9,
     "03-dashboard-widgets.css": 6,
     #: 10's component rules moved beside their components (UI plan 13b,
     #: decision 19): its nine went with them, all to 09's closing block, the

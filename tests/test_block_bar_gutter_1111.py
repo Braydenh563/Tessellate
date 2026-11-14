@@ -11,7 +11,9 @@ from tests._css_paths import FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = sheets(*FORMER_10)
-BAR = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+BAR = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in the lazy sheet
 JS = (ROOT / "frontend" / "js" / "documents-callouts.js").read_text(encoding="utf-8")
 
 

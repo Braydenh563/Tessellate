@@ -8,18 +8,19 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 0 | 0 | 0 | 0 | 15 |
+| graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 195 | 63 | 2 | 59 | 434 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 9 | 4 | 1 | 0 | 19 | 14 |
+| ui-modernisation | 9 | 3 | 1 | 0 | 19 | 13 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 6 | 2 | 0 | 0 | 8 |
 | all | 466 | 433 | 129 | 2 | 181 | 1028 |
 
 ## graph
+- [ ] **L-graph-19** `graph` open, S: Delete the dead SVG-graph CSS (.graph-node, .graph-edge, .graph-core, .graph-label rules) with the tests that pin them. From L-ui-modernisation-30. Evidence: frontend/css/02-chat-graph.css, 04-chat-dock-appearance.css, 07-whiteboard-misc.css, graph-lazy.css hold about 30 rules for .graph-node, .graph-edge, .graph-core and .graph-label; the graph is a canvas (graph-canvas.js) and no JS creates those elements (grep: only comments and graph-edge-hover on the canvas). The unused-names test passes them because comments name the tokens. Rules are dead but tests/test_graph_hover_fade.py, test_motion_tokens.py and test_svg_paint_attributes.py read some.
 
 ## chat
 
@@ -353,9 +354,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
-- [ ] **L-ui-modernisation-30** `ui-modernisation` open, M: Remove the 236 unused CSS selectors after a runtime coverage sweep (UI plan 13b). From UI_MODERNISATION_PLAN.md:1089. Evidence: 13b static check: 256 class and id names in the CSS have no word match in JS, HTML or Python; concatenation pieces explain 235; the 21 left are built by template (nm-${mood}, wb-nav-item-${kind}), nested side variants (nm-foot-l/r) or sit inside :not() where removal changes specificity. None removable without a runtime coverage sweep (scratchpad/ui-sweeps/bootcsscov.js) over every surface and state
-- [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
+- [ ] **L-ui-modernisation-51** `ui-modernisation` open, M: Move the 231 cascade-blocked Library-only boot rules to library-lazy.css (L-ui-modernisation-31 remainder). From L-ui-modernisation-31. Evidence: L-ui-modernisation-31 moved 148 of 385 Library-only boot rules (A/B 0 diffs). 231 stay because a later boot rule, another lazy sheet or an already-moved region writes the same properties at equal specificity (moving flips the cascade): e.g. .contents-subtree vs .contents-list, :disabled colour from forced-colors-lazy, .ev-foot:has(...). 6 more stay in 00-tokens-shell.css because they carry a literal height or colour that the ratchets count only outside 00. Method: scratchpad lazymove.py (not tracked); each blocker needs its sibling rule moved with it or its specificity made explicit.
 
 ## timeline
 

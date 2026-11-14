@@ -18,7 +18,9 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
 WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 
 

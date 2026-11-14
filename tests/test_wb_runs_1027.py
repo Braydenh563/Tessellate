@@ -26,7 +26,9 @@ BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
 MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
 DOCS = (JS / "documents.js").read_text(encoding="utf-8")
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
 
 
 def _function(source: str, name: str) -> str:

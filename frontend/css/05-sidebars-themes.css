@@ -656,14 +656,6 @@ mark.text-highlight {
   padding: 0 0.12em;
   font-weight: inherit;
 }
-/* `==green|text==` and friends. Written as low-alpha colours rather than
-   solid ones so a highlight sits *behind* `--ink` at whatever the theme's
-   text colour is, instead of forcing a light-on-dark inversion that would
-   need its own foreground colour per theme, the same reason `--warn-soft`
-   above works unchanged in both. The set is closed and matches the
-   allowlist inside INLINE_MD (app.js) exactly: a colour with no rule here
-   cannot be typed. */
-mark.text-highlight-yellow { background: var(--warn-soft); }
 mark.text-highlight-green { background: var(--ok-soft); }
 mark.text-highlight-blue { background: var(--accent-soft); }
 mark.text-highlight-pink { background: rgba(236, 72, 153, 0.22); }
@@ -1643,11 +1635,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   overflow-x: auto;
   text-align: center;
 }
-.md-math-number {
-  position: absolute;
-  right: 0;
-  color: var(--muted);
-}
 /* Inline maths, `$x$`: sits in the line of prose it was written in, so it
    takes none of the display block's centring or margin. */
 .md-math-inline {
@@ -2194,31 +2181,10 @@ body.resizing-sidebar {
 .doc-toolbar[data-toolbar-mode="row"] {
   flex-wrap: nowrap;
 }
-/* A tool that does not fit on the row, until More is pressed. Scoped to the
-   closed strip rather than undone by the open one, so an open strip shows
-   each tool with its own `display`, not a guessed one. */
-.doc-toolbar:not(.is-more-open) > .doc-toolbar-over {
-  display: none;
-}
 /* More pressed: the strip wraps, as the expanded mode does, and the folded
    tools are back in their own places, with their own menus. */
 .doc-toolbar.is-more-open {
   flex-wrap: wrap;
-}
-/* A narrow strip folds its layout toggle behind More before any tool
-   (`fitDocToolbarRow`); pressed, More brings it back with the rest. */
-.doc-toolbar.is-layout-folded:not(.is-more-open) .doc-toolbar-layout {
-  display: none;
-}
-/* The document strip's group, trimmed when it would sit alone on a row
-   (`trimDocToolbarGroup`): the layout and collapse buttons are rows of the
-   document's own ⋯ menu, and line numbers stays on the strip. */
-.doc-toolbar.is-group-trimmed > .doc-toolbar-tools > :is(.doc-toolbar-layout, .doc-toolbar-collapse) {
-  display: none;
-}
-/* `[hidden]` loses to the strip's own `button` sizing rules otherwise. */
-.doc-toolbar .doc-toolbar-more[hidden] {
-  display: none;
 }
 /* **Un-clipping the strip to free a menu freed the whole toolbar too.**
    This used to be `.doc-toolbar[data-toolbar-mode="row"]:has(details[open])
@@ -2336,12 +2302,6 @@ body.resizing-sidebar {
   display: none;
   color: var(--muted);
   font-size: var(--text-sm);
-}
-/* The name appears only while collapsed: expanded, the buttons say what the
-   strip is far better than a word would. */
-.doc-toolbar.is-collapsed .doc-toolbar-collapsed-name {
-  display: inline;
-  margin-right: auto;
 }
 /* Before documents.js has mounted the cluster (the markup says collapsed, so
    the first paint is the folded bar and not a two-row strip that folds when
@@ -3066,23 +3026,6 @@ body.resizing-sidebar {
   background: var(--surface-3);
   color: var(--ink);
 }
-/* **The row floor follows the density, and the pointer.** The rows were
-   25.2px at every setting, under DESIGN.md's 28px `--target-min`, which was
-   left on purpose because a table of contents is a dense list you scan and
-   24px is WCAG 2.2 AA's own floor. That reasoning is the compact density's,
-   so compact keeps it; comfortable and spacious are the settings a person
-   picks to get room, and there the rows take the floor every other control
-   has. A coarse pointer takes it at every density, because on a touch screen
-   `--target-min` is 44px and a 25px row is a row you miss
-   (`scratchpad/ui-sweeps/outlinerows.js`). */
-:root:not([data-density="compact"]) .outline-link {
-  min-height: var(--target-min);
-}
-@media (pointer: coarse) {
-  .outline-link {
-    min-height: var(--target-min);
-  }
-}
 .outline-twist {
   flex: none;
   width: 1rem;
@@ -3153,10 +3096,6 @@ button.outline-twist:focus-visible {
 .doc-attach-row > .select-shell {
   flex: 1 1 auto;
   min-width: 0;
-}
-.doc-outline-row > .doc-outline-row-action,
-.doc-attach-row > .doc-outline-row-action {
-  flex: 0 0 auto;
 }
 /* The line that says what fills an empty outline. One sentence, the muted
    ink, and the same left edge as the entries that will replace it, so the
@@ -4539,33 +4478,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    image tile so the grid stays a grid, a PDF among photos must not make
    the row it is in a different height. See library.js's own comment for why
    these tiles used to delete themselves instead of rendering. */
-/* **The PDF's first page covers the tile; it does not sit on top of it.**
-   Reported with a screenshot: "in the files tab, the file type logo gets cut
-   off and squashed below the preview image". It did. `.library-file-page` had
-   no rule of its own at all, so the rendered page was a plain `<img>` flowing
-   as the first child of a 9rem `overflow: hidden` flex column: pushing the
-   glyph and the "PDF" caption down and off the bottom edge.
-   `library.js`'s own comment says what was meant: "The glyph stays underneath
-   as the fallback for everything without pages, and for a PDF whose render
-   fails." Underneath, not above. Taking the page out of flow and letting it
-   fill the tile makes that true, the glyph is still there, still centred,
-   simply covered while there is a page to show, and revealed the moment the
-   render 404s, because the error handler removes the page and nothing else
-   has to change.
-   `cover`, not `contain`: a tile is a fixed 9rem box and a portrait page in it
-   would otherwise letterbox into a thin strip with the glyph showing through
-   either side. The top of a document is the part worth seeing, so the crop is
-   anchored there rather than to the middle. */
-.library-file-page {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  background: #fff;
-}
 .library-file-thumb {
   position: relative;
   overflow: hidden;
@@ -4627,17 +4539,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .chip.link {
   line-height: 1;
   padding-block: 0;
-}
-/* Files shown by type rather than by preview, `setLibraryMediaView`
-   (library.js), asked for as "make it togglable to change between filetype
-   and previews".
-   Hiding the page render is the whole switch. The glyph and its caption are
-   already in every tile, centred, and were only ever covered; take the cover
-   away and the type view is simply what the tile looks like underneath. No
-   second markup path, nothing refetched, and a tile cannot end up in a state
-   where neither is showing. */
-.library-image-grid.show-file-types .library-file-page {
-  display: none;
 }
 /* --- the document editor's instruments ---------------------------------------
    Asked for: "take inspo from vs code and word with options to view more info
@@ -4823,9 +4724,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   height: auto;
   align-self: stretch;
 }
-.doc-prose-resize:has(+ .doc-prose-panel.hidden) {
-  display: none;
-}
 
 /* The group headings: the eyebrow, its count beside it as quiet text (INBOX
    549: pushed to the far edge it read as a second column of numbers), so the
@@ -4973,26 +4871,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   height: var(--space-1);
   background: var(--accent);
 }
-/* Suggestion mode (INBOX 404). An insertion is underlined on a green ground,
-   a deletion struck through in the error ink, the pair every editor with
-   tracked changes uses; the ink of the words themselves is left alone, so
-   contrast is the body text's own. The markers show only outside Live. */
-.cm-suggest-ins {
-  text-decoration: underline;
-  text-decoration-color: var(--ok);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--ok) 14%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.cm-suggest-del {
-  text-decoration: line-through;
-  text-decoration-color: var(--error);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
 
 /* The words carry the identity, so they hold the weight and they are the half
    that ellipsises: the reason is a sentence and can be read from the title. */
@@ -5084,31 +4962,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-lg);
   font-weight: 600;
 }
-/* The caret mirror (documents.js). Off-screen rather than `display: none`, a
-   box with no layout reports no position, which is the whole reason it exists.
-   Every property that affects text layout is copied onto it in script; these
-   are only the ones that must never be. */
-.doc-caret-mirror {
-  position: absolute;
-  visibility: hidden;
-  top: 0;
-  left: -9999px;
-  overflow: hidden;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  /* `border-width` does nothing without a `border-style`, so the
-     `borderLeftWidth` documents.js copies into this mirror (DOC_MIRROR_PROPS)
-     computed to 0 and the mirror had no border at all. Two consequences, both
-     measured against the Phase 0 backdrop, which lays the same text out
-     independently: every caret point came back 1.00px to the left of the
-     glyph it was for, and, because the copied `box-sizing` is border-box and
-     the copied `width` is the textarea's, the mirror's content box was 2px
-     wider than the textarea's, so a line could wrap one character later here
-     than on screen and put the popup a whole line out. Transparent, because
-     the box is only ever measured. */
-  border-style: solid;
-  border-color: transparent;
-}
 /* The autocorrect underline (autocorrect.js, Brief 94): a button over the
    corrected word for five seconds, a click puts the word back. It sits in the
    window's coordinates, a layer above its box set in script. */
@@ -5175,16 +5028,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   margin-top: var(--space-1);
   padding-top: var(--space-1);
   border-top: 1px solid var(--border);
-}
-/* **The answers, under the row that asked** (DOCUMENTS_PLAN 12 D3): the same
-   controls the floating menu draws, laid out along the row rather than down it,
-   because the panel is the width of the editor and a column of five candidates
-   inside a 33vh box is a scroller inside a scroller. Indented to the width of
-   the dot and its gap, so the answers hang off the finding they belong to. */
-.doc-prose-answers {
-  margin: var(--space-1) 0 var(--space-3) calc(var(--space-3) + var(--space-4));
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--divider);
 }
 .doc-suggest-list-inline,
 .doc-suggest-actions-inline {
@@ -5298,11 +5141,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-dictionary-row:focus-within .doc-dictionary-remove {
   opacity: 1;
 }
-@media (hover: none) {
-  .doc-dictionary-remove {
-    opacity: 1;
-  }
-}
 
 .doc-dictionary-section {
   margin: var(--space-5) 0 var(--space-2);
@@ -5393,12 +5231,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   white-space: nowrap;
 }
 
-.library-grid:not(.library-list) .library-board-card > .library-card-meta > :first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* 14. "Removing the badges background has made some areas look pretty plain
        and hard to read" (the owner). Quiet's `--chip-bg` is ink at 5%, so a
        chip with no border of its own is a 5% smudge: measured on a white
@@ -5486,9 +5318,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    `align-items: center` keeps them level. */
 #raw-results :is(.chip.link, .result-reason-why) .ph-text {
   line-height: 1.4;
-}
-.doc-prose-empty p {
-  margin: 0;
 }
 .doc-prose-empty .muted {
   grid-column: 2;
@@ -5931,12 +5760,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
     min-height: var(--target-min);
   }
 }
-/* Unlinked mentions is the backlinks section's shape exactly, so the two read
-   as one panel. The help line is the section's one line of description
-   (CLAUDE.md's copy rule) and carries the muted empty-state ink. */
-.doc-mentions-help {
-  margin-top: 0;
-}
 /* ================= BREADCRUMBS: WHERE THE CARET IS =====================
    DOCUMENTS_PLAN Phase 4 item 3. One quiet line between the find bar and the
    panes, deliberately not a panel: the find bar has a border and a card
@@ -6038,16 +5861,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-crumb[aria-current="location"] {
   color: var(--text);
   font-weight: 600;
-}
-@media (max-width: 819.98px), (pointer: coarse) {
-  /* The phone floor, the same one the docks and the segmented controls take:
-     a crumb is a tap target, and 0.15rem of padding around 0.75rem text is
-     22px of one. */
-  .doc-crumb {
-    min-height: var(--target-min);
-    display: inline-flex;
-    align-items: center;
-  }
 }
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its
