@@ -95,7 +95,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L286 (D24): place, stacking and bar carved out of whiteboard.js and wrapped whole. Measured 7,234.
 #: 2026-11-14 L286 (D24): map strip, waypoints and marks carved out of whiteboard-map.js and wrapped whole. Measured 7,203.
 #: 2026-11-14 L286 (D24): map edges, notes and look carved out of whiteboard-map.js and wrapped whole. Measured 7,180 (WB_MAP_FONTS is read at load by whiteboard-sketch-text.js).
-GLOBAL_NAMES_CAP = 7180
+#: 2026-11-14 L335 (D24): twelve whole sections carved out of documents.js and wrapped (documents-prose-check, -suggest-panel, -commands, -templates, -cm-load, -tablemenu, -preview, -edit-keys, -richpaste, -block-ids, -links-panels, -save). Measured 7,028.
+GLOBAL_NAMES_CAP = 7030  # 7028 on the L335 branch plus the two names the documents-plan-2 head added meanwhile; down from 7180
 
 
 @functools.lru_cache(maxsize=None)

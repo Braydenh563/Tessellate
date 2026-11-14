@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import documents_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -26,7 +27,7 @@ def test_one_relative_time_helper_for_the_past():
 def test_the_document_palette_names_every_find_chord():
     """D32: Ctrl+G is Go to line in code and find next in prose; the palette
     lists Go to line for code and find next (F3) for prose, with Ctrl+H."""
-    src = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+    src = documents_text()
     assert 'id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",\n    code: true,' in src
     assert 'id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",\n    prose: true,' in src
     assert 'id: "goto-line-text", icon: "ph:arrow-line-down", label: "Go to a line in this text", keys: "Ctrl+Alt+G",\n    prose: true,' in src

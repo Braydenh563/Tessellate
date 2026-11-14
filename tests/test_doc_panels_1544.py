@@ -25,12 +25,13 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 PICKER = _js_scope.unwrapped((JS / "icon-picker.js").read_text(encoding="utf-8"))
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 FEATURES = (JS / "app-features.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 

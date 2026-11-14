@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 LIB = (JS / "library.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _mount() -> str:

@@ -3874,18 +3874,11 @@ async function renderLibraryDocuments() {
           downloadFromApi(`/documents/${doc.id}/export.md`, "document.md");
         }),
         makeMenuItem("ph:trash Delete", "Delete this document", async () => {
-          if (
-            !(await confirmDialog(
-              `Delete "${doc.title || "Untitled"}"? You can undo this straight after.`
-            ))
-          ) {
-            return;
-          }
           //: The fourth and last door onto the same delete. All four now go
           //: through `deleteDocumentWithUndo`, a delete that is recoverable
           //: from one menu and permanent from another is worse than one that
           //: is permanent everywhere, because it teaches a rule that is false.
-          await deleteDocumentWithUndo(doc).catch((e) => toast(e.message, true));
+          if ((await deleteDocumentWithUndo(doc, true).catch((e) => toast(e.message, true))) === false) return;
           libraryDocsSelection.delete(doc.id);
           renderLibraryDocuments();
         }),

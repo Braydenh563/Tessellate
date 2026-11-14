@@ -5,8 +5,9 @@ the path are guarded here by shape, because the numbers need a browser.
 """
 
 from pathlib import Path
+from tests._app_js import documents_text
 
-JS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js").read_text()
+JS = documents_text()
 
 
 def _body(start: str, end: str) -> str:

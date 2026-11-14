@@ -5,6 +5,7 @@ table or a link) runs in node; the wiring is checked as text, because the suite
 cannot see the DOM (the Playwright run is `scratchpad/ui-sweeps/docpaste.js`)."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -17,7 +18,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 PROSE = (ROOT / "frontend/js/documents-prose.js").read_text(encoding="utf-8")
 CORE = PROSE
-DOCUMENTS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8") + (ROOT / "frontend/js/documents-view.js").read_text(encoding="utf-8")
+DOCUMENTS = frontend_text("documents.js") + (ROOT / "frontend/js/documents-view.js").read_text(encoding="utf-8")
 #: The table model moved to documents-tables.js, one closure (DC13 remainder, doc24-1102).
 TABLE = (ROOT / "frontend/js/documents-tables.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend/index.html").read_text(encoding="utf-8")

@@ -11,10 +11,11 @@ shape the sweeps found working.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CODE = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _function(text: str, name: str) -> str:

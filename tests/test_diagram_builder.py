@@ -22,7 +22,7 @@ import pytest
 
 from tests import _js_scope
 
-from tests._app_js import lazy_modules_source
+from tests._app_js import lazy_modules_source, documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -270,7 +270,7 @@ def test_the_bundle_is_named_where_the_library_is_and_never_at_boot():
 
 
 def test_the_document_shows_blocks_for_a_diagram_and_hands_its_edits_to_the_history():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
     assert '["split", "rendered", "canvas", "blocks"].includes(mode)' in state

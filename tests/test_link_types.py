@@ -13,7 +13,7 @@ This is the failure that would otherwise be silent.
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, documents_text
 import re
 from pathlib import Path
 
@@ -130,9 +130,8 @@ def test_an_undo_on_a_board_or_document_says_so_even_when_muted() -> None:
     """INBOX 1300 C32: undo and redo on a board or document gave no feedback;
     they now raise the exempt ("info") toast naming the place. The words live
     in the lazy surfaces (whiteboard.js, documents.js), not the boot's status.js."""
-    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
     board = frontend_text("whiteboard.js")
-    doc = (js / "documents.js").read_text(encoding="utf-8")
+    doc = documents_text()
     for verb in ("Undone", "Redone"):
         assert f'toast("{verb}: last change on this board", "info")' in board
         assert f'toast("{verb}: last change on this document", "info")' in doc

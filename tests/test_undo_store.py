@@ -9,7 +9,7 @@ relies on and the two rules that keep it safe.
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, documents_text
 import re
 from pathlib import Path
 
@@ -17,13 +17,15 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 STORE = (JS / "undo-store.js").read_text(encoding="utf-8")
 APP = (JS / "app.js").read_text(encoding="utf-8")
 WB = frontend_text("whiteboard.js")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def test_the_store_loads_first_in_the_library_bundle():
     bundle = re.search(r"library: \[(.*?)\]", APP, re.S).group(1)
     files = re.findall(r'"(/js/[^"]+)"', bundle)
-    assert files[0] == "/js/undo-store.js"
+    #: documents-warm.js goes ahead of it (L-documents-83: the Documents fetches start while the bundle arrives); it reads no history.
+    assert files[:2] == ["/js/documents-warm.js", "/js/undo-store.js"]
+    assert "undo" not in (JS / "documents-warm.js").read_text(encoding="utf-8").lower()
 
 
 def test_it_keeps_a_hundred_steps_on_this_device():

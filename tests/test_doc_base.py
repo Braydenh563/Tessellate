@@ -13,6 +13,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -50,7 +51,7 @@ def test_sort_without_a_direction_is_ascending_and_the_limit_is_capped() -> None
 
 def test_read_and_live_draw_the_fence_and_the_module_is_lazy() -> None:
     math = (JS / "documents-math.js").read_text(encoding="utf-8")
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     editor = (JS / "editor.js").read_text(encoding="utf-8")
     assert "docMathRender.graphIn(preview);\n  docMathRender.baseIn(preview);" in docs
     assert "docMathRender.baseField(CM)" in docs
@@ -131,7 +132,7 @@ def test_a_query_block_names_a_saved_search_or_holds_the_words() -> None:
 
 
 def test_the_query_block_is_wired_in_read_live_the_menu_and_the_save() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "docMathRender.queryIn(preview)" in docs and "docMathRender.queryField(CM)" in docs
     assert 'new CustomEvent("doc-saved")' in docs
     assert '"doc-saved"' in (JS / "documents-base.js").read_text(encoding="utf-8")

@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -102,7 +103,7 @@ def test_an_asymptote_breaks_the_line_and_ticks_land_on_round_numbers() -> None:
 
 def test_read_swaps_the_fence_and_live_draws_it() -> None:
     math = (JS / "documents-math.js").read_text(encoding="utf-8")
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     editor = (JS / "editor.js").read_text(encoding="utf-8")
     # Read: after the mermaid swap, on the rendered preview; Live: the field joins the editor's extensions.
     assert "docRenderMermaidIn(preview);\n  docMathRender.graphIn(preview);" in docs

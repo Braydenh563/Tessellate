@@ -10,9 +10,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 STORE = Path(__file__).resolve().parent.parent / "frontend" / "js" / "undo-store.js"
-DOCS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
 
 
 def _function(source: str, head: str) -> str:
@@ -35,5 +35,5 @@ def test_a_function_value_is_called_once_after_many_puts():
 
 
 def test_the_document_history_is_handed_over_as_a_function():
-    body = _function(DOCS.read_text(encoding="utf-8"), "function docHistoryPersist(")
+    body = _function(documents_text(), "function docHistoryPersist(")
     assert "() => state.toJSON(" in body

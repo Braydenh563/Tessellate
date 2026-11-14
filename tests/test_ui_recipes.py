@@ -2867,7 +2867,7 @@ def test_code_diagnostics_are_drawn_in_the_apps_ink() -> None:
     #: out of documents.js on 2026-09-24), joined.
     docs = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
+        for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
     )
     theme = docs.split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
     for selector in (
@@ -3478,7 +3478,7 @@ def test_a_script_built_dialog_opens_with_the_dialog_head() -> None:
 #: 25; DESIGN.md, "A grid of things you place"). The icon and emoji picker is
 #: the third grid of glyphs (MINDMAP_PLAN decision 43; DESIGN.md, "An icon or
 #: an emoji, picked or dragged"): its tiles are dragged as well as picked.
-HAND_BUILT_OPTION_ROWS = {"documents.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "whiteboard-library.js": 1}
+HAND_BUILT_OPTION_ROWS = {"documents-prose-check.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "whiteboard-library.js": 1}
 
 
 def test_only_the_rich_picker_stamps_its_anatomy() -> None:
@@ -4412,7 +4412,7 @@ def test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows() -> None:
     remarks where 4 fit), the panel is not redrawn under a reply being typed,
     and the styles live in the lazy sheet, out of the boot budget."""
     comments = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     boot_css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
     assert "threads: renderDocComments.threads()" in docs, "every save carries the sidecar"

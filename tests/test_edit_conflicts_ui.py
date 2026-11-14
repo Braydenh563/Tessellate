@@ -5,14 +5,14 @@ The backend half, and why the check is on the text, is tests/test_edit_conflicts
 
 from __future__ import annotations
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, documents_text
 
 
 def test_the_editors_send_the_hash_they_started_from_and_ask_on_a_conflict():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "frontend"
-    docs = (root / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     notes = (root / "js" / "note-edit-panels.js").read_text(encoding="utf-8")
     app = app_js_text()  # the whole boot code, not app.js alone (CLAUDE.md)
     assert "base_hash: currentDoc.content_hash" in docs
@@ -27,9 +27,8 @@ def test_the_editors_send_the_hash_they_started_from_and_ask_on_a_conflict():
 def test_taking_their_document_takes_their_title_too():
     """Audit 1028 D10: "Take theirs" updated `currentDoc` but left the title
     box on the old text, so the next save sent the old title back."""
-    from pathlib import Path
 
-    docs = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     start = docs.index("async function docResolveConflict(")
     theirs = docs[docs.index('answer === "theirs"', start): docs.index("\n}\n", start)]
     assert '$("doc-title").value = current.title' in theirs

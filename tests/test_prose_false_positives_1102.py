@@ -10,6 +10,7 @@ and every planted error still caught.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -58,7 +59,7 @@ def test_a_planted_error_is_still_caught(measured, sentence) -> None:
 def test_a_misspelling_row_names_its_nearest_word() -> None:
     """"libary" and "tomorow" showed only "not in the dictionary" until the row
     was opened. The row now says "Did you mean ...", from one edit only."""
-    source = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    source = frontend_text("documents.js")
     assert "docSpellGuesses.hint = (finding)" in source
     line = source[source.index("function docFindingLine("):]
     line = line[: line.index("\n}\n")]

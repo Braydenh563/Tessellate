@@ -17,6 +17,7 @@ import pytest
 
 from tests import _js_scope
 from tests._help_text import help_chat_text
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -54,7 +55,7 @@ console.log(JSON.stringify({{ before, vim: typeof ctx.CM6.vim, Vim: typeof ctx.C
 
 
 def test_the_setting_is_a_remembered_tool_preference_off_by_default() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert re.search(r'vimKeys: "doc-vim"', docs)
     ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     assert 'docToolPref("vimKeys", false)' in ide

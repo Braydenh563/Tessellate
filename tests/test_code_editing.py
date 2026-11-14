@@ -16,6 +16,8 @@ somebody's file, so nothing here is approximate.
 
 from __future__ import annotations
 
+from tests._app_js import unwrapped
+
 import json
 import re
 import shutil
@@ -32,12 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 #: documents.js, so a test that reads "the documents editor" reads all three.
 DOCUMENTS_JS = tuple(
     ROOT / "frontend" / "js" / name
-    for name in ("documents.js", "documents-code-format.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js")
+    for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-code-format.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js")
 )
 
 
 def _documents_text() -> str:
-    return "\n".join(path.read_text(encoding="utf-8") for path in DOCUMENTS_JS)
+    return "\n".join(unwrapped(path.read_text(encoding="utf-8")) for path in DOCUMENTS_JS)
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 

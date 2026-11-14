@@ -2378,45 +2378,13 @@ function docProseGhostSet(pos, text) {
 
 function docProseGhostPlugin(CM) {
   if (docProseGhostCache) return docProseGhostCache;
-  const { Decoration, ViewPlugin, WidgetType } = CM.view;
   docProseGhostEffect = CM.state.StateEffect.define();
-  class Ghost extends WidgetType {
-    constructor(text) {
-      super();
-      this.text = text;
-    }
-    eq(other) {
-      return other.text === this.text;
-    }
-    toDOM() {
-      const span = document.createElement("span");
-      //: The code side's own class, so the two ghosts are one look.
-      span.className = "cm-ghostText";
-      span.setAttribute("aria-hidden", "true");
-      span.textContent = this.text;
-      return span;
-    }
-    ignoreEvent() {
-      return true;
-    }
-  }
-  const build = (state) => {
+  docProseGhostCache = docGhostPlugin.make(CM, (state, ghost) => {
     const g = docProseGhost;
     const range = state.selection.main;
-    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return Decoration.none;
-    return Decoration.set([Decoration.widget({ widget: new Ghost(g.text), side: 1 }).range(g.pos)]);
-  };
-  docProseGhostCache = ViewPlugin.fromClass(
-    class {
-      constructor(view) {
-        this.decorations = build(view.state);
-      }
-      update(update) {
-        this.decorations = build(update.state);
-      }
-    },
-    { decorations: (plugin) => plugin.decorations }
-  );
+    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return null;
+    return ghost(g.text, g.pos);
+  });
   return docProseGhostCache;
 }
 

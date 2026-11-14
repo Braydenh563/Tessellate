@@ -5,6 +5,7 @@ not a sheet uses: an opener that is gone, hidden or `<body>` falls to a named
 fallback, so a close never drops the page's focus on nothing."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 from pathlib import Path
 
@@ -12,7 +13,7 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 
 def _src(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name == "documents.js" else (JS / name).read_text(encoding="utf-8")
 
 
 def test_the_pair_lives_in_app_js_and_skips_body_and_hidden_openers():

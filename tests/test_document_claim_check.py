@@ -9,8 +9,7 @@ misses, so a note counts only when it shares a word with the claim.
 """
 
 from __future__ import annotations
-
-from pathlib import Path
+from tests._app_js import frontend_text
 
 import pytest
 
@@ -93,8 +92,7 @@ def test_a_document_with_no_sentences_is_refused(client):
 def test_the_panel_lists_claims_with_the_note_behind_each():
     """`docAiCheck.claims` (kebab menu, palette) fills the same panel as Check
     with AI under "Checked against your notes"; claim-check1112.js measures it."""
-    js = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
-    text = js.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     assert "/claim-check`" in text
     assert '["claim", "Checked against your notes"]' in text
     assert 'return "backed";' in text and 'return "claim";' in text

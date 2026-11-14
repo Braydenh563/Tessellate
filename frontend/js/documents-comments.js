@@ -968,6 +968,8 @@
   });
 
   //: The file's whole surface: what documents.js, documents-cm.js and documents-prose.js call.
+  //: The markdown an attached thing is written as, shared with the board's comments (whiteboard-comments.js).
+  renderDocComments.attachMarkdown = docReplyAttachMarkdown;
   Object.assign(window, { docCommentStrip, docCommentFootnotes, renderDocComments, docShowComment, docAnnotateSelection });
   //: What a save sends beside the text; a property of the panel's own entry point so it takes no name in the shared scope (tests/test_global_scope_ratchet.py).
   renderDocComments.threads = docThreadsForSave;

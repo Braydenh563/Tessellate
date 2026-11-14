@@ -342,7 +342,7 @@
       if (typeof pickLibraryItemDialog !== "function") return;
       const chosen = await pickLibraryItemDialog("Attach to this comment", { sources: ["link", "note", "document", "board"] });
       if (!chosen) return;
-      const piece = wbCommentAttachMarkdown(chosen);
+      const piece = renderDocComments.attachMarkdown(chosen);
       if (!piece) return;
       const at = box.selectionStart ?? box.value.length;
       const before = box.value.slice(0, at);
@@ -641,18 +641,6 @@
       renderNoteInline(span, run.data, []);
       run.replaceWith(span);
     }
-  }
-
-  //: What an attached thing is written as in a comment.
-  function wbCommentAttachMarkdown(chosen) {
-    const row = chosen.row || {};
-    const label = String(chosen.label || row.title || "").replace(/[[\]|]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
-    if (chosen.kind === "link") {
-      const url = String(row.url || "").replace(/ /g, "%20").replace(/\)/g, "%29");
-      return url ? `[${label || url}](${url})` : "";
-    }
-    if (chosen.kind === "board") return `[[${row.type === "board" ? "board" : "map"}:${chosen.id ?? row.id}|${label || "Board"}]]`;
-    return label ? `[[${label}]]` : "";
   }
 
   //: The two comment boxes are editing surfaces of their own context.

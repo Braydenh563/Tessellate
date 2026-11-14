@@ -14,16 +14,16 @@ import re
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
 DOCUMENTS_VIEW_JS = ROOT / "frontend" / "js" / "documents-view.js"
 INDEX_HTML = ROOT / "frontend" / "index.html"
 
 
 @pytest.fixture(scope="module")
 def table() -> str:
-    source = DOCUMENTS_JS.read_text(encoding="utf-8") + DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
+    source = documents_text()
     start = source.index("// DOC-COMMANDS-BEGIN")
     end = source.index("// DOC-COMMANDS-END")
     return source[start:end]
@@ -79,7 +79,7 @@ def test_the_sheet_and_the_palette_read_the_same_table():
     """Both doors by name, so a later pass cannot quietly give one of them a
     list of its own: that is exactly what the plan's "generated from the same
     table so the two cannot disagree" is asking to be prevented."""
-    source = DOCUMENTS_JS.read_text(encoding="utf-8") + DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
+    source = documents_text()
     for reader in ["function docPaletteCommands()", "function renderDocShortcutSheet("]:
         assert reader in source
     palette = source[source.index("function docPaletteCommands()"):]
@@ -94,7 +94,7 @@ def test_every_row_has_a_chord_or_says_none(table):
     chords are Google Docs' and are bound in `docCmKeymap`."""
     keys = re.findall(r'keys: "([^"]*)"', table)
     assert "" not in keys, f"{keys.count('')} rows have neither a chord nor \"none\""
-    source = DOCUMENTS_JS.read_text(encoding="utf-8") + DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
+    source = documents_text()
     keymap = source[source.index("function docCmKeymap("):]
     keymap = keymap[: keymap.index("\n}\n")]
     for chord, binding in (("Ctrl+Shift+8", "Mod-Shift-8"), ("Ctrl+Shift+7", "Mod-Shift-7"), ("Ctrl+Shift+9", "Mod-Shift-9")):

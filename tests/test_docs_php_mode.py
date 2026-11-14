@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from tests import _js_scope
 from tests._help_text import help_chat_text
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -58,7 +58,7 @@ def test_the_boot_budget_does_not_see_the_editor_bundle_or_php() -> None:
 
 
 def test_php_is_fetched_on_first_open_and_a_failure_offers_try_again() -> None:
-    docs = _js_scope.unwrapped((JS / "documents.js").read_text(encoding="utf-8"))
+    docs = documents_text()
     load = docs[docs.index("async loadPhp()") : docs.index("async loadPhp()") + 700]
     assert '"/vendor/codemirror/php.min.js"' in load and "lazyScript(" in load
     assert '"Try again"' in load and "toast(" in load and "docCmApplied.delete(\"language\")" in load

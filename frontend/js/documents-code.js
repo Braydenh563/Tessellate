@@ -1895,6 +1895,22 @@ let docGhostPluginCache = null;
 
 function docGhostPlugin(CM) {
   if (docGhostPluginCache) return docGhostPluginCache;
+  const ac = CM.autocomplete;
+  docGhostPluginCache = docGhostPlugin.make(CM, (state, ghost) => {
+    const range = state.selection.main;
+    if (!range.empty || ac.completionStatus(state) !== "active") return null;
+    const chosen = ac.selectedCompletion(state);
+    if (!chosen) return null;
+    const line = state.doc.lineAt(range.head);
+    const col = range.head - line.from;
+    return ghost(docGhostSuffix(line.text.slice(0, col), line.text.slice(col), chosen.label), range.head);
+  });
+  return docGhostPluginCache;
+}
+
+//: The ghost widget and its view plugin, one for the code side above and the prose side (documents-prose.js): `build(state, ghost)`
+//: answers `ghost(text, pos)` or null for nothing, and the plugin rebuilds on every update. One look, the `cm-ghostText` class.
+docGhostPlugin.make = (CM, build) => {
   const { Decoration, ViewPlugin, WidgetType } = CM.view;
   class Ghost extends WidgetType {
     constructor(text) {
@@ -1915,31 +1931,20 @@ function docGhostPlugin(CM) {
       return true;
     }
   }
-  const build = (state) => {
-    const ac = CM.autocomplete;
-    const range = state.selection.main;
-    if (!range.empty || ac.completionStatus(state) !== "active") return Decoration.none;
-    const chosen = ac.selectedCompletion(state);
-    if (!chosen) return Decoration.none;
-    const line = state.doc.lineAt(range.head);
-    const col = range.head - line.from;
-    const rest = docGhostSuffix(line.text.slice(0, col), line.text.slice(col), chosen.label);
-    if (!rest) return Decoration.none;
-    return Decoration.set([Decoration.widget({ widget: new Ghost(rest), side: 1 }).range(range.head)]);
-  };
-  docGhostPluginCache = ViewPlugin.fromClass(
+  const ghost = (text, pos) => (text ? Decoration.set([Decoration.widget({ widget: new Ghost(text), side: 1 }).range(pos)]) : null);
+  const decorate = (state) => build(state, ghost) || Decoration.none;
+  return ViewPlugin.fromClass(
     class {
       constructor(view) {
-        this.decorations = build(view.state);
+        this.decorations = decorate(view.state);
       }
       update(update) {
-        this.decorations = build(update.state);
+        this.decorations = decorate(update.state);
       }
     },
     { decorations: (plugin) => plugin.decorations }
   );
-  return docGhostPluginCache;
-}
+};
 
 //: Everything above, for a code document: the list opening as you type,
 //: Emmet where the type has it, the ghost text and Tab.
@@ -2147,28 +2152,31 @@ function docHoverDocs(CM) {
     const name = view.state.sliceDoc(node.from, node.to);
     const line = docHoverLine(kind, name, docCssValueTable(window.EMMET));
     if (!line) return null;
-    return {
-      pos: node.from,
-      end: node.to,
-      above: true,
-      create: () => {
-        const dom = document.createElement("div");
-        dom.className = "cm-hover-doc";
-        const head = document.createElement("code");
-        head.textContent = kind === "html" ? `<${name}>` : name;
-        dom.appendChild(head);
-        for (const part of line.split("\n")) {
-          const row = document.createElement("div");
-          row.className = part.startsWith("Values:") ? "cm-hover-doc-values" : "cm-hover-doc-line";
-          row.textContent = part;
-          dom.appendChild(row);
-        }
-        return { dom };
-      },
-    };
+    return docHoverDocs.card(node, kind === "html" ? `<${name}>` : name, line.split("\n").map((part) => [part.startsWith("Values:") ? "cm-hover-doc-values" : "cm-hover-doc-line", part]));
   });
   return docHoverDocsCache;
 }
+
+//: The hover card both the CSS/HTML hover above and the Python one below draw: `lines` are [class, text] pairs under the head.
+docHoverDocs.card = (node, head, lines) => ({
+  pos: node.from,
+  end: node.to,
+  above: true,
+  create: () => {
+    const dom = document.createElement("div");
+    dom.className = "cm-hover-doc";
+    const code = document.createElement("code");
+    code.textContent = head;
+    dom.appendChild(code);
+    for (const [className, text] of lines) {
+      const row = document.createElement("div");
+      row.className = className;
+      row.textContent = text;
+      dom.appendChild(row);
+    }
+    return { dom };
+  },
+});
 
 //: A standard library name under the pointer in a Python file (`math.sqrt`,
 //: OPEN 1070): its signature and its doc's first line, the signature help
@@ -2183,25 +2191,7 @@ async function docPyHover(CM, view, pos, side) {
   const name = view.state.sliceDoc(node.from, node.to);
   const row = rows?.find((r) => r[0] === name);
   if (!row) return null;
-  return {
-    pos: node.from,
-    end: node.to,
-    above: true,
-    create: () => {
-      const dom = document.createElement("div");
-      dom.className = "cm-hover-doc";
-      const head = document.createElement("code");
-      head.textContent = row[2] || `${dotted}.${name}`;
-      dom.appendChild(head);
-      if (row[3]) {
-        const line = document.createElement("div");
-        line.className = "cm-hover-doc-line";
-        line.textContent = row[3];
-        dom.appendChild(line);
-      }
-      return { dom };
-    },
-  };
+  return docHoverDocs.card(node, row[2] || `${dotted}.${name}`, row[3] ? [["cm-hover-doc-line", row[3]]] : []);
 }
 
 //: **Indentation guides** (INBOX 402): a hairline at each indent step of a
