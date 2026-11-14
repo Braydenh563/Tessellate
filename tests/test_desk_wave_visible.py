@@ -14,8 +14,9 @@ Image = pytest.importorskip("PIL.Image")
 ROOT = Path(__file__).resolve().parent.parent
 FRAMES = ROOT / "frontend" / "img" / "desk"
 SOLID = 128
-#: Rows from the top of the head to the shoulder in the shipped frames (source px).
-ARM_ROWS = (85, 150)
+#: Rows from the top of the head to the shoulder in the shipped frames (source px). Re-registered 2026-11-14 (L150): the
+#: new feminine frame's shoulder starts on row 149 (4 solid px at x 93 to 96), so the window ends one row above it.
+ARM_ROWS = (85, 149)
 
 
 def _solid(look: str, name: str):

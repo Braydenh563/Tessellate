@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion: new frame set shipped (canvas 290x308 and 269x308), feminine idle seam 1.9x the median step with the strict xfail removed, rest-feet, sit and hang registration in render_desk_frames.py, highlights gain 1.1 saturation, geometry tests re-registered (L150, 2026-11-14).
 - Docs: 17 open-reading comments in the Ask, capture, reply and skills scripts reworded (feature words, not open work); the Ask foot announces suggested questions (2026-11-14).
 - Fix flake: companion live click test waits for the viewer and retries a covered click, and says how many clicks landed (2026-11-14).
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
