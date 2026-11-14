@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11006, test files 2819, tests 22516, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11006, test files 2820, tests 22519, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -16242,43 +16242,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Item` | src/tessellate/ai/composer_money.py:99 |
-| `_Diff` | src/tessellate/ai/composer_money.py:1056 |
+| `_Diff` | src/tessellate/ai/composer_money.py:1058 |
 | `_Measure` | src/tessellate/ai/composer_money.py:728 |
-| `_Target` | src/tessellate/ai/composer_money.py:908 |
+| `_Target` | src/tessellate/ai/composer_money.py:910 |
 | `_Win` | src/tessellate/ai/composer_money.py:185 |
 | `_about` | src/tessellate/ai/composer_money.py:280 |
-| `_adjective` | src/tessellate/ai/composer_money.py:991 |
+| `_adjective` | src/tessellate/ai/composer_money.py:993 |
 | `_after_what` | src/tessellate/ai/composer_money.py:117 |
 | `_asks_a_sum` | src/tessellate/ai/composer_money.py:767 |
 | `_bare_total` | src/tessellate/ai/composer_money.py:668 |
-| `_both_sets` | src/tessellate/ai/composer_money.py:1162 |
+| `_both_sets` | src/tessellate/ai/composer_money.py:1164 |
 | `_cite_all` | src/tessellate/ai/composer_money.py:357 |
 | `_clause_items` | src/tessellate/ai/composer_money.py:159 |
-| `_difference` | src/tessellate/ai/composer_money.py:1184 |
-| `_difference_asked` | src/tessellate/ai/composer_money.py:1093 |
-| `_dimension_asked` | src/tessellate/ai/composer_money.py:1081 |
+| `_difference` | src/tessellate/ai/composer_money.py:1186 |
+| `_difference_asked` | src/tessellate/ai/composer_money.py:1095 |
+| `_dimension_asked` | src/tessellate/ai/composer_money.py:1083 |
 | `_dimension_of` | src/tessellate/ai/composer_money.py:741 |
 | `_done` | src/tessellate/ai/composer_money.py:808 |
 | `_due` | src/tessellate/ai/composer_money.py:691 |
 | `_due_by` | src/tessellate/ai/composer_money.py:336 |
 | `_due_line` | src/tessellate/ai/composer_money.py:607 |
 | `_figure` | src/tessellate/ai/composer_money.py:814 |
-| `_first_window` | src/tessellate/ai/composer_money.py:1113 |
+| `_first_window` | src/tessellate/ai/composer_money.py:1115 |
 | `_forms` | src/tessellate/ai/composer_money.py:801 |
-| `_gap_line` | src/tessellate/ai/composer_money.py:1175 |
-| `_goal_in` | src/tessellate/ai/composer_money.py:975 |
+| `_gap_line` | src/tessellate/ai/composer_money.py:1177 |
+| `_goal_in` | src/tessellate/ai/composer_money.py:977 |
 | `_in_month` | src/tessellate/ai/composer_money.py:247 |
-| `_in_one_currency` | src/tessellate/ai/composer_money.py:1143 |
+| `_in_one_currency` | src/tessellate/ai/composer_money.py:1145 |
 | `_in_window` | src/tessellate/ai/composer_money.py:266 |
-| `_ing_forms` | src/tessellate/ai/composer_money.py:917 |
+| `_ing_forms` | src/tessellate/ai/composer_money.py:919 |
 | `_is_done` | src/tessellate/ai/composer_money.py:304 |
 | `_items` | src/tessellate/ai/composer_money.py:291 |
 | `_items_by` | src/tessellate/ai/composer_money.py:313 |
 | `_kind_spent` | src/tessellate/ai/composer_money.py:36 |
-| `_left_asked` | src/tessellate/ai/composer_money.py:883 |
-| `_left_out` | src/tessellate/ai/composer_money.py:1154 |
+| `_left_asked` | src/tessellate/ai/composer_money.py:885 |
+| `_left_out` | src/tessellate/ai/composer_money.py:1156 |
 | `_listed` | src/tessellate/ai/composer_money.py:391 |
-| `_measure` | src/tessellate/ai/composer_money.py:846 |
+| `_measure` | src/tessellate/ai/composer_money.py:848 |
 | `_measure_asked` | src/tessellate/ai/composer_money.py:773 |
 | `_measures_line` | src/tessellate/ai/composer_money.py:824 |
 | `_money` | src/tessellate/ai/composer_money.py:353 |
@@ -16287,7 +16287,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_months_of` | src/tessellate/ai/composer_money.py:258 |
 | `_most` | src/tessellate/ai/composer_money.py:616 |
 | `_moved` | src/tessellate/ai/composer_money.py:146 |
-| `_names_window` | src/tessellate/ai/composer_money.py:1066 |
+| `_names_window` | src/tessellate/ai/composer_money.py:1068 |
 | `_note_month` | src/tessellate/ai/composer_money.py:194 |
 | `_note_name` | src/tessellate/ai/composer_money.py:425 |
 | `_noted` | src/tessellate/ai/composer_money.py:297 |
@@ -16295,7 +16295,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_one_of_several` | src/tessellate/ai/composer_money.py:395 |
 | `_one_short_vowel` | src/tessellate/ai/composer_money.py:794 |
 | `_only_priced` | src/tessellate/ai/composer_money.py:490 |
-| `_past` | src/tessellate/ai/composer_money.py:1119 |
+| `_past` | src/tessellate/ai/composer_money.py:1121 |
 | `_planned` | src/tessellate/ai/composer_money.py:478 |
 | `_rates` | src/tessellate/ai/composer_money.py:509 |
 | `_rates_total` | src/tessellate/ai/composer_money.py:525 |
@@ -16303,36 +16303,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_refunds_and_due` | src/tessellate/ai/composer_money.py:589 |
 | `_say` | src/tessellate/ai/composer_money.py:581 |
 | `_say_rates` | src/tessellate/ai/composer_money.py:534 |
-| `_says_kind` | src/tessellate/ai/composer_money.py:971 |
-| `_side` | src/tessellate/ai/composer_money.py:1133 |
+| `_says_kind` | src/tessellate/ai/composer_money.py:973 |
+| `_side` | src/tessellate/ai/composer_money.py:1135 |
 | `_spent` | src/tessellate/ai/composer_money.py:563 |
 | `_spent_by_sign` | src/tessellate/ai/composer_money.py:552 |
 | `_spent_line` | src/tessellate/ai/composer_money.py:454 |
 | `_spent_nothing` | src/tessellate/ai/composer_money.py:542 |
 | `_still_due` | src/tessellate/ai/composer_money.py:327 |
 | `_subject` | src/tessellate/ai/composer_money.py:379 |
-| `_target_asked` | src/tessellate/ai/composer_money.py:946 |
-| `_target_dimension` | src/tessellate/ai/composer_money.py:937 |
-| `_target_verb` | src/tessellate/ai/composer_money.py:927 |
+| `_target_asked` | src/tessellate/ai/composer_money.py:948 |
+| `_target_dimension` | src/tessellate/ai/composer_money.py:939 |
+| `_target_verb` | src/tessellate/ai/composer_money.py:929 |
 | `_total_asked` | src/tessellate/ai/composer_money.py:632 |
 | `_total_rest` | src/tessellate/ai/composer_money.py:638 |
 | `_totalled` | src/tessellate/ai/composer_money.py:762 |
-| `_toward` | src/tessellate/ai/composer_money.py:1004 |
-| `_unit_named` | src/tessellate/ai/composer_money.py:1071 |
+| `_toward` | src/tessellate/ai/composer_money.py:1006 |
+| `_unit_named` | src/tessellate/ai/composer_money.py:1073 |
 | `_unit_of` | src/tessellate/ai/composer_money.py:683 |
-| `_verdict` | src/tessellate/ai/composer_money.py:998 |
+| `_verdict` | src/tessellate/ai/composer_money.py:1000 |
 | `_what` | src/tessellate/ai/composer_money.py:124 |
-| `_which_measure` | src/tessellate/ai/composer_money.py:836 |
+| `_which_measure` | src/tessellate/ai/composer_money.py:838 |
 | `_window_asked` | src/tessellate/ai/composer_money.py:234 |
 | `_without_trailing_punctuation` | src/tessellate/ai/composer_money.py:752 |
-| `_word_for` | src/tessellate/ai/composer_money.py:1125 |
+| `_word_for` | src/tessellate/ai/composer_money.py:1127 |
 | `_year_of` | src/tessellate/ai/composer_money.py:217 |
-| `answer` | src/tessellate/ai/composer_money.py:1249 |
-| `asks` | src/tessellate/ai/composer_money.py:1205 |
-| `recorded_notes` | src/tessellate/ai/composer_money.py:1227 |
-| `records_amounts` | src/tessellate/ai/composer_money.py:1243 |
+| `answer` | src/tessellate/ai/composer_money.py:1251 |
+| `asks` | src/tessellate/ai/composer_money.py:1207 |
+| `recorded_notes` | src/tessellate/ai/composer_money.py:1229 |
+| `records_amounts` | src/tessellate/ai/composer_money.py:1245 |
 | `spent_only` | src/tessellate/ai/composer_money.py:484 |
-| `sums_a_measure` | src/tessellate/ai/composer_money.py:1213 |
+| `sums_a_measure` | src/tessellate/ai/composer_money.py:1215 |
 
 ### src/tessellate/ai/composer_names.py (5)
 
@@ -28242,7 +28242,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22516)
+## Tests (22519)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28562,6 +28562,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_followups.py | 14 |
 | tests/test_chat_followups_race.py | 2 |
 | tests/test_chat_foot_1706.py | 7 |
+| tests/test_chat_handoff_1010.py | 2 |
 | tests/test_chat_head_phone_e50.py | 2 |
 | tests/test_chat_intent.py | 13 |
 | tests/test_chat_leaves_edit_time_w30_1110.py | 3 |
@@ -28808,7 +28809,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_lists_1111.py | 4 |
 | tests/test_composer_long_question.py | 7 |
 | tests/test_composer_longer_1029.py | 5 |
-| tests/test_composer_measures_1030.py | 7 |
+| tests/test_composer_measures_1030.py | 8 |
 | tests/test_composer_mermaid_1466.py | 16 |
 | tests/test_composer_money_1030.py | 8 |
 | tests/test_composer_money_years_1030.py | 13 |
@@ -31487,14 +31488,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:625 |
+| Needs hardware | docs/roadmap/LEDGER.md:624 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:618 |
+| Owner calls | docs/roadmap/LEDGER.md:617 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31675,7 +31676,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1852 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:813 |
+| Plan session briefs | docs/roadmap/LEDGER.md:812 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31729,25 +31730,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:829 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:913 |
-| documents | docs/roadmap/LEDGER.md:202 |
-| documents | docs/roadmap/LEDGER.md:853 |
-| general | docs/roadmap/LEDGER.md:577 |
+| chat | docs/roadmap/LEDGER.md:828 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:912 |
+| documents | docs/roadmap/LEDGER.md:201 |
+| documents | docs/roadmap/LEDGER.md:852 |
+| general | docs/roadmap/LEDGER.md:576 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:817 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:925 |
+| graph | docs/roadmap/LEDGER.md:816 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:924 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:218 |
-| mindmap | docs/roadmap/LEDGER.md:865 |
-| timeline | docs/roadmap/LEDGER.md:339 |
-| timeline | docs/roadmap/LEDGER.md:889 |
-| ui-modernisation | docs/roadmap/LEDGER.md:222 |
-| ui-modernisation | docs/roadmap/LEDGER.md:877 |
-| whiteboard | docs/roadmap/LEDGER.md:155 |
-| whiteboard | docs/roadmap/LEDGER.md:841 |
-| world-class | docs/roadmap/LEDGER.md:341 |
-| world-class | docs/roadmap/LEDGER.md:901 |
+| mindmap | docs/roadmap/LEDGER.md:217 |
+| mindmap | docs/roadmap/LEDGER.md:864 |
+| timeline | docs/roadmap/LEDGER.md:338 |
+| timeline | docs/roadmap/LEDGER.md:888 |
+| ui-modernisation | docs/roadmap/LEDGER.md:221 |
+| ui-modernisation | docs/roadmap/LEDGER.md:876 |
+| whiteboard | docs/roadmap/LEDGER.md:154 |
+| whiteboard | docs/roadmap/LEDGER.md:840 |
+| world-class | docs/roadmap/LEDGER.md:340 |
+| world-class | docs/roadmap/LEDGER.md:900 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
