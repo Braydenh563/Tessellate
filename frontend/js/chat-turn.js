@@ -1036,7 +1036,7 @@ chatSendTurn.stage = {
       for (const send of bubble.saving.splice(0)) send();
       loadConversationList();
     } catch {
-      toast("Couldn't save this chat turn.", true);
+      toast(voiceLine("failed", { what: "save this chat turn" }), true, { action: ["Copy the answer", () => copyToClipboard(answerRaw)] });
     }
   },
   afterAnswer(t) {
@@ -1206,7 +1206,7 @@ chatSendTurn.stage = {
       try {
         await commitStagedImages();
       } catch (error) {
-        toast(error.message || "Couldn't upload the attached image.", true);
+        toast(error.message || voiceLine("failed", { what: "upload the attached image" }), true);
         return { done: true };
       }
     }
@@ -2086,7 +2086,7 @@ async function offerReminder(bubble, question) {
       row.replaceChildren(Object.assign(document.createElement("span"), { className: "muted", textContent: `Reminder set: ${relativeWhen(made.due_at)}.` }));
     } catch (error) {
       offer.classList.remove("hidden");
-      toast(error.message || "Couldn't make that reminder.", true);
+      toast(error.message || voiceLine("failed", { what: "make that reminder" }), true);
     }
   });
   offer.title = "Makes a reminder from what you wrote; nothing is made until you press this";
@@ -2795,7 +2795,7 @@ async function deleteChatTurn(assistantBubble) {
         return restoreFocusTo($("chat-input"));
       }
     } catch {
-      toast("Couldn't delete that message.", true);
+      toast(voiceLine("failed", { what: "delete that message" }), true, { action: ["Try again", () => deleteChatTurn(assistantBubble)] });
       return;
     }
   }
@@ -2892,7 +2892,7 @@ async function forkFromBubble(bubble) {
       openConversation(fork.id), { go: { open: "conversation", id: fork.id } }
     );
   } catch (error) {
-    toast(error.message || "Couldn't fork from here.", true);
+    toast(error.message || voiceLine("failed", { what: "fork from here" }), true);
   }
 }
 

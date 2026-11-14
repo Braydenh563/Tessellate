@@ -374,7 +374,7 @@ async function applyFeatureModel(key, name) {
     );
     refreshModelStatus();
   } catch (error) {
-    toast(error.message || "Couldn't set that model.", true);
+    toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     refreshModelStatus();
   }
 }

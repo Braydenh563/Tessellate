@@ -93,7 +93,6 @@ EXEMPT = {
     "webEngineInfo": "the web search engine, per notebook",
     "featureAiTools": "feature list, per notebook",
     "quickEditing": "a flag",
-    "backendFieldsDirty": "a flag: the person is typing a model address, so the status poll leaves the field alone",
     "docPyStdlibLoad": "a download state",
     "docVariantFor": "a document's variant key, cleared with the document",
     "docFocusSavedWatch": "a flag",
@@ -484,6 +483,7 @@ let here = "alpha";
 const ctx = {
   Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
   recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  voiceLine: (key, slots) => `Couldn't ${slots.what}.`,
   spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
 };
 vm.createContext(ctx);

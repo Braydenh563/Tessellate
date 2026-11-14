@@ -94,7 +94,7 @@
           //: A refusal (a new time already gone) says why and keeps the form.
           editingReminderId = reminder.id;
           if (error.isLockout) return;
-          toast(error.message || "Couldn't save that reminder.", true);
+          toast(error.message || voiceLine("failed", { what: "save that reminder" }), true);
           dueInput.setAttribute("aria-invalid", "true");
           dueInput.focus();
         }

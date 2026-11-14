@@ -326,7 +326,8 @@ MID_TOPICS.extend(
                 "as one Merge above the list, and the count after a tag shows its "
                 "notes. Right-click a tag chip (or press the menu key on it) for "
                 "Show notes, Rename in all notes, Remove from this note "
-                "and Manage tags. The selection bar's Tags adds or removes tags on "
+                "and Manage tags; hover a tag chip on a note card to see how "
+                "many notes carry it. The selection bar's Tags adds or removes tags on "
                 "every selected note at once."
             ),
             "badge": {"label": "Notes", "tab": "notes"},

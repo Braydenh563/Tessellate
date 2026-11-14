@@ -19,7 +19,93 @@ from tessellate.ai import realise
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
-MOVED = ("library.js", "whiteboard.js", "whiteboard-map.js", "statistics.js", "space-swap.js", "chat-edit.js")
+MOVED = (
+    "activity-panel.js",
+    "ai-tools.js",
+    "answer-kit.js",
+    "app-import.js",
+    "app.js",
+    "ask-compose.js",
+    "ask-history.js",
+    "attachment-actions.js",
+    "captions.js",
+    "capture-ask.js",
+    "chat-agent.js",
+    "chat-attach.js",
+    "chat-docs.js",
+    "chat-edit.js",
+    "chat-turn.js",
+    "chat.js",
+    "dash-night.js",
+    "dashboard.js",
+    "diag-report.js",
+    "diagram-suggest.js",
+    "documents-history.js",
+    "documents-ide.js",
+    "documents-prose.js",
+    "documents-replace.js",
+    "documents-word.js",
+    "documents.js",
+    "editor.js",
+    "entity-page.js",
+    "entry-card.js",
+    "entry-menu.js",
+    "file-drop.js",
+    "gesture-kit.js",
+    "graph-canvas.js",
+    "graph.js",
+    "image-layout.js",
+    "library.js",
+    "lightbox-actions.js",
+    "lightbox-view.js",
+    "margin-reader.js",
+    "math-editor.js",
+    "media.js",
+    "meetings.js",
+    "mermaid-draw.js",
+    "model-bench.js",
+    "note-history.js",
+    "note-panels.js",
+    "note-properties.js",
+    "notes-list.js",
+    "notifications.js",
+    "onboarding.js",
+    "phone-shell.js",
+    "questions-view.js",
+    "quick-note.js",
+    "quickadd.js",
+    "reminder-edit.js",
+    "reply-kit.js",
+    "selection.js",
+    "semantic-notice.js",
+    "settings-controls.js",
+    "settings-data.js",
+    "settings-health.js",
+    "settings-models.js",
+    "settings-packages.js",
+    "settings-panes.js",
+    "settings-wiring.js",
+    "settings.js",
+    "shell-reminders.js",
+    "skills.js",
+    "space-swap.js",
+    "spaces-find.js",
+    "statistics.js",
+    "studio.js",
+    "suggestions-inbox.js",
+    "tag-manager.js",
+    "tag-suggest.js",
+    "update-dialogs.js",
+    "usage-ledger.js",
+    "web-clip.js",
+    "web-results.js",
+    "whiteboard-history.js",
+    "whiteboard-library.js",
+    "whiteboard-map-more.js",
+    "whiteboard-map.js",
+    "whiteboard.js",
+    "wiring.js",
+)
 
 
 def _js_voice() -> dict:
@@ -56,8 +142,8 @@ def test_the_moved_surfaces_fail_in_the_voice():
         for line in src.split("\n"):
             if "toast(" in line:
                 assert not re.search(r'["`]Could not ', line), f"{name}: {line.strip()}"
-                assert not re.search(r'"Couldn\'t [^"$`]*"', line), f"{name}: a failure not through the voice: {line.strip()}"
-    assert calls >= 72  # 67 until whiteboard-map.js lost "put it back" to the shared undo
+                assert not re.search(r'["`]Couldn\'t ', line), f"{name}: a failure not through the voice: {line.strip()}"
+    assert calls >= 281  # 262 before L-world-class-140, which moved the last literal template toasts
 
 
 def test_no_toast_in_the_app_says_oops_or_shouts():

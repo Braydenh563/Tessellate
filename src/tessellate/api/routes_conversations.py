@@ -151,7 +151,7 @@ class TurnBody(BaseModel):
     #: there is nothing to migrate: a reply saved before this has no key and
     #: reads as the default assistant. Bounded as a name, not a prompt.
     persona: str | None = Field(default=None, max_length=80)
-    #: The question whose suggested follow-up this one was, as its words (INBOX
+    #: The question whose suggested follow-on this one was, as its words (INBOX
     #: 490: "hyperlinked bread crumbs ... if a suggested follow suggested
     #: question is used"). Words rather than a turn index, because deleting a
     #: turn renumbers every turn after it and an index would then point at the
@@ -1037,7 +1037,7 @@ def set_turn_followups(
     body: FollowupsBody,
     session: Session = Depends(get_session),
 ) -> dict:
-    """Remember the follow-up chips for one turn.
+    """Remember the follow-on chips for one turn.
 
     Reported directly: "suggested repsponse continuation prompts in chat doesnt
     persist and disappears once I switch chat sessions or quit the app." They

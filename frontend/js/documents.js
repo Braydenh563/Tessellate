@@ -1353,7 +1353,7 @@ async function openDocument(id) {
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
   if (!doc) {
-    toast("Couldn't open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    toast(voiceLine("failed", { what: "open that document", why: "the one on screen is unchanged" }), true, { action: ["Try again", () => openDocument(id)] });
     renderDocList();
     return;
   }
@@ -7282,7 +7282,7 @@ async function docImageUpload(box, boxId, file, said = "") {
       }
       docImageUpload(box, boxId, file, said);
     };
-    toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+    toast(voiceLine("failed", { what: "upload that picture", why: "add its address by hand" }), true, { action: ["Try again", retry] });
   }
 }
 
@@ -8169,7 +8169,7 @@ async function openDocAiHistory() {
           toast("Reverted.");
           dialog.close();
         } catch (error) {
-          toast(error.message || "Couldn't revert that.", true);
+          toast(error.message || voiceLine("failed", { what: "revert that" }), true);
         } finally {
           revertBtn.disabled = false;
         }
@@ -15189,7 +15189,8 @@ function docFindingLine(finding, variant = "row") {
   const line = document.createElement("span");
   line.className = `doc-finding-line doc-finding-line-${variant}`;
   const dot = document.createElement("span");
-  dot.className = `doc-finding-dot doc-finding-dot-${docFindingKind(finding)}`;
+  dot.className = "doc-finding-dot";
+  dot.classList.add(`doc-finding-dot-${docFindingKind(finding)}`);
   dot.setAttribute("aria-hidden", "true");
   const words = document.createElement("span");
   words.className = "doc-finding-words";

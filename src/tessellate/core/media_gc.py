@@ -53,7 +53,7 @@ def _could_name_a_file(column):
     (the performance pass, 2026-10-03). SQLite's LIKE folds ASCII case, so
     this keeps a superset of what the regex reads. Ciphertext is kept too: a
     private note's stored text is `mmenc1:...`, which says nothing until it is
-    opened, and the pass below must still open it, or note that it could not.
+    opened, and the pass below must open it, or note that it could not.
     """
     from tessellate.core import crypto
 
@@ -120,7 +120,7 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
     whiteboard content. Without this, `find_orphaned_media` would call
     every image ever attached to a chat message "orphaned", sent or not,
     and `delete_orphaned_media` would delete its file out from under a
-    conversation someone can still open and read.
+    conversation someone can open and read.
     """
     ids: set[int] = set()
     for conversation in session.scalars(select(Conversation)):

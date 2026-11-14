@@ -78,17 +78,6 @@
   margin: 0;
 }
 
-.inbox-row-actions {
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.inbox-row-actions > .chip {
-  margin-inline-end: auto;
-}
-
 /* GRAPH_PLAN KG3: a link's kind on its chip, quiet, before the note's name. */
 .link-kind {
   color: var(--muted);

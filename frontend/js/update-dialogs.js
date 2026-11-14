@@ -109,7 +109,7 @@ async function askUpdateChoiceOnce() {
     if ($("pref-update-check")) $("pref-update-check").checked = Boolean(saved.update_check_enabled);
     if ($("pref-auto-update")) $("pref-auto-update").checked = Boolean(saved.auto_update_enabled);
   } catch (error) {
-    toast(error.message || "Couldn't save that answer.", true);
+    toast(error.message || voiceLine("failed", { what: "save that answer" }), true);
     return;
   }
   if (yes) await checkForUpdate(true);
@@ -195,7 +195,7 @@ async function showUpdateBar(result) {
     // success the app exits itself shortly after (routes_update.py).
     if (!ok) {
       update.disabled = false;
-      toast(text.textContent || "Couldn't apply the update.", true);
+      toast(text.textContent || voiceLine("failed", { what: "apply the update" }), true, { action: ["Try again", () => update.click()] });
     }
   }, false);
   // Closable notice recipe (DESIGN.md): the icon-only ghost button is the last child.

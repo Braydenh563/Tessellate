@@ -517,7 +517,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     copy: () => {
       const text = mathEditorOutput(pane.tex(), display);
       if (!text) return pane.focus();
-      navigator.clipboard?.writeText(text).then(() => toast("Equation copied."), () => toast("Couldn't copy the equation.", "info"));
+      navigator.clipboard?.writeText(text).then(() => toast("Equation copied."), () => toast(voiceLine("failed", { what: "copy the equation" }), "info"));
     },
     insert: () => {
       if (mathEditorWrite(target, pane.tex(), { display, start })) close();

@@ -8,6 +8,10 @@ const CASES = [
   
   ['notes', 'openNotePropertiesSheet({ id: 1 })'],
   ['reminders', 'clearDoneReminders()'],
+  //: L-world-class-44: the lazy surfaces, opened first (`ensureModule`), then driven the same way.
+  ['wb-export', 'ensureModule("boards").then(() => wbLibExport(1))'],
+  ['wb-history', 'ensureModule("boards").then(() => wbOpenHistory())'],
+  ['doc-bookmark', 'ensureModule("library").then(() => { currentDoc = { id: 1, title: "t", content: "" }; return attachBookmarkToDocument(); }).finally(() => { currentDoc = null; })'],
 ];
 
 (async () => {

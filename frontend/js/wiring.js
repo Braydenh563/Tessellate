@@ -617,7 +617,7 @@ onSurface("chat", () => {
       chatWriteRecord("chatForkUndo", fork);
       toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
     } catch (error) {
-      toast(error.message || "Couldn't fork this conversation.", true);
+      toast(error.message || voiceLine("failed", { what: "fork this conversation" }), true);
     }
   });
 });
@@ -661,7 +661,7 @@ async function renameCurrentConversation() {
     chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
     loadConversationList();
   } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
+    toast(error.message || voiceLine("failed", { what: "rename this conversation" }), true);
   }
 }
 

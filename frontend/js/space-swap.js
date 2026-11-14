@@ -86,6 +86,8 @@
       captureDocumentList = [];
       captureDocumentTitles = new Map();
       captureDocuments.clear();
+      //: A half-typed model address is the old space's: the status poll fills the field again.
+      backendFieldsDirty = false;
       //: The open thread belongs to the space it was held in.
       if (typeof newChatConversation === "function" && chatConv?.id != null) newChatConversation();
       if (typeof newChat === "function" && conversation.length) newChat();

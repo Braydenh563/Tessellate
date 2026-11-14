@@ -125,7 +125,7 @@ def _worked_out(question: str):
     if kind == "weather" and (deps.get_ollama().is_running() or utilities.web_on()):
         #: "The weather is not something this app knows" is the answer only with
         #: no model and no web; with either, the turn is a general question and
-        #: goes to them (the owner, 2026-10-27: a weather follow-up came back
+        #: goes to them (the owner, 2026-10-27: a weather follow-on came back
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
@@ -876,7 +876,7 @@ def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
 
 def _call_events(req: _StreamRequest) -> list[dict]:
     """A message that only called the assistant: here, and three things to
-    ask next as chips (an "ask" offer; the follow-up strip draws them)."""
+    ask next as chips (an "ask" offer; the follow-on strip draws them)."""
     recent, seed = _reply_seed(req)
     line = composer_smalltalk.call(req.address.names, recent=recent, seed=seed, voice=_composer_voice())
     return [
@@ -1243,7 +1243,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
 
 
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
-    """The composer's result with the follow-up it answered, the notes it read
+    """The composer's result with the follow-on it answered, the notes it read
     and the older ones those replaced."""
     follow = prepared.get("follow_on")
     #: A follow-on that is a question in its own right ("what about
@@ -1300,7 +1300,7 @@ def _composed_grounding_event(req: _StreamRequest, result: dict, asks: list[str]
 def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None, listed: bool = True) -> tuple[str, list[str]]:
     """The answer's next step: the screen-aware closing line when the screen
     is known, else the chips for the cited note (INBOX 1466: the prose offer
-    "Next, I can open ..." is the follow-up strip's now, not both). Left off
+    "Next, I can open ..." is the follow-on strip's now, not both). Left off
     by Quick and by an answer that already ends in a question."""
     if size == "short" or text.rstrip().endswith("?"):
         return text, []
@@ -1569,7 +1569,7 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
 
 def _forced_notes(req: _StreamRequest, follow: object) -> bool:
     """A turn that is about the notebook whatever its words read as: a reply
-    to the agent's question, a follow-up, and, in Ask, "list my work notes"
+    to the agent's question, a follow-on, and, in Ask, "list my work notes"
     (an act in Chat, the question it is here: the listing is the answer,
     CHAT_PLAN Phase 6 P12)."""
     if req.body.answering_agent or follow is not None:
@@ -1709,10 +1709,10 @@ def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -
 
 
 def _spoken_act(req: _StreamRequest) -> str | None:
-    """A spoken follow-up that is an act ("and delete it", "same for
+    """A spoken follow-on that is an act ("and delete it", "same for
     Tuesday", "pin the other one"), resolved over the chat's last five turns
     (`reading.follow`, decision 59 step 3): the sentence it stands for, or
-    None so a question's follow-up stays `composer.follow_on`'s."""
+    None so a question's follow-on stays `composer.follow_on`'s."""
     from tessellate.ai import reading
 
     now = user_now(deps.get_config())
@@ -1759,7 +1759,7 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
 
 
 def _follow_up(req: _StreamRequest):
-    """The follow-up the turn before gives this one: a spoken act stands in
+    """The follow-on the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
     `composer.follow_on`'s; None otherwise."""
     if acts_on_listed_task(req.question, req.history, user_now(deps.get_config())):
@@ -1799,7 +1799,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     """Retrieval happens INSIDE the stream, not before it: that is the whole
     latency win. Nothing before this touches the model.
 
-    **A follow-up read against the turn before** (INBOX 725): "tell me more"
+    **A follow-on read against the turn before** (INBOX 725): "tell me more"
     or "the second one" means nothing searched on its own. Only for a turn the
     composer answers (Ask's From your notes, or any turn with no model), and
     only with a turn before it: a model reads the history itself, and the

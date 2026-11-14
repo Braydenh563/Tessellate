@@ -43,7 +43,9 @@ def test_a_skip_link_jumps_past_the_chrome_to_the_list():
 def test_show_more_the_rail_menus_and_the_board_grips_meet_the_floor():
     assert "min-height: var(--target-min)" in _rule("#entry-list .entry-more,\n#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > .entry-more")
     assert "min-block-size: var(--target-min)" in re.search(r"\n\.card-open \{([^}]*)\}", CSS).group(1)
-    assert "border: var(--space-3) solid transparent" in (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8").split("@media (pointer: coarse)")[-1]
+    #: Any coarse-pointer block: the board menu's own (L-world-class-13) now comes after the grips'.
+    coarse = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8").split("@media (pointer: coarse)")[1:]
+    assert any("border: var(--space-3) solid transparent" in block.split("\n}\n")[0] for block in coarse)
     # Where they are declared: the rail's link menus and a card's task boxes.
     assert re.search(r"@media \(pointer: fine\) \{\s*#entry-list \.link-connection > \.menu-wrap \{[^}]*\}\s*#entry-list \.link-connection > \.menu-wrap > button \{\s*width: 1\.5rem;\s*height: 1\.5rem;", CSS)
     forms = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")

@@ -138,7 +138,7 @@ def build_llm_client(config: ConfigManager) -> Provider:
     # silently, and on every turn.
     #
     # Falling back to the provider's local default rather than refusing to
-    # start: the app must still open so the setting can be fixed from inside it.
+    # start: the app must open so the setting can be fixed from inside it.
     if base_url and config.get_preference("local_only_ai", True):
         from tessellate.core import security
 

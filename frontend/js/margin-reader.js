@@ -136,7 +136,7 @@
           reminderMadeUndo(made);
           toast(`Reminder set for ${card.phrase}.`);
         } catch (error) {
-          toast(error.message || "Couldn't make that reminder.", true);
+          toast(error.message || voiceLine("failed", { what: "make that reminder" }), true);
           event.currentTarget.disabled = false;
         }
       });

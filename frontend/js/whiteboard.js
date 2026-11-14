@@ -11896,7 +11896,7 @@ async function wbUndo() {
     }
     wbScheduleRender();
   } catch {
-    toast(voiceLine("failed", { what: "undo that" }), true);
+    toast(voiceLine("failed", { what: "undo that" }), true, { action: ["Try again", wbUndo] });
   }
 }
 
@@ -11914,7 +11914,7 @@ async function wbRedo() {
     toast("Redone: last change on this board", "info");
     wbScheduleRender();
   } catch {
-    toast(voiceLine("failed", { what: "redo that" }), true);
+    toast(voiceLine("failed", { what: "redo that" }), true, { action: ["Try again", wbRedo] });
   }
 }
 
@@ -14584,7 +14584,7 @@ async function wbImportOutlineFile(event) {
     //: it (W5). Everything else is text.
     content = format === "xmind" ? wbBase64(await file.arrayBuffer()) : await file.text();
   } catch {
-    toast(voiceLine("failed", { what: "read that file" }), true);
+    toast(voiceLine("failed", { what: "read that file" }), true, { action: ["Try again", () => wbImportOutlineFile({ target: { files: [file], value: "" } })] });
     return;
   }
   if (!content.trim()) {
@@ -19612,7 +19612,7 @@ async function wbPlaceNote(entryId, at) {
     //: told why. The message is what the server sent, and it belongs on
     //: screen rather than in a console nobody has open.
     const why = (err && err.message) || "the server refused it";
-    toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
+    toast(voiceLine("failed", { what: "add that note to the board", why: why }), true, { action: ["Try again", () => wbPlaceNote(entryId, at)] });
   }
 }
 

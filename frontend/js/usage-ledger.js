@@ -83,7 +83,7 @@
     //: Through the shared helper, which falls back where the clipboard API
     //: is not allowed (tests/test_log_console.py).
     if (await copyToClipboard($("capture-command").textContent)) toast("Copied. Paste it as the command your shortcut runs.");
-    else toast("Couldn't copy here. Select the command and copy it.", "info");
+    else toast(voiceLine("failed", { what: "copy here", why: "select the command and copy it" }), "info");
   });
 
   $("pref-simple-mode")?.addEventListener("change", (event) => applySimpleMode(event.target.checked));
@@ -95,7 +95,7 @@
       prefs.remove("palette-picks");
       toast("Every count is cleared.");
     } catch (error) {
-      toast(error.message || "Couldn't clear the counts.", true);
+      toast(error.message || voiceLine("failed", { what: "clear the counts" }), true);
     }
     renderUsage();
   });

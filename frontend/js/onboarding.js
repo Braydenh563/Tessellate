@@ -155,7 +155,7 @@ function renderOnboardingActions(models, notebook) {
             refreshModelStatus();
           } catch (error) {
             setBusy(offer, false);
-            toast(error.message || "Couldn't start the download.", true);
+            toast(error.message || voiceLine("failed", { what: "start the download" }), true);
           }
         },
         false
@@ -218,7 +218,7 @@ function renderOnboardingActions(models, notebook) {
             );
           } catch (error) {
             event.target.disabled = false;
-            toast(error.message || "Couldn't add the example notes.", true);
+            toast(error.message || voiceLine("failed", { what: "add the example notes" }), true);
           }
         },
         false
@@ -276,7 +276,7 @@ onboardingRun.renderPrefs = async () => {
         const saved = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ [choice.key]: value }) });
         if (typeof prefsCache !== "undefined") prefsCache = saved;
       } catch (error) {
-        toast(error.message || "Couldn't save that setting.", true);
+        toast(error.message || voiceLine("failed", { what: "save that setting" }), true);
       }
     });
     const row = document.createElement("div");
@@ -575,6 +575,6 @@ async function maybeShowConsoleViewIntro() {
       `${wantsDevView ? "Dev" : "User"} view: starting from next launch.`
     );
   } catch (error) {
-    toast(error.message || "Couldn't save your console view choice.", true);
+    toast(error.message || voiceLine("failed", { what: "save your console view choice" }), true);
   }
 }

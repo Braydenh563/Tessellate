@@ -165,7 +165,7 @@
         const done = await apiJson(`/voice/models/${encodeURIComponent(size)}`, { method: "DELETE" });
         toast(done.message);
       } catch (error) {
-        toast(error.message || "Couldn't remove that model.", true);
+        toast(error.message || voiceLine("failed", { what: "remove that model" }), true);
       }
       voiceModelsPaint();
     });

@@ -83,7 +83,8 @@ def test_a_name_that_is_no_recording_leaves_the_box_and_asks_once_per_half_minut
 
 def test_read_and_live_both_reach_the_player_and_the_css_and_guide_say_so() -> None:
     markdown = (JS / "markdown.js").read_text(encoding="utf-8")
-    assert "window.docEmbedFill?.(body, name, { keep: true })" in markdown
+    #: Read falls back to the note player when the documents bundle is not loaded (L579).
+    assert "(window.docEmbedFill || noteRecording)(body, name, { keep: true })" in markdown
     embeds = (JS / "documents-embeds.js").read_text(encoding="utf-8")
     assert "kind: \"recording\"" in embeds and "!options?.keep" in embeds
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
@@ -92,4 +93,4 @@ def test_read_and_live_both_reach_the_player_and_the_css_and_guide_say_so() -> N
     from tessellate.ai import help_chat
 
     body = {t["id"]: t for t in help_chat.HELP_TOPICS}["voice"]["body"]
-    assert "![[a recording's name]]" in body
+    assert "![[name]] plays a recording" in body

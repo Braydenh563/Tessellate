@@ -590,7 +590,7 @@ def window_handle(window: Any) -> int | None:
     earlier would make the form on this (worker) thread."""
     try:
         return int(window.native.Handle.ToInt64())
-    except Exception as exc:  # noqa: BLE001 - not WinForms, or not built yet
+    except Exception as exc:  # noqa: BLE001 - not WinForms, or its window does not exist yet
         logger.debug("desk companion: no native handle (%s); the window stays an ordinary one", exc)
         return None
 
@@ -1504,8 +1504,8 @@ class DeskCompanion:
     def let_it_walk(self) -> bool:
         """The menu's "Let it walk": the app's Companion movement set to Always
         (through its own window), and the figure restarted moving."""
-        done = self._ask_main(WALK_SCRIPT, "the walk setting") is True
-        return self._restart_shown("let it walk", walk_forced=not done)
+        walked = self._ask_main(WALK_SCRIPT, "the walk setting") is True
+        return self._restart_shown("let it walk", walk_forced=not walked)
 
     def _restart_shown(self, what: str, walk_forced: bool | None = None) -> bool:
         """The runner restarted for whatever the app window now says (look, motion), where

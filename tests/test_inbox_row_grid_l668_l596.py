@@ -19,5 +19,5 @@ def test_tidy_rows_use_row_actions():
 
 def test_names_and_types_rows_use_the_links_grid():
     inbox = _text("suggestions-inbox.js")
-    assert 'row.className = "link-suggestion inbox-row"' in inbox
+    assert 'row = inboxEl("div", "link-suggestion inbox-row")' in inbox  # the shared shell, built by `inboxEl`
     assert inbox.count("inboxGridRow(") >= 3  # the definition and two callers

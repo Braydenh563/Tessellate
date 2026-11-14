@@ -61,11 +61,13 @@ def test_u11_there_is_one_insert_and_it_is_the_slash_menu():
 
 def test_find_panel_is_tokened_with_a_tappable_close_button():
     assert ".cm-search" not in EDITOR_CSS  # moved to the lazy sheet, boot bytes down
-    for selector in (".doc-editor .cm-search .cm-textfield", ".doc-editor .cm-search .cm-button"):
+    #: The note's find bar shares these rules since L-world-class-17, hence the `:is()`.
+    scope = ":is(.doc-editor, .note-surface)"
+    for selector in (f"{scope} .cm-search .cm-textfield", f"{scope} .cm-search .cm-button"):
         assert "border-radius: var(--radius-md)" in _rule(LAZY_CSS, selector)
-    close = _rule(LAZY_CSS, '.doc-editor .cm-search button[name="close"]')
+    close = _rule(LAZY_CSS, f'{scope} .cm-search button[name="close"]')
     assert "min-width: 24px" in close and "min-block-size: 24px" in close
-    coarse = LAZY_CSS[LAZY_CSS.index('.doc-editor .cm-search button[name="close"] {') :]
+    coarse = LAZY_CSS[LAZY_CSS.index(f'{scope} .cm-search button[name="close"] {{') :]
     assert re.search(r"@media \(pointer: coarse\) \{[^@]*cm-search button\[name=\"close\"\][^}]*min-block-size: 44px", coarse)
 
 

@@ -284,7 +284,7 @@
         //: The shared helper: it falls back where the clipboard API is absent
         //: (the desktop window over plain http), as every copy path does.
         if (await copyToClipboard(model.name)) toast("Copied the name.");
-        else toast("Couldn't copy it from here.", "info");
+        else toast(voiceLine("failed", { what: "copy it from here" }), "info");
       },
     });
     if (state.installed) {
@@ -708,7 +708,7 @@
     try {
       await putModelHardware(body);
     } catch (error) {
-      toast(error.message || "Couldn't save the hardware override.", true);
+      toast(error.message || voiceLine("failed", { what: "save the hardware override" }), true);
       return;
     }
     openModelHardwareForm(false);

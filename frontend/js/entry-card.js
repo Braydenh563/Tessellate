@@ -20,6 +20,20 @@ function tagAddChipKind(entry, options) {
   return !tags && !(entry.suggested_tags || []).length ? "add" : "more";
 }
 
+//: How many notes carry a tag, counted from the notes already loaded (no request), for a
+//: tag chip's hover. Rebuilt only when the list is replaced or its length moves. A property
+//: of `tagAddChipKind`, not a new global (tests/test_global_scope_ratchet.py).
+tagAddChipKind.carrying = (tag) => {
+  const memo = tagAddChipKind;
+  if (memo.source !== allEntries || memo.size !== allEntries.length) {
+    memo.counts = new Map();
+    for (const note of allEntries) for (const name of new Set(note.tags || [])) memo.counts.set(name, (memo.counts.get(name) || 0) + 1);
+    memo.source = allEntries;
+    memo.size = allEntries.length;
+  }
+  return memo.counts.get(tag) || 0;
+};
+
 //: **A meeting card shows what the meeting settled, not its raw headings**
 //: (libr-1011 row 1238: `## Agenda` and `## Notes` printed as text). The four
 //: sections of `entry/meetings.py` read for one line each: the first agenda
@@ -30,6 +44,8 @@ const MEETING_GLANCE_SECTIONS = {
   decisions: "decisions", decided: "decisions",
   "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", todo: "actions", "next steps": "actions",
 };
+
+const MEETING_EMPTY_ITEM = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]*)?(?:\[[ xX]\][ \t]*)?$/;
 
 function meetingGlance(entry) {
   const types = (entry?.properties?.type || []).map((value) => String(value).toLowerCase());
@@ -42,7 +58,8 @@ function meetingGlance(entry) {
       current = MEETING_GLANCE_SECTIONS[heading[1].toLowerCase()] || "";
       continue;
     }
-    if (current && sections[current] && line.trim()) sections[current].push(line);
+    //: A bare "- " or "- [ ] " is a list's blank placeholder, not a decision or an action.
+    if (current && sections[current] && !MEETING_EMPTY_ITEM.test(line)) sections[current].push(line);
   }
   const plain = (line) => line.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+(?:\[[ xX]\][ \t]*)?/, "").trim();
   const rows = [];
@@ -131,7 +148,7 @@ function renderInlineAction(entry) {
         try {
           if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
         } catch (error) {
-          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          if (!error.isLockout) toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
           return;
         }
         inlineAction = null;
@@ -450,7 +467,7 @@ function entryItem(entry, options = {}) {
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Couldn't remove that image.", true);
+      toast(err.message || voiceLine("failed", { what: "remove that image" }), true);
     }
   });
   if (glance) {
@@ -660,7 +677,8 @@ function entryItem(entry, options = {}) {
       })
       : chip(tag, "tag hashtag");
     if (options.actions) {
-      tagChip.title = `Show every note tagged #${tag}. Right-click for more.`;
+      const carrying = tagAddChipKind.carrying(tag);
+      tagChip.title = `Show every note tagged #${tag}${carrying ? ` (${carrying === 1 ? "1 note carries" : `${carrying} notes carry`} it)` : ""}. Right-click for more.`;
       tagChip.setAttribute("aria-haspopup", "menu");
       //: The chip's own menu (INBOX 447 (4)): Show notes, Rename, Remove from
       //: this note. Right-click and the menu keys; a plain click still filters.
@@ -1470,6 +1488,6 @@ async function publishDraft(entry) {
     await refreshEntries([entry.id]);
     toast("Published.");
   } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
+    toast(error.message || voiceLine("failed", { what: "publish that draft" }), true);
   }
 }

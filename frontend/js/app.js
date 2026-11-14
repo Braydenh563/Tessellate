@@ -941,12 +941,12 @@ function startApp() {
           // The lock screen already said what happened; a toast under it
           // repeating "Couldn't X: Locked" for every parallel step is noise
           // about one state dressed up as several failures.
-          if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+          if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
         });
       }
       return Promise.resolve(result);
     } catch (error) {
-      if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+      if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
       return Promise.resolve();
     }
   };

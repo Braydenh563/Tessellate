@@ -159,9 +159,14 @@ def grounds(
     return found or _lexicon_grounds(tag, content)
 
 
-def reason(tag: str, content: str, hits: dict[str, list[str]] | None = None) -> str:
-    """One line for a suggested tag's chip; "" when nothing grounds it."""
-    found = grounds(tag, content, hits)
+def reason(
+    tag: str, content: str, hits: dict[str, list[str]] | None = None, note_stems: set[str] | None = None,
+    own: str | None = None,
+) -> str:
+    """One line for a suggested tag's chip; "" when nothing grounds it.
+    `note_stems` and `own` are `grounds`'s: a caller weighing several tags
+    on one note cleans and stems the text once, not once a tag (L-world-class-20)."""
+    found = grounds(tag, content, hits, note_stems, own)
     if not found:
         return ""
     quoted = lexical_filing._quote_list(found[:2])

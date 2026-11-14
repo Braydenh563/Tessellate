@@ -360,7 +360,7 @@
             }
             samplingState.was = null;
           } catch {
-            toast("Couldn't save that setting.", true, { action: ["Reload them", loadSamplingSettings] });
+            toast(voiceLine("failed", { what: "save that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
           }
           await loadSamplingSettings();
         }, 400);
@@ -409,7 +409,7 @@
           });
           pushRequestUndo("Reset a sampling setting", "/models/sampling", "PUT", { overrides: before }, { overrides: { ...samplingState.overrides } }, loadSamplingSettings);
         } catch {
-          toast("Couldn't reset that setting.", true, { action: ["Reload them", loadSamplingSettings] });
+          toast(voiceLine("failed", { what: "reset that setting" }), true, { action: ["Reload them", loadSamplingSettings] });
         }
         await loadSamplingSettings();
       });

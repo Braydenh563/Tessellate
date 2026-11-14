@@ -642,7 +642,7 @@
       reminderMadeUndo(reminder);
       toastAction(`Reminder set: ${relativeWhen(reminder.due_at)}.`, "Go to it", () => flashReminder(reminder.id), { go: { open: "reminder", id: reminder.id } });
     } catch (error) {
-      toast(error.message || "Couldn't set the reminder.", true);
+      toast(error.message || voiceLine("failed", { what: "set the reminder" }), true);
     }
   }
 

@@ -55,7 +55,7 @@ _PATTERNS = re.compile(
 )
 _CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b"
                              r"|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
-#: "What am I forgetting" is what is still open; "what have I forgotten" is the faded notes
+#: "What am I forgetting" is what is unfinished; "what have I forgotten" is the faded notes
 #: (second eye F13d), which the older readers list as titles.
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
 
@@ -93,7 +93,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
 def starter_leads(session: Session, now: datetime) -> list[str]:
     """Starter chips that name something in the notebook: what is due this
     week first, then `composer_voice.suggested_searches` (the latest on the
-    newest titled note, what is still open), in place of category names said
+    newest titled note, what is unfinished), in place of category names said
     as topics (second composer audit G12)."""
     from datetime import timedelta
 
@@ -112,7 +112,7 @@ def starter_leads(session: Session, now: datetime) -> list[str]:
 
 def _early_events(session: Session, typed: str, history: list[dict], now: datetime) -> list[dict] | None:
     """The readers that go before any note is read. Each reads what was typed, not the rewritten
-    question: a follow-up rewrites that ("no cancel it" became a question about a note)."""
+    question: a follow-on rewrites that ("no cancel it" became a question about a note)."""
     #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
     if (dropped := composer_cancel.reply(typed, history)) is not None:
         return dropped

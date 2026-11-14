@@ -52,7 +52,7 @@ With default settings the server offers **28 tools**, all of them reads (of 73 i
 | `add_whiteboard_link` | write | Draw a link between two cards already on a whiteboard board (add_whiteboard_card first). |
 | `audit_link_reasons` | write | Audits vague graph link reasons (like 'similar in meaning') and rewrites them by deducing a specific reason based on both notes. |
 | `check_learned` | write | Check what the app learned about the user: re-read every claim and question it worked out against its note as written now, retire what no longer holds (note edited or deleted, a joke, quote or draft, marked wrong, repeated) and flag what needs a look (two notes disagree, a date that has passed). The retired ones can be undone in Settings, What it learned. |
-| `complete_reminder` | write | Mark a reminder done (or not done). |
+| `complete_reminder` | write | Mark a reminder done or undone. |
 | `create_category` | write | Make a new category. |
 | `create_document` | write | Write a new long-form document (an essay, a report, a write-up) and save it. |
 | `create_mindmap` | write | Create an empty mindmap with one root topic on it, for 'start a mind map about X'. |

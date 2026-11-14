@@ -27,6 +27,9 @@
     "Every Link, Merge or type you accept, and every one you dismiss, teaches the inbox which reasons to trust in your notebook. A dismissed suggestion does not come back.",
   ];
 
+  //: One element and its class: the inbox builds every row by hand.
+  const inboxEl = (tag, className) => Object.assign(document.createElement(tag), { className });
+
   let inboxState = null;
 
   //: "Link all above 70%": the confidence over every reason (`confidence`, or the
@@ -58,8 +61,7 @@
         kind.className = "inbox-kind";
         kind.setAttribute("aria-label", "Kind of suggestion");
         kind.title = "Kind of suggestion";
-        const body = document.createElement("div");
-        body.className = "inbox-body";
+        const body = inboxEl("div", "inbox-body");
         for (const [key, label, line] of INBOX_KINDS) {
           const option = document.createElement("option");
           option.value = key;
@@ -72,11 +74,9 @@
           pane.setAttribute("role", "group");
           pane.setAttribute("aria-label", label);
           pane.hidden = true;
-          const desc = document.createElement("p");
-          desc.className = "muted inbox-desc";
+          const desc = inboxEl("p", "muted inbox-desc");
           desc.textContent = line;
-          const list = document.createElement("div");
-          list.className = "inbox-list";
+          const list = inboxEl("div", "inbox-list");
           pane.append(desc, list);
           body.appendChild(pane);
           state.options[key] = option;
@@ -121,18 +121,15 @@
     help.setAttribute("aria-expanded", "false");
     help.title = "About suggestions";
     help.setAttribute("aria-label", "About suggestions");
-    const icon = document.createElement("i");
-    icon.className = "ph ph-question";
+    const icon = inboxEl("i", "ph ph-question");
     icon.setAttribute("aria-hidden", "true");
     help.appendChild(icon);
-    const actions = document.createElement("span");
-    actions.className = "dialog-head-actions";
+    const actions = inboxEl("span", "dialog-head-actions");
     const closeButton = head.querySelector(".sheet-close");
     if (closeButton) actions.appendChild(closeButton);
     head.querySelector(".sheet-title")?.after(help);
     head.appendChild(actions);
-    const helpBody = document.createElement("div");
-    helpBody.className = "help-body hidden";
+    const helpBody = inboxEl("div", "help-body hidden");
     helpBody.id = "inbox-help";
     helpBody.setAttribute("role", "dialog");
     helpBody.setAttribute("aria-label", "About suggestions");
@@ -181,8 +178,7 @@
   }
 
   function inboxEmpty(list, text) {
-    const line = document.createElement("p");
-    line.className = "muted inbox-empty";
+    const line = inboxEl("p", "muted inbox-empty");
     line.textContent = text;
     list.appendChild(line);
   }
@@ -208,8 +204,7 @@
 
   /** The reasons under a row, each with its own percentage. */
   function inboxWhy(signals) {
-    const why = document.createElement("p");
-    why.className = "muted link-suggestion-why";
+    const why = inboxEl("p", "muted link-suggestion-why");
     why.textContent = (signals || []).map((g) => `${g.reason} (${Math.round(g.confidence * 100)}%)`).join(" · ");
     return why;
   }
@@ -219,11 +214,9 @@
   //: read one by one.
   function inboxScoreBar(confidence) {
     const pct = Math.round((confidence || 0) * 100);
-    const score = document.createElement("span");
-    score.className = "link-suggestion-score";
+    const score = inboxEl("span", "link-suggestion-score");
     score.title = "How sure, over every reason";
-    const bar = document.createElement("span");
-    bar.className = "link-suggestion-bar";
+    const bar = inboxEl("span", "link-suggestion-bar");
     bar.setAttribute("aria-hidden", "true");
     const fill = document.createElement("span");
     fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
@@ -238,13 +231,10 @@
   //: subject, one line of how sure and why under it, the actions one cell
   //: (`rowActions`, L668). `inboxGridRow` builds the shell the kinds share.
   function inboxPairName(words, icon) {
-    const made = document.createElement("span");
-    made.className = "link-suggestion-note";
-    const glyph = document.createElement("i");
-    glyph.className = `ph ph-${icon}`;
+    const made = inboxEl("span", "link-suggestion-note");
+    const glyph = inboxEl("i", `ph ph-${icon}`);
     glyph.setAttribute("aria-hidden", "true");
-    const text = document.createElement("span");
-    text.className = "link-suggestion-name";
+    const text = inboxEl("span", "link-suggestion-name");
     text.textContent = words;
     made.title = words;
     made.append(glyph, text);
@@ -252,19 +242,15 @@
   }
 
   function inboxGridRow(pair, signals, confidence, actions, label) {
-    const row = document.createElement("div");
-    row.className = "link-suggestion inbox-row";
+    const row = inboxEl("div", "link-suggestion inbox-row");
     row.setAttribute("role", "group");
     row.setAttribute("aria-label", label);
-    const text = document.createElement("span");
-    text.className = "link-suggestion-text link-suggestion-pair";
+    const text = inboxEl("span", "link-suggestion-text link-suggestion-pair");
     text.setAttribute("role", "group");
-    const join = document.createElement("i");
-    join.className = "ph ph-arrow-right link-suggestion-join";
+    const join = inboxEl("i", "ph ph-arrow-right link-suggestion-join");
     join.setAttribute("aria-hidden", "true");
     text.append(pair[0], join, pair[1]);
-    const facts = document.createElement("p");
-    facts.className = "muted link-suggestion-facts";
+    const facts = inboxEl("p", "muted link-suggestion-facts");
     facts.appendChild(inboxScoreBar(confidence));
     if (signals?.length) {
       const why = inboxWhy(signals);
@@ -402,18 +388,15 @@
   function inboxTensionsPane() {
     const list = inboxState?.lists.tensions;
     if (!list) return;
-    const tools = document.createElement("div");
-    tools.className = "row inbox-tools";
-    const status = document.createElement("span");
-    status.className = "muted inbox-status";
+    const tools = inboxEl("div", "row inbox-tools");
+    const status = inboxEl("span", "muted inbox-status");
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
     const run = document.createElement("button");
     run.type = "button";
     run.className = "accent small";
     run.textContent = "Start the review";
-    const results = document.createElement("div");
-    results.className = "tensions-results";
+    const results = inboxEl("div", "tensions-results");
     run.addEventListener("click", async () => {
       run.disabled = true;
       results.replaceChildren();
@@ -452,26 +435,21 @@
 
   /** One proposed disagreement, with both notes and the two decisions. */
   function tensionCard(tension) {
-    const card = document.createElement("div");
-    card.className = "card tension-card";
+    const card = inboxEl("div", "card tension-card");
     card.setAttribute("role", "group");
     card.setAttribute("aria-label", `Possible contradiction: ${tension.explanation}`);
-    const why = document.createElement("p");
-    why.className = "tension-why";
+    const why = inboxEl("p", "tension-why");
     why.textContent = tension.explanation;
-    const gap = document.createElement("p");
-    gap.className = "muted tension-gap";
+    const gap = inboxEl("p", "muted tension-gap");
     //: The gap is the finding as much as the text: "you thought this, then
     //: months later that".
     gap.textContent = tension.gap_days ? `${tensionGapText(tension.gap_days)} apart` : "Written around the same time";
-    const pair = document.createElement("div");
-    pair.className = "tension-pair";
+    const pair = inboxEl("div", "tension-pair");
     pair.append(
       tensionSide("Earlier", tension.earlier_at, tension.earlier_excerpt, tension.earlier_id),
       tensionSide("Later", tension.later_at, tension.later_excerpt, tension.later_id),
     );
-    const actions = document.createElement("div");
-    actions.className = "row tension-actions";
+    const actions = inboxEl("div", "row tension-actions");
     const ids = JSON.stringify({ earlier_id: tension.earlier_id, later_id: tension.later_id });
     const accept = document.createElement("button");
     accept.type = "button";
@@ -484,7 +462,7 @@
         const done = await apiJson("/entries/tensions/accept", { method: "POST", body: ids });
         pushTensionLinkUndo(tension.earlier_id, tension.later_id, "accept", done?.created !== false);
       } catch (error) {
-        toast(error.message || "Couldn't link these notes.", true);
+        toast(error.message || voiceLine("failed", { what: "link these notes" }), true);
         return;
       }
       tensionResolve(card, "Linked as contradicting.");
@@ -498,7 +476,7 @@
         await apiJson("/entries/tensions/dismiss", { method: "POST", body: ids });
         pushTensionLinkUndo(tension.earlier_id, tension.later_id, "dismiss");
       } catch (error) {
-        toast(error.message || "Couldn't dismiss this pair.", true);
+        toast(error.message || voiceLine("failed", { what: "dismiss this pair" }), true);
         return;
       }
       tensionResolve(card, "Dismissed: this pair won't come back.");
@@ -514,8 +492,7 @@
     card.classList.add("is-resolved");
     const actions = card.querySelector(".tension-actions");
     if (!actions) return;
-    const done = document.createElement("p");
-    done.className = "muted tension-done";
+    const done = inboxEl("p", "muted tension-done");
     done.setAttribute("role", "status");
     done.textContent = message;
     actions.replaceWith(done);
@@ -531,21 +508,17 @@
   }
 
   function tensionSide(label, when, excerpt, entryId) {
-    const side = document.createElement("div");
-    side.className = "tension-side";
-    const head = document.createElement("p");
-    head.className = "tension-side-head";
+    const side = inboxEl("div", "tension-side");
+    const head = inboxEl("p", "tension-side-head");
     const tag = document.createElement("strong");
     tag.textContent = label;
     head.appendChild(tag);
     if (when) {
-      const date = document.createElement("span");
-      date.className = "muted tension-date";
+      const date = inboxEl("span", "muted tension-date");
       date.textContent = when;
       head.appendChild(date);
     }
-    const text = document.createElement("p");
-    text.className = "tension-excerpt";
+    const text = inboxEl("p", "tension-excerpt");
     text.textContent = excerpt || "(empty note)";
     const open = document.createElement("button");
     open.type = "button";
@@ -646,7 +619,7 @@
         if (!done) return;
         if (done.filled) toast(`Filled in ${nounCount(done.filled, "reason")}.`);
         else if (done.result.ai_unavailable) toast("Atlas isn't running, so no reasons could be guessed.", "info");
-        else toast("Couldn't guess a reason for any of these.");
+        else toast(voiceLine("failed", { what: "guess a reason for any of these" }));
       },
     };
     //: **Every sure one at once** (WORLD_CLASS_PLAN, Placed 2026-09-09 item
@@ -670,8 +643,7 @@
       },
     );
     const more = kebabMenu([suggestReasons, backfill], "More ways to fill in reasons");
-    const tools = document.createElement("div");
-    tools.className = "row inbox-tools";
+    const tools = inboxEl("div", "row inbox-tools");
     //: When "Explain your existing links" last ran (INBOX 438); settings.js.
     tools.append(linkSure, more, status);
     list.appendChild(tools);
@@ -685,32 +657,26 @@
   }
 
   function inboxLinkRow(s, rowReasons) {
-    const row = document.createElement("div");
-    row.className = "link-suggestion";
+    const row = inboxEl("div", "link-suggestion");
     //: **The two notes are the subject** (INBOX 1329): each name one line, cut
     //: with an ellipsis and whole in its title, an arrow between, where two
     //: wrapping chips of raw file names were the row's tallest thing (measured
     //: at 390: 210px a row, one row in view). Side by side on a wide sheet,
     //: stacked on a phone (inbox-lazy.css).
-    const text = document.createElement("span");
-    text.className = "link-suggestion-text link-suggestion-pair";
+    const text = inboxEl("span", "link-suggestion-text link-suggestion-pair");
     //: The note's name, not its markdown (`notePreviewText`, as everywhere).
     const name = (raw) => notePreviewText(raw || "").replace(/\s+/g, " ").trim() || "Untitled note";
     const noteName = (raw) => {
-      const made = document.createElement("span");
-      made.className = "link-suggestion-note";
-      const icon = document.createElement("i");
-      icon.className = "ph ph-note";
+      const made = inboxEl("span", "link-suggestion-note");
+      const icon = inboxEl("i", "ph ph-note");
       icon.setAttribute("aria-hidden", "true");
-      const words = document.createElement("span");
-      words.className = "link-suggestion-name";
+      const words = inboxEl("span", "link-suggestion-name");
       words.textContent = name(raw);
       made.title = name(raw);
       made.append(icon, words);
       return made;
     };
-    const join = document.createElement("i");
-    join.className = "ph ph-arrows-left-right link-suggestion-join";
+    const join = inboxEl("i", "ph ph-arrows-left-right link-suggestion-join");
     join.setAttribute("aria-hidden", "true");
     text.append(noteName(s.source_preview), join, noteName(s.target_preview));
     text.setAttribute("role", "group");
@@ -780,8 +746,7 @@
     //: How sure and why, one line under the names: the bar and its number,
     //: then the reasons, cut to the line, each with its own percentage in the
     //: title (`inboxWhy` spells them out under the other kinds' rows).
-    const facts = document.createElement("p");
-    facts.className = "muted link-suggestion-facts";
+    const facts = inboxEl("p", "muted link-suggestion-facts");
     facts.appendChild(inboxScoreBar(s.confidence ?? s.similarity));
     if (sigs.length) {
       const why = inboxWhy(sigs);
@@ -792,8 +757,7 @@
     //: The row's actions, one cell: the reason as a quiet word, Link with its
     //: edge (the row's one accept), the dismiss a quiet cross.
     dismiss.classList.add("quiet");
-    const actions = document.createElement("span");
-    actions.className = "link-suggestion-actions";
+    const actions = inboxEl("span", "link-suggestion-actions");
     actions.append(addReason, link, dismiss);
     row.append(text, facts, actions, reason);
     return row;
@@ -802,8 +766,7 @@
   // A line for code that builds its control at runtime. Painted at once from
   // what is already known, and a refresh is asked for.
   function jobLineEl(kind) {
-    const el = document.createElement("p");
-    el.className = "status job-line";
+    const el = inboxEl("p", "status job-line");
     el.setAttribute("role", "status");
     el.dataset.jobLine = kind;
     paintJobLine(el);

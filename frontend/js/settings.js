@@ -220,7 +220,11 @@ function showSettingsSection(name) {
   }
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
-  if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  if (name === "learned") {
+    //: The scheduled-check switch (L584) is filled by `renderAutonomousSettings` too, for Learned opened first.
+    if (prefsCache) $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
+    ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  }
   if (name === "tasks") {
     renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
@@ -1273,7 +1277,7 @@ async function clearLogs() {
     const cleared = await api("/logs", { method: "DELETE" }).then(
       () => true,
       (error) => {
-        toast(error.message || "Couldn't clear the server log.", true);
+        toast(error.message || voiceLine("failed", { what: "clear the server log" }), true);
         return false;
       }
     );
@@ -1299,7 +1303,7 @@ async function downloadSupportBundle() {
     await saveFile("tessellate-support-bundle.zip", await response.blob());
     toast("Support bundle saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the support bundle.", true);
+    toast(error.message || voiceLine("failed", { what: "build the support bundle" }), true);
   } finally {
     setBusy(button, false);
   }

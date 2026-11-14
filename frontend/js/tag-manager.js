@@ -559,7 +559,7 @@ async function drawTurnedDown(box) {
         await apiJson("/tags/turned-down/offer-again", { method: "POST", body: JSON.stringify({ tag }) });
         toast(`${tag} is suggested again.`);
       } catch (error) {
-        toast(`Couldn't offer ${tag} again: ${error.message}`, true);
+        toast(voiceLine("failed", { what: `offer ${tag} again`, why: error.message }), true);
       }
       drawTurnedDown(box);
     });

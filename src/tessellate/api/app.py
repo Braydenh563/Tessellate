@@ -860,7 +860,7 @@ def _warm_routes(app) -> None:
     router under one lock: about 0.9 s here for ~240 paths, so the browser's
     boot burst (`/models/status` among them) all waited on it, 3.9 s on the
     owner's machine. One in-process `/health` takes that cost while the lock
-    screen is still open. On the pool's thread Jobs, not the event loop; a
+    screen is showing. On the pool's thread Jobs, not the event loop; a
     failure only means the first real request pays as before. Skipped under
     pytest, where every test app would pay a second for nothing.
     """
