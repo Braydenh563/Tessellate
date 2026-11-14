@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents cold open: the Library bundle's 35 scripts are fetched as one served file, `/js/library-bundle.js` (comment-stripped, in `LAZY_MODULES.library` order, stamped and gzipped once; `ensureModule` uses it unless a file of the bundle was already fetched alone); `lazyAssetStamp` and the Tab bridge in app.js are shorter to pay for it. Measured at 1440, 7 runs each, load 8 to 9: median 1,408 and 1,252 ms before, 947 and 1,087 ms after (L-documents-83, 106 stay open: under 800 ms was not reached). Test: `tests/test_library_bundle_served.py`.
 - Section graph nodes name their paragraph class literally, so the unused-class lint sees it; three HISTORY lines quote a fence name as code so the archive link check pairs fences correctly.
 - Boot CSS back under its cap (a duplicate `height: auto` in the fullscreen graph card removed); three documents tests follow the lazy sections module, the `none` chord and the shared ink selector list.
 - Tests: the claim check's hostile-line test counts the characters handed to each regex at n and 2n instead of timing them (#222 ae427a9b took 2.76 s on hostile4 on a loaded runner; locally it is linear, 0.019, 0.023 and 0.047 s at n, 2n and 4n), and pins the list marker's pattern so it cannot backtrack over a run of tabs.
