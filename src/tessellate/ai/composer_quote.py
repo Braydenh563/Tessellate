@@ -14,7 +14,7 @@ import re
 from datetime import date
 
 from tessellate.ai import composer_done, composer_tables, composer_threads, composer_tree
-from tessellate.ai.composer_answer import _Answer, _SESSION
+from tessellate.ai.composer_answer import _Answer, _RETRY, _SESSION
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
 from tessellate.core.lazyre import lazy_compile
@@ -26,7 +26,7 @@ def _pick(question: str, salt: str, options: list[str]) -> str:
     questions."""
     session = _SESSION.get()
     digest = hashlib.sha1(f"{salt}:{question.strip().lower()}{':' + session if session else ''}".encode()).digest()
-    return options[digest[0] % len(options)]
+    return options[(digest[0] + _RETRY.get()) % len(options)]
 
 
 #: The first words a quote may have lowered after a joiner ("Separately,

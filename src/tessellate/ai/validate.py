@@ -41,6 +41,8 @@ _NUMBER_WORDS = {
     "nine": "9", "ten": "10", "eleven": "11", "twelve": "12", "twenty": "20", "thirty": "30", "hundred": "100",
 }
 _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?|\b(?:" + "|".join(_NUMBER_WORDS) + r")\b", re.I)
+#: What the person may type, said in the app's words ("remind me to call mum on Friday at 9"): an example, not a claim.
+_QUOTED_EXAMPLE = re.compile(r"“[^”]*”")
 #: A joining phrase that ends in a comma, and the case of what follows it.
 _COMMA_END = re.compile(r",\s*$")
 _SHOUT = re.compile(r"(?<!\[)!|\boops\b", re.I)
@@ -173,7 +175,7 @@ def maxims(result: dict, question: str = "", notes: list[dict] | None = None) ->
     found = _quantity_findings(parts)
     # quality: numbers only where a fact or the question put them.
     found.extend(Finding("quality", "number in the app's own words", str(part[1])[:80])
-                 for part in parts if part[0] in APP_KINDS and _values(str(part[1])))
+                 for part in parts if part[0] in APP_KINDS and _values(_QUOTED_EXAMPLE.sub("", str(part[1]))))
     # relation: every quote is a grounded sentence of a note the answer cites.
     cited = {row.get("note_id") for row in result.get("grounding") or []}
     found.extend(Finding("relation", "quote with no grounding row", str(part[1])[:80])

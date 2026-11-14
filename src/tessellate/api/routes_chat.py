@@ -1457,16 +1457,17 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     return events
 
 
+def _world_reply(req: _StreamRequest, result: dict, *, missed: bool, follow) -> str:  # noqa: ANN001
+    """"what's the capital of France" found nothing: the world, said so, not "nothing about capital". "What is this" is the open note (audit 1031 C11); a help answer is the app's own (L-chat-182)."""
+    world = missed and not follow and result.get("shape") != "help" and personal.general(req.question or "") and not composer_digest_sentences.about_this(req.question or "")
+    return personal.general_reply(_web_allowed(req), web_pref=_web_pref_on(), by_choice=req.body.answer_from == "notes" and req.ollama.is_running()) if world else ""
+
+
 def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> tuple[str, list[str]]:  # noqa: ANN001
     """The composed text and the asks that close it (`_with_next_step`)."""
     text = result["text"]
     asks: list[str] = []
-    #: "what is this" is the open note, whatever it holds (audit 1031 C11), never the world.
-    if missed and not follow and personal.general(req.question or "") and not composer_digest_sentences.about_this(req.question or ""):
-        #: "what's the capital of France": the world, not the notes, and
-        #: said so rather than "nothing in your notes about capital".
-        text = personal.general_reply(
-            _web_allowed(req), web_pref=_web_pref_on(), by_choice=req.body.answer_from == "notes" and req.ollama.is_running())
+    text = _world_reply(req, result, missed=missed, follow=follow) or text
     if missed:
         text += _search_footer(prepared, result)
     size = composer_tone.length(_resolve_mode(req.body.mode))

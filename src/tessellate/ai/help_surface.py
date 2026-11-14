@@ -1,0 +1,25 @@
+"""A what-question that names a part of the app (L-chat-182), kept out of `help_chat` (line cap)."""
+import re
+
+from tessellate.ai import help_chat
+
+#: "what is the graph tab", "what does the whiteboard do", "what's the bin for": a question about a part of the app, not
+#: a how-to, so it is not the "how do I" frame (L-chat-182: it was answered "that's general knowledge").
+_FILLER = {"the", "for", "and", "you", "can", "how", "what", "does", "this", "that", "with", "tell", "about", "work", "tabs", "page"}
+_WHAT_FRAME = re.compile(r"^\s*(?:what(?:'s| is| are| does| do| can| could)|tell me about|explain)\s+(?:the\s+|a\s+|an\s+|my\s+)?", re.I)
+
+
+def surface_word(question: str) -> str:
+    """The word of a what-question that names the app's own part ("the graph tab" is Graph;
+    "a sourdough starter" shares a keyword with Templates but not its name), or ""."""
+    topics = help_chat._matching_topics(question) if _WHAT_FRAME.match(question) else []
+    if not topics:
+        return ""
+    named = {w[:5] for w in re.findall(r"[a-z]{3,}", f"{topics[0].get('id', '')} {help_chat.topic_title(topics[0])}".lower())}
+    return next((w for w in re.findall(r"[a-z]{3,}", question.lower()) if w[:5] in named and w not in _FILLER), "")
+
+
+def asks_about_a_part(question: str, notes: list[dict]) -> bool:
+    """The question names an app part and no note mentions it: it asks about the app, not the notes."""
+    word = surface_word(question)
+    return bool(word) and not any(word in f"{n.get('title') or ''} {n.get('content') or ''}".lower() for n in notes)

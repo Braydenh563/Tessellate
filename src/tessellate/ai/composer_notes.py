@@ -172,13 +172,21 @@ def _is_label_note(content: str) -> bool:
     return len(lines) == 1 and not lines[0].startswith("#") and bool(_LABEL_NOTE.fullmatch(lines[0]))
 
 
+_BOXES = re.compile(r"\s*-\s*\[[ xX]\]\s*")
+
+
+def _unboxed(line: str) -> str:
+    """A checklist read out as items: "- [ ] email Raj - [x] pay tax" says "email Raj; pay tax" (L-chat-189)."""
+    return _BOXES.sub("; ", line).lstrip("; ") if _BOXES.search(line) else line
+
+
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
     if _is_label_note(content):
         #: Named the way every title-less note is (`composer_frame.name_of`),
         #: never "Untitled" and never its line said twice (audit 1031 C31).
         return f"- {_day(_made(note))}, [{composer_frame.name_of(note)}](#/notes/{note['id']})"
-    line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
+    line = _unboxed(re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or ""))
     title = composer_frame.link_text(note)
     #: The sentence read from a headed note starts with the heading ("Scope
     #: Blockers: none."): the link already says it.

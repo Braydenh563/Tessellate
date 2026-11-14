@@ -50,7 +50,7 @@ _WORLD_TOPIC = lazy_compile(
 PHRASES.update({
     "ood_act": "That is not something this app can do.",
     "ood_world": "Nothing in these notes answers that.",
-    "ood_closest": "The closest note I found is this one.",
+    "ood_closest": "The closest note I found is shown here.",
     "ood_capability": act_registry.capability_short(),
 })
 

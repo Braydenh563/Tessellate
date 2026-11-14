@@ -462,7 +462,21 @@ def regenerations(question: str = "What do my notes say about running?", times: 
     data = load()
     entry = next(e for e in data["questions"] if e["question"] == question)
     notes = notes_for(entry, data)
-    return [composer.compose(question, notes, today=today(data), turn=i + 1, salt="eval-again") for i in range(times)]
+    #: As the route asks (`_compose_over`): the nth Ask again is turn n + 1 with `retry` n.
+    return [composer.compose(question, notes, today=today(data), turn=i + 1, salt="eval-again", retry=i) for i in range(times)]
+
+
+def regeneration_spread(times: int = 3) -> dict:
+    """Ask again `times` times on every question: how many give that many different texts, and how far apart
+    the two closest of a question's answers are (1 minus the share of words they have in common, L-chat-191)."""
+    data = load()
+    closest, distinct = [], 0
+    for entry in data["questions"]:
+        texts = [a["text"] for a in regenerations(entry["question"], times)]
+        words = [set(re.findall(r"\w+", t.lower())) for t in texts]
+        closest.append(min(1 - len(a & b) / len(a | b) for i, a in enumerate(words) for b in words[i + 1 :]))
+        distinct += len(set(texts)) == times
+    return {"questions": len(closest), "all_different": distinct, "closest_pair_mean": round(sum(closest) / len(closest), 3)}
 
 
 def summary(rows: list[dict]) -> dict:
