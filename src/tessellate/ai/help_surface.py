@@ -12,11 +12,14 @@ _WHAT_FRAME = re.compile(r"^\s*(?:what(?:'s| is| are| does| do| can| could)|tell
 def surface_word(question: str) -> str:
     """The word of a what-question that names the app's own part ("the graph tab" is Graph;
     "a sourdough starter" shares a keyword with Templates but not its name), or ""."""
-    topics = help_chat._matching_topics(question) if _WHAT_FRAME.match(question) else []
+    framed = _WHAT_FRAME.match(question)
+    topics = help_chat._matching_topics(question) if framed else []
     if not topics:
         return ""
     named = {w[:5] for w in re.findall(r"[a-z]{3,}", f"{topics[0].get('id', '')} {help_chat.topic_title(topics[0])}".lower())}
-    return next((w for w in re.findall(r"[a-z]{3,}", question.lower()) if w[:5] in named and w not in _FILLER), "")
+    #: Only the first word after the frame names the part: "the zorblax code" is a thing in the notes, not Code files.
+    first = next((w for w in re.findall(r"[a-z]{3,}", question[framed.end():].lower()) if w not in _FILLER), "")
+    return first if first[:5] in named else ""
 
 
 def asks_about_a_part(question: str, notes: list[dict]) -> bool:

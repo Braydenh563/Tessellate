@@ -47,3 +47,11 @@ def test_a_question_about_the_world_is_still_the_worlds(ask, notes_only):
 def test_a_note_that_names_the_thing_keeps_the_question(ask):
     #: "starter" is a keyword of the Templates help; the notes have a starter, and the name of the topic is not in the question.
     assert "Templates" not in ask("what does a sourdough starter do", True)
+
+
+def test_a_part_word_after_an_unknown_word_is_not_the_apps_part() -> None:
+    #: "the zorblax code" is a thing in the notes, not the Code files help: the part must be the first word after the frame.
+    from tessellate.ai import help_surface
+
+    assert help_surface.surface_word("what is the zorblax code") == ""
+    assert help_surface.surface_word("what is the graph tab") == "graph"
