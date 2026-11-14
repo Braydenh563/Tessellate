@@ -1998,3 +1998,17 @@ def test_a_hold_menu_ignores_the_click_of_the_finger_lifting() -> None:
     assert "nmb.menu?.contains(event.target)" in block
     assert 'document.removeEventListener("click", eat, true)' in block
     assert "event.stopPropagation()" in block
+
+
+def test_a_long_note_read_along_counts_a_truncated_preview_as_long() -> None:
+    """Source text: `else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);` in `nameMarkBuddyNoteOpened`.
+
+    companionreact.js: a long note's Show more gave no reading glasses. The
+    list holds a 298-character preview of a 1853-character note
+    (`content_truncated`, "long by definition" in entry-card.js), so the
+    length test never passed on a click, only through the palette jump where
+    the whole note is loaded. The flag now counts.
+    """
+    block = AV[AV.index("function nameMarkBuddyNoteOpened(id)") : AV.index("function nameMarkBuddyNoteOpen(id)")]
+    assert 'entry.content_truncated || String(entry.content || "").length > 1200' in block
+    assert 'nameMarkBuddyReact("read", row)' in block

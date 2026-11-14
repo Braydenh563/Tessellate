@@ -9560,7 +9560,9 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: A list row holds only a preview of a long note (`content_truncated`, entry-card.js: "long by definition"), so its
+    //: own text is never past 1200 characters when its Show more is pressed: the flag counts as long.
+    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
