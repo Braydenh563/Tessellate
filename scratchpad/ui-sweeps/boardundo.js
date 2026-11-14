@@ -73,7 +73,7 @@ function check(label, ok, detail) {
 
   await roundTrip("Delete key on a topic with a branch", async () => {
     const a = await id("Alpha");
-    await page.evaluate(async (x) => { await wbDeleteObjectRef((wbState.objects || []).find((o) => o.id === x)); }, a);
+    await page.evaluate(async (x) => { await wbDeleteObject((wbState.objects || []).find((o) => o.id === x)); }, a);
   });
   await roundTrip("fold a branch", async () => { const a = await id("Alpha"); await page.evaluate((x) => wbMapToggleCollapse(x), a); });
   await roundTrip("theme field", () => page.evaluate(() => wbMapSetTheme({ edge_dashed: true })), { redoCheck: false });
@@ -145,7 +145,7 @@ function check(label, ok, detail) {
   }, board.id);
   const boardBefore = await boardState();
   check("the board has two boxes and a link", /One->Two/.test(boardBefore), boardBefore);
-  await page.evaluate(async () => { await wbDeleteObjectRef(wbState.objects.find((o) => o.data.content === "One")); });
+  await page.evaluate(async () => { await wbDeleteObject(wbState.objects.find((o) => o.data.content === "One")); });
   await undo();
   check("a deleted box comes back with its link", (await boardState()) === boardBefore, await boardState());
   await redo();
