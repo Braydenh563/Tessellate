@@ -8229,6 +8229,31 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
   //: per-frame edge work on any branch drag, and changes nothing about what
   //: is drawn: both ends move by the same delta.
   const claimed = new Set();
+  //: **A link is redrawn once a move, and a link inside the move only
+  //: travels** (L-ui-modernisation-61). A link is listed under both its ends,
+  //: so inside a branch it was drawn twice a frame; and one whose two ends
+  //: both move keeps its shape, so its drawn `d` is compiled once here and
+  //: offset per frame (`origin.rigidLinks`) rather than drawn again from its
+  //: topics. Traced on a 200-topic branch with 300 links: 49ms of each move.
+  //: `linked` stays whole for the callers that are not a translation (a
+  //: frame's turn); `movedLinks` is what a move redraws.
+  const moving = new Set(keys);
+  const claimedLinks = new Set();
+  const rigidLinks = [];
+  const rigidLink = (pair) => {
+    const p = pair.parsed;
+    const ends = [`${p.sourceKind || "node"}:${p.sourceId}`, `${p.targetKind || "node"}:${p.targetId}`];
+    if (!ends.every((end) => moving.has(end))) return false;
+    const el = document.querySelector(`.sketch-group[data-id="${pair.sketch.id}"]`);
+    const path = el?.querySelector(".sketch-path");
+    const hit = el?.querySelector(".sketch-hitbox");
+    if (!path || el.querySelector(":scope > .wb-link-label")) return false;
+    const at = wbTransformPathD.translator(path.getAttribute("d"));
+    const hitAt = hit ? wbTransformPathD.translator(hit.getAttribute("d")) : null;
+    if (!at || (hit && !hitAt)) return false;
+    rigidLinks.push({ pair, path, hit, at, hitAt });
+    return true;
+  };
   for (const key of keys) {
     if (key === excludeKey) continue; // the dragged item's own handler already moves it
     const sep = key.indexOf(":");
@@ -8260,9 +8285,17 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
           mapEdges.push(edge);
         }
       }
+      const linked = wbLinkedSketchesFor(id, kind, linkIndex);
+      const movedLinks = [];
+      for (const pair of linked) {
+        if (claimedLinks.has(pair.sketch.id)) continue;
+        claimedLinks.add(pair.sketch.id);
+        if (!rigidLink(pair)) movedLinks.push(pair);
+      }
       origin.set(key, {
         kind, id, item, x: item.x, y: item.y,
-        linked: wbLinkedSketchesFor(id, kind, linkIndex),
+        linked,
+        movedLinks,
         mapEdges,
         //: Resolved here when the board is a map (one pass for the whole
         //: capture, above) and on the first frame that needs it otherwise;
@@ -8275,6 +8308,7 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
   //: The selection's box as the gesture found it, for the bar above it to
   //: ride along on (`wbBulkBarBounds`).
   if (keys === wbMultiSelection && wbMultiSelection.size > 1) origin.boundsAtStart = wbSelectionBounds();
+  origin.rigidLinks = rigidLinks;
   return origin;
 }
 
@@ -8395,10 +8429,20 @@ function wbApplyBulkMove(origin, dx, dy) {
     // See this entry's own comment in `wbCaptureBulkMoveOrigin`: without
     // this, only the card the pointer is actually on kept its edges live
     // during a multi-select drag.
-    wbUpdateLinkedSketches(entry.id, entry.linked);
+    wbUpdateLinkedSketches(entry.id, entry.movedLinks || entry.linked);
     // Same for a map's tree edges, which are not sketches at all: a marquee
     // drag of half a branch left every one of its curves behind.
     if (entry.mapEdges?.length) wbUpdateMapEdges(entry.mapEdges);
+  }
+  //: The links that travel with the move (`wbCaptureBulkMoveOrigin`). One a
+  //: render replaced mid-gesture is drawn from its ends instead.
+  for (const rigid of origin.rigidLinks || []) {
+    if (!rigid.path.isConnected) {
+      wbUpdateLinkedSketches(null, [rigid.pair]);
+      continue;
+    }
+    rigid.path.setAttribute("d", rigid.at(dx, dy));
+    rigid.hit?.setAttribute("d", rigid.hitAt(dx, dy));
   }
 }
 
@@ -20238,6 +20282,42 @@ function wbTransformPathD(d, { dx = 0, dy = 0, sx = 1, sy = 1, rotate = 0, ancho
   }
   return out.join(" ");
 }
+
+//: **A path compiled once for a rigid move** (L-ui-modernisation-61): a
+//: function of `(dx, dy)` giving the same path that far away, or null for a
+//: path that is not a list of absolute points (a relative command, an arc or
+//: a one-axis `H`/`V` would need the pen tracked, which is
+//: `wbTransformPathD`'s job). A branch drag offsets every link inside the
+//: branch on every frame; tokenising each one per frame, or drawing its
+//: ribbon again from its two ends, was most of the frame.
+wbTransformPathD.translator = function (d) {
+  const tokens = typeof d === "string" ? d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[A-Za-z]/g) : null;
+  if (!tokens) return null;
+  const heads = [];
+  const nums = [];
+  const ys = [];
+  let text = "";
+  let y = false;
+  for (const tok of tokens) {
+    if (/[A-Za-z]/.test(tok)) {
+      if (!"MLCQSTZ".includes(tok)) return null;
+      text = (text === " " ? "" : text) + tok;
+      y = false;
+      continue;
+    }
+    heads.push(text);
+    nums.push(parseFloat(tok));
+    ys.push(y);
+    y = !y;
+    text = " ";
+  }
+  const tail = text === " " ? "" : text;
+  return (dx, dy) => {
+    let out = "";
+    for (let i = 0; i < nums.length; i++) out += heads[i] + Math.round((nums[i] + (ys[i] ? dy : dx)) * 100) / 100;
+    return out + tail;
+  };
+};
 
 //: The bounding box of a path this app drew, walked the same way a real SVG
 //: renderer would (tracking the pen's current point through relative

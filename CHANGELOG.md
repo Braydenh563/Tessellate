@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Maps: a link with both ends inside a dragged branch is translated, not re-routed, each move, and a link shared by two moved topics is updated once (L-ui-modernisation-61).
 - Maps: the zoom level holds its width, so a zoom past 100% no longer restyles the whole board (192ms and 120ms frames at 200 topics; L-ui-modernisation-61). mapperf.js waits for the board bundle instead of sleeping.
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.

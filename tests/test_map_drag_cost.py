@@ -200,3 +200,55 @@ def test_the_selection_chrome_is_found_once_per_gesture() -> None:
     assert "wbTranslateSelectionChrome(dx, dy, origin);" in _code("wbApplyBulkMove")
     # The bar's own editing check asks the board, not the whole page.
     assert 'container.querySelector(".wb-object.wb-text-editing")' in _code("wbUpdateSelectionBar")
+
+
+def _translator_js() -> str:
+    """The text of `wbTransformPathD.translator`, from its assignment to its closing `};`."""
+    match = re.search(r"^wbTransformPathD\.translator = function \(d\) \{.*?^\};", WB, re.M | re.S)
+    assert match, "wbTransformPathD.translator is gone"
+    return match.group(0)
+
+
+def test_a_link_inside_the_moved_branch_is_translated_not_recomputed() -> None:
+    """Source text: wbCaptureBulkMoveOrigin and wbApplyBulkMove (L-ui-modernisation-61).
+
+    Traced on a 200-topic branch drag carrying 300 cross-links (mapperf.js):
+    every link was recomputed from its two topics on every move, and from
+    both of them, since a link is listed under each end: the ribbon outline,
+    `wbMapRibbonD` and `wbMapSmoothThrough`, was 49ms of each move against 33ms
+    for the tree lines, and the linked drag's worst frame was 383ms to the
+    plain drag's 117ms. A link with both ends in the moved set keeps its shape
+    and only travels, so its drawn `d` is compiled once at the pick-up and
+    offset per frame; any other link is claimed by one end only.
+    """
+    capture = _code("wbCaptureBulkMoveOrigin")
+    assert "claimedLinks.has(pair.sketch.id)" in capture and "claimedLinks.add(pair.sketch.id)" in capture
+    assert "wbTransformPathD.translator(" in capture and "origin.rigidLinks" in capture
+    apply = _code("wbApplyBulkMove")
+    assert "entry.movedLinks" in apply and "origin.rigidLinks" in apply
+    # The turn about a frame is not a translation: it keeps every link live.
+    assert "entry.linked" in _code("wbApplyFrameTurn")
+
+
+def test_the_translator_offsets_every_point_and_refuses_what_is_not_a_point_list(tmp_path) -> None:
+    """Source text: wbTransformPathD.translator, run in node against three paths."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("needs node")
+    script = tmp_path / "t.js"
+    script.write_text(
+        "function wbTransformPathD() {}\n" + _translator_js() + "\n"
+        "const t = wbTransformPathD.translator;\n"
+        "const ribbon = t('M10 20C1.5 2.5 3 4 -5 6L7 8.25Z');\n"
+        "console.log(JSON.stringify([ribbon(0, 0), ribbon(100, -10), t('M0 0A5 5 0 0 1 10 10'), t('M0 0h10'), t(null)]));\n",
+        encoding="utf-8",
+    )
+    out = json.loads(subprocess.run(["node", str(script)], capture_output=True, text=True, check=True).stdout)
+    assert out[0] == "M10 20C1.5 2.5 3 4 -5 6L7 8.25Z"
+    assert out[1] == "M110 10C101.5 -7.5 103 -6 95 -4L107 -1.75Z"
+    assert out[2:] == [None, None, None]
