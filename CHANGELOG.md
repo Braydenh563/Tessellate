@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, Live view: a link chip's underline thickens (2px) while Ctrl or Meta is held, the key that opens it; cleared on key release, window blur and a hidden tab.
 - Documents: a Today button in the Library Documents dock opens today's document, or starts it from the Daily template (no new endpoint; one press twice leaves one document).
 - Documents: the block-reference, suggestion and code-format pieces each export one object, so no name is declared in two scripts (test_s66; global names 7,406 to 7,379).
 - Documents: an opt-in Vim keymap for the code and document editors (Vim keys in the ... menu, off by default and remembered): `@replit/codemirror-vim` 6.4.0 (MIT) is its own lazy file, `vim.min.js` (124,464 bytes, 39,576 gzipped), fetched only when the setting is on and built against the editor bundle's own `CM6`, so `codemirror.min.js` is unchanged; the bar shows NORMAL, INSERT or VISUAL. Measured in the app: Escape then `dd` deletes a line with it on and types `dd` with it off (L-documents-41).

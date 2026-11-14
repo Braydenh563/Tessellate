@@ -1055,7 +1055,8 @@ TAIL_TOPICS.extend(
                 "as it does, and suggests its words as you type; typing the name "
                 "after the opening fence lists the languages. The block's corner "
                 "shows its title (title=\"fit.py\" on the fence) or language; press it "
-                "to pick another language."
+                "to pick another language. A link opens on Ctrl+click (Command+click on a Mac); "
+                "while you hold that key its underline thickens, to say a click now follows it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

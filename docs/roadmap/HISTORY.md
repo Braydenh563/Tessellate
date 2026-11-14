@@ -55745,3 +55745,21 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ## Moved from the plans, 2026-11-14 (documents Today)
 
 From DOCUMENTS_PLAN section 14. The plan's earlier line was: "Not built, deliberately: a Today button in the documents dock. The template gallery is two clicks from the same place, the Timeline's day view is the surface that knows about days, and a third door onto one page is what this decision exists to refuse." The hub reopened it as L-documents-64 and it is built: the Library Documents dock's Today button (`library-docs-today`, `libraryDocsNewMount`) finds the document whose title is the template's own `docTemplateFill(daily).title` through `GET /documents?q=` and opens it, or makes it with `createDocument(daily)`. No endpoint, no second streak; the day is one page in one place, whichever door opened it. Measured (t646-today.js, fresh data dir): two presses left one document; at 390 px the button's right edge is 297.6 in a 328 px dock.
+
+## Moved from the plans, 2026-11-14 (link modifier cue)
+
+From DOCUMENTS_PLAN section 15 item 3 (L-documents-66). The plan's earlier text, which left the cue unbuilt on purpose:
+
+> **3. The `Mod+click` affordance: the note is out of date, and nothing is
+> built.** It says "there is no affordance saying so beyond the tooltip".
+> Measured, a link chip in Live carries `cursor: pointer` and
+> `title="Ctrl+click to open https://example.com"`, which is a pointer inviting
+> the press, the chord named, and the destination shown before it is followed.
+> That is what Obsidian offers for the same gesture. The one thing that would
+> improve it is the underline-while-the-modifier-is-held that VS Code draws, and
+> it costs a window-level key listener with a reset on blur for a hover hint
+> that is already available by resting on the chip. Left unbuilt on purpose; a
+> row here rather than a fourth session rediscovering the tooltip.
+> Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-66 (held-modifier underline).
+
+Built: the live plugin (`docLivePlugin`, documents-cm.js) holds one handler on window keydown, keyup and blur and on document visibilitychange, removed in `destroy`; it toggles `doc-mod-held` on the editor root, and the theme thickens `.cm-md-link` to 2px (offset 2px). The chip was already underlined, so the cue is thickness. Measured (t646-mod.js, 1440x900): idle thickness auto, Ctrl down 2px, released auto, held then blur auto.
