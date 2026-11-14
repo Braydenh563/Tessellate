@@ -1757,8 +1757,8 @@ function ensureModule(name) {
     //: The Library bundle's scripts as one served file (api/app.py `library_bundle`), unless one was already fetched alone (the list tab, a lightbox): that file must not run twice.
     const js = name === "library" && files.filter((f, i) => i && f.endsWith(".js"));
     const one = js && !js.some((f) => lazyFileLoads.has(f)) && "/js/library-bundle.js";
-    const wanted = one ? files.filter((f) => !js.includes(f)).concat(one) : files;
-    lazyModuleLoads.set(name, Promise.all(wanted.map(lazyScript)).then((r) => r.every(Boolean) || (one && js.map((f) => lazyFileLoads.delete(f)), !lazyModuleLoads.delete(name))));
+    //: A file that threw at load stopped the rest of the bundle: documents-warm.js's `#f` (the first file of the bundle, kept out of this boot script for its gzip cap) loads the files after the faulty one apart.
+    lazyModuleLoads.set(name, Promise.all((one ? files.filter((f) => !js.includes(f)).concat(one) : files).map(lazyScript)).then((r) => one && lazyFileLoads.get("#f")?.(r) || r).then((r) => r.every(Boolean) || !lazyModuleLoads.delete(name)));
     if (one) js.map((f) => lazyFileLoads.set(f, lazyFileLoads.get(one)));
   }
   return lazyModuleLoads.get(name);

@@ -58,3 +58,41 @@ def test_the_page_carries_the_bundles_own_stamp(client):
     page = client.get("/").text
     listed = re.search(r'name="asset-stamps" content="([^"]*)"', page).group(1)
     assert re.search(r"/js/library-bundle\.js=" + re.escape(__version__) + r"-[0-9a-f]{10}", listed)
+
+
+def test_a_file_that_throws_does_not_stop_the_files_after_it(tmp_path, monkeypatch):
+    """L-documents-119: a classic script that throws stops the rest of that
+    script, so the bundle records the last file that finished (on app.js's
+    `lazyFileLoads` map) and `ensureModule` loads the files after the faulty
+    one apart. Here the real bundle builder serves three files, the second
+    throws, and node runs the result the way a page would."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node is not installed")
+    from tessellate.api import app as api_app
+
+    (tmp_path / "js").mkdir()
+    for name, body in (("a", "ran.push('a');"), ("b", "throw new Error('b');"), ("c", "ran.push('c');")):
+        (tmp_path / "js" / f"{name}.js").write_text(body + "\n", encoding="utf-8")
+    monkeypatch.setattr(api_app, "FRONTEND_DIR", tmp_path)
+    monkeypatch.setattr(api_app, "library_bundle_files", lambda: ["/js/a.js", "/js/b.js", "/js/c.js"])
+    monkeypatch.setattr(api_app, "_library_bundle_cache", {})
+    body = api_app.library_bundle()[1].decode()
+    script = (
+        "const vm = require('vm');"
+        "const lazyFileLoads = new Map(); const ran = [];"
+        f"const code = {json.dumps(body)};"
+        "try { vm.runInNewContext(code, {lazyFileLoads, ran}); } catch (e) {}"
+        "console.log(JSON.stringify({at: lazyFileLoads.get('#at'), ran}));"
+    )
+    out = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+    # File 1 (b) threw: the marker counts one file finished, and c never ran.
+    assert out == {"at": 1, "ran": ["a"]}
+    # The page resumes after the faulty file: the count plus 1 is c.
+    assert '"#at") + 1 || 0' in (APP_JS.parent / "documents-warm.js").read_text(encoding="utf-8")

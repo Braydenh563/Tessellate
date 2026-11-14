@@ -13,6 +13,21 @@
 // answered with that request, once, and an answer nobody took within 4 s is
 // dropped. The wrapper keeps `api`'s own properties (`epoch`, `retries`,
 // `upload`), and a write never matches.
+//
+// **A file that throws at load** stops the rest of the bundle's one script
+// (L-documents-119). The route appends `lazyFileLoads.set("#at", n)` after each
+// file (n files have finished), and `ensureModule` calls the `#f` set here
+// with the load results once the script is in: the files after the
+// faulty one (it ran in part; running it again would repeat its effects) are
+// loaded one by one. Nothing ran when `#at` is unset (a syntax error), so all
+// are. When the bundle itself failed, the files it aliased are forgotten so a retry
+// fetches them. Here, not in app.js, for the boot gzip cap.
+lazyFileLoads.set("#f", (r) => {
+  const js = LAZY_MODULES.library.filter((f, i) => i && f.endsWith(".js"));
+  return r.every(Boolean)
+    ? Promise.all(js.slice(lazyFileLoads.get("#at") + 1 || 0).map((f) => (lazyFileLoads.delete(f), lazyScript(f))))
+    : (js.map((f) => lazyFileLoads.delete(f)), r);
+});
 (() => {
   if (document.getElementById("tab-documents")?.classList.contains("hidden") !== false) return;
   const warm = {};

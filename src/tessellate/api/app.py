@@ -281,9 +281,13 @@ def library_bundle() -> tuple[str, bytes, bytes]:
     key = "|".join(stamps)
     if _library_bundle_cache.get("key") != key:
         parts = []
-        for name in names:
+        for i, name in enumerate(names):
             path = FRONTEND_DIR / name.lstrip("/")
             parts.append(asset_strip.strip_for_path(name.lstrip("/"), path.read_bytes()))
+            #: A file that throws stops the rest of this one script (L-documents-119).
+            #: This marker records, on app.js's `lazyFileLoads` map, the last file that
+            #: finished, so `ensureModule` can load the files after the faulty one apart.
+            parts.append(f'\nlazyFileLoads.set("#at", {i + 1});'.encode())
         body = b"\n".join(parts) + b"\n"
         digest = hashlib.sha256(key.encode()).hexdigest()[:10]
         _library_bundle_cache.update(

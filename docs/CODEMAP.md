@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11020, test files 2852, tests 22958, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8978, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11020, test files 2852, tests 22959, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
-## Frontend functions (8980)
+## Frontend functions (8978)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5331,13 +5331,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ensureDocEditor` | frontend/js/documents-view.js:608 |
 | `mountDocEditor` | frontend/js/documents-view.js:578 |
 | `noteSurfaceGutter` | frontend/js/documents-view.js:900 |
-
-### frontend/js/documents-warm.js (2)
-
-| Name | File:line |
-|---|---|
-| `ask` | frontend/js/documents-warm.js:21 |
-| `preload` | frontend/js/documents-warm.js:28 |
 
 ### frontend/js/documents-wiring.js (22)
 
@@ -14449,7 +14442,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1849 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1853 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:1970 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
@@ -14598,7 +14591,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:997 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1005 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1812 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1816 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:402 |
@@ -14622,9 +14615,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:156 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1635 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1030 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1710 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1724 |
-| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1744 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1714 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1728 |
+| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1748 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:364 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1267 |
@@ -14708,7 +14701,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1791 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1795 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2354 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:1945 |
@@ -14729,7 +14722,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1319 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1368 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:684 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1774 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1778 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:517 |
 | `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:638 |
@@ -14873,7 +14866,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sync/reset` | POST | `sync_reset` | src/tessellate/api/routes_sync.py:166 |
 | `/sync/segment` | GET | `sync_segment` | src/tessellate/api/routes_sync.py:46 |
 | `/sync/status` | GET | `sync_status` | src/tessellate/api/routes_sync.py:90 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1784 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1788 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1437 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -21926,50 +21919,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1460 |
-| `RequestPulse` | src/tessellate/api/app.py:1321 |
-| `RevalidatedStatic` | src/tessellate/api/app.py:395 |
-| `SpaceGuard` | src/tessellate/api/app.py:1248 |
-| `_UnversionedStatic` | src/tessellate/api/app.py:386 |
-| `_add_instance_routes` | src/tessellate/api/app.py:1707 |
-| `_add_middleware` | src/tessellate/api/app.py:1560 |
-| `_add_system_routes` | src/tessellate/api/app.py:1770 |
-| `_backup_if_due` | src/tessellate/api/app.py:846 |
-| `_check_data_folder` | src/tessellate/api/app.py:832 |
-| `_check_notebook_file` | src/tessellate/api/app.py:824 |
-| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:761 |
-| `_code_for_status` | src/tessellate/api/app.py:993 |
-| `_compact_event_log` | src/tessellate/api/app.py:679 |
-| `_compact_step` | src/tessellate/api/app.py:725 |
-| `_content_length` | src/tessellate/api/app.py:1300 |
-| `_has_password` | src/tessellate/api/app.py:1435 |
-| `_include_routers` | src/tessellate/api/app.py:1697 |
-| `_install_pending_extras` | src/tessellate/api/app.py:733 |
-| `_purge_expired_bin_entries` | src/tessellate/api/app.py:655 |
-| `_purge_step` | src/tessellate/api/app.py:721 |
-| `_read_note_dates` | src/tessellate/api/app.py:803 |
-| `_register_client_error_handlers` | src/tessellate/api/app.py:1004 |
-| `_register_error_handlers` | src/tessellate/api/app.py:1177 |
-| `_register_server_error_handlers` | src/tessellate/api/app.py:1065 |
-| `_seed_companion_milestone` | src/tessellate/api/app.py:811 |
-| `_stamp_for` | src/tessellate/api/app.py:300 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:948 |
-| `_start_searxng_if_asked` | src/tessellate/api/app.py:871 |
-| `_start_services` | src/tessellate/api/app.py:1358 |
-| `_startup_maintenance` | src/tessellate/api/app.py:772 |
-| `_static_gzip` | src/tessellate/api/app.py:594 |
-| `_warm_routes` | src/tessellate/api/app.py:903 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1449 |
+| `Layer` | src/tessellate/api/app.py:1464 |
+| `RequestPulse` | src/tessellate/api/app.py:1325 |
+| `RevalidatedStatic` | src/tessellate/api/app.py:399 |
+| `SpaceGuard` | src/tessellate/api/app.py:1252 |
+| `_UnversionedStatic` | src/tessellate/api/app.py:390 |
+| `_add_instance_routes` | src/tessellate/api/app.py:1711 |
+| `_add_middleware` | src/tessellate/api/app.py:1564 |
+| `_add_system_routes` | src/tessellate/api/app.py:1774 |
+| `_backup_if_due` | src/tessellate/api/app.py:850 |
+| `_check_data_folder` | src/tessellate/api/app.py:836 |
+| `_check_notebook_file` | src/tessellate/api/app.py:828 |
+| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:765 |
+| `_code_for_status` | src/tessellate/api/app.py:997 |
+| `_compact_event_log` | src/tessellate/api/app.py:683 |
+| `_compact_step` | src/tessellate/api/app.py:729 |
+| `_content_length` | src/tessellate/api/app.py:1304 |
+| `_has_password` | src/tessellate/api/app.py:1439 |
+| `_include_routers` | src/tessellate/api/app.py:1701 |
+| `_install_pending_extras` | src/tessellate/api/app.py:737 |
+| `_purge_expired_bin_entries` | src/tessellate/api/app.py:659 |
+| `_purge_step` | src/tessellate/api/app.py:725 |
+| `_read_note_dates` | src/tessellate/api/app.py:807 |
+| `_register_client_error_handlers` | src/tessellate/api/app.py:1008 |
+| `_register_error_handlers` | src/tessellate/api/app.py:1181 |
+| `_register_server_error_handlers` | src/tessellate/api/app.py:1069 |
+| `_seed_companion_milestone` | src/tessellate/api/app.py:815 |
+| `_stamp_for` | src/tessellate/api/app.py:304 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:952 |
+| `_start_searxng_if_asked` | src/tessellate/api/app.py:875 |
+| `_start_services` | src/tessellate/api/app.py:1362 |
+| `_startup_maintenance` | src/tessellate/api/app.py:776 |
+| `_static_gzip` | src/tessellate/api/app.py:598 |
+| `_warm_routes` | src/tessellate/api/app.py:907 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1453 |
 | `asset_hash` | src/tessellate/api/app.py:237 |
-| `asset_stamps` | src/tessellate/api/app.py:305 |
-| `clear_static_cache` | src/tessellate/api/app.py:635 |
-| `create_app` | src/tessellate/api/app.py:1885 |
+| `asset_stamps` | src/tessellate/api/app.py:309 |
+| `clear_static_cache` | src/tessellate/api/app.py:639 |
+| `create_app` | src/tessellate/api/app.py:1889 |
 | `library_bundle` | src/tessellate/api/app.py:277 |
 | `library_bundle_files` | src/tessellate/api/app.py:269 |
-| `out_of_space_body` | src/tessellate/api/app.py:1218 |
+| `out_of_space_body` | src/tessellate/api/app.py:1222 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:204 |
-| `served_index_html` | src/tessellate/api/app.py:351 |
-| `served_offline_html` | src/tessellate/api/app.py:335 |
+| `served_index_html` | src/tessellate/api/app.py:355 |
+| `served_offline_html` | src/tessellate/api/app.py:339 |
 
 ### src/tessellate/api/asset_strip.py (24)
 
@@ -29148,7 +29141,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22958)
+## Tests (22959)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30671,7 +30664,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_board_counts.py | 2 |
 | tests/test_library_boards.py | 5 |
 | tests/test_library_boards_ticks.py | 3 |
-| tests/test_library_bundle_served.py | 3 |
+| tests/test_library_bundle_served.py | 4 |
 | tests/test_library_caption_echo.py | 3 |
 | tests/test_library_doc_page.py | 5 |
 | tests/test_library_docs_import.py | 5 |
