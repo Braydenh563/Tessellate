@@ -169,5 +169,69 @@
     }
   }
 
-  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, ENDS };
+  //: Pure (node-tested): the rows of an export narrowed to a selection. `rows` are `wbExportRows` rows (links carry
+  //: `link: true` and their data as JSON in `payload.data`). A connector stays when each end is joined to a kept item,
+  //: hangs on a kept connector, or is a free end, and at least one end is joined or hangs; a chain of connectors on
+  //: connectors is settled by passing over the rows until nothing changes.
+  function keptRows(rows) {
+    const keys = new Set(rows.filter((r) => !r.link).map((r) => `${r.kind}:${r.id}`));
+    const links = rows.filter((r) => r.link).map((r) => ({ row: r, data: JSON.parse(r.payload.data) }));
+    const kept = new Set();
+    for (let pass = 0; pass <= MAX_DEPTH; pass += 1) {
+      let grew = false;
+      for (const { row, data } of links) {
+        if (kept.has(row.id)) continue;
+        let joined = false;
+        const ok = ENDS.every((end) => {
+          if (data[`${end}Id`] != null) {
+            joined = true;
+            return keys.has(`${data[`${end}Kind`] || "node"}:${data[`${end}Id`]}`);
+          }
+          const edge = edgeOf(data, end);
+          if (edge) {
+            joined = true;
+            return kept.has(edge.id);
+          }
+          return Boolean(data[`${end}Point`]);
+        });
+        if (ok && joined) {
+          kept.add(row.id);
+          grew = true;
+        }
+      }
+      if (!grew) break;
+    }
+    return rows.filter((r) => !r.link || kept.has(r.id));
+  }
+
+  //: Pure (node-tested): a connector's data as an import places it, or null when an end cannot be rejoined yet.
+  //: `remap` maps `kind:oldId` to the new id; a connector made by this import is put there as `sketch:oldId`, so one
+  //: that hangs on it finds it. Free ends and the last points move with the paste by `(dx, dy)`.
+  function place(data, remap, dx, dy) {
+    const out = { ...data };
+    let joined = false;
+    for (const end of ENDS) {
+      if (out[`${end}Id`] != null) {
+        const id = remap.get(`${out[`${end}Kind`] || "node"}:${out[`${end}Id`]}`);
+        if (id == null) return null;
+        out[`${end}Id`] = id;
+        joined = true;
+        continue;
+      }
+      const edge = edgeOf(out, end);
+      if (edge) {
+        const id = remap.get(`sketch:${edge.id}`);
+        if (id == null) return null;
+        out[`${end}Edge`] = { id, t: edge.t };
+        joined = true;
+      } else if (!out[`${end}Point`]) return null;
+      const at = out[`${end}Point`];
+      if (at) out[`${end}Point`] = { x: at.x + dx, y: at.y + dy };
+    }
+    if (!joined) return null;
+    if (Array.isArray(out.points)) out.points = out.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+    return out;
+  }
+
+  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, keptRows, place, ENDS };
 })();

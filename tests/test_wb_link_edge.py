@@ -177,3 +177,56 @@ def test_it_is_wired_into_the_board():
     assert board.count("wbFmtState.linkEdge?.hitAt(") == 3, "the port drag, the end handle and the Arrow tool"
     assert "/js/whiteboard-link-edge.js" in frontend_text("lazy-entries.js")
     assert "innerHTML" not in frontend_text("whiteboard-link-edge.js")
+
+
+def test_draw_io_gets_the_resolved_point_as_a_free_end_and_reads_it_back():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    source = frontend_text("whiteboard-interchange.js")
+    pure = source[: source.index("//: The rows inside an SVG")]
+    body = """
+        add(1, { sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 100, y: 0 } });
+        add(2, { sourcePoint: { x: 50, y: 80 }, targetPoint: { x: 0, y: 0 }, targetEdge: { id: 1, t: 0.5 } });
+        await wbSaveSketchProps(sketches[0], { targetPoint: { x: 200, y: 40 } });
+        const made = wbBoardToDrawio({ nodes: [], objects: [], sketches }, { title: 'T', box: () => null });
+        return made.xml;
+    """
+    script = PRELUDE + frontend_text("whiteboard-link-edge.js") + pure + f"\n(async () => {{ {body} }})().then((v) => console.log(JSON.stringify(v)));"
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    xml = json.loads(out.stdout)
+    # The second connector's end was at t = 0.5 along a line now running (0,0) to (200,40): (100, 20).
+    assert 'as="targetPoint"' in xml and '<mxPoint x="100" y="20" as="targetPoint"/>' in xml, xml
+    assert "targetEdge" not in xml and "sourceEdge" not in xml
+
+
+def test_a_selection_keeps_connectors_on_kept_connectors_and_places_them_after_them():
+    got = _run(
+        """
+        const row = (id, data) => ({ kind: 'sketch', id, link: true, payload: { data: JSON.stringify({ type: 'link-straight', ...data }) } });
+        const shape = { kind: 'sketch', id: 5, link: false, payload: {} };
+        const rows = [
+          shape,
+          row(1, { sourceKind: 'sketch', sourceId: 5, targetPoint: { x: 100, y: 0 } }),
+          row(2, { sourcePoint: { x: 1, y: 1 }, targetPoint: { x: 2, y: 2 }, targetEdge: { id: 1, t: 0.5 } }),
+          row(3, { sourcePoint: { x: 1, y: 1 }, targetPoint: { x: 2, y: 2 }, targetEdge: { id: 99, t: 0.5 } }),
+          row(4, { sourcePoint: { x: 1, y: 1 }, targetPoint: { x: 2, y: 2 } }),
+        ];
+        const kept = L().keptRows(rows).map((r) => r.id);
+        const remap = new Map([['sketch:5', 50], ['sketch:1', 10]]);
+        const placed = L().place(JSON.parse(rows[2].payload.data), remap, 10, 20);
+        const early = L().place(JSON.parse(rows[2].payload.data), new Map([['sketch:5', 50]]), 10, 20);
+        return { kept, placed, early };
+        """
+    )
+    assert got["kept"] == [5, 1, 2], "a connector on a missing connector, and a loose one, are left out"
+    assert got["placed"]["targetEdge"] == {"id": 10, "t": 0.5}
+    assert got["placed"]["targetPoint"] == {"x": 12, "y": 22} and got["placed"]["sourcePoint"] == {"x": 11, "y": 21}
+    assert got["early"] is None, "waits for the connector it hangs on"
+
+
+def test_the_interchange_goes_through_the_edge_rules():
+    source = frontend_text("whiteboard-interchange.js")
+    assert "wbFmtState.linkEdge.keptRows(rows)" in source and "wbFmtState.linkEdge.place(" in source
+    assert "?.pinned(stored)" in source, "the draw.io writer reads each connector through the pin"
