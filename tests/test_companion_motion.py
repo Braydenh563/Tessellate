@@ -1980,3 +1980,35 @@ def test_a_board_object_or_map_node_is_a_perch_1629() -> None:
     assert "g.dx = g.fx * box.width - NMB_W / 2" in js
     # The chooser never walks to one by itself: no tab's order lists it.
     assert '"node"' not in js[js.index("const NAME_MARK_BUDDY_ORDER") : js.index("const NAME_MARK_BUDDY_ORDER") + 900]
+
+
+def test_a_hold_menu_ignores_the_click_of_the_finger_lifting() -> None:
+    """Source text: `face.addEventListener("pointerdown", ... hold = setTimeout(`.
+
+    A long press opens the menu at the finger (`nameMarkBuddyMenu(buddy, at)`),
+    so a row can sit under it, and a touch that is lifted can still end in a
+    click. companionmenu.js at 1280x800 and 1.5 scale: the menu opened at
+    [8, 205, 257, 739] over a finger at (187, 221), and the release's click
+    (`click BUTTON.menu-item 187,221`) closed it at once. The hold takes that
+    one click off the menu, for a short while after the lift.
+    """
+    start = AV.index("hold = setTimeout(() => {")
+    block = AV[start : AV.index("}, 550);", start)]
+    assert 'document.addEventListener("click", eat, true)' in block
+    assert "nmb.menu?.contains(event.target)" in block
+    assert 'document.removeEventListener("click", eat, true)' in block
+    assert "event.stopPropagation()" in block
+
+
+def test_a_long_note_read_along_counts_a_truncated_preview_as_long() -> None:
+    """Source text: `else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);` in `nameMarkBuddyNoteOpened`.
+
+    companionreact.js: a long note's Show more gave no reading glasses. The
+    list holds a 298-character preview of a 1853-character note
+    (`content_truncated`, "long by definition" in entry-card.js), so the
+    length test never passed on a click, only through the palette jump where
+    the whole note is loaded. The flag now counts.
+    """
+    block = AV[AV.index("function nameMarkBuddyNoteOpened(id)") : AV.index("function nameMarkBuddyNoteOpen(id)")]
+    assert 'entry.content_truncated || String(entry.content || "").length > 1200' in block
+    assert 'nameMarkBuddyReact("read", row)' in block

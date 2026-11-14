@@ -9560,7 +9560,9 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: A list row holds only a preview of a long note (`content_truncated`, entry-card.js: "long by definition"), so its
+    //: own text is never past 1200 characters when its Show more is pressed: the flag counts as long.
+    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
@@ -11365,6 +11367,17 @@
         drag = null;
         face.dataset.dragged = "1";
         nameMarkBuddyMenu(buddy, at);
+        //: The menu opens at the finger, so a row can be under it and the lift may end in a click on it
+        //: (companionmenu.js, 1280x800 at 1.5: the menu closed itself): that one click is not a choice.
+        const eat = (event) => {
+          if (nmb.menu?.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+        };
+        document.addEventListener("click", eat, true);
+        document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 350), { once: true, capture: true });
+        setTimeout(() => document.removeEventListener("click", eat, true), 4000);
       }, 550);
     });
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
