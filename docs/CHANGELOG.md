@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: one heading indent; a pane's title sat 11px in and the group headings under it 17px (19 titles measured), the title now takes the groups' 1rem inset so both read 17px (L-world-class-84).
 - Capture: the Add to this note row stays one line from 768 to 1200px (36px tall at 1024, the five tools icon-only below 72rem); a test holds the collapse (L-world-class-82).
 - Settings: the sign-in token is stored through prefs.set; app.js has no localStorage.setItem left (the ratchet cap is gone) and only the one-time origin carry keeps raw writes (L-world-class-78).
 - Router: a pasted #/Manual or #/Statistics opens at load in either case, and the address reads lowercase, #/manual and #/statistics (L-world-class-74).

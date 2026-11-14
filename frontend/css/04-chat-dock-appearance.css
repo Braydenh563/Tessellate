@@ -1977,6 +1977,13 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   margin-bottom: 1rem;
 }
 
+/* One heading indent (L-world-class-84): a pane's title sat 11px in (the dock's
+   own 0.6rem and its border) while every group heading under it sat 17px in
+   (the group's 1rem and its border). The title takes the group's inset. */
+.settings-section > .dock {
+  padding-inline: 1rem;
+}
+
 .settings-group>h3:first-child {
   margin-top: 0;
 }
