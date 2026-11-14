@@ -1302,7 +1302,7 @@ async function wbLibExport(libraryId) {
     const named = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") || "")?.[1] || "library.memorymap-library.json";
     await saveFile(named, blob);
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "export that library" }), true);
+    toast(err.message || voiceLine("failed", { what: "export that library" }), true, { retry: () => wbLibExport(libraryId) });
   }
 }
 
