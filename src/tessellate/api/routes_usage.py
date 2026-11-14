@@ -6,7 +6,7 @@ here; Settings reads them back. Behind the sign-in like every other route.
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from tessellate.core import deps, usage
@@ -35,6 +35,14 @@ def count(body: UsageIn) -> dict:
 @router.post("/summary")
 def summary(body: KnownIn) -> dict:
     return usage.summary(deps.get_config().data_dir, body.known)
+
+
+@router.get("/offer")
+def offer(known: list[str] = Query(default_factory=list, max_length=2000)) -> dict:
+    """The one feature to try this week, or none (`usage.weekly_offer`). A GET
+    because it only notes which name it said (names, never user data), so the
+    page asks again without a body and nothing a person made is written."""
+    return {"name": usage.weekly_offer(deps.get_config().data_dir, known)}
 
 
 @router.delete("")

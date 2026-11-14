@@ -232,13 +232,7 @@ class FramesMixin:
             return "think"
         if s == "sit":
             return "lounge" if now - self.state_at >= bh.LOUNGE_AFTER else ""
-        return self._lower_moving(s)
-
-    def _lower_moving(self, s: str) -> str:
-        """The lower body on the move: a slow hover (L173) has its own longer, narrower trail; a fast one, or a walk, glides."""
-        if s == "drift" and self.gait == "float" and abs(self.vx_px) < bh.BILLOW_SPEED * WALK_SPEED * self._scale():
-            return "float"
-        return "glide" if s in ("walk", "drift") else ""
+        return bh.lower_moving(s, self.gait, abs(self.vx_px), WALK_SPEED * self._scale())
 
     def _tail_view(self, now: float, frame: str) -> tuple[int, ...] | None:
         """The layered tail's view over a stand-family or sit frame, or None (no layer: another frame, reduced motion, a

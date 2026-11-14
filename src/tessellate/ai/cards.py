@@ -282,6 +282,7 @@ PROJECTIONS: dict[str, tuple[_Where, ...]] = {
     # strictly more than a bare chip.
     "tag_note": (),
     "pin_note": (),
+    "archive_note": (),
     "link_notes": (),
     "unlink_notes": (),
     "delete_note": (),

@@ -334,7 +334,7 @@
     try {
       recordings = (await apiJson("/recordings?limit=500")).recordings || [];
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "read your recordings" }), true);
+      toast(error.message || voiceLine("failed", "read your recordings"), true);
       return null;
     }
     if (!recordings.length) {
@@ -377,7 +377,7 @@
     try {
       segments = (await apiJson(`/recordings/${id}/transcript`)).segments || [];
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "read that transcript" }), true);
+      toast(error.message || voiceLine("failed", "read that transcript"), true);
       return;
     }
     const lines = segments.map((seg) => String(seg.text || "").replace(/\s+/g, " ").trim()).filter(Boolean);

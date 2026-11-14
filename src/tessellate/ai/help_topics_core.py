@@ -125,6 +125,7 @@ HELP_TOPICS: list[dict] = [
             "still run, read straight off your notes with no AI and labelled as such: Summarise my week, "
             "Daily review, Catch up on a topic, Find loose ends, Auto-tag my notes, Link related notes, "
             "Tidy suggestions, Notebook health check and Find notes worth combining. "
+            "Four of the others look back over your notebook: Prepare for a meeting, Monthly look back, Archive stale notes (it archives only the notes you pick) and Everything about a person. "
             "The others are greyed and marked (needs a model) in the Skills menu: they are unavailable while no model is connected."
         ),
         "badge": {"label": "Skills", "section": "skills"},
@@ -221,7 +222,7 @@ HELP_TOPICS: list[dict] = [
             "Most opened this month and Filings to check. The Digest widget is your day "
             "with no AI: what is due, open questions, what changed since "
             "yesterday and topics gone quiet, each line a count or a quote that "
-            "opens its note. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
+            "opens its note. With a model running and Save power off, it rewords the counted lines once the page has shown, and only where every number and link stays the same; quotes are never reworded. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
             "layout and Widgets to show, hide and rearrange them; the layout is "
             "remembered per user."
         ),
@@ -749,7 +750,9 @@ HELP_TOPICS: list[dict] = [
             "Archiving keeps a note, chat or document but gets it out of your "
             "everyday lists: different from the bin, since nothing archived "
             "is ever auto-cleared or at risk of being deleted. The action is "
-            "in each item's own menu (next to Delete, not grouped with it); "
+            "in each item's own menu (next to Delete, not grouped with it), and "
+            "for notes Chat does it from a sentence, such as archive the old trip notes "
+            "(the card counts them first; Undo brings them back); "
             "everything archived is still reachable from the Library's "
             "Archived filter, where Unarchive brings it straight back."
         ),

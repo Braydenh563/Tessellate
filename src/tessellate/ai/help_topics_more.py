@@ -657,7 +657,8 @@ MORE_TOPICS: list[dict] = [
             "records, with times. Autonomous background AI is here "
             "too. Battery-efficient "
             "mode pauses background AI, heavy graph work and the moving "
-            "artwork. Quit Tessellate stops the app and its server properly, so "
+            "artwork, and chat answers from your notes with no model, "
+            "saying so in one line. Quit Tessellate stops the app and its server properly, so "
             "the next start finds its port free."
         ),
         "badge": {"label": "Background tasks", "section": "tasks"},
@@ -1254,8 +1255,10 @@ MORE_TOPICS: list[dict] = [
             "file in your data folder: names and dates, never what you typed, "
             "and never sent anywhere (there is no telemetry). It lists your most "
             "used tabs and commands and the ones not used in 90 days, and the "
-            "command palette lists the commands you use most first. Clear the "
-            "counts forgets every one."
+            "command palette lists the commands you use most first. Once a week, "
+            "after the ledger is 90 days old, the dashboard's day lines add one "
+            "unused feature with Try it and not now. Clear the counts forgets "
+            "every one."
         ),
         "badge": {"label": "What you use", "section": "general", "target": "usage-box"},
     },

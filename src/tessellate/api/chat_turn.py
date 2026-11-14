@@ -152,10 +152,35 @@ class _NoModel:
         return getattr(self._real, name)
 
 
+#: Said once under an answer composed because Save power is on (CHAT_PLAN decision 61).
+SAVE_POWER_LINE = "Save power is on, so this came from your notes with no model."
+
+
+def save_power() -> bool:
+    """Save power (decision 61): the Battery-efficient mode setting. While it is on
+    a turn answers from the engine alone and says so, so no model is woken."""
+    try:
+        return bool(deps.get_config().get_preference("battery_efficient_mode", False))
+    except Exception:  # noqa: BLE001  # no readable setting is the model's way
+        return False
+
+
+def save_power_events(t) -> Iterator[str]:  # noqa: ANN001
+    """The one line a Save power turn ends with: said once, and kept in the turn's text."""
+    if save_power():
+        t.answer_text += "\n\n" + SAVE_POWER_LINE
+        yield _event({"type": "answer", "delta": "\n\n" + SAVE_POWER_LINE})
+
+
+def model_may_run() -> bool:
+    """Whether a chat-side feature may call the model now: one runs and Save power is off."""
+    return not save_power() and deps.get_ollama().is_running()
+
+
 def one_turn_provider(body: ChatRequest):  # noqa: ANN201
-    """The provider this turn talks to: the real one, or none for `composer_only`."""
+    """The provider this turn talks to: the real one, or none for `composer_only` or Save power."""
     real = deps.get_ollama()
-    return _NoModel(real) if body.composer_only else real
+    return _NoModel(real) if body.composer_only or save_power() else real
 
 
 def one_turn_models(body: ChatRequest, feature: str):  # noqa: ANN201
@@ -170,7 +195,7 @@ def _composes_offline(body: ChatRequest) -> bool:
     ("No model is no reason to answer a hello with an error": a hello was
     getting "this comes from your notes alone" over a welcome). A turn with
     pictures, or with a model running, goes the model's way."""
-    if body.image_media_ids or (deps.get_ollama().is_running() and not body.composer_only):
+    if body.image_media_ids or (model_may_run() and not body.composer_only):
         return False
     kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.media_file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
@@ -507,6 +532,17 @@ def model_chips(session: Session, t: "_Turn", grounding: list[dict]) -> list[dic
 
 def _uncut(title: str) -> str:
     return title.rstrip("…. ").lower()
+
+
+def _find_act_facts(req: _StreamRequest, prepared: dict, planned) -> list[dict]:
+    """A find said as an act ("find my gym notes", L-chat-239): its rows are facts the model words under
+    the figure check, as a list is; no model, or the Ask box, keeps the act's own path."""
+    from tessellate.ai import acts
+
+    if prepared["intent"] != intent.ACT or req.body.notes_only:
+        return []
+    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
+    return list(planned(req, parsed)) if parsed and parsed["intent"] == "find" else []
 
 
 def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:

@@ -769,6 +769,13 @@ FLUTTER_FOR = 4.0
 BILLOW_SPEED = 1.2  # times the walking speed
 
 
+def lower_moving(state: str, gait: str, speed: float, walk: float) -> str:
+    """The lower body on the move: a slow hover (L173) has its own longer, narrower trail; a fast one, or a walk, glides."""
+    if state == "drift" and gait == "float" and speed < BILLOW_SPEED * walk:
+        return "float"
+    return "glide" if state in ("walk", "drift") else ""
+
+
 #: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle
 #: frames carry the tail's beat baked in at 6 a second, so the tail is drawn on its own, every display frame, over the body.
 #: The poses are the in-app rig's (`ATLAS_TAIL_ACTS`): [curl rad root to tip (+ round and down), amp rad of the wave at the

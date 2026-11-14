@@ -324,7 +324,7 @@
         if (asked) return meetingRemind(entryId, item, button, redraw, asked);
         return;
       }
-      toast(error.message || "Couldn't make that reminder.", true);
+      toast(error.message || voiceLine("failed", "make that reminder"), true);
     }
   }
 
@@ -337,7 +337,7 @@
     try {
       data = await apiJson(`/entries/${entryId}/meeting`);
     } catch (error) {
-      toast(error.message || "Couldn't open that meeting.", true);
+      toast(error.message || voiceLine("failed", "open that meeting"), true);
       return;
     }
     const entry = (typeof allEntries !== "undefined" ? allEntries : []).find((e) => e.id === entryId);
@@ -503,7 +503,7 @@
         redraw();
       } catch (error) {
         add.disabled = false;
-        toast(error.message || "Couldn't add that.", true);
+        toast(error.message || voiceLine("failed", "add that"), true);
       }
     }, false);
     add.classList.add("accent");
@@ -1363,7 +1363,7 @@
     try {
       await meetingTakeFinish();
     } catch (error) {
-      toast(`Couldn't finish the discarded recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, true);
+      toast(voiceLine("failed", `finish the discarded recording (${error.message || "the request failed"}). It is still in Library, Recordings`), true);
       return;
     }
     await meetingTakeBin(id);
@@ -1377,7 +1377,7 @@
     try {
       await apiJson(`/recordings/${id}`, { method: "DELETE" });
     } catch (error) {
-      toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+      toastAction(voiceLine("failed", "discard the recording", `${error.message || "the request failed"}. It is still in Library, Recordings.`), "Try again", () => meetingTakeBin(id), { sticky: true });
       return;
     }
     pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
@@ -1581,7 +1581,7 @@
         made++;
         ids.push(row.id);
       } catch (error) {
-        toast(error.message || `Couldn't keep ${file.name}.`, true);
+        toast(error.message || voiceLine("failed", `keep ${file.name}`), true);
       }
     }
     if (made) {
@@ -1985,7 +1985,7 @@
     try {
       await saveRecordingMarks(li, after);
     } catch (error) {
-      return toast(error.message || "Couldn't add that mark.", true);
+      return toast(error.message || voiceLine("failed", "add that mark"), true);
     }
     pushUndo("Added a mark", () => saveRecordingMarks(li, before), () => saveRecordingMarks(li, after));
   }
@@ -2007,7 +2007,7 @@
     try {
       await saveRecordingMarks(li, after);
     } catch (error) {
-      return toast(error.message || "Couldn't remove that mark.", true);
+      return toast(error.message || voiceLine("failed", "remove that mark"), true);
     }
     pushUndo("Removed a mark", () => saveRecordingMarks(li, before), () => saveRecordingMarks(li, after));
     toastAction(`Removed the mark at ${meetingClockText(mark.at)}.`, "Undo", () => saveRecordingMarks(li, before));
@@ -2180,7 +2180,7 @@
           watchRecordingTranscription(rec, {});
           recordingCardsRun(rec.id, started.transcription);
         } catch (error) {
-          toast(error.message || "Couldn't label the speakers.", true);
+          toast(error.message || voiceLine("failed", "label the speakers"), true);
         }
       }));
       //: Row 11: offered only with a model on; with none, no label is shown.
@@ -2218,7 +2218,7 @@
       await put(from, to.trim());
       pushUndo("Renamed a speaker", () => put(to.trim() || from, from), () => put(from, to.trim()));
     } catch (error) {
-      toast(error.message || "Couldn't rename that speaker.", true);
+      toast(error.message || voiceLine("failed", "rename that speaker"), true);
     }
   }
 
@@ -2228,7 +2228,7 @@
       await renderRecordings();
       toast(body.speakers ? "Named the speakers; open Transcript to see them." : "The local AI could not tell the speakers apart.", "info");
     } catch (error) {
-      toast(error.message || "Couldn't name the speakers.", true);
+      toast(error.message || voiceLine("failed", "name the speakers"), true);
     }
   }
 
@@ -2247,7 +2247,7 @@
     try {
       await redo();
     } catch (error) {
-      toast(error.message || "Couldn't delete that recording.", true);
+      toast(error.message || voiceLine("failed", "delete that recording"), true);
       return;
     }
     pushUndo("Deleted a recording", undo, redo);
@@ -2272,7 +2272,7 @@
       });
       toast("Transcribing in the background; you will be told when it is done.", "info");
     } catch (error) {
-      toast(error.message || "Couldn't transcribe that recording.", true);
+      toast(error.message || voiceLine("failed", "transcribe that recording"), true);
     }
   }
 
@@ -2300,7 +2300,7 @@
       const body = await apiJson(`/recordings/${id}/transcribe/stop`, { method: "POST" });
       if (!body.stopped) toast(body.detail, "info");
     } catch (error) {
-      toast(error.message || "Couldn't stop that.", true);
+      toast(error.message || voiceLine("failed", "stop that"), true);
     }
   }
 
@@ -2337,7 +2337,7 @@
       } else if (run.state === "done") toast(`“${name}” sounds like one voice, so nothing was labelled.`, "info");
       else {
         recordNotification({ kind: "error", title: `Couldn't label the speakers in “${name}”`, detail: run.error, key: `voices:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
-        toastAction(`Couldn't label the speakers in “${name}”: ${run.error}`, "Open", () => openRecordings(rec.id));
+        toastAction(voiceLine("failed", `label the speakers in “${name}”`, run.error), "Open", () => openRecordings(rec.id));
       }
     } else if (run.state === "done") {
       await hooks.done?.(run);
@@ -2348,7 +2348,7 @@
     } else if (run.state === "failed") {
       hooks.ended?.(run);
       recordNotification({ kind: "error", title: `Couldn't transcribe “${name}”`, detail: run.error, key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
-      if (!here) toastAction(`Couldn't transcribe “${name}”: ${run.error}`, "Open", () => openRecordings(rec.id));
+      if (!here) toastAction(voiceLine("failed", `transcribe “${name}”`, run.error), "Open", () => openRecordings(rec.id));
     } else {
       hooks.ended?.(run);
       if (!here) toast(`Stopped transcribing “${name}”.`, "info");

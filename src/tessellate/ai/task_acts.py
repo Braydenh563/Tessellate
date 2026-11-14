@@ -404,7 +404,8 @@ def read_snooze(text: str, resolve) -> dict | None:  # noqa: ANN001
     verb = found.group("verb").lower()
     if (verb == "move" and not said) or not (verb == "snooze" or said or due is not None):
         return None
-    read = _task_found("snooze", about, said)
+    #: "reschedule" and "move" name a new time for the reminder, said as a move from the old one (L-chat-47); "snooze" and the rest keep the snooze.
+    read = _task_found("reschedule" if verb in ("reschedule", "move") else "snooze", about, said)
     return {**read, "due_at": due, "said": said_when} if read else None
 
 
@@ -686,7 +687,12 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
     when = said_when(due)
     #: "for 2 hours, at 2pm", never "to in 2 hours" (audit 1029 C47).
     label = f"Snooze “{item['text']}” " + (f"for {when[3:]}" if when.startswith("in ") else f"to {when}")
+    if parsed["intent"] == "reschedule":
+        #: The old time is said, and is the undo's (the step's `was`).
+        label = f"Move “{item['text']}” from {said_when(item['due'].replace(tzinfo=None)).removeprefix('on ')} to {when.removeprefix('on ')}"
     arguments = {"reminder_id": item["id"], "due_at": due.isoformat(), "was": item["due"].isoformat()}
+    if parsed["intent"] == "reschedule":
+        arguments["moved"] = True
     return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}])}
 
 
@@ -725,8 +731,8 @@ def run_step(session: Session, name: str, args: dict) -> dict:
         rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=due, restore=True), session)
     except HTTPException as exc:
         return {"error": str(exc.detail)}
-    back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"]} if args.get("was") else None
-    return {"label": f"Snoozed reminder {_named(session, reminder_id)}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
+    back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"], **({"moved": True} if args.get("moved") else {})} if args.get("was") else None
+    return {"label": f"{'Moved' if args.get('moved') else 'Snoozed'} reminder {_named(session, reminder_id)}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
 
 
 def undo_step(name: str, args: dict) -> dict | None:

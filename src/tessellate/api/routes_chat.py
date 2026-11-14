@@ -82,7 +82,8 @@ from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGE
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _capability_answer, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _cited_bodies, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, one_turn_models, one_turn_provider, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.api import chat_turn
+from tessellate.api.chat_turn import _find_act_facts, _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, one_turn_models, one_turn_provider, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -155,10 +156,8 @@ def chat_followups(body: FollowupBody) -> list[str]:
     turn is on screen and simply renders nothing if it comes back empty, which
     it does on every failure path, including the AI not running at all.
     """
-    if model_gate.busy():
-        # The person is already asking the next thing: a second model call
-        # now would put their question behind suggestions they can no longer
-        # use (audit ARCH-16).
+    if model_gate.busy() or chat_turn.save_power():
+        # Save power wakes no model for a suggestion; a second call while the person asks the next thing would queue their question behind it (ARCH-16).
         return []
     return followups.suggest_followups(
         body.question,
@@ -206,14 +205,14 @@ def _worked_out(question: str):
     from tessellate.ai import utilities
 
     kind = utilities.kind_of(question)
-    if kind == "weather" and (deps.get_ollama().is_running() or utilities.web_on()):
+    if kind == "weather" and (chat_turn.model_may_run() or utilities.web_on()):
         #: "The weather is not something this app knows" is the answer only with
         #: no model and no web; with either, the turn is a general question and
         #: goes to them (the owner, 2026-10-27: a weather follow-up came back
         #: from the composer with a model up and Web on).
         return intent.NOTES, None
     worked = None
-    if kind not in ("translate", "generate") or not deps.get_ollama().is_running():
+    if kind not in ("translate", "generate") or not chat_turn.model_may_run():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
@@ -1824,15 +1823,6 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 
-def _find_act_facts(req: _StreamRequest, prepared: dict) -> list[dict]:
-    """A find said as an act ("find my gym notes", L-chat-239): its rows are facts the model words under
-    the figure check, as a list is; no model, or the Ask box, keeps the act's own path."""
-    if prepared["intent"] != intent.ACT or req.body.notes_only:
-        return []
-    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
-    return list(_act_planned_events(req, parsed)) if parsed and parsed["intent"] == "find" else []
-
-
 def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     """A read tool's answer (decision 59) is the whole notebook's, so the
     notes retrieval found are not its sources. Read with a model up too: a
@@ -1845,7 +1835,7 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     ("list my work notes") with a model up to say it: that is facts too."""
     reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
     if prepared["stats"] is None and reads and not req.skill:
-        prepared["tool_read"] = _tool_read_events(req, prepared["notes"]) or _find_act_facts(req, prepared)
+        prepared["tool_read"] = _tool_read_events(req, prepared["notes"]) or _find_act_facts(req, prepared, _act_planned_events)
         if not prepared["tool_read"] and t.ollama_running and not t.composed and prepared["intent"] != intent.ACT:
             #: A figure or a tick the notes settle (a sum, a day, "did I"):
             #: the engine's own, handed to the model as facts too, so the
@@ -2125,6 +2115,7 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
     if notice is not None:
         yield _event(notice)
     yield from _relay_events(req, prepared, t, events)
+    yield from chat_turn.save_power_events(t)
     yield from _settle_turn(req, prepared, t)
 
 

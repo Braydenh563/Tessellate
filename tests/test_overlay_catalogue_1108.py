@@ -10,7 +10,7 @@ from tests._cat_node import run
 
 
 def test_the_loader_returns_every_entry() -> None:
-    assert len(catalogue.entries()) == 323  # intent moved: E3 and E5 added entries, P7 added react.note_milestone, L-chat-7 react.writing_stretch
+    assert len(catalogue.entries()) == 324  # intent moved: E3 and E5 added entries, P7 added react.note_milestone, L-chat-7 react.writing_stretch, L173 lower.float
     assert catalogue.load()["moods"]
 
 

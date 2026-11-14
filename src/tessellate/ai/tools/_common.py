@@ -117,6 +117,11 @@ class ToolSpec:
     #: this, and the flag exists rather than a name check so the loop reads
     #: as "why" instead of "which" (§33).
     ends_turn: bool = False
+    #: Offered only to a skill that names it in its `tools`, never to a plain
+    #: chat turn. The look-back tools exist to back four skills, and a schema
+    #: every turn pays for is a cost a tool no one asks for by name cannot earn
+    #: (the prompt budget in tests/test_prompt_budget.py).
+    skill_only: bool = False
 
 
 # --- context budget -------------------------------------------------------------

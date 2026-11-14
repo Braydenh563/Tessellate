@@ -351,6 +351,17 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     amount, unit, tail = (found.group(1), found.group(2), found.group(3)) if found.group(1) else (found.group(4), found.group(5), found.group(6))
     return amount, unit, not (tail or "from").startswith("from")
 
+_AGE_OF = lazy_compile(r"^how (?:old|long ago) (?:is|was) (?:the date |the day )?(\S.*\b\d{4})$", re.I)
+
+
+def age_question(text: str) -> str | None:
+    """The dated phrase of "how old is 3 March 1990" or "how long ago was
+    1 May 2020", else None. The frame is read here, the one reader of
+    date words, so `utilities` holds no pattern with "ago" in it."""
+    found = _AGE_OF.match(text)
+    return found.group(1) if found else None
+
+
 #: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
 #: months and weekdays, "21st", "3/11", "due". A cheap test before the
 #: recogniser runs on it (notes are read by the hundred).

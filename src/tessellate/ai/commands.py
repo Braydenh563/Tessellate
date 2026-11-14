@@ -6,8 +6,8 @@ The grammar is `verb object [qualifier] [when]`, read by rules the way
 `ai/when.py` reads a time. The verbs (`VERBS`): remind, tag, untag, file
 (into a category), rename, pin, unpin, link, unlink, delete (always
 confirmed), create (a note, a meeting, a document, a mind map), add (to a
-note), summarise, find, open. No archive (decision 42: archiving stays a
-UI action). Three stages, each testable alone:
+note), summarise, find, open. Archive and unarchive are read as a filing
+(L-chat-46, the owner's call of 2026-11-14 over decision 42). Three stages, each testable alone:
 
 - `parse(text, now)`: the `Command` (verb, object, when, confirm) from the
   words alone, or None. No database, no model. `read` gives the same as the
@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, anchor_acts, find_topic, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
+from tessellate.ai import address, anchor_acts, find_topic, library_acts, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
 from tessellate.ai import act_registry, act_steps, recognise
 from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
@@ -49,10 +49,10 @@ VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rena
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "delete_document": "delete", "delete_skill": "delete", "board_card": "add", "make_map": "create", "remember": "add", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "set_theme": "change", "summarise": "summarise", "find": "find", "similar": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "reschedule": "snooze", "archive": "file", "unarchive": "file", "tag_many": "tag", "make_board": "create", "set_name": "rename", "set_theme": "change", "summarise": "summarise", "find": "find", "similar": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"}) | surface_acts.INTENTS
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "reschedule", "set_name"}) | surface_acts.INTENTS | library_acts.INTENTS
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "similar", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -74,7 +74,7 @@ def __getattr__(name: str) -> str:
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
+     "pin_note", "archive_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
      "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference"}
 )
 
@@ -1333,7 +1333,7 @@ def _slipped(tidy: str, now: datetime, locale: str | None) -> dict | None:
 #: Acts named by a noun the broad acts would swallow on a slip: "delete the
 #: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";
 #: "find noes similar to" is similar notes, "make a mid map" a mind map.
-_NARROW = {"delete": {"delete_skill", "delete_document"}, "find": {"similar"}, None: {"make_map", "similar", "board_card", "set_theme"}}
+_NARROW = {"delete": {"delete_skill", "delete_document"}, "find": {"similar"}, None: {"make_map", "make_board", "similar", "board_card", "set_theme"}}
 
 
 def _narrower(tidy: str, found: dict | None, now: datetime, locale: str | None) -> dict | None:
@@ -1384,9 +1384,6 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     binned = _TO_THE_BIN.match(" ".join(command.split()))
     if binned:
         command = f"delete {binned.group(1)}"
-    if re.match(r"(?i)archive\b", command):
-        #: Decision 42: archiving stays a UI action; no act archives.
-        return None
     found = _every_act(command, now, locale) or _read_folded(command, question, polite, urgent, now, locale)
     lead = next((w for w in _CASUAL if command.lower().startswith(w)), None)
     if found is None and lead:
@@ -1417,7 +1414,7 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), lambda t: surface_acts.read(t, _one_target), anchor_acts.read, task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), lambda t: library_acts.read(t, _one_target), lambda t: surface_acts.read(t, _one_target), anchor_acts.read, task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _similar, _summarise, _navigate, _find):
         found = reader(command)
@@ -1716,7 +1713,7 @@ def _plan_task(session: Session, parsed: dict) -> dict:
     title = lambda note: note_title(note.content, size=48)  # noqa: E731
     if intent == "cancel":
         return task_acts.plan_cancel(session, parsed, _card, title)
-    if intent == "snooze":
+    if intent in ("snooze", "reschedule"):
         from tessellate.core import deps
         from tessellate.core.config import user_now
 
@@ -1917,7 +1914,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
             return into_note
     if intent == "reminder":
         return _plan_reminder(session, parsed, note_ids)
-    if intent in ("complete", "uncomplete", "cancel", "snooze"):
+    if intent in ("complete", "uncomplete", "cancel", "snooze", "reschedule"):
         return _plan_task(session, parsed)
     if intent == "new_note":
         return _plan_new_note(session, parsed)
@@ -1940,11 +1937,13 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
     raise ValueError(intent)
 
 
-_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS | surface_acts.INTENTS
+_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS | surface_acts.INTENTS | library_acts.INTENTS
 
 
 def _plan_object(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """The acts on a kind of thing (a tag, a category, a note's text): `object_acts` and `parity_acts`."""
+    if parsed["intent"] in library_acts.INTENTS:
+        return library_acts.plan(session, parsed, note_ids, _parity_helpers())
     if parsed["intent"] in surface_acts.INTENTS:
         return surface_acts.plan(session, parsed, note_ids, _parity_helpers())
     if parsed["intent"] in parity_acts.INTENTS:
@@ -1962,7 +1961,7 @@ def _now_for_plan() -> datetime:
 def _parity_helpers() -> dict:
     """What `parity_acts` borrows: the card, the Confirm line, the note helpers and the time words."""
     return {"card": _card, "confirm": _confirm, "item": _item, "note_title": note_title, "summarise_done": summarise_done, "clip": _clip, "today": lambda: _now_for_plan().date(),
-            "resolve_one": _resolve_one, "split_allowed": _split_allowed, "when_words": lambda due, now: reminder_when(due, now, False)}
+            "resolve_one": _resolve_one, "split_allowed": _split_allowed, "attached": _attached, "words": _content_words, "when_words": lambda due, now: reminder_when(due, now, False)}
 
 
 def _voice() -> str:
@@ -2403,6 +2402,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened
     summary = summarise_done([str(r.get("label") or n.replace("_", " ")) for n, _a, r in done], failed, say)
+    summary = library_acts.with_readbacks(session, summary, done)
     out = {
         "ok": bool(done),
         "summary": summary,

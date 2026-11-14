@@ -343,7 +343,7 @@ async function undoSkillRun(span, button, onDone) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify(body) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", "read what would be undone"), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -369,7 +369,7 @@ async function undoSkillRun(span, button, onDone) {
     onDone?.();
     await loadEntries().catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't undo that run.", true);
+    toast(error.message || voiceLine("failed", "undo that run"), true);
   }
 }
 

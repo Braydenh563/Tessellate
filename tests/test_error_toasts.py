@@ -304,12 +304,12 @@ FAULTS = {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
-        'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
-        'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
-        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
-        'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
-        'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
+        'voiceLine("failed", "save the move", "the item went back where it was")': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+        'voiceLine("failed", "undo that")': 'undo threw an exception',
+        'voiceLine("failed", "redo that")': 'redo threw an exception',
+        'voiceLine("failed", "delete that")': 'the delete request failed (it offers Try again)',
+        'voiceLine("failed", "read that file")': 'reading the chosen file threw',
+        'voiceLine("failed", "add that note to the board", why)': 'creating the node on the server failed',
     },
 }
 
@@ -373,10 +373,26 @@ def _calls(src: str):
     return out
 
 
+#: A failure said through the app's voice (decision 55, `voiceLine("failed", ...)`)
+#: is read as the sentence it makes, so FAULTS and EXPECTED keep naming the words.
+_VOICED = re.compile(r'voiceLine\("failed", (["`])(.*?)\1(?:, (.+?))?\)')
+
+
+def _said(text: str) -> str:
+    def plain(m):
+        if m.group(3):
+            return f"`Couldn't {m.group(2)}: ${{{m.group(3)}}}`"
+        return f"{m.group(1)}Couldn't {m.group(2)}.{m.group(1)}"
+
+    return _VOICED.sub(plain, text)
+
+
 def _all_calls():
     for path in sorted(JS.glob("*.js")):
         for line, args in _calls(path.read_text(encoding="utf-8")):
-            yield path.name, line, args
+            known = set(FAULTS.get(path.name, {})) | set(EXPECTED.get(path.name, ()))
+            #: Only a sentence the tables already name is read back; a voiced failure they never listed stays as written.
+            yield path.name, line, [_said(a) if _said(a) in known else a for a in args]
 
 
 def _flag(args):
