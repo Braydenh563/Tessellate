@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
 - Documents plan: the plan-file open cell is 0, every item a LEDGER row (L-documents-79 added for the Brief 60 frame measurement), pinned by tests/test_documents_plan_recount.py.
 - Documents: a failed look-up for today's document says so instead of starting a second copy, and a JSON schema that cannot be read says the keys were not checked (CI cap on silent empty loads).
