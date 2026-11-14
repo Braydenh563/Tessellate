@@ -146,6 +146,7 @@ def _date_card(paragraph: str, now: datetime) -> dict | None:
     try:
         mentions = timewords.find(paragraph, now)
     except Exception:  # noqa: BLE001
+        logger.debug("_date_card: fell back", exc_info=True)
         return None
     if not mentions:
         return None

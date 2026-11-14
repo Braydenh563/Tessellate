@@ -734,6 +734,7 @@ class Provider:
         try:
             stored = _sampling_overrides_getter()
         except Exception:  # noqa: BLE001  # settings must never break a request
+            logging.getLogger(__name__).debug("sampling_overrides: settings must never break a request", exc_info=True)
             return {}
         return stored if isinstance(stored, dict) else {}
 

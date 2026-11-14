@@ -51,6 +51,7 @@ that a new dependency is a decision rather than a side effect.
 
 from __future__ import annotations
 
+import logging
 import re
 import zipfile
 from dataclasses import dataclass
@@ -348,6 +349,7 @@ def _docx_part(archive: zipfile.ZipFile, name: str, parse) -> object | None:
             return None
         return parse(archive.read(name))
     except Exception:  # noqa: BLE001 - an optional part never sinks the import
+        logging.getLogger(__name__).debug("_docx_part: an optional part never sinks the import", exc_info=True)
         return None
 
 

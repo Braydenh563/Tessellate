@@ -37,6 +37,7 @@ tool names handed in by the caller rather than importing the registry, because
 from __future__ import annotations
 
 import json
+import logging
 import re
 import threading
 from pathlib import Path
@@ -1820,6 +1821,7 @@ def small_class(config) -> bool:
 
         return deps.get_model_manager().chat_model_is_small() is True
     except Exception:  # noqa: BLE001  # a label is not worth failing the list over
+        logging.getLogger(__name__).debug("small_class: a label is not worth failing the list over", exc_info=True)
         return False
 
 

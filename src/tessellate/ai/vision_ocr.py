@@ -238,6 +238,7 @@ def pdf_reader_or_none():
         if not ollama.is_running():
             return None
     except Exception:  # noqa: BLE001  # an unreachable backend is not an error
+        logger.debug("pdf_reader_or_none: an unreachable backend is not an error", exc_info=True)
         return None
     model = deps.get_model_manager().resolve_ocr_model(ollama)
     if not model:
@@ -400,6 +401,7 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
     try:
         text = (reader(pdf_path) or "").strip()
     except Exception:  # noqa: BLE001  # same reasoning as vision_ocr_text's own
+        logger.debug("pdf_vision_ocr_and_store: same reasoning as vision_ocr_text's own", exc_info=True)
         taskhistory.record(
             "vision_ocr",
             f"Reading text from {original}",

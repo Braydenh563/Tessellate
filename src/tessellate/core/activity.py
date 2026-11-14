@@ -145,6 +145,7 @@ class Job:
             try:
                 self.on_stop()
             except Exception:  # noqa: BLE001  # a failed stop is a message, not a 500
+                logging.getLogger(__name__).debug("request_stop: a failed stop is a message, not a 500", exc_info=True)
                 return True, "Asked it to stop; it will end at its next step."
         return True, f"Stopping {self.label.lower()}."
 
