@@ -84,8 +84,10 @@ def test_every_note_keeps_its_place_and_fields(rows):
             continue
         before, after = row["notes"], row["brief"]["notes"]
         assert [n["id"] for n in after] == [n["id"] for n in before]
+        # Intent moved (L-chat-59): a brief with sentence ids also says so on
+        # the note (`marked`), which tells the prompt to ask for citations.
         for old, new in zip(before, after):
-            assert {k: v for k, v in new.items() if k not in ("content", "briefed")} == {k: v for k, v in old.items() if k != "content"}
+            assert {k: v for k, v in new.items() if k not in ("content", "briefed", "marked")} == {k: v for k, v in old.items() if k != "content"}
 
 
 def test_every_part_of_the_brief_is_the_notes_own_words(rows):
@@ -99,7 +101,12 @@ def test_every_part_of_the_brief_is_the_notes_own_words(rows):
             #: A checklist's items are read without their "- [x]" marks (the
             #: words are still the note's own), so compare against that too.
             unticked = _flat(re.sub(r"(?m)^\s*[-*+]\s+\[[ xX]\]\s+", "", old["content"]))
-            for part in new["content"].split(" … "):
+            # Intent moved (L-chat-59): the `[Sn]` ids are the composer's, the
+            # words after them must still be the note's own; every id is one
+            # the brief records.
+            for mark in re.findall(r"\[(S\d+)\] ", new["content"]):
+                assert row["brief"]["marks"][mark]["note_id"] == old["id"]
+            for part in re.sub(r"\[S\d+\] ", "", new["content"]).split(" … "):
                 part = part.strip(" …").removeprefix(composer.read_note(old, 0).title).strip()
                 if part:
                     assert part in flat or _flat(part) in flat or _flat(part) in unticked, (row["question"], part)

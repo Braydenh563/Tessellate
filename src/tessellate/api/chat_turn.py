@@ -18,7 +18,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
-from tessellate.ai import composer_digest_sentences
+from tessellate.ai import cite_marks, composer_digest_sentences
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder, composed_support
@@ -723,6 +723,8 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
     #: The fence markers a small model echoes back are taken out of the answer
     #: before anything reads or saves it (`fence.AnswerScrubber`).
     scrubber = fence.AnswerScrubber()
+    #: The brief's `[Sn]` sentence ids the model wrote back (L-chat-59).
+    marks = prepared["mark_scrubber"] = cite_marks.MarkScrubber(prepared.get("marks") or {})
     #: A composed turn ends with Next chips (INBOX 1729 a).
     closing = composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), t.composing or t.composed or prepared["stats"] is not None, req.history)
     try:
@@ -732,11 +734,11 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             _note_kind(t, kind, payload)
             if kind == "answer":
                 #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
-                payload = {**{k: v for k, v in payload.items() if k not in ("attached", "counts")}, "delta": scrubber.feed(payload.get("delta") or "")}
+                payload = {**{k: v for k, v in payload.items() if k not in ("attached", "counts")}, "delta": marks.feed(scrubber.feed(payload.get("delta") or ""))}
                 if not payload["delta"]:
                     continue
             else:
-                held = scrubber.flush()
+                held = marks.feed(scrubber.flush()) + marks.flush()
                 if held:
                     t.answer_text += held
                     yield _event({"type": "answer", "delta": held})
@@ -744,7 +746,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             yield _event(payload)
             if live_rows:
                 yield _event({"type": "grounding_live", "sentences": list(live_grounder.rows)})
-        held = scrubber.flush()
+        held = marks.feed(scrubber.flush()) + marks.flush()
         if held:
             t.answer_text += held
             yield _event({"type": "answer", "delta": held})

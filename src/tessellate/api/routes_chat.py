@@ -37,7 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import address, composer_retry, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
-from tessellate.ai import consent, consent_store, recognise, timetravel
+from tessellate.ai import cite_marks, consent, consent_store, recognise, timetravel
 from tessellate.ai import (
     acts,
     context,
@@ -740,6 +740,7 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
         }
     if packed and packed["shortened"]:
         prepared["model_notes"] = packed["notes"]
+        prepared["marks"] = packed["marks"]
         prepared["brief"] = {
             "before": packed["chars_before"] // context.CHARS_PER_TOKEN,
             "after": packed["chars_after"] // context.CHARS_PER_TOKEN,
@@ -2030,6 +2031,17 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
         yield _event({"type": "answer", "delta": heads})
 
 
+def _with_cited(answer: str, grounding: list[dict], scrubber, allowed: set[int]) -> list[dict]:  # noqa: ANN001
+    """The rows the model's own `[Sn]` marks name (L-chat-59), beside the
+    similarity rows, in answer order; a mark is the model's word for which
+    sentence it used, so it counts even where the words drifted."""
+    have = {(row["sentence"], row["note_id"]) for row in grounding}
+    cited = [row for row in cite_marks.rows(answer, scrubber) if row["note_id"] in allowed and (row["sentence"], row["note_id"]) not in have]
+    if not cited:
+        return grounding
+    return sorted([*grounding, *cited], key=lambda row: answer.find(row["sentence"]))
+
+
 def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     """The rows the saved turn carries and the `grounding` event for them
     (INBOX 241). A conversational turn, or one nothing could be grounded
@@ -2045,6 +2057,7 @@ def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
         )
         or []
     )
+    grounding = _with_cited(t.answer_text, grounding, prepared.get("mark_scrubber"), {n["id"] for n in candidates})
     if not grounding:
         return grounding, None
     # A touched note is not in `raw_results`, so the client has no text to

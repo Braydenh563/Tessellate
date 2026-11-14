@@ -392,7 +392,11 @@ UNTOOLED_NOTE_CHARS = 2_400
 #: Said once above the notes when the composer cut any of them
 #: (`composer.brief`), so the model knows what "…" means and that a note it
 #: sees in part has more to it.
-BRIEF_HEADER = "(Each note is cut to the parts on my question, in its own words; … marks text left out.)"
+BRIEF_HEADER = "(Notes cut to what I asked; … is a gap.)"
+#: L-chat-59: the composer's chosen sentences carry `[Sn]` ids; the model is
+#: asked, after the question, to write the id after a sentence that uses one (`cite_marks` takes
+#: them back out and grounds on them).
+CITE_HEADER = "After each sentence of yours, add the [S] mark of the note sentence it uses."
 
 
 #: A note that only arrived by a link did not match the question, so it goes in
@@ -850,6 +854,9 @@ def build_messages(
             f"{' ' + BRIEF_HEADER if any(note.get('briefed') for note in notes) else ''}"
             f"\n{numbered}{dropped_hint}\n\n"
             f"My question: {question}{attached_hint}"
+            #: After the question, where a 1.5B model acts on it: measured
+            #: 0 of 12 answers cited from a line above the notes, 3 of 5 here.
+            f"{' ' + CITE_HEADER if any(note.get('marked') for note in notes) else ''}"
         ),
     }
     if images:

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
 - Skills: Find loose ends is paged and cue-matched by the runner, the matches read in full, and a small model's answer closes with any it left out (L-chat-62).
 - Composer: the one-claim cosine line is measured on the real embedder (0.86), the topic line confirmed at 0.55 (L-chat-63).
 - Parity tests for chat acts: boards, maps, tag and preference sentences run on the composer path and as a model's own tool call, with Confirm and Undo (L114, tests/test_driven_parity_1114.py).

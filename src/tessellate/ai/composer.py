@@ -897,6 +897,10 @@ def brief(
         _add_matching(by_note, view, terms)
     out: list[dict] = []
     shortened = before = after = 0
+    #: **The chosen sentences carry ids** (L-chat-59; CHAT_PLAN handoff step
+    #: 3): `[S1]`, `[S2]` in the order the model reads them, so its answer can
+    #: name the sentence it used and the grounding pass need not guess.
+    marks: dict[str, dict] = {}
     for i, note in enumerate(notes):
         content = str(note.get("content") or "")
         before += len(content)
@@ -906,20 +910,43 @@ def brief(
             out.append(note)
             after += len(content)
             continue
-        out.append({**note, "content": text, "briefed": True})
+        had = len(marks)
+        text = _brief_text(view, content, by_note, marks)
+        out.append({**note, "content": text, "briefed": True, **({"marked": True} if len(marks) > had else {})})
         after += len(text)
         shortened += 1
+    if len({mark["note_id"] for mark in marks.values()}) < 2:
+        #: One note's sentences need no ids: every sentence of the answer can
+        #: only be grounded in that note, and the ids and the line asking for
+        #: them cost the brief its measured saving on short notes.
+        out, marks = _unmarked(out, notes, views, by_note), {}
     return {
         "notes": out,
         "quoted": sum(len(kept) for kept in by_note.values()),
         "shortened": shortened,
         "chars_before": before,
         "chars_after": after,
+        "marks": marks,
     }
 
 
-def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]) -> str:
-    """One note's part of the brief: its name, then the sentences kept."""
+def _unmarked(out: list[dict], notes: list[dict], views: dict, by_note: dict) -> list[dict]:
+    """The brief's notes again, without `[Sn]` ids."""
+    plain = []
+    for i, note in enumerate(out):
+        if note.get("marked"):
+            note = {k: v for k, v in note.items() if k != "marked"}
+            note["content"] = _brief_text(views[i], str(notes[i].get("content") or ""), by_note)
+        plain.append(note)
+    return plain
+
+
+def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]], marks: dict | None = None) -> str:
+    """One note's part of the brief: its name, then the sentences kept.
+
+    With `marks`, each sentence the composer chose (not the first-sentence
+    stand-in of a note it chose none from) is written after its `[Sn]` id,
+    and the id's note and span are added to `marks`."""
     if view.id in by_note:
         picked = sorted(by_note[view.id], key=lambda s: s.order)
     else:
@@ -931,10 +958,16 @@ def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]
     if view.title and not opens_with_name:
         parts.append(view.title)
     last = -1
+    chosen = marks is not None and view.id in by_note
     for s in picked:
         if parts and s.order != last + 1:
             parts.append("…")
-        parts.append(_raw(content, s))
+        if chosen:
+            mark = f"S{len(marks) + 1}"
+            marks[mark] = {"note_id": view.id, "start": s.start, "end": s.end}
+            parts.append(f"[{mark}] {_raw(content, s)}")
+        else:
+            parts.append(_raw(content, s))
         last = s.order
     if last < len(view.sentences) - 1:
         parts.append("…")
