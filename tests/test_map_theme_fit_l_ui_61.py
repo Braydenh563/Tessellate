@@ -14,5 +14,8 @@ def test_groups_are_blocks_set_in_two_columns_when_wide():
     css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
     assert 'block.className = "wb-map-theme-group"' in js
     assert ".wb-map-theme-rows:has(> .wb-map-theme-group)" in css
-    wide = css.split("@media (min-width: 1100px) {", 1)[1].split("\n}\n", 1)[0]
+    #: The block that holds the theme rows, not the first 1100px block: the
+    #: Library CSS pass (L-ui-modernisation-51) moved another one above it.
+    blocks = [b.split("\n}\n", 1)[0] for b in css.split("@media (min-width: 1100px) {")[1:]]
+    wide = next((b for b in blocks if ".wb-map-theme-rows:has(> .wb-map-theme-group)" in b), "")
     assert "grid-template-columns: 1fr 1fr" in wide
