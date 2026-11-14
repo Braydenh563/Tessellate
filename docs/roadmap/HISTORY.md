@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-14 (L982 closed by the owner)
+
+- [x] **L982** closed 2026-11-14: Settings panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms (INBOX 1726). Owner decided 2026-11-14: stale unless it recurs; reopen if the lag reporter flags it again. It did not reproduce off Windows at 4x CPU; settings-panes.js returns early on a plain key.
+
 ## Moved from the plans, 2026-11-14 (BACKLOG size cap)
 
 From BACKLOG.md section 1 (Live log console), two built bullets moved whole:
