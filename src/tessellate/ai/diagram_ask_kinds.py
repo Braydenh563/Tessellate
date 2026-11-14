@@ -57,8 +57,14 @@ _PROMPTS = {
 }
 
 
+#: A bare key in the shorthand above (`,"text","parent"}`): the 1.5B model copied it as written, which is not JSON, and the
+#: whole reply was dropped (L-documents-100, class and ER). Each is written out as a key with an empty value.
+_BARE_KEY = re.compile(r'(?<=[{,])"(\w+)"(?=[,}])')
+
+
 def prompt(kind: str) -> str:
-    return f"You edit {_PROMPTS[kind]}; {{\"op\":\"rename\",\"target\",\"text\"}}; {{\"op\":\"delete\",\"target\"}}. Reply with JSON only: {{\"ops\": [...]}}, at most 12 ops, only what was asked. Name blocks by uid or by their words as listed."
+    text = f"You edit {_PROMPTS[kind]}; {{\"op\":\"rename\",\"target\",\"text\"}}; {{\"op\":\"delete\",\"target\"}}. Reply with JSON only: {{\"ops\": [...]}}, at most 12 ops, only what was asked. Name blocks by uid or by their words as listed."
+    return _BARE_KEY.sub(lambda m: f'"{m.group(1)}":""', text)
 
 
 class _Sim:

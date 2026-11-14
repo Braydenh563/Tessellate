@@ -594,6 +594,13 @@
       toast(selection ? "The selection is already formatted." : "Already formatted.");
       return true;
     }
+    //: The save refuses a file over `routes_documents.MAX_CONTENT` (422), so a Format that grows a file past it
+    //: would be lost on the next save; it is declined here, with the text left as written (L-documents-96).
+    const grown = text.length + changes.reduce((n, c) => n + c.insert.length - (c.to - c.from), 0);
+    if (grown > 500000) {
+      toast(`Not formatted: the result would be ${grown.toLocaleString()} characters, over the 500,000 a document can hold. Your text is unchanged.`, "info");
+      return false;
+    }
     view.dispatch({
       changes,
       annotations: [CM.commands.isolateHistory.of("full"), CM.state.Transaction.userEvent.of("format")],

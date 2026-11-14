@@ -74,6 +74,28 @@ def test_an_empty_or_failing_model_falls_back_to_the_counts(ai_client, fake_olla
     assert (got["source"], got["reason"]) == ("words", "unusable") and "lines added" in got["summary"]
 
 
+def test_a_model_that_times_out_says_so_and_gets_the_longer_limit(ai_client, fake_ollama, monkeypatch):
+    """L-documents-97: the cold 1.5B model passed 45 s. This one call waits longer; a timeout is its own reason."""
+    seen = {}
+
+    def slow(label, messages, seconds=None):
+        seen["seconds"] = seconds
+        raise TimeoutError
+
+    monkeypatch.setattr(routes_document_story, "bounded_chat", slow)
+    doc = _history(ai_client, [V0, V1])
+    got = ai_client.post(f"/documents/{doc}/revisions/summary").json()
+    assert (got["source"], got["reason"]) == ("words", "timeout") and "lines added" in got["summary"]
+    assert seen["seconds"] == routes_document_story.SUMMARY_SECONDS > 45
+
+
+def test_the_dialog_tells_the_reader_when_the_counts_stand_in_for_a_timed_out_model():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-history.js").read_text(encoding="utf-8")
+    assert 'got.reason === "timeout"' in js and "The model took too long, so these are the counts." in js
+
+
 def test_nothing_is_written(client):
     doc = _history(client, [V0, V1])
     before = client.get(f"/documents/{doc}/revisions").json()
