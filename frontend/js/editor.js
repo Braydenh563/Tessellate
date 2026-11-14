@@ -1356,7 +1356,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left an unclosed `[[Atlas project line 183: remember to ...` in the note (audit 1029 N19).
         .slice(0, 120),
     }))
     .filter((item) => item.value);

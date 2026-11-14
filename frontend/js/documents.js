@@ -188,7 +188,7 @@ function docTypeSync(type) {
 
 // Everything about the editor that depends on the type, applied in one place
 // so a type change and opening a document of that type cannot diverge.
-//: `prose: false` from `openDocument`, whose deferred `renderDocTools` runs
+//: `prose: false` from `openDocument`, whose postponed `renderDocTools` runs
 //: the same check a frame later (DOCUMENTS 25 row 7).
 function syncDocFileType({ prose = true } = {}) {
   const type = docFileType();
@@ -238,7 +238,7 @@ function syncDocFileType({ prose = true } = {}) {
   //: stays: a code file prints its own listing (`docCodePrintFill`).
   for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-export-slides")?.classList.toggle("hidden", docIsCodeFile());
-  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid left open on another file closes.
+  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid still showing on another file closes.
   for (const grid of document.querySelectorAll("#doc-csv-grid, [data-click-proxy=doc-csv-grid]")) grid.classList.toggle("hidden", type.ext !== "csv");
   if (docViewState.csvGrid?.isOpen() && (type.ext !== "csv" || docViewState.csvGrid.forDoc() !== (currentDoc?.id ?? null))) docViewState.csvGrid.close();
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
@@ -2996,7 +2996,7 @@ const docOutlineState = { headings: [], crumbsKey: "" };
 // action with its shortcut, and a `?` shortcut sheet "generated from the same
 // table so the two cannot disagree". This is that table.
 //
-// **The decision the plan left open, taken here because it had to be.** The
+// **The decision the plan did not settle, taken here because it had to be.** The
 // plan names `Ctrl+K`, written before this app had a command palette of its
 // own on exactly that chord (`openPalette`, app.js). Two palettes on one key
 // is the collision the agent palette's own comment already records being
@@ -4049,7 +4049,7 @@ onDomReady(() => {
 //: the caret in Section 3 with the view still at `scrollTop` 0, the outline
 //: marked Section 1.
 //:
-//: **Which wins when the two disagree**, the question the next step left open:
+//: **Which wins when the two disagree**, the question the next step did not settle:
 //: the caret does, while it is visible. A caret you can see is where you are
 //: writing, and every editor this is measured against (Obsidian, Typora)
 //: follows it. Scroll far enough that the caret leaves the box and it is no
@@ -11248,7 +11248,7 @@ function renderDocCaret() {
 }
 
 //: **Which formatting buttons are on for the caret** (DOCUMENTS_PLAN Phase 2,
-//: the third of the three things the engine phase left deliberately unbuilt:
+//: the third of the three things the engine phase deliberately left absent:
 //: "which buttons are 'on' for the caret's position is not driven from the
 //: syntax tree, which the tree now makes cheap").
 //:
