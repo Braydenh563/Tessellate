@@ -210,6 +210,29 @@
   //: Put the board, or only what was selected, back as it was at the moment
   //: shown: one request, then the board read afresh inside a recorded gesture,
   //: so the whole restore is one Undo step (`wbRecordGesture`).
+  //: "What changed" (L-whiteboard-11): the sentence about this version against
+  //: now. The guard above refuses writes while the past shows, and this POST
+  //: only reads, so it goes through the real `apiJson`.
+  async function wbHistNarrate() {
+    const moment = wbHistMoment();
+    if (!moment) {
+      toast("This is the board as it is now, so there is nothing to compare it with.");
+      return;
+    }
+    const button = document.getElementById("wb-history-narrate");
+    if (button) button.disabled = true;
+    try {
+      const call = wbHist.realApi || apiJson;
+      const told = await call(`/whiteboard/history/${moment.id}/narrate?board_id=${wbHist.boardId ?? 0}`, { method: "POST" });
+      toast(told.summary);
+      wbAnnounce(told.summary);
+    } catch (error) {
+      toast(error.message || "The change could not be put into words.", true);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   async function wbHistRestore(onlySelection) {
     const moment = wbHistMoment();
     if (!moment || wbHist.shown !== moment.id) return;
@@ -291,6 +314,7 @@
     const button = event.target.closest?.(`#${WB_HIST_BAR} button`);
     if (!button || !wbHist.open || button.disabled) return;
     if (button.id === "wb-history-end") wbCloseHistory();
+    else if (button.id === "wb-history-narrate") wbHistNarrate();
     else if (button.id === "wb-history-restore") wbHistRestore(false);
     else if (button.id === "wb-history-restore-selection") wbHistRestore(true);
   });
