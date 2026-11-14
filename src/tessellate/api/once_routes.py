@@ -37,7 +37,11 @@ def _takes_request(handler: Callable, wrapped: Callable) -> Callable:
 
 
 def _caller(request: Request) -> str:
-    """One sign-in's slots are its own: two devices that pick the same turn id never share an answer."""
+    """One sign-in's slots are its own: two devices that pick the same turn id never share an answer.
+
+    With no password there is no token, so every caller hashes the empty string and shares one
+    key. That is intended: such a notebook has one person, and a repeat of a turn id from a second
+    tab of theirs should get the first answer rather than run the turn twice."""
     token = request.headers.get("x-auth-token") or ""
     return hashlib.sha256(token.encode()).hexdigest()[:16]
 
@@ -103,10 +107,14 @@ def stream_route(handler: Callable) -> Callable:
 def check_tag(body: object) -> None:
     """A tool call runs only as the server offered it: a card press is bound by its id (E43), anything
     else (an Undo, a redo) must carry the tag it was handed out with, unchanged (L566)."""
+    #: An id alone counts only while its card is waiting (parked, not spent):
+    #: a batch never reaches the card check, so a made-up id ran its steps.
     if not body.sig and not body.consent_id:
         raise HTTPException(
             status_code=400, detail="That action was not offered by this app, so it was not run."
         )
+    if not body.sig and consent_store.peek(body.consent_id) is None:
+        raise HTTPException(status_code=409, detail="That card is no longer waiting. Ask for it again.")
     if body.sig and not consent_store.tag_matches(body.name, body.arguments, body.steps, body.sig):
         raise HTTPException(
             status_code=400,

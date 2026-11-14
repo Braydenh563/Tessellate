@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8499, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11011, test files 2815, tests 22443, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8499, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2815, tests 22447, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8499)
 
@@ -14150,7 +14150,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11011)
+## Backend modules (11012)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21443,12 +21443,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_caller` | src/tessellate/api/once_routes.py:39 |
-| `_remember` | src/tessellate/api/once_routes.py:63 |
+| `_remember` | src/tessellate/api/once_routes.py:67 |
 | `_takes_request` | src/tessellate/api/once_routes.py:31 |
 | `_tracked` | src/tessellate/api/once_routes.py:22 |
-| `check_tag` | src/tessellate/api/once_routes.py:103 |
-| `json_route` | src/tessellate/api/once_routes.py:45 |
-| `stream_route` | src/tessellate/api/once_routes.py:76 |
+| `check_tag` | src/tessellate/api/once_routes.py:107 |
+| `json_route` | src/tessellate/api/once_routes.py:49 |
+| `stream_route` | src/tessellate/api/once_routes.py:80 |
 
 ### src/tessellate/api/paging.py (13)
 
@@ -24809,15 +24809,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `undo` | src/tessellate/core/events.py:997 |
 | `writes` | src/tessellate/core/events.py:298 |
 
-### src/tessellate/core/events_redo.py (5)
+### src/tessellate/core/events_redo.py (6)
 
 | Name | File:line |
 |---|---|
-| `_edited_since` | src/tessellate/core/events_redo.py:27 |
-| `_redo_fields` | src/tessellate/core/events_redo.py:43 |
-| `_redo_status` | src/tessellate/core/events_redo.py:50 |
-| `_redo_taken` | src/tessellate/core/events_redo.py:66 |
-| `redo` | src/tessellate/core/events_redo.py:76 |
+| `_edits_after` | src/tessellate/core/events_redo.py:28 |
+| `_redo` | src/tessellate/core/events_redo.py:115 |
+| `_redo_fields` | src/tessellate/core/events_redo.py:52 |
+| `_redo_status` | src/tessellate/core/events_redo.py:59 |
+| `_redo_taken` | src/tessellate/core/events_redo.py:82 |
+| `redo` | src/tessellate/core/events_redo.py:97 |
 
 ### src/tessellate/core/extra_downloads.py (23)
 
@@ -28235,7 +28236,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22443)
+## Tests (22447)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29329,7 +29330,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_error_toasts.py | 8 |
 | tests/test_escape_closes.py | 3 |
 | tests/test_events.py | 25 |
-| tests/test_events_undo.py | 16 |
+| tests/test_events_undo.py | 19 |
 | tests/test_every_route_is_locked.py | 4 |
 | tests/test_everyday_vocabulary.py | 6 |
 | tests/test_evidence_spec.py | 12 |
@@ -30743,7 +30744,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_toggle_icons.py | 1 |
 | tests/test_token_tables_1031.py | 4 |
 | tests/test_tool_call_dialects.py | 15 |
-| tests/test_tool_call_tags_566.py | 7 |
+| tests/test_tool_call_tags_566.py | 8 |
 | tests/test_tool_cards.py | 20 |
 | tests/test_tool_catalog_groups.py | 3 |
 | tests/test_tool_contracts.py | 14 |

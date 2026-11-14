@@ -68,3 +68,17 @@ def test_the_redo_button_sends_the_change_s_redo_tag():
     from tests._app_js import app_js_text
 
     assert "sig: change.redo_sig" in app_js_text()
+
+
+def test_an_id_with_no_waiting_card_is_refused_at_the_tag_check_and_runs_nothing(client):
+    """Review 5899353774 (4): an id alone passed the tag check, so a batch (which
+    never reaches the card check) ran on a made-up or spent id."""
+    made = _made(client)
+    steps = [{"tool": "delete_note", "arguments": {"note_id": made}}]
+    made_up = client.post("/chat/tools/execute", json={"name": "batch", "arguments": {}, "steps": steps, "consent_id": "no-such-card"})
+    assert made_up.status_code == 409
+    key = consent_store.park({"label": "Delete", "tool": {"name": "delete_note", "arguments": {"note_id": made}}})
+    consent_store.take(key)
+    spent = client.post("/chat/tools/execute", json={"name": "batch", "arguments": {}, "steps": steps, "consent_id": key})
+    assert spent.status_code == 409
+    assert client.get(f"/entries/{made}").status_code == 200
