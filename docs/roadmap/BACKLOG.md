@@ -4441,3 +4441,14 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 
 - **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
 - **L279, owner input: the texts of U19, U20, U23, U30, U31, U36, U37, U39, U41, U45 and U49.** They came from `bs-1111.md`, a scratch file of the 2026-11-11 run that was never committed (`git log --all -- '*bs-1111*'` is empty). The repo and HISTORY hold other audits' items under the same numbers (U23, U36, U37 and U39 in audit 1028 copy, U41 the mind-map toast), so none can be matched to these 11 ids. Needs the owner to name what each item asked for; each then becomes a row on its surface's plan.
+
+- **Whiteboard device checks (moved from LEDGER 2026-11-14; each needs the named device, everything that runs headless is built and swept):**
+  - L872: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
+  - L873: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
+  - L874: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
+  - L875: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
+  - L876: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
+  - L877: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
+  - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
+  - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
+  - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.

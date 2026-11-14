@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 0 | 1 | 0 | 10 | 31 |
+| whiteboard | 30 | 0 | 1 | 0 | 1 | 31 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 528 | 126 | 2 | 182 | 1207 |
+| all | 553 | 528 | 126 | 2 | 173 | 1207 |
 
 ## graph
 
@@ -762,13 +762,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L869** `chat` blocked-hardware, S: Desk bust 20/28 px and live companion not swept; light-theme p10 contrast 2.6. From atlasf1696-1108c.md. Evidence: Needs real desk/Windows render and a sweep
 - [ ] **L870** `chat` blocked-hardware, M: Windows: foot offsets, hang on a real title bar, z-order vs taskbar, UpdateLayeredWindow. From desk-1670.md Remaining. Evidence: Source: unverified on Windows; fakes only
 - [ ] **L871** `chat` blocked-hardware, M: Linux desk: real window manager z-order, _NET_WORKAREA, suspend/resume, per-monitor scale. From desk-1670.md Remaining. Evidence: Xvfb has no WM; needs a real Linux desktop
-- [ ] **L872** `whiteboard` blocked-hardware, S: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
-- [ ] **L873** `whiteboard` blocked-hardware, S: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
-- [ ] **L874** `whiteboard` blocked-hardware, S: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
-- [ ] **L875** `whiteboard` blocked-hardware, M: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
-- [ ] **L876** `whiteboard` blocked-hardware, S: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
-- [ ] **L877** `whiteboard` blocked-hardware, S: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
-- [ ] **L878** `whiteboard` blocked-hardware, S: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
 - [ ] **L879** `documents` blocked-hardware, S: Measure Write with AI with a model on; Draft it disabled. From OPEN.md:3418. Evidence: Needs a real model run (standing caveat, CLAUDE.md s4); only fake transport tested.
 - [ ] **L880** `documents` blocked-hardware, M: Brief 69 checks on desktop webview, dark panel rows, large SQL result and touch (hardware). From OPEN.md:608; OPEN.md:2912. Evidence: Desktop webview and touch hardware
 - [ ] **L881** `documents` blocked-hardware, S: Verify suggestion mode with candidate chosen and touch long-press at phone width (touch hardware). From OPEN.md:622; OPEN.md:3550. Evidence: Touch long-press needs touch hardware; docProseFix path undriven
@@ -869,7 +862,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
 - [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
 - [ ] **L246** `chat` blocked-hardware, M: A real model's first token replaces a shown composed preview cleanly. The gate on the preview is built (651624f81, `chat_chips.shows_first`) and tested on the fake transport. From ledger-1112 P1. Evidence: `scratchpad/llama-dev.sh serve`, then `pytest -m evals`.
-- [ ] **L282** `whiteboard` blocked-hardware, S: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
 - [ ] **L-chat-11** `chat` blocked-hardware, S: Find why a reopened Ask answer drops citation markers under a heading list. From open-work sweep 2026-11-12, tests/test_citation_after_heading.py:23. Evidence: Coordinator report: an Ask answer reopened from history lost in-text citation markers on two bullets under a heading. Reproduction failed with the fake model, and the test says the root cause is still
 - [ ] **L-world-class-3** `world-class` blocked-hardware, S: Verify the Linux Secret Service PIN store against a real keyring. From open-work sweep 2026-11-12, tests/test_pin_unlock.py:342. Evidence: The skip does not hide a broken test, but the Linux Secret Service path of core/pinstore.py has never run against a real keyring. L931 covers only the Windows DPAPI and macOS Keychain paths, so Linux 
 - [ ] **L-chat-12** `chat` blocked-hardware, S: Check the wider desk frame canvas, crop and window size on a real Windows desktop (hardware). From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1550. Evidence: The wider desk-frame canvas (masculine 289x304, feminine 275x298) changed the crop, the wave reach and the 100 percent window size. None of it has been checked on a real desktop. The nearest rows are 
@@ -884,7 +876,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-chat-17** `chat` blocked-hardware, L: Personal wording switch and per-surface composer evals. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:655. Evidence: Open line in the plan's prose a session could miss. Items 1-11 leftovers; item 10 needs a local model.
 - [ ] **L-chat-23** `chat` blocked-hardware, M: Chat latency budgets and small-model tool use. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1614. Evidence: Open line in the plan's prose a session could miss. Budgets unmet and small-model tool use unverified.
 - [ ] **L-documents-6** `documents` blocked-hardware, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open.
-- [ ] **L-whiteboard-14** `whiteboard` blocked-hardware, S: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
 - [ ] **L-ui-modernisation-8** `ui-modernisation` blocked-hardware, S: Check the composer above a soft keyboard and iPad landscape on real devices. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:619. Evidence: Open line in the plan's prose a session could miss. A phone gate left unmeasured, with phone.md's real iPad landscape look. There is no hardware row.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
