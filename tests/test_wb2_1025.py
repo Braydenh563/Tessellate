@@ -184,7 +184,7 @@ def test_one_branch_copies_as_an_outline_and_exports_alone():
     # The server's tree, so the order and notes match the whole-map exports.
     assert "/tree`" in copy and "wbMapTreeMarkdown([node])" in copy and "copyToClipboard(" in copy
     export = _function(MAP, "wbMapExportBranch")
-    assert "wbMapSubtree(index, id)" in export and "!hidden.has(o.id)" in export and "wbExportBoard();" in export
+    assert "wbMapSubtree(index, id)" in export and "!hidden.has(o.id)" in export and "wbExportBoard({ branch: true });" in export  # L267: the dialog says branch
     assert 'sub("Copy this branch as an outline"' in WB and 'sub("Export this branch…"' in WB
     cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'id: "copy-branch-outline"' in cmds and 'id: "export-branch"' in cmds
