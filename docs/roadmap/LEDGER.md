@@ -18,6 +18,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | world-class | 0 | 136 | 29 | 3 | 10 | 165 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
 | all | 405 | 527 | 100 | 5 | 121 | 1032 |
+| world-class | 0 | 144 | 29 | 3 | 10 | 173 |
+| general | 0 | 35 | 2 | 0 | 4 | 37 |
+| all | 405 | 535 | 100 | 5 | 121 | 1040 |
 
 ## graph
 
@@ -569,8 +572,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
 - [ ] **L-world-class-97** `world-class` open, S: Leave guard for a board mid-drag (22.1.4). From WORLD_CLASS_PLAN.md:2264. Evidence: WORLD_CLASS_PLAN.md:2264 'a board mid-drag, which has no such flag yet'
 - [ ] **L-world-class-102** `world-class` open, S: Audit Ctrl+S and Ctrl+Z in every editor and dialog. From WORLD_CLASS_PLAN.md:2290. Evidence: WORLD_CLASS_PLAN.md:2290 'not audited'
+- [ ] **L-world-class-93** `world-class` open, S: Fold the four one-second clocks into one tick (19.4). From WORLD_CLASS_PLAN.md:2004. Evidence: WORLD_CLASS_PLAN.md:2004 'the four one-second clocks are still separate timers'
+- [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
+- [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
+- [ ] **L-world-class-98** `world-class` open, S: base_hash on the other note writers: a card's checkbox, the graph's tag edit, the lightbox caption (22.1.5). From WORLD_CLASS_PLAN.md:2268. Evidence: WORLD_CLASS_PLAN.md:2268: card checkbox, graph tag edit, lightbox caption send no base_hash
+- [ ] **L-world-class-99** `world-class` open, S: Queue or refuse a write while the server is unreachable, with the banner's message (22.1.6). From WORLD_CLASS_PLAN.md:2275. Evidence: WORLD_CLASS_PLAN.md:2275 'queuing or refusing a write ... while it is up' left
+- [ ] **L-world-class-101** `world-class` open, S: First run: a prompt to choose a backup folder (22.1.8). From WORLD_CLASS_PLAN.md:2280. Evidence: WORLD_CLASS_PLAN.md:2283 'a first-run prompt to choose a backup folder'
 - [ ] **L-world-class-103** `world-class` open, M: Right-click, and a hold on touch, on every card and row. From WORLD_CLASS_PLAN.md:2292. Evidence: 38 contextmenu sites, not every card (:2292)
-- [ ] **L-world-class-104** `world-class` open, S: Every status-bar '!' says what it means on hover and click. From WORLD_CLASS_PLAN.md:2293. Evidence: only the AI status glyph is checked (status.js:2484, :2293)
 - [ ] **L-world-class-105** `world-class` open, S: Re-measure 22.3: card padding and body size at laptop widths, section-head weight, one Phosphor weight lint, the toast corner at 1093x614. From WORLD_CLASS_PLAN.md:2294. Evidence: WORLD_CLASS_PLAN.md:2294 '22.3 not re-measured'
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
@@ -619,6 +627,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-150** `world-class` open, M: Cut app import from 2.1 s toward 1.5 s: load route modules and sqlalchemy models lazily. From L-world-class-51 measurement. Evidence: importtime: fastapi 224 ms, sqlalchemy 120 ms, core.database 105 ms, api route modules (routes_learned, routes_entries, routes_settings, routes_auth) 40 to 95 ms each self; starlette route compile 36 ms (632 patterns); app import median 2.14 s
 - [ ] **L-world-class-240** `world-class` open, M: LAN mode: a second HTTPS request from a device whose sign-in is held open can be cut at the handshake under load; reproduce (20 serial runs, 4 busy loops) and fix the cause. From hub 2026-11-14 13:40Z, CI 86918627 py3.13 leg 1. Evidence: tests/test_lan.py:1015 SSLEOFError on a LAN /auth/lan-watch request while a LAN /auth/unlock is held open; passes 3/3 alone 2026-11-14 14:05Z: 20/20 under load, no gate close in any log; netid.read() here never returns None (2000/2000), so the ARP-flicker cause cannot be reproduced on this machine. Fix fd917ac6 (tests/test_lan_gate_arp_flicker.py). The test now raises with the server log tail on any OSError; close when a CI failure shows the cause, or after 5 green CI runs with the test.
 - [ ] **L-world-class-260** `world-class` open, S: Settings pane titles: Models, Help and Your profile still sit off the shared indent; align them or record why. From batch R report 2026-11-14 (L-world-class-84 follow-up). Evidence: after the pane-title indent fix, Models is -1px, Help 0px and Preferences 'Your profile' 69px off the other Settings pane titles; whether any is meant to differ was not checked
+- [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
+- [ ] **L-world-class-201** `world-class` open, S: Status chips Offline and Saver on are keyboard reachable and Enter says what they mean. From L-world-class-104. Evidence: Enter on a focused status chip needs a key handler (about 20 bytes gzipped over the boot cap); the saver chip has no tabindex, so a keyboard user cannot reach its title. Put the handler in a lazy file the bar loads, or a native button.
+- [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.
 
 ## general
 
