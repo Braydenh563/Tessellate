@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22451, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22452, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -25241,16 +25241,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_board_uses` | src/tessellate/core/media_gc.py:157 |
-| `_conversation_referenced_ids` | src/tessellate/core/media_gc.py:130 |
+| `_board_uses` | src/tessellate/core/media_gc.py:163 |
+| `_conversation_referenced_ids` | src/tessellate/core/media_gc.py:136 |
 | `_could_name_a_file` | src/tessellate/core/media_gc.py:56 |
-| `_note_uses` | src/tessellate/core/media_gc.py:176 |
+| `_note_uses` | src/tessellate/core/media_gc.py:182 |
 | `_referenced_filenames` | src/tessellate/core/media_gc.py:73 |
-| `delete_orphaned_media` | src/tessellate/core/media_gc.py:266 |
-| `find_orphaned_media` | src/tessellate/core/media_gc.py:248 |
+| `delete_orphaned_media` | src/tessellate/core/media_gc.py:272 |
+| `find_orphaned_media` | src/tessellate/core/media_gc.py:254 |
 | `referenced_names` | src/tessellate/core/media_gc.py:47 |
-| `sealed_only` | src/tessellate/core/media_gc.py:297 |
-| `usage_map` | src/tessellate/core/media_gc.py:212 |
+| `sealed_only` | src/tessellate/core/media_gc.py:303 |
+| `usage_map` | src/tessellate/core/media_gc.py:218 |
 
 ### src/tessellate/core/media_process.py (7)
 
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22451)
+## Tests (22452)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29770,7 +29770,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_measure_keys_1102.py | 1 |
 | tests/test_media_api.py | 54 |
 | tests/test_media_cookie.py | 20 |
-| tests/test_media_gc.py | 21 |
+| tests/test_media_gc.py | 22 |
 | tests/test_media_process.py | 17 |
 | tests/test_media_size.py | 3 |
 | tests/test_media_size_backfill.py | 3 |

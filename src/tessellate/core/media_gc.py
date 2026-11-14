@@ -121,7 +121,13 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
                 if key is None:
                     skipped_private = True
                     continue
-                stored = crypto.decrypt(key, stored)
+                try:
+                    stored = crypto.decrypt(key, stored)
+                except crypto.DecryptionError:
+                    #: One revision sealed under another key aborted the whole
+                    #: cleanup; unreadable is treated as locked: skipped, and said.
+                    skipped_private = True
+                    continue
             referenced.update(referenced_names(stored))
 
     return referenced, skipped_private

@@ -380,3 +380,25 @@ def test_a_locked_private_document_blocks_deletion(ai_client, session):
     assert result["deleted"] == 0
     remaining = {row["url"] for row in ai_client.get("/media").json()}
     assert uploaded["url"] in remaining
+
+
+def test_a_revision_that_will_not_open_is_skipped_not_fatal(ai_client, monkeypatch):
+    """Source text: review (media_gc): a DecryptionError on one revision aborted
+    the whole cleanup; it is skipped like a locked note and the pass goes on."""
+    from tessellate.core import crypto, media_gc
+
+    uploaded = _upload(ai_client)
+    made = ai_client.post("/entries", json={"content": f"![p]({uploaded['url']})"}).json()
+    ai_client.put(f"/entries/{made['id']}", json={"content": "No picture now."})
+    monkeypatch.setattr(crypto, "is_encrypted", lambda stored: True)
+    monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
+
+    def refuse(key, stored):  # noqa: ANN001, ARG001
+        raise crypto.DecryptionError("wrong key")
+
+    monkeypatch.setattr(crypto, "decrypt", refuse)
+    from tessellate.core import deps
+
+    with deps.get_db().session() as session:
+        referenced, skipped = media_gc._referenced_filenames(session)
+    assert skipped is True
