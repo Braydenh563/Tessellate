@@ -7,9 +7,9 @@ element). At 390 px the readout is display none for both, as before (the bar fol
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests._app_js import documents_text
 
-DOCS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _stats() -> str:

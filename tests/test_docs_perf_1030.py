@@ -100,7 +100,7 @@ def test_visible_tab_runs_the_facts_pass_once_for_two_pauses():
 
 def test_entering_the_tab_runs_a_stale_pass():
     source = frontend_text("documents.js") + (JS / "documents-view.js").read_text(encoding="utf-8")
-    assert "if (docFactsStale && currentDoc) runDocFacts();" in _function(source, "async function loadDocuments(")
+    assert "if (docFactsPending() && currentDoc) runDocFacts();" in _function(source, "async function loadDocuments(")
 
 
 def test_the_live_view_reads_the_text_through_the_per_version_cache():
