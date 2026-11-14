@@ -18,16 +18,15 @@ import re
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Query, Response, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
-from tessellate.api.downloads import attachment_headers
-from tessellate.core import activity, deps, jobs, recordings, transcript
+from tessellate.api.downloads import attachment_headers, sealed_aware
+from tessellate.core import activity, deps, jobs, recordings, sealed_files, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
@@ -163,17 +162,12 @@ def create_recording(body: RecordingCreate, session: Session = Depends(get_sessi
     return recordings.as_dict(row)
 
 
-def _append(path, data: bytes, size: int) -> None:  # noqa: ANN001
+def _append(session: Session, row: Recording, data: bytes) -> None:
     """Append, or leave the file as it was: a write cut short (a full disk)
     is cut back, so the retry starts where the saved audio ends. The error
-    goes on to the app's handler, which answers a full disk with 507."""
-    try:
-        with path.open("ab") as out:
-            out.write(data)
-    except OSError:
-        with path.open("ab") as out:
-            out.truncate(size)
-        raise
+    goes on to the app's handler, which answers a full disk with 507. A
+    private space's recording is sealed from its first chunk (L-world-class-52)."""
+    sealed_files.append(recordings.path_of(row), data, sealed=sealed_files.wanted(session, row.workspace_id))
 
 
 @router.post("/recordings/{recording_id}/chunk")
@@ -203,7 +197,7 @@ def append_chunk(
     if not row.size_bytes and data and not recordings.matches(row.mime, data[:16]):
         raise HTTPException(status_code=415, detail="That audio isn't the type it says it is.")
     if data:
-        _append(recordings.path_of(row), data, row.size_bytes)
+        _append(session, row, data)
         row.size_bytes += len(data)
     row.duration_ms = max(row.duration_ms, min(int(duration_ms), 24 * 3600 * 1000))
     row.updated_at = utcnow()
@@ -289,10 +283,15 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
     try:
-        with activity.track("transcription", "Transcribing a recording", stoppable=False):
+        with activity.track("transcription", "Transcribing a recording", stoppable=False), sealed_files.readable(path) as audio:
             segments = voice.transcribe_segments(
-                Path(path), model_size=deps.get_config().get_preference("voice_model", "base")
+                Path(audio), model_size=deps.get_config().get_preference("voice_model", "base")
             )
+            kept = transcript.clean(segments)
+            if diarize.available():
+                kept = diarize.label_audio(kept, Path(audio))
+    except sealed_files.SealedLocked as exc:
+        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:  # a bad clip must not 500 mysteriously
@@ -300,14 +299,21 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
         raise HTTPException(
             status_code=422, detail="Couldn't transcribe that recording. Try recording it again."
         ) from exc
-    kept = transcript.clean(segments)
-    if diarize.available():
-        kept = diarize.label_audio(kept, Path(path))
     kept = _named_if_unlabelled(session, row, kept)
     row.segments = transcript.dumps(kept)
     log_action(session, "transcribed", "recording", row.id)
     session.commit()
     return {"text": " ".join(seg["text"] for seg in kept), "segments": kept}
+
+
+#: A background run has no vault key (`vault.key`), so it can neither open a
+#: private space's sealed audio nor write its sealed transcript.
+SEALED_IN_BACKGROUND = "A private space's recording can't be transcribed in the background yet."
+
+
+def _refuse_sealed_in_background(path: Path) -> None:
+    if sealed_files.is_sealed(path):
+        raise HTTPException(status_code=409, detail=SEALED_IN_BACKGROUND)
 
 
 @router.post("/recordings/{recording_id}/transcribe/start", status_code=202)
@@ -322,6 +328,7 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
+    _refuse_sealed_in_background(path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Transcribing “{name}”", stoppable=True)
     if not recordings.begin_transcription(row.id, job.id):
@@ -485,6 +492,7 @@ def label_speakers_by_voice(recording_id: int, session: Session = Depends(get_se
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
+    _refuse_sealed_in_background(path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Telling the voices apart in “{name}”", stoppable=False)
     if not recordings.begin_transcription(row.id, job.id, task="voices"):
@@ -574,7 +582,9 @@ def transcript_vtt(recording_id: int, session: Session = Depends(get_session)) -
 
 
 @media_router.get("/media/recordings/{recording_id}")
-def recording_audio(recording_id: int, session: Session = Depends(get_session)) -> FileResponse:
+def recording_audio(
+    recording_id: int, session: Session = Depends(get_session), range: str | None = Header(default=None)  # noqa: A002
+) -> Response:
     row = _get(session, recording_id)
     path = recordings.path_of(row)
     if not path.is_file():
@@ -584,5 +594,5 @@ def recording_audio(recording_id: int, session: Session = Depends(get_session)) 
         "Content-Security-Policy": "sandbox; default-src 'none'",
         "Cache-Control": "no-store",
     }
-    return FileResponse(path, media_type=row.mime, headers=headers)
+    return sealed_aware(path, media_type=row.mime, headers=headers, request_range=range)
 

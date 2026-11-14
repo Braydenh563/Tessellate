@@ -17,7 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import starter_acts, vision_ocr
-from tessellate.core import deps, docview
+from tessellate.core import deps, docview, sealed_files
 from tessellate.core.config import days_from_today
 from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.repo import documents as documents_repo
@@ -181,10 +181,8 @@ def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
             continue
         body = ""
         try:
-            viewed = docview.extract(
-                uploads / attachment.stored_name,
-                vision_reader=vision_ocr.pdf_reader_or_none(),
-            )
+            with sealed_files.readable(uploads / attachment.stored_name) as plain:
+                viewed = docview.extract(plain, vision_reader=vision_ocr.pdf_reader_or_none())
             body = (viewed.text or "").strip()
         except Exception:  # noqa: BLE001 - an unreadable file is still worth naming
             body = ""
@@ -589,7 +587,8 @@ def _attachment_readings(session: Session, entry_id: int) -> str:
         if not path.is_file():
             continue
         try:
-            viewed = docview.extract(path)
+            with sealed_files.readable(path) as plain:
+                viewed = docview.extract(plain)
         except Exception:  # noqa: BLE001  # a bad file must not cost the answer
             continue
         text = viewed.text.strip()

@@ -136,7 +136,8 @@ def test_a_recording_is_sealed_chunk_by_chunk_and_still_seeks(signed_in):
             f"/recordings/{rid}/chunk", files={"file": ("c", part, "audio/webm")}, data={"at": str(at)}, headers=_h(space)
         )
         assert got.status_code == 200, got.text
-    assert client.post(f"/recordings/{rid}/finish", json={"duration_ms": 1000}, headers=_h(space)).status_code == 200
+    finished = client.post(f"/recordings/{rid}/finish", json={"duration_ms": 1000}, headers=_h(space))
+    assert finished.status_code == 200
     assert SECRET not in _on_disk()
     whole = client.get(f"/media/recordings/{rid}", headers=_h(space))
     assert whole.status_code == 200 and whole.content == audio
@@ -169,11 +170,13 @@ def test_a_plain_file_from_before_still_reads_and_is_sealed_at_the_next_unlock(s
     with vault.request_scope(client.headers["X-Auth-Token"]):
         sealed_files.unseal(path)  # what a file written before this change looks like
     assert path.read_bytes() == SECRET
-    assert client.get(f"/files/{aid}", headers=_h(space)).content == SECRET
+    before = client.get(f"/files/{aid}", headers=_h(space))
+    assert before.content == SECRET
     client.post("/private-spaces/lock")
     _unlock(client)
     assert sealed_files.is_sealed(path) and SECRET not in _on_disk()
-    assert client.get(f"/files/{aid}", headers=_h(space)).content == SECRET
+    after = client.get(f"/files/{aid}", headers=_h(space))
+    assert after.content == SECRET
 
 
 def test_turning_a_space_private_seals_its_files_and_ordinary_unseals_them(signed_in):
@@ -182,7 +185,8 @@ def test_turning_a_space_private_seals_its_files_and_ordinary_unseals_them(signe
     _nid, aid = _attach(client, space)
     assert SECRET in _on_disk()
     _unlock(client)
-    assert client.put(f"/spaces/{space}/private", json={"private": True}).status_code == 200
+    on = client.put(f"/spaces/{space}/private", json={"private": True})
+    assert on.status_code == 200
     assert SECRET not in _on_disk()
     off = client.put(f"/spaces/{space}/private", json={"private": False, "keep_private": False})
     assert off.status_code == 200, off.text
@@ -212,7 +216,8 @@ def test_editing_a_sealed_text_file_keeps_it_sealed(signed_in):
     assert got.status_code == 200, got.text
     assert got.json()["text"] == SECRET.decode()
     assert SECRET not in _on_disk()
-    assert client.get(f"/files/{aid}/text", headers=_h(space)).json()["text"] == SECRET.decode()
+    reread = client.get(f"/files/{aid}/text", headers=_h(space))
+    assert reread.json()["text"] == SECRET.decode()
 
 
 def test_an_open_private_space_chosen_for_export_carries_its_files_readable(signed_in):

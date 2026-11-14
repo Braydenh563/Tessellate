@@ -1364,7 +1364,8 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "A private space seals everything in it with your vault password, "
-            "as a private note is: its notes, documents and boards. Turn on "
+            "as a private note is: its notes, documents and boards, and on disk "
+            "the bytes of its recordings, library pictures and note files. Turn on "
             "Private in New space, or in Edit space (the pencil beside a space "
             "in the picker); turning it on asks once with the count of what "
             "gets sealed. A locked private space shows its name with a lock and "
@@ -1385,6 +1386,7 @@ MORE_TOPICS: list[dict] = [
             "private note while it is locked. A locked private space cannot "
             "be deleted or brought back with Undo. An export leaves it out "
             "unless it is unlocked and you ask, and backups keep it encrypted. "
+            "Its recordings are not transcribed in the background yet. "
             "New notes start private (Account & security, off by default) seals "
             "each new note from its first save, unfiled and unindexed. Make all "
             "notes private, beside it, locks every ordinary note after a confirm, "
