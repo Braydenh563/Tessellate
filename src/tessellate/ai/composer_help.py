@@ -257,6 +257,11 @@ FIRST_LINE = 1.0
 _HOW_TOP = lazy_compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|where (?:do|can|is|are)|can i|is there)\b", re.I)
 
 
+def _opens_the_how_to(line: str, lines: list[str], first: bool) -> bool:
+    """The topic's opening line leads a bare how-to only when it is a line: a 61-word inventory of the Dashboard is not the step (L229)."""
+    return first and lines.index(line) == 0 and len(line.split()) <= _HELP_LEAD_WORDS
+
+
 def _help_best(lines: list[str], ask: dict, doing: float = 0.0, first: bool = False) -> str:
     """The line that says the most; a later one must say more to lead (the
     topic opens on its point: "Link one note to another by typing [[" over
@@ -274,7 +279,7 @@ def _help_best(lines: list[str], ask: dict, doing: float = 0.0, first: bool = Fa
         verb = says(line)
         #: A listing of what cannot be done leads for the ask that wants it.
         listed = 3.0 if ask.get("listed") and _NO_UNDO.search(line) else 0.0
-        return _help_shared(line, ask) + (doing if verb else 0.0) + listed - 0.05 * lines.index(line) + (FIRST_LINE if first and lines.index(line) == 0 and not opens else 0.0)
+        return _help_shared(line, ask) + (doing if verb else 0.0) + listed - 0.05 * lines.index(line) + (FIRST_LINE if _opens_the_how_to(line, lines, first and not opens) else 0.0)
 
     return max(lines, key=lambda line: (score(line), -lines.index(line)))
 

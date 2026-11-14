@@ -12,6 +12,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat: the first "not right" on an answer says it is stored only on this device, and Settings, Learned has a Clear answers marked not right row (L225)
 - Activity: the panel moves by its head (kept on screen, remembered, double-click puts it back), and a test pins that the agent never edits, removes or sends without a Confirm (L-chat-13)
 - Agent tools: a test pins snake_case verb-first names, no two tools opening with the same sentence and a 12-word lead; the 37 long leads and 5 noun-first names are named, and only shrink (L168)
+- Guide: a bare how-to no longer leads with a 61-word opening inventory; "How do I change the widgets?" leads with the Widgets and Edit layout step (L229)
 - Ask: a map or board whose words hold the question joins the answer's records as a map or board source card with an open link (L112)
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
