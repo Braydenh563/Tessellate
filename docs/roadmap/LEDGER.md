@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 120 | 29 | 0 | 0 | 149 |
+| world-class | 0 | 112 | 29 | 0 | 0 | 141 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 509 | 100 | 2 | 111 | 981 |
+| all | 372 | 501 | 100 | 2 | 111 | 973 |
 
 ## chat
 
@@ -548,7 +548,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-115** `world-class` open, S: Capture: hold staged pictures and files while offline. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'staged pictures and files cannot be held offline'
 - [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
 - [ ] **L-world-class-119** `world-class` open, M: Import: write a 5,000-note import in batches, not one commit per note. From WORLD_CLASS_PLAN.md:3602. Evidence: 5,000-note write 45.9 s, one commit per note (:3602)
-- [ ] **L-world-class-120** `world-class` open, S: Generate the keyboard shortcuts sheet from the shortcut table. From WORLD_CLASS_PLAN.md:3609. Evidence: WORLD_CLASS_PLAN.md:3609 'the sheet must be generated from the table'
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-122** `world-class` open, M: Ratchet the silent broad excepts to zero (decision 57). From WORLD_CLASS_PLAN.md:3728. Evidence: tests/test_no_silent_except.py SEED holds 60 handlers; decision 57 says to 0
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
@@ -557,7 +556,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-126** `world-class` open, M: Graph and companion at rest: long tasks to zero. From WORLD_CLASS_PLAN.md:3788. Evidence: REST_BUDGET graph 10, companion 6 long tasks in 3 s (:3788)
 - [ ] **L-world-class-127** `world-class` open, S: Find and replace inside a note. From WORLD_CLASS_PLAN.md:3810. Evidence: WORLD_CLASS_PLAN.md:3810 and :3582 'find and replace inside a note'
 - [ ] **L-world-class-128** `world-class` open, M: Bulk edit from the selection bar on every list: tag, category, property, move, delete with the undo bar (decision 65). From WORLD_CLASS_PLAN.md:3862. Evidence: decision 65 (:3862); 27.1 Notes and Library rows
-- [ ] **L-world-class-129** `world-class` open, S: Group the note menu: Atlas, structure, share, destructive, under nine visible (decision 64). From WORLD_CLASS_PLAN.md:3860. Evidence: about 30 items in one list (:3811); decision 64 (:3860)
 - [ ] **L-world-class-130** `world-class` open, M: Complete exports: a board or map as SVG and PNG with its linked notes as a folder; a document as PDF (decision 66). From WORLD_CLASS_PLAN.md:3865. Evidence: decision 66 (:3865); 27.1 Export row (:3827)
 - [ ] **L-world-class-131** `world-class` open, M: Move the popups to the kind 27.2's table rules (decision 63). From WORLD_CLASS_PLAN.md:3839. Evidence: frontend/index.html: 10 of the table's sheets and panels are still <dialog> (space-create, doc-storage, quick-note, doc-history, ...)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
@@ -567,19 +565,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-175** `world-class` open, S: Gravity and spread have no effect on the graph's other layouts. From IDEAS.md:113. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-176** `world-class` open, L: A visual timeline drawn as a branching line with off-shoots. From IDEAS.md:114. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-177** `world-class` open, S: Settings pages cannot be reached on a narrow phone view: check every page. From IDEAS.md:115. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-178** `world-class` open, S: No Markdown rendering in some of the dashboard's widgets. From IDEAS.md:117. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-179** `world-class` open, S: Pie charts for the dashboard. From IDEAS.md:118. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-184** `world-class` open, S: Check that the status dot's error state in the top bar can be reached. From IDEAS.md:127. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-186** `world-class` open, S: Check that a note like 'ai is cool' is not filed under sketches against the notebook's categories. From IDEAS.md:130. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-187** `world-class` open, S: Check docs/index.html's text against the README. From IDEAS.md:132. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
