@@ -24,8 +24,6 @@
   top: 50%;
   pointer-events: none;
 }
-.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
-.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
@@ -191,9 +189,6 @@
   touch-action: none;
   user-select: none;
 }
-.wb-object-grip:active {
-  cursor: grabbing;
-}
 .wb-resize-handle {
   position: absolute;
   width: 10px;
@@ -302,9 +297,6 @@
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
 }
-.wb-rotate-handle:active {
-  cursor: grabbing;
-}
 /* A link's own two endpoints, round, not the square resize handles above,
    so the two read as a different kind of control (reattach/detach an end,
    not resize a shape). */
@@ -318,46 +310,6 @@
   pointer-events: auto;
 }
 
-.wb-resize-handle[data-handle="nw"] {
-  top: -5px;
-  left: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="n"] {
-  top: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="ne"] {
-  top: -5px;
-  right: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="e"] {
-  top: calc(50% - 5px);
-  right: -5px;
-  cursor: ew-resize;
-}
-.wb-resize-handle[data-handle="se"] {
-  bottom: -5px;
-  right: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="s"] {
-  bottom: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="sw"] {
-  bottom: -5px;
-  left: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="w"] {
-  top: calc(50% - 5px);
-  left: -5px;
-  cursor: ew-resize;
-}
 /* ======================= SIDEBAR COLLAPSE & PEEK ======================= */
 .sidebar-collapse-toggle {
   position: absolute;
@@ -2172,9 +2124,6 @@ body.scroll-top-visible .skills-split > .tab-main {
   :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content, .sketch-group) {
   cursor: inherit;
 }
-.wb-panel-grip.is-dragging {
-  cursor: grabbing;
-}
 .wb-sidebar-head h3 {
   margin: 0;
 }
@@ -3142,12 +3091,6 @@ dialog::backdrop {
   min-height: 11rem;
   padding: var(--space-4);
   padding-right: calc(var(--target-min) + var(--space-3));
-}
-/* The wrap is the box's stand-in inside the surface, so it takes neither the
-   `.gutter-wrap` recipe's own bottom margin (which would open a gap inside
-   the composer, above the counter) nor any width of its own. */
-.note-composer > .gutter-wrap {
-  margin-bottom: 0;
 }
 /* The foot: Clear and the counter sit inside the surface, so they take its padding
    instead of the negative margin it used to pull itself up against a box it
@@ -5278,23 +5221,8 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   }
 }
 
-/* The first head sits under the lead line rather than against it; every
-   later one opens a group, so it gets the space above that says so. */
-.wb-map-theme .setting-subhead {
-  margin: var(--space-3) 0 var(--space-1);
-}
 .wb-map-theme .setting-subhead:first-of-type {
   margin-top: 0;
-}
-/* The map proposal dialog (`wbReviewMapProposal`, whiteboard.js: "make a map
-   of these notes"). `.confirm-card`'s min(30rem, 92vw) is sized for a question
-   and two buttons; what this holds is a twenty-line outline, and at that width
-   the lines it exists to let you read wrap. Compound selector for the reason
-   `.confirm-card.graph-link-panel` gives at its own override: equal
-   specificity would let source order decide, and `.confirm-card` is declared
-   in a later file. */
-.confirm-card.wb-proposal-card {
-  width: min(36rem, 94vw);
 }
 /* A board's actual layout, in miniature. The dots are cards drawn at their
    real relative positions, so two boards look different from each other in
@@ -6000,12 +5928,6 @@ body.library-media-selecting
   flex: 0 0 auto;
 }
 
-.library-image-usage-chip:hover,
-.library-image-usage-chip:focus-visible {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
-}
-
 .timeline-row-meta > .chip {
   background: transparent;
   border: 0;
@@ -6661,14 +6583,6 @@ button.connection-row:is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   cursor: pointer;
 }
-.ocr-box:hover,
-.ocr-box:focus-visible {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.ocr-box.is-active {
-  border-width: 2.5px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
-}
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
@@ -6691,10 +6605,6 @@ button.connection-row:is(:hover, :focus-visible) {
 
 .ocr-region:hover {
   border-color: var(--accent);
-}
-.ocr-region.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
 }
 /* A disabled control has to read as disabled, the `<input>` greys itself, and
    without this the words beside it stayed at full strength and the pair looked
@@ -7620,12 +7530,6 @@ button.connection-row:is(:hover, :focus-visible) {
 
 .library-file-meta-sep {
   opacity: 0.5;
-}
-.library-file-reading-head > .library-file-open-reading,
-.library-file-reading-actions > .library-file-open-reading,
-.library-file-reading-actions > .library-file-copy-reading {
-  margin-top: 0;
-  flex: 0 0 auto;
 }
 
 /* The bend point on a selected link, a sibling of the endpoint handles,
@@ -8734,18 +8638,6 @@ button.connection-row:is(:hover, :focus-visible) {
   transition: rotate var(--ui-base) var(--ease-out);
 }
 
-/* **The card's gap is its only rhythm** (INBOX 437 (4); DESIGN.md, "zero the
-   margins, not just the heights"). The card is a flex column on one gap,
-   but the title kept an 8px bottom margin inside its head, the description
-   a paragraph's 12px each side and the run line 11.2px each side, so the
-   steps between the parts ran 28, 20, 19 and 27px for no reason a reader
-   could see. The footer keeps its own hairline and the space above it. */
-.skill-card .skill-card-header > .skill-card-title,
-.skill-card > .skill-card-desc,
-.skill-card > .skill-card-when {
-  margin: 0;
-}
-
 .entry-meta.note-meta > .chip {
   background: transparent;
   border: 0;
@@ -9496,11 +9388,6 @@ input[type="file"] {
 .wb-map-node[data-shape="rect"] {
   border-radius: 0;
 }
-.wb-map-node[data-shape="none"] {
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
-}
 /* The fourth, and the one the core node brought with it (MINDMAP_PLAN.md item
    177 names "rounded rectangle, pill, ellipse" as a core idea's shape set).
    A radius, like the three above it, so it still holds any label: what an
@@ -9557,13 +9444,6 @@ input[type="file"] {
   border-left-width: 6px;
   box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in srgb, var(--wb-branch-edge) 45%, transparent);
 }
-/* A map that grows downward reads top-to-bottom, so the spine belongs on the
-   top edge: a left bar on a node whose parent is directly above it points at
-   nothing. */
-.wb-map-down .wb-map-node {
-  border-left-width: 1.5px;
-  border-top: 4px solid var(--wb-branch);
-}
 /* --- the spine on the other edge (MINDMAP_PLAN.md §13e) ---------------------
    A topic whose parent is to its *right* carries the branch bar on its right
    edge, for the same reason a downward map carries it on the top: a bar on
@@ -9573,10 +9453,6 @@ input[type="file"] {
    Each of the three rules above has its mirror here, in the same order and
    for the same reason: the explicit choice has to win over the weight a core
    mark gave the edge, and source order is what decides that. */
-.wb-map-node.wb-map-node-mirrored {
-  border-left-width: 1.5px;
-  border-right: 4px solid var(--wb-branch);
-}
 /* **Em, not a token.** Reported: "the icons in mindmap nodes dont resize with
    the text or size of the node". A topic's own text size is written on the
    node as a px `font-size` (`wbMapApplyNodeStyle`), and a token here is an
@@ -9626,11 +9502,6 @@ input[type="file"] {
   border-radius: var(--radius-sm);
   padding: 0 var(--space-1);
   font-size: 0.92em;
-}
-.wb-map-text .wb-map-inline-link {
-  color: var(--accent-text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 /* The node's two "grow the map here" buttons: `+` (a topic) and the library
    one (a node pointing at a real note/document/file/link). They are an
@@ -9878,19 +9749,6 @@ input[type="file"] {
 .wb-map-strip-menu .wb-menu-controls {
   gap: 2px;
 }
-/* The icon slot's eleven and None are a palette, six to a row like the
-   swatch picker's (DESIGN.md "A choice among colours"): two rows by design,
-   not a run that wrapped, with More icons and emoji under them. */
-.wb-map-picks.is-grid {
-  display: grid;
-  grid-template-columns: repeat(6, var(--wb-map-pick));
-}
-.wb-map-strip-menu .wb-map-icon-more {
-  grid-row: 2;
-  justify-self: stretch;
-  white-space: nowrap;
-  font-size: var(--text-sm);
-}
 
 /* Chosen: the choice control's selected state (DESIGN.md: `--accent-surface`
    behind `--on-accent`, no shadow), on the previews and on the door's own
@@ -9993,12 +9851,6 @@ input[type="file"] {
 }
 .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:disabled {
   opacity: 0.4;
-}
-/* The text size on the bar: the stepper recipe at the bar's own control
-   height, so it does not stand taller than the round buttons beside it. */
-.wb-map-size-stepper > .stepper-btn {
-  width: var(--target-min);
-  height: var(--target-min);
 }
 
 /* The rows themselves stand on the same height as a menu item, so a label
@@ -10220,28 +10072,6 @@ input[type="file"] {
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
-}
-
-/* On a core topic's full colour and on a filled topic's tint the muted ink
-   is not a quiet grey any more: measured, 4.39:1 on the blue branch's tint in
-   light. The label's own ink there, which the fill was chosen to keep legible;
-   the smaller size keeps it second to the name. */
-.wb-map-core .wb-map-number,
-.wb-map-filled .wb-map-number {
-  color: inherit;
-}
-.wb-map-progress.wb-map-progress-complete {
-  color: var(--ok);
-}
-/* On a core topic's colour and a filled topic's tint, the label's ink, for
-   the reason given for the number above: the muted grey there is the same
-   4.39:1 on the blue tint, and the success green is a second hue on a hue.
-   Complete still reads, from the count itself ("5/5"). */
-.wb-map-core .wb-map-progress,
-.wb-map-filled .wb-map-progress,
-.wb-map-core .wb-map-progress.wb-map-progress-complete,
-.wb-map-filled .wb-map-progress.wb-map-progress-complete {
-  color: inherit;
 }
 
 /* The arrowhead takes the branch's own colour: `context-stroke` is what
@@ -15264,10 +15094,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .wb-layer-row:hover {
   background: var(--hover-veil);
 }
-.wb-layer-row[aria-selected="true"] {
-  background: var(--accent-soft);
-  font-weight: 600;
-}
 
 .chat-toolbar .chat-headline > :first-child {
   flex: 0 1 auto;
@@ -15756,12 +15582,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .wb-layer-row .is-by-layer {
   opacity: 0.55;
   cursor: default;
-}
-.wb-layer-row.drop-above {
-  border-top-color: var(--accent);
-}
-.wb-layer-row.drop-below {
-  border-bottom-color: var(--accent);
 }
 /* The template gallery's name field: its word over the field, as every
    dialog field is, with the focus ring's reach added to the gap (INBOX 715:

@@ -2723,13 +2723,6 @@
    it came to run off the bottom of the window (INBOX 12). Its rules are gone;
    the name still appears in some grouped selectors in 03-dashboard-widgets.css that
    cover every menu in the app, which cost nothing to leave. */
-.wb-export-card .wb-export-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
 /* The segments wrap rather than shrinking their words: seven formats do not
    fit one line of a 390px dialog, and a segment whose labels are ellipsised
    is a row of guesses. */
@@ -2740,19 +2733,6 @@
 .wb-export-card .wb-export-note {
   margin: 0;
   color: var(--muted);
-}
-/* The "some of these notes are collapsed" line (INBOX 238). `--warn` rather
-   than `--error`, because nothing has gone wrong: the export will work, it
-   will just carry what the board is showing, which is the whole point of the
-   sentence. It sits under the format and scope note in the same column so it
-   reads as a second line of the same explanation rather than as an alert
-   bolted onto the dialog.
-   Written with `.wb-export-card` in front of it, and immediately after the
-   rule it has to beat, because the element carries both classes: a bare
-   `.wb-export-warning` is one class against that rule's two, so the muted
-   grey won and the line was measured rendering at rgb(76, 85, 99). */
-.wb-export-card .wb-export-warning {
-  color: var(--warn);
 }
 .wb-snap-label {
   display: inline-flex;
@@ -3297,13 +3277,6 @@
 .wb-object.wb-selected {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
-}
-/* The note card's own edge stands down while the selection box is on it: two
-   rectangles two pixels apart is the "the outline on note objects differs from
-   every other object kind" report (INBOX 25), and the box is the one that
-   means something. */
-.node-card.wb-selected {
-  border-color: transparent;
 }
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id

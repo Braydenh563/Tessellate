@@ -3007,11 +3007,6 @@ body.resizing-sidebar {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.outline-link:hover,
-.outline-link:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--surface-3);
-  color: var(--ink);
-}
 .outline-twist {
   flex: none;
   width: 1rem;
@@ -3030,10 +3025,6 @@ body.resizing-sidebar {
   /* A span in the same slot on a row with nothing under it: no pointer, no
      ink, exactly the same box. */
   cursor: default;
-}
-button.outline-twist:hover,
-button.outline-twist:focus-visible {
-  color: var(--ink);
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -3055,17 +3046,6 @@ button.outline-twist:focus-visible {
   font: inherit;
   font-size: var(--text-md);
   padding: 0 var(--space-3);
-}
-/* **The heading you are in.** Keyed off the attribute rather than off the
-   class beside it, so a mark that is only painted and never announced is a
-   mark that does not appear at all: `documents.js` sets both together and
-   this rule pays for the pair. A fill and a weight, never the colour alone
-   (one in twelve men cannot use a colour-only cue), and a fill *without* an
-   accent edge, which is DESIGN.md's rule for a selected row. */
-.outline-link[aria-current] {
-  background: var(--accent-soft);
-  color: var(--ink);
-  font-weight: 600;
 }
 /* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
    rebuilds every `<select>` inside one on a MutationObserver, so for the frame
@@ -5451,14 +5431,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   min-width: 0;
 }
 
-.library-card-meta > .library-card-category {
-  --category-dot: var(--accent);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  color: var(--ink);
-}
 /* **How far along a section is, on its outline row** (DOCUMENTS_PLAN Phase 3
    item 2, "task lists with progress in the outline"). Pushed to the right
    edge of the row rather than sat after the words: the headings are what the
@@ -5680,18 +5652,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      height, so the ellipsis above still applies. */
   min-height: var(--target-min);
   line-height: calc(var(--target-min) - 0.3rem);
-}
-.doc-crumb:hover,
-.doc-crumb:focus-visible {
-  color: var(--text);
-  text-decoration: underline;
-}
-/* Where you are, which is the one crumb that is not a destination you are
-   navigating *to*. Hangs off `aria-current` so the mark and the thing a
-   screen reader announces cannot drift apart. */
-.doc-crumb[aria-current="location"] {
-  color: var(--text);
-  font-weight: 600;
 }
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its

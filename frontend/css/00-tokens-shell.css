@@ -2320,21 +2320,6 @@ button.scroll-row-arrow[hidden] {
   min-width: 0;
   padding-right: 0;
 }
-.library-list .library-card-preview {
-  flex: 1 1 auto;
-  min-width: 0;
-  /* -webkit-line-clamp, not just the unprefixed property: a note's own
-     preview (.library-note .library-card-preview, same specificity, tied
-     on source order for the property this rule forgot) clamps to 8 lines
-     for grid view, and Chromium honours the -webkit- prefixed property,
-     not the unprefixed one this rule set alone. Left unset, a note's
-     preview kept trying to grow to 8 lines' worth of content in list
-     view too, which is what threw its row out of alignment with every
-     other kind's single-line row. */
-  line-clamp: 1;
-  -webkit-line-clamp: 1;
-  margin: 0;
-}
 /* An audit-log entry's own preview can run to the full 400-char budget
    (routes_library.py's ACTIVITY_DETAIL_CHARS) and, unlike every other kind
    here, has nowhere else to read the rest, the grid view already shows it
@@ -2344,31 +2329,6 @@ button.scroll-row-arrow[hidden] {
    not unclamped: list view's row-alignment is still worth keeping for
    every *other* kind sharing this list, so this stays a real (generous)
    cap rather than "as tall as the text wants to be". */
-/* **Fixed, like the two tracks above it, and for the same reason.** Reported
-   again: "the line view in the library all subtab is broken and elements
-   arent aligned or consistent in position." The title and preview columns
-   were pinned by the rule above; the meta column was not, so its width
-   followed whichever category name a row happened to carry, and the ⋯ after
-   it therefore started at a different x on every row. Half a list view is not
-   a list view.
-   Right-aligned inside its own track so the dates line up on their right
-   edge, which is how a column of dates is read. */
-.library-list .library-card-meta {
-  flex: 0 0 14rem;
-  justify-content: flex-end;
-  /* **Pushed to the right edge, not merely sized.** Not every kind of row has
-     a preview, an activity entry does, a board does not, and on the rows
-     without one the meta simply slid left into the gap. Measured across eight
-     rows: the ⋯ started at 1369px on rows with a preview and 681px on rows
-     without, which is the "not aligned or consistent in position" report
-     exactly. `margin-left: auto` makes the last two columns hug the right
-     edge whatever came before them, so the fixed track above then puts the ⋯
-     at one x for the whole list. */
-  margin-left: auto;
-  margin-top: 0;
-  padding-top: 0;
-  gap: var(--space-5);
-}
 .library-list .library-card-thumb {
   width: 3rem;
   height: 2.2rem;
@@ -2740,10 +2700,6 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-4);
   padding: 0 var(--space-4) var(--space-4);
 }
-.library-image-reading > summary:hover,
-.library-image-reading > summary:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--ink);
-}
 
 /* The two blocks that moved inside the fold were written as sections of the
    card's outside: a rule above the usage chips, an inset on the byline. In
@@ -2823,26 +2779,6 @@ button.scroll-row-arrow[hidden] {
   max-height: 9.6rem;
   overflow-y: auto;
 }
-/* **A clamp must cut between lines, never through them.** Reported: "the text
-   in image captions and ocr text in the images and files subtabs gets cut off
-   half way through the letters horizontally if collapsed".
-   `-webkit-line-clamp` clips at the line box, and the line box here is
-   fractional -- 1.5 x 11.2px = 16.8px -- so the clip lands mid-pixel and the
-   descenders of the last line (g, j, p, q, y) sit in the part that is thrown
-   away. `overflow: hidden` then slices them horizontally, which is exactly the
-   shape CLAUDE.md records for the nav-history popup: a box a fraction shorter
-   than its own content.
-   A taller line box fixes it at any font size: 1.6 puts the descender well
-   inside the line rather than at its edge, and the fraction that is lost is
-   then leading, not ink.
-   **Not reproduced in this sandbox** -- there is no OCR'd content in it, so
-   this is the identified cause removed, not an observed repair. If it
-   persists, measure `clientHeight` against `2 * line-height` on the clamped
-   element with real text in it; the remainder is what is being sliced. */
-.library-image-caption.library-image-caption-clamped,
-.library-image-ocr.library-image-ocr-clamped {
-  line-height: 1.6;
-}
 
 /* --- a card that opens does not inflate the six beside it -----------------
    UI_MODERNISATION_PLAN.md Phase 11 (the INBOX 164 block's leftover), measured
@@ -2919,12 +2855,6 @@ button.scroll-row-arrow[hidden] {
   overflow-wrap: anywhere;
   max-height: 18rem;
   overflow-y: auto;
-}
-.library-image-vision-ocr.library-image-vision-ocr-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .library-image-ocr-input {
   width: 100%;

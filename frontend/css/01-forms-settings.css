@@ -1800,9 +1800,6 @@ input.md-task-inline:disabled,
   padding: 0.6rem 0.8rem;
   margin-bottom: 0.6rem;
 }
-.entry-item .log-detail {
-  margin-top: var(--space-2);
-}
 /* Roving-tabindex keyboard nav (app.js's applyEntryListTabOrder /
    initEntryListKeyboardNav): arrow keys move this outline between notes,
    Enter opens the focused one. */
@@ -2623,10 +2620,6 @@ button:not(.ghost) > .spinner {
   color: var(--muted);
   font-size: var(--text-body);
 }
-.contents-heading > .contents-icon {
-  flex: 0 0 auto;
-  color: var(--muted);
-}
 
 /* One line, never two: the last fact gives way first. */
 .library-file-meta.contents-meta {
@@ -2636,12 +2629,6 @@ button:not(.ghost) > .spinner {
   white-space: nowrap;
 }
 
-.contents-heading-row {
-  --depth: 0;
-  padding-block: var(--space-2);
-  padding-inline-start: calc(var(--space-6) + 2rem + var(--space-3) + var(--depth) * var(--space-6));
-  color: var(--muted);
-}
 /* The focused item must be findable without the pointer. */
 .contents-outline [role="treeitem"]:focus-visible {
   outline: 2px solid var(--accent);
