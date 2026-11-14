@@ -1173,19 +1173,19 @@ function settingsHistoryFind(change) {
 //: The dock's own switches (chat mode, Web, mute) are drawn from what they last
 //: wrote, so an Undo or Redo of one repaints them; every other control is drawn
 //: from the saved value when its pane opens.
-function settingsRepaintDock(body) {
-  if ("tools_enabled" in body) {
-    $("tools-toggle").checked = body.tools_enabled === true;
-    renderChatModeSeg();
-  }
-  if ("web_search_enabled" in body) renderWebSearchToggle();
-  if ("notifications_muted_except_reminders" in body) {
-    renderNotifMuteToggle();
-    renderNotificationBadge();
-  }
-}
-
 async function settingsHistoryApply(change, side) {
+  //: Nested, not shared: only an Undo here repaints the dock (the global-scope ratchet).
+  function settingsRepaintDock(body) {
+    if ("tools_enabled" in body) {
+      $("tools-toggle").checked = body.tools_enabled === true;
+      renderChatModeSeg();
+    }
+    if ("web_search_enabled" in body) renderWebSearchToggle();
+    if ("notifications_muted_except_reminders" in body) {
+      renderNotifMuteToggle();
+      renderNotificationBadge();
+    }
+  }
   const kept = settingsHistoryFind(change) || change;
   const held = kept.big ? settingsHistoryBigKept.get(kept.id) : null;
   if (held) Object.assign(kept, held);

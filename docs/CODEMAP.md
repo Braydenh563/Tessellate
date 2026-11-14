@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11026, test files 2840, tests 22552, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11026, test files 2840, tests 22552, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8508)
+## Frontend functions (8507)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7497,7 +7497,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `waitForRestart` | frontend/js/settings-controls.js:1810 |
 | `wireLearnedSection` | frontend/js/settings-controls.js:4972 |
 
-### frontend/js/settings-data.js (53)
+### frontend/js/settings-data.js (52)
 
 | Name | File:line |
 |---|---|
@@ -7543,7 +7543,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsClearCount` | frontend/js/settings-data.js:720 |
 | `settingsClearDone` | frontend/js/settings-data.js:890 |
 | `settingsHistoryAdd` | frontend/js/settings-data.js:1157 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1188 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1176 |
 | `settingsHistoryEntry` | frontend/js/settings-data.js:1138 |
 | `settingsHistoryFind` | frontend/js/settings-data.js:1168 |
 | `settingsHistoryLoad` | frontend/js/settings-data.js:1127 |
@@ -7552,7 +7552,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsHistorySave` | frontend/js/settings-data.js:1131 |
 | `settingsHistoryUndo` | frontend/js/settings-data.js:1264 |
 | `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
-| `settingsRepaintDock` | frontend/js/settings-data.js:1176 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
 ### frontend/js/settings-find.js (36)
