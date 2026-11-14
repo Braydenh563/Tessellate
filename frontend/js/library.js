@@ -1204,7 +1204,7 @@ function libraryActions(item) {
         if (archived !== undefined) {
           pushRoutePairUndo("Archived a note", [`/entries/${item.id}/unarchive`, "POST"], [`/entries/${item.id}/archive`, "POST"], () => Promise.all([loadLibrary(), refreshEntries([item.id])]));
         }
-        toast("Archived.");
+        toast(`Archived “${item.title}”.`);
         reload();
         loadEntries();
       }),
@@ -1289,7 +1289,7 @@ function libraryActions(item) {
         if (!(await confirmDialog(`Delete "${item.title}"?\n\nIt moves out of the Library; Undo brings it back.`))) return;
         const gone = await apiJson(`/files/${item.id}`, { method: "DELETE" }).catch((e) => toast(e.message, true));
         if (gone) pushTokenUndo(`Deleted “${item.title}”`, [{ del: [`/files/${item.id}`, "DELETE"], restore: "/files/restore", token: gone.undo_token }], reload);
-        toast("Deleted.");
+        toast(`Deleted “${item.title}”.`);
         reload();
       }),
     ];

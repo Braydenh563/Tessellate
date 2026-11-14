@@ -471,6 +471,14 @@ function entryItem(entry, options = {}) {
     });
     li.appendChild(more);
   } else {
+    //: A long note says what it is about before its clamped lines (CHAT_PLAN B22):
+    //: the gist is the server's (`composer_gist`), under 90 characters.
+    if (entry.gist && isLong) {
+      const gist = document.createElement("p");
+      gist.className = "entry-gist muted text-sm";
+      gist.textContent = entry.gist;
+      li.appendChild(gist);
+    }
     li.appendChild(content);
   }
   if (isLong) {

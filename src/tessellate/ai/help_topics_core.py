@@ -52,7 +52,7 @@ HELP_TOPICS: list[dict] = [
             "Use a template, dictate with the microphone icon, sketch with the "
             'palette icon, or run "Improve" to proofread first, which needs no model (rewording does). '
             "A note's ... menu has Generate title, which with no model takes the title from the "
-            "note's first sentence and is named Title from its words. The Writing room has "
+            "note's first sentence and is named Title from its words. A long note's card opens with a one-line gist, its own first sentence under 90 characters. The Writing room has "
             '"Split into notes", which turns a block of pasted text into several '
             "notes, split by its headings, paragraphs and subjects with no model and by meaning, "
             "auto-linked, with one. A formatting toolbar, here or in a document, is one Tab stop: "
@@ -80,7 +80,7 @@ HELP_TOPICS: list[dict] = [
         "body": (
             '"Ask your notebook" (Notes tab) and the Chat tab both answer from '
             "saved notes, with the raw notes beside the answer, each saying why "
-            "it is there; in Ask, "
+            "it is there; "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
             "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "
@@ -606,6 +606,8 @@ HELP_TOPICS: list[dict] = [
         "id": "storage",
         "keywords": (
             "backup",
+            "auto backup",
+            "backup setting",
             "storage",
             "data dir",
             "where is my",

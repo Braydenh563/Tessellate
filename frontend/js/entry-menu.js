@@ -60,7 +60,7 @@ function fillEntryMenu(menu, entry) {
             flashEntry(copy.id);
             await openNoteEditor(copy.id);
           }
-          toast("Note duplicated.");
+          toast(`Duplicated “${noteNamePlain(content, 40) || "a note"}”.`);
         } catch (err) {
           toast(err.message || "Couldn't duplicate note.", true);
         }

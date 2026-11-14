@@ -132,6 +132,35 @@ function finderActions(query) {
 }
 
 async function finderSearch(append = false) {
+  //: The composed one-line answer above the results when the query is a
+  //: question (CHAT_PLAN composer everywhere, row 4); asked after the results
+  //: are drawn so it never holds them up, and dropped if a newer search runs.
+  async function finderAnswerLine(query, run) {
+    const line = document.getElementById("finder-answer");
+    if (!line) return;
+    line.classList.add("hidden");
+    line.replaceChildren();
+    if (!/\?\s*$|^(?:what|when|where|who|why|how|which|do|does|did|is|are|can)\s/i.test(query)) return;
+    const got = await apiJson(`/read/answer?q=${encodeURIComponent(query)}&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true }).catch(() => null);
+    if (run !== finderState.run || !got || !got.answer) return;
+    const text = document.createElement("span");
+    text.textContent = got.answer.text;
+    line.appendChild(text);
+    const id = (got.answer.sources || [])[0];
+    if (id) {
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "ghost small finder-answer-open";
+      open.textContent = "Open the note";
+      open.addEventListener("click", () => {
+        closeFinder();
+        FINDER_OPEN.note({ id });
+      });
+      line.appendChild(open);
+    }
+    line.classList.remove("hidden");
+  }
+
   const run = ++finderState.run;
   finderState.page = append ? finderState.page + 1 : 1;
   const query = finderQuery.trim();
@@ -142,6 +171,7 @@ async function finderSearch(append = false) {
     finderHits = [];
     finderCounts = {};
     finderRenderEmpty();
+    document.getElementById("finder-answer")?.classList.add("hidden");
     return;
   }
   //: **No "Searching" flash.** Reported: "the 'searching...' text keeps
@@ -207,6 +237,7 @@ async function finderSearch(append = false) {
   }
   finderHits = [...hits, ...actions];
   finderRender();
+  finderAnswerLine(query, run);
 }
 
 //: Sorting is done here rather than asked of the route because two of the

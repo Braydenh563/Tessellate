@@ -357,10 +357,10 @@ async function binNoteWithUndo(entry) {
   };
   const action = pushUndo("Moved a note to the bin", restoreIt, binIt);
   window.nameMarkBuddyReact?.("binned");
-  toastAction("Moved to the bin.", "Undo", async () => {
+  toastAction(`Moved “${noteNamePlain(entry.content, 40) || "a note"}” to the bin.`, "Undo", async () => {
     settleUndoFromToast(action);
     await restoreIt();
-    toast("Note restored.");
+    toast(`Restored “${noteNamePlain(entry.content, 40) || "a note"}”.`);
   }, { also: GO_TO_BIN });
 }
 

@@ -26,6 +26,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from tessellate.ai import (
+    composer_gist,
     extractor,
     filing_certainty,
     janitor,
@@ -1777,6 +1778,7 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
         row.tasks_done = len(_TASK_DONE.findall(row.content))
         row.wiki_linked = bool(_WIKI_LINK.search(row.content))
         row.heading_count = _heading_count(row.content)
+        row.gist = "" if row.is_private else composer_gist.gist(row.content)
         #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
         #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
         #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.

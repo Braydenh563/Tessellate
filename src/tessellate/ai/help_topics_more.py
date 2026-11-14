@@ -818,7 +818,9 @@ MORE_TOPICS: list[dict] = [
             "(the app keeps the note the link would make), and no thanks drops it. "
             "A story over many notes tells the ones it read and says so at the end (That tells five of the twelve; ask for a month or a tag to see the rest). "
             "A counting question in Ask (how many notes per category this month) also gets "
-            "a chart from your notes, with its numbers and Save as PNG."
+            "a chart from your notes, with its numbers and Save as PNG. In Find anything, a "
+            "question (\"when does my passport expire?\") gets a one-line answer from your "
+            "notes above the results, with a button to open the note."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1083,7 +1085,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "lock",
         "keywords": (
-            "auto-lock", "auto lock", "change my password", "reset password",
+            "auto-lock", "auto lock", "lock timeout", "lock setting", "change my password", "reset password",
             "other devices", "on my phone", "another computer", "sessions",
             "lock everywhere", "re-encrypt", "new key", "rotate key",
             "recovery key", "make a recovery key",

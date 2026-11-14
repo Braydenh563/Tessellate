@@ -291,6 +291,8 @@ class EntryOut(BaseModel):
     link_reason: str | None = None
     #: `content` is the first part only (`GET /entries?preview=`).
     content_truncated: bool = False
+    #: A long note's one-line gist for its card (`ai/composer_gist`); "" for a short one.
+    gist: str = ""
     #: What the whole text holds, for a row whose `content` is a part (`GET /entries?preview=`): the
     #: words (`core/cjk.word_count`, the page's own rule) and the `- [ ]` and `- [x]` task lines.
     #: None on a row that carries the whole text, where a caller counts it itself.

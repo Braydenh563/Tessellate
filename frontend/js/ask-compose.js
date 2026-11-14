@@ -142,32 +142,30 @@ function markSaidSentences(targets, sentences) {
 //: a rename, a move or a tag waits for them) or, once it ran (a reminder, a
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
-const ACT_ITEMS_SHOWN = 5;
-
-//: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
-function actItemList(items) {
-  if (!items || !items.length) return null;
-  const list = document.createElement("ul");
-  list.className = "act-items";
-  items.forEach((title, at) => {
-    const row = document.createElement("li");
-    row.textContent = title;
-    if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
-    list.appendChild(row);
-  });
-  if (items.length > ACT_ITEMS_SHOWN) {
-    const more = document.createElement("li");
-    const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
-      for (const row of list.children) row.hidden = false;
-      more.remove();
-    });
-    more.appendChild(button);
-    list.appendChild(more);
-  }
-  return list;
-}
-
 function renderActCard(holder, event) {
+  //: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
+  function actItemList(items) {
+    const ACT_ITEMS_SHOWN = 5;
+    if (!items || !items.length) return null;
+    const list = document.createElement("ul");
+    list.className = "act-items";
+    items.forEach((title, at) => {
+      const row = document.createElement("li");
+      row.textContent = title;
+      if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
+      list.appendChild(row);
+    });
+    if (items.length > ACT_ITEMS_SHOWN) {
+      const more = document.createElement("li");
+      const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
+        for (const row of list.children) row.hidden = false;
+        more.remove();
+      });
+      more.appendChild(button);
+      list.appendChild(more);
+    }
+    return list;
+  }
   //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
   //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
   function applyThemeSteps(steps, result) {
@@ -684,6 +682,63 @@ function citationVerdictRow(source, content) {
 }
 
 function askAnswerMenu() {
+  async function askKeepAsFlashcards() {
+    if (!askKept?.text) return toast("There is no answer to keep yet.");
+    const title = askKeptTitle();
+    try {
+      const deck = await apiJson(`/read/flashcards?title=${encodeURIComponent(title)}&text=${encodeURIComponent(askKept.text.slice(0, 8000))}`);
+      if (!deck.count) return toast("This answer holds nothing to turn into flashcards.");
+      const doc = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: `Flashcards: ${title}`, content: deck.text }) });
+      pushUndo(
+        "Made flashcards from an answer",
+        () => api(`/documents/${doc.id}`, { method: "DELETE" }),
+        () => api(`/documents/${doc.id}/restore`, { method: "POST" })
+      );
+      toastAction(`Made ${nounCount(deck.count, "flashcard")}.`, "Open", () => {
+        switchTab("documents");
+        openDocument(doc.id);
+      }, { go: { open: "doc", id: doc.id } });
+    } catch (error) {
+      toast(error.message || "Couldn't make the flashcards.", true);
+    }
+  }
+
+  async function askRemindAboutAnswer() {
+    if (!askKept?.question) return toast("There is no answer to remind you about yet.");
+    const due = new Date();
+    due.setDate(due.getDate() + 1);
+    due.setHours(9, 0, 0, 0);
+    try {
+      const made = await apiJson("/reminders", {
+        method: "POST",
+        body: JSON.stringify({ text: `Revisit: ${askKeptTitle()}`, due_at: due.toISOString() }),
+      });
+      reminderMadeUndo(made);
+      loadReminders();
+      toast(`Reminder set for tomorrow at 9: ${askKeptTitle()}.`);
+    } catch (error) {
+      toast(error.message || "Couldn't make that reminder.", true);
+    }
+  }
+
+  async function askRateAnswer(good) {
+    if (!askKept?.text) return toast("There is no answer to rate yet.");
+    const payload = JSON.stringify({ question: askKept.question || "", answer: askKept.text, good });
+    try {
+      let made = await apiJson("/read/rate", { method: "POST", body: payload });
+      pushUndo(
+        good ? "Rated an answer good" : "Rated an answer not good",
+        () => api(`/read/rate?at=${encodeURIComponent(made.at)}`, { method: "DELETE" }),
+        async () => {
+          made = await apiJson("/read/rate", { method: "POST", body: payload });
+        }
+      );
+      toast(good ? "Added to your good answers." : "Marked as not good.");
+    } catch (error) {
+      toast(error.message || "Couldn't save that rating.", true);
+    }
+  }
+
   const slot = $("ask-answer-more");
   if (!slot || slot.firstChild) return;
   slot.appendChild(
@@ -703,6 +758,26 @@ function askAnswerMenu() {
           label: "ph:graph Make a mind map of its notes",
           title: "A mind map of the notes this answer cites",
           run: () => askKeepAsMap(),
+        },
+        {
+          label: "ph:cards Make flashcards",
+          title: "Questions and answers from this answer's own words, saved as a document",
+          run: () => askKeepAsFlashcards(),
+        },
+        {
+          label: "ph:alarm Remind me about this",
+          title: "A reminder tomorrow at 9 to come back to this question",
+          run: () => askRemindAboutAnswer(),
+        },
+        {
+          label: "ph:thumbs-up Good answer",
+          title: "Add this answer to your local set of good answers",
+          run: () => askRateAnswer(true),
+        },
+        {
+          label: "ph:thumbs-down Not a good answer",
+          title: "Mark this answer as not good; it shows in the weekly gallery",
+          run: () => askRateAnswer(false),
         },
       ],
       "More ways to keep this answer"
