@@ -7910,3 +7910,32 @@ def test_a_scroll_rows_arrows_are_for_a_pointer_not_touch() -> None:
     its middle at 390 (L-world-class-35, touch.js), so `hover: none` hides the arrows."""
     shell = (ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8")
     assert re.search(r"@media \(hover: none\) \{\s*button\.scroll-row-arrow\.icon-only \{\s*display: none;", shell)
+
+
+def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
+    """L-world-class-36: #doc-statusbar was 80px over at 320 to 820 (overlap.js)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    m = re.search(r"\.doc-statusbar > #doc-caret,\s*\.doc-statusbar > \.doc-statusbar-button \{([^}]*)\}", css)
+    assert m and "min-width: 0" in m.group(1) and "overflow: hidden" in m.group(1)
+    assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
+    assert re.search(r"\.doc-statusbar-button > span \{[^}]*text-overflow: ellipsis", css)
+    assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.doc-statusbar > \.doc-statusbar-button \{\s*flex-shrink: 1;", css)
+
+
+def test_the_optional_package_notice_keeps_its_action_whole() -> None:
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
+    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+
+
+def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:
+    """L-world-class-36: the 24px "+N" chip's overhang ran 10px past its box at 390."""
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    assert re.search(r"\.entry-meta\.note-meta > \.note-meta-more \{\s*min-width: var\(--target-min\);", css)
+
+
+def test_a_reminders_phone_time_may_wrap_instead_of_overflowing() -> None:
+    """L-world-class-36: the nowrap time ran 6px past its column at 320."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"#reminder-groups \.entry-meta > \.entry-date \{\s*grid-area: when;\s*white-space: normal;", css)

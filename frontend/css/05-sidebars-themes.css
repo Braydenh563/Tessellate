@@ -4608,6 +4608,34 @@ html[data-chrome="native"] #top-bar #brand-logo {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The caret position and the two buttons whose words are labels give way
+   after the counts do, each with an ellipsis, so the file type slot keeps
+   its place and the bar never reaches past its box (L-world-class-36:
+   80px over at 320 to 820). */
+.doc-statusbar > #doc-caret,
+.doc-statusbar > .doc-statusbar-button {
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.doc-statusbar > #doc-caret {
+  flex-shrink: 8;
+  text-overflow: ellipsis;
+}
+#doc-counts {
+  flex-shrink: 4;
+}
+@media (max-width: 599.98px) {
+  .doc-statusbar > .doc-statusbar-button {
+    flex-shrink: 1;
+  }
+}
+.doc-statusbar-button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .doc-statusbar-spacer {
   flex: 1 1 auto;
 }

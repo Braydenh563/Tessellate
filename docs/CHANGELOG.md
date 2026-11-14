@@ -8,6 +8,10 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Search: a test pins that tag: narrows the keyword candidates before the depth cut (L626).
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).
+- Reminders at 320: a row's time may wrap to a second line instead of running 6px past its column
+- Notes, narrow widths: the "+N" tags chip takes the 44px finger floor inside its box, so its touch overhang no longer runs 10px past it at 390
+- Settings, Models: the optional-package notice keeps its action's label whole and wraps the row, so "Open Packages" no longer runs 21px past its button at 320 and 390
+- Documents status bar: the caret position, the goal and the suggestions chip give way with an ellipsis (the file type keeps its place), so the bar is no longer 80px wider than its box at 320 to 820
 - The documents dictionary dialog is built on its first open, not parsed at boot: the boot page is back under its element cap after the base merge.
 - The first Settings open no longer lays its window out to draw your face: the face is drawn on idle (L-world-class-37).
 - Restore drain tests no longer time the wall clock: a zero wait proves a stream or long poll does not hold a restore (L-world-class-38).

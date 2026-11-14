@@ -2684,6 +2684,16 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .notice-warn > .ph {
   color: var(--warn);
 }
+/* The optional-package notice (extra-notice.js): its action keeps the width of
+   its label and the row wraps, so "Open Packages" no longer runs 21px past
+   its button in a 320px Settings card (L-world-class-36). */
+.extra-notice {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.extra-notice > button {
+  flex: none;
+}
 /* --- glass reaches the floating chrome that sat outside it ------------------
    Owner, with four screenshots: "some elements dont use the glass styles if
    they are active". Measured with glass on in Classic dark: the graph's
@@ -4593,8 +4603,11 @@ body .chip.item-label,
     grid-area: text;
     padding-top: var(--space-2);
   }
+  /* The time may take a second line: nowrap ran "Sat, Nov 14, 11:31 AM · in
+     2 h" 6px past its column at 320 (overlap.js, L-world-class-36). */
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
+    white-space: normal;
   }
   /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {
