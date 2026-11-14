@@ -1731,9 +1731,9 @@ BUILTIN_SKILLS: list[dict] = [
                 "search_notes",
             ),
             _step(
-                "Look up each person named in {{people}} with person_page, to see what my notes hold about them.",
+                "Look up each person named in {{people}} with get_person_page, to see what my notes hold about them.",
                 "tool_optional",
-                "person_page",
+                "get_person_page",
             ),
             _step("Check my open reminders with list_reminders for anything about {{topic}} or {{people}}.", "tool_called", "list_reminders"),
             _step(
@@ -1751,7 +1751,7 @@ BUILTIN_SKILLS: list[dict] = [
             {"name": "people", "label": "Who is it with?", "required": True},
             {"name": "topic", "label": "What is it about?", "required": True},
         ],
-        "tools": [*_READING_TOOLS, "person_page", "list_reminders", "create_note"],
+        "tools": [*_READING_TOOLS, "get_person_page", "list_reminders", "create_note"],
     },
     {
         "name": "Monthly look back",
@@ -1760,9 +1760,9 @@ BUILTIN_SKILLS: list[dict] = [
         "prompt": "Look back at {{month}}: what I wrote, spent and finished.",
         "steps": [
             _step(
-                "Get the month's numbers with month_figures for {{month}} (last month when I left it blank).",
+                "Get the month's numbers with count_month_figures for {{month}} (last month when I left it blank).",
                 "tool_called",
-                "month_figures",
+                "count_month_figures",
             ),
             _step(
                 "Read the three or four most telling notes it names with get_note, to say what the month was about.",
@@ -1777,7 +1777,7 @@ BUILTIN_SKILLS: list[dict] = [
             _step("Save it with create_note, titled with the month, and say where it is.", "tool_called", "create_note"),
         ],
         "inputs": [{"name": "month", "label": "Which month? (blank for last month)"}],
-        "tools": [*_READING_TOOLS, "month_figures", "create_note"],
+        "tools": [*_READING_TOOLS, "count_month_figures", "create_note"],
     },
     {
         "name": "Archive stale notes",
@@ -1786,9 +1786,9 @@ BUILTIN_SKILLS: list[dict] = [
         "prompt": "Find notes I have not touched for {{span}} and let me choose which to archive.",
         "steps": [
             _step(
-                "List the notes untouched for {{span}} with stale_notes, turning the span into a number of days.",
+                "List the notes untouched for {{span}} with find_stale_notes, turning the span into a number of days.",
                 "tool_called",
-                "stale_notes",
+                "find_stale_notes",
             ),
             _step(
                 "Show them as a numbered list with the date each was last touched, then ask which to archive and stop. "
@@ -1803,7 +1803,7 @@ BUILTIN_SKILLS: list[dict] = [
             _step("Say how many you archived, and that Undo in Chat brings them back.", "answer_only"),
         ],
         "inputs": [{"name": "span", "label": "Untouched for how long? (e.g. 3 months, 90 days)", "required": True}],
-        "tools": ["stale_notes", "get_note", "archive_note"],
+        "tools": ["find_stale_notes", "get_note", "archive_note"],
     },
     {
         "name": "Everything about a person",
@@ -1811,7 +1811,7 @@ BUILTIN_SKILLS: list[dict] = [
         "when_to_use": "when you want all you have on one person in one place",
         "prompt": "Gather everything my notes hold about {{person}} into one note.",
         "steps": [
-            _step("Read {{person}}'s page with person_page.", "tool_called", "person_page"),
+            _step("Read {{person}}'s page with get_person_page.", "tool_called", "get_person_page"),
             _step(
                 "Read the two or three most recent notes it names with get_note, for what was last said.",
                 "tool_optional",
@@ -1825,7 +1825,7 @@ BUILTIN_SKILLS: list[dict] = [
             _step("Save it with create_note, titled with their name, and say where it is.", "tool_called", "create_note"),
         ],
         "inputs": [{"name": "person", "label": "Who?", "required": True}],
-        "tools": [*_READING_TOOLS, "person_page", "create_note"],
+        "tools": [*_READING_TOOLS, "get_person_page", "create_note"],
     },
     # BACKLOG §22: "the way skills are used... it doesn't recognise that it
     # needs to use tools" was fixed at the mechanism level (this module's own

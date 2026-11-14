@@ -2406,7 +2406,7 @@
     }
    }
   ],
-  "stale_notes": [
+  "find_stale_notes": [
    {
     "args": {
      "days": 90
@@ -2431,7 +2431,7 @@
     }
    }
   ],
-  "month_figures": [
+  "count_month_figures": [
    {
     "args": {
      "month": "October"
@@ -2463,7 +2463,7 @@
     }
    }
   ],
-  "person_page": [
+  "get_person_page": [
    {
     "args": {
      "name": "Sam"

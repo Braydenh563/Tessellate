@@ -63,9 +63,9 @@ With default settings the server offers **28 tools**, all of them reads (of 73 i
 | `link_notes` | write | Connect a note to one or more related notes. |
 | `map_from_note` | write | Make a mind map from one note in one call, for 'turn this note into a map': its title is the centre, its headings and lists the branches. |
 | `archive_note` | write | Archive notes, or bring them back (archived false). Archived notes are kept, never deleted. |
-| `stale_notes` | read | Notes not written, edited or opened for a span, oldest first. Favourites and archived notes are left out. |
-| `month_figures` | read | A month in numbers: notes written, reminders finished, what the notes record as spent, each with its note ids. |
-| `person_page` | read | Everything the notes hold about one person: the notes naming them, the notes linked to those, and open reminders that name them. |
+| `find_stale_notes` | read | Notes not written, edited or opened for a span, oldest first. Favourites and archived notes are left out. |
+| `count_month_figures` | read | A month in numbers: notes written, reminders finished, what the notes record as spent, each with its note ids. |
+| `get_person_page` | read | Everything the notes hold about one person: the notes naming them, the notes linked to those, and open reminders that name them. |
 | `pin_note` | write | Add a note to Favourites (or remove it). |
 | `place_library_item` | write | Place a library item (a ref from list_library) on a board, centred at x, y. |
 | `rename_category` | write | Rename a category; merges if the new name is already taken. |

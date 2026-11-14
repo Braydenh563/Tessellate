@@ -36,9 +36,9 @@ def test_stale_notes_lists_only_what_is_untouched_past_the_span(session):
     opened = _note(session, "# Read lately\n\nw", datetime(2026, 1, 2, 9))
     opened.last_opened_at = datetime(2026, 11, 1, 9)
     session.commit()
-    out = tools.execute_tool(session, "stale_notes", {"days": 90})
+    out = tools.execute_tool(session, "find_stale_notes", {"days": 90})
     assert [n["id"] for n in out["notes"]] == [old.id] and out["total_stale"] == 1
-    assert "error" in tools.execute_tool(session, "stale_notes", {"days": "soon"})
+    assert "error" in tools.execute_tool(session, "find_stale_notes", {"days": "soon"})
 
 
 def test_stale_notes_never_lists_private_or_archived_notes(session):
@@ -47,7 +47,7 @@ def test_stale_notes_never_lists_private_or_archived_notes(session):
     shelved = _note(session, "# Shelved\n\nq", datetime(2026, 1, 1, 9))
     manager.archive_entry(session, shelved)
     session.commit()
-    assert tools.execute_tool(session, "stale_notes", {"days": 30})["notes"] == []
+    assert tools.execute_tool(session, "find_stale_notes", {"days": 30})["notes"] == []
 
 
 def test_month_figures_counts_what_was_written_and_finished(session):
@@ -57,16 +57,16 @@ def test_month_figures_counts_what_was_written_and_finished(session):
     session.add(Reminder(text="Send the form", due_at=datetime(2026, 10, 12, 9), done=True, done_at=datetime(2026, 10, 12, 10)))
     session.add(Reminder(text="Book the vet", due_at=datetime(2026, 10, 20, 9)))
     session.commit()
-    out = tools.execute_tool(session, "month_figures", {"month": "October"})
+    out = tools.execute_tool(session, "count_month_figures", {"month": "October"})
     assert out["notes_written"] == 2 and out["reminders_finished"] == 1 and out["reminders_still_open_from_then"] == 1
     assert out["from"] == "2026-10-01" and out["to"] == "2026-10-31"
     assert out["spent"]["source_notes"], out["spent"]
-    assert "error" in tools.execute_tool(session, "month_figures", {"month": "the zorgblat era"})
+    assert "error" in tools.execute_tool(session, "count_month_figures", {"month": "the zorgblat era"})
 
 
 def test_month_figures_says_nothing_was_spent_when_nothing_is_recorded(session):
     _note(session, "# Walk\n\nA long walk.", datetime(2026, 10, 5, 9))
-    assert tools.execute_tool(session, "month_figures", {})["spent"] == {"text": "", "source_notes": []}
+    assert tools.execute_tool(session, "count_month_figures", {})["spent"] == {"text": "", "source_notes": []}
 
 
 def test_person_page_gathers_notes_links_and_open_reminders(session):
@@ -80,11 +80,11 @@ def test_person_page_gathers_notes_links_and_open_reminders(session):
     session.add(Reminder(text="Email Sam the report", due_at=datetime(2026, 11, 12, 9)))
     session.add(Reminder(text="Buy milk", due_at=datetime(2026, 11, 12, 9)))
     session.commit()
-    out = tools.execute_tool(session, "person_page", {"name": "sam"})
+    out = tools.execute_tool(session, "get_person_page", {"name": "sam"})
     assert [n["id"] for n in out["linked_notes"]] == [b.id]
     assert out["name"] == "Sam Lee" and [n["id"] for n in out["mentioned_in"]] == [a.id]
     assert [r["text"] for r in out["open_reminders"]] == ["Email Sam the report"]
-    assert "No one called" in tools.execute_tool(session, "person_page", {"name": "Zed"})["error"]
+    assert "No one called" in tools.execute_tool(session, "get_person_page", {"name": "Zed"})["error"]
 
 
 def test_the_four_looking_back_skills_are_built_in_and_each_writes_last():

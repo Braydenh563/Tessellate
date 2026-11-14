@@ -682,7 +682,7 @@ confirmation (SEC-02).
 
 *Reading the notebook:* `search_notes` · `get_note` · `list_notes` ·
 `count_notes` · `list_tags` · `list_categories` · `summarize_notes` ·
-`find_similar_notes` · `related_notes` · `notebook_overview` · `stale_notes` · `month_figures` · `person_page` ·
+`find_similar_notes` · `related_notes` · `notebook_overview` · `find_stale_notes` · `count_month_figures` · `get_person_page` ·
 `find_contradictions`: notes that disagree with each other: a reversed
 decision, a date that moved
 
