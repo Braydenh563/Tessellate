@@ -1835,6 +1835,7 @@ TOPIC_META: dict[str, dict] = {
     "translate": {"title": "Translating", "path": "Notes tab, Writing room"},
     "tags-categories": {"title": "Tags and categories", "path": "A note's own row, or Capture's Filing menu"},
     "code-files": {"title": "Code documents", "path": "Library tab, Documents"},
+    "json-schema": {"title": "JSON schema checks", "path": "Library tab, Documents"},
     "code-completions": {"title": "Completions and snippets in code", "path": "A code document, as you type"},
     "code-tabs": {"title": "Tabs for open code files", "path": "A code document, the strip above the editor"},
     "vim-keys": {"title": "Vim keys in the editor", "path": "A document, the ... menu, Vim keys"},
@@ -1963,7 +1964,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (

@@ -133,6 +133,7 @@ TOPIC_LEADS: dict[str, str] = {
     "writing-checks": "Catch spelling, grammar and long sentences as you write, all on this computer.",
     "spelling-check": "Why a word is or is not flagged, and how to keep your own words.",
     "code-files": "Write code in a document with colours, error checks and closing brackets.",
+    "json-schema": "Check a JSON file against a schema in your Library and complete its keys.",
     "code-completions": "Save typing in code with suggestions and short words that expand into blocks.",
     "code-tabs": "Keep several code files open as tabs and switch between them.",
     "vim-keys": "Turn on Vim's modes and keys in code and documents.",

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Help: the JSON schema checks topic is listed under Documents with its title and lead (L-documents-42 follow-up).
 - Writing room: the Earlier drafts foot height is reset inside the existing 72rem one-column query instead of a new 72.01rem breakpoint, which failed test_the_breakpoints_only_shrink.
 - Documents: a Copy button on fenced code in Live view (L-documents-65): a CodeMirror widget laid over the block's first code line (absolute, so the 8px fence rows stay 7.4px), hover or focus on desktop and always shown on touch with a 44px hit area; not reachable by the arrow keys (0 of 18) and not part of Ctrl+A copy; it copies the code without the fences.
 - Documents: the block-reference, suggestion and code-format pieces each export one object, so no name is declared in two scripts (test_s66; global names 7,406 to 7,379).
