@@ -1010,9 +1010,8 @@ def _preference(key: str, default: bool) -> bool:
 
 
 def _stated_lead(question: str, topics: list[dict]) -> str:
-    """The lead, after the switch's state when the topic has one; a lead
-    that only gives the default ("off by default") gives way to the next
-    sentence that answers, since the state now says it."""
+    """The lead, after the switch's state when the topic has one; a lead giving
+    only the default ("off by default") yields to the next answering sentence."""
     state = guide_lead.state_line(topics[0]["id"], _preference)
     lead = _guide_lead(question, topics)
     if state and re.search(r"\bby default\b", lead):
@@ -1022,10 +1021,8 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     #: gets its own sentence (audit 1031 AI12).
     if state.endswith(" is on now."):
         lead = re.sub(r"^Turn it on\b", "Turn it off", lead)
-    #: The switch's state already says what the topic's short opening says
-    #: ("Web search is opt-in."), so a stated answer opens on the state.
-    opening = "" if state else guide_lead.short_opening(question, topics[0])
-    return " ".join(x for x in (opening, state, lead) if x)
+    #: A stated switch opens on its state, which says what the short opening would.
+    return " ".join(x for x in (state or guide_lead.short_opening(question, topics[0]), lead) if x)
 
 
 def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:
