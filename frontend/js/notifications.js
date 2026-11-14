@@ -108,13 +108,39 @@ function reminderDoneButton(item) {
     }
   };
   const was = item.detail;
+  //: After Done the row re-renders without its button, so focus goes to the
+  //: line that now says what happened, and the live region says it too.
+  const land = (detail) => {
+    announce(detail);
+    openNotifications({ keepWatermark: true }).then(() => {
+      const li = [...$("notif-list").children].find((el) => el.dataset.at === String(item.at));
+      const meta = li?.querySelector(".notif-meta");
+      if (meta) {
+        meta.tabIndex = -1;
+        meta.focus();
+      } else $("notif-close")?.focus();
+    });
+  };
   button.addEventListener("click", async (event) => {
     event.stopPropagation();
     button.disabled = true;
     let rolled;
+    //: `expected_due_at`: the occurrence this row was raised for. Ticked in
+    //: the Reminders tab or on another device since, a repeat would roll on a
+    //: second time; the route answers 409 instead and the row says where the
+    //: reminder is now.
+    const seen = item.reminderDue ? `&expected_due_at=${encodeURIComponent(item.reminderDue)}` : "";
     try {
-      rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" });
-    } catch {
+      rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}${seen}`, { method: "POST" });
+    } catch (error) {
+      if (error?.status === 409) {
+        const now = error.detail?.reminder;
+        const detail = !now || now.done ? "Already done" : `Already done, next ${whenText(now.due_at)}`;
+        mark(true, detail);
+        loadReminders().catch(() => {});
+        land(detail);
+        return;
+      }
       button.disabled = false;
       toast("Couldn't complete that reminder. Press Done to try again.", "info");
       return;
@@ -134,7 +160,7 @@ function reminderDoneButton(item) {
         put({ due_at: rolled.due_at, done: rolled.done }, true, said));
     }
     loadReminders().catch(() => {});
-    openNotifications({ keepWatermark: true });
+    land(said);
   });
   return button;
 }

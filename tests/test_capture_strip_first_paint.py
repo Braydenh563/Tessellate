@@ -62,3 +62,15 @@ def test_the_folded_capture_strip_opens_when_pressed():
     lst = frontend_text("notes-list.js")
     body = lst[lst.index("function foldNoteToolbarForFirstPaint() {") :][:1500]
     assert 'startNewNote();' in body
+
+
+def test_the_strip_is_wired_once_the_notes_surface_is_built():
+    """Measured 2026-11-12 against the running app: pressing the folded strip did
+    nothing (0 `startNewNote` calls, strip still 40px with only Source), because
+    `#note-toolbar` is in the Notes surface's template and does not exist when
+    notes-list.js loads, so the call at load found no bar and bound nothing. The
+    string test above passed over a handler that never ran. It runs on the
+    surface's build now."""
+    lst = frontend_text("notes-list.js")
+    assert "\nfoldNoteToolbarForFirstPaint();\n" not in lst
+    assert 'onSurface("notes", foldNoteToolbarForFirstPaint);' in lst

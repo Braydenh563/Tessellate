@@ -101,3 +101,23 @@ def test_start_up_queues_the_pass_only_while_notes_are_unread(client, monkeypatc
     assert redate.enqueue_if_pending() is True and queued == ["redate"]
     deps.get_config().set_preference(redate.DONE_KEY, redate.VERSION)
     assert redate.enqueue_if_pending() is False and queued == ["redate"]
+
+
+def test_a_range_saved_before_until_existed_gets_its_last_day(client, session):
+    """Review on #222: `entry_dates.until` arrived with the range reading, so a row saved before
+    it holds the range's first day and no last. Version 4 reads such notes again, once."""
+    made = client.post("/entries", json={"content": "Away 3 to 7 March 2031.", "category": "Journal"}).json()
+    session.expire_all()
+    rows = session.scalars(select(EntryDate).where(EntryDate.entry_id == made["id"])).all()
+    assert rows and rows[0].until is not None  # the save reads it today
+    for row in rows:
+        row.until = None  # as the row stood before the column
+    session.get(Entry, made["id"]).created_at = datetime(2024, 3, 2, 10, 0)
+    session.commit()
+    deps.get_config().set_preference(redate.DONE_KEY, 3)
+    assert redate.VERSION >= 4 and redate.pending() is True
+    assert redate.run()["changed"] == 1
+    session.expire_all()
+    got = session.scalars(select(EntryDate).where(EntryDate.entry_id == made["id"])).all()
+    assert [(r.at.date().isoformat(), r.until.date().isoformat() if r.until else None) for r in got] == [("2031-03-03", "2031-03-07")]
+    assert redate.run()["changed"] == 0  # a second pass changes nothing

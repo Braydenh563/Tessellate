@@ -1553,6 +1553,56 @@
     if (!rows.length) list.appendChild(recordingsEmpty(q ? "match" : "none"));
   }
 
+  //: **Import audio** (L2): a file already on this computer becomes a recording the
+  //: same way a take does (create, one slice, finish), so it plays, transcribes and
+  //: trims like any other. The browser decodes it for its length; a type the
+  //: server will not keep says so in a toast.
+  async function importAudioFiles(files) {
+    let made = 0;
+    const ids = [];
+    for (const file of files) {
+      try {
+        let duration = 0;
+        try {
+          const ctx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 44100);
+          duration = Math.round((await ctx.decodeAudioData(await file.arrayBuffer())).duration * 1000);
+        } catch {
+          duration = 0;
+        }
+        const row = await apiJson("/recordings", {
+          method: "POST",
+          body: JSON.stringify({ title: file.name.replace(/\.[^.]+$/, "").slice(0, 200), mime: file.type }),
+        });
+        const form = new FormData();
+        form.append("file", file, file.name);
+        form.append("duration_ms", String(duration));
+        await api.upload(`/recordings/${row.id}/chunk`, form);
+        await apiJson(`/recordings/${row.id}/finish`, { method: "POST", body: JSON.stringify({ duration_ms: duration }) });
+        made++;
+        ids.push(row.id);
+      } catch (error) {
+        toast(error.message || `Couldn't keep ${file.name}.`, true);
+      }
+    }
+    if (made) {
+      toast(`Imported ${nounCount(made, "recording")}.`);
+      //: One Undo bins the whole import, one Redo brings it back.
+      const each = (path, method) => () => Promise.all(ids.map((id) => apiJson(`/recordings/${id}${path}`, { method }))).then(renderRecordings);
+      pushUndo(`Imported ${nounCount(made, "recording")}`, each("", "DELETE"), each("/restore", "POST"));
+    }
+    renderRecordings();
+  }
+  onDomReady(() => {
+    const input = $("recordings-import-file");
+    const door = $("recordings-import");
+    door?.addEventListener("click", () => input?.click());
+    input?.addEventListener("change", () => {
+      const picked = [...input.files];
+      input.value = "";
+      if (picked.length) importAudioFiles(picked);
+    });
+  });
+
   //: **The empty state recipe** (DESIGN.md: icon, title, one sentence, one
   //: action), not a grey line: the owner, 2026-10-11, of the bare sentence that
   //: was here, "can you add like an icon or smth to this page so it doesnt look
@@ -1560,7 +1610,7 @@
   //: "failed" (the list did not load, the recipe's warn mood).
   function recordingsEmpty(kind) {
     const copy = {
-      none: ["ph-microphone", "Nothing recorded yet", "Record keeps a voice note here; a meeting's recording lands here too."],
+      none: ["ph-microphone", "Nothing recorded yet", "Record a voice note, or import audio you already have."],
       match: ["ph-magnifying-glass", "No recordings match", "No recording has that in its name or its transcript."],
     }[kind];
     const li = document.createElement("li");
@@ -1577,17 +1627,31 @@
     const line = document.createElement("p");
     line.textContent = copy[2];
     li.append(icon, title, line);
-    //: The one action: what the header's Record does.
+    //: Two actions (L2): Open recorder, as the header's button says, labelled by outcome; Import audio keeps a file already on this computer.
     if (kind === "none") {
+      const actions = document.createElement("div");
+      actions.className = "row empty-actions";
       const record = document.createElement("button");
       record.type = "button";
-      record.className = "ghost small";
+      record.className = "small";
       const mic = document.createElement("i");
       mic.className = "ph ph-microphone ph-lead";
       mic.setAttribute("aria-hidden", "true");
       record.append(mic, " Open recorder");
       record.addEventListener("click", () => openVoiceNote());
-      li.appendChild(record);
+      const pick = document.createElement("button");
+      pick.type = "button";
+      pick.className = "ghost small";
+      const up = document.createElement("i");
+      up.className = "ph ph-upload-simple ph-lead";
+      up.setAttribute("aria-hidden", "true");
+      pick.append(up, " Import audio");
+      pick.addEventListener("click", () => $("recordings-import-file")?.click());
+      actions.append(record, pick);
+      const more = document.createElement("p");
+      more.className = "muted text-sm";
+      more.textContent = "A meeting's recording and its transcript land here too.";
+      li.append(actions, more);
     }
     return li;
   }

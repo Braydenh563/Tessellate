@@ -176,3 +176,50 @@ def test_a_stopped_model_falls_back_to_the_composed_review(book, ai_client, fake
 def test_an_empty_span_never_asks_the_model(book, ai_client, fake_ollama):
     ai_client.get("/timeline/digest", params={"start": "2026-08-01", "end": "2026-08-31"})
     assert not fake_ollama.chat_calls
+
+
+def test_a_slow_model_is_not_waited_for(book, ai_client, fake_ollama, monkeypatch):
+    """The model call runs inside the GET the sheet waits on: past
+    SPAN_MODEL_TIMEOUT the composed review is served instead."""
+    import threading
+
+    from tessellate.api import routes_timeline
+
+    release = threading.Event()
+
+    def slow(*_a, **_k):
+        release.wait(5)
+        return {"content": "Too late.", "thinking": ""}
+
+    monkeypatch.setattr(routes_timeline, "SPAN_MODEL_TIMEOUT", 0.05)
+    monkeypatch.setattr(fake_ollama, "chat", slow)
+    try:
+        body = ai_client.get("/timeline/digest", params={"start": "2026-10-01", "end": "2026-10-31"}).json()
+    finally:
+        release.set()
+    assert body["composed"] is True and body["text"].startswith("You wrote two notes from ")
+
+
+def test_the_span_reads_only_its_own_days_from_the_database(book, monkeypatch):
+    """Both ends are in SQL (with a day's slack for the zone): a span in
+    October does not pull November's or September's notes off disk."""
+    from tessellate.ai import review_digest
+
+    fetched: list[int] = []
+    execute = book.execute
+
+    def counting(statement, *a, **k):
+        result = execute(statement, *a, **k)
+        rows = result.all()
+        fetched.append(len(rows))
+
+        class _Rows:
+            def all(self):
+                return rows
+
+        return _Rows()
+
+    monkeypatch.setattr(book, "execute", counting)
+    notes = review_digest._notes(book, dt.date(2026, 10, 1), dt.timezone.utc, dt.date(2026, 10, 31))
+    assert [n["content"][:9] for n in notes] == ["# Harbor ", "# Lisbon "]
+    assert fetched == [2]  # not the 9 November note, nor 28 September's
