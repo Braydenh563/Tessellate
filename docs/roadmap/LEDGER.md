@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 6 | 0 | 0 | 0 | 6 |
+| whiteboard | 0 | 9 | 0 | 0 | 0 | 9 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 533 | 125 | 2 | 172 | 1130 |
+| all | 472 | 536 | 125 | 2 | 172 | 1133 |
 
 ## graph
 
@@ -281,11 +281,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
-- [ ] **L-whiteboard-54** `whiteboard` open, M: Edit in an embedded board: pointer and key handlers bound per instance so wbInstance.create(..., { editable: true }) edits, saves and fires onChange; needed by L-documents-104. From L-whiteboard-53 report (f29369c83). Evidence: initWhiteboard binds pointer and key handlers to the page container only; editable is stored but unused
-- [ ] **L-whiteboard-55** `whiteboard` open, S: Scope the board's compound selectors (#wb-html-layer .wb-object in export, record, search) to the active instance's container. From L-whiteboard-53 report (f29369c83). Evidence: export, record and search use '#wb-html-layer .wb-object' document-wide
-- [ ] **L-whiteboard-56** `whiteboard` open, S: Inverse-zoom selectors (whiteboard.js:904-905) and whiteboard-options.js wb-zoom-group lookup reach the active instance, not only the page. From L-whiteboard-53 report (f29369c83). Evidence: whiteboard.js:904-905 inverse-zoom selectors; whiteboard-options.js $("wb-zoom-group")
-- [ ] **L-whiteboard-57** `whiteboard` open, S: A multi-row nudge save captures its board id before the await, so activating another instance mid-save cannot send it to the wrong board. From L-whiteboard-53 report (f29369c83). Evidence: multi-row nudge save reads currentBoardId after an await
-- [ ] **L-whiteboard-58** `whiteboard` open, S: An embedded board's draw leaves the page board's chrome (empty hint, counts) untouched. From L-whiteboard-53 report (f29369c83). Evidence: page chrome (empty hint, counts) re-renders after an embed draw
+- [ ] **L-whiteboard-59** `whiteboard` open, S: Resolve settings-wiring.js html layer lookup through wbInstances.layer. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: settings-wiring.js:967 queries #wb-html-layer document-wide
+- [ ] **L-whiteboard-60** `whiteboard` open, M: Give an embedded board its own rulers and map radial menu, or hide them there. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: rulers and .wb-map-radial are drawn for the page board only
+- [ ] **L-whiteboard-61** `whiteboard` open, M: Keep the active tool and cursor per board instance. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: tool and cursor are globals shared by every instance
+- [ ] **L-whiteboard-62** `whiteboard` open, M: Route window-level board listeners to the instance the event belongs to. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: window-level listeners act on the active board, not the one under the pointer
+- [ ] **L-whiteboard-63** `whiteboard` open, S: Let an embed made before initWhiteboard edit at once. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: an embed created before initWhiteboard gets its handlers only once init runs
+- [ ] **L-whiteboard-64** `whiteboard` open, S: Fire an instance onChange on undo and redo. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: undo and redo do not call the onChange callbacks
+- [ ] **L-whiteboard-65** `whiteboard` open, S: Reload a board that is not live after a failed save-many. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: a failed save-many on a board that is no longer live skips the reload
+- [ ] **L-whiteboard-66** `whiteboard` open, S: Keep two live instances of one board from sharing one persisted undo history. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: two instances of one board share the persisted undo history key
 
 ## documents
 

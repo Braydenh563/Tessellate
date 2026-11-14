@@ -244,7 +244,7 @@ def test_the_board_layers_are_rasterised_again_when_a_zoom_settles():
     refresh = wb[wb.index("function wbRefreshRaster") :][:600]
     assert 'style.willChange = "auto"' in refresh and 'style.willChange = ""' in refresh
     publish = wb[wb.index("function wbPublishInvZoom") :][:200]
-    assert "wbRefreshRaster()" in publish
+    assert "wbRefreshRaster(el)" in publish
 
 
 def _slice(js: str, name: str, span: int = 2500) -> str:

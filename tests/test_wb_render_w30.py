@@ -62,14 +62,14 @@ def test_the_export_finds_each_items_element_in_one_walk_not_one_walk_per_item()
         assert part in build, part
     assert "if (!found.has(el.dataset.id)) found.set(el.dataset.id, el)" in build
     #: No per-item page walk by id remains in the export.
-    assert 'document.querySelector(`' not in build
+    assert 'document.querySelector(`' not in build and 'wbInstances.query(`' not in build
 
 
 def test_the_board_bounds_find_cards_and_sketches_in_one_walk_each():
     start = WB.index("function wbBoardBounds(")
     bounds = WB[start : WB.index("\n}\n", start)]
     assert 'idIndex(".node-card")' in bounds and 'idIndex(".sketch-group")' in bounds
-    assert "document.querySelector(`" not in bounds
+    assert "document.querySelector(`" not in bounds and "wbInstances.query(`" not in bounds
 
 
 def test_a_sketch_class_is_written_only_when_it_changes():
@@ -162,7 +162,7 @@ console.log(JSON.stringify({ first, second, jumpedDiffers: jumped !== "M50 0L50 
 def test_a_boards_connector_batch_measures_only_the_objects_its_ends_are_on():
     index = frontend_text("whiteboard-map.js")
     body = index[index.index("function wbIndexMapNodeElements(linkEndsOnly = false)") :].split("\n}\n", 1)[0]
-    head = body[: body.index("for (const el of document.querySelectorAll")]
+    head = body[: body.index("for (const el of wbInstances.queryAll")]
     assert 'wbItemElement("object", id)' in head and "if (linkEndsOnly) {" in head
     assert 'parsed.sourceKind === "object"' in body and 'parsed.targetKind === "object"' in body
 

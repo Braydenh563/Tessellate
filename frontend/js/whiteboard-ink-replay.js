@@ -37,7 +37,7 @@
     const list = strokes();
     if (!list.length) { toast("There is no pen drawing on this board to replay."); return false; }
     if (reducedMotionWanted()) { toast("Replay skipped to the end: reduced motion is on."); return true; }
-    hidden = list.map((s) => document.querySelector(`.sketch-group[data-id="${s.id}"]`)).filter(Boolean);
+    hidden = list.map((s) => wbInstances.query(`.sketch-group[data-id="${s.id}"]`)).filter(Boolean);
     for (const el of hidden) el.style.visibility = "hidden";
     const gap = Math.max(60, Math.min(400, 3000 / list.length));
     let shown = 0;

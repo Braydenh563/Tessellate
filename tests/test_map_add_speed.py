@@ -88,9 +88,9 @@ def test_a_committed_name_returns_focus_to_the_canvas_and_is_announced():
 def test_the_render_skips_the_search_highlight_walk_when_no_search_is_live():
     # L-mindmap-13: every render walked every object to toggle two classes off.
     body = _body(WB_JS, "function wbApplySearchHighlight(")
-    guard = body.index("document.querySelector(\".wb-search-hit, .wb-search-current\")")
+    guard = body.index("wbInstances.query(\".wb-search-hit, .wb-search-current\")")
     assert "!wbBoardSearch.matches.length" in body[:guard + 120]
-    assert guard < body.index("querySelectorAll(")
+    assert guard < body.index("queryAll(")
 
 
 def _run_render_add(case: str) -> list:
@@ -112,7 +112,7 @@ const wbMapCache = { defer: (fn) => { calls.push("defer"); } };
 const c = (n, r) => (...a) => { calls.push(n); return r; };
 let map = true, layer = {}, hold = { moves: [], edges: false };
 const document = { getElementById: () => layer };
-const wbInstances = { container: () => document.getElementById("whiteboard-container"), layer: (id) => document.getElementById(id) };  // the page board, the default instance (L-whiteboard-53)
+const wbInstances = { container: () => document.getElementById("whiteboard-container"), layer: (id) => document.getElementById(id), query: (s) => document.querySelector(s), queryAll: (s) => document.querySelectorAll(s) };  // the page board, the default instance (L-whiteboard-53)
 const d3 = { select: (x) => x };
 const wbBoardSearch = { matches: [], query: "" };
 """ + SEARCH_LIVE + """

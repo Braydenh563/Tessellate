@@ -560,7 +560,7 @@
   //: in the branch rather than quadratic in the board.
   function wbMapEdgeContext() {
     const els = new Map();
-    const group = document.querySelector(".wb-map-edges");
+    const group = wbInstances.query(".wb-map-edges");
     if (group) {
       for (const el of group.querySelectorAll(
         ".wb-map-edge, .wb-map-edge-hit, .wb-map-edge-handle, .wb-map-edge-label"

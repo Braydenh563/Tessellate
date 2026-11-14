@@ -339,7 +339,7 @@ function wbSaveExpandedNodes() {
 //: when it stands taller than that (`wbCardMoreNeeded`, node-tested).
 function wbSyncCardClamps() {
   const wanted = [];
-  for (const card of document.querySelectorAll(".node-card")) {
+  for (const card of wbInstances.queryAll(".node-card")) {
     //: A culled card keeps the toggle it had: asking its content for a
     //: height would lay out the very subtree the cull is there to skip.
     if (card.classList.contains("wb-culled")) continue;
@@ -802,7 +802,7 @@ function wbCullNow(transform, size) {
   //: A map's tree lines, by the box of their two ends: a line with one end on
   //: screen is on screen. `display: none` is right for these: nothing ever
   //: measures a line's element, only its ends.
-  const edges = document.querySelector("#wb-zoom-group .wb-map-edges");
+  const edges = wbInstances.query("#wb-zoom-group .wb-map-edges");
   const cache = edges?._wbMapEdges;
   if (cache instanceof Map && cache.size) {
     const byId = new Map((wbState.objects || []).map((o) => [o.id, o]));
@@ -837,8 +837,6 @@ let WB_GRID_SPACING = 24;
 //: assumed all along (see the drop handler and `dragStart`'s own comments).
 const WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };
 
-let wbInvZoomTimer = 0;
-
 function wbSyncGridToTransform(transform) {
   const el = wbInstances.container();
   if (!el) return;
@@ -867,10 +865,12 @@ function wbSyncGridToTransform(transform) {
   //: writes nothing; a zoom writes once, 120ms after its last step, so the
   //: grips ride the board's scale for the length of the gesture and snap to
   //: their true size when it stops.
+  //: Per board (L-whiteboard-56): an embed keeps its own scale, value and timer.
+  const inst = wbInstances.active;
   const inv = String(1 / (t.k || 1));
-  clearTimeout(wbInvZoomTimer);
-  if (wbInvZoomValue === inv) return;
-  wbInvZoomTimer = setTimeout(() => wbPublishInvZoom(el, inv), 120);
+  clearTimeout(inst.invTimer);
+  if (inst.invZoom === inv) return;
+  inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), 120);
 }
 
 //: **Written onto the grips, not inherited down the whole board** (INBOX
@@ -903,13 +903,14 @@ const WB_INV_ZOOM_GRIPS = [
   //: Their small-zoom and downward-flow placements (L360) read it too.
   "#whiteboard-container[data-wb-zoom-far] .wb-map-actions",
   "#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions",
+  ".wb-embed[data-wb-zoom-far] .wb-map-actions",
+  ".wb-embed .wb-map-node[data-flow=down] .wb-map-actions",
   ".wb-map-collapse",
   ".wb-map-count",
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
 let wbInvZoomSheet = null;
-let wbInvZoomValue = "1";
 
 //: **The board's layers are rasterised again once a zoom has settled**
 //: (INBOX 791, "labels look pixelated"). A layer promoted with `will-change:
@@ -918,17 +919,18 @@ let wbInvZoomValue = "1";
 //: is SVG text, as a stretched bitmap. Dropping the hint for one frame and
 //: restoring the sheet's own makes the next paint at the current scale; all
 //: three go in the same frame so the pan pipelines stay together.
-function wbRefreshRaster() {
-  const layers = ["wb-html-layer", "wb-svg-layer", "wb-overlay-layer"].map((id) => document.getElementById(id)).filter(Boolean);
+function wbRefreshRaster(el) {
+  const layers = ["wb-html-layer", "wb-svg-layer", "wb-overlay-layer"]
+    .map((id) => el.querySelector(`#${id}, [data-wb-layer="${id}"]`)).filter(Boolean);
   for (const layer of layers) layer.style.willChange = "auto";
   requestAnimationFrame(() => {
     for (const layer of layers) layer.style.willChange = "";
   });
 }
 
-function wbPublishInvZoom(el, inv) {
-  wbInvZoomValue = inv;
-  wbRefreshRaster();
+function wbPublishInvZoom(el, inv, inst = wbInstances.page) {
+  inst.invZoom = inv;
+  wbRefreshRaster(el);
   //: Below half zoom a topic's link button goes (INBOX 816): `inv` is 1 / zoom.
   el.toggleAttribute("data-wb-zoom-far", Number(inv) > 2);
   //: The clone arrows stand a fixed number of screen pixels off their sides.
@@ -945,7 +947,17 @@ function wbPublishInvZoom(el, inv) {
     wbInvZoomSheet = new CSSStyleSheet();
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbInvZoomSheet];
   }
-  wbInvZoomSheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
+  wbInvZoomSheet.replaceSync(wbInvZoomRules());
+}
+
+//: The page board's rule, then one per embed, scoped to its box: `:is()` takes
+//: its most specific argument's weight (an id), so an embed's own scale wins
+//: over the page's inside it (L-whiteboard-56).
+function wbInvZoomRules() {
+  const grips = WB_INV_ZOOM_GRIPS.join(", ");
+  return wbInstances.list.map((inst) => (inst.container
+    ? `[data-wb-embed="${inst.key}"] :is(${grips}) { --wb-inv-zoom: ${inst.invZoom}; }`
+    : `${grips} { --wb-inv-zoom: ${inst.invZoom}; }`)).join("\n");
 }
 
 function wbGridType() {
@@ -1099,7 +1111,7 @@ wbGuideBoxes.walls = (frame, ins) => {
 //: the two. A frame whose title hangs above its edge has no header inside.
 //: Null when the frame is not drawn.
 wbGuideBoxes.insets = (frame) => {
-  const node = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
+  const node = wbInstances.query(`.wb-object[data-id="${frame.id}"]`);
   if (!node) return null;
   const probe = document.createElement("div");
   probe.style.position = "absolute";
@@ -1823,7 +1835,7 @@ function wbRefreshHighlighterBlend() {
   for (const path of document.querySelectorAll(".sketch-path")) {
     if (path.style.mixBlendMode) path.style.mixBlendMode = blend;
   }
-  const drawing = document.querySelector("#wb-overlay-zoom-group > path.wb-live-highlighter");
+  const drawing = wbInstances.query("#wb-overlay-zoom-group > path.wb-live-highlighter");
   if (drawing) drawing.style.mixBlendMode = blend;
 }
 
@@ -1964,7 +1976,7 @@ async function wbClearVotes() {
 //: The dots in an export: the same pill, at the corner the board draws it,
 //: in the colours the live badge shows.
 function wbSvgVotes(obj) {
-  const badge = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] > .wb-votes`);
+  const badge = wbInstances.query(`#wb-html-layer .wb-object[data-id="${obj.id}"] > .wb-votes`);
   const fill = badge ? wbExportColour(getComputedStyle(badge).backgroundColor) : "#2f5bd3";
   const ink = badge ? wbExportColour(getComputedStyle(badge).color) : "#ffffff";
   const w = Math.max(16, 8 + String(obj.data.votes).length * 7);
@@ -4187,7 +4199,7 @@ function wbEditNodeText(nodeId, firstKey = "", whole = null) {
   wbAddGate.cardRetypeId = null;
   const node = wbState.nodes.find((n) => n.id === nodeId);
   if (!node) return;
-  const card = document.querySelector(`.node-card[data-id="${nodeId}"]`);
+  const card = wbInstances.query(`.node-card[data-id="${nodeId}"]`);
   const content = card?.querySelector(".wb-card-content");
   if (!content) return;
   const entry = whole || allEntries.find((e) => e.id === node.entry_id);
@@ -4649,7 +4661,7 @@ async function wbTrashDelete(keys) {
 //: it, on screen only: nothing was saved yet, so nothing needs unsaving.
 function wbRestoreMove(kind, d) {
   if (kind === "sketch") {
-    const el = document.querySelector(`.sketch-group[data-id="${d.id}"]`);
+    const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
     if (d._dragOriginalD != null) {
       el?.querySelector(".sketch-path")?.setAttribute("d", d._dragOriginalD);
       el?.querySelector(".sketch-hitbox")?.setAttribute("d", d._dragOriginalD);
@@ -6044,13 +6056,14 @@ async function initWhiteboard() {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
   }, true);
   container.call(wbZoom).on("dblclick.zoom", null);
-  container.node().addEventListener("scroll", wbFoldNativeScroll);
+  //: Pan and zoom listeners: `view`, so a read-only embed gets them too.
+  wbInstances.on("scroll", wbFoldNativeScroll, undefined, true);
   // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
   // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
   // here so the page behind the board does not scroll on a shifted wheel.
   if (!container.node().dataset.wbWheelPan) {
     container.node().dataset.wbWheelPan = "1";
-    container.node().addEventListener("wheel", (e) => {
+    wbInstances.on("wheel", (e) => {
       //: **A wheel held down is a pan, not a scroll** (the owner, 2026-09-24,
       //: from the desktop window: the middle-button pan "jerks repeatedly to
       //: the left side of the screen until i let go"). Pressing a wheel hard
@@ -6071,14 +6084,15 @@ async function initWhiteboard() {
       }
       if (e.ctrlKey || e.metaKey || !(e.shiftKey || wbTrackpadPan(e))) return;
       e.preventDefault();
-      const k = d3.zoomTransform(container.node()).k || 1;
+      const el = d3.select(e.currentTarget);
+      const k = d3.zoomTransform(el.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
       //: Shift+wheel on a mouse turns the notch sideways; a trackpad scroll
       //: already carries both axes and keeps them.
       if (!dx && !wbTrackpadPan(e)) { dx = dy; dy = 0; }
-      container.call(wbZoom.translateBy, -dx / k, -dy / k);
-    }, { passive: false });
+      el.call(wbZoom.translateBy, -dx / k, -dy / k);
+    }, { passive: false }, true);
   }
   
   // Toolbar hooks
@@ -6188,7 +6202,7 @@ async function initWhiteboard() {
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
   for (const type of ["pointerover", "focusin"]) {
-    $("whiteboard-container")?.addEventListener(type, (e) => {
+    wbInstances.on(type, (e) => {
       const node = e.target.closest?.(".wb-map-node");
       if (node) wbMapCache.part(node, "grip");
     }, { passive: true });
@@ -6650,7 +6664,7 @@ async function initWhiteboard() {
   const bgColorReset = document.getElementById("wb-bg-color-reset");
   if (bgColorPicker) {
     bgColorPicker.addEventListener("input", (e) => {
-      container.node().style.setProperty("--wb-board-bg", e.target.value);
+      wbInstances.container().style.setProperty("--wb-board-bg", e.target.value);
     });
     bgColorPicker.addEventListener("change", (e) => {
       wbSetBackground({ color: e.target.value });
@@ -7344,12 +7358,14 @@ async function initWhiteboard() {
     if (wbSelectedItem?.kind === "node") wbArrangeMindMap(wbSelectedItem.id, "radial");
   });
 
-  const containerEl = wbInstances.container();
+  //: The active board's container, read when a handler runs: the same element
+  //: for the page board, an embed's own box for an embed (L-whiteboard-54).
+  const boardEl = () => wbInstances.container();
   const undoBtn = document.getElementById("wb-undo");
 
   function updateWbCursor() {
-    containerEl.setAttribute("data-current-tool", window.currentTool);
-    containerEl.style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, WB_STROKE_WIDTH);
+    boardEl().setAttribute("data-current-tool", window.currentTool);
+    boardEl().style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, WB_STROKE_WIDTH);
   }
 
   // The six shape tools folded into the toolbar's own dropdown: asked for
@@ -7385,7 +7401,7 @@ async function initWhiteboard() {
     // the canvas while any drawing tool was selected without switching tool
     // and switching back. That was a large part of the reported "constantly
     // having to switch between tools".
-    container.call(wbZoom).on("dblclick.zoom", null);
+    d3.select(wbInstances.container()).call(wbZoom).on("dblclick.zoom", null);
     // The toggle shows whichever shape is actually active (and reads as
     // "on" the same way any other tool button does) instead of a fixed
     // icon: picking "circle" from the menu should look exactly like
@@ -8154,7 +8170,7 @@ async function initWhiteboard() {
   // they act on. It was out of the tab order while Tab on it did nothing; it
   // is a stop since INBOX 445, because Tab on it now walks the items
   // (`wbWalkItems`), which is the only way to a shape without a pointer.
-  container.node()?.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     // Any editable body, not the two class names that were editable when
     // this was written: pulling focus to the canvas out from under a map
     // node's editor is the other half of "I cant highlight text in mindmap
@@ -8171,7 +8187,7 @@ async function initWhiteboard() {
   //: from the top bar added fifteen). The canvas, its topics and the editor
   //: inside a topic are not "outside", so a topic being typed into keeps it.
   document.addEventListener("focusin", (e) => {
-    if (!container.node()?.contains(e.target)) wbMapKeysArmed = false;
+    if (!wbInstances.container()?.contains(e.target)) wbMapKeysArmed = false;
   });
 
   //: On `window`, capturing, so it runs before the app zoom's own capture
@@ -8180,7 +8196,11 @@ async function initWhiteboard() {
   document.addEventListener("keydown", (e) => {
     if (typeof e.key !== "string") return; // a keydown with no key (see the ring's handler above)
     const view = document.getElementById("library-view-whiteboard");
-    if (!view || view.classList.contains("hidden")) return;
+    //: A key typed inside an embed is for that board (L-whiteboard-54), and only
+    //: when it may be edited; any other is the page board's, while it shows.
+    const embed = wbInstances.embedFor(e.target);
+    if (embed ? !embed.editable : (!view || view.classList.contains("hidden"))) return;
+    wbInstances.activate(embed || wbInstances.page);
     //: **Escape takes back a gesture in flight** before it does anything
     //: else (see `wbCancelGesture`): with a drag, a resize, a turn or a line
     //: half drawn, that is the only thing the key can mean, and the
@@ -8382,7 +8402,7 @@ async function initWhiteboard() {
       //: keyboard, and it is why nothing in the node's menu is pointer-only.
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         e.preventDefault();
-        const el = document.querySelector(`.wb-object[data-id="${mapNode.id}"]`);
+        const el = wbInstances.query(`.wb-object[data-id="${mapNode.id}"]`);
         const box = el?.getBoundingClientRect();
         wbCloseMapRadial();
         wbOpenMapNodeMenu(mapNode, box ? box.left + box.width / 2 : 0, box ? box.bottom + 4 : 0);
@@ -8723,7 +8743,7 @@ async function initWhiteboard() {
   // them for a stylus. `touch-action: none` on .whiteboard-container (CSS)
   // is the other half of this: without it the browser eats the gesture for
   // page-scroll before a single pointer event reaches here.
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (window.currentTool === "eraser") {
       wbErasing = true;
       wbEraseHad = new Set(wbUndoStack);
@@ -8781,7 +8801,7 @@ async function initWhiteboard() {
       if (item) wbDeleteObject(item);
     }
   }
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     if (window.currentTool !== "eraser" || !wbErasing) return;
     const samples = e.getCoalescedEvents?.() ?? [];
     for (const p of samples.length ? samples : [e]) wbEraseAt(p.clientX, p.clientY);
@@ -8794,7 +8814,7 @@ async function initWhiteboard() {
   // gets no automatic click-suppression), `wbMarqueeJustSelected` is the
   // one-shot flag that stops it from wiping out the selection the marquee
   // just made.
-  containerEl.addEventListener("click", (e) => {
+  wbInstances.on("click", (e) => {
     //: A press on a shape's own grip that did not move is not a click on
     //: the canvas. The grips live in their own handle group rather than in
     //: the shape (see `wbIsEmptyCanvasTarget`), so nothing stopped this
@@ -8805,7 +8825,7 @@ async function initWhiteboard() {
     if (window.currentTool === "select" || window.currentTool === "lasso") {
       if (wbMarqueeJustSelected) {
         wbMarqueeJustSelected = false;
-      } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(containerEl).k || 1))) {
+      } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(boardEl()).k || 1))) {
         // A click on a panel's body or a frame's edge selected that frame.
       } else if (window.currentTool === "select" && wbPointInSelectionBounds(...getLogicalMouse(e))) {
         // A click inside the selection's box is on the selection: it stays.
@@ -8905,7 +8925,7 @@ async function initWhiteboard() {
     wbMarqueeFrame = 0;
     wbMarqueeAt = null;
   }
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     //: A new press is a new gesture: a one-shot left by a drag released off
     //: the board (no click ever reached the canvas to spend it) must not
     //: swallow this press's click.
@@ -9001,28 +9021,28 @@ async function initWhiteboard() {
     wbMarqueeEl.dataset.label = place === "frame" ? "Frame" : place === "sticky" ? "" : "Text";
     wbMarqueeEl.setAttribute("aria-hidden", "true");
     layer.appendChild(wbMarqueeEl);
-    wbBoardState.capture(containerEl, pointerId);
+    wbBoardState.capture(boardEl(), pointerId);
   }
   function wbBeginMarqueeRect(pointerId) {
     wbMarqueeEl = document.createElement("canvas");
     wbMarqueeEl.className = "wb-marquee";
     wbMarqueeEl.setAttribute("aria-hidden", "true");
     const ratio = window.devicePixelRatio || 1;
-    const w = containerEl.clientWidth, h = containerEl.clientHeight;
+    const w = boardEl().clientWidth, h = boardEl().clientHeight;
     wbMarqueeEl.width = Math.max(1, Math.round(w * ratio));
     wbMarqueeEl.height = Math.max(1, Math.round(h * ratio));
     wbMarqueeEl.style.width = `${w}px`;
     wbMarqueeEl.style.height = `${h}px`;
     //: Through `wbExportColour`, because a canvas cannot read a `var()` and
     //: the accent may be a `color-mix()` the canvas does not parse either.
-    const accent = wbExportColour(getComputedStyle(containerEl).getPropertyValue("--accent").trim());
+    const accent = wbExportColour(getComputedStyle(boardEl()).getPropertyValue("--accent").trim());
     wbMarqueeInk = accent && accent !== "none" ? accent : "#3b82f6";
-    containerEl.appendChild(wbMarqueeEl);
+    boardEl().appendChild(wbMarqueeEl);
     // **The capture is the fix.** Without it every pointermove and pointerup
     // outside the container went to whatever element was under the cursor,
     // so a drag that ended over the top bar, over the left rail or off the
     // window simply never finished, and left its rectangle behind.
-    wbBoardState.capture(containerEl, pointerId);
+    wbBoardState.capture(boardEl(), pointerId);
   }
   //: The selection drag's frames: the same 4-unit threshold as the marquee,
   //: then the whole selection by the pointer's travel from the press, Shift on
@@ -9035,7 +9055,7 @@ async function initWhiteboard() {
       start.origin = wbSelectionDragOrigin();
       if (!start.origin) return wbEndMarqueeDrag();
       start.pending = false;
-      wbBoardState.capture(containerEl, start.pointerId);
+      wbBoardState.capture(boardEl(), start.pointerId);
     }
     const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
     wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
@@ -9079,7 +9099,7 @@ async function initWhiteboard() {
   function wbDrawMarquee() {
     wbMarqueeFrame = 0;
     if (!wbMarqueeEl || !wbMarqueeStart || !wbMarqueeAt) return;
-    const t = d3.zoomTransform(containerEl);
+    const t = d3.zoomTransform(boardEl());
     //: A box being placed is drawn at the size it will be made, minimum and
     //: all, so what the ghost shows is what the release creates.
     const box = wbMarqueeStart.place ? wbPlaceBox(wbMarqueeStart, wbMarqueeAt[0], wbMarqueeAt[1]) : null;
@@ -9142,7 +9162,7 @@ async function initWhiteboard() {
   //: before written: a style write on every move would re-layerize the
   //: page (tests/test_marquee_cost.py), so this is a resize, not a draw.
   function wbFitMarqueeCanvas(ratio) {
-    const cw = containerEl.clientWidth, ch = containerEl.clientHeight;
+    const cw = boardEl().clientWidth, ch = boardEl().clientHeight;
     const bw = Math.max(1, Math.round(cw * ratio)), bh = Math.max(1, Math.round(ch * ratio));
     if (wbMarqueeEl.width === bw && wbMarqueeEl.height === bh) return;
     wbMarqueeEl.width = bw;
@@ -9168,14 +9188,14 @@ async function initWhiteboard() {
   }
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
-    if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    if (!wbEdgePanWanted() || !document.body.contains(boardEl())) return;
+    const r = boardEl().getBoundingClientRect();
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
     if (!vx && !vy) return;
-    const k = d3.zoomTransform(containerEl).k || 1;
-    d3.select(containerEl).call(wbZoom.translateBy, vx / k, vy / k);
+    const k = d3.zoomTransform(boardEl()).k || 1;
+    d3.select(boardEl()).call(wbZoom.translateBy, vx / k, vy / k);
     const at = { clientX: wbEdgePan.x, clientY: wbEdgePan.y, buttons: wbEdgePan.buttons, bubbles: true, cancelable: true, view: window };
     if (wbMarqueeEl && wbMarqueeStart) {
       wbMarqueeAt = getLogicalMouse(at);
@@ -9212,7 +9232,7 @@ async function initWhiteboard() {
   //: On the container, not on each handle: the handles are rebuilt by the
   //: render on every change, and a listener bound per handle is a listener
   //: lost on the next repaint (the mistake `wbWireContextMenu` documents).
-  containerEl.addEventListener("dblclick", (e) => {
+  wbInstances.on("dblclick", (e) => {
     const turn = e.target.closest?.(".wb-rotate-handle, .wb-sketch-rotate-handle");
     if (turn) {
       e.preventDefault();
@@ -9255,7 +9275,7 @@ async function initWhiteboard() {
   //: says for a marquee: a double-click on a line asks for its label (see
   //: `wbWireMapEdgeGestures`), and it used to fall through to this and make a
   //: new trunk on top of the line.
-  containerEl.addEventListener("dblclick", (e) => {
+  wbInstances.on("dblclick", (e) => {
     if (window.currentTool !== "select") return;
     if (!wbIsEmptyCanvasTarget(e.target) || wbIsEditingTarget(e.target)) return;
     if (e.target.closest?.(".wb-map-edge-group, .sketch-group")) return;
@@ -9349,7 +9369,7 @@ async function initWhiteboard() {
   };
 
   //: The first press on a locked item, which lets the pointer through, says how to unlock it.
-  containerEl.addEventListener("pointerdown", wbOnLockPress, true);
+  wbInstances.on("pointerdown", wbOnLockPress, true);
 
   const wbCanvasMenuWanted = (target) =>
     wbIsEmptyCanvasTarget(target) && !wbIsEditingTarget(target)
@@ -9372,7 +9392,7 @@ async function initWhiteboard() {
   const wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
   window.addEventListener("mousedown", (e) => {
     if (e.button !== 2) return;
-    wbRightPress = containerEl.contains(e.target) && wbCanvasMenuWanted(e.target)
+    wbRightPress = boardEl().contains(e.target) && wbCanvasMenuWanted(e.target)
       ? { x: e.clientX, y: e.clientY, moved: false, up: false, upAt: 0 } : null;
   }, true);
   window.addEventListener("mousemove", (e) => {
@@ -9396,7 +9416,7 @@ async function initWhiteboard() {
       setTimeout(() => openCanvasMenu(clientX, clientY), 0);
     }
   }, true);
-  containerEl.addEventListener("contextmenu", (e) => {
+  wbInstances.on("contextmenu", (e) => {
     //: A topic and a line have rings of their own, and both stop the event
     //: before it reaches here; this is the canvas itself, which had nothing.
     if (!wbCanvasMenuWanted(e.target)) return;
@@ -9406,18 +9426,18 @@ async function initWhiteboard() {
   });
 
   //: The same menu from a hold, which is the right-click a phone has.
-  wireLongPress(containerEl, (event, point) => {
+  wireLongPress({ addEventListener: (type, fn, opts) => wbInstances.on(type, fn, opts) }, (event, point) => {
     if (!wbCanvasMenuWanted(event.target)) return;
     openCanvasMenu(point.x, point.y);
   });
 
   //: Where a keyboard paste lands (`wbPointerOnBoard`).
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     wbPointerClient = { clientX: e.clientX, clientY: e.clientY };
   }, { passive: true });
-  containerEl.addEventListener("pointerleave", () => { wbPointerClient = null; });
+  wbInstances.on("pointerleave", () => { wbPointerClient = null; });
 
-  containerEl.addEventListener("pointermove", wbOnFrame((e) => {
+  wbInstances.on("pointermove", wbOnFrame((e) => {
     if (wbLinkDragActive) return;
     //: Off a link tool there are no dots to show, and any left over go (INBOX
     //: 573: the cross-link tool's dots stayed on a topic after switching back
@@ -9448,7 +9468,7 @@ async function initWhiteboard() {
   // Not on what is selected (its resize grips sit where its ports are), a
   // locked item, a map (whose lines are its tree), or touch (no hover).
   const port = { kind: null, item: null, drag: null };
-  const zoomK = () => d3.zoomTransform(containerEl).k || 1;
+  const zoomK = () => d3.zoomTransform(boardEl()).k || 1;
   const portTarget = (x, y) => {
     let hit = wbLinkCandidateAt(x, y);
     if (!hit && port.item) {
@@ -9481,7 +9501,7 @@ async function initWhiteboard() {
     wbClearAnchorHints();
     wbFmtState.linkEdge?.cue(null);
   };
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
     //: A selected connector's end grip wins over a port beneath it (INBOX
     //: 1328: dragging the end of an arrow drew a second arrow instead,
@@ -9512,7 +9532,7 @@ async function initWhiteboard() {
     wbInstances.layer("wb-zoom-group")?.appendChild(path);
     port.drag = { kind: port.kind, item: port.item, anchor, start, path, moved: false, id: e.pointerId };
     wbLinkDragActive = true;
-    wbBoardState.capture(containerEl, e.pointerId);
+    wbBoardState.capture(boardEl(), e.pointerId);
   }, true);
   //: The line and `moved` follow every event (release reads `moved`); only
   //: the anchor hit test waits for the frame.
@@ -9523,7 +9543,7 @@ async function initWhiteboard() {
     else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
     wbFmtState.linkEdge?.cue(hit ? null : [x, y]);
   });
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     const drag = port.drag;
     if (!drag) return;
     const [x, y] = getLogicalMouse(e);
@@ -9531,13 +9551,13 @@ async function initWhiteboard() {
     drag.path.setAttribute("d", `M ${drag.start.x} ${drag.start.y} L ${x} ${y}`);
     portHints({ drag, x, y });
   });
-  containerEl.addEventListener("keydown", (e) => {
+  wbInstances.on("keydown", (e) => {
     if (port.drag && e.key === "Escape") {
       e.stopPropagation();
       portEnd();
     }
   }, true);
-  containerEl.addEventListener("pointerup", async (e) => {
+  wbInstances.on("pointerup", async (e) => {
     const drag = port.drag;
     if (!drag) return;
     const [x, y] = getLogicalMouse(e);
@@ -9729,7 +9749,7 @@ async function initWhiteboard() {
     }
     return inFlight;
   };
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     // Unlike the marquee (`wbIsEmptyCanvasTarget`, above: empty canvas
     // only, since a drag starting *on* a card there means "move it"), a
     // lasso loop is drawn freeform and routinely starts right at the edge
@@ -9749,7 +9769,7 @@ async function initWhiteboard() {
     // base SVG the loop was drawn *under* every card and sticky (reported:
     // "the lasso select tool is behind everything").
     wbInstances.layer("wb-overlay-zoom-group").appendChild(wbLassoEl);
-    wbBoardState.capture(containerEl, e.pointerId);
+    wbBoardState.capture(boardEl(), e.pointerId);
   });
   wbBoardState.onGestureLost(() => wbEndLassoDrag());
   window.addEventListener("pointermove", (e) => {
@@ -9894,10 +9914,10 @@ async function initWhiteboard() {
     }
   }
 
-  containerEl.addEventListener("dragover", (e) => {
+  wbInstances.on("dragover", (e) => {
     if (e.dataTransfer?.types?.includes("Files")) e.preventDefault();
   });
-  containerEl.addEventListener("drop", (e) => {
+  wbInstances.on("drop", (e) => {
     if (!e.dataTransfer?.files?.length) return;
     e.preventDefault();
     const [x, y] = getLogicalMouse(e);
@@ -9972,16 +9992,16 @@ async function initWhiteboard() {
     imageFileInput.value = "";
   });
 
-  // On `containerEl`, not `svgCanvas`, the same reasoning the eraser
+  // On the container, not `svgCanvas`, the same reasoning the eraser
   // listener above already follows. `svgCanvas` only ever sees a
   // pointerdown that lands directly on it or on something inside it; a
   // click that starts on a card (`#wb-html-layer`, a sibling painted on
   // top) never reaches it at all, which is the exact mechanism behind
-  // "drawing over a note just moves the note". `containerEl` is an
+  // "drawing over a note just moves the note". the container is an
   // ancestor of both layers, so it sees every pointerdown either way, 
   // and, with the card/object drags above now filtered out while a brush
   // tool is active, nothing else claims the gesture first.
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (!WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     isDrawing = true;
@@ -10040,7 +10060,7 @@ async function initWhiteboard() {
     const width = tool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH;
     return wbFmtState.inkMore.outline(currentDrawData, tool, width, ink.pointer, last);
   }
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     let [x, y] = getLogicalMouse(e);
@@ -10123,7 +10143,7 @@ async function initWhiteboard() {
   }, true);
   window.addEventListener("pointercancel", wbAbandonStroke);
   window.addEventListener("pointerup", wbAbandonStroke);
-  containerEl.addEventListener("pointerup", async (e) => {
+  wbInstances.on("pointerup", async (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     isDrawing = false;
@@ -10232,12 +10252,12 @@ async function initWhiteboard() {
   });
 
   // Drop handler for Library
-  wbInstances.container().addEventListener("dragover", (e) => {
+  wbInstances.on("dragover", (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   });
   
-  wbInstances.container().addEventListener("drop", async (e) => {
+  wbInstances.on("drop", async (e) => {
     e.preventDefault();
     const dropped = e.dataTransfer.getData("text/plain");
     if (!dropped) return;
@@ -10638,7 +10658,7 @@ async function wbNewUntitledBoard(kind = "board") {
   if (!root) return;
   wbMapEditNode(root.id);
   requestAnimationFrame(() => {
-    const label = document.querySelector(`.wb-object[data-id="${root.id}"] .wb-map-text`);
+    const label = wbInstances.query(`.wb-object[data-id="${root.id}"] .wb-map-text`);
     label?.addEventListener("blur", () => setTimeout(async () => {
       const typed = (label.textContent || "").trim();
       if (!typed || typed === name || window.currentBoardId !== boardId) return;
@@ -11250,7 +11270,7 @@ function wbSketchCaps(parsed) {
 // reintroduce the same gap quietly.
 function wbClearSketchHandles() {
   for (const layer of ["#wb-zoom-group", "#wb-overlay-zoom-group"]) {
-    d3.select(layer).selectAll(".wb-sketch-handle-group").remove();
+    d3.select(wbInstances.query(layer)).selectAll(".wb-sketch-handle-group").remove();
   }
 }
 
@@ -11263,8 +11283,8 @@ function wbClearSketchHandles() {
 //: The press is handed to the link's own hit stroke at the same point, which
 //: is exactly the right-click that already works a little way along the line.
 function wbForwardGripContextMenu(event, sketchId) {
-  const hit = document.querySelector(`.sketch-group[data-id="${sketchId}"] .sketch-hitbox`)
-    || document.querySelector(`.sketch-group[data-id="${sketchId}"]`);
+  const hit = wbInstances.query(`.sketch-group[data-id="${sketchId}"] .sketch-hitbox`)
+    || wbInstances.query(`.sketch-group[data-id="${sketchId}"]`);
   if (!hit) return;
   event.preventDefault();
   event.stopPropagation();
@@ -11303,11 +11323,11 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
   else {
     const mid = { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 };
     const bendLive = { x: parsed.bend?.x || 0, y: parsed.bend?.y || 0 };
-    const paths = () => [".sketch-path", ".sketch-hitbox"].map((c) => document.querySelector(`.sketch-group[data-id="${sketch.id}"] ${c}`));
+    const paths = () => [".sketch-path", ".sketch-hitbox"].map((c) => wbInstances.query(`.sketch-group[data-id="${sketch.id}"] ${c}`));
     const repaint = () => {
       const d = wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, bendLive);
       for (const el of paths()) el?.setAttribute("d", d);
-      wbLayoutLinkLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+      wbLayoutLinkLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
       //: A map's ribbon is a filled outline; mid-bend the path is an open
       //: curve, which a fill would close into a wedge. Stroke it in the same
       //: colour until the render after the gesture redraws it properly.
@@ -11384,9 +11404,9 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
             d3.select(this).attr("cx", live.x).attr("cy", live.y);
             const previewPts = end === "source" ? [live, endpoints[other]] : [endpoints[other], live];
             const previewD = wbLinkPathD(parsed.type, previewPts[0], previewPts[1], wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed));
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", previewD);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", previewD);
-            wbLayoutLinkLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", previewD);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", previewD);
+            wbLayoutLinkLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
 
             const hit = hoveredItemAt(live.x, live.y);
             if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], live.x, live.y));
@@ -11436,7 +11456,7 @@ function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
   if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) return;
   const elbow = parsed.route === "elbow";
   const points = wbLinkWaypoints(parsed, endpoints).map((p) => ({ x: p.x, y: p.y }));
-  const groupEl = () => document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+  const groupEl = () => wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
   const live = () => ({ ...parsed, points, bend: undefined });
   const ends = () => wbResolveLinkEndpoints(live()) || endpoints;
   const repaint = () => {
@@ -11759,7 +11779,7 @@ function wbMultiLiveLinks(rows) {
 }
 
 function wbMultiMemberOutline(id) {
-  return document.querySelector(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
+  return wbInstances.query(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
 }
 
 function wbFollowMultiOutline(id, liveD) {
@@ -12180,7 +12200,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
   //: A lone selection's grips go in the overlay, above the HTML objects that
   //: can lie over the shape (3 of 8 grips were under a text box: measured
   //: with `elementFromPoint`); a multi member's bare outline stays under.
-  const group = d3.select(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group")
+  const group = d3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))
     .append("g")
     .attr("class", "wb-sketch-handle-group")
     .attr("data-sketch-id", sketch.id);
@@ -12257,9 +12277,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             sketch._resizeUndoBefore = WB_KIND_INFO.sketch.payload(sketch);
             sketch._gesture = wbBeginGesture(() => {
               delete sketch._liveD;
-              document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
-              document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
-              wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+              wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
+              wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
+              wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
             });
           })
           .on("drag", (event) => {
@@ -12276,9 +12296,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             rawDY += event.dy;
             const t = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey || wbKeepsRatio("sketch", sketch), event.sourceEvent.altKey);
             const newD = (wbFmtState.shapeTable?.resized(parsed.d, t, parsed.shapeKind, wbTransformPathD, wbPathBBox) ?? wbTransformPathD(parsed.d, t));
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
-            wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
+            wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
             sketch._liveD = newD; // read at drag end, without waiting for a full render
             wbFollowLiveShape(sketch, newD);
             const live = wbPathBBox(newD);
@@ -12352,9 +12372,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           sketch._gesture = wbBeginGesture(() => {
             rotateLiveD = null;
             group.attr("transform", null);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
-            wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
+            wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
           });
         })
         .on("drag", (event) => {
@@ -12491,8 +12511,12 @@ function renderWhiteboardNow() {
   // with them and the navigator's item rectangles are stale. Both re-apply
   // from state rather than being re-derived by their own callers.
   wbApplySearchHighlight();
-  wbRenderNavigator();
-  wbSyncBoardCount();
+  //: The navigator and the picker's count are the page board's chrome: an
+  //: embed's draw (wbInstances' `draw`) leaves them be (L-whiteboard-58).
+  if (!wbInstances.active.container) {
+    wbRenderNavigator();
+    wbSyncBoardCount();
+  }
   wbMapAfterRender();
 }
 
@@ -12621,15 +12645,18 @@ function renderWhiteboard() {
   // own help, and on an emptied map it was pens, shapes and the eraser
   // sitting over a surface none of them apply to.
   const wbHintHidden = !wbHintForcedOpen && (wbIsMap() || wbBoardHolds > 0 || prefs.get("wbEmptyHintDismissed", null) === "1");
-  document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
-  //: A card turned off still leaves one line on an empty board (audit 1028 B34).
-  document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
+  //: Both are the page board's: an embedded board's render leaves them be (L-whiteboard-58).
+  if (!wbInstances.active.container) {
+    document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
+    //: A card turned off still leaves one line on an empty board (audit 1028 B34).
+    document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
+  }
 
   // Render Sketches (SVG)
   const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));
   //: Every stroke's group wherever its band put it (decision 43); a new one
   //: is made in the base layer and `wbPlaceSketchBands` moves it.
-  const sketchSelection = svgGroup.selectAll(() => document.querySelectorAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
+  const sketchSelection = svgGroup.selectAll(() => wbInstances.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
     .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
     
 
@@ -12736,7 +12763,7 @@ function renderWhiteboard() {
       }
       const newD = wbTransformPathD(d._dragOriginalD, { dx, dy });
       d._dragLiveD = newD;
-      const el = document.querySelector(`.sketch-group[data-id="${d.id}"]`);
+      const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
       el?.querySelector(".sketch-path")?.setAttribute("d", newD);
       el?.querySelector(".sketch-hitbox")?.setAttribute("d", newD);
       wbNudgeShapeLabel(el, dx, dy);
@@ -13174,7 +13201,7 @@ function renderWhiteboard() {
         d._resizeUndoBefore = WB_KIND_INFO.node.payload(d);
         d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
         //: Measured once, at the press: the height the text needs.
-        const card = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const card = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         d._fitH = card && !wbExpandedNodes.has(d.id) ? wbCardFitHeight(card) : null;
         d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._resizeUndoBefore));
       })
@@ -13201,7 +13228,7 @@ function renderWhiteboard() {
         d.height = height;
         d.x = x;
         d.y = y;
-        const el = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         if (el) {
           el.style.width = `${width}px`;
           el.style.height = `${height}px`;
@@ -13259,7 +13286,7 @@ function renderWhiteboard() {
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
-        const el = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         if (!el) return;
         const rect = el.getBoundingClientRect();
         d.rotation = wbAngleFromCenterDeg(
@@ -13806,14 +13833,15 @@ async function wbFitToText(el) {
   toast("Sized to its text.");
 }
 
-async function wbSaveNode(node) {
+//: `boardId` is read when the save starts: a caller that awaited first (wbSaveMany) passes the one it began on.
+async function wbSaveNode(node, boardId = window.currentBoardId ?? null) {
   delete node._unsaved;
   try {
     const saved = await apiJson(`/whiteboard/nodes/${node.id}`, {
       method: "PUT",
       body: JSON.stringify({
         entry_id: node.entry_id,
-        board_id: node.board_id ?? window.currentBoardId ?? null,
+        board_id: node.board_id ?? boardId,
         x: node.x, y: node.y, z: node.z,
         width: node.width ?? null, height: node.height ?? null,
         rotation: node.rotation ?? null,
@@ -13873,6 +13901,11 @@ async function wbSaveObject(d) {
 //: body plus its id (`PUT /whiteboard/items/save-many`, one transaction, all
 //: or nothing). One item, or a topic still being created, goes the old way.
 async function wbSaveMany(rows) {
+  //: **The board is the one the save began on** (L-whiteboard-57): a nudge burst is
+  //: flushed as another board instance goes live (wbInstances.activate), so after
+  //: the first await `currentBoardId` and the reload below are that board's.
+  const inst = wbInstances.active;
+  const boardId = window.currentBoardId ?? null;
   //: An item twice (width then height on one card) is one row: the server
   //: refuses a batch that names an id twice.
   const seen = new Set();
@@ -13883,23 +13916,24 @@ async function wbSaveMany(rows) {
     return true;
   });
   const waiting = rows.filter((r) => r.item?._creating);
-  for (const { kind, item } of waiting) await wbSaveRow(kind, item);
+  for (const { kind, item } of waiting) await wbSaveRow(kind, item, boardId);
   if (ready.length < 2) {
-    for (const { kind, item } of ready) await wbSaveRow(kind, item);
+    for (const { kind, item } of ready) await wbSaveRow(kind, item, boardId);
     return true;
   }
   //: The route takes at most 5,000 of a kind a request; a larger selection
   //: goes in slices of that size (each slice all or nothing, like move-many).
   for (let at = 0; at < ready.length; at += WB_SAVE_MANY_MAX) {
-    if (!(await wbSaveManyBatch(ready.slice(at, at + WB_SAVE_MANY_MAX)))) return false;
+    if (!(await wbSaveManyBatch(ready.slice(at, at + WB_SAVE_MANY_MAX), inst))) return false;
   }
   return true;
 }
 
 const WB_SAVE_MANY_MAX = 5000;
 
-//: One `save-many` request. False (after reloading the board) when it fails.
-async function wbSaveManyBatch(slice) {
+//: One `save-many` request. False (after reloading the board) when it fails;
+//: a board no longer live is not reloaded in the live one's place.
+async function wbSaveManyBatch(slice, inst = wbInstances.active) {
   const body = { nodes: [], sketches: [], objects: [] };
   for (const { kind, item } of slice) body[WB_KIND_INFO[kind].list].push({ id: item.id, ...WB_KIND_INFO[kind].payload(item) });
   try {
@@ -13907,15 +13941,16 @@ async function wbSaveManyBatch(slice) {
     return true;
   } catch {
     recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
+    if (wbInstances.active !== inst) return false;
     await fetchWhiteboardState();
     wbScheduleRender();
     return false;
   }
 }
 
-function wbSaveRow(kind, item) {
+function wbSaveRow(kind, item, boardId) {
   if (kind === "sketch") return wbSaveSketchProps(item, {});
-  return kind === "node" ? wbSaveNode(item) : wbSaveObject(item);
+  return kind === "node" ? wbSaveNode(item, boardId) : wbSaveObject(item);
 }
 
 //: A sketch's `d` written into its data without saving it (a group drag's end).
@@ -14460,7 +14495,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
-        const el = document.querySelector(`.wb-object[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.wb-object[data-id="${d.id}"]`);
         if (!el) return;
         const rect = el.getBoundingClientRect();
         d.rotation = wbAngleFromCenterDeg(
@@ -15117,7 +15152,7 @@ function wbUpdateLinkedSketches(nodeId, precomputed) {
     //: from the document and has to be looked for again rather than written
     //: to invisibly for ever.
     if (!entry.el || !entry.el.isConnected) {
-      entry.el = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+      entry.el = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
       entry.path = entry.el?.querySelector(".sketch-path") || null;
       entry.hitbox = entry.el?.querySelector(".sketch-hitbox") || null;
     }
@@ -15703,7 +15738,7 @@ function renderWbGestureHints() {
   }
   const cards = (wbState && wbState.nodes ? wbState.nodes.length : 0);
   const card = !wbIsMap() && wbMultiSelection.size === 0 && wbSelectedItem?.kind === "node"
-    ? document.querySelector(`.node-card[data-id="${wbSelectedItem.id}"]`)
+    ? wbInstances.query(`.node-card[data-id="${wbSelectedItem.id}"]`)
     : null;
   const wanted = Boolean(card) && !wbGesturesDismissed && cards <= WB_GESTURE_CARD_LIMIT;
   strip.classList.toggle("hidden", !wanted);

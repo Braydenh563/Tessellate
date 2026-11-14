@@ -2787,17 +2787,20 @@ body.printing-doc #doc-preview p,
 }
 /* Below half zoom only the + stays: two buttons of 20px are wider than the
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-ref {
+#whiteboard-container[data-wb-zoom-far] .wb-map-ref,
+.wb-embed[data-wb-zoom-far] .wb-map-ref {
   display: none;
 }
 /* The one + left at far zoom is 20px and hangs flush on the topic's edge: a
    level is 76 units apart, 19px at 25%, so the 24px button 8px off the box
    covered the parent by 9px (L360, mapactions.js). */
-#whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+#whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+.wb-embed[data-wb-zoom-far] .wb-map-actions {
   transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
   right: calc(100% + 2px * var(--wb-inv-zoom));
 }
-#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions {
+#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions,
+.wb-embed .wb-map-node[data-flow=down] .wb-map-actions {
   transform-origin: 50% 0;
   right: auto;
   left: 50%;
@@ -2805,7 +2808,8 @@ body.printing-doc #doc-preview p,
   translate: -50% 0;
 }
 @media (pointer: coarse) {
-  #whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+  #whiteboard-container[data-wb-zoom-far] .wb-map-actions,
+  .wb-embed[data-wb-zoom-far] .wb-map-actions {
     transform: scale(calc(20 / 44 * var(--wb-inv-zoom)));
   }
 }
@@ -2817,7 +2821,8 @@ body.printing-doc #doc-preview p,
    Below half zoom a 24px chevron is wider than the topic it sits on (30%:
    a topic 17px tall carried one on every branch), so it waits for the zoom
    or for the topic to be selected. */
-#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
+#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse,
+.wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
   display: none;
 }
 
@@ -9762,4 +9767,10 @@ input[type="color"].wb-mixed {
   .wb-status-bar {
     display: none;
   }
+}
+
+/* A read-only embed pans and zooms only (L-whiteboard-54; with the boards bundle, as the embed is): its layers take no
+   pointer, so no card's drag starts and every press reaches the box's zoom. */
+.wb-embed-readonly > [data-wb-layer] {
+  pointer-events: none;
 }

@@ -453,6 +453,13 @@ function wbCommandMenuRow(id) {
 //: Whether the board is the thing on screen, with a board in it: the
 //: palette's "This board" group shows only then.
 function wbCommandsLive() {
+  //: Focus inside an embed: its board takes the command if it may be edited
+  //: (L-whiteboard-54), and becomes the live one so the command acts on it.
+  const embed = wbInstances.embedFor(document.activeElement);
+  if (embed) {
+    if (embed.editable) wbInstances.activate(embed);
+    return embed.editable;
+  }
   const view = document.getElementById("library-view-whiteboard");
   const canvas = document.getElementById("wb-canvas-view");
   //: Rendered, not only un-hidden: the Library tab hides by its own panel,
@@ -460,7 +467,9 @@ function wbCommandsLive() {
   //: screen, and a stray Ctrl+V dropped an image onto the unseen board (and
   //: started captioning it). `getClientRects()` is empty under any hidden
   //: ancestor.
-  return Boolean(view && !view.classList.contains("hidden") && canvas && !canvas.classList.contains("hidden") && canvas.getClientRects().length);
+  const live = Boolean(view && !view.classList.contains("hidden") && canvas && !canvas.classList.contains("hidden") && canvas.getClientRects().length);
+  if (live) wbInstances.activate(wbInstances.page);
+  return live;
 }
 
 //: The command palette's rows (palette.js, through `paletteCommands` in

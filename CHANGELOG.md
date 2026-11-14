@@ -6,6 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: each board instance keeps its own undo history key, so Ctrl+Z in an embedded board takes back its own step and the page board keeps its own (found driving L-whiteboard-54).
+- Boards: an embedded board's draw leaves the page board's empty hint, count, navigator and outline alone, and no longer redraws the page after itself (L-whiteboard-58).
+- Boards: a multi-row save keeps the board it began on, so a board embed going live mid-save no longer takes its later rows or its stale reload (L-whiteboard-57).
+- Boards: each board keeps its own inverse zoom, so a zoomed embed no longer resizes the page board's grips, and the page view draws into the active board (L-whiteboard-56).
+- Code: the board looks up its layers and items inside the active board (L-whiteboard-55): `wbInstances.query` and `queryAll` search the live container and read an embed's layer ids as its `data-wb-layer`, so export, record, search and 90 other `#wb-html-layer .wb-object`-style lookups never find another board's cards. Tests: tests/test_wb_instances.py (2 new)
+- Code: editing inside an embedded board (L-whiteboard-54): initWhiteboard binds its container listeners through `wbInstances.on`, so the page board and every embed get their own copy, each making its instance live before it runs; a read-only embed gets only the pan and zoom ones, destroy() unbinds them, and keys and paste go to the embed holding the focus. Tests: tests/test_wb_instances.py (3 new)
 - Code: board state per instance (L-whiteboard-53): whiteboard-instances.js keeps each board's state, selection, Undo and zoom and swaps them in on `wbInstances.activate`, so the page board is the default instance and unchanged; `wbInstance.create(host, boardId, { editable })` mounts a board inside a document's element with its own layers and zoom, and `destroy()` leaves nothing behind (`tests/test_wb_instances.py`).
 - Tests: the marquee, voice-table and quick-add checks read the carved board files (whiteboard-bar.js, whiteboard-map-record.js and the search file's `searchLive` line), and none of their bounds moved.
 - Fix: a new branch made with Tab on a board's map threw a ReferenceError (the board search was private to its wrapped file after the carve); it is exported, and `tests/test_wrapped_private_names.py` fails when any file reads a name another wrapped file keeps private.

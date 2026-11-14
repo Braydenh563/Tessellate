@@ -34,7 +34,7 @@ def _function(name: str) -> str:
 
 
 def test_the_plain_wheel_stands_aside_while_the_middle_button_is_down() -> None:
-    start = SOURCE.index('container.node().addEventListener("wheel"')
+    start = SOURCE.index('wbInstances.on("wheel"')
     body = SOURCE[start : SOURCE.index("{ passive: false }", start)]
     guard = body.find("(e.buttons & 4) === 4 || wbMidPanHeld")
     assert guard != -1, "the plain-wheel pan must ignore wheel events while the middle button pans"
@@ -98,7 +98,7 @@ def test_the_right_button_pans_from_bare_canvas_and_a_drag_eats_its_menu() -> No
     body = _function("wbZoomFilter")
     assert 'event.button === 2) return wbIsBareCanvas(event.target)' in body
     assert "const WB_RIGHT_SLOP = 4;" in SOURCE
-    handler = SOURCE[SOURCE.index('containerEl.addEventListener("contextmenu", (e) => {\n    //: A topic'):][:600]
+    handler = SOURCE[SOURCE.index('wbInstances.on("contextmenu", (e) => {\n    //: A topic'):][:600]
     assert "wbRightOwns()" in handler, "the native menu must stand aside while a right press owns the gesture"
 
 
@@ -158,7 +158,7 @@ def test_a_selected_connectors_end_grip_wins_over_an_items_port() -> None:
     """INBOX 1328: pressing a connector's end grip, which sits on the very edge point the
     item's port is, drew a second arrow (sketches 1 -> 2, measured). Browser half: the press
     must reach the grip's own drag (1 -> 1, the end moves)."""
-    start = SOURCE.index('containerEl.addEventListener("pointerdown", (e) => {\n    if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item')
+    start = SOURCE.index('wbInstances.on("pointerdown", (e) => {\n    if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item')
     body = SOURCE[start : SOURCE.index("portTarget(x, y)", start)]
     assert ".wb-link-endpoint-handle" in body, "the port press must yield to a connector's end grip"
 

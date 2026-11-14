@@ -58,7 +58,7 @@ def test_shift_takes_the_longer_travel_both_ways() -> None:
 
 def test_the_click_after_a_drawn_box_is_spent() -> None:
     """The release of a drag also clicks the canvas; that click must not drop a second box."""
-    click = SOURCE[SOURCE.index('containerEl.addEventListener("click", (e) => {') :]
+    click = SOURCE[SOURCE.index('wbInstances.on("click", (e) => {') :]
     click = click[: click.index("\n  });\n")]
     spent = click.index("if (wbPlaceJustDrawn)")
     assert spent < click.index("wbCreateTextBox(x, y)") and spent < click.index("wbCreateSticky(x, y)")

@@ -25,7 +25,8 @@ const extra={};
 for(let i=0;i<200;i++){
   const ctx={console,Math,Number,Object,Set,Map,JSON,Array,String,Promise,Boolean,RegExp,Date,
     setTimeout:()=>0,clearTimeout:()=>{},addEventListener:()=>{},
-    document:{querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:()=>{},documentElement:{dataset:{}}},...extra};
+    document:{querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:()=>{},documentElement:{dataset:{}}},
+    wbInstances:{query:()=>null,queryAll:()=>[],layer:()=>null,container:()=>null},...extra};
   ctx.window=ctx;ctx.__out=(v)=>process.stdout.write(JSON.stringify(v));vm.createContext(ctx);
   try{vm.runInContext(lib,ctx);vm.runInContext(probe,ctx);break;}
   catch(e){const m=/(\w+) is not defined/.exec(String(e.message));if(!m||extra[m[1]]!==undefined)throw e;extra[m[1]]=stub();}

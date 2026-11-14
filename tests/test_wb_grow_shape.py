@@ -27,6 +27,7 @@ def _grow(need_h: int, area_h: int):
         f"const label = {{ getBBox: () => ({{ width: 100, height: {need_h} }}) }};"
         f"const group = {{ querySelector: () => label }};"
         "global.document = { querySelector: () => group };"
+        "const wbInstances = { query: (sel) => document.querySelector(sel) };"
         f"const wbShapeLabelPlace = () => ({{ area: {{ w: 100, h: {area_h} * scale }} }});"
         "const wbSketchParsedData = () => ({ d: 'M 0 0' });"
         "const wbPathBBox = () => ({ minX: 0, minY: 0 });"

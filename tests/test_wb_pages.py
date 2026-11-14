@@ -85,7 +85,7 @@ def test_a_locked_item_answers_the_pointer() -> None:
     # Audit 1028 B20: the lock is a persistent badge, not a hover-only pin.
     assert "wbPaintLockBadges();" in _function(BOARD, "wbPaintLocks")
     assert "wbPaintLockHover" not in BOARD and "wbOnLockHoverMove" not in BOARD
-    assert 'addEventListener("pointerdown", wbOnLockPress, true)' in BOARD
+    assert 'wbInstances.on("pointerdown", wbOnLockPress, true)' in BOARD
     assert "Locked. Right-click to unlock it." in BOARD
     assert "Unlock this item" in BOARD
     hit = _function(BOARD, "wbLockedItemAt")

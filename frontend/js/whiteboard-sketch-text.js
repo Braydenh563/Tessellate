@@ -467,7 +467,7 @@
   function wbOpenSketchLabelEditor(sketch, parsed, { box, ink, multiline, max, name, said, extraClass = "" }) {
     const layer = wbInstances.layer("wb-html-layer");
     if (!sketch || !parsed || !layer || document.querySelector(".wb-shape-label-editor")) return;
-    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const group = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
     const editor = document.createElement("div");
     editor.className = `wb-shape-label-editor ${extraClass}`.trim();
     editor.setAttribute("role", "textbox");
@@ -710,7 +710,7 @@
       parsed = null;
     }
     if (!wbLinkTakesLabel(sketch, parsed)) return;
-    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const group = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
     const p = wbLinkMidpoint((group?.querySelector(".sketch-hitbox") || group?.querySelector(".sketch-path"))?.getAttribute("d"), wbLinkLabelT(parsed));
     if (!p) return;
     const w = 180;

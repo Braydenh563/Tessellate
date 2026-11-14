@@ -26,7 +26,7 @@ def test_a_native_scroll_of_the_canvas_is_folded_into_the_zoom_transform():
     fold = _fn(WB, "wbFoldNativeScroll")
     assert "el.scrollLeft = 0" in fold and "el.scrollTop = 0" in fold
     assert "t.x - dx" in fold and "wbZoom.transform" in fold
-    assert 'container.node().addEventListener("scroll", wbFoldNativeScroll)' in WB
+    assert 'wbInstances.on("scroll", wbFoldNativeScroll, undefined, true)' in WB
 
 
 def test_the_board_editors_focus_without_scrolling():

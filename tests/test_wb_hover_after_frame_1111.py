@@ -30,7 +30,7 @@ def _gate() -> str:
 
 
 def test_only_the_select_hover_waits_for_the_frame_to_draw() -> None:
-    assert re.search(r'containerEl\.addEventListener\("pointermove", wbOnFrame\(\(e\) => \{\s*\n\s*if \(wbLinkDragActive\) return;.*?\}, true\), \{ passive: true \}\);', WB, re.S)
+    assert re.search(r'wbInstances\.on\("pointermove", wbOnFrame\(\(e\) => \{\s*\n\s*if \(wbLinkDragActive\) return;.*?\}, true\), \{ passive: true \}\);', WB, re.S)
     # The port-drag hint keeps the in-frame gate: it follows a held pointer.
     assert re.search(r"const portHints = wbOnFrame\(\(\{ drag, x, y \}\) => \{.*?\n  \}\);", WB, re.S)
 

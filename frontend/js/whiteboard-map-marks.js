@@ -162,7 +162,7 @@
       return;
     }
     wbMapCloseMarkers();
-    const target = anchor?.isConnected ? anchor : document.querySelector(`.wb-object[data-id="${id}"]`);
+    const target = anchor?.isConnected ? anchor : wbInstances.query(`.wb-object[data-id="${id}"]`);
     if (!target) return;
     const panel = document.createElement("div");
     panel.className = "help-popover wb-map-markers-pop";
@@ -470,7 +470,8 @@
 
   //: What follows every render of a map: the outline and the marker filter.
   function wbMapAfterRender() {
-    wbOutlineSync();
+    //: The outline panel lists the page board's map, never an embed's (L-whiteboard-58).
+    if (!wbInstances.active.container) wbOutlineSync();
     if (wbMarkerUi.filters.size || wbMapDim.on || wbInstances.container()?.classList.contains("wb-map-filtering")) {
       wbMapPaintMarkerFilter();
     }
