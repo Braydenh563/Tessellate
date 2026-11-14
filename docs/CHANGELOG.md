@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the marquee, voice-table and quick-add checks read the carved board files (whiteboard-bar.js, whiteboard-map-record.js and the search file's `searchLive` line), and none of their bounds moved.
 - Fix: a new branch made with Tab on a board's map threw a ReferenceError (the board search was private to its wrapped file after the carve); it is exported, and `tests/test_wrapped_private_names.py` fails when any file reads a name another wrapped file keeps private.
 - Code: the map's Undo-recorded commands (add, fold, tidy, layout, theme, cross-link edits) moved out of whiteboard-map.js into the wrapped whiteboard-map-record.js (1,200 lines), each bound once through `wbRecorded`, so a call from inside the file and a call through `window` both record one Undo step; the shared global scope has 17 fewer names (L-whiteboard-49)
 - Whiteboard: an image object must name a picture or PDF upload (a `/media/x.svg` address is refused), and `tests/test_wb_no_svg_images.py` proves no SVG reaches a board by any route (L-whiteboard-39 stays moot)
@@ -73,6 +74,12 @@ below). Versioning is `0.x` while the app stabilises.
 - Whiteboard (L-whiteboard-10): the first time you hold each board tool, a one-line hint says what it does; it shows once per tool and is remembered on this device (`wb-tool-hint-<tool>`, `tests/test_wb_tool_hints.py`).
 - Whiteboard (L-whiteboard-6): Repeat last (Ctrl+Alt+Y, Edit menu and Ctrl+K) does the last move, turn or resize again to what is selected now; arrow nudges, drags, Turn, the card and picture rotate grips and the Format width and height record it (`tests/test_wb_repeat_last.py`). A drawn shape's rotate grip is not recorded yet.
 - Whiteboard tables: merged cells (Merge cells, Split cell; `data.merges`), Striped rows (Format panel and menu), row heights and grips on the grid lines to drag a row or column (one Undo step per drag), and a pasted Markdown pipe table becomes a table; SVG, PNG and draw.io export draw the spans and stripes. Measured: merged cell 2x wide and 2x tall, column drag +40px, row drag +20px (35 sweep checks).
+- Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
+- Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
+- Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
+- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
+- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
 - Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
 - Mind map plan closed: L-mindmap-13 (Tab to an editable new topic) closed at the measured median with its restyle profile recorded; the plan's last stale "left open" line (L-mindmap-14, built) corrected.
