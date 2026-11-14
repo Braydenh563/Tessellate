@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Saved searches in the Notes sidebar (L-world-class-160): after a reload the list stayed empty, because `search.js` ran before the Notes surface existed and drew into nothing; it now draws when the surface is built. Measured at 5,000 notes: 0 rows before, 3 after; the row menu is 198 x 83 px inside 1440 x 900 with Rename and Forget, and a click opens the finder with its words (30 results, 513 to 899 ms).
 - Import at 5,000 notes (L-world-class-119): `tests/test_import_commit_batches.py` now counts a 5,000-note zip import at 103 commits (writer 51, embedding 50) against 5,000 and more before; the row was already built as L508.
 - Silent broad excepts at zero (L-world-class-122, decision 57): the 60 handlers in `tests/test_no_silent_except.py`'s seed now log at debug with the reason (41 files), the log-buffer filter catches the named format errors, and `SEED` is empty so a new silent `except Exception` fails the test; `_answer_voice` reads the composer's own `voice_now` (routes_chat stays at its line cap).
 - LAN port: the accept loop asks the non-blocking socket directly every 50 ms instead of a `sock_accept` cancelled by a 0.5 s timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240). No task is left pending, so the background registry stays as it was.
