@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The timeline draws a thread as a branching line: a note that continues another branches off beside it, and its Continues button, which never appeared before, now does (L-world-class-176).
 - A board or map exports as a folder with its notes: one zip holding the picture as SVG and PNG and every note on it as Markdown (L-world-class-130).
 - The selection bar's ... menu sets or removes one property on every selected note, with one Undo (L-world-class-128).
 - A note's edit box finds and replaces inside the note: Ctrl+F and Ctrl+H open the document editor's search panel (L-world-class-127).

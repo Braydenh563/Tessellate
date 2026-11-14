@@ -396,7 +396,8 @@ HELP_TOPICS: list[dict] = [
             "the strip under the bar opens or starts one, and its head steps to the day before and after; "
             "after two days running with a daily note, the strip's head says how many days in a row. "
             "A week or more with nothing written shows a line between the dates; its What happened here? "
-            "starts a page for the first empty day."
+            "starts a page for the first empty day. "
+            "A note that continues another branches off the line beside it, and its Continues button goes to the note it follows."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },

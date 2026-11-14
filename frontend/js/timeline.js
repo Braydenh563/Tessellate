@@ -1633,20 +1633,24 @@ function timelineRowElement(row, density) {
 
   // A row that continues another says so and goes there (decision 5's one
   // surviving thread affordance). Only where there is room to say it.
-  if (density === "full" && row.parentId) {
-    const parent = timelineById.get(row.parentId);
-    if (parent) {
-      const link = document.createElement("button");
-      link.type = "button";
-      link.className = "ghost small timeline-row-thread";
-      setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
-      link.title = `Continues “${parent.title}”`;
-      link.addEventListener("click", (event) => {
-        event.stopPropagation();
-        focusTimelineRow(parent.key);
-      });
-      main.appendChild(link);
-    }
+  //: **An off-shoot, not a second list** (L-world-class-176): a row that
+  //: continues a loaded note branches off the spine, so a thread reads as a
+  //: line with its shoots. Every density, because the shape needs no room.
+  //: The map is keyed by row key ("note:5"), not by id: looked up by the bare
+  //: id, the "Continues" link below never found its parent.
+  const parent = row.parentId ? timelineById.get(`note:${row.parentId}`) : null;
+  if (parent) li.dataset.branch = "1";
+  if (density === "full" && parent) {
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "ghost small timeline-row-thread";
+    setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
+    link.title = `Continues “${parent.title}”`;
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusTimelineRow(parent.key);
+    });
+    main.appendChild(link);
   }
 
   li.addEventListener("click", (event) => {
