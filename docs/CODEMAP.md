@@ -18467,7 +18467,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `asks_about_a_part` | src/tessellate/ai/help_surface.py:25 |
+| `asks_about_a_part` | src/tessellate/ai/help_surface.py:29 |
 | `surface_word` | src/tessellate/ai/help_surface.py:12 |
 
 ### src/tessellate/ai/help_targets.py (1)
