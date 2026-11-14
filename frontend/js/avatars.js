@@ -2753,10 +2753,16 @@
     cute: ["Hi.", "Boop."], drunk: ["Heyyy.", "Who moved the floor."], greedy: ["Time is money.", "Stonks."],
   };
 
+  let lastNameMarkLine = "";
+
   function nameMarkLine(seed) {
     const reading = nameMood(seed);
     const lines = NAME_MARK_LINES[reading.mood] || ["Hello.", "Need anything?", "Still here."];
-    return lines[Math.floor(Math.random() * lines.length)];
+    //: Never the line just said: with two lines a mood, a plain random pick repeated one a poke in two (audit G8).
+    const fresh = lines.filter((line) => line !== lastNameMarkLine);
+    const pool = fresh.length ? fresh : lines;
+    lastNameMarkLine = pool[Math.floor(Math.random() * pool.length)];
+    return lastNameMarkLine;
   }
 
   //: A face drawn to always move (the viewer, the companion, the dashboard):

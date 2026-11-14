@@ -2694,7 +2694,7 @@ function assistantMessageActions({ bubble, text, question, onEdit, message }) {
       prefs.set("notRightNoted", "1");
       offerUndo(
         "Marked an answer not right",
-        first ? "Stored only on this device. Clear it in Settings, Learned." : "Marked not right. Those notes come last for a question like this.",
+        first ? "Stored only on this device. Clear it in Settings, What it learned." : "Marked not right. Those notes come last for a question like this.",
         async () => {
           await Promise.all(made.ids.map((id) => api(`/learned/corrections/${id}`, { method: "DELETE" })));
           delete bubble.dataset.notRight;

@@ -433,6 +433,30 @@ def _named_act(question: str) -> bool:
     return any(name in guide_aliases.HARD for name, _ids in guide_aliases.intents(question))
 
 
+def _title_lead(question: str, topic: dict) -> str:
+    """A topic's own title asked as the question is answered by what the topic opens on (L195): it opens on its point, and the best-overlap pick landed mid-topic ("They lock again after...", "To change it, open...")."""
+    from tessellate.ai import guide_titles, help_chat
+
+    if [t["id"] for t in guide_titles.topic(question, [topic])] != [topic.get("id")]:
+        return ""
+    sentences = help_chat.help_sentences(str(topic.get("body") or ""))
+    return _headline(sentences[0]) if sentences else ""
+
+
+def _headline(sentence: str) -> str:
+    """A long sentence cut to its head: at the first `:` (four words in) or `,` (eight in) outside brackets and quotes, within the lead budget."""
+    if len(sentence.split()) <= _HELP_LEAD_WORDS:
+        return sentence
+    depth, quote = 0, False
+    for i, ch in enumerate(sentence):
+        depth = max(0, depth + (ch in "([") - (ch in ")]"))
+        quote ^= ch in "\"“”"
+        words = len(sentence[:i].split())
+        if not depth and not quote and words <= _HELP_LEAD_WORDS and ((ch == ":" and words >= 4) or (ch == "," and words >= 8)):
+            return sentence[:i].rstrip() + "."
+    return sentence
+
+
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     """The one sentence of the best topic that answers a how-to (its step
     sentence sharing the most of the question's words) and the topic's id:
@@ -440,6 +464,9 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     so help and chat say it in one voice. None with no topic."""
     if not topics:
         return None
+    titled = _title_lead(question, topics[0])
+    if titled:
+        return titled, str(topics[0].get("id", ""))
     act = _help_act(question)
     named = _act_sentence(question, topics, act) if act else None
     if named is not None:

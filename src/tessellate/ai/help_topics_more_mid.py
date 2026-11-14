@@ -680,7 +680,7 @@ MID_TOPICS.extend(
                 "Settings, Models, Who answers plain Ask: Your model (the default) or Quoted from your notes. With your model, "
                 "Ask writes the answer and cites your notes. With Quoted from your notes, a plain question is answered by "
                 "Atlas's assistant, quoting your notes with no AI; a small model (3B and under) answers best this way. It is "
-                "the Ask box's own switch beside the answer length, set from Settings, and it is this computer's choice. "
+                "the Ask box's own switch beside the answer length, and it is this computer's choice, set in Settings. "
                 "With no model running the answer is always from your notes."
             ),
             "badge": {"label": "Models", "section": "models", "target": "ask-answerer-row"},
@@ -885,7 +885,7 @@ MID_TOPICS.extend(
                 "installed models", "remove a model", "uninstall a model", "free disk space",
             ),
             "body": (
-                "Settings, Models, Suggested downloads: cards grouped by purpose "
+                "Settings, Models, Suggested downloads lists models to download as cards grouped by purpose "
                 "(chat and filing, bigger machines, search, images, reading "
                 "text), each with its size on disk, the memory it asks for, what "
                 "it is good at and whether it fits this computer, and one "

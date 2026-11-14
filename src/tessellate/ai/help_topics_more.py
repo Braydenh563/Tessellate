@@ -337,8 +337,7 @@ MORE_TOPICS: list[dict] = [
             "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
+            "Settings, Tools it can use lets another app use these tools: a snippet to paste into an MCP client such as Claude Desktop, "
             "with a Copy button; that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
@@ -491,7 +490,7 @@ MORE_TOPICS: list[dict] = [
             "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General sets how the calendar and dates read: First day of the week, and Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "

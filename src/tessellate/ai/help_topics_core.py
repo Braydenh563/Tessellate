@@ -851,7 +851,7 @@ HELP_TOPICS: list[dict] = [
             'who (a title like "Sync with Ana friday 2pm" fills When and '
             "Who from its chips), then opens the meeting as a note with Agenda, Notes, Decisions "
             "and Action items; Start and open recorder does the same and opens the "
-            'recorder, writing into its Notes; press Record there (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
+            'recorder, writing into its Notes; press Record in the recorder (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
             '@Sam by Friday": @Name is its owner, the plain words its due. '
             "The meeting chip on the note (or its ... menu, Meeting) opens the "
             "meeting sheet: Remind me makes an action item a reminder, asking "
@@ -1386,7 +1386,7 @@ HELP_TOPICS.extend(
                 "make it formal",
             ),
             "body": (
-                "Notes tab, Writing room: pick what to write (draft a note, "
+                "The Writing room (Notes tab) drafts, rewrites and translates: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "

@@ -12,6 +12,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat: the first "not right" on an answer says it is stored only on this device, and Settings, Learned has a Clear answers marked not right row (L225)
 - Activity: the panel moves by its head (kept on screen, remembered, double-click puts it back), and a test pins that the agent never edits, removes or sends without a Confirm (L-chat-13)
 - Agent tools: a test pins snake_case verb-first names, no two tools opening with the same sentence and a 12-word lead; the 37 long leads and 5 noun-first names are named, and only shrink (L168)
+- Guide: a question that names a topic's title ("what is Meeting notes", "tell me about Skills") now reaches that topic first, 51 misrouted titles fixed, and about ten topic openers were rewritten to state the thing before the detail (L195).
+- Guide and Magic Add: "how do I record a meeting" leads with "Press Record in the recorder" instead of a dangling "there"; a clock window ("between 8 and 10", "from 8 to 10pm") makes a reminder due when it opens, not at 09:00; a poke line is never repeated twice running (L252).
 - Guide: a bare how-to no longer leads with a 61-word opening inventory; "How do I change the widgets?" leads with the Widgets and Edit layout step (L229)
 - Ask: a map or board whose words hold the question joins the answer's records as a map or board source card with an open link (L112)
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).

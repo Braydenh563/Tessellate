@@ -34,7 +34,7 @@ def test_clearing_leaves_other_corrections_alone(client):
 
 def test_the_first_mark_says_it_stays_on_this_device_and_where_to_clear_it():
     chat = (ROOT / "frontend/js/chat-turn.js").read_text()
-    assert "Stored only on this device. Clear it in Settings, Learned." in chat
+    assert "Stored only on this device. Clear it in Settings, What it learned." in chat
     assert "notRightNoted" in chat, "said once, not on every mark"
 
 
