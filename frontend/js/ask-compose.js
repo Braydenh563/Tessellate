@@ -974,7 +974,10 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
+    delete chartHost.dataset.streamed;
+    //: A chart the answer's own stream drew (`onChart` below) is not wiped by
+    //: the parallel fetch coming back empty (L-chat-60).
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question && !chartHost.dataset.streamed)).catch(() => {});
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.
@@ -1162,6 +1165,14 @@ async function askQuestion(preset) {
       onTip: (event) => { answerTip = event.text || ""; },
       //: Drawn with the foot, once the answer's text is final.
       onPanel: (event) => answerPanels.push(event),
+      //: The chart a no-model answer made (a window's counts, a graph ask):
+      //: the box above the answer, the same recipe Chat draws (L-chat-60).
+      onChart: (event) => ensureModule("askHistory").then(() => {
+        if (!chartHost || !event.chart) return;
+        chartHost.dataset.streamed = "1";
+        chartHost.classList.remove("hidden");
+        drawAskChart(chartHost, event.chart);
+      }),
       //: The web pages a composed answer read, as cards (decision 66), drawn
       //: with the panels for the same reason.
       onWebSources: (event) => answerPanels.push({ web: event.sources }),

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8510, frontend ids 2795, CSS sections 524, backend routes 714, backend modules 11149, test files 2903, tests 22875, plan headings 692, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8510, frontend ids 2795, CSS sections 524, backend routes 714, backend modules 11149, test files 2904, tests 22877, plan headings 692, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8510)
 
@@ -2029,19 +2029,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1468 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1479 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
 | `askAnswerMenu` | frontend/js/ask-compose.js:660 |
-| `askAsOf` | frontend/js/ask-compose.js:1481 |
+| `askAsOf` | frontend/js/ask-compose.js:1492 |
 | `askFromNotesFold` | frontend/js/ask-compose.js:884 |
 | `askKeepAsDocument` | frontend/js/ask-compose.js:692 |
 | `askKeepAsMap` | frontend/js/ask-compose.js:714 |
 | `askKeptTitle` | frontend/js/ask-compose.js:687 |
 | `askPreAnswerCard` | frontend/js/ask-compose.js:874 |
 | `askQuestion` | frontend/js/ask-compose.js:928 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1406 |
-| `askStatusText` | frontend/js/ask-compose.js:1493 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1417 |
+| `askStatusText` | frontend/js/ask-compose.js:1504 |
 | `citationVerdictRow` | frontend/js/ask-compose.js:631 |
 | `digestMore` | frontend/js/ask-compose.js:467 |
 | `digestOffer` | frontend/js/ask-compose.js:507 |
@@ -2053,14 +2053,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderActCard` | frontend/js/ask-compose.js:145 |
 | `renderAskBoth` | frontend/js/ask-compose.js:863 |
 | `renderAskFollowups` | frontend/js/ask-compose.js:813 |
-| `renderAskHint` | frontend/js/ask-compose.js:1443 |
+| `renderAskHint` | frontend/js/ask-compose.js:1454 |
 | `renderAskInsights` | frontend/js/ask-compose.js:741 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1512 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1523 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
 | `renderAskWhy` | frontend/js/ask-compose.js:765 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1302 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1313 |
 | `renderWebSources` | frontend/js/ask-compose.js:285 |
-| `setAsking` | frontend/js/ask-compose.js:1502 |
+| `setAsking` | frontend/js/ask-compose.js:1513 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -28464,7 +28464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22875)
+## Tests (22877)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28545,6 +28545,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_answer_object.py | 23 |
 | tests/test_ask_answerer_setting_l737.py | 3 |
 | tests/test_ask_category_scope.py | 4 |
+| tests/test_ask_chart_event_chatplan60.py | 2 |
 | tests/test_ask_chips.py | 8 |
 | tests/test_ask_facts2_1110.py | 5 |
 | tests/test_ask_facts_1110.py | 11 |

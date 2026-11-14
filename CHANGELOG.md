@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: the chart a no-model answer makes (a window's counts, a graph ask) is drawn in the chart box above the answer, as Chat does (L-chat-60).
 - Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
 - Chat: Settings has How long answers are (Short, Normal, Detailed; one preference with the dock's Length, the composer cut to two sentences or given a supporting sentence per source) and a Personas off switch; "what was I working on" and "what did I change today" read the newest edits; `/tools` lists the assistant's recent tool calls; a note can Supersede another and the older one reads Superseded by (L161, L163, INBOX 1841, 1842).
 - Composer: the graph maker in Chat and Ask. "chart this: Mon 3, Tue 5" (pasted values, a table, or the answer before) and "chart my notes on running" (the measure those notes share, one point a note) answer with the chart maker's ```chart block, drawn with Save as SVG and CSV; notes with no shared measure are a mind map (L158, INBOX 1847, tests/test_composer_graph_l158.py).
