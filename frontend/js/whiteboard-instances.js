@@ -29,6 +29,8 @@
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
       mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
       invZoom: "1", invTimer: 0, key: ++made,
+      //: The tool in hand on this board (L-whiteboard-61): a new one starts on the page board's first tool.
+      tool: "pan",
       //: `wbHistoryBoard`, the board whose stacks `wbHistoryFor` holds live: an
       //: instance's own, so its first read keeps the stacks it has.
       historyBoard: String(boardId ?? "default"),
@@ -71,6 +73,7 @@
     inst.zoom = wbZoom;
     inst.mapState = window.wbMapState ?? null;
     inst.historyBoard = wbHistoryBoard;
+    inst.tool = window.currentTool;
   }
 
   function restoreGlobals(inst) {
@@ -85,6 +88,7 @@
     wbZoom = inst.zoom;
     window.wbMapState = inst.mapState;
     wbHistoryBoard = inst.historyBoard;
+    window.currentTool = inst.tool;
   }
 
   //: The same caches openWhiteboardBoard drops on a board switch: each answers
@@ -114,6 +118,8 @@
     restoreGlobals(inst);
     dropBoardCaches();
     wbUpdateUndoRedoButtons();
+    //: The toolbar and the incoming container's cursor show its own tool.
+    wbSelectToolRef?.swap(inst.tool);
     if (inst.renderPending) {
       inst.renderPending = false;
       wbScheduleRender();

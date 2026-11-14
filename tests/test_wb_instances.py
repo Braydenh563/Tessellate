@@ -101,7 +101,7 @@ window.currentBoardId = 1;
 window.currentTool = "draw";
 //: whiteboard.js's tool switch; an activation repaints the toolbar through it without a stroke being dropped.
 const toolSyncs = [];
-let wbSelectToolRef = (tool, opts) => toolSyncs.push([tool, opts, window.currentBoardId]);
+let wbSelectToolRef = { swap: (tool) => toolSyncs.push([tool, window.currentBoardId]) };
 let wbRenderQueued = false, wbRenderFrame = 0, wbInitialized = true;
 const renders = [];
 function wbScheduleRender() { log.push(["schedule", window.currentBoardId]); }
@@ -817,3 +817,35 @@ process.exit(0);
     assert out["wheelHeld"] and out["wheelFree"]
     #: Each swap drops the canvas box cached for the board that was live: the first draw (in and out), pointerdown, contextmenu, keydown.
     assert out["rectDrops"] == 5
+
+
+def test_each_board_keeps_its_own_tool():
+    """L-whiteboard-61: a tool picked in an embed is the embed's; the page board keeps its own,
+    and each swap repaints the toolbar and cursor through the tool switch in its quiet form."""
+    out = _run("""
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.embedStarts = window.currentTool;
+window.currentTool = "rect";
+I.activate(I.page);
+out.pageKept = window.currentTool;
+I.activate(B);
+out.embedKept = window.currentTool;
+I.activate(I.page);
+out.syncs = toolSyncs;
+""")
+    assert out["embedStarts"] == "pan" and out["pageKept"] == "draw" and out["embedKept"] == "rect"
+    assert out["syncs"] == [["pan", 7], ["draw", 1], ["rect", 7], ["draw", 1]]
+
+
+def test_the_quiet_tool_switch_drops_no_stroke_and_shows_no_hint():
+    """An activation can come mid-stroke (an embed's reload draws it with its globals live):
+    the swap form repaints the toolbar and the cursor, and leaves the gesture and the hint alone."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    swap = wb[wb.index("  wbSelectToolRef = Object.assign(selectWbTool, {"):][:200]
+    assert "window.currentTool = tool;\n      showWbTool(tool);\n    }," in swap
+    shown = wb[wb.index("  function showWbTool(tool) {"):wb.index("  wbSelectToolRef = Object.assign(")]
+    assert "updateWbCursor();" in shown and 'b.classList.toggle("active", b.dataset.tool === tool)' in shown
+    for gone in ("wbAbandonStroke", "wbDropLostGesture", "toolHint", "call(wbZoom)"):
+        assert gone not in shown, gone
+
