@@ -61,3 +61,12 @@ def test_c9_the_tick_that_finishes_a_list_is_remarked_on(client, session, monkey
         done = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": [], "consent_id": card["consent_id"]}).json()
         assert done["ok"], done
     assert "All 5 items on **Lisbon packing list** are ticked." in done["summary"], done["summary"]
+
+
+def test_c2_the_bye_line_names_an_act_that_ran_and_not_one_that_was_only_proposed(client, session, monkeypatch):
+    seed.seed(session)
+    go = seed.asker(client, monkeypatch, chat=True)
+    ran = go("bye", history=[{"question": "remind me to call mum tomorrow", "answer": "Done.", "done_act": "Remind me to call mum"}])[0]
+    assert "Remind me to call mum" in ran, ran
+    proposed = go("bye", history=[{"question": "remind me to call mum tomorrow", "answer": "Confirm?", "pending_act": "Remind me to call mum"}])[0]
+    assert "call mum" not in proposed, proposed

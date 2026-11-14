@@ -947,6 +947,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
     if kind == "test" and (subject := composer_social.ping_subject(req.question)):
         said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
+    said = composer_social.with_act_ran(said, kind, last)
     sees = _sees(req, kind, seed)
     return f"{said}\n\n{sees}" if sees else said
 

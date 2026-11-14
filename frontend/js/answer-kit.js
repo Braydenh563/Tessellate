@@ -1343,6 +1343,9 @@ function chatHistoryToSend() {
   let turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
   //: The answer's note offer (Gather them, Track your lifts) is held by the server under an id; the last turn
   //: carries it until the button is pressed, so a typed yes makes that note (`composer_talk.held_offer`).
+  //: A card confirmed on the last turn tells the next one what ran, so a goodbye can name it (`done_act`).
+  const ran = chatHistoryToSend.ran;
+  if (ran && ran.turns === turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), done_act: ran.label }];
   if (chatHistoryToSend.heldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHistoryToSend.heldOffer }];
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
@@ -1358,6 +1361,7 @@ function chatHistoryToSend() {
 }
 
 chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
+  chatHistoryToSend.ran = outcome === "done" ? { label: event.label || event.name || "", turns: chatConv.turns.length } : null;
   const msg = card.closest(".msg.assistant");
   const send = () => {
     const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
