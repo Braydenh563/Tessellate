@@ -13506,8 +13506,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | PUT | `keep` | src/tessellate/api/routes_kept_words.py:44 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/wb_board.py:114 |
 | `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1741 |
-| `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:1022 |
-| `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1103 |
+| `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:1023 |
+| `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1104 |
 | `/address-names` | POST | `set_address_names` | src/tessellate/api/routes_auth.py:1523 |
 | `/all` | GET | `ranked` | src/tessellate/api/routes_resurface.py:129 |
 | `/answer-verdict` | POST | `mark_answer_wrong` | src/tessellate/api/routes_learned.py:114 |
@@ -13612,8 +13612,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/day` | GET | `day_digest_lines` | src/tessellate/api/routes_insights.py:442 |
 | `/delete` | POST | `delete_model` | src/tessellate/api/routes_models.py:1387 |
 | `/delete` | POST | `delete_tag` | src/tessellate/api/routes_tags.py:95 |
-| `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:849 |
-| `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:864 |
+| `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:850 |
+| `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:865 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
 | `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:853 |
@@ -13749,12 +13749,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1689 |
 | `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1709 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:362 |
-| `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:614 |
+| `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:615 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1283 |
-| `/jobs/last-runs` | GET | `jobs_last_runs` | src/tessellate/api/routes_tasks.py:577 |
-| `/jobs/passes/{kind}/run` | POST | `run_pass_now` | src/tessellate/api/routes_tasks.py:600 |
-| `/jobs/stream` | GET | `jobs_stream` | src/tessellate/api/routes_tasks.py:644 |
-| `/jobs/{job_id}/cancel` | POST | `cancel_job` | src/tessellate/api/routes_tasks.py:622 |
+| `/jobs/last-runs` | GET | `jobs_last_runs` | src/tessellate/api/routes_tasks.py:578 |
+| `/jobs/passes/{kind}/run` | POST | `run_pass_now` | src/tessellate/api/routes_tasks.py:601 |
+| `/jobs/stream` | GET | `jobs_stream` | src/tessellate/api/routes_tasks.py:645 |
+| `/jobs/{job_id}/cancel` | POST | `cancel_job` | src/tessellate/api/routes_tasks.py:623 |
 | `/keep` | POST | `keep` | src/tessellate/api/routes_learned_audit.py:64 |
 | `/lan-access` | GET | `lan_access` | src/tessellate/api/routes_auth.py:1341 |
 | `/lan-access` | POST | `set_lan_access` | src/tessellate/api/routes_auth.py:1635 |
@@ -13934,8 +13934,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1960 |
 | `/run` | POST | `run_check` | src/tessellate/api/routes_learned_audit.py:23 |
 | `/run` | POST | `run_now` | src/tessellate/api/routes_night.py:50 |
-| `/running-copies` | GET | `running_copies_list` | src/tessellate/api/routes_tasks.py:924 |
-| `/running-copies/{pid}/shutdown` | POST | `running_copies_shutdown` | src/tessellate/api/routes_tasks.py:934 |
+| `/running-copies` | GET | `running_copies_list` | src/tessellate/api/routes_tasks.py:925 |
+| `/running-copies/{pid}/shutdown` | POST | `running_copies_shutdown` | src/tessellate/api/routes_tasks.py:935 |
 | `/runs/{run_id}` | GET | `run_state` | src/tessellate/api/routes_studio.py:110 |
 | `/runs/{run_id}/facts` | GET | `run_facts` | src/tessellate/api/routes_night.py:92 |
 | `/runs/{run_id}/stop` | POST | `stop_run` | src/tessellate/api/routes_studio.py:119 |
@@ -13946,7 +13946,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sampling` | PUT | `save_sampling_settings` | src/tessellate/api/routes_models.py:880 |
 | `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2082 |
 | `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:875 |
-| `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:876 |
+| `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:877 |
 | `/sketches` | POST | `create_sketch` | src/tessellate/api/wb_items.py:139 |
 | `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/wb_items.py:199 |
 | `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/wb_items.py:169 |
@@ -14008,12 +14008,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/system/restart` | POST | `restart_app` | src/tessellate/api/routes_settings.py:1508 |
 | `/tag-cloud` | GET | `tag_cloud` | src/tessellate/api/routes_insights.py:682 |
 | `/take` | POST | `take` | src/tessellate/api/routes_origin_handoff.py:67 |
-| `/tasks` | GET | `list_tasks` | src/tessellate/api/routes_tasks.py:563 |
-| `/tasks/autonomous/last` | GET | `last_autonomous_pass` | src/tessellate/api/routes_tasks.py:808 |
-| `/tasks/autonomous/last/clear` | POST | `clear_last_autonomous_pass` | src/tessellate/api/routes_tasks.py:825 |
-| `/tasks/cancel` | POST | `cancel_task` | src/tessellate/api/routes_tasks.py:729 |
-| `/tasks/history/clear` | POST | `clear_history` | src/tessellate/api/routes_tasks.py:834 |
-| `/tasks/trigger-autonomous` | POST | `trigger_autonomous` | src/tessellate/api/routes_tasks.py:771 |
+| `/tasks` | GET | `list_tasks` | src/tessellate/api/routes_tasks.py:564 |
+| `/tasks/autonomous/last` | GET | `last_autonomous_pass` | src/tessellate/api/routes_tasks.py:809 |
+| `/tasks/autonomous/last/clear` | POST | `clear_last_autonomous_pass` | src/tessellate/api/routes_tasks.py:826 |
+| `/tasks/cancel` | POST | `cancel_task` | src/tessellate/api/routes_tasks.py:730 |
+| `/tasks/history/clear` | POST | `clear_history` | src/tessellate/api/routes_tasks.py:835 |
+| `/tasks/trigger-autonomous` | POST | `trigger_autonomous` | src/tessellate/api/routes_tasks.py:772 |
 | `/templates/draft` | POST | `draft_template` | src/tessellate/api/routes_settings.py:214 |
 | `/tensions` | GET | `find_tensions` | src/tessellate/api/routes_entries_relations.py:305 |
 | `/tensions/accept` | POST | `accept_tension` | src/tessellate/api/routes_entries_relations.py:430 |
@@ -23633,7 +23633,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `CancelTaskBody` | src/tessellate/api/routes_tasks.py:720 |
+| `CancelTaskBody` | src/tessellate/api/routes_tasks.py:721 |
 | `_autonomous_rows` | src/tessellate/api/routes_tasks.py:185 |
 | `_bulk_extra_row` | src/tessellate/api/routes_tasks.py:285 |
 | `_caption_rows` | src/tessellate/api/routes_tasks.py:108 |
@@ -23641,46 +23641,46 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_embed_switch_rows` | src/tessellate/api/routes_tasks.py:381 |
 | `_extra_rows` | src/tessellate/api/routes_tasks.py:305 |
 | `_fill_live_passes` | src/tessellate/api/routes_tasks.py:390 |
-| `_finished_run_row` | src/tessellate/api/routes_tasks.py:1033 |
-| `_ledger_rows` | src/tessellate/api/routes_tasks.py:472 |
+| `_finished_run_row` | src/tessellate/api/routes_tasks.py:1034 |
+| `_ledger_rows` | src/tessellate/api/routes_tasks.py:473 |
 | `_mark_cancellable` | src/tessellate/api/routes_tasks.py:431 |
-| `_merge_report_jobs` | src/tessellate/api/routes_tasks.py:1067 |
-| `_model_state` | src/tessellate/api/routes_tasks.py:960 |
+| `_merge_report_jobs` | src/tessellate/api/routes_tasks.py:1068 |
+| `_model_state` | src/tessellate/api/routes_tasks.py:961 |
 | `_page_read_rows` | src/tessellate/api/routes_tasks.py:133 |
 | `_percent` | src/tessellate/api/routes_tasks.py:44 |
 | `_pool_rows` | src/tessellate/api/routes_tasks.py:160 |
 | `_pull_rows` | src/tessellate/api/routes_tasks.py:68 |
 | `_reindex_rows` | src/tessellate/api/routes_tasks.py:52 |
-| `_report_twin` | src/tessellate/api/routes_tasks.py:1055 |
+| `_report_twin` | src/tessellate/api/routes_tasks.py:1056 |
 | `_searxng_install_rows` | src/tessellate/api/routes_tasks.py:336 |
 | `_searxng_start_rows` | src/tessellate/api/routes_tasks.py:224 |
-| `_stamp_started` | src/tessellate/api/routes_tasks.py:527 |
-| `_stop_filing` | src/tessellate/api/routes_tasks.py:553 |
+| `_stamp_started` | src/tessellate/api/routes_tasks.py:528 |
+| `_stop_filing` | src/tessellate/api/routes_tasks.py:554 |
 | `_tidy_rows` | src/tessellate/api/routes_tasks.py:204 |
 | `_update_rows` | src/tessellate/api/routes_tasks.py:360 |
 | `_warmup_rows` | src/tessellate/api/routes_tasks.py:87 |
-| `activity_rows` | src/tessellate/api/routes_tasks.py:976 |
-| `cancel_job` | src/tessellate/api/routes_tasks.py:623 |
-| `cancel_task` | src/tessellate/api/routes_tasks.py:730 |
-| `clear_history` | src/tessellate/api/routes_tasks.py:835 |
-| `clear_last_autonomous_pass` | src/tessellate/api/routes_tasks.py:826 |
-| `collect` | src/tessellate/api/routes_tasks.py:454 |
-| `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:850 |
-| `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:865 |
-| `finished_rows` | src/tessellate/api/routes_tasks.py:1084 |
-| `jobs_last_runs` | src/tessellate/api/routes_tasks.py:578 |
-| `jobs_stream` | src/tessellate/api/routes_tasks.py:645 |
-| `last_autonomous_pass` | src/tessellate/api/routes_tasks.py:809 |
-| `list_activity` | src/tessellate/api/routes_tasks.py:1023 |
-| `list_jobs` | src/tessellate/api/routes_tasks.py:615 |
-| `list_tasks` | src/tessellate/api/routes_tasks.py:564 |
-| `run_pass_now` | src/tessellate/api/routes_tasks.py:601 |
-| `running_copies_list` | src/tessellate/api/routes_tasks.py:925 |
-| `running_copies_shutdown` | src/tessellate/api/routes_tasks.py:935 |
-| `shutdown` | src/tessellate/api/routes_tasks.py:877 |
-| `stop_activity` | src/tessellate/api/routes_tasks.py:1104 |
-| `stop_process_soon` | src/tessellate/api/routes_tasks.py:904 |
-| `trigger_autonomous` | src/tessellate/api/routes_tasks.py:772 |
+| `activity_rows` | src/tessellate/api/routes_tasks.py:977 |
+| `cancel_job` | src/tessellate/api/routes_tasks.py:624 |
+| `cancel_task` | src/tessellate/api/routes_tasks.py:731 |
+| `clear_history` | src/tessellate/api/routes_tasks.py:836 |
+| `clear_last_autonomous_pass` | src/tessellate/api/routes_tasks.py:827 |
+| `collect` | src/tessellate/api/routes_tasks.py:455 |
+| `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:851 |
+| `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:866 |
+| `finished_rows` | src/tessellate/api/routes_tasks.py:1085 |
+| `jobs_last_runs` | src/tessellate/api/routes_tasks.py:579 |
+| `jobs_stream` | src/tessellate/api/routes_tasks.py:646 |
+| `last_autonomous_pass` | src/tessellate/api/routes_tasks.py:810 |
+| `list_activity` | src/tessellate/api/routes_tasks.py:1024 |
+| `list_jobs` | src/tessellate/api/routes_tasks.py:616 |
+| `list_tasks` | src/tessellate/api/routes_tasks.py:565 |
+| `run_pass_now` | src/tessellate/api/routes_tasks.py:602 |
+| `running_copies_list` | src/tessellate/api/routes_tasks.py:926 |
+| `running_copies_shutdown` | src/tessellate/api/routes_tasks.py:936 |
+| `shutdown` | src/tessellate/api/routes_tasks.py:878 |
+| `stop_activity` | src/tessellate/api/routes_tasks.py:1105 |
+| `stop_process_soon` | src/tessellate/api/routes_tasks.py:905 |
+| `trigger_autonomous` | src/tessellate/api/routes_tasks.py:773 |
 
 ### src/tessellate/api/routes_tidy.py (14)
 
