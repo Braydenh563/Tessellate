@@ -1096,7 +1096,7 @@ links, Typora for the live view (section 17).
 | 2 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): the closed dock menu list has no box; opened, it sits in the window | `deepen72a.js` 390 overlaps 20 to 0 (code 9 to 0), past the edge 12 to 0 | 7, 8 |
 | 3 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): AI edit and Extract notes are `aria-disabled` with no model and a press opens why and Set up a model (`data-model-offer`) | no-model probe: 2 dead controls to 0 | 12, 4, 6 |
 | 4 | redesign | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): named versions, a Named filter, Changes side by side, restore as one undo step without a confirm | `dochistory76.js`: restore then Ctrl+Z byte-equal at 1440 and 390 | 1, 3 |
-| 5 | optimisation | Cold open 1,743 ms at 1440 and 3,013 ms at 390: fetch the documents bundle on idle after unlock and paint the first screen before the outline and checks | click to painted editor under 800 ms at both widths (25g budget, Brief 53) | 13 |
+| 5 | optimisation | Measured 2026-11-14 (L-documents-47): see HISTORY.md, "Moved from the plans, 2026-11-14 (perf1114)". 1440 still over 800: LEDGER row. | | 13 |
 | 6 | fix | Built (found by audit 2026-11-14): a failed save says why, retries and keeps the words locally (HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)") | | 3, 4 |
 | 7 | redesign | Built 2026-11-13 (the recommendation taken): see HISTORY.md, "Moved from the plans, 2026-11-13 (documents-plan: section 1121 row 7)". | | |
 | 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items) | Brief 42's numbers | 6, 13 |
@@ -1236,7 +1236,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 
-- `documents.js` holds 14 `requestAnimationFrame` sites, 7 scroll listeners, 3 `ResizeObserver` and 4 `MutationObserver` (WORLD_CLASS 26.5, `scripts/handlers.py --list`): the second-largest wake-source count after `whiteboard.js`. No frame measurement of the editor yet; `frames.js` has no documents surface. LEDGER L-documents-79.
+- Brief 60 frame measurement: built (L-documents-79), see HISTORY.md, "Moved from the plans, 2026-11-14 (perf1114)".
 
 ## Placed from INBOX, 2026-10-10 (code as documents)
 

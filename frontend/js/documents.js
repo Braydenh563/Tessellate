@@ -1139,6 +1139,8 @@ async function loadDocumentsNow(selectId) {
   // Before the list, not after: the file-type table decides how the editor
   // behaves, and openDocument below reads it. Awaited rather than fired off,
   // so the picker is never briefly empty on the first visit to this tab.
+  //: The list is asked for first and awaited after the table: two round trips that were in a row are side by side (L-documents-47, cold open).
+  const listing = apiPagedList("/documents", DOCUMENTS_PAGE_SIZE).catch(() => null);
   await loadDocFileTypes();
   //: Paged, and read to the end: `GET /documents` hands back a page now
   //: (INBOX 117), and this list is not only the sidebar's eight rows. A
@@ -1148,7 +1150,7 @@ async function loadDocumentsNow(selectId) {
   //: A sentinel rather than `[]`, because an empty list and a failed request
   //: were the same value here and the sidebar said "No documents yet" for
   //: both. See `surfaceFailed` in navigation.js.
-  const loaded = await apiPagedList("/documents", DOCUMENTS_PAGE_SIZE).catch(() => null);
+  const loaded = await listing;
   if (!loaded) {
     surfaceFailed(document.getElementById("doc-empty"), "your documents", () => loadDocuments(selectId));
     return;
@@ -1349,8 +1351,10 @@ async function openDocument(id) {
   //: moment later, which is how the two would disagree on the very first
   //: paint. Failing is not an error path: `ensureDocEditor` resolves to null
   //: and everything below carries on against the textarea.
+  //: The document is fetched while the bundle loads, not after it (L-documents-47).
+  const fetching = apiJson(`/documents/${id}`).catch(() => null);
   await ensureDocEditor();
-  const doc = await apiJson(`/documents/${id}`).catch(() => null);
+  const doc = await fetching;
   if (seq !== docOpenSeq) return;
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
@@ -15503,12 +15507,13 @@ const DOC_CM_BUNDLE = "/vendor/codemirror/codemirror.min.js";
 //: **Warm on idle** (perf-1026): the Documents list is the signal that a
 //: document is about to open, so the editor bundle (about 140 ms to evaluate)
 //: is loaded in a spare moment and the checker's files are fetched into the
-//: HTTP cache, rather than both on the first open. Never on a phone or a
-//: metered connection, where the bytes cost more than the wait.
+//: HTTP cache, rather than both on the first open. Phones too (L-documents-47:
+//: the cold open there is the one a person waits on), but never on a metered
+//: connection or a device with 2 GB or less, where the bytes cost more than the wait.
 let docWarmed = false;
 function warmDocumentEngine() {
   const link = navigator.connection || {};
-  if (docWarmed || link.saveData || window.matchMedia("(max-width: 720px)").matches) return;
+  if (docWarmed || link.saveData || (navigator.deviceMemory || 8) <= 2) return;
   docWarmed = true;
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 400));
   idle(() => {

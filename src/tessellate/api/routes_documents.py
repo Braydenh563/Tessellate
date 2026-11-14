@@ -203,6 +203,16 @@ def _preview(content: str) -> str:
     return cut.rstrip(" ,;:-") + "\u2026"
 
 
+#: The first picture a document embeds from the app's own uploads, as `![alt](/media/name.ext)`; the options ride in the alt text.
+_COVER = re.compile(r"!\[[^\]\n]*\]\((/media/[A-Za-z0-9._-]{1,200})[ )]")
+
+
+def _cover(content: str) -> str:
+    """The page card's cover (L-documents-80): taken from the content the summary already holds, so the list pays no request per row."""
+    found = _COVER.search(content or "")
+    return found.group(1) if found else ""
+
+
 def _summary(document: Document) -> dict:
     return {
         "id": document.id,
@@ -214,6 +224,7 @@ def _summary(document: Document) -> dict:
         #: A last newline ends a line, it does not start one: the status bar counts this way, so the two agree.
         "lines": (document.content or "").count("\n") + (0 if (document.content or "").endswith("\n") else 1) if document.content else 0,
         "preview": _preview(document.content),
+        "cover": _cover(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
         # anything at all, and the editor picks its whole mode from this.

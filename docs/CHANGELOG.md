@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library Documents: a document's first embedded picture (`![alt](/media/name)`) is the page card's cover in the same 3:4 box, named by a `cover` field on the list summary so there is no request per row, lazy-loaded, and dropped if it fails (L-documents-80); the Library help says so.
+- Documents cold open: the list is fetched beside the file-type table, the document beside the editor bundle, and the bundle is warmed on idle at 390 too (not with Save-Data or 2 GB or less); 390 cold open median 773 to 620 ms (5 runs, interleaved), 1440 about 1,060 ms against 1,140 and still over 800 (library bundle 420 to 470 ms, list 150, open 250 to 400; L-documents-47). New sweeps `scratchpad/ui-sweeps/docscold47.js` and `docframes79.js` (L-documents-79: editor frames at 4x, no site wakes with nothing to do beyond cheap early returns).
 - Documents plan: the plan-file open cell is 0, every item a LEDGER row (L-documents-79 added for the Brief 60 frame measurement), pinned by tests/test_documents_plan_recount.py.
 - Documents: a failed look-up for today's document says so instead of starting a second copy, and a JSON schema that cannot be read says the keys were not checked (CI cap on silent empty loads).
 - Writing room: after a Draft, the status line names any time, number or [placeholder] that the thoughts, the notes and the old draft do not hold, so an invented detail is checked before it is sent (L-documents-77).

@@ -247,7 +247,7 @@ HELP_TOPICS: list[dict] = [
             "Bookmarks (a shelf for websites you visit often), Contents (a "
             "hyperlinked outline of the whole notebook) and Skills. "
             "The other sub-tabs are Documents (each card shows its first "
-            "lines on a small page), Boards & maps (whiteboards "
+            "lines on a small page, or its first picture), Boards & maps (whiteboards "
             "and mind maps), Images and Files. Each sub-tab's top bar ends "
             "with a ? that says what it holds. The Highlights chip lists every "
             "passage you marked in a note, each with its note. The Activity chip "
