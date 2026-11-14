@@ -210,3 +210,18 @@ def test_a_card_pressed_off_while_the_instance_is_still_being_made_destroys_it_w
       out.destroyed = out.destroyed; out.pressed = a.attrs["aria-pressed"];
     """)
     assert r["destroyed"] == 1 and r["pressed"] == "false"
+
+
+@pytest.mark.xfail(strict=True, reason="L-whiteboard-54: the board's tools do not honour an embed's `editable` yet")
+def test_an_embed_opened_editable_is_edited_by_the_boards_own_tools():
+    """L-documents-104 stays partly until this passes: the mount API
+    (L-whiteboard-53) stores `inst.editable`, and the board's tools must read it
+    (a write elsewhere than the assignment), so a card opened with
+    `{ editable: true }` edits and one without stays read-only."""
+    import re
+
+    root = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    text = "\n".join(p.read_text(encoding="utf-8") for p in sorted(root.glob("whiteboard*.js")))
+    assert "inst.editable = opts.editable === true;" in text, "the mount API stores the flag"
+    reads = [m for m in re.finditer(r"(?<!opts)\.editable\b(?!\s*=[^=])", text)]
+    assert reads, "a board tool reads the embed's editable flag"
