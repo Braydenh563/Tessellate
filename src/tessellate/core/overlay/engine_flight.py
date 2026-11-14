@@ -39,6 +39,9 @@ from .engine_consts import (
 )
 
 
+#: Each throw's own give: BOUNCE_DAMP scaled by up to this much either way, drawn at the release from its own stream (L148).
+BOUNCE_SPREAD = 0.25
+
 class FlightMixin:
     def _hit_ceiling(self, m: Monitor, uy0: float, now: float) -> bool:
         """A thrown figure that reaches the top of an open work area takes hold and hangs."""
@@ -52,7 +55,7 @@ class FlightMixin:
             self._leave_top(m, now)
             return True
         if not self._ceiling_holds():  # it bounces off the top like a side wall and drifts back down
-            self.vy = abs(self.vy) * BOUNCE_DAMP
+            self.vy = abs(self.vy) * self.bounce_k
             self.bonk_until = now + BONK_FOR
             self._spin_contact(1.0 if self.vx >= 0 else -1.0)
             return False
@@ -199,7 +202,7 @@ class FlightMixin:
             self.wob_kind, self.wob_t0 = "scrabble", now
             self._spin_contact(float(-side))
             return
-        self.vx = -side * abs(self.vx) * BOUNCE_DAMP
+        self.vx = -side * abs(self.vx) * self.bounce_k
         self._spin_contact(float(-side))
 
     def _start_wrap(self, side: int, edge: float, far: float, now: float) -> None:
@@ -476,6 +479,7 @@ class FlightMixin:
         self.wall, self.wob, self.air_t0 = 0, 0.0, self.now
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0
+        self.bounce_k = BOUNCE_DAMP * (1.0 + BOUNCE_SPREAD * (2.0 * self.var_rng.random() - 1.0))
         if abs(vx) > 1:
             self.facing = 1 if vx > 0 else -1
         self._enter("fly", self.now)

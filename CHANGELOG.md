@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Overlay: each throw has its own wall and ceiling give (the bounce damp varies 25% either way from its own random stream) (L148, 2026-11-14).
 - Constellation: a second Regenerate leaves at rest with half the peak step (L146, 2026-11-14).
 - Companion trips: 3 simulated hours with no windows make 4 to 9 floor or hang trips on every seed and both gaits, never a window trip (L139, 2026-11-14).
 - Desk companion window rests after 2 s without input: tail and dress loops stop, a calm tail act holds three times as long, the look beat is a second; idle 43.3% to 1.7% of a core and 3,366 to 341 restyles a minute headless (L744, 2026-11-14).
