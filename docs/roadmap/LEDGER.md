@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 135 | 29 | 3 | 10 | 164 |
+| world-class | 0 | 134 | 29 | 3 | 10 | 163 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 526 | 100 | 5 | 121 | 1031 |
+| all | 405 | 525 | 100 | 5 | 121 | 1030 |
 
 ## graph
 
@@ -566,7 +566,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-92** `world-class` open, S: Run boottime.js in the CI workflow (H9). From WORLD_CLASS_PLAN.md:1851. Evidence: WORLD_CLASS_PLAN.md:1851; no boottime in .github/workflows (grep 0 hits)
 - [ ] **L-world-class-94** `world-class` open, S: Escape on the image lightbox, reminders add form, note edit entry and graph node panel; the chat undo line; undo.js reading the mind map's own stack. From WORLD_CLASS_PLAN.md:2083. Evidence: WORLD_CLASS_PLAN.md:2083 'Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
-- [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
 - [ ] **L-world-class-97** `world-class` open, S: Leave guard for a board mid-drag (22.1.4). From WORLD_CLASS_PLAN.md:2264. Evidence: WORLD_CLASS_PLAN.md:2264 'a board mid-drag, which has no such flag yet'
 - [ ] **L-world-class-102** `world-class` open, S: Audit Ctrl+S and Ctrl+Z in every editor and dialog. From WORLD_CLASS_PLAN.md:2290. Evidence: WORLD_CLASS_PLAN.md:2290 'not audited'
 - [ ] **L-world-class-103** `world-class` open, M: Right-click, and a hold on touch, on every card and row. From WORLD_CLASS_PLAN.md:2292. Evidence: 38 contextmenu sites, not every card (:2292)

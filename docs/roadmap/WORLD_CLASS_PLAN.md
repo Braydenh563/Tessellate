@@ -1989,11 +1989,7 @@ mobile first, as the owner's web design class teaches. Measured with
    both, and the status bar folding into the top bar under 680px. Gate: 4
    note cards and the first dashboard widget above the fold at 1093x614. M,
    Opus. LEDGER L-world-class-95.
-3. **Tabs lose their names on a laptop.** Under about 1100px the tab strip
-   is icons only with the active tab labelled, so six of seven tabs are
-   guesses. Target: short labels kept down to 1024px (the strip has room once
-   the spaces picker shrinks to an icon), tooltips with the shortcut below
-   it, and the strip centred (INBOX 430). LEDGER L-world-class-96.
+3. ~~**Tabs lose their names on a laptop.**~~ Built 2026-11-14: the captions hold from 820px up (measured at 1024, 1100 and 1280: every label 34 to 83px wide), and every tab's tooltip names its chord (`t then n`, from `TAB_JUMP_KEYS`; `tests/test_tab_tooltips_96.py`).
 4. **Leaving with unsaved work.** Built 2026-09-27 for the note edit form,
    the Capture box and a document mid-autosave, the three surfaces with a
    plain dirty flag (HISTORY.md, "Moved from the plans, 2026-09-27"), and a

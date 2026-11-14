@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Top bar: every tab's tooltip names its jump chord ("Notes (t then n)"), held to the one jump table by a test; the captions already held at 1024, 1100 and 1280 (label widths 34 to 83px) and go only under 820 (L-world-class-96).
+- Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
 - Undo: every preference written outside Settings (dock switches, saved lists, dictionary words) now reaches the one history and Ctrl+Z; 31 of 287 undo-coverage exemptions removed (L-world-class-31).
 - Start-up: the composer money and digest regex tables compile on first use and the money stop-word list is built at the first question, not at import (L-world-class-51).
