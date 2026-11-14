@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- UX audit sizes: on a phone the document dock's Edit and Read are 44x44 (were 37.1x36) and the dock takes the dock recipe's 8px 9.6px padding like the writing room (was 4px); the collapsed Formatting, AI edit and Snippets buttons are 32x32 beside the 32x32 icon run (were 28x32 at 1024 and 1440); the graph zoom buttons stay `max(--control-h-lg, --target-min)` (33.6px at 1440 was 2rem under a 105% text size, probe 32 at 16px and 33.59 at 16.8px, no px override); Zoom in's title names Ctrl+Plus and Ctrl+= and the Guide's graph topic lists the zoom keys (L-world-class-370 to 374).
 - LAN port: one accept stays pending across the 0.5 s ticks instead of being cancelled by a timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240).
 
 - Boot long tasks and handler lag measured at 4x CPU in headless Chromium (`scratchpad/ui-sweeps/bootlongtasks.js`, `handlerlag.js`): the Settings usage-ledger wiring no longer builds the Settings surface at boot (151-186 ms task gone), Settings search typing reuses cached meaning text, indexes rows while idle and switches panes after the typing pauses (281 to 104 ms), and the Data pane fills a frame after it shows. L-world-class-354 and 355 stay open with the remaining numbers.

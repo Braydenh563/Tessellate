@@ -53,8 +53,10 @@ def test_graph_zoom_buttons_follow_the_control_token_with_no_px_override_373():
     assert "width: max(var(--control-h-lg), var(--target-min))" in base
     assert "height: max(var(--control-h-lg), var(--target-min))" in base
     for name in sorted(p.name for p in CSS_DIR.glob("*.css")):
-        for m in re.finditer(r"[^{}]*graph-zoom[^{}]*\{([^}]*)\}", _css(name)):
-            assert not re.search(r"(?:width|height):\s*\d+(?:\.\d+)?px", m.group(1)), name
+        for chunk in _css(name).split("}"):
+            head, _, body = chunk.partition("{")
+            if "graph-zoom" in head:
+                assert not re.search(r"(?:width|height):\s*\d+(?:\.\d+)?px", body), name
 
 
 def test_graph_zoom_in_title_names_ctrl_plus_374():
