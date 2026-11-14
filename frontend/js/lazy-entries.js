@@ -9,22 +9,65 @@ Object.assign(LAZY_MODULES, {
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
+    "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map.js: markers, dim and filter views, summaries; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-edges.js", //: After whiteboard-map.js: line geometry, ribbons and edge paint; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-notes.js", //: After whiteboard-map.js: map note topics and folding; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
+    "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-frames.js", //: After whiteboard.js: frame creation, painting and turning; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-comments.js", //: After whiteboard.js: item comments and links; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-locks.js", //: After whiteboard.js: locks, hidden items and keep-ratio; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-search.js", //: After whiteboard.js: the find-a-card bar; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-connectors.js", //: After whiteboard.js: anchors, link routing and the connector panel; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-arrange.js", //: After whiteboard.js: align, distribute, nudge and size commands; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-navigator.js", //: After whiteboard.js: the live minimap; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-sketch-text.js", //: After whiteboard.js: text in shapes and connector labels; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-textedit.js", //: After whiteboard.js: the text box and sticky editor; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-ctxmenu.js", //: After whiteboard.js: the right-click menu for a selection; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-place.js", //: After whiteboard.js: paste, placement and clone-and-connect; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-stacking.js", //: After whiteboard.js: stacking order, layer order and bulk move; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-bar.js", //: After whiteboard.js: the selection bar and context strip; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
     //: The New board dialog and every template's picture (INBOX 715).
     "/js/whiteboard-templates.js",
     "/js/whiteboard-format.js",
     "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
-    "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
+    "/js/whiteboard-label-rich.js", //: After whiteboard-label.js: rich (markdown) words in a shape label; joins `wbFmtState` and the look key lists.
+    "/js/whiteboard-link-edge.js", //: A connector end that sits on another connector (`sourceEdge`/`targetEdge`); joins `wbFmtState`, names whiteboard.js at run time only.
+    "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs the page, `prefs`, `toast` and `wbFmtState`.
+    "/js/whiteboard-options.js", //: The Format panel's Board section; reads `wbSetBackground` and `onSurface` at run time only.
+    "/js/whiteboard-export-more.js", //: PNG resolution and embedded board, the HTML page; pure, joins `wbFmtState` (whiteboard-format.js).
     "/js/whiteboard-keys.js",
+    "/js/whiteboard-toolbar.js", //: One tab stop per section of the tool rail, arrows inside it; needs `onSurface` and `wbFmtState`.
+    "/js/whiteboard-workspace.js", //: Edit inside a group and saved panel layouts; names whiteboard.js, whiteboard-library.js and whiteboard-format.js at run time only.
     "/js/whiteboard-layers-more.js",
     "/js/whiteboard-draw-more.js",
     "/js/whiteboard-arrange-more.js", //: After whiteboard-draw-more.js: it reads that file's loop sides at run time.
+    "/js/whiteboard-layouts-more.js", //: After whiteboard-arrange-more.js: the board Layout menu and the lane stack; names whiteboard.js at run time only.
+    "/js/whiteboard-structure-more.js", //: Tags, folded frames, the frame drop highlight and the find bar's frame scope; joins `wbFmtState` and the field lists (whiteboard-format.js).
     "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
+    "/js/whiteboard-shapes-js.js", //: Insert, Polygon and the JS-drawn shape classes; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-text-more.js", //: Subscript, superscript and `$...$` maths in board words; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-effects.js", //: Text shadow, glass, a picture fill, mirroring and the status bar; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/vendor/perfect-freehand/perfect-freehand.min.js", //: Before whiteboard-ink-more.js: it sets `window.perfectFreehand` (MIT, 5 KB).
+    "/js/whiteboard-ink-more.js", //: Free-line hollow ends, smoothed pen strokes, shape clean-up, replay and the GIF; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-ink-recognise.js", //: Turns a rough stroke into a clean shape; pure, joins `wbFmtState` and runs after whiteboard-ink-more.js.
+    "/js/whiteboard-ink-replay.js", //: Replay ink and its GIF; joins `wbFmtState`, names whiteboard.js at run time only.
+    "/js/whiteboard-pdf.js", //: A PDF dropped on a board, placed as pages or kept as one object; joins `wbFmtState`, names whiteboard.js at run time only.
+    "/js/whiteboard-gif.js", //: The animated-GIF writer; pure, joins `wbFmtState`.
+    "/js/whiteboard-shape-table.js", //: The table of JS-drawn shapes (cylinder, cube, step...): the picker rows, resize and draw.io words; joins `wbFmtState`.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",
+    "/js/whiteboard-convert.js", //: GraphML, Miro, PlantUML and EMF in, through the server; joins `wbFmtState`, names whiteboard-interchange.js at run time only.
+    "/js/whiteboard-plantuml.js", //: The board as PlantUML text; joins `wbFmtState`, names whiteboard-interchange.js at run time only.
+    "/js/whiteboard-config.js", //: A board's defaults, palettes and library switches as a checked JSON file; joins `wbFmtState`.
     "/js/whiteboard-history.js",
   ],
   //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).

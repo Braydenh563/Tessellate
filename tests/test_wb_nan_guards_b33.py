@@ -6,14 +6,14 @@ was set."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
-BOARD = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

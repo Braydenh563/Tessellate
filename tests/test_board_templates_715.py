@@ -14,6 +14,7 @@ picture functions (run under node), and the dialog's shape on index.html.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -226,7 +227,7 @@ def test_the_dialog_chooses_its_kind_with_a_tab_strip_and_groups_its_rows():
 def test_a_new_maps_offer_and_the_tiles_draw_from_the_one_list():
     """The "Start from a shape" bar had four templates of its own; it reads
     the Library's map templates now, and draws each with the same picture."""
-    map_js = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+    map_js = frontend_text("whiteboard-map.js")
     assert "WB_MAP_TEMPLATES" not in map_js
     js = (JS / "whiteboard-templates.js").read_text(encoding="utf-8")
     offer = js[js.index("function wbRenderMapTemplates") :]

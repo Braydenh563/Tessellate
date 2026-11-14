@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 
-SRC = (JS_DIR / "whiteboard.js").read_text(encoding="utf-8")
+SRC = frontend_text("whiteboard.js")
 
 
 def test_pagehide_finishes_the_open_edit() -> None:

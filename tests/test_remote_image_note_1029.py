@@ -8,6 +8,7 @@ the drawing needs a browser (numbers in the commit, from scratchpad/ui-sweeps).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -81,5 +82,5 @@ def test_the_picker_preview_and_the_board_card_skip_a_remote_picture_too() -> No
     logged a CSP error; both now fall through (an attachment, or no picture)."""
     pick = _decl("note-pick-preview.js", "notePickThumb")
     assert "isRenderableUrl(inline[1]) && !isRemoteImage(inline[1])" in pick
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert "entry.thumb_url && !isRemoteImage(entry.thumb_url)" in board

@@ -105,6 +105,83 @@ def test_no_network_at_all_is_its_own_closed_state():
     assert lantrust.evaluate(loose, None, online=True) == (True, "any_network")
 
 
+def test_one_missed_router_read_does_not_shut_an_allowed_network(tmp_path, monkeypatch):
+    # The router's hardware address comes from the ARP table, which drops a
+    # quiet gateway's entry now and then; while the route is still there
+    # (online), a missed read keeps the last network for MISSED_KEEP_SECONDS
+    # rather than shut the port and drop every phone mid-request (CI, ca77baf3).
+    lantrust.reset_for_tests()
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(lantrust, "_now", lambda: clock["t"])
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    reads = iter([HOME, None, None, None, HOME])
+    monkeypatch.setattr(lantrust.netid, "read", lambda: next(reads))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    clock["t"] += 30
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    clock["t"] += lantrust.MISSED_KEEP_SECONDS - 1
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    # Missed for longer than that, the network really is unknown: closed.
+    clock["t"] += 2
+    assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
+    # A good read counts again from nothing.
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    # Off the network altogether (no route), it closes at once.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    monkeypatch.setattr(lantrust, "_online", lambda: False)
+    assert lantrust.refresh(tmp_path)["reason"] == "no_network"
+
+
+def test_rapid_reads_inside_the_grace_do_not_use_it_up(tmp_path, monkeypatch):
+    # CI, #226 477cbe0a: test_lan_mode_end_to_end reset mid-test. An address
+    # change (a container bridge coming up) makes the accept loop read the
+    # network at once, again and again; a grace counted in reads was spent
+    # in a second and shut the port. The grace is time, so ten quick misses
+    # inside it keep the port open.
+    lantrust.reset_for_tests()
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(lantrust, "_now", lambda: clock["t"])
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    for _ in range(10):
+        clock["t"] += 0.5
+        assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    assert lantrust.is_open() is True
+
+
+def test_the_missed_read_grace_never_covers_a_different_network_or_a_restart(tmp_path, monkeypatch):
+    lantrust.reset_for_tests()
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    reads = iter([HOME, None, CAFE])
+    monkeypatch.setattr(lantrust.netid, "read", lambda: next(reads))
+    assert lantrust.refresh(tmp_path)["open"] is True
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"  # one missed read: kept
+    # A different router mid-grace closes at once.
+    assert lantrust.refresh(tmp_path)["reason"] == "new_network"
+    assert lantrust.is_open() is False
+    # A listener start reads fresh: no grace from the run before it.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    assert lantrust.refresh(tmp_path, fresh=True)["reason"] == "unknown_network"
+    # A restart (empty module state) has no last network to keep.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    lantrust.refresh(tmp_path)
+    lantrust.reset_for_tests()
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
+
+
+def test_the_listener_start_reads_the_network_fresh():
+    src = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "core" / "lanlive.py").read_text(encoding="utf-8")
+    assert "lantrust.refresh(data_dir, fresh=True)" in src
+
+
 def test_a_network_the_port_stayed_closed_on_is_listed_to_trust_later(tmp_path):
     lantrust.reset_for_tests()
     lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))

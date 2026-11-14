@@ -11,12 +11,16 @@ rather than being noticed as "the map is slow again".
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")  # with its pieces, whiteboard-map-record.js among them (L-whiteboard-49)
+#: The quick add asks the search file whether a search is live (the state is private to that wrapped file);
+#: the stub runs that file's own line, so a change to it is seen here.
+SEARCH_LIVE = next(line.strip() for line in frontend_text("whiteboard-search.js").splitlines() if line.strip().startswith("wbMapCache.searchLive = "))
+WB_JS = frontend_text("whiteboard.js")
 
 
 def _body(source: str, signature: str) -> str:
@@ -110,6 +114,7 @@ let map = true, layer = {}, hold = { moves: [], edges: false };
 const document = { getElementById: () => layer };
 const d3 = { select: (x) => x };
 const wbBoardSearch = { matches: [], query: "" };
+""" + SEARCH_LIVE + """
 const wbOutlineState = { adding: false };
 const wbAddGate = { get renderHold() { return hold; } };
 const wbItemElCache = { clear: c("clear") };

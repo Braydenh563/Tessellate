@@ -3,6 +3,7 @@
 Each test names the measurement it pins (docs/roadmap/agent-remaining/polish5-1031.md).
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def _src(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def test_back_to_top_clears_the_floating_new_button_on_a_phone():
@@ -41,7 +42,7 @@ def test_the_boards_picker_face_runs_to_two_lines_on_a_phone():
 def test_a_spilling_tidy_fits_the_map_on_desktop_and_frames_only_a_narrow_canvas():
     # Review finding: wbMapTidy called wbFrameMapOnOpen, which on desktop jumps
     # a large map to its root at 1:1 instead of fitting it.
-    src = _src("whiteboard-map.js")
+    src = _src("whiteboard-map.js") + _src("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     tidy = src[src.index("async function wbMapTidy(") :]
     tidy = tidy[: tidy.index("\n}\n")]
     assert "wbFrameSpilledMap()" in tidy and "wbFrameMapOnOpen" not in tidy

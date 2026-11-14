@@ -7,6 +7,7 @@ so node runs it here. The run itself is driven in the browser by
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -17,8 +18,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MAP_JS = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
-BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
+BOARD = frontend_text("whiteboard.js")
 COMMANDS = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

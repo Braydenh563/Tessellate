@@ -6,11 +6,12 @@ and "canvasdepth, ranked" row 8, draw.io's). An object of kind `table`:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -52,7 +53,7 @@ def test_the_grid_is_built_painted_and_edited_in_place():
 
 def test_rows_and_columns_go_in_at_the_pressed_cell_and_the_box_follows():
     reshape = _body(FMT, "function wbTableReshape(")
-    assert "d.height / rows" in reshape and "d.width / cols" in reshape
+    assert "extent / weights.length" in reshape and "d.height" in reshape and "d.width" in reshape
     rows = _body(FMT, "function wbTableMenuRows(")
     for words in ("Add a row below", "Add a column to the right", "Delete this row", "First row as a header"):
         assert words in rows
@@ -109,9 +110,9 @@ def test_the_edges_are_shares_of_the_width():
 
 def test_the_grid_the_menu_the_export_and_a_reshape_read_the_widths():
     assert "wbTableWeights(d)" in _body(FMT, "function wbPaintTable(")
-    assert "minmax(0, ${n}fr)" in _body(FMT, "function wbPaintTable(")
-    assert "wbTableColumnEdges(" in _body(FMT, "function wbSvgTable(")
-    rows = _body(FMT, "function wbTableMenuRows(") + _body(FMT, "function wbTableWidthRows(")
+    assert "minmax(0, ${n}fr)" in _body(FMT, "function wbTableTracks(")
+    assert "wbTableCellBoxes(" in _body(FMT, "function wbSvgTable(") and "wbTableColumnEdges(" in _body(FMT, "function wbTableCellBoxes(")
+    rows = _body(FMT, "function wbTableMenuRows(") + _body(FMT, "function wbTableSizeRows(")
     for words in ("Widen this column", "Narrow this column", "Equal column widths"):
         assert words in rows
     assert "col_widths" in _body(FMT, "function wbTableReshape(")

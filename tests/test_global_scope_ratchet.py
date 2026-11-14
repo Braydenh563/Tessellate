@@ -86,7 +86,16 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 Q34 (offline studio, natural voice): studio.js wrapped whole, two exports (openStudio, speakNatural); sync-folder.js, one (openFolderSync). Measured 8,457.
 #: 2026-11-11 D24 scope-wrap-1111b: avatars.js (113 exports) and graph-canvas.js (21) wrapped whole; the tests read them through `unwrapped`, and the shared readers in `tests/_app_js.py` unwrap every file. Measured 7,878.
 #: 2026-11-11 D24 scope-wrap-1111b, second group: meetings.js, bg-art.js, settings-controls.js, settings-find.js, settings-models.js, atlas-life.js, companion-menu.js and companion-throw.js wrapped whole. Measured 7,406.
-GLOBAL_NAMES_CAP = 7406
+#: 2026-11-14 L286 (D24): whiteboard-export.js carved out of whiteboard.js and wrapped whole, 18 exports for 43 names. Measured 7,381.
+#: 2026-11-14 L286 (D24): present, frames, comments and locks carved out of whiteboard.js and wrapped whole. Measured 7,353.
+#: 2026-11-14 L286 (D24): search, connectors and arrange carved out of whiteboard.js and wrapped whole. Measured 7,303.
+#: 2026-11-14 L286 (D24): navigator and sketch-text carved out of whiteboard.js and wrapped whole. Measured 7,279.
+#: 2026-11-14 L286 (D24): textedit and ctxmenu carved out of whiteboard.js and wrapped whole. Measured 7,262.
+#: 2026-11-14 L286 (D24): place, stacking and bar carved out of whiteboard.js and wrapped whole. Measured 7,234.
+#: 2026-11-14 L286 (D24): map strip, waypoints and marks carved out of whiteboard-map.js and wrapped whole. Measured 7,203.
+#: 2026-11-14 L286 (D24): map edges, notes and look carved out of whiteboard-map.js and wrapped whole. Measured 7,180 (WB_MAP_FONTS is read at load by whiteboard-sketch-text.js).
+#: 2026-11-14 L-whiteboard-49: the Undo-recorded map commands carved out of whiteboard-map.js into whiteboard-map-record.js and wrapped whole (wbRecorded registry added). Measured 7,163.
+GLOBAL_NAMES_CAP = 7163
 
 
 @functools.lru_cache(maxsize=None)
@@ -149,7 +158,7 @@ def _named_in(code: dict[str, str]) -> dict[str, set[str]]:
     for file, text in code.items():
         for m in _TOKEN.finditer(text):
             start = m.start()
-            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window.":
+            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window." and text[max(0, start - 3) : start] != "...":  #: a spread (`...NAME`) names the identifier; a member (`x.NAME`) does not
                 continue
             named[m.group()].add(file)
     return named

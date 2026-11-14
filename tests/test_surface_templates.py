@@ -12,6 +12,7 @@ at load wires its elements except through `onSurface`.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -327,7 +328,7 @@ def test_the_sweeps_the_page_runs_at_boot_take_the_stamped_host():
 def test_a_resize_before_the_first_board_open_does_not_read_the_unbuilt_canvas():
     """e2e editor-keys at 700 px: a window resize ran `wbScheduleCull`, whose canvas read threw on the board's
     template not yet stamped (`getBoundingClientRect` of null, two page errors per resize)."""
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     body = js[js.index("function wbCanvasOriginRect() {") :][:500]
     assert 'getElementById("whiteboard-container")?.getBoundingClientRect() ?? null' in body
     assert "if (rect) wbCullNow(undefined, { width: rect.width, height: rect.height });" in js

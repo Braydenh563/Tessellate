@@ -1,5 +1,6 @@
 """A text box or sticky grows as its words are typed (wbdog-1026: 177px of words sat behind a scroll bar in a 62px box)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 
 

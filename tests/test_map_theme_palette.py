@@ -17,6 +17,7 @@ Three things the first half of the theme left open, each gated here:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tessellate.api.routes_whiteboard import (
     MAP_APP_DEFAULT_PINS,
     MAP_BRANCH_PALETTE,
@@ -91,13 +92,12 @@ def test_eight_curated_palettes_and_the_picker_offers_each():
     the client), so a palette added on one side is never missing on the
     other."""
     import re
-    from pathlib import Path
 
     from tessellate.api.routes_whiteboard import MAP_THEME_FIELDS
 
     assert len(MAP_BRANCH_PALETTES) == 8
     assert set(MAP_BRANCH_PALETTES) - {"classic"} == set(MAP_THEME_FIELDS["palette"])
-    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "whiteboard-map.js").read_text()
+    js = frontend_text("whiteboard-map.js")
     block = js[js.index('key: "palette"'):]
     block = block[: block.index("] },")]
     offered = set(re.findall(r'\["([a-z]*)", "', block))

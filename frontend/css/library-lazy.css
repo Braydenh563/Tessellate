@@ -227,6 +227,12 @@ textarea.has-gutter {
   display: none;
 }
 
+/* Edit inside a group (L-whiteboard-7): the rest of the board stands back and cannot be pressed. */
+#whiteboard-container .wb-dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 .skill-card .skill-card-facts > :is(.chip, button).skill-fact > .ph-lead {
   margin-inline-end: 0;
 }
@@ -2971,6 +2977,34 @@ body.printing-doc #doc-preview p,
   user-select: none;
 }
 
+.wb-label-math {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+/* Rich words in a shape's label (whiteboard-label-rich.js): the text box's markdown, small and tight to fit a shape. */
+.wb-label-rich {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+.wb-label-rich[data-valign="top"] { justify-content: flex-start; }
+.wb-label-rich[data-valign="bottom"] { justify-content: flex-end; }
+.wb-label-rich > * { margin: 0; }
+.wb-label-rich ul, .wb-label-rich ol { padding-left: 1.2em; text-align: left; }
+.wb-label-rich a { color: inherit; text-decoration: underline; pointer-events: auto; }
+
 /* The one-line editor over a connector sits on the line, so it takes the
    card's ground to stay readable over it. */
 .wb-shape-label-editor.wb-link-label-editor {
@@ -3771,6 +3805,11 @@ body.printing-doc #doc-preview p,
   white-space: nowrap;
   pointer-events: none;
   transition: background-color var(--ui-fast) var(--ease-out), color var(--ui-fast) var(--ease-out), border-color var(--ui-fast) var(--ease-out), scale var(--ui-fast) var(--ease-out);
+}
+
+/* A Library tile or Layers row is the browser's own drag, so the target takes the pointer for that one. */
+.whiteboard-floating-panel.wb-trash.wb-trash-dnd {
+  pointer-events: auto;
 }
 
 .whiteboard-floating-panel.wb-trash .ph {
@@ -6601,6 +6640,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-table-grid {
   /* One cell until `wbPaintTable` sets the tracks from the table's cells. */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
@@ -6632,6 +6672,50 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-table-grid.has-header .wb-table-cell[data-r="0"] {
   background: color-mix(in srgb, var(--accent) 12%, var(--card));
   font-weight: 600;
+}
+
+/* Every other body row (data.stripes); the header keeps its own tint. */
+.wb-table-cell[data-stripe] {
+  background: color-mix(in srgb, var(--text) 5%, var(--card));
+}
+
+/* A range picked with Shift and a click, for Merge cells. */
+.wb-table-cell.is-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--card));
+}
+
+/* The grid lines, draggable while the table is selected (a row's or column's size). */
+.wb-table-grip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+}
+
+.wb-table-grip-col {
+  width: var(--space-2);
+  margin-left: calc(var(--space-2) / -2);
+  cursor: col-resize;
+}
+
+.wb-table-grip-row {
+  height: var(--space-2);
+  margin-top: calc(var(--space-2) / -2);
+  cursor: row-resize;
+}
+
+.wb-selected .wb-table-grip {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.wb-selected .wb-table-grip:hover,
+.wb-selected .wb-table-grip:focus-visible,
+.wb-table-grip.is-dragging {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 /* Edit data (canvasdepth2): a name and a value per row, the value taking
@@ -9372,6 +9456,59 @@ input[type="color"].wb-mixed {
   overflow-wrap: anywhere;
 }
 
+/* Structure rows (WHITEBOARD_PLAN section 12). A tag filter stands the untagged rest back but leaves it pressable. */
+#whiteboard-container .wb-tag-dim {
+  opacity: 0.25;
+}
+
+.wb-fmt-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+
+.wb-fmt-tag-row:empty {
+  display: none;
+}
+
+.wb-search-tag {
+  flex: 0 1 7rem;
+  min-width: 0;
+  width: 7rem;
+}
+
+/* A folded frame is its bar: a ground and the count of what it hides, in the frame's own words. */
+.wb-object-frame.wb-frame-collapsed {
+  background: var(--chip-bg);
+  border-radius: var(--radius-sm);
+}
+
+.wb-object-frame.wb-frame-collapsed::after {
+  content: attr(data-folded) " inside";
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The frame under a carried item. An outline and a tint of the accent, no blur. */
+.wb-object-frame.wb-drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-soft);
+}
+
+/* Insert, Polygon: the cursor while corners are being placed (whiteboard-shapes-js.js). */
+.whiteboard-container.wb-polygon-on,
+.whiteboard-container.wb-polygon-on * {
+  cursor: crosshair;
+}
+
 /* Links: a look per link and folder, folders, the card view (library-links.js, INBOX 827 L3 to L6).
    The colour is a palette key the script sets as `--swatch` (library-links.js `LOOKS`), never a free colour. */
 /* A chosen colour shows in every look, the flat ones too (their rule above clears the mark). */
@@ -9557,4 +9694,70 @@ input[type="color"].wb-mixed {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+/* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
+/* Page view (Format > Board): the printed page frames, under the cards. */
+.wb-page-frame {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 35%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 6;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Rulers (View > Rulers): a strip along the top and down the left, over the canvas, taking no pointer. */
+.wb-ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: color-mix(in srgb, var(--modal-bg-opaque) 88%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 45%, transparent);
+  stroke-width: 1;
+  fill: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--text-xs);
+}
+.wb-ruler text {
+  stroke: none;
+}
+
+/* A flipped sticky note (whiteboard-effects.js, L-whiteboard-47): only the empty fold corner is mirrored, in place with
+   `scale`, and moved to the mirrored edge; the words are never mirrored, so the note still reads. */
+.wb-object-text.wb-sticky[data-flip~="x"]::after {
+  right: auto;
+  left: 0;
+  scale: -1 1;
+}
+.wb-object-text.wb-sticky[data-flip~="y"]::after {
+  bottom: auto;
+  top: 0;
+  scale: 1 -1;
+}
+.wb-object-text.wb-sticky[data-flip="xy"]::after {
+  scale: -1 -1;
+}
+
+/* The board's status bar (whiteboard-effects.js, View, Status bar): a plain corner `.dock` like the diagram builder's
+   zoom bar, off by default, no blur. It sits bottom left, clear of the zoom cluster at the right. */
+.wb-status-bar {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 819.98px) {
+  .wb-status-bar {
+    display: none;
+  }
 }

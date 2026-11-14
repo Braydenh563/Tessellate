@@ -4,9 +4,9 @@ tool so strokes continue. Undo is the one `create` entry, so one step."""
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _commit_block() -> str:

@@ -1,6 +1,7 @@
 """A Gantt view of the topics that have dates (MINDMAP_PLAN gap 3, XMind): a
 `start` marker beside `due`, and a sheet drawing a bar from one to the other."""
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -13,7 +14,7 @@ from tests._help_text import help_core_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 GANTT = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
 
 

@@ -8,6 +8,7 @@ at 12 and 200 topics and counts overlapping boxes.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from tessellate.api.routes_whiteboard import BOARD_LAYOUTS
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 NEW = ("logic-right", "timeline", "fishbone", "tree-table")
 
 

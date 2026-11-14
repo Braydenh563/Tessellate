@@ -18,6 +18,7 @@ never added to.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -172,7 +173,7 @@ def test_a_line_shows_its_ends_by_a_class_on_its_own_group():
     assert ":has(.wb-map-edge-handle" not in lazy
     misc = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".wb-map-edge-group:is(:focus-visible, :has(:focus-visible))" not in misc
-    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     assert 'handle.parentNode.classList.toggle("is-shown", on)' in js
 
 

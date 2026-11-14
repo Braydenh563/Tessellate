@@ -1858,9 +1858,15 @@ TOPIC_META: dict[str, dict] = {
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New's arrow, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
+    "board-drawio": {"title": "draw.io files, CSV and libraries, and draw.io templates", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG; the Library panel menu"},
+    "board-interchange": {"title": "Rack layout, GraphML, Miro, PlantUML and EMF import, and the board configuration", "path": "A board, Arrange, Layout; Import"},
+    "board-draw-io-keys": {"title": "Board keys from draw.io: edit data, select none, turn, resize, copy size and data", "path": "A board, Help, Keyboard shortcuts"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, Home, tidy as a tree, change a shape, link a shape, shrink text to fit, clear labels", "path": "A board, Arrange, View, or a selection's More"},
     "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
+    "board-pdf": {"title": "Put a PDF on a board", "path": "A board, drop a PDF, or the Image button"},
+    "board-frame-binds": {"title": "Bind a frame to a note property", "path": "A board, right-click a frame, Bind to a property"},
+    "board-suggest-name": {"title": "Suggest a name for a board", "path": "Library, a board's ... menu, Suggest a name"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
@@ -1966,9 +1972,9 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-interchange", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-effects", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2257,6 +2263,74 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-group-edit",
+        "keywords": (
+            "edit inside a group", "enter a group", "leave a group", "dim the rest of the board", "board workspace",
+            "save panel layout", "workspaces", "which panels are open",
+        ),
+        "body": (
+            "Edit inside a group: double-click a grouped item (or Ctrl+K, Edit inside the group) and the rest "
+            "of the board dims and cannot be clicked, swept or reached with Select all or Tab; the group's own "
+            "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
+            "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "
+            "name, and switch between up to eight; they are kept on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-structure",
+        "keywords": (
+            "tags on a shape", "tag a board item", "filter the board by tag", "show only one tag", "collapse a frame",
+            "expand a frame", "fold a frame", "find in this frame", "drop highlight on a frame",
+        ),
+        "body": (
+            "Tags: select a shape, drawing, connector or object and type words in the Format panel's Data tab "
+            "(Enter adds, a comma adds several, press a tag to remove it), or use Ctrl+K, Edit tags. In the "
+            "find bar (Ctrl+F) the tag list shows only one tag and dims everything without it; closing the bar "
+            "clears it. Collapse a frame with its Collapsed box in the Format panel or Ctrl+K, Collapse this "
+            "frame: it folds to its title bar, hides what it holds and shows a count; Expand puts it back, each "
+            "as one Undo step, and export and presenting skip what is hidden. A frame outlines while you carry "
+            "an item over it. The find bar's frame button limits matches and Replace all to the frame holding "
+            "the selection or the middle of the view."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-text-more",
+        "keywords": (
+            "subscript", "superscript", "h2o on a board", "x squared on a board", "small raised text",
+            "maths on a board", "latex on a board", "equation in a shape", "dollar sign maths", "rich text in a shape", "list in a shape", "link in a shape", "bold in a shape label",
+        ),
+        "body": (
+            "Subscript and superscript on a board, in a text box that shows its markdown and in a shape's text: "
+            "write H~2~O for a lowered 2 and x^2^ for a raised one (no spaces between the marks; a doubled ~~ is still "
+            "strikethrough). To add them without typing the marks, select the words and choose Text style, then Subscript or Superscript. While you type you see the marks; when you finish they turn into small raised or lowered "
+            "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
+            "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
+            "an export carries the source words instead. Rich text in a shape: select a drawn shape, open Format, Label, and tick Rich text. "
+            "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, two stars on each side make "
+            "bold, one star makes italic, a backtick on each side makes code, and [words](address) makes a link; links open in a new tab and only web, mail and phone addresses work. Labels you "
+            "have not ticked stay plain. An SVG, PNG or PDF export draws rich words as they look: rows, bullets, bold and italic."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-drawn-shapes",
+        "keywords": (
+            "cylinder", "cube", "database shape", "uml actor", "lifeline", "folder shape", "step shape", "chevron",
+            "tape", "document shape", "process shape", "drawn shapes", "resize keeps corners", "shape picker",
+            "isometric cube", "curly bracket", "uml component", "double arrow", "data storage",
+        ),
+        "body": (
+            "Drawn shapes are a set of 40 outlines in the shape picker (Insert, Shape picker, or Ctrl+K and type the name) and in the "
+            "Library tab under Drawn shapes: cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, "
+            "process, the flowchart and UML sets, arrows, brackets and isometric tiles. Unlike a stretched picture, one is drawn again when you resize it, so a step keeps the size "
+            "of its notch and a folder its tab. Edit a point or turn it and it is stretched like any other shape from then on. A draw.io "
+            "file with shape=cylinder3, cube, step, umlActor and the rest brings them in as these shapes, and Export, draw.io writes them back."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-keyboard-create",
         "keywords": (
             "keyboard only board", "make a sticky with the keyboard", "enter on a board",
@@ -2267,7 +2341,32 @@ MORE_TOPICS.extend([
             "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
             "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
-            "selected shape writes in it. Escape leaves the words."
+            "selected shape writes in it. Escape leaves the words. Ctrl+Alt+Y (Edit, Repeat last move, "
+            "turn or resize) does the last move, turn or resize again to what is selected now. "
+            "The first time you hold each tool a one-line hint says what it does; it shows once per tool on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-ink",
+        "keywords": (
+            "pen", "marker", "smooth", "smoothed", "pressure", "stylus", "apple pencil", "freehand",
+            "ink", "draw a line", "wobbly pen", "thick and thin", "clean up", "replay", "gif",
+        ),
+        "body": (
+            "The pen and the marker draw smoothed ink: the line you make is evened out, "
+            "and with a pen or stylus it is thicker where you press harder. With a mouse or "
+            "a finger the width follows how fast you draw. A dashed pen keeps the plain "
+            "stroke. A free line or arrow with a hollow end (diamond, circle, square) stops "
+            "at the end's edge instead of running through it. To tidy a rough shape, select the "
+            "pen stroke and choose Edit, Clean up the drawn shape (or find it in the command "
+            "palette): a stroke drawn as a line, arrow, rectangle, ellipse, triangle or diamond "
+            "becomes that shape in the same colour and width, as one Undo step. A scribble that "
+            "is none of them stays as it is. To watch a board being drawn, choose Edit, Replay "
+            "the pen drawing: the pen strokes disappear and come back one by one in the order "
+            "you drew them (with reduced motion on, it skips to the finished board). Export, "
+            "GIF saves the same thing as an animated picture. The Format panel's width control "
+            "and turning a pen stroke work on smoothed ink too, each as one Undo step."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2287,11 +2386,29 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-effects",
+        "keywords": (
+            "text shadow", "glass", "gloss", "picture fill", "image fill", "flip", "mirror",
+            "frame opacity", "status bar", "board zoom", "selection count",
+        ),
+        "body": (
+            "Finishing touches on a board, in the Format panel. Text shadow puts a soft shadow "
+            "behind the words of a shape or a text box. Glass adds a glossy sheen to a drawn "
+            "shape, next to Shadow. Picture fill pours an image you choose into a drawn shape, "
+            "cut to its outline; Clear takes it out. Flip mirrors a sticky, a picture or a "
+            "frame left to right or top to bottom, and a sticky's words stay readable. A frame "
+            "has an Opacity slider. The View menu's Status bar shows the zoom, the tool and "
+            "how many items are selected; it is off until you switch it on."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-tables",
         "keywords": (
             "table", "tables", "add a table", "table on a board", "rows and columns",
             "add a row", "add a column", "delete a row", "delete a column", "grid of cells",
             "connect to a table row", "table row connection point",
+            "merge cells", "split a cell", "striped rows", "resize a row", "paste a markdown table",
         ),
         "body": (
             "A table on a board, as in draw.io: Insert, Table places three rows of "
@@ -2299,9 +2416,17 @@ MORE_TOPICS.extend([
             "Tab and Shift+Tab go to the next and previous cell, Enter keeps the "
             "words, Escape drops them. Right-click the table for Add a row below or "
             "above, Add a column to the right or left, Widen or Narrow this column, "
-            "Equal column widths, Delete this row or column (at the cell you "
-            "pressed last) and First row as a header. Resize it by its handles; "
-            "columns share the width equally until you widen or narrow one. "
+            "Equal column widths, Taller or Shorter row, Equal row heights, "
+            "Delete this row or column (at the cell you pressed last), First row "
+            "as a header and Striped rows. Drag a line between two columns or two "
+            "rows to size them, one Undo step per drag; the menu rows do the same "
+            "from the keyboard. Shift-click a second cell to pick a block, then "
+            "Merge cells in the menu joins them into one cell with their words; "
+            "Split cell on a merged cell undoes it. Striped rows (also in the Format "
+            "panel) tints every other body row, on the board and in an export. "
+            "Paste a Markdown table (pipes and a dashed rule) or cells copied from a "
+            "sheet onto the board and it becomes a table. Resize it by its handles; "
+            "columns and rows share the size equally until you drag a line. "
             "Pointing at a table while you drag a connector's end shows a connection point at each side of every row, so "
             "a connector can join one row; add or delete a row and the connectors on the rows below it stay on the same row."
         ),
@@ -2312,13 +2437,18 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit shape points", "edit polygon points", "move a corner of a shape", "add a corner to a shape",
             "take a corner out", "reshape a polygon", "change the corners of a shape", "edit points",
+            "draw a polygon", "insert polygon", "polygon tool", "click the corners of a shape",
         ),
         "body": (
+            "Insert, Polygon draws a new one: click each corner, double-click or press Enter to close it (Backspace takes the last corner back, Escape cancels). It is one Undo step and its corners are connection points. "
             "Edit shape points, in a straight-sided shape's More, the right-click Arrange and Ctrl+K, shows a square "
             "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
             "press the outline to add a corner there and drag it, press a corner without moving to take it out "
             "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
-            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit."
+            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit. "
+            "Connection points are separate: Format, Position and size lists a shape's connection points. Pick one to hold it on the outline (On outline) "
+            "so it stays on the edge when the shape is resized, nudge it by pixels, add one or remove the chosen one (Enter on Add puts one after the chosen point), each change one Undo step; "
+            "a draw.io file's points, with their pixel offsets, come in and go back out."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2578,8 +2708,14 @@ TOPIC_META.update({
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
+    "board-effects": {"title": "Text shadow, glass, picture fill, flip, frame opacity and the status bar", "path": "A board's Format panel, Style tab; the View menu, Status bar"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
+    "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
+    "board-drawn-shapes": {"title": "Drawn shapes: cylinder, cube, step, actor", "path": "A board's Insert menu, Shape picker, or the Library tab, Drawn shapes"},
+    "board-text-more": {"title": "Subscript, superscript and maths on a board", "path": "A text box or a shape's text, type H~2~O or x^2^"},
+    "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
+    "board-ink": {"title": "Smoothed pen, Clean up, replay and GIF", "path": "A board's pen or marker; the Edit menu, Clean up the drawn shape or Replay the pen drawing"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},
@@ -2977,3 +3113,30 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+
+#: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
+MORE_TOPICS.append({
+    "id": "board-format-options",
+    "keywords": (
+        "picture border", "image border", "border on a picture", "outline a picture",
+        "grid size", "grid colour", "grid color", "change the grid", "board options",
+        "rulers", "show rulers", "units", "millimetres", "inches", "centimetres", "points", "png resolution", "png dpi", "include a copy of the diagram", "reopen a png", "html export", "export as a web page", "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
+    ),
+    "body": (
+        "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
+        "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
+        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
+        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200 pixels whatever the units, empty is 24) "
+        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
+        "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
+        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "
+        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts. "
+        "Export: PNG adds Border (space round the picture), Resolution (72, 96, 150 or 300 dots per inch, written into the file) and "
+        "Include a copy of the diagram, which puts the board inside the PNG so Insert, Diagram can open it again; HTML saves one web page "
+        "of the board that opens offline in any browser, with scroll to zoom and drag to pan. "
+        "Rulers and units: View, Rulers shows a ruler along the top and down the left that follows pan and zoom; Units in the Board section "
+        "(pixels, millimetres, centimetres, inches or points, 96 pixels to the inch) sets what the rulers and the Format panel's position and size fields show."
+    ),
+    "badge": {"label": "Whiteboard", "tab": "library"},
+})
+TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}

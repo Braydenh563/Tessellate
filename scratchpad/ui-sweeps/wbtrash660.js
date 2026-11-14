@@ -8,9 +8,9 @@
 // it back. Measures the target's box and colours.
 //
 //   BASE=http://127.0.0.1:8802 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wbtrash660.js
-//   W=390 for a phone width; THEME=dark; ONLY=board or ONLY=map; TOUCH=1 drags with
+//   W=390 for a phone width; THEME=dark; ONLY=board, map or side (the sidebar drags); TOUCH=1 drags with
 //   a finger (a touch context, CDP touch events) and runs the drop cases only.
-const { boot } = require("./lib.js");
+const { boot, openBoardsTab } = require("./lib.js");
 
 const results = [];
 function check(label, ok, detail) {
@@ -37,16 +37,8 @@ const TOUCH = Boolean(process.env.TOUCH);
   const lift = () => (TOUCH ? touch("touchEnd", null) : page.mouse.up());
   page.on("pageerror", (e) => console.log("pageerror", e.message));
   const wait = (ms) => page.waitForTimeout(ms);
-  await page.evaluate(() => switchTab("library"));
-  await wait(700);
-  await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await wait(1200);
-  await page.evaluate(async () => {
-    window.confirmDialog = async () => true;
-    const v = document.getElementById("library-view-whiteboard");
-    for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
-    await initWhiteboard();
-  });
+  await openBoardsTab(page);
+  await page.evaluate(() => { window.confirmDialog = async () => true; });
   await wait(400);
 
   //: The whole board as text, ids left out (a restored row is a new row).
@@ -54,7 +46,7 @@ const TOUCH = Boolean(process.env.TOUCH);
     const strip = (o, keys) => keys.map((k) => `${k}=${JSON.stringify(o[k] ?? null)}`).join(" ");
     const objects = (wbState.objects || []).map((o) => `O ${o.kind} ${strip(o, ["x", "y", "width", "height", "rotation", "z"])} ${JSON.stringify(o.data?.content ?? "")}`);
     const nodes = (wbState.nodes || []).map((n) => `N ${strip(n, ["entry_id", "x", "y", "width", "height", "rotation"])}`);
-    const sketches = (wbState.sketches || []).map((s) => `S ${s.data}`);
+    const sketches = (wbState.sketches || []).map((s) => { let d = s.data; try { d = JSON.stringify(typeof d === "string" ? JSON.parse(d) : d); } catch {} return `S ${d}`; });
     return [...objects, ...nodes, ...sketches].sort().join("\n");
   });
   const mapState = () => page.evaluate(() => {
@@ -81,6 +73,7 @@ const TOUCH = Boolean(process.env.TOUCH);
     const b = el.getBoundingClientRect();
     return b.width || b.height ? { x: b.left + b.width / 2, y: b.top + b.height / 2 } : null;
   }, selector);
+  const centre2 = (selector) => page.evaluate((q) => { const el = document.querySelector(q); if (!el) return null; el.scrollIntoView({ block: "nearest" }); const b = el.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; }, selector);
   const trash = () => page.evaluate(() => {
     const el = document.querySelector(".wb-trash");
     if (!el || el.classList.contains("hidden")) return { shown: false };
@@ -112,7 +105,7 @@ const TOUCH = Boolean(process.env.TOUCH);
     return { shown, over };
   };
 
-  if (ONLY !== "map") {
+  if (ONLY !== "map" && ONLY !== "side") {
     const ids = await page.evaluate(async () => {
       const board = await apiJson("/whiteboard/boards", { method: "POST", body: JSON.stringify({ name: `trash ${Date.now()}`, type: "board" }) });
       await openWhiteboardBoard(board.id);
@@ -228,12 +221,13 @@ const TOUCH = Boolean(process.env.TOUCH);
     }
   }
 
-  if (ONLY !== "board") {
+  if (ONLY !== "board" && ONLY !== "side") {
     const map = await page.evaluate(async () => apiJson("/whiteboard/boards/import", {
       method: "POST", body: JSON.stringify({ format: "markdown", content: "# Trash map\n- Root\n  - Alpha\n    - Beta\n  - Gamma", name: "Trash map " + Date.now() }),
     }));
     await page.evaluate(async (b) => { await openWhiteboardBoard(b); }, map.id);
-    await wait(1500);
+    await page.waitForFunction(() => wbIsMap() && document.querySelectorAll("#whiteboard-container .wb-object").length >= 4, null, { timeout: 20000 });
+    await wait(1200);
     await page.evaluate(() => { wbSelectToolRef?.("select"); });
     const id = await page.evaluate(() => wbMapIndex().nodes.find((n) => String(wbMapLabel(n)).trim() === "Alpha")?.id);
     const before = await mapState();
@@ -251,6 +245,102 @@ const TOUCH = Boolean(process.env.TOUCH);
     await wait(1200);
     const back = await mapState();
     check("map topic: Undo restores the map identically", back === before, back === before ? "" : `\n${before}\n---\n${back}`);
+  }
+
+
+  //: The sidebar's two drags (LEDGER L262): a Layers row and a Library tile of your own, dragged with the real mouse (the
+  //: browser's drag and drop) onto the same target.
+  if (ONLY === "side" || (ONLY === "" && !TOUCH)) {
+    await page.evaluate(async () => {
+      const board = await apiJson("/whiteboard/boards", { method: "POST", body: JSON.stringify({ name: `side ${Date.now()}`, type: "board" }) });
+      await openWhiteboardBoard(board.id);
+      await new Promise((r) => setTimeout(r, 900));
+      const post = (body) => apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ board_id: board.id, kind: "text", ...body }) });
+      await post({ x: 120, y: 80, width: 160, height: 70, data: { content: "Row one" } });
+      await post({ x: 340, y: 80, width: 140, height: 60, data: { content: "Row two" } });
+      await fetchWhiteboardState();
+      renderWhiteboardNow();
+      wbOpenSidebar("layers");
+    });
+    await wait(900);
+    const layerKeys = () => page.evaluate(() => [...document.querySelectorAll("#wb-layers-tree [role='treeitem']:not([data-group])")].map((r) => r.dataset.key));
+    const rowsBefore = await layerKeys();
+    const depth0 = await undoDepth();
+    const row = await centre2('#wb-layers-tree [role="treeitem"]:not([data-group])');
+    await page.mouse.move(row.x, row.y);
+    await page.mouse.down();
+    await page.mouse.move(row.x + 10, row.y + 10, { steps: 4 });
+    await wait(150);
+    const shown = await trash();
+    check("layers row: target shows while the row is carried", shown.shown, JSON.stringify(shown.box));
+    await page.mouse.move(shown.x, shown.y, { steps: 14 });
+    await page.mouse.move(shown.x + 3, shown.y + 1, { steps: 3 }); // the drag emulation drops the last dragover of a glide
+    await wait(200);
+    const hot = await trash();
+    check("layers row: hot over the target", hot.hot && /Release to delete/.test(hot.label), hot.label);
+    await page.mouse.up();
+    await wait(1000);
+    const rowsAfter = await layerKeys();
+    check("layers row: that object is deleted", rowsAfter.length === rowsBefore.length - 1, `${rowsBefore.length} -> ${rowsAfter.length}`);
+    check("layers row: one undo step", (await undoDepth()) - depth0 === 1, `${depth0} -> ${await undoDepth()}`);
+    check("layers row: toast with Undo", /Deleted 1 item\./.test(await toastText()), await toastText());
+    check("layers row: target hidden after", !(await trash()).shown);
+    await page.evaluate(async () => { await wbUndo(); });
+    await wait(900);
+    check("layers row: Undo brings it back", (await layerKeys()).length === rowsBefore.length);
+
+    // A tile you made: saved from a selection, dragged to the target, deleted with the existing Undo toast.
+    await page.evaluate(async () => {
+      const o = wbState.objects[0];
+      wbMultiSelection.clear();
+      wbMultiSelection.add(wbMultiKey("object", o.id));
+      const payload = wbLibSelectionPayload({ quiet: true });
+      await apiJson("/board-library", { method: "POST", body: JSON.stringify({ kind: "element", name: "Trash me", payload }) });
+      clearWbSelection();
+      wbMultiSelection.clear();
+      await wbLoadLibrary({ force: true });
+      wbOpenSidebar("library");
+    });
+    await wait(900);
+    await page.fill("#wb-lib-search", "Trash me");
+    await wait(700);
+    const tileSel = "#wb-lib-list .wb-lib-tile";
+    const countTiles = () => page.evaluate((q) => document.querySelectorAll(q).length, tileSel);
+    const tile = await centre2(tileSel);
+    check("library tile: found", Boolean(tile));
+    const before = await countTiles();
+    await page.mouse.move(tile.x, tile.y);
+    await page.mouse.down();
+    await page.mouse.move(tile.x + 12, tile.y + 8, { steps: 4 });
+    await wait(150);
+    check("library tile: target shows while the tile is carried", (await trash()).shown);
+    const t2 = await trash();
+    await page.mouse.move(t2.x, t2.y, { steps: 14 });
+    await page.mouse.move(t2.x + 3, t2.y + 1, { steps: 3 });
+    await wait(200);
+    check("library tile: hot over the target", (await trash()).hot);
+    const objsBefore = await page.evaluate(() => wbState.objects.length);
+    await page.mouse.up();
+    await wait(1300);
+    check("library tile: the entry is deleted", (await countTiles()) === before - 1, `${before} -> ${await countTiles()}`);
+    check("library tile: nothing was placed on the board", (await page.evaluate(() => wbState.objects.length)) === objsBefore);
+    check("library tile: toast with Undo", /Deleted Trash me from the library\./.test(await toastText()), await toastText());
+    check("library tile: target hidden after", !(await trash()).shown);
+    await page.evaluate(async () => { await wbUndo(); });
+    await wait(1100);
+    check("library tile: Undo brings the entry back", (await countTiles()) === before, String(await countTiles()));
+    // A built-in tile does not offer the target.
+    await page.fill("#wb-lib-search", "Rectangle");
+    await wait(700);
+    const built = await centre2(tileSel);
+    if (built) {
+      await page.mouse.move(built.x, built.y);
+      await page.mouse.down();
+      await page.mouse.move(built.x + 12, built.y + 8, { steps: 4 });
+      await wait(150);
+      check("built-in tile: no delete target", !(await trash()).shown);
+      await page.mouse.up();
+    }
   }
 
   const failed = results.filter((r) => !r).length;

@@ -16,6 +16,7 @@ The browser half is the sweep; this pins the two guards in the source so a
 later edit cannot drop either without a failing test.
 """
 
+from tests._app_js import frontend_text
 import re
 import shutil
 import subprocess
@@ -24,7 +25,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:
