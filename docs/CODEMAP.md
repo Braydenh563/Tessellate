@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8500, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11014, test files 2819, tests 22460, plan headings 689, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8500, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11016, test files 2820, tests 22465, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8500)
 
@@ -2624,20 +2624,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `captionDecimate` | frontend/js/captions.js:105 |
-| `captionOfferTranslate` | frontend/js/captions.js:264 |
+| `captionOfferTranslate` | frontend/js/captions.js:265 |
 | `captionPaint` | frontend/js/captions.js:124 |
-| `captionRelease` | frontend/js/captions.js:270 |
-| `captionRunMerge` | frontend/js/captions.js:190 |
-| `captionSendNext` | frontend/js/captions.js:138 |
+| `captionRelease` | frontend/js/captions.js:271 |
+| `captionRunMerge` | frontend/js/captions.js:191 |
+| `captionSendNext` | frontend/js/captions.js:139 |
 | `captionToggleTranslate` | frontend/js/captions.js:77 |
 | `captionTranslatePump` | frontend/js/captions.js:59 |
 | `captionTranslatedText` | frontend/js/captions.js:55 |
 | `captionsText` | frontend/js/captions.js:97 |
-| `holdLiveCaptions` | frontend/js/captions.js:315 |
-| `startLiveCaptions` | frontend/js/captions.js:200 |
-| `stopLiveCaptions` | frontend/js/captions.js:278 |
-| `stopRecorderWords` | frontend/js/captions.js:311 |
-| `toggleLiveCaptions` | frontend/js/captions.js:319 |
+| `holdLiveCaptions` | frontend/js/captions.js:316 |
+| `startLiveCaptions` | frontend/js/captions.js:201 |
+| `stopLiveCaptions` | frontend/js/captions.js:279 |
+| `stopRecorderWords` | frontend/js/captions.js:312 |
+| `toggleLiveCaptions` | frontend/js/captions.js:320 |
 
 ### frontend/js/capture-card-more.js (13)
 
@@ -14161,7 +14161,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11014)
+## Backend modules (11016)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18090,8 +18090,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2592 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2745 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2593 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2746 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -20809,13 +20809,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `looks_like_a_question_about` | src/tessellate/ai/toolwords.py:235 |
 | `score_groups` | src/tessellate/ai/toolwords.py:212 |
 
-### src/tessellate/ai/translate.py (3)
+### src/tessellate/ai/translate.py (5)
 
 | Name | File:line |
 |---|---|
-| `_folder` | src/tessellate/ai/translate.py:63 |
-| `served` | src/tessellate/ai/translate.py:85 |
-| `status` | src/tessellate/ai/translate.py:67 |
+| `_folder` | src/tessellate/ai/translate.py:84 |
+| `_pair` | src/tessellate/ai/translate.py:44 |
+| `installed_pairs` | src/tessellate/ai/translate.py:88 |
+| `served` | src/tessellate/ai/translate.py:114 |
+| `status` | src/tessellate/ai/translate.py:101 |
 
 ### src/tessellate/ai/turn_once.py (6)
 
@@ -28254,7 +28256,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22460)
+## Tests (22465)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30794,6 +30796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_transcript_copy.py | 2 |
 | tests/test_transcript_lines_l578.py | 4 |
 | tests/test_translate_offline.py | 7 |
+| tests/test_translate_pairs_l582.py | 5 |
 | tests/test_tray.py | 18 |
 | tests/test_tray_1603.py | 7 |
 | tests/test_tray_drag_1593.py | 15 |
@@ -31498,14 +31501,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:645 |
+| Needs hardware | docs/roadmap/LEDGER.md:644 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:638 |
+| Owner calls | docs/roadmap/LEDGER.md:637 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31744,7 +31747,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:879 |
 | documents | docs/roadmap/LEDGER.md:327 |
 | documents | docs/roadmap/LEDGER.md:819 |
-| general | docs/roadmap/LEDGER.md:597 |
+| general | docs/roadmap/LEDGER.md:596 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:783 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:891 |

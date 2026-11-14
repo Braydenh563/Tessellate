@@ -86,7 +86,7 @@
         return;
       }
       //: The two lines the dock shows are translated at once; older ones are not.
-      Object.assign(captionTranslate, { on: true, pair: status.pairs[0], out: captionRun.lines.slice(0, -2).map(() => ""), busy: false });
+      Object.assign(captionTranslate, { on: true, pair: status.pairs.find((p) => `${p.from}-${p.to}` === prefs.get("translate-pair")) || status.pairs[0], out: captionRun.lines.slice(0, -2).map(() => ""), busy: false });
     }
     button.setAttribute("aria-pressed", String(captionTranslate.on));
     $("captions-dock").classList.toggle("is-translating", captionTranslate.on);
@@ -133,6 +133,7 @@
     const translated = $("captions-translated");
     translated.textContent = captionTranslate.on ? captionTranslatedText() : "";
     translated.classList.toggle("hidden", !captionTranslate.on);
+    if (captionTranslate.on) translated.lang = captionTranslate.pair.to;
   }
 
   async function captionSendNext() {
