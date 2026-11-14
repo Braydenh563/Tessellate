@@ -814,7 +814,7 @@ def test_the_tree_hands_back_what_the_strip_and_the_rings_wrote(client):
 
 
 def test_freemind_carries_a_styled_node_out_and_back(client):
-    """§12.0: "a feature that cannot round-trip is not built". The strip and
+    """§12.0: every feature round-trips. The strip and
     the two rings landed with none of their fields in either XML export,
     which made the one path built for taking a map somewhere else a silent
     loss of everything a person had styled."""

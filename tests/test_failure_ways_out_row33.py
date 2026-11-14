@@ -1,4 +1,4 @@
-"""WORLD_CLASS_PLAN section 21, what the survey left open (section 8, row 33):
+"""WORLD_CLASS_PLAN section 21, the survey's last items (section 8, row 33), built:
 rows 1 and 2 on the notice recipe, row 12's "check the address" in the status
 line, row 13's update size before the button is pressed."""
 

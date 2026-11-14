@@ -192,7 +192,7 @@ def test_the_new_styles_are_lazy() -> None:
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_html_has_a_check_for_problems() -> None:
-    """A stray closing tag and an element left open, the two HTML mistakes a
+    """A stray closing tag and an element never closed, the two HTML mistakes a
     parser that recovers from everything never reports."""
     cm = (ROOT / "frontend" / "vendor" / "codemirror" / "codemirror.min.js").read_text(encoding="utf-8")
     sets = CODE[CODE.index("const DOC_HTML_VOID") : CODE.index("const DOC_HTML_RAW")]
