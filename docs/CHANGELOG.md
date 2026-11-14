@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- open_scan: TODO, FIXME, XXX and HACK count only in capitals, so a `todo` callout kind or queue variable is a name, not work (INBOX 1811).
 - open_scan: a quoted string in CSS (a selector value such as `[class*="-todo"]`) is copy, the same rule as JS and Python; a CSS comment is still scanned.
 - LEDGER: the open rows L-general-56, 57 and 67 are now L-ui-modernisation-60, 61 and 62, because general ids clashed across parallel branches.
 - Home: the first-steps card shares the widget column's edge (3px off before); the density census gains alignment and near-miss columns (L-ui-modernisation-53).
