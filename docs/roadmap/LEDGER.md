@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 4 | 1 | 0 | 0 | 5 |
+| whiteboard | 0 | 1 | 1 | 0 | 0 | 2 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 523 | 532 | 126 | 2 | 172 | 1181 |
+| all | 523 | 529 | 126 | 2 | 172 | 1178 |
 
 ## graph
 
@@ -281,6 +281,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
+- [ ] **L-whiteboard-48** `whiteboard` open, S: Attach the original EMF to the board (media upload refuses .emf; needs a storage path). From L-whiteboard-45 follow-up. Evidence: EMF import measures the header and places a note; the bytes are not kept, as /media/upload takes only images and PDFs.
 
 ## documents
 
@@ -704,10 +705,6 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
-- [ ] **L-whiteboard-41** `whiteboard` open, L: PlantUML in and out (needs a local renderer). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 14 Mermaid row; PlantUML needs a renderer
-- [ ] **L-whiteboard-42** `whiteboard` open, M: Rack layout (draw.io rackLayout). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 12 child layouts row; no rack in whiteboard-layouts-more.js
-- [ ] **L-whiteboard-44** `whiteboard` open, L: Plugins and configuration JSON (draw.io). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 plugins row
-- [ ] **L-whiteboard-45** `whiteboard` open, L: Miro, graphml and emf import. Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 Miro, graphml and emf import have no owner line
 
 ## Needs hardware
 

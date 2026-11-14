@@ -455,7 +455,28 @@
     return count;
   }
 
+  //: A rack, like draw.io's `rackLayout`: the boxes in one column as wide as the widest, each in a slot a whole
+  //: number of rack units tall (an item taller than a unit takes the next whole number), a gap between slots, each
+  //: centred in its slot. Order is top to bottom, then left to right, as they lie now; the column's top left stays
+  //: where the group's was. Edges play no part. Pure: boxes in, top-left corners out.
+  const RACK_UNIT = 24;
+  function lmRack(nodes, edges, { gap = DUMMY_GAP, unit = RACK_UNIT } = {}) {
+    const order = [...nodes].sort((a, b) => a.y - b.y || a.x - b.x);
+    const width = Math.max(0, ...nodes.map((nd) => nd.w));
+    const left = Math.min(...nodes.map((nd) => nd.x));
+    const top = Math.min(...nodes.map((nd) => nd.y));
+    const pos = new Map();
+    let y = top;
+    for (const nd of order) {
+      const slot = Math.max(1, Math.ceil(nd.h / unit)) * unit;
+      pos.set(nd.key, { x: left + (width - nd.w) / 2, y: y + (slot - nd.h) / 2 });
+      y += slot + gap;
+    }
+    return pos;
+  }
+
   const KINDS = {
+    rack: lmRack,
     "flow-h": (nodes, edges) => lmFlow(nodes, edges, { dir: "right" }),
     "flow-v": (nodes, edges) => lmFlow(nodes, edges, { dir: "down" }),
     radial: lmRadial,
@@ -471,7 +492,7 @@
 
   // --- On a board --------------------------------------------------------------------------------------------------
 
-  const NOUN = { "flow-h": "a flow, left to right", "flow-v": "a flow, top to bottom", radial: "a radial tree", org: "an org chart", organic: "an organic layout", circle: "a circle" };
+  const NOUN = { "flow-h": "a flow, left to right", "flow-v": "a flow, top to bottom", radial: "a radial tree", org: "an org chart", organic: "an organic layout", circle: "a circle", rack: "a rack" };
 
   //: What a layout moves: the selected shapes, or every shape on the board when fewer than two are selected. Frames,
   //: connectors, locked and hidden things stay out.
@@ -489,13 +510,28 @@
     return entries.length >= 2 && wbTidyEdges(entries).length > 0;
   }
 
+  //: A rack stacks what is selected (two or more, connectors or none), so a board with nothing selected is never
+  //: swept into one by accident.
+  function lmRackEntries() {
+    return wbSelectionEntries().filter((e) => e.bbox && !wbIsLocked(e.kind, e.item) && !wbItemHidden(e.kind, e.item) && !(e.kind === "sketch" && wbIsLinkSketch(e.item)) && !(e.kind === "object" && e.item.kind === "frame"));
+  }
+
+  function lmCanRack() {
+    return lmRackEntries().length >= 2;
+  }
+
   //: One Undo step: the boxes move, and the connectors between them drop the bends and pinned ends they had, which
   //: described the old places, so each routes afresh from where its two boxes now are.
   async function lmApply(kind) {
     await ensureModule("boards");
-    const entries = lmLayoutEntries();
-    const edges = wbTidyEdges(entries);
-    if (entries.length < 2 || !edges.length) {
+    const rack = kind === "rack";
+    const entries = rack ? lmRackEntries() : lmLayoutEntries();
+    const edges = rack ? [] : wbTidyEdges(entries);
+    if (rack && entries.length < 2) {
+      toast("Select two or more things to stack them as a rack.");
+      return 0;
+    }
+    if (!rack && (entries.length < 2 || !edges.length)) {
       toast("Join two or more shapes with connectors to lay them out.");
       return 0;
     }
@@ -621,6 +657,6 @@
   wbBoardState.lane = { settle: lmSettle, settleNow: lmSettleNow };
   wbFmtState.layoutMore = {
     GAP, flow: lmFlow, radial: lmRadial, org: lmOrg, organic: lmOrganic, circle: lmCircle, arrange: lmArrange, overlapCount: lmOverlapCount,
-    crossingCount: lmCrossingCount, canLayout: lmCanLayout, apply: lmApply, stackColumn: lmStackColumn,
+    crossingCount: lmCrossingCount, canLayout: lmCanLayout, canRack: lmCanRack, rack: lmRack, apply: lmApply, stackColumn: lmStackColumn,
   };
 })();

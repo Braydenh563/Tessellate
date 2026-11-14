@@ -1038,7 +1038,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
-| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack reopened 2026-11-14: LEDGER L-whiteboard-42 | none here |
+| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack yes (Layout, Rack, L-whiteboard-42) | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack built 2026-11-14: `lmRack`, `test_rack_*` | none here |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 
@@ -1060,7 +1060,7 @@ clash is listed so the choice is made once.
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
 | VSDX import and export, Gliffy, Lucidchart | dropped by the owner, 2026-11-12 ("drop VSDX and Lucid"; Gliffy with them, "revisit on request"; section 18) | `vsdx/importer.js`, `exportVsdx`, `importFrom` | the owner's decision, above | none |
-| Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | Mermaid subset kept; PlantUML reopened 2026-11-14: LEDGER L-whiteboard-41 | none here |
+| Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | Mermaid subset kept; PlantUML built 2026-11-14 (`wb_convert.py` reads class, sequence, activity and named boxes; `whiteboard-plantuml.js` writes; L-whiteboard-41) | none here |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
 | Export selection, visible area, whole board, one frame | yes | `selection only`, `crop`, page range | done | none |
 | Copy as image, copy as SVG | copy as image yes, 2026-10-18 (whiteboard-1018; HISTORY); copy as SVG yes, 2026-10-18 (fixes7-1018; HISTORY) | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
@@ -1094,10 +1094,10 @@ clash is listed so the choice is made once.
 | Cloud storage: Google Drive, OneDrive, Dropbox, GitHub, GitLab, Trello | `DriveClient.js`, `OneDriveClient.js`, `DropboxClient.js`, `GitHubClient.js`, `GitLabClient.js`, `TrelloClient.js` | ARCHITECTURE.md standing decision 1 (offline-first, no cloud service) |
 | Real-time collaboration, shared cursors, "present to everyone" | `P2PCollab.js`, `DrawioFileSync.js`, `shareCursor`, `presentToEveryone` | ARCHITECTURE.md standing decision 1 (no network service) |
 | Comments with notifications, share dialog, revision history on a server | `DrawioComment.js`, `share`, `revisionHistory` | moot by fact: the board has comments and its own history (`whiteboard-history.js`); a server share is ARCHITECTURE.md standing decision 1 |
-| Plugins and `configuration` JSON | `plugins`, `ConfigEditor.js` | reopened 2026-11-14: LEDGER L-whiteboard-44 |
+| Plugins and `configuration` JSON | `plugins`, `ConfigEditor.js` | built 2026-11-14 as a declarative JSON only (`wb_config.py`, `whiteboard-config.js`; no plugin code, the CSP forbids it), L-whiteboard-44 |
 | Confluence, Jira, Notion, Microsoft Office, Atlassian embeds | `Sidebar-Atlassian*.js`, `microsoftOffice`, `embedNotion` | ARCHITECTURE.md standing decision 1 (they are cloud services) |
 | Desktop updater, language packs, telemetry | `check4Updates`, `language` | moot by fact: the app has its own update check (ARCHITECTURE.md standing decision 1) |
-| Visio, Lucidchart, Gliffy, Miro import | `vsdx/`, `miro/`, `graphml/`, `emf/` | Visio, Lucidchart and Gliffy: the owner, 2026-11-12 ("drop VSDX and Lucid", Gliffy "revisit on request"); Miro, graphml and emf: reopened, LEDGER L-whiteboard-45 |
+| Visio, Lucidchart, Gliffy, Miro import | `vsdx/`, `miro/`, `graphml/`, `emf/` | Visio, Lucidchart and Gliffy: the owner, 2026-11-12 ("drop VSDX and Lucid", Gliffy "revisit on request"); Miro (REST items JSON), graphml and emf (header measured, note placed) built 2026-11-14, L-whiteboard-45 |
 
 ### Build first
 

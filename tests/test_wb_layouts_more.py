@@ -169,3 +169,37 @@ def test_the_guide_names_the_layouts() -> None:
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
     assert "a flow, a radial tree, an org chart, an organic network or a circle" in body and len(body) < 1900
+
+
+def test_rack_stacks_in_one_column_of_equal_units_with_a_gap():
+    # L-whiteboard-42: heights 60, 80, 50, 70 take 3, 4, 3, 3 units of 24; the column is the widest box wide.
+    got = _run(
+        'const pos = L.arrange("rack", nodes.slice(0, 4), []); const b = nodes.slice(0, 4).map((n) => ({ ...n, ...pos.get(n.key) }));'
+        "console.log(JSON.stringify({ b: b.map((o) => [o.x, o.y, o.w, o.h]), overlap: L.overlapCount(boxesOf(pos, nodes.slice(0, 4))) }));"
+    )
+    assert got["overlap"] == 0
+    boxes = sorted(got["b"], key=lambda o: o[1])
+    column = max(o[2] for o in boxes)
+    left = min(o[0] for o in boxes)
+    assert left == min(n for n in [0, 37, 74, 111])  # the group's left edge stays
+    for x, _, w, _ in boxes:
+        assert abs((x + w / 2) - (left + column / 2)) < 0.01, "centred in the column"
+    # Slot tops are a whole number of units plus the 12 gap apart.
+    tops = [round(o[1] + (24 * -(-o[3] // 24) - o[3]) / -2, 6) for o in boxes]
+    steps = [b - a for a, b in zip(tops, tops[1:])]
+    assert all((s - 12) % 24 == 0 for s in steps), steps
+
+
+def test_rack_is_repeatable_and_ignores_connectors():
+    got = _run(
+        'const a = [...L.arrange("rack", nodes, edges)]; const b = [...L.arrange("rack", nodes, [])];'
+        "console.log(JSON.stringify(JSON.stringify(a) === JSON.stringify(b)));"
+    )
+    assert got is True
+
+
+def test_the_rack_command_needs_two_selected_and_is_in_the_layout_menu():
+    commands = frontend_text("whiteboard-commands.js")
+    assert 'id: "layout-rack"' in commands and 'needs: "rack"' in commands
+    assert '"layout-circle", "layout-rack"' in commands
+    assert "canRack" in frontend_text("whiteboard-layouts-more.js")

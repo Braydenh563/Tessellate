@@ -36,6 +36,27 @@ const WB_MERMAID_SHAPES = {
 function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, frameOf = null) {
   //: Words safe inside a node or edge label: quotes, brackets and the bar would end it early.
   const safeWords = (text) => String(text || "").replace(/["[\](){}|<>#;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || " ";
+  const graph = wbBoardToMermaid.graph(state, cardTitle, frameOf);
+  const line = (n) => {
+    const [open, close] = WB_MERMAID_SHAPES[n.shape];
+    return `${n.id}${open}"${safeWords(n.words)}"${close}`;
+  };
+  const lines = ["flowchart TD"];
+  let f = 0;
+  for (const { title, nodes } of graph.frames.values()) {
+    f += 1;
+    lines.push(`  subgraph f${f} ["${safeWords(title)}"]`, ...nodes.map((n) => `    ${line(n)}`), "  end");
+  }
+  lines.push(...graph.loose.map((n) => `  ${line(n)}`));
+  for (const e of graph.edges) lines.push(`  ${e.from} ${e.arrow ? "-->" : "---"}${e.label ? `|${safeWords(e.label)}|` : ""} ${e.to}`);
+  return lines.join("\n") + "\n";
+}
+
+//: The board's joined things as one plain graph both text writers (Mermaid, PlantUML) format: every connector whose
+//: two ends are a shape, a text box or a card, and the things it joins, in the order met. `nodes` are `{id: "n1",
+//: words, shape: rect|diamond|circle, frame}`; `frames` a Map of frame id to `{title, nodes}` (the framed ones,
+//: in the order met); `loose` the unframed; `edges` `{from, to, arrow, label, dashed}`. Pure: reads `state`.
+wbBoardToMermaid.graph = function (state, cardTitle = (node) => `Note ${node.entry_id}`, frameOf = null) {
   const ids = new Map();
   const loose = [];
   const framed = new Map();
@@ -59,14 +80,14 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
       words = data.label || "";
       shape = data.shape === "diamond" ? "diamond" : data.shape === "circle" ? "circle" : "rect";
     }
-    const [open, close] = WB_MERMAID_SHAPES[shape];
     const frame = frameOf ? frameOf(kind, item) : null;
+    const made = { id, words, shape, frame: frame ? frame.id : null };
     let bucket = loose;
     if (frame) {
-      if (!framed.has(frame.id)) framed.set(frame.id, { title: frame.title, lines: [] });
-      bucket = framed.get(frame.id).lines;
+      if (!framed.has(frame.id)) framed.set(frame.id, { title: frame.title, nodes: [] });
+      bucket = framed.get(frame.id).nodes;
     }
-    bucket.push(`${id}${open}"${safeWords(words)}"${close}`);
+    bucket.push(made);
     return id;
   };
   const find = (kind, id) => (state[{ node: "nodes", object: "objects", sketch: "sketches" }[kind]] || []).find((i) => i.id === id);
@@ -82,19 +103,11 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
     const s = find(sKind, data.sourceId), t = find(tKind, data.targetId);
     if (!s || !t) continue;
     const a = declare(sKind, s), b = declare(tKind, t);
-    const arrow = (data.endCap && data.endCap !== "none") || data.endStyle === "end" || data.endStyle === "both" ? "-->" : "---";
-    const label = data.label ? `|${safeWords(data.label)}|` : "";
-    edges.push(`  ${a} ${arrow}${label} ${b}`);
+    const arrow = (data.endCap && data.endCap !== "none") || data.endStyle === "end" || data.endStyle === "both";
+    edges.push({ from: a, to: b, arrow: Boolean(arrow), label: data.label || "", dashed: Boolean(data.dash && data.dash !== "solid") });
   }
-  const lines = ["flowchart TD"];
-  let f = 0;
-  for (const { title, lines: inside } of framed.values()) {
-    f += 1;
-    lines.push(`  subgraph f${f} ["${safeWords(title)}"]`, ...inside.map((l) => `    ${l}`), "  end");
-  }
-  lines.push(...loose.map((l) => `  ${l}`), ...edges);
-  return lines.join("\n") + "\n";
-}
+  return { loose, frames: framed, edges };
+};
 
 //: Rows by depth from the nodes nothing points at (a cycle's entry is its
 //: first node), in the order met; then each node's centre in board units,
@@ -1212,16 +1225,19 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
 //: A Mermaid flowchart, state or class diagram onto this board: shapes and
 //: elbow connectors laid out by depth, centred in the view, one undo step.
 //: A sequence diagram has its own drawing (`wbImportMermaidSequence`).
-async function wbImportMermaid(source, at = wbViewCentre()) {
-  const kind = wbMermaidKind(source) || "flowchart";
+//: `parsed` is a graph the server already read from GraphML, Miro or PlantUML (`{nodes, edges, subgraphs, skipped}`);
+//: it is drawn the same way. A graph the file placed itself (`positioned`: Miro and yEd keep where each shape was)
+//: keeps those places, centred on `at`; any other is laid out in rows.
+async function wbImportMermaid(source, at = wbViewCentre(), parsed = null) {
+  const kind = parsed ? "flowchart" : wbMermaidKind(source) || "flowchart";
   if (kind === "sequence") return wbImportMermaidSequence(source, at);
-  const graph = kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : diagramModel.parse(source) || { nodes: [], edges: [] };
+  const graph = parsed || (kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : diagramModel.parse(source) || { nodes: [], edges: [] });
   if (!graph.nodes.length) {
     toast("No diagram found. Start with a line like: flowchart TD, stateDiagram, classDiagram or sequenceDiagram", "info");
     return 0;
   }
-  const place = wbMermaidLayout(graph);
-  const look = wbMermaidLayout.look(graph);
+  const place = graph.positioned ? wbMermaidLayout.positioned(graph) : wbMermaidLayout(graph);
+  const look = graph.positioned ? { nodes: new Map(), edges: new Map() } : wbMermaidLayout.look(graph);
   const ink = window.currentStrokeColor && /^#[0-9a-f]{6}$/i.test(window.currentStrokeColor) ? window.currentStrokeColor : "#335599";
   const ids = new Map();
   const frameIds = new Map();
@@ -1234,7 +1250,7 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     }
     for (const n of graph.nodes) {
       const c = place.get(n.id);
-      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink, look.nodes.get(n.id));
+      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink, n.fill ? { ...(look.nodes.get(n.id) || {}), fill: n.fill, fillOpacity: 1 } : look.nodes.get(n.id));
       wbState.sketches.push(made);
       ids.set(n.id, made.id);
     }
@@ -1262,6 +1278,20 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
   return graph.nodes.length;
 }
 
+//: Where a file that kept its own places puts each shape: the centre of each box, the whole centred on 0, and the
+//: file's frames (Miro's) as boxes round what they held. Same shape as `wbMermaidLayout`'s answer (a Map of id to
+//: centre, with `frames`).
+wbMermaidLayout.positioned = function (graph) {
+  const boxes = graph.nodes.map((n) => ({ id: n.id, cx: n.x + (graph.centred ? 0 : (n.w || 160) / 2), cy: n.y + (graph.centred ? 0 : (n.h || 70) / 2), w: n.w || 160, h: n.h || 70 }));
+  const frames = [...(graph.frames || [])].map((f) => ({ ...f, w: f.w, h: f.h }));
+  const xs = [...boxes.flatMap((b) => [b.cx - b.w / 2, b.cx + b.w / 2]), ...frames.flatMap((f) => [f.x, f.x + f.w])];
+  const ys = [...boxes.flatMap((b) => [b.cy - b.h / 2, b.cy + b.h / 2]), ...frames.flatMap((f) => [f.y, f.y + f.h])];
+  const midX = xs.length ? (Math.min(...xs) + Math.max(...xs)) / 2 : 0, midY = ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : 0;
+  const out = new Map(boxes.map((b) => [b.id, { x: b.cx - midX, y: b.cy - midY }]));
+  out.frames = frames.map((f) => ({ id: f.id, title: f.title, x: f.x - midX, y: f.y - midY, w: f.w, h: f.h }));
+  return out;
+};
+
 //: A cap this board draws: a mark it has no drawing for (a board from
 //: before the triangle and diamond ends) falls back to the arrow.
 function wbMermaidCap(kind) {
@@ -1273,7 +1303,7 @@ function wbMermaidCap(kind) {
 //: tall as its text (a class with its members).
 async function wbMermaidPlaceNode(n, cx, cy, ink, look = null) {
   const dot = n.shape === "start" || n.shape === "end";
-  const w = dot ? 28 : 160, h = dot ? 28 : n.h || 70;
+  const w = dot ? 28 : n.w || 160, h = dot ? 28 : n.h || 70;
   const x = cx - w / 2, y = cy - h / 2;
   const r = 14;
   const d = n.shape === "diamond"
@@ -1299,8 +1329,9 @@ async function wbMermaidPlaceNode(n, cx, cy, ink, look = null) {
 //: between lifelines one row down from the last (a message to itself a
 //: loop out to the right), a note a sticky across the lifelines it is
 //: over, a block's opening line a text label. One undo step.
-async function wbImportMermaidSequence(source, at = wbViewCentre()) {
-  const seq = wbMermaidSequenceParse(source);
+//: `parsed` is a sequence the server already read (`{participants, steps, skipped}`, PlantUML's), drawn the same way.
+async function wbImportMermaidSequence(source, at = wbViewCentre(), parsed = null) {
+  const seq = parsed || wbMermaidSequenceParse(source);
   if (!seq.participants.length) {
     toast("No participants found. Start with a line like: sequenceDiagram", "info");
     return 0;
@@ -1579,6 +1610,9 @@ async function wbImportText(text) {
     return 0;
   }
   if (/<mxfile[\s>]|<mxGraphModel[\s>]|content="&lt;mxfile/i.test(text)) return wbImportDrawio(text);
+  //: GraphML, Miro JSON and PlantUML are read by the server (whiteboard-convert.js).
+  const other = wbFmtState.convert?.sniff(text);
+  if (other) return wbFmtState.convert.run({ format: other, content: text });
   const rows = /<svg[\s>]/i.test(text) ? wbBoardRowsFromSvg(text) : null;
   if (/<svg[\s>]/i.test(text) && !rows) {
     toast("That SVG was not exported from a board here, so it has no board inside it. Insert it as a picture instead.", "info");
@@ -1602,6 +1636,11 @@ onDomReady(() => {
       dialog.close();
       if (rows) await wbImportBoardRows(rows);
       else toast("That PNG has no board inside it. Export a PNG with Include a copy of the diagram on, or insert it as a picture.", "info");
+      return;
+    }
+    if (/\.emf$/i.test(chosen.name)) {
+      dialog.close();
+      await wbFmtState.convert.importEmf(chosen);
       return;
     }
     const text = await chosen.text();

@@ -1859,6 +1859,7 @@ TOPIC_META: dict[str, dict] = {
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
     "board-drawio": {"title": "draw.io files, CSV and libraries, and draw.io templates", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG; the Library panel menu"},
+    "board-interchange": {"title": "Rack layout, GraphML, Miro, PlantUML and EMF import, and the board configuration", "path": "A board, Arrange, Layout; Import"},
     "board-draw-io-keys": {"title": "Board keys from draw.io: edit data, select none, turn, resize, copy size and data", "path": "A board, Help, Keyboard shortcuts"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, Home, tidy as a tree, change a shape, link a shape, shrink text to fit, clear labels", "path": "A board, Arrange, View, or a selection's More"},
@@ -1971,7 +1972,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-interchange", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-effects", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),

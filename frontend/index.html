@@ -1139,9 +1139,9 @@
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
-    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file or CSV, or an SVG or PNG a board here exported.</p>
+    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid or PlantUML diagram, or choose a .mmd, .puml, GraphML, Miro JSON, an EMF, a draw.io file or CSV, or an SVG or PNG a board here exported.</p>
     <textarea id="wb-import-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid diagram" aria-describedby="wb-import-about" placeholder="flowchart TD&#10;  A[Start] --> B{Ready?}&#10;  B -->|yes| C[Ship it]"></textarea>
-    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.csv,.svg,.png,.drawio,.xml,text/plain,text/csv,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
+    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.csv,.svg,.png,.drawio,.xml,.graphml,.json,.puml,.plantuml,.pu,.emf,text/plain,text/csv,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost quiet small" id="wb-import-choose">Choose a file…</button>
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
@@ -7024,6 +7024,9 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="wb-menu-section" data-wb-submenu="ph:flow-arrow Diagram" data-wb-submenu-title="Build one, or bring in Mermaid, draw.io or a board SVG">
                 <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Diagram builder…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="import-diagram" data-wb-surface="board"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Mermaid, draw.io or board SVG…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="export-plantuml" data-wb-surface="board"><i class="ph ph-file-code ph-lead" aria-hidden="true"></i><span>Export as PlantUML</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="export-board-config" data-wb-surface="board"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Export board configuration</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="import-board-config" data-wb-surface="board"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Import board configuration</span></button>
               </div>
               <div class="wb-menu-section" data-wb-submenu="ph:shapes Shapes and icons" data-wb-submenu-title="The shape library, emoji and icons">
                 <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
@@ -7117,6 +7120,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-rack"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Rack</span></button>
             </div>
             <div class="wb-menu-section" data-wb-submenu="ph:tree-structure Tidy and connect" data-wb-submenu-title="Lay shapes out as a tree, join them or measure">
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
@@ -8089,6 +8093,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-rack"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Rack</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">This selection</span>
