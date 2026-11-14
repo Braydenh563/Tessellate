@@ -71,7 +71,7 @@ const onboardingRun = { index: 0, diagnosticsToken: 0 };
 
 // §27's first-run diagnostics: Ollama reachability and where the notebook
 // actually lives, both already computed for other UI (the AI-status pill,
-// Settings, Data) and just not surfaced before a first capture could fail
+// Settings, Import & export) and just not surfaced before a first capture could fail
 // silently into Uncategorised.
 async function loadOnboardingDiagnostics(forSlide) {
   const token = ++onboardingRun.diagnosticsToken;
@@ -155,7 +155,7 @@ function renderOnboardingActions(models, notebook) {
             refreshModelStatus();
           } catch (error) {
             setBusy(offer, false);
-            toast(error.message || "Couldn't start the download.", true);
+            toast(error.message || voiceLine("failed", { what: "start the download" }), true);
           }
         },
         false
@@ -218,7 +218,7 @@ function renderOnboardingActions(models, notebook) {
             );
           } catch (error) {
             event.target.disabled = false;
-            toast(error.message || "Couldn't add the example notes.", true);
+            toast(error.message || voiceLine("failed", { what: "add the example notes" }), true);
           }
         },
         false
@@ -273,10 +273,10 @@ onboardingRun.renderPrefs = async () => {
     select.addEventListener("change", async () => {
       const value = choice.key === "before_includes_day" ? select.value === "yes" : select.value;
       try {
-        const saved = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ [choice.key]: value }) });
+        const saved = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ [choice.key]: value }) });
         if (typeof prefsCache !== "undefined") prefsCache = saved;
       } catch (error) {
-        toast(error.message || "Couldn't save that setting.", true);
+        toast(error.message || voiceLine("failed", { what: "save that setting" }), true);
       }
     });
     const row = document.createElement("div");
@@ -373,7 +373,7 @@ function renderOnboardingSlide() {
 //: it fakes `/health`'s `desktop`). Now every surface names its slot in
 //: `FIRST_RUN_ORDER`, the queue shows the lowest slot waiting, and on a first
 //: run (no `onboardingDone`) nothing opens until the welcome has had its turn.
-const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "updates"];
+const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "backup", "updates"];
 //: How long the queue holds the others for a welcome that never arrives (its
 //: module failed to load): a stuck queue would hide the recovery offer for good.
 const FIRST_RUN_WELCOME_WAIT_MS = 15000;
@@ -565,6 +565,7 @@ async function maybeShowConsoleViewIntro() {
   try {
     prefsCache = await apiJson("/preferences", {
       method: "PUT",
+      noHistory: true,
       body: JSON.stringify({
         show_console_on_startup: wantsDevView,
         console_view_intro_seen: true,
@@ -574,6 +575,22 @@ async function maybeShowConsoleViewIntro() {
       `${wantsDevView ? "Dev" : "User"} view: starting from next launch.`
     );
   } catch (error) {
-    toast(error.message || "Couldn't save your console view choice.", true);
+    toast(error.message || voiceLine("failed", { what: "save your console view choice" }), true);
+  }
+  // 22.1.8: then the second backup folder, once per device, while none is set.
+  if (prefsCache.backup_copy_dir || prefs.get("backupFolderAsked", null)) return;
+  const wants = await firstRunTurn(() => confirmDialog(
+    "Keep a second copy of your backups?\n\nOn an external drive or synced " +
+      "folder, so one disk failing cannot take both. Change it any time in Settings, Import & export.",
+    { confirmLabel: "Choose a folder", cancelLabel: "Not now", danger: false }
+  ), "backup");
+  prefs.set("backupFolderAsked", "1");
+  const value = wants && (await promptDialog("Folder for the second copy"));
+  if (!value) return;
+  try {
+    prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ backup_copy_dir: value.trim() }) });
+    toast("Saved.");
+  } catch (error) {
+    toast(`${error.message} Set it in Settings, Import & export.`, "info");
   }
 }

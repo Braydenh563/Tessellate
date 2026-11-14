@@ -43,6 +43,8 @@ function lightboxZoomFactor(e) {
 
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
+  //: Where the focus was, so closing hands it back instead of dropping it on the page (L593).
+  const opener = document.activeElement;
   const overlay = document.createElement("div");
   overlay.className = "lightbox";
   // Not decoration: this is what puts the lightbox inside `activeOverlay()`'s
@@ -207,7 +209,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
           }
         );
       } catch (err) {
-        toast(err.message || "Couldn't delete that reading.", true);
+        toast(err.message || voiceLine("failed", { what: "delete that reading" }), true);
       } finally {
         self.disabled = false;
       }
@@ -1086,7 +1088,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
 
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
-  actionBtn("ph:download-simple", "Download this file", async () => {
+  const saveFileNow = async () => {
     try {
       const current = items[index];
       const href = await current.getUrl();
@@ -1107,9 +1109,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       a.click();
       a.remove();
     } catch {
-      toast("Couldn't save that file.", true);
+      toast(voiceLine("failed", { what: "save that file" }), true, { action: ["Try again", saveFileNow] });
     }
-  }, topActions);
+  };
+  actionBtn("ph:download-simple", "Download this file", saveFileNow, topActions);
   //: "Open in": the browser's own viewer, in a tab of its own, for a file
   //: with a url (a native document has none: its url is a download).
   const openTabBtn = actionBtn("ph:arrow-square-out", "Open in a new tab", async () => {
@@ -1254,10 +1257,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     button.disabled = true;
     try {
       const wasText = lightboxEditTarget.text;
-      const saved = await apiJson(lightboxEditTarget.url, {
-        method: "PUT",
-        body: JSON.stringify({ text: docEdit.value }),
-      });
+      //: `base_hash`: the text this edit opened on, so a save over a file another window changed meanwhile is
+      //: asked about (keep mine, take theirs), not silently written over it (WORLD_CLASS_PLAN 22.1 item 5).
+      let saved = null;
+      while (!saved) {
+        try {
+          saved = await apiJson(lightboxEditTarget.url, {
+            method: "PUT",
+            body: JSON.stringify({ text: docEdit.value, base_hash: lightboxEditTarget.hash }),
+          });
+        } catch (error) {
+          if (!isEditConflict(error)) throw error;
+          const current = error.detail.current;
+          const answer = await editConflictPrompt({ noun: "file", mine: docEdit.value, theirs: current.content || "" });
+          if (answer === "mine") lightboxEditTarget.hash = current.content_hash;
+          else {
+            if (answer === "theirs") {
+              lightboxEditTarget.text = current.content || "";
+              lightboxEditTarget.hash = current.content_hash;
+              docEdit.value = lightboxEditTarget.text;
+            }
+            return;
+          }
+        }
+      }
+      lightboxEditTarget.hash = saved.content_hash || null;
       pushRequestUndo("Edited a file's text", lightboxEditTarget.url, "PUT", { text: wasText }, { text: saved.text ?? docEdit.value }, () => lightboxLoadExtractedText?.());
       //: Re-rendered from what the server wrote back, not from what was
       //: typed. They are the same today; if they ever differ, a normalised
@@ -1271,7 +1295,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       //: A 409 is the server declining to overwrite (`docview.editability`),
       //: and its `detail` is written to be read by a person, so it is shown
       //: rather than replaced with a generic failure.
-      toast(error.message || "Couldn't save that file.", true);
+      toast(error.message || voiceLine("failed", { what: "save that file" }), true);
     } finally {
       button.disabled = false;
     }
@@ -1303,7 +1327,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       const extension = kind === "markdown" ? "md" : "txt";
       await saveFile(`${stem}.${extension}`, new Blob([text], { type: "text/plain" }));
     } catch (error) {
-      toast(error.message || "Couldn't export that text.", true);
+      toast(error.message || voiceLine("failed", { what: "export that text" }), true);
     } finally {
       button.disabled = false;
     }
@@ -1529,7 +1553,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               item.filename = updated.original_name;
               renderInfo(item, true);
             } catch (err) {
-              toast(err.message || "Couldn't rename that image.", true);
+              toast(err.message || voiceLine("failed", { what: "rename that image" }), true);
             }
           },
         },
@@ -1548,7 +1572,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               }
               show(index);
             } catch (err) {
-              toast(err.message || "Couldn't delete that image.", true);
+              toast(err.message || voiceLine("failed", { what: "delete that image" }), true);
             }
           },
         },
@@ -1825,7 +1849,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (item.kind && item.text != null) {
         editFileBtn.classList.add("hidden");
       } else if (payload.editable) {
-        lightboxEditTarget = { url: textUrl, text: body };
+        lightboxEditTarget = { url: textUrl, text: body, hash: payload.content_hash || null };
         editFileBtn.classList.remove("hidden");
       } else {
         editFileBtn.classList.add("hidden");
@@ -2161,7 +2185,12 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // The picture may have been paged away from while this was in flight.
     if (forIndex !== index) return;
 
-    const readings = lightboxReadingsFor(row);
+    //: The two stored readings come from `GET /files/readings` (F10), so the
+    //: panel and the search index agree; the row is the fallback if it fails.
+    const stored = row.id ? await apiJson(`/files/readings?source=upload&id=${row.id}`).catch(() => null) : null;
+    if (forIndex !== index) return;
+    const of = (kind) => (Array.isArray(stored) ? stored : []).find((r) => r.kind === kind && !r.page);
+    const readings = lightboxReadingsFor(stored ? { vision_ocr_text: of("vision")?.text, vision_ocr_model: of("vision")?.model, ocr_text: of("ocr")?.text } : row);
     if (!item.caption && row.caption) item.caption = row.caption;
     if (row.id && !item.metaId) item.metaId = row.id;
     if (!item.text) {
@@ -2322,6 +2351,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     overlay.remove();
     setFullscreenSurface("lightbox", false);
     document.removeEventListener("keydown", onKey, true);
+    if (opener?.isConnected && opener !== document.body) opener.focus({ preventScroll: true });
   };
   //: Typing keeps its keys: the find box and the file editor are inside this
   //: dialog, and an arrow there moves the caret, not the file.

@@ -103,6 +103,21 @@ def _link_counts(session: Session) -> dict[int, int]:
     return links
 
 
+def _score_values(entry: Entry, now: datetime, link_count: int) -> dict:
+    created = entry.created_at
+    if created is not None and created.tzinfo is None:
+        created = created.replace(tzinfo=timezone.utc)
+    age_days = (now - created).days if created is not None else 0
+    access_count = int(entry.access_count or 0)
+    return {
+        "score": score_for(age_days, link_count, access_count),
+        "age_days": max(0, age_days),
+        "link_count": link_count,
+        "access_count": access_count,
+        "computed_at": now,
+    }
+
+
 def compute_scores(session: Session) -> int:
     """Refresh every note's fading score. Returns how many rows were written.
 
@@ -135,22 +150,15 @@ def compute_scores(session: Session) -> int:
     fresh: list[dict] = []
     progress = jobruns.current("resurface")
     progress.say(f"Scoring {len(entries)} note{'' if len(entries) == 1 else 's'} for fading.")
+    stopped = False
     for index, entry in enumerate(entries):
         if index % 50 == 0:
+            #: Stop (Background jobs) is honoured every 50 notes; what was scored is kept.
+            if index and "resurface" in jobruns.stop_asked:
+                stopped = True
+                break
             progress.step(index, len(entries), "Scoring notes")
-        created = entry.created_at
-        if created is not None and created.tzinfo is None:
-            created = created.replace(tzinfo=timezone.utc)
-        age_days = (now - created).days if created is not None else 0
-        link_count = links.get(entry.id, 0)
-        access_count = int(entry.access_count or 0)
-        values = {
-            "score": score_for(age_days, link_count, access_count),
-            "age_days": max(0, age_days),
-            "link_count": link_count,
-            "access_count": access_count,
-            "computed_at": now,
-        }
+        values = _score_values(entry, now, links.get(entry.id, 0))
         row = existing.get(entry.id)
         if row is None:
             fresh.append({"entry_id": entry.id, **values})
@@ -163,7 +171,7 @@ def compute_scores(session: Session) -> int:
     # from the dead in a panel.
     live = {entry.id for entry in entries}
     for entry_id, row in existing.items():
-        if entry_id not in live:
+        if entry_id not in live and not stopped:  # a stopped run has not read every note
             session.delete(row)
     session.flush()
     _upsert_scores(session, fresh)

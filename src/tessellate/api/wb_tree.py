@@ -192,7 +192,7 @@ def _object_data(obj: WhiteboardObject) -> dict:
 #: hands them to the canvas, the two XML exports carry them out, and the two
 #: XML imports read them back. The seven that arrived with the strip and the
 #: rings were invisible to the exports for exactly as long as this list did
-#: not exist, and §12.0 says a feature that cannot round-trip is not built.
+#: not exist, and §12.0 says a feature that cannot round-trip is not shipped.
 #: `color` is not here because a node dict has carried it as a key of its own
 #: since long before the strip existed; the exports read both.
 MAP_STYLE_FIELDS = (

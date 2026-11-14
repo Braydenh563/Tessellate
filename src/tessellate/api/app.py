@@ -17,7 +17,6 @@ import logging
 import os
 import re
 import sys
-import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -47,6 +46,7 @@ from tessellate.api import (
     routes_bookmarks,
     routes_categories,
     routes_chat,
+    routes_chat_meta,
     routes_conversations,
     routes_debug,
     routes_documents,
@@ -86,6 +86,7 @@ from tessellate.api import (
     routes_files,
     routes_files_ocr,
     routes_files_readings,
+    routes_reading_bin,
     routes_graph,
     routes_help,
     routes_insights,
@@ -725,6 +726,7 @@ def _startup_maintenance() -> None:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
             ("_check_data_folder", "Check the data folder"),
+            ("_mend_category_names", "Mend category names saved with a broken bar"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
             ("_backup_if_due", "Back up if today's is due"),
@@ -743,6 +745,17 @@ def _startup_maintenance() -> None:
                 run.say(f"That step did not finish: {words.lower()}. The server log has the detail.")
             run.step(index + 1)
         run.result = "at start"
+
+
+def _mend_category_names() -> None:
+    """Category names saved with a broken bar for "&" are renamed once (L803)."""
+    from tessellate.entry.manager_categories import mend_broken_bar_names
+
+    session = deps.get_db().session()
+    try:
+        mend_broken_bar_names(session)
+    finally:
+        session.close()
 
 
 def _read_note_dates() -> None:
@@ -834,11 +847,7 @@ def _start_searxng_if_asked() -> None:
         config = deps.get_config()
         if not config.get_preference("searxng_autostart", False):
             return
-        threading.Thread(
-            target=lambda: searxng_manager.start(config.data_dir),
-            name="searxng-autostart",
-            daemon=True,
-        ).start()
+        jobs.thread("searxng-autostart", lambda: searxng_manager.start(config.data_dir))
     except Exception:  # noqa: BLE001  # a failed autostart must never block startup
         logging.getLogger("tessellate.startup").warning(
             "SearXNG autostart didn't run this start", exc_info=True
@@ -852,7 +861,7 @@ def _warm_routes(app) -> None:
     router under one lock: about 0.9 s here for ~240 paths, so the browser's
     boot burst (`/models/status` among them) all waited on it, 3.9 s on the
     owner's machine. One in-process `/health` takes that cost while the lock
-    screen is still open. On the pool's thread Jobs, not the event loop; a
+    screen is showing. On the pool's thread Jobs, not the event loop; a
     failure only means the first real request pays as before. Skipped under
     pytest, where every test app would pay a second for nothing.
     """
@@ -1327,8 +1336,7 @@ def _start_services() -> Path:
     #: owner's lag log): the search model's load, the speller, the day's
     #: housekeeping and the queued jobs start after the unlock answer has
     #: gone (core/afterunlock.py), never beside it.
-    if _has_password():
-        afterunlock.arm()
+    afterunlock.arm(_has_password())
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)
@@ -1533,6 +1541,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_properties.router, LOCKED),
     (routes_property_table.router, LOCKED),
     (routes_chat.router, LOCKED),
+    (routes_chat_meta.router, LOCKED),  # its side routes (L624)
     (routes_ask_history.router, LOCKED),
     (routes_models.router, LOCKED),
     (routes_settings.router, LOCKED),
@@ -1566,6 +1575,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_files.router, LOCKED),
     (routes_files_ocr.router, LOCKED),  # the OCR routes of files and media (K24)
     (routes_files_readings.router, LOCKED),  # the reading-side routes of files and media (K24)
+    (routes_reading_bin.router, LOCKED),  # bin, restore and purge a reading (split from the readings routes)
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the
     # media cookie, on their own gate rather than widening `locked` for every
@@ -1860,6 +1870,11 @@ def create_app() -> FastAPI:
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
         # line in the log.
+        # The registry first (core/background.py): every named worker, the
+        # reminder notifier among them, is signalled before anything waits.
+        from tessellate.core import background
+
+        background.stop_all()
         jobs.stop_all()
         # The thread Jobs (`jobs.thread`): their watchers name how they
         # stop, and quitting is when to ask.

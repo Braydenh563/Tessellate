@@ -115,6 +115,30 @@ def _rarity(n: int, rare: float, few: float, some: float) -> float:
     return rare if n <= 2 else few if n <= 5 else some
 
 
+def _entity_groups(notes: dict[int, NoteFacts], mentions: list[tuple[str, int]]) -> list[tuple[list[int], str]]:
+    """The known notes each named thing appears in, with the name as first
+    written; a thing in one note or in more than `ENTITY_HUB` ties nothing."""
+    by_entity: dict[str, list[int]] = defaultdict(list)
+    names: dict[str, str] = {}
+    for name, note_id in mentions:
+        if note_id in notes:
+            folded = name.strip().casefold()
+            names.setdefault(folded, name.strip())
+            by_entity[folded].append(note_id)
+    return [(m, names[f]) for f, m in by_entity.items() if 2 <= len(set(m)) <= ENTITY_HUB]
+
+
+def _neighbour_groups(notes: dict[int, NoteFacts], edges: list[tuple[int, int]]) -> list[tuple[int, set[int]]]:
+    """Each known note with the known notes it links to, when that is between
+    two and `NEIGHBOUR_HUB` of them."""
+    neighbours: dict[int, set[int]] = defaultdict(set)
+    for a, b in edges:
+        if a in notes and b in notes and a != b:
+            neighbours[a].add(b)
+            neighbours[b].add(a)
+    return [(hub, m) for hub, m in neighbours.items() if 2 <= len(m) <= NEIGHBOUR_HUB]
+
+
 def _collect_shared(
     notes: dict[int, NoteFacts],
     edges: list[tuple[int, int]],
@@ -134,28 +158,10 @@ def _collect_shared(
                 if (a, b) not in banned:
                     table[(a, b)].append((weight, thing))
 
-    by_entity: dict[str, list[int]] = defaultdict(list)
-    names: dict[str, str] = {}
-    for name, note_id in mentions:
-        if note_id in notes:
-            folded = name.strip().casefold()
-            names.setdefault(folded, name.strip())
-            by_entity[folded].append(note_id)
-    for folded, members in by_entity.items():
-        n = len(set(members))
-        if 2 <= n <= ENTITY_HUB:
-            pairs_of(members, "entities", _rarity(n, 0.5, 0.35, 0.2), names[folded])
-
-    neighbours: dict[int, set[int]] = defaultdict(set)
-    for a, b in edges:
-        if a in notes and b in notes and a != b:
-            neighbours[a].add(b)
-            neighbours[b].add(a)
-    for hub, members in neighbours.items():
-        n = len(members)
-        if 2 <= n <= NEIGHBOUR_HUB:
-            pairs_of(list(members), "neighbours", _rarity(n, 0.35, 0.25, 0.12), notes[hub].label)
-
+    for members, thing in _entity_groups(notes, mentions):
+        pairs_of(members, "entities", _rarity(len(set(members)), 0.5, 0.35, 0.2), thing)
+    for hub, members in _neighbour_groups(notes, edges):
+        pairs_of(list(members), "neighbours", _rarity(len(members), 0.35, 0.25, 0.12), notes[hub].label)
     by_tag: dict[str, list[int]] = defaultdict(list)
     for note_id, facts in notes.items():
         for tag in facts.tags:

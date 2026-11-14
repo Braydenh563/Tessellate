@@ -92,7 +92,7 @@ async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
   const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
   if (!loaded.every(Boolean) || !window.SketchPad) {
-    toast("Couldn't open the sketch pad.", true);
+    toast(voiceLine("failed", { what: "open the sketch pad" }), true, { action: ["Try again", () => openSketch(options)] });
     return;
   }
   $("sketch-overlay").classList.remove("hidden");
@@ -309,9 +309,7 @@ function speakText(text, button = null) {
   //: Kept on this device (Settings, Read aloud); anything else reads at normal speed (E71).
   utterance.rate = prefs.number("read-aloud-rate", 1, { min: 0.75, max: 1.5 });
   //: The voice named in Settings, Read aloud (L333), when this browser still has it.
-  const named = prefs.get("read-aloud-voice-name", "");
-  const picked = named && speechSynthesis.getVoices().find((v) => v.name === named);
-  if (picked) utterance.voice = picked;
+  utterance.voice = speechSynthesis.getVoices().find((v) => v.name === prefs.get("read-aloud-voice-name", "")) || null;
   if (button) {
     const rest = button.innerHTML;
     const paint = (on) => {

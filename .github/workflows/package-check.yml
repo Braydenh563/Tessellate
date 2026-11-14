@@ -118,6 +118,21 @@ jobs:
           if [ -n "$written" ]; then echo "FAIL the app wrote into its own folder:"; echo "$written"; failed=1; fi
           exit $failed
 
+      # L-world-class-72: how long a person waits. Seconds from launching the
+      # frozen exe to the first 200 from /health, written to the job summary.
+      # No threshold yet (numbers first); the step never fails the job.
+      - name: Record the frozen app's startup time
+        shell: bash
+        env:
+          TESSELLATE_DATA_DIR: ${{ runner.temp }}/mm-startup
+          TESSELLATE_PORT: "8767"
+        run: |
+          "dist/Tessellate/Tessellate.exe" > "$RUNNER_TEMP/startup-stdio.log" 2>&1 &
+          pid=$!
+          python packaging/startup_time.py --base http://127.0.0.1:8767 \
+            --summary "$GITHUB_STEP_SUMMARY" || true
+          kill $pid || true
+
       # What the wizard's optional-packages page runs after copying the app
       # (installer.iss [Run]). The frozen exe has no pip of its own; it must
       # find the runner's Python (setup-python put one on PATH), install

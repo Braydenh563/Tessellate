@@ -82,7 +82,7 @@ const finderState = { corrected: "", notices: [], page: 1, more: false, timer: n
 //: function already knows a board opens its board and not the empty note the
 //: board is stored in, which is exactly the mistake a fresh copy would make.
 const FINDER_OPEN = {
-  note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
+  note: (hit) => { switchTab("notes"); flashEntry(hit.id, { terms: finderState.terms() }); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
   board: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "board", id: hit.id })),
   map: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "map", id: hit.id })),
@@ -98,10 +98,23 @@ const FINDER_OPEN = {
       showNotesSection("ask");
       viewAskHistoryTurn(hit.id);
     } else {
+      //: L562: the index holds one row per chat, so the hit cannot say which turn matched. The chat opens, then
+      //: the first bubble holding a typed word is rung and scrolled to (`flashRevealed`), as a note hit marks its words.
       switchTab("chat");
-      openConversation(hit.id);
+      openConversation(hit.id).then(() => {
+        const terms = finderState.terms().map((term) => term.toLowerCase());
+        const bubbles = [...(document.getElementById("chat-messages")?.children || [])];
+        const turn = terms.length && bubbles.find((bubble) => terms.some((term) => (bubble.textContent || "").toLowerCase().includes(term)));
+        if (turn) flashRevealed(turn);
+      });
     }
   },
+};
+
+//: The query's words and phrases, as the Notes filter would mark them.
+finderState.terms = () => {
+  const query = parseNoteQuery(finderQuery);
+  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 };
 
 function finderOverlay() { return document.getElementById("finder-overlay"); }
@@ -826,3 +839,22 @@ function renderSavedFinds() {
   }
 }
 renderSavedFinds();
+
+//: L592: the Notes sidebar's field. Enter hands its words to the finder, Escape clears it. The notes
+//: surface is built lazily, so the field is wired when it appears (or now, if it already has).
+//: A statement, not a named function: the shared scope is capped (test_global_scope_ratchet).
+onSurface("notes", () => {
+  const box = document.getElementById("sidebar-find");
+  if (!box || box.dataset.wired) return;
+  box.dataset.wired = "1";
+  box.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      openFinder(box.value.trim(), { kind: "" });
+      box.value = "";
+    } else if (event.key === "Escape" && box.value) {
+      event.stopPropagation();
+      box.value = "";
+    }
+  });
+});

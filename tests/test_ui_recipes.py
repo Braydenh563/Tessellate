@@ -3133,6 +3133,7 @@ PILL_CONTROLS = {
     ".chat-dock-controls .chat-dock-more>button": "the chat composer's row is pills",
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
+    ".chat-dock-controls .seg>button": "the same segments in the strip's family rule (L-world-class-250)",
     ".chat-context-pill": "the context meter in the chat composer's row",
     ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
     ".minimised-pill-x": "the round x inside that pill",
@@ -4129,9 +4130,9 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     that ignores it."""
     js = {path.name: path.read_text(encoding="utf-8") for path in JS}
     #: Atlas's drawing calls belong to the decider, atlas.js and avatars.js
-    #: (their own files), the welcome card's large greeting and Settings' find
-    #: row (a result's icon, not a reply head).
-    allowed = {"atlas.js", "avatars.js", "chat-agent.js", "settings-wiring.js", "onboarding.js", "settings-panes.js"}
+    #: (their own files), the welcome card's large greeting, Settings' find
+    #: row (a result's icon, not a reply head) and the palette row's face (`paletteRowParts`, app-features.js).
+    allowed = {"atlas.js", "avatars.js", "chat-agent.js", "settings-wiring.js", "onboarding.js", "settings-panes.js", "app-features.js"}
     strays = [
         name
         for name, text in js.items()
@@ -5692,7 +5693,7 @@ def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
     used = {p.name for p in JS if "noteNamePlain(" in p.read_text(encoding="utf-8")}
-    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):
+    for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js"):  # note-cards.js name site moved to entry-menu.js (L611)
         assert name in used, name
 
 
@@ -5805,6 +5806,35 @@ def test_a_bar_has_one_select_one_filter_trigger_and_one_view_order() -> None:
     for seg in re.findall(r'<div class="seg[^"]*"[^>]*>(.*?)</div>', html, re.S):
         if "ph-rows" in seg and "ph-squares-four" in seg:
             assert seg.index("ph-rows") < seg.index("ph-squares-four"), "a view switch is list, then grid"
+
+
+def test_the_chat_strip_is_one_pill_family() -> None:
+    """DESIGN.md, Bar controls (L-world-class-250): Chat, the busiest screen,
+    counted 12 control recipes, three of them pills in one row (the chips,
+    the chosen Ask | Agent segment on a fill with no edge, the other on
+    none) and the Ask Atlas offer on a hairline with no ground. Each segment
+    is a chip now, the well behind them stepped back, and the offer rests on
+    the chip's ground and lifts to the chip's accent."""
+    rules: dict[str, str] = {}
+    for sel, body in _rules(_css_all()):
+        key = " ".join(sel.split())
+        rules[key] = rules.get(key, "") + body
+    family = next(
+        (body for sel, body in rules.items()
+         if ".chat-dock-controls>.chat-tool-group>button" in sel and ".chat-dock-controls .seg>button" in sel
+         and "border-radius" in body),
+        None,
+    )
+    assert family, "the strip's family rule must name the mode segments beside the chips"
+    for decl in ("border-radius: var(--radius-pill)", "border: 1px solid transparent", "background: var(--chip-bg)"):
+        assert decl in family, decl
+    assert "background: none" in rules.get(".chat-dock-controls .seg", ""), "the well behind the segments draws no second ground"
+    unchosen = rules.get('.chat-dock-controls .seg>button:not(.active, [aria-pressed="true"])', "")
+    assert "background: var(--chip-bg)" in unchosen, "an unchosen segment rests on the chip ground"
+    offer = rules.get(".help-atlas > .atlas-suggest", "")
+    assert "background: var(--chip-bg)" in offer and "border: 1px solid transparent" in offer
+    lift = rules.get(".help-atlas > .atlas-suggest:hover, .help-atlas > .atlas-suggest:focus-visible", "")
+    assert "border-color: var(--accent)" in lift and "background: var(--accent-soft)" in lift
 
 
 def test_the_documents_assistant_is_one_composer_at_one_height() -> None:
@@ -6413,6 +6443,7 @@ PANEL_FIXED_JS = {
     "lightbox-view.js": "the image viewer",
     "settings-controls.js": "an anchored control overlay",
     "whiteboard-map-more.js": "a topic's audio player, an anchored popover",
+    "whiteboard-map-marks.js": "the affinity sort's confirm card (head from `dialogHead`), fixed like every confirm",
     "companion-settings.js": "a help body (the habits row's popover)",
     "settings-health.js": "a help body (the data folder check's popover)",
     "hello-unlock.js": "a help body (Unlock with Windows Hello's popover in Settings)",
@@ -7892,3 +7923,63 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_confirmations_decline_is_the_quiet_text_action_not_a_bordered_ghost() -> None:
+    """L527: Cancel beside a tool-confirm's filled Confirm was a second bordered box."""
+    css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    m = re.search(r"\.tool-confirm \.row > button\.ghost \{([^}]*)\}", css)
+    assert m, "the confirmation's decline recipe is gone"
+    body = m.group(1)
+    assert re.search(r"border:\s*0", body) and "background: transparent" in body and "color: var(--accent-text)" in body
+    assert re.search(r"\.tool-confirm \.row > button\.ghost:is\(:hover, :focus-visible\):not\(:disabled\) \{\s*background: var\(--hover-veil\)", css)
+
+
+def test_a_scroll_rows_arrows_are_for_a_pointer_not_touch() -> None:
+    """On touch the swipe is the control: an arrow sat over the last chip that shows and covered
+    its middle at 390 (L-world-class-35, touch.js), so `hover: none` hides the arrows."""
+    shell = (ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8")
+    assert re.search(r"@media \(hover: none\) \{\s*button\.scroll-row-arrow\.icon-only \{\s*display: none;", shell)
+
+
+def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
+    """L-world-class-36: #doc-statusbar was 80px over at 320 to 820 (overlap.js)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    m = re.search(r"\.doc-statusbar > #doc-caret,\s*\.doc-statusbar > \.doc-statusbar-button \{([^}]*)\}", css)
+    assert m and "min-width: 0" in m.group(1) and "overflow: hidden" in m.group(1)
+    assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
+    assert re.search(r"\.doc-statusbar-button > span \{[^}]*text-overflow: ellipsis", css)
+    assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.doc-statusbar > \.doc-statusbar-button \{\s*flex-shrink: 1;", css)
+
+
+def test_the_optional_package_notice_keeps_its_action_whole() -> None:
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
+    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+
+
+def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:
+    """L-world-class-36: the 24px "+N" chip's overhang ran 10px past its box at 390."""
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    assert re.search(r"\.entry-meta\.note-meta > \.note-meta-more \{\s*min-width: var\(--target-min\);", css)
+
+
+def test_a_reminders_phone_time_may_wrap_instead_of_overflowing() -> None:
+    """L-world-class-36: the nowrap time ran 6px past its column at 320."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"#reminder-groups \.entry-meta > \.entry-date \{\s*grid-area: when;\s*white-space: normal;", css)
+
+
+def test_ask_as_of_slider_is_one_value_with_the_day():
+    """H8, L-world-class-91: Ask's time travel has a slider beside the day picker, the recipe "A day picked on a
+    slider": days back from today, drawn right to left, typeable (`data-unit`), and kept in step with the day input."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.search(r'<input type="range" id="ask-as-of-slider"[^>]*data-unit=" days back"', html)
+    assert html.index('id="ask-as-of"') < html.index('id="ask-as-of-slider"') < html.index('id="ask-as-of-clear"')
+    css = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "css").glob("*.css"))
+    assert re.search(r"\.ask-as-of-slider \{[^}]*direction: rtl", css)
+    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    assert '$("ask-as-of-slider").addEventListener("input"' in wiring
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A day picked on a slider" in design

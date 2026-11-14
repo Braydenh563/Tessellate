@@ -92,7 +92,7 @@ def _transcribe_upload(
     suffix = Path(file.filename or "").suffix.lower()
     suffix = suffix if re.fullmatch(r"\.[a-z0-9]{1,7}", suffix) else ".webm"
     # delete=True keeps the file open under this handle for the `with` block's
-    # whole lifetime: harmless on POSIX, where a second handle can still open
+    # whole lifetime: harmless on POSIX, where a second handle can open
     # the same path, but Windows locks a file exclusively while any handle on
     # it is open. faster-whisper's own reader opening that path for decoding
     # then failed with "Permission denied" on every Windows machine, which

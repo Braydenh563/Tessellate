@@ -20,6 +20,20 @@ function tagAddChipKind(entry, options) {
   return !tags && !(entry.suggested_tags || []).length ? "add" : "more";
 }
 
+//: How many notes carry a tag, counted from the notes already loaded (no request), for a
+//: tag chip's hover. Rebuilt only when the list is replaced or its length moves. A property
+//: of `tagAddChipKind`, not a new global (tests/test_global_scope_ratchet.py).
+tagAddChipKind.carrying = (tag) => {
+  const memo = tagAddChipKind;
+  if (memo.source !== allEntries || memo.size !== allEntries.length) {
+    memo.counts = new Map();
+    for (const note of allEntries) for (const name of new Set(note.tags || [])) memo.counts.set(name, (memo.counts.get(name) || 0) + 1);
+    memo.source = allEntries;
+    memo.size = allEntries.length;
+  }
+  return memo.counts.get(tag) || 0;
+};
+
 //: **A meeting card shows what the meeting settled, not its raw headings**
 //: (libr-1011 row 1238: `## Agenda` and `## Notes` printed as text). The four
 //: sections of `entry/meetings.py` read for one line each: the first agenda
@@ -30,6 +44,8 @@ const MEETING_GLANCE_SECTIONS = {
   decisions: "decisions", decided: "decisions",
   "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", todo: "actions", "next steps": "actions",
 };
+
+const MEETING_EMPTY_ITEM = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]*)?(?:\[[ xX]\][ \t]*)?$/;
 
 function meetingGlance(entry) {
   const types = (entry?.properties?.type || []).map((value) => String(value).toLowerCase());
@@ -42,17 +58,34 @@ function meetingGlance(entry) {
       current = MEETING_GLANCE_SECTIONS[heading[1].toLowerCase()] || "";
       continue;
     }
-    if (current && sections[current] && line.trim()) sections[current].push(line);
+    //: A bare "- " or "- [ ] " is a list's blank placeholder, not a decision or an action.
+    if (current && sections[current] && !MEETING_EMPTY_ITEM.test(line)) sections[current].push(line);
   }
   const plain = (line) => line.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+(?:\[[ xX]\][ \t]*)?/, "").trim();
   const rows = [];
+  //: When and who from the note's own properties (L662), above what was settled.
+  const when = String(entry.properties?.date?.[0] || "").trim();
+  const day = when ? new Date(when.replace(" ", "T")) : null;
+  if (when) {
+    const said = day && !Number.isNaN(day.getTime())
+      ? day.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) + (/\d:\d/.test(when) ? `, ${day.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}` : "")
+      : when;
+    rows.push({ label: "When", text: said });
+  }
+  const whenRow = rows.length;
+  const who = (entry.properties?.attendees || []).map((name) => String(name).trim()).filter(Boolean);
+  const withWho = who.length > 3 ? `${who.slice(0, 3).join(", ")} and ${who.length - 3} more` : who.join(", ");
+  //: One line for both, so a card grows by one row, not two.
+  if (who.length && whenRow) rows[0].text += ` · with ${withWho}`;
+  else if (who.length) rows.push({ label: "With", text: withWho });
+  const framed = rows.length;
   if (sections.agenda.length) rows.push({ label: "Agenda", text: plain(sections.agenda[0]) + (sections.agenda.length > 1 ? ` (+${sections.agenda.length - 1})` : "") });
   if (sections.decisions.length) rows.push({ label: "Decisions", text: `${sections.decisions.length}: ${plain(sections.decisions[0])}` });
   const open = sections.actions.filter((line) => /^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+\[ \]/.test(line));
   const done = sections.actions.filter((line) => /\[[xX]\]/.test(line)).length;
   if (open.length) rows.push({ label: "Open actions", text: `${open.length}: ${plain(open[0])}` });
   else if (done) rows.push({ label: "Actions", text: `all ${done} done` });
-  return rows.length ? rows : [{ label: "", text: "Nothing written yet." }];
+  return rows.length > framed ? rows : [...rows, { label: "", text: "Nothing written yet." }];
 }
 
 //: **Copy a note's text** (INBOX 1525 review). A clipped list row holds 300 characters, so the whole text is read first,
@@ -115,7 +148,7 @@ function renderInlineAction(entry) {
         try {
           if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
         } catch (error) {
-          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          if (!error.isLockout) toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
           return;
         }
         inlineAction = null;
@@ -397,7 +430,7 @@ function entryItem(entry, options = {}) {
   const fillContent = () => renderNoteText(
     content,
     content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
-    searchHighlightTerms(),
+    searchHighlightTerms(entry.id),
     //: Heading hashes are source, not words (dogfood item 18). Run on the
     //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
     (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
@@ -428,13 +461,19 @@ function entryItem(entry, options = {}) {
     const contentBefore = whole.content;
     const contentAfter = contentBefore.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
-      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter }) });
+      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter, base_hash: whole.content_hash }) });
       pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: contentAfter });
       await refreshEntries([entry.id]);
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Couldn't remove that image.", true);
+      //: Changed in another window since the card read it: nothing was written; say so and let the list catch up.
+      if (isEditConflict(err)) {
+        toast("This note changed in another window. Nothing was removed; try again.", "info");
+        refreshEntries([entry.id]).catch(() => {});
+        return;
+      }
+      toast(err.message || voiceLine("failed", { what: "remove that image" }), true);
     }
   });
   if (glance) {
@@ -456,7 +495,7 @@ function entryItem(entry, options = {}) {
       box.appendChild(line);
     }
     li.classList.add("meeting-card");
-    li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms().length > 0);
+    li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms(entry.id).length > 0);
     li.append(box, content);
     const more = document.createElement("button");
     more.type = "button";
@@ -526,8 +565,13 @@ function entryItem(entry, options = {}) {
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.
   if (entry.filing_state === "pending") {
-    const filing = chip("ph:spin Filing…", "filing");
-    filing.title = "Atlas is deciding where this note goes. It's already saved.";
+    //: L-world-class-6: the first note waits on the search model loading,
+    //: and "Filing…" for those seconds read as an AI filing it.
+    const warming = modelStatus && modelStatus.embedding_ready === false;
+    const filing = chip(warming ? "ph:spin Search model loading…" : "ph:spin Filing…", "filing");
+    filing.title = warming
+      ? "The search model is loading so this note can be filed. It's already saved."
+      : "Atlas is deciding where this note goes. It's already saved.";
     meta.appendChild(filing);
     //: Any pending card is watched, not only the one just saved: a note
     //: left filing when the app closed, or listed after a reload, would
@@ -639,7 +683,8 @@ function entryItem(entry, options = {}) {
       })
       : chip(tag, "tag hashtag");
     if (options.actions) {
-      tagChip.title = `Show every note tagged #${tag}. Right-click for more.`;
+      const carrying = tagAddChipKind.carrying(tag);
+      tagChip.title = `Show every note tagged #${tag}${carrying ? ` (${carrying === 1 ? "1 note carries" : `${carrying} notes carry`} it)` : ""}. Right-click for more.`;
       tagChip.setAttribute("aria-haspopup", "menu");
       //: The chip's own menu (INBOX 447 (4)): Show notes, Rename, Remove from
       //: this note. Right-click and the menu keys; a plain click still filters.
@@ -854,7 +899,7 @@ function entryItem(entry, options = {}) {
     const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
     //: UX-02: a clock said with the day, shown as written.
     const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
-      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })
       : "";
     //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
     //: "month of Nov 30" read as a date).
@@ -1379,8 +1424,9 @@ function notesSpanSpaces() {
 }
 
 // The words worth highlighting in a result, operators aren't text to find.
-function searchHighlightTerms() {
-  if (!noteSearch) return [];
+//: With no filter typed, the note a finder result opened keeps the finder's words marked.
+function searchHighlightTerms(id = null) {
+  if (!noteSearch) return id !== null && noteEngine.opened.id === id ? noteEngine.opened.terms : [];
   const query = parseNoteQuery(noteSearch);
   return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 }
@@ -1448,6 +1494,6 @@ async function publishDraft(entry) {
     await refreshEntries([entry.id]);
     toast("Published.");
   } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
+    toast(error.message || voiceLine("failed", { what: "publish that draft" }), true);
   }
 }

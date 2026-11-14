@@ -22,7 +22,7 @@ import json
 
 from sqlalchemy import select
 
-from tessellate.core import events
+from tessellate.core import events, events_redo
 from tessellate.core.database import AuditLog, Entry
 from tessellate.entry import manager
 
@@ -276,3 +276,138 @@ def test_private_text_under_the_current_key_is_put_back(session, monkeypatch):
     session.commit()
     session.refresh(entry)
     assert crypto.decrypt(key, entry.content) == "before the AI"
+
+
+def test_a_redo_puts_the_ais_change_back_and_a_second_undo_works_l805(session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies", tags=["pond"])
+    done = events.undo(session, AI, since_id=mark, apply=True)
+    session.commit()
+    assert len(done["restored"]) == 1
+    assert manager.category_name_for(session, entry) == "Garden"
+
+    plan = events_redo.redo(session, done["restored"], apply=False)
+    assert [item["status"] for item in plan["items"]] == ["redo"]
+    assert manager.category_name_for(session, entry) == "Garden"  # a dry run writes nothing
+
+    back = events_redo.redo(session, done["restored"], apply=True)
+    session.commit()
+    session.refresh(entry)
+    assert back["redone"] == 1
+    assert manager.category_name_for(session, entry) == "Hobbies"
+    assert json.loads(entry.tags) == ["pond"]
+
+    twice = events_redo.redo(session, done["restored"], apply=True)
+    assert [item["status"] for item in twice["items"]] == ["already redone"]
+
+    # The redo made the AI's events live again: the same undo runs once more,
+    # and the undo/redo pair is not read as the person's edit in between.
+    again = events.undo(session, AI, since_id=mark, apply=True)
+    session.commit()
+    session.refresh(entry)
+    assert again["undone"] == 1
+    assert manager.category_name_for(session, entry) == "Garden"
+
+
+def test_a_redo_leaves_a_note_the_person_changed_since_l805(session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies")
+    done = events.undo(session, AI, since_id=mark, apply=True)
+    manager.update_entry(session, entry, content="Mine now")
+    session.commit()
+    back = events_redo.redo(session, done["restored"], apply=True)
+    assert [item["status"] for item in back["items"]] == ["changed since"]
+    assert back["redone"] == 0
+
+
+def test_the_redo_route_and_the_feed_name_what_it_took_back_l805(client, session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies")
+    undone = client.post("/events/undo", json={"actor": AI, "since": mark, "dry_run": False}).json()
+    assert undone["undone"] == 1
+    redone = client.post("/events/redo", json={"restored": undone["restored"]}).json()
+    assert redone["redone"] == 1
+    feed = client.get(f"/events?since={mark}&include_quiet=true").json()["items"]
+    assert [i["redid"] for i in feed if i["action"] == "redone"] == [undone["restored"]]
+
+
+def _undone_note(session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies")
+    done = events.undo(session, AI, since_id=mark, apply=True)
+    session.commit()
+    return entry, done["restored"]
+
+
+def _redone_events(session) -> int:
+    return len(session.scalars(select(AuditLog.id).where(AuditLog.action == "redone")).all())
+
+
+def test_a_redo_leaves_a_binned_or_private_note_alone(session):
+    """Review 5899353774 (2): a redo wrote a binned note, and a private one's
+    words would land in the `redone` event's `changed` in the clear."""
+    binned, binned_ids = _undone_note(session)
+    binned.is_deleted = True
+    sealed, sealed_ids = _undone_note(session)
+    sealed.is_private = True
+    session.commit()
+    back = events_redo.redo(session, binned_ids + sealed_ids, apply=True)
+    assert [item["status"] for item in back["items"]] == ["binned", "private"]
+    assert back["redone"] == 0 and _redone_events(session) == 0
+    assert manager.category_name_for(session, sealed) == "Garden"
+
+
+def test_two_redos_at_once_apply_once(session):
+    """Review 5899353774 (1): both read "not yet redone" before either wrote."""
+    import threading
+
+    from sqlalchemy.orm import Session as OrmSession
+
+    _, restored = _undone_note(session)
+    bind = session.get_bind()
+    gate = threading.Barrier(2)
+    results = []
+
+    def press():
+        with OrmSession(bind) as own:
+            gate.wait()
+            results.append(events_redo.redo(own, restored, apply=True)["redone"])
+
+    threads = [threading.Thread(target=press) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+    assert sorted(results) == [0, 1]
+    session.expire_all()
+    assert _redone_events(session) == 1
+
+
+def test_a_redo_reads_the_later_edits_in_one_query_whatever_the_count(session):
+    """Review 5899353774 (3): one query per `restored` row became one in all."""
+    from sqlalchemy import event
+
+    restored = []
+    for _ in range(3):
+        restored += _undone_note(session)[1]
+    seen = []
+
+    def count(conn, cursor, statement, *args):
+        if statement.lstrip().upper().startswith("SELECT") and "audit_log" in statement.lower():
+            seen.append(statement)
+
+    engine = session.get_bind()
+    counts = []
+    for ids in (restored[:1], restored):
+        seen.clear()
+        event.listen(engine, "before_cursor_execute", count)
+        try:
+            events_redo.redo(session, ids, apply=False)
+        finally:
+            event.remove(engine, "before_cursor_execute", count)
+        counts.append(len(seen))
+    assert counts[0] == counts[1]

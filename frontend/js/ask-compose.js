@@ -374,7 +374,7 @@ async function readWebPage(fold, list, reader, source, { back: withBack = true }
     link.rel = "noopener noreferrer";
     link.textContent = page.url || source.url;
     where.appendChild(link);
-    const at = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const at = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
     const facts = document.createElement("p");
     facts.className = "library-file-meta web-reader-facts";
     const said = [page.domain || sourceHost(page.url || source.url)];
@@ -689,7 +689,7 @@ async function askKeepAsDocument() {
       openDocument(doc.id);
     }, { go: { open: "doc", id: doc.id } });
   } catch (error) {
-    toast(error.message || "Couldn't save that document.", true);
+    toast(error.message || voiceLine("failed", { what: "save that document" }), true);
   }
 }
 
@@ -700,7 +700,7 @@ async function askKeepAsMap() {
   const board = await apiJson("/whiteboard/maps/from-notes", {
     method: "POST",
     body: JSON.stringify({ name, note_ids: ids }),
-  }).catch((error) => toast(error.message || "Couldn't make the map.", true));
+  }).catch((error) => toast(error.message || voiceLine("failed", { what: "make the map" }), true));
   if (!board?.id) return;
   pushUndo(
     "Made a mind map from an answer",

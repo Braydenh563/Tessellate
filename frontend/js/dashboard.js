@@ -62,6 +62,8 @@ const DASH_WIDGETS = {
   activity: { title: "ph:pulse Recent activity", description: "What changed in your notebook lately, and whether you, Atlas or a skill changed it.", render: renderActivityWidget },
   //: WORLD_CLASS_PLAN I1's morning card over `GET /night/latest`.
   night: { title: "ph:moon-stars While you were away", description: "What Atlas worked out reading your notes on its own, with each finding to open or dismiss.", render: renderNightWidget },
+  //: L591: the backup schedule and its last success, off by default like the other status cards (dash-day.js).
+  backups: { title: "ph:shield-check Backups", description: "When the last backup was taken, whether the daily one worked, and when the next is due.", render: renderBackupsWidget },
   "most-used": { title: "ph:flame Most used", description: "The notes you open and ask about most often.", render: renderMostUsedWidget },
   //: WORLD_CLASS_PLAN section 17 rows 5 and 1: the owner's "most-accessed
   //: information" for this month (`GET /most-opened`, a day-by-day open log),
@@ -120,7 +122,7 @@ const DASH_WIDGETS = {
   //: isn't in this object.)
   //: Brief 89 (statistics row 2): Screen Time's weekly report, drawn by
   //: statistics.js, which also holds the page it opens.
-  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week.", render: (body) => renderWeekWidget(body) },
+  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week, and one feature you have not used lately.", render: (body) => renderWeekWidget(body) },
   pace: { title: "ph:chart-line-up Writing pace", description: "How many words you have written each day this fortnight.", render: renderPaceWidget },
 };
 
@@ -159,7 +161,7 @@ const DASH_DEFAULT_SHOWN = [
 //: offered in the picker rather than appended to every existing dashboard.
 //: Applied only while a saved layout has never seen the widget: once anybody
 //: adds it, or saves a layout with it hidden, the saved layout decides.
-const DASH_OPT_IN = ["activity", "night", "week"];
+const DASH_OPT_IN = ["activity", "night", "week", "backups"];
 
 //: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
 //: calculator, converter, stopwatch etc"). A widget draws the tool itself, not
@@ -216,10 +218,20 @@ function dashLayout() {
 }
 
 async function saveDashLayout(layout) {
+  const before = prefsCache?.dashboard_layout || { order: [], hidden: [], wide: [], sizes: {} };
+  const was = prefsCache;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
+    noHistory: true,
     body: JSON.stringify({ dashboard_layout: layout }),
   }).catch(() => prefsCache);
+  //: The dashboard's layout is a step on the stack (L696): Ctrl+Z puts it back.
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(layout)) {
+    pushRequestUndo("Dashboard layout", "/preferences", "PUT", { dashboard_layout: before }, { dashboard_layout: layout }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderDashboard();
+    });
+  }
 }
 
 // Add/remove and wide/narrow, factored out of the inline "Edit layout" grid
@@ -397,6 +409,7 @@ function paintDashClock() {
   timeEl.textContent = now.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
+    ...clockOptions(),
   });
   dateEl.textContent = now.toLocaleDateString([], {
     weekday: "long",
@@ -609,7 +622,7 @@ function renderDashboardGreeting() {
 //: is a token `renderDashGlance` turns into the press, not a closure.
 function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new Date() } = {}) {
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
   const byDue = (a, b) => new Date(a.due_at) - new Date(b.due_at);
   const open = (reminders || []).filter((r) => r && !r.done).sort(byDue);
   const today = open.filter((r) => new Date(r.due_at) < endOfDay);
@@ -1395,7 +1408,15 @@ function quickLinkButton(link, tint = "") {
 }
 
 async function saveQuickAccess(ids) {
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  const before = Array.isArray(prefsCache?.dashboard_quick_access) ? prefsCache.dashboard_quick_access : [];
+  const was = prefsCache;
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(ids)) {
+    pushRequestUndo("Quick access", "/preferences", "PUT", { dashboard_quick_access: before }, { dashboard_quick_access: ids }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 function quickTints() {
@@ -1404,7 +1425,15 @@ function quickTints() {
 }
 
 async function saveQuickTints(tints) {
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  const before = quickTints();
+  const was = prefsCache;
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(tints)) {
+    pushRequestUndo("Quick access colours", "/preferences", "PUT", { dashboard_quick_tints: before }, { dashboard_quick_tints: tints }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 //: True while the row is being arranged: the editing view and its picker are
@@ -2893,7 +2922,7 @@ async function renderRemindersWidget(body) {
     //: The day and the time a person would say, never a machine timestamp
     //: with seconds ("9/24/2026, 1:22:17 PM", measured); the relative phrase
     //: ("in 23 hours") is the tooltip.
-    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() });
     //: The thing to do, then when, on a line of its own in the muted rank:
     //: "Submit IT assignment: Thu, Sep 24, 1:22 PM" as one run-on line made
     //: the time read as part of the sentence.
@@ -3184,6 +3213,8 @@ function paintFadedNotes(body, items) {
     list.appendChild(card);
   }
   body.appendChild(list);
+  //: I9: what Rediscover was told to hide, and why, is in What it learned.
+  body.appendChild(openSettingsModal.learnedLink(""));
 }
 
 async function renderRandomShuffle(body) {
@@ -3324,7 +3355,7 @@ async function renderTagCloudWidget(body) {
 // kept per day in this browser.
 //: `unsaved`: seconds focused since the last save to today's count, written
 //: on every pause and end rather than every second.
-let focusTimer = { remaining: 0, total: 25 * 60, running: false, handle: null, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
+let focusTimer = { remaining: 0, total: 25 * 60, running: false, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
 const FOCUS_PRESETS = [5, 15, 25, 50, 60];
 const FOCUS_BREAK_MIN = 5;
 const FOCUS_SVG = "http://www.w3.org/2000/svg";
@@ -3463,14 +3494,13 @@ function startFocusTimer() {
   if (focusTimer.remaining <= 0) focusTimer.remaining = focusTimer.total;
   focusTimer.running = true;
   askNotificationPermission();
-  focusTimer.handle = setInterval(focusTimerTick, 1000);
+  secondTick.add(focusTimerTick);
   paintFocusTimer();
 }
 
 function stopFocusTimer() {
   focusTimer.running = false;
-  if (focusTimer.handle) clearInterval(focusTimer.handle);
-  focusTimer.handle = null;
+  secondTick.remove(focusTimerTick);
   if (focusTimer.unsaved) {
     focusTodaySeconds(focusTimer.unsaved);
     focusTimer.unsaved = 0;
@@ -3756,6 +3786,9 @@ const NIGHT_KIND_WORDS = {
   question: ["open question", "open questions"],
   tension: ["claim that disagrees with another", "claims that disagree with others"],
   answered: ["question answered later", "questions answered later"],
+  date: ["date it names", "dates it names"],
+  entity: ["name it mentions", "names it mentions"],
+  duplicate: ["note that repeats another", "notes that repeat others"],
 };
 const NIGHT_PAIR_LEAD = { tension: "Disagrees with", answered: "Answers" };
 const NIGHT_PAGE = 5;
@@ -3900,7 +3933,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ actor, since }) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", { what: "read what would be undone" }), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -3915,15 +3948,33 @@ async function undoActorFrom(actor, since, byId, rerender) {
   );
   if (!ok) return;
   try {
-    const done = await apiJson("/events/undo", {
-      method: "POST",
-      body: JSON.stringify({ actor, since, dry_run: false }),
-    });
+    const body = JSON.stringify({ actor, since, dry_run: false });
+    const done = await apiJson("/events/undo", { method: "POST", body });
+    //: The server's redo (L805): Redo re-applies the reversed events, and the
+    //: next Undo reverses them again, so this joins the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
+    const settle = async () => {
+      await refreshEntries(ids).catch(() => {});
+      rerender();
+    };
+    if (done.restored?.length) {
+      pushUndo(
+        `Undid what ${name} changed`,
+        async () => {
+          await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
+          await settle();
+        },
+        async () => {
+          done.restored = (await apiJson("/events/undo", { method: "POST", body })).restored;
+          await settle();
+        }
+      );
+    }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
-    await loadEntries().catch(() => {});
-    rerender();
+    await settle();
   } catch (error) {
-    toast(error.message || `Couldn't undo what ${name} changed.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo what ${name} changed` }), true);
   }
 }
 
@@ -3934,8 +3985,10 @@ async function undoActorFrom(actor, since, byId, rerender) {
 //: has put everything back instead of staying to say "Already undone".
 function activityUndoStarts(items) {
   const undone = new Set();
+  //: A redo names the undo it took back (`redid`): that undo no longer counts.
+  const redone = new Set(items.flatMap((item) => (item.action === "redone" && Array.isArray(item.redid) ? item.redid : [])));
   for (const item of items) {
-    if (item.action === "restored" && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
+    if (item.action === "restored" && !redone.has(item.id) && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
   }
   const from = new Map();
   for (const item of items) {
@@ -4191,7 +4244,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that decision.", true);
+      toast(error.message || voiceLine("failed", { what: "save that decision" }), true);
     }
   };
   actions.append(

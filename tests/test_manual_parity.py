@@ -755,3 +755,14 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+
+
+def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_keeps_its_own():
+    """L-world-class-76 (INBOX 1851): only a board, a map and a document keep their undo across a
+    reload (`undo-store.js`); the app's own stack starts empty, and Help says so."""
+    from tessellate.ai import help_chat
+
+    body = next(t for t in help_chat.HELP_TOPICS if t["id"] == "undo-bin")["body"]
+    assert "lasts for the session" in body and "after a reload or a restart it starts empty" in body
+    assert "a board, a mind map and a document keep their last hundred steps" in body
+    assert "undo after reload" in help_chat._KEYWORDS_ADD_GUIDE["undo-bin"]

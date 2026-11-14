@@ -96,6 +96,11 @@
 .link-suggestion-actions > .link-suggestion-add-reason:not(:hover, :focus-visible) {
   color: var(--muted);
 }
+/* The sentence a link type was read from, on the reason line of the grid. */
+.link-suggestion-context {
+  grid-area: reason;
+  margin: 0;
+}
 /* The reason field, the small buttons' height (INBOX 110/111). */
 .link-suggestion-reason {
   grid-area: reason;
@@ -169,6 +174,14 @@
 .entity-date {
   margin: 0 0 var(--space-1);
   font-size: var(--text-sm);
+}
+/* B4: a row's quiet second line (where a task is, a reminder's day), and a
+   month of the timeline with its newest notes under it. */
+.entity-row-sub {
+  font-size: var(--text-xs);
+}
+.entity-month + .entity-month {
+  margin-top: var(--space-3);
 }
 .entity-count {
   margin-inline-start: auto;

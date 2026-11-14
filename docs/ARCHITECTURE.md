@@ -1001,7 +1001,7 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   hands off), timestamps, and soft-delete (`is_deleted` / `deleted_at`).
   Also on an entry: `suggested_tags` and `discarded_tags` (JSON lists):
   the tags filing offered, shown on the card as "+ tag", and the ones a
-  person refused so no later pass offers them again on that note (`_keep_suggestions`
+  person refused so no pass after it offers them again on that note (`_keep_suggestions`
   in `routes_entries.py` fills the first at filing: the model's tag pass when
   the model filed the note, otherwise `ai/lexical_filing.suggest_tags`, which
   only ever offers tags the person already uses); and `edited_at`, which moves only when a person changes the
@@ -1130,6 +1130,15 @@ properties and types) → `e5a1c8f3b7d2` (locked board items) → `f3c7a9e1d5b8`
 (the bin for documents and reminders) → `c2f8a6d4e9b1` (`entry_opens`) →
 **`b4e8d2a6f1c9`** (`entries.map_topic`, the head). `tests/test_alembic_baseline.py`
 holds it; the stamp step is skipped under pytest.
+
+**Which schema path a change takes (owner 2026-11-12, LEDGER L794: keep both):**
+a new nullable column or one with a constant default goes through the additive
+migrator (`_add_missing_columns`) and needs no migration; a new table comes from
+`create_all`; an index goes in `_ensure_indexes`; anything that renames, drops,
+retypes, adds a constraint or rewrites data gets an Alembic revision in
+`migrations/versions/`, chained onto the single head. A one-off data mend that
+is idempotent may instead run at startup in `DatabaseManager` (as
+`_drop_orphan_links` and `_mend_broken_bar_names` do).
 
 ### Why SQLite holds the notes (a decision, with its limits)
 
@@ -1739,7 +1748,7 @@ not an import string, and uvicorn cannot fork that); running `uvicorn` against
 the factory directly can, and is the case the check exists for.
 
 More workers is also not the lever for speed here. The slow paths are Ollama
-and embedding. A deferred filing (`defer_filing`) runs both off the request
+and embedding. A background filing (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
 

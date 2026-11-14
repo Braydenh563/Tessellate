@@ -472,10 +472,8 @@ globalThis.mdList = {
     const n = cur ? cur.count : 0;
     //: Any count, not only to 59 (laglist-1108): the next numeral is built the way `docLists` builds it.
     let roman = "";
-    for (let rest = n + 1, i = 0; rest > 0; i += 1) {
-      const [r, v] = [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]][i];
-      while (rest >= v) { roman += r; rest -= v; }
-    }
+    let rest = n + 1;
+    for (const [r, v] of [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]]) for (; rest >= v; rest -= v) roman += r;
     const run = (cur?.key === "ol-a-dot" && token === String.fromCharCode(97 + n) && "a") || (cur?.key === "ol-i-dot" && token === roman && "i");
     const start = token === "a" || token === "i" ? token : "";
     if (!run && (!start || (cur && indent.length > cur.indent.length))) return null;
@@ -709,7 +707,7 @@ function mdEmbedElement(name, depth) {
   } else {
     body.textContent = `Nothing called \u{201C}${name}\u{201D} yet.`;
     //: A recording or a file the index has not loaded yet is swapped in when it arrives (documents-embeds.js).
-    window.docEmbedFill?.(body, name, { keep: true });
+    (window.docEmbedFill || noteRecording)(body, name, { keep: true });
   }
   box.appendChild(body);
   return box;
@@ -780,83 +778,9 @@ function boardEmbedElement(ref) {
     }
     walk.then(() => fill(true));
   };
-  fill(false);
+  //: The card's fill (`boardEmbedFill`, board-embed.js) is lazy, for the boot gzip.
+  ensureModule("boardEmbed").then((ok) => ok && fill(false));
   return box;
-}
-
-function boardEmbedFill(box, ref, final) {
-  const board = boardEmbedTarget(ref);
-  box.replaceChildren();
-  box.classList.toggle("board-embed-gone", !board && final);
-
-  if (!board && !final) {
-    //: **Not the tombstone.** "We have not looked yet" and "it is gone" are
-    //: different facts, and printing the second while the first is true is
-    //: how a working board gets reported as deleted.
-    const waiting = document.createElement("p");
-    waiting.className = "note-embed-head";
-    setLabel(waiting, `${ref.map ? "ph:tree-structure" : "ph:squares-four"} ${ref.title || "Loading\u2026"}`);
-    box.appendChild(waiting);
-    return null;
-  }
-
-  if (!board) {
-    //: **A tombstone, not a disappearance** (the decision recorded in
-    //: DOCUMENTS_PLAN's "Decisions made"). A board deleted after it was put
-    //: in a note would otherwise take a paragraph of that note with it, and
-    //: the reader would never learn that anything had been there: content
-    //: that vanishes silently is worse than content that says it is gone.
-    //: The title the reference carries is exactly what makes this sentence
-    //: worth reading.
-    const head = document.createElement("p");
-    head.className = "note-embed-head";
-    setLabel(head, "ph:trash Removed");
-    const what = document.createElement("p");
-    what.className = "board-embed-title";
-    what.textContent = ref.title || (ref.map ? "A mind map" : "A whiteboard");
-    const why = document.createElement("p");
-    why.className = "library-file-meta board-embed-meta";
-    why.textContent = "This board is no longer in your notebook.";
-    box.append(head, what, why);
-    return null;
-  }
-
-  const isMap = board.type !== "board";
-  const title = board.title || ref.title || (isMap ? "Untitled map" : "Untitled board");
-  const open = document.createElement("button");
-  open.type = "button";
-  open.className = "board-embed-open";
-  open.title = `Open \u201c${title}\u201d`;
-
-  const head = document.createElement("span");
-  head.className = "note-embed-head";
-  setLabel(head, `${isMap ? "ph:tree-structure" : "ph:squares-four"} ${isMap ? "Mind map" : "Whiteboard"}`);
-
-  const body = document.createElement("span");
-  body.className = "board-embed-body";
-  const picture = mapPreview(board, { size: "card" });
-  picture.classList.add("board-embed-picture");
-  const text = document.createElement("span");
-  text.className = "board-embed-text";
-  const name = document.createElement("span");
-  name.className = "board-embed-title";
-  name.textContent = title;
-  //: The facts line recipe (DESIGN.md), the same sentence the Library card
-  //: and the dashboard row carry under the same picture.
-  const meta = document.createElement("span");
-  meta.className = "library-file-meta board-embed-meta";
-  meta.textContent = mapCountLabel(board);
-  text.append(name, meta);
-  body.append(picture, text);
-  open.append(head, body);
-  open.addEventListener("click", (event) => {
-    //: The note card underneath is itself clickable (it expands), so a press
-    //: meant for the board must not also open the note.
-    event.stopPropagation();
-    openWhiteboardBoard(board.id);
-  });
-  box.appendChild(open);
-  return board;
 }
 
 //: The reference a note carries for one board, the one place the text form is

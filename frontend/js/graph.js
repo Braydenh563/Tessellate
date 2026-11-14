@@ -2723,7 +2723,7 @@ function openGraphLinkPeek(edge, event, nodes) {
       try {
         await apiJson(`/entries/${sourceId}/links/${edge.id}`, { method: "PATCH", body: JSON.stringify({ two_way: next }) });
       } catch (error) {
-        toast(error.message || "Couldn't change the link's direction.", true);
+        toast(error.message || voiceLine("failed", { what: "change the link's direction" }), true);
         return;
       }
       pushRequestUndo(
@@ -2834,7 +2834,14 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(textarea);
 
   const returnFocus = document.activeElement;
+  //: Escape closes it as every dialog here does (tests/test_escape_closes.py).
+  const onKey = (event) => {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    close();
+  };
   const close = () => {
+    document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     returnFocus?.focus?.();
   };
@@ -2890,6 +2897,7 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, () => close());
+  document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
   textarea.focus();
 }
@@ -2922,10 +2930,7 @@ function openGraphLinkPanel(edge, nodes) {
 //: same thing about the other direction), so a panel that reads only
 //: `entry.attachments` is blind to the commonest kind of image note there is.
 //:
-//: Only this app's own stored files, the same rule `noteFirstImage` keeps: an
-//: external `https://` image is blocked by the CSP (`img-src 'self' data:
-//: blob:`), so drawing one would guarantee a broken frame.
-const GRAPH_POPUP_MEDIA_REF = /(!?)\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g;
+//: Only this app's own stored files: `ownFileLinks` (att-chip.js) is the one rule.
 
 function graphPopupMediaRefs(entry) {
   const refs = [];
@@ -2933,11 +2938,10 @@ function graphPopupMediaRefs(entry) {
   //: An attachment's own url is `/files/<id>`, and a note can both carry the
   //: file and link to it in its text. Same url, one card.
   for (const attachment of entry.attachments || []) seen.add(`/files/${attachment.id}`);
-  for (const match of (entry.content || "").matchAll(GRAPH_POPUP_MEDIA_REF)) {
-    const url = match[3];
+  for (const [, bang, alt, url] of ownFileLinks(entry.content)) {
     if (seen.has(url)) continue;
     seen.add(url);
-    refs.push({ image: match[1] === "!", name: match[2] || url.split("/").pop(), url });
+    refs.push({ image: !!bang, name: alt || url.split("/").pop(), url });
   }
   return refs;
 }
@@ -2949,11 +2953,6 @@ function graphPopupMediaRefs(entry) {
 //: thumbnail" without opening it. `formatFileSize` returns "" for an unknown
 //: or zero size, which is why nothing is appended in that case rather than a
 //: claim the panel cannot make.
-//: The attachment card states it itself now (INBOX 440 (2)), given the size.
-function graphPopupFileCard(name, url, size) {
-  return fileCard(name, url, size);
-}
-
 function renderGraphPopupMedia(entry) {
   const box = $("graph-popup-media");
   box.replaceChildren();
@@ -2966,7 +2965,7 @@ function renderGraphPopupMedia(entry) {
   if (!all.length && !refFiles.length) return;
   for (const attachment of files) {
     box.appendChild(
-      graphPopupFileCard(
+      fileCard(
         attachment.filename || attachment.name || "",
         attachment.url || `/files/${attachment.id}`,
         attachment.size
@@ -3294,9 +3293,9 @@ function graphPopupDragEnd(ev) {
 //: cannot.
 //: A note (or a document's node) found and framed on the map: the half of
 //: `showNoteInGraph` (note-cards.js) that runs once the bundle is here.
-async function graphShowNote(id, { document: isDocument = false } = {}) {
-  if (isDocument) {
-    const box = $("graph-documents");
+async function graphShowNote(id, { document: isDocument = false, maps = false } = {}) {
+  if (isDocument || maps) {
+    const box = isDocument ? $("graph-documents") : $("graph-maps");
     if (box && !box.checked) {
       box.checked = true;
       box.dispatchEvent(new Event("change", { bubbles: true }));
@@ -3996,7 +3995,7 @@ async function exportGraphPng() {
     await saveFile("graph.png", blob);
     toast("Graph exported as PNG.");
   } catch (error) {
-    toast(error.message || "Couldn't export the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "export the graph" }), true);
   }
 }
 
@@ -5481,7 +5480,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
       () => graphUnpinAllNow()
     );
   } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "unpin the graph" }), true);
   }
 });
 

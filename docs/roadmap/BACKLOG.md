@@ -62,22 +62,7 @@ support bundle** (an allowlist zip of the log buffer, scrubbed
   pre-selected in a dialog. A test asserts no caller writes to
   `navigator.clipboard` directly any more, since a helper only some callers
   use leaves the rest quietly lying.
-- ~~**Export a support bundle.**~~ **done**, see below; it is an allowlist,
-  not a denylist. One button that zips the log buffer,
-  `preferences.json` with anything sensitive stripped, and Ollama/model
-  status (`/models/status`) into a file the user attaches to a bug report,
-  asked for indirectly ("an interface for managing the application… errors
-  etc") and echoed by the outside review's "support bundle" suggestion.
-  Everything in it is already local and already visible somewhere in the app;
-  this only collects it. No new telemetry: the file is written to disk and
-  the user chooses whether to send it, which is the difference between this
-  and the outside review's other suggestion (opt-in crash reporting),
-  rejected in §30.
-- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
-  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
-  discards rather than losing the fact silently), and the frontend renders it
-  - "N earlier records … the oldest record still kept is from …", whenever
-  `stats().dropped` is nonzero.
+- The support bundle and the dropped-records count are built: HISTORY.md, "Moved from the plans, 2026-11-14 (BACKLOG size cap)".
 
 ---
 
@@ -4415,6 +4400,81 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+## World-class plan: the checks that need a real device or a real model (2026-11-12)
+
+Each row is the one step left of a built item; everything that runs here is built and tested.
+
+- **L-world-class-72 (moved from LEDGER 2026-11-14):** Profile the Windows frozen build's startup on a real machine. Check: on the reference laptop (cold and warm, with and without antivirus) time launch to window and to /health; compare with the CI summary line. Recommendation: collect five CI runs first, then set a threshold at 1.5 times their median and profile only if the laptop is over it.
+- **L-world-class-116 (moved from LEDGER 2026-11-14):** Capture on the real desktop window and real clipboards. Check: on Windows and macOS, paste text, an image and a file into the capture bar from the real clipboard, kill the app mid-save, relaunch; each note is there once. Recommendation: run it with the next desktop build; the crash-between-commit-and-answer case is tested here.
+- **L968 (moved from LEDGER 2026-11-14):** Restart now through start.bat on a real Windows desktop. Check: from a source install press Restart now; the console runs start.bat's steps, the window returns, and User view (hidden console) stays hidden. Recommendation: run it once with the next Windows build; the spawn and the bat's pid forwarding are tested with a fake spawn.
+- **L-world-class-117 (moved from LEDGER 2026-11-14):** Chrome_WidgetWin_0 error 1411 on Restart. Check: on a Windows desktop (packaged exe and source), press Restart now five times; the window comes back each time and `restart.log`/the console show no crash. Recommendation: run it with the next Windows build; the fix is covered by a fake window, the real error text is the owner's report.
+- **L-world-class-100 (moved from LEDGER 2026-11-14):** A real screen-reader pass. Check: NVDA on Windows and VoiceOver on macOS through lock, capture, the notes list, a note, Settings and chat; every control is announced by name and role, focus never lands on a hidden element. Recommendation: run it once before a release; the axe sweep (0 findings at 1440) covers what can run here.
+- **L-world-class-134 (moved from LEDGER 2026-11-14):** Live captions on real hardware. Check: a ten-minute captioned recording on the reference laptop (lag under 2 s, CPU under 60%), then the Windows, macOS and aarch64 wheels each caption one clip. Recommendation: wheels first, the laptop run after; the fake-engine tests cover the pipeline.
+- **L950 (moved from LEDGER 2026-11-14):** Packaged captions helper. Check: with release assets published, the per-platform pin downloads, its hash matches, and the supervisor restarts a killed whisper-server on the Windows desktop. Recommendation: build it with the first release that ships captions; it needs the assets to exist.
+- **L971 (moved from LEDGER 2026-11-14):** Boot forced layout, canvas pointerout, most-accessed render (1667i). Check: a Performance trace from the owner's browser at boot on the dashboard; the three long tasks named in w34-fix2-1111.md are gone or under 50 ms. Recommendation: the owner records one trace; no reproduction here at 4x CPU.
+- **L976 (moved from LEDGER 2026-11-14):** Text metrics and the wrap sweep beyond Chromium. Check: the wrap sweep in Firefox and WebKit at 360, 768 and 1440; no clipped label, no overflow. Recommendation: run it when Firefox and WebKit builds are installed (only Chromium is here).
+- **L982 (moved from LEDGER 2026-11-14):** Settings panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms (INBOX 1726). Check: the app's lag reporter on the owner's Windows machine, the same three actions; each under 100 ms. Recommendation: treat as stale unless it recurs; it does not reproduce off Windows at 4x CPU, and settings-panes.js:1104 returns early on a plain key.
+- **L-world-class-109 (moved from LEDGER 2026-11-14):** Back opened Settings (421 j). Check: the owner's exact clicks before Back opened Settings; replay them in the sweep and assert Back returns to the previous tab. Recommendation: keep the history stack as built; not reproduced on any path the sweeps drive.
+- **L-world-class-112 (moved from LEDGER 2026-11-14):** Atlas's anatomy, rounds 3 and 4 (427 1). Check: the owner looks at Atlas at rest and talking, light and dark, and says keep or redo. Recommendation: keep rounds 3 and 4 as built; this is taste, so no change is made on the owner's behalf.
+- **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
+- **L915 (moved from LEDGER 2026-11-12):** Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
+- **L918 (moved from LEDGER 2026-11-12):** Run CHAT evals gate on a 3B model. From OPEN.md:616. Evidence: Needs real-model run (pytest -m evals, scratchpad/llama-dev.sh)
+- **L919 (moved from LEDGER 2026-11-12):** Verify iPhone profile install, Windows network category and macOS readers on real machines. From OPEN.md:577. Evidence: Needs real iPhone, Windows and macOS machines; parsed from fixtures only Also L588 (a Windows machine): The merge of skills, personas and templates on Settings import is built and tested (routes_settings.py `_MERGED_LISTS`, tests/test_settings_rows.py). The check left: in the Windows desktop app, press Export settings and Import settings, and see the native save dialog open on the folder chosen in Settings, and that an imported file keeps this notebook's other personas, skills and templates. Needs a Windows machine; unverified here.
+- **L920 (moved from LEDGER 2026-11-12):** Run provider checks against a real model instead of the fake transport. From OPEN.md:612. Evidence: Standing caveat CLAUDE.md s4; needs real model
+- **L921 (moved from LEDGER 2026-11-12):** Verify real built-in embedding model load, Ollama pulls and dark theme for new rows. From OPEN.md:619; OPEN.md:3540. Evidence: No sentence-transformers here (CLAUDE.md s7); needs real model
+- **L922 (moved from LEDGER 2026-11-12):** Verify real Ollama keep_alive 0 and /api/ps, desktop window and WebKit. From OPEN.md:629; OPEN.md:3671. Evidence: ollama_client.py:573 stop via keep_alive 0 built; needs real Ollama
+- **L923 (moved from LEDGER 2026-11-12):** Reproduce the Windows grammar worker failure on the owner's machine. From OPEN.md:690. Evidence: Needs the owner's Windows machine; failure now names its reason
+- **L925 (moved from LEDGER 2026-11-12):** Upgrade a real pre-Brief-7 database to verify migrations. From OPEN.md:1772; OPEN.md:3358. Evidence: Needs the owner's real year-old database file
+- **L926 (moved from LEDGER 2026-11-12):** Measure privacy receipt on real destinations and status ring under auto motion on hardware. From OPEN.md:2515. Evidence: Needs real destination and motion measure on hardware
+- **L927 (moved from LEDGER 2026-11-12):** Measure the learning loop on a real large notebook. From OPEN.md:3363. Evidence: Needs a real large notebook
+- **L928 (moved from LEDGER 2026-11-12):** Re-measure cosine numbers with a real 384-dim embedding backend. From OPEN.md:3368. Evidence: Needs real 384-dim backend via llama runner
+- **L929 (moved from LEDGER 2026-11-12):** Verify the another-device notice on the recovery card with a second device and screen reader. From OPEN.md:3527. Evidence: Needs a second device on LAN and screen reader; sweep server binds loopback only. Also L958 (OPEN.md:617), the same check.
+- **L930 (moved from LEDGER 2026-11-12):** Verify LAN bar and LAN security on a real phone (wifi drop, hotspot). From OPEN.md:3883; OPEN.md:3884. Evidence: Needs real phone and network
+- **L931 (moved from LEDGER 2026-11-12):** Run Windows DPAPI and macOS Keychain paths in core/pinstore.py on real machines. From OPEN.md:3893. Evidence: core/pinstore.py:10,158 implements CryptProtectData/Keychain; needs the owner's Windows desktop and a Mac to run.
+- **L932 (moved from LEDGER 2026-11-12):** Verify grounded tag path with a real small model (pytest -m evals) and dark theme. From OPEN.md:594; OPEN.md:2638; OPEN.md:3621. Evidence: Needs a real model
+- **L934 (moved from LEDGER 2026-11-12):** Test touch drag from the Library on real touch hardware. From OPEN.md:1639. Evidence: Needs real touch hardware; headless drag shows no ghost
+- **L935 (moved from LEDGER 2026-11-12):** Verify PDF zoom dock, trackpad pinch, touch and Windows webview. From OPEN.md:3857. Evidence: Needs PDF renderer, real trackpad, touch, Windows
+- **L936 (moved from LEDGER 2026-11-12):** Verify real Whisper segments, model rewording and speaker naming in page. From OPEN.md:593; OPEN.md:2625. Evidence: Needs real Whisper and model
+- **L937 (moved from LEDGER 2026-11-12):** Verify real Whisper, mic, whisper-server and Safari/Firefox capture. From OPEN.md:598; OPEN.md:600; OPEN.md:2742; OPEN.md:2768. Evidence: Real mic and browsers; fake transport only
+- **L938 (moved from LEDGER 2026-11-12):** Drive Summarise 503, OCR pinch zoom and phone board/map paths on touch hardware. From OPEN.md:615; OPEN.md:3456. Evidence: Pinch zoom and phone path need touch hardware
+- **L939 (moved from LEDGER 2026-11-12):** Verify Summarise with a real small model and transcription with real faster-whisper. From OPEN.md:625; OPEN.md:1648; OPEN.md:3565. Evidence: Needs real small model and transcription engine
+- **L940 (moved from LEDGER 2026-11-12):** Verify voice enhancement on a real voice with a human rater. From OPEN.md:641. Evidence: Only synthetic tones via fake mic; needs real voice and human rater
+- **L941 (moved from LEDGER 2026-11-12):** Verify webview, phone tour, voice, OCR, clipper, update check, restore on owner's Windows desktop and phone. From OPEN.md:754. Evidence: Needs owner's Windows desktop, mic, network and a phone
+- **L942 (moved from LEDGER 2026-11-12):** See PDF page picture drawn with the render extra and a real reading. From OPEN.md:1482; OPEN.md:3395. Evidence: pdfpages.available() false in this sandbox; needs owner's machine with the render extra
+- **L943 (moved from LEDGER 2026-11-12):** Listen to the captions chime by ear. From OPEN.md:1988. Evidence: Needs human ears; W34 unverifiable
+- **L944 (moved from LEDGER 2026-11-12):** Measure live captions latency on a real whisper-server and tune STEP_MS, LENGTH_MS, audio_ctx. From OPEN.md:1627; OPEN.md:2764. Evidence: scratchpad/captions_audio.py exists; needs a real whisper-server on the reference laptop, not the fake transport
+- **L945 (moved from LEDGER 2026-11-12):** Read audio_ctx accuracy on more sentences with real whisper. From OPEN.md:1628; OPEN.md:2765. Evidence: Needs real whisper runs and a human read of more sentences
+- **L946 (moved from LEDGER 2026-11-12):** Verify ocr-reading with real Tesseract or vision model. From OPEN.md:1635; OPEN.md:3049. Evidence: Reads-ahead is deliberate; real-reader check needs a real model/OCR install
+- **L947 (moved from LEDGER 2026-11-12):** Run RapidOCR and Tesseract for real on owner's machine. From OPEN.md:1640; OPEN.md:3533. Evidence: Needs a real install and a real read on the owner's machine; tests monkeypatch
+- **L948 (moved from LEDGER 2026-11-12):** Drive live translated captions with a real model. From OPEN.md:2748. Evidence: Built against fake translator; needs device and model
+- **L949 (moved from LEDGER 2026-11-12):** Verify under-1 s sheet, real network install, WebView2 and Safari. From OPEN.md:2751. Evidence: Needs Windows desktop and Safari Also L955 (OPEN.md:599), the same check.
+- **L951 (moved from LEDGER 2026-11-12):** Open package bundle exports in Word/LibreOffice and run real pip. From OPEN.md:3135. Evidence: Needs Word or LibreOffice and real pip run
+- **L952 (moved from LEDGER 2026-11-12):** Run the Windows installer, upgrade from a pre-rename release and .bat fallbacks on a Windows machine. From OPEN.md:438. Evidence: No Windows here; w34-unv1-1111.md hardware-only (CI runs some)
+- **L953 (moved from LEDGER 2026-11-12):** Verify the packaged PyInstaller build after the package rename on Windows. From OPEN.md:439. Evidence: Needs Windows packaged build; w34-unv1-1111.md hardware-only
+- **L954 (moved from LEDGER 2026-11-12):** Check Chat tap right after boot at 390 and the Highlight API in a macOS webview. From OPEN.md:597; OPEN.md:2712. Evidence: Needs macOS webview and idle-machine timing; no evidence either way
+- **L956 (moved from LEDGER 2026-11-12):** Check Firefox/Safari permission help, webview denied state and hidden-tab firing on a non-UTC machine. From OPEN.md:603. Evidence: Needs Firefox, Safari, desktop webview, non-UTC machine
+- **L957 (moved from LEDGER 2026-11-12):** Run launchers once on real Windows and macOS (start.bat, --doctor, --shortcut, uninstall --dry-run). From OPEN.md:610; OPEN.md:2972; OPEN.md:3349. Evidence: Needs owner's Windows machine; start.bat, doctor.bat, uninstall.bat exist at root
+- **L959 (moved from LEDGER 2026-11-12):** Run on Windows and macOS; Action Center toast after 600 s needs COM. From OPEN.md:692. Evidence: Needs Windows and macOS machines
+- **L960 (moved from LEDGER 2026-11-12):** Draw splash.ps1 on Windows (look, minimise, taskbar id) and check macOS right-drag. From OPEN.md:695; OPEN.md:3874; INBOX.md:904 B50. Evidence: scripts/splash.ps1 exists; needs Windows run (taskbar id fix b1e2dcf6 untested visually)
+- **L961 (moved from LEDGER 2026-11-12):** Compile the installer.iss ISPP version reader on Windows CI. From OPEN.md:696. Evidence: packaging/windows/installer.iss; needs Windows CI run
+- **L962 (moved from LEDGER 2026-11-12):** Drive sign-in off in the desktop window, on a second LAN device and the dark prompt card. From OPEN.md:729; OPEN.md:2304. Evidence: Needs desktop window and a real second device
+- **L963 (moved from LEDGER 2026-11-12):** Run the desktop window (start-desktop.sh) on the owner's desktop. From OPEN.md:1938; OPEN.md:3381. Evidence: Needs owner's Windows desktop
+- **L964 (moved from LEDGER 2026-11-12):** Check in the desktop webview profile and on a second machine. From OPEN.md:1760; OPEN.md:2577. Evidence: Needs the owner's Windows desktop and a second machine
+- **L966 (moved from LEDGER 2026-11-12):** Verify Quit contrast, line-number baseline, Windows rasteriser and tablets on real displays. From OPEN.md:3304. Evidence: Needs Windows display and real devices
+- **L969 (moved from LEDGER 2026-11-12):** Verify on a real touch device and the Windows webview. From OPEN.md:3900. Evidence: Needs real touch hardware and the owner's Windows desktop.
+- **L970 (moved from LEDGER 2026-11-12):** Measure frame times and cache, @starting-style, :has on owner's desktop webview. From OPEN.md:1263. Evidence: Needs owner's Windows desktop webview; W34 notes it unverifiable (w34-L2r-1111.md).
+- **L973 (moved from LEDGER 2026-11-12):** Smoke step traceback check reads whole output. From OPEN.md:698. Evidence: Windows CI smoke behaviour; needs a Windows run to see a benign traceback
+- **L977 (moved from LEDGER 2026-11-12):** Chromium only: no second browser, no real touch device. From OPEN.md:1344; OPEN.md:3373. Evidence: Needs real touch hardware and other browsers; gcWorldFor constant reasoned only.
+- **L980 (moved from LEDGER 2026-11-12):** Provider tests use fake transport; real inference and Windows build unverified. From OPEN.md:3342; a31c-1103.md Not verified. Evidence: CLAUDE.md section 4; needs a real model (pytest -m evals)
+- **L981 (moved from LEDGER 2026-11-12):** installer.iss ISPP version reader compiles only on Windows. From OPEN.md:3482. Evidence: Needs a Windows CI run or owner's Windows desktop; packaging/windows/installer.iss.
+- **L-world-class-3 (moved from LEDGER 2026-11-12):** Verify the Linux Secret Service PIN store against a real keyring. From open-work sweep 2026-11-12, tests/test_pin_unlock.py:342. Evidence: The skip does not hide a broken test, but the Linux Secret Service path of core/pinstore.py has never run against a real keyring. L931 covers only the Windows DPAPI and macOS Keychain paths, so Linux 
+- **L-world-class-4 (moved from LEDGER 2026-11-12):** Evaluate Kokoro-82M via kokoro-onnx as a second natural voice. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1800. Evidence: It is on the ranked vendor shortlist with no code. Piper was built for read aloud. The only mention in the plans is WORLD_CLASS_PLAN 2205's prose line "research in flight", which is not a row.
+- **L-world-class-5 (moved from LEDGER 2026-11-12):** Verify Tessellate --mcp from the packaged Windows exe with a real MCP client (hardware). From open-work sweep 2026-11-12, docs/INSTALL.md:297. Evidence: The packaged windowed exe's stdio MCP mode has not been checked on a real Windows build. L687 covers the HTTP transport, not this check.
+- **L-world-class-28 (moved from LEDGER 2026-11-12):** I7 gate: filing accuracy with 20 synthetic corrections up 10 points, on a real model (pytest -m evals). From WORLD_CLASS_PLAN.md I7 gate. Evidence: test_corrections_wrong_card_i7.py runs on a fake transport; the 20-correction filing eval needs a real model
+- **Second device and calendar app on the LAN (L567):** Add a second device (a phone or another computer) on the LAN trust page, then subscribe a real calendar app (Apple Calendar, Google Calendar, Thunderbird) to the reminders feed and check an event appears and updates; needs the hardware, nothing else of the thread move is open.
+- **Filing 1010 leftovers that need a real model or a tagger (L-world-class-23):** Run the filing paths with a real chat model (`scratchpad/llama-dev.sh serve`, `pytest -m evals`): `_engine_tags` puts the model's grounded tags first and the engine fills the rest, and only the no-model path has been driven; and a verb-sense guard so "a tutoring service run by" is not read as #running needs a part-of-speech tagger (about one wrong extra tag on the 67-note set). Nothing else from the 1010 pass is open.
+- **Split the rest of the files over 800 lines (L624, moved 2026-11-12):** 167 source files are over the bar; `tests/file_size_caps.json` caps each (its length plus a tenth) and the cap only falls. Split each as it is next worked on (avatars.js first: 110 tests read its text, so they move to a shared reader in the same commit).
 
 ## Device and owner checks from the mindmap plan (2026-11-12)
 

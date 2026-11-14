@@ -106,7 +106,7 @@ def test_capture_works_with_zero_ai(client):
 
 
 def _starters():
-    from tessellate.api.routes_chat import STARTER_SUGGESTIONS
+    from tessellate.api.chat_recent import STARTER_SUGGESTIONS
 
     return STARTER_SUGGESTIONS
 
@@ -148,7 +148,7 @@ def test_a_summary_starter_names_the_category_as_a_place(client):
 
 def _asked(session, question):
     """One question in the Ask box's history, the row `/chat/recent` reads."""
-    from tessellate.api.routes_chat import ASK_SURFACE
+    from tessellate.api.chat_recent import ASK_SURFACE
     from tessellate.core.database import AuditLog
 
     session.add(AuditLog(action="queried", entity_type=ASK_SURFACE, detail=question))
@@ -307,7 +307,7 @@ def test_chat_endpoint_threads_history_to_model(ai_client, fake_ollama):
 def test_a_starter_names_a_category_as_it_reads_in_a_sentence():
     # The seeded notebook's "About Tessellate" gave "What have I saved about
     # about memorymap?": the category's own "About" doubled and a name lower-cased.
-    from tessellate.api.routes_chat import _about
+    from tessellate.api.chat_recent import _about
 
     assert _about("About Tessellate") == "Tessellate"
     assert _about("Travel plans") == "travel plans"

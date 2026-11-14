@@ -11,6 +11,15 @@ anything else gets a `301` to the same address over https, and only for a Host
 that names this computer (`netbind.host_allowed`), so the redirect can never
 send anyone elsewhere.
 
+Two things answer a plain-http first byte instead of the redirect (Brief 40,
+fix shape 2 and 3). `/lan/trust` and `/lan/trust/ca.crt`: the one-page guide
+and the public authority certificate a phone installs, served only while
+Settings has the trust window open (`open_trust_page`), which is what the QR
+code in Settings points at. And, when the person turned "plain http" on, the
+app itself: the connection goes to uvicorn's protocol without TLS, off by
+default, the password warning beside the switch. A failed TLS handshake
+(a phone refusing the certificate, a scanner) is counted for Settings.
+
 uvicorn is given no socket of its own (`serve(sockets=[])`): it still runs
 its loop, keeps the connections this loop hands it in `server_state`, and
 closes them at shutdown, so Ctrl+C ends both listeners as before.
@@ -47,6 +56,12 @@ HEAD_LIMIT = 8192
 #: (Proactor) has no `add_reader`; their request head is already in hand.
 _PEEKERS = ThreadPoolExecutor(max_workers=4, thread_name_prefix="lan-http")
 _SAFE_PATH = re.compile(r"^/[\x21-\x7e]*$")
+#: How long Settings' "Phone setup QR code" keeps the trust page answering.
+TRUST_WINDOW_SECONDS = 900.0
+TRUST_PATH = "/lan/trust"
+#: Failed TLS handshakes since start (a phone refusing the certificate is the
+#: usual one): the number beside "connection was lost" in Settings.
+_stats = {"trust_until": 0.0, "handshake_failures": 0}
 #: The addresses a device beside this computer has: private (RFC 1918 and
 #: IPv6 unique-local), carrier-grade shared space (a phone hotspot, some
 #: mesh VPNs), link-local, and this computer itself. Listed rather than
@@ -73,6 +88,80 @@ REFRESH_SECONDS = 30.0
 #: losing Wi-Fi or joining a hotspot closes or re-certifies the port in
 #: seconds rather than at the next full read of the network.
 ADDRESS_SECONDS = 5.0
+
+
+def open_trust_page(seconds: float = TRUST_WINDOW_SECONDS) -> float:
+    """Let the plain-http trust page answer for `seconds` (the QR code's window).
+    Returns the seconds it will stay open."""
+    _stats["trust_until"] = time.monotonic() + seconds
+    return seconds
+
+
+def trust_page_open() -> bool:
+    return time.monotonic() < _stats["trust_until"]
+
+
+def handshake_failures() -> int:
+    return _stats["handshake_failures"]
+
+
+def _text_response(status: bytes, kind: bytes, body: bytes, extra: bytes = b"") -> bytes:
+    return (
+        b"HTTP/1.1 " + status + b"\r\nContent-Type: " + kind + b"\r\nCache-Control: no-store\r\n"
+        + extra + b"Connection: close\r\nContent-Length: " + str(len(body)).encode() + b"\r\n\r\n" + body
+    )
+
+
+def _trust_page(fingerprint: str, https_url: str) -> bytes:
+    steps = (
+        "<li>iPhone or iPad: tap <b>Download the certificate</b>, allow it, then Settings, Profile Downloaded, "
+        "Install. After that, Settings, General, About, Certificate Trust Settings, and switch it on.</li>"
+        "<li>Android: tap <b>Download the certificate</b>, then in the phone's own settings app: Security, Install a certificate, "
+        "CA certificate.</li><li>Brave on iPhone uses the same system trust as Safari.</li>"
+    )
+    html = (
+        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        "<title>Trust this notebook</title><style>body{font:17px/1.5 system-ui;max-width:34rem;margin:2rem auto;padding:0 1rem}</style><body>"
+        "<h1>Trust this notebook on your phone</h1>"
+        "<p>Install the certificate once and this address stops warning you.</p>"
+        '<p><a href="/lan/trust/ca.crt"><b>Download the certificate</b></a></p>'
+        f"<p>After installing, check the fingerprint reads <code>{fingerprint}</code>.</p><ol>{steps}</ol>"
+        f'<p>Then open <a href="{https_url}">{https_url}</a>.</p>'
+    )
+    return _text_response(b"200 OK", b"text/html; charset=utf-8", html.encode("utf-8"))
+
+
+def _trust_request(head: bytes) -> tuple[str, str] | None:
+    """(path, host) of a GET for the trust page from a Host that names this
+    computer, else None."""
+    lines = head.decode("latin-1", "replace").split("\r\n")
+    parts = lines[0].split(" ")
+    if len(parts) != 3 or parts[0] != "GET" or parts[1] not in (TRUST_PATH, TRUST_PATH + "/ca.crt"):
+        return None
+    host = next((v.strip() for n, _, v in (ln.partition(":") for ln in lines[1:]) if n.strip().lower() == "host"), "")
+    if not host or not netbind.host_allowed(host) or not re.fullmatch(r"[A-Za-z0-9.\-:\[\]%]+", host):
+        return None
+    return parts[1], host
+
+
+def trust_response(head: bytes, port: int, trust) -> bytes | None:  # noqa: ANN001
+    """The guide or the certificate for a plain-http request to `/lan/trust`,
+    or None when this is not that request (the redirect answers). `trust` is
+    `() -> (authority_pem, fingerprint) | None`; None, or a closed window,
+    is not an answer either. Only a Host naming this computer, as the redirect."""
+    request = _trust_request(head) if trust is not None and trust_page_open() else None
+    material = trust() if request else None
+    if material is None:
+        return None
+    path, host = request
+    pem, fingerprint = material
+    if path.endswith("/ca.crt"):
+        return _text_response(
+            b"200 OK", b"application/x-x509-ca-cert", pem,
+            b'Content-Disposition: attachment; filename="tessellate-lan.crt"\r\n',
+        )
+    name = host.split("]", 1)[0] + "]" if host.startswith("[") else (host.rsplit(":", 1)[0] if host.count(":") == 1 else host)
+    return _trust_page(fingerprint, f"https://{name}:{port}/")
 
 
 def drop_connections(server) -> int:  # noqa: ANN001  # a uvicorn.Server
@@ -181,8 +270,9 @@ class _FirstByteWatcher:
         with self._lock:
             self._waiting[conn] = (loop, future, time.monotonic() + timeout)
             if self._thread is None:
-                self._thread = threading.Thread(target=self._run, name="lan-first-byte", daemon=True)
-                self._thread.start()
+                from tessellate.core import jobs
+
+                self._thread = jobs.thread("lan-first-byte", self._run)
         return future
 
     @staticmethod
@@ -268,7 +358,7 @@ def redirect_response(head: bytes, port: int) -> bytes:
     )
 
 
-def _answer_plain_http(conn: socket.socket, port: int) -> None:
+def _answer_plain_http(conn: socket.socket, port: int, trust=None) -> None:  # noqa: ANN001
     conn.settimeout(FIRST_BYTE_SECONDS)
     head = b""
     with contextlib.suppress(OSError):
@@ -277,13 +367,15 @@ def _answer_plain_http(conn: socket.socket, port: int) -> None:
             if not chunk:
                 break
             head += chunk
-        conn.sendall(redirect_response(head, port))
+        conn.sendall(trust_response(head, port, trust) or redirect_response(head, port))
     with contextlib.suppress(OSError):
         conn.shutdown(socket.SHUT_RDWR)
     conn.close()
 
 
-async def _route(conn: socket.socket, make_protocol, context: ssl.SSLContext, port: int) -> None:  # noqa: ANN001
+async def _route(  # noqa: ANN001, PLR0913
+    conn: socket.socket, make_protocol, context: ssl.SSLContext, port: int, plain_http=None, trust=None,
+) -> None:
     loop = asyncio.get_running_loop()
     try:
         first = await _WATCHER.wait(conn)
@@ -294,13 +386,19 @@ async def _route(conn: socket.socket, make_protocol, context: ssl.SSLContext, po
         conn.close()
         return
     if first[0] != TLS_HANDSHAKE:
-        await loop.run_in_executor(_PEEKERS, _answer_plain_http, conn, port)
+        if plain_http is not None and plain_http():
+            #: The person's choice, off by default: the app over plain http, the
+            #: first byte still unread (it was only peeked).
+            await loop.connect_accepted_socket(make_protocol, conn)
+            return
+        await loop.run_in_executor(_PEEKERS, _answer_plain_http, conn, port, trust)
         return
     try:
         await loop.connect_accepted_socket(make_protocol, conn, ssl=context)
     except (OSError, ssl.SSLError, asyncio.TimeoutError, ConnectionError):
         # A failed handshake: a phone refusing the certificate, a scanner.
         # asyncio has closed the transport; the socket may still be open.
+        _stats["handshake_failures"] += 1
         conn.close()
 
 
@@ -358,6 +456,8 @@ async def serve(  # noqa: PLR0913
     refresh=None,  # noqa: ANN001  # () -> None: read the network again
     reopen=None,  # noqa: ANN001  # () -> socket: bind the port again
     on_addresses=None,  # noqa: ANN001  # () -> None: this computer's addresses changed
+    plain_http=None,  # noqa: ANN001  # () -> bool: serve the app over plain http too?
+    trust=None,  # noqa: ANN001  # () -> (authority pem, fingerprint) | None, for /lan/trust
 ) -> None:
     """Run `server` (TLS configured, `config.load()`ed) on `sock`, sniffing
     each connection's first byte. Returns once the server has exited.
@@ -424,7 +524,7 @@ async def serve(  # noqa: PLR0913
                 continue
             conn, addr = accepted
             _record_incoming(addr[0])
-            task = asyncio.ensure_future(_route(conn, make_protocol, context, port))
+            task = asyncio.ensure_future(_route(conn, make_protocol, context, port, plain_http, trust))
             pending.add(task)
             task.add_done_callback(pending.discard)
     finally:

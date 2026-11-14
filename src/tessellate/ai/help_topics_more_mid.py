@@ -326,7 +326,8 @@ MID_TOPICS.extend(
                 "as one Merge above the list, and the count after a tag shows its "
                 "notes. Right-click a tag chip (or press the menu key on it) for "
                 "Show notes, Rename in all notes, Remove from this note "
-                "and Manage tags. The selection bar's Tags adds or removes tags on "
+                "and Manage tags; hover a tag chip on a note card to see how "
+                "many notes carry it. The selection bar's Tags adds or removes tags on "
                 "every selected note at once."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
@@ -422,7 +423,7 @@ MID_TOPICS.extend(
                 "version sets what it said against what the note says today, "
                 "sentence by sentence (Changed, No longer says, Says now). In Ask, "
                 "the clock button answers from your notes as they were on a day "
-                "you pick, and Back to now returns to today. It also says who "
+                "you pick, by date or by sliding back through the days, and Back to now returns to today. It also says who "
                 "filed the note "
                 "and how sure, and a change made by an AI tool names the model "
                 "that made it. When the same note or document is edited in two "
@@ -561,7 +562,7 @@ MID_TOPICS.extend(
             ),
             "body": (
                 "Library, Contents is the whole notebook as a tree: pick By "
-                "category, By tag, By topic, By month or By folder in its Group by list, "
+                "category, By tag, By topic, By month, By folder or By type in its Group by list, "
                 "and each group folds at its heading. A document lists its "
                 "headings, so a press jumps straight to one. Expand all and "
                 "Collapse all, in the ⋯ menu, open or fold every group; folded, "
@@ -570,7 +571,9 @@ MID_TOPICS.extend(
                 "to the ends, and Enter opens. By month puts each document under "
                 "the month it was made, with that month's notes. By topic groups "
                 "notes by the subjects the graph finds in how they link; F2 or "
-                "right-click on a topic's heading renames it or shows it on the graph."
+                "right-click on a topic's heading renames it or shows it on the graph. "
+                "By type groups notes under their note type (Meeting, Book, your own), "
+                "and the notes with no type come last."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -737,10 +740,11 @@ MID_TOPICS.extend(
                 "is this line right", "confirm a line",
             ),
             "body": (
-                "Press a numbered mark in an answer: under the note's words, "
-                "Is this line right? has Confirm and Not right. Not right "
-                "leaves those sentences of the note out of every answer from "
-                "the next one on, and no pattern that quotes them is offered. "
+                "Press a numbered mark in an answer, or open Show the evidence: "
+                "under the note's words, Is this line right? has Confirm and "
+                "Not right. Not right leaves those sentences of the note out "
+                "of every answer from the next one on, and out of what filing "
+                "reads, and no pattern that quotes them is offered. "
                 "Confirm pins them as true: answers say them as your word, "
                 "with the day you pinned them, and a model reads them that "
                 "way too. Each goes on the undo stack, and lists in Settings, "

@@ -1539,13 +1539,20 @@ TAIL_TOPICS.extend(
                 "aliases",
                 "merge names",
                 "named together",
+                "person page",
+                "project page",
+                "open items",
             ),
             "body": (
                 "Atlas notes the people, places, projects, organisations and things "
                 "your notes name, with a kind for each. Show, Entities on the Graph "
                 "draws them; two named together in two notes or more are joined. "
-                "Click one, or open People and things from the command palette, for "
-                "its page: every note that names it with the sentence, what it is "
+                "Click one, open People and things from the command palette, or "
+                "a name under a note's Connections, People and projects it names, "
+                "for its page: Open items (a project's unticked tasks and "
+                "reminders, or the tasks that name a person), a Timeline of its "
+                "notes by month, every note that names it with the sentence, "
+                "Linked notes (joined to its notes without naming it), what it is "
                 "named with, and the dates its notes mention. Its ⋯ sets the Kind, "
                 "Renames it, edits Other names (the names it also goes by) and "
                 "Merges it into another, moving every mention; Undo in the toast, "

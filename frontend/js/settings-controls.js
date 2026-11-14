@@ -143,7 +143,7 @@
       renderLanState(await apiJson("/auth/lan-certificate", { method: "POST" }));
       toast("New certificate made. Compare its fingerprint on the other device.");
     } catch (error) {
-      toast(error.message || "Couldn't make a new certificate.", true);
+      toast(error.message || voiceLine("failed", { what: "make a new certificate" }), true);
     }
   });
 
@@ -160,6 +160,15 @@
       status.textContent = result.removed
         ? `Saved: removed ${result.removed} old backup${result.removed === 1 ? "" : "s"}.`
         : "Saved.";
+      //: The number is a setting, so Ctrl+Z puts it back (L694); backups already removed stay removed.
+      const was = Number(e.target.dataset.keep);
+      e.target.dataset.keep = String(keep);
+      if (was && was !== keep) {
+        pushRequestUndo("Backups to keep", "/backups/retention", "PUT", { keep: was }, { keep }, () => {
+          renderBackups();
+          return renderBackupRetention();
+        });
+      }
       renderBackups();
     } catch (error) {
       status.textContent = error.message;
@@ -436,7 +445,7 @@
     try {
       done = await apiJson("/websearch/stored", { method: "DELETE" });
     } catch (error) {
-      return toast(`Couldn't clear the kept pages: ${error.message}`, "info");
+      return toast(voiceLine("failed", { what: "clear the kept pages", why: error.message }), "info");
     }
     toast(`Cleared ${done.cleared} kept page${done.cleared === 1 ? "" : "s"}.`, "info");
   });
@@ -463,7 +472,7 @@
       // button stuck disabled over a real network error someone can just
       // retry once they're back online.
       button.disabled = false;
-      toast((status && status.textContent) || "Couldn't apply the update.", true);
+      toast((status && status.textContent) || voiceLine("failed", { what: "apply the update" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -545,7 +554,7 @@
     if (!ok) {
       button.disabled = false;
       select.disabled = false;
-      toast(status.textContent || "Couldn't install that version.", true);
+      toast(status.textContent || voiceLine("failed", { what: "install that version" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -569,7 +578,7 @@
       );
     } catch (error) {
       e.target.checked = !checked; // the change didn't take: don't leave the switch lying
-      toast(error.message || "Couldn't switch view.", true);
+      toast(error.message || voiceLine("failed", { what: "switch view" }), true);
     }
   });
 
@@ -628,7 +637,7 @@
       const result = await apiJson("/files/open-exports-folder", { method: "POST" });
       toast(`Opened ${result.path}`);
     } catch (error) {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", { what: "open the exports folder" }), true);
     }
   });
 
@@ -666,6 +675,7 @@
   );
   $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
+  $("pref-time-format").addEventListener("change", (e) => setPreference("time_format", e.target.value));
   $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
   $("pref-birthday").addEventListener("change", (e) => setPreference("birthday", e.target.value));
   $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
@@ -766,6 +776,10 @@
 
   $("pref-auto-dedupe").addEventListener("change", (e) =>
     setPreference("auto_dedupe_enabled", e.target.checked)
+  );
+
+  $("pref-learned-audit").addEventListener("change", (e) =>
+    setPreference("learned_audit_enabled", e.target.checked)
   );
 
   $("pref-auto-stale-review").addEventListener("change", (e) =>
@@ -1195,7 +1209,7 @@
   $("import-dir")?.addEventListener("click", importDirectory);
 
   $("export-backup-zip")?.addEventListener("click", () =>
-    exportFullBackup().catch((error) => toast(error.message || "Couldn't save the backup.", true))
+    exportFullBackup().catch((error) => toast(error.message || voiceLine("failed", { what: "save the backup" }), true))
   );
 
   $("restore-bundle")?.addEventListener("click", () => $("restore-bundle-file").click());
@@ -1205,6 +1219,15 @@
   $("import-document").addEventListener("click", () => $("import-document-file").click());
 
   $("import-document-file").addEventListener("change", () => importDocument());
+
+  //: A control whose backend is not installed is not drawn (WORLD_CLASS_PLAN B7, `GET /capabilities`):
+  //: the document importer needs the markitdown extra, and a button that fails on its first press is
+  //: worse than none. Only an explicit `installed: false` hides it; a failed read leaves it as it is.
+  apiJson("/capabilities", { silent: true })
+    .then((caps) => {
+      if (caps?.features?.office_import?.installed === false) $("import-document").closest(".fold-help-wrap")?.classList.add("hidden");
+    })
+    .catch(() => {});
 
   $("backup-now").addEventListener("click", backupNow);
 
@@ -1453,7 +1476,7 @@
       renderModelSpec(modelContextModel);
       toast(value ? `${modelContextModel} will run at ${value.toLocaleString()} tokens.` : `${modelContextModel} is back on auto.`);
     } catch (e) {
-      toast(e.message || "Couldn't save that window.", true);
+      toast(e.message || voiceLine("failed", { what: "save that window" }), true);
     }
   }
 
@@ -1548,7 +1571,7 @@
       toast(`Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now.`);
       setStatus("");
     } catch (error) {
-      toast(error.message || `Couldn't switch to ${EMBEDDING_FALLBACK_MODEL}.`, true);
+      toast(error.message || voiceLine("failed", { what: `switch to ${EMBEDDING_FALLBACK_MODEL}` }), true);
       setStatus("");
     } finally {
       embeddingFallbackRunning = false;
@@ -1570,7 +1593,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't reset those models.", true);
+      toast(error.message || voiceLine("failed", { what: "reset those models" }), true);
     }
   }
 
@@ -1605,7 +1628,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't set that model.", true);
+      toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     }
   }
 
@@ -1776,7 +1799,7 @@
         toast("Restart isn't available in this build, close and reopen Tessellate by hand.", "info");
       }
     } catch (error) {
-      toast(error.message || "Couldn't restart.", true);
+      toast(error.message || voiceLine("failed", { what: "restart" }), true);
     }
   }
 
@@ -1845,7 +1868,7 @@
       toast(value ? `Exports will now be saved to ${prefsCache.export_save_dir}` : "Exports will save to the default location.");
     } catch (error) {
       input.value = prefsCache?.export_save_dir || "";
-      toast(error.message || "Couldn't save that folder.", true);
+      toast(error.message || voiceLine("failed", { what: "save that folder" }), true);
     }
   }
 
@@ -2369,16 +2392,19 @@
     lanQrShown: "",
     themePreviewTimer: 0,
   };
-  async function showLanQr(holder, address, button, open) {
+  async function showLanQr(holder, address, button, open, caption = "Point the phone's camera at it to open this address.") {
     holder.querySelector(".lan-qr")?.remove();
+    holder.querySelectorAll("[data-lan-qr]").forEach((other) => other.setAttribute("aria-expanded", "false"));
     button.setAttribute("aria-expanded", String(open));
     settingsControlState.lanQrShown = open ? address : "";
     if (!open) return;
     let blob;
     try {
+      //: The trust page answers only while this window is open (core/lanserve.py).
+      if (address.startsWith("http://")) await api("/auth/lan-trust-page", { method: "POST", silent: true });
       blob = await (await api(`/privacy/lan-qr.svg?address=${encodeURIComponent(address)}`, { silent: true })).blob();
     } catch (error) {
-      toast(`Couldn't draw the QR code: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "draw the QR code", why: error.message }), true);
       button.setAttribute("aria-expanded", "false");
       settingsControlState.lanQrShown = "";
       return;
@@ -2390,10 +2416,10 @@
     img.src = URL.createObjectURL(blob);
     img.alt = `QR code for ${address}`;
     img.addEventListener("load", () => URL.revokeObjectURL(img.src), { once: true });
-    const caption = document.createElement("figcaption");
-    caption.className = "muted text-sm";
-    caption.textContent = "Point the phone's camera at it to open this address.";
-    figure.append(img, caption);
+    const note = document.createElement("figcaption");
+    note.className = "muted text-sm";
+    note.textContent = caption;
+    figure.append(img, note);
     holder.querySelector(".lan-address-main")?.after(figure);
   }
 
@@ -2419,9 +2445,23 @@
     const qr = smallButton("ph:qr-code QR code", "Show a QR code the phone's camera opens", () =>
       showLanQr(holder, first, qr, qr.getAttribute("aria-expanded") !== "true"));
     qr.setAttribute("aria-expanded", "false");
+    qr.dataset.lanQr = "address";
     main.append(value, copy, qr);
+    //: Brief 40: a QR code to the plain-http `/lan/trust` page, where the phone
+    //: installs the certificate once and every later visit has no warning.
+    const trustUrl = (state.trust_urls || [])[0];
+    let trustQr = null;
+    if (trustUrl) {
+      trustQr = smallButton("ph:certificate Phone setup QR code", "Show a QR code to the page where a phone installs this notebook's certificate", () =>
+        showLanQr(holder, trustUrl, trustQr, trustQr.getAttribute("aria-expanded") !== "true",
+          "Point the phone's camera at it: the page has the certificate and the steps. It answers for fifteen minutes."));
+      trustQr.setAttribute("aria-expanded", "false");
+      trustQr.dataset.lanQr = "trust";
+      main.append(trustQr);
+    }
     holder.appendChild(main);
     if (settingsControlState.lanQrShown === first) showLanQr(holder, first, qr, true);
+    else if (trustQr && settingsControlState.lanQrShown === trustUrl) trustQr.click();
     if (!rest.length) return;
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -2519,6 +2559,12 @@
     trust.classList.toggle("hidden", !state.allow_lan);
     $("account-lan-ask").checked = state.ask_new_devices !== false;
     $("account-lan-any").checked = state.any_network === true;
+    $("account-lan-plain").checked = state.plain_http === true;
+    //: Brief 40: "connection was lost" with a number beside it.
+    const refused = state.failed_handshakes || 0;
+    $("account-lan-handshakes").textContent = refused
+      ? `${refused} secure connection${refused === 1 ? "" : "s"} refused by a device since the app started. A phone that has not installed the certificate does this.`
+      : "";
     const pending = state.pending || [];
     $("account-lan-pending-wrap").classList.toggle("hidden", !pending.length);
     $("account-lan-pending").replaceChildren(
@@ -2617,7 +2663,7 @@
     if (!looser(wanted)) return lanCall("/auth/lan-options", { method: "POST", body: JSON.stringify({ name, enabled: wanted }) });
     let reply = null;
     const done = await askPasswordPrompt({
-      title: name === "any_network" ? "Allow on any network" : "Stop asking about new devices",
+      title: name === "any_network" ? "Allow on any network" : name === "plain_http" ? "Allow plain http" : "Stop asking about new devices",
       message: "Enter your password to change how other devices get in.",
       submitLabel: "Change",
       submit: async (password) => {
@@ -2634,6 +2680,7 @@
 
   $("account-lan-ask")?.addEventListener("change", (event) => setLanOption(event.target, "ask_new_devices", (on) => !on));
   $("account-lan-any")?.addEventListener("change", (event) => setLanOption(event.target, "any_network", (on) => on));
+  $("account-lan-plain")?.addEventListener("change", (event) => setLanOption(event.target, "plain_http", (on) => on));
 
   $("account-lan-allow-here")?.addEventListener("click", () => lanAllowHere(renderLanState));
 
@@ -2744,7 +2791,7 @@
       try {
         await apply(data);
       } catch (error) {
-        toast(error?.message || "Couldn't import that file.", "info");
+        toast(error?.message || voiceLine("failed", { what: "import that file" }), "info");
       }
     };
     input.click();
@@ -2927,7 +2974,7 @@
             await apiJson(`/memory/${pref.id}/answer`, {
               method: "POST",
               body: JSON.stringify({ accept }),
-            }).catch((error) => toast(error.message || "Couldn't save that answer.", true));
+            }).catch((error) => toast(error.message || voiceLine("failed", { what: "save that answer" }), true));
             renderMemorySettings();
           };
           const yes = document.createElement("button");
@@ -2955,7 +3002,7 @@
           const flipped = await apiJson(`/memory/${pref.id}`, {
             method: "PATCH",
             body: JSON.stringify({ active: !pref.active }),
-          }).catch((error) => toast(error.message || "Couldn't change that.", true));
+          }).catch((error) => toast(error.message || voiceLine("failed", { what: "change that" }), true));
           if (flipped) {
             pushRequestUndo(pref.active ? "Turned a memory off" : "Turned a memory on", `/memory/${pref.id}`, "PATCH", { active: pref.active }, { active: !pref.active }, () => renderMemorySettings());
           }
@@ -2991,7 +3038,7 @@
               }
             );
           } catch (error) {
-            toast(error.message || "Couldn't forget that.", true);
+            toast(error.message || voiceLine("failed", { what: "forget that" }), true);
           }
           renderMemorySettings();
         });
@@ -3073,7 +3120,7 @@
       const result = await apiJson("/system/doctor");
       box.replaceChildren(...result.rows.map(maintenanceDoctorRow));
       box.classList.remove("hidden");
-      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
       const worth = result.rows.filter((row) => row.status === "warn").length;
       maintenanceSay(
         result.failed
@@ -3303,6 +3350,8 @@
       if (settingsControlState.themeHold && name !== currentSettingsSection) releaseThemeHold();
       return show(name);
     };
+    //: settings.js hangs helpers on the function (`showSettingsSection.loadCurrencyRates`) and calls them through the global name, which is now this wrapper: copy them over or opening Search and index throws.
+    Object.assign(showSettingsSection, show);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && settingsControlState.themeHold) releaseThemeHold();
     });
@@ -3793,7 +3842,7 @@
       });
     } catch (error) {
       check.checked = !check.checked;
-      toast(error.message || "Couldn't save that tool setting. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save that tool setting" }), true);
       return;
     }
     // The "N of 51 on" count is only true until someone flips one.
@@ -3838,7 +3887,7 @@
         body: JSON.stringify({ disabled_tools: [...next] }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't save those tool settings. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save those tool settings" }), true);
       return;
     }
     for (const check of boxes) check.checked = turnOn;
@@ -4385,14 +4434,16 @@
   $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
 
   $("sampling-reset")?.addEventListener("click", async () => {
+    const was = { ...(samplingState?.overrides || {}) };
     try {
       await apiJson("/models/sampling", {
         method: "PUT",
         body: JSON.stringify({ overrides: {} }),
       });
+      if (Object.keys(was).length) pushRequestUndo("Reset the sampling settings", "/models/sampling", "PUT", { overrides: was }, { overrides: {} }, loadSamplingSettings);
       toast("Back to what each model recommends.");
     } catch {
-      toast("Couldn't reset those settings.", true);
+      toast(voiceLine("failed", { what: "reset those settings" }), true, { action: ["Reload them", loadSamplingSettings] });
     }
     await loadSamplingSettings();
   });
@@ -4452,6 +4503,9 @@
   const LEARNED_KIND_COPY = {
     claim: "Claim",
     question: "Open question",
+    date: "Date",
+    entity: "Name",
+    duplicate: "Repeated note",
     //: The person's own word (decision 60, B31, B32).
     confirmed: "Confirmed by you",
     pinned: "Pinned as true",
@@ -4573,10 +4627,15 @@
 
   async function learnedSetSwitch(name, value) {
     try {
+      //: Undo sends back the one switch (the master only masks the other seven in the reply, it does not store them off) (L694).
+      const before = await apiJson("/learned/switches", { silent: true }).catch(() => null);
       await apiJson("/learned/switches", {
         method: "PUT",
         body: JSON.stringify({ [name]: value }),
       });
+      if (before && Boolean(before[name]) !== Boolean(value)) {
+        pushRequestUndo("Learning switch", "/learned/switches", "PUT", { [name]: before[name] }, { [name]: value }, renderLearnedSwitches);
+      }
     } catch (error) {
       toast(error.message, true);
     }
@@ -5082,6 +5141,38 @@
       const note = document.createElement("p");
       note.className = "muted learned-meta learned-flag";
       note.textContent = `Check this: ${reason}`;
+      //: Keep it (L584): the flag goes and no later check raises it again.
+      const keep = document.createElement("button");
+      keep.type = "button";
+      keep.className = "ghost small";
+      keep.textContent = "Keep it";
+      keep.title = "This one stands: clear the flag and do not flag it again";
+      keep.addEventListener("click", async () => {
+        keep.disabled = true;
+        const body = JSON.stringify({ fact_id: Number(li.dataset.factId) });
+        const post = (path) => apiJson(path, { method: "POST", body });
+        const refresh = () => learnedCheckRefresh().then(renderLearnedList);
+        try {
+          await post("/learned/audit/keep");
+          offerUndo(
+            "Keep a flagged item",
+            "Kept. It will not be flagged again.",
+            async () => {
+              await post("/learned/audit/unkeep");
+              await refresh();
+            },
+            async () => {
+              await post("/learned/audit/keep");
+              await refresh();
+            }
+          );
+          await learnedCheckRefresh();
+          li.querySelector(".learned-flag")?.remove();
+        } catch {
+          keep.disabled = false;
+        }
+      });
+      note.append(" ", keep);
       li.appendChild(note);
     }
   }

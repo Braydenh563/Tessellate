@@ -16,6 +16,9 @@
 //: The datetime field's value for "now", to the nearest five minutes: a
 //: meeting starts at 14:00, not at 14:03:27.
 (() => {
+  //: The recorder's card is a surface (index.html, L621): this file loads on first use, so it is built here, before
+  //: the wiring below reads its ids.
+  surfaceBuild("meeting");
   function meetingNowValue(at = new Date()) {
     const d = new Date(at.getTime());
     d.setSeconds(0, 0);
@@ -32,7 +35,7 @@
     if (!m) return String(value || "");
     const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4] || 0), Number(m[5] || 0));
     const day = d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
-    return m[4] ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}` : day;
+    return m[4] ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}` : day;
   }
 
   //: The people field: one chip per name and the field to type the next in,
@@ -281,7 +284,7 @@
     if (item.owner) facts.push(`Owner ${item.owner}`);
     if (item.reminder_due) {
       const due = parseServerTime(item.reminder_due) || new Date(item.reminder_due);
-      facts.push(`Reminder ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`);
+      facts.push(`Reminder ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", ...clockOptions() })}`);
     }
     if (facts.length) {
       const line = document.createElement("span");
@@ -314,7 +317,7 @@
       const due = parseServerTime(made.due_at) || new Date(made.due_at);
       const binned = meetingBinPair("reminder", made.id, redraw);
       pushUndo("Made a reminder from an action item", binned.undo, binned.redo);
-      toastAction(`Reminder set for ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`, "Show", () => switchTab("reminders"));
+      toastAction(`Reminder set for ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", ...clockOptions() })}.`, "Show", () => switchTab("reminders"));
       redraw();
     } catch (error) {
       button.disabled = false;
@@ -324,7 +327,7 @@
         if (asked) return meetingRemind(entryId, item, button, redraw, asked);
         return;
       }
-      toast(error.message || "Couldn't make that reminder.", true);
+      toast(error.message || voiceLine("failed", { what: "make that reminder" }), true);
     }
   }
 
@@ -337,7 +340,7 @@
     try {
       data = await apiJson(`/entries/${entryId}/meeting`);
     } catch (error) {
-      toast(error.message || "Couldn't open that meeting.", true);
+      toast(error.message || voiceLine("failed", { what: "open that meeting" }), true, { retry: () => openMeetingSheet(entryId) });
       return;
     }
     const entry = (typeof allEntries !== "undefined" ? allEntries : []).find((e) => e.id === entryId);
@@ -503,7 +506,7 @@
         redraw();
       } catch (error) {
         add.disabled = false;
-        toast(error.message || "Couldn't add that.", true);
+        toast(error.message || voiceLine("failed", { what: "add that" }), true);
       }
     }, false);
     add.classList.add("accent");
@@ -609,7 +612,6 @@
   }
   let meetingStream = null;
   let meetingChunks = [];
-  let meetingTimerHandle = null;
   let meetingStartedAt = 0;
 
   //: **The recording in hand is an object** (WORLD_CLASS_PLAN 28.5 row 1,
@@ -874,8 +876,7 @@
   }
 
   function stopMeetingTimer() {
-    if (meetingTimerHandle) clearInterval(meetingTimerHandle);
-    meetingTimerHandle = null;
+    secondTick.remove(meetingTick);
   }
 
   //: **One state at a time** (INBOX 708, "these panels feel badly designed and
@@ -964,6 +965,7 @@
   //: global-scope ratchet).
 
   async function openMeetingRecorder() {
+    surfaceBuild("meeting");
     //: A recording folded into the dock is brought back, not reset.
     if (meetingRecorder) return showMeetingRecorder();
     nameMeetingMic();
@@ -1090,7 +1092,7 @@
   function meetingRecordingStarted(button) {
     meetingStartedAt = Date.now();
     $("meeting-timer").textContent = meetingElapsedText();
-    meetingTimerHandle = setInterval(meetingTick, 1000);
+    secondTick.add(meetingTick);
     button.classList.add("recording");
     setLabel(button, "ph:stop Stop");
     // Appended after setLabel, not before: setLabel's replaceChildren() wipes
@@ -1207,7 +1209,7 @@
         here: () => meetingTake.id === saved.id && !$("meeting-overlay").classList.contains("hidden") && $("meeting-card").dataset.state === "transcribing",
         done: async (run) => {
           const body = await apiJson(`/recordings/${saved.id}/transcript`).catch(() => ({ segments: [] }));
-          const text = body.segments.map((seg) => seg.text).join(" ").trim();
+          const text = (body.lines || body.segments.map((seg) => seg.text).join(" ")).trim(); //: timed lines, so the note keeps when each thing was said (L578)
           if (!text) {
             setMeetingState("saved");
             return meetingSay(`Nothing was heard in that recording. The ${length} of audio is kept in Recordings.`);
@@ -1363,7 +1365,7 @@
     try {
       await meetingTakeFinish();
     } catch (error) {
-      toast(`Couldn't finish the discarded recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, true);
+      toast(voiceLine("failed", { what: "finish the discarded recording", why: `${error.message || "the request failed"}. It is still in Library, Recordings.` }), true);
       return;
     }
     await meetingTakeBin(id);
@@ -1377,7 +1379,7 @@
     try {
       await apiJson(`/recordings/${id}`, { method: "DELETE" });
     } catch (error) {
-      toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+      toastAction(voiceLine("failed", { what: "discard the recording", why: `${error.message || "the request failed"}. It is still in Library, Recordings.` }), "Try again", () => meetingTakeBin(id), { sticky: true });
       return;
     }
     pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
@@ -1413,7 +1415,7 @@
       // Push the start forward by however long the pause lasted, so the timer
       // keeps reading as the length of the audio rather than of the sitting.
       meetingStartedAt += Date.now() - meetingPausedAt;
-      meetingTimerHandle = setInterval(meetingTick, 1000);
+      secondTick.add(meetingTick);
       setLabel(button, "ph:pause Pause");
       setMeetingState("recording");
       meetingSay(meetingStatusLine());
@@ -1581,7 +1583,7 @@
         made++;
         ids.push(row.id);
       } catch (error) {
-        toast(error.message || `Couldn't keep ${file.name}.`, true);
+        toast(error.message || voiceLine("failed", { what: `keep ${file.name}` }), true);
       }
     }
     if (made) {
@@ -1985,7 +1987,7 @@
     try {
       await saveRecordingMarks(li, after);
     } catch (error) {
-      return toast(error.message || "Couldn't add that mark.", true);
+      return toast(error.message || voiceLine("failed", { what: "add that mark" }), true);
     }
     pushUndo("Added a mark", () => saveRecordingMarks(li, before), () => saveRecordingMarks(li, after));
   }
@@ -2007,7 +2009,7 @@
     try {
       await saveRecordingMarks(li, after);
     } catch (error) {
-      return toast(error.message || "Couldn't remove that mark.", true);
+      return toast(error.message || voiceLine("failed", { what: "remove that mark" }), true);
     }
     pushUndo("Removed a mark", () => saveRecordingMarks(li, before), () => saveRecordingMarks(li, after));
     toastAction(`Removed the mark at ${meetingClockText(mark.at)}.`, "Undo", () => saveRecordingMarks(li, before));
@@ -2180,7 +2182,7 @@
           watchRecordingTranscription(rec, {});
           recordingCardsRun(rec.id, started.transcription);
         } catch (error) {
-          toast(error.message || "Couldn't label the speakers.", true);
+          toast(error.message || voiceLine("failed", { what: "label the speakers" }), true);
         }
       }));
       //: Row 11: offered only with a model on; with none, no label is shown.
@@ -2218,7 +2220,7 @@
       await put(from, to.trim());
       pushUndo("Renamed a speaker", () => put(to.trim() || from, from), () => put(from, to.trim()));
     } catch (error) {
-      toast(error.message || "Couldn't rename that speaker.", true);
+      toast(error.message || voiceLine("failed", { what: "rename that speaker" }), true);
     }
   }
 
@@ -2228,7 +2230,7 @@
       await renderRecordings();
       toast(body.speakers ? "Named the speakers; open Transcript to see them." : "The local AI could not tell the speakers apart.", "info");
     } catch (error) {
-      toast(error.message || "Couldn't name the speakers.", true);
+      toast(error.message || voiceLine("failed", { what: "name the speakers" }), true);
     }
   }
 
@@ -2247,7 +2249,7 @@
     try {
       await redo();
     } catch (error) {
-      toast(error.message || "Couldn't delete that recording.", true);
+      toast(error.message || voiceLine("failed", { what: "delete that recording" }), true);
       return;
     }
     pushUndo("Deleted a recording", undo, redo);
@@ -2262,7 +2264,7 @@
       await startRecordingTranscription(rec, {
         done: async () => {
           const body = await apiJson(`/recordings/${rec.id}/transcript`).catch(() => ({ segments: [] }));
-          const text = body.segments.map((seg) => seg.text).join(" ").trim();
+          const text = (body.lines || body.segments.map((seg) => seg.text).join(" ")).trim(); //: timed lines, so the note keeps when each thing was said (L578)
           if (!text) return toast(`Nothing was heard in “${rec.title || "Recording"}”.`, "info");
           const made = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: `${rec.title || "Recording"}\n\n${text}`, defer_filing: true }) });
           const binned = meetingBinPair("note", made.id);
@@ -2272,7 +2274,7 @@
       });
       toast("Transcribing in the background; you will be told when it is done.", "info");
     } catch (error) {
-      toast(error.message || "Couldn't transcribe that recording.", true);
+      toast(error.message || voiceLine("failed", { what: "transcribe that recording" }), true);
     }
   }
 
@@ -2300,7 +2302,7 @@
       const body = await apiJson(`/recordings/${id}/transcribe/stop`, { method: "POST" });
       if (!body.stopped) toast(body.detail, "info");
     } catch (error) {
-      toast(error.message || "Couldn't stop that.", true);
+      toast(error.message || voiceLine("failed", { what: "stop that" }), true);
     }
   }
 
@@ -2820,6 +2822,40 @@
     if (event.target.matches("select.mic-device")) nameMeetingMic();
   });
 
+  // --- a note names a recording (L579) -----------------------------------------
+  //
+  // `![[Sync call]]` and `[[Sync call]]` in a note, by the name the Library
+  // shows. The boot files only call these through their stand-ins, so the
+  // Library's recordings are fetched here, when a name is not a note, a board
+  // or a document.
+
+  async function noteRecordingByName(name) {
+    const wanted = String(typeof wikiLinkTarget === "function" ? wikiLinkTarget(name) : name || "").trim().toLowerCase();
+    if (!wanted) return null;
+    const body = await apiJson(`/recordings?q=${encodeURIComponent(wanted)}&limit=50`, { silent: true }).catch(() => null);
+    return (body?.recordings || []).find((row) => String(row.title || "").trim().toLowerCase() === wanted) || null;
+  }
+
+  //: A note's `![[Name]]` (a host to fill) or `[[Name]]` (no host): the take's player where the embed's "Nothing called
+  //: that yet" stood, or the take opened in Library, Recordings. False when the name is no recording, so a link
+  //: goes on to offer a note. One export, because the shared scope's names are counted.
+  async function noteRecording(host, name) {
+    const take = await noteRecordingByName(name);
+    if (!take) return false;
+    if (!host) {
+      await openRecordings(take.id);
+      return true;
+    }
+    if (!host.isConnected) return false;
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.preload = "none";
+    audio.src = `/media/recordings/${take.id}`;
+    audio.setAttribute("aria-label", `Recording: ${take.title || name}`);
+    host.replaceChildren(audio);
+    return true;
+  }
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { closeMeetingRecorder, meetingRecordingLive, micControlsInto, noteRecoveredRecordings, openMeetingRecorder, openMeetingSheet, openNewMeeting, openRecordings, openVoiceNote, renderRecordings });
+  Object.assign(window, { closeMeetingRecorder, meetingRecordingLive, micControlsInto, noteRecording, noteRecoveredRecordings, openMeetingRecorder, openMeetingSheet, openNewMeeting, openRecordings, openVoiceNote, renderRecordings });
 })();

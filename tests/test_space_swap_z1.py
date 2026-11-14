@@ -415,6 +415,8 @@ const ctx = {
   refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
   noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
+  //: The server-down refusal (22.1 item 6) reads these; the server is up in this harness.
+  serverUnreachable: false, retryServerNow() {}, showServerDownBanner: () => "",
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
   //: A fetch that answers when the test says so, with the kind of body it is told.
   fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),
@@ -483,6 +485,7 @@ let here = "alpha";
 const ctx = {
   Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
   recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  voiceLine: (key, slots) => `Couldn't ${slots.what}.`,
   spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
 };
 vm.createContext(ctx);

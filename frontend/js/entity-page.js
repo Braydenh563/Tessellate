@@ -10,7 +10,7 @@
 
 (() => {
   const ENTITY_KIND_WORDS = { person: "Person", place: "Place", project: "Project", organisation: "Organisation", thing: "Thing" };
-  const ENTITY_KIND_ICONS = { person: "ph-user", place: "ph-map-pin", project: "ph-kanban", organisation: "ph-buildings", thing: "ph-cube" };
+  const ENTITY_KIND_ICONS = { person: "ph-user", place: "ph-map-pin", project: "ph-kanban", organisation: "ph-buildings", thing: "ph-cube", task: "ph-square", reminder: "ph-bell" };
 
   function entityIcon(kind) {
     const icon = document.createElement("i");
@@ -89,7 +89,14 @@
         head.appendChild(actions);
         const body = document.createElement("div");
         body.className = "inbox-body";
+        //: B4: what makes it a person's or a project's page: what is still
+        //: open, when it came up, and the notes joined to its notes.
+        const open = page.open_items || [];
+        body.append(entitySection("Open items", open.map(entityOpenRow), page.kind === "person" ? "No open task names them." : "Its notes hold no open tasks or reminders."));
+        body.append(entitySection("Timeline", (page.timeline || []).map(entityMonthRow), "Its notes have no dates."));
         body.append(entitySection("Mentioned in", page.mentions.map(entityMentionRow), "No visible note names it."));
+        const linked = (page.links || []).map((n) => entityNoteButton(n.id, n.title, n.links > 1 ? `Linked to ${n.links} of its notes` : "Linked to one of its notes"));
+        body.append(entitySection("Linked notes", linked, "No other note is linked to its notes."));
         const related = document.createElement("div");
         related.className = "row entity-related";
         for (const other of page.related) {
@@ -134,6 +141,52 @@
       flashEntry(m.id);
     });
     row.append(open, docBacklinkContext(m));
+    return row;
+  }
+
+  function entityNoteButton(id, title, sub = "") {
+    const row = document.createElement("div");
+    row.className = "inbox-row";
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "linklike inbox-row-title";
+    open.textContent = noteNamePlain(title) || "Untitled note";
+    open.title = "Open this note";
+    open.addEventListener("click", () => {
+      entityPageClose?.();
+      flashEntry(id);
+    });
+    row.append(open);
+    if (sub) {
+      const meta = document.createElement("span");
+      meta.className = "muted entity-row-sub";
+      meta.textContent = sub;
+      row.append(meta);
+    }
+    return row;
+  }
+
+  //: An open task says its words and the note it is in; a reminder its day.
+  function entityOpenRow(item) {
+    const due = item.kind === "reminder" ? `Reminder, ${entityWhen(item.due_at)}` : `To do, in ${noteNamePlain(item.title) || "Untitled note"}`;
+    const row = entityNoteButton(item.entry_id, item.text, due);
+    row.querySelector("button").prepend(entityIcon(item.kind === "reminder" ? "reminder" : "task"));
+    return row;
+  }
+
+  function entityMonthRow(month) {
+    const [year, m] = month.month.split("-").map(Number);
+    const row = document.createElement("div");
+    row.className = "entity-month";
+    const head = document.createElement("p");
+    head.className = "entity-date";
+    const when = document.createElement("strong");
+    when.textContent = new Date(year, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const count = document.createElement("span");
+    count.className = "muted";
+    count.textContent = ` ${nounCount(month.count, "note")}`;
+    head.append(when, count);
+    row.append(head, ...month.notes.map((n) => entityNoteButton(n.id, n.title)));
     return row;
   }
 
@@ -201,7 +254,7 @@
    *  list of where it can go. */
   async function openEntitiesSheet({ mergeFrom = null } = {}) {
     const rows = await apiJson("/entities").catch(() => null);
-    if (!rows) return toast("Couldn't load the people and things in your notes. Try again.", true, { action: ["Try again", () => openEntitiesSheet({ mergeFrom })] });
+    if (!rows) return toast(voiceLine("failed", { what: "load the people and things in your notes" }), true, { action: ["Try again", () => openEntitiesSheet({ mergeFrom })] });
     openSheet({
       label: mergeFrom ? `Merge “${mergeFrom.name}” into` : "People and things",
       sub: mergeFrom ? "Every mention moves; its names are kept as other names." : "Named in your notes, most named first.",

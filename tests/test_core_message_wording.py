@@ -22,6 +22,8 @@ never by widening a rule.
 """
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 import ast
 import re
 from dataclasses import dataclass, field
@@ -334,6 +336,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_sync.py", "sync_pull.BUSY"): "a constant in entry/sync_pull.py (one sync at a time), checked in SOURCES",
     ("routes_sync.py", "sync_segments.SAME_ID"): "a constant in entry/sync_segments.py (a copied notebook folder, INBOX 1783), checked in SOURCES",
     ("routes_chat.py", "str(exc)"): "ToolError from validate_make_plan and summarise_turns",
+    ("routes_chat_meta.py", "str(exc)"): "ToolError from summarise_turns (the side routes split from routes_chat, L624)",
     ("routes_documents.py", "str(error)"): "ValueError from core/syntaxcheck.py check",
     ("routes_documents.py", "viewed.message or 'There was no readable text in that file.'"): "ViewedFile.message in core/docview.py",
     ("routes_entries.py", "str(exc)"): "ValueError from ai/extractor.py build_extraction",
@@ -368,7 +371,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_webclip.py", "IMAGE_WEB_OFF"): "a constant in routes_webclip.py (a topic picture from a link), checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
-    ("routes_chat.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
+    ("routes_chat_meta.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",
     # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
     ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
@@ -507,7 +510,7 @@ def test_a_model_failure_reading_a_spec_or_removing_a_model_is_a_sentence(
 def test_a_confirmed_tool_that_fails_answers_with_a_sentence_for_the_person(ai_client, caplog):
     caplog.set_level("WARNING")
     response = ai_client.post(
-        "/chat/tools/execute", json={"name": "delete_category", "arguments": {"name": "No such category"}}
+        "/chat/tools/execute", json=call("delete_category", {"name": "No such category"})
     )
     assert response.status_code == 400
     detail = response.json()["detail"]

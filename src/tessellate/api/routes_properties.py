@@ -152,6 +152,8 @@ def create_note_type(body: NoteTypeIn, session: Session = Depends(get_session)) 
     row = NoteType(name=name, icon=body.icon, colour=body.colour, fields=_fields(body.fields) or None)
     if body.restore and body.id is not None and session.get(NoteType, body.id) is None:
         row.id = body.id
+    else:
+        row.id = note_properties.next_type_id(session, deps.get_config())
     session.add(row)
     session.commit()
     return _type_row(row)
@@ -194,4 +196,5 @@ def delete_note_type(type_id: int, session: Session = Depends(get_session)) -> d
     kept = _type_row(row)
     session.delete(row)
     session.commit()
+    note_properties.remember_deleted_type(type_id, deps.get_config())
     return {"deleted": type_id, "type": kept}

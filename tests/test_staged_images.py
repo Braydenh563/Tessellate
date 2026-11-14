@@ -35,7 +35,9 @@ def _source() -> str:
 def test_every_request_passes_through_the_guard():
     source = _source()
     start = source.index("async function api(path, options = {})")
-    body = source[start : start + 2000]
+    #: The whole function, not a fixed width: the down-server refusal (L-world-class-99)
+    #: put 1,400 more characters between the guard and the fetch.
+    body = source[start : source.index("\n}\n", start)]
     guard = body.index("refuseStagedUrls(fetchOptions.body)")
     fetch = body.index("await fetch(path")
     assert guard < fetch, (

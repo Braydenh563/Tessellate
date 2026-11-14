@@ -8,6 +8,9 @@ after a press runs nothing twice)."""
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
 import secrets
 import threading
 import time
@@ -29,6 +32,30 @@ _results: dict[str, tuple[float, dict]] = {}
 _declined: dict[str, float] = {}
 
 
+#: A per-process secret: a call the server handed out (a parked card's tool, an Undo or a redo)
+#: carries `sign_call`'s tag, and `/chat/tools/execute` runs only what still matches it (L566).
+#: Not persisted on purpose: a restart voids every tag, as it voids every parked card.
+_SECRET = secrets.token_bytes(32)
+
+
+def sign_call(name: str, arguments: dict | None, steps: list | None = None) -> str:
+    """The tag for one tool call: HMAC-SHA256 over its name, arguments and batch steps."""
+    body = json.dumps([name, arguments or {}, steps or []], sort_keys=True, separators=(",", ":"), default=str)
+    return hmac.new(_SECRET, body.encode(), hashlib.sha256).hexdigest()
+
+
+def signed(call: dict | None) -> dict | None:
+    """`call` ({"tool", "arguments", "steps"?}) with its `sig` added; anything else as it came."""
+    if not isinstance(call, dict) or not call.get("tool"):
+        return call
+    return {**call, "sig": sign_call(str(call["tool"]), call.get("arguments"), call.get("steps"))}
+
+
+def tag_matches(name: str, arguments: dict | None, steps: list | None, sig: str | None) -> bool:
+    """Whether `sig` is this server's tag for exactly this call."""
+    return bool(sig) and hmac.compare_digest(str(sig), sign_call(name, arguments, steps))
+
+
 def _now() -> float:
     return time.monotonic()
 
@@ -42,6 +69,9 @@ def park(proposal: dict) -> str:
         while len(_parked) >= MAX_PARKED:
             _parked.pop(next(iter(_parked)))
         key = secrets.token_urlsafe(12)
+        tool = proposal.get("tool")
+        if isinstance(tool, dict):  # the parked call is signed as it is parked
+            proposal = {**proposal, "tool": {**tool, "sig": sign_call(str(tool.get("name")), tool.get("arguments"))}}
         _parked[key] = (now + TTL_SECONDS, proposal)
     return key
 
@@ -80,6 +110,8 @@ def refusal_for_press(key: str | None, name: str, arguments: dict) -> str:
         return "That card is no longer waiting. Ask for it again."
     tool = held.get("tool")
     if not isinstance(tool, dict) or tool.get("name") != name or (tool.get("arguments") or {}) != (arguments or {}):
+        return "That card is for a different action."
+    if not tag_matches(name, arguments, None, tool.get("sig")):
         return "That card is for a different action."
     return ""
 

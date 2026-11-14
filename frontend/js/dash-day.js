@@ -138,6 +138,44 @@
     return got?.text || "";
   }
 
+  //: **The backup card's words** (L591): the daily backup's last success and
+  //: when the next is due, from `/backups` (newest) and `/jobs/last-runs`, so
+  //: "did last night's backup work?" is answered on the dashboard and not only
+  //: in Settings, Import & export (settings-data.js `backupScheduleWords`).
+  //: A failed last try is said even when an older backup exists.
+  function dashBackupWords(run, newest, now = new Date()) {
+    const at = newest ? parseServerTime(newest.created_at) : null;
+    if (!at) return { state: "none", big: "No backup yet", sub: run?.schedule || "Once a day, at the first start of the day." };
+    const sub = [run?.schedule || "Once a day, at the first start of the day."];
+    const failed = run?.ran && run.status === "failed";
+    if (failed) sub.push(`The last try failed${run.error ? `: ${run.error}` : ""}.`);
+    const due = new Date(at.getTime() + 24 * 3600 * 1000);
+    sub.push(due.getTime() <= now.getTime() ? "Due at the next start." : `Next due ${due.toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit", ...clockOptions() })}.`);
+    return { state: failed ? "failed" : "ok", big: `Last backup ${relativeTime(newest.created_at)}`, sub: sub.join(" ") };
+  }
+  //: end dashBackupWords
+
+  async function renderBackupsWidget(body) {
+    const [list, runs] = await Promise.all([
+      apiJson("/backups", { silent: true }),
+      apiJson("/jobs/last-runs", { silent: true, cacheMs: 1000 }).catch(() => null),
+    ]);
+    const run = runs?.jobs?.find((job) => job.kind === "backup");
+    const words = dashBackupWords(run, list?.find((b) => b.latest) || list?.[0] || null);
+    const big = document.createElement("p");
+    big.className = "dash-big";
+    big.textContent = words.big;
+    const sub = document.createElement("p");
+    sub.className = "muted";
+    sub.textContent = words.sub;
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "ghost small";
+    setLabel(open, "ph:gear Backup settings");
+    open.addEventListener("click", () => openSettingsModal("data", "backup-schedule"));
+    body.append(big, sub, open);
+  }
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { dashPatternBit, dashTodayLine, renderDayDigest });
+  Object.assign(window, { dashPatternBit, dashTodayLine, renderBackupsWidget, renderDayDigest });
 })();

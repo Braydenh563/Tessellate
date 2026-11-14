@@ -63,7 +63,7 @@ def load(session: Session) -> tuple[list[FactView], dict[int, NoteView]]:
     pairs = session.execute(
         select(DerivedFact, Entry)
         .join(Entry, Entry.id == DerivedFact.entry_id)
-        .where(DerivedFact.deleted_at.is_(None), DerivedFact.kind.in_(facts.KINDS), Entry.is_private.is_(False))
+        .where(DerivedFact.deleted_at.is_(None), DerivedFact.kind.in_(facts.JUDGED_KINDS), Entry.is_private.is_(False))
     ).all()
     rows, notes = [], {}
     for fact, entry in pairs:
@@ -95,7 +95,7 @@ def apply(session: Session, findings: list[Finding], stamp: str, at: datetime | 
     earlier check wrote that no longer holds. Returns the ids by action."""
     by_id = {item.fact_id: item for item in findings}
     done: dict[str, list[int]] = {"retired": [], "flagged": []}
-    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind.in_(facts.KINDS), DerivedFact.deleted_at.is_(None))):
+    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind.in_(facts.JUDGED_KINDS), DerivedFact.deleted_at.is_(None))):
         found = by_id.get(row.id)
         if _mark(row).get("restored") or (found is None and _mark(row).get("action") != "flag"):
             continue
@@ -171,6 +171,40 @@ def flags(session: Session) -> dict[int, str]:
         if mark.get("action") == "flag" and not mark.get("restored"):
             out[row.id] = mark.get("reason", "")
     return out
+
+
+def keep(session: Session, fact_id: int) -> bool:
+    """Keep it, on one flag (L584): the person's word that the row stands, so
+    the flag goes and no later check flags it again. The same `restored` mark
+    Undo writes, so the checks already leave it be. False when the row is not
+    an open flag."""
+    row = session.get(DerivedFact, fact_id)
+    if row is None or row.deleted_at is not None:
+        return False
+    mark = _mark(row)
+    if mark.get("action") != "flag" or mark.get("restored"):
+        return False
+    data = _payload(row)
+    data["audit"] = {**mark, "restored": True}
+    row.payload = json.dumps(data)
+    session.flush()
+    return True
+
+
+def unkeep(session: Session, fact_id: int) -> bool:
+    """Undo of `keep`: the flag is raised again. Only a kept flag, never the
+    `restored` mark an undone retirement carries."""
+    row = session.get(DerivedFact, fact_id)
+    if row is None or row.deleted_at is not None:
+        return False
+    mark = _mark(row)
+    if mark.get("action") != "flag" or not mark.get("restored"):
+        return False
+    data = _payload(row)
+    data["audit"] = {key: value for key, value in mark.items() if key != "restored"}
+    row.payload = json.dumps(data)
+    session.flush()
+    return True
 
 
 def undo(session: Session, stamp: str) -> int:

@@ -381,13 +381,12 @@ function nameMarkBuddyToggle() {
   } catch (e) {
     // Shown for this session at least.
   }
-  //: Through the Appearance select's own change, so a custom companion is
-  //: mounted and the size control follows, as when it is picked there.
+  //: The same steps as the Appearance select's change, run here: that
+  //: listener is wired only when Settings first opens (settings-controls.js),
+  //: and the select can exist before then (built for the palette's labels).
   const select = document.getElementById("avatar-buddy");
-  if (select) {
-    select.value = back;
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  } else {
-    syncNameMarkBuddy();
-  }
+  if (select) select.value = back;
+  mountBuddyCustom();
+  syncNameMarkBuddy();
+  if (select) nameMarkBuddySizeSelect();
 }

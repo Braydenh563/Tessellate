@@ -97,6 +97,16 @@ def _set(**changes) -> None:  # noqa: ANN003
         _lock.notify_all()
 
 
+def _trust_material(data_dir):  # noqa: ANN001, ANN202
+    """What `/lan/trust` hands a phone: the authority's public certificate and
+    its fingerprint, or None before there is one."""
+    from tessellate.core import lancert
+
+    pem = lancert.authority_pem(data_dir)
+    info = lancert.read(data_dir)
+    return (pem, info.authority_fingerprint) if pem and info else None
+
+
 class Listener:
     """One LAN listener, built on `start` and gone after `stop`."""
 
@@ -232,6 +242,8 @@ class Listener:
                 self.server, sock, port=port, gate=lantrust.is_open,
                 refresh=lambda: lantrust.refresh(data_dir), reopen=lambda: make_socket(port),
                 on_addresses=self._reissue,
+                plain_http=lambda: lantrust.plain_http_on(data_dir),
+                trust=lambda: _trust_material(data_dir),
             )
         )
         self.failed_at = 0.0

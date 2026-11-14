@@ -543,7 +543,7 @@
         await openDocument(doc.id);
         offerCreateUndo(doc);
       } catch (error) {
-        toast(error.message || "Couldn't make the diagram.", true);
+        toast(error.message || voiceLine("failed", { what: "make the diagram" }), true);
       } finally {
         open.disabled = false;
       }

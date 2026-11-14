@@ -227,6 +227,17 @@ LABELS: dict[str, str] = {
     "import": "Importing a folder of notes",
 }
 
+#: A kind whose label depends on the moment (L-world-class-6): the first
+#: note's filing waits on the search model loading, and "Filing a note" for
+#: those seconds read as the AI filing a note no AI could file yet. A reader
+#: here returns the label for now, or None for the kind's usual one.
+LIVE_LABELS: dict[str, Callable[[], str | None]] = {}
+
+
+def label_for(kind: str) -> str:
+    live = LIVE_LABELS.get(kind)
+    return (live() if live else None) or LABELS.get(kind, "Background job")
+
 
 #: Who started a job that a phone or another computer asked for (`core/origin.py`).
 ANOTHER_DEVICE = "another-device"
@@ -606,7 +617,7 @@ class Pool:
         hidden: dict[str, int] = {}
         for job in jobs:
             #: A pass's row is named for the pass ("Night shift").
-            label = job.name if job.kind == "pass" and job.name else LABELS.get(job.kind, "Background job")
+            label = job.name if job.kind == "pass" and job.name else label_for(job.kind)
             waiting = job.seq not in running
             if waiting:
                 shown[job.kind] = shown.get(job.kind, 0) + 1
@@ -855,10 +866,11 @@ def join_threads(timeout: float = 5.0) -> None:
 # message is a normal answer. Nothing here kills a thread: a stop is a flag
 # checked at the next boundary or a `terminate()` on a child process.
 
-#: kind -> "module:function". `embeddings` is absent: the warm-up is one
-#: blocking model load with nothing to check a flag between, so the panel
-#: says so rather than offering a button that would do nothing.
+#: kind -> "module:function". `embeddings` is the warm-up: a download in it
+#: stops after its file and nothing follows the load (L650); the load call
+#: itself is the one step that cannot be interrupted, and the row says so.
 CANCELLERS: dict[str, str] = {
+    "embeddings": "tessellate.ai.embeddings:stop_warmup",
     "reindex": "tessellate.ai.model_manager:stop_reindex",
     "pull": "tessellate.ai.model_manager:stop_pulls",
     "autonomous": "tessellate.ai.autonomous:stop_pass",

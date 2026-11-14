@@ -371,6 +371,13 @@ async function api(path, options = {}) {
     fetchOptions.signal = fetchOptions.signal || controller.signal;
   }
   let response;
+  //: A write while the banner is up is refused, with its words, not sent (22.1 item 6): a TypeError, as a dropped
+  //: connection is, so held notes still queue. Reads, sign-in and `/health` go on (how the app sees the server return).
+  //: `serverUnreachable` (status.js) is read last: a request made at load, before that file runs, never gets to it.
+  if (fetchOptions.method && !/^(GET|HEAD)$/.test(fetchOptions.method) && !readOnly && !path.startsWith("/auth/") && !path.startsWith("/health") && serverUnreachable) {
+    retryServerNow();
+    throw new TypeError(showServerDownBanner());
+  }
   //: Rule 4: a network-level failure of a read (GET, HEAD) retries itself
   //: twice, 300 then 600 ms apart, before anything is said; `api.retries`
   //: counts them. A write is never resent: it may have arrived.
@@ -416,7 +423,7 @@ async function api(path, options = {}) {
       noteServerDown();
     }
     //: "Failed to fetch" and its kin go to the log above; the toast gets a sentence.
-    if (networkErr instanceof TypeError) networkErr.message = "Tessellate is not answering. Is it still running?";
+    if (networkErr instanceof TypeError) networkErr.message = showServerDownBanner();
     throw networkErr;
   } finally {
     if (timer) clearTimeout(timer);
@@ -633,7 +640,7 @@ function startWithoutPassword() {
 }
 
 function enterWithoutPassword(body) {
-  localStorage.setItem("token", body.token);
+  prefs.set("token", body.token);
   vaultOpen = !!body.vault_open;
   lockedByHand = false;
   const opening = startApp();
@@ -941,12 +948,12 @@ function startApp() {
           // The lock screen already said what happened; a toast under it
           // repeating "Couldn't X: Locked" for every parallel step is noise
           // about one state dressed up as several failures.
-          if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+          if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
         });
       }
       return Promise.resolve(result);
     } catch (error) {
-      if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+      if (!error.isLockout) toast(voiceLine("failed", { what: label, why: error.message }), true);
       return Promise.resolve();
     }
   };
@@ -1537,6 +1544,7 @@ const LAZY_MODULES = {
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
+  wikiPeek: ["/js/citation-peek.js", "/js/wiki-peek.js"],
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
@@ -1579,7 +1587,7 @@ const LAZY_MODULES = {
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
-  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js", "/js/icon-picker-icons.js"],
   vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
@@ -1659,6 +1667,7 @@ const LAZY_MODULES = {
     "/js/documents-mermaid.js",
     "/js/documents-math.js",
     "/js/documents-comments.js",
+    "/js/documents-threads.js",
     "/js/documents-embeds.js",
     "/js/documents-tables.js",
     "/js/documents-columns.js",
@@ -1779,6 +1788,12 @@ document.addEventListener("focusin", (event) => {
   });
 });
 
+//: L573: a note's [[link]] previews its note on hover or focus (wiki-peek.js).
+for (const t of ["mouseover", "focusin"]) document.addEventListener(t, (e) => {
+  const el = e.target.closest?.(".wiki-link[data-wiki]");
+  if (el) ensureModule("wikiPeek").then((ok) => ok && wikiPeek(el, t == "focusin"));
+});
+
 //: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and dedenting across the app also doesnt come in the form it should"). The editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`) arrives with the Library bundle on a note box's first focus, and until it has, the box is a plain textarea: measured on a fresh boot, "- alpha" plus Tab moved focus to the tags field instead of indenting. This bridges that second or two with the same rule the editor applies: whole lines, two spaces, list items as blocks, Shift+Tab only when there is something to take off (so a flush-left caret still tabs backwards out of the box). Once the bundle is in, the textarea is replaced and this never runs.
 document.addEventListener("keydown", (event) => {
   const box = event.target;
@@ -1866,7 +1881,7 @@ const LAZY_ENTRY_POINTS = {
   //: Opened by a gesture; the closers are called only once it is open.
   search: ["openFinder"],
   statistics: ["openStatistics", "renderWeekWidget"],
-  meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
+  meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder", "noteRecording"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],

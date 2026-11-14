@@ -89,7 +89,7 @@ logger = logging.getLogger("tessellate.embeddings")
 
 # Warm-up bookkeeping so the UI can tell "still loading" from "failed"
 # (a silently failed load used to look like eternal "warming up…").
-_warmup = {"running": False, "started": False, "error": False}
+_warmup = {"running": False, "started": False, "error": False, "cancel": False}
 
 
 #: How long the warm-up waits before touching the model. Two seconds is longer
@@ -200,6 +200,7 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
             return
         _warmup["running"] = True
         _warmup["error"] = False
+        _warmup["cancel"] = False
         started = time.monotonic()
         try:
             service.embed_text("warm up")
@@ -220,6 +221,12 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
                     duration_ms=(time.monotonic() - started) * 1000,
                 )
         # Now that the model is up, catch any notes that missed out.
+        #: A Stop pressed during the load (L650) lands here: the load itself
+        #: is one blocking call, so the model stays loaded but nothing more is
+        #: started on this thread.
+        if _warmup["cancel"]:
+            logging.getLogger("tessellate.embeddings").info("embedding warm-up stopped after the model load")
+            return
         if session_factory is not None and not _warmup["error"]:
             backfill_missing(service, session_factory)
             # ...and build the retrieval engine's vector matrix once, here,
@@ -457,6 +464,21 @@ def warmup_running() -> bool:
 
 def warmup_failed() -> bool:
     return _warmup["error"]
+
+
+def stop_warmup(_name: str = "") -> tuple[bool, str]:
+    """Quit on the "Loading the embedding model" row (`jobs.CANCELLERS`):
+    (acted, message). Cooperative, like the re-index: a model download in
+    progress stops after its current file (`embedmodels.cancel`), and once
+    the load returns the warm-up does not go on to fill missing vectors or
+    build the retrieval matrix. The load call itself cannot be interrupted."""
+    if not _warmup["running"]:
+        return False, "The embedding model is not loading."
+    _warmup["cancel"] = True
+    import importlib
+
+    importlib.import_module("tessellate.core.embedmodels").cancel()
+    return True, "Asked the embedding model load to stop; it ends after the step it is on."
 
 
 def clean_orphaned_vectors(session_factory) -> int:  # noqa: ANN001
@@ -1116,8 +1138,7 @@ class EmbeddingService:
         if not self._download_allowed() and not (_package_present() and self._model_on_disk(repo)):
             self.awaiting_consent = True
             raise EmbeddingNeedsConsent(
-                "Search by meaning is not installed yet; search uses keywords until you allow the download "
-                "in Settings, Search and index (or Reinstall in Settings, Models)."
+                "Search by meaning is not installed yet; search uses keywords until you allow the download in Settings, Search and index."
             )
         from fastembed import TextEmbedding
 
@@ -1381,9 +1402,7 @@ class EmbeddingService:
         # pool worker held that long with captions queued behind it is the
         # pool starving itself, the exact failure a queue is supposed to
         # prevent. One per process, at most once ever (`_auto_install_attempted`).
-        threading.Thread(
-            target=_retry_once_installed, name="embedding-auto-install-watch", daemon=True
-        ).start()
+        jobs.thread("embedding-auto-install-watch", _retry_once_installed)
 
     def store_for_entry(self, session: Session, entry: Entry) -> bool:
         """Save an entry's vector. Returns False on failure, which only

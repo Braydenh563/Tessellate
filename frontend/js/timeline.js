@@ -1526,9 +1526,9 @@ function applyTimelineRowTabOrder() {
 //: the 62ms the feed took to build was this function's own time, nearly all
 //: of it in those calls. A formatter made with the same locale and options
 //: formats identically, so the text is unchanged.
-const TIMELINE_ROW_TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+const TIMELINE_ROW_TIME = clockOptions.formatter({ hour: "numeric", minute: "2-digit" });
 const TIMELINE_ROW_DAY = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
-const TIMELINE_ROW_WRITTEN = new Intl.DateTimeFormat(undefined, {
+const TIMELINE_ROW_WRITTEN = clockOptions.formatter({
   year: "numeric", month: "numeric", day: "numeric",
   hour: "numeric", minute: "numeric", second: "numeric",
 });

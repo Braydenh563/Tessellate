@@ -444,6 +444,39 @@ def context_rules() -> dict:
     return _read("memorymap_context_rules.json")
 
 
+@lru_cache(maxsize=1)
+def _context_index() -> tuple[tuple[str, re.Pattern, str, tuple[re.Pattern, ...], tuple[re.Pattern, ...]], ...]:
+    """Each rule as (its term, the term's pattern, its topic, the cues for it, the cues against it), compiled once."""
+
+    def phrase(text: str) -> re.Pattern:
+        return re.compile(r"\b" + re.escape(text.casefold()) + r"s?\b")
+
+    return tuple(
+        (r["term"].casefold(), phrase(r["term"]), r["candidate_topic"], tuple(map(phrase, r["positive_cues_any"])), tuple(map(phrase, r["competing_cues_any"])))
+        for r in context_rules()["rules"]
+    )
+
+
+def in_context(text: str, hits: dict[str, list[str]]) -> dict[str, list[str]]:
+    """`hits` with the pack's word-sense rules applied, one sentence at a time (L663): a sense
+    the sentence's words argue against ("bank" beside "river") loses the phrase, a sense they
+    argue for gains it, and a word with neither is left as the pack read it. Where both
+    speak, both senses stay (the rule's `abstain_or_retain_alternatives`)."""
+    out = {topic: list(phrases) for topic, phrases in hits.items()}
+    for sentence in re.split(r"[.!?\n]+", normalize_text(text or "").casefold()):
+        for said, pattern, topic, pro, con in _context_index():
+            if not pattern.search(sentence):
+                continue
+            for_it, against = any(p.search(sentence) for p in pro), any(c.search(sentence) for c in con)
+            if for_it and said not in out.get(topic, ()):
+                out.setdefault(topic, []).append(said)
+            elif against and not for_it and said in out.get(topic, ()):
+                out[topic].remove(said)
+                if not out[topic]:
+                    del out[topic]
+    return out
+
+
 # --- reviewed vocabulary (the pack's `memorymap_lexicon.py`) ----------------
 # Explicitly reviewed vocabulary only; nothing is learned from raw notes.
 

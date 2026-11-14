@@ -219,6 +219,8 @@ const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|ur
 //: it fails or says null).
 const noteEngine = {
   q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null,
+  //: The words to mark in the one note a search result opened (`flashEntry`).
+  opened: { id: null, terms: [] },
   body: { q: "", ids: null, pending: "" },
   live: { q: "", ids: null, pending: "" },
   ask(slot, q, load, fail, done = renderEntries) {
@@ -1628,6 +1630,7 @@ function renderNoteInline(element, text, terms) {
     const link = document.createElement("button");
     link.type = "button";
     link.className = "wiki-link";
+    link.dataset.wiki = name;
     const label = wikiLinkLabel(name);
     link.textContent = label;
     link.title = `Go to the note starting "${label}"`;
@@ -3772,7 +3775,7 @@ function offerWikiRename(entryId, saved) {
       toast(`Updated ${nounCount(done.rewritten, "note")}.`);
       await loadEntries().catch(() => {});
     } catch (error) {
-      toast(error.message || "Couldn't update those links.", true);
+      toast(error.message || voiceLine("failed", { what: "update those links" }), true);
     }
   });
 }

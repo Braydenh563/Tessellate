@@ -463,6 +463,7 @@ function changeRow(change, options = {}) {
             name: change.undo.tool,
             arguments: change.undo.arguments,
             steps: change.undo.steps,
+            sig: change.undo.sig,
           }),
         });
         if (result?.error) throw new Error(result.error);
@@ -474,7 +475,7 @@ function changeRow(change, options = {}) {
         loadEntries();
       } catch (error) {
         undo.disabled = false;
-        toast(error.message || "Couldn't undo that change.", true);
+        toast(error.message || voiceLine("failed", { what: "undo that change" }), true);
       }
     });
     undo.dataset.changeUndo = "1";
@@ -919,7 +920,7 @@ function rememberDraftVersion(text) {
   draftVersions.push({
     text: trimmed,
     words: wordCount(trimmed),
-    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }),
   });
   if (draftVersions.length > MAX_DRAFT_VERSIONS) draftVersions.shift();
   renderDraftVersions();

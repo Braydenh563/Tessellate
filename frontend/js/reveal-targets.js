@@ -437,6 +437,8 @@ const REVEAL_TARGETS = {
   "library-images": { tab: "library", open: () => revealLibrarySub('[data-media-kind="images"]'), el: "library-view-media", flash: false },
   "library-files": { tab: "library", open: () => revealLibrarySub('[data-media-kind="files"]'), el: "library-view-media", flash: false },
   "library-links": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-links"]'), el: "library-view-links", flash: false },
+  "library-boards": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-whiteboard"]'), el: "library-view-whiteboard", flash: false },
+  "library-recordings": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-recordings"]'), el: "library-view-recordings", flash: false },
   "library-skills": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-skills"]'), el: "library-view-skills", flash: false },
   "library-contents": { tab: "library", open: () => revealLibrarySub('[data-target="library-view-contents"]'), el: "library-view-contents", flash: false },
 

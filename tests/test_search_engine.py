@@ -374,6 +374,18 @@ def test_a_tag_filter_uses_the_indexed_tags(session):
     assert len(hits) == 1
 
 
+def test_a_tag_filter_applies_before_the_candidate_cut(session):
+    """L626: `tag:` narrows the MATCH in SQL, so a tagged note that ranks past
+    the candidate depth on its words is still found."""
+    from tessellate.search import engine
+
+    for index in range(6):
+        _note(session, f"planting planting planting plan {index}")
+    tagged = _note(session, "a long note that mentions planting once among many other words", tags=["garden"])
+    hits = engine.search(session, "tag:garden planting", ctx=None, hybrid=False, depth=3)
+    assert [hit.ref_id for hit in hits] == [tagged.id]
+
+
 def _hit_ids(session, q):
     from tessellate.search import engine
 

@@ -296,6 +296,7 @@ def _chats(session: Session, q: str = "") -> list[dict]:
                 # same reasoning the conversation list already used.
                 "preview": _clip(first_question),
                 "updated_at": chat.updated_at.isoformat(),
+                "last_at": _last_at(chat, messages),
                 "detail": f"{turns} turn{'' if turns == 1 else 's'}",
                 "size": turns,
                 "entry_id": None,
@@ -485,6 +486,13 @@ def _first_image_by_entry(session: Session, entry_ids: list[int]) -> dict[int, i
     return thumb_by_entry
 
 
+def _last_at(chat: Conversation, messages: list) -> str:
+    """When the chat was last spoken in: the last message's own stamp, else the row's time.
+    `updated_at` also moves on a pin or a rename, so the card shows this one (L512)."""
+    last = messages[-1].get("at") if messages and isinstance(messages[-1], dict) else None
+    return str(last or chat.updated_at.isoformat())
+
+
 def _shelved_chats(session: Session) -> list[dict]:
     items = []
     for chat in session.scalars(
@@ -508,6 +516,7 @@ def _shelved_chats(session: Session) -> list[dict]:
                 "title": chat.title or "Untitled chat",
                 "preview": _clip(first_question),
                 "updated_at": chat.archived_at.isoformat(),
+                "last_at": _last_at(chat, messages),
                 "detail": "archived",
                 "size": len(messages) // 2,
                 "entry_id": None,

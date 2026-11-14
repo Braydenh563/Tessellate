@@ -580,13 +580,41 @@
     const slots = qaSlotsOf(state);
     if (qaIntent(state.reading, "remind")) {
       const words = slots.due
-        ? `${slots.due.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ${slots.due.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`
+        ? `${slots.due.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ${slots.due.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}`
         : "when?";
       return {
         group: "Do it",
         label: `ph:bell Remind you: ${slots.title || query.trim()} (${words})`,
         about: "Makes the reminder the chips under the box describe. A missing day or time is asked in Reminders.",
         run: () => qaPaletteRemind(query.trim(), slots),
+      };
+    }
+    //: The other acts the reading names get a row each (L656): a note, a
+    //: meeting, and the search a "find ..." sentence asks for, so the sentence
+    //: is one Enter from what it says.
+    const read = state.reading.slots || {};
+    if (qaIntent(state.reading, "new_note") && read.content) {
+      return {
+        group: "Do it",
+        label: `ph:note-pencil Save as a note: ${String(read.content).slice(0, 60)}`,
+        about: "Opens Quick note with these words, ready to save.",
+        run: () => { openQuickNote(); setTimeout(() => { const box = $("quick-note-text"); box.value = String(read.content); box.dispatchEvent(new Event("input", { bubbles: true })); box.focus(); }, 60); },
+      };
+    }
+    if (qaIntent(state.reading, "meeting") && read.title) {
+      return {
+        group: "Do it",
+        label: `ph:users-three New meeting: ${String(read.title).slice(0, 60)}`,
+        about: "Opens the new meeting sheet with this title.",
+        run: () => openNewMeeting({ title: String(read.title) }),
+      };
+    }
+    if (qaIntent(state.reading, "find") && read.about) {
+      return {
+        group: "Do it",
+        label: `ph:magnifying-glass Search notes for: ${String(read.about).slice(0, 60)}`,
+        about: "Find anything, narrowed to notes.",
+        run: () => openFinder(String(read.about), { kind: "note" }),
       };
     }
     return null;
@@ -614,7 +642,7 @@
       reminderMadeUndo(reminder);
       toastAction(`Reminder set: ${relativeWhen(reminder.due_at)}.`, "Go to it", () => flashReminder(reminder.id), { go: { open: "reminder", id: reminder.id } });
     } catch (error) {
-      toast(error.message || "Couldn't set the reminder.", true);
+      toast(error.message || voiceLine("failed", { what: "set the reminder" }), true);
     }
   }
 
@@ -852,5 +880,7 @@
   });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: The per-field state, read by the quickadd.js sweep (L532); a property, not a new global.
+  quickAddAttach.fields = qaFields;
   Object.assign(window, { magicAddReminder, noteOffersAttach, quickAddAsk, quickAddAttach, quickAddClear, quickAddPaletteRow, quickAddSlots, reminderComposeAdd });
 })();

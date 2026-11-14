@@ -255,7 +255,11 @@ def track(
         raise
     except Exception as exc:
         if job.run is not None:
-            job.run.fail(str(exc) or type(exc).__name__)
+            from tessellate.core import jobruns
+
+            #: The worded reason, never `str(exc)`: an OSError's carries the
+            #: person's own path and an errno onto a screen line (L505).
+            job.run.fail(jobruns.failure_reason(exc))
         raise
     finally:
         finish(job)

@@ -39,6 +39,7 @@ async function renderPrefs() {
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";
   $("pref-date-order").value = prefsCache.date_order || "auto";
+  $("pref-time-format").value = prefsCache.time_format || "auto";
   $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;
   $("pref-insight").value = prefsCache.insight_level || "one";
   $("pref-profile").value = prefsCache.user_profile;
@@ -100,6 +101,7 @@ function renderAutonomousSettings() {
   $("pref-auto-tag").checked = prefsCache.auto_tag_enabled ?? true;
   $("pref-auto-link").checked = prefsCache.auto_link_enabled ?? true;
   $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
+  $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
   $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
   $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
   $("pref-mcp-writes").checked = Boolean(prefsCache.mcp_writes_enabled);
@@ -248,4 +250,21 @@ function syncEmbeddingPickerState(offline) {
   apply.title = usingOllama
     ? "Re-read every note with this model"
     : "Switch to the built-in model and re-read every note with it";
+}
+
+//: The profile box's count (moved from settings-panes.js, L611: its callers are here).
+//: The prompt reads the first 600 characters of About me
+//: (`librarian.PROFILE_ABOUT_CAP_CHARS`); the box stops there, and the count
+//: says how much is left. A profile saved before the cap may be longer, and
+//: then the line says which part Atlas reads rather than hiding the rest.
+const PROFILE_ABOUT_CAP = 600;
+
+function updateProfileCount() {
+  const line = $("pref-profile-count");
+  const box = $("pref-profile");
+  if (!line || !box) return;
+  const used = box.value.length;
+  line.textContent = used > PROFILE_ABOUT_CAP
+    ? `${used} characters; Atlas reads the first ${PROFILE_ABOUT_CAP}.`
+    : `${used} of ${PROFILE_ABOUT_CAP} characters.`;
 }

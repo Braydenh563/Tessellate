@@ -41,18 +41,24 @@ class WordBand:
     """The per-topic phrase index and the score it gives a question."""
 
     def __init__(self, topics: Iterable[dict], word: re.Pattern, stop: frozenset[str], keyword_in: Callable[[str, str], bool]) -> None:
-        topics = list(topics)
-        self._total = len(topics)
+        self._topics = list(topics)
+        self._total = len(self._topics)
         self._word = word
         self._stop = stop
         self._keyword_in = keyword_in
         self._phrases: dict[str, list[tuple[str, frozenset[str]]]] = {}
         self._topics_with: dict[str, int] = {}
-        for topic in topics:
+        self._built = False
+
+    def _build(self) -> None:
+        """The index, at the first question: stemming every keyword of every
+        topic is about 15 ms, and most runs never ask the Guide."""
+        for topic in self._topics:
             sets = [(k, self._words(k)) for k in topic["keywords"]]
             self._phrases[topic["id"]] = [(k, ws) for k, ws in sets if len(ws) >= 2]
             for w in set().union(*(ws for _, ws in sets)):
                 self._topics_with[w] = self._topics_with.get(w, 0) + 1
+        self._built = True
 
     def _words(self, text: str) -> frozenset[str]:
         return frozenset(stem(w) for w in self._word.findall(text.lower()) if w not in self._stop and len(w) > 2)
@@ -60,6 +66,8 @@ class WordBand:
     def score(self, question_words: Iterable[str], lowered: str, topic_id: str) -> float:
         """The best keyword phrase of the topic that the question holds two or
         more rare words of, short of the whole phrase (which scores on its own)."""
+        if not self._built:
+            self._build()
         asked = {stem(w) for w in question_words if len(w) > 2}
         best = 0.0
         for keyword, words in self._phrases[topic_id]:

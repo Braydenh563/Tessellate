@@ -260,6 +260,21 @@ class IndexesMixin:
         ("ix_document_bookmarks_bookmark", "document_bookmarks (bookmark_id)"),
         ("ix_entity_mentions_entry", "entity_mentions (entry_id)"),
         ("ix_entity_mentions_entity", "entity_mentions (entity_id)"),
+        # **Partial indexes over the rare live flags** (L-world-class-21, the
+        # census of WORLD_CLASS_PLAN 26.4: `entries.is_private` x54 and
+        # `is_board` x37 had no index leading on them). The flags are
+        # low-cardinality, so an index per flag is the wrong shape, and the
+        # first cut (`(is_private, is_board) WHERE is_deleted = 0`) was worse
+        # than none: SQLite took `is_private = 0` for a selective equality and
+        # put a sort on /timeline and on "every live note by id". What is
+        # worth an index is the *rare* value, held alone: the live private
+        # notes and the live boards, in id order. Planned at 5,000 notes,
+        # "live private" and "live boards" went from `SCAN entries` to a
+        # covering index read of just those rows. The common value
+        # (`is_private = 0`) stays a table read on purpose: it is nearly every
+        # row. `tests/test_indexes_at_5000.py` pins both halves.
+        ("ix_entries_live_private", "entries (id) WHERE is_deleted = 0 AND is_private = 1"),
+        ("ix_entries_live_boards", "entries (id) WHERE is_deleted = 0 AND is_board = 1"),
         # **The all-spaces orders** (WORLD_CLASS_PLAN 19.3, the whole
         # `EXPLAIN QUERY PLAN` pass, 2026-10-05: scratchpad/
         # plat1005_query_plans.py over every GET route at 5,000 notes). Every

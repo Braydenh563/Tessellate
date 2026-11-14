@@ -136,7 +136,7 @@
           reminderMadeUndo(made);
           toast(`Reminder set for ${card.phrase}.`);
         } catch (error) {
-          toast(error.message || "Couldn't make that reminder.", true);
+          toast(error.message || voiceLine("failed", { what: "make that reminder" }), true);
           event.currentTarget.disabled = false;
         }
       });
@@ -148,6 +148,8 @@
       if (key) marginDismissed.add(key);
       box.remove();
     });
+    //: I9: the way into Settings, What it learned, from the card itself.
+    actions.append(openSettingsModal.learnedLink(""));
     box.append(head, text);
     if (card.reason) box.append(reason);
     box.append(actions);

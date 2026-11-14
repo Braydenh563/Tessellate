@@ -1106,6 +1106,20 @@ function libraryActions(item) {
       makeMenuItem("ph:alarm Remind me", "Set a reminder about this document", () =>
         remindAbout({ title: item.title, documentId: item.id })
       ),
+      //: A document is joined to a note by attaching it (`POST /documents/{id}/notes`).
+      //: Inline, not a named function: the shared scope is on a ratchet (7406 names).
+      makeMenuItem("ph:link Link to…", "Attach a note to this document", async () => {
+        const other = await pickEntryDialog("Link to which note?");
+        if (!other) return;
+        try {
+          await apiJson(`/documents/${item.id}/notes`, { method: "POST", body: JSON.stringify({ entry_id: other.id }) });
+        } catch (error) {
+          toast(error.message, true);
+          return;
+        }
+        pushRoutePairUndo("Linked a note to a document", [`/documents/${item.id}/notes/${other.id}`, "DELETE"], [`/documents/${item.id}/notes`, "POST", { entry_id: other.id }]);
+        toast("Linked.");
+      }),
       makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
         await archiveDocumentWithUndo(item).catch((e) => toast(e.message, true));
         reload();
@@ -1281,6 +1295,8 @@ function libraryActions(item) {
       makeMenuItem("ph:chat-circle Ask Atlas about this", "Start a chat about this file", () =>
         askAtlasAboutThing("file", item.title)
       ),
+      //: A file is not a note, so its reminder is the words alone (no jump back).
+      makeMenuItem("ph:alarm Remind me", "Set a reminder about this file", () => remindAbout({ title: item.title })),
       // Live-reported: an uploaded file "can't be deleted", true for its
       // own ⋯ menu specifically; bulk-select delete already worked
       // (`library-bulk-delete` already has a `file` branch), but nothing
@@ -1737,8 +1753,10 @@ function libraryCard(item) {
   }
   const when = document.createElement("span");
   when.className = "library-card-when";
-  when.textContent = relativeTime(item.updated_at);
-  when.title = whenText(item.updated_at);
+  //: A chat shows when it was last spoken in (`last_at`), not when its row last changed (a pin or a rename moves that).
+  const shownAt = item.last_at || item.updated_at;
+  when.textContent = relativeTime(shownAt);
+  when.title = whenText(shownAt);
   foot.append(detail, when);
   card.appendChild(foot);
 
@@ -2206,7 +2224,7 @@ $("library-bulk-restore").addEventListener("click", async () => {
   }
   if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
   const failed = chosen.length - restored;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true, { action: ["Reload the list", loadLibrary] });
   loadLibrary();
   loadEntries();
   loadReminders();
@@ -2279,7 +2297,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   }
   if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
   const failed = chosen.length - deleted;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true, { action: ["Reload the list", loadLibrary] });
   loadLibrary();
   loadEntries();
 });
@@ -3485,7 +3503,7 @@ async function importLibraryDocuments(files) {
         });
       made.push(document_);
     } catch (error) {
-      toast(`Couldn't import “${file.name}”: ${error.message || "the file could not be read."}`, true);
+      toast(voiceLine("failed", { what: `import “${file.name}”`, why: error.message || "the file could not be read" }), true);
     }
   }
   if (!made.length) return;
@@ -3579,108 +3597,53 @@ function libraryDocsNewMount() {
   slot.replaceChildren(wrap);
 }
 
-async function renderLibraryDocuments() {
-  const list = document.getElementById("library-docs-list");
-  const empty = document.getElementById("library-docs-empty");
-  const noMatch = document.getElementById("library-docs-no-match");
-  if (!list) return;
-  const needle = (document.getElementById("library-docs-search")?.value || "")
-    .trim()
-    .toLowerCase();
+//: Scroll paging of the unfiltered list (L-world-class-68): `cursor` is the next page's.
+window.libraryDocsScroll = { page: 50, cursor: null, total: 0, gen: 0, all: false };
 
-  let docs = [];
-  showSkeletons(list, 4, "li");
-  //: The type table names a code card's kind; the library can open before
-  //: the Documents tab has asked for it.
-  await loadDocTypeTable();
-  libraryDocsNewMount();
-  try {
-    // `q` searches title *and* content server-side (routes_documents.py): 
-    // client-side filtering alone could only ever match a title, since a
-    // document's body is never sent to the browser in the list view.
-    //
-    //: Read to the end rather than one page (`apiPagedList`, documents.js).
-    //: `GET /documents` returns a page now (INBOX 117), and this list sorts
-    //: and pages *client-side* below: on one page of the server's rows,
-    //: sorting oldest-first would show the oldest of the newest two hundred
-    //: and call it the oldest, and the pager would offer pages that do not
-    //: exist. With `q` given the server counts the matches, not the table,
-    //: so the loop ends on the size of the search.
-    docs = await apiPagedList(
-      needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents",
-      DOCUMENTS_PAGE_SIZE
-    );
-  } catch {
-    list.replaceChildren();
-    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
-  } finally {
-    clearSkeletons(list);
+//: A reorder needs every document placed, so the first one on a partial list
+//: reads the rest and redraws the whole list, then asks for the move again.
+libraryDocsScroll.fill = function () {
+  libraryDocsScroll.all = true;
+  renderLibraryDocuments();
+};
+
+//: The next page when the list's end scrolls into view; a button too.
+libraryDocsScroll.watch = function (list) {
+  if (!libraryDocsScroll.cursor) return;
+  const gen = libraryDocsScroll.gen;
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "ghost small library-docs-more";
+  more.textContent = "Show more documents";
+  list.after(more);
+  let busy = false;
+  const seen = "IntersectionObserver" in window ? new IntersectionObserver((e) => e.some((x) => x.isIntersecting) && next(), { rootMargin: "200px" }) : null;
+  async function next() {
+    if (busy || gen !== libraryDocsScroll.gen || !libraryDocsScroll.cursor) return;
+    busy = true;
+    try {
+      const response = await api(`/documents?limit=${libraryDocsScroll.page}&cursor=${encodeURIComponent(libraryDocsScroll.cursor)}`);
+      const rows = await response.json();
+      if (gen !== libraryDocsScroll.gen) return;
+      libraryDocsScroll.cursor = response.headers.get("X-Next-Cursor");
+      libraryDocsAll = libraryDocsAll.concat(rows);
+      for (const doc of rows) list.appendChild(libraryDocsScroll.item(doc));
+      renderLibraryDocsPropertyFilter(libraryDocsAll);
+    } catch {
+      return;
+    } finally {
+      busy = false;
+    }
+    if (!libraryDocsScroll.cursor) {
+      seen?.disconnect();
+      more.remove();
+    }
   }
-  surfaceRecovered(empty);
-  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
-  if (!needle) {
-    libraryDocsAll = docs;
-    nounCount.dock("library-docs", docs.length, "document");
-  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
+  more.addEventListener("click", next);
+  seen?.observe(more);
+};
 
-  //: The property filter's options come from what the *search* left, so the
-  //: control offers the properties of the documents on screen rather than of
-  //: a list the reader has already narrowed past. Drawn before the rows are
-  //: filtered by it, because it is what decides whether the current choice is
-  //: still on offer at all.
-  renderLibraryDocsPropertyFilter(docs);
-  const propertyFiltered = Boolean(libraryDocsProperty);
-  if (propertyFiltered) docs = docs.filter(libraryDocsMatchesProperty);
-
-  // A reload can drop a document that was ticked (deleted, or filtered out
-  // by a new search) - drop it from the selection too, or the bar's count
-  // would go on including a row that no longer exists.
-  const liveIds = new Set(docs.map((d) => d.id));
-  for (const id of [...libraryDocsSelection]) {
-    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
-  }
-
-  list.replaceChildren();
-  const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
-  empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
-  //: One New document at a time: the empty state's own button is the action
-  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
-  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
-  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
-  noMatch?.classList.toggle("hidden", !isFilteredEmpty);
-  if (noMatch && isFilteredEmpty) {
-    //: Which of the two narrowings came up empty, said by name: "no documents
-    //: match" over a list the reader narrowed twice is an answer that does not
-    //: say which half to undo.
-    const [key, value] = libraryDocsProperty.split(LIBRARY_DOC_PROP_SEP);
-    const parts = [];
-    if (needle) parts.push(`match \u201C${needle}\u201D`);
-    if (propertyFiltered) parts.push(`have ${key} set to \u201C${value}\u201D`);
-    noMatch.textContent = `No documents ${parts.join(" and ")}.`;
-  }
-
-  // Sliced after the selection-cleanup above (which has to see every live
-  // id, not just the current page) and before the render loop below.
-  const pageBar = document.getElementById("library-docs-pagination");
-  //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
-  //: an array another reader holds.
-  docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
-  if (libraryDocsPageSize === "all" || !docs.length) {
-    pageBar?.classList.add("hidden");
-  } else {
-    const pageSize = Number(libraryDocsPageSize);
-    const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
-    libraryDocsCurrentPage = Math.min(Math.max(1, libraryDocsCurrentPage), totalPages);
-    const start = (libraryDocsCurrentPage - 1) * pageSize;
-    docs = docs.slice(start, start + pageSize);
-    pageBar?.classList.remove("hidden");
-    document.getElementById("library-docs-page-status").textContent =
-      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
-    document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
-    document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
-  }
-
-  for (const doc of docs) {
+libraryDocsScroll.item = function (doc) {
     const item = document.createElement("li");
 
     // Reported: "can't rename, multi select, or delete documents in the
@@ -3849,8 +3812,122 @@ async function renderLibraryDocuments() {
 
     open.append(top, body, menu);
     item.appendChild(open);
-    list.appendChild(item);
+    return item;
+};
+
+async function renderLibraryDocuments() {
+  const list = document.getElementById("library-docs-list");
+  const empty = document.getElementById("library-docs-empty");
+  const noMatch = document.getElementById("library-docs-no-match");
+  if (!list) return;
+  const needle = (document.getElementById("library-docs-search")?.value || "")
+    .trim()
+    .toLowerCase();
+
+  let docs = [];
+  let scrolled = false;
+  list.nextElementSibling?.classList.contains("library-docs-more") && list.nextElementSibling.remove();
+  showSkeletons(list, 4, "li");
+  //: The type table names a code card's kind; the library can open before
+  //: the Documents tab has asked for it.
+  await loadDocTypeTable();
+  libraryDocsNewMount();
+  try {
+    // `q` searches title *and* content server-side (routes_documents.py): 
+    // client-side filtering alone could only ever match a title, since a
+    // document's body is never sent to the browser in the list view.
+    //
+    //: Read to the end rather than one page (`apiPagedList`, documents.js).
+    //: `GET /documents` returns a page now (INBOX 117), and this list sorts
+    //: and pages *client-side* below: on one page of the server's rows,
+    //: sorting oldest-first would show the oldest of the newest two hundred
+    //: and call it the oldest, and the pager would offer pages that do not
+    //: exist. With `q` given the server counts the matches, not the table,
+    //: so the loop ends on the size of the search.
+    //: With nothing narrowing it (no search, no property, newest first, no page
+    //: size), one page and the rest on scroll; any narrowing reads it all.
+    libraryDocsScroll.gen++;
+    scrolled = !needle && !libraryDocsProperty && libraryDocSort() === "newest" && libraryDocsPageSize === "all" && !libraryDocsScroll.all;
+    if (scrolled) {
+      const first = await api(`/documents?limit=${libraryDocsScroll.page}`);
+      docs = await first.json();
+      Object.assign(libraryDocsScroll, { cursor: first.headers.get("X-Next-Cursor"), total: Number(first.headers.get("X-Total-Count")) || docs.length });
+    } else {
+      libraryDocsScroll.cursor = null;
+      docs = await apiPagedList(needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents", DOCUMENTS_PAGE_SIZE);
+    }
+  } catch {
+    list.replaceChildren();
+    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
+  } finally {
+    clearSkeletons(list);
   }
+  surfaceRecovered(empty);
+  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
+  if (!needle) {
+    libraryDocsAll = docs;
+    nounCount.dock("library-docs", scrolled ? libraryDocsScroll.total : docs.length, "document");
+  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
+
+  //: The property filter's options come from what the *search* left, so the
+  //: control offers the properties of the documents on screen rather than of
+  //: a list the reader has already narrowed past. Drawn before the rows are
+  //: filtered by it, because it is what decides whether the current choice is
+  //: still on offer at all.
+  renderLibraryDocsPropertyFilter(docs);
+  const propertyFiltered = Boolean(libraryDocsProperty);
+  if (propertyFiltered) docs = docs.filter(libraryDocsMatchesProperty);
+
+  // A reload can drop a document that was ticked (deleted, or filtered out
+  // by a new search) - drop it from the selection too, or the bar's count
+  // would go on including a row that no longer exists.
+  const liveIds = new Set(docs.map((d) => d.id));
+  for (const id of [...libraryDocsSelection]) {
+    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
+  }
+
+  list.replaceChildren();
+  const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
+  empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
+  //: One New document at a time: the empty state's own button is the action
+  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
+  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  noMatch?.classList.toggle("hidden", !isFilteredEmpty);
+  if (noMatch && isFilteredEmpty) {
+    //: Which of the two narrowings came up empty, said by name: "no documents
+    //: match" over a list the reader narrowed twice is an answer that does not
+    //: say which half to undo.
+    const [key, value] = libraryDocsProperty.split(LIBRARY_DOC_PROP_SEP);
+    const parts = [];
+    if (needle) parts.push(`match \u201C${needle}\u201D`);
+    if (propertyFiltered) parts.push(`have ${key} set to \u201C${value}\u201D`);
+    noMatch.textContent = `No documents ${parts.join(" and ")}.`;
+  }
+
+  // Sliced after the selection-cleanup above (which has to see every live
+  // id, not just the current page) and before the render loop below.
+  const pageBar = document.getElementById("library-docs-pagination");
+  //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
+  //: an array another reader holds.
+  docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
+  if (libraryDocsPageSize === "all" || !docs.length) {
+    pageBar?.classList.add("hidden");
+  } else {
+    const pageSize = Number(libraryDocsPageSize);
+    const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
+    libraryDocsCurrentPage = Math.min(Math.max(1, libraryDocsCurrentPage), totalPages);
+    const start = (libraryDocsCurrentPage - 1) * pageSize;
+    docs = docs.slice(start, start + pageSize);
+    pageBar?.classList.remove("hidden");
+    document.getElementById("library-docs-page-status").textContent =
+      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
+    document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
+    document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
+  }
+
+  for (const doc of docs) list.appendChild(libraryDocsScroll.item(doc));
+  if (scrolled) libraryDocsScroll.watch(list);
   syncLibraryDocsSelectbar();
 }
 
@@ -3897,7 +3974,7 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   libraryDocsSelection.clear();
   if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
   const failed = ids.length - deleted;
-  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true, { action: ["Reload the list", renderLibraryDocuments] });
   renderLibraryDocuments();
 });
 
@@ -4486,9 +4563,22 @@ function ocrSelectRegion(index) {
 //: panel never disagree about what was read. Which field the sections came
 //: from is kept for Delete reading, which clears that one.
 let ocrWorkspaceReadings = [];
-function ocrRenderOtherReadings(body) {
+//: The fold also reads `GET /files/readings`, as the lightbox does: stored rows replace a reading's text or add one the answer lacked.
+function ocrRenderOtherReadings(body, stored) {
   const box = $("ocr-other-readings");
-  ocrWorkspaceReadings = Array.isArray(body?.readings) ? body.readings : [];
+  ocrWorkspaceReadings = (body?.readings || []).map((r) => ({ ...r }));
+  for (const [kind, source] of [["vision", "vision"], ["ocr", "tesseract"]]) {
+    const row = (stored || []).find((r) => r.kind === kind && !r.page && (r.text || "").trim());
+    const have = ocrWorkspaceReadings.find((r) => r.source === source);
+    if (row && have) have.text = row.text;
+    else if (row) ocrWorkspaceReadings.push({ source, text: row.text, label: kind === "ocr" ? "Read with Tesseract OCR" : `Read by ${row.model || "a vision model"}` });
+  }
+  const image = ocrWorkspaceCurrent;
+  if (!stored && image?.id) {
+    apiJson(`/files/readings?source=${image._isAttachment ? "attachment" : "upload"}&id=${image.id}`).then((rows) => {
+      if (ocrWorkspaceCurrent === image && Array.isArray(rows)) ocrRenderOtherReadings(body, rows);
+    }).catch(() => {});
+  }
   if (!box) return;
   box.replaceChildren();
   const others = ocrWorkspaceReadings.filter((r) => !r.in_regions && (r.text || "").trim());
@@ -5409,7 +5499,7 @@ async function ocrRunRegion(mode) {
   const blob = await ocrRegionCrop();
   if (!blob) {
     buttons.forEach((b) => b && (b.disabled = false));
-    toast("That region couldn't be cut out of the page.", true);
+    toast("That region couldn't be cut out of the page.", true, { action: ["Try again", () => ocrRunRegion(mode)] });
     return;
   }
   const form = new FormData();
@@ -7376,6 +7466,7 @@ async function ocrReadImage(image, button) {
   try {
     const kind = ocrIsLocal(reader) ? "ocr" : "vision-ocr";
     const before = ocrFieldText(kind);
+    const beforeModel = image.vision_ocr_model || "";
     const row = await trackOcrRead(
       image,
       label,
@@ -7389,7 +7480,11 @@ async function ocrReadImage(image, button) {
     //: A fresh read replaces the reading that was there, the first read after
     //: an engine install included: undo puts the old one back.
     if (after !== before.trim()) {
-      pushUndo(`Read with ${ocrReaderNameFor(reader)}`, ocrTextWriter(image, kind, before), ocrTextWriter(image, kind, after));
+      pushUndo(
+        `Read with ${ocrReaderNameFor(reader)}`,
+        ocrTextWriter(image, kind, before, false, beforeModel),
+        ocrTextWriter(image, kind, after, false, row?.vision_ocr_model || ""),
+      );
     }
     //: Re-read rather than render the response: the regions endpoint is the
     //: one thing that knows how to turn either reader's answer into boxes, and
@@ -8563,9 +8658,13 @@ function ocrFieldText(kind) {
 
 //: `edited` is the redo's flag: an edit redone is still the person's
 //: correction (`VisionOcrBody.edited`), and the reading it undoes to is not.
-function ocrTextWriter(image, kind, text, edited = false) {
+//: `model` (L517): a vision reading's reader, put back with its text by Undo
+//: and Redo of a fresh read; undefined leaves the stored name alone.
+function ocrTextWriter(image, kind, text, edited = false, model = undefined) {
   return async () => {
-    await analyseMediaRow(image, kind, edited ? { text, edited: true } : { text });
+    const payload = edited ? { text, edited: true } : { text };
+    if (kind === "vision-ocr" && model !== undefined) payload.model = model;
+    await analyseMediaRow(image, kind, payload);
     await ocrRepaintReading(image);
   };
 }
@@ -9906,6 +10005,12 @@ function filterLibraryImagesGallery() {
         if (next === (image.ocr_text || "")) return cancel();
         finish(next); // optimistic, corrected below if the server refuses it
         try {
+          if (!next) {
+            //: Emptying the box deletes the whole reading, so it goes to the bin like the workspace's Delete (L581).
+            const binned = await ocrBinField(image, "ocr");
+            ocrOfferBinUndo(image, "Delete the reading", "Reading moved to the bin.", binned, () => ocrBinField(image, "ocr"));
+            return;
+          }
           const updated = await analyseMediaRow(image, "ocr", { text: next });
           setOcrState(updated.ocr_text);
         } catch (error) {
@@ -10094,6 +10199,11 @@ function filterLibraryImagesGallery() {
         // about text that no longer exists.
         finish(next, next ? previousModel : "");
         try {
+          if (!next) {
+            const binned = await ocrBinField(image, "vision-ocr");
+            ocrOfferBinUndo(image, "Delete the reading", "Reading moved to the bin.", binned, () => ocrBinField(image, "vision-ocr"));
+            return;
+          }
           const updated = await analyseMediaRow(image, "vision-ocr", { text: next });
           setVisionOcrState(updated.vision_ocr_text, updated.vision_ocr_model);
         } catch (error) {
@@ -11346,7 +11456,7 @@ async function bulkDeleteLibraryBoards() {
     });
   }
   const failed = boards.length - deleted;
-  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true, { action: ["Reload the list", loadLibrary] });
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
@@ -11514,7 +11624,7 @@ renderBookmarks.file = {
       if (!response.ok) throw new Error(`The server answered ${response.status}`);
       await saveFile("tessellate-bookmarks.html", await response.blob());
     } catch (e) {
-      toast(`Couldn't export your bookmarks: ${e.message}.`, true, { action: ["Try again", () => renderBookmarks.file.save()] });
+      toast(voiceLine("failed", { what: "export your bookmarks", why: e.message }), true, { action: ["Try again", () => renderBookmarks.file.save()] });
     }
   },
 };
@@ -11535,7 +11645,7 @@ async function deleteBookmarksWithUndo(links) {
   }
   libraryLinksSelection.clear();
   const failed = links.length - deleted;
-  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true, { action: ["Reload the list", renderBookmarks] });
   await renderBookmarks();
   if (!deleted) return;
   const restore = async () => {
@@ -12428,7 +12538,7 @@ function bookmarkRow(bookmark) {
 //: The Group by select's value, kept for the next visit (a per-viewer
 //: convenience, so `localStorage`, and a blocked one only forgets it).
 const CONTENTS_GROUP_KEY = "contents-group";
-const CONTENTS_GROUPS = ["category", "tag", "topic", "date", "folder"];
+const CONTENTS_GROUPS = ["category", "tag", "topic", "date", "folder", "type"];
 //: INBOX 547: By topic reads the graph's topics (`/graph/structure?topics=1`),
 //: fetched only in that mode; null when the fetch failed.
 let contentsTopics = null;
@@ -12450,6 +12560,7 @@ const contentsCollapsed = {
   topic: new Set(),
   date: new Set(),
   folder: new Set(),
+  type: new Set(),
 };
 // A big notebook can have a group with hundreds of notes; nobody scans
 // past this many in one section, and rendering them all would be the one
@@ -12519,6 +12630,9 @@ function contentsGroups(entries) {
     const topicOf = contentsTopics?.topic_of || {};
     const names = contentsTopicNames();
     for (const entry of entries) addTo(names.get(topicOf[String(entry.id)]) || CONTENTS_NO_TOPIC, entry);
+  } else if (contentsMode === "type") {
+    //: `note_type` is the `type:` property of the note's `---` block (Meeting, Book, a type you made).
+    for (const entry of entries) addTo(entry.note_type || "No type", entry);
   } else if (contentsMode === "date") {
     for (const entry of entries) {
       addTo(contentsMonthKey(entry.created_at || entry.updated_at || Date.now()), entry);
@@ -12562,6 +12676,8 @@ function contentsOrderedKeys(groups) {
     const order = [...contentsTopicNames().values(), CONTENTS_NO_TOPIC];
     return keys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
   }
+  //: The types by name, the notes with none last: where nothing is filed comes after where something is.
+  if (contentsMode === "type") return keys.sort((a, b) => (a === "No type") - (b === "No type") || a.localeCompare(b));
   //: Newest month first: an index by time is read from now backwards.
   if (contentsMode === "date") return keys.sort((a, b) => b.localeCompare(a));
   //: Folders in path order, with the two synthetic groups last: they are
@@ -12788,7 +12904,7 @@ function contentsGroupMark(key) {
     return dot;
   }
   return contentsGlyph(
-    contentsMode === "tag" ? "ph-hash" : contentsMode === "date" ? "ph-calendar-blank" : "ph-folder"
+    contentsMode === "tag" ? "ph-hash" : contentsMode === "date" ? "ph-calendar-blank" : contentsMode === "type" ? "ph-shapes" : "ph-folder"
   );
 }
 
@@ -13254,15 +13370,11 @@ async function remindAbout({ title, entryId = null, documentId = null }) {
 //: note's images live: pasted, dropped and AI-attached pictures all end up as
 //: `![alt](/media/…)` in the body, and there is no column that mirrors them.
 //:
-//: Only this app's own stored files. An external `https://` image in a note is
-//: skipped on purpose: the CSP blocks it (`img-src 'self' data: blob:`), so a
-//: thumbnail built from one would be a guaranteed broken frame, which is worse
-//: than no thumbnail at all.
+//: Only this app's own stored files (`ownFileLinks` in att-chip.js keeps the rule).
 
 function noteFirstImage(content) {
-  const match = /!\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\n]{1,500})\)/.exec(content || "");
-  if (!match) return null;
-  return { alt: match[1] || "", url: match[2] };
+  const m = ownFileLinks(content).find((link) => link[1]);
+  return m ? { alt: m[2], url: m[3] } : null;
 }
 
 //: A note's picture, wherever it lives, the markdown, or the attachments

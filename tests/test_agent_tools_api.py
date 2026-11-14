@@ -4,6 +4,8 @@ preferences, and hallucinated-write recovery."""
 
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 import json
 
 from tessellate.ai import tools
@@ -195,7 +197,7 @@ def test_agent_runs_tool_then_answers(ai_client, fake_ollama):
     assert events[-1]["type"] == "done"
 
     # Confirm (the card's button, or a typed yes) runs it.
-    ran = ai_client.post("/chat/tools/execute", json={"name": confirms[0]["name"], "arguments": confirms[0]["arguments"]})
+    ran = ai_client.post("/chat/tools/execute", json=call(confirms[0]["name"], confirms[0]["arguments"]))
     assert ran.status_code == 200
     assert any(e["content"] == "buy milk" for e in ai_client.get("/entries").json())
 
@@ -239,7 +241,7 @@ def test_confirmed_tool_executes_via_endpoint(ai_client):
 
     response = ai_client.post(
         "/chat/tools/execute",
-        json={"name": "delete_note", "arguments": {"note_id": saved["id"]}},
+        json=call("delete_note", {"note_id": saved["id"]}),
     )
     assert response.status_code == 200
     assert "recycle bin" in response.json()["label"]
@@ -252,11 +254,11 @@ def test_confirmed_tool_executes_via_endpoint(ai_client):
 
 def test_execute_endpoint_rejects_unknown_and_bad_calls(ai_client):
     assert (
-        ai_client.post("/chat/tools/execute", json={"name": "nope"}).status_code == 404
+        ai_client.post("/chat/tools/execute", json=call("nope")).status_code == 404
     )
     response = ai_client.post(
         "/chat/tools/execute",
-        json={"name": "delete_note", "arguments": {"note_id": 12345}},
+        json=call("delete_note", {"note_id": 12345}),
     )
     assert response.status_code == 400
 
@@ -296,7 +298,7 @@ def test_agent_works_on_an_empty_notebook(ai_client, fake_ollama):
     events = _stream_events(ai_client, "save my first note")
     confirm = next(e for e in events if e["type"] == "confirm")  # parked for consent (owner, 2026-11-10)
     assert not ai_client.get("/entries").json()
-    ai_client.post("/chat/tools/execute", json={"name": confirm["name"], "arguments": confirm["arguments"]})
+    ai_client.post("/chat/tools/execute", json=call(confirm["name"], confirm["arguments"]))
     assert any(e["content"] == "first ever note" for e in ai_client.get("/entries").json())
 
 
@@ -607,18 +609,18 @@ def test_undo_of_a_change_to_several_notes_runs_through_execute(ai_client):
     second = _save(ai_client, "buy gas canisters")
     done = ai_client.post(
         "/chat/tools/execute",
-        json={"name": "tag_note", "arguments": {"note_ids": [first["id"], second["id"]], "add": ["trip"]}},
+        json=call("tag_note", {"note_ids": [first["id"], second["id"]], "add": ["trip"]}),
     ).json()
     undo = done["undo"]
     assert undo["tool"] == "batch" and len(undo["steps"]) == 2
 
-    response = ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "steps": undo["steps"]})
+    response = ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "steps": undo["steps"], "sig": undo["sig"]})
     assert response.status_code == 200, response.text
     tags = {e["id"]: e.get("tags") or [] for e in ai_client.get("/entries").json()}
     assert "trip" not in tags[first["id"]] and "trip" not in tags[second["id"]]
 
     # A batch only carries registry tools, never another batch.
-    nested = ai_client.post("/chat/tools/execute", json={"name": "batch", "steps": [{"tool": "batch", "steps": []}]})
+    nested = ai_client.post("/chat/tools/execute", json=call("batch", None, [{"tool": "batch", "steps": []}]))
     assert nested.status_code == 404
 
 

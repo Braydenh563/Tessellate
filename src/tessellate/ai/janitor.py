@@ -162,6 +162,7 @@ def categorise(
     exclude_entry_id: int | None = None,
     on_late_llm=None,  # noqa: ANN001 - has .arrived(category, confidence) and .waiting()
     model_deadline: float | None = None,
+    release_session: bool = False,
 ) -> tuple[str, int, str]:
     """Decide (category_name, confidence 0-100, method) for a new note.
 
@@ -217,7 +218,7 @@ def categorise(
 
     category, confidence, method = _ask_llm(
         session, content, model_manager, ollama, on_late=on_late_llm, deadline=model_deadline,
-        exclude_entry_id=exclude_entry_id,
+        exclude_entry_id=exclude_entry_id, release_session=release_session,
     )
     if method == "timeout":
         # The model is still answering and its answer will be applied when
@@ -620,6 +621,7 @@ def _ask_llm(
     on_late=None,  # noqa: ANN001
     deadline: float | None = None,
     exclude_entry_id: int | None = None,
+    release_session: bool = False,
 ) -> tuple[str, int, str]:
     if not ollama.is_running():
         return UNCATEGORISED, 0, "none"
@@ -635,6 +637,12 @@ def _ask_llm(
     # place every week, with the user moving it every week, is the reported
     # failure this answers.
     user_prompt = librarian.filing_prompt(session, content, existing, exclude_entry_id=exclude_entry_id)
+    #: A request that files inline ends its read transaction before the wait,
+    #: so its pooled connection goes back while the model thinks (L690); the
+    #: session takes one again for the calibration read after the answer.
+    #: Only when nothing is pending: a commit here must never save half a change.
+    if release_session and not (session.new or session.dirty or session.deleted):
+        session.commit()
     try:
         reply = _chat_within_deadline(
             ollama,
@@ -901,6 +909,41 @@ def _stall_set(ollama: object, until: float | None) -> None:
         logger.debug("janitor: no stall memory for %r", type(ollama))
 
 
+def _take_model_slot(ollama: OllamaClient, waits_for_it: bool) -> bool:
+    """A call that does not wait for the model takes one of the filing slots,
+    or is refused when the model is stalled or every slot is taken. True when
+    a slot was taken (the caller releases it)."""
+    if waits_for_it:
+        return False
+    if _stalled(ollama):
+        raise ModelStalled("filing model stalled")
+    if not _model_slots.acquire(blocking=False):
+        logger.info("janitor: %d notes are already waiting on the model; filing this one by meaning", FILING_MODEL_CONCURRENCY)
+        raise ModelStalled("filing model busy")
+    return True
+
+
+def _takes_mode(chat) -> bool:  # noqa: ANN001
+    """Whether this provider's `chat` takes a `mode`."""
+    try:
+        return "mode" in inspect.signature(chat).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _apply_late(reply: dict, on_late, late: int) -> None:  # noqa: ANN001
+    """A filing answer that came after the caller gave up: applied when there
+    is somewhere to apply it, and taken off the late count either way."""
+    try:
+        if on_late is not None:
+            on_late(reply)
+    except Exception:  # noqa: BLE001
+        logger.warning("janitor: applying a late filing answer failed", exc_info=True)
+        _uncount_late(late, "The late answer came but could not be applied", "failed")
+    finally:
+        _uncount_late(late, "The late answer came and was applied")
+
+
 def _chat_within_deadline(
     ollama: OllamaClient,
     model: str,
@@ -913,19 +956,9 @@ def _chat_within_deadline(
     provider takes a mode: a filing reply is one line of JSON, and a
     reasoning model left to think first is most of the minute."""
     waits_for_it = deadline >= BLOCKING_MODEL_DEADLINE_SECONDS
-    if not waits_for_it and _stalled(ollama):
-        raise ModelStalled("filing model stalled")
-    slot = False
-    if not waits_for_it:
-        if not _model_slots.acquire(blocking=False):
-            logger.info("janitor: %d notes are already waiting on the model; filing this one by meaning", FILING_MODEL_CONCURRENCY)
-            raise ModelStalled("filing model busy")
-        slot = True
+    slot = _take_model_slot(ollama, waits_for_it)
     try:
-        try:
-            takes_mode = "mode" in inspect.signature(ollama.chat).parameters
-        except (TypeError, ValueError):
-            takes_mode = False
+        takes_mode = _takes_mode(ollama.chat)
         outcome: dict = {}
         lock = threading.Lock()
 
@@ -961,19 +994,14 @@ def _chat_within_deadline(
                 raise
             if settle("reply", reply):
                 _stall_set(ollama, None)  # it answered after all: ask it again
-                try:
-                    if on_late is not None:
-                        on_late(reply)
-                except Exception:  # noqa: BLE001
-                    logger.warning("janitor: applying a late filing answer failed", exc_info=True)
-                    _uncount_late(outcome.get("late", 0), "The late answer came but could not be applied", "failed")
-                finally:
-                    _uncount_late(outcome.get("late", 0), "The late answer came and was applied")
+                _apply_late(reply, on_late, outcome.get("late", 0))
 
         #: The request's context too, so a call made for a request is named
         #: for it ("Create entry") rather than "AI request to <model>".
-        worker = threading.Thread(target=contextvars.copy_context().run, args=(run,), name="mm-filing-chat", daemon=True)
-        worker.start()
+        from tessellate.core import jobs
+
+        context = contextvars.copy_context()
+        worker = jobs.thread("mm-filing-chat", lambda: context.run(run))
         worker.join(deadline)
         with lock:
             if "reply" not in outcome and "error" not in outcome:

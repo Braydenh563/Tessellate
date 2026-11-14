@@ -271,6 +271,52 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
     return _js_scan(text)[0]
 
 
+def _js_comment(text: str, i: int, nxt: str, every: list, spans: list, keep: list) -> int:
+    """Record the `//` or `/*` comment at `i` (a kept one in `keep`, the rest
+    in `spans`, every one in `every`) and return where it ends."""
+    n = len(text)
+    if nxt == "/":
+        end = i + 2
+        while end < n and text[end] not in "\r\n":
+            end += 1
+    else:
+        end = text.find("*/", i + 2)
+        end = n if end == -1 else end + 2
+    every.append((i, end))
+    if not _keep(text[i:end]):
+        spans.append((i, end))
+    elif nxt == "*":
+        keep.append((i, end))
+    return end
+
+
+def _closes_substitution(templates: list[int]) -> bool:
+    """A `}` outside a string: True when it closes the innermost `${`."""
+    if not templates:
+        return False
+    if templates[-1] == 0:
+        templates.pop()
+        return True
+    templates[-1] -= 1
+    return False
+
+
+def _template_step(text: str, i: int, tstart: int, keep: list, templates: list[int]) -> tuple[int, bool]:
+    """At the next special character inside template text: where to go on
+    from, and whether that is still template text."""
+    ch = text[i]
+    if ch == "\\":
+        return i + 2, True
+    if ch == "`":
+        keep.append((tstart, i))
+        return i + 1, False
+    if text[i + 1 : i + 2] == "{":
+        keep.append((tstart, i))
+        templates.append(0)
+        return i + 2, False
+    return i + 1, True
+
+
 def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
     """(comment spans, ranges whose inner line starts are data), in order."""
     spans: list[tuple[int, int]] = []
@@ -294,21 +340,7 @@ def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
             if m is None:
                 keep.append((tstart, n))
                 return spans, _keep_after(keep, doubt, n)
-            i = m.start()
-            ch = text[i]
-            if ch == "\\":
-                i += 2
-            elif ch == "`":
-                keep.append((tstart, i))
-                in_template = False
-                i += 1
-            elif text[i + 1 : i + 2] == "{":
-                keep.append((tstart, i))
-                templates.append(0)
-                in_template = False
-                i += 2
-            else:
-                i += 1
+            i, in_template = _template_step(text, m.start(), tstart, keep, templates)
             continue
         m = _JS_NEXT.search(text, i)
         if m is None:
@@ -328,33 +360,14 @@ def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
                 templates[-1] += 1
             i += 1
         elif ch == "}":
-            if templates:
-                if templates[-1] == 0:
-                    templates.pop()
-                    in_template = True
-                    tstart = i + 1
-                else:
-                    templates[-1] -= 1
+            if _closes_substitution(templates):
+                in_template = True
+                tstart = i + 1
             i += 1
         else:  # "/"
             nxt = text[i + 1 : i + 2]
-            if nxt == "/":
-                end = i + 2
-                while end < n and text[end] not in "\r\n":
-                    end += 1
-                every.append((i, end))
-                if not _keep(text[i:end]):
-                    spans.append((i, end))
-                i = end
-            elif nxt == "*":
-                end = text.find("*/", i + 2)
-                end = n if end == -1 else end + 2
-                every.append((i, end))
-                if _keep(text[i:end]):
-                    keep.append((i, end))
-                else:
-                    spans.append((i, end))
-                i = end
+            if nxt and nxt in "/*":
+                i = _js_comment(text, i, nxt, every, spans, keep)
             elif _js_regex_allowed(text, i, every):
                 end = _skip_regex(text, i)
                 i = i + 1 if end is None else end

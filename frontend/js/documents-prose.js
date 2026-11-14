@@ -170,7 +170,7 @@ function docGrammarMessage(message) {
 //: doc]] chip" came back as a redundancy ("Use another on its own") whose
 //: only fix was "aNother", measured in the live view 2026-10-04. A lint that
 //: touches a link or an embed (`![[...]]`) is dropped; one beside it is kept.
-const DOC_GRAMMAR_WIKI = /!?\[\[[^\]\n]+\]\]/g;
+const DOC_GRAMMAR_WIKI = /!?\[\[[^\]\n]{1,99}\]\]/g;
 
 function docGrammarOutside(text) {
   const spans = [];
@@ -392,6 +392,7 @@ async function docLinkOfferIgnore(name) {
   const save = async (names) => {
     prefsCache = await apiJson("/preferences", {
       method: "PUT",
+      noHistory: true,
       body: JSON.stringify({ link_offer_ignored: names }),
     }).catch(() => prefsCache);
     renderDocProse();
@@ -959,7 +960,7 @@ function docAccessFindings(text) {
   };
   let match;
   //: Links and images in one pass: `!` in front makes it an image.
-  const links = /(!?)\[([^\]\n]*)\]\(([^)\s]+)[^)\n]*\)/g;
+  const links = /(!?)\[([^\]\n]{0,99})\]\(([^)\s]{1,99})(?:\s[^)\n]{0,99})?\)/g;
   while ((match = links.exec(src)) !== null) {
     const words = match[2].trim();
     if (match[1] === "!") {
@@ -1548,10 +1549,10 @@ function docFillDate(kind, now, locale) {
   const loc = locale || undefined;
   if (kind === "today") return now.toLocaleDateString(loc, { year: "numeric", month: "long", day: "numeric" });
   if (kind === "date") return now.toLocaleDateString(loc, { year: "numeric", month: "2-digit", day: "2-digit" });
-  if (kind === "time") return now.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" });
+  if (kind === "time") return now.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit", ...clockOptions() });
   if (kind === "now") {
     return now.toLocaleString(loc, {
-      year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+      year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions(),
     });
   }
   return docIsoDay(now);
@@ -3476,7 +3477,7 @@ async function docEditorPaste(view) {
         await action.undo();
       }, { also: { label: "Open", run: () => flashEntry(chosen.id) } });
     } catch (error) {
-      toast(error.message || "Couldn't save that to a note.", true);
+      toast(error.message || voiceLine("failed", { what: "save that to a note" }), true);
     }
   }
 

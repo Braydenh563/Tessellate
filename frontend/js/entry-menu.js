@@ -62,7 +62,7 @@ function fillEntryMenu(menu, entry) {
           }
           toast("Note duplicated.");
         } catch (err) {
-          toast(err.message || "Couldn't duplicate note.", true);
+          toast(err.message || voiceLine("failed", { what: "duplicate note" }), true);
         }
       },
     },
@@ -182,7 +182,7 @@ function fillEntryMenu(menu, entry) {
           pushBinPairUndo("Made a mind map from a note", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
           await openWhiteboardBoard(board.id);
         } catch (err) {
-          toast(err.message || "Couldn't make a mind map of this note.", true);
+          toast(err.message || voiceLine("failed", { what: "make a mind map of this note" }), true);
         }
       },
     }]),
@@ -409,7 +409,7 @@ fillEntryMenu.headings = async function (entry) {
   try {
     whole = await fullEntry(entry.id);
   } catch (error) {
-    toast(error.message || "Couldn't read that note.", true);
+    toast(error.message || voiceLine("failed", { what: "read that note" }), true);
     return;
   }
   const entries = mdTocEntries(whole.title ? bodyWithoutTitleLine(whole.content) : stripFrontmatter(whole.content));
@@ -519,7 +519,7 @@ async function generateEntryTitle(entry) {
       detail: title ? `“${title}”` : `Note #${entry.id}`,
     });
   } catch (error) {
-    toast(error.message || "Couldn't generate a title.", true);
+    toast(error.message || voiceLine("failed", { what: "generate a title" }), true);
   }
 }
 
@@ -533,7 +533,7 @@ async function removeEntryTitle(entry) {
     // Said out loud: it was silent.
     toast("Title removed.", false, { exempt: true });
   } catch (error) {
-    toast(error.message || "Couldn't remove the title.", true);
+    toast(error.message || voiceLine("failed", { what: "remove the title" }), true);
   }
 }
 
@@ -562,4 +562,13 @@ async function translateNoteInDesk(entry) {
   saveDraftLocally();
   toast("Pick the language in the menu beside Draft, then press Draft.");
   $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
+}
+
+// Moved from note-cards.js (boot gzip budget, L611): this menu row is its one caller.
+//: Start a chat about one note. Named by its title in the words a person
+//: would use, so the agent's own search tools find it, rather than pasting the
+//: whole note into the box.
+function askAtlasAboutNote(entry) {
+  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
+  askAtlasAboutThing("note", name);
 }

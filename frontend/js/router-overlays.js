@@ -12,7 +12,7 @@
 //: The manual and Statistics are places too (INBOX 1335): overlays that push an
 //: entry on open, as Settings does; their own close steps back off it.
 const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
-//: They read as `#/Manual` and `#/Statistics` while open (B43), and a pasted one
+//: They read as `#/manual` and `#/statistics` while open (B43), and a pasted one
 //: opens them at load: both are routes in router.js (`ROUTE_TABS`, `routeEntry`,
 //: `routerRestore`), so they hold in the first seconds, before this file loads.
 const routerBack = { swallow: 0, timer: 0 };
@@ -62,6 +62,12 @@ function routerCloseTopOverlay() {
   }
   if (document.querySelector(".lightbox")) {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    return true;
+  }
+  //: The graph's note panel is a sheet at a phone and floats on a desktop; Back left it open on the hidden map (L593).
+  const popup = document.getElementById("graph-popup");
+  if (popup && popup.offsetParent !== null && !popup.classList.contains("hidden")) {
+    call("closeGraphPopup");
     return true;
   }
   const closers = [

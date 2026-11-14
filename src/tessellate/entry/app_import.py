@@ -307,7 +307,7 @@ def _enex_time(value: str | None) -> datetime | None:
 
 def _enml(content: str) -> str:
     """An ENML body as markdown: `en-media` (an attached file the export
-    carries as base64 elsewhere) and `en-todo` become words, the rest is
+    carries as base64 elsewhere) and Evernote check boxes become words, the rest is
     XHTML."""
     content = re.sub(r"<\?xml[^<>]*\?>|<!DOCTYPE[^<>]*>", "", content or "")
     content = re.sub(r"<en-todo\s+checked=\"true\"\s*/>", "[x] ", content)
@@ -488,14 +488,25 @@ def _already_here(session, keys: list[str]) -> set[str]:  # noqa: ANN001
     return existing
 
 
-def _make(session, note: Imported, key: str):  # noqa: ANN001, ANN202
+#: Most people, and most places, a note gets as tags from what it names.
+NAME_TAGS_PER_KIND = 3
+
+
+def name_tags(names: dict) -> list[str]:
+    """The people and places a note names, as the tags it is written with (L575):
+    the names as written, a few of each so a note that lists a whole team is not
+    one tag per member."""
+    return [*names["people"][:NAME_TAGS_PER_KIND], *names["places"][:NAME_TAGS_PER_KIND]]
+
+
+def _make(session, note: Imported, key: str, names: dict | None = None):  # noqa: ANN001, ANN202
     from tessellate.entry import manager
 
     entry = manager.create_entry(
         session,
         note.body,
         category_name=note.category or manager.UNCATEGORISED,
-        tags=note.tags,
+        tags=[*note.tags, *name_tags(names or {"people": [], "places": []})],
         ai_confidence=100 if note.category else 0,
         commit=False,
         dates=False,
@@ -566,9 +577,10 @@ def write(session, source: str, notes: list[Imported], progress=None) -> dict:  
             already += 1
             continue
         seen.add(key)
-        entry = _make(session, note, key)
-        for kind, names in people_and_places(note.body).items():
-            named[kind].update(names)
+        names = people_and_places(note.body)
+        entry = _make(session, note, key, names)
+        for kind, found in names.items():
+            named[kind].update(found)
         ids.append(entry.id)
         made.append(entry)
         if done % progress.every == 0:

@@ -11,12 +11,14 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, vision_ocr
 from tessellate.api import routes_files as rf
 from tessellate.api.routes_files import AttachmentGalleryOut, MediaUploadOut, OcrPageReadOut
 from tessellate.core import (
+    activity,
     deps,
     ocr,
     pdfpages,
@@ -120,10 +122,20 @@ def _read_range(
     requested = len(indices)
     limit = MAX_TESSERACT_RANGE_PAGES if reader in rf.LOCAL_READERS else MAX_RANGE_PAGES
     capped = indices[:limit]
-    pages = [rf._read_page(path, index, reader, key) for index in capped]
+    pages: list[OcrPageReadOut] = []
+    #: An Activity-panel job (decision 70): it lists, counts pages done, and Stop
+    #: ends it between two pages, keeping what was read.
+    with activity.track("ocr-range", f"Reading {len(capped)} page(s) of {path.name[:60]}") as job:
+        for done, index in enumerate(capped):
+            if job.stopped:
+                break
+            job.update(done, len(capped), f"Reading page {index + 1}")
+            pages.append(rf._read_page(path, index, reader, key))
     read = sum(1 for page in pages if page.text)
     note = ""
-    if requested > len(capped):
+    if len(pages) < len(capped):
+        note = f" Stopped after {len(pages)} page(s)."
+    elif requested > len(capped):
         last = capped[-1] + 1
         note = (
             f" Stopped after {len(capped)} pages (the limit for one go), "
@@ -456,6 +468,40 @@ def media_page_caption(
     return rf._describe_page(path, page, rf._page_read_key(None, upload_id))
 
 
+class FileReadingOut(BaseModel):
+    """One stored reading of a file: the `readings` view's row (F10)."""
+
+    kind: str
+    page: int = 0
+    text: str
+    model: str = ""
+    ts: str | None = None
+
+
+@router.get("/files/readings", response_model=list[FileReadingOut])
+def file_readings(
+    source: str,
+    id: int,  # noqa: A002  # the query name the plan and the tests use
+    session: Session = Depends(get_session),
+) -> list[FileReadingOut]:
+    """Every reading of one file in one shape: caption, Tesseract, vision, pages.
+
+    `source` is "attachment" or "upload". A locked private note's file answers
+    409 like the rest of its routes.
+    """
+    if source == "attachment":
+        rf._existing_attachment(session, id)
+    elif source == "upload":
+        rf._existing_upload(session, id)
+    else:
+        raise HTTPException(status_code=422, detail="The source must be attachment or upload.")
+    rows = session.execute(
+        text("SELECT kind, page, text, model, ts FROM readings WHERE source = :s AND source_id = :i ORDER BY page, kind"),
+        {"s": source, "i": id},
+    ).all()
+    return [FileReadingOut(kind=r[0], page=r[1] or 0, text=r[2], model=r[3] or "", ts=str(r[4]) if r[4] else None) for r in rows]
+
+
 @router.get("/files/{attachment_id}/page-reads", response_model=OcrRangeReadOut)
 def attachment_page_reads(
     attachment_id: int,
@@ -537,82 +583,6 @@ def delete_media_page_read(
     rf._existing_upload(session, upload_id)
     binned_id = _forget_page_read(rf._page_read_key(None, upload_id), page)
     return _stored_range(rf._page_read_key(None, upload_id)).model_copy(update={"binned_id": binned_id})
-
-
-class ReadingBinnedOut(BaseModel):
-    """A whole-file reading moved to the bin: its row there, for Undo."""
-
-    binned_id: int | None = None
-
-
-_READING_FIELDS = {"tesseract": "ocr_text", "vision": "vision_ocr_text"}
-
-
-def _bin_file_reading(session: Session, kind: str, source_id: int, source: str) -> ReadingBinnedOut:
-    field = _READING_FIELDS.get(source)
-    if field is None:
-        raise HTTPException(status_code=422, detail="A reading is either tesseract or vision.")
-    binned_id = reading_bin.bin_field(session, kind, source_id, field)
-    session.commit()
-    key = (kind, int(source_id))
-    rf._forget_regions(key)
-    with deps.get_db().session() as fresh:
-        rf._reindex_file(fresh, kind, source_id)
-        fresh.commit()
-    return ReadingBinnedOut(binned_id=binned_id)
-
-
-@router.delete("/media/{upload_id}/readings/{source}", response_model=ReadingBinnedOut)
-def delete_media_reading(
-    upload_id: int, source: str, session: Session = Depends(get_session)
-) -> ReadingBinnedOut:
-    """Delete an image's whole reading (Tesseract's or the vision model's)
-    into the bin (WORLD_CLASS_PLAN 28.4 row 2)."""
-    rf._existing_upload(session, upload_id)
-    return _bin_file_reading(session, "upload", upload_id, source)
-
-
-@router.delete("/files/{attachment_id}/readings/{source}", response_model=ReadingBinnedOut)
-def delete_attachment_reading(
-    attachment_id: int, source: str, session: Session = Depends(get_session)
-) -> ReadingBinnedOut:
-    """`delete_media_reading`'s sibling for a note's own file."""
-    rf._existing_attachment(session, attachment_id)
-    return _bin_file_reading(session, "attachment", attachment_id, source)
-
-
-class ReadingRestoredOut(BaseModel):
-    kind: str
-    source_id: int
-    field: str
-    page: int = 0
-
-
-@router.post("/reading-bin/{bin_id}/restore", response_model=ReadingRestoredOut)
-def restore_binned_reading(bin_id: int, session: Session = Depends(get_session)) -> ReadingRestoredOut:
-    """Put a deleted reading back where it came from (Undo, or the Bin)."""
-    restored = reading_bin.restore(session, bin_id)
-    if restored is None:
-        raise HTTPException(status_code=404, detail="That reading is no longer in the bin.")
-    out = ReadingRestoredOut(
-        kind=restored.kind, source_id=restored.source_id, field=restored.field, page=restored.page
-    )
-    session.commit()
-    if out.field != "page":
-        rf._forget_regions((out.kind, out.source_id))
-    with deps.get_db().session() as fresh:
-        rf._reindex_file(fresh, out.kind, out.source_id)
-        fresh.commit()
-    return out
-
-
-@router.delete("/reading-bin/{bin_id}/purge")
-def purge_binned_reading(bin_id: int, session: Session = Depends(get_session)) -> dict:
-    """Delete a binned reading for good, from the Bin's own menu."""
-    if not reading_bin.purge(session, bin_id):
-        raise HTTPException(status_code=404, detail="That reading is no longer in the bin.")
-    session.commit()
-    return {"purged": True}
 
 
 def _clean_reading_fields(*fields: tuple[str, str | None]) -> dict[str, str | None]:
@@ -702,6 +672,8 @@ class VisionOcrBody(BaseModel):
     #: app. The Tesseract line has been editable since it shipped; this one
     #: was the odd one out.
     text: str | None = Field(default=None, max_length=10_000)
+    #: With `text`: who read it, put back by Undo of a fresh read (L517).
+    model: str | None = Field(default=None, max_length=200)
 
 
 def _store_typed_reading(session: Session, upload, body: VisionOcrBody) -> None:  # noqa: ANN001
@@ -713,6 +685,8 @@ def _store_typed_reading(session: Session, upload, body: VisionOcrBody) -> None:
         # Clearing the text clears the attribution with it, "Read by X"
         # under nothing is a claim about a reading that no longer exists.
         upload.vision_ocr_model = None
+    elif body.model is not None:
+        upload.vision_ocr_model = body.model or None
     session.commit()
     if body.edited:
         rf._set_edited_reading(rf._page_read_key(None, upload.id), upload.vision_ocr_text, "vision")

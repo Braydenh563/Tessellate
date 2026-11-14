@@ -66,7 +66,7 @@ def run(calls: list) -> list:
         + _function(PREFS_JS, "nounCount")
         + "\n"
         + _function(APP_JS, "mdHeadingId")
-        + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
+        + "\nconst clockOptions = () => ({});\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
         " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent};\n"

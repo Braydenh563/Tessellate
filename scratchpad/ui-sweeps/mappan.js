@@ -33,7 +33,7 @@ async function buildBoard(page) {
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(700);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function", null, { timeout: 30000 });
   return page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
@@ -93,8 +93,8 @@ function probe(page) {
       return { x: Math.round(r.left * 100) / 100, y: Math.round(r.top * 100) / 100 };
     };
     const card = document.querySelector("#wb-html-layer .wb-object, #wb-html-layer .wb-card, #wb-html-layer .node-card");
-    const shape = document.querySelector("#wb-shapes-group path, #wb-shapes-group rect, #wb-zoom-group .sketch-group path");
-    const link = document.querySelector(".wb-link-sketch path, #wb-lines-group path");
+    const shape = document.querySelector(".sketch-group:not(.wb-link-sketch) .sketch-path");
+    const link = document.querySelector(".wb-link-sketch .sketch-path");
     return {
       html: read("#wb-html-layer"),
       svg: read("#wb-svg-layer"),
@@ -176,6 +176,10 @@ function probe(page) {
   await page.click('#wb-tool-group [data-tool="pan"]');
   await page.waitForTimeout(300);
   const start = await read();
+  // Sketches draw in per-band svgs inside #wb-html-layer now; a missing one
+  // used to skip every drift check silently, so absence is a failure.
+  check("the pan fixture drew a card, a shape and a connector", start.card && start.shape && start.link,
+    `card ${!!start.card}, shape ${!!start.shape}, link ${!!start.link}`);
   const baseGapX = start.card && start.shape ? start.card.x - start.shape.x : null;
   const baseGapY = start.card && start.shape ? start.card.y - start.shape.y : null;
   const baseLinkX = start.card && start.link ? start.card.x - start.link.x : null;

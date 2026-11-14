@@ -35,11 +35,11 @@ _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
 #: CodeQL to read as polynomial (it ignores the lookbehind; composer_brief has the same fix).
 _SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9*\"“(\[])")
 _MARKUP = re.compile(r"(\*\*|__|\*|`)")
-_FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
+_FOOTNOTE = re.compile(r"\[\^[^\]\n]{0,300}\]|<sup>[^<]{0,6}</sup>")
 #: A list marker with nothing after it ("-", "* ", "3."): an empty bullet.
 _MARKER_ONLY = re.compile(r"^\s*(?:[-*+•]+|\d{1,2}[.)])\s*$")
-_FOOTNOTE_LINE = re.compile(r"^\s*\[\^[^\]]+\]:")
-_LINK = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\([^)]*\)")
+_FOOTNOTE_LINE = re.compile(r"^\s*\[\^[^\]]{1,300}\]:")
+_LINK = re.compile(r"\[\[([^\]|]{1,300})(?:\|([^\]]{1,300}))?\]\]|\[([^\]]{1,300})\]\([^)]{0,1000}\)")
 _BOLD = re.compile(r"\*\*([^*\n]{2,60})\*\*|__([^_\n]{2,60})__")
 _PRONOUNS = frozenset({
     "it", "this", "that", "these", "those", "there", "he", "she", "they", "we", "i", "you", "which", "what", "who", "here",

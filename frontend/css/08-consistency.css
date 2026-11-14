@@ -1111,89 +1111,6 @@ summary > .ph-lead,
    fill: a disclosure that is invisible until you find it is the problem that
    round was solving, and taking the affordance away to make it quieter would
    just trade one report for the other. */
-/* **One row of facts, one height, one baseline** (INBOX 450). Every fact in
-   the row, the plain chips ("Reads only", "1 input") and the two toggles
-   ("3 steps", "4 tools"), is a `--skill-fact-h` box with its words centred,
-   so the row has one top, one bottom and one baseline. Before, a 20px chip
-   stood beside 22px `<details>` whose summaries sat 2px lower, and an open
-   one put its list inside the row and pushed the next fact under it. The
-   toggles are buttons now (library.js) and open a panel below the row.
-   One step of padding a side and the row's own gap, so the four facts a
-   card can carry fit a 311px card on one line. */
-.skill-card .skill-card-facts > :is(.chip, button).skill-fact {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  height: var(--skill-fact-h);
-  min-height: var(--skill-fact-h);
-  margin: 0;
-  padding: 0 var(--space-2);
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  box-shadow: none;
-}
-/* The caret says which way it will go, by turning, never by colour alone. */
-.skill-card .skill-fact-toggle > .ph-trail {
-  margin-inline-start: 0;
-  transition: rotate var(--ui-base) var(--ease-out);
-}
-.skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]) {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
-}
-/* What a toggle opens: the card's full width, under the row. The panel adds
-   no box of its own; the list inside is the steps' bordered panel or the
-   tools' row of code chips. */
-.skill-fact-panel > .skill-fact-list {
-  margin: 0;
-}
-/* A tool is an identifier: a code chip, every one the same height on the
-   same line, starting at the card's content edge. */
-.skill-fact-list-tools {
-  align-items: center;
-  padding: 0;
-}
-.skill-fact-list-tools .skill-tool-token {
-  display: inline-flex;
-  align-items: center;
-  height: var(--skill-fact-h);
-  padding-block: 0;
-  line-height: 1;
-}
-/* "Never run." / "Last run ..." is a sentence about the card, not a control
-   on it. A fill and a radius made it the fourth box in a row of three. */
-.skill-card-when {
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
-}
-/* **The card's gap is its only rhythm** (INBOX 437 (4); DESIGN.md, "zero the
-   margins, not just the heights"). The card is a flex column on one gap,
-   but the title kept an 8px bottom margin inside its head, the description
-   a paragraph's 12px each side and the run line 11.2px each side, so the
-   steps between the parts ran 28, 20, 19 and 27px for no reason a reader
-   could see. The footer keeps its own hairline and the space above it. */
-.skill-card .skill-card-header > .skill-card-title,
-.skill-card > .skill-card-desc,
-.skill-card > .skill-card-when {
-  margin: 0;
-}
-/* The card's own "Built-in" marker is the same fact the persona list states,
-   so it says it the same way. `--accent-soft` is this app's *selected* tone
-   (DESIGN.md), and nothing about a built-in skill is selected. */
-.skill-card .chip.skill-builtin,
-.skill-card-header .chip:not(.skill-fact) {
-  background: var(--chip-bg);
-  color: var(--muted);
-  font-weight: 500;
-}
 /* Library image cards: the model name and the "Read by ..." row are facts
    about the picture. Same recipe, same reason. The usage chip stays
    `cursor: pointer` because it really does navigate to the note it names.
@@ -2057,9 +1974,12 @@ summary > .ph-lead,
   height: auto;
   min-height: var(--target-min);
   padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-pill);
-  background: transparent;
+  /* The chip's ground at rest and the chip's accent under the pointer, the
+     Chat strip's family (L-world-class-250): it was a hairline on nothing
+     that took the chip's ground only on hover, two grounds for one chip. */
+  background: var(--chip-bg);
   box-shadow: none;
   color: var(--ink);
   font-size: var(--text-sm);
@@ -2072,7 +1992,8 @@ summary > .ph-lead,
 }
 .help-atlas > .atlas-suggest:hover,
 .help-atlas > .atlas-suggest:focus-visible {
-  background: var(--chip-bg);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 /* On a phone the offer takes a button's corner, not the pill (INBOX 464
    (16)): a question that wraps inside a pill is a two-line capsule (Chat's
@@ -2683,6 +2604,16 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 }
 .notice-warn > .ph {
   color: var(--warn);
+}
+/* The optional-package notice (extra-notice.js): its action keeps the width of
+   its label and the row wraps, so "Open Packages" no longer runs 21px past
+   its button in a 320px Settings card (L-world-class-36). */
+.extra-notice {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.extra-notice > button {
+  flex: none;
 }
 /* --- glass reaches the floating chrome that sat outside it ------------------
    Owner, with four screenshots: "some elements dont use the glass styles if
@@ -4092,32 +4023,8 @@ body .chip.item-label,
   backdrop-filter: var(--glass-filter);
   -webkit-backdrop-filter: var(--glass-filter);
 }
-/* 11. A skill card (findings 15 to 17). The title was `--text-md`, the same
-       size as the description under it and smaller than the card titles
-       everywhere else in the Library; it is a card title now. "Built-in"
-       was a pill on every card, the same weight as the title beside it, for
-       a fact that is true of most of them: it is a small label in muted ink,
-       and "Yours" keeps the accent, since that is the one worth seeing. */
-.skill-card-title {
-  font-size: var(--text-body);
-}
-.skill-card-header {
-  align-items: baseline;
-  gap: var(--space-3);
-}
 .skills-worker-toggles {
   padding-left: 0;
-}
-/* 13. A skill card's title is an `h3` inside a `.card`, so the eyebrow
-       recipe (`.card h3`) set it at 12px muted: measured 12px where the
-       title of every other Library card is 16px. (The Contents jump chips
-       this item also styled went with INBOX 496.) */
-.skill-card .skill-card-title {
-  color: var(--ink);
-  font-size: var(--text-body);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
 }
 /* 14. "Removing the badges background has made some areas look pretty plain
        and hard to read" (the owner). Quiet's `--chip-bg` is ink at 5%, so a
@@ -4593,8 +4500,11 @@ body .chip.item-label,
     grid-area: text;
     padding-top: var(--space-2);
   }
+  /* The time may take a second line: nowrap ran "Sat, Nov 14, 11:31 AM · in
+     2 h" 6px past its column at 320 (overlap.js, L-world-class-36). */
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
+    white-space: normal;
   }
   /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {

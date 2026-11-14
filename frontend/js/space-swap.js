@@ -52,6 +52,8 @@
       mapBoardIndexAt = 0;
       mapBoardIndexWalk = null;
       if (typeof objOrderCache !== "undefined") objOrderCache.clear();
+      //: The way back for a large settings change is held in memory only; it is not carried into another space.
+      if (typeof settingsHistoryBigKept !== "undefined") settingsHistoryBigKept.clear();
       const box = $("note-search");
       if (box) box.value = "";
       //: The list is drawn from `allEntries`, not read from it, so emptying the array left the old
@@ -86,6 +88,8 @@
       captureDocumentList = [];
       captureDocumentTitles = new Map();
       captureDocuments.clear();
+      //: A half-typed model address is the old space's: the status poll fills the field again.
+      backendFieldsDirty = false;
       //: The open thread belongs to the space it was held in.
       if (typeof newChatConversation === "function" && chatConv?.id != null) newChatConversation();
       if (typeof newChat === "function" && conversation.length) newChat();
@@ -186,7 +190,7 @@
         Promise.resolve()
           .then(run)
           .catch((error) => {
-            if (!error?.isLockout) toast(`Couldn't load ${label}: ${error.message}`, true);
+            if (!error?.isLockout) toast(voiceLine("failed", { what: `load ${label}`, why: error.message }), true, { retry: run });
           })
       )
     );
@@ -244,7 +248,7 @@
     try {
       await refreshActiveTab();
     } catch (error) {
-      toast(`Couldn't load this tab: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "load this tab", why: error.message }), true, { retry: refreshActiveTab });
     }
   }
 

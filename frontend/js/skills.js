@@ -866,7 +866,7 @@ async function downloadFromApi(path, fallbackName, unlocked = false) {
     if (!unlocked && error?.detail === "Unlock first." && (await ensureVaultOpen())) {
       return downloadFromApi(path, fallbackName, true);
     }
-    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || "Couldn't download that.", true);
+    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || voiceLine("failed", { what: "download that" }), true);
   }
 }
 
@@ -908,7 +908,7 @@ async function saveFile(filename, blob) {
       // directly after "I have to dig in the app data files to find them".
       toastAction(`Saved to ${saved.path}`, "Open folder", () => {
         apiJson("/files/open-exports-folder", { method: "POST" }).catch((error) => {
-          toast(error.message || "Couldn't open the exports folder.", true);
+          toast(error.message || voiceLine("failed", { what: "open the exports folder" }), true);
         });
       }, { record: false });
       renderExportsList();
@@ -926,7 +926,7 @@ async function saveFile(filename, blob) {
       });
       return saved;
     } catch (error) {
-      toast(`Couldn't save ${filename}: ${error.message}`, true);
+      toast(voiceLine("failed", { what: `save ${filename}`, why: error.message }), true);
       return null;
     }
   }

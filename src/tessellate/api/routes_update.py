@@ -837,12 +837,10 @@ def apply_update(tag: str | None = None) -> dict:
         _state.step = "Starting…"
         _state.done_bytes = 0
         _state.total_bytes = 0
-    threading.Thread(
-        target=_run_apply, args=(download_url, asset["name"], asset), daemon=True, name="update-apply"
-    ).start()
-    threading.Thread(
-        target=_exit_once_launched, args=(watched, attempt), daemon=True, name="update-exit-watch"
-    ).start()
+    from tessellate.core import jobs
+
+    jobs.thread("update-apply", lambda: _run_apply(download_url, asset["name"], asset))
+    jobs.thread("update-exit-watch", lambda: _exit_once_launched(watched, attempt))
     return {"started": True}
 
 

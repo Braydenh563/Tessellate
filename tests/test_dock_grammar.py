@@ -162,7 +162,7 @@ def _kind(tag: str, classes: set[str]) -> str:
         return "other"
     if "icon-only" in classes:
         return "icon"
-    if classes & {"ghost", "library-chip", "linklike"}:
+    if classes & {"ghost", "library-chip", "linklike", "chat-model-button"}:
         return "worded"
     return "filled"
 
@@ -238,6 +238,11 @@ class _Parser(HTMLParser):
                 # clear ("Show: Work") is one, and counting it failed that
                 # dock for having two filled buttons when it has one.
                 and "library-chip" not in classes
+                # A model pill (`.chat-model-button`, the `#chat-active-model`
+                # recipe) names a model and opens its picker: a readout with
+                # a press, never the dock's action (the Writing room's and
+                # the document bar's pill, section 20).
+                and "chat-model-button" not in classes
             ):
                 dock.filled.append(a.get("id") or "(no id)")
             if tag == "input" and a.get("type") in ("checkbox", "radio"):

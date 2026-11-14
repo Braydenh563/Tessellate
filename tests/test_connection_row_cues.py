@@ -68,7 +68,8 @@ def _cues(rows):
     match = re.search(r"^function connectionRowCues\(rows\) \{.*?^\}", source, re.S | re.M)
     assert match, "connectionRowCues is gone"
     script = (
-        match.group(0)
+        "function clockOptions() { return {}; }\n"  # the 12 or 24 hour setting at auto
+        + match.group(0)
         + f"\nconst out = connectionRowCues({json.dumps(rows)});"
         + "\nprocess.stdout.write(JSON.stringify([...out.entries()]));"
     )

@@ -139,7 +139,7 @@ def lan_qr(
     "Placed from Brief 40" fix 2). Only an address this notebook itself
     shows (`netbind.describe`, the same list Settings and the receipt draw),
     so the route draws nothing a caller chose. SVG, black on white."""
-    shown = netbind.describe(config, request.url.port).get("addresses") or []
+    shown = [*(netbind.describe(config, request.url.port).get("addresses") or []), *netbind.trust_urls(config, request.url.port)]
     if address not in shown:
         raise HTTPException(status_code=404, detail="That is not an address this notebook shows.")
     return Response(qrsvg.svg(address), media_type="image/svg+xml", headers={"Cache-Control": "no-store"})

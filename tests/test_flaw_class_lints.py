@@ -29,25 +29,13 @@ SRC = ROOT / "src" / "tessellate"
 #: Module -> `threading.Thread(` calls, 2026-09-26. Lower a number when a
 #: thread moves onto `core/jobs.py`; never raise one, never add a module.
 THREAD_SITES = {
-    "__main__.py": 2,  # the desktop window's server thread and the tray icon
-    "ai/autonomous.py": 1,
     #: The captions helper is its own child process, standard library only (it
     #: never imports the app), so core/jobs.py's pool does not exist there: its
     #: one thread watches stdin so it exits when the app does (INBOX 1777).
-    "ai/captions_helper.py": 1,  # the scheduler loop; its passes and Run now moved onto the pool (Brief 9),
-    "ai/embeddings.py": 1,
-    "ai/janitor.py": 1,  # the filing deadline: runs *on* the model lane, so it cannot queue there
-    # ai/model_manager.py: 0 since Brief 9, model downloads run on the pool's `download` lane
-    "api/app.py": 1,
-    "api/routes_update.py": 2,
-    "core/embedmodels.py": 1,
-    "core/lanserve.py": 1,  # lan-first-byte: one selector thread for every connection waiting on its first byte, started on the first wait
-    # core/extras.py: 0 since INBOX 595, its installs run on the pool's `install` lane
-    #: 3 since INBOX 1502: background.py's one call moved here with its registry (`jobs.thread`); the total is unchanged.
-    "core/jobs.py": 3,  # the pool, the durable leases' heartbeat, and `jobs.thread`: the one place this is the design
-    "core/security.py": 1,
-    "search/searxng_install.py": 1,
-    "search/searxng_manager.py": 1,
+    "ai/captions_helper.py": 1,
+    #: 3 since INBOX 1502: the pool, the durable leases' heartbeat, and `jobs.thread`,
+    #: the one place this is the design. Every other module starts its thread there (L567).
+    "core/jobs.py": 3,
 }
 
 

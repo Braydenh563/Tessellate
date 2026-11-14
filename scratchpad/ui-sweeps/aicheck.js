@@ -57,7 +57,7 @@ const STREAM = [
         notice: !!p.querySelector(".doc-prose-ai .notice.notice-warn"),
         settings: !!p.querySelector(".doc-prose-ai-settings"),
         chat: !!p.querySelector(".doc-prose-ai-chat"),
-        aiRows: [...p.querySelectorAll(".doc-prose-row")].filter((r) => r.querySelector(".doc-finding-dot-ai")).length,
+        aiRows: [...p.querySelectorAll(".doc-prose-row")].filter((r) => r.querySelector(".doc-finding-dot[data-kind=\"ai\"]")).length,
         underlines: document.querySelectorAll(".cm-content .cm-finding-ai").length,
       };
     });
@@ -88,19 +88,19 @@ const STREAM = [
   ok("and are underlined in the text", p.underlines === 3, J(p.underlines));
   ok("the line says what it found", p.status === "Checked with AI: 3 findings.", p.status);
   const row = await page.evaluate(() => {
-    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot-ai"));
+    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot[data-kind=\"ai\"]"));
     return {
       words: r.querySelector(".doc-finding-words")?.textContent,
       why: r.querySelector(".doc-finding-why")?.textContent,
       apply: r.querySelector(".doc-prose-fix:not(.doc-prose-dismiss)")?.getAttribute("aria-label"),
       dismiss: r.querySelector(".doc-prose-dismiss")?.getAttribute("aria-label"),
-      dot: getComputedStyle(r.querySelector(".doc-finding-dot-ai")).backgroundColor,
+      dot: getComputedStyle(r.querySelector(".doc-finding-dot[data-kind=\"ai\"]")).backgroundColor,
     };
   });
   ok("a row is the words, the reason, Apply and Dismiss", row.words && row.why === "missing apostrophe" && /It.s a good plan/.test(row.apply || "") && row.dismiss === "Dismiss this finding", J(row));
   // Apply the first.
   await page.evaluate(() => {
-    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot-ai"));
+    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot[data-kind=\"ai\"]"));
     r.querySelector(".doc-prose-fix:not(.doc-prose-dismiss)").click();
   });
   await page.waitForTimeout(400);
@@ -108,7 +108,7 @@ const STREAM = [
   p = await panel();
   ok("Apply writes the fix and the row goes", text.includes("It's a good plan.") && p.aiRows === 2, J({ rows: p.aiRows }));
   await page.evaluate(() => {
-    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot-ai"));
+    const r = [...document.querySelectorAll("#doc-prose-panel .doc-prose-row")].find((x) => x.querySelector(".doc-finding-dot[data-kind=\"ai\"]"));
     r.querySelector(".doc-prose-dismiss").click();
   });
   await page.waitForTimeout(300);

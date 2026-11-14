@@ -20,7 +20,7 @@ INDEX = Path(__file__).resolve().parents[1] / "frontend" / "index.html"
 #: Empty in the markup, named (text or aria-label) by the script that fills
 #: them: the status bar's buttons and the four chips below.
 FILLED_BY_SCRIPT = {
-    "chat-active-model", "chat-context", "timeline-month-btn", "graph-layout-chip", "logs-copy",
+    "chat-active-model", "draft-model-pill", "doc-ai-model-pill", "chat-context", "timeline-month-btn", "graph-layout-chip", "logs-copy",
     *{f"status-{name}" for name in ("notes", "reminders", "task", "timer", "activity", "command", "agent", "guide", "find", "back", "forward", "undo", "redo")},
 }
 

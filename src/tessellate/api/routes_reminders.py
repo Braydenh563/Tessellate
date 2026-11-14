@@ -20,7 +20,7 @@ from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.ai import recognise_reminders
-from tessellate.core import deps, ics_import, reminder_token
+from tessellate.core import activity, deps, ics_import, reminder_token
 from tessellate.core.database import PRIVATE_SPACES, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import private_space
@@ -502,12 +502,13 @@ def import_ics(
     added: list[int] = []
     updated: list[int] = []
     skipped = list(reading.skipped)
-    for event in reading.events:
-        if _past_and_open(event):
-            skipped.append({"line": event.line, "text": event.text, "reason": f"line {event.line}: already past"})
-            continue
-        verb, reminder = reminder_repo.import_event(session, event)
-        (added if verb == "added" else updated).append(reminder.id)
+    with activity.track("import", "Importing a calendar", stoppable=False):
+        for event in reading.events:
+            if _past_and_open(event):
+                skipped.append({"line": event.line, "text": event.text, "reason": f"line {event.line}: already past"})
+                continue
+            verb, reminder = reminder_repo.import_event(session, event)
+            (added if verb == "added" else updated).append(reminder.id)
     if added or updated:
         log_action(session, "created", "reminder", added[0] if added else updated[0], f"imported {len(added)}, updated {len(updated)}")
     session.commit()
@@ -523,6 +524,7 @@ def list_reminders(
     entry_id: int | None = Query(default=None, description="Only this note's reminders"),
     document_id: int | None = Query(default=None, description="Only this document's reminders"),
     include_done: bool = True,
+    only_done: bool = Query(default=False, description="Only the ticked-off ones (the Done section pages on this)"),
     due_within_days: int | None = Query(default=None, ge=0, le=3650, description="Only reminders due within this many days (overdue ones included)"),
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -543,7 +545,7 @@ def list_reminders(
     due_before = utcnow().replace(tzinfo=None) + timedelta(days=due_within_days) if due_within_days is not None else None
     rows, total = reminder_repo.page(
         session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id,
-        include_done=include_done, due_before=due_before,
+        include_done=include_done, only_done=only_done, due_before=due_before,
     )
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)

@@ -68,7 +68,7 @@
           toast("Linked as disagreeing");
         } catch (error) {
           keep.disabled = false;
-          toast(error.message || "Couldn't link those notes.", true);
+          toast(error.message || voiceLine("failed", { what: "link those notes" }), true);
         }
       });
       actions.append(keep);
@@ -95,7 +95,7 @@
         onGone();
       } catch (error) {
         dismiss.disabled = false;
-        toast(error.message || "Couldn't dismiss that.", true);
+        toast(error.message || voiceLine("failed", { what: "dismiss that" }), true);
       }
     });
     actions.append(open, dismiss);
@@ -138,7 +138,7 @@
         offset += (reply.items || []).length;
         more.classList.toggle("hidden", offset >= (reply.total || 0));
       } catch (error) {
-        toast(error.message || "Couldn't read that list.", true);
+        toast(error.message || voiceLine("failed", { what: "read that list" }), true, { retry: page });
       } finally {
         more.disabled = false;
       }
@@ -162,13 +162,20 @@
   //: The card, then the open questions count and the oldest one (I3).
   async function renderNightWidget(body) {
     await renderNightCard(body);
+    //: I9: the card's own way into Settings, What it learned (all kinds); the
+    //: open-questions line below has its own, kept to questions.
+    const manageAll = () => body.appendChild(openSettingsModal.learnedLink(""));
     let summary;
     try {
       summary = await apiJson("/questions/summary", { silent: true });
     } catch {
+      manageAll();
       return;
     }
-    if (!summary || !summary.open) return;
+    if (!summary || !summary.open) {
+      manageAll();
+      return;
+    }
     const line = document.createElement("p");
     line.className = "muted night-questions";
     const oldest = summary.oldest;
@@ -186,8 +193,9 @@
     });
     const row = document.createElement("div");
     row.className = "row night-questions-row";
-    row.append(line, open);
+    row.append(line, open, openSettingsModal.learnedLink("question"));
     body.appendChild(row);
+    manageAll();
   }
 
   async function renderNightCard(body) {

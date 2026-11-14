@@ -81,8 +81,11 @@ def test_the_package_is_a_pinned_mpl_download_never_in_the_repo():
     written = {name for d in extra.downloads for _m, name in d.members}
     assert set(translate.ENGINE_FILES) <= written
     assert "LICENSE" in written, "the MPL text travels with the engine"
-    for pair in translate.PAIRS:
-        assert {pair["model"], pair["lex"], pair["vocab"]} <= written
+    # The registry may name directions the package does not carry yet (L582);
+    # each pair the package does write is a complete, registered row.
+    carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= written]
+    assert [(p["from"], p["to"]) for p in carried] == [("en", "es")]
+    assert not {n for n in written if n.startswith("model.")} - {p["model"] for p in carried}
     assert any(extra.id in bundle.extras for bundle in extras.BUNDLES)
     assert not list((ROOT / "frontend").rglob("*.wasm.translate*"))
     assert not list(ROOT.glob("**/bergamot-translator-worker.*"))

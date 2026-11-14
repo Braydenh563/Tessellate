@@ -318,6 +318,7 @@ def _flush_work(session: Session) -> list[tuple[Source, int, Row | None]]:
             except Exception:  # noqa: BLE001  # see the docstring
                 logger.warning("could not index %s %s", source.name, ref_id, exc_info=True)
     work.extend(_boards_touched_by_objects(session, {(s.name, ref) for s, ref, _ in work}))
+    work.extend(_notes_touched_by_files(session, {(s.name, ref) for s, ref, _ in work}))
     return work
 
 
@@ -406,6 +407,40 @@ def _boards_touched_by_objects(
     return out
 
 
+#: At most this much file text joins a note's row: a scanned book's OCR made
+#: every save of its note re-index megabytes, and search needs no more.
+FILE_WORDS_CAP = 20_000
+
+#: The columns of a file a note's row now carries (`_file_words`).
+_READ_COLUMNS = ("caption", "ocr_text", "vision_ocr_text")
+
+
+def _notes_touched_by_files(session: Session, done: set[tuple[str, int]]) -> list[tuple[Source, int, Row | None]]:
+    """The note rows a file's write changed (L564): a picture's caption, OCR and
+    vision text are part of its note's row, so a file added, removed or read again
+    has to re-read the note. `done` is what this flush already wrote."""
+    from tessellate.core.database import Attachment, Entry
+
+    owners: set[int] = {obj.entry_id for obj in [*session.new, *session.deleted] if isinstance(obj, Attachment) and obj.entry_id is not None}
+    for obj in session.dirty:
+        if isinstance(obj, Attachment) and obj.entry_id is not None:
+            state = sa_inspect(obj)
+            if any(state.attrs[name].history.has_changes() for name in _READ_COLUMNS):
+                owners.add(int(obj.entry_id))
+    out: list[tuple[Source, int, Row | None]] = []
+    source = _SOURCES["notes"]
+    with session.no_autoflush:
+        for owner in sorted(owners):
+            entry = session.get(Entry, owner)
+            if entry is None or ("notes", owner) in done:
+                continue
+            try:
+                out.append((source, owner, source.read(entry)))
+            except Exception:  # noqa: BLE001  # see `_index_on_flush`
+                logger.warning("could not index notes %s", owner, exc_info=True)
+    return out
+
+
 def reconcile_boards(session: Session) -> bool:
     """Bring the board and map rows in line with what they should say.
 
@@ -460,6 +495,9 @@ def touch(session: Session, source_name: str, ref_id: int) -> None:
     obj = session.get(source.model, ref_id)
     row = source.read(obj) if obj is not None else None
     _write(session.connection(), source, ref_id, row)
+    if source_name == "attachments" and obj is not None:
+        # The note carries its files' words (L564): refresh it with them.
+        touch(session, "notes", int(obj.entry_id))
 
 
 def forget(session: Session, model: type, ids: Iterable[int]) -> int:
@@ -632,6 +670,31 @@ def _board_words(entry) -> str:  # noqa: ANN001
     return "\n".join(words)
 
 
+def _file_words(entry) -> str:  # noqa: ANN001
+    """The words in a note's pictures and files: each one's caption, OCR text and
+    vision reading, and its pages' (L564). Raw SQL on the entry's own connection,
+    for the reason `_board_words` gives."""
+    session = object_session(entry)
+    note_id = getattr(entry, "id", None)
+    if session is None or note_id is None or _table_missing(session):
+        return ""
+    connection = session.connection()
+    files = connection.exec_driver_sql(
+        "SELECT id, caption, ocr_text, vision_ocr_text FROM attachments WHERE entry_id = ? ORDER BY id", (int(note_id),)
+    ).all()
+    parts = [part for _id, *readings in files for part in readings]
+    if files:
+        marks = ", ".join("?" * len(files))
+        for body, caption in connection.exec_driver_sql(
+            f"SELECT text, caption FROM page_reads WHERE kind = 'attachment' AND source_id IN ({marks}) ORDER BY source_id, page",
+            tuple(row[0] for row in files),
+        ).all():
+            parts.extend((body, caption))
+    seen: set[str] = set()
+    kept = [p for p in (str(part or "").strip() for part in parts) if p and not (p in seen or seen.add(p))]
+    return "\n".join(kept)[:FILE_WORDS_CAP]
+
+
 def _entry_row(entry, *, want: str) -> Row | None:  # noqa: ANN001
     """A note, a board or a map, from the same table.
 
@@ -656,10 +719,9 @@ def _entry_row(entry, *, want: str) -> Row | None:  # noqa: ANN001
         flags.append("clipped")
     content = entry.content or ""
     body = content
-    if want != "note":
-        words = _board_words(entry)
-        if words:
-            body = f"{content}\n{words}" if content else words
+    words = _board_words(entry) if want != "note" else _file_words(entry)
+    if words:
+        body = f"{content}\n{words}" if content else words
     return Row(
         title=_first_line(content),
         body=body,
@@ -862,6 +924,8 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
     owner = object_session(att)
     if owner is not None and getattr(owner.get(Entry, att.entry_id), "is_private", False):
         return None
+    if _in_private_space(att):
+        return None
     return Row(
         title=att.filename or "",
         # Every reading, pages included (F10, `core/readings.text_of`).
@@ -874,7 +938,7 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
 
 def _media_row(media) -> Row | None:  # noqa: ANN001
     #: A picture only a board uses is not searchable until Save to Library (K18).
-    if media is None or getattr(media, "board_only", False):
+    if media is None or getattr(media, "board_only", False) or _in_private_space(media):
         return None
     from tessellate.core import readings
 
@@ -889,7 +953,7 @@ def _media_row(media) -> Row | None:  # noqa: ANN001
 
 
 def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
-    if mark is None:
+    if mark is None or _in_private_space(mark):
         return None
     flags = ["pinned"] if getattr(mark, "pinned", False) else []
     return Row(
@@ -903,7 +967,7 @@ def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
 
 
 def _in_private_space(obj) -> bool:  # noqa: ANN001
-    """A chat, an Ask turn or a reminder of a private space is sealed
+    """A chat, an Ask turn, a reminder, a link, a recording or a file of a private space is sealed
     (INBOX 1727) and so never indexed, like a private note. Raw SQL on the
     flush's own connection: this runs inside a flush."""
     from sqlalchemy import text
@@ -982,7 +1046,7 @@ def _recording_row(rec) -> Row | None:  # noqa: ANN001
     A take still being made (`state` "recording") and one in the bin are out,
     as a binned document is; the transcript lines are joined without their
     timings, which a search has no use for (the recording's own sheet seeks)."""
-    if rec is None or getattr(rec, "deleted_at", None) is not None or rec.state != "saved":
+    if rec is None or getattr(rec, "deleted_at", None) is not None or rec.state != "saved" or _in_private_space(rec):
         return None
     from tessellate.core import transcript
 
@@ -1028,6 +1092,31 @@ def reconcile_sources(session: Session) -> bool:
         for ref_id, row in source.scan(session):
             _write(connection, source, ref_id, row)
             changed = changed or row is not None
+    return changed
+
+
+def reconcile_note_files(session: Session) -> bool:
+    """Put the files' words into the rows of notes that hold files read before
+    this existed (L564). A diff over the notes that hold a file with a reading:
+    a second startup writes nothing."""
+    if _table_missing(session):
+        return False
+    from tessellate.core.database import Entry
+
+    connection = session.connection()
+    owners = [int(i) for (i,) in connection.exec_driver_sql(
+        "SELECT DISTINCT entry_id FROM attachments WHERE coalesce(caption, '') != '' OR coalesce(ocr_text, '') != '' "
+        "OR coalesce(vision_ocr_text, '') != '' OR id IN (SELECT source_id FROM page_reads WHERE kind = 'attachment')"
+    ).all()]
+    source = _SOURCES["notes"]
+    changed = False
+    for owner in owners:
+        entry = session.get(Entry, owner)
+        row = source.read(entry) if entry is not None else None
+        held = connection.exec_driver_sql("SELECT body FROM search_index WHERE rowid = ?", (_rowid(source, owner),)).first()
+        if row is not None and held is not None and held[0] != row.body:
+            _write(connection, source, owner, row)
+            changed = True
     return changed
 
 

@@ -10,6 +10,7 @@ Object.assign(LAZY_MODULES, {
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table (stamps, stickers, affinity, boundary).
     "/js/whiteboard.js",
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
@@ -98,6 +99,8 @@ Object.assign(LAZY_MODULES, {
   entryCard: ["/js/entry-card.js"],
   //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
   tableBlock: ["/js/table-block.js"],
+  //: A `![[board]]` card's fill (board-embed.js): `boardEmbedElement` (markdown.js) waits for it.
+  boardEmbed: ["/js/board-embed.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -148,7 +151,7 @@ installStandIns({
   libraryPick: ["pickLibraryItemDialog", "pickMediaDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
-  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine", "renderBackupsWidget"],
   dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],

@@ -42,7 +42,7 @@
       apiJson("/note-types").catch(() => []),
     ]);
     if (!got) {
-      toast("Couldn't read this note's properties.", true);
+      toast(voiceLine("failed", { what: "read this note's properties" }), true, { action: ["Try again", () => openNotePropertiesSheet(entry)] });
       return;
     }
     const rows = [];
@@ -256,7 +256,8 @@
                 await apiJson(`/note-types/${liveId}`, { method: "DELETE" });
               },
               async () => {
-                const again = await apiJson("/note-types", { method: "POST", body: JSON.stringify(body) });
+                // Redo keeps the id (undo-1005), so a later Undo of an edit on this type still finds it.
+                const again = await apiJson("/note-types", { method: "POST", body: JSON.stringify({ ...body, id: liveId, restore: true }) });
                 liveId = again?.id ?? liveId;
               }
             );

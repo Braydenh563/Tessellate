@@ -41,18 +41,39 @@ INSTALL_HINT = (
 #: The engine's two files, loaded by the worker.
 ENGINE_FILES = ("bergamot-translator-worker.js", "bergamot-translator-worker.wasm")
 
-#: The installed pairs' files, by direction. A new pair is a row here and its
-#: downloads in `core/extras.py`'s entry.
+def _pair(source: str, target: str, label: str) -> dict:
+    """One direction's row. The file names follow the Mozilla model release's
+    own pattern (`model.<pair>.intgemm.alphas.bin`, `lex.50.50.<pair>.s2t.bin`,
+    `vocab.<pair>.spm`), the one the English to Spanish files already carry."""
+    tag = source + target
+    return {
+        "from": source,
+        "to": target,
+        "label": label,
+        "model": f"model.{tag}.intgemm.alphas.bin",
+        "lex": f"lex.50.50.{tag}.s2t.bin",
+        "vocab": f"vocab.{tag}.spm",
+    }
+
+
+#: Every direction the app knows how to ask for. A row reaches the page only
+#: when its three files are in the installed folder (`installed_pairs`), so a
+#: pair the package does not carry never shows in the picker. Only English to
+#: Spanish ships today (`core/extras.py`); the rest wait on pinned downloads
+#: (a LEDGER row), and their file names are the release's pattern, not yet
+#: checked against a downloaded file.
 PAIRS: tuple[dict, ...] = (
-    {
-        "from": "en",
-        "to": "es",
-        "label": "English to Spanish",
-        "model": "model.enes.intgemm.alphas.bin",
-        "lex": "lex.50.50.enes.s2t.bin",
-        "vocab": "vocab.enes.spm",
-    },
+    _pair("en", "es", "English to Spanish"),
+    _pair("en", "fr", "English to French"),
+    _pair("en", "de", "English to German"),
+    _pair("en", "it", "English to Italian"),
+    _pair("en", "pt", "English to Portuguese"),
+    _pair("es", "en", "Spanish to English"),
+    _pair("fr", "en", "French to English"),
+    _pair("de", "en", "German to English"),
 )
+
+_PAIR_KEYS = ("from", "to", "label", "model", "lex", "vocab")
 
 _TYPES = {
     ".js": "text/javascript; charset=utf-8",
@@ -64,18 +85,26 @@ def _folder() -> Path | None:
     return extras.download_ready(EXTRA_ID)
 
 
+def installed_pairs() -> list[dict]:
+    """The registry rows whose three files are all in the installed folder, in
+    registry order (English to Spanish first, so the first is the default)."""
+    folder = _folder()
+    if folder is None:
+        return []
+    return [
+        {key: pair[key] for key in _PAIR_KEYS}
+        for pair in PAIRS
+        if all((folder / pair[key]).is_file() for key in ("model", "lex", "vocab"))
+    ]
+
+
 def status() -> dict:
-    """What the palette row and the sheet read: installed or not, the pairs,
-    and the sentence to show when it is not."""
+    """What the palette row and the sheet read: installed or not, the pairs
+    there are to pick from, and the sentence to show when it is not."""
     installed = _folder() is not None
     return {
         "installed": installed,
-        "pairs": [
-            {key: pair[key] for key in ("from", "to", "label", "model", "lex", "vocab")}
-            for pair in PAIRS
-        ]
-        if installed
-        else [],
+        "pairs": installed_pairs(),
         "engine": ENGINE_FILES[0] if installed else "",
         "hint": "" if installed else INSTALL_HINT,
         "extra": EXTRA_ID,
@@ -93,6 +122,7 @@ def served(name: str) -> tuple[Path, str] | None:
         return None
     extra = extras.EXTRAS_BY_ID[EXTRA_ID]
     allowed = {file: file for download in extra.downloads for _member, file in download.members}
+    allowed.update({pair[key]: pair[key] for pair in PAIRS for key in ("model", "lex", "vocab")})
     listed = allowed.get(name)
     if listed is None or not (folder / listed).is_file():
         return None

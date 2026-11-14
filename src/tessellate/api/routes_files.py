@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
+from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
 from tessellate.api.this_computer import this_computer_only
@@ -388,6 +389,9 @@ class AttachmentAnalyseBody(BaseModel):
     #: fixture, a clear, an import) just replaces the stored text and lets the
     #: sections be derived again.
     edited: bool = False
+    #: With `text` on a vision reading: who read it, put back by Undo of a
+    #: fresh read (L517), so "Read by" names the reader of the text restored.
+    model: str | None = Field(default=None, max_length=200)
     #: The local engine for `kind="ocr"` on a picture (INBOX 717): "" for the
     #: automatic pick, or "tesseract" / "rapidocr" by name.
     engine: str = Field(default="", max_length=20)
@@ -467,6 +471,8 @@ def _store_typed_reading(session: Session, attachment: Attachment, body: Attachm
         attachment.vision_ocr_text = stripped
         if not stripped:
             attachment.vision_ocr_model = None
+        elif body.model is not None:
+            attachment.vision_ocr_model = body.model or None
     session.commit()
     if body.edited and body.kind in {"ocr", "vision"}:
         _set_edited_reading(
@@ -696,6 +702,9 @@ class AttachedFileTextOut(BaseModel):
     #: disabled Edit button: §R7.1 item 2 asks for the honest reason in the UI
     #: rather than a control that does nothing.
     edit_message: str = ""
+    #: The hash of `text` (`edit_conflicts.content_hash`): a save sends it back
+    #: as `base_hash` so a file changed meanwhile is not overwritten unseen.
+    content_hash: str = ""
 
 
 @router.get("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -736,6 +745,7 @@ def attached_file_text(
         extra=viewed.extra,
         editable=editable,
         edit_message=edit_message,
+        content_hash=content_hash(viewed.text),
     )
 
 
@@ -743,6 +753,8 @@ class FileTextIn(BaseModel):
     """The edited text of a file, on its way back to disk."""
 
     text: str = Field(max_length=bounds.FILE_TEXT_MAX)
+    #: The `content_hash` of the text this edit started from (two windows, one file).
+    base_hash: str | None = Field(default=None, max_length=64)
 
 
 @router.put("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -768,6 +780,13 @@ def save_attached_file_text(
     editable, edit_message = docview.editability(path, viewed)
     if not editable:
         raise HTTPException(status_code=409, detail=edit_message)
+    refuse_if_stale(
+        base_hash=payload.base_hash,
+        current_text=viewed.text,
+        new_text=payload.text,
+        current=lambda: {"content": viewed.text, "content_hash": content_hash(viewed.text)},
+        noun="file",
+    )
     docview.write_text_file(path, payload.text)
     #: The row's `size` is what the Library shows beside the name, so it has to
     #: follow the file rather than stay at whatever was uploaded. Nothing here
@@ -784,6 +803,7 @@ def save_attached_file_text(
         truncated=saved.truncated,
         message=saved.message,
         editable=True,
+        content_hash=content_hash(saved.text),
     )
 
 
@@ -2125,8 +2145,10 @@ def ocr_media(
     regenerate behind a spinner the same way.
     """
     upload = _existing_upload(session, upload_id)
-    if Path(upload.filename).suffix.lower() not in ocr.OCR_SUFFIXES:
-        raise HTTPException(status_code=415, detail="Only images can be read this way.")
+    suffix = Path(upload.filename).suffix.lower()
+    is_pdf = suffix == ".pdf"
+    if not is_pdf and suffix not in ocr.OCR_SUFFIXES:
+        raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
     if body.text is not None:
         upload.ocr_text = body.text.strip() or None
         session.commit()
@@ -2138,7 +2160,7 @@ def ocr_media(
         #: A missing engine used to come back as a 200 with no text, which the
         #: workspace painted as "Read <file>." over an empty panel. Say so.
         choice = _checked_engine(body.engine)
-        reason = ocr.unavailable_reason(choice)
+        reason = "" if is_pdf else ocr.unavailable_reason(choice)
         if reason:
             raise HTTPException(status_code=409, detail=reason)
         media_dir = deps.get_config().data_dir / "media"
@@ -2147,7 +2169,8 @@ def ocr_media(
         #: "stand down when a vision model exists") are right for the
         #: background pass after an upload and wrong here: with a reading on
         #: the row, or a model running, "Read again" did nothing at all.
-        text = _local_text(media_dir / upload.filename, choice)
+        read = _local_pdf_text if is_pdf else _local_text
+        text = read(media_dir / upload.filename, choice)
         if text:
             upload.ocr_text = text
             session.commit()
@@ -2211,6 +2234,7 @@ from tessellate.api.routes_files_ocr import (  # noqa: E402,F401
     _forget_region_misses,
     _forget_regions,
     _local_region_text,
+    _local_pdf_text,
     _local_text,
     _page_read_count_map,
     _page_read_key,
@@ -2242,6 +2266,7 @@ __all__ = [
     "_forget_region_misses",
     "_forget_regions",
     "_local_region_text",
+    "_local_pdf_text",
     "_local_text",
     "_page_read_count_map",
     "_page_read_key",

@@ -388,7 +388,7 @@ MM_CANCEL_FILE=""
 # mm_status <step> <title> <detail> <state>
 mm_status() {
   local step="$1" title="$2" detail="$3" state="$4" pct=0
-  # Steps *finished*, over total. The active step counts as not yet done,
+  # Steps *finished*, over total. The active step counts as unfinished,
   # which is why this is step-1 and not step: a bar that jumps to 100% while
   # the last and longest phase is still running is the lie the old marquee
   # existed to avoid.
@@ -508,7 +508,7 @@ run_with_timeout() {
 # (a real dependency conflict, a corrupt requirements.txt, disk full) falls
 # through to printing the tool's actual error, on purpose - CLAUDE.md is
 # explicit that swallowing a genuine failure behind "offline?" costs the
-# next session an hour finding out it wasn't.
+# the next person an hour finding out it wasn't.
 is_network_error() {
   grep -qiE \
     'could not resolve host|temporary failure in name resolution|name or service not known|nodename nor servname|node name.*not known|connection timed out|connection refused|network is unreachable|failed to establish a new connection|read timed out|newconnectionerror|max retries exceeded|no route to host|could not connect to server|couldn.t connect to server|ssl.*(handshake|certificate)|proxy (error|authentication)|getaddrinfo failed|unable to connect|connection reset by peer|no address associated with hostname|could not fetch url|unreachable network|operation too slow|bytes/sec transferred|unable to access|could not resolve proxy|empty reply from server|timed out waiting' \
@@ -715,7 +715,7 @@ mm_doctor() {
   # whether to repair automatically, so the two never disagree about what
   # "broken" means.
   if [ ! -x ".venv/bin/python" ]; then
-    mm_row warn ".venv" "not built yet" "Normal before the first run. ./start.sh builds it."
+    mm_row warn ".venv" "not created yet" "Normal before the first run. ./start.sh builds it."
   elif .venv/bin/python -c "import tessellate.api.app" >/dev/null 2>&1; then
     mm_row ok ".venv" "the app imports cleanly"
   else
@@ -1251,7 +1251,7 @@ if [ "$NEED_INSTALL" = "1" ]; then
       else
         # Not a network shape - show the real reason rather than guessing.
         # A silently-mislabelled dependency failure is the trap CLAUDE.md
-        # calls out: it reads as "offline" and costs the next session an hour
+        # calls out: it reads as "offline" and costs the next person an hour
         # finding out the real cause was a broken requirements.txt.
         echo " ${YELLOW}[!]${RESET} Could not update dependencies:"
         tail -n 8 "$PIP_LOG" | sed 's/^/        /'

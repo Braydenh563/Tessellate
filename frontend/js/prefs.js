@@ -122,6 +122,45 @@ const prefs = {
 };
 
 //: Run each schema key's `migrate` once per version bump.
+//: **One 12 or 24 hour setting for every clock** (WORLD_CLASS_PLAN 22.2): the
+//: `time_format` preference ("auto" follows the browser's region, "12", "24").
+//: Every time formatter spreads `clockOptions()` into its options, or is made
+//: with `clockOptions.formatter()` (built once and again only when the setting
+//: changes); `tests/test_time_format.py` fails on one that does neither. One
+//: shared name (the global-scope ratchet), the rest hang off it.
+//: `hourCycle`, not `hour12`: `hour12: false` prints midnight as 24:00.
+function clockOptions() {
+  const choice = clockOptions.choice();
+  if (choice === "12") return { hourCycle: "h12" };
+  if (choice === "24") return { hourCycle: "h23" };
+  return {};
+}
+
+//: `prefsCache` is a `let` in settings-panes.js, not a window property, and
+//: is in its temporal dead zone until that script has run.
+clockOptions.choice = () => {
+  try {
+    return prefsCache?.time_format || "auto";
+  } catch {
+    return "auto";
+  }
+};
+
+clockOptions.formatter = (options) => {
+  let made;
+  let madeFor;
+  return {
+    format(date) {
+      const choice = clockOptions.choice();
+      if (madeFor !== choice) {
+        made = new Intl.DateTimeFormat(undefined, { ...options, ...clockOptions() });
+        madeFor = choice;
+      }
+      return made.format(date);
+    },
+  };
+};
+
 function prefsMigrate() {
   const done = prefs.json("prefs-versions", {});
   let changed = false;
@@ -202,3 +241,30 @@ function shortcutTitle(base, action) {
 function nounCount(n, one, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
 }
+
+//: **One second's clock for every ticking display** (L-world-class-15): the
+//: chat's answer timer, the focus timer, the meeting recorder and the status
+//: bar clock each ran their own one-second interval, four wakes a second
+//: where one does. A display adds its paint while it shows and removes it
+//: when it stops; the interval runs only while one is added.
+const secondTick = {
+  fns: new Set(),
+  id: 0,
+  add(fn) {
+    this.fns.add(fn);
+    if (!this.id) this.id = setInterval(() => this.fns.forEach((paint) => {
+      try {
+        paint();
+      } catch (err) {
+        console.error(err);
+      }
+    }), 1000);
+  },
+  remove(fn) {
+    this.fns.delete(fn);
+    if (!this.fns.size && this.id) {
+      clearInterval(this.id);
+      this.id = 0;
+    }
+  },
+};

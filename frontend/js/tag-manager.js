@@ -366,9 +366,8 @@ function drawManageSuggestions(box, { groups, nouns, state, onMerge }) {
     //: What goes where, in words: the busiest name keeps its notes.
     names.textContent = `${group.slice(1).join(", ")} into ${group[0]}`;
     names.title = names.textContent;
-    const merge = smallButton("ph:arrows-merge Merge", `Fold ${names.textContent}`, () => onMerge(group[0], group.slice(1)));
-    merge.setAttribute("aria-label", `Merge ${names.textContent}`);
-    row.append(names, merge);
+    const actions = rowActions([{ label: "ph:arrows-merge Merge", title: `Fold ${names.textContent}`, run: () => onMerge(group[0], group.slice(1)) }], `Actions for ${names.textContent}`);
+    row.append(names, actions);
     box.appendChild(row);
   }
   if (groups.length > 3) {
@@ -560,7 +559,7 @@ async function drawTurnedDown(box) {
         await apiJson("/tags/turned-down/offer-again", { method: "POST", body: JSON.stringify({ tag }) });
         toast(`${tag} is suggested again.`);
       } catch (error) {
-        toast(`Couldn't offer ${tag} again: ${error.message}`, true);
+        toast(voiceLine("failed", { what: `offer ${tag} again`, why: error.message }), true);
       }
       drawTurnedDown(box);
     });

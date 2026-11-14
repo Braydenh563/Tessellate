@@ -29,7 +29,7 @@ from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, deps, events, logbuffer, security
+from tessellate.core import backup, deps, events, events_redo, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -338,6 +338,8 @@ class PreferencesBody(BaseModel):
     before_includes_day: bool | None = None
     #: The order a numeric date such as 3/4 is read in; "auto" follows the browser's region.
     date_order: Literal["auto", "day", "month"] | None = None
+    #: A 12 or 24 hour clock everywhere; "auto" follows the browser's region.
+    time_format: Literal["auto", "12", "24"] | None = None
     #: Which half of the year "summer" and "last winter" mean: the person's
     #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
     season_hemisphere: Literal["auto", "north", "south"] | None = None
@@ -550,6 +552,8 @@ class PreferencesBody(BaseModel):
     # autonomous pass could never actually pick up any candidates no matter
     # what the checkbox showed.
     auto_stale_review_enabled: bool | None = None
+    #: L584: the scheduled Check what it learned (Settings, What it learned).
+    learned_audit_enabled: bool | None = None
     #: ANALYSIS.md §60 item 2. Declared here as well as in the response and
     #: `_AUTONOMOUS_PREFS` below: the comment above this block records what
     #: happens when it is not: Pydantic drops the key, every PUT that turns it
@@ -840,6 +844,7 @@ def _prefs_notebook(config) -> dict:
         "week_start_locale": config.get_preference("week_start_locale", 0),
         "before_includes_day": config.get_preference("before_includes_day", False),
         "date_order": config.get_preference("date_order", "auto"),
+        "time_format": config.get_preference("time_format", "auto"),
         "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
         "birthday": config.get_preference("birthday", ""),
         "season_locale": config.get_preference("season_locale", ""),
@@ -970,6 +975,7 @@ def _prefs_interface_and_desktop(config) -> dict:
         "auto_link_enabled": config.get_preference("auto_link_enabled", True),
         "auto_dedupe_enabled": config.get_preference("auto_dedupe_enabled", True),
         "auto_stale_review_enabled": config.get_preference("auto_stale_review_enabled", False),
+        "learned_audit_enabled": config.get_preference("learned_audit_enabled", True),
         "auto_capture_enabled": config.get_preference("auto_capture_enabled", False),
         "mcp_writes_enabled": config.get_preference("mcp_writes_enabled", False),
         "autonomous_tasks_interval_hours": config.get_preference(
@@ -2032,6 +2038,11 @@ def _feed_item(row: AuditLog) -> dict:
     undid = (row.payload or {}).get("undid") if row.action == "restored" else None
     if isinstance(undid, list):
         item["undid"] = [i for i in undid if isinstance(i, int)]
+    #: A redo names the undo it took back, so that undo no longer hides the
+    #: AI's changes from the "Undo what Atlas did" row.
+    redid = (row.payload or {}).get("redid") if row.action == "redone" else None
+    if isinstance(redid, list):
+        item["redid"] = [i for i in redid if isinstance(i, int)]
     return item
 
 
@@ -2074,6 +2085,24 @@ def undo_actor(body: UndoBody, session: Session = Depends(get_session)) -> dict:
         apply=not body.dry_run,
         force=body.force,
     )
+    if not body.dry_run:
+        session.commit()
+    return result
+
+
+class RedoBody(BaseModel):
+    #: The `restored` events an applied `/events/undo` returned.
+    restored: list[int] = Field(min_length=1, max_length=500)
+    dry_run: bool = False
+    force: bool = False
+
+
+@router.post("/events/redo")
+def redo_undo(body: RedoBody, session: Session = Depends(get_session)) -> dict:
+    """Take an AI-change undo back (`events.redo`): the server re-applies the
+    events that undo reversed, so those undos join the normal undo stack with
+    Redo (owner decision, L805)."""
+    result = events_redo.redo(session, body.restored, apply=not body.dry_run, force=body.force)
     if not body.dry_run:
         session.commit()
     return result

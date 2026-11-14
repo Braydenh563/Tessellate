@@ -305,3 +305,20 @@ def test_an_alert_can_be_changed_and_cleared_by_the_edit(client):
     assert cleared["alert_minutes"] is None and not cleared.get("alert_words")
     added = client.put(f"/reminders/{made['id']}", json={"alert_minutes": 10080}).json()
     assert added["alert_minutes"] == 10080
+
+
+def test_count_kind_reads_counted_things_only_when_asked_for():
+    """L501: `count` is a kind of `recognise` the fact layer delegates to; other readers leave it off."""
+    now = datetime(2026, 11, 12, 12)
+    spans = rec.recognise("Baked 3 loaves of Sourdough. Did five sets.", now=now, counts=True)
+    got = [(s.kind, s.text, s.value) for s in spans if s.kind == "count"]
+    assert got == [("count", "3 loaves of Sourdough", (3, "loaves", "Sourdough")), ("count", "five sets", (5, "sets", None))]
+    assert [s.json()["value"] for s in spans if s.kind == "count"][0] == {"amount": 3, "noun": "loaves", "of": "Sourdough"}
+    assert not [s for s in rec.recognise("Baked 3 loaves and did five sets.", now=now) if s.kind == "count"]
+    assert not [s for s in rec.recognise("Ran 5 km in 20 minutes", now=now, counts=True) if s.kind == "count"]
+
+
+def test_the_fact_layer_has_no_quantity_pattern_of_its_own():
+    from tessellate.ai import factgraph
+
+    assert not hasattr(factgraph, "_QUANTITY")

@@ -31,6 +31,8 @@ router = APIRouter(tags=["import"])
 
 #: Files in one request: a vault picked as a folder is many files.
 MAX_FILES = 5000
+#: Notes embedded and committed per call after an import (was one commit per note, L508).
+EMBED_BATCH_NOTES = 100
 
 
 def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
@@ -105,7 +107,8 @@ def import_app(
 ) -> dict:
     """Read, write, and keep a report. The write is a job with progress and
     Stop (decision 70): Stop ends it at the next note and every note made
-    before then stays, since each one is committed as it is made."""
+    before then stays: the writer commits every hundred notes and at a stop,
+    and the embeddings are stored and committed in batches (L508)."""
     from tessellate.api.routes_settings_transfer import _parse_frontmatter
 
     left_out = _excluded(exclude)
@@ -131,10 +134,11 @@ def import_app(
             written = export_folder.write(session, read, deps.get_config().uploads_dir, progress)
         else:
             written = app_import.write(session, source, read.notes, progress)
-        for entry in written.pop("entries"):
-            if job.stopped:
+        made = written.pop("entries")
+        for start in range(0, len(made), EMBED_BATCH_NOTES):
+            if job.stopped:  # Stop is honoured between batches; the notes are already kept
                 break
-            deps.store_quietly(session, entry)
+            deps.store_quietly_many(session, made[start : start + EMBED_BATCH_NOTES])
         run.result = _summary(written, label)
         if written.get("stopped"):
             run.cancel(f"stopped: {run.result}")

@@ -35,7 +35,7 @@ def test_one_tool_row_with_a_group_by_select() -> None:
     select = re.search(r'<select id="contents-group"[^>]*>(.*?)</select>', view, re.S)
     assert select, "the grouping is one select"
     values = re.findall(r'<option value="(\w+)"', select.group(1))
-    assert values == ["category", "tag", "topic", "date", "folder"]
+    assert values == ["category", "tag", "topic", "date", "folder", "type"]  # By type added (L-world-class-8)
     # The four-way segment and the sideways strip of jump chips are gone.
     assert 'class="seg"' not in view and "contents-mode" not in view
     assert "contents-jump" not in view and "contents-jump" not in LIBRARY

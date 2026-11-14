@@ -823,13 +823,28 @@ _UNDOABLE_ENTRY_FIELDS = ("content", "tags", "category_id", "is_deleted", "delet
 
 
 def _undone_ids(session: Session, since_id: int) -> set[int]:
-    """Events an earlier undo already reversed (named in its `undid`)."""
-    done: set[int] = set()
-    for payload in session.scalars(
-        select(AuditLog.payload).where(AuditLog.id > since_id, AuditLog.action == "restored")
+    """Events an earlier undo already reversed (named in its `undid`), less
+    those whose undo a redo has since taken back (a `redone` names it in
+    `redid`): they are live again."""
+    undos: list[tuple[int, list[int]]] = []
+    redid: set[int] = set()
+    for row_id, action, payload in session.execute(
+        select(AuditLog.id, AuditLog.action, AuditLog.payload).where(
+            AuditLog.id > since_id, AuditLog.action.in_(("restored", "redone"))
+        )
     ):
-        if isinstance(payload, dict) and isinstance(payload.get("undid"), list):
-            done.update(int(i) for i in payload["undid"] if isinstance(i, int))
+        if not isinstance(payload, dict):
+            continue
+        key = "redid" if action == "redone" else "undid"
+        ids = [int(i) for i in payload.get(key) or [] if isinstance(i, int)]
+        if action == "redone":
+            redid.update(ids)
+        else:
+            undos.append((row_id, ids))
+    done: set[int] = set()
+    for row_id, ids in undos:
+        if row_id not in redid:
+            done.update(ids)
     return done
 
 
@@ -860,6 +875,33 @@ def _refused_early(entity_type: str, live: list[AuditLog]) -> str | None:
     return None
 
 
+def _is_own_undo(action: str, payload: Any, own_ids: set[int]) -> bool:
+    """An undo (or its redo) of these very events: not somebody else's edit."""
+    if action not in ("restored", "redone") or not isinstance(payload, dict):
+        return False
+    ids = payload.get("undid") or []
+    return bool(ids) and all(i in own_ids for i in ids)
+
+
+def _later_by_others(session: Session, entity_type: str, entity_id: int, live: list[AuditLog], actors: list[str]) -> int:
+    """Events on the entity after the actor's first live one by anyone else,
+    leaving out the undo and redo of these very events."""
+    own_ids = {row.id for row in live}
+    return sum(
+        1
+        for action, payload in session.execute(
+            select(AuditLog.action, AuditLog.payload).where(
+                AuditLog.entity_type == entity_type,
+                AuditLog.entity_id == entity_id,
+                AuditLog.id > live[0].id,
+                AuditLog.actor.notin_(actors),
+                AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
+            )
+        )
+        if not _is_own_undo(action, payload, own_ids)
+    )
+
+
 def _plan_undo(
     session: Session,
     item: dict[str, Any],
@@ -883,17 +925,7 @@ def _plan_undo(
     if not created and not changes:
         item["status"] = "no values recorded"
         return None
-    later_by_others = session.scalar(
-        select(func.count())
-        .select_from(AuditLog)
-        .where(
-            AuditLog.entity_type == entity_type,
-            AuditLog.entity_id == entity_id,
-            AuditLog.id > live[0].id,
-            AuditLog.actor.notin_(actors),
-            AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
-        )
-    )
+    later_by_others = _later_by_others(session, entity_type, entity_id, live, actors)
     if later_by_others and not force:
         item["status"] = "changed since"
         return None
@@ -926,8 +958,7 @@ def _fields_to_restore(created: bool, changes: list[AuditLog]) -> dict[str, Any]
     return target
 
 
-def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live: list[AuditLog], actors: list[str]) -> None:
-    was = entry_state(entry)
+def _write_fields(session: Session, entry: Entry, target: dict[str, Any]) -> None:
     if "content" in target and target["content"] != entry.content:
         # The text about to be replaced is kept, as every restore keeps
         # it: undoing an undo has to be possible.
@@ -941,8 +972,15 @@ def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live:
             entry.is_deleted = bool(value)
         else:
             setattr(entry, key, value)
+
+
+def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live: list[AuditLog], actors: list[str]) -> int | None:
+    """Write the fields back and record the `restored` event; its id, so a
+    redo can name it."""
+    was = entry_state(entry)
+    _write_fields(session, entry, target)
     with acting_as(ACTOR_USER):
-        record(
+        row = record(
             session,
             "restored",
             "entry",
@@ -950,6 +988,10 @@ def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live:
             detail=f"undid {len(live)} change(s) by {', '.join(actors)}"[:200],
             payload={**changed(was, entry_state(entry)), "undid": [row.id for row in live]},
         )
+    if row is None:
+        return None
+    session.flush()
+    return row.id
 
 
 def undo(
@@ -999,6 +1041,7 @@ def undo(
 
     items: list[dict[str, Any]] = []
     undone = 0
+    restored: list[int] = []
     for (entity_type, entity_id), mine in touched.items():
         item: dict[str, Any] = {
             "entity_type": entity_type,
@@ -1011,7 +1054,9 @@ def undo(
         if planned is None or not apply:
             continue
         entry, target = planned
-        _restore_entry(session, entry, target, live, actors)
+        event_id = _restore_entry(session, entry, target, live, actors)
+        if event_id is not None:
+            restored.append(event_id)
         undone += 1
     if apply:
         session.flush()
@@ -1021,5 +1066,7 @@ def undo(
         "until": until_id,
         "dry_run": not apply,
         "undone": undone,
+        #: The `restored` events this wrote: `redo` takes them back.
+        "restored": restored,
         "items": items,
     }

@@ -135,18 +135,7 @@ def test_stop_the_model_stops_every_generation_first(client):
 #: `core/activity.py` or `jobruns.job_run`. Infrastructure that is not a job
 #: (the server, the tray icon, a heartbeat) says so.
 THREAD_SITES = {
-    "ai/embeddings.py": "collect: embeddings, embedding-model",
-    "ai/janitor.py": "collect: filing kinds",
-    "ai/autonomous.py": "collect: autonomous",
-    "search/searxng_manager.py": "infrastructure: the SearXNG output pump",
-    "search/searxng_install.py": "collect: searxng",
-    "api/routes_update.py": "collect: app-update",
-    "api/app.py": "jobruns: backup",
-    "__main__.py": "infrastructure: the server and the tray icon",
     "core/jobs.py": "collect: job- kinds (the pool) and its heartbeat; `jobs.thread`, the thread Jobs: threads() lists, stop_threads() at quit; callers reach Activity (transcription: activity.start, warm-up: collect embeddings)",
-    "core/embedmodels.py": "collect: embedding-model",
-    "core/security.py": "infrastructure: a DNS probe of two seconds",
-    "core/lanserve.py": "infrastructure: the one select thread that waits for a LAN connection first byte",
     "ai/captions_helper.py": "infrastructure: the captions helper is its own child process; its one thread watches stdin so it exits with the app (the app lists the helper itself: captions_process)",
 }
 
@@ -163,3 +152,56 @@ def test_every_thread_site_is_registered_with_activity():
         "core/activity.track or jobruns.job_run, then name it in THREAD_SITES"
     )
     assert not set(THREAD_SITES) - found, "a listed thread site is gone: drop its row"
+
+
+#: Request-bound long work (a model call or an import the person waits on) that
+#: is not a thread site: the handler that does it, and the kind it registers
+#: under. The THREAD_SITES lint above cannot see these, so each is named here
+#: and must reach `activity.track` or `jobruns.job_run` inside that function.
+REQUEST_BOUND_LONG = {
+    ("api/routes_graph.py", "topic_summary"): "generation",
+    ("api/routes_map_suggest.py", "summarise_branch"): "generation",
+    ("api/routes_reminders.py", "import_ics"): "import",
+    ("api/routes_bookmarks.py", "import_bookmarks"): "import",
+    ("api/routes_meetings.py", "_model_pass"): "generation",
+    ("api/routes_import.py", "import_app"): "import",
+    ("api/routes_documents.py", "import_document"): "import",
+    ("api/routes_settings_transfer.py", "import_markdown"): "import",
+}
+
+
+def _function_text(rel: str, name: str) -> str | None:
+    import ast
+
+    text = (SRC / rel).read_text(encoding="utf-8")
+    for node in ast.walk(ast.parse(text)):
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return ast.get_source_segment(text, node)
+    return None
+
+
+def test_request_bound_long_tasks_register_with_activity():
+    missing = []
+    for (rel, name), kind in REQUEST_BOUND_LONG.items():
+        body = _function_text(rel, name)
+        assert body is not None, f"{rel}::{name} is gone: drop its row"
+        if f"activity.track(\"{kind}\"" not in body and "jobruns.job_run(" not in body and "activity.tracked_stream(" not in body:
+            missing.append(f"{rel}::{name}")
+    assert not missing, f"{missing} do long work in a request and nothing lists it: wrap it in activity.track"
+
+
+def test_a_tracked_job_that_fails_on_a_file_keeps_the_sentence_not_the_path():
+    """L505: `activity.track` put `str(exc)` on the run's line, which for an
+    OSError is "[Errno 28] ...: '/home/x/...'"; jobruns keeps the sentence."""
+    import pytest
+
+    seen = {}
+
+    def fail_on_a_file():
+        with activity.track("generation", "Answering in Chat") as job:
+            seen["run"] = job.run
+            raise OSError(28, "No space left on device", "/home/someone/private/notes.db")
+
+    with pytest.raises(OSError):
+        fail_on_a_file()
+    assert seen["run"]._error == "No space left on device"

@@ -206,10 +206,25 @@ function showSettingsSection(name) {
   if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
-  if (name === "tools") renderToolSettings();
+  if (name === "tools") {
+    renderToolSettings();
+    //: `#pref-mcp-writes` sits in Tools and was filled only by
+    //: `renderAutonomousSettings`, so Tools opened first showed it unchecked
+    //: over a preference that was on (L523, the Models case below over again).
+    apiJson("/preferences")
+      .then((prefs) => {
+        prefsCache = prefs;
+        $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
+      })
+      .catch(() => {});
+  }
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
-  if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  if (name === "learned") {
+    //: The scheduled-check switch (L584) is filled by `renderAutonomousSettings` too, for Learned opened first.
+    if (prefsCache) $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
+    ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
+  }
   if (name === "tasks") {
     renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
@@ -259,7 +274,10 @@ function showSettingsSection(name) {
   }
   if (name === "tasks") renderTasks(); // fill it in now, then poll
   if (name === "extras") renderExtras();
-  if (name === "searchindex") renderEmbedChoices();
+  if (name === "searchindex") {
+    renderEmbedChoices();
+    showSettingsSection.loadCurrencyRates();
+  }
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
@@ -288,10 +306,6 @@ function setSettingsPeek(on) {
     button.setAttribute("aria-pressed", String(!!on));
     button.classList.toggle("is-on", !!on);
   }
-}
-
-function settingsPeekIsOn() {
-  return $("settings-modal").classList.contains("peeking");
 }
 
 function updatePeekAvailability(section) {
@@ -328,6 +342,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
+  for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
   // lazily, and a pass that ran before they existed would leave exactly the
   // rows a user is most likely to be reading uncollapsed. Idempotent, so
@@ -501,6 +517,21 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     });
   }
 }
+
+//: **"Learned: manage"** (WORLD_CLASS_PLAN I9): the small link every invention's
+//: own surface carries (the morning card, a margin card, the question list,
+//: Rediscover) into Settings, What it learned, kept to `kind` when the surface
+//: has one, so a wrong fact is fixed where it is met. The list is already
+//: filtered by `#learned-kind`; setting it and firing `change` is all it takes.
+openSettingsModal.learnedLink = function learnedLink(kind = "") {
+  return smallButton("ph:sliders-horizontal Learned: manage", "Open what Atlas learned, to fix or remove a fact", async () => {
+    await openSettingsModal("learned");
+    const filter = $("learned-kind");
+    if (!filter) return;
+    filter.value = kind;
+    filter.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+};
 
 // CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
@@ -805,7 +836,7 @@ function renderLogGap(stats) {
     return;
   }
   const since = stats.dropped_since
-    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString()}.`
+    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString(undefined, clockOptions())}.`
     : "";
   note.textContent =
     `${stats.dropped.toLocaleString()} earlier record${stats.dropped === 1 ? "" : "s"} ` +
@@ -865,7 +896,7 @@ function logRow(record) {
 
   const when = document.createElement("span");
   when.className = "when";
-  when.textContent = new Date(record.time).toLocaleTimeString();
+  when.textContent = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
 
   const level = document.createElement("span");
   level.className = "what";
@@ -1022,7 +1053,7 @@ function renderLogList() {
 //, message", level padded like uvicorn's own default formatter pads
 // "INFO:"/"WARNING:"/"ERROR:" so a column of mixed levels still lines up.
 function logTerminalParts(record) {
-  const when = new Date(record.time).toLocaleTimeString();
+  const when = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
   const level = `${record.level}:`.padEnd(9);
   const body = record.logger ? `${record.logger}: ${record.message}` : record.message;
   return [`${when} ${level}`, body];
@@ -1261,7 +1292,7 @@ async function clearLogs() {
     const cleared = await api("/logs", { method: "DELETE" }).then(
       () => true,
       (error) => {
-        toast(error.message || "Couldn't clear the server log.", true);
+        toast(error.message || voiceLine("failed", { what: "clear the server log" }), true);
         return false;
       }
     );
@@ -1287,7 +1318,7 @@ async function downloadSupportBundle() {
     await saveFile("tessellate-support-bundle.zip", await response.blob());
     toast("Support bundle saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the support bundle.", true);
+    toast(error.message || voiceLine("failed", { what: "build the support bundle" }), true);
   } finally {
     setBusy(button, false);
   }
@@ -1496,10 +1527,6 @@ function applyEffectiveAccent() {
   else delete root.dataset.accent;
   if (custom) return applyCustomAccent(custom); // a picked hex wins outright
   applyCustomAccent(preset ? preset.swatch : null);
-}
-
-function contrastOn() {
-  return prefs.get("contrast", null) === "on";
 }
 
 // --- Wave O: expanded appearance controls -------------------------------------------
@@ -2272,7 +2299,7 @@ function savedThemeCard(theme) {
   // every neutral around it. Anything the saved look does not carry falls back
   // to the live theme, which is also what applying it would do.
   const named = (ACCENTS || []).find((a) => a.name === values.accent);
-  const accent = values["accent-custom"] || named?.swatch || cssVarNow("--accent");
+  const accent = values["accent-custom"] || named?.swatch || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
   const dark = (values.theme || document.documentElement.dataset.theme || "dark") !== "light";
   const page = dark ? "#12141c" : "#f5f6f9";
   const surface = dark ? "#1b1f2b" : "#ffffff";
@@ -2317,12 +2344,6 @@ function savedThemeCard(theme) {
 
   card.append(preview, foot);
   return card;
-}
-
-//: One resolved custom property, for building a preview out of the live theme
-//: when a saved look predates a given key.
-function cssVarNow(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "";
 }
 
 // "#rrggbb" -> "r, g, b" so a custom colour can drive rgba() softs.
@@ -2872,7 +2893,7 @@ function renderAppearance() {
     const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
     if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
   }), 1);
-  $("contrast-toggle").checked = contrastOn();
+  $("contrast-toggle").checked = prefs.get("contrast", null) === "on";
   _segActive("motion-seg", "motionChoice", MOTION.choice(appearancePref("motion")));
   for (const b of document.querySelectorAll("#motion-seg button")) b.setAttribute("aria-pressed", String(b.classList.contains("active")));
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
@@ -3421,7 +3442,7 @@ document.addEventListener("motionchange", () => {
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
 $("settings-close").addEventListener("click", closeSettingsModal);
-$("settings-peek").addEventListener("click", () => setSettingsPeek(!settingsPeekIsOn()));
+$("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click
@@ -4051,3 +4072,78 @@ document.addEventListener("click", (event) => {
     }
   }
 });
+
+// --- currency rates (decision 43, L519) ----------------------------------------
+//: The dated table currency answers use, as "EUR 0.88" lines: read from and
+//: saved to `/utilities/rates`. Undo puts the table that was there back.
+//: One IIFE hung on `showSettingsSection`, so the shared scope does not grow.
+(() => {
+  function currencyRatesText(rates) {
+    return Object.entries(rates).filter(([code]) => code !== "USD").map(([code, rate]) => `${code} ${rate}`).join("\n");
+  }
+
+  function currencyRatesPaint(body) {
+    $("currency-rates-date").value = body.date;
+    $("currency-rates-text").value = currencyRatesText(body.rates);
+    $("currency-rates-status").textContent = body.built_in ? `The built-in table, dated ${body.date}.` : `Your table, dated ${body.date}.`;
+  }
+
+  //: "EUR 0.88" or "EUR: 0.88" per line; answers `{ rates }` or `{ error }`.
+  function currencyRatesParse(text) {
+    const rates = {};
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (!line) continue;
+      const match = line.match(/^([A-Za-z]{3})\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)$/);
+      if (!match || Number(match[2]) <= 0) return { error: `Write each line as a code and a rate above 0, like EUR 0.88: "${line}".` };
+      rates[match[1].toUpperCase()] = Number(match[2]);
+    }
+    return { rates };
+  }
+
+  async function loadCurrencyRates() {
+    if (!$("currency-rates-group")) return;
+    if (!$("currency-rates-group").dataset.wired) {
+      $("currency-rates-group").dataset.wired = "1";
+      $("currency-rates-save").addEventListener("click", () => saveCurrencyRates());
+      $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates({ reset: true }));
+    }
+    try {
+      currencyRatesPaint(await apiJson("/utilities/rates", { silent: true }));
+    } catch (error) {
+      $("currency-rates-status").textContent = `Couldn't load the rates: ${error.message}`;
+    }
+  }
+
+  async function writeCurrencyRates(table) {
+    const body = table
+      ? await apiJson("/utilities/rates", { method: "PUT", body: JSON.stringify(table) })
+      : await apiJson("/utilities/rates", { method: "DELETE" });
+    currencyRatesPaint(body);
+    return body;
+  }
+
+  async function saveCurrencyRates({ reset = false } = {}) {
+    const status = $("currency-rates-status");
+    const parsed = reset ? { rates: null } : currencyRatesParse($("currency-rates-text").value);
+    if (parsed.error) {
+      status.textContent = parsed.error;
+      return;
+    }
+    if (!reset && !$("currency-rates-date").value) {
+      status.textContent = "Say the date these rates are from.";
+      return;
+    }
+    try {
+      const before = await apiJson("/utilities/rates", { silent: true });
+      const after = reset ? null : { date: $("currency-rates-date").value, rates: parsed.rates };
+      await writeCurrencyRates(after);
+      const was = before.built_in ? null : { date: before.date, rates: before.rates };
+      offerUndo(reset ? "Use the built-in rates" : "Save currency rates", reset ? "Currency rates are the built-in table." : "Saved the currency rates.", () => writeCurrencyRates(was), () => writeCurrencyRates(after));
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+
+  showSettingsSection.loadCurrencyRates = loadCurrencyRates;
+})();

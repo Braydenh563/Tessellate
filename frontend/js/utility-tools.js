@@ -19,7 +19,7 @@
 //: stopwatch's elapsed milliseconds at each lap. The one store: the panel, the
 //: chip and the dashboard line all read this list.
 const utilityClocks = [];
-const utilityTick = { id: 0, end: 0 };
+const utilityTick = { on: false, end: 0 };
 
 function utilityTimeText(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -88,13 +88,16 @@ function utilityClockRun(kind, name, seconds = 0) {
   return clock;
 }
 
-//: The one wake source here: a second's tick while any clock is on the bar,
-//: cleared the moment none is (tests/wake_sources_seed.json).
+//: A second's tick while any clock is on the bar, on the shared `secondTick`
+//: (prefs.js, L-world-class-15 and 93), removed the moment none is.
 function utilityEnsureTick() {
-  if (utilityClocks.length && !utilityTick.id) utilityTick.id = setInterval(paintUtilityChip, 1000);
-  if (!utilityClocks.length && utilityTick.id) {
-    clearInterval(utilityTick.id);
-    utilityTick.id = 0;
+  if (utilityClocks.length && !utilityTick.on) {
+    utilityTick.on = true;
+    secondTick.add(paintUtilityChip);
+  }
+  if (!utilityClocks.length && utilityTick.on) {
+    utilityTick.on = false;
+    secondTick.remove(paintUtilityChip);
   }
   //: A one-shot at the soonest end: a hidden tab runs the interval about
   //: once a minute after a while, so "Time is up" came up to a minute late;
@@ -230,7 +233,7 @@ const utilityOps = (() => {
     const timers = utilityClocks
       .filter((c) => c.kind === "timer")
       .map((c) => `${c.name} timer, ${c.paused == null && c.end <= now ? "time is up" : `${utilityTimeText(utilityClockSeconds(c))} left${c.paused == null ? "" : ", paused"}`}`);
-    const when = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" };
+    const when = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() };
     return [...timers, ...prefs.json("lock-digest", []).map((r) => `${r.t}, ${new Date(r.d).toLocaleString([], when)}`)];
   }
 

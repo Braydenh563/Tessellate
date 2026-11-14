@@ -867,6 +867,33 @@ def _local_text(path: Path, choice: str = "") -> str:
         return ocr.extract_text(path, choice) if choice else ocr.extract_text(path)
 
 
+def _local_pdf_text(path: Path, choice: str = "") -> str:
+    """An uploaded PDF read without a model (L631): its text layer when it has
+    one, else its first pages drawn to pictures and read with the chosen OCR
+    engine. Raises 409 with a plain reason when neither can be done, so the
+    caller never shows an empty panel as if the PDF had no words."""
+    from tessellate.core import docview
+
+    text = (docview.extract(path).text or "").strip()
+    if text:
+        return text
+    if not pdfpages.available():
+        raise HTTPException(
+            status_code=409,
+            detail="This PDF has no text layer, and reading its pages needs the PDF viewer extra. Install it in Settings, then try again.",
+        )
+    if reason := ocr.unavailable_reason(choice):
+        raise HTTPException(status_code=409, detail=reason)
+    out: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="mm-pdfocr-") as scratch:
+        for number, png in enumerate(pdfpages.render_pages(path), start=1):
+            page_path = Path(scratch) / f"page-{number:03d}.png"
+            page_path.write_bytes(png)
+            if page_text := _local_text(page_path, choice).strip():
+                out.append(page_text)
+    return "\n\n".join(out)
+
+
 def _local_region_text(path: Path, choice: str = "") -> str:
     """`ocr.extract_region_text`: a crop is read as one block (INBOX 1568)."""
     with activity.track("ocr", "Reading text from a picture", stoppable=False):

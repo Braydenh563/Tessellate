@@ -244,7 +244,7 @@ async function answerSuggestedTags(entry, body) {
       offerUndo(`Turned down #${tag}`, `Won't suggest #${tag} for this note again.`, post({ restore: [tag] }), post(body), { record: false });
     }
   } catch (error) {
-    toast(error.message || "Couldn't change the tags.", true);
+    toast(error.message || voiceLine("failed", { what: "change the tags" }), true);
   }
 }
 

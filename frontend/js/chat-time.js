@@ -12,7 +12,7 @@
 function chatTimeLabel(iso, now = new Date()) {
   const then = parseServerTime(iso);
   if (!then) return null;
-  const clock = then.toLocaleTimeString(undefined, { timeStyle: "short" });
+  const clock = then.toLocaleTimeString(undefined, { timeStyle: "short", ...clockOptions() });
   const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const days = Math.round((midnight(now) - midnight(then)) / 86400000);
   let text;
@@ -25,7 +25,7 @@ function chatTimeLabel(iso, now = new Date()) {
     const sameYear = then.getFullYear() === now.getFullYear();
     text = then.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(sameYear ? {} : { year: "numeric" }) });
   }
-  return { text, title: then.toLocaleString(undefined, { dateStyle: "full", timeStyle: "medium" }), iso: then.toISOString() };
+  return { text, title: then.toLocaleString(undefined, { dateStyle: "full", timeStyle: "medium", ...clockOptions() }), iso: then.toISOString() };
 }
 
 //: Put (or take away) one bubble's time. It lives in the bubble's meta row

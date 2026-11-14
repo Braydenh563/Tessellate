@@ -78,17 +78,6 @@
   margin: 0;
 }
 
-.inbox-row-actions {
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.inbox-row-actions > .chip {
-  margin-inline-end: auto;
-}
-
 /* GRAPH_PLAN KG3: a link's kind on its chip, quiet, before the note's name. */
 .link-kind {
   color: var(--muted);
@@ -4735,6 +4724,14 @@ button.answer-figure-open {
   width: auto;
   height: var(--control-h);
   padding-block: 0;
+}
+
+/* Time travel's slider (H8): days back from today, drawn right to left so the
+   past is leftward and today is the right end. */
+.ask-scope .ask-as-of-slider {
+  direction: rtl;
+  width: 10rem;
+  max-width: 100%;
 }
 
 /* Recent activity's "Undo what Atlas did" under its list (activityUndoControl,

@@ -55,6 +55,7 @@ def page(
     entry_id: int | None = None,
     document_id: int | None = None,
     include_done: bool = True,
+    only_done: bool = False,
     due_before: datetime | None = None,
 ) -> tuple[list[Reminder], int]:
     """A page soonest first and the total of the same filtered set: a total
@@ -64,7 +65,9 @@ def page(
         filters.append(Reminder.entry_id == entry_id)
     if document_id is not None:
         filters.append(Reminder.document_id == document_id)
-    if not include_done:
+    if only_done:
+        filters.append(Reminder.done.is_(True))
+    elif not include_done:
         filters.append(Reminder.done.is_(False))
     if due_before is not None:
         filters.append(Reminder.due_at <= due_before)
@@ -247,3 +250,16 @@ def purge(session: Session, reminder: Reminder) -> None:
     log_action(session, "purged", "reminder", reminder.id)
     session.delete(reminder)
     session.flush()
+
+
+def open_on_notes(session: Session, entry_ids: list[int]) -> list[Reminder]:
+    """The reminders on these notes still pending, soonest first."""
+    if not entry_ids:
+        return []
+    return list(
+        session.scalars(
+            select(Reminder)
+            .where(Reminder.entry_id.in_(entry_ids), Reminder.done.is_(False), Reminder.deleted_at.is_(None))
+            .order_by(*ORDER)
+        )
+    )

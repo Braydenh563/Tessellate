@@ -1726,7 +1726,7 @@ BUILTIN_SKILLS: list[dict] = [
     # aimed at *building* a skill instead of *thinking through* an idea.
     {
         "name": "Build a skill",
-        "description": "Interviews you about a job you do often, then saves it as a real skill, with steps and an actual tool allowlist, not just a saved sentence.",
+        "description": "Interviews you about a job you do often, then saves it as a real skill with steps and a tool allowlist.",
         "when_to_use": "when something you keep asking the AI to do by hand should become a one-click skill instead",
         "prompt": "Help me turn {{task}} into a saved skill.",
         "steps": [

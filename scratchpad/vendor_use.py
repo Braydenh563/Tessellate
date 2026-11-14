@@ -12,7 +12,7 @@ for the three browser bundles whose exports can only be read by running them
 (CodeMirror, D3, Emmet). p5's public API was dumped once in Chromium
 (`new Set(Object.getOwnPropertyNames(p5.prototype))`, functions not starting
 with an underscore) because p5 will not initialise outside a page; it is
-pinned to the vendored 1.9.4, so it changes only with the file.
+pinned to the vendored 1.11.13, so it changes only with the file.
 
 "Called" is a lower bound: a name built at run time (`"ph-" + name`) is not
 seen. The unused lists are therefore leads to check, not verdicts.
@@ -83,6 +83,10 @@ P5_FUNCTIONS = [
     "atan",
     "atan2",
     "background",
+    "baseColorShader",
+    "baseMaterialShader",
+    "baseNormalShader",
+    "baseStrokeShader",
     "beginClip",
     "beginContour",
     "beginGeometry",
@@ -132,6 +136,7 @@ P5_FUNCTIONS = [
     "createImage",
     "createImg",
     "createInput",
+    "createModel",
     "createNumberDict",
     "createP",
     "createRadio",
@@ -256,6 +261,7 @@ P5_FUNCTIONS = [
     "normalMaterial",
     "orbitControl",
     "ortho",
+    "paletteLerp",
     "panorama",
     "perspective",
     "pixelDensity",
@@ -372,7 +378,6 @@ P5_FUNCTIONS = [
 P5_CLASSES = [
     "Camera",
     "Color",
-    "ColorConversion",
     "DataArray",
     "Element",
     "File",
@@ -387,6 +392,7 @@ P5_CLASSES = [
     "MediaElement",
     "NumberDict",
     "PrintWriter",
+    "Quat",
     "RenderBuffer",
     "Renderer",
     "Renderer2D",
@@ -397,7 +403,6 @@ P5_CLASSES = [
     "TableRow",
     "Texture",
     "TypedDict",
-    "VERSION",
     "Vector",
     "XML",
 ]

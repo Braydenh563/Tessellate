@@ -14,9 +14,9 @@ in full is not cut off mid-list (INBOX 410).
 
 **The model is the utility model, and it is the utility model's own
 fallbacks that decide what that means.** `ModelManager.utility_model()`
-answers the chat model in two cases: smart model routing turned off, and no
-utility model chosen. Both are the documented behaviour and neither is a bug
-here, but together they are why the Guide can be seen running the chat model
+answers the chat model when no utility model is chosen; smart model routing
+off does not move the Guide (the owner's decision, 2026-09-24). That fallback
+is why the Guide can be seen running the chat model
 while every line of copy around it says "your utility model", so
 `tests/test_help_chat.py` pins which model a real request takes in each of
 the three cases rather than leaving it to be read off this sentence.
@@ -56,6 +56,7 @@ from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a le
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+from tessellate.core.lazyre import lazy_compile
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # annotations only: the speller reads this module's topics,
@@ -133,7 +134,7 @@ _CONTROLS_FOR: dict[str, str] = {
 #: The words that make a question about a surface a question about its
 #: controls. Deliberately narrow: "how do I make a mind map" is not one, and
 #: that is the question most people ask.
-_CONTROL_INTENT = re.compile(
+_CONTROL_INTENT = lazy_compile(
     r"\b(?:shortcuts?|keybinds?|keybindings?|key ?binds?|hotkeys?|keys|keyboard|"
     r"controls?|gestures?|chords?|hidden|secret|tips|tricks|power user|"
     r"everything (?:i|you) can do|what can i do|all the (?:features|tools|things))\b"
@@ -246,7 +247,7 @@ def _keyword_pattern(keyword: str) -> re.Pattern[str]:
 #: The lookahead insists on a key after the modifier, so "shift and drag" and
 #: "the control panel" are left alone. The separator is one bounded choice
 #: (CodeQL 426: `\s*(?:\+|-|\s)\s*` let a run of tabs split three ways).
-_MODIFIER = re.compile(
+_MODIFIER = lazy_compile(
     r"\b(ctrl|control|cmd|shift|alt|option)(?:\s{0,3}[+\-]\s{0,3}|\s{1,3})"
     r"(?=(?:ctrl|control|cmd|shift|alt|option)\b|f\d{1,2}\b|enter\b|tab\b|up\b|down\b|"
     r"left\b|right\b|[a-z0-9](?![a-z0-9])|[/.,=\-\[\]])"
@@ -279,7 +280,7 @@ for _topic in HELP_TOPICS:
 #: markdown" is Import & export.
 _KEYWORDS_ADD_GUIDE: dict[str, tuple[str, ...]] = {
     "performance": ("so slow", "is slow", "running slow", "takes ages", "sluggish"),
-    "undo-bin": ("deleted", "deleted notes", "deleted note", "undo deleting", "undelete"),
+    "undo-bin": ("deleted", "deleted notes", "deleted note", "undo deleting", "undelete", "undo after reload"),
     "import-export": ("export", "markdown", "to markdown", "as markdown", "backup", "back up my notes"),
     "meetings": ("record a meeting", "record meetings", "record the meeting"),
     "notes-controls": ("lots of notes", "many notes", "notes at once", "all at once"),
@@ -339,12 +340,12 @@ _WORD_BAND = help_words.WordBand(HELP_TOPICS, _WORD, _STOP, _keyword_in)
 
 #: The asking frame of a how-to, taken off before the rest is read as a
 #: sentence ("how do I pin a note" reads "pin a note").
-_HOW_FRAME = re.compile(r"^\s*(?:how (?:do|can|would|should) (?:i|you)|how to|can i|can you|where do i|is there a way to)\s+", re.I)
+_HOW_FRAME = lazy_compile(r"^\s*(?:how (?:do|can|would|should) (?:i|you)|how to|can i|can you|where do i|is there a way to)\s+", re.I)
 
 
 #: Words naming a surface other than a note: "rename a category" or "add a
 #: branch to a mind map" is that surface's own how-to, not a note act.
-_OTHER_SURFACE = re.compile(
+_OTHER_SURFACE = lazy_compile(
     r"\b(?:graph|board|whiteboard|canvas|sticky|map|mind ?map|branch|document|chat|category|categories|timeline|"
     r"library|palette|tab|folder|space|file|photo|template|word|order|sort|arrange|reorder|diagram|flowchart)s?\b", re.I)
 
@@ -425,7 +426,7 @@ def _repaired(question: str) -> str:
 
 #: "where do I find settings" asks where a place is, not for Find anything
 #: (bug sweep 2026-10-12): the asking frame's "find" names no topic.
-_WHERE_FIND = re.compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
+_WHERE_FIND = lazy_compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
 
 
 def _matching_topics(question: str) -> list[dict]:
@@ -618,13 +619,13 @@ def _about_the_guide(question: str) -> list[dict]:
 
 
 #: A question that points at the screen ("how does this work", "what is here").
-_DEICTIC = re.compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
+_DEICTIC = lazy_compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
 #: How-to forms that are about the app whatever else they name.
-_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?[\s?.!]*$", re.I)
+_HOW_TO_APP = lazy_compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?[\s?.!]*$", re.I)
 
 
 #: A request for writing or a performance, never a question about the app.
-_CREATIVE = re.compile(r"^\s*(?:please\s+)?(?:tell me (?:a|an|some) \w+|write|compose|draft|sing|recite|translate|give me (?:a|an) \w+|make me (?:a|an) \w+)\b", re.I)
+_CREATIVE = lazy_compile(r"^\s*(?:please\s+)?(?:tell me (?:a|an|some) \w+|write|compose|draft|sing|recite|translate|give me (?:a|an) \w+|make me (?:a|an) \w+)\b", re.I)
 
 
 def _outside_the_app(question: str) -> bool:
@@ -642,17 +643,17 @@ def _outside_the_app(question: str) -> bool:
     return bool(personal.general(question) or (personal.about_own_record(question) and not _HOW_TO_APP.match(question)))
 
 
-_INJECTION = re.compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )?(?:previous|prior|above|earlier|system) (?:instructions|rules|prompt)\b|\b(?:print|show|reveal|repeat) (?:me )?(?:your|the) (?:system )?prompt\b", re.I)
+_INJECTION = lazy_compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )?(?:previous|prior|above|earlier|system) (?:instructions|rules|prompt)\b|\b(?:print|show|reveal|repeat) (?:me )?(?:your|the) (?:system )?prompt\b", re.I)
 
 
-_WHO_IS_MY = re.compile(r"^(?:who(?:'s| is| are| was)|what(?:'s| is) the name of) (?:my|our) \w+(?: \w+)?[?.!]*$", re.I)
+_WHO_IS_MY = lazy_compile(r"^(?:who(?:'s| is| are| was)|what(?:'s| is) the name of) (?:my|our) \w+(?: \w+)?[?.!]*$", re.I)
 
 
 #: A request for the person's own list ("what are my tasks", "show my
 #: reminders", "what tasks do I have"): the contents are in Chat, and a keyword
 #: match with the help ("tasks" is Mind map controls) is no answer (A18).
 _ITEMS = r"(?:open |due |overdue |upcoming |current |pending )?(?:tasks?|to-?dos?|to do(?: list)?|todo list|reminders?)"
-_MY_ITEMS = re.compile(
+_MY_ITEMS = lazy_compile(
     rf"^\s*(?:(?:what|which)(?: are| is|'s)?(?: on)?|show|list|get|see|tell me|give me)(?: me)?(?: all)?(?: of)? (?:my|our) {_ITEMS}\b"
     rf"|^\s*(?:what|which) {_ITEMS} do i have\b",
     re.I,
@@ -832,12 +833,12 @@ def _nothing_matched(question: str) -> str:
 #: open tab's topic, the Dashboard's paragraph, twice). The reply says who is
 #: answering and the client puts the tab's three starters under it
 #: (`atlasStartersFor`), so the first thing to ask is one tap away.
-_GREETING = re.compile(
+_GREETING = lazy_compile(
     r"^\W*(?:hi|hey|hello|hiya|howdy|yo|good (?:morning|afternoon|evening))"
     r"(?:\s+(?:there|again|atlas|guide))?\W*$",
     re.I,
 )
-_THANKS = re.compile(r"^\W*(?:thanks|thank you|thx|cheers|ta)(?:\s+(?:atlas|a lot|so much|very much))?\W*$", re.I)
+_THANKS = lazy_compile(r"^\W*(?:thanks|thank you|thx|cheers|ta)(?:\s+(?:atlas|a lot|so much|very much))?\W*$", re.I)
 GREETING_REPLY = (
     f"Hi, I'm {GUIDE_NAME}, the app's guide. Ask me where a feature lives, "
     "what a setting does or how to do something here. Three to start with:"
@@ -848,27 +849,27 @@ THANKS_WORKED_REPLY = "Glad that worked. Ask me if anything else gets in the way
 #: **Open and social questions** (INBOX 1414), read from the words and answered
 #: in the first person, in a line or two, with no help dump and no resume
 #: offer. The tab's three starters go under the ones that flag `greeting`.
-_THANKS_LONG = re.compile(r"^\W*(?:thanks|thank you|thx|cheers)\b[^?]{0,40}$", re.I)
-_WORKED = re.compile(r"\b(?:worked|helped|great|perfect|brilliant|solved|fixed|got it)\b", re.I)
-_CAPABLE = re.compile(
+_THANKS_LONG = lazy_compile(r"^\W*(?:thanks|thank you|thx|cheers)\b[^?]{0,40}$", re.I)
+_WORKED = lazy_compile(r"\b(?:worked|helped|great|perfect|brilliant|solved|fixed|got it)\b", re.I)
+_CAPABLE = lazy_compile(
     r"^\W*(?:so )?(?:what (?:can|could) you (?:help (?:me )?(?:with|do)|do(?: for me)?)"
     r"|what do you (?:do|know)|what are you (?:for|good for|able to do)|what is your (?:job|purpose))\W*$",
     re.I,
 )
-_WHO = re.compile(r"^\W*(?:who|what) are you\W*$|^\W*who (?:is|are) (?:atlas|you)\W*$|^\W*what is atlas\W*$", re.I)
-_MISSED = re.compile(
+_WHO = lazy_compile(r"^\W*(?:who|what) are you\W*$|^\W*who (?:is|are) (?:atlas|you)\W*$|^\W*what is atlas\W*$", re.I)
+_MISSED = lazy_compile(
     r"^\W*(?:that|this|it)(?:'s| is| was)? ?(?:didn'?t|did not|doesn'?t|does not|isn'?t|is not|wasn'?t|was not|not)"
     r" (?:help|work|right|what i (?:asked|meant|wanted)|helpful|useful|it|correct|answer)\b[^?]{0,30}$"
     r"|^\W*(?:you(?:'re| are)|that(?:'s| is)|this is) (?:wrong|incorrect|useless|not right|no help|not helpful)\W*$"
     r"|^\W*(?:wrong|not helpful|useless|that'?s not what i (?:asked|meant|wanted))\W*$",
     re.I,
 )
-_ORGANISE = re.compile(
+_ORGANISE = lazy_compile(
     r"^\W*(?:how (?:do|can|should) (?:i|we)|help me|can you help me|i want to|i need to)\s+"
     r"(?:organi[sz]e|sort|tidy(?: up)?|clean up|arrange)\s+(?:this|it|things|everything|my stuff|stuff|all this)\W*$",
     re.I,
 )
-_CAN_YOU = re.compile(r"^\W*(?:can|could|would|will) you\b", re.I)
+_CAN_YOU = lazy_compile(r"^\W*(?:can|could|would|will) you\b", re.I)
 WHO_REPLY = (
     f"I'm {GUIDE_NAME}, the app's guide, named for a book of maps. I answer questions about "
     "Tessellate from its own help: where a feature lives, what a setting does, how to do something."
@@ -925,14 +926,14 @@ def social_reply(question: str) -> dict | None:
 #: A place is added only to a question that wants one (INBOX 1414: "what can
 #: you help me with" was given the guide's own button). A how-to carries its
 #: place in its steps.
-_FIND_ASKED = re.compile(r"\b(?:where|find|locate|get to|go to|navigate|located|which (?:tab|menu|setting))\b", re.I)
-_WHERE_ASKED = re.compile(r"^\s*(?:where(?:'s| is| are| do| can| would)?|which (?:tab|setting|menu))\b", re.I)
+_FIND_ASKED = lazy_compile(r"\b(?:where|find|locate|get to|go to|navigate|located|which (?:tab|menu|setting))\b", re.I)
+_WHERE_ASKED = lazy_compile(r"^\s*(?:where(?:'s| is| are| do| can| would)?|which (?:tab|setting|menu))\b", re.I)
 
 
 #: A second sentence longer than this is a wall, not a help: the topic's
 #: own text, a tap away, has it.
 SECOND_SENTENCE_WORDS = 35
-_HOW_ASKED = re.compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|can i|is there a way)\b", re.I)
+_HOW_ASKED = lazy_compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|can i|is there a way)\b", re.I)
 _COUNTS = ("no", "one", "two", "three", "four", "five", "six")
 
 

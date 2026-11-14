@@ -85,14 +85,16 @@
 
   //: Save a note, or hold it when the server is gone. Answers `{ saved }` or
   //: `{ queued: true }`; a refusal (a 4xx, a 5xx) is thrown as it would be.
-  async function createNoteSafely(body, { online = false } = {}) {
+  //: `heldReminder` (L497): the quick note's reminder chip, kept with a held
+  //: note and set once the note is in and has an id; never sent as the note.
+  async function createNoteSafely(body, { online = false, heldReminder = null } = {}) {
     const payload = { defer_filing: true, inline_tags: true, ...body };
     payload.client_key = payload.client_key || newNoteClientKey();
     try {
       return { saved: await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) }) };
     } catch (error) {
       //: `online`: the caller needs the new note's id (files to attach), so it is never held for later.
-      if (online || !noteServerGone(error) || !noteOutboxAdd(payload)) throw error;
+      if (online || !noteServerGone(error) || !noteOutboxAdd(heldReminder ? { ...payload, held_reminder: heldReminder } : payload)) throw error;
       return { queued: true };
     }
   }
@@ -114,7 +116,7 @@
     noteOutboxFlushing = (async () => {
       let sent = 0;
       for (const item of noteOutbox()) {
-        const { queued_at: _queuedAt, edit_id: editId, ...payload } = item;
+        const { queued_at: _queuedAt, edit_id: editId, held_reminder: heldReminder, ...payload } = item;
         try {
           if (editId) {
             const { client_key: _key, ...edit } = payload;
@@ -128,6 +130,10 @@
           writeNoteOutbox(noteOutbox().filter((held) => held.client_key !== item.client_key));
           sent += 1;
           pushEntryCreateUndo(saved, "Saved a note kept on this device");
+          if (heldReminder) {
+            const said = await quickNoteReminder(saved.id, { ...heldReminder, due: new Date(heldReminder.due) });
+            if (said) toast(said.trim());
+          }
           if (saved.filing_state === "pending") watchFiling(saved, { quiet: true });
         } catch (error) {
           if (noteServerGone(error) || error.isLockout || !error.status || error.status >= 500 || error.status === 429) break;
@@ -371,13 +377,14 @@
     quickNoteStatus("Saving…");
     try {
       const slots = await quickAddSlots(quickNoteBox());
-      const result = await createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) });
+      const heldReminder = slots?.due ? { title: slots.title, due: slots.due.toISOString(), recurring: slots.recurring || "none" } : null;
+      const result = await createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) }, { heldReminder });
       clearQuickNote();
       $("quick-note").close();
       if (result.queued) {
         //: The reminder chip needs the saved note's id, which a held note does
-        //: not have yet: said, not dropped without a word.
-        toast(`Saved on this device. It goes into your notebook as soon as the server answers.${slots?.due ? " Its reminder was not set: add it once the note is in." : ""}`);
+        //: not have yet: it is held with the note and set when the note goes in.
+        toast(`Saved on this device. It goes into your notebook as soon as the server answers.${heldReminder ? " Its reminder is set then too." : ""}`);
         return;
       }
       const saved = result.saved;
@@ -465,11 +472,35 @@
       keepQuickNoteDraft();
       if ($("quick-note-status").classList.contains("error")) quickNoteStatus("");
     });
+    //: **Rich paste, as the document and the capture box have it** (L-world-class-50). The
+    //: converter is documents.js's own (`docHtmlToMarkdown`, in the Library bundle), so the
+    //: paste is taken, the bundle fetched, and the words typed in with `insertText` (the
+    //: box's undo keeps them). Ctrl+Shift+V pastes plain, as everywhere.
+    let plainPaste = false;
     box.addEventListener("keydown", (event) => {
+      plainPaste = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
       if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
         event.preventDefault();
         saveQuickNote();
       }
+    });
+    box.addEventListener("paste", (event) => {
+      const html = event.clipboardData?.getData("text/html") || "";
+      const plain = event.clipboardData?.getData("text/plain") || "";
+      const asPlain = plainPaste;
+      plainPaste = false;
+      if (!html || asPlain || event.clipboardData.files.length) return;
+      event.preventDefault();
+      ensureModule("library").then((ok) => {
+        let text = ok && docHtmlIsRich(html) ? docHtmlToMarkdown(html) : "";
+        const { value, selectionStart: from, selectionEnd: to } = box;
+        //: A block starts its own line, as in the document (`docRichPasteEvent.fit`).
+        if (text) text = docRichPasteEvent.fit(text, value.slice(value.lastIndexOf("\n", from - 1) + 1, from), value.slice(to, (value.indexOf("\n", to) + 1 || value.length + 1) - 1));
+        text ||= plain;
+        box.focus();
+        if (!document.execCommand("insertText", false, text)) box.setRangeText(text, from, to, "end");
+        box.dispatchEvent(new Event("input", { bubbles: true }));
+      });
     });
     $("quick-note-save").addEventListener("click", saveQuickNote);
     $("quick-note-more").addEventListener("click", quickNoteToCapture);
@@ -514,7 +545,7 @@
     try {
       text = ((await navigator.clipboard.readText()) || "").trim();
     } catch {
-      toast("Couldn't read the clipboard here. Paste into Capture instead.", "info");
+      toast(voiceLine("failed", { what: "read the clipboard here", why: "paste into Capture instead" }), "info");
       return;
     }
     if (!text) return toast("There is no text on the clipboard to save.", "info");
@@ -572,7 +603,7 @@
         openDocument(doc.id);
       }, { go: { open: "doc", id: doc.id } });
     } catch (error) {
-      toast(error.message || "Couldn't save that document.", true);
+      toast(error.message || voiceLine("failed", { what: "save that document" }), true);
     }
   }
 
@@ -596,7 +627,7 @@
       await openWhiteboardBoard(board.id);
       chatProposalBar(board);
     } catch (error) {
-      toast(error.message || "Couldn't make a mind map from this chat.", true);
+      toast(error.message || voiceLine("failed", { what: "make a mind map from this chat" }), true);
     }
   }
 
@@ -661,7 +692,7 @@
       // already calls this with no such guard, for the same reason.
       loadEntries();
     } catch (error) {
-      toast(error.message || "Couldn't save that note.", true);
+      toast(error.message || voiceLine("failed", { what: "save that note" }), true);
     }
   }
 
@@ -694,7 +725,7 @@
         return flashReminder(reminder.id);
       }, { go: { open: "reminder", id: reminder.id } });
     } catch (error) {
-      toast(error.message || "Couldn't set a reminder.", true);
+      toast(error.message || voiceLine("failed", { what: "set a reminder" }), true);
     }
   }
 

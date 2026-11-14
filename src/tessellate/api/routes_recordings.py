@@ -101,7 +101,7 @@ def list_recordings(
     session: Session = Depends(get_session),
 ) -> dict:
     """Newest first, a page at a time (`X-Total-Count` is the whole library),
-    after finishing any a closed tab left open (row 5): `recovered` lists
+    after finishing any take a closed tab left unfinished (row 5): `recovered` lists
     those, once. `q` keeps the recordings whose name or transcript has the
     words, each with `match`: the first transcript line that has them and
     when it was said (the library's own search box, which used to read names
@@ -455,7 +455,7 @@ def read_transcript(recording_id: int, session: Session = Depends(get_session)) 
     """The transcript's lines with their times, each one a moment the player
     seeks to."""
     _row, segments = _segments_of(session, recording_id)
-    return {"segments": segments, "speakers": any(seg["speaker"] for seg in segments)}
+    return {"segments": segments, "speakers": any(seg["speaker"] for seg in segments), "lines": transcript.to_lines(segments)}
 
 
 @router.post("/recordings/{recording_id}/speakers")

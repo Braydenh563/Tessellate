@@ -374,7 +374,7 @@ async function applyFeatureModel(key, name) {
     );
     refreshModelStatus();
   } catch (error) {
-    toast(error.message || "Couldn't set that model.", true);
+    toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     refreshModelStatus();
   }
 }
@@ -428,6 +428,7 @@ const FEATURE_MODEL_SELECTS = [
 ];
 
 function syncFeatureModelSelects() {
+  syncFeatureModelSelects.pills?.();
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
     const select = document.getElementById(id);
     if (!select) continue;
@@ -486,6 +487,10 @@ function syncFeatureModelSelects() {
       : `${row.label} runs on ${row.inherits}, inherited. The same setting as Settings, Models.`;
   }
 }
+
+//: The dock pills (the owner, 2026-11-12: "Yes, a dock pill") are painted and wired by feature-model-sheet.js,
+//: fetched when either surface is built (the pills live in those lazy surfaces).
+for (const surface of ["notes", "documents"]) onSurface(surface, () => ensureModule("featureModelSheet"));
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {

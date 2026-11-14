@@ -27,6 +27,7 @@
     {
       scope: "docs", list: "#library-docs-list", unit: "li", select: "library-docs-sort",
       all: () => [...libraryDocsAll].sort(LIBRARY_DOC_SORTS[libraryDocSort()]).map((doc) => `document:${doc.id}`),
+      partial: () => Boolean(window.libraryDocsScroll?.cursor), fill: () => window.libraryDocsScroll.fill(),
     },
     {
       scope: "boards", list: "#library-boards-grid", unit: ".library-board-card", select: "library-boards-sort",
@@ -83,6 +84,11 @@
   //: and nothing at all changed, when the list would look the same afterwards (a
   //: drag round a pinned note: pinned notes stay on top in every order).
   function objReorderCommit(def, ref, keys, from, to, quiet = false) {
+    if (def.partial?.()) {
+      def.fill();
+      toast("Loading every document first. Move it again in a moment.");
+      return false;
+    }
     const stored = objOrderLoad(def.scope);
     const whole = def.all?.() || [];
     const next = objMergeOrder(whole.length ? whole : stored, keys, objMoveKey(keys, from, to));

@@ -289,6 +289,26 @@ def _forget_private_spaces(session, flush_context, instances):
         session.info.pop(PRIVATE_SPACES, None)
 
 
+@event.listens_for(Session, "before_flush")
+def _stamp_edited_at(session, flush_context, instances):
+    """Every write that changes a saved note's text stamps `Entry.edited_at`
+    in this one place (L570), so an AI-tool edit, an import over an existing
+    note and a duplicate merge are covered as well as the edit routes, and
+    `lexical_filing` can key its changed-since read on it. Not an insert (a
+    new note is "never edited"), not a privacy toggle (sealing rewrites
+    `content` with ciphertext), not an access_count bump, filing or a pin:
+    only `content` is read here. Tag and category edits still stamp through
+    `manager.mark_edited`, which the AI's own filing must not call."""
+    for obj in session.dirty:
+        if not isinstance(obj, Entry) or obj in session.new:
+            continue
+        attrs = sa_inspect(obj).attrs
+        if attrs["edited_at"].history.has_changes():
+            continue
+        if attrs["content"].history.has_changes() and not attrs["is_private"].history.has_changes():
+            obj.edited_at = utcnow()
+
+
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
     if isinstance(obj, tuple(_SPACE_SEALED)):
         # Before `_set_workspace` has stamped a new row: the request's space.
@@ -539,7 +559,7 @@ class Entry(Base, WorkspaceMixin):
     #: filed before its POST returned.
     filing_state: Mapped[str] = mapped_column(String(10), default="done")
     #: The note this one turned out to be a near-duplicate of, found by the
-    #: same background pass that files it. Only ever set on a deferred save:
+    #: same background pass that files it. Only ever set on a save filed in the background:
     #: a synchronous one still returns its `similar` in the create response,
     #: because it has already paid for the search by then. NULL is the
     #: overwhelmingly common case and means "no duplicate, or not looked for
@@ -1273,16 +1293,16 @@ class Attachment(Base, WorkspaceMixin):
     #: the same "a person may overwrite any of it" rule; added by the
     #: additive auto-migrator on existing databases like every other
     #: backfilled column here.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     caption_model: Mapped[str | None] = mapped_column(String(200), default=None)
     caption_edited: Mapped[bool] = mapped_column(Boolean, default=False)
     #: Local Tesseract text for an image, or the extracted/converted text of
     #: a document (`core/docview.py`), one column either way, because what
     #: a reader wants is "the text in this file", not which extractor found it.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model reading the pages, for the case Tesseract cannot serve:
     #: handwriting, low contrast, a diagram whose meaning is in its layout.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
 
 
@@ -1328,7 +1348,7 @@ class AskTurn(Base, WorkspaceMixin):
     like the notes it's about, not just re-asked from a five-item chip row.
 
     Deliberately not a Conversation: the Ask box is single-shot, notes-only
-    Q&A (§35A) with no follow-up thread, so a flat row per question beats a
+    Q&A (§35A) with no follow-on thread, so a flat row per question beats a
     JSON message list a saved chat needs. `raw_result_ids` records which
     notes answered it at the time, resolved back to live entries on read
     (routes_ask_history.py), so an edited or deleted note since then shows
@@ -1387,9 +1407,9 @@ class Bookmark(Base, WorkspaceMixin):
     __tablename__ = "bookmarks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    url: Mapped[str] = mapped_column(String(2000))
-    title: Mapped[str] = mapped_column(String(200), default="")
-    note: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str] = mapped_column(SealedTitle(2000, locked="A private link"))
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private link"), default="")
+    note: Mapped[str] = mapped_column(SealedText(), default="")
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
     # Free text, not a foreign key to a real folder table: asked for directly
     # ("should they be groupable... make sections and groups"), but a full
@@ -1416,11 +1436,11 @@ class Bookmark(Base, WorkspaceMixin):
     #: What the last fetch found (L3, and the stale-icon bug): the site's own icon as a `data:` address (nothing
     #: is requested from the site to draw it), a two-line excerpt and the page's text. Written only by
     #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
-    #: Deferred (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
+    #: Loaded on demand (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
     #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
-    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred_group="favicon")
     excerpt: Mapped[str] = mapped_column(String(400), default="")
-    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred_group="page_text")
     has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
     has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -2003,7 +2023,7 @@ class Recording(Base, WorkspaceMixin):
     __tablename__ = "recordings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private recording"), default="")
     mime: Mapped[str] = mapped_column(String(80), default="audio/webm")
     #: The stored, random name under `data_dir/recordings`; never a path the
     #: client chose.
@@ -2017,7 +2037,7 @@ class Recording(Base, WorkspaceMixin):
     #: The add-on's transcript, a JSON list of `{start, end, text, speaker}`
     #: in milliseconds (WORLD_CLASS 28.5 row 7, `core/transcript.py`); added
     #: by the auto-migrator to a database made before it.
-    segments: Mapped[str] = mapped_column(Text, default="[]")
+    segments: Mapped[str] = mapped_column(SealedText(locked="[]"), default="[]")
     #: The meeting note it was recorded into, if any (no foreign key: the
     #: note may be binned and purged while the recording is kept).
     entry_id: Mapped[int | None] = mapped_column(Integer, default=None, index=True)
@@ -2280,7 +2300,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: caller only ever wants "is there searchable text here at all".
     #: Populated for raster images only (`ocr.OCR_SUFFIXES`); a PDF upload
     #: stays NULL forever, honestly, no page-rasterisation step exists.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model's own description of the image (`ai/captioning.py`),
     #: filled in on a background thread after upload, same NULL convention
     #: as `ocr_text` above: "not captioned yet or no vision model available",
@@ -2288,7 +2308,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: left alone after that (a caption an AI or a person already read and
     #: trusted must not silently change under them) unless the user presses
     #: Regenerate: see `routes_files.caption_media`.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model wrote the caption currently stored, or NULL when there is
     #: no caption or it was only ever typed by hand. Asked for directly: a
     #: caption with no visible author reads as this app's own opinion rather
@@ -2311,7 +2331,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: NULL until run: manual-trigger only (`POST /media/{id}/vision-ocr`),
     #: never automatic on upload, since it is a full model round trip a
     #: person opts into rather than something every upload should pay for.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model produced `vision_ocr_text`, or NULL when there is none, 
     #: same "credit the model, not the app" reasoning as `caption_model`.
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
@@ -2368,7 +2388,7 @@ class DurableJob(Base):
     (WORLD_CLASS_PLAN B2). Written only through `core/jobstore.py`.
 
     **One row per job, unlike `JobRun`'s one per kind**: the question here
-    is "what was still to do when the app closed", which is a row per thing
+    is "what was left to do when the app closed", which is a row per thing
     to do. Finished rows are pruned at launch (`jobstore.prune`), so the
     table holds the work in hand plus a short tail of what ended.
 
@@ -2482,7 +2502,11 @@ _SEALED_COLUMNS.update(
         Conversation: ("title", "messages"),
         AskTurn: ("question", "answer"),
         Reminder: ("text",),
+        Bookmark: ("url", "title", "note"),
+        Recording: ("title", "segments"),
+        MediaUpload: ("ocr_text", "caption", "vision_ocr_text"),
+        Attachment: ("ocr_text", "caption", "vision_ocr_text"),
     }
 )
-_SPACE_SEALED.extend((Conversation, AskTurn, Reminder))
+_SPACE_SEALED.extend((Conversation, AskTurn, Reminder, Bookmark, Recording, MediaUpload, Attachment))
 

@@ -97,7 +97,7 @@ def test_an_overlay_with_an_entry_shows_its_own_address():
     lazy = (ROOT / "frontend" / "js" / "router-overlays.js").read_text(encoding="utf-8")
     assert "Object.assign(ROUTE_TABS" not in lazy
     for tab in ("Manual", "Statistics"):
-        assert _run(f'routeHash({{tab: "{tab}", section: null}})') == f"#/{tab}"
+        assert _run(f'routeHash({{tab: "{tab}", section: null}})') == f"#/{tab.lower()}"
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")

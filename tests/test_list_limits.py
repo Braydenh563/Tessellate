@@ -101,3 +101,29 @@ def test_the_allowlist_names_routes_that_exist(app_state):
     app = create_app()
     served = {path for _route, path in _routes(app)}
     assert not (BOUNDED - served), f"BOUNDED names routes the app does not serve: {sorted(BOUNDED - served)}"
+
+
+#: Lists that are not named `list_*`, so the walk above does not see them
+#: (WORLD_CLASS_PLAN ARCH-04, L-world-class-11). Each names the line in its
+#: route file that bounds it, or why the whole notebook is the answer.
+NAMED = {
+    "/chat/suggestions": ("routes_chat_meta.py", "return _fill(candidates, asked)"),  # SUGGESTIONS_SHOWN
+    "/entries/link-suggestions": ("routes_entries_relations.py", "if len(suggestions) == 12:"),
+    "/documents/outline": ("routes_documents.py", "document_repo.live(session, limit=OUTLINE_DOCUMENTS)"),
+    # The rows drawn are capped; `ids` stays whole on purpose: it is the Notes
+    # filter's answer, and a filter that drops matches hides notes.
+    "/entries/query": ("routes_entries.py", "shown = ids[:QUERY_ROWS_MAX]"),
+    # The graph draws every note by design; documents are capped and the
+    # encoded payload is cached while nothing moves (`_payload_key`).
+    "/graph": ("routes_graph.py", ".limit(GRAPH_DOCUMENT_CAP)"),
+}
+
+
+def test_lists_outside_the_list_name_say_what_bounds_them(app_state):
+    from pathlib import Path
+
+    api = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api"
+    served = {path for _route, path in _routes(create_app())}
+    for path, (name, bound) in NAMED.items():
+        assert path in served, f"{path} is no longer served; drop it from NAMED"
+        assert bound in (api / name).read_text(encoding="utf-8"), f"{path}: its bound `{bound}` left {name}"

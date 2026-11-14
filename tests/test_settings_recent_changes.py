@@ -61,6 +61,9 @@ globalThis.settingsOpen = () => open;
 globalThis.toastAction = (message, label, run, opts) => toasts.push({{ message, label, opts }});
 globalThis.toastHost = () => ({{ querySelectorAll: () => [{{ getAnimations: () => [{{ currentTime: 100 }}], remove: () => removed.push(1) }}] }});
 globalThis.settingsHistoryUndo = () => {{}};
+globalThis.settingsHistoryApply = () => {{}};
+globalThis.undoStack = [];
+globalThis.pushUndo = (label, undo, redo) => {{ const action = {{ label, undo, redo }}; undoStack.push(action); return action; }};
 globalThis.setTimeout = (fn, ms) => {{ timers.push({{ fn, ms }}); return timers.length; }};
 globalThis.clearTimeout = (id) => {{ if (timers[id - 1]) timers[id - 1].dead = true; }};
 globalThis.LOOK_KEYS = ["density", "radius"];
@@ -127,19 +130,23 @@ console.log(JSON.stringify({ n: added.length, kind: added[0].kind, changes: adde
     assert got["words"] == "Density: comfortable to compact and 1 more"
 
 
-def test_nothing_is_noted_when_settings_is_closed_or_on_the_first_answer() -> None:
+def test_a_change_is_noted_with_settings_closed_but_not_on_the_first_answer_or_a_read_or_nohistory() -> None:
+    """L-world-class-31: the dock's switches and the lists kept outside Settings are
+    changes too (this was "nothing is noted when Settings is closed")."""
     out = _run(
         """
 await answer("PUT", { a: 1 });   // no earlier answer: nothing to diff against
 open = false;
-await answer("PUT", { a: 2 });   // Settings closed
+await answer("PUT", { a: 2 });   // Settings closed: still a change
+answers.push({ a: 3 });
+await apiJson("/preferences", { method: "PUT", noHistory: true });   // a write with its own Undo
 open = true;
-await answer("GET", { a: 3 });   // a read is not a change
+await answer("GET", { a: 4 });   // a read is not a change
 await tick();
 console.log(added.length);
 """
     )
-    assert out == "0"
+    assert out == "1"
 
 
 def test_a_slider_is_one_change_whose_way_back_is_its_first_value() -> None:
@@ -215,3 +222,97 @@ def test_a_recent_change_row_is_text_beside_a_quiet_action_that_never_wraps() ->
     action = css[css.index(".entry-list .recent-change .row-actions {") :].split("}")[0]
     assert "flex: none" in action and "white-space: nowrap" in action
     assert "opacity: 1" in action, "the entry list hides row actions until hover; this one is there at rest"
+
+
+def test_a_switch_is_a_step_on_the_stack_a_drag_is_one_and_a_quiet_change_adds_none_l694() -> None:
+    out = _run(
+        """
+noteSettingChange({ kind: "prefs", changes: [{ key: "a_b", old: 1, new: 2 }] });
+const afterSwitch = undoStack.map((a) => a.label);
+noteSettingChange({ kind: "look", changes: [{ key: "radius", old: "8", new: "9" }] });
+noteSettingChange({ kind: "look", changes: [{ key: "radius", old: "9", new: "12" }] });
+const afterDrag = undoStack.map((a) => a.label);
+noteSettingChange({ kind: "recents", changes: [], words: "Cleared", data: {} }, { quiet: true });
+console.log(JSON.stringify({ afterSwitch, afterDrag, quiet: undoStack.length, change: undoStack[0].settingChange.changes[0].key }));
+"""
+    )
+    got = json.loads(out)
+    assert got["afterSwitch"] == ["A b: 1 to 2"]
+    assert got["afterDrag"] == ["A b: 1 to 2", "Radius: 8 to 12"], "the drag leaves one step, back to where it began"
+    assert got["quiet"] == 2, "a caller that raised its own Undo adds none here"
+    assert got["change"] == "a_b"
+
+
+def test_undoing_the_avatar_look_updates_the_copy_every_autosave_sends() -> None:
+    """The look is held in memory (`nameMarkOwn`) and `savePrefs` re-sends it, so an
+    Undo that only PUT the old value was put back by the next unrelated save
+    (L-world-class-32: profile-look-look and profile-look-mood stayed NOT UNDONE)."""
+    apply_fn = _slice(DATA, "async function settingsHistoryApply", "async function settingsHistoryUndo")
+    out = _node(
+        """
+const calls = [];
+let busy = false, prefsCache = null;
+const settingsHistoryBigKept = new Map();
+const settingsHistoryFind = () => null, settingsHistoryLoad = () => [], settingsHistorySave = () => {};
+const renderSettingsHistory = () => {}, settingsModalOpen = () => false, settingsRepaintDock = () => {};
+const apiJson = async (path, o) => JSON.parse(o.body);
+let held = null, repainted = 0;
+const setOwnNameMarkStyle = (s) => { held = s; };
+const repaintOwnFace = () => { repainted++; };
+const ensureModule = async () => true;
+"""
+        + apply_fn.replace("settingsHistoryBusy", "busy")
+        + """
+(async () => {
+  await settingsHistoryApply({ id: 1, kind: "prefs", changes: [{ key: "avatar_style", old: { look: "a" }, new: { look: "b" } }] }, "old");
+  const back = JSON.stringify(held);
+  await settingsHistoryApply({ id: 2, kind: "prefs", changes: [{ key: "avatar_style", old: undefined, new: { look: "b" }, unset: true }] }, "old");
+  console.log(JSON.stringify({ back, cleared: JSON.stringify(held), repainted }));
+})();
+"""
+    )
+    got = json.loads(out)
+    assert got["back"] == '{"look":"a"}'
+    assert got["cleared"] == "{}", "an avatar that had no saved look goes back to none"
+    assert got["repainted"] == 2
+
+
+def test_a_look_change_reaches_the_history_and_its_undo_leaves_the_next_change_alone() -> None:
+    """L-world-class-49: the `ui_state` mirror is the only way a look change (Font,
+    density) is noted, so it must not opt out with `noHistory` (the Font select
+    had no Undo at all). An Undo of a look writes its own mirror at once, marked
+    `noHistory`, instead of holding `settingsHistoryBusy` for 2.5 s: that window
+    swallowed whatever the person changed next."""
+    tools = (JS / "ai-tools.js").read_text(encoding="utf-8")
+    mirror = _slice(tools, "function saveUiState() {", "// Mirror every write to a watched key")
+    assert 'apiJson("/preferences"' in mirror and "noHistory" not in mirror
+    apply_fn = _slice(DATA, "async function settingsHistoryApply", "async function settingsHistoryUndo")
+    assert "settingsHistoryBusy = false), " not in apply_fn, "no time window: the Undo's own write is marked"
+    out = _node(
+        """
+const sent = [], timers = [];
+let busy = false, uiStateSaveTimer = 7, uiStateOnServer = "", uiStateSeeded = true, synced = null;
+const settingsHistoryBigKept = new Map();
+const settingsHistoryFind = () => null, settingsHistoryLoad = () => [], settingsHistorySave = () => {};
+const renderSettingsHistory = () => {}, settingsModalOpen = () => false;
+const store = {};
+const prefs = { set: (k, v) => { store[k] = v; }, remove: (k) => { delete store[k]; }, get: (k, d) => store[k] ?? d };
+const applyThemeChoice = () => {}, applyAppearance = () => {}, bgArtOn = () => false, stopBgArt = () => {}, renderAppearance = () => {};
+const setTimeout = (fn, ms) => timers.push(ms), clearTimeout = (id) => { if (id === uiStateSaveTimer) uiStateSaveTimer = null; };
+const uiStatePayload = () => ({ font: store.font });
+const uiStateRememberSynced = (s) => { synced = s; };
+const apiJson = async (path, o) => { sent.push({ path, busy, noHistory: o.noHistory === true, body: JSON.parse(o.body) }); return {}; };
+"""
+        + apply_fn.replace("settingsHistoryBusy", "busy")
+        + """
+(async () => {
+  await settingsHistoryApply({ id: 1, kind: "look", changes: [{ key: "font", old: "serif", new: "system" }] }, "old");
+  console.log(JSON.stringify({ sent, busy, timers, pending: uiStateSaveTimer, onServer: uiStateOnServer, synced }));
+})();
+"""
+    )
+    got = json.loads(out)
+    assert got["sent"] == [{"path": "/preferences", "busy": True, "noHistory": True, "body": {"ui_state": {"font": "serif"}}}]
+    assert got["busy"] is False and got["timers"] == [], "the next change is noted at once"
+    assert got["pending"] is None, "the debounced mirror would have sent the Undo again"
+    assert got["onServer"] == '{"font":"serif"}' and got["synced"] == {"font": "serif"}

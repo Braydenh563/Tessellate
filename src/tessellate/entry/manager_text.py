@@ -5,12 +5,16 @@ Moved whole out of `entry/manager.py` (audit K24, BK11), unchanged. A layer belo
 
 from __future__ import annotations
 
-import importlib
 import re
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 from tessellate.core.database import Entry, MediaUpload
 from tessellate.core.lookahead import Ahead
+
+#: A `/media/<filename>` in text. Here, not in `core/media_gc.py` (which
+#: reads it from here): that module imports this one, and the old lazy import
+#: back made an import cycle.
+MEDIA_NAME_RE = re.compile(r"/media/([A-Za-z0-9][A-Za-z0-9._-]{0,119})")
 
 
 # --- private notes -----------------------------------------------------------
@@ -342,7 +346,7 @@ def content_for_entry(entry: Entry, text: str) -> str | None:
 def flag_private_media(session: Session, text: str) -> None:
     """Mark the uploads a private note's readable text embeds (SEC-A2), so a
     locked session can tell them from plain orphans (`MediaUpload.in_private_note`)."""
-    names = importlib.import_module("tessellate.core.media_gc").referenced_names(text or "")
+    names = set(MEDIA_NAME_RE.findall(text or ""))
     if names:
         session.execute(
             update(MediaUpload).where(MediaUpload.filename.in_(names)).values(in_private_note=True)

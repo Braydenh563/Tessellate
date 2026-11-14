@@ -1353,7 +1353,7 @@ async function openDocument(id) {
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
   if (!doc) {
-    toast("Couldn't open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    toast(voiceLine("failed", { what: "open that document", why: "the one on screen is unchanged" }), true, { action: ["Try again", () => openDocument(id)] });
     renderDocList();
     return;
   }
@@ -1960,7 +1960,7 @@ async function attachBookmarkToDocument() {
   try {
     all = await apiJson("/bookmarks");
   } catch (error) {
-    toast(error.message, true);
+    toast(error.message, true, { retry: attachBookmarkToDocument });
     return;
   }
   if (!all.length) {
@@ -2337,7 +2337,7 @@ function docTemplateFill(template, typedTitle = "") {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
   const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso).replaceAll("{{time}}", time);
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
@@ -7282,7 +7282,7 @@ async function docImageUpload(box, boxId, file, said = "") {
       }
       docImageUpload(box, boxId, file, said);
     };
-    toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+    toast(voiceLine("failed", { what: "upload that picture", why: "add its address by hand" }), true, { action: ["Try again", retry] });
   }
 }
 
@@ -8169,7 +8169,7 @@ async function openDocAiHistory() {
           toast("Reverted.");
           dialog.close();
         } catch (error) {
-          toast(error.message || "Couldn't revert that.", true);
+          toast(error.message || voiceLine("failed", { what: "revert that" }), true);
         } finally {
           revertBtn.disabled = false;
         }
@@ -8851,6 +8851,15 @@ function noteSurfaceExtensions(CM, host, options) {
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
+    //: Pasted HTML becomes Markdown here as in a document (L-world-class-50): the same
+    //: `docRichPasteEvent`, and Ctrl+Shift+V the same plain paste.
+    CM.state.Prec.high(CM.view.EditorView.domEventHandlers({
+      keydown: (event) => {
+        docPastePlain = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
+        return false;
+      },
+      paste: (event, view) => docRichPasteEvent(event, view),
+    })),
     //: Bullets that do not nest when retyped, fences that close at their own
     //: indent, Enter on an empty item ending the list (dogfood round 1).
     docListFenceExtensions(CM, false),
@@ -8879,6 +8888,8 @@ function noteSurfaceExtensions(CM, host, options) {
     docCmTheme(CM),
     docCmHighlight(CM),
     CM.view.placeholder(host.placeholder || ""),
+    CM.search.search({ top: true }),
+    CM.search.highlightSelectionMatches(),
     //: This app's chords first, so Ctrl+B is bold in a note for the same
     //: reason it is bold in a document.
     docRedoChord(CM),
@@ -8915,9 +8926,9 @@ function noteSurfaceName(host) {
 //: `doc-content`, so Ctrl+B in a note would have emboldened a word in
 //: whatever document was last open, and Ctrl+S would have saved it. The
 //: helpers underneath all take a box id or a surface already, so this is the
-//: same four actions with this box named. Ctrl+S and Ctrl+F are deliberately
-//: absent: a note has no find panel and saving one is the form's business,
-//: which the app's own global chord already handles.
+//: same four actions with this box named. Ctrl+S is deliberately absent:
+//: saving a note is the form's business, which the app's own global chord
+//: already handles. Ctrl+F and Ctrl+H are here since L-world-class-17.
 function noteSurfaceKeymap(host) {
   const surface = () => noteSurfaceFor(host) || textareaSurface(host);
   return [
@@ -8977,6 +8988,21 @@ function noteSurfaceKeymap(host) {
     { key: "Mod-2", run: () => { applyMarkdown("h2", host.id); return true; } },
     { key: "Mod-3", run: () => { applyMarkdown("h3", host.id); return true; } },
     ...docCmKeymap.insert((kind) => { applyMarkdown(kind, host.id); return true; }),
+    //: **Find and replace in a note** (L-world-class-17): the engine's own panel, as in a document (Ctrl+F finds,
+    //: Ctrl+H opens it on the replace field, F3 steps, Escape closes it). `stopPropagation`: the page's own find bar
+    //: (`openGlobalFind`) must not open behind the note's. No Ctrl+G or Ctrl+D: those are other chords here.
+    ...[["Mod-f", false], ["Mod-h", true]].map(([key, replace]) => ({
+      key,
+      stopPropagation: true,
+      run: (view) => {
+        window.CM6.search.openSearchPanel(view);
+        if (replace) view.dom.querySelector(".cm-search input[name=replace]")?.focus();
+        return true;
+      },
+    })),
+    { key: "F3", run: (view) => window.CM6.search.findNext(view) },
+    { key: "Shift-F3", run: (view) => window.CM6.search.findPrevious(view) },
+    { key: "Escape", run: (view) => window.CM6.search.closeSearchPanel(view) },
     //: No Ctrl+/ here: in a note it is the blocks menu (the registry's
     //: `editorMenu`), and a comment toggle bound here as well wrapped the
     //: line in the *document's* comment marker before the menu wrote "/"
@@ -10706,15 +10732,6 @@ function mountDocToolbarControls() {
     setDocToolbarCollapsed(!docToolbarCollapsed())
   );
   $("doc-format-show")?.addEventListener("click", () => toggleDocToolbar());
-  //: Ctrl+Shift+X anywhere on the Documents tab, not only inside the text
-  //: (the editor's own keymap has it too): with the strip hidden, the focus
-  //: is as likely to be on the dock as in the page.
-  document.addEventListener("keydown", (event) => {
-    if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey || event.key.toLowerCase() !== "x") return;
-    if (event.defaultPrevented || $("tab-documents")?.classList.contains("hidden") || !currentDoc) return;
-    event.preventDefault();
-    toggleDocToolbar();
-  });
   // The capture box gets its gutter here, once, with the strip that toggles it.
   mountGutterFor($("entry-content"));
   for (const bar of document.querySelectorAll(".doc-toolbar")) mountDocToolbarControlsFor(bar);
@@ -11025,6 +11042,16 @@ function fitDocToolbars() {
 //: toggle would read as the setting not having been saved.
 applyDocToolbarMode(docToolbarMode());
 mountDocToolbarControls();
+//: Ctrl+Shift+X anywhere on the Documents tab, not only inside the text
+//: (the editor's own keymap has it too): with the strip hidden, the focus
+//: is as likely to be on the dock as in the page. Module level, beside the
+//: mount, so no render adds a page listener (tests/test_perf_1031.py).
+document.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey || event.key.toLowerCase() !== "x") return;
+  if (event.defaultPrevented || $("tab-documents")?.classList.contains("hidden") || !currentDoc) return;
+  event.preventDefault();
+  toggleDocToolbar();
+});
 
 // =============================================================================
 // The editor's own instruments: counts, completion, prose checks, autocorrect
@@ -12000,7 +12027,7 @@ const DOC_PROSE_SKIP = [
   /\]\([^)\n]*\)/g, // a markdown link's destination
   /^\[[^\]\n]+\]:\s*\S+/gm, // a reference link's definition
   /<\/?[A-Za-z][^>\n]*>/g, // an html tag
-  /\[\[[^\]\n]*\]\]/g, // a note link: the title is a name, not prose
+  /\[\[[^\]\n]{0,99}\]\]/g, // a note link, not prose
   //: A callout's own marker. `> [!note]` is syntax, and the space before its
   //: "!" was being reported as a space before punctuation on every callout in
   //: every document.
@@ -14449,82 +14476,85 @@ docListen("input", (event) => {
   if (!$("doc-suggest-menu")?.classList.contains("hidden")) closeDocSuggest();
 });
 
-$("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
-$("doc-spelling-variant")?.addEventListener("change", async (event) => {
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
-  }).catch(() => prefsCache);
-  //: The variant decides which half of the pair table is a finding, so the
-  //: lookup has to be rebuilt before the next pass reads it.
-  docVariantFor = null;
-  //: And the grammar checker's dialect with it (British or American rules).
-  docGrammarCache = { text: null, findings: [] };
-  renderDocProse();
-});
-//: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
-//: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
-$("doc-prose-groups")?.addEventListener("change", async (event) => {
-  const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ prose_kinds_off: off }),
-  }).catch(() => prefsCache);
-  docGrammarCache = { text: null, findings: [] };
-  renderDocProse();
-});
-$("doc-link-offers")?.addEventListener("change", async (event) => {
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ link_offers: event.currentTarget.checked }),
-  }).catch(() => prefsCache);
-  DOC_LINK_OFFERS.text = null;
-  DOC_LINK_OFFERS.findings = [];
-  renderDocProse();
-});
-//: Link text (K11): the same preference as Settings, Writing. The grammar
-//: answer is thrown away because what it keeps depends on the switch.
-$("doc-check-link-text")?.addEventListener("change", async (event) => {
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
-  }).catch(() => prefsCache);
-  docGrammarCache = { text: null, findings: [] };
-  renderDocProse();
-});
-$("doc-grammar-check")?.addEventListener("change", async (event) => {
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
-  }).catch(() => prefsCache);
-  docGrammarCache = { text: null, findings: [] };
-  renderDocProse();
-});
-//: The field finds and adds (`renderDocDictionary`, `docDictionaryAddTyped`);
-//: Add beside it is the same as Enter, for a pointer.
-$("doc-dictionary-add")?.addEventListener("click", () => docDictionaryAddTyped());
-$("doc-dictionary-search")?.addEventListener("input", () => renderDocDictionary());
-$("doc-dictionary-search")?.addEventListener("keydown", (event) => {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  docDictionaryAddTyped();
-});
-$("doc-dictionary-import")?.addEventListener("click", () => $("doc-dictionary-file")?.click());
-$("doc-dictionary-file")?.addEventListener("change", async (event) => {
-  const input = event.currentTarget;
-  const file = input.files?.[0];
-  //: Cleared first, so choosing the same file again still raises a change.
-  input.value = "";
-  await docDictionaryImport(file);
-});
-$("doc-dictionary-export")?.addEventListener("click", () => docDictionaryExport());
-//: The same preference Settings, Preferences sets (`smart_punctuation`), here
-//: beside the other writing checks; saved on the change, as the two above are.
-$("doc-smart-punctuation")?.addEventListener("change", async (event) => {
-  prefsCache = await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
-  }).catch(() => prefsCache);
+//: The dictionary dialog is a surface built on its first open (index.html), so its controls are wired then.
+onSurface("docDictionary", () => {
+  $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
+  $("doc-spelling-variant")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
+    }).catch(() => prefsCache);
+    //: The variant decides which half of the pair table is a finding, so the
+    //: lookup has to be rebuilt before the next pass reads it.
+    docVariantFor = null;
+    //: And the grammar checker's dialect with it (British or American rules).
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+  //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
+  //: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+  $("doc-prose-groups")?.addEventListener("change", async (event) => {
+    const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ prose_kinds_off: off }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+  $("doc-link-offers")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    DOC_LINK_OFFERS.text = null;
+    DOC_LINK_OFFERS.findings = [];
+    renderDocProse();
+  });
+  //: Link text (K11): the same preference as Settings, Writing. The grammar
+  //: answer is thrown away because what it keeps depends on the switch.
+  $("doc-check-link-text")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+  $("doc-grammar-check")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+  //: The field finds and adds (`renderDocDictionary`, `docDictionaryAddTyped`);
+  //: Add beside it is the same as Enter, for a pointer.
+  $("doc-dictionary-add")?.addEventListener("click", () => docDictionaryAddTyped());
+  $("doc-dictionary-search")?.addEventListener("input", () => renderDocDictionary());
+  $("doc-dictionary-search")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    docDictionaryAddTyped();
+  });
+  $("doc-dictionary-import")?.addEventListener("click", () => $("doc-dictionary-file")?.click());
+  $("doc-dictionary-file")?.addEventListener("change", async (event) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    //: Cleared first, so choosing the same file again still raises a change.
+    input.value = "";
+    await docDictionaryImport(file);
+  });
+  $("doc-dictionary-export")?.addEventListener("click", () => docDictionaryExport());
+  //: The same preference Settings, Preferences sets (`smart_punctuation`), here
+  //: beside the other writing checks; saved on the change, as the two above are.
+  $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+  });
 });
 
 $("doc-prose")?.addEventListener("click", () => {
@@ -15169,7 +15199,9 @@ function docFindingLine(finding, variant = "row") {
   const line = document.createElement("span");
   line.className = `doc-finding-line doc-finding-line-${variant}`;
   const dot = document.createElement("span");
-  dot.className = `doc-finding-dot doc-finding-dot-${docFindingKind(finding)}`;
+  dot.className = "doc-finding-dot";
+  //: The kind is a data attribute, so the dot is built here alone and its colours are named in CSS.
+  dot.dataset.kind = docFindingKind(finding);
   dot.setAttribute("aria-hidden", "true");
   const words = document.createElement("span");
   words.className = "doc-finding-words";

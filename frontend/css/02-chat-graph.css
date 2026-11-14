@@ -343,18 +343,23 @@
    focus (08-consistency.css, `.dock .dock-search`); this was the one still
    drawn as a form field, a 58% ink edge round white, its words at 12px
    (unslop 1103, 7). The same three declarations, in a sidebar. */
-.search-field.chat-sidebar-search {
+.search-field.chat-sidebar-search,
+.search-field.sidebar-search {
   margin-bottom: var(--space-2); /* E47: a gap above the list it filters */
   border-color: transparent;
   background: var(--field-inset);
   box-shadow: none;
 }
-.search-field.chat-sidebar-search:focus-within {
+.search-field.chat-sidebar-search:focus-within,
+.search-field.sidebar-search:focus-within {
   background: var(--input-bg);
 }
-.search-field.chat-sidebar-search > .search-field-input {
+.search-field.chat-sidebar-search > .search-field-input,
+.search-field.sidebar-search > .search-field-input {
   font-size: var(--text-md);
 }
+/* L592: the Notes sidebar's Find box, the same field. */
+.search-field.sidebar-search { margin-bottom: var(--space-3); }
 #conversation-list {
   list-style: none;
   margin: 0;
@@ -608,6 +613,19 @@ details.tool-chip[open] > .tool-chip-body {
 .tool-confirm p {
   margin: 0 0 0.5rem;
   font-size: var(--text-lg);
+}
+/* The decline beside a confirmation's filled button (Cancel, No thanks, Not now)
+   is the quiet text action, not a second bordered box (L527; DESIGN.md, the
+   button with no face and no edge): accent words, the veil on hover. */
+.tool-confirm .row > button.ghost {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent-text);
+  font-weight: 500;
+}
+.tool-confirm .row > button.ghost:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--hover-veil);
 }
 /* --- the agent's run, as a timeline -------------------------------------------
    A turn used to render into three fixed slots, all the thinking, then all the
@@ -4050,6 +4068,22 @@ mark.lightbox-hit {
 .answer-evidence .answer-evidence-card:hover,
 .answer-evidence .answer-evidence-card:focus-visible {
   background: var(--ghost-btn-bg-hover);
+}
+/* I7: a card and its verdict pair; the pair sits under the card on the
+   card's own inset, as it does in a cited line's peek. */
+.answer-evidence-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.answer-evidence-item .citation-peek-verdicts {
+  margin: 0;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+.answer-evidence-item .citation-peek-verdicts .insight-text {
+  flex-basis: auto;
 }
 .answer-evidence-quote {
   -webkit-line-clamp: 4;

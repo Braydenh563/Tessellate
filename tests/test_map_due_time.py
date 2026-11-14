@@ -25,7 +25,7 @@ def _run(expr: str) -> object:
     if not node:
         pytest.skip("node is not installed")
     code = MAP_JS[MAP_JS.index("function wbMapMarkerParts") : MAP_JS.index("//: The row before the label.")]
-    out = subprocess.run([node, "-e", CLOCK + "const WB_MAP_MARKERS_MAX = 6; const WB_MAP_MARKER_ICON_NAMES = new Map();\n" + code + f"\nconsole.log(JSON.stringify({expr}));"], capture_output=True, text=True, timeout=30, check=True)
+    out = subprocess.run([node, "-e", CLOCK + "const clockOptions = () => ({}); const WB_MAP_MARKERS_MAX = 6; const WB_MAP_MARKER_ICON_NAMES = new Map();\n" + code + f"\nconsole.log(JSON.stringify({expr}));"], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)
 
 

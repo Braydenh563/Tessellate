@@ -136,6 +136,8 @@ def glance(tmp_path_factory) -> dict:
     source = "\n".join(
         [
             _function((JS / "prefs.js").read_text(encoding="utf-8"), "nounCount"),
+            # The 12 or 24 hour setting at "auto" (prefs.js clockOptions): the locale decides.
+            "function clockOptions() { return {}; }",
             _function(DASH, "dashContinueNote"),
             _function(DASH, "dashMeetingWhen"),
             _function(DASH, "dashGlanceFacts"),

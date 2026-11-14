@@ -32,7 +32,7 @@ let statusClockTimer = null;
 function paintStatusClock() {
   const el = $("status-clock");
   if (!el) return;
-  el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
 }
 
 // Reads prefsCache.status_bar_clock rather than taking an argument, the same
@@ -64,7 +64,6 @@ function applyStatusClock() {
 // case, open only while someone is actually looking at it, so it gets
 // its own 1s ticker, started on open and stopped on close rather than
 // running unconditionally in the background the way the bar's clock does.
-let statusClockDetailTimer = null;
 let statusClockDetailPinned = false;
 
 function paintStatusClockDetail() {
@@ -84,6 +83,7 @@ function paintStatusClockDetail() {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    ...clockOptions(),
   });
   // Both the IANA name (what a person recognises, "Europe/London") and
   // the numeric offset (what actually explains a gap between two
@@ -104,9 +104,7 @@ function openStatusClockDetail(pin) {
   panel.classList.remove("hidden");
   btn.setAttribute("aria-expanded", "true");
   paintStatusClockDetail();
-  if (!statusClockDetailTimer) {
-    statusClockDetailTimer = setInterval(paintStatusClockDetail, 1000);
-  }
+  secondTick.add(paintStatusClockDetail);
   // Positioned from the button's own rect, not a static CSS offset: the
   // clock's horizontal position among the bar's other optional slots
   // (STATUS_SLOTS) isn't fixed, so a hardcoded `right:` would drift out
@@ -132,10 +130,7 @@ function closeStatusClockDetail(force) {
   statusClockDetailPinned = false;
   $("status-clock-detail")?.classList.add("hidden");
   $("status-clock")?.setAttribute("aria-expanded", "false");
-  if (statusClockDetailTimer) {
-    clearInterval(statusClockDetailTimer);
-    statusClockDetailTimer = null;
-  }
+  secondTick.remove(paintStatusClockDetail);
 }
 
 (() => {
@@ -341,7 +336,7 @@ async function toggleSpaceHidden(id, hidden) {
     // screen, so it has to be re-read rather than left stale.
     if (activeSpaceId() === SPACE_ALL) await loadEntries();
   } catch (error) {
-    toast(error.message || "Couldn't change that space.", true);
+    toast(error.message || voiceLine("failed", { what: "change that space" }), true);
   }
 }
 

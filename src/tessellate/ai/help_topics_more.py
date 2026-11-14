@@ -405,14 +405,15 @@ MORE_TOPICS: list[dict] = [
             "says which note it came from, which model decided it and how sure "
             "it was. Edit a row and no later run overwrites it; delete one and "
             "it is never worked out again. What may run switches each kind off; "
-            "Read my notes now runs it. Check what it learned, on the bar, re-reads "
+            "Read my notes now runs it. Learned: manage, on Atlas's own cards, opens "
+            "this pane. Check what it learned, on the bar, re-reads "
             "every claim and question against its note as the note says it now: it "
             "retires what no longer holds, each with its reason and an Undo (a note "
             "edited or deleted; a note tagged joke, quote, fiction, test or draft, "
             "or a sentence inside a quote or a list of questions and answers; a "
             "sentence you marked wrong; a repeat), and flags what needs your eye "
             "(two notes that disagree, a date that has passed), marked on the row "
-            "with a Check this line. It also runs after each background pass, as a "
+            "with a Check this line and a Keep it button (the flag goes and is not raised again). It also runs after each background pass, unless Check what it learned on its own schedule, at the top of the pane, is off, as a "
             "job in Settings, Background tasks with its lines, and as the skill "
             "Check what it learned. Export what it learned and Forget "
             "everything learned act on all of it and never touch your notes. "
@@ -484,13 +485,14 @@ MORE_TOPICS: list[dict] = [
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
             "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
-            "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
+            "my birthday", "on my birthday", "date order", "day first", "month first", "12 hour", "24 hour", "clock", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General. Calendar: First day of the week, Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
-            "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "Clock (a 12 or 24 hour clock everywhere), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's last card offers the same three choices once, and Skip passes them by. "
@@ -848,7 +850,8 @@ MORE_TOPICS: list[dict] = [
             "needed, and merging keeps every tag and bins the rest. Import "
             "markdown files or a folder (Obsidian frontmatter is understood; a "
             "preview lists the files first, so you can untick any), "
-            "or a PDF, Word file or slide deck, one note per chapter or slide. "
+            "or a PDF, Word file or slide deck, one note per chapter or slide "
+            "(once installed). "
             "The four import groups (Import markdown, Import a document, Import "
             "from another app, Web clipper) are folded: press a heading to open "
             "it, and the ? beside it opens it too. "
@@ -858,9 +861,10 @@ MORE_TOPICS: list[dict] = [
             "each day the app starts. Restore first says how many notes and "
             "documents the backup holds against now, and snapshots first, so even a "
             "restore can be undone. A line above the list gives the schedule, when "
-            "it last ran and whether that worked, and when the next is due; in the "
+            "it last ran and whether that worked, and when the next is due (the "
+            "Dashboard's Backups card, added from Edit layout, shows the last backup and the next due, with a Backup settings button); in the "
             "desktop app, Also copy each backup to sends a second copy to a folder "
-            "you choose, such as an external drive. Each backup row says when in words, marks "
+            "you choose, such as an external drive (the desktop app asks once on first run). Each backup row says when in words, marks "
             "the newest Latest, and says what made it (the daily backup, Back "
             "up now, before an update or a restore), its size and whether it "
             "was checked. App cache, at the bottom: Clear app cache "
@@ -923,18 +927,19 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Find anything (Ctrl+P, or the magnifying glass in the status bar) searches notes, "
-            "files, documents, chats and actions in one box as you type: Enter opens "
-            "the top result, the arrows move, Esc closes, and the star keeps the "
+            "files, documents, chats and actions in one box as you type (the Notes sidebar has its own \"Search everything\" field: Enter opens it with your words): Enter opens "
+            "the top result (a chat opens at the turn that holds your words), the arrows move, Esc closes, and the star keeps the "
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
-            "their kind), Newest first and Oldest first. Its '?' lists "
+            "their kind), Newest first and Oldest first. Inside a note you are writing, Ctrl+F finds in that note, "
+            "Ctrl+H adds a replace field, F3 steps to the next match and Esc closes the panel. Its '?' lists "
             "the operators. The kind chips under the box scroll sideways when they do "
             "not fit: a thin bar on a mouse or trackpad, an arrow at the end that has "
             "more, a swipe on touch. It lists the command "
             "palette's actions too, so \"dark\" finds Toggle light/dark, after the "
             "notes and files. The command palette (Ctrl+K) sends what you type "
             "here: its last row, Search everything for, opens this box with "
-            "the words already searched. As you type it suggests your recent searches, "
+            "the words already searched. Typing a note, a meeting or a search in plain words (note: buy clay, new meeting with Sam) adds a matching Do it row. As you type it suggests your recent searches, "
             "then note titles, tags and categories, with the best match in grey: Tab or "
             "Right takes it, and Settings, General, Search turns it off."
         ),
@@ -1025,8 +1030,8 @@ MORE_TOPICS: list[dict] = [
             "phone menu", "app menu",
         ),
         "body": (
-            "On a phone the tabs are a bar along the bottom: Dashboard, Notes, "
-            "Chat, Library and More, last. More opens a sheet: Graph, Timeline "
+            "On a phone the tabs are a bar along the bottom: Dashboard (captioned Home "
+            "under 480 pixels wide), Notes, Chat, Library and More, last. More opens a sheet: Graph, Timeline "
             "and Reminders first, then Ask the agent, Commands, Guide, Agent "
             "activity while the agent runs, and Settings. More is lit while one "
             "of its pages is showing, and carries the count of reminders due. "
@@ -1088,7 +1093,7 @@ MORE_TOPICS: list[dict] = [
             "needs your password. The first "
             "visit warns that the certificate is not trusted: compare its "
             "SHA-256 fingerprint with the one under the switch before you "
-            "continue, and Regenerate certificate makes a new one. Trust this certificate on your phone downloads it, and its ? says how to install it on iPhone and Android. If this computer's address changes, the app makes a new certificate straight away. Change your password (private "
+            "continue. Trust this certificate on your phone installs it once (its ? has the steps); Regenerate certificate makes a new one. Also allow plain http is off: on, anyone on the Wi-Fi can read your password and sign-in cookies. Change your password (private "
             "notes move across; a new one needs at least 8 characters, and an "
             "easy one gets a warning). Re-encrypt private notes (Settings, Account & security) makes "
             "a new encryption key and moves every private note onto it, so an old "
@@ -1269,7 +1274,8 @@ MORE_TOPICS: list[dict] = [
             "the top answers from the same counts with no model: try Summarise my "
             "month, What do I use most? or Am I writing more than last month?, or ask "
             "how many notes you wrote in July, or when you wrote your first or newest note. Clear (shown once there is an answer) empties the box. This week compares notes made, words "
-            "written and reminders done since Monday with the whole of last week. "
+            "written and reminders done since Monday with the whole of last week, and "
+            "offers one feature you have not used lately, a different one each week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
             "statistics, or Statistics in the command palette (Ctrl+K). Ask "
@@ -1311,7 +1317,7 @@ MORE_TOPICS: list[dict] = [
             "and Copy is the way out. The keypad is one Tab stop: the "
             "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
-            "button; currency rates are set by hand and dated, not today's rate. "
+            "button; currency rates are dated, set in Settings, Search and index. "
             "Time zone takes a time and two places (09:00, London, Tokyo), "
             "offline. "
             "The Equation tab is the equation editor (see Equation editor): when "
@@ -1588,7 +1594,8 @@ MORE_TOPICS: list[dict] = [
             "(Languages); until then the row says so and opens that page. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
-            "Other languages: the Writing room translates with your model."
+            "With more than one language pair installed the sheet shows a "
+            "picker. Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
@@ -1761,7 +1768,7 @@ TOPIC_META: dict[str, dict] = {
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
-    "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after"},
+    "undo-bin": {"title": "Undo and the bin", "path": "the bin: the Library's Include the bin, or Ctrl+Z right after (the app's Undo lasts for the session)"},
     "autonomous": {"title": "Autonomous background AI", "path": "Settings, Background tasks"},
     "guide": {"title": "Atlas, the guide", "path": "Status bar, the compass (Ctrl+Shift+H)"},
     "command-palette": {"title": "The command palette", "path": "Ctrl+K"},
@@ -2032,8 +2039,8 @@ MORE_TOPICS.extend([
             (
                 "Your phone opens this computer's notebook over your own network: turn on Allow other "
                 "devices on this network (Settings, Account & security, Other devices), then open the "
-                "large address it shows (Copy is beside it, and QR code shows a code the phone's camera "
-                "opens; Other addresses folds the rest) on the phone and sign in with your password. On "
+                "large address it shows (Copy is beside it, and QR code opens it, Phone setup QR code "
+                "installs the certificate; Other addresses folds the rest) on the phone and sign in with your password. On "
                 "an iPhone, press Install the certificate on the lock screen, then, in the iPhone's own "
                 "Settings app, General, VPN and Device Management to install it and About, Certificate "
                 "Trust Settings to trust it; its ? has the steps. The phone's first sign-in waits until "
@@ -2676,7 +2683,7 @@ MORE_TOPICS.append({
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
         "word, and puts back a missing apostrophe (havent, ive, dont, youre and the rest "
         "become haven't, I've, don't, you're; ill, id, cant and wont only where "
-        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
+        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes (new and edit), the Atlas help chat, the editor's ask and rewrite lines, a bookmark's title and note, memories, skill and template descriptions and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "

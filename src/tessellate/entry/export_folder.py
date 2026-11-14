@@ -669,7 +669,8 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
 def _fresh_bin_period(entry) -> None:  # noqa: ANN001
     """A binned note that came in already past the bin's days would be purged
     at the next start, so an import would lose what it just made: it gets a
-    full period from now instead (a note still inside its days keeps its date)."""
+    full period from now instead. `_restore` already restarts every stamp, so this
+    is the guard for a record whose `deleted_at` was missing or unreadable."""
     if not entry.is_deleted:
         return
     from tessellate.core import deps

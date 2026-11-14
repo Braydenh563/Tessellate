@@ -496,12 +496,33 @@ function renderEditForm(li, entry) {
   //: Escape closes the form, asking first when it has changes (INBOX 432:
   //: it did nothing). Bubbling, and only when nothing inside took it first,
   //: so the "/" menu, the [[ list and the editor's own Escape still win.
-  li.addEventListener("keydown", async (event) => {
+  const escapeForm = async (event) => {
     if (event.key !== "Escape" || event.defaultPrevented || editingId !== entry.id) return;
     if (document.querySelector(".action-menu:not(.hidden), #editor-menu:not(.hidden)")) return;
     event.preventDefault();
     if (await noteFormMayClose()) closeNoteForm();
-  });
+  };
+  li.addEventListener("keydown", escapeForm);
+  //: With the caret nowhere (a click on the page's blank, a closed popover
+  //: handing focus to <body>) the key never reaches the form; the page
+  //: takes it for as long as this form is the one on screen.
+  const escapeFromBody = (event) => {
+    if (!li.isConnected) {
+      if (renderEditForm.bodyKeys === escapeFromBody) renderEditForm.bodyKeys = null;
+      return;
+    }
+    if (document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) return;
+    if (event.target === document.body) escapeForm(event);
+    //: Ctrl+S saves this form (L-world-class-102). Capture phase, so the chord is taken before the page's own, which finds nothing to save here.
+    if (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey) && (event.target === document.body || li.contains(event.target))) {
+      event.preventDefault();
+      event.stopPropagation();
+      saveButton.click();
+    }
+  };
+  //: The page has one listener for this (below the function); each render only
+  //: points it at the form now on screen, so re-renders never stack listeners.
+  renderEditForm.bodyKeys = escapeFromBody;
   row.append(
     smallButton("Cancel", "Discard changes", async () => {
       if (await noteFormMayClose()) closeNoteForm();
@@ -619,6 +640,9 @@ ${textarea.value}`));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }
+//: The note form's page-level keys (Escape with focus on <body>, Ctrl+S): one
+//: capture listener for the page's life, calling whichever form renderEditForm set.
+document.addEventListener("keydown", (event) => renderEditForm.bodyKeys?.(event), true);
 
 //: Hold an edit the server could not take and close the form on it. False
 //: when it cannot be held (storage full or blocked), so the form stays and

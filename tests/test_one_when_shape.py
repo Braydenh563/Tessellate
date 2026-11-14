@@ -20,5 +20,8 @@ def test_no_date_is_printed_with_a_bare_to_locale_string():
 def test_when_text_is_defined_once_and_has_no_seconds():
     status = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
     assert status.count("function whenText(") == 1
-    assert 'new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })' in status
-    assert "second" not in status[status.index("const WHEN_FORMAT") : status.index("function whenText(")]
+    # The formatter now follows the 12 or 24 hour setting (`clockOptions`,
+    # prefs.js); the shape it asks for is unchanged: to the minute, no seconds.
+    line = status[status.index("whenText.format = ") :].split("\n", 1)[0]
+    assert 'clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" })' in line
+    assert "second" not in line

@@ -343,7 +343,7 @@ async function undoSkillRun(span, button, onDone) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify(body) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", { what: "read what would be undone" }), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -363,13 +363,31 @@ async function undoSkillRun(span, button, onDone) {
   });
   if (!ok) return;
   try {
-    const done = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ ...body, dry_run: false }) });
+    const applied = JSON.stringify({ ...body, dry_run: false });
+    const done = await apiJson("/events/undo", { method: "POST", body: applied });
+    //: Redo re-applies the reversed events (`POST /events/redo`, L805), so the
+    //: run's Undo is a step on the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
+    if (done.restored?.length) {
+      pushUndo(
+        "Undid this run",
+        async () => {
+          await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
+          await refreshEntries(ids).catch(() => {});
+        },
+        async () => {
+          done.restored = (await apiJson("/events/undo", { method: "POST", body: applied })).restored;
+          await refreshEntries(ids).catch(() => {});
+        }
+      );
+    }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
     button?.remove();
     onDone?.();
     await loadEntries().catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't undo that run.", true);
+    toast(error.message || voiceLine("failed", { what: "undo that run" }), true);
   }
 }
 

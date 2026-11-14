@@ -111,11 +111,11 @@
       });
       return;
     }
-    const pair = status.pairs[0];
+    const pair = status.pairs.find((p) => `${p.from}-${p.to}` === prefs.get("translate-pair")) || status.pairs[0];
     const replaceable = translateCanReplace(caught, whole);
     openSheet({
       label: "Translate this",
-      sub: `${pair.label}, on this computer. A small model: good for the gist, check what matters.`,
+      sub: `${status.pairs.length > 1 ? "Choose the languages below. On this computer" : `${pair.label}, on this computer`}. A small model: good for the gist, check what matters.`,
       name: "translate",
       build: (card, close) => {
         card.classList.add("inbox-card", "translate-card");
@@ -157,29 +157,61 @@
         }
         card.append(body, actions);
 
-        translateAsk(pair, text).then((answer) => {
-          if (!answer.ok) {
-            result.textContent = "";
-            line.textContent = `Couldn't translate it. ${answer.error || ""}`.trim();
-            line.classList.add("error");
-            return;
-          }
-          result.textContent = answer.text;
-          const seconds = (answer.ms / 1000).toFixed(1);
-          line.textContent = answer.loadMs > 200
-            ? `Translated in ${seconds} s, after ${(answer.loadMs / 1000).toFixed(1)} s loading the translator.`
-            : `Translated in ${seconds} s.`;
-          copy.disabled = false;
-          copy.addEventListener("click", () => copyToClipboard(answer.text, copy));
-          if (replace) {
-            replace.disabled = false;
-            replace.addEventListener("click", () => {
-              close();
-              translateReplace(caught, answer.text);
-              toast("Replaced the selection with its translation. Ctrl+Z puts it back.");
-            });
-          }
+        //: One handler each, reading the latest answer, so choosing another pair
+        //: asks again without stacking listeners.
+        let latest = "";
+        copy.addEventListener("click", () => copyToClipboard(latest, copy));
+        replace?.addEventListener("click", () => {
+          close();
+          translateReplace(caught, latest);
+          toast("Replaced the selection with its translation. Ctrl+Z puts it back.");
         });
+        let asked = 0;
+        const run = (chosen) => {
+          const mine = ++asked;
+          latest = "";
+          copy.disabled = true;
+          if (replace) replace.disabled = true;
+          result.textContent = "Translating…";
+          result.lang = chosen.to;
+          line.textContent = "";
+          line.classList.remove("error");
+          translateAsk(chosen, text).then((answer) => {
+            if (mine !== asked) return;
+            if (!answer.ok) {
+              result.textContent = "";
+              line.textContent = `Couldn't translate it. ${answer.error || ""}`.trim();
+              line.classList.add("error");
+              return;
+            }
+            latest = answer.text;
+            result.textContent = answer.text;
+            const seconds = (answer.ms / 1000).toFixed(1);
+            line.textContent = answer.loadMs > 200
+              ? `Translated in ${seconds} s, after ${(answer.loadMs / 1000).toFixed(1)} s loading the translator.`
+              : `Translated in ${seconds} s.`;
+            copy.disabled = false;
+            if (replace) replace.disabled = false;
+          });
+        };
+        //: Two or more installed pairs: a select, not a pill well (DESIGN.md `.seg`
+        //: is for two or three short choices), the last pick kept on this device.
+        if (status.pairs.length > 1) {
+          const pick = document.createElement("select");
+          pick.id = "translate-pair";
+          pick.className = "translate-pair";
+          pick.setAttribute("aria-label", "Language pair");
+          pick.title = "Language pair";
+          for (const option of status.pairs) pick.add(new Option(option.label, `${option.from}-${option.to}`));
+          pick.value = `${pair.from}-${pair.to}`;
+          pick.addEventListener("change", () => {
+            const chosen = status.pairs.find((p) => `${p.from}-${p.to}` === pick.value) || status.pairs[0];
+            prefs.set("translate-pair", pick.value);
+            run(chosen);
+          });
+          body.prepend(pick);
+        }
+        run(pair);
       },
     });
   }

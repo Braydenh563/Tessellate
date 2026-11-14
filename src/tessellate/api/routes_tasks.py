@@ -96,9 +96,9 @@ def _warmup_rows() -> list[dict]:
             "name": deps.get_model_manager().embedding_model(),
             "label": "Loading the embedding model",
             "detail": "The first run downloads it (~90 MB). Search falls "
-            "back to keywords until it's ready. This one can't be "
-            "stopped part-way: it is a single load with nothing to "
-            "interrupt between.",
+            "back to keywords until it's ready. Stop ends the "
+            "download after its file and skips what follows the load; the "
+            "load itself can't be stopped part-way.",
             "progress": None,
             "log": [],
         }

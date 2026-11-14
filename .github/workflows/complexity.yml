@@ -22,11 +22,11 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip ruff radon
 
-      # Q20: fails on a new finding. BASELINE is the count on 2026-11-11 (14, all C901);
+      # Q20: fails on a new finding. BASELINE is the count on 2026-11-12 (0 since L812; 9 earlier on 11-12, 14 on 11-11);
       # it only goes down: lower it in the commit that fixes one.
       - name: Ruff complexity and performance rules (ratchet)
         env:
-          BASELINE: "14"
+          BASELINE: "0"
         run: |
           ruff check src --select C901,PERF --config "lint.mccabe.max-complexity = 15" --output-format=github --exit-zero
           found=$(ruff check src --select C901,PERF --config "lint.mccabe.max-complexity = 15" --output-format=concise --exit-zero | grep -cE ' (C901|PERF[0-9]+) ' || true)

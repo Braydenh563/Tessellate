@@ -19,7 +19,7 @@ _OPEN_IT = re.compile(
     r"(?:(?:it|that|this|that one|this one|that note|the note|the same one)|the (first|second|third|fourth|last|1st|2nd|3rd|top|latest|newest) (?:one|note|result|match))"
     r"\s*(?:please|for me|now)?\W*$", re.I)
 _ORDINAL = {"first": 0, "1st": 0, "top": 0, "latest": 0, "newest": 0, "second": 1, "2nd": 1, "third": 2, "3rd": 2, "fourth": 3, "last": -1}
-_LINKED = re.compile(r"\[\*{0,2}([^\]\n]+?)\*{0,2}\]\(#/notes/(\d+)\)")
+_LINKED = re.compile(r"\[\*{0,2}([^\]\n]{1,300}?)\*{0,2}\]\(#/notes/(\d+)\)")
 
 
 def open_it(ctx: Ctx) -> Reply | None:

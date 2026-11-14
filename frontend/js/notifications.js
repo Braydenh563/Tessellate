@@ -142,7 +142,7 @@ function reminderDoneButton(item) {
         return;
       }
       button.disabled = false;
-      toast("Couldn't complete that reminder. Press Done to try again.", "info");
+      toast(voiceLine("failed", { what: "complete that reminder", why: "press Done to try again" }), "info");
       return;
     }
     const said = rolled.done ? "Done" : `Done, next ${whenText(rolled.due_at)}`;
@@ -427,7 +427,7 @@ function dismissNotification(item) {
 async function openExportsFromNotification() {
   if (await desktopShell()) {
     apiJson("/files/open-exports-folder", { method: "POST" }).catch((error) => {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", { what: "open the exports folder" }), true);
     });
     return;
   }

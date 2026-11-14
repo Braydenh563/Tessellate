@@ -474,6 +474,10 @@ onSurface("notes", () => {
   $("ask-time-travel").addEventListener("click", () => {
     showAskAsOf($("ask-as-of-row").classList.contains("hidden"));
   });
+  //: Days back from today, drawn right to left.
+  $("ask-as-of-slider").addEventListener("input", (e) => {
+    $("ask-as-of").value = new Date(Date.now() - e.target.value * 864e5).toLocaleDateString("sv");
+  });
   $("ask-as-of-clear").addEventListener("click", () => {
     showAskAsOf(false);
     $("question").focus();
@@ -690,8 +694,10 @@ document.addEventListener("keydown", (e) => {
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
     //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
-    const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
-    const inTextField = inEditable(document.activeElement);
+    //: Settings and the OCR workspace are not a pause: their acts are steps on the stack, so Ctrl+Z reaches them from inside (L694, L543).
+    const behindModal = () => [...document.querySelectorAll(".modal-overlay:not(#settings-modal):not(#ocr-workspace), dialog[open]")].some((m) => m.getClientRects().length);
+    //: A focused switch, radio or slider has no text to undo, so Ctrl+Z reaches the stack from it (L694).
+    const inTextField = inEditable(document.activeElement) && !document.activeElement.matches("input[type=checkbox],input[type=radio],input[type=range]");
     //: **Ctrl+Y is redo too** (the Windows habit; the board's Redo prints it): a text field keeps its own.
     if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
@@ -1578,6 +1584,7 @@ let noteSearchDebounceTimeout;
 onSurface("notes", () => {
   $("note-search").addEventListener("input", (e) => {
     noteSearch = e.target.value.trim();
+    noteEngine.opened = { id: null, terms: [] };
     // Nothing to save when the box is empty; the button appears when it isn't.
     // Cheap, so it stays immediate rather than waiting on the debounce below.
     $("save-search").classList.toggle("hidden", !noteSearch);
@@ -2281,7 +2288,7 @@ async function handleFileUpload(textarea, files) {
       console.error("Upload failed", err);
       textarea.value = textarea.value.replace(`![Uploading ${file.name}…]()\n`, "");
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      toast(err.message || `Couldn't upload "${file.name}".`, true);
+      toast(err.message || voiceLine("failed", { what: `upload "${file.name}"` }), true);
     }
   }
   if (added) pushTextUndo("Added a file", textarea, originalText, textarea.value);

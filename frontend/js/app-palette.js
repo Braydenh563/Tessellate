@@ -889,6 +889,27 @@
         run: paletteLater(() => openBulkTags(ids)),
       });
     }
+    //: The two note menu rows the palette lacked (L693): a note in hand, and
+    //: not a private one, can be chatted about or filed by Atlas from here.
+    const held = ids.length === 1 ? allEntries.find((e) => e.id === ids[0]) : null;
+    if (held) {
+      rows.push({
+        group: "This note",
+        label: "ph:chat-circle Ask Atlas about this note",
+        about: "Start a chat about this note and what it connects to.",
+        keywords: "chat about talk discuss",
+        run: paletteLater(() => ensureModule("entryMenu").then((ok) => ok && askAtlasAboutNote(held))),
+      });
+      if (!held.is_private) {
+        rows.push({
+          group: "This note",
+          label: "ph:sparkle Tag and file with Atlas",
+          about: "Atlas re-reads the note, suggests tags and links, and may refile it.",
+          keywords: "file it refile tag atlas",
+          run: paletteLater(() => reevaluateEntry(held)),
+        });
+      }
+    }
     //: Tidy (INBOX 691): the reviews, and two of them by name.
     rows.push({
       group: "Notes",

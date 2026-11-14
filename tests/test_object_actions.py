@@ -53,6 +53,24 @@ def test_a_library_document_reaches_the_graph():
     assert '$("graph-documents")' in door
 
 
+def test_a_board_or_map_card_reaches_the_graph():
+    """WORLD_CLASS_PLAN 1.3: a board is an Entry, so it is a bare-id node, but
+    it is drawn only while the Maps switch is on; the door turns it on."""
+    assert "showNoteInGraph(board.id, { maps: true })" in BOARDS
+    assert "ph:graph Show in graph" in BOARDS
+    graph = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    door = _block(graph, "async function graphShowNote(", "focusGraphNode(node);")
+    assert '$("graph-maps")' in door
+
+
+def test_a_document_links_to_a_note_and_a_file_sets_a_reminder():
+    document = _block(LIBRARY, 'if (item.kind === "document" || item.kind === "diagram") {', 'if (item.kind === "archived") {')
+    assert "ph:link Link to" in document
+    assert "/documents/${item.id}/notes" in document
+    file_menu = _block(LIBRARY, 'if (item.kind === "file") {', "return [];\n}")
+    assert "remindAbout({ title: item.title })" in file_menu
+
+
 def test_a_board_or_map_card_reaches_the_chat():
     assert "askAtlasAboutThing(board.type === \"map\" ? \"map\" : \"board\", board.title)" in BOARDS
 

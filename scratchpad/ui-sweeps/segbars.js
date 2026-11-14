@@ -27,10 +27,6 @@ const { boot } = require('./lib.js');
   console.log('doc-view-seg  ', JSON.stringify(await m('#doc-view-seg')));
   const box = await (await page.$('#doc-ai-verb')).boundingBox();
   await page.screenshot({ path: (process.env.SCRATCH || '.') + '/segbar-docai.png', clip: { x: box.x - 10, y: box.y - 10, width: box.width + 20, height: box.height + 20 } });
-  await page.evaluate(() => { document.getElementById('doc-ai-panel').classList.add('hidden'); switchTab('graph'); });
-  await page.waitForTimeout(2200);
-  console.log('graph-layout  ', JSON.stringify(await m('#graph-layout')));
-  const gb = await page.$('#graph-layout');
-  if (gb) { const b2 = await gb.boundingBox(); if (b2 && b2.width) await page.screenshot({ path: (process.env.SCRATCH || '.') + '/segbar-graph.png', clip: { x: b2.x - 10, y: b2.y - 10, width: b2.width + 20, height: b2.height + 20 } }); }
+  // #graph-layout is a <select> in the options popover since INBOX 670, not a seg bar: not measured here.
   await browser.close();
 })();

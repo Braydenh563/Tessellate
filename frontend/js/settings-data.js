@@ -254,9 +254,9 @@ async function renderStorageBreakdown() {
 //: `backup.BACKUP_EVERY_HOURS`), so the words come from `/jobs/last-runs` and
 //: the due time is the newest backup plus a day.
 function backupScheduleWords(run, newest) {
-  const parts = [run?.schedule || "Once a day, at the first start of the day."];
+  const parts = [];
   const day = (iso) =>
-    parseServerTime(iso)?.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }) || "";
+    parseServerTime(iso)?.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", ...clockOptions() }) || "";
   if (run?.ran && run.status === "failed") {
     parts.push(`The last try failed${run.error ? `: ${run.error}` : ""}.`);
   } else if (run?.ran && run.finished_at) {
@@ -267,7 +267,7 @@ function backupScheduleWords(run, newest) {
   const at = newest ? parseServerTime(newest.created_at) : null;
   if (at) {
     const due = new Date(at.getTime() + 24 * 3600 * 1000);
-    parts.push(due.getTime() <= Date.now() ? "Due at the next start." : `Next due ${day(due.toISOString())}, at the first start after that.`);
+    parts.push(due.getTime() <= Date.now() ? "Due at the next start." : `Next due ${day(due.toISOString())}.`);
   }
   return parts.join(" ");
 }
@@ -303,7 +303,7 @@ async function saveBackupCopyDir(value) {
     toast(value ? `Each backup is also copied to ${prefsCache.backup_copy_dir}` : "Backups stay on this computer only.");
   } catch (error) {
     input.value = prefsCache?.backup_copy_dir || "";
-    toast(error.message || "Couldn't use that folder.", true);
+    toast(error.message || voiceLine("failed", { what: "use that folder" }), true);
   }
 }
 
@@ -343,7 +343,7 @@ async function renderBackups() {
     const name = document.createElement("strong");
     const at = parseServerTime(item.created_at);
     name.textContent = at
-      ? at.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" })
+      ? at.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions() })
       : item.name;
     name.title = item.name;
     const size = document.createElement("span");
@@ -390,7 +390,7 @@ async function renderBackups() {
           try {
             await apiJson(`/backups/${item.name}`, { method: "DELETE" });
           } catch (error) {
-            toast(error.message || "Couldn't delete that backup.", true);
+            toast(error.message || voiceLine("failed", { what: "delete that backup" }), true);
           }
           renderBackups();
         },
@@ -493,6 +493,7 @@ async function renderBackupRetention() {
   input.min = storage.backup_retention_min;
   input.max = storage.backup_retention_max;
   input.value = storage.backup_retention_count;
+  input.dataset.keep = String(storage.backup_retention_count);
   input.title = `Between ${storage.backup_retention_min} and ${storage.backup_retention_max}`;
 }
 
@@ -848,7 +849,7 @@ async function renderSettingsClear() {
           `Restored “${item.label}”: it can be offered again.`
         );
       } catch (error) {
-        toast(error.message || "Couldn't restore that suggestion.", true);
+        toast(error.message || voiceLine("failed", { what: "restore that suggestion" }), true);
       }
     }
   }
@@ -952,7 +953,7 @@ $("clear-dismissed")?.addEventListener("click", async () => {
       `Cleared ${settingsClearCount(done.cleared, "dismissed suggestion", "dismissed suggestions")}: they can be offered again.`
     );
   } catch (error) {
-    toast(error.message || "Couldn't clear the dismissed suggestions.", true);
+    toast(error.message || voiceLine("failed", { what: "clear the dismissed suggestions" }), true);
   }
 });
 
@@ -1067,10 +1068,20 @@ function noteSettingChange(change, { quiet = false } = {}) {
       if (before) change.changes[i] = { ...c, old: before.old };
     });
     clearTimeout(last.timer);
+    //: The tick this one continues leaves the stack: one Ctrl+Z for the whole drag.
+    const spent = undoStack.indexOf(last.action);
+    if (spent !== -1) undoStack.splice(spent, 1);
   }
   change.label = settingChangeWords(change);
-  settingFresh.last = { change, timer: 0 };
+  settingFresh.last = { change, timer: 0, action: null };
   settingsHistoryAdd(change);
+  //: A switch or a choice is a step on the one stack (L694), so Ctrl+Z and the
+  //: status bar reach it; a caller that raised its own Undo (`quiet`) has one.
+  if (!quiet) {
+    const action = pushUndo(change.label, () => settingsHistoryApply(change, "old"), () => settingsHistoryApply(change, "new"));
+    action.settingChange = change;
+    settingFresh.last.action = action;
+  }
   if (quiet) return;
   //: One notice, with the Undo and long enough to use: the toast the control
   //: raised for its own change (a "Saved", found by its enter animation still
@@ -1159,7 +1170,22 @@ function settingsHistoryFind(change) {
 }
 
 //: Reapply one side of a change: "old" is Undo, "new" is Redo.
+//: The dock's own switches (chat mode, Web, mute) are drawn from what they last
+//: wrote, so an Undo or Redo of one repaints them; every other control is drawn
+//: from the saved value when its pane opens.
 async function settingsHistoryApply(change, side) {
+  //: Nested, not shared: only an Undo here repaints the dock (the global-scope ratchet).
+  function settingsRepaintDock(body) {
+    if ("tools_enabled" in body) {
+      $("tools-toggle").checked = body.tools_enabled === true;
+      renderChatModeSeg();
+    }
+    if ("web_search_enabled" in body) renderWebSearchToggle();
+    if ("notifications_muted_except_reminders" in body) {
+      renderNotifMuteToggle();
+      renderNotificationBadge();
+    }
+  }
   const kept = settingsHistoryFind(change) || change;
   const held = kept.big ? settingsHistoryBigKept.get(kept.id) : null;
   if (held) Object.assign(kept, held);
@@ -1174,7 +1200,16 @@ async function settingsHistoryApply(change, side) {
         else body[c.key] = c[side];
       }
       if (unset.length) body.unset = unset;
-      prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify(body) });
+      prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify(body) });
+      settingsRepaintDock(body);
+      //: The avatar look is also held in memory, and every later autosave sends
+      //: that copy: left stale, the next unrelated change put the undone look back.
+      if ("avatar_style" in body || unset.includes("avatar_style")) {
+        await ensureModule("characters");
+        await ensureModule("companionSettings");
+        setOwnNameMarkStyle(body.avatar_style || {});
+        repaintOwnFace();
+      }
     } else if (kept.kind === "look") {
       for (const c of kept.changes) {
         if (c[side] == null) prefs.remove(c.key);
@@ -1186,6 +1221,16 @@ async function settingsHistoryApply(change, side) {
       if (bgArtOn()) startBgArt();
       else stopBgArt();
       renderAppearance();
+      //: The Undo's own copy to the notebook, sent now and marked, so the
+      //: debounced mirror has nothing left to send. A 2.5 s busy window used to
+      //: cover it and swallowed the next real change too (L-world-class-49).
+      clearTimeout(uiStateSaveTimer);
+      if (uiStateSeeded) {
+        const state = uiStatePayload();
+        await apiJson("/preferences", { method: "PUT", noHistory: true, silent: true, body: JSON.stringify({ ui_state: state }) });
+        uiStateOnServer = JSON.stringify(state);
+        uiStateRememberSynced(state);
+      }
     } else if (kept.kind === "recents") {
       await ensureModule("searchSuggest");
       if (side === "old") searchRecentRestore(kept.data.before);
@@ -1207,10 +1252,7 @@ async function settingsHistoryApply(change, side) {
       else helpChatNewChat();
     }
   } finally {
-    //: A look is mirrored to the notebook 800 ms after it is written: that PUT
-    //: is this Undo's own, not a new change.
-    if (kept.kind === "look") setTimeout(() => (settingsHistoryBusy = false), 2500);
-    else settingsHistoryBusy = false;
+    settingsHistoryBusy = false;
   }
   kept.undone = side === "old";
   if (held) {
@@ -1229,6 +1271,9 @@ async function settingsHistoryApply(change, side) {
 async function settingsHistoryUndo(change) {
   try {
     await settingsHistoryApply(change, "old");
+    //: The step `noteSettingChange` put on the stack is spent by this Undo.
+    const live = undoStack.findIndex((action) => action.settingChange === change);
+    if (live !== -1) undoStack.splice(live, 1);
     //: Through the one undo contract (status.js, rule 1.8): an undone change
     //: waits on the redo side, so Redo and Ctrl+Y reach it like any other.
     const action = pushUndo(change.label, () => settingsHistoryApply(change, "old"), () => settingsHistoryApply(change, "new"));
@@ -1236,7 +1281,7 @@ async function settingsHistoryUndo(change) {
     settleUndoFromToast(action);
     toast(`Undone: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't undo that setting change.", true);
+    toast(error.message || voiceLine("failed", { what: "undo that setting change" }), true);
   }
 }
 
@@ -1245,11 +1290,12 @@ async function settingsHistoryRedo(change) {
     await settingsHistoryApply(change, "new");
     //: Done again here, so the redo that waited for it (above) is spent.
     const waiting = redoStack.findIndex((action) => action.settingChange === change);
-    if (waiting !== -1) redoStack.splice(waiting, 1);
+    //: Done again here, it is a step to undo once more.
+    if (waiting !== -1) undoStack.push(...redoStack.splice(waiting, 1));
     renderUndoBar();
     toast(`Done again: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't do that again.", true);
+    toast(error.message || voiceLine("failed", { what: "do that again" }), true);
   }
 }
 

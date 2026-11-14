@@ -20,6 +20,12 @@ window.addEventListener("offline", reflectOnlineState);
 window.addEventListener("online", reflectOnlineState);
 reflectOnlineState();
 
+//: status-chip-says (L-world-class-104)
+for (const chip of [$("power-saver-indicator"), $("offline-indicator")]) {
+  chip?.addEventListener("click", () => toast(chip.title, "info"));
+  chip?.addEventListener("keydown", (e) => e.key === "Enter" && chip.click());
+}
+
 // --- writing room wiring ---
 onSurface("notes", () => ensureModule("notesLazy"));
 onSurface("notes", () => {
@@ -541,22 +547,9 @@ function openGlobalFind(opts = {}) {
     return;
   }
   const bar = $("global-find-bar");
-  //: The Documents tab's fallback (the editor engine failed to load) keeps the engine panel's two reach-outs, made on first use
-  //: (not in the page: the boot element cap) and shown on that tab only.
-  let reach = bar.querySelector(".global-find-docs");
-  if (!reach && $("tab-documents")) {
-    reach = Object.assign(document.createElement("span"), { className: "global-find-docs" });
-    const mk = (name, label, title, run) => {
-      const b = Object.assign(document.createElement("button"), { type: "button", className: "ghost small", name, textContent: label, title });
-      b.addEventListener("click", run);
-      return b;
-    };
-    reach.append(
-      mk("all-documents", "All documents", "Find this in every document", () => docFindInDocuments($("global-find-input").value)),
-      mk("replace-in-all", "Replace in all", "Replace this in every document", () => openDocReplace({ find: $("global-find-input").value })),
-    );
-    $("global-find-count").after(reach);
-  }
+  //: The Documents tab's fallback (the editor engine failed to load) keeps the engine panel's two reach-outs: made on
+  //: first use by documents-code.js (a property of this function, so Documents-only code stays out of the boot).
+  const reach = $("tab-documents") && openGlobalFind.docsReach?.(bar);
   if (reach) reach.hidden = !($("tab-documents") && !$("tab-documents").classList.contains("hidden"));
   bar.classList.remove("hidden");
   const input = $("global-find-input");
@@ -630,7 +623,7 @@ onSurface("chat", () => {
       chatWriteRecord("chatForkUndo", fork);
       toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
     } catch (error) {
-      toast(error.message || "Couldn't fork this conversation.", true);
+      toast(error.message || voiceLine("failed", { what: "fork this conversation" }), true);
     }
   });
 });
@@ -674,7 +667,7 @@ async function renameCurrentConversation() {
     chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
     loadConversationList();
   } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
+    toast(error.message || voiceLine("failed", { what: "rename this conversation" }), true);
   }
 }
 
@@ -1437,29 +1430,12 @@ onSurface("reminders", () => {
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
   $("reminder-clear-done").addEventListener("click", clearDoneReminders);
-  $("reminders-page-size").value = remindersPageSize;
-  $("reminders-page-size").addEventListener("change", (e) => {
-    remindersPageSize = e.target.value;
-    prefs.set("reminders-page-size", remindersPageSize);
-    remindersDonePage = 1;
-    loadReminders();
-  });
-  $("reminders-done-page-prev").addEventListener("click", () => {
-    if (remindersDonePage <= 1) return;
-    remindersDonePage -= 1;
-    loadReminders();
-  });
-  $("reminders-done-page-next").addEventListener("click", () => {
-    remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
-    loadReminders();
-  });
   for (const button of document.querySelectorAll("#reminder-filter button")) {
     button.addEventListener("click", () => {
       reminderFilter = button.dataset.filter;
       for (const b of document.querySelectorAll("#reminder-filter button")) {
         setActiveChoice(b, b === button);
       }
-      remindersDonePage = 1; // a filter switch can change what's even in Done
       loadReminders();
     });
   }

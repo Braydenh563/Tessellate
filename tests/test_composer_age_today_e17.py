@@ -13,6 +13,27 @@ from tessellate.ai import composer_digest_sentences
 TODAY = date(2026, 11, 2)
 
 
+@pytest.fixture(autouse=True)
+def _fresh_answer_state():
+    """`_pattern` is called here without `_begin`, so it reads whatever the
+    last answer in this thread left: an untimed question left `_TIMED` False
+    and the age line vanished (L552, order dependence). Every digest
+    ContextVar is pinned to its default for the test."""
+    from contextvars import Context, ContextVar
+
+    _UNSET = object()
+    tokens = []
+    for value in vars(composer_digest_sentences).values():
+        if isinstance(value, ContextVar):
+            #: A var with no default has nothing to pin: it is left as it is.
+            fresh = Context().run(value.get, _UNSET)
+            if fresh is not _UNSET:
+                tokens.append((value, value.set(fresh)))
+    yield
+    for var, token in reversed(tokens):
+        var.reset(token)
+
+
 def _views(*days_back: int):
     return [SimpleNamespace(written=date.fromordinal(TODAY.toordinal() - d), note={"tags": []}) for d in days_back]
 

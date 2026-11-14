@@ -20,7 +20,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import act_registry, librarian, tools
+from tessellate.ai import act_registry, consent_store, librarian, tools
 from tessellate.ai import budget as run_budget
 from tessellate.ai.agent_policy import (
     _CLAIMED_ACTIONS,
@@ -213,7 +213,9 @@ def _record_call(
             "document_id": _change_document_id(name, result),
             "reminder_id": _change_reminder_id(name, result),
             "category_name": _change_category_name(name, result),
-            "undo": undo,
+            "undo": consent_store.signed(undo),
+            #: Redo runs this same call again, so it needs the server's tag too (L-world-class-28).
+            "redo_sig": consent_store.sign_call(name, arguments),
         }
     return change
 

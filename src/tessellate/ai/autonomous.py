@@ -45,11 +45,15 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, text
 
-from tessellate.ai import agent
+from tessellate.ai.lazy import LazyModule
 from tessellate.core import deps, events, jobruns
 from tessellate.core.database import Conversation
 
 logger = logging.getLogger("tessellate.autonomous")
+
+#: `ai.agent` loads on first use (L678): it pulls the model stack.
+agent = LazyModule("tessellate.ai.agent")
+
 
 #: How long a run may take before the loop stops waiting on it at shutdown.
 _JOIN_TIMEOUT = 5.0
@@ -474,12 +478,12 @@ def _stage_night_shift(config, run: "jobruns.Run") -> None:  # noqa: ANN001
 
 def _stage_learned_audit(config) -> None:  # noqa: ANN001
     """Decision 68: after the night shift read the notes, re-read what it
-    learned against them. Under the night shift's own switch, so the learned
-    store is touched only while it may be."""
+    learned against them. Under the night shift's own switch (and its own, Settings,
+    What it learned), so the learned store is touched only while it may be."""
     try:
         from tessellate.ai import facts, learned_audit_run
 
-        if facts.enabled(config, "night_shift"):
+        if facts.enabled(config, "night_shift") and config.get_preference("learned_audit_enabled", True):
             learned_audit_run.run_job()
     except Exception as exc:  # noqa: BLE001  # top of a worker thread
         logger.error("learned audit failed: %s", exc, exc_info=True)
@@ -908,10 +912,17 @@ def start() -> None:
             return
         _stop_event = threading.Event()
         _wake_event = threading.Event()
-        _loop_thread = threading.Thread(
-            target=_loop, args=(_stop_event, _wake_event), daemon=True, name="autonomous-agent"
+        from tessellate.core import jobs
+
+        stop_event, wake_event = _stop_event, _wake_event
+        #: A long-lived loop names its stop, so `jobs.join_threads` (every
+        #: test's teardown) skips it instead of waiting out its 5 s for a
+        #: thread that sleeps for hours: that wait slowed CI past its timeout.
+        _loop_thread = jobs.thread(
+            "autonomous-agent",
+            lambda: _loop(stop_event, wake_event),
+            stop=lambda: (stop_event.set(), wake_event.set()),
         )
-        _loop_thread.start()
 
 
 def stop() -> None:

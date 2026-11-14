@@ -8,6 +8,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
+from tessellate.core.lazyre import lazy_compile
 from tessellate.ai import (
     composer,
     composer_aliases,
@@ -16,8 +17,7 @@ from tessellate.ai import (
     composer_frame,
     composer_likeness,
     composer_overview,
-    composer_read,
-    composer_slots, composer_stale,
+    composer_read, composer_slots, composer_stale,
     composer_story,
     composer_threads,
     composer_verbuse,
@@ -45,12 +45,12 @@ __all__ = ["_CJK_ENDS", "_CJK_STOP", "_LATEST_ASK", "_NAMES_A_THING", "_WHEN_NOW
 #: 2026-10-11: "You just bought a new gaming mouse ... haha" is "you bought a
 #: gaming mouse"): laughter, emoji, and "just" or "literally" before a verb
 #: in the past ("just bought"), never "just two left", which is "only".
-_LAUGHED = re.compile(r"(?<![\s,])[\s,]*\b(?:(?:ha|he){2,}h?|lo+l+|lmf?a+o+|rofl|xd+)\b[.!]*", re.I)
-_EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u200D]+")
+_LAUGHED = lazy_compile(r"(?<![\s,])[\s,]*\b(?:(?:ha|he){2,}h?|lo+l+|lmf?a+o+|rofl|xd+)\b[.!]*", re.I)
+_EMOJI = lazy_compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u200D]+")
 #: A typed face is an emoji too (INBOX 1483: "so it was chill :D,¹"), never
 #: a time ("10:30") or a link ("https://"): it stands alone between spaces.
-_FACE = re.compile(r"\s+(?:[:;=][-']?[)(DPpOo3/\\|\]\[]+|<3+|\^_?\^)(?=$|\s|[.,!?])")
-_JUST = re.compile(
+_FACE = lazy_compile(r"\s+(?:[:;=][-']?[)(DPpOo3/\\|\]\[]+|<3+|\^_?\^)(?=$|\s|[.,!?])")
+_JUST = lazy_compile(
     r"\b(?:just|literally|finally just)\s+(?=(?:\w+ed|bought|got|went|made|found|sold|paid|spent|won|lost|had|took|saw|met|"
     r"left|came|ran|did|began|set|put|read|heard|told|gave|sent|built|broke|fell|felt|kept|wrote)\b)",
     re.I,
@@ -133,7 +133,7 @@ class _Split(NamedTuple):
 
 #: "It's in four phases: the Opener, ..." is a sentence leading into its
 #: list, not a heading: never "Your It's in four phases note" (INBOX 1420).
-_CLAUSE_HEAD = re.compile(r"(?:it|this|that|there|they|we|i|he|she|you)(?:'s|'re|'m|’s| is| are| was| were| has| have| had)\b", re.I)
+_CLAUSE_HEAD = lazy_compile(r"(?:it|this|that|there|they|we|i|he|she|you)(?:'s|'re|'m|’s| is| are| was| were| has| have| had)\b", re.I)
 
 
 def _split_label(text: str) -> _Split:
@@ -160,7 +160,7 @@ def _node_split(view: composer.NoteView, sentence: composer.Sentence) -> _Split 
     return None
 
 
-_CONDITION = re.compile(r"(?:^|,\s*)(?:if|when|whenever|once|unless|in case)\b[^,]*$", re.I)
+_CONDITION = lazy_compile(r"(?:^|,\s*)(?:if|when|whenever|once|unless|in case)\b[^,]*$", re.I)
 
 
 def _action_of(body: str) -> tuple[str, str]:
@@ -253,7 +253,7 @@ def _picture_of(view: composer.NoteView) -> Fact | None:
     return _picture_fact(view, shown, read) if shown or read else None
 
 
-_DAY_HEADING = re.compile(
+_DAY_HEADING = lazy_compile(
     r"^(?:[A-Za-z]+:\s*)?(?:(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+)?(?:\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:,?\s+\d{4})?\.?$",
     re.I,
 )
@@ -268,7 +268,7 @@ def _left_out(view: composer.NoteView, s, known) -> bool:  # noqa: ANN001
     return len(view.sentences) > 1 and bool(_DAY_HEADING.match(s.text.strip()))
 
 
-_IT_IS = re.compile(r"^it(?:'s|’s| is)\s+", re.I)
+_IT_IS = lazy_compile(r"^it(?:'s|’s| is)\s+", re.I)
 
 
 def _its_title(view: composer.NoteView, text: str, i: int) -> str:
@@ -484,7 +484,7 @@ def _named_category(q: str, members: list[composer.NoteView]) -> str:
 #: "the plan for December", "my gifts for Mum": a thing for something, both
 #: halves the topic (composer-subject-1029.md item 2: "about December" lost
 #: the plan). The determiner is needed: "what did I buy for Mum" is about Mum.
-_OWNED_FOR = re.compile(r"\b(the|my|our)\s+([a-z][\w'-]*)\s+for\s+(.+?)\s*\??$", re.I)
+_OWNED_FOR = lazy_compile(r"\b(the|my|our)\s+([a-z][\w'-]*)\s+for\s+(.+?)\s*\??$", re.I)
 
 
 def _topic_owned(q: str) -> str:
@@ -617,7 +617,7 @@ def _told_by_day(bodies: list[str], tail: str) -> str | None:
 
 #: A note's shorthand opening on a past verb ("trimmed your first bowl"), which
 #: a date in front needs a subject for.
-_VERB_FIRST = re.compile(r"^(?!(?:\w*eed|\w{0,3}ed)\b)[a-z]{3,}ed\b")
+_VERB_FIRST = lazy_compile(r"^(?!(?:\w*eed|\w{0,3}ed)\b)[a-z]{3,}ed\b")
 
 
 def _own_subject(body: str) -> str:
@@ -650,18 +650,18 @@ def _recent(written: date | None, today: date | None) -> str:
 #: on the person, a place ("at Mia's barbecue") or a time.
 #: A day said first by `_when_gone` ("back in July, ...", "three weeks
 #: ago, on 8 October, ...", "yesterday, ...") leads a clause, never a fragment.
-_SHORTHAND = re.compile(
+_SHORTHAND = lazy_compile(
     r"^(?!(?:you|your|at|in|on|with|after|before|from|for|during|to|by|this|last|next|the day|back in|yesterday,|"
     r"[\w-]+ (?:days?|weeks?|months?|years?) ago)\b)[a-z]", re.I)
 
 
-_HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s+)?", re.I)
-_WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
+_HERE_ARE = lazy_compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s+)?", re.I)
+_WH_SUBJECT = lazy_compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 
 #: A date a sentence says itself ("ran 6 km on 25 October"): the day the note
 #: was written must not lead it.
-_OWN_DATE = re.compile(
+_OWN_DATE = lazy_compile(
     rf"\b\d{{1,2}}(?:st|nd|rd|th)? (?i:{'|'.join(composer_ask._MONTHS)})\b"  # noqa: SLF001
     #: Month first needs the capital: "we may 5 of us go" is not a date.
     rf"|\b(?:{'|'.join(m.capitalize() for m in composer_ask._MONTHS)}) \d{{1,2}}\b"  # noqa: SLF001
@@ -696,7 +696,7 @@ def _cleaned_body(line_body: str, label: str) -> str:
 
 
 #: A note's own plural "we" and "our": said by the writer, so kept as reported speech.
-_WE = re.compile(r"(?:we|we're|we've|we'd|we'll|our|us)\b", re.I)
+_WE = lazy_compile(r"(?:we|we're|we've|we'd|we'll|our|us)\b", re.I)
 #: Verbs a note opens a line with when it tells what to do ("Bake at 230C",
 #: "feed the starter"): the person's note-to-self, never what they did.
 _IMPERATIVES = frozenset("""
@@ -707,7 +707,7 @@ rinse drain soak toast roast fry grill steam blend squat press lift stretch
 
 #: A weekday the app pinned to its date ("Saturday 3 October"): inside a
 #: quotation it is the note's own words, so the date goes outside it.
-_PINNED_DAY = re.compile(rf"\b((?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day) (\d{{1,2}} (?:{'|'.join(composer_ask._MONTHS)})(?: \d{{4}})?)\b")  # noqa: SLF001
+_PINNED_DAY = lazy_compile(rf"\b((?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day) (\d{{1,2}} (?:{'|'.join(composer_ask._MONTHS)})(?: \d{{4}})?)\b")  # noqa: SLF001
 
 
 def _unpinned(said: str) -> tuple[str, str]:
@@ -754,10 +754,10 @@ def _past_verb(word: str) -> bool:
     return word.lower() in factgraph._PAST  # noqa: SLF001
 
 
-_SENTENCE_BREAK = re.compile(r"[.!?] [A-Z]")
+_SENTENCE_BREAK = lazy_compile(r"[.!?] [A-Z]")
 #: A line with "my" or "I" in it is reported ("Sara is your sister"), so only the rest is quoted whole.
-_FIRST_PERSON = re.compile(r"\b(?:my|me|mine|your|yours|i|i'm|i've|we|our)\b", re.I)
-_LIST_HEADING = re.compile(r"your .+? note lists \w+ (?:items|questions to ask)\b", re.I)
+_FIRST_PERSON = lazy_compile(r"\b(?:my|me|mine|your|yours|i|i'm|i've|we|our)\b", re.I)
+_LIST_HEADING = lazy_compile(r"your .+? note lists \w+ (?:items|questions to ask)\b", re.I)
 
 
 def _said_as_written(line_body: str, i: int, written: date | None = None) -> str:
@@ -822,8 +822,8 @@ def _said_body(f: Fact, label: str) -> str:
     return _fragment(_named_pronoun(body, f.view), _NAMES.get())
 
 
-_PRONOUN_START = re.compile(r"(she|he|her|his)\b(?P<rest>.*)", re.I | re.S)
-_PERSON_TITLE = re.compile(r"[A-Z][a-z]+(?: [A-Z][a-z]+)?")
+_PRONOUN_START = lazy_compile(r"(she|he|her|his)\b(?P<rest>.*)", re.I | re.S)
+_PERSON_TITLE = lazy_compile(r"[A-Z][a-z]+(?: [A-Z][a-z]+)?")
 
 
 def _kind_of_note(title: str, view) -> bool:  # noqa: ANN001
@@ -1075,8 +1075,8 @@ def _gap_on(days: int, day: str) -> str:
 #: ("just", "recently"), is true of that day, not of today: after "by 9
 #: August," it is said as reported speech, one tense back. A plain past
 #: ("you bought a headset") is already the day's and stays as it is.
-_NOW_WORDS = re.compile(r"\b(?:just|recently|currently|now|at the moment|these days|so far|lately)\b", re.I)
-_PRESENT = re.compile(r"\byou(?:'re|'ve| are| have| am| can| will| don't| do not| need| want| feel| think| like| love| hate| know)\b", re.I)
+_NOW_WORDS = lazy_compile(r"\b(?:just|recently|currently|now|at the moment|these days|so far|lately)\b", re.I)
+_PRESENT = lazy_compile(r"\byou(?:'re|'ve| are| have| am| can| will| don't| do not| need| want| feel| think| like| love| hate| know)\b", re.I)
 _BACKSHIFT = (
     (re.compile(r"\byou're\b"), "you were"), (re.compile(r"\byou are\b"), "you were"),
     (re.compile(r"\byou've\b"), "you had"), (re.compile(r"\byou have\b"), "you had"),
@@ -1095,10 +1095,10 @@ _PAST_PARTICIPLE = {
     "forgot": "forgotten", "knew": "known", "grew": "grown", "threw": "thrown", "flew": "flown", "fell": "fallen",
     "became": "become", "wore": "worn", "hid": "hidden", "woke": "woken", "froze": "frozen", "stole": "stolen",
 }
-_HAD_PAST = re.compile(r"^you((?: (?:just|recently|only|finally|already|also|actually))*) ([a-z]+ed|" + "|".join(_PAST_PARTICIPLE) + r"|bought|felt|made|found|left|met|paid|sent|spent|told|thought|heard|kept|lost|read|said|sat|slept|stood|taught|won|built|got|put|set|cut|hit|quit)\b")
+_HAD_PAST = lazy_compile(r"^you((?: (?:just|recently|only|finally|already|also|actually))*) ([a-z]+ed|" + "|".join(_PAST_PARTICIPLE) + r"|bought|felt|made|found|left|met|paid|sent|spent|told|thought|heard|kept|lost|read|said|sat|slept|stood|taught|won|built|got|put|set|cut|hit|quit)\b")
 #: A clause whose own verb is a plain present the backshift does not turn
 #: ("you interrupt", "you get"), not "you're", "you have", "you want".
-_HABIT = re.compile(
+_HABIT = lazy_compile(
     r"^you (?!(?:are|have|can|will|don't|do|need|want|feel|think|like|love|hate|know|am|were|was|had|did|just|recently|"
     r"currently|now|still|also|only|finally|already|actually)\b)(?![a-z]+ed\b)[a-z]+\b(?!')",
 )
@@ -1135,30 +1135,30 @@ def _backshift(said: str) -> str:
     return recogniser.as_of_then(said)
 
 
-_PINNED = re.compile(r" \(you pinned this as true, [^)]+\)")
+_PINNED = lazy_compile(r" \(you pinned this as true, [^)]+\)")
 
 #: What a note's heading names, and how a paragraph opens on it (the owner,
 #: 2026-10-11: "In your first psych lecture you learned that ...").
-_HEARD = re.compile(r"\b(lecture|class|seminar|talk|tutorial|lesson|workshop|webinar|podcast|course)\b", re.I)
-_DID = re.compile(r"\b(lab|practical|session|workout|training|game|match|meeting|appointment|trip|visit|shift|run|ride|swim)\b", re.I)
-_PLANNED = re.compile(r"\b(plan|routine|schedule|goals?|budget|timetable|system)\b", re.I)
+_HEARD = lazy_compile(r"\b(lecture|class|seminar|talk|tutorial|lesson|workshop|webinar|podcast|course)\b", re.I)
+_DID = lazy_compile(r"\b(lab|practical|session|workout|training|game|match|meeting|appointment|trip|visit|shift|run|ride|swim)\b", re.I)
+_PLANNED = lazy_compile(r"\b(plan|routine|schedule|goals?|budget|timetable|system)\b", re.I)
 _ORDINALS = ("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth")
 #: A note-to-self ("Read chapters 1 to 3 before next week"), said as the
 #: task the person set: what to do, and to what.
-_TASK = re.compile(r"^(read|watch|finish|review|revise|redo|practise|practice|learn|write|do|study|listen to)\s+(.+?)(\s+(?:before|by|until|for|on)\s+.+)?$", re.I)
-_DOING = re.compile(r"^(?:ask|call|email|text|book|buy|order|check|remember to|pay|send|bring|look up|try|go|get|sort|plan|start)\b", re.I)
-_PLACE_NOUN = re.compile(r"^(library|gym|pool|office|park|bus|train|cafe|range|studio|lab|track|beach)\b", re.I)
+_TASK = lazy_compile(r"^(read|watch|finish|review|revise|redo|practise|practice|learn|write|do|study|listen to)\s+(.+?)(\s+(?:before|by|until|for|on)\s+.+)?$", re.I)
+_DOING = lazy_compile(r"^(?:ask|call|email|text|book|buy|order|check|remember to|pay|send|bring|look up|try|go|get|sort|plan|start)\b", re.I)
+_PLACE_NOUN = lazy_compile(r"^(library|gym|pool|office|park|bus|train|cafe|range|studio|lab|track|beach)\b", re.I)
 
 
-_LIFT = re.compile(r"^(squats?|bench(?: press(?:es)?)?|deadlifts?|rows?|overhead press(?:es)?|presses|curls?|lunges?)\s+(up to\s+)?(\d.+)$", re.I)
+_LIFT = lazy_compile(r"^(squats?|bench(?: press(?:es)?)?|deadlifts?|rows?|overhead press(?:es)?|presses|curls?|lunges?)\s+(up to\s+)?(\d.+)$", re.I)
 _LIFTED = {"squat": "squatted", "bench": "benched", "deadlift": "deadlifted", "row": "rowed", "overhead": "overhead pressed", "press": "pressed", "curl": "curled", "lunge": "lunged"}
 #: "Back in July, ..." is a day said first (INBOX 1483), not how a back felt.
-_BODY_PART = re.compile(r"^(?!back in\b)(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
+_BODY_PART = lazy_compile(r"^(?!back in\b)(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
 _PLANNED_FOR = re.compile(r"^\s*(\S+(?:\s+\S+)*?)\s+(planned|booked|set|moved|pencilled in)\s+(for|to)\s+(.+)$", re.I)
 #: A day's shorthand is a line or two; `_PLANNED_FOR` retries `(.+)$` at every "planned for" and each try runs to
 #: the line end, so it is only offered a body this short (review 1109: 50,000 characters took 0.4 s).
 PLANNED_MAX = 1000
-_WEEKDAY_WORD = re.compile(r"\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b")
+_WEEKDAY_WORD = lazy_compile(r"\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b")
 
 
 def _day_clause(body: str) -> str | None:
@@ -1225,10 +1225,10 @@ def _past(body: str) -> str:
     return re.sub(r"\byou were going to\b", "you planned to", body)
 
 
-_FINITE = re.compile(r"\b(?:is|was|are|were|has|had|have|will|can|felt|looks?|seems?)\b", re.I)
+_FINITE = lazy_compile(r"\b(?:is|was|are|were|has|had|have|will|can|felt|looks?|seems?)\b", re.I)
 
 
-_CLAUSE_SPLICE = re.compile(r", (?=(?:the|my|your|it|his|her|their)\b[^,]*\b(?:was|is|were|are)\b)", re.I)
+_CLAUSE_SPLICE = lazy_compile(r", (?=(?:the|my|your|it|his|her|their)\b[^,]*\b(?:was|is|were|are)\b)", re.I)
 
 
 def _noted_sentence(body: str, first: bool) -> str:
@@ -1246,7 +1246,7 @@ def _noted_sentence(body: str, first: bool) -> str:
     return ("says " if finite else "is ") + body
 
 
-_LABELLED = re.compile(r"[A-Z][^:.!?\n]{0,60}:\s+\S")
+_LABELLED = lazy_compile(r"[A-Z][^:.!?\n]{0,60}:\s+\S")
 
 
 def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
@@ -1265,7 +1265,7 @@ def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     return _wrote(body, i)
 
 
-_OBLIGED = re.compile(r"(?:need|needs|needed|want|wants|wanted|have|has|got|should|must|ought|hope|hopes|forgot)\s+to\b", re.I)
+_OBLIGED = lazy_compile(r"(?:need|needs|needed|want|wants|wanted|have|has|got|should|must|ought|hope|hopes|forgot)\s+to\b", re.I)
 
 
 def _clause(body: str, frame: str, i: int, first: bool) -> str:
@@ -1418,15 +1418,15 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
 
 #: The joins inside a line (INBOX 870): "; still shaky on big O" reads as
 #: a list; ", though you're still shaky on big O" reads as a thought.
-_STILL_VERB = re.compile(r"^still (need|have|want|haven't|hasn't|don't|to)\b", re.I)
+_STILL_VERB = lazy_compile(r"^still (need|have|want|haven't|hasn't|don't|to)\b", re.I)
 
 
 #: A body with no subject of its own: a lower-case "-ing" word first (typed
 #: case matters, so no `re.I`), or one to three words that do not open on a
 #: pronoun. Two patterns, not one with an inline flag group: CodeQL read
 #: the inline `(?-i:` form as an unmatchable `$`.
-_GERUND_OPEN = re.compile(r"[a-z]+ing\b")
-_SHORT_FRAGMENT = re.compile(r"(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$", re.I)
+_GERUND_OPEN = lazy_compile(r"[a-z]+ing\b")
+_SHORT_FRAGMENT = lazy_compile(r"(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$", re.I)
 
 
 def _is_fragment(body: str) -> bool:
@@ -1459,7 +1459,7 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
     return out
 
 
-_SUBJECT_START = re.compile(r"^(?:i|you|we|he|she|they|it|that|this|there|what|how|why|who|when|where)(?:'\w+|’\w+)?\b", re.I)
+_SUBJECT_START = lazy_compile(r"^(?:i|you|we|he|she|they|it|that|this|there|what|how|why|who|when|where)(?:'\w+|’\w+)?\b", re.I)
 
 
 def _a_sentence(body: str) -> bool:
@@ -1471,20 +1471,20 @@ def _a_sentence(body: str) -> bool:
 
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 #: Not "back in July", a month gone by (INBOX 1483).
-_FOR_MONTH = re.compile(r"\b(?<![Bb]ack )(?:for|in|by|until) (" + "|".join(m.capitalize() for m in _MONTHS) + r")\b")
+_FOR_MONTH = lazy_compile(r"\b(?<![Bb]ack )(?:for|in|by|until) (" + "|".join(m.capitalize() for m in _MONTHS) + r")\b")
 
 
 #: What a price is per: two prices on different periods ("$1,200 a month",
 #: "$80 a week") have no gap between them.
-_PER = re.compile(r"(?:\ba|\bper|\beach|\bevery|/)\s*(day|week|month|year|hour|night)\b", re.I)
+_PER = lazy_compile(r"(?:\ba|\bper|\beach|\bevery|/)\s*(day|week|month|year|hour|night)\b", re.I)
 #: A gap is the budget against what was spent, the ask against the offer:
 #: it needs one word of each side.
 #: Two things weighed against each other in one line ("The Logitech is about
 #: $230 and the Razer is $200"): each is named and priced, so the gap between
 #: them is true, which a budget and an unrelated amount are not.
-_RIVAL_PRICES = re.compile(r"\b[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d{1,9}[\d.,]{0,9} and (?:the )?[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d")
-_PLANNED_PRICE = re.compile(r"\b(?:budget|limit|target|goal|estimate|quote|quoted|asking|listing|listed|planned)\b", re.I)
-_ACTUAL_PRICE = re.compile(r"\b(?:spent|spend|paid|cost|actual|offer|negotiated|saved|came to)\b", re.I)
+_RIVAL_PRICES = lazy_compile(r"\b[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d{1,9}[\d.,]{0,9} and (?:the )?[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d")
+_PLANNED_PRICE = lazy_compile(r"\b(?:budget|limit|target|goal|estimate|quote|quoted|asking|listing|listed|planned)\b", re.I)
+_ACTUAL_PRICE = lazy_compile(r"\b(?:spent|spend|paid|cost|actual|offer|negotiated|saved|came to)\b", re.I)
 
 
 def _price_gap(body: str) -> str:
@@ -1576,8 +1576,8 @@ def _row(said: str, fact: Fact) -> dict:
 
 
 #: A note that is weighing a purchase, not one with a price in it (audit 1031 C20).
-_PLAN_ASK = re.compile(r"\b(?:plan|plans|planning|itinerary)\b", re.I)
-_WEIGHING = re.compile(r"\blooking at an? new\b|\bleaning towards\b|\bdeciding between\b", re.I)
+_PLAN_ASK = lazy_compile(r"\b(?:plan|plans|planning|itinerary)\b", re.I)
+_WEIGHING = lazy_compile(r"\blooking at an? new\b|\bleaning towards\b|\bdeciding between\b", re.I)
 
 
 def _missing(members: list[composer.NoteView], asked: str | None = None) -> str:
@@ -1603,10 +1603,10 @@ def _missing(members: list[composer.NoteView], asked: str | None = None) -> str:
 
 
 #: A question about what is open or due, where any to-do is on topic.
-_ABOUT_TASKS = re.compile(r"\b(?:to ?do|left|remaining|outstanding|need|should|must|due|deadline|homework|tasks?|remind\w*)\b", re.I)
+_ABOUT_TASKS = lazy_compile(r"\b(?:to ?do|left|remaining|outstanding|need|should|must|due|deadline|homework|tasks?|remind\w*)\b", re.I)
 
 
-_ABOUT_TIME = re.compile(r"\b(?:when|what (?:day|time|date))\b", re.I)
+_ABOUT_TIME = lazy_compile(r"\b(?:when|what (?:day|time|date))\b", re.I)
 
 
 def _on_topic(action: str, asked: str) -> bool:
@@ -1672,10 +1672,10 @@ def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
 
 #: With the date a weekday is pinned to, when it carries one ("on Thursday 6
 #: August", `_pin_weekdays`): the two go together.
-_ON_DAY = re.compile(r"(?<!\s)\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b(?:\s\d{1,2}\s[A-Za-z]+(?:\s\d{4})?)?", re.I)
+_ON_DAY = lazy_compile(r"(?<!\s)\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b(?:\s\d{1,2}\s[A-Za-z]+(?:\s\d{4})?)?", re.I)
 #: What makes an instruction a task rather than advice: a thing or person
 #: it is about ("the tutor", "my passport", "Daniel") or a day or number.
-_SPECIFIC_CASED = re.compile(r"(?<=\s)[A-Z][a-z]+")
+_SPECIFIC_CASED = lazy_compile(r"(?<=\s)[A-Z][a-z]+")
 
 
 def _task_of(f: Fact) -> str:
@@ -1707,7 +1707,7 @@ def _still_ahead(action: str, written: date | None) -> str:
     return action
 
 
-_STUCK = re.compile(r"\b(?:shaky|stuck|confused|unsure|lost) (?:on|with|about) ([^,;.]+)", re.I)
+_STUCK = lazy_compile(r"\b(?:shaky|stuck|confused|unsure|lost) (?:on|with|about) ([^,;.]+)", re.I)
 
 
 def _asked_about(action: str, body: str) -> str:
@@ -1835,7 +1835,7 @@ def _narrate(out: _Out, view, facts: list[Fact], today: date) -> set:  # noqa: A
     return {s.key for s in said}
 
 
-_HAS_SUBJECT = re.compile(r"(?:you|we|i|they|he|she|it|you're|we're|i'm|they're)\b", re.I)
+_HAS_SUBJECT = lazy_compile(r"(?:you|we|i|they|he|she|it|you're|we're|i'm|they're)\b", re.I)
 
 
 def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[str, list[Fact]]:  # noqa: ANN001
@@ -1871,10 +1871,10 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
 #: its shape (its sections) or what is still to do on it, or a second line.
 #: Quoted examples are the note's material, never the person's facts.
 _QUOTED = re.compile(r'^["\u201c\u2018\']')
-_NUMBERED = re.compile(r"^(.*?\S)\s+(\d{1,2})$")
+_NUMBERED = lazy_compile(r"^(.*?\S)\s+(\d{1,2})$")
 #: A body that opens on an instruction ("Count to two before answering"):
 #: the person's advice to themselves, said as theirs.
-_ADVICE = re.compile(
+_ADVICE = lazy_compile(
     r"^(?:invite|count|find|listen|stop|start|try|keep|remember to|focus|message|suggest|take|say|be|don't|do not|use|make|"
     r"give|practise|practice|slow down|breathe|smile|wait|ask|call|email|text|book|buy|order|check|pay|send|bring|look up|"
     r"go|get|sort|plan|write|read|watch|finish)\b",
@@ -2084,11 +2084,11 @@ def _title_said(view: composer.NoteView, body: str) -> str:
     return body
 
 
-_TRAINING = re.compile(r"^(?:push|pull|legs?|upper|lower|chest|back|arms?|shoulders|cardio|core|full body)\b", re.I)
-_REST = re.compile(r"^rest(?: days?)?$", re.I)
+_TRAINING = lazy_compile(r"^(?:push|pull|legs?|upper|lower|chest|back|arms?|shoulders|cardio|core|full body)\b", re.I)
+_REST = lazy_compile(r"^rest(?: days?)?$", re.I)
 
 
-_DAY_LINE = re.compile(r"^\s*(?:[-*]\s*)?([A-Za-z][\w ]{0,20}?)\s*:\s*(\S.*)$")
+_DAY_LINE = lazy_compile(r"^\s*(?:[-*]\s*)?([A-Za-z][\w ]{0,20}?)\s*:\s*(\S.*)$")
 
 
 def _split_days(content: str) -> tuple[dict[str, list[str]], bool]:
@@ -2173,10 +2173,10 @@ def _gists(members: list, facts: list[Fact]) -> list[Fact]:  # noqa: ANN001
 
 
 #: A line that already says when ("on Monday", "yesterday", "last week").
-_SAYS_WHEN = re.compile(r"\b(?:(?:on )?(?:mon|tues|wednes|thurs|fri|satur|sun)day|yesterday|today|tonight|last (?:week|month|night|weekend)|this (?:week|morning)|\w+ ago)\b|^(?:back )?in \w+,", re.I)
+_SAYS_WHEN = lazy_compile(r"\b(?:(?:on )?(?:mon|tues|wednes|thurs|fri|satur|sun)day|yesterday|today|tonight|last (?:week|month|night|weekend)|this (?:week|morning)|\w+ ago)\b|^(?:back )?in \w+,", re.I)
 #: A past-tense line that is not an event: a taste or a report ("you liked
 #: pasta", "you mentioned that ...").
-_NOT_AN_EVENT = re.compile(
+_NOT_AN_EVENT = lazy_compile(
     r"\b(?:liked|loved|enjoyed|wanted|needed|preferred|hated|wished|hoped|mentioned|noted|wrote|said|saved|thought|believed)\b", re.I)
 
 
@@ -2207,8 +2207,8 @@ def _event_lines(out: _Out, members) -> list[tuple[int, object]]:  # noqa: ANN00
 _DAYS_RE = r"(?:mon|tues|wednes|thurs|fri|satur|sun)day"
 _MONTHS_RE = r"(?:jan|febr)uary|march|april|may|june|july|august|(?:sept|nov|dec)ember|october"
 #: "On Friday 23 October, you went": the absolute date a weekday carries (1441: relative or none).
-_DATED_LEAD = re.compile(rf"^on {_DAYS_RE},? \d{{1,2}} (?:{_MONTHS_RE}),?\s+", re.I)
-_DATED_DAY = re.compile(rf"\b({_DAYS_RE}),? (\d{{1,2}}) ({_MONTHS_RE})(?: (\d{{4}}))?\b", re.I)
+_DATED_LEAD = lazy_compile(rf"^on {_DAYS_RE},? \d{{1,2}} (?:{_MONTHS_RE}),?\s+", re.I)
+_DATED_DAY = lazy_compile(rf"\b({_DAYS_RE}),? (\d{{1,2}}) ({_MONTHS_RE})(?: (\d{{4}}))?\b", re.I)
 
 
 def _undated_past(found: re.Match, today: date) -> str:
@@ -2387,7 +2387,7 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
 
 #: A name a summary line can carry: a title or a short noun phrase, never a
 #: quoted sentence or "the note that starts ..." (composer-1031).
-_CLEAN_NAME = re.compile(r"^(?!the note that starts|[“\"])")
+_CLEAN_NAME = lazy_compile(r"^(?!the note that starts|[“\"])")
 
 
 def _summary_names(members) -> str:  # noqa: ANN001
@@ -2464,7 +2464,7 @@ def _themed(dated) -> list[list[int]]:  # noqa: ANN001
 
 
 #: A question that asks for the figure ("count my notes about Hobart", "how many notes on Sara"): the count, not a story.
-_COUNT_ASKED = re.compile(r"^\W*(?:please\s+)?(?:how many|(?:the )?number of|count|tally|check|total)\b", re.I)
+_COUNT_ASKED = lazy_compile(r"^\W*(?:please\s+)?(?:how many|(?:the )?number of|count|tally|check|total)\b", re.I)
 
 
 def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
@@ -2491,10 +2491,10 @@ def _overview(out: _Out, question: str, members, facts, today: date, kind: str) 
 
 _CJK_ENDS = "。！？）」』】〕"
 _CJK_STOP = re.compile(r"([。！？）」』】〕\u3040-\u30ff\u4e00-\u9fff])\.(?!\.)")
-_GOING = re.compile(r"\bhow(?:'s| is| are) .+ going\b|\bprogress\b|\bhow am i (?:going|doing)\b", re.I)
+_GOING = lazy_compile(r"\bhow(?:'s| is| are) .+ going\b|\bprogress\b|\bhow am i (?:going|doing)\b", re.I)
 #: The word a measure is of: "squats" in "squats up to 90 kg".
-_MEASURE_OF = re.compile(r"\b([a-z]+)(?: up to| down to| at)? $", re.I)
-_FIGURE = re.compile(r"(\d+(?:\.\d+)?)\s?(\S+)")
+_MEASURE_OF = lazy_compile(r"\b([a-z]+)(?: up to| down to| at)? $", re.I)
+_FIGURE = lazy_compile(r"(\d+(?:\.\d+)?)\s?(\S+)")
 
 
 def _measures(text: str) -> list[tuple[str, float, str, str]]:
@@ -2621,10 +2621,10 @@ def _opening(fact: Fact) -> bool:
 
 #: The verb a question asks with ("how do I feed the starter", "who teaches Spanish", "what did Hannah
 #: think of it"): the sentence that holds it answers, before one that only names the subject (R9-2).
-_ASK_VERB = re.compile(
+_ASK_VERB = lazy_compile(
     r"\b(?:how (?:do|can|should|would|did) (?:i|we|you|they)|what (?:did|do|does|should) (?:i |we |you |they |he |she |\w+ )?|who(?:m)?|how to) *([a-z]{3,})\b", re.I)
 #: "how much flour for the starter": the thing asked for is the attribute.
-_ASK_NOUN = re.compile(r"\bhow (?:much|many) ([a-z]{3,}) (?:for|of|do|does|did|is|are)\b", re.I)
+_ASK_NOUN = lazy_compile(r"\bhow (?:much|many) ([a-z]{3,}) (?:for|of|do|does|did|is|are)\b", re.I)
 #: "my last run", "the last one": the newest by the sentence's own day, as "latest" asks.
 _LAST_ONE = re.compile(r"\b(?:my|the) last (?!week|month|year|night|weekend|time|few)\w+", re.I)
 _NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need mention mentions write wrote the my and for did does".split())
@@ -2637,7 +2637,7 @@ _ASK_VERB_SAYS = {
 
 
 #: "why is my bread dense": the word that says what is wrong is the point of the question (R9-2).
-_ASK_PREDICATE = re.compile(r"^why (?:is|are|was|were) (?:my|the|our) [a-z]{3,20} (?P<word>[a-z]{4,20})$", re.I)
+_ASK_PREDICATE = lazy_compile(r"^why (?:is|are|was|were) (?:my|the|our) [a-z]{3,20} (?P<word>[a-z]{4,20})$", re.I)
 
 
 def _predicate_stems(question: str) -> set[str]:
@@ -2709,7 +2709,7 @@ def _title_is_subject(f: Fact, stems: set[str]) -> bool:
 
 #: "when did I buy that gaming mouse": one thing that happened, asked for
 #: its day, against "when are my uni days" (a habit, said as its days).
-_WHEN_DID = re.compile(r"^\s*when (?:did|was|were|have|had|do i|i)\b", re.I)
+_WHEN_DID = lazy_compile(r"^\s*when (?:did|was|were|have|had|do i|i)\b", re.I)
 
 
 #: The composer's grammar pass (INBOX 1299): closed lists, no model. Words
@@ -2721,7 +2721,7 @@ _WEEKDAY_WORDS = frozenset(name.lower() for name in calendar.day_name)
 _WEEKDAYS = "|".join(sorted(_WEEKDAY_WORDS))
 #: "may" and "march" are also words: they are months only beside a day number.
 _MONTH_NAMES = "january|february|april|june|july|august|september|october|november|december"
-_DAY_NAME = re.compile(rf"\b(?:{_WEEKDAYS}|{_MONTH_NAMES})\b", re.I)
+_DAY_NAME = lazy_compile(rf"\b(?:{_WEEKDAYS}|{_MONTH_NAMES})\b", re.I)
 
 
 def _chosen_members(question: str, members, kind: str):  # noqa: ANN001

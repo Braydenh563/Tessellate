@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that notification setting" }), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast(voiceLine("failed", { what: "go back to the space it was made in" }), "info", { retry: backThenRun });
     };
   }
   if (!record) return () => run();
@@ -1154,11 +1154,11 @@ const VOICE = {
 //: `toLocaleString()` printed seconds on version lists, notes' hovers and run
 //: logs while the Timeline and the reminders printed none, and 12 or 24 hours
 //: follows the locale's own rule everywhere.
-const WHEN_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 function whenText(value = new Date()) {
   const moment = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(moment.getTime()) ? "" : WHEN_FORMAT.format(moment);
+  return Number.isNaN(moment.getTime()) ? "" : whenText.format.format(moment);
 }
+whenText.format = clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" });
 
 function toastName(text, fallback = "it", limit = 48) {
   const flat = String(text || "").replace(/\s+/g, " ").trim();
@@ -1172,7 +1172,7 @@ function voiceLine(key, slots = {}) {
   return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
 }
 
-function toast(message, isError = false, { exempt = false, action = null } = {}) {
+function toast(message, isError = false, { exempt = false, retry, action = retry && ["Try again", retry] } = {}) {
   //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
   if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {
@@ -1383,14 +1383,16 @@ const SERVER_DOWN_RETRY_MIN_MS = 3000;
 const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
+//: Answers the banner's words, which `api()` also gives a write it refuses while this is up (L-world-class-99).
 function showServerDownBanner() {
-  if (serverDownNote && serverDownNote.isConnected) return; // already up
+  const message = "Can't reach Tessellate. Retrying…";
+  if (serverDownNote && serverDownNote.isConnected) return message; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent = "Can't reach Tessellate. Retrying…";
+  text.textContent = message;
   const button = document.createElement("button");
   button.className = "small toast-action";
   button.textContent = "Retry";
@@ -1398,6 +1400,7 @@ function showServerDownBanner() {
   note.append(text, toastActions(button), toastCloseButton(note, null));
   toastStack(box, () => box.appendChild(note));
   serverDownNote = note;
+  return message;
 }
 
 function noteServerDown() {
@@ -1703,7 +1706,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo “${action.label}”` }), true);
   }
   renderUndoBar();
 }
@@ -1724,7 +1727,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", { what: "redo that" }), true);
   }
   renderUndoBar();
 }
@@ -1859,7 +1862,7 @@ async function loadMostUsed() {
     //: A picture's markdown is not words: cut at 25 characters it showed as a
     //: raw `![Sketch...` (dog3-1026 row 15).
     const flat = stripFrontmatter(entry.content)
-      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
+      .replace(/!\[[^\]\n]{0,99}\]\([^)\n]{0,999}\)/g, "")
       .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
       .trim() || "Picture";
     const { text: sliced, truncated } = safeMdSlice(flat, 25);
@@ -1951,11 +1954,10 @@ function settingsOpen() {
 // change, so no control has to remember: every `/preferences` answer passes the
 // wrapper below (the last one kept as text, so a PUT can be diffed against it),
 // and ai-tools.js reports a look key. All the rest (the diff, the list, the
-// Undo) is the lazy settings-data.js, loaded only when a change is made while
-// Settings is open: the boot scripts are at their gzip cap, and `apiJson` is
+// Undo) is the lazy settings-data.js, loaded on the first change: the boot scripts are at their gzip cap, and `apiJson` is
 // wrapped here rather than edited at its twenty callers.
 let settingsPrefsLast = null;
-//: `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
+//: A write with `noHistory` keeps its own Undo or is a setup step. `settingsHistoryBusy` is set while an Undo or Redo writes, so its own write is
 //: not noted again.
 let settingsHistoryBusy = false;
 {
@@ -1965,7 +1967,7 @@ let settingsHistoryBusy = false;
     if (path === "/preferences") {
       const was = settingsPrefsLast;
       settingsPrefsLast = JSON.stringify(data);
-      if (was && options.method === "PUT" && !settingsHistoryBusy && settingsOpen()) {
+      if (was && options.method === "PUT" && !settingsHistoryBusy && !options.noHistory) {
         ensureModule("settingsData").then(() => settingsPrefsSeen(JSON.parse(was), data));
       }
     }
@@ -2656,11 +2658,10 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   if (title && rest) title = `${title}: ${rest}`;
   //: The same words again change nothing: the Undo and Redo pair repaints on every document keystroke, and rebuilding the buttons cost
   //: style and layout work a bare editor does not pay (L323: UpdateLayoutTree 7.7 ms a key at 4x, 2.3 bare). The last paint is kept on the
-  //: function, not a new global, and dropped if the button's children were replaced from outside.
-  const seen = (paintStatusItem.last ||= new WeakMap());
+  //: button (`paintSig`), not a new global, and dropped if the button's children were replaced from outside.
   const sig = [icon, value, label, title, tone].join("\u0001");
-  if (seen.get(button) === sig && button.firstChild) return;
-  seen.set(button, sig);
+  if (button.paintSig === sig && button.firstChild) return;
+  button.paintSig = sig;
   button.replaceChildren();
   if (icon) {
     const glyph = document.createElement("span");
@@ -2955,10 +2956,6 @@ async function setChatMode(mode) {
   }).catch(() => {});
 }
 
-function backendLabel(status) {
-  return status?.provider === "openai" ? "The model server" : "Ollama";
-}
-
 // True while the user is mid-edit, so a status poll doesn't overwrite the
 // address they are halfway through typing. The polling that keeps this screen
 // live is the reason: without it, a five-second refresh eats every third
@@ -2995,7 +2992,7 @@ function renderSettings() {
   // Name the backend that actually answered. Saying "Ollama not detected"
   // when the app was pointed at LM Studio sends people to install the wrong
   // thing (§6).
-  const backend = backendLabel(status);
+  const backend = status?.provider === "openai" ? "The model server" : "Ollama";
   //: The dot is the line's class, as on the search engine line under it,
   //: not a typed "●"/"○" beside a CSS dot: two alphabets for one signal.
   //: Section 21 row 12: an address the person typed that nothing answers is
@@ -3022,8 +3019,8 @@ function renderSettings() {
   }
   //: K13: with no model, the line says what answers instead (ai/composer.py).
   if (aiIsOff()) {
-    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
-  }
+    ollamaLine.title = "Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.";
+  } else ollamaLine.title = "";
   renderBackendPicker(status);
   //: The one-time question before search by meaning is downloaded
   //: (semantic-notice.js, lazy): opened while the server says it is owed,
@@ -3038,14 +3035,11 @@ function renderSettings() {
   //: the owner's report was exactly that case ("no nomic-embed-text
   //: suggested") and the button below only exists while it is.
   //: The notice recipe's icon first (section 21 rows 1 and 2), then the line.
+  embeddingError.title = "";
   const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
   if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
-    say(
-      `${withoutEndStop(status.embedding_error)}. ` +
-      (status.ollama_running
-        ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
-        : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)
-    );
+    say(`${withoutEndStop(status.embedding_error)}.`);
+    embeddingError.title = `Or ${status.ollama_running ? "" : "start Ollama and "}pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`;
   } else if (status.embedding_error) {
     say(
       `Search engine problem: ${status.embedding_error}: semantic search is ` +
@@ -3233,8 +3227,15 @@ const QUIET_TASK_KINDS = new Set([
   "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
 
+//: **A watched run that outlived its page** (L514): a transcription (or any
+//: run its own surface watches) still running on the first poll after a
+//: reload has no page watching it any more, so its ending is announced like
+//: any other job's rather than passing in silence. Its start is not news.
+//: (`polled` is a property, not a global: tests/test_global_scope_ratchet.py.)
 function noticeTaskTransitions(running, history) {
   const now = new Map(running.map((task) => [taskKey(task), task]));
+  const firstPoll = !noticeTaskTransitions.polled;
+  noticeTaskTransitions.polled = true;
 
   //: A running job's row keeps its fraction and its own status line up to
   //: date. It is the same run list the chat's skill runs land in, an
@@ -3252,6 +3253,7 @@ function noticeTaskTransitions(running, history) {
   for (const [key, task] of now) {
     if (seenRunningTasks.has(key)) continue;
     seenRunningTasks.set(key, task);
+    if (task.watched && firstPoll) task.orphaned = true;
     //: A chat answer, a transcription: the person is watching it where they
     //: started it. The status bar and Running jobs list it; nothing announces it.
     if (task.watched) continue;
@@ -3288,7 +3290,7 @@ function noticeTaskTransitions(running, history) {
     seenRunningTasks.delete(key);
     const row = backgroundRunRows.get(key);
     backgroundRunRows.delete(key);
-    if (task.watched) continue;
+    if (task.watched && !task.orphaned) continue;
     // The outcome comes from the server's own history, on this same payload, 
     // "it stopped appearing in the running list" is true of a job that died as
     // much as one that succeeded, and a cheerful toast over a failure is how

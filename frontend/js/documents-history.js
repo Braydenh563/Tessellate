@@ -511,7 +511,7 @@
       const full = await apiJson(
         `/documents/${currentDoc.id}/revisions/${entry.id}`
       ).catch(() => null);
-      if (!full) return toast("Couldn't open that version.", true, { action: ["Try again", () => view.click()] });
+      if (!full) return toast(voiceLine("failed", { what: "open that version" }), true, { action: ["Try again", () => view.click()] });
       $("doc-history-dialog").close();
       //: Through the lightbox, which is already the app's read-only viewer for
       //: a document's text: including its find bar, which is how anyone
@@ -542,7 +542,7 @@
         await restoreDocVersionWithUndo(entry);
         $("doc-history-dialog").close();
       } catch (error) {
-        toast(error.message || "Couldn't restore that version.", true);
+        toast(error.message || voiceLine("failed", { what: "restore that version" }), true);
       } finally {
         restore.disabled = false;
       }
@@ -618,7 +618,7 @@
     try {
       await put(name);
     } catch (error) {
-      return toast(error.message || "Couldn't name that version.", true);
+      return toast(error.message || voiceLine("failed", { what: "name that version" }), true);
     }
     offerUndo(name.trim() ? `Named a version “${clipText(name.trim(), 40)}”` : "Removed a version's name", name.trim() ? "Version named." : "Name removed.", () => put(before), () => put(name));
   }
@@ -635,7 +635,7 @@
     try {
       made = await apiJson(`/documents/${docId}/revisions`, { method: "POST", body: JSON.stringify({ name }) });
     } catch (error) {
-      return toast(error.message || "Couldn't name this version.", true);
+      return toast(error.message || voiceLine("failed", { what: "name this version" }), true);
     }
     if ($("doc-history-dialog")?.open) await openDocHistory();
     const entry = { id: made.id, name: made.name };

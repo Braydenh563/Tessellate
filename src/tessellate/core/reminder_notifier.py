@@ -515,4 +515,7 @@ def start(
         FiredStore(Path(data_dir) / STORE_NAME), backend, on_open=on_open, icon=icon, on_due=on_due
     )
     _running["notifier"] = notifier
+    from tessellate.core import background
+
+    background.register("reminder-notifier", stop=notifier.stop)
     return notifier.start()
