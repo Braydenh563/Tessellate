@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 8 | 0 | 0 | 0 | 8 |
+| whiteboard | 0 | 5 | 0 | 0 | 0 | 5 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 535 | 125 | 2 | 172 | 1132 |
+| all | 472 | 532 | 125 | 2 | 172 | 1129 |
 
 ## graph
 
@@ -281,13 +281,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
-- [ ] **L-whiteboard-59** `whiteboard` open, S: Resolve settings-wiring.js html layer lookup through wbInstances.layer. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: settings-wiring.js:967 queries #wb-html-layer document-wide
-- [ ] **L-whiteboard-63** `whiteboard` open, S: Let an embed made before initWhiteboard edit at once. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: an embed created before initWhiteboard gets its handlers only once init runs
-- [ ] **L-whiteboard-64** `whiteboard` open, S: Fire an instance onChange on undo and redo. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: undo and redo do not call the onChange callbacks
-- [ ] **L-whiteboard-65** `whiteboard` open, S: Reload a board that is not live after a failed save-many. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: a failed save-many on a board that is no longer live skips the reload
-- [ ] **L-whiteboard-66** `whiteboard` open, S: Keep two live instances of one board from sharing one persisted undo history. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: two instances of one board share the persisted undo history key
 - [ ] **L-whiteboard-67** `whiteboard` open, S: Keep the board options' unit and page-view key per board instance. From L-whiteboard-60 to 62 agent report, 2026-11-14. Evidence: whiteboard-options.js:15 let unit and :143 pagesKey are module state; sync() and drawPages run for whichever board is live
 - [ ] **L-whiteboard-68** `whiteboard` open, S: Give a map line's right-click in an embed the plain menu. From L-whiteboard-60 to 62 agent report, 2026-11-14. Evidence: whiteboard-map-waypoints.js wbOpenMapLinkRadial returns false in an embed and its contextmenu prevents the native menu, so nothing opens
+- [ ] **L-whiteboard-69** `whiteboard` open, S: Drive an embed made with the board tab never opened and check initWhiteboard leaves the page chrome alone. From L-whiteboard-59 to 66 agent report, 2026-11-14. Evidence: whiteboard-instances.js createEmbed awaits window.initWhiteboard(), which runs surfaceBuild('board') and binds the page container; never driven from a document with the board tab closed
+- [ ] **L-whiteboard-70** `whiteboard` open, S: Persist an embed's undo history under its own key so it survives a reload. From L-whiteboard-66 agent report, 2026-11-14. Evidence: whiteboard.js wbUpdateUndoRedoButtons persists only for the page instance; an embed's undo history lasts the session
 
 ## documents
 

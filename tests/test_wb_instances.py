@@ -913,3 +913,159 @@ I.activate(B);
 out.embed = I.onPage;
 """)
     assert out2 == {"page": True, "embed": False}
+
+
+def test_settings_wiring_finds_the_html_layer_through_the_active_board():
+    """L-whiteboard-59: boot code asked the document for `#wb-html-layer`, which
+    is the page board's even while an embed is live. `wbInstances.query` searches
+    the active board's container and reads the id as its own layer; with the lazy
+    bundle not loaded no board, so no map editor, is open."""
+    text = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    assert 'window.wbInstances?.query("#wb-html-layer .wb-map-text' in text
+    assert 'document.querySelector("#wb-html-layer .wb-map-text' not in text
+    out = _run("""
+const emb = I.mount(fakeEl("div", "box"), 5);
+emb.container.append(Object.assign(fakeEl("div", "html"), { attrs: { "data-wb-layer": "wb-html-layer" } }));
+out.page = I.query("#wb-html-layer .wb-map-text");
+I.activate(emb);
+out.embed = I.query("#wb-html-layer .wb-map-text").name;
+""")
+    assert out["page"] == {"sel": "#wb-html-layer .wb-map-text", "in": "page"} and out["embed"] == "html"
+
+def test_an_embed_made_before_init_whiteboard_is_editable_at_once():
+    """L-whiteboard-63: create() awaits initWhiteboard, so the board's handlers are
+    already bound to the embed when the promise resolves."""
+    out = _run("""
+let inited = false;
+wbInitialized = false;
+window.initWhiteboard = async function () {
+  if (wbInitialized) return;
+  wbInitialized = true;
+  await new Promise((r) => setTimeout(r, 5));
+  I.on("pointerdown", () => log.push(["pointerdown"]));
+  I.on("wheel", () => {}, { passive: false }, true);
+  inited = true;
+};
+(async () => {
+const host = fakeEl("div", "host");
+const e = await window.wbInstance.create(host, 5, { editable: true });
+out.afterCreate = { inited, bound: e.instance.listeners.map((l) => l[1]) };
+const r = await window.wbInstance.create(fakeEl("div", "h2"), 5, {});
+out.second = { inited, bound: r.instance.listeners.map((l) => l[1]) };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["afterCreate"] == {"inited": True, "bound": ["pointerdown", "wheel"]}, out
+    assert out["second"]["bound"] == ["wheel"]
+
+
+def test_undo_and_redo_fire_the_instance_on_change_callbacks():
+    """L-whiteboard-64: a push fires onChange (wbPushUndo), and so do undo and redo."""
+    te = (JS / "whiteboard-textedit.js").read_text(encoding="utf-8")
+    body = ""
+    for name in ("wbUndo", "wbRedo"):
+        at = te.index(f"  async function {name}() {{")
+        body += te[at : te.index("\n  }\n", at) + 5]
+    out = _run(body + """
+const wbDeleting = { settled: async () => {} };
+let wbUndoParents = [];
+function wbHistoryFor() {}
+function wbCommitOpenEdit() {}
+let applies = true;
+async function wbApplyHistoryEntry() { return applies; }
+function toast() {}
+function wbIsMap() { return false; }
+function voiceLine() { return ""; }
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+const fired = { page: 0, emb: 0 };
+I.page.changeFns.add(() => fired.page++);
+emb.changeFns.add(() => fired.emb++);
+await wbUndo();
+await wbRedo();
+out.page = { ...fired };
+I.activate(emb);
+await wbUndo();
+out.emb = { ...fired };
+applies = false;
+await wbUndo();
+await wbRedo();
+out.refused = { ...fired };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["page"] == {"page": 2, "emb": 0}
+    assert out["emb"] == {"page": 2, "emb": 1}
+    #: A step that was not applied changed nothing, so nothing is announced.
+    assert out["refused"] == out["emb"]
+
+
+def _history_buttons_fn() -> str:
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    at = wb.index("function wbUpdateUndoRedoButtons() {")
+    return wb[at : wb.index("\n}\n", at) + 3]
+
+
+def test_only_the_page_board_writes_the_persisted_history_key():
+    """L-whiteboard-66: two live instances of one board shared `board:<id>` in the
+    undo store, each write replacing the other's stack. The page board owns that
+    key (what a reload restores); an embed's history is in memory for its life,
+    which cannot clobber the page's and leaves no key of its own to clean up."""
+    out = _run(_history_buttons_fn() + """
+const puts = [];
+function undoStorePut(key, value) { puts.push([key, value]); }
+function undoStoreBoardValue(u, r) { return { undo: u.length, redo: r.length }; }
+const wbHistoryRead = new Set(["5", "default"]);
+function wbHistoryFor() {}
+function scheduleUndoBar() {}
+const emb = I.mount(fakeEl("div", "box"), 5);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.page = puts.splice(0);
+I.activate(emb);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.embed = puts.splice(0);
+""")
+    assert [k for k, _ in out["page"]] == ["board:5"]
+    assert out["embed"] == []
+
+
+def test_a_failed_save_many_reloads_the_board_that_is_not_live():
+    """L-whiteboard-65: the stale selection belongs to the board that began the
+    save. An embed reloads itself; the page board, which has no embed object, is
+    marked stale and reloads when it is next live."""
+    fns = _wb_functions("WB_SAVE_MANY_MAX", "wbSaveManyBatch")
+    out = _run(fns + """
+const reloads = [], embedReloads = [];
+let scheduledRenders = 0;
+apiJson = async () => { throw new Error("409"); };
+function recordBrowserLog() {}
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); }
+const WB_KIND_INFO = { node: { list: "nodes", payload: () => ({}) } };
+wbScheduleRender = () => { scheduledRenders++; };
+(async () => {
+const embed = I.mount(fakeEl("div", "box"), 5);
+embed.reload = async () => { embedReloads.push(5); };
+const slice = [{ kind: "node", item: { id: 1 } }];
+out.okA = await wbSaveManyBatch(slice, embed);
+out.a = { reloads: [...reloads], embedReloads: [...embedReloads], pageStale: I.page.stale === true };
+I.activate(embed);
+out.okB = await wbSaveManyBatch(slice, I.page);
+out.b = { reloads: [...reloads], pageStale: I.page.stale === true };
+I.activate(I.page);
+await new Promise((r) => setTimeout(r, 5));
+out.c = { reloads: [...reloads], pageStale: I.page.stale === true, scheduled: scheduledRenders };
+await wbSaveManyBatch(slice, I.page);
+out.d = [...reloads];
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["okA"] is False and out["okB"] is False
+    assert out["a"] == {"reloads": [], "embedReloads": [5], "pageStale": False}
+    assert out["b"] == {"reloads": [], "pageStale": True}
+    assert out["c"] == {"reloads": [1], "pageStale": False, "scheduled": 1}
+    assert out["d"] == [1, 1]

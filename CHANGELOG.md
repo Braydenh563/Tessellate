@@ -9,6 +9,11 @@ below). Versioning is `0.x` while the app stabilises.
 - Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
 - Boards: each board instance keeps its own tool, so a tool picked in an embedded board leaves the page board's tool, toolbar mark and cursor as they were; a swap repaints the toolbar without dropping a stroke (L-whiteboard-61).
 - Boards: window and document board listeners act on the board the event happened on: one window capture router makes the embed or the page board live before any of them runs, and a swap drops the cached canvas box (L-whiteboard-62).
+- Boards: a failed multi-row save on a board that is no longer live reloads that board (an embed at once, the page board when it is next live) instead of skipping the reload (L-whiteboard-65).
+- Boards: only the page board writes a board's stored undo history, so an embed of the same board no longer overwrites it (L-whiteboard-66).
+- Boards: undo and redo now fire a board instance's onChange callbacks, as a recorded edit does (L-whiteboard-64).
+- Boards: an embed made before the board's first open waits for it, so its handlers are bound and it edits at once (L-whiteboard-63).
+- Boards: the map-editor check in boot code reads the active board's html layer, not the page's by id (L-whiteboard-59).
 - Boards: each board instance keeps its own undo history key, so Ctrl+Z in an embedded board takes back its own step and the page board keeps its own (found driving L-whiteboard-54).
 - Boards: an embedded board's draw leaves the page board's empty hint, count, navigator and outline alone, and no longer redraws the page after itself (L-whiteboard-58).
 - Boards: a multi-row save keeps the board it began on, so a board embed going live mid-save no longer takes its later rows or its stale reload (L-whiteboard-57).

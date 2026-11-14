@@ -5169,7 +5169,8 @@ function wbHistoryRestore(key) {
 
 function wbUpdateUndoRedoButtons() {
   wbHistoryFor();
-  if (typeof undoStorePut === "function" && wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default") {
+  //: Only the page board writes the stored copy: an embed of the same board would replace it with its own stack (L-whiteboard-66).
+  if (typeof undoStorePut === "function" && !wbInstances.active.container && wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default") {
     undoStorePut(`board:${wbHistoryBoard}`, undoStoreBoardValue(wbUndoStack, wbRedoStack));
   }
   const undoBtn = document.getElementById("wb-undo");
@@ -13954,7 +13955,12 @@ async function wbSaveManyBatch(slice, inst = wbInstances.active) {
     return true;
   } catch {
     recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
-    if (wbInstances.active !== inst) return false;
+    //: A board not live is read again by itself, not in the live one's place (L-whiteboard-65).
+    if (wbInstances.active !== inst) {
+      if (!inst.reload) inst.stale = true;
+      else if (!inst.destroyed) inst.reload().catch(() => {});
+      return false;
+    }
     await fetchWhiteboardState();
     wbScheduleRender();
     return false;

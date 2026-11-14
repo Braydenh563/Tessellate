@@ -28,6 +28,9 @@
       container, boardId: boardId ?? null, state: { nodes: [], sketches: [], objects: [] },
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
       mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
+      //: `stale`: a save failed while this board was not live, so it reads itself again when it is
+      //: (the page board); `reload`: an embed's own read, which needs no live globals.
+      stale: false, reload: null,
       invZoom: "1", invTimer: 0, key: ++made,
       //: The tool in hand on this board (L-whiteboard-61): a new one starts on the page board's first tool.
       tool: "pan",
@@ -120,6 +123,10 @@
     wbUpdateUndoRedoButtons();
     //: The toolbar and the incoming container's cursor show its own tool.
     wbSelectToolRef?.swap(inst.tool);
+    if (inst.stale) {
+      inst.stale = false;
+      fetchWhiteboardState().then(() => wbScheduleRender());
+    }
     if (inst.renderPending) {
       inst.renderPending = false;
       wbScheduleRender();
@@ -269,8 +276,13 @@
 
   //: **The mount API** (L-documents-104): a board inside `host`, an empty element
   //: the caller owns. Resolves once the board is read and drawn.
+  //: One run of initWhiteboard for every embed made before the page board was
+  //: ever opened: it binds the board's handlers through `on`, so an embed made
+  //: without waiting for it would be a board that cannot be edited (L-whiteboard-63).
+  let embedBoardInit = null;
   async function createEmbed(host, boardId, opts = {}) {
     const editable = opts.editable === true;
+    await (embedBoardInit ??= window.initWhiteboard?.());
     const box = document.createElement("div");
     box.className = editable ? "whiteboard-container wb-embed" : "whiteboard-container wb-embed wb-embed-readonly";
     box.tabIndex = 0;
@@ -305,6 +317,7 @@
       box.remove();
     }
 
+    inst.reload = reloadEmbed;
     try {
       await reloadEmbed();
     } catch (err) {

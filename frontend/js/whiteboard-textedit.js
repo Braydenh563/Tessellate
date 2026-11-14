@@ -1043,6 +1043,7 @@
     try {
       if (!(await wbApplyHistoryEntry(wbUndoStack, wbRedoStack))) return;
       wbUpdateUndoRedoButtons();
+      wbInstances.changed();
       //: C32: no labels on a board's history, so the notice names the place; "info" shows even when muted.
       toast("Undone: last change on this board", "info");
       if (wbIsMap()) {
@@ -1066,6 +1067,7 @@
     try {
       if (!(await wbApplyHistoryEntry(wbRedoStack, wbUndoStack))) return;
       wbUpdateUndoRedoButtons();
+      wbInstances.changed();
       toast("Redone: last change on this board", "info");
       wbScheduleRender();
     } catch {
