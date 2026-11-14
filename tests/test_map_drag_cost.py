@@ -230,6 +230,26 @@ def test_a_link_inside_the_moved_branch_is_translated_not_recomputed() -> None:
     assert "entry.linked" in _code("wbApplyFrameTurn")
 
 
+def test_a_rigid_link_moves_by_its_group_and_is_written_once_at_the_end() -> None:
+    """Source text: wbCaptureBulkMoveOrigin, wbApplyBulkMove and wbSaveBulkMove (L-ui-modernisation-61).
+
+    A linked branch drag rewrote two `d` attributes per rigid link each move,
+    a 1143-element style recalc of 30ms on a 50-topic map. The link's group
+    now takes one `transform` per move (a bare page wrote 300 of them in 0.5ms
+    against 600 `d`s in 1.7ms); the gesture's end, a cancel and a render that
+    replaced the path all write the same `d` a full recompute would.
+    """
+    capture = _code("wbCaptureBulkMoveOrigin")
+    assert "group: el" in capture
+    apply = _code("wbApplyBulkMove")
+    assert 'rigid.group.setAttribute("transform"' in apply
+    assert "origin.rigidAt = dx || dy ? [dx, dy] : null" in apply
+    start = WB.index("async function wbSaveBulkMove(")
+    save = WB[start:WB.index("\n}\n", start)]
+    assert "origin.rigidAt" in save and 'rigid.group.removeAttribute("transform")' in save
+    assert "rigid.at(" in save
+
+
 def test_the_translator_offsets_every_point_and_refuses_what_is_not_a_point_list(tmp_path) -> None:
     """Source text: wbTransformPathD.translator, run in node against three paths."""
     import json

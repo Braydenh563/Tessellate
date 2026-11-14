@@ -8259,7 +8259,7 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
     const at = wbTransformPathD.translator(path.getAttribute("d"));
     const hitAt = hit ? wbTransformPathD.translator(hit.getAttribute("d")) : null;
     if (!at || (hit && !hitAt)) return false;
-    rigidLinks.push({ pair, path, hit, at, hitAt });
+    rigidLinks.push({ pair, path, hit, at, hitAt, group: el });
     return true;
   };
   //: The same for a tree line with both topics moving: its two paths are
@@ -8468,9 +8468,19 @@ function wbApplyBulkMove(origin, dx, dy) {
       wbUpdateLinkedSketches(null, [rigid.pair]);
       continue;
     }
-    rigid.path.setAttribute("d", rigid.at(dx, dy));
-    rigid.hit?.setAttribute("d", rigid.hitAt(dx, dy));
+    //: One `transform` on the link's group a move, not two `d` rewrites (a
+    //: bare page: 300 transforms 0.5ms, 600 paths 1.7ms; on the map the
+    //: paths were a 1143-element style recalc each move). The `d` is written
+    //: where the drag lands, `wbSaveBulkMove`, or put back here at 0, 0.
+    if (dx || dy) {
+      rigid.group.setAttribute("transform", `translate(${dx} ${dy})`);
+    } else {
+      rigid.group.removeAttribute("transform");
+      rigid.path.setAttribute("d", rigid.at(0, 0));
+      rigid.hit?.setAttribute("d", rigid.hitAt(0, 0));
+    }
   }
+  origin.rigidAt = dx || dy ? [dx, dy] : null;
   const write = wbTransformPathD.translator.write;
   const x100 = Math.round(dx * 100), y100 = Math.round(dy * 100);
   for (const rigid of origin.rigidEdges || []) {
@@ -9003,6 +9013,18 @@ async function wbSaveMapBulkMove(origin) {
 }
 
 async function wbSaveBulkMove(origin) {
+  //: A link that travelled by its group's transform (`wbApplyBulkMove`) is
+  //: written where it landed, the `d` a full recompute gives, and the
+  //: transform cleared, before anything below reads or replaces the paths.
+  if (origin.rigidAt) {
+    for (const rigid of origin.rigidLinks || []) {
+      if (!rigid.path.isConnected) continue;
+      rigid.group.removeAttribute("transform");
+      rigid.path.setAttribute("d", rigid.at(...origin.rigidAt));
+      rigid.hit?.setAttribute("d", rigid.hitAt(...origin.rigidAt));
+    }
+    origin.rigidAt = null;
+  }
   //: **And is rebuilt where the items landed, before the save goes out.** The
   //: translate above is a view of the drag, not the truth: the items' own
   //: coordinates have moved, so the outline has to be recomputed from them or
