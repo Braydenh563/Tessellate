@@ -973,7 +973,10 @@ def test_the_feminine_body_is_an_hourglass_that_flows_into_one_wide_tail(tmp_pat
     for gone in ("atl-sower-inner", "atl-sower-light", "atl-sower-sparkle", "atl-hem-edge", "atl-hem-glow", "sparkles: [[0.3, 0.32]"):
         assert gone not in ATLAS and gone not in CSS, gone
     # The masculine look keeps its own torso and trail.
-    assert "sower" not in _look("masculine") and "wisps:" not in _look("masculine")
+    masculine = _look("masculine")
+    # L742 (the owner's call, 2026-11-12; atlas-3 051bc2900): the masculine look now carries a pair of back wisps that wrap
+    # behind the body, so `wisps:` is no longer absent; they are the low back ones only, and it still has no sower tail.
+    assert "sower" not in masculine and masculine.count("{ low: true, seg:") == 2 and "wisps:" in masculine
 
 
 def test_the_feminine_look_has_astral_wisps_that_drift_on_a_box():
@@ -1270,7 +1273,9 @@ def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
     assert ATLAS.count("lowerPivot: [31, 55.5],") == 2 and "spec.lowerPivot || [31, 55.5];" in ATLAS
     assert ".atl-lw-lower { transform-origin: 31px 55.5px; }" in CSS
     assert ".nm-atlas.atl-layer-lower { transform-origin: 31px 55.5px;" in CSS
-    assert "for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * 0.4)}deg) scale(1, ${(1 + (sy - 1) * 0.5).toFixed(3)})`);" in ATLAS
+    assert "for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * shear)}deg) scale(1, ${(1 + (sy - 1) * stretch).toFixed(3)})`);" in ATLAS
+    # L173 (the owner's call): the shear and stretch come from the pose's `dress` gains, [0.4, 0.5] by default.
+    assert "const [shear, stretch] = spec.dress || [0.4, 0.5];" in ATLAS
     # Its idle loops shear about the join and never turn or slide there.
     for name in ("atl-hem-wind", "atl-skirt-idle", "atl-lower-sway", "atl-lower-sway-heavy", "atl-lower-flick"):
         frames = _keyframes(name).split("{", 1)[1]

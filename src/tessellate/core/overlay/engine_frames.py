@@ -232,6 +232,8 @@ class FramesMixin:
             return "think"
         if s == "sit":
             return "lounge" if now - self.state_at >= bh.LOUNGE_AFTER else ""
+        if s == "drift" and self.gait == "float" and abs(self.vx_px) < bh.BILLOW_SPEED * WALK_SPEED * self._scale():
+            return "float"  # L173: a slow hover has its own longer, narrower trail; a fast one glides
         if s in ("walk", "drift"):
             return "glide"
         return ""

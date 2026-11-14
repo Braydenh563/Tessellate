@@ -748,6 +748,8 @@ FLOW_LOWER = {
     "billow": (1.0, 1.9, 0.9, 0.9), "coil": (0.6, 0.7, 0.3, -0.3), "ripple_calm": (0.8, 0.5, 0.0, 0.2),
     "flutter": (0.9, 2.0, 0.0, 0.5), "pool": (0.5, 0.5, 0.6, -0.6), "hem_kick": (1.0, 1.8, 0.7, 0.8),
     "spiral": (1.0, 1.6, 0.8, 0.0), "heavy": (0.4, 0.4, 0.0, -0.8),
+    # L173 (the owner's call): a float, hovering, trails a longer, narrower hem on a slow drift than a standing idle.
+    "float": (0.9, 0.6, 0.3, 0.4),
 }
 #: A sit this long is a lounge (the lower body spreads and slackens).
 LOUNGE_AFTER = 6.0
