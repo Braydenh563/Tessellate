@@ -9562,3 +9562,27 @@ input[type="color"].wb-mixed {
   flex-wrap: wrap;
   gap: var(--space-1);
 }
+
+/* A synced block reads as a copy: the text is the way in (documents-embeds.js), and the marker in the block's own document (documents-cm.js). */
+.doc-embed-synced .doc-embed-block-body {
+  cursor: text;
+}
+
+.cm-md-blockuse {
+  margin-inline-start: var(--space-2);
+}
+
+.doc-block-use {
+  vertical-align: baseline;
+}
+
+.doc-synced-own {
+  position: fixed;
+  z-index: 2;
+  inline-size: min(22rem, calc(100vw - var(--space-4)));
+  padding: var(--space-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}

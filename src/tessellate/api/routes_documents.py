@@ -944,6 +944,47 @@ def document_backlinks(document_id: int, session: Session = Depends(get_session)
     return _backlinks(session, _existing(session, document_id))
 
 
+def _block_uses(session: Session, document: Document) -> dict[str, int]:
+    """How many times each block of this document is linked or embedded elsewhere:
+    `[[Title#^id]]` and `![[Title#^id]]` in other documents and notes (synced blocks,
+    DOCUMENTS_PLAN 26). Read from the same text the backlinks read, so there is no
+    second index to fall out of step."""
+    from tessellate.entry.manager_text import WIKI_LINK, wiki_target
+
+    title = (document.title or "").strip().lower()
+    if not title:
+        return {}
+    like = f"%{like_escape(title)}#^%"
+    texts = [row.content or "" for row in document_repo.mentioning(session, document.id, like, BACKLINK_SOURCES_MAX)]
+    texts.extend(
+        row or ""
+        for row in session.scalars(
+            select(Entry.content)
+            .where(
+                Entry.is_deleted == False,  # noqa: E712
+                Entry.is_private == False,  # noqa: E712
+                Entry.content.ilike(like, escape=LIKE_ESCAPE),
+            )
+            .limit(BACKLINK_SOURCES_MAX)
+        )
+    )
+    uses: dict[str, int] = {}
+    prefix = f"{title}#^"
+    for text in texts:
+        for match in WIKI_LINK.finditer(text):
+            target = wiki_target(match.group(1))
+            if target.lower().startswith(prefix) and len(target) > len(prefix):
+                block = target[len(prefix):]
+                uses[block] = uses.get(block, 0) + 1
+    return uses
+
+
+@router.get("/{document_id}/block-uses")
+def document_block_uses(document_id: int, session: Session = Depends(get_session)) -> dict:
+    """`{uses: {blockId: places}}`: the blocks of this document shown or linked elsewhere."""
+    return {"uses": _block_uses(session, _existing(session, document_id))}
+
+
 @router.get("/{document_id}/connections")
 def document_connections(document_id: int, session: Session = Depends(get_session)) -> dict:
     """The same Connections block a note gets, for a document.
