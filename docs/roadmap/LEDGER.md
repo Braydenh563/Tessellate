@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 9 | 5 | 1 | 0 | 19 | 15 |
+| ui-modernisation | 9 | 4 | 1 | 0 | 19 | 14 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 11 | 3 | 0 | 0 | 14 |
-| all | 466 | 439 | 130 | 2 | 181 | 1035 |
+| all | 466 | 438 | 130 | 2 | 181 | 1034 |
 
 ## graph
 
@@ -702,7 +702,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
 - [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable. Hardware audit 2026-11-14: the light theme and 390 sidebar sheet parts split to their own open row; the screen reader alone stays here
 - [ ] **L899** `ui-modernisation` blocked-hardware, S: Verify phone foot bar touch and scroll-driven animation in webview. From OPEN.md:3860. Evidence: Needs touch device and desktop webview
-- [ ] **L900** `ui-modernisation` open, S: Retake README OCR screenshot with Tesseract in current dark theme. From OPEN.md:2325. Evidence: Needs a Tesseract binary; seed-ocr.js removed 2026-10-12. Hardware audit 2026-11-14: apt installs tesseract-ocr in the container (/usr/bin/tesseract), so not device-bound
 - [ ] **L901** `ui-modernisation` blocked-hardware, S: Verify the phone action sheet (openKebabSheet) below 600 with touch and a screen reader, plus Settings jump list. From OPEN.md:623; OPEN.md:3553. Evidence: Needs real phone/touch and screen reader
 - [ ] **L902** `ui-modernisation` blocked-hardware, S: Judge phone first toggle frame timing and animation jump on a real touch device. From OPEN.md:743. Evidence: Headless emulation timing; real touch device needed to judge
 - [ ] **L903** `ui-modernisation` blocked-hardware, S: Check the dark palette on an OLED panel and other gamma, and re-run glassdepth.js. From OPEN.md:1820; OPEN.md:3392. Evidence: Needs a real OLED panel / gamma, a human look
