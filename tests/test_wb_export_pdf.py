@@ -114,3 +114,12 @@ def test_the_dialog_names_a_branch_when_opened_for_one():
     assert 'function wbExportBoard({ branch = false } = {})' in WB
     assert '"Export this branch" : "Export this board"' in body
     assert "dialogHead(heading, close)" in body and 'setAttribute("aria-label", heading)' in body
+
+
+def test_the_maps_branch_export_opens_the_dialog_for_a_branch():
+    """L267: the map's "Export this branch" opened the board's dialog titled "Export this board"."""
+    from tests._app_js import JS_DIR
+
+    js = (JS_DIR / "whiteboard-map.js").read_text(encoding="utf-8")
+    body = js[js.index("function wbMapExportBranch("):][:700]
+    assert "wbExportBoard({ branch: true })" in body

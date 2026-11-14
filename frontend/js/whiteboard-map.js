@@ -5207,7 +5207,7 @@ function wbMapExportBranch(id) {
   for (const o of branch) wbMultiSelection.add(wbMultiKey("object", o.id));
   wbApplySelectionHighlight();
   wbUpdateSelectionBar();
-  wbExportBoard();
+  wbExportBoard({ branch: true });
 }
 
 //: The menu row and the palette row: written, saved as a new document that
