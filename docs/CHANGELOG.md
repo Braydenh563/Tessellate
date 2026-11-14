@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Windows package check records the frozen app's startup: seconds to the first 200 from /health, printed to the job summary by `packaging/startup_time.py`, with no failing threshold yet (L-world-class-72).
 - Capture survives a server crash between the commit and the answer: a test raises after the commit, and the client's retry with the same key returns the one note, in the same process and after a restart (L-world-class-116).
 - Restart now goes through the launcher: on a Windows source install it starts `start.bat --desktop --restart-after PID` (venv check, repair and update included) instead of `python -m tessellate`; start.bat forwards the pid to the app (L968).
 - Desktop restart: WebView2's "Failed to unregister class Chrome_WidgetWin_0. Error = 1411" at window teardown is non-fatal (`core/window_teardown.py`), and a restarted copy that hits it starts its window again instead of leaving nothing running (L-world-class-117).
