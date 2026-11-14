@@ -3597,108 +3597,53 @@ function libraryDocsNewMount() {
   slot.replaceChildren(wrap);
 }
 
-async function renderLibraryDocuments() {
-  const list = document.getElementById("library-docs-list");
-  const empty = document.getElementById("library-docs-empty");
-  const noMatch = document.getElementById("library-docs-no-match");
-  if (!list) return;
-  const needle = (document.getElementById("library-docs-search")?.value || "")
-    .trim()
-    .toLowerCase();
+//: Scroll paging of the unfiltered list (L-world-class-68): `cursor` is the next page's.
+window.libraryDocsScroll = { page: 50, cursor: null, total: 0, gen: 0, all: false };
 
-  let docs = [];
-  showSkeletons(list, 4, "li");
-  //: The type table names a code card's kind; the library can open before
-  //: the Documents tab has asked for it.
-  await loadDocTypeTable();
-  libraryDocsNewMount();
-  try {
-    // `q` searches title *and* content server-side (routes_documents.py): 
-    // client-side filtering alone could only ever match a title, since a
-    // document's body is never sent to the browser in the list view.
-    //
-    //: Read to the end rather than one page (`apiPagedList`, documents.js).
-    //: `GET /documents` returns a page now (INBOX 117), and this list sorts
-    //: and pages *client-side* below: on one page of the server's rows,
-    //: sorting oldest-first would show the oldest of the newest two hundred
-    //: and call it the oldest, and the pager would offer pages that do not
-    //: exist. With `q` given the server counts the matches, not the table,
-    //: so the loop ends on the size of the search.
-    docs = await apiPagedList(
-      needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents",
-      DOCUMENTS_PAGE_SIZE
-    );
-  } catch {
-    list.replaceChildren();
-    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
-  } finally {
-    clearSkeletons(list);
+//: A reorder needs every document placed, so the first one on a partial list
+//: reads the rest and redraws the whole list, then asks for the move again.
+libraryDocsScroll.fill = function () {
+  libraryDocsScroll.all = true;
+  renderLibraryDocuments();
+};
+
+//: The next page when the list's end scrolls into view; a button too.
+libraryDocsScroll.watch = function (list) {
+  if (!libraryDocsScroll.cursor) return;
+  const gen = libraryDocsScroll.gen;
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "ghost small library-docs-more";
+  more.textContent = "Show more documents";
+  list.after(more);
+  let busy = false;
+  const seen = "IntersectionObserver" in window ? new IntersectionObserver((e) => e.some((x) => x.isIntersecting) && next(), { rootMargin: "200px" }) : null;
+  async function next() {
+    if (busy || gen !== libraryDocsScroll.gen || !libraryDocsScroll.cursor) return;
+    busy = true;
+    try {
+      const response = await api(`/documents?limit=${libraryDocsScroll.page}&cursor=${encodeURIComponent(libraryDocsScroll.cursor)}`);
+      const rows = await response.json();
+      if (gen !== libraryDocsScroll.gen) return;
+      libraryDocsScroll.cursor = response.headers.get("X-Next-Cursor");
+      libraryDocsAll = libraryDocsAll.concat(rows);
+      for (const doc of rows) list.appendChild(libraryDocsScroll.item(doc));
+      renderLibraryDocsPropertyFilter(libraryDocsAll);
+    } catch {
+      return;
+    } finally {
+      busy = false;
+    }
+    if (!libraryDocsScroll.cursor) {
+      seen?.disconnect();
+      more.remove();
+    }
   }
-  surfaceRecovered(empty);
-  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
-  if (!needle) {
-    libraryDocsAll = docs;
-    nounCount.dock("library-docs", docs.length, "document");
-  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
+  more.addEventListener("click", next);
+  seen?.observe(more);
+};
 
-  //: The property filter's options come from what the *search* left, so the
-  //: control offers the properties of the documents on screen rather than of
-  //: a list the reader has already narrowed past. Drawn before the rows are
-  //: filtered by it, because it is what decides whether the current choice is
-  //: still on offer at all.
-  renderLibraryDocsPropertyFilter(docs);
-  const propertyFiltered = Boolean(libraryDocsProperty);
-  if (propertyFiltered) docs = docs.filter(libraryDocsMatchesProperty);
-
-  // A reload can drop a document that was ticked (deleted, or filtered out
-  // by a new search) - drop it from the selection too, or the bar's count
-  // would go on including a row that no longer exists.
-  const liveIds = new Set(docs.map((d) => d.id));
-  for (const id of [...libraryDocsSelection]) {
-    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
-  }
-
-  list.replaceChildren();
-  const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
-  empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
-  //: One New document at a time: the empty state's own button is the action
-  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
-  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
-  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
-  noMatch?.classList.toggle("hidden", !isFilteredEmpty);
-  if (noMatch && isFilteredEmpty) {
-    //: Which of the two narrowings came up empty, said by name: "no documents
-    //: match" over a list the reader narrowed twice is an answer that does not
-    //: say which half to undo.
-    const [key, value] = libraryDocsProperty.split(LIBRARY_DOC_PROP_SEP);
-    const parts = [];
-    if (needle) parts.push(`match \u201C${needle}\u201D`);
-    if (propertyFiltered) parts.push(`have ${key} set to \u201C${value}\u201D`);
-    noMatch.textContent = `No documents ${parts.join(" and ")}.`;
-  }
-
-  // Sliced after the selection-cleanup above (which has to see every live
-  // id, not just the current page) and before the render loop below.
-  const pageBar = document.getElementById("library-docs-pagination");
-  //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
-  //: an array another reader holds.
-  docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
-  if (libraryDocsPageSize === "all" || !docs.length) {
-    pageBar?.classList.add("hidden");
-  } else {
-    const pageSize = Number(libraryDocsPageSize);
-    const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
-    libraryDocsCurrentPage = Math.min(Math.max(1, libraryDocsCurrentPage), totalPages);
-    const start = (libraryDocsCurrentPage - 1) * pageSize;
-    docs = docs.slice(start, start + pageSize);
-    pageBar?.classList.remove("hidden");
-    document.getElementById("library-docs-page-status").textContent =
-      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
-    document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
-    document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
-  }
-
-  for (const doc of docs) {
+libraryDocsScroll.item = function (doc) {
     const item = document.createElement("li");
 
     // Reported: "can't rename, multi select, or delete documents in the
@@ -3867,8 +3812,122 @@ async function renderLibraryDocuments() {
 
     open.append(top, body, menu);
     item.appendChild(open);
-    list.appendChild(item);
+    return item;
+};
+
+async function renderLibraryDocuments() {
+  const list = document.getElementById("library-docs-list");
+  const empty = document.getElementById("library-docs-empty");
+  const noMatch = document.getElementById("library-docs-no-match");
+  if (!list) return;
+  const needle = (document.getElementById("library-docs-search")?.value || "")
+    .trim()
+    .toLowerCase();
+
+  let docs = [];
+  let scrolled = false;
+  list.nextElementSibling?.classList.contains("library-docs-more") && list.nextElementSibling.remove();
+  showSkeletons(list, 4, "li");
+  //: The type table names a code card's kind; the library can open before
+  //: the Documents tab has asked for it.
+  await loadDocTypeTable();
+  libraryDocsNewMount();
+  try {
+    // `q` searches title *and* content server-side (routes_documents.py): 
+    // client-side filtering alone could only ever match a title, since a
+    // document's body is never sent to the browser in the list view.
+    //
+    //: Read to the end rather than one page (`apiPagedList`, documents.js).
+    //: `GET /documents` returns a page now (INBOX 117), and this list sorts
+    //: and pages *client-side* below: on one page of the server's rows,
+    //: sorting oldest-first would show the oldest of the newest two hundred
+    //: and call it the oldest, and the pager would offer pages that do not
+    //: exist. With `q` given the server counts the matches, not the table,
+    //: so the loop ends on the size of the search.
+    //: With nothing narrowing it (no search, no property, newest first, no page
+    //: size), one page and the rest on scroll; any narrowing reads it all.
+    libraryDocsScroll.gen++;
+    scrolled = !needle && !libraryDocsProperty && libraryDocSort() === "newest" && libraryDocsPageSize === "all" && !libraryDocsScroll.all;
+    if (scrolled) {
+      const first = await api(`/documents?limit=${libraryDocsScroll.page}`);
+      docs = await first.json();
+      Object.assign(libraryDocsScroll, { cursor: first.headers.get("X-Next-Cursor"), total: Number(first.headers.get("X-Total-Count")) || docs.length });
+    } else {
+      libraryDocsScroll.cursor = null;
+      docs = await apiPagedList(needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents", DOCUMENTS_PAGE_SIZE);
+    }
+  } catch {
+    list.replaceChildren();
+    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
+  } finally {
+    clearSkeletons(list);
   }
+  surfaceRecovered(empty);
+  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
+  if (!needle) {
+    libraryDocsAll = docs;
+    nounCount.dock("library-docs", scrolled ? libraryDocsScroll.total : docs.length, "document");
+  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
+
+  //: The property filter's options come from what the *search* left, so the
+  //: control offers the properties of the documents on screen rather than of
+  //: a list the reader has already narrowed past. Drawn before the rows are
+  //: filtered by it, because it is what decides whether the current choice is
+  //: still on offer at all.
+  renderLibraryDocsPropertyFilter(docs);
+  const propertyFiltered = Boolean(libraryDocsProperty);
+  if (propertyFiltered) docs = docs.filter(libraryDocsMatchesProperty);
+
+  // A reload can drop a document that was ticked (deleted, or filtered out
+  // by a new search) - drop it from the selection too, or the bar's count
+  // would go on including a row that no longer exists.
+  const liveIds = new Set(docs.map((d) => d.id));
+  for (const id of [...libraryDocsSelection]) {
+    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
+  }
+
+  list.replaceChildren();
+  const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
+  empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
+  //: One New document at a time: the empty state's own button is the action
+  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
+  document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  noMatch?.classList.toggle("hidden", !isFilteredEmpty);
+  if (noMatch && isFilteredEmpty) {
+    //: Which of the two narrowings came up empty, said by name: "no documents
+    //: match" over a list the reader narrowed twice is an answer that does not
+    //: say which half to undo.
+    const [key, value] = libraryDocsProperty.split(LIBRARY_DOC_PROP_SEP);
+    const parts = [];
+    if (needle) parts.push(`match \u201C${needle}\u201D`);
+    if (propertyFiltered) parts.push(`have ${key} set to \u201C${value}\u201D`);
+    noMatch.textContent = `No documents ${parts.join(" and ")}.`;
+  }
+
+  // Sliced after the selection-cleanup above (which has to see every live
+  // id, not just the current page) and before the render loop below.
+  const pageBar = document.getElementById("library-docs-pagination");
+  //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
+  //: an array another reader holds.
+  docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
+  if (libraryDocsPageSize === "all" || !docs.length) {
+    pageBar?.classList.add("hidden");
+  } else {
+    const pageSize = Number(libraryDocsPageSize);
+    const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
+    libraryDocsCurrentPage = Math.min(Math.max(1, libraryDocsCurrentPage), totalPages);
+    const start = (libraryDocsCurrentPage - 1) * pageSize;
+    docs = docs.slice(start, start + pageSize);
+    pageBar?.classList.remove("hidden");
+    document.getElementById("library-docs-page-status").textContent =
+      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
+    document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
+    document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
+  }
+
+  for (const doc of docs) list.appendChild(libraryDocsScroll.item(doc));
+  if (scrolled) libraryDocsScroll.watch(list);
   syncLibraryDocsSelectbar();
 }
 

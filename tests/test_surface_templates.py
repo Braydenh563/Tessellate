@@ -53,7 +53,7 @@ SURFACES = {
         "tab-reminders",
         ("shell-reminders.js", "reminder-*.js", "quickadd.js", "phone-shell.js", "dashboard.js", "palette.js", "wiring.js", "navigation.js"),
         ("switchTab",),
-        ("reminder-compose", "reminder-magic", "reminder-groups", "reminders-empty", "reminders-done-pagination"),
+        ("reminder-compose", "reminder-magic", "reminder-groups", "reminders-empty"),
     ),
     "timeline": (
         "tab-timeline",

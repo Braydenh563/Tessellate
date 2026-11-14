@@ -524,6 +524,7 @@ def list_reminders(
     entry_id: int | None = Query(default=None, description="Only this note's reminders"),
     document_id: int | None = Query(default=None, description="Only this document's reminders"),
     include_done: bool = True,
+    only_done: bool = Query(default=False, description="Only the ticked-off ones (the Done section pages on this)"),
     due_within_days: int | None = Query(default=None, ge=0, le=3650, description="Only reminders due within this many days (overdue ones included)"),
     session: Session = Depends(get_session),
 ) -> list[dict]:
@@ -544,7 +545,7 @@ def list_reminders(
     due_before = utcnow().replace(tzinfo=None) + timedelta(days=due_within_days) if due_within_days is not None else None
     rows, total = reminder_repo.page(
         session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id,
-        include_done=include_done, due_before=due_before,
+        include_done=include_done, only_done=only_done, due_before=due_before,
     )
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
