@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 90 | 38 | 0 | 18 | 258 |
+| world-class | 130 | 89 | 38 | 0 | 18 | 257 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 482 | 109 | 2 | 129 | 1144 |
+| all | 553 | 481 | 109 | 2 | 129 | 1143 |
 
 ## graph
 
@@ -583,7 +583,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-9** `world-class` open, S: Re-run the Settings prose length metric. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:442. Evidence: Open line in the plan's prose a session could miss. Measurement promised in D13 never re-run after the copy pass.
 - [ ] **L-world-class-12** `world-class` open, M: Run MCP tool tests and confirm outside agents' destructive calls. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:800. Evidence: Open line in the plan's prose a session could miss. Section 8 table row left open (also at 1796).
 - [ ] **L-world-class-13** `world-class` open, S: Sweep the five whiteboard menus. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:986. Evidence: Open line in the plan's prose a session could miss. Hand-off to other plans that no LEDGER row records (the SVG graph flag part is stale).
-- [ ] **L-world-class-17** `world-class` open, M: Find and replace inside a note. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3747. Evidence: Open line in the plan's prose a session could miss. Gap listed in section 25 and 27 (3975).
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
