@@ -8714,13 +8714,6 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   white-space: nowrap;
 }
 /* A row of three fills three columns rather than leaving a fourth empty. */
-.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
-  grid-template-columns: repeat(3, 1fr);
-}
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
-}
 /* The same fault in every icon-only button, smaller. Measured by
    scratchpad/ui-sweeps/inkcentre.js (each button photographed at 4x with its
    glyph painted red): 46 distinct icon buttons at 1440, their boxes centred

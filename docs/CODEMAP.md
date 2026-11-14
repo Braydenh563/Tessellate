@@ -13680,12 +13680,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Section | File:line |
 |---|---|
 | "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4380 |
-| "how are these connected?" | frontend/css/02-chat-graph.css:3700 |
+| "how are these connected?" | frontend/css/02-chat-graph.css:3688 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
-| 1. touch targets, one step, one block | frontend/css/07-whiteboard-misc.css:9637 |
+| 1. touch targets, one step, one block | frontend/css/07-whiteboard-misc.css:9529 |
 | 2. A disclosure inside a card is a header, not a button | frontend/css/08-consistency.css:332 |
-| 2. the safe area | frontend/css/07-whiteboard-misc.css:9677 |
+| 2. the safe area | frontend/css/07-whiteboard-misc.css:9569 |
 | 3. A dock is one bar, and its controls belong to it | frontend/css/08-consistency.css:504 |
 | 4. One gap between an icon and the label it leads | frontend/css/08-consistency.css:950 |
 | 5. The Write-with-AI footers are one row, primary on the right | frontend/css/08-consistency.css:1237 |
@@ -13693,61 +13693,61 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1083 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2420 |
 | A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4553 |
-| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10727 |
+| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10720 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4679 |
-| A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9119 |
+| A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9112 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:529 |
-| A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:6674 |
-| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10080 |
-| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10573 |
+| A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:6935 |
+| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10073 |
+| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10566 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8487 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3501 |
-| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10801 |
-| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10711 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3429 |
+| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10794 |
+| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10704 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2862 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/08-consistency.css:8079 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1830 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/08-consistency.css:6570 |
-| BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6329 |
+| BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6244 |
 | BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:5688 |
-| Boards, 2026-10-10 (boardmap-1010): lazy with the board, off the boot | frontend/css/library-lazy.css:5788 |
+| Boards, 2026-10-10 (boardmap-1010): lazy with the board, off the boot | frontend/css/library-lazy.css:6049 |
 | Capture: the add tools as a quiet toolbar (INBOX 395) | frontend/css/08-consistency.css:4622 |
-| Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:2842 |
-| Capture: three families, three rows | frontend/css/07-whiteboard-misc.css:4911 |
+| Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:2757 |
+| Capture: three families, three rows | frontend/css/07-whiteboard-misc.css:4826 |
 | Carbon: near-monochrome, minimal colour, maximum text contrast. | frontend/css/05-sidebars-themes.css:3307 |
 | Chat sources: every card reads from the top | frontend/css/08-consistency.css:8454 |
 | Chat: the user's bubble as a quiet surface, not an accent slab | frontend/css/08-consistency.css:4789 |
 | Columns and image options (DOCUMENTS_PLAN Phase 3 item 5) | frontend/css/09-editor.css:328 |
 | Curated palettes (Settings, Appearance, Theme) | frontend/css/05-sidebars-themes.css:3064 |
-| Documents: focus mode | frontend/css/07-whiteboard-misc.css:6156 |
+| Documents: focus mode | frontend/css/07-whiteboard-misc.css:6071 |
 | Editorial paper: off-white paper, black type, one red-orange for what | frontend/css/05-sidebars-themes.css:3465 |
 | Ember: warm oranges over a dim ground. Best in the evening. | frontend/css/05-sidebars-themes.css:3237 |
-| Files as a reading list | frontend/css/library-lazy.css:3292 |
-| Files sub-tab: rows, not cards | frontend/css/library-lazy.css:3319 |
-| Find anything | frontend/css/07-whiteboard-misc.css:10751 |
+| Files as a reading list | frontend/css/library-lazy.css:3553 |
+| Files sub-tab: rows, not cards | frontend/css/library-lazy.css:3580 |
+| Find anything | frontend/css/07-whiteboard-misc.css:10628 |
 | Find anything, de-vibecoded | frontend/css/search-lazy.css:121 |
 | Find anything: group heads read as heads | frontend/css/search-lazy.css:133 |
 | GLASS THAT DOES NOT COST WHAT IT USED TO | frontend/css/03-dashboard-widgets.css:527 |
-| GRIPS AT A CONSTANT SIZE ON SCREEN | frontend/css/07-whiteboard-misc.css:10679 |
+| GRIPS AT A CONSTANT SIZE ON SCREEN | frontend/css/07-whiteboard-misc.css:10571 |
 | Graph options: one section-head style | frontend/css/08-consistency.css:4472 |
 | Help & guide: the topics box and the "Ask the guide" box are two | frontend/css/08-consistency.css:1826 |
 | INBOX 1717: browser zoom (the window at 125 to 200 %) | frontend/css/10-responsive.css:2762 |
 | INBOX 68: the board and map previews | frontend/css/10-responsive.css:417 |
-| Icons | frontend/css/07-whiteboard-misc.css:2377 |
-| Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6423 |
+| Icons | frontend/css/07-whiteboard-misc.css:2292 |
+| Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6338 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3185 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2476 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4033 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4058 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4531 |
-| MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:732 |
+| MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:650 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3342 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3150 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:799 |
 | On this day | frontend/css/03-dashboard-widgets.css:4330 |
-| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10680 |
-| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10761 |
-| PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7978 |
+| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10673 |
+| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10754 |
+| PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7886 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3077 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:183 |
 | Phase 10, INBOX 101: concentric corners | frontend/css/10-responsive.css:209 |
@@ -13766,49 +13766,49 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2054 |
 | Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1382 |
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2843 |
-| Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4523 |
+| Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4438 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3782 |
 | Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4068 |
 | Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3272 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2241 |
 | Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1716 |
 | Quiet utilitarian: the default look (UI_MODERNISATION_PLAN decisions, | frontend/css/05-sidebars-themes.css:3415 |
-| RESPONSIVE BY DEVICE (UI_MODERNISATION_PLAN.md: Phase 9) | frontend/css/07-whiteboard-misc.css:9559 |
+| RESPONSIVE BY DEVICE (UI_MODERNISATION_PLAN.md: Phase 9) | frontend/css/07-whiteboard-misc.css:9451 |
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
-| Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:1736 |
+| Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:1997 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4484 |
-| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10277 |
+| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10270 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3380 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1456 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:675 |
 | SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5144 |
 | SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5294 |
-| SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:512 |
-| SKILLS TAB | frontend/css/07-whiteboard-misc.css:884 |
+| SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:430 |
+| SKILLS TAB | frontend/css/07-whiteboard-misc.css:799 |
 | Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3115 |
 | Sans-serif system font override (macOS fix) | frontend/css/00-tokens-shell.css:1229 |
-| Settings at phone width: nothing scrolls sideways (Phase 5.1, 390px) | frontend/css/07-whiteboard-misc.css:8071 |
-| Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7874 |
+| Settings at phone width: nothing scrolls sideways (Phase 5.1, 390px) | frontend/css/07-whiteboard-misc.css:7963 |
+| Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7782 |
 | Settings headings sit at one left edge | frontend/css/08-consistency.css:1481 |
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2254 |
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6255 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4614 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
-| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5487 |
-| THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5517 |
+| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5482 |
+| THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5432 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2343 |
-| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5534 |
+| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5529 |
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:5013 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3503 |
-| Templates (INBOX 715) | frontend/css/library-lazy.css:4923 |
+| Templates (INBOX 715) | frontend/css/library-lazy.css:5184 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:3899 |
 | The Activity popup (the Tasks popup) | frontend/css/popup-anatomy-lazy.css:113 |
-| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:10131 |
-| The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:5760 |
-| The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:5262 |
+| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:10124 |
+| The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:6021 |
+| The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:5523 |
 | The bordered card | frontend/css/popup-anatomy-lazy.css:59 |
 | The chat header stays one line (INBOX 91) | frontend/css/08-consistency.css:2288 |
-| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:10489 |
+| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:10482 |
 | The connection pill's menu button, concentric with the pill | frontend/css/08-consistency.css:8467 |
 | The documents editor: layout around the engine (DOCUMENTS_PLAN Phase 2) | frontend/css/09-editor.css:1 |
 | The five whiteboard menus (Insert, Edit, Arrange, View, Board) | frontend/css/08-consistency.css:1306 |
@@ -13824,7 +13824,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:159 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:3939 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2257 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:11033 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:11026 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:663 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1514 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1380 |
@@ -13834,27 +13834,27 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the density strip (TIMELINE_PLAN.md Phase 3) | frontend/css/06-timeline-dialogs.css:304 |
 | Timeline: the feed (TIMELINE_PLAN.md Phase 1) | frontend/css/06-timeline-dialogs.css:1 |
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:373 |
-| Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2142 |
+| Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2057 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/08-consistency.css:4823 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3294 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3222 |
 | WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2363 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:404 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:925 |
-| Wave F: command palette | frontend/css/02-chat-graph.css:1402 |
-| Wave F: mobile / PWA responsive pass | frontend/css/02-chat-graph.css:1481 |
+| Wave F: command palette | frontend/css/02-chat-graph.css:1399 |
+| Wave F: mobile / PWA responsive pass | frontend/css/02-chat-graph.css:1478 |
 | Wave G: agentic tools + skills | frontend/css/02-chat-graph.css:503 |
-| Wave H: voice + read-aloud | frontend/css/02-chat-graph.css:1516 |
-| Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1698 |
+| Wave H: voice + read-aloud | frontend/css/02-chat-graph.css:1513 |
+| Wave I: skeletons, focus, reduced motion | frontend/css/02-chat-graph.css:1695 |
 | Wave J: accent presets + appearance picker | frontend/css/05-sidebars-themes.css:1 |
-| Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1803 |
-| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2253 |
-| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2381 |
-| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2830 |
+| Wave J: generative art + note tools + undo toast | frontend/css/02-chat-graph.css:1800 |
+| Wave K: empty states, mobile tap targets, high-contrast | frontend/css/02-chat-graph.css:2250 |
+| Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2378 |
+| Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2818 |
 | Wave N: improve-writing, link suggestions, tasks | frontend/css/03-dashboard-widgets.css:1 |
 | Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:696 |
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:274 |
 | Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:333 |
-| Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6717 |
+| Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6632 |
 | Wrap and zoom sweep of the mind map and the Dashboard (owner, 2026-11-11) | frontend/css/10-responsive.css:2939 |
 | Writing pace | frontend/css/03-dashboard-widgets.css:4339 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:770 |
@@ -13865,58 +13865,58 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a board or a map as an object in a note (INBOX 309) | frontend/css/05-sidebars-themes.css:1625 |
 | a callout that folds (REDESIGN.md §R7.3 item 3) | frontend/css/05-sidebars-themes.css:1312 |
 | a card that opens does not inflate the six beside it | frontend/css/08-consistency.css:2539 |
-| a chip lane scrolls without drawing a scrollbar | frontend/css/07-whiteboard-misc.css:3970 |
-| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:9573 |
-| a disclosure arrow that matches the app's own carets | frontend/css/07-whiteboard-misc.css:3989 |
-| a disclosure is a control, so it answers the pointer | frontend/css/07-whiteboard-misc.css:3579 |
+| a chip lane scrolls without drawing a scrollbar | frontend/css/07-whiteboard-misc.css:3885 |
+| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:9566 |
+| a disclosure arrow that matches the app's own carets | frontend/css/07-whiteboard-misc.css:3904 |
+| a disclosure is a control, so it answers the pointer | frontend/css/07-whiteboard-misc.css:3494 |
 | a face drawn once (avatars.js, `nameMarkCompose`) | frontend/css/08-consistency.css:5020 |
-| a file says what it is attached to | frontend/css/07-whiteboard-misc.css:5103 |
-| a file tile shows what it has, not what it lacks | frontend/css/07-whiteboard-misc.css:3544 |
+| a file says what it is attached to | frontend/css/07-whiteboard-misc.css:5018 |
+| a file tile shows what it has, not what it lacks | frontend/css/07-whiteboard-misc.css:3459 |
 | a fold head's '?', beside its <summary> (INBOX 433) | frontend/css/08-consistency.css:3460 |
 | a generated face that moves (the owner: "can they be animated as a | frontend/css/08-consistency.css:4868 |
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/08-consistency.css:2590 |
 | a label that lost its capitals keeps its rank | frontend/css/08-consistency.css:4420 |
-| a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:4457 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:9061 |
-| a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:4826 |
-| a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8743 |
+| a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:4372 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:9322 |
+| a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:5087 |
+| a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8736 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5666 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3512 |
-| a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5178 |
+| a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5093 |
 | a note's connections: one pill each, its menu inside it | frontend/css/08-consistency.css:3274 |
 | a notice: one line the app says about what is on screen | frontend/css/08-consistency.css:2637 |
 | a poke, a look, a large view and a companion (avatars.js) | frontend/css/08-consistency.css:4987 |
 | a segmented choice inside a dialog | frontend/css/06-timeline-dialogs.css:1077 |
-| a settings group that says what depends on what | frontend/css/07-whiteboard-misc.css:4477 |
-| a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4225 |
+| a settings group that says what depends on what | frontend/css/07-whiteboard-misc.css:4392 |
+| a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4140 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:830 |
-| a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:4860 |
-| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4093 |
+| a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:5121 |
+| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4081 |
 | a traced path (§9) | frontend/css/graph-lazy.css:296 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4150 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1113 |
 | account & security | frontend/css/01-forms-settings.css:3470 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1873 |
 | activity log | frontend/css/01-forms-settings.css:2818 |
-| activity, as a timeline rather than as cards | frontend/css/library-lazy.css:4565 |
+| activity, as a timeline rather than as cards | frontend/css/library-lazy.css:4826 |
 | an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:5783 |
 | and inside a small phone | frontend/css/05-sidebars-themes.css:5577 |
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1963 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4225 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2843 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9994 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:10255 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4129 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2663 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
-| band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9734 |
+| band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9626 |
 | band 3 (600 to 820): the tab strip fits on its own row | frontend/css/10-responsive.css:20 |
-| band 3: 600-820, iPad portrait, and the sheet that band 4 inherits | frontend/css/07-whiteboard-misc.css:9821 |
+| band 3: 600-820, iPad portrait, and the sheet that band 4 inherits | frontend/css/07-whiteboard-misc.css:9713 |
 | band 4 (under 600): the editor's own targets (DOCUMENTS_PLAN Phase 6) | frontend/css/10-responsive.css:500 |
 | band 4: an icon-only chip is still a target (Phase 11) | frontend/css/10-responsive.css:555 |
-| band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10007 |
+| band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:9899 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:653 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:972 |
-| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:10982 |
+| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:11243 |
 | boot splash | frontend/css/00-tokens-shell.css:4151 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1247 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2731 |
@@ -13928,7 +13928,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat, de-vibecoded | frontend/css/08-consistency.css:3098 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2447 |
 | choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:8673 |
-| column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3790 |
+| column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3705 |
 | compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:822 |
 | curated themes | frontend/css/01-forms-settings.css:3506 |
 | dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:361 |
@@ -13936,98 +13936,98 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1508 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4259 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1951 |
-| documents tab | frontend/css/library-lazy.css:20 |
+| documents tab | frontend/css/library-lazy.css:272 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2795 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:10099 |
-| drag to delete (INBOX 660) | frontend/css/library-lazy.css:4883 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:10360 |
+| drag to delete (INBOX 660) | frontend/css/library-lazy.css:5144 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1697 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:313 |
 | empty states that sit where they should | frontend/css/08-consistency.css:4356 |
 | entry actions + links (Phase 4) | frontend/css/01-forms-settings.css:2178 |
 | entry lists | frontend/css/01-forms-settings.css:1415 |
-| every control in a dock takes the touch floor | frontend/css/07-whiteboard-misc.css:10448 |
-| every menu scrolls down, never sideways, and never runs off the page | frontend/css/07-whiteboard-misc.css:7790 |
-| fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3708 |
+| every control in a dock takes the touch floor | frontend/css/07-whiteboard-misc.css:10340 |
+| every menu scrolls down, never sideways, and never runs off the page | frontend/css/07-whiteboard-misc.css:7698 |
+| fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3623 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:650 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1422 |
 | finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5772 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2338 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2683 |
-| glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7860 |
-| graph minimap | frontend/css/02-chat-graph.css:3552 |
+| glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7768 |
+| graph minimap | frontend/css/02-chat-graph.css:3540 |
 | graph polish | frontend/css/03-dashboard-widgets.css:3489 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1519 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1543 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
-| held space pans, from any tool | frontend/css/07-whiteboard-misc.css:5034 |
+| held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4949 |
 | help | frontend/css/sketch-pad.css:613 |
 | help guide accordion | frontend/css/04-chat-dock-appearance.css:2414 |
 | help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2436 |
-| hovering a node | frontend/css/02-chat-graph.css:1239 |
-| icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3503 |
-| left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3764 |
-| line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) | frontend/css/07-whiteboard-misc.css:7991 |
+| hovering a node | frontend/css/02-chat-graph.css:1236 |
+| icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3418 |
+| left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3679 |
+| line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) | frontend/css/library-lazy.css:206 |
 | live clock (reminders tab) | frontend/css/01-forms-settings.css:3697 |
 | lock screen (Phase 4) | frontend/css/01-forms-settings.css:2057 |
-| map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8113 |
+| map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8005 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1901 |
-| meeting notes (§17) | frontend/css/02-chat-graph.css:1587 |
+| meeting notes (§17) | frontend/css/02-chat-graph.css:1584 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5926 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
-| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9858 |
+| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9851 |
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
-| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9746 |
-| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9726 |
+| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9739 |
+| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9719 |
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:254 |
 | motion: a menu that hangs off a button grows from it (INBOX 1565) | frontend/css/ui-reveal-lazy.css:28 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:446 |
-| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9826 |
+| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9819 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:9615 |
-| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9937 |
-| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9756 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:9611 |
-| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9614 |
-| motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9977 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:9876 |
+| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9930 |
+| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9749 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:9872 |
+| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9607 |
+| motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9970 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:327 |
-| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9998 |
-| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:8016 |
-| moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:6483 |
-| moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:976 |
+| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9991 |
+| moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:8277 |
+| moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:6744 |
+| moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:1237 |
 | moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal | frontend/css/library-lazy.css:16 |
-| moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:2038 |
+| moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:2299 |
 | narrow windows | frontend/css/sketch-pad.css:668 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1618 |
 | note history | frontend/css/05-sidebars-themes.css:1747 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2064 |
-| nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:4044 |
+| nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:3959 |
 | notifications | frontend/css/08-consistency.css:3797 |
-| numbered citations inside an answer | frontend/css/02-chat-graph.css:3762 |
-| one control height per Library header row | frontend/css/07-whiteboard-misc.css:5478 |
+| numbered citations inside an answer | frontend/css/02-chat-graph.css:3750 |
+| one control height per Library header row | frontend/css/07-whiteboard-misc.css:5393 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4904 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2715 |
-| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9323 |
+| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9316 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4867 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2151 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4307 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1702 |
-| page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2759 |
-| previews on the Library's document and board cards | frontend/css/library-lazy.css:2645 |
+| page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2674 |
+| previews on the Library's document and board cards | frontend/css/library-lazy.css:2906 |
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1289 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:704 |
 | reminders page polish | frontend/css/03-dashboard-widgets.css:2740 |
 | reminders, de-vibecoded | frontend/css/08-consistency.css:3166 |
-| reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3724 |
+| reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3639 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1778 |
 | results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1240 |
 | rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1239 |
 | rows instead of cards | frontend/css/00-tokens-shell.css:2331 |
-| rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1159 |
+| rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1074 |
 | saved filters | frontend/css/05-sidebars-themes.css:663 |
 | screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2715 |
-| scrollbars | frontend/css/07-whiteboard-misc.css:3658 |
+| scrollbars | frontend/css/07-whiteboard-misc.css:3573 |
 | search match highlighting | frontend/css/05-sidebars-themes.css:350 |
 | settings / model manager | frontend/css/01-forms-settings.css:2013 |
 | settings modal + logs (Wave A) | frontend/css/01-forms-settings.css:3277 |
@@ -14036,115 +14036,115 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | settings: one column for every "?", and a pane title that is a title | frontend/css/08-consistency.css:3394 |
 | sidebar | frontend/css/01-forms-settings.css:111 |
 | sidebar heading rows | frontend/css/05-sidebars-themes.css:75 |
-| space dialogs | frontend/css/07-whiteboard-misc.css:2627 |
-| space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2438 |
+| space dialogs | frontend/css/07-whiteboard-misc.css:2542 |
+| space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2353 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1961 |
 | status and foot | frontend/css/sketch-pad.css:519 |
-| sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") | frontend/css/library-lazy.css:10835 |
+| sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") | frontend/css/library-lazy.css:11096 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3549 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:842 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5428 |
-| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:10008 |
-| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9527 |
+| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:10001 |
+| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9520 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1565 |
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1268 |
-| the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3133 |
-| the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5294 |
+| the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3048 |
+| the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5209 |
 | the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2478 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:9931 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:10192 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2311 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2404 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2395 |
-| the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7636 |
+| the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7544 |
 | the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1851 |
-| the Library on a phone (BACKLOG §116.1 item 3) | frontend/css/07-whiteboard-misc.css:9161 |
-| the Library tab's floating action is not the whiteboard's | frontend/css/07-whiteboard-misc.css:10656 |
-| the Library's Activity rows (library.js, `library-${item.kind}`) | frontend/css/library-lazy.css:4561 |
+| the Library on a phone (BACKLOG §116.1 item 3) | frontend/css/07-whiteboard-misc.css:9053 |
+| the Library tab's floating action is not the whiteboard's | frontend/css/07-whiteboard-misc.css:10548 |
+| the Library's Activity rows (library.js, `library-${item.kind}`) | frontend/css/library-lazy.css:4822 |
 | the Library, de-vibecoded (the owner: "devibecode all the ui") | frontend/css/08-consistency.css:2941 |
-| the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:1277 |
-| the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6517 |
-| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:10965 |
+| the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:1538 |
+| the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6432 |
+| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:11226 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1141 |
-| the Sources panel | frontend/css/02-chat-graph.css:4292 |
+| the Sources panel | frontend/css/02-chat-graph.css:4280 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:3001 |
-| the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10496 |
+| the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10388 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:612 |
 | the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2979 |
 | the app's one help popover | frontend/css/03-dashboard-widgets.css:4077 |
-| the app's own dropdown | frontend/css/07-whiteboard-misc.css:3817 |
-| the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9752 |
+| the app's own dropdown | frontend/css/07-whiteboard-misc.css:3732 |
+| the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9644 |
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4762 |
-| the assistant's three verbs (INBOX 192) | frontend/css/library-lazy.css:872 |
+| the assistant's three verbs (INBOX 192) | frontend/css/library-lazy.css:1124 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:422 |
 | the bar's three zones | frontend/css/00-tokens-shell.css:3295 |
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:898 |
-| the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5083 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:9505 |
+| the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:4998 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:9766 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2172 |
-| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:8704 |
+| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:8965 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4343 |
-| the bottom docks | frontend/css/07-whiteboard-misc.css:9704 |
+| the bottom docks | frontend/css/07-whiteboard-misc.css:9596 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2577 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1378 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4806 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4794 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1506 |
-| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3824 |
-| the code editor: gutter + monospace | frontend/css/library-lazy.css:145 |
-| the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:6416 |
+| the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3812 |
+| the code editor: gutter + monospace | frontend/css/library-lazy.css:397 |
+| the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:6677 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:885 |
-| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5123 |
+| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5118 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
-| the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7041 |
-| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:8737 |
+| the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:6949 |
+| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:8998 |
 | the dashboard and the labels, de-vibecoded | frontend/css/08-consistency.css:3057 |
-| the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10391 |
-| the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10369 |
-| the dashboard's three densities | frontend/css/07-whiteboard-misc.css:11061 |
+| the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10283 |
+| the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10261 |
+| the dashboard's three densities | frontend/css/07-whiteboard-misc.css:10938 |
 | the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3619 |
 | the dialog | frontend/css/sketch-pad.css:9 |
-| the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9210 |
+| the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9102 |
 | the dock above the editor | frontend/css/04-chat-dock-appearance.css:4156 |
-| the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9803 |
+| the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9695 |
 | the document editor's instruments | frontend/css/05-sidebars-themes.css:4459 |
-| the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:6235 |
-| the document toolbar's two folds | frontend/css/07-whiteboard-misc.css:5401 |
-| the documents editor | frontend/css/library-lazy.css:4653 |
-| the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2242 |
-| the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:6288 |
+| the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:6496 |
+| the document toolbar's two folds | frontend/css/07-whiteboard-misc.css:5316 |
+| the documents editor | frontend/css/library-lazy.css:4914 |
+| the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2157 |
+| the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:6549 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2628 |
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4489 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1069 |
-| the file picker, in the app's own clothes | frontend/css/08-consistency.css:8961 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:9546 |
+| the file picker, in the app's own clothes | frontend/css/08-consistency.css:8954 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:9807 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3713 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3774 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2923 |
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:877 |
 | the glass card | frontend/css/00-tokens-shell.css:3822 |
-| the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:10027 |
+| the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:9919 |
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2297 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3136 |
 | the graph's options panel | frontend/css/08-consistency.css:3352 |
-| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5592 |
+| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5587 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1009 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2563 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1157 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2282 |
-| the live action line | frontend/css/02-chat-graph.css:4124 |
+| the live action line | frontend/css/02-chat-graph.css:4112 |
 | the lock screen | frontend/css/08-consistency.css:3833 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:741 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4830 |
-| the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:4336 |
-| the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8560 |
-| the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8825 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4818 |
+| the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:4597 |
+| the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8452 |
+| the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8717 |
 | the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1556 |
 | the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1715 |
 | the one control in a dock that was not the dock's height | frontend/css/10-responsive.css:402 |
 | the one generating animation | frontend/css/01-forms-settings.css:4809 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:791 |
-| the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:7821 |
+| the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:7729 |
 | the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1697 |
 | the overview strip | frontend/css/00-tokens-shell.css:1913 |
 | the pad | frontend/css/sketch-pad.css:42 |
@@ -14153,60 +14153,60 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2563 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5546 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3596 |
-| the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10263 |
+| the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10155 |
 | the quick-nav chord's guide | frontend/css/chord-guide-lazy.css:5 |
 | the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1391 |
-| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:9590 |
+| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:9583 |
 | the rich picker (rich-picker.js; DESIGN.md's recipe index) | frontend/css/05-sidebars-themes.css:882 |
-| the run list (AGENT_SKILLS_REFORM.md, Phase C) | frontend/css/07-whiteboard-misc.css:1536 |
+| the run list (AGENT_SKILLS_REFORM.md, Phase C) | frontend/css/07-whiteboard-misc.css:1451 |
 | the scroll container (§36A) | frontend/css/00-tokens-shell.css:1086 |
-| the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:9080 |
-| the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4338 |
-| the settings jump list | frontend/css/07-whiteboard-misc.css:10410 |
+| the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:9073 |
+| the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4253 |
+| the settings jump list | frontend/css/07-whiteboard-misc.css:10302 |
 | the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5561 |
 | the spine | frontend/css/00-tokens-shell.css:2281 |
-| the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8365 |
+| the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8257 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3213 |
 | the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1240 |
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3522 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1138 |
-| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4197 |
-| the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8658 |
+| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4185 |
+| the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8550 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1928 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1405 |
 | the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:4915 |
-| the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:7957 |
-| the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7679 |
+| the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:7865 |
+| the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7587 |
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3149 |
-| the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10566 |
+| the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10458 |
 | the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2783 |
 | the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4453 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3569 |
-| the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3427 |
+| the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3342 |
 | the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2565 |
-| the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7894 |
-| the whiteboard's panels are one surface each | frontend/css/07-whiteboard-misc.css:3621 |
-| the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10329 |
+| the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7802 |
+| the whiteboard's panels are one surface each | frontend/css/07-whiteboard-misc.css:3536 |
+| the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10221 |
 | the writing room | frontend/css/04-chat-dock-appearance.css:3415 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1801 |
 | tools and page | frontend/css/sketch-pad.css:412 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4180 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1598 |
-| two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9968 |
-| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10855 |
+| two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9860 |
+| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10848 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1930 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:974 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3649 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5619 |
-| what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2071 |
-| what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5437 |
-| what the answering model is | frontend/css/02-chat-graph.css:4626 |
-| what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:9981 |
-| whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2176 |
+| what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:1986 |
+| what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5352 |
+| what the answering model is | frontend/css/02-chat-graph.css:4614 |
+| what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:9873 |
+| whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2091 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
-| widget picker modal (roadmap §26) | frontend/css/07-whiteboard-misc.css:3309 |
+| widget picker modal (roadmap §26) | frontend/css/07-whiteboard-misc.css:3224 |
 
 ### Lines per stylesheet
 
@@ -14214,13 +14214,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4337 |
 | frontend/css/01-forms-settings.css | 6332 |
-| frontend/css/02-chat-graph.css | 5282 |
+| frontend/css/02-chat-graph.css | 5270 |
 | frontend/css/03-dashboard-widgets.css | 4930 |
-| frontend/css/04-chat-dock-appearance.css | 6415 |
+| frontend/css/04-chat-dock-appearance.css | 6410 |
 | frontend/css/05-sidebars-themes.css | 5931 |
-| frontend/css/06-timeline-dialogs.css | 3773 |
-| frontend/css/07-whiteboard-misc.css | 11832 |
-| frontend/css/08-consistency.css | 11059 |
+| frontend/css/06-timeline-dialogs.css | 3701 |
+| frontend/css/07-whiteboard-misc.css | 11676 |
+| frontend/css/08-consistency.css | 11052 |
 | frontend/css/09-editor.css | 983 |
 | frontend/css/10-responsive.css | 3035 |
 | frontend/css/answer-foot-lazy.css | 161 |
@@ -14254,7 +14254,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 11006 |
+| frontend/css/library-lazy.css | 11267 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |

@@ -16,6 +16,258 @@
 /* --- moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal
    specificity, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
+/* From 02-chat-graph.css */
+#wb-canvas-view.wb-entering {
+  opacity: 0;
+}
+/* The whiteboard's right-click/long-press selection menu (ROADMAP §89.12).
+   Appended straight to <body> and positioned at the pointer, same reasoning
+   as `wbOpenDockedMenu`'s reparent: a fixed pixel position rather than
+   `.action-menu`'s default `absolute; right:0` anchored to a `.menu-wrap`
+   ancestor it doesn't have here. */
+.wb-ctx-menu {
+  position: fixed;
+  z-index: 200;
+}
+
+/* From 04-chat-dock-appearance.css */
+.wb-info-card {
+  width: min(30rem, calc(100vw - var(--space-8) * 2));
+  max-height: calc(100vh - var(--space-8) * 2);
+  overflow-y: auto;
+}
+
+/* From 06-timeline-dialogs.css */
+/* **One selection recipe for every kind** (WHITEBOARD_PLAN.md decision 6:
+   "eight handles, rotate stem on top, the bounding box at `--accent` 1px; a
+   note's inner card no longer draws its own outline").
+   Measured before it: a card and a text box wore a 2px accent outline, and a
+   sketch wore a dashed 35%-opacity stroke along its own path and no box at
+   all, so the same click read as two different kinds of thing. The box is a
+   real rect now (`.wb-sketch-selection-box`, drawn by `wbRenderSketchHandles`)
+   and both are 1px. */
+.node-card.wb-selected,
+.wb-object.wb-selected {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+/* The note card's own edge stands down while the selection box is on it: two
+   rectangles two pixels apart is the "the outline on note objects differs from
+   every other object kind" report (INBOX 25), and the box is the one that
+   means something. */
+.node-card.wb-selected {
+  border-color: transparent;
+}
+.wb-card-content {
+  font-size: var(--text-lg);
+  line-height: 1.4;
+  /* **A flex item will not shrink below its own content unless it is told
+     it may.** `.wb-card` is a column flex container, and a placed note
+     carries the height the person dragged it to as an inline style. A flex
+     item's `min-height` defaults to `auto`, which resolves to its content's
+     height, so the text won a fight with a box that had a definite size:
+     the paragraphs were laid out past the card's own border, and with
+     nothing clipping them they were painted over the board.
+     Reported as "when I expand the size of notes in the whiteboard and
+     mindmap, the text goes out of the panel border" (INBOX 238). Measured
+     before the fix: a 324-character note in a 320x120 card rendered a
+     215px-tall content block, 112px of it below the card's bottom edge; a
+     408-character note in a 320x160 card spilled 254px.
+     `min-height: 0` lets the item shrink to the box, `overflow: hidden`
+     clips what does not fit. Both belong here rather than on `.wb-card`
+     itself: the eight resize handles and the rotate stem are absolutely
+     positioned children that sit *outside* the card's edge on purpose, and
+     clipping at the card would take them with it. */
+  min-height: 0;
+  overflow: hidden;
+}
+/* Reported: an attached note showed "a cut-off version" with no way to see
+   the rest. The card now renders the whole note (see renderWhiteboard in
+   app.js) and only clamps past a height cap, with a Show more/less toggle
+   below to get past it, this rule used to apply unconditionally at 3 lines
+   with nothing pointing at what was missing. Line-count rather than a pixel
+   max-height for the same reason `.entry-clamped` uses it: it scales with
+   the reading-size setting instead of pinning a font-independent height. */
+/* The collapsed state. The clipping itself is `.wb-card-content`'s job
+   above, since the card's own height is what the text has to fit inside;
+   this adds the cap for the other case, a card that has never been
+   resized and so has no definite height of its own to be clipped by.
+   Eight lines, which is what the `-webkit-line-clamp: 8` this replaces
+   showed, written as a height so that it composes with the card's box
+   instead of competing with it. The old rule could not: `-webkit-line-clamp`
+   counts lines in one inline formatting context, and this element holds
+   rendered markdown, so a note of five paragraphs was eight *paragraphs*
+   tall, not eight lines, and a card sized to hold four of them showed the
+   other four over the board.
+   `.wb-card-content-capped` is added by `renderWhiteboard` only for a card
+   with no stored height, because that is the only case this cap is for. A
+   card the person dragged to 700px is already telling the text how much
+   room it has, and capping it at eight lines as well would leave five
+   hundred pixels of empty card under a "Show more" that hides nothing. */
+.wb-card-content.wb-card-content-clamped.wb-card-content-capped {
+  max-height: calc(1.4em * 8);
+}
+.wb-card-more {
+  align-self: flex-start;
+}
+
+/* From 07-whiteboard-misc.css */
+.wb-object-image > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+}
+#whiteboard-container[data-current-tool] .wb-object.wb-object-image.wb-selected:has(> .wb-crop-frame) .wb-resize-handle { display: none; }
+.wb-crop-rect {
+  position: absolute;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 55%, transparent);
+}
+.wb-crop-grip[data-grip^="n"] { top: 0; }
+.wb-crop-grip[data-grip^="s"] { top: 100%; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { top: 50%; }
+.wb-crop-grip[data-grip$="w"] { left: 0; }
+.wb-crop-grip[data-grip$="e"] { left: 100%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { left: 50%; }
+.wb-object-frame .wb-frame-title,
+.wb-object-frame .wb-resize-handle {
+  pointer-events: auto;
+}
+#library-view-whiteboard.wb-presenting #wb-html-layer,
+#library-view-whiteboard.wb-presenting #wb-svg-layer {
+  pointer-events: none;
+}
+.wb-comment-marks {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+#library-view-whiteboard.wb-presenting .wb-comment-marks {
+  display: none;
+}
+.wb-object-text.wb-text-editing .wb-text-content {
+  cursor: text;
+  user-select: text;
+}
+/* `outline: none` above had no replacement, a keyboard/screen-reader user
+   tabbing into a whiteboard text box got no visible confirmation it was
+   focused (Web Interface Guidelines pass). The box itself already has a
+   defined border/background (see the comment above), so an inset ring on
+   the editable area reads as an ordinary text-field focus state rather than
+   a stray rectangle on the canvas. */
+.wb-object-text .wb-text-content:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.wb-object-text .wb-text-content:focus {
+  cursor: text;
+}
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
+#whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle,
+#whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+.wb-sketch-rotate-handle {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 1px;
+  cursor: grab;
+}
+.wb-link-endpoint-handle:hover,
+.wb-link-endpoint-handle:is(:focus-visible, :has(:focus-visible)) {
+  fill: var(--accent);
+}
+.wb-card.dragging {
+  transition: none;
+}
+/* The stroke takes the accent, the same answer the cards' outline gives; a
+   `drop-shadow` glow here was a filter on hover (INBOX 405). */
+#whiteboard-container[data-current-tool^="link-"] .sketch-group:hover .sketch-path,
+#whiteboard-container[data-current-tool^="link-"] .sketch-group:is(:focus-visible, :has(:focus-visible)) .sketch-path {
+  stroke: var(--accent);
+  cursor: crosshair;
+}
+/* --- line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) -------
+   The documents editor's gutter pattern, wrapped so the capture box and the
+   note edit form can carry one: the gutter takes the textarea's own metrics
+   through the CSSOM at mount, and a numbered box stops soft-wrapping so the
+   numbers stay true. */
+.gutter-wrap {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+.gutter-wrap > .doc-gutter {
+  flex: 0 0 auto;
+}
+.gutter-wrap {
+  margin-bottom: var(--space-2);
+}
+.wb-resize-handle {
+  transform: scale(var(--wb-inv-zoom));
+}
+.wb-rotate-handle {
+  transform-origin: 50% 28px;
+  transform: scale(var(--wb-inv-zoom));
+}
+.sketch-group.wb-selected .sketch-hitbox {
+  stroke: var(--accent);
+  stroke-opacity: 0.2;
+}
+.wb-link-label.wb-link-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
+.wb-layer-row {
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--row-h);
+  padding: 0 var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.wb-layer-row:hover .wb-layer-eye,
+.wb-layer-row:hover .wb-layer-lock,
+.wb-layer-row:focus-within .wb-layer-eye,
+.wb-layer-row:focus-within .wb-layer-lock,
+.wb-layer-row:focus .wb-layer-eye,
+.wb-layer-row:focus .wb-layer-lock,
+.wb-layer-row.is-hidden .wb-layer-eye,
+.wb-layer-row.is-locked .wb-layer-lock {
+  opacity: 1;
+}
+.wb-layer-row.drop-above {
+  border-top-color: var(--accent);
+}
+.wb-layer-row.drop-below {
+  border-bottom-color: var(--accent);
+}
+.wb-clone-grip:hover,
+.wb-clone-grip:is(:focus-visible, :has(:focus-visible)) {
+  fill-opacity: 1;
+}
+
 /* From 04-chat-dock-appearance.css */
 /* --- documents tab ----------------------------------------------------------- */
 /* Reported with a screenshot: "I clicked some buttons in the documents
@@ -971,6 +1223,15 @@ input.doc-title-input::placeholder {
 #doc-format-show {
     display: none;
   }
+}
+
+/* From 08-consistency.css */
+.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, 1fr);
+}
+.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
+.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
 }
 
 /* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library

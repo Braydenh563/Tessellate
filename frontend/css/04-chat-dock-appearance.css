@@ -4878,11 +4878,6 @@ span > .chip {
 }
 
 /* A map's facts and its look (`wbInfoDialog`): the same head, no foot. */
-.wb-info-card {
-  width: min(30rem, calc(100vw - var(--space-8) * 2));
-  max-height: calc(100vh - var(--space-8) * 2);
-  overflow-y: auto;
-}
 
 /* One row height for every picker row (INBOX 572): 56px holds the 2rem tile
    and the two lines with air above and below, so two rows never read as one. */
