@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
 - open_scan hits in tests/test_[a-c]* swept from 211 to 2: comments reworded, names changed, dead strict-xfail machinery with empty OPEN sets removed; tests/test_open_scan_tests_ac.py allows only strict xfails naming an open LEDGER row (L-graph-19).
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
 - Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
