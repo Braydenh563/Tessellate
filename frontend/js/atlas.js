@@ -3212,6 +3212,17 @@ function atlasDrawFigure(mood) {
         const [ox, oy] = name === "tail" ? spec.tailSegsNow[0].slice(0, 2) : name.startsWith("neb") ? [31, 52] : spec.lowerPivot || [31, 55.5];
         into.style.transformOrigin = `${ox}px ${oy}px`;
         box.appendChild(into);
+        //: Her wisps' and glints' drawings turn and drift on a box of their own: `translate` and `rotate` on an svg root are
+        //: refused by the compositor (bit 19) and ran on the main thread (L176, atlas-lazy.css `.atl-lw-drift-box`).
+        if (name.startsWith("wisps") || name.startsWith("glint")) {
+          const wrap = document.createElement("span");
+          wrap.className = "atl-lw-drift-box";
+          //: Placed inline, like the pose box it sits in: the boot sheet is at its byte cap.
+          Object.assign(wrap.style, { position: "absolute", left: "0", top: "0", width: "64px", height: "92px" });
+          Object.assign(svg.style, { position: "absolute", left: "0", top: "0", overflow: "visible" });
+          into.appendChild(wrap);
+          into = wrap;
+        }
       }
       into.appendChild(svg);
       frag.appendChild(box);
@@ -3298,6 +3309,8 @@ function atlasOrbits() {
   ATLAS_GEO.rings.forEach(({ r, glints }, k) => {
     const frame = document.createElement("span");
     frame.className = `atl-orbit atl-orbit-${k}`;
+    //: 1px, not an empty box: the compositor refuses a loop on one (L138); `transform-origin` is 0 0, so nothing moves.
+    frame.style.width = frame.style.height = "1px";
     frame.style.transform = `translate(${cx}px, ${cy}px) rotate(${tilt}deg) scale(1, ${flat})`;
     for (const [deg, drawn, kind] of glints) {
       //: A ring's star glint goes round with it too, a small pale body (INBOX
@@ -3306,6 +3319,7 @@ function atlasOrbits() {
       const size = star ? drawn * 0.7 : drawn;
       const arm = document.createElement("span");
       arm.className = "atl-orbit-arm";
+      arm.style.width = arm.style.height = "1px";
       arm.style.setProperty("--atl-at", String(+(deg / 360).toFixed(4)));
       arm.style.rotate = `${deg}deg`;
       const body = document.createElement("span");
@@ -3369,7 +3383,8 @@ function atlasRings(look, front) {
     const R = r + 3;
     const frame = document.createElement("span");
     frame.className = `atl-ring-frame atl-ring-frame-${k}`;
-    place(frame, 0, 0, 0, 0);
+    //: 1px, not 0: the compositor takes no loop on an empty box (L138, `.atl-orbit` in 08-consistency.css).
+    place(frame, 0, 0, 1, 1);
     frame.style.transformOrigin = "0 0";
     frame.style.transform = `translate(${cx}px, ${cy}px) rotate(${tilt}deg) scale(1, ${flat})`;
     const clip = document.createElement("span");

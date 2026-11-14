@@ -13,6 +13,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 - An Ask answer can become flashcards or a reminder. A long note's card opens with a one-line gist. Find anything shows a one-line answer from your notes above the results when the query is a question; a reminder notification says which note it is about; the light rewrite spells out "b4" and similar shorthand.
 
+- Atlas at rest costs a third less: her wisps and glints drift on a box around the drawing (the compositor refused `translate` and `rotate` on an svg root) and the ring and planet pivots are 1px, not empty boxes; style recalcs a minute 3,075 to 2,019, layouts 3,027 to 1,989, main thread 18.6 to 13.1 s (median of 3, one look, headless, loaded container; L138, L176, L231).
 - Chat recount batch 1: digest counts link to their notes, no repeated sentences in a row, remark bubbles wait while you type and open their source, and the command palette previews a typed act.
 - Chat: a past window no longer misreads "the day before yesterday" as yesterday or "the last week of October" as last week; a 60-phrasing window gate (60 of 60 read right, gate 95%) pins both readers; the limits and labels rows (L-chat-116, 117, 127) are pinned by tests. L-chat-128.
 - Chat: the first hello of a chat takes the saved name after a comma too ("Good afternoon, Sam, and welcome back.") and not in the Neutral voice; "back" restores the answer before the last, "start over", "stop" and "never mind" end the thread (L-chat-114, L-chat-115).
