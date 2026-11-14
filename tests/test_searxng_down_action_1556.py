@@ -107,7 +107,8 @@ def test_the_panel_and_the_tool_chip_draw_the_same_row():
 
 def test_the_row_says_why_it_cannot_start_and_offers_the_settings():
     web = _read("web-results.js")
-    row = web.split("async function searxngDownRow(")[1].split("\nasync function ")[0].split("\nfunction ")[0]
+    #: web-results.js is one IIFE now (lazy module), so the next function is indented: cut at any depth.
+    row = re.split(r"\n\s*(?:async )?function ", web.split("async function searxngDownRow(")[1])[0]
     assert "onOtherDevice()" in row and "THIS_COMPUTER_ONLY" in row
     assert "info.backend" in row and "Web search settings" in row
     assert "Install SearXNG" in row and "Start SearXNG" in row

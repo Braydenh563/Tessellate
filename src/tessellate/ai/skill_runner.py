@@ -46,6 +46,7 @@ from collections.abc import Callable, Iterator
 from itertools import chain
 from dataclasses import dataclass
 from dataclasses import field as dc_field
+from typing import NamedTuple
 
 from sqlalchemy.orm import Session
 
@@ -865,6 +866,9 @@ class _RunState:
     #: What the run knows so far, as ids rather than prose (`_absorb`).
     known: dict
     started: bool = False
+    #: The runner helpers a scanning step calls (`skill_scan` reads them here,
+    #: so it never imports this module back).
+    kit: object = None
     #: The index the run did not get past, None when it finished.
     stopped_at: int | None = None
     paused: bool = False
@@ -1260,6 +1264,7 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
     _count_step()
     st = _begin_step(setup, index, step)
     if st.spec.get("scan") or st.spec.get("reads") == "candidates":
+        run.kit = run.kit or _Kit(_absorb, _halt, _done_event, _step_answer)
         yield from scan_steps.run(setup, run, st)
         return _after_done(setup, run, index) if st.outcome == "done" else "stop"
     while st.outcome is None:
@@ -1678,3 +1683,12 @@ def _collect(events: Iterator[dict], changes: list[dict], state: dict) -> Iterat
             _absorb_change(state, event["change"])
         _absorb(state, event)
         yield event
+
+
+class _Kit(NamedTuple):
+    """What a scanning step needs from the runner (`skill_scan`)."""
+
+    absorb: object
+    halt: object
+    done_event: object
+    step_answer: object

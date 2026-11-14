@@ -46,11 +46,9 @@ def _first_line(text: str) -> str:
 
 
 def _call(session, run, name: str, args: dict) -> tuple[dict, dict]:
-    from tessellate.ai import skill_runner
-
     result = tools.execute_tool(session, name, args)
     event = _tool_event(name, args, result)
-    skill_runner._absorb(run.known, event)
+    run.kit.absorb(run.known, event)
     return result, event
 
 
@@ -97,8 +95,8 @@ def _reads(setup, run) -> Iterator[dict]:
 
 def run(setup, run, st) -> Iterator[dict]:
     """Run one scanning or reading step; sets `st.outcome` like a model step."""
-    from tessellate.ai import skill_runner
-
+    #: The runner's own helpers arrive on `run.kit` (absorb, halt, done_event,
+    #: step_answer): importing skill_runner here was an import cycle.
     if not run.started:
         yield setup.plan
         run.started = True
@@ -106,7 +104,7 @@ def run(setup, run, st) -> Iterator[dict]:
     if st.spec.get("scan"):
         got, error = yield from _scan(setup, run, st)
         if got is None:
-            yield skill_runner._halt(run, st, "failed", f"list_notes failed: {error}", replannable=False)
+            yield run.kit.halt(run, st, "failed", f"list_notes failed: {error}", replannable=False)
             return
         matched, seen, truncated = got
         run.known["candidates"] = [note_id for note_id, _line in matched]
@@ -117,8 +115,8 @@ def run(setup, run, st) -> Iterator[dict]:
         answer = _scan_answer(matched, seen, truncated, st.spec["scan"])
     else:
         answer = yield from _reads(setup, run)
-    yield skill_runner._done_event(st, [], set(st.spec.get("tools") or []))
-    run.step_history.append({"question": st.step, "answer": skill_runner._step_answer(answer, [], st.truncated)})
+    yield run.kit.done_event(st, [], set(st.spec.get("tools") or []))
+    run.step_history.append({"question": st.step, "answer": run.kit.step_answer(answer, [], st.truncated)})
     st.outcome = "done"
 
 

@@ -66,6 +66,10 @@ CALLED_FLOOR = {
     #: and not through `p.color` and `p.hue`.
     "p5": 10,
     "flashtext": 2,
+    #: L-chat-64: named holidays; plurals and a or an; close names.
+    "holidays": 1,
+    "inflect": 2,
+    "rapidfuzz": 1,
     "stencils": 7,
     "mammoth": 2,
     #: initialize, render and parse, in the diagram frame (mermaid-frame.js).
