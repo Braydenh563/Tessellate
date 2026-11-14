@@ -402,7 +402,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   font-size: var(--text-sm);
 }
 
-
 /* Below the width the script draws it at, never: see NOTES_RAIL_MIN_WIDTH in
    notes-list.js, which has to name the same number. The note's own
    Connections sheet is the way in there. */
@@ -2749,7 +2748,6 @@ span > .chip {
   transform: none;
 }
 
-
 .scroll-top:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -3131,26 +3129,6 @@ span > .chip {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
-}
-
-/* A picture: cropped to fill a fixed frame, so a portrait photo, a wide
-   screenshot and a deleted file all make the same cell. */
-.note-picker-thumb {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--divider);
-  background: var(--surface-2);
-}
-
-.note-picker-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 /* On a picture the check sits in its corner, on an opaque ground so it reads
@@ -3850,7 +3828,6 @@ span > .chip {
   grid-template-columns: 1fr !important;
 }
 
-
 /* Belt to the `:has()` braces above: whatever hides the sidebar (a class this
    file never heard of, `display: none` from a focus mode, the element removed
    outright), the editor is pinned to the second track and can never be
@@ -4094,12 +4071,6 @@ span > .chip {
   opacity: 1;
 }
 
-@media (hover: none) {
-  .doc-item-menu {
-    opacity: 1;
-  }
-}
-
 /* The Library's own Documents sub-tab (#library-docs-list): a *different*
    list from the editor's sidebar above, sharing only the .doc-list layout
    class. It had no styling of its own at all beyond that, so every row fell
@@ -4147,7 +4118,6 @@ span > .chip {
   gap: var(--space-3);
   flex: 0 0 auto;
 }
-
 
 /* Same hover/focus reveal as `.menu-wrap.library-card-menu`
    (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
@@ -4428,7 +4398,6 @@ span > .chip {
   align-items: center;
   gap: var(--space-3);
 }
-
 
 /* `.card > .row.space-between > .row` (01-forms-settings.css) sets
    `flex: 0 0 auto` on any inner row of a card head, which is right for a
@@ -4749,7 +4718,6 @@ span > .chip {
 .doc-gutter.hidden {
   display: none;
 }
-
 
 /* The Phase 0 backdrop's rules lived here: `.doc-backdrop` (a div behind the
    textarea holding the same text) and `#doc-content.has-backdrop` (the
@@ -5183,7 +5151,6 @@ span > .chip {
   flex: 1;
 }
 
-
 /* **The picker dialog** (`pickerDialog`, selection.js; INBOX 548): every
    "choose from your notebook" dialog on the dialog recipes, the head, the
    `.seg` of sources, the `.search-field`, the rich picker's rows (or the
@@ -5195,13 +5162,6 @@ span > .chip {
   flex-direction: column;
   gap: var(--space-4);
   width: min(34rem, calc(100vw - var(--space-8) * 2));
-}
-
-/* A map's facts and its look (`wbInfoDialog`): the same head, no foot. */
-.wb-info-card {
-  width: min(30rem, calc(100vw - var(--space-8) * 2));
-  max-height: calc(100vh - var(--space-8) * 2);
-  overflow-y: auto;
 }
 
 /* One row height for every picker row (INBOX 572): 56px holds the 2rem tile
@@ -5587,7 +5547,6 @@ span > .chip {
   gap: var(--space-2);
 }
 
-
 /* The activity-mode picker in the notifications panel head. `select` is
    `width: 100%` by default in this app (see the base rule), which in a row of
    small buttons makes it the whole row, the same trap `.chat-toolbar select`
@@ -5597,7 +5556,6 @@ span > .chip {
   margin: 0;
   min-width: 0;
 }
-
 
 /* The header's context meter. A button, because it does something (opens
    Compress): and coloured only when it is telling you something: quiet under
@@ -5717,7 +5675,6 @@ input.doc-title-input::placeholder {
   color: var(--muted);
 }
 
-
 /* **The turn's status belongs with the turn, not under the box you type in.**
 
    Reported: "maybe remove the little 'the model is writing' line at the bottom
@@ -5765,8 +5722,6 @@ input.doc-title-input::placeholder {
     gap: var(--space-1);
   }
 }
-
-
 
 /* The picker's source strip. It sits above the search box because it decides
    what that box searches -- reading order and cause order agree here. A
@@ -6139,7 +6094,6 @@ button.ghost.tour-row:is(:focus-visible, :has(:focus-visible)) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 
 /* The whole tour (the pane's one filled button) and Replay the welcome, the
    quiet one beside it; the sections are the list under them. */

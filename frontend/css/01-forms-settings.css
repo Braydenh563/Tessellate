@@ -2475,14 +2475,6 @@ button:not(.ghost) > .spinner {
   overflow: hidden;
   white-space: nowrap;
 }
-.library-file-meta.bookmark-meta > span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.library-file-meta.bookmark-meta > .library-file-meta-sep {
-  flex: 0 0 auto;
-}
 
 /* The dot makes the mark a positioned box, which paints over the tick that
    shares its grid cell (the tick takes the mark's place on hover, 08-
@@ -2493,17 +2485,6 @@ button:not(.ghost) > .spinner {
 }
 .bookmark-row:not(.is-read) .bookmark-title {
   font-weight: 650;
-}
-.bookmark-row:not(.is-read) .bookmark-mark::after {
-  content: "";
-  position: absolute;
-  top: calc(var(--space-1) * -0.5);
-  right: calc(var(--space-1) * -0.5);
-  width: var(--space-3);
-  height: var(--space-3);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-pill);
-  background: var(--accent);
 }
 .bookmark-count {
   margin: 0 0 var(--space-2);
@@ -2522,9 +2503,6 @@ button:not(.ghost) > .spinner {
   display: flex;
   flex-direction: column;
   gap: var(--row-gap);
-}
-.bookmark-site.is-folded .contents-caret {
-  transform: rotate(-90deg);
 }
 /* The details panel a row opens in place: it spans the row's grid under the
    title, and stays out of the way of the controls above it. */
@@ -2550,19 +2528,6 @@ button:not(.ghost) > .spinner {
 .bookmark-row.is-open {
   background: var(--surface-2);
   border-color: var(--divider);
-}
-/* **Deleted deliberately, and this comment is the reason.**
-   `#bookmark-search { margin-bottom: var(--space-3) }` dates from when this
-   field sat alone above the list. It now sits in `.library-toolbar`, which is
-   `display: flex; align-items: center`, and centring aligns *margin* boxes,
-   so a 6px bottom margin lifted the input 3px above the sort control beside
-   it. Measured: search at y=291.1, sort at y=294.1, both 36.8px tall. That is
-   the reported "Links sub-tab filter and search aren't aligned", and an ID
-   selector is why the toolbar's own `margin: 0` could not win. The row's
-   `gap` provides the spacing this margin used to. */
-.bookmark-attach-picker {
-  width: auto;
-  max-width: 16rem;
 }
 .bookmark-group-chips {
   flex-wrap: wrap;
@@ -2616,10 +2581,6 @@ button:not(.ghost) > .spinner {
   color: var(--muted);
   transition: transform var(--ui-base) var(--ease-out);
 }
-.contents-section.is-folded .contents-caret,
-.contents-doc:not(.is-open) .contents-doc-caret {
-  transform: rotate(-90deg);
-}
 
 /* --- motion: one vocabulary for what opens and folds (INBOX 1506 B) ---------
    Three durations (`--ui-fast` 120, `--ui-base` 180, `--ui-slow` 240 ms), one
@@ -2670,9 +2631,6 @@ button:not(.ghost) > .spinner {
   font-size: var(--text-md);
   text-decoration: none;
 }
-.contents-row {
-  min-height: var(--row-h);
-}
 
 /* The mark: a 2rem square, the picture or the kind's glyph centred in it. */
 .contents-thumb,
@@ -2700,11 +2658,6 @@ button:not(.ghost) > .spinner {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-}
-.library-file-meta.contents-meta > span:last-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .contents-heading-row {

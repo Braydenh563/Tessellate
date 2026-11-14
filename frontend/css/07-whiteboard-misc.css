@@ -32,14 +32,6 @@
   opacity: 0.75;
   pointer-events: none;
 }
-.wb-object-image > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: inherit;
-  pointer-events: none;
-}
 /* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
    box's own shadow, so nothing needs a blur. */
 .wb-crop-frame {
@@ -47,12 +39,6 @@
   left: 50%;
   top: 50%;
   pointer-events: none;
-}
-#whiteboard-container[data-current-tool] .wb-object.wb-object-image.wb-selected:has(> .wb-crop-frame) .wb-resize-handle { display: none; }
-.wb-crop-rect {
-  position: absolute;
-  border: 1.5px solid var(--accent);
-  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 55%, transparent);
 }
 .wb-crop-grip {
   position: absolute;
@@ -66,13 +52,6 @@
   touch-action: none;
   transform: translate(-50%, -50%);
 }
-.wb-crop-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.wb-crop-grip[data-grip^="n"] { top: 0; }
-.wb-crop-grip[data-grip^="s"] { top: 100%; }
-.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { top: 50%; }
-.wb-crop-grip[data-grip$="w"] { left: 0; }
-.wb-crop-grip[data-grip$="e"] { left: 100%; }
-.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { left: 50%; }
 .wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
 .wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
@@ -117,9 +96,6 @@
 .wb-object-frame .wb-frame-title {
   min-width: min(100%, calc(var(--target-min) * var(--wb-inv-zoom)));
   border-top: max(0px, calc(var(--target-min) * var(--wb-inv-zoom) - var(--text-sm) * 1.4 - var(--space-1))) solid transparent;
-}
-.wb-object-frame.wb-text-editing .wb-frame-title {
-  border-top-width: 0;
 }
 .wb-object-frame.wb-text-editing .wb-frame-title {
   color: var(--text);
@@ -196,15 +172,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.wb-present-pick-caret {
-  position: absolute;
-  inset-inline-end: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-}
-.wb-present-pick-check {
-  margin-inline-start: auto;
-}
 .action-menu .menu-item.wb-present-pick-row {
   font-weight: 600;
 }
@@ -213,19 +180,6 @@
   flex: 1 0 100%;
   order: -1;
   width: auto;
-}
-.wb-present-pick-slot.is-wide .wb-present-pick-title {
-  white-space: normal;
-  max-height: 9em;
-  overflow-y: auto;
-}
-/* A locked item (WHITEBOARD_PLAN decision 15) lets the pointer through, all
-   of it: a sketch's hit path and a frame's title set their own
-   `pointer-events`, so the children are named too, and the id keeps this
-   above every per-part rule. The board's right-click menu unlocks. */
-#whiteboard-container .wb-locked,
-#whiteboard-container .wb-locked * {
-  pointer-events: none;
 }
 /* An item's comment count (WHITEBOARD_PLAN decision 17): a zero-size pin on
    the item's top-right corner, scaled back to screen size like a grip
@@ -237,10 +191,6 @@
   top: 0;
   width: 0;
   height: 0;
-}
-
-#library-view-whiteboard.wb-presenting .wb-comment-marks {
-  display: none;
 }
 
 /* The thread, in the help popover's shell: the comments, then a quiet "New
@@ -267,10 +217,6 @@
      the same gesture. Both come back under `.wb-text-editing` below. */
   cursor: inherit;
   user-select: none;
-}
-.wb-object-text.wb-text-editing .wb-text-content {
-  cursor: text;
-  user-select: text;
 }
 /* `outline: none` above had no replacement, a keyboard/screen-reader user
    tabbing into a whiteboard text box got no visible confirmation it was
@@ -312,11 +258,6 @@
 }
 .wb-object-grip:active {
   cursor: grabbing;
-}
-/* Editing text has to win over the box's own drag: a click that starts a
-   text selection must not also move the box out from under it. */
-.wb-object-text .wb-text-content:focus {
-  cursor: text;
 }
 .wb-resize-handle {
   position: absolute;
@@ -426,16 +367,6 @@
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
 }
-.wb-rotate-handle::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: calc(50% - 1px);
-  width: 2px;
-  height: 16px;
-  background: var(--accent);
-  opacity: 0.6;
-}
 .wb-rotate-handle:active {
   cursor: grabbing;
 }
@@ -456,12 +387,6 @@
      stem, so that edge could not be dragged at all (INBOX 262). */
   pointer-events: none;
 }
-.wb-sketch-rotate-handle {
-  fill: var(--accent);
-  stroke: var(--card);
-  stroke-width: 1px;
-  cursor: grab;
-}
 /* A link's own two endpoints, round, not the square resize handles above,
    so the two read as a different kind of control (reattach/detach an end,
    not resize a shape). */
@@ -473,10 +398,6 @@
   /* The overlay SVG root is `pointer-events: none` (it must never block a
      card underneath it): each handle opts back in individually. */
   pointer-events: auto;
-}
-.wb-link-endpoint-handle:hover,
-.wb-link-endpoint-handle:is(:focus-visible, :has(:focus-visible)) {
-  fill: var(--accent);
 }
 
 .wb-resize-handle[data-handle="nw"] {
@@ -848,14 +769,6 @@ aside[data-resizable].sidebar-collapsed {
 .library-image-grid > .skeleton {
   height: 11.75rem;
   margin-bottom: 0;
-}
-/* While placeholders are up the grid keeps the tile layout whichever kind is
-   chosen: a press on Files before the first answer flipped the six
-   placeholders from a grid to a column (a shift of 0.44). */
-.library-image-grid.library-file-rows[aria-busy="true"] {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: var(--space-6);
 }
 .timeline-feed > .skeleton {
   height: 2.6rem;
@@ -3849,10 +3762,6 @@ button.setting-hint-toggle {
    either has real content, the label comes back and the field reads as
    normal. `:has()` is already used in this codebase, and the empty state is
    already announced by a class, so nothing new has to be tracked in JS. */
-.library-image-field:has(.library-image-caption-empty) .library-image-field-label,
-.library-image-field:has(.library-image-ocr-empty) .library-image-field-label {
-  display: none;
-}
 /* **A composer's buttons sit on its bottom edge, however tall it grows.**
    Reported: "the chat controls go out of alignment when I extend the text
    bar". Reproduced by setting the textarea to 260px and reading every
@@ -5577,9 +5486,6 @@ img.board-minimap {
 .library-grid:not(.library-list) .library-board-card > :is(.board-minimap, .library-card-meta) {
   grid-column: 1 / -1;
 }
-.library-list .library-board-card .library-card-menu {
-  margin-left: auto;
-}
 /* `rect.`: a stored thumbnail is an <img> carrying the size class
    `board-minimap-card` (pick-row.js `mapRaster`), and this rule faded the
    whole picture to 0.55, grey on the light theme (the owner, 2026-10-27). */
@@ -6096,23 +6002,6 @@ rect.board-minimap-card,
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-}
-.whiteboard-container.wb-space-pan > .wb-pan-shield {
-  display: block;
-  cursor: grab;
-}
-.whiteboard-container.wb-space-pan > .wb-pan-shield:active,
-/* The middle-button pan (INBOX 183). It is the same gesture as the two
-   above and had no cursor of its own, so the board moved under an arrow
-   pointer. `wb-mid-pan` is set on the mousedown that prevents the browser's
-   autoscroll and cleared on the release, and `wb-hand-pan` on the first move
-   of any pointer pan (handleWbZoom), see initWhiteboard. The shield also
-   takes the browser's text selection out of the gesture: a middle drag must
-   not leave a trail of selected text behind it. */
-.whiteboard-container.wb-mid-pan > .wb-pan-shield,
-.whiteboard-container.wb-hand-pan > .wb-pan-shield {
-  display: block;
-  cursor: grabbing;
 }
 /* --- the board panel, sorted into the questions it answers ---------------
    Nine controls used to sit in one flow with nothing separating them, so they
@@ -7820,73 +7709,6 @@ button.connection-row:is(:hover, :focus-visible) {
      the tile's own width. It wraps rather than truncating. */
   white-space: normal;
 }
-/* **The thumbnail is positioned, not a grid item.** Reported with a
-   screenshot: "the file preview squished and elements in the wrong place", 
-   the title on the first line, then a 108px hole, then the size line. The
-   thumb spanned every row (`grid-row: 1 / -1`) at a fixed 9rem, and a
-   spanning item's height is handed to the tracks it spans: measured, the
-   whole 144px landed in row 1, whose own content is a 36px title. Taking
-   the picture out of flow leaves the first column as a plain 7rem spacer
-   and every row exactly as tall as its text. */
-.library-file-rows .library-image-tile > .library-file-thumb,
-.library-file-rows .library-image-tile > img {
-  position: absolute;
-  top: var(--space-3);
-  left: var(--space-3);
-  width: 7rem;
-  height: 9rem;
-  object-fit: cover;
-}
-.library-file-rows .library-image-tile > *:not(img):not(.library-file-thumb) {
-  grid-column: 2;
-  width: 100%;
-  text-align: left;
-}
-/* The selection tick sits on the thumbnail's corner, as it does on an image
-   tile: it had been a grid child in the text column, stretched to the full
-   row width by the rule above, so its focus ring drew a 1000px box across
-   the title (reported: "the selected box on the file title isn't even on the
-   actual title"). */
-.library-file-rows .library-image-tile > input.library-tile-tick {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: start;
-  /* Above `.library-file-page` (the PDF's rendered first page, absolute at
-     z-index 1, later in the DOM). This rule set 1 too and lost the tie on
-     order -- reported as the tick showing in the filetype view and not the
-     preview view. Only a PDF has a page render, which is why .md/.txt rows
-     never showed it. */
-  z-index: 3;
-  align-self: start;
-  width: auto;
-  margin: var(--space-1);
-}
-/* **One line of facts.** Reported (INBOX 115): "the files rows in files
-   still needs some ui improvement and redesign, and better function", with a
-   screenshot of a row holding a name, a meta strip, a reading pill and a lot
-   of empty space. Measured at 1440: the text column is 1218px wide and held
-   five full-width blocks, each carrying one short string, so one row stood
-   257px tall and four files filled the window.
-   What the file is, whether it has been read and where it is used are three
-   statements of fact about one file at one rank, so they sit on one wrapping
-   line. The name above them and the description below keep their own lines,
-   which is the difference the old stack could not express: five blocks at one
-   rank say nothing about what matters most. `flex-wrap` gives the stack back
-   on a narrow window rather than clipping the line. */
-.library-file-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--space-4);
-  row-gap: var(--space-2);
-}
-/* The three children size to their own content inside that line: the rows
-   layout stretches every direct child of a tile to the full column, and a
-   `width: 100%` fact would put each one back on its own line. */
-.library-file-facts > * {
-  width: auto;
-  max-width: 100%;
-}
 /* The usage row was written as a *section* of the image card: a rule above
    it, an inset, and rhythm on both sides. On one line beside the meta strip
    that rule becomes a 333px hairline hanging in the middle of the row, and
@@ -7910,26 +7732,6 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-2);
   font-size: var(--text-xs);
   color: var(--muted);
-}
-/* **One height for the facts line, chip or no chip.** The count is a 16.8px
-   line of text and the fold is a 31.6px chip, so a card with a reading stood
-   14.8px taller inside than the card beside it without one, and the grid paid
-   that out as a shorter photograph on one of the two. 2rem is the chip's own
-   height, so the line reserves it once and every card's foot is the same
-   whichever of the two facts it has. Only the Images cards: a Files row's facts
-   line is a full-width strip with a reading badge and a button in it, and has
-   its own height already. */
-.library-image-meta {
-  min-height: 2rem;
-}
-/* **The fold opens downwards, not sideways.** Closed, the disclosure is a chip
-   sized to its words and sits on the facts line beside the count. Open, its
-   body is a transcription, which wants the card's full width: a flex item
-   cannot both hug its summary and hold a paragraph, so an open one takes a
-   line of its own (`flex-basis: 100%` wraps it under the count) and the card
-   grows by the reading rather than by the layout. */
-.library-image-meta > .library-image-reading[open] {
-  flex: 1 1 100%;
 }
 
 .library-file-meta-sep {
@@ -8233,13 +8035,6 @@ button.connection-row:is(:hover, :focus-visible) {
 #whiteboard-container[data-current-tool^="link-"] .wb-object:is(:focus-visible, :has(:focus-visible)) {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  cursor: crosshair;
-}
-/* The stroke takes the accent, the same answer the cards' outline gives; a
-   `drop-shadow` glow here was a filter on hover (INBOX 405). */
-#whiteboard-container[data-current-tool^="link-"] .sketch-group:hover .sketch-path,
-#whiteboard-container[data-current-tool^="link-"] .sketch-group:is(:focus-visible, :has(:focus-visible)) .sketch-path {
-  stroke: var(--accent);
   cursor: crosshair;
 }
 /* Board menu rows: name left, control right, one height. */
@@ -9022,12 +8817,6 @@ button.connection-row:is(:hover, :focus-visible) {
   background: var(--inner);
   font-size: var(--text-sm);
 }
-.wb-text-content.wb-text-md > :first-child {
-  margin-top: 0;
-}
-.wb-text-content.wb-text-md > :last-child {
-  margin-bottom: 0;
-}
 
 @media (max-width: 1399.98px) {
   [data-dock-name="notes"] .dock-word {
@@ -9144,12 +8933,6 @@ button.connection-row:is(:hover, :focus-visible) {
 .help-chat-msg.is-assistant > .msg-role {
   margin-bottom: var(--space-2);
   font-style: normal;
-}
-.wb-text-content.wb-text-md h1,
-.wb-text-content.wb-text-md h2,
-.wb-text-content.wb-text-md h3 {
-  font-size: 1.25em;
-  margin: 0.3em 0;
 }
 
 /* `.contents-head-actions` lived here: a wrapper that existed to hold the
@@ -9579,22 +9362,10 @@ header#top-bar > #tab-bar {
    note edit form can carry one: the gutter takes the textarea's own metrics
    through the CSSOM at mount, and a numbered box stops soft-wrapping so the
    numbers stay true. */
-.gutter-wrap {
-  display: flex;
-  align-items: stretch;
-  min-width: 0;
-}
 /* The numbers keep their width: only the text box gives way (owner,
    0.3.32: a preview beside the box crushed the column to a sliver). */
 .gutter-wrap > .doc-gutter {
   flex: 0 0 auto;
-}
-.gutter-wrap > textarea {
-  flex: 1 1 auto;
-  min-width: 0;
-  /* The base input rule's bottom margin would leave the gutter 10px taller
-     than the box it numbers (measured 122 vs 112); the wrap owns the gap. */
-  margin-bottom: 0;
 }
 /* **A gutter numbers a box, so a hidden box has no numbers.** Reported (INBOX
    119, with a screenshot): "when I press preview in the capture a thought
@@ -9902,93 +9673,12 @@ input[type="file"] {
   border-left-width: 6px;
   box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in srgb, var(--wb-branch-edge) 45%, transparent);
 }
-.wb-map-node.wb-map-core .wb-map-text {
-  font-weight: 600;
-  font-size: 1.15em;
-}
-/* **The third of the three ways: the shape** (INBOX 201, MINDMAP_PLAN §12.5's
-   "one toggle in the strip sets all of them"). Marking a topic core gives it
-   the ellipse, which is the shape item 177's own list named for a core idea,
-   without writing anything into the node's `shape` field.
-   `:not([data-shape])` is what keeps the toggle from being a thief: a topic
-   someone put in a box or on a pill by hand keeps the shape they chose and
-   still gains the fill, the size and the star. Only a topic that never had an
-   opinion about its shape takes the ellipse, which is the "rounded" default
-   every topic starts on. The three declarations are the ellipse rule's own,
-   repeated rather than shared through a selector list because the two rules
-   answer different questions and the ellipse one is reached by a value in the
-   strip's own picker. */
-.wb-map-node.wb-map-core:not([data-shape]) {
-  border-radius: 50%;
-  padding-inline: var(--space-7);
-  text-align: center;
-}
-/* The star, the count badge and the chevron on a core node all sit on the fill,
-   so they take the same ink as the label rather than the muted grey they wear
-   on a card. */
-.wb-map-node.wb-map-core .wb-map-node-icon,
-.wb-map-node.wb-map-core .wb-map-count {
-  color: var(--wb-core-ink);
-}
-/* A map that grows downward carries the spine on the top edge (see below), so
-   a core node thickens that one instead. */
-.wb-map-down .wb-map-node.wb-map-core {
-  border-left-width: 2px;
-  border-top-width: 6px;
-}
 /* A map that grows downward reads top-to-bottom, so the spine belongs on the
    top edge: a left bar on a node whose parent is directly above it points at
    nothing. */
 .wb-map-down .wb-map-node {
   border-left-width: 1.5px;
   border-top: 4px solid var(--wb-branch);
-}
-/* **The bar itself, per topic** (MINDMAP_PLAN.md item 177, "per-node left
-   edge: solid, dashed or none"). The spine is the strongest thing a node
-   wears, and on a dense map of one colour it is also the loudest: a person
-   who wants the boxes to recede needs to be able to quiet it on the topic
-   rather than only on the whole board.
-   Placed after the core and the downward rules on purpose. All three write
-   the same edge at the same specificity, so source order decides, and the
-   explicit choice must win over the weight a mark gave it: a core node whose
-   bar is set to none is still core, in its type, its outline and its ring.
-   `:not([data-shape="none"])` because a plain topic has no box at all
-   (`border-color: transparent` above): a colour written here would paint an
-   edge back on the one shape whose whole point is not having one, and the
-   width would move its label by the 2.5px that rule keeps still. */
-.wb-map-node[data-spine="dashed"]:not([data-shape="none"]) {
-  border-left-style: dashed;
-}
-/* **A dash's gaps show what is behind the topic, not the topic's ground**
-   (INBOX 581, the owner: "the solid and dashed bar are exactly the same on
-   mind map nodes"). A border's gaps show the element's own background, which
-   runs under the border by default; a core topic's ground is its branch
-   colour (`.wb-map-core`), the bar's colour, so its dashed bar was a solid
-   one: measured, 0% of the lines across the bar were gaps on a core ellipse
-   or pill, Dashed or Solid. Clipped to the padding box, the gaps show the
-   board. A filled topic's tint is the same colour weaker, and is covered by
-   the same rule. Every side of the box, since the bar moves to the top on a
-   downward map and to the right on a mirrored topic. */
-.wb-map-node[data-spine="dashed"]:not([data-shape="none"]) {
-  background-clip: padding-box;
-}
-.wb-map-node[data-spine="none"]:not([data-shape="none"]) {
-  /* Not `border-left: none`: the node's own comment says the layout, the edge
-     anchors and the ring's centring all measure this box, so the bar becomes
-     the same hairline the other three sides are rather than disappearing. */
-  border-left-width: 1.5px;
-  border-left-color: color-mix(in srgb, var(--wb-branch-edge) 55%, transparent);
-}
-/* Downward, where the bar is the top edge (see above), the choice has to move
-   with it: the left edge goes back to the hairline it is in that layout and
-   the top carries the dash or the quiet. */
-.wb-map-down .wb-map-node[data-spine="dashed"]:not([data-shape="none"]) {
-  border-left-style: solid;
-  border-top-style: dashed;
-}
-.wb-map-down .wb-map-node[data-spine="none"]:not([data-shape="none"]) {
-  border-top-width: 1.5px;
-  border-top-color: color-mix(in srgb, var(--wb-branch-edge) 55%, transparent);
 }
 /* --- the spine on the other edge (MINDMAP_PLAN.md §13e) ---------------------
    A topic whose parent is to its *right* carries the branch bar on its right
@@ -10002,18 +9692,6 @@ input[type="file"] {
 .wb-map-node.wb-map-node-mirrored {
   border-left-width: 1.5px;
   border-right: 4px solid var(--wb-branch);
-}
-.wb-map-node.wb-map-core.wb-map-node-mirrored {
-  border-left-width: 2px;
-  border-right-width: 6px;
-}
-.wb-map-node-mirrored[data-spine="dashed"]:not([data-shape="none"]) {
-  border-left-style: solid;
-  border-right-style: dashed;
-}
-.wb-map-node-mirrored[data-spine="none"]:not([data-shape="none"]) {
-  border-right-width: 1.5px;
-  border-right-color: color-mix(in srgb, var(--wb-branch-edge) 55%, transparent);
 }
 /* **Em, not a token.** Reported: "the icons in mindmap nodes dont resize with
    the text or size of the node". A topic's own text size is written on the
@@ -10038,20 +9716,6 @@ input[type="file"] {
      needs would only add a band of empty card under a short one. */
   min-height: 0;
 }
-.wb-map-node[data-body="picture"] .wb-map-node-body {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-1);
-}
-/* The caption. Smaller than the topic's own text and centred under the
-   picture, which is what makes the two read as one card rather than as a
-   label that happens to have an image over it. `em`, so a topic given a text
-   size of its own (the Aa grip writes a px `font-size` on the node) scales its
-   caption with it, the same rule the icon beside it follows. */
-.wb-map-node[data-body="picture"] .wb-map-text {
-  text-align: center;
-  font-size: 0.9em;
-}
 .wb-map-text {
   min-width: 0;
   flex: 1 1 auto;
@@ -10069,10 +9733,6 @@ input[type="file"] {
 .wb-map-text[data-grammar] {
   text-decoration: underline double var(--warn);
 }
-.wb-map-node.wb-text-editing .wb-map-text {
-  cursor: text;
-  user-select: text;
-}
 .wb-map-text:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -10087,12 +9747,6 @@ input[type="file"] {
   color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-.wb-map-down .wb-map-collapse {
-  right: 50%;
-  top: auto;
-  bottom: calc(var(--space-6) * -1);
-  translate: 50% 0;
 }
 /* The node's two "grow the map here" buttons: `+` (a topic) and the library
    one (a node pointing at a real note/document/file/link). They are an
@@ -10170,14 +9824,6 @@ input[type="file"] {
   z-index: 5;
   transform: scale(var(--wb-inv-zoom));
   display: none;
-}
-.wb-map-resize-grip::before {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  background: var(--wb-branch);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-sm);
 }
 /* The focus ring is the app's own (every button has it). */
 #whiteboard-container[data-current-tool="select"] .wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip,
@@ -10373,23 +10019,12 @@ input[type="file"] {
 .wb-map-strip-menu .wb-menu-controls {
   gap: 2px;
 }
-.wb-map-picks {
-  grid-row: 1;
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 2px;
-}
 /* The icon slot's eleven and None are a palette, six to a row like the
    swatch picker's (DESIGN.md "A choice among colours"): two rows by design,
    not a run that wrapped, with More icons and emoji under them. */
 .wb-map-picks.is-grid {
   display: grid;
   grid-template-columns: repeat(6, var(--wb-map-pick));
-}
-.wb-map-strip-menu .wb-menu-row.has-map-pick-grid {
-  align-items: start;
-  row-gap: var(--space-2);
 }
 .wb-map-strip-menu .wb-map-icon-more {
   grid-row: 2;
@@ -10487,27 +10122,9 @@ input[type="file"] {
   font-size: var(--text-xs);
   line-height: 1.6;
 }
-/* **One selected look and one reset look** (INBOX 814, the owner's
-   screenshot: the chosen option drawn as an accent fill, a bordered box and
-   a grey fill, the resets in two colours). The look a following topic shows
-   is the chosen one, so it takes the chosen state above (`.is-inherited` is
-   a hook, not a second look); what separates "you chose it" from "the map
-   gives it" is the reset beside the row, which can be pressed only while
-   the topic has a look of its own. Every reset in the door and on the bar
-   (`#wb-map-reset`) is the same quiet glyph in `--muted`, the row-actions
-   recipe's ink, and goes to the full ink on hover. */
-.wb-map-strip-menu .wb-menu-row .wb-map-pick.is-inherited {
-  background: var(--accent-surface);
-  color: var(--on-accent);
-  border-color: transparent;
-  box-shadow: none;
-}
 .wb-map-pick-follow,
 #wb-map-reset {
   color: var(--muted);
-}
-.wb-map-pick-follow {
-  margin-inline-start: var(--space-1);
 }
 .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):hover,
 .wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:not(:disabled):is(:focus-visible, :has(:focus-visible)),
@@ -10523,24 +10140,6 @@ input[type="file"] {
 .wb-map-size-stepper > .stepper-btn {
   width: var(--target-min);
   height: var(--target-min);
-}
-.wb-map-size-stepper .stepper-unit {
-  min-width: 2rem;
-}
-/* At 44px a row of six previews is 278px, which leaves no room for a name
-   column inside the 21rem door: below the tablet band and under touch the
-   name goes over its previews instead, and the previews still never wrap. */
-@media (max-width: 819.98px), (pointer: coarse) {
-  .wb-map-strip-menu .wb-menu-row.has-map-picks {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: var(--space-1);
-  }
-  .wb-map-strip-menu .wb-menu-row > .wb-map-picks {
-    grid-row: 2;
-  }
-  .wb-map-strip-menu .wb-map-icon-more {
-    grid-row: 3;
-  }
 }
 
 /* The rows themselves stand on the same height as a menu item, so a label
@@ -10755,57 +10354,6 @@ input[type="file"] {
 .wb-map-radial-caption:empty {
   display: none;
 }
-/* Alt held: the two add sectors are the two remove sectors, so they say so,
-   in the app's own danger colour on the sector itself: a gesture that
-   deletes a branch must not look like the one that grows it. */
-.wb-map-radial .wb-map-radial-slot.wb-map-radial-danger {
-  color: var(--error);
-  background: color-mix(in srgb, var(--error) 10%, var(--modal-bg-opaque));
-}
-@media (hover: hover) {
-  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:hover,
-  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:is(:focus-visible, :has(:focus-visible)) {
-    background: color-mix(in srgb, var(--error) 20%, var(--modal-bg-opaque));
-  }
-}
-/* What the line into a topic says (§12.1 items 3 and 4). Drawn in the edge
-   layer, which takes no pointer events, so the label is a caption rather than
-   a control: it is edited from the radial that put it there. Stroked in the
-   canvas colour under the fill (`paint-order`) so it stays readable where it
-   crosses its own line. */
-.wb-map-edge-label {
-  fill: var(--ink);
-  stroke: var(--card);
-  stroke-width: 3;
-  paint-order: stroke;
-  font-size: var(--text-xs);
-  text-anchor: middle;
-  pointer-events: none;
-}
-/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
-.wb-map-edge-label.wb-map-edge-label-chip {
-  stroke-width: 12;
-  stroke-linejoin: round;
-}
-/* What the strip sets, drawn on the node. Weight and slant sit on the text
-   rather than on the node so a node's icon and its count badge keep their own
-   weight; alignment is the text's own, which is the only thing on the node
-   that can be anywhere but the leading edge. */
-.wb-map-node.wb-map-bold .wb-map-text {
-  font-weight: 700;
-}
-.wb-map-node.wb-map-italic .wb-map-text {
-  font-style: italic;
-}
-.wb-map-node[data-align="center"] .wb-map-text {
-  text-align: center;
-}
-.wb-map-node[data-align="right"] .wb-map-text {
-  text-align: right;
-}
-.wb-map-node[data-align="left"] .wb-map-text {
-  text-align: left;
-}
 /* The note itself, in the help popover's shell (`.help-popover`): one plain
    text box the width of the popover, and one quiet line under it. */
 .help-popover.wb-map-note-peek {
@@ -10837,27 +10385,6 @@ input[type="file"] {
   color: inherit;
 }
 
-/* A pinned node keeps the place it was dragged to when the map is tidied
-   (`wbMapPinOnDrag`). Stated on the node, quietly, because "why did Tidy
-   move everything except this one" is otherwise unanswerable from the screen. */
-.wb-map-pinned {
-  border-style: dashed;
-}
-/* **The pin dashes the box, never the bar** (INBOX 569, the owner: "it says
-   the edge bar is solid even though it is dashed"). The rule above, one class
-   and later in the file, beat the bar's own `border-left: 4px solid`, so a
-   dragged topic's Solid bar was drawn dashed while the Shape menu said Solid
-   (measured: 44% of the bar's pixels were gaps). The bar's side keeps what
-   the Edge bar chooses; the hairline sides carry the pin's dash, including
-   the left edge on a downward map and on a mirrored topic, which the bar's
-   own rules set solid. `mmdoc1005-spinebar.js` checks every combination. */
-.wb-map-node.wb-map-pinned:not([data-spine]):not(.wb-map-node-mirrored) {
-  border-left-style: solid;
-}
-.wb-map-down .wb-map-node.wb-map-pinned:not([data-shape="none"]),
-.wb-map-node.wb-map-pinned.wb-map-node-mirrored:not([data-shape="none"]) {
-  border-left-style: dashed;
-}
 /* The arrowhead takes the branch's own colour: `context-stroke` is what
    makes one marker serve every colour without a marker per branch. */
 #wb-map-arrow path {
@@ -12001,11 +11528,6 @@ header#top-bar {
   box-shadow: none;
 }
 
-/* A row of three fills three columns rather than leaving a fourth empty. */
-.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 /* A dock's controls folded into its ⋯ below 1100 ("Sort and view"): the
    label and the zone above, and a lone folded control here, on the same
    column (menus.js at 1024 and 390: 4.6 to 5.2px left of the rows). */
@@ -12808,11 +12330,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   color: var(--accent-text);
 }
 
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
-}
-
 #entry-list .entry-links .unlink > i {
   display: block;
   line-height: 1;
@@ -13576,26 +13093,6 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
   margin-inline: calc(-1 * var(--space-3) - 1px);
 }
 
-.library-file-rows .library-image-tile > .library-file-facts > * + *::before {
-  content: "\00b7";
-  color: var(--muted);
-  margin-inline: var(--space-2) 0;
-}
-
-.library-file-rows .library-image-tile .library-read-open:hover,
-.library-file-rows .library-image-tile .library-read-open:is(:focus-visible, :has(:focus-visible)) {
-  background: none;
-}
-
-/* On a phone the line wraps at every group (measured at 390: three lines),
-   and a dot that opens a line separates it from nothing. Each group is its
-   own line there, which is separation enough. */
-@media (max-width: 599.98px) {
-  .library-file-rows .library-image-tile > .library-file-facts > * + *::before {
-    content: none;
-  }
-}
-
 .timeline-row-meta > .chip.category::before {
   content: "";
   flex: 0 0 auto;
@@ -13966,38 +13463,7 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
      object's top edge, so the foot is the anchor: scaling about the handle's
      own centre would leave the stem too short to reach, which is the shape of
      bug that makes a control look detached at one zoom level only. */
-/* 10px box centred on its corner by the `-5px` offsets above, so `center` is
-   the corner in layer space and the scale leaves it there. */
-.wb-resize-handle {
-  transform: scale(var(--wb-inv-zoom));
-}
-/* 12px circle at `top: -28px` with a 16px stem below it: the stem's foot sits
-   28px down from the handle's own top edge, which is exactly the object's top
-   edge, and that is the origin the scale has to keep still. Written as a
-   length rather than a percentage because the foot is outside the handle's own
-   border box, where `100%` cannot reach. */
-.wb-rotate-handle {
-  transform-origin: 50% 28px;
-  transform: scale(var(--wb-inv-zoom));
-}
 
-/* **A swept-up shape looks selected.** Reported: "shapes like circles and
-   lines dont visibly select and show anchor points when I highlight select
-   over them". A one-item sweep now promotes to the single selection, which
-   draws the bbox and its eight anchors (`wbRenderSketchHandles`); a sweep
-   that caught several has no one box to hang anchors off, and until now had
-   no decoration at all, so half a dozen selected shapes looked exactly like
-   none.
-   The glow goes on the hit band rather than the shape's own stroke: the band
-   already follows the path (an ellipse's curve, a line's diagonal) and is 20px
-   wide, so making it faintly visible reads as a halo round the shape without
-   touching the colour, dash or weight the shape was drawn with. A
-   `stroke-dasharray` here would redraw the shape as dashed, which is the map's
-   own grammar for a cross-link. */
-.sketch-group.wb-selected .sketch-hitbox {
-  stroke: var(--accent);
-  stroke-opacity: 0.2;
-}
 /* A connector's label (WHITEBOARD_PLAN decision 13; `wbPaintLinkLabel`): the
    map's edge-label recipe (`.wb-map-edge-label`) one step larger, because a
    board's labels are read at a board's zoom: the ink, stroked in the card
@@ -14010,11 +13476,6 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
   font-family: var(--font-sans);
   font-size: var(--text-md);
   user-select: none;
-}
-/* The chip: a wide halo in the card colour behind the words, round-cornered. */
-.wb-link-label.wb-link-label-chip {
-  stroke-width: 12;
-  stroke-linejoin: round;
 }
 /* --- Find anything -----------------------------------------------------------
    The universal search dialog (app.js, `openFinder`). INBOX 270. It shares the
@@ -15636,21 +15097,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   }
 }
 
-.wb-export-overlay .seg.wb-export-seg > button {
-  justify-content: center;
-  min-height: var(--target-min);
-  min-width: 0;
-  padding-inline: var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-  /* One line per tile (the owner: "the image library text clashes with the
-     button card borders"): a wrapped label sat on the tile's edge. */
-  white-space: nowrap;
-}
-
 @media (max-width: 599.98px) {
   /* Customise keeps its glyph on a phone (INBOX 488); the word stays its
      accessible name through the button's own label. A dock's Filter does the
@@ -15967,14 +15413,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   background: var(--accent-soft);
   font-weight: 600;
 }
-.wb-layer-row:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-.wb-layer-row.is-hidden .wb-layer-name {
-  color: var(--muted);
-  text-decoration: line-through;
-}
 
 .chat-toolbar .chat-headline > :first-child {
   flex: 0 1 auto;
@@ -16157,28 +15595,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.library-file-rows .library-image-tile .library-read-open {
-  min-height: 0;
-  height: auto;
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-  font-size: inherit;
-  line-height: inherit;
-  font-weight: 500;
-  color: var(--accent-text);
-  gap: var(--space-1);
-}
-
-/* A finger still needs the target the pointer no longer does; the line
-   grows to hold it rather than the link shrinking under a thumb. */
-@media (pointer: coarse) {
-  .library-file-rows .library-image-tile .library-read-open {
-    min-height: var(--target-min);
-  }
 }
 
 /* 15. The timeline's facts in the note meta row's grammar (app.js, the
@@ -16480,16 +15896,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     flex: 1;
   }
 }
-.wb-layer-row:hover .wb-layer-eye,
-.wb-layer-row:hover .wb-layer-lock,
-.wb-layer-row:focus-within .wb-layer-eye,
-.wb-layer-row:focus-within .wb-layer-lock,
-.wb-layer-row:focus .wb-layer-eye,
-.wb-layer-row:focus .wb-layer-lock,
-.wb-layer-row.is-hidden .wb-layer-eye,
-.wb-layer-row.is-locked .wb-layer-lock {
-  opacity: 1;
-}
 /* An eye or lock the layer decides: shown, but quiet, since a press does not
    change it. */
 .wb-layer-row .is-by-layer {
@@ -16542,10 +15948,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   cursor: pointer;
   pointer-events: auto;
   transition: fill-opacity var(--motion-fast) var(--ease-out);
-}
-.wb-clone-grip:hover,
-.wb-clone-grip:is(:focus-visible, :has(:focus-visible)) {
-  fill-opacity: 1;
 }
 
 /* Pages (decision 22): the frames in presentation order, on the Layers
@@ -20484,13 +19886,6 @@ header#top-bar[data-scrolled="1"],
 #entry-list li .entry-content {
   -webkit-user-select: text;
   user-select: text;
-}
-
-/* An image tile's kebab sits on the photo, where a bare glyph is lost (the
-   owner, 2026-10-26: "the image meatball buttons are really hard to see").
-   The chip itself is in library-lazy.css (2026-10-27). */
-.library-image-tile .library-image-actions {
-  opacity: 1;
 }
 
 /* The capture bar is its own zone (INBOX 1572; tests/test_capture_bar_zone_a30s.py): a divider and a gap below the dock, one quiet row, its card over the list. */

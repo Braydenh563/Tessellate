@@ -2249,15 +2249,6 @@ button.scroll-row-arrow[hidden] {
   -webkit-line-clamp: 8;
   line-clamp: 8;
 }
-/* Markdown rendered inline inside a preview must not change the line height, 
-   a clamp counts lines, and a card whose emphasis made it taller would break
-   the row it sits in. */
-.library-card-preview code {
-  font-size: 0.92em;
-  padding: 0 0.2em;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-}
 .library-card-meta {
   display: flex;
   justify-content: space-between;
@@ -2550,42 +2541,10 @@ button.scroll-row-arrow[hidden] {
    gallery uses the app's own `kebabMenu` now, whose open state lives on a
    `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
    set in the row's main rule above. */
-/* **The row is a container, so only its buttons may take a click.** Reported:
-   "I cant click the select radio buttons in any of the images in the library
-   images subtab." Measured with `elementFromPoint` at the centre of each
-   tick: every one returned `DIV.library-image-actions`, not the checkbox.
-   The cause is the `left` that was added to this row (see its main rule
-   above) so the buttons could wrap instead of running off the tile's edge on
-   a narrow window. `left` *and* `right` stretch the box across the full width
-   of the tile, and the tick sits at the tile's top-left: under a transparent
-   part of a box at `z-index: 2` that still takes every pointer event landing
-   on it.
-   Raising the tick's own z-index would fix this one control and leave the
-   rest of that strip of thumbnail dead to clicks. `pointer-events` fixes the
-   class: the row itself stops being a target, each control inside it goes
-   back to being one, and the thumbnail underneath is clickable again along
-   its whole top edge. */
-.library-image-actions {
-  pointer-events: none;
-}
-.library-image-actions > * {
-  pointer-events: auto;
-}
 .library-image-tile:hover .library-image-actions,
 .library-image-tile:focus-within .library-image-actions,
 .library-image-actions:focus-within {
   opacity: 1;
-}
-/* A device with no hover has no way to trigger the reveal above at all, 
-   touch is binary (tap = click), it never sends the hover a mouse would.
-   Left at opacity:0 there, rename/delete were unreachable except by
-   tabbing to them with a keyboard, which is exactly what got reported as
-   "broken" rather than "hidden". Always visible where hovering isn't a
-   thing; unchanged, hover-revealed behaviour everywhere a mouse is. */
-@media (hover: none) {
-  .library-image-actions {
-    opacity: 1;
-  }
 }
 .library-image-tile img {
   display: block;
@@ -2723,17 +2682,6 @@ button.scroll-row-arrow[hidden] {
      nothing at all. */
   max-height: 9rem;
 }
-/* Filling a frame whose height its siblings decide. `inset: 0` against the
-   frame's own positioning context resolves at whatever height flex ends up
-   giving it; `height: 100%` would need that height to be definite before
-   layout, which a growing flex item's is not. */
-.library-image-frame > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 /* **The focus ring on the card's own action** (INBOX 164). The thumbnail is the
    control that opens the picture, and it is the control a keyboard now reaches
    (`role="button"`, `tabindex="0"`, set in library.js, where the reasons are):
@@ -2825,30 +2773,6 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-4);
   padding: 0 var(--space-4) var(--space-4);
 }
-/* **One disclosure, on the app's own <details> recipe** (details.tool-chip,
-   02-chat-graph.css): the marker is replaced by a caret that turns, and the
-   body is hidden by an author rule when closed rather than by trusting the
-   user-agent one (the bug that comment records). Two clamped transcriptions,
-   each with a label and a Show more, were four of the card's six ranks of
-   information; folded away they are one row. */
-.library-image-reading > summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-  list-style: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  /* The resting tonal fill and hairline come from the app's own
-     `summary:not(.icon-only):not(.icon-button)` rule (07-whiteboard-misc.css)
-     and are deliberately left alone: that rule exists because a disclosure
-     that looks like a line of text is a control nobody finds, and this is the
-     same object in a different place. Overriding it here would need a
-     two-class selector to beat that one, which is the shape of a decision
-     being quietly remade. */
-}
 .library-image-reading > summary:hover,
 .library-image-reading > summary:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
@@ -2877,29 +2801,6 @@ button.scroll-row-arrow[hidden] {
 .library-image-card-fold > .library-image-reading-body {
   max-height: 11rem;
   overflow-y: auto;
-}
-.library-image-reading > summary::-webkit-details-marker {
-  display: none;
-}
-/* **The caret leads the label, it does not trail the row.** Reported on
-   2026-09-09: "the text extracted from this file dropdown doesnt even have a
-   dropdown arrow and make sure it is aligned with the text". It had one, as
-   `::after` with `margin-left: auto`: on an image tile that put it a few
-   pixels past a short label, but a Files row's summary is the full width of
-   the row, so the caret sat about 300px away from the words it belongs to,
-   with nothing between them. A marker that far from its label is not a marker.
-   Leading, which is also what every other disclosure in this app does (the
-   chat's `.agent-step` and `details.tool-chip` both draw theirs before the
-   text) and therefore what DESIGN.md's <details> recipe means. */
-.library-image-reading > summary::before {
-  content: "\e13a"; /* ph-caret-right */
-  font-family: Phosphor, sans-serif;
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  flex: 0 0 auto;
-  opacity: 0.7;
-  transition: transform var(--ui-base) var(--ease-out);
 }
 .library-image-reading:not([open]) > .library-image-reading-body {
   display: none;
@@ -3047,9 +2948,6 @@ button.scroll-row-arrow[hidden] {
 ) {
   transition: none;
 }
-.library-image-caption-empty {
-  font-style: italic;
-}
 
 .library-image-caption-input {
   width: 100%;
@@ -3085,9 +2983,6 @@ button.scroll-row-arrow[hidden] {
   overflow-wrap: anywhere;
   max-height: 18rem;
   overflow-y: auto;
-}
-.library-image-ocr-empty {
-  font-style: italic;
 }
 .library-image-vision-ocr.library-image-vision-ocr-clamped {
   display: -webkit-box;

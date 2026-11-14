@@ -4771,15 +4771,6 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   margin-top: 0;
 }
 
-.library-grid:not(.library-list) .library-card > .library-card-thumb {
-  width: calc(100% + var(--space-6) * 2);
-  max-width: none;
-  height: 8rem;
-  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0;
-  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-  border-bottom: 1px solid var(--border);
-}
-
 /* `@media all`, not `(prefers-reduced-motion: no-preference)`, on purpose:
    the same call renderEmblem makes for the logo (app.js). These faces are
    the app's own decoration with its own switches (Avatar animation, Reduce

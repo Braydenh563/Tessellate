@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- CSS (L-ui-modernisation-31): 148 more Library-only boot rules moved to library-lazy.css (cascade-checked against every later boot rule and every lazy sheet; a computed-style A/B on the same DOM at 390, 700, 900 and 1280 showed no change); boot CSS gzip 163,239 to 160,279 and its cap 164,300 to 160,800. 231 rules that share properties with a later rule stay (L-ui-modernisation-49).
 - CSS (L-ui-modernisation-30): of the 196 class names the unused-names test flags, 180 are built by template at a live call site (Atlas parts, moods, plan steps, heat cells, ...) and stay; 16 had no builder and went with their 8 rules and 3 selector parts (the old SVG graph's edge, node and label variants, `.cm-run-row.is-input`/`.is-result`, `.nm-foot-l`/`-r`, `.nm-tentacle-late`; 143 lines). Boot CSS gzip 163,438 to 163,239 bytes; the cap in `test_css_unused_names.py` 196 to 180.
 - CI red after the base merge fixed at the cause: one Alt+Enter row, the dock declares its own control height, Settings builds its body before reading a control, an empty board query removed.
 - Boot scripts back under their cap: a file paste or drop, a reminder's bin, repeat and outcome load on the press.

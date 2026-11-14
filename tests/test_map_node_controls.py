@@ -26,7 +26,9 @@ def _html() -> str:
 
 
 def _css() -> str:
-    return (ROOT / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    return (ROOT / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+        ROOT / "css" / "library-lazy.css"
+    ).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in the lazy sheet
 
 
 def _body(file: str, name: str) -> str:
