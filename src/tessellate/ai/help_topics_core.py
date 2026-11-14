@@ -298,7 +298,8 @@ HELP_TOPICS: list[dict] = [
             "thumbnails); a picture set in one place looks the same in all. "
             "The status bar counts characters, words, lines and reading time as "
             "the note composer does (an emoji is one character); a code file "
-            "shows lines, characters and the language instead. The type button (and New's arrow) lists file types; Markdown is rich text, "
+            "shows lines, characters and the language instead. From 200 lines up the caret's "
+            "readout adds how far through the document it is (Ln 200, Col 1 · 50%). The type button (and New's arrow) lists file types; Markdown is rich text, "
             "a .mmd diagram opens beside its picture (Library, Diagrams). Search "
             'documents reads a window: "harbor last week" finds the harbor '
             "ones edited last week."

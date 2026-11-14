@@ -55764,3 +55764,7 @@ From DOCUMENTS_PLAN section 15 item 3 (L-documents-66). The plan's earlier text,
 > Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-66 (held-modifier underline).
 
 Built: the live plugin (`docLivePlugin`, documents-cm.js) holds one handler on window keydown, keyup and blur and on document visibilitychange, removed in `destroy`; it toggles `doc-mod-held` on the editor root, and the theme thickens `.cm-md-link` to 2px (offset 2px). The chip was already underlined, so the cue is thickness. Measured (t646-mod.js, 1440x900): idle thickness auto, Ctrl down 2px, released auto, held then blur auto.
+
+## Moved from the plans, 2026-11-14 (how far through)
+
+From DOCUMENTS_PLAN section 17d (L-documents-67). The plan's earlier text: "One half of 17d was   decided against there (a "how far through" figure, the scrollbar and the   outline mark already say it). Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-67 (how far through)." The 2026-10-04 decision above (nothing added to the chrome) is kept: no element was added. The caret readout (`renderDocCaret`, `docCaretStats`) appends ` · NN%` (caret line of the last line, from the surface's own `lineAt`, no text pass) from 200 lines up. Measured (t646-through.js, 1440x900): 50 lines `Ln 25, Col 1` 69 px wide; 400 lines at line 200 `Ln 200, Col 1 · 50%` 114 px wide; at 390 px the readout is hidden by the status bar as before, so the figure shows on wide windows only.

@@ -798,10 +798,8 @@ compared with.
   2026-09-23"); `scratchpad/ui-sweeps/docblocks17c.js` is the gate.
 - **17d and 17e: built 2026-10-04.** Moved to HISTORY.md ("Moved from the
   plans, 2026-10-04 (the documents tails)"); `doccrumbview.js` and
-  `contrast.js` with `ONLY=document` are the gates. One half of 17d was
-  decided against there (a "how far through" figure, the scrollbar and the
-  outline mark already say it).
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-67 (how far through).
+  `contrast.js` with `ONLY=document` are the gates. The "how far through" half of 17d was
+  built 2026-11-14 (HISTORY.md, "Moved from the plans, 2026-11-14 (how far through)").
 
 **Not verified, and to be taken first by whoever opens this.** 17a to 17c
 are measured at 1280, 1440, 1920 and 2560, light and dark, in the default
