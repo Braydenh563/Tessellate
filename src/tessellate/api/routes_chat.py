@@ -2031,17 +2031,6 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
         yield _event({"type": "answer", "delta": heads})
 
 
-def _with_cited(answer: str, grounding: list[dict], scrubber, allowed: set[int]) -> list[dict]:  # noqa: ANN001
-    """The rows the model's own `[Sn]` marks name (L-chat-59), beside the
-    similarity rows, in answer order; a mark is the model's word for which
-    sentence it used, so it counts even where the words drifted."""
-    have = {(row["sentence"], row["note_id"]) for row in grounding}
-    cited = [row for row in cite_marks.rows(answer, scrubber) if row["note_id"] in allowed and (row["sentence"], row["note_id"]) not in have]
-    if not cited:
-        return grounding
-    return sorted([*grounding, *cited], key=lambda row: answer.find(row["sentence"]))
-
-
 def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     """The rows the saved turn carries and the `grounding` event for them
     (INBOX 241). A conversational turn, or one nothing could be grounded
@@ -2050,14 +2039,10 @@ def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     grounding: list[dict] = list(t.exact_grounding or [])
     if t.exact_grounding is not None or t.conversational or not candidates or not t.answer_text:
         return grounding, None
-    grounding = (
-        ground_answer_sentences(
-            t.answer_text, candidates, numbered=len(prepared["notes"]),
-            meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings()),
-        )
-        or []
-    )
-    grounding = _with_cited(t.answer_text, grounding, prepared.get("mark_scrubber"), {n["id"] for n in candidates})
+    meaning = search_chunks.meaning_scorer(req.session, deps.get_embeddings())
+    grounding = ground_answer_sentences(t.answer_text, candidates, numbered=len(prepared["notes"]), meaning=meaning) or []
+    #: The model's own `[Sn]` marks name rows too (L-chat-59).
+    grounding = cite_marks.with_cited(t.answer_text, grounding, prepared.get("mark_scrubber"), {n["id"] for n in candidates})
     if not grounding:
         return grounding, None
     # A touched note is not in `raw_results`, so the client has no text to

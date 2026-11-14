@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, cite_marks, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -809,12 +809,6 @@ BRIEF_PER_NOTE = 4
 BRIEF_WHOLE = 0.8
 
 
-def _raw(content: str, s: Sentence) -> str:
-    """The sentence as the note has it: the offsets, not the cleaned text, so a
-    model reads (and the grounding pass later matches) the person's words."""
-    return " ".join(content[s.start : s.end].split())
-
-
 def _add_matching(by_note: dict, view: NoteView, terms: list[str]) -> None:
     """Every sentence of `view` that holds a word of the question the pick lacks (R9-13)."""
     kept = by_note.setdefault(view.id, [])
@@ -895,31 +889,7 @@ def brief(
             if (view.id, s.start) in spans and s not in by_note.get(view.id, []):
                 by_note.setdefault(view.id, []).append(s)
         _add_matching(by_note, view, terms)
-    out: list[dict] = []
-    shortened = before = after = 0
-    #: **The chosen sentences carry ids** (L-chat-59; CHAT_PLAN handoff step
-    #: 3): `[S1]`, `[S2]` in the order the model reads them, so its answer can
-    #: name the sentence it used and the grounding pass need not guess.
-    marks: dict[str, dict] = {}
-    for i, note in enumerate(notes):
-        content = str(note.get("content") or "")
-        before += len(content)
-        view = views.get(i)
-        text = _brief_text(view, content, by_note) if view else None
-        if text is None or len(text) >= BRIEF_WHOLE * len(content.strip()):
-            out.append(note)
-            after += len(content)
-            continue
-        had = len(marks)
-        text = _brief_text(view, content, by_note, marks)
-        out.append({**note, "content": text, "briefed": True, **({"marked": True} if len(marks) > had else {})})
-        after += len(text)
-        shortened += 1
-    if len({mark["note_id"] for mark in marks.values()}) < 2:
-        #: One note's sentences need no ids: every sentence of the answer can
-        #: only be grounded in that note, and the ids and the line asking for
-        #: them cost the brief its measured saving on short notes.
-        out, marks = _unmarked(out, notes, views, by_note), {}
+    out, marks, shortened, before, after = cite_marks.pack(notes, views, by_note, BRIEF_WHOLE)
     return {
         "notes": out,
         "quoted": sum(len(kept) for kept in by_note.values()),
@@ -928,50 +898,6 @@ def brief(
         "chars_after": after,
         "marks": marks,
     }
-
-
-def _unmarked(out: list[dict], notes: list[dict], views: dict, by_note: dict) -> list[dict]:
-    """The brief's notes again, without `[Sn]` ids."""
-    plain = []
-    for i, note in enumerate(out):
-        if note.get("marked"):
-            note = {k: v for k, v in note.items() if k != "marked"}
-            note["content"] = _brief_text(views[i], str(notes[i].get("content") or ""), by_note)
-        plain.append(note)
-    return plain
-
-
-def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]], marks: dict | None = None) -> str:
-    """One note's part of the brief: its name, then the sentences kept.
-
-    With `marks`, each sentence the composer chose (not the first-sentence
-    stand-in of a note it chose none from) is written after its `[Sn]` id,
-    and the id's note and span are added to `marks`."""
-    if view.id in by_note:
-        picked = sorted(by_note[view.id], key=lambda s: s.order)
-    else:
-        picked = view.sentences[:1]
-    parts: list[str] = []
-    #: An untitled note is named by its first words; when its first sentence
-    #: is kept, the name would only say those words twice.
-    opens_with_name = bool(picked) and picked[0].order == 0 and _raw(content, picked[0]).startswith(view.title.rstrip("…"))
-    if view.title and not opens_with_name:
-        parts.append(view.title)
-    last = -1
-    chosen = marks is not None and view.id in by_note
-    for s in picked:
-        if parts and s.order != last + 1:
-            parts.append("…")
-        if chosen:
-            mark = f"S{len(marks) + 1}"
-            marks[mark] = {"note_id": view.id, "start": s.start, "end": s.end}
-            parts.append(f"[{mark}] {_raw(content, s)}")
-        else:
-            parts.append(_raw(content, s))
-        last = s.order
-    if last < len(view.sentences) - 1:
-        parts.append("…")
-    return " ".join(parts)
 
 
 act_registry.help_sentence = help_line

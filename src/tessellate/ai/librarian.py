@@ -743,6 +743,42 @@ def _app_help(question: str) -> str:
     return help_chat.help_block_for(question)
 
 
+def _note_line(i: int, note: dict, notes: list[dict], question: str) -> str:
+    """One numbered note of the librarian prompt, its hints first."""
+    return (
+        # A note the user attached by hand is flagged, so the model treats it
+        # as the subject rather than as one more search hit, and a note that
+        # arrived because it is *linked* to a hit is flagged too, for the
+        # opposite reason: it did not match, and an answer that presents it as
+        # though it did is telling the user their search found something it
+        # did not.
+        f"{i}.{category_hint(note)}"
+        # The day the note was written, when the caller knows it matters: a
+        # note that says "tonight" means the night it was written, and a
+        # model that cannot see that date reads it as tonight (the weekly
+        # digest, reported 2026-09-23). Optional, so every other caller's
+        # prompt is exactly what it was.
+        f"{_written_hint(note)}"
+        f"{_dates_hint(note)}"
+        f"{' (my newest note)' if note.get('newest') else ''}"
+        f"{_pictures_hint(note, i, bool(PICTURE_ASK.search(question or '')))}"
+        f"{' (attached by me)' if note.get('attached') else ''}"
+        f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
+        f"{_match_info_hint(note.get('match_info'))}"
+        f"{_shown_hint(note, notes)}"
+        f"{_tags_files_hint(note)} "
+        # No tools on this path by definition, it is the plain librarian
+        # prompt: so notes get the larger allowance and an honest marker.
+        f"{note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False)}"
+    )
+
+
+def _brief_headers(notes: list[dict]) -> tuple[str, str]:
+    """The brief's header and the cite ask, each only when a note needs it."""
+    brief = " " + BRIEF_HEADER if any(note.get("briefed") for note in notes) else ""
+    return brief, " " + CITE_HEADER if any(note.get("marked") for note in notes) else ""
+
+
 def build_messages(
     question: str,
     notes: list[dict],
@@ -802,33 +838,7 @@ def build_messages(
             lambda note: note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False),
         )
 
-    numbered = "\n".join(
-        # A note the user attached by hand is flagged, so the model treats it
-        # as the subject rather than as one more search hit, and a note that
-        # arrived because it is *linked* to a hit is flagged too, for the
-        # opposite reason: it did not match, and an answer that presents it as
-        # though it did is telling the user their search found something it
-        # did not.
-        f"{i}.{category_hint(note)}"
-        # The day the note was written, when the caller knows it matters: a
-        # note that says "tonight" means the night it was written, and a
-        # model that cannot see that date reads it as tonight (the weekly
-        # digest, reported 2026-09-23). Optional, so every other caller's
-        # prompt is exactly what it was.
-        f"{_written_hint(note)}"
-        f"{_dates_hint(note)}"
-        f"{' (my newest note)' if note.get('newest') else ''}"
-        f"{_pictures_hint(note, i, bool(PICTURE_ASK.search(question or '')))}"
-        f"{' (attached by me)' if note.get('attached') else ''}"
-        f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
-        f"{_match_info_hint(note.get('match_info'))}"
-        f"{_shown_hint(note, notes)}"
-        f"{_tags_files_hint(note)} "
-        # No tools on this path by definition, it is the plain librarian
-        # prompt: so notes get the larger allowance and an honest marker.
-        f"{note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False)}"
-        for i, note in enumerate(notes, start=1)
-    )
+    numbered = "\n".join(_note_line(i, note, notes, question) for i, note in enumerate(notes, start=1))
     attached_hint = (
         " The notes marked \"attached by me\" are the ones I specifically chose "
         "for this question: focus on those."
@@ -847,16 +857,16 @@ def build_messages(
         if dropped_notes
         else ""
     )
+    brief, cite = _brief_headers(notes)
     user_message = {
         "role": "user",
         "content": (
-            f"{_app_help(question)}My notes:"
-            f"{' ' + BRIEF_HEADER if any(note.get('briefed') for note in notes) else ''}"
+            f"{_app_help(question)}My notes:{brief}"
             f"\n{numbered}{dropped_hint}\n\n"
             f"My question: {question}{attached_hint}"
             #: After the question, where a 1.5B model acts on it: measured
             #: 0 of 12 answers cited from a line above the notes, 3 of 5 here.
-            f"{' ' + CITE_HEADER if any(note.get('marked') for note in notes) else ''}"
+            f"{cite}"
         ),
     }
     if images:

@@ -125,30 +125,31 @@ _PLURALS = frozenset({"knives", "shelves", "loaves", "wives", "leaves"})
 _NAMED_AMERICAN_IN_CANADA = frozenset({"programme", "programmes", "aluminium"})
 
 
+def _pair_for(word: str, words: frozenset):
+    """The first rule (or the doubled l) that turns `word` into another word on the list, as (candidate, rule)."""
+    for index, ((pattern, replacement), guard) in enumerate(zip(_RULES, _GUARDS)):
+        if guard(word):
+            candidate = pattern.sub(replacement, word, count=1)
+            if candidate != word and candidate in words:
+                return candidate, index
+    double = _DOUBLE_L.match(word) if "ll" in word else None
+    if double and double.group(1) + "l" in words and double.group(1) + "ll" not in words:
+        candidate = double.group(1) + "l" + double.group(2)
+        if candidate in words:
+            return candidate, "ll"
+    return None
+
+
 @lru_cache(maxsize=1)
 def _spelling_pairs() -> tuple[tuple[str, str, object], ...]:
     words = _english_all()
     out: list[tuple[str, str, object]] = []
-    seen: set[str] = set()
     for word in sorted(words):
-        if len(word) < _MIN or word in _NOT_PAIRS or word in seen:
+        if len(word) < _MIN or word in _NOT_PAIRS:
             continue
-        for index, ((pattern, replacement), guard) in enumerate(zip(_RULES, _GUARDS)):
-            if not guard(word):
-                continue
-            candidate = pattern.sub(replacement, word, count=1)
-            if candidate != word and candidate in words:
-                out.append((word, candidate, index))
-                seen.add(word)
-        double = _DOUBLE_L.match(word) if "ll" in word else None
-        if double and double.group(1) + "l" in words and double.group(1) + "ll" not in words:
-            candidate = double.group(1) + "l" + double.group(2)
-            if candidate in words and word not in seen:
-                out.append((word, candidate, "ll"))
-                seen.add(word)
-    for uk, us in NAMED:
-        if uk not in _PLURALS:
-            out.append((uk, us, "named"))
+        if found := _pair_for(word, words):
+            out.append((word, *found))
+    out.extend((uk, us, "named") for uk, us in NAMED if uk not in _PLURALS)
     return tuple(out)
 
 

@@ -718,6 +718,20 @@ def _live_grounder(req: _StreamRequest, prepared: dict, t: _Turn):  # noqa: ANN2
     return SentenceGrounder(prepared["notes"], meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings()))
 
 
+def _flush_held(marks, scrubber, t: _Turn) -> Iterator[str]:  # noqa: ANN001
+    """Whatever the fence and mark scrubbers were holding back, said as one answer delta."""
+    held = marks.feed(scrubber.flush()) + marks.flush()
+    if held:
+        t.answer_text += held
+        yield _event({"type": "answer", "delta": held})
+
+
+def _scrubbed_answer(payload: dict, marks, scrubber) -> dict:  # noqa: ANN001
+    #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
+    kept = {k: v for k, v in payload.items() if k not in ("attached", "counts")}
+    return {**kept, "delta": marks.feed(scrubber.feed(payload.get("delta") or ""))}
+
+
 def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iterator[str]:  # noqa: ANN001
     live_grounder = _live_grounder(req, prepared, t)
     #: The fence markers a small model echoes back are taken out of the answer
@@ -733,23 +747,16 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             payload = closing.see(payload, t.answer_text)
             _note_kind(t, kind, payload)
             if kind == "answer":
-                #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
-                payload = {**{k: v for k, v in payload.items() if k not in ("attached", "counts")}, "delta": marks.feed(scrubber.feed(payload.get("delta") or ""))}
+                payload = _scrubbed_answer(payload, marks, scrubber)
                 if not payload["delta"]:
                     continue
             else:
-                held = marks.feed(scrubber.flush()) + marks.flush()
-                if held:
-                    t.answer_text += held
-                    yield _event({"type": "answer", "delta": held})
+                yield from _flush_held(marks, scrubber, t)
             live_rows = _fold_event(t, kind, payload, live_grounder)
             yield _event(payload)
             if live_rows:
                 yield _event({"type": "grounding_live", "sentences": list(live_grounder.rows)})
-        held = marks.feed(scrubber.flush()) + marks.flush()
-        if held:
-            t.answer_text += held
-            yield _event({"type": "answer", "delta": held})
+        yield from _flush_held(marks, scrubber, t)
         yield from map(_event, closing.finish(t.answer_text))
     except Exception as exc:  # noqa: BLE001  # a failure partway through rather
         # than before the first event (a later skill step, say): say what
