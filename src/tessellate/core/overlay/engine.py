@@ -103,6 +103,7 @@ from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
+from .engine_nap import NapMixin
 from .engine_roam import RoamMixin
 from .engine_touch import TouchMixin
 
@@ -113,7 +114,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -1523,39 +1524,6 @@ class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskAc
             self._enter("stand", now)
             return True
         return self.state in self._FREE
-
-    def _nap(self, now: float) -> None:
-        if self.perch is not None and not self.reduced and self.gait == "walk":
-            self.nap_after_land = True  # it never sleeps on a window: down first, then to sleep
-            self._leave_perch(now, hop=False)
-            return
-        self.perch = None
-        self.spell = None
-        self.follow_until = self.follow_close_until = 0.0
-        self.relocate_at = None
-        if self.reduced:
-            self._enter("sit", now)
-            return
-        self.nap_req = True
-        spot = self._nap_spot()
-        if spot is not None and self.gait == "walk":
-            self._go(spot, "nap", now, plain=True)  # to a corner first, on foot
-            return
-        self._settle_to_sleep(now)
-
-    def _nap_spot(self) -> tuple[float, float] | None:
-        """Where a nap is taken: out of the middle third, by the nearer edge; None when it is there already."""
-        m = self.current_monitor()
-        x = tv.out_of_middle(self.x, m.area, self.size[0])
-        if abs(x - self.x) < 12 * self._scale():
-            return None
-        return x, self.ground_y(m)
-
-    def _settle_to_sleep(self, now: float) -> None:
-        """A turn (to face the way it came, tail to the room) and a curl, then asleep."""
-        if self.metrics:
-            self._face(-self.facing, now)
-        self._enter("sleep", now)
 
     def _wake_up(self, now: float) -> None:
         if not self.reduced:
