@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8960, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2850, tests 22933, plan headings 690, app scripts 29, boot scripts 38, script files 367.
+Counts: frontend functions 8966, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2850, tests 22937, plan headings 690, app scripts 29, boot scripts 38, script files 367.
 
-## Frontend functions (8960)
+## Frontend functions (8966)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4813,22 +4813,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markDocDirty` | frontend/js/documents-save.js:5 |
 | `saveDocument` | frontend/js/documents-save.js:43 |
 
-### frontend/js/documents-sections.js (12)
+### frontend/js/documents-sections.js (18)
 
 | Name | File:line |
 |---|---|
-| `currentText` | frontend/js/documents-sections.js:133 |
-| `cut` | frontend/js/documents-sections.js:132 |
-| `fill` | frontend/js/documents-sections.js:142 |
+| `currentText` | frontend/js/documents-sections.js:147 |
+| `cut` | frontend/js/documents-sections.js:146 |
+| `fill` | frontend/js/documents-sections.js:235 |
 | `graph` | frontend/js/documents-sections.js:100 |
+| `inRead` | frontend/js/documents-sections.js:159 |
 | `labelOf` | frontend/js/documents-sections.js:25 |
 | `layout` | frontend/js/documents-sections.js:111 |
 | `parse` | frontend/js/documents-sections.js:39 |
-| `renderLinks` | frontend/js/documents-sections.js:247 |
-| `reveal` | frontend/js/documents-sections.js:137 |
-| `showLink` | frontend/js/documents-sections.js:230 |
-| `svgEl` | frontend/js/documents-sections.js:126 |
-| `wrapEl` | frontend/js/documents-sections.js:213 |
+| `peek` | frontend/js/documents-sections.js:206 |
+| `peekExtension` | frontend/js/documents-sections.js:181 |
+| `peekOn` | frontend/js/documents-sections.js:225 |
+| `pickBlock` | frontend/js/documents-sections.js:127 |
+| `readBlock` | frontend/js/documents-sections.js:151 |
+| `renderLinks` | frontend/js/documents-sections.js:348 |
+| `reveal` | frontend/js/documents-sections.js:163 |
+| `showLink` | frontend/js/documents-sections.js:325 |
+| `svgEl` | frontend/js/documents-sections.js:140 |
+| `wrapEl` | frontend/js/documents-sections.js:308 |
 
 ### frontend/js/documents-spell.js (15)
 
@@ -14195,7 +14201,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/diagram-lazy.css | 2785 |
 | frontend/css/doc-base-lazy.css | 306 |
 | frontend/css/doc-csv-grid-lazy.css | 182 |
-| frontend/css/doc-graph-lazy.css | 307 |
+| frontend/css/doc-graph-lazy.css | 318 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -29053,7 +29059,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22933)
+## Tests (22937)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30012,7 +30018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_remind_slash.py | 2 |
 | tests/test_doc_rich_paste.py | 7 |
 | tests/test_doc_save_serial.py | 2 |
-| tests/test_doc_section_links.py | 7 |
+| tests/test_doc_section_links.py | 11 |
 | tests/test_doc_sections.py | 7 |
 | tests/test_doc_selection_to_note.py | 5 |
 | tests/test_doc_sidebar_narrow.py | 2 |
@@ -32329,14 +32335,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:706 |
+| Needs hardware | docs/roadmap/LEDGER.md:704 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:699 |
+| Owner calls | docs/roadmap/LEDGER.md:697 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32515,7 +32521,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:864 |
+| Plan session briefs | docs/roadmap/LEDGER.md:862 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32571,25 +32577,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:880 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:964 |
+| chat | docs/roadmap/LEDGER.md:878 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:962 |
 | documents | docs/roadmap/LEDGER.md:285 |
-| documents | docs/roadmap/LEDGER.md:904 |
-| general | docs/roadmap/LEDGER.md:658 |
+| documents | docs/roadmap/LEDGER.md:902 |
+| general | docs/roadmap/LEDGER.md:656 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:868 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:976 |
+| graph | docs/roadmap/LEDGER.md:866 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:974 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:300 |
-| mindmap | docs/roadmap/LEDGER.md:916 |
-| timeline | docs/roadmap/LEDGER.md:420 |
-| timeline | docs/roadmap/LEDGER.md:940 |
-| ui-modernisation | docs/roadmap/LEDGER.md:303 |
-| ui-modernisation | docs/roadmap/LEDGER.md:928 |
+| mindmap | docs/roadmap/LEDGER.md:298 |
+| mindmap | docs/roadmap/LEDGER.md:914 |
+| timeline | docs/roadmap/LEDGER.md:418 |
+| timeline | docs/roadmap/LEDGER.md:938 |
+| ui-modernisation | docs/roadmap/LEDGER.md:301 |
+| ui-modernisation | docs/roadmap/LEDGER.md:926 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:892 |
-| world-class | docs/roadmap/LEDGER.md:422 |
-| world-class | docs/roadmap/LEDGER.md:952 |
+| whiteboard | docs/roadmap/LEDGER.md:890 |
+| world-class | docs/roadmap/LEDGER.md:420 |
+| world-class | docs/roadmap/LEDGER.md:950 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |

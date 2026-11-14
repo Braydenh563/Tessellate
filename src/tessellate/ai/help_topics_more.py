@@ -3012,8 +3012,9 @@ MORE_TOPICS.append({
         "Label a section by ending its heading or paragraph with ^ and a name, such as # Method ^method "
         "(or use Link to this block in the / menu, which adds one). Link to it from another labelled section with "
         "[[#^method|the numbers come from it]]: the words after the bar are the reason, and are what the link shows. "
-        "Press the link to go to that section. The Outline tab's Section links lists every link with its reason; press a row "
-        "to select both sections. Type /section graph, or write a code block marked sections, to draw the labelled "
+        "Press the link to go to that section; in Read the block is ringed where it is and the view stays Read. The Outline "
+        "tab's Section links lists every link with its reason; hover a row or a graph arrow to mark both sections, press a row "
+        "to select them. Type /section graph, or write a code block marked sections, to draw the labelled "
         "sections as boxes and the links as arrows with their reasons; press a box to go to it. A title: line in the "
         "block is its caption. A link to a name that is not in the document is listed and not drawn."
     ),
