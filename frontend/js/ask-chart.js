@@ -154,7 +154,7 @@
       angle = end;
       const y = 12 + step * i + step / 2;
       const swatch = askChartSvgEl("rect", { x: legendX, y: y - 6, width: 12, height: 12, rx: 3, class: mark.getAttribute("class") });
-      swatch.setAttribute("style", mark.getAttribute("style") || "");
+      swatch.style.cssText = mark.style.cssText;
       const text = askChartSvgEl("text", { x: legendX + 18, y: y + 4, class: "ask-chart-axis ask-chart-legend" });
       text.textContent = askChartFit(`${row.label} ${pct}%`, room - 18);
       const label = `${askChartTipText(chart, row)}, ${pct}%`;
