@@ -87,3 +87,8 @@ def test_a19_a_definition_is_the_sentence_that_says_is_a():
     notes = [_note(1, "Sprint\n\nA sprint is a two week block of work.", 3), _note(2, "Lunch with Sam on Friday.", 5)]
     said = composer.compose("what is a sprint", notes, today=TODAY688)["text"]
     assert "A sprint is a two week block of work." in said
+
+
+def test_a6_from_when_to_when_gives_the_span_and_the_count_of_the_dated_notes(ask):
+    said = ask("from when to when did I write about running")
+    assert said.startswith("You have three notes about running, 1 to 25 October."), said
