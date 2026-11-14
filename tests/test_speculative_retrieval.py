@@ -4,6 +4,7 @@ embedding model."""
 
 from __future__ import annotations
 
+import threading
 import time
 from pathlib import Path
 
@@ -75,9 +76,16 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
     order: list[str] = []
     monkeypatch.setattr(embedding_service, "wait_for_quiet", lambda max_wait: order.append(f"quiet {max_wait}"))
 
+    release = threading.Event()
+    started = threading.Event()
+
     class Cold:
+        """Blocks inside the load until the test releases it: if `warm` ran the
+        load on the caller's thread it could not return while this is held."""
+
         def __init__(self):
             self.calls = []
+            self.thread = None
 
         def is_ready(self):
             return False
@@ -88,17 +96,21 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
         def embed_text(self, text):
             order.append("embed")
             self.calls.append(text)
-            time.sleep(0.05)
+            self.thread = threading.get_ident()
+            started.set()
+            release.wait(30)
             return None
 
     cold = Cold()
-    began = time.perf_counter()
-    assert search_manager.warm(session, "", cold) is False
-    assert time.perf_counter() - began < 0.05
-    for _ in range(100):
-        if cold.calls:
-            break
-        time.sleep(0.01)
+    try:
+        assert search_manager.warm(session, "", cold) is False
+        # Returned with the load not yet finished (release is still unset), and
+        # the load is running elsewhere, not on this thread.
+        assert not release.is_set()
+        assert started.wait(30), "the background load never started"
+        assert cold.thread != threading.get_ident()
+    finally:
+        release.set()
     assert cold.calls == ["warm up"]
     assert order == [f"quiet {search_manager.LOAD_LATER_MAX_WAIT_SECONDS}", "embed"]
 
