@@ -263,12 +263,36 @@ def _one_step_spec(
         retries = int(retries)
     except (TypeError, ValueError):
         retries = DEFAULT_STEP_RETRIES
-    return {
+    spec = {
         "text": text,
         "expects": expects,
         "tools": tools,
         "retries": max(0, min(retries, MAX_STEP_RETRIES)),
     }
+    scan = _scan_cues(step.get("scan"))
+    if scan:
+        spec["scan"] = scan
+    if step.get("reads") == "candidates":
+        spec["reads"] = "candidates"
+    return spec
+
+
+#: The most cue phrases one scanning step may carry, and their longest length.
+MAX_SCAN_CUES = 12
+MAX_SCAN_CUE = 30
+
+
+def _scan_cues(raw) -> list[str]:
+    """A step's cue phrases for the runner's own paged scan (L-chat-62), in
+    canonical form: short strings, no blanks, no duplicates, capped."""
+    if not isinstance(raw, list):
+        return []
+    cues: list[str] = []
+    for cue in raw:
+        cue = str(cue or "").strip().lower()[:MAX_SCAN_CUE]
+        if cue and cue not in cues:
+            cues.append(cue)
+    return cues[:MAX_SCAN_CUES]
 
 
 def verify_spec(raw: dict, known_tools: set[str] | None, declared: list[str]) -> dict | None:
@@ -399,6 +423,8 @@ def step_specs(skill: dict) -> list[dict]:
                 "expects": spec.get("expects") or None,
                 "tools": list(spec.get("tools") or []),
                 "retries": int(spec.get("retries", DEFAULT_STEP_RETRIES)),
+                **({"scan": list(spec["scan"])} if spec.get("scan") else {}),
+                **({"reads": "candidates"} if spec.get("reads") == "candidates" else {}),
             }
         )
     return out
@@ -1369,20 +1395,33 @@ BUILTIN_SKILLS: list[dict] = [
             #: (bounded by `skill_runner.MAX_PAGES_PER_STEP`, which says so
             #: out loud when it runs out rather than quietly reporting a
             #: partial answer as a complete one).
-            _step(
-                "Go through my notes page by page with list_notes, and keep "
-                "going until it says there are no more. Note which ones read "
-                "as unfinished: todo, need to, should, waiting on, must, "
-                "chase up, follow up.",
-                "tool_called",
-                "list_notes",
-            ),
-            _step(
-                "Read each candidate with get_note, to check it is genuinely "
-                "unfinished rather than something I already closed off.",
-                "tool_called",
-                "get_note",
-            ),
+            #:
+            #: **The runner pages, not the model** (L-chat-62). Measured on a
+            #: 1.5B model over the seventy-note fixture: it called list_notes
+            #: once with made-up filters, never paged, stalled, and named 2 of
+            #: 8. Paging and a cue match are mechanical, so the runner does
+            #: both (`scan`) and reads the matches in full (`reads`); the model
+            #: keeps the judgment, in the answer.
+            {
+                **_step(
+                    "Go through my notes page by page with list_notes, and keep "
+                    "going until it says there are no more. Note which ones read "
+                    "as unfinished: todo, need to, should, waiting on, must, "
+                    "chase up, follow up.",
+                    "tool_called",
+                    "list_notes",
+                ),
+                "scan": ["todo", "need to", "should", "waiting on", "must", "chase up", "follow up"],
+            },
+            {
+                **_step(
+                    "Read each candidate with get_note, to check it is genuinely "
+                    "unfinished rather than something I already closed off.",
+                    "tool_called",
+                    "get_note",
+                ),
+                "reads": "candidates",
+            },
             _step("List each loose end with its note id, newest first.", "answer_only"),
         ],
         "tools": _READING_TOOLS,

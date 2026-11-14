@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Skills: Find loose ends is paged and cue-matched by the runner, the matches read in full, and a small model's answer closes with any it left out (L-chat-62).
 - Composer: the one-claim cosine line is measured on the real embedder (0.86), the topic line confirmed at 0.55 (L-chat-63).
 - Parity tests for chat acts: boards, maps, tag and preference sentences run on the composer path and as a model's own tool call, with Confirm and Undo (L114, tests/test_driven_parity_1114.py).
 - Chat: twelve more acts run from one sentence with no model, each a card that waits for Confirm and has an Undo: draw a shape, place a library item, connect two cards, move, reword or take an item off the whiteboard, add a node to a named mind map or cross-link two nodes, draw a tree of new notes, write a document from a title and text, save a skill, and check what it learned (L-chat-60); a saved skill now returns its own Undo.

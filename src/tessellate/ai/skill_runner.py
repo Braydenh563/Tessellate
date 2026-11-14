@@ -51,6 +51,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import presets
 from tessellate.ai import agent, budget as run_budget, plan_writes, skills, tools
+from tessellate.ai import skill_scan as scan_steps
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
@@ -821,6 +822,7 @@ class _RunSetup:
     loop come out of a 682-line function (WORLD_CLASS_PLAN A5).
     """
 
+    session: Session
     skill: dict
     values: dict | None
     #: One parsed contract per step, from `skills.step_specs`.
@@ -1257,6 +1259,9 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
     step = run.steps[index]
     _count_step()
     st = _begin_step(setup, index, step)
+    if st.spec.get("scan") or st.spec.get("reads") == "candidates":
+        yield from scan_steps.run(setup, run, st)
+        return _after_done(setup, run, index) if st.outcome == "done" else "stop"
     while st.outcome is None:
         source = yield from _open_turn(setup, run, st)
         if source is None:
@@ -1267,6 +1272,9 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
         return "stop"
     if st.outcome != "done":
         return (yield from _replan_or_stop(setup, run, st))
+    if setup.small_model and st.spec.get("expects") == "answer_only" and index == len(run.steps) - 1:
+        if line := scan_steps.unnamed_line(run, run.step_history[-1]["answer"]):
+            yield {"type": "answer", "delta": line}
     return _after_done(setup, run, index)
 
 
@@ -1377,6 +1385,7 @@ def _run_skill(
     #: are the same mechanism and naming a step is the more specific request.
     resume_from = only_step if only_step is not None else min(max(0, start_at), len(steps))
     setup = _RunSetup(
+        session=session,
         skill=skill,
         values=values,
         specs=specs,

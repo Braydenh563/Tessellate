@@ -1,7 +1,7 @@
 """L114, driven both ways on the fake transport: the five parity sentences (a board, a mind map, rename a tag, delete a tag,
 remember a preference) reach their tools from the composer with no model AND from a model that calls the tool itself. Either
 way the write waits for Confirm, runs once, and Undo puts the notebook back. The 1.5B's own run is `pytest -m evals`
-(scratchpad/llama-dev.sh serve); this pins everything around it. Clock: Tuesday 10 November 2026, 09:00."""
+(the developer's local llama-server); this pins everything around it. Clock: Tuesday 10 November 2026, 09:00."""
 
 from __future__ import annotations
 

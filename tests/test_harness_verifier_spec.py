@@ -27,11 +27,15 @@ def test_a_skill_may_declare_a_verify_block():
 
 
 def test_a_step_pages_until_its_contract_is_met(fake_model_with_paged_list):
-    """70 notes, list_notes pages 20 at a time: the step that must see every
-    note calls the tool four times and the run's state holds 70 ids."""
+    """70 notes: the step that must see every note pages to the end and the
+    run's state holds 70 ids.
+
+    Intent moved (L-chat-62): Find loose ends is paged by the runner, 25 a
+    page, so three calls, not the model's four of twenty. A model paging its
+    own step is `test_a_step_is_not_done_while_its_read_has_more_pages`."""
     run = run_for_test(fake_model_with_paged_list, skill="find_loose_ends", notes=70)
     step = run.steps[0]
-    assert step.tool_calls >= 4
+    assert step.tool_calls == 3
     assert len(run.state["seen_ids"]) == 70
     assert run.verification.ok
 

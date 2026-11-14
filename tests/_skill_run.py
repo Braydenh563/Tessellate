@@ -65,6 +65,7 @@ def run_for_test(
     notes: int = 0,
     budget: dict | None = None,
     values: dict | None = None,
+    small_model: bool | None = None,
 ) -> RunResult:
     """Run one skill end to end against a model double, and return the run.
 
@@ -113,6 +114,7 @@ def run_for_test(
             deps.get_model_manager(),
             ollama,
             budget=spend,
+            small_model=small_model,
         ):
             run.events.append(event)
             kind = event.get("type")
