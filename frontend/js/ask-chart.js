@@ -137,12 +137,12 @@
       const [x1, y1, x2, y2] = [Math.cos(angle), Math.sin(angle), Math.cos(angle + sweep), Math.sin(angle + sweep)].map((n, k) => (k % 2 ? cy : cx) + n * radius);
       angle += sweep;
       const d = sweep >= Math.PI * 2 - 1e-6 ? `M${cx - radius},${cy}a${radius},${radius} 0 1,0 ${radius * 2},0a${radius},${radius} 0 1,0 ${-radius * 2},0Z` : `M${cx},${cy}L${x1.toFixed(2)},${y1.toFixed(2)}A${radius},${radius} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2.toFixed(2)},${y2.toFixed(2)}Z`;
-      const slice = askChartSvgEl("path", { d, class: `ask-chart-slice ask-chart-slice-${i % 6}` });
+      const slice = askChartSvgEl("path", { d, class: ["ask-chart-slice", `ask-chart-slice-${i % 6}`].join(" ") });
       const share = `${Math.round((row.value / total) * 100)}%`;
       if (i < 10) {
         const key = askChartSvgEl("text", { x: cx + radius + 24, y: 24 + i * 18, class: "ask-chart-axis" });
         key.textContent = `${askChartFit(askChartLabel(chart, row.label), width - cx - radius - 90)}, ${share}`;
-        const swatch = askChartSvgEl("rect", { x: cx + radius + 8, y: 14 + i * 18, width: 10, height: 10, rx: 2, class: `ask-chart-slice ask-chart-slice-${i % 6}` });
+        const swatch = askChartSvgEl("rect", { x: cx + radius + 8, y: 14 + i * 18, width: 10, height: 10, rx: 2, class: ["ask-chart-slice", `ask-chart-slice-${i % 6}`].join(" ") });
         svg.append(swatch, key);
       }
       if (!chart.interactive) {
