@@ -1452,14 +1452,26 @@
     const named = String(seed || "").trim().toLowerCase();
     const ai = typeof aiNameNow === "function" ? String(aiNameNow() || "").toLowerCase() : "atlas";
     if (named && (named === ai || named === "atlas")) return atlasMark(size);
-    //: Under 28px a face never moves, so it is one picture; above, its parts.
-    const moving = size >= 28;
-    //: 28px and under is the small mark: the face and one cue (drawCharacter).
-    const mini = size <= 28;
-    const style = JSON.stringify(nameMarkOwnFor(seed) || {});
-    const face = nameMarkCompose(`gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`, () => drawCharacter(seed, 100, mini ? "mini" : "mark"), { parts: moving ? NM_MARK_PARTS : "", size });
+    //: Under 28px a face never moves (one picture); 28px and under is the small mark (drawCharacter).
+    const face = nameMarkGenerated(seed, size);
     watchNameMark(face);
     return face;
+  }
+
+  function nameMarkGenerated(seed, size) {
+    const moving = size >= 28;
+    const mini = size <= 28;
+    const style = JSON.stringify(nameMarkOwnFor(seed) || {});
+    return nameMarkCompose(`gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`, () => drawCharacter(seed, 100, mini ? "mini" : "mark"), { parts: moving ? NM_MARK_PARTS : "", size });
+  }
+
+  //: The Settings head's 56px face (`#profile-avatar`) is cut up once while the page is idle: drawn cold
+  //: inside the first Settings open, its measure forced that window's layout, 25-33ms (L-world-class-37).
+  //: Only the cache is filled; a registered or Atlas face has no cut to warm.
+  function nameMarkWarmOwn() {
+    const seed = userMarkSeed();
+    if (!seed || characterRendererFor(seed) || isAtlasSeed(seed)) return;
+    nameMarkGenerated(seed, 56);
   }
 
   // --- the generated characters ------------------------------------------------------
@@ -11598,5 +11610,7 @@
   // pull-grab:end
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  if (window.requestIdleCallback) requestIdleCallback(nameMarkWarmOwn, { timeout: 4000 });
+  else setTimeout(nameMarkWarmOwn, 2000);
   Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
 })();

@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8499, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2815, tests 22447, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8501, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22449, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
-## Frontend functions (8499)
+## Frontend functions (8501)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2286,271 +2286,273 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autocorrectSurface` | frontend/js/autocorrect.js:329 |
 | `autocorrectUndo` | frontend/js/autocorrect.js:162 |
 
-### frontend/js/avatars.js (262)
+### frontend/js/avatars.js (264)
 
 | Name | File:line |
 |---|---|
 | `atlasMark` | frontend/js/avatars.js:1156 |
 | `characterFor` | frontend/js/avatars.js:1242 |
 | `characterRendererFor` | frontend/js/avatars.js:1225 |
-| `drawCharacter` | frontend/js/avatars.js:1718 |
-| `dropAnimations` | frontend/js/avatars.js:10763 |
+| `drawCharacter` | frontend/js/avatars.js:1730 |
+| `dropAnimations` | frontend/js/avatars.js:10775 |
 | `isAtlasSeed` | frontend/js/avatars.js:1236 |
-| `nameCharacterFigure` | frontend/js/avatars.js:3910 |
-| `nameCharacterHeld` | frontend/js/avatars.js:2604 |
+| `nameCharacterFigure` | frontend/js/avatars.js:3922 |
+| `nameCharacterHeld` | frontend/js/avatars.js:2616 |
 | `nameMark` | frontend/js/avatars.js:1447 |
-| `nameMarkBuddyAct` | frontend/js/avatars.js:8483 |
-| `nameMarkBuddyActOff` | frontend/js/avatars.js:3350 |
-| `nameMarkBuddyActions` | frontend/js/avatars.js:3374 |
-| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3343 |
-| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6238 |
-| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4109 |
-| `nameMarkBuddyAim` | frontend/js/avatars.js:8747 |
-| `nameMarkBuddyAloft` | frontend/js/avatars.js:6477 |
-| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5870 |
-| `nameMarkBuddyAppear` | frontend/js/avatars.js:7975 |
-| `nameMarkBuddyAsleep` | frontend/js/avatars.js:9939 |
-| `nameMarkBuddyAttention` | frontend/js/avatars.js:4072 |
-| `nameMarkBuddyAwake` | frontend/js/avatars.js:9848 |
-| `nameMarkBuddyBand` | frontend/js/avatars.js:5451 |
-| `nameMarkBuddyBeat` | frontend/js/avatars.js:7753 |
-| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7510 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10412 |
-| `nameMarkBuddyBlend` | frontend/js/avatars.js:9971 |
-| `nameMarkBuddyBody` | frontend/js/avatars.js:3871 |
-| `nameMarkBuddyBoredom` | frontend/js/avatars.js:10094 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10814 |
-| `nameMarkBuddyBurst` | frontend/js/avatars.js:7353 |
-| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9926 |
-| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6301 |
-| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6320 |
-| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6324 |
-| `nameMarkBuddyCaret` | frontend/js/avatars.js:4083 |
-| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5729 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10422 |
-| `nameMarkBuddyCheck` | frontend/js/avatars.js:7591 |
-| `nameMarkBuddyChoose` | frontend/js/avatars.js:4858 |
-| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9912 |
-| `nameMarkBuddyColours` | frontend/js/avatars.js:3856 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10542 |
-| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:4023 |
-| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:4038 |
-| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7493 |
-| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4468 |
-| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7513 |
-| `nameMarkBuddyCovers` | frontend/js/avatars.js:4428 |
-| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6560 |
-| `nameMarkBuddyCue` | frontend/js/avatars.js:9637 |
-| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8863 |
-| `nameMarkBuddyCurtained` | frontend/js/avatars.js:7962 |
+| `nameMarkBuddyAct` | frontend/js/avatars.js:8495 |
+| `nameMarkBuddyActOff` | frontend/js/avatars.js:3362 |
+| `nameMarkBuddyActions` | frontend/js/avatars.js:3386 |
+| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3355 |
+| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6250 |
+| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4121 |
+| `nameMarkBuddyAim` | frontend/js/avatars.js:8759 |
+| `nameMarkBuddyAloft` | frontend/js/avatars.js:6489 |
+| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5882 |
+| `nameMarkBuddyAppear` | frontend/js/avatars.js:7987 |
+| `nameMarkBuddyAsleep` | frontend/js/avatars.js:9951 |
+| `nameMarkBuddyAttention` | frontend/js/avatars.js:4084 |
+| `nameMarkBuddyAwake` | frontend/js/avatars.js:9860 |
+| `nameMarkBuddyBand` | frontend/js/avatars.js:5463 |
+| `nameMarkBuddyBeat` | frontend/js/avatars.js:7765 |
+| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7522 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10424 |
+| `nameMarkBuddyBlend` | frontend/js/avatars.js:9983 |
+| `nameMarkBuddyBody` | frontend/js/avatars.js:3883 |
+| `nameMarkBuddyBoredom` | frontend/js/avatars.js:10106 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10826 |
+| `nameMarkBuddyBurst` | frontend/js/avatars.js:7365 |
+| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9938 |
+| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6313 |
+| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6332 |
+| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6336 |
+| `nameMarkBuddyCaret` | frontend/js/avatars.js:4095 |
+| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5741 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10434 |
+| `nameMarkBuddyCheck` | frontend/js/avatars.js:7603 |
+| `nameMarkBuddyChoose` | frontend/js/avatars.js:4870 |
+| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9924 |
+| `nameMarkBuddyColours` | frontend/js/avatars.js:3868 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10554 |
+| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:4035 |
+| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:4050 |
+| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7505 |
+| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4480 |
+| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7525 |
+| `nameMarkBuddyCovers` | frontend/js/avatars.js:4440 |
+| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6572 |
+| `nameMarkBuddyCue` | frontend/js/avatars.js:9649 |
+| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8875 |
+| `nameMarkBuddyCurtained` | frontend/js/avatars.js:7974 |
 | `nameMarkBuddyCustom` | frontend/js/avatars.js:357 |
 | `nameMarkBuddyCustomReset` | frontend/js/avatars.js:354 |
-| `nameMarkBuddyDecide` | frontend/js/avatars.js:9055 |
-| `nameMarkBuddyDodge` | frontend/js/avatars.js:4205 |
-| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4276 |
-| `nameMarkBuddyDrift` | frontend/js/avatars.js:9368 |
-| `nameMarkBuddyDrop` | frontend/js/avatars.js:5148 |
-| `nameMarkBuddyDue` | frontend/js/avatars.js:5974 |
-| `nameMarkBuddyEase` | frontend/js/avatars.js:10065 |
-| `nameMarkBuddyEdges` | frontend/js/avatars.js:4609 |
-| `nameMarkBuddyEmote` | frontend/js/avatars.js:3360 |
-| `nameMarkBuddyEnter` | frontend/js/avatars.js:8184 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10394 |
-| `nameMarkBuddyExpress` | frontend/js/avatars.js:9278 |
-| `nameMarkBuddyFeel` | frontend/js/avatars.js:9883 |
-| `nameMarkBuddyFlies` | frontend/js/avatars.js:6543 |
-| `nameMarkBuddyFlip` | frontend/js/avatars.js:7277 |
-| `nameMarkBuddyFloaters` | frontend/js/avatars.js:4051 |
-| `nameMarkBuddyFollow` | frontend/js/avatars.js:5591 |
-| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5800 |
-| `nameMarkBuddyFrames` | frontend/js/avatars.js:8835 |
-| `nameMarkBuddyGait` | frontend/js/avatars.js:6533 |
-| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8867 |
-| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:9045 |
-| `nameMarkBuddyGlue` | frontend/js/avatars.js:5530 |
-| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5579 |
-| `nameMarkBuddyGo` | frontend/js/avatars.js:6695 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10771 |
-| `nameMarkBuddyHalt` | frontend/js/avatars.js:8883 |
-| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8832 |
-| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10239 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11507 |
-| `nameMarkBuddyHits` | frontend/js/avatars.js:4410 |
-| `nameMarkBuddyHold` | frontend/js/avatars.js:9363 |
-| `nameMarkBuddyHover` | frontend/js/avatars.js:7044 |
-| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:10086 |
-| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4525 |
-| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4534 |
-| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4722 |
-| `nameMarkBuddyJoy` | frontend/js/avatars.js:9328 |
-| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8874 |
-| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:5007 |
-| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5752 |
-| `nameMarkBuddyLandNear` | frontend/js/avatars.js:7018 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:10349 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10344 |
-| `nameMarkBuddyLedges` | frontend/js/avatars.js:3969 |
-| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6333 |
-| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8853 |
-| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8633 |
-| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6636 |
-| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7485 |
-| `nameMarkBuddyLoud` | frontend/js/avatars.js:9931 |
-| `nameMarkBuddyMade` | frontend/js/avatars.js:3011 |
-| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4123 |
-| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7749 |
-| `nameMarkBuddyMind` | frontend/js/avatars.js:8030 |
-| `nameMarkBuddyMotion` | frontend/js/avatars.js:3796 |
-| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3830 |
-| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6338 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10510 |
-| `nameMarkBuddyNapMs` | frontend/js/avatars.js:5794 |
-| `nameMarkBuddyNear` | frontend/js/avatars.js:4010 |
-| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7938 |
-| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3842 |
-| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9565 |
-| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9558 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:10270 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11388 |
-| `nameMarkBuddyObstacles` | frontend/js/avatars.js:3979 |
-| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6317 |
-| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4366 |
-| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4711 |
-| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5406 |
-| `nameMarkBuddyPainted` | frontend/js/avatars.js:4603 |
-| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5888 |
-| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7686 |
-| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3961 |
-| `nameMarkBuddyPerches` | frontend/js/avatars.js:4798 |
-| `nameMarkBuddyPet` | frontend/js/avatars.js:7066 |
-| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8653 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10594 |
-| `nameMarkBuddyPoof` | frontend/js/avatars.js:7301 |
-| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4190 |
-| `nameMarkBuddyPopups` | frontend/js/avatars.js:4176 |
-| `nameMarkBuddyPout` | frontend/js/avatars.js:10076 |
-| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9350 |
-| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:5963 |
-| `nameMarkBuddyPut` | frontend/js/avatars.js:5228 |
-| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7738 |
-| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8399 |
-| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8395 |
-| `nameMarkBuddyReact` | frontend/js/avatars.js:9441 |
-| `nameMarkBuddyRefit` | frontend/js/avatars.js:8438 |
-| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8473 |
-| `nameMarkBuddyRelease` | frontend/js/avatars.js:8908 |
-| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:6976 |
-| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4336 |
-| `nameMarkBuddyRestore` | frontend/js/avatars.js:5054 |
-| `nameMarkBuddyRide` | frontend/js/avatars.js:5263 |
-| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5347 |
-| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5334 |
-| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5320 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10622 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10612 |
-| `nameMarkBuddyRoute` | frontend/js/avatars.js:6595 |
-| `nameMarkBuddyRubbed` | frontend/js/avatars.js:7111 |
-| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4307 |
-| `nameMarkBuddyScaled` | frontend/js/avatars.js:4370 |
-| `nameMarkBuddyScene` | frontend/js/avatars.js:8704 |
-| `nameMarkBuddySchedule` | frontend/js/avatars.js:8926 |
-| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:9935 |
-| `nameMarkBuddyScroller` | frontend/js/avatars.js:5438 |
-| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5567 |
-| `nameMarkBuddySeed` | frontend/js/avatars.js:2964 |
-| `nameMarkBuddySeen` | frontend/js/avatars.js:5426 |
-| `nameMarkBuddySelector` | frontend/js/avatars.js:5017 |
-| `nameMarkBuddySenses` | frontend/js/avatars.js:9589 |
-| `nameMarkBuddySetSize` | frontend/js/avatars.js:4316 |
-| `nameMarkBuddySettle` | frontend/js/avatars.js:8115 |
-| `nameMarkBuddySettleIn` | frontend/js/avatars.js:9030 |
-| `nameMarkBuddySettleKind` | frontend/js/avatars.js:9024 |
-| `nameMarkBuddyShape` | frontend/js/avatars.js:4377 |
-| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4380 |
-| `nameMarkBuddyShown` | frontend/js/avatars.js:3947 |
-| `nameMarkBuddyShowy` | frontend/js/avatars.js:8388 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10651 |
-| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4345 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10520 |
-| `nameMarkBuddySpotFor` | frontend/js/avatars.js:5039 |
-| `nameMarkBuddySpots` | frontend/js/avatars.js:4998 |
-| `nameMarkBuddySquash` | frontend/js/avatars.js:6937 |
-| `nameMarkBuddyStances` | frontend/js/avatars.js:4780 |
-| `nameMarkBuddyState` | frontend/js/avatars.js:8980 |
-| `nameMarkBuddyStateOf` | frontend/js/avatars.js:8973 |
-| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5102 |
-| `nameMarkBuddyStill` | frontend/js/avatars.js:3839 |
-| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7578 |
-| `nameMarkBuddyStir` | frontend/js/avatars.js:10209 |
-| `nameMarkBuddyStreak` | frontend/js/avatars.js:9523 |
-| `nameMarkBuddyStride` | frontend/js/avatars.js:6923 |
-| `nameMarkBuddyStrokes` | frontend/js/avatars.js:7084 |
-| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7445 |
-| `nameMarkBuddySupported` | frontend/js/avatars.js:7395 |
-| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4547 |
-| `nameMarkBuddySway` | frontend/js/avatars.js:5243 |
-| `nameMarkBuddyTab` | frontend/js/avatars.js:3939 |
-| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7866 |
-| `nameMarkBuddyTabSide` | frontend/js/avatars.js:7928 |
-| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4142 |
-| `nameMarkBuddyTempo` | frontend/js/avatars.js:5993 |
-| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4489 |
-| `nameMarkBuddyTick` | frontend/js/avatars.js:9149 |
-| `nameMarkBuddyTilt` | frontend/js/avatars.js:8811 |
-| `nameMarkBuddyToggles` | frontend/js/avatars.js:3354 |
-| `nameMarkBuddyTraits` | frontend/js/avatars.js:8957 |
-| `nameMarkBuddyTravel` | frontend/js/avatars.js:6685 |
-| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4270 |
-| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4266 |
-| `nameMarkBuddyVary` | frontend/js/avatars.js:8674 |
-| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7824 |
-| `nameMarkBuddyWake` | frontend/js/avatars.js:10169 |
-| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:8014 |
-| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8416 |
-| `nameMarkBuddyWander` | frontend/js/avatars.js:10107 |
-| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4102 |
-| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9879 |
-| `nameMarkBuddyWatch` | frontend/js/avatars.js:6168 |
-| `nameMarkBuddyWay` | frontend/js/avatars.js:6673 |
-| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4745 |
-| `nameMarkBuddyWork` | frontend/js/avatars.js:9730 |
-| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9726 |
-| `nameMarkBuddyWorld` | frontend/js/avatars.js:6995 |
-| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5138 |
+| `nameMarkBuddyDecide` | frontend/js/avatars.js:9067 |
+| `nameMarkBuddyDodge` | frontend/js/avatars.js:4217 |
+| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4288 |
+| `nameMarkBuddyDrift` | frontend/js/avatars.js:9380 |
+| `nameMarkBuddyDrop` | frontend/js/avatars.js:5160 |
+| `nameMarkBuddyDue` | frontend/js/avatars.js:5986 |
+| `nameMarkBuddyEase` | frontend/js/avatars.js:10077 |
+| `nameMarkBuddyEdges` | frontend/js/avatars.js:4621 |
+| `nameMarkBuddyEmote` | frontend/js/avatars.js:3372 |
+| `nameMarkBuddyEnter` | frontend/js/avatars.js:8196 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10406 |
+| `nameMarkBuddyExpress` | frontend/js/avatars.js:9290 |
+| `nameMarkBuddyFeel` | frontend/js/avatars.js:9895 |
+| `nameMarkBuddyFlies` | frontend/js/avatars.js:6555 |
+| `nameMarkBuddyFlip` | frontend/js/avatars.js:7289 |
+| `nameMarkBuddyFloaters` | frontend/js/avatars.js:4063 |
+| `nameMarkBuddyFollow` | frontend/js/avatars.js:5603 |
+| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5812 |
+| `nameMarkBuddyFrames` | frontend/js/avatars.js:8847 |
+| `nameMarkBuddyGait` | frontend/js/avatars.js:6545 |
+| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8879 |
+| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:9057 |
+| `nameMarkBuddyGlue` | frontend/js/avatars.js:5542 |
+| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5591 |
+| `nameMarkBuddyGo` | frontend/js/avatars.js:6707 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10783 |
+| `nameMarkBuddyHalt` | frontend/js/avatars.js:8895 |
+| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8844 |
+| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10251 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11519 |
+| `nameMarkBuddyHits` | frontend/js/avatars.js:4422 |
+| `nameMarkBuddyHold` | frontend/js/avatars.js:9375 |
+| `nameMarkBuddyHover` | frontend/js/avatars.js:7056 |
+| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:10098 |
+| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4537 |
+| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4546 |
+| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4734 |
+| `nameMarkBuddyJoy` | frontend/js/avatars.js:9340 |
+| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8886 |
+| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:5019 |
+| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5764 |
+| `nameMarkBuddyLandNear` | frontend/js/avatars.js:7030 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10361 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10356 |
+| `nameMarkBuddyLedges` | frontend/js/avatars.js:3981 |
+| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6345 |
+| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8865 |
+| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8645 |
+| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6648 |
+| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7497 |
+| `nameMarkBuddyLoud` | frontend/js/avatars.js:9943 |
+| `nameMarkBuddyMade` | frontend/js/avatars.js:3023 |
+| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4135 |
+| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7761 |
+| `nameMarkBuddyMind` | frontend/js/avatars.js:8042 |
+| `nameMarkBuddyMotion` | frontend/js/avatars.js:3808 |
+| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3842 |
+| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6350 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10522 |
+| `nameMarkBuddyNapMs` | frontend/js/avatars.js:5806 |
+| `nameMarkBuddyNear` | frontend/js/avatars.js:4022 |
+| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7950 |
+| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3854 |
+| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9577 |
+| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9570 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:10282 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11400 |
+| `nameMarkBuddyObstacles` | frontend/js/avatars.js:3991 |
+| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6329 |
+| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4378 |
+| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4723 |
+| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5418 |
+| `nameMarkBuddyPainted` | frontend/js/avatars.js:4615 |
+| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5900 |
+| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7698 |
+| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3973 |
+| `nameMarkBuddyPerches` | frontend/js/avatars.js:4810 |
+| `nameMarkBuddyPet` | frontend/js/avatars.js:7078 |
+| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8665 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10606 |
+| `nameMarkBuddyPoof` | frontend/js/avatars.js:7313 |
+| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4202 |
+| `nameMarkBuddyPopups` | frontend/js/avatars.js:4188 |
+| `nameMarkBuddyPout` | frontend/js/avatars.js:10088 |
+| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9362 |
+| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:5975 |
+| `nameMarkBuddyPut` | frontend/js/avatars.js:5240 |
+| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7750 |
+| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8411 |
+| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8407 |
+| `nameMarkBuddyReact` | frontend/js/avatars.js:9453 |
+| `nameMarkBuddyRefit` | frontend/js/avatars.js:8450 |
+| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8485 |
+| `nameMarkBuddyRelease` | frontend/js/avatars.js:8920 |
+| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:6988 |
+| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4348 |
+| `nameMarkBuddyRestore` | frontend/js/avatars.js:5066 |
+| `nameMarkBuddyRide` | frontend/js/avatars.js:5275 |
+| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5359 |
+| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5346 |
+| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5332 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10634 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10624 |
+| `nameMarkBuddyRoute` | frontend/js/avatars.js:6607 |
+| `nameMarkBuddyRubbed` | frontend/js/avatars.js:7123 |
+| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4319 |
+| `nameMarkBuddyScaled` | frontend/js/avatars.js:4382 |
+| `nameMarkBuddyScene` | frontend/js/avatars.js:8716 |
+| `nameMarkBuddySchedule` | frontend/js/avatars.js:8938 |
+| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:9947 |
+| `nameMarkBuddyScroller` | frontend/js/avatars.js:5450 |
+| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5579 |
+| `nameMarkBuddySeed` | frontend/js/avatars.js:2976 |
+| `nameMarkBuddySeen` | frontend/js/avatars.js:5438 |
+| `nameMarkBuddySelector` | frontend/js/avatars.js:5029 |
+| `nameMarkBuddySenses` | frontend/js/avatars.js:9601 |
+| `nameMarkBuddySetSize` | frontend/js/avatars.js:4328 |
+| `nameMarkBuddySettle` | frontend/js/avatars.js:8127 |
+| `nameMarkBuddySettleIn` | frontend/js/avatars.js:9042 |
+| `nameMarkBuddySettleKind` | frontend/js/avatars.js:9036 |
+| `nameMarkBuddyShape` | frontend/js/avatars.js:4389 |
+| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4392 |
+| `nameMarkBuddyShown` | frontend/js/avatars.js:3959 |
+| `nameMarkBuddyShowy` | frontend/js/avatars.js:8400 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10663 |
+| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4357 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10532 |
+| `nameMarkBuddySpotFor` | frontend/js/avatars.js:5051 |
+| `nameMarkBuddySpots` | frontend/js/avatars.js:5010 |
+| `nameMarkBuddySquash` | frontend/js/avatars.js:6949 |
+| `nameMarkBuddyStances` | frontend/js/avatars.js:4792 |
+| `nameMarkBuddyState` | frontend/js/avatars.js:8992 |
+| `nameMarkBuddyStateOf` | frontend/js/avatars.js:8985 |
+| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5114 |
+| `nameMarkBuddyStill` | frontend/js/avatars.js:3851 |
+| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7590 |
+| `nameMarkBuddyStir` | frontend/js/avatars.js:10221 |
+| `nameMarkBuddyStreak` | frontend/js/avatars.js:9535 |
+| `nameMarkBuddyStride` | frontend/js/avatars.js:6935 |
+| `nameMarkBuddyStrokes` | frontend/js/avatars.js:7096 |
+| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7457 |
+| `nameMarkBuddySupported` | frontend/js/avatars.js:7407 |
+| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4559 |
+| `nameMarkBuddySway` | frontend/js/avatars.js:5255 |
+| `nameMarkBuddyTab` | frontend/js/avatars.js:3951 |
+| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7878 |
+| `nameMarkBuddyTabSide` | frontend/js/avatars.js:7940 |
+| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4154 |
+| `nameMarkBuddyTempo` | frontend/js/avatars.js:6005 |
+| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4501 |
+| `nameMarkBuddyTick` | frontend/js/avatars.js:9161 |
+| `nameMarkBuddyTilt` | frontend/js/avatars.js:8823 |
+| `nameMarkBuddyToggles` | frontend/js/avatars.js:3366 |
+| `nameMarkBuddyTraits` | frontend/js/avatars.js:8969 |
+| `nameMarkBuddyTravel` | frontend/js/avatars.js:6697 |
+| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4282 |
+| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4278 |
+| `nameMarkBuddyVary` | frontend/js/avatars.js:8686 |
+| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7836 |
+| `nameMarkBuddyWake` | frontend/js/avatars.js:10181 |
+| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:8026 |
+| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8428 |
+| `nameMarkBuddyWander` | frontend/js/avatars.js:10119 |
+| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4114 |
+| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9891 |
+| `nameMarkBuddyWatch` | frontend/js/avatars.js:6180 |
+| `nameMarkBuddyWay` | frontend/js/avatars.js:6685 |
+| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4757 |
+| `nameMarkBuddyWork` | frontend/js/avatars.js:9742 |
+| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9738 |
+| `nameMarkBuddyWorld` | frontend/js/avatars.js:7007 |
+| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5150 |
 | `nameMarkCompose` | frontend/js/avatars.js:1296 |
-| `nameMarkFigure` | frontend/js/avatars.js:3926 |
-| `nameMarkIdleAct` | frontend/js/avatars.js:2850 |
-| `nameMarkIdleQuiet` | frontend/js/avatars.js:2829 |
-| `nameMarkIdleTick` | frontend/js/avatars.js:2835 |
-| `nameMarkIdleWake` | frontend/js/avatars.js:2826 |
+| `nameMarkFigure` | frontend/js/avatars.js:3938 |
+| `nameMarkGenerated` | frontend/js/avatars.js:1461 |
+| `nameMarkIdleAct` | frontend/js/avatars.js:2862 |
+| `nameMarkIdleQuiet` | frontend/js/avatars.js:2841 |
+| `nameMarkIdleTick` | frontend/js/avatars.js:2847 |
+| `nameMarkIdleWake` | frontend/js/avatars.js:2838 |
 | `nameMarkKeyboard` | frontend/js/avatars.js:1139 |
 | `nameMarkLean` | frontend/js/avatars.js:929 |
-| `nameMarkLine` | frontend/js/avatars.js:2756 |
-| `nameMarkLive` | frontend/js/avatars.js:2765 |
+| `nameMarkLine` | frontend/js/avatars.js:2768 |
+| `nameMarkLive` | frontend/js/avatars.js:2777 |
 | `nameMarkLookLean` | frontend/js/avatars.js:372 |
 | `nameMarkNextSerial` | frontend/js/avatars.js:1090 |
 | `nameMarkOwnFor` | frontend/js/avatars.js:332 |
 | `nameMarkRasterise` | frontend/js/avatars.js:1315 |
-| `nameMarkReact` | frontend/js/avatars.js:2773 |
-| `nameMarkSay` | frontend/js/avatars.js:2786 |
-| `nameMarkShade` | frontend/js/avatars.js:3846 |
+| `nameMarkReact` | frontend/js/avatars.js:2785 |
+| `nameMarkSay` | frontend/js/avatars.js:2798 |
+| `nameMarkShade` | frontend/js/avatars.js:3858 |
 | `nameMarkSlot` | frontend/js/avatars.js:288 |
 | `nameMarkStyleClean` | frontend/js/avatars.js:306 |
-| `nameMarkSushi` | frontend/js/avatars.js:2595 |
+| `nameMarkSushi` | frontend/js/avatars.js:2607 |
 | `nameMarkTitle` | frontend/js/avatars.js:1039 |
+| `nameMarkWarmOwn` | frontend/js/avatars.js:1471 |
 | `nameMood` | frontend/js/avatars.js:377 |
-| `nmHex` | frontend/js/avatars.js:1694 |
-| `nmLineFor` | frontend/js/avatars.js:1707 |
-| `nmLuma` | frontend/js/avatars.js:1711 |
-| `nmMix` | frontend/js/avatars.js:1698 |
-| `nmbTick` | frontend/js/avatars.js:7561 |
-| `nmbTickArm` | frontend/js/avatars.js:7540 |
+| `nmHex` | frontend/js/avatars.js:1706 |
+| `nmLineFor` | frontend/js/avatars.js:1719 |
+| `nmLuma` | frontend/js/avatars.js:1723 |
+| `nmMix` | frontend/js/avatars.js:1710 |
+| `nmbTick` | frontend/js/avatars.js:7573 |
+| `nmbTickArm` | frontend/js/avatars.js:7552 |
 | `ownNameMarkStyle` | frontend/js/avatars.js:328 |
-| `placeNameMarkBuddy` | frontend/js/avatars.js:7374 |
-| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7708 |
+| `placeNameMarkBuddy` | frontend/js/avatars.js:7386 |
+| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7720 |
 | `registerCharacter` | frontend/js/avatars.js:1219 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:295 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11399 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11411 |
 | `watchNameMark` | frontend/js/avatars.js:1106 |
 
 ### frontend/js/batch-space.js (7)
@@ -28236,7 +28238,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22447)
+## Tests (22449)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30301,6 +30303,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_private_view_1110.py | 5 |
 | tests/test_process_ledger.py | 22 |
 | tests/test_profile_api.py | 5 |
+| tests/test_profile_face_warm.py | 2 |
 | tests/test_progress_phases.py | 10 |
 | tests/test_prompt_budget.py | 38 |
 | tests/test_prompt_prefix_stability.py | 4 |
@@ -31476,14 +31479,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:651 |
+| Needs hardware | docs/roadmap/LEDGER.md:650 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:644 |
+| Owner calls | docs/roadmap/LEDGER.md:643 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31664,7 +31667,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:785 |
+| Plan session briefs | docs/roadmap/LEDGER.md:784 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31718,25 +31721,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:801 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:885 |
+| chat | docs/roadmap/LEDGER.md:800 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:884 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:825 |
-| general | docs/roadmap/LEDGER.md:603 |
+| documents | docs/roadmap/LEDGER.md:824 |
+| general | docs/roadmap/LEDGER.md:602 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:789 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:897 |
+| graph | docs/roadmap/LEDGER.md:788 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:896 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:837 |
+| mindmap | docs/roadmap/LEDGER.md:836 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:861 |
+| timeline | docs/roadmap/LEDGER.md:860 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:849 |
+| ui-modernisation | docs/roadmap/LEDGER.md:848 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:813 |
+| whiteboard | docs/roadmap/LEDGER.md:812 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:873 |
+| world-class | docs/roadmap/LEDGER.md:872 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
