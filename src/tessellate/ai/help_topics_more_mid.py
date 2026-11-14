@@ -1265,7 +1265,7 @@ MID_TOPICS.extend(
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
                 "functions, template strings, classes with fields, destructuring, "
                 "spread, getters and setters and private members are rewritten for it, "
-                "and generators, async and await, tagged templates and spread in new are stepped too; async generators, for await, top-level await and the arguments object inside them are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
+                "and generators, async and await, async generators, for await, top-level await, tagged templates and spread in new are stepped too. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},

@@ -6,7 +6,11 @@
   var STEP_BUDGET = 4000, REPR = 200, NAMES = 200;
   //: A statement is where a line stops, as a line is where VS Code stops.
   var SKIP = { BlockStatement: 1, FunctionDeclaration: 1, EmptyStatement: 1 };
+  //: The lowering's own statements (a loop's close, the top-level wrapper) start
+  //: with `__cl` or `__tl`; nobody wrote them, so no line stops on them.
+  var code = "";
   function isStatement(node) {
+    if (node.type === "ExpressionStatement" && /^\(?__(?:cl|tl)/.test(code.substr(node.start, 6))) return false;
     return /(?:Statement|Declaration)$/.test(node.type) && !SKIP[node.type];
   }
   function own(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
@@ -103,8 +107,10 @@
       //: The helpers below (promises, generators, spread) are the debugger's:
       //: their calls are not frames of the program.
       if ((n.type === "CallExpression" || n.type === "NewExpression") && s.doneExec_ && s.func_ && s.func_.node && s.func_.node.end) {
-        var fn = s.func_.node;
-        out.push({ name: (fn.id && fn.id.name) || "(anonymous)", line: top.line, scope: s.scope });
+        var fn = s.func_.node, co = s.func_.coName;
+        //: A top-level await's body is the file itself: its line and scope go to the base frame.
+        if (co === "(top level)") { if (s.scope) top.scope = s.scope; continue; }
+        out.push({ name: co || (fn.id && fn.id.name) || "(anonymous)", line: top.line, scope: s.scope });
       }
     }
     return out.reverse();
@@ -153,7 +159,8 @@
   function snapshot(reason, fr, line, text) {
     var top = fr[0], locals = [], globals = [];
     var global = interp.getGlobalScope();
-    if (fr.length > 1) {
+    //: A top-level await's file is a function's body: its frame shows its scope's names as locals.
+    if (fr.length > 1 || top.scope !== global) {
       for (var s = top.scope; s && s !== global; s = s.parentScope) locals = locals.concat(names(s.object.properties, { "this": 1, arguments: 1 }));
       globals = names(global.object.properties, builtins);
     } else {
@@ -321,8 +328,47 @@
       });
     };
     g.Promise = Promise;
-    g.__async = function (self, fn) {
-      var gen = g.__gen(self, fn);
+    g.__tl = function (self, fn) { return g.__async(self, fn, "(top level)"); };
+    g.__close = function (it, r) { if (r && !r.done && typeof it["return"] === "function") it["return"](); };
+    g.__aclose = function (it, r) { if (r && !r.done && typeof it["return"] === "function") return it["return"](); };
+    g.__aiter = function (v) {
+      if (v != null && typeof v.length !== "number" && typeof v.next === "function") return v;
+      var s = g.__iter(v);
+      return { next: function () { var r = s.next(); return Promise.resolve(r.value).then(function (x) { return { value: x, done: r.done }; }); } };
+    };
+    var AW = {};
+    g.__aw = function (v) { return g.__yield({ __aw: AW, v: v }); };
+    g.__ayieldStar = function (it) {
+      it = g.__aiter(it);
+      var r, sent;
+      while (!(r = g.__aw(it.next(sent))).done) sent = g.__yield(r.value);
+      return r.value;
+    };
+    //: An async generator is a generator whose `await`s are tagged (`__aw`) so
+    //: the driver can tell them from its `yield`s; requests wait in a queue.
+    g.__asyncgen = function (self, fn, name) {
+      var gen = g.__gen(self, fn, name), queue = [], busy = false, o = {};
+      function pump() {
+        if (busy || !queue.length) return;
+        busy = true;
+        var req = queue[0];
+        function done(ok, v) { queue.shift(); busy = false; if (ok) req.res(v); else req.rej(v); pump(); }
+        function run(how, arg) {
+          var r;
+          try { r = gen[how](arg); } catch (e) { done(false, e); return; }
+          var v = r.value;
+          if (!r.done && v && v.__aw === AW) { Promise.resolve(v.v).then(function (x) { run("next", x); }, function (e) { run("throw", e); }); return; }
+          Promise.resolve(v).then(function (x) { done(true, { value: x, done: r.done }); }, function (e) { if (r.done) done(false, e); else run("throw", e); });
+        }
+        run(req.how, req.arg);
+      }
+      ["next", "return", "throw"].forEach(function (how) {
+        o[how] = function (arg) { return new Promise(function (res, rej) { queue.push({ how: how, arg: arg, res: res, rej: rej }); pump(); }); };
+      });
+      return o;
+    };
+    g.__async = function (self, fn, name) {
+      var gen = g.__gen(self, fn, name);
       return new Promise(function (res, rej) {
         function step(how, arg) {
           var r;
@@ -363,7 +409,6 @@
         if (how === "throw") it.throwException(v);
         return result(how === "return" ? v : undefined, true);
       }
-      if (how === "return") { st.done = true; st.frames = null; return result(v, true); }
       st.running = true;
       if (!st.started) {
         st.started = true;
@@ -377,6 +422,19 @@
       var frames = st.frames;
       st.frames = null;
       for (var i = 0; i < frames.length; i++) stack.push(frames[i]);
+      //: `return` unwinds from the yield, so a `finally` on the way runs (and may yield).
+      if (how === "return") {
+        //: Not `unwind`, which would stop at the `yield` call's own state as if it
+        //: were the function returning: the innermost `try` above the body's call
+        //: takes the return (its `finally` runs, even one that yields); with none,
+        //: the call itself returns it.
+        var at = stack.length - frames.length + 1, j = stack.length - 1;
+        while (j > at && stack[j].node.type !== "TryStatement") j--;
+        stack.length = j + 1;
+        if (j > at) stack[j].cv = { type: I.Completion.RETURN, value: v, label: undefined };
+        else stack[at].value = v;
+        return undefined;
+      }
       if (how === "throw") it.throwException(v);
       frames[frames.length - 1].value = v;
       return undefined;
@@ -385,7 +443,9 @@
     ["next", "return", "throw"].forEach(function (how) {
       it.setProperty(proto, how, it.createNativeFunction(function (v) { return resume(this, how, v); }), I.NONENUMERABLE_DESCRIPTOR);
     });
-    it.setProperty(g, "__gen", it.createNativeFunction(function (self, fn) {
+    it.setProperty(g, "__gen", it.createNativeFunction(function (self, fn, name) {
+      //: The frame of a resumed body is named for its function (`frames`).
+      if (typeof name === "string") fn.coName = name;
       var gen = it.createObjectProto(proto);
       gen.gs = { self: self, fn: fn, started: false, done: false, running: false, frames: null };
       return gen;
@@ -712,6 +772,7 @@
       return;
     }
     if (typeof d.source !== "string") return;
+    code = d.source;
     setBreaks(d.breaks || []);
     watches = (d.watches || []).map(String).slice(0, 50);
     DOM = Boolean(d.dom);

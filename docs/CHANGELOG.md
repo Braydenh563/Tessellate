@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, Debug: generators and async go the rest of the way: `return()` and a `for...of` break, return or throw run the generator's `finally`; async generators, `for await` and top-level await step; `arguments` works inside async and generator bodies; a resumed frame is named for its function (L-documents-99).
 - CodeQL: the PlantUML comment strip is a linear scan (no backtracking regex on a pasted file); the whiteboard route module lists its re-exports in `__all__`; a board test reads its CSS through `Path`.
 - CI leg 2: tests follow L-documents-47 (fetch before the editor), -89 (pan reads once per press) and the resolved `data-motion` read; the moving-arrow check uses `reducedMotionWanted()`; lint and math read text through `docStr`; the Gantt menu says Set timing; the Ruff help names Settings, Packages; the diagram builder topic keeps "Cancel changes nothing." under the 1,900 budget; credits regenerated.
 - CI fixes: the Ruff extra has its install notice sentence; document save harnesses stub `document` for the query block's "doc-saved" event; the new-note test follows L-documents-48's `startNewNote(1)`; three one-off docsverify sweeps removed (scratchpad cap).
