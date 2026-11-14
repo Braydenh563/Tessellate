@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: L180 closed; the enlarged view and framed Atlas clip are pinned by a test (INBOX 1840).
 - Chat plan: the 146 lines the open-work scan read as open (comments, docstrings, locals, taxonomy data) are reworded by hand or moved to code with the same matching; `open_scan --plan chat` reads 0 (L-chat-243, 2026-11-14).
 
 - Chat ledger: hardware audit of 32 rows, five marked genuine and 27 emulable with the step; L819 closed on a real 1.5B run, tablet and 390px widths measured with no overflow (2026-11-14).
