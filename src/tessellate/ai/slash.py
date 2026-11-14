@@ -158,7 +158,7 @@ _RUN: dict[str, Callable[[Session, str, datetime], str]] = {
     "today": _today,
     "yesterday": _yesterday,
     **slash_more.RUN,
-    "tools": tool_history.slash,
+    "tools": lambda session, arg, now: tool_history.slash(session, slash_more.count_arg(arg), now),
     "help": _help,
 }
 

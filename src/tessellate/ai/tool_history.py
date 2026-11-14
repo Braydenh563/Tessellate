@@ -77,11 +77,10 @@ def clear() -> None:
         _LOG.clear()
 
 
-def slash(session: Session, arg: str, now: datetime) -> str:
-    """`/tools [n]`: the newest calls, one line each."""
-    from tessellate.ai import slash_more
-
-    rows = recent(slash_more.count_arg(arg))
+def slash(session: Session, n: int, now: datetime) -> str:
+    """`/tools [n]`: the newest `n` calls, one line each (the caller parses `n`,
+    so this module imports nothing of the chat and stays out of the tool cycle)."""
+    rows = recent(n)
     if not rows:
         return "No tool calls yet. When the assistant uses a tool, it is listed here with what came back."
     lines = []
