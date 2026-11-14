@@ -8779,6 +8779,9 @@ input[type="color"].wb-mixed {
   #tab-documents .doc-dock-identity > .doc-title-input {
     flex: 1 1 0;
     min-width: 0;
+    /* At 320 the identity is 73px wide: the back square, a gap and the title, whose own side padding and margin (25.6px) were wider than the 21px left, so the row ran 7px past its box (overlap.js). */
+    margin-inline: 0;
+    padding-inline: var(--space-1);
   }
   /* A diagram's three views keep their row to themselves: beside them the title was 21px wide on a new diagram, no room to read or name it (measured at 390), so the back and the title take a row under the toggle and the views. */
   #tab-documents.doc-is-diagram .doc-dock {

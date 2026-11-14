@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 35 | 0 | 19 | 229 |
+| world-class | 130 | 63 | 35 | 0 | 19 | 228 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 106 | 2 | 130 | 1117 |
+| all | 553 | 457 | 106 | 2 | 130 | 1116 |
 
 ## graph
 
@@ -562,7 +562,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-31** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
 - [ ] **L-world-class-32** `world-class` open, M: Settings sweep: two avatar look pickers and the web search switch do not undo. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-12. Evidence: profile-look-look and profile-look-mood (companion-settings.js:146 markPrefsDirty) and pref-web-search stay NOT UNDONE in the sweep; the first two keep the style in memory, so a later autosave re-sends it
-- [ ] **L-world-class-39** `world-class` open, M: Overlap sweep: doc-dock-identity 7px at 320 and doc-sidebar-tabs 5px at 820 still overflow. From overlap.js 2026-11-14 after L-world-class-36. Evidence: scratchpad/ui-sweeps/overlap.js ONLY=documents: span.doc-dock-identity 7px at 320, div#doc-sidebar-tabs 5px at 820
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50
 
 ## general

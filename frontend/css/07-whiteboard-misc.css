@@ -2319,9 +2319,10 @@ body.scroll-top-visible .skills-split > .tab-main {
     padding-right: 0;
   }
   /* At 192px even the whole width is 160px against the two tabs' 182: the
-     tabs-line's --space-5 of side room drops to --space-2 here only. */
+     tabs-line's --space-5 of side room drops to --space-1 here only (at 820
+     the box is 158px and the pair, at --space-2, ran 5px past it). */
   .doc-sidebar-tabs > [role="tab"] {
-    padding-inline: var(--space-2);
+    padding-inline: var(--space-1);
   }
 }
 /* **The strip is square, the paint on it is not.** Reported as "square tab
