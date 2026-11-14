@@ -6444,6 +6444,7 @@ PANEL_FIXED_JS = {
     "tag-suggest.js": "an anchored suggestion panel",
     "update-dialogs.js": "update prompts: small, blocking",
     "whiteboard-export.js": "the export dialog, moved from whiteboard.js with its anchored panel",
+    "whiteboard-map-marks.js": "the marker and filter popovers, moved from whiteboard-map.js",
     "whiteboard-format.js": "an anchored panel",
     "whiteboard-map.js": "anchored map panels",
     "whiteboard-comments.js": "anchored board panels",

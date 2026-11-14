@@ -185,14 +185,18 @@ EXPECTED = {
         '"That file is too large to be a library (8 MB at most)."',
         '"That file is not a Tessellate library."',
     ],
-    'whiteboard-map.js': [
-        '"That topic\'s link is not a web address."',
+    'whiteboard-map-marks.js': [
+        '"That time has gone: pick a later due date for a reminder."',
+    ],
+    'whiteboard-map-strip.js': [
         '"A topic\'s link has to be an http, https or mailto address."',
         '"That file is not a picture."',
+    ],
+    'whiteboard-map.js': [
+        '"That topic\'s link is not a web address."',
         '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
-        '"That time has gone: pick a later due date for a reminder."',
     ],
     'whiteboard-comments.js': [
         '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',

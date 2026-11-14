@@ -115,8 +115,11 @@ def run(body: str):
         script = Path(tmp) / "body.js"
         harness.write_text(HARNESS, encoding="utf-8")
         script.write_text(SCENE + body, encoding="utf-8")
+        #: The edge-end maths moved to its own wrapped file (L286); the scene loads both as one script.
+        both = Path(tmp) / "whiteboard-map.js"
+        both.write_text(frontend_text("whiteboard-map.js"), encoding="utf-8")
         proc = subprocess.run(
-            ["node", str(harness), str(MAP_JS), str(script)], capture_output=True, text=True
+            ["node", str(harness), str(both), str(script)], capture_output=True, text=True
         )
     assert proc.returncode == 0, proc.stderr[-2000:]
     return json.loads(proc.stdout)
