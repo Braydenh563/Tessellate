@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8500, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11030, test files 2842, tests 22586, plan headings 691, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8500, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11034, test files 2844, tests 22594, plan headings 691, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8500)
 
@@ -2827,19 +2827,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatAttachmentStrip` | frontend/js/chat-turn.js:2299 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
 | `commitStagedImages` | frontend/js/chat-turn.js:2202 |
-| `continueRunControls` | frontend/js/chat-turn.js:2932 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2874 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2977 |
-| `manualPauseControls` | frontend/js/chat-turn.js:3006 |
-| `markFollowup` | frontend/js/chat-turn.js:3032 |
+| `continueRunControls` | frontend/js/chat-turn.js:2935 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2877 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2980 |
+| `manualPauseControls` | frontend/js/chat-turn.js:3009 |
+| `markFollowup` | frontend/js/chat-turn.js:3035 |
 | `mountChatTimer` | frontend/js/chat-turn.js:2251 |
 | `offerFollowups` | frontend/js/chat-turn.js:2137 |
 | `offerReminder` | frontend/js/chat-turn.js:2076 |
 | `paintChatTimer` | frontend/js/chat-turn.js:2238 |
-| `removeChatBubble` | frontend/js/chat-turn.js:3056 |
+| `removeChatBubble` | frontend/js/chat-turn.js:3059 |
 | `renderAgentQuestion` | frontend/js/chat-turn.js:1864 |
 | `renderMemoryProposal` | frontend/js/chat-turn.js:1948 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2830 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2833 |
 | `revalidateSelection` | frontend/js/chat-turn.js:2020 |
 | `saveFollowups` | frontend/js/chat-turn.js:2223 |
 | `selectionContextBlock` | frontend/js/chat-turn.js:2175 |
@@ -7360,9 +7360,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appendToolRow` | frontend/js/settings-controls.js:3898 |
 | `applyBackendChoice` | frontend/js/settings-controls.js:1437 |
 | `applyChatModel` | frontend/js/settings-controls.js:1619 |
-| `applyContrast` | frontend/js/settings-controls.js:5312 |
-| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5215 |
-| `applyHarmony` | frontend/js/settings-controls.js:5259 |
+| `applyContrast` | frontend/js/settings-controls.js:5326 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5229 |
+| `applyHarmony` | frontend/js/settings-controls.js:5273 |
 | `applyOcrModel` | frontend/js/settings-controls.js:1635 |
 | `applyToolFilter` | frontend/js/settings-controls.js:3962 |
 | `applyUtilityModel` | frontend/js/settings-controls.js:1654 |
@@ -7370,9 +7370,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `changePassword` | frontend/js/settings-controls.js:186 |
 | `chosenSkillTools` | frontend/js/settings-controls.js:2205 |
 | `chosenSkillVerify` | frontend/js/settings-controls.js:2184 |
-| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5338 |
-| `clearManualOverrides` | frontend/js/settings-controls.js:5303 |
-| `copyLogs` | frontend/js/settings-controls.js:5289 |
+| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5352 |
+| `clearManualOverrides` | frontend/js/settings-controls.js:5317 |
+| `copyLogs` | frontend/js/settings-controls.js:5303 |
 | `decorateThemeCards` | frontend/js/settings-controls.js:3321 |
 | `deleteProfile` | frontend/js/settings-controls.js:2098 |
 | `ensureAppearancePopOut` | frontend/js/settings-controls.js:3515 |
@@ -7390,13 +7390,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lanSwitch` | frontend/js/settings-controls.js:82 |
 | `lanTrustNetwork` | frontend/js/settings-controls.js:2633 |
 | `learnedBulk` | frontend/js/settings-controls.js:4650 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:5088 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:5120 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:5168 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:5131 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:5139 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:5083 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:5102 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:5102 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:5134 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:5182 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:5145 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:5153 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:5097 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:5116 |
 | `learnedDelete` | frontend/js/settings-controls.js:4860 |
 | `learnedEdit` | frontend/js/settings-controls.js:4813 |
 | `learnedExport` | frontend/js/settings-controls.js:4902 |
@@ -7407,13 +7407,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `learnedRow` | frontend/js/settings-controls.js:4696 |
 | `learnedRunNow` | frontend/js/settings-controls.js:4921 |
 | `learnedSetSwitch` | frontend/js/settings-controls.js:4616 |
-| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5348 |
+| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5362 |
 | `maintenanceDoctorRow` | frontend/js/settings-controls.js:3083 |
 | `maintenanceSay` | frontend/js/settings-controls.js:3059 |
 | `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3156 |
 | `mergeDuplicateGroup` | frontend/js/settings-controls.js:1988 |
 | `mergeNamedPrompts` | frontend/js/settings-controls.js:2111 |
-| `nearLogBottom` | frontend/js/settings-controls.js:5328 |
+| `nearLogBottom` | frontend/js/settings-controls.js:5342 |
 | `openMaintenanceFolder` | frontend/js/settings-controls.js:3147 |
 | `openTaskLog` | frontend/js/settings-controls.js:3367 |
 | `openUninstallSteps` | frontend/js/settings-controls.js:3167 |
@@ -7432,7 +7432,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderLanFirewall` | frontend/js/settings-controls.js:2495 |
 | `renderLanState` | frontend/js/settings-controls.js:2357 |
 | `renderLanTrust` | frontend/js/settings-controls.js:2547 |
-| `renderLearned` | frontend/js/settings-controls.js:5021 |
+| `renderLearned` | frontend/js/settings-controls.js:5035 |
 | `renderLearnedFromYou` | frontend/js/settings-controls.js:5012 |
 | `renderLearnedList` | frontend/js/settings-controls.js:4773 |
 | `renderLearnedSwitches` | frontend/js/settings-controls.js:4513 |
@@ -7441,15 +7441,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMemorySettings` | frontend/js/settings-controls.js:2828 |
 | `renderPinSettings` | frontend/js/settings-controls.js:3684 |
 | `renderRunBudget` | frontend/js/settings-controls.js:3816 |
-| `renderSkillFolderLine` | frontend/js/settings-controls.js:5429 |
-| `renderSkillSettings` | frontend/js/settings-controls.js:5411 |
+| `renderSkillFolderLine` | frontend/js/settings-controls.js:5443 |
+| `renderSkillSettings` | frontend/js/settings-controls.js:5425 |
 | `renderSmallModelAuto` | frontend/js/settings-controls.js:3420 |
 | `renderSmallModelMode` | frontend/js/settings-controls.js:3804 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2270 |
 | `renderToolFocus` | frontend/js/settings-controls.js:3778 |
 | `renderToolSettings` | frontend/js/settings-controls.js:3729 |
 | `resetAllFeatureModels` | frontend/js/settings-controls.js:1602 |
-| `resetThemeOnly` | frontend/js/settings-controls.js:5321 |
+| `resetThemeOnly` | frontend/js/settings-controls.js:5335 |
 | `restartMemoryMap` | frontend/js/settings-controls.js:1803 |
 | `restoreFullBackup` | frontend/js/settings-controls.js:2049 |
 | `runEmbeddingFallback` | frontend/js/settings-controls.js:1538 |
@@ -7468,7 +7468,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showCurrencyRates` | frontend/js/settings-controls.js:1007 |
 | `showLanQr` | frontend/js/settings-controls.js:2414 |
 | `showVoiceSample` | frontend/js/settings-controls.js:680 |
-| `skillRow` | frontend/js/settings-controls.js:5355 |
+| `skillRow` | frontend/js/settings-controls.js:5369 |
 | `syncLearnedSelectbar` | frontend/js/settings-controls.js:4638 |
 | `textToInputs` | frontend/js/settings-controls.js:2802 |
 | `textToSteps` | frontend/js/settings-controls.js:2795 |
@@ -13419,7 +13419,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (712)
+## Backend routes (714)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13428,7 +13428,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | DELETE | `clear` | src/tessellate/api/routes_usage.py:40 |
 |  | DELETE | `clear_ask_history` | src/tessellate/api/routes_ask_history.py:200 |
 |  | DELETE | `forget` | src/tessellate/api/routes_kept_words.py:79 |
-|  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:268 |
+|  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:287 |
 |  | GET | `list_ask_history` | src/tessellate/api/routes_ask_history.py:48 |
 |  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:90 |
 |  | GET | `list_categories` | src/tessellate/api/routes_categories.py:142 |
@@ -13437,7 +13437,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_duplicates` | src/tessellate/api/routes_duplicates.py:78 |
 |  | GET | `list_entities` | src/tessellate/api/routes_entities.py:68 |
 |  | GET | `list_entries` | src/tessellate/api/routes_entries.py:1791 |
-|  | GET | `list_facts` | src/tessellate/api/routes_learned.py:188 |
+|  | GET | `list_facts` | src/tessellate/api/routes_learned.py:207 |
 |  | GET | `list_questions` | src/tessellate/api/routes_questions.py:26 |
 |  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:517 |
 |  | GET | `list_tags` | src/tessellate/api/routes_tags.py:40 |
@@ -13466,7 +13466,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1099 |
 | `/address-names` | POST | `set_address_names` | src/tessellate/api/routes_auth.py:1505 |
 | `/all` | GET | `ranked` | src/tessellate/api/routes_resurface.py:129 |
-| `/answer-verdict` | POST | `mark_answer_wrong` | src/tessellate/api/routes_learned.py:114 |
+| `/answer-verdict` | POST | `mark_answer_wrong` | src/tessellate/api/routes_learned.py:115 |
+| `/answer-verdicts` | DELETE | `clear_answer_verdicts` | src/tessellate/api/routes_learned.py:141 |
+| `/answer-verdicts` | GET | `count_answer_verdicts` | src/tessellate/api/routes_learned.py:135 |
 | `/apply` | POST | `apply_update` | src/tessellate/api/routes_update.py:758 |
 | `/apply/status` | GET | `apply_status` | src/tessellate/api/routes_update.py:849 |
 | `/ask` | POST | `ask` | src/tessellate/api/routes_help.py:68 |
@@ -13525,7 +13527,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
 | `/budgets` | GET | `budgets` | src/tessellate/api/routes_bench.py:125 |
-| `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:312 |
+| `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:331 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
@@ -13556,9 +13558,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/confirmed/{fact_id}/restore` | POST | `restore_confirmed` | src/tessellate/api/routes_insights.py:647 |
 | `/contents` | GET | `read_contents` | src/tessellate/api/routes_documents.py:539 |
 | `/contents` | POST | `write_contents` | src/tessellate/api/routes_documents.py:563 |
-| `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:134 |
-| `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:54 |
-| `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:456 |
+| `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:153 |
+| `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:55 |
+| `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:475 |
 | `/count` | GET | `count_entries` | src/tessellate/api/routes_entries.py:1957 |
 | `/counts` | GET | `counts` | src/tessellate/api/routes_questions.py:45 |
 | `/counts` | GET | `reminder_counts` | src/tessellate/api/routes_reminders.py:257 |
@@ -13609,7 +13611,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:2121 |
 | `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:2092 |
 | `/export` | GET | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:111 |
-| `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:206 |
+| `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:225 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:52 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:767 |
@@ -13934,12 +13936,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1470 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:878 |
 | `/suggestions` | GET | `suggestions` | src/tessellate/api/routes_chat.py:120 |
-| `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:245 |
+| `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:264 |
 | `/summary` | GET | `summary` | src/tessellate/api/routes_questions.py:53 |
 | `/summary` | POST | `summary` | src/tessellate/api/routes_usage.py:35 |
 | `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2301 |
-| `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:253 |
-| `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:259 |
+| `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:272 |
+| `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:278 |
 | `/sync/file` | GET | `sync_file` | src/tessellate/api/routes_sync.py:76 |
 | `/sync/items` | GET | `sync_items` | src/tessellate/api/routes_sync.py:64 |
 | `/sync/manifest` | GET | `sync_manifest` | src/tessellate/api/routes_sync.py:57 |
@@ -13987,7 +13989,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:184 |
 | `/undo` | POST | `undo` | src/tessellate/api/routes_learned_audit.py:52 |
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
-| `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:294 |
+| `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:313 |
 | `/unlock` | POST | `unlock` | src/tessellate/api/routes_auth.py:1036 |
 | `/unlock` | POST | `unlock` | src/tessellate/api/routes_hello.py:285 |
 | `/unlock-vault` | POST | `unlock_vault` | src/tessellate/api/routes_auth.py:1192 |
@@ -13995,7 +13997,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/utilities/work` | GET | `work` | src/tessellate/api/routes_utilities.py:22 |
 | `/utility-model` | POST | `set_utility_model` | src/tessellate/api/routes_models.py:1078 |
 | `/verdict` | GET | `verdict` | src/tessellate/api/routes_privacy.py:95 |
-| `/verdict` | POST | `mark_verdict` | src/tessellate/api/routes_learned.py:91 |
+| `/verdict` | POST | `mark_verdict` | src/tessellate/api/routes_learned.py:92 |
 | `/vision-model` | POST | `set_vision_model` | src/tessellate/api/routes_models.py:1096 |
 | `/warm` | POST | `warm` | src/tessellate/api/routes_search.py:37 |
 | `/warm-filing` | POST | `warm_filing` | src/tessellate/api/routes_models.py:384 |
@@ -14110,12 +14112,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/then-and-now` | POST | `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:70 |
 | `/{entry_id}/unarchive` | POST | `unarchive_entry` | src/tessellate/api/routes_entries.py:2387 |
 | `/{entry_id}/wiki-rename` | POST | `wiki_rename` | src/tessellate/api/routes_entries.py:2334 |
-| `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:421 |
-| `/{fact_id}` | GET | `get_fact` | src/tessellate/api/routes_learned.py:383 |
-| `/{fact_id}` | PATCH | `patch_fact` | src/tessellate/api/routes_learned.py:391 |
+| `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:440 |
+| `/{fact_id}` | GET | `get_fact` | src/tessellate/api/routes_learned.py:402 |
+| `/{fact_id}` | PATCH | `patch_fact` | src/tessellate/api/routes_learned.py:410 |
 | `/{fact_id}` | POST | `set_state` | src/tessellate/api/routes_questions.py:65 |
-| `/{fact_id}/reset` | POST | `reset_fact` | src/tessellate/api/routes_learned.py:410 |
-| `/{fact_id}/restore` | POST | `restore_fact` | src/tessellate/api/routes_learned.py:444 |
+| `/{fact_id}/reset` | POST | `reset_fact` | src/tessellate/api/routes_learned.py:429 |
+| `/{fact_id}/restore` | POST | `restore_fact` | src/tessellate/api/routes_learned.py:463 |
 | `/{key}` | DELETE | `delete_type` | src/tessellate/api/routes_relations.py:77 |
 | `/{key}` | GET | `tidy_rows` | src/tessellate/api/routes_tidy.py:88 |
 | `/{key}` | PATCH | `patch_type` | src/tessellate/api/routes_relations.py:70 |
@@ -14138,7 +14140,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11030)
+## Backend modules (11034)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17410,15 +17412,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_button_lines` | src/tessellate/ai/composer_web.py:135 |
+| `_button_lines` | src/tessellate/ai/composer_web.py:137 |
 | `_host` | src/tessellate/ai/composer_web.py:59 |
-| `can_start` | src/tessellate/ai/composer_web.py:103 |
-| `can_start_here` | src/tessellate/ai/composer_web.py:112 |
-| `down_buttons` | src/tessellate/ai/composer_web.py:91 |
-| `page_summary` | src/tessellate/ai/composer_web.py:157 |
+| `can_start` | src/tessellate/ai/composer_web.py:105 |
+| `can_start_here` | src/tessellate/ai/composer_web.py:114 |
+| `down_buttons` | src/tessellate/ai/composer_web.py:93 |
+| `page_summary` | src/tessellate/ai/composer_web.py:159 |
 | `reads_link` | src/tessellate/ai/composer_web.py:45 |
-| `search_down` | src/tessellate/ai/composer_web.py:139 |
-| `start_reply` | src/tessellate/ai/composer_web.py:123 |
+| `search_down` | src/tessellate/ai/composer_web.py:141 |
+| `start_reply` | src/tessellate/ai/composer_web.py:125 |
 | `unreadable` | src/tessellate/ai/composer_web.py:74 |
 | `url_in` | src/tessellate/ai/composer_web.py:34 |
 | `web_off` | src/tessellate/ai/composer_web.py:63 |
@@ -18182,8 +18184,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2611 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2764 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2613 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2766 |
 
 ### src/tessellate/ai/help_words.py (6)
 
@@ -21297,7 +21299,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `fallback_events` | src/tessellate/api/chat_degrade.py:42 |
 | `falls_back` | src/tessellate/api/chat_degrade.py:34 |
 
-### src/tessellate/api/chat_extra.py (26)
+### src/tessellate/api/chat_extra.py (27)
 
 | Name | File:line |
 |---|---|
@@ -21319,11 +21321,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `name_events` | src/tessellate/api/chat_extra.py:265 |
 | `note_bearing` | src/tessellate/api/chat_extra.py:295 |
 | `notebook_events` | src/tessellate/api/chat_extra.py:75 |
+| `notes_instead` | src/tessellate/api/chat_extra.py:430 |
 | `read_events` | src/tessellate/api/chat_extra.py:250 |
 | `remark_facts` | src/tessellate/api/chat_extra.py:236 |
 | `reminder_events` | src/tessellate/api/chat_extra.py:177 |
 | `saved_joke` | src/tessellate/api/chat_extra.py:386 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:430 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:436 |
 | `starter_leads` | src/tessellate/api/chat_extra.py:103 |
 | `talk_events` | src/tessellate/api/chat_extra.py:312 |
 | `welcome_line` | src/tessellate/api/chat_extra.py:338 |
@@ -21546,23 +21549,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `one_turn_models` | src/tessellate/api/chat_turn.py:161 |
 | `one_turn_provider` | src/tessellate/api/chat_turn.py:155 |
 
-### src/tessellate/api/chat_web.py (13)
+### src/tessellate/api/chat_web.py (14)
 
 | Name | File:line |
 |---|---|
-| `_can_start_searxng` | src/tessellate/api/chat_web.py:126 |
-| `_home_place` | src/tessellate/api/chat_web.py:85 |
-| `_link_events` | src/tessellate/api/chat_web.py:131 |
-| `_offer_events` | src/tessellate/api/chat_web.py:92 |
-| `_search_service` | src/tessellate/api/chat_web.py:116 |
-| `_torn_events` | src/tessellate/api/chat_web.py:157 |
+| `_can_start_searxng` | src/tessellate/api/chat_web.py:131 |
+| `_home_place` | src/tessellate/api/chat_web.py:90 |
+| `_link_events` | src/tessellate/api/chat_web.py:136 |
+| `_notes_chip` | src/tessellate/api/chat_web.py:48 |
+| `_offer_events` | src/tessellate/api/chat_web.py:97 |
+| `_search_service` | src/tessellate/api/chat_web.py:121 |
+| `_torn_events` | src/tessellate/api/chat_web.py:162 |
 | `_unmatched_recents` | src/tessellate/api/chat_web.py:25 |
-| `_web_allowed` | src/tessellate/api/chat_web.py:48 |
-| `_web_chip` | src/tessellate/api/chat_web.py:145 |
+| `_web_allowed` | src/tessellate/api/chat_web.py:53 |
+| `_web_chip` | src/tessellate/api/chat_web.py:150 |
 | `_web_first` | src/tessellate/api/chat_web.py:42 |
-| `_web_page_row` | src/tessellate/api/chat_web.py:71 |
-| `_web_pref_on` | src/tessellate/api/chat_web.py:63 |
-| `nothing_found_meta` | src/tessellate/api/chat_web.py:111 |
+| `_web_page_row` | src/tessellate/api/chat_web.py:76 |
+| `_web_pref_on` | src/tessellate/api/chat_web.py:68 |
+| `nothing_found_meta` | src/tessellate/api/chat_web.py:116 |
 
 ### src/tessellate/api/downloads.py (3)
 
@@ -22966,37 +22970,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `lag_reports` | src/tessellate/api/routes_lag.py:54 |
 | `record_lag` | src/tessellate/api/routes_lag.py:36 |
 
-### src/tessellate/api/routes_learned.py (27)
+### src/tessellate/api/routes_learned.py (29)
 
 | Name | File:line |
 |---|---|
-| `AnswerVerdictBody` | src/tessellate/api/routes_learned.py:105 |
-| `BulkBody` | src/tessellate/api/routes_learned.py:305 |
-| `CorrectionBody` | src/tessellate/api/routes_learned.py:36 |
-| `FactPatch` | src/tessellate/api/routes_learned.py:169 |
-| `ForgetBody` | src/tessellate/api/routes_learned.py:184 |
-| `SwitchBody` | src/tessellate/api/routes_learned.py:177 |
-| `UnforgetBody` | src/tessellate/api/routes_learned.py:290 |
-| `VerdictBody` | src/tessellate/api/routes_learned.py:79 |
-| `_unlearn_deletion` | src/tessellate/api/routes_learned.py:361 |
-| `add_correction` | src/tessellate/api/routes_learned.py:55 |
-| `bulk_action` | src/tessellate/api/routes_learned.py:313 |
-| `delete_fact` | src/tessellate/api/routes_learned.py:422 |
-| `export_learned` | src/tessellate/api/routes_learned.py:207 |
-| `forget_everything` | src/tessellate/api/routes_learned.py:269 |
-| `get_fact` | src/tessellate/api/routes_learned.py:384 |
-| `get_switches` | src/tessellate/api/routes_learned.py:254 |
-| `learned_summary` | src/tessellate/api/routes_learned.py:246 |
-| `list_corrections` | src/tessellate/api/routes_learned.py:135 |
-| `list_facts` | src/tessellate/api/routes_learned.py:189 |
-| `mark_answer_wrong` | src/tessellate/api/routes_learned.py:115 |
-| `mark_verdict` | src/tessellate/api/routes_learned.py:92 |
-| `patch_fact` | src/tessellate/api/routes_learned.py:392 |
-| `put_switches` | src/tessellate/api/routes_learned.py:260 |
-| `remove_correction` | src/tessellate/api/routes_learned.py:457 |
-| `reset_fact` | src/tessellate/api/routes_learned.py:411 |
-| `restore_fact` | src/tessellate/api/routes_learned.py:445 |
-| `unforget_everything` | src/tessellate/api/routes_learned.py:295 |
+| `AnswerVerdictBody` | src/tessellate/api/routes_learned.py:106 |
+| `BulkBody` | src/tessellate/api/routes_learned.py:324 |
+| `CorrectionBody` | src/tessellate/api/routes_learned.py:37 |
+| `FactPatch` | src/tessellate/api/routes_learned.py:188 |
+| `ForgetBody` | src/tessellate/api/routes_learned.py:203 |
+| `SwitchBody` | src/tessellate/api/routes_learned.py:196 |
+| `UnforgetBody` | src/tessellate/api/routes_learned.py:309 |
+| `VerdictBody` | src/tessellate/api/routes_learned.py:80 |
+| `_unlearn_deletion` | src/tessellate/api/routes_learned.py:380 |
+| `add_correction` | src/tessellate/api/routes_learned.py:56 |
+| `bulk_action` | src/tessellate/api/routes_learned.py:332 |
+| `clear_answer_verdicts` | src/tessellate/api/routes_learned.py:142 |
+| `count_answer_verdicts` | src/tessellate/api/routes_learned.py:136 |
+| `delete_fact` | src/tessellate/api/routes_learned.py:441 |
+| `export_learned` | src/tessellate/api/routes_learned.py:226 |
+| `forget_everything` | src/tessellate/api/routes_learned.py:288 |
+| `get_fact` | src/tessellate/api/routes_learned.py:403 |
+| `get_switches` | src/tessellate/api/routes_learned.py:273 |
+| `learned_summary` | src/tessellate/api/routes_learned.py:265 |
+| `list_corrections` | src/tessellate/api/routes_learned.py:154 |
+| `list_facts` | src/tessellate/api/routes_learned.py:208 |
+| `mark_answer_wrong` | src/tessellate/api/routes_learned.py:116 |
+| `mark_verdict` | src/tessellate/api/routes_learned.py:93 |
+| `patch_fact` | src/tessellate/api/routes_learned.py:411 |
+| `put_switches` | src/tessellate/api/routes_learned.py:279 |
+| `remove_correction` | src/tessellate/api/routes_learned.py:476 |
+| `reset_fact` | src/tessellate/api/routes_learned.py:430 |
+| `restore_fact` | src/tessellate/api/routes_learned.py:464 |
+| `unforget_everything` | src/tessellate/api/routes_learned.py:314 |
 
 ### src/tessellate/api/routes_learned_audit.py (6)
 
@@ -28277,7 +28283,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22586)
+## Tests (22594)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30061,6 +30067,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_no_system_torch_launcher.py | 4 |
 | tests/test_no_tracked_symlinks.py | 3 |
 | tests/test_no_ui_emoji.py | 3 |
+| tests/test_not_right_stored_l225.py | 4 |
 | tests/test_note_backlinks_kg1.py | 11 |
 | tests/test_note_by_number_1102.py | 5 |
 | tests/test_note_card_blocks_1029.py | 4 |
@@ -31059,6 +31066,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wcag_pass.py | 1 |
 | tests/test_web_analyse_2210.py | 5 |
 | tests/test_web_down_a9_l197.py | 2 |
+| tests/test_web_down_notes_l217.py | 4 |
 | tests/test_web_engine_memory.py | 2 |
 | tests/test_web_reader_site_builders.py | 4 |
 | tests/test_web_reply_meta_1550.py | 1 |
@@ -31546,14 +31554,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:600 |
+| Needs hardware | docs/roadmap/LEDGER.md:599 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:585 |
+| Owner calls | docs/roadmap/LEDGER.md:584 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31734,7 +31742,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1852 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:788 |
+| Plan session briefs | docs/roadmap/LEDGER.md:787 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31788,25 +31796,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:804 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:888 |
-| documents | docs/roadmap/LEDGER.md:169 |
-| documents | docs/roadmap/LEDGER.md:828 |
-| general | docs/roadmap/LEDGER.md:544 |
+| chat | docs/roadmap/LEDGER.md:803 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:887 |
+| documents | docs/roadmap/LEDGER.md:167 |
+| documents | docs/roadmap/LEDGER.md:827 |
+| general | docs/roadmap/LEDGER.md:543 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:792 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:900 |
+| graph | docs/roadmap/LEDGER.md:791 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:899 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:185 |
-| mindmap | docs/roadmap/LEDGER.md:840 |
-| timeline | docs/roadmap/LEDGER.md:306 |
-| timeline | docs/roadmap/LEDGER.md:864 |
-| ui-modernisation | docs/roadmap/LEDGER.md:189 |
-| ui-modernisation | docs/roadmap/LEDGER.md:852 |
-| whiteboard | docs/roadmap/LEDGER.md:122 |
-| whiteboard | docs/roadmap/LEDGER.md:816 |
-| world-class | docs/roadmap/LEDGER.md:308 |
-| world-class | docs/roadmap/LEDGER.md:876 |
+| mindmap | docs/roadmap/LEDGER.md:184 |
+| mindmap | docs/roadmap/LEDGER.md:839 |
+| timeline | docs/roadmap/LEDGER.md:305 |
+| timeline | docs/roadmap/LEDGER.md:863 |
+| ui-modernisation | docs/roadmap/LEDGER.md:188 |
+| ui-modernisation | docs/roadmap/LEDGER.md:851 |
+| whiteboard | docs/roadmap/LEDGER.md:120 |
+| whiteboard | docs/roadmap/LEDGER.md:815 |
+| world-class | docs/roadmap/LEDGER.md:307 |
+| world-class | docs/roadmap/LEDGER.md:875 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 66 | 29 | 10 | 59 | 271 |
+| chat | 176 | 66 | 27 | 10 | 59 | 269 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
-| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 440 | 98 | 10 | 183 | 1091 |
+| all | 553 | 441 | 96 | 10 | 183 | 1090 |
 
 ## graph
 
@@ -87,11 +87,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L212** `chat` partly, M: Keep the subject in follow-ons in Ask and Chat (C12). From OPEN.md:4514. Evidence: CHANGELOG.md:229 (W9 B21, B29) fixed 'tell me more about it' for composer; Ask client sends no objects, still open
 - [ ] **L214** `chat` partly, M: Stop showing '100% sure' for a small model's filing pick. From OPEN.md:827; OPEN.md:3466. Evidence: Needs a real small model to calibrate certainty Remaining 2026-11-14: calibrating the percent a small model's filing pick shows needs a real small model (llama-server missing here); the step is `scratchpad/llama-dev.sh serve`, file 30 notes with known categories, and compare the shown certainty with the hit rate.
 - [ ] **L215** `chat` partly, M: Fix engine-probe P1-P16 bugs and re-run the probe. From OPEN.md:942. Evidence: b9b13b7bb fixed P10-P13; rest of P1-P16 not re-run Remaining 2026-11-14: P1 to P9 and P14 to P16 were not re-run; the engine probe needs the real small model (llama-server missing here): `scratchpad/llama-dev.sh serve`, then the probe, then fix what it finds.
-- [ ] **L217** `chat` partly, M: Web search down: give more than failure, add clarify-first flow. From OPEN.md:3825. Evidence: composer_extra.py:47 handles start-search-service; clarify-first and similarity alternatives not found Remaining 2026-11-14: the clarify-first flow has no owner answer on the row, in HANDOVER or in CHAT_PLAN section 4; the SearXNG down row now has Start and an automatic retry (L167).
 - [ ] **L218** `chat` partly, M: Make composer replies more varied and less prepared (and the '?' question). From INBOX.md:904 B07. Evidence: Replies still from composer_smalltalk.py tables with variant picks; fully AI-like variation not built; '?' is an owner question
 - [ ] **L219** `chat` partly, M: Make composer compose in Ask rather than give the note back. From INBOX.md:904 B30. Evidence: Recency fixed; note-back is OPEN O1; composer batches r4 to r9 and tests/test_composer_chips_1110.py moved many replies
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
-- [ ] **L225** `chat` partly, M: Design per-answer 'wrong' feedback (E59) and code editor tabs (D52). From OPEN.md:4505; v1028-4.md Remaining. Evidence: Thumbs/Not right store: what it teaches and consent are owner calls Remaining 2026-11-14: what Not right teaches and the consent for it are owner calls with no answer written; code editor tabs (D52) are in the documents plan's files.
 - [ ] **L228** `chat` partly, M: Redesign Ask at half width and make replies differ across notes. From OPEN.md:356. Evidence: 67ef381 fixed open-note reply (composer_open.py); half-width Ask redesign not built
 - [ ] **L229** `chat` partly, M: Lead 'How do I change the widgets?' with the step sentence behind 'More about'. From OPEN.md:3514. Evidence: composer.py:317 voice=='help' and chat_said.py:636 compose(voice='help') exist; lead-with-step behaviour not confirmed. Remaining 2026-11-14: measured, the Guide's lead for this question is the Dashboard topic's first sentence (55 words, no step); `_HOW_TOP` in ai/composer_help.py makes a bare how-to take the first sentence, and the sentence with the step ("Customise arranges the page ... Widgets and Edit layout") is the fix target. composer_help.py belongs to the composer agent, so the change is left to it; the "More about" fold shape needs the owner's word.
 - [ ] **L230** `chat` partly, M: Finish no-model Chat for sums, convert, date, summarise-week and reminder from words. From OPEN.md:3582. Evidence: composer.py:_early_answer answers sums; utilities.py conversions and until_subject; no-model reminder creation not confirmed
@@ -181,6 +179,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
+- [ ] **L-documents-41** `documents` open, M: Code editor tabs (D52): a code document opens several files as tabs in the editor. From L225, OPEN.md:4505 (D52). Evidence: D52 is not in docs/roadmap/DOCUMENTS_PLAN.md
 
 ## mindmap
 

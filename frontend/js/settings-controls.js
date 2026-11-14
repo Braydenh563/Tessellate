@@ -5016,6 +5016,20 @@
     const text = learnedFromYouText(sum);
     line.textContent = text;
     line.classList.toggle("hidden", !text);
+    //: Answers marked not right (L225): a count and one button, kept only on this device.
+    const marks = (await apiJson("/learned/answer-verdicts").catch(() => null))?.count || 0;
+    let row = line.parentElement.querySelector(".learned-not-right");
+    if (!marks) return void row?.remove();
+    if (!row) {
+      row = document.createElement("p");
+      row.className = "muted row learned-not-right";
+      line.after(row);
+    }
+    const clear = smallButton("ph:eraser Clear answers marked not right", "Forget every answer you marked not right", async () => {
+      await api("/learned/answer-verdicts", { method: "DELETE" });
+      renderLearnedFromYou();
+    }, true);
+    row.replaceChildren(`${nounCount(marks, "answer mark")} kept on this device. `, clear);
   }
 
   async function renderLearned() {

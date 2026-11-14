@@ -8,6 +8,8 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Chat: a regenerate or an edit and resend keeps every version of the answer (a 1 of N pager under it), and Regenerate with answers once with the same model, another installed one or none (L165)
 - Chat and notes: a Chart row in the / menu makes a bar or line chart from pasted values, saves it as a chart block that draws in the note and exports as SVG, PNG or CSV (L171); "what are my goals" and "show my lists" answer from the notes tagged or headed so, with no model (L254)
+- Chat: a web search that cannot run offers a "Search my notes instead" chip beside Start SearXNG, and a question that fits notes and web asks "Did you mean your notes or the web?" first (L217)
+- Chat: the first "not right" on an answer says it is stored only on this device, and Settings, Learned has a Clear answers marked not right row (L225)
 - Ask: a map or board whose words hold the question joins the answer's records as a map or board source card with an open link (L112)
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)

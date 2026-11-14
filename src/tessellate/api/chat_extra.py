@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, realise
+from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, composer_web, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
@@ -427,10 +427,18 @@ def _turn_label(content: str) -> str:
     return re.split(r"[:.!?]", first)[0].strip()[:80]
 
 
+def notes_instead(history: list[dict]) -> str:
+    """The question the "Search my notes instead" chip was offered under: the
+    last turn's, or "" when there is none (L217)."""
+    return str(history[-1].get("question") or "").strip() if history else ""
+
+
 def slot_reply(session: Session, question: str, history: list[dict]) -> str:
     """The reply to "Which note do you want pinned?" completes that act before anything
     routes it ("erm, the interesting bean one" is "Pin note 3"; INBOX 1570). The
     question itself when the last answer was not asking for a note."""
+    if question.strip() == composer_web.NOTES_INSTEAD:
+        return notes_instead(history) or question
     if not composer_suggest.pending_kind(history):
         return question
     #: The notes the other readers here read (`_notes`: visible, newest 400), not a query of its own.

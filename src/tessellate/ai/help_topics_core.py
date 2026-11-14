@@ -694,10 +694,10 @@ HELP_TOPICS: list[dict] = [
             "and sections; with it off you are told so and given the setting. "
             "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
             '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
-            'Settings", "Open the web panel" and "Use another provider"), and the panel '
+            'Settings", "Open the web panel" and "Use another provider", and a "Search my notes instead" chip that asks your notes alone), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
             "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
+            "you are asked, with a chip for your notes and one for the web (also for a question both fit: Did you mean your notes or the web?). To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
