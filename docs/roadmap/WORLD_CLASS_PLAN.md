@@ -979,8 +979,8 @@ nearest-neighbour index below 50k notes. The measured costs are elsewhere.
 
 **State 2026-09-24:** 1 is (b): the loop is built for
 filing (`ai/learning.py`, corrections in `AuditLog`) and search
-(`open_after_ask`); dismissed link pairs and accepted neighbourhoods were not
-traced (LEDGER L-world-class-85). 2 is built (B3). 3 is built 2026-10-04 (row 6; HISTORY, "row 6: paragraph vectors and evidence cards").
+(`open_after_ask`); dismissed link pairs and accepted neighbourhoods are traced (KG9; proved in
+`tests/test_link_learning_trace.py`, L-world-class-85). 2 is built (B3). 3 is built 2026-10-04 (row 6; HISTORY, "row 6: paragraph vectors and evidence cards").
 4 is B4, (b).
 
 ## 15. Inventions: eight things no notebook does, specified for Opus and Sonnet

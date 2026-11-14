@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 123 | 29 | 3 | 10 | 152 |
+| world-class | 0 | 122 | 29 | 3 | 10 | 151 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 512 | 100 | 5 | 121 | 984 |
+| all | 372 | 511 | 100 | 5 | 121 | 983 |
 
 ## graph
 
@@ -542,7 +542,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-79** `world-class` open, M: Move the model downloads, the scheduler, SearXNG and update threads onto the pool (F7). From WORLD_CLASS_PLAN.md:862. Evidence: tests/test_flaw_class_lints.py ratchet; 26 thread sites at :3775
 - [ ] **L-world-class-80** `world-class` open, S: One renderer in the Files card reading GET /files/readings (F10). From WORLD_CLASS_PLAN.md:864. Evidence: GET /files/readings exists (F10 view); the Files card does not read it (:864)
 - [ ] **L-world-class-81** `world-class` open, L: store.js: the next slices (reminders, the current note), each surface subscribing in place of its own copy (F12). From WORLD_CLASS_PLAN.md:866. Evidence: store.js has one slice, notes (:866)
-- [ ] **L-world-class-85** `world-class` open, S: Trace dismissed link pairs and accepted neighbourhoods into the learning loop. From WORLD_CLASS_PLAN.md:1020. Evidence: WORLD_CLASS_PLAN.md:1020 'dismissed link pairs and accepted neighbourhoods were not traced'
 - [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
 - [ ] **L-world-class-89** `world-class` open, S: Print and PDF of a document with its citations. From WORLD_CLASS_PLAN.md:1814. Evidence: WORLD_CLASS_PLAN.md:1814 'citations in it were not checked'
