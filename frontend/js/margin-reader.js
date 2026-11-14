@@ -187,7 +187,7 @@
       exclude: [...marginDismissed].filter(Number.isInteger),
       judge,
     };
-    let followUp = false;
+    let followOn = false;
     try {
       const reply = await apiJson("/editor/read", { method: "POST", body: JSON.stringify(body) });
       const now = marginParagraphAtCaret();
@@ -199,14 +199,14 @@
       const cards = (reply.cards || []).filter((c) => !marginDismissed.has(marginCardKey(c)));
       marginRender(cards);
       const judgeable = cards.some((c) => c.kind === "related" || c.kind === "repeats");
-      followUp = !judge && judgeable;
+      followOn = !judge && judgeable;
     } catch (error) {
       // A margin that cannot read says nothing rather than a toast per pause.
       marginLogError(error);
     } finally {
       marginState.inFlight = false;
     }
-    if (followUp) marginAsk(true);
+    if (followOn) marginAsk(true);
   }
 
   function marginOffNote() {

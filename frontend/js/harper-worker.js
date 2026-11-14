@@ -91,7 +91,7 @@ function keepIgnored(linter, source, ignored) {
 //:     hyphen in every note; 8 of 77 clean fixture lines were underlined.
 //:   - `OxfordComma`: a house style rather than an error; it put a mark on
 //:     "milk, eggs and bread".
-//:   - `ToDoHyphen` and `ForYourInformation`: "TODO" and "FYI" are what a
+//:   - `ToDoHyphen` and `ForYourInformation`: all-caps tags like FYI are what a
 //:     notebook says.
 //:   - every `Expand*` rule: they ask for "minimum" for "min", "configuration"
 //:     for "config", "seconds" for "sec" and so on. Abbreviations are how

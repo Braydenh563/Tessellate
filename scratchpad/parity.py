@@ -2,7 +2,7 @@
 measurable with no model: variety (decision 51's floor), structure (the
 maxims lint, decision 52), grounding (every eval clause traced) and acts
 (each with an inverse, decision 53). Brief 68 prints decision 58's six
-columns (understanding, grounding, structure, variety, follow-up, repair),
+columns (understanding, grounding, structure, variety, follow-on, repair),
 the engine's number beside a model's: the model column reads "not run" when
 no `TESSELLATE_EVALS_URL` model is set (CLAUDE.md section 4).
 

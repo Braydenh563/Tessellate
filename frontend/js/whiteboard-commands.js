@@ -402,7 +402,7 @@ function wbCommandsLive() {
   const view = document.getElementById("library-view-whiteboard");
   const canvas = document.getElementById("wb-canvas-view");
   //: Rendered, not only un-hidden: the Library tab hides by its own panel,
-  //: so a board left open there kept these classes while Notes or Ask was on
+  //: so a board still showing there kept these classes while Notes or Ask was on
   //: screen, and a stray Ctrl+V dropped an image onto the unseen board (and
   //: started captioning it). `getClientRects()` is empty under any hidden
   //: ancestor.

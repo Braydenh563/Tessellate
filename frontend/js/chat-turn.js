@@ -635,7 +635,7 @@ chatSendTurn.stage = {
     //: costs nothing and closes every path at once, which is the property the
     //: success-path-only version could never have.
     timeline.finalise?.();
-    //: Whatever step group is still open stops saying "Working", see
+    //: Whatever step group is still running stops saying "Working", see
     //: `agentTimeline.finish`.
     timeline.finish?.();
     //: …and the same for this turn's row in the activity panel, on the same
@@ -711,7 +711,7 @@ chatSendTurn.stage = {
       sentences: t.groundingSentences,
       composed: Boolean(t.meta?.composed),
     });
-    //: The page this turn went out to read, for a follow-up about it
+    //: The page this turn went out to read, for a follow-on about it
     //: (`webFollowUp`, web-clip.js).
     chatWeb.lastUrl = turnSources.find((source) => source.kind === "web" && source.url)?.url || null;
     if (t.groundingSentences?.length) {
@@ -838,7 +838,7 @@ chatSendTurn.stage = {
       // Start the run as its own message, down the same path the Skill dropdown
       // uses: so the plan, the ticked steps, the change list and every Undo
       // work here exactly as they do when the user picks the skill themselves.
-      // Deferred by a task because this turn is still finishing: it re-enables
+      // Postponed by a task because this turn is still finishing: it re-enables
       // the input box in `finally`, and the run needs to disable it again.
       //: A plan the model drew waits for Run the plan (row 3: approved once,
       //: with each step's writes listed); a skill the person saved starts.
@@ -1667,7 +1667,7 @@ function agentTimeline(holder, options = {}) {
       groupSummary(entry);
       current = null; // whatever comes next begins a fresh step
     },
-    //: The turn is over: whatever group is still open stops saying "Working".
+    //: The turn is over: whatever group is still running stops saying "Working".
     //: Called from the stream's `finally`, so it runs on an error and an
     //: abort too: a group left mid-sentence is how a stopped turn ends up
     //: looking like a running one forever.
@@ -1751,7 +1751,7 @@ function agentTimeline(holder, options = {}) {
       //: model finished without writing anything." That message is written by
       //: the app, after `finalise()` has already run, and `startAnswer` builds
       //: its node in the live, mid-stream state: a caret on a sentence that
-      //: was never streaming and no later pass to take it down.
+      //: was never streaming and no further pass to take it down.
       step.el.classList.remove("is-streaming", "is-generating");
       return step.body;
     },
@@ -2901,7 +2901,7 @@ async function forkFromBubble(bubble) {
 // Manual (step-through) mode's pause card: a text box to add what the agent
 // missed or answer a question it raised, and a Continue button, the answer
 // to "a manual mode" asked for directly, and the single most-requested
-// unbuilt thing on the roadmap. `onContinue(note)` gets whatever was typed,
+// missing thing on the roadmap. `onContinue(note)` gets whatever was typed,
 // or an empty string if nothing was.
 function manualPauseControls({ onContinue }) {
   const row = document.createElement("div");

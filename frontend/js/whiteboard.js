@@ -3257,7 +3257,7 @@ function wbRememberBoardView() {
   if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
   const t = d3.zoomTransform(container);
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
-  //: Past a reload too (per device, like the board's background image): the view of a board left open is its last.
+  //: Past a reload too (per device, like the board's background image): the view of a board still showing at close is its last.
   prefs.set(`wb-view-${id}`, JSON.stringify({ x: t.x, y: t.y, k: t.k }));
 }
 window.addEventListener("pagehide", wbRememberBoardView);
@@ -7682,7 +7682,7 @@ function wbUpdateSelectionBar(panning = false) {
   const gripsBottom = grips ? grips.getBoundingClientRect().bottom - hostRect.top : bottom;
   if (y < floor) y = Math.max(bottom, gripsBottom) + gapBelow;
   //: **At phone width the board bar is pinned to the top of the canvas**
-  //: (WHITEBOARD_PLAN section 7's open question, answered 2026-09-20 by
+  //: (WHITEBOARD_PLAN section 7's unsettled question, answered 2026-09-20 by
   //: building both and measuring them: `scratchpad/ui-sweeps/wbcontextphone.js`,
   //: five kinds high and low on the board, ten selections each way).
   //:
@@ -9512,7 +9512,7 @@ function wbLayoutCloneGrips() {
 //: selected so a second Ctrl+D steps on again. Leaves the clipboard alone,
 //: so a duplicate never overwrites something copied to paste later.
 async function wbDuplicateSelection() {
-  //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit follow-up):
+  //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit follow-on):
   //: the board's copy posts an object with no `parent_id`, so a duplicated
   //: topic landed as a loose root and undoing it left nothing selected.
   //: One selected topic is copied in place right after itself instead.
@@ -12556,7 +12556,7 @@ function wbPaintCommentMarks() {
   const wanted = [];
   for (const kind of ["node", "object", "sketch"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-      //: The mark counts what is still open; a thread that is all resolved
+      //: The mark counts what is unresolved; a thread that is all resolved
       //: keeps a quiet tick, so it can still be opened and read.
       //: A reply is as open as the comment it answers.
       const thread = wbItemComments(kind, item);
@@ -21662,7 +21662,7 @@ function wbLinkNearestT(d, p) {
 //: No rotate handle. Rotating a group means rotating each item about the
 //: group's centre, which for a card means a rotation *and* a move, and for a
 //: sketch means baking a rotation into a path that is already rotated. It is
-//: a real feature, not a line of code, and an unbuilt one is better absent
+//: a real feature, not a line of code, and a feature not made is better absent
 //: than drawn and inert.
 function wbMultiSelectionEntries() {
   const entries = [];
@@ -22704,7 +22704,7 @@ function renderWhiteboard() {
       const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(document.getElementById("whiteboard-container")).k);
       if (!step) return;
       // First real movement of this gesture, decide once whether this is
-      // a solo move or a bulk move of the whole multi-selection. Deferred
+      // a solo move or a bulk move of the whole multi-selection. Postponed
       // to here rather than "start" (see its own comment) specifically so
       // a zero-movement click never reaches this at all.
       if (d._bulkOrigin === undefined) {
@@ -24072,7 +24072,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection is deliberately postponed to the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }
@@ -25141,7 +25141,7 @@ function dragStart(event, d) {
     d._moveUndoBefore = WB_KIND_INFO.node.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("node", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection is deliberately postponed to the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }
