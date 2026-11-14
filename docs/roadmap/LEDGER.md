@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 32 | 1 | 0 | 2 | 33 |
+| documents | 0 | 27 | 1 | 0 | 7 | 28 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 587 | 129 | 2 | 165 | 1199 |
+| all | 483 | 582 | 129 | 2 | 170 | 1194 |
 
 ## graph
 
@@ -345,12 +345,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function
-- [ ] **L880** `documents` open, M: Brief 69 checks on desktop webview, dark panel rows, large SQL result and touch (hardware). From OPEN.md:608; OPEN.md:2912. Evidence: Desktop webview and touch hardware. Device-only remainder: the real desktop webview and real touch; dark panel rows, the large SQL result and emulated touch run here.
-- [ ] **L882** `documents` open, M: Verify .docx in Word, Format on large file, list chords on non-US layout, docx extra removal. From OPEN.md:632; OPEN.md:3684. Evidence: Needs Word and non-US keyboard. Doable here: docx export and the format and chord paths run here; Word itself and a non-US layout stay unchecked.
-- [ ] **L883** `documents` open, S: Verify autocorrect with IME on a real phone keyboard. From OPEN.md:639. Evidence: Real phone keyboard; W34 unverifiable. Device-only remainder: a real phone keyboard IME; composition events can be emulated here.
-- [ ] **L885** `documents` open, L: Verify IME composition in editor engine and the blocked-request fallback (real IME). From OPEN.md:825; OPEN.md:3404. Evidence: Needs a real IME and a genuinely blocked request. Doable here: composition events and a blocked-request fallback can be scripted here (CDP composition, a route abort).
-- [ ] **L889** `documents` open, M: Verify writing desk Stop mid-pass, real thinking and draft prompts with a slow real backend. From OPEN.md:1933; OPEN.md:3083. Evidence: Needs slow real backend; stand-in answers in 150ms. Doable here: Stop mid-pass runs here against a delayed stub backend.
-- [ ] **L890** `documents` open, S: Verify real-clipboard Ctrl+V from Word and phone touch. From OPEN.md:3859. Evidence: Needs real clipboard source and phone. Device-only remainder: a real Word clipboard source and a phone; synthetic paste events run here.
 - [ ] **L891** `documents` open, M: Docs audit needing real print dialog, clipboard image paste, phone IME, Safari/Firefox, screen reader, harper cost. From audit-1102-docs.md 6. Evidence: Needs real browsers/devices and a human. Device-only remainder: real print dialog, Safari, screen reader, phone IME; Firefox, harper cost and image paste run here.
 - [ ] **L893** `documents` open, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human. Device-only remainder: real inference, Windows, screen reader; >10 block perf, light 390, touch emulation and print to PDF run here.
 - [ ] **L894** `documents` open, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost. Device-only remainder: a Windows display for ClearType; the 12 ms per key CodeMirror cost is measured here.
@@ -359,6 +353,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
+- [ ] **L-documents-89** `documents` open, M: Sweep other sync-generator streaming routes for the disconnect leak, and explain the 500000-char formatted-file save refusal. From L889. Evidence: sync-generator StreamingResponse bodies are not closed on disconnect under Starlette 1.10; a file over 500000 chars is refused on save with a 422
 
 ## mindmap
 
@@ -936,6 +931,11 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-documents-84** `documents` blocked-hardware, M: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here
+- [ ] **L-documents-85** `documents` blocked-hardware, M: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code
+- [ ] **L-documents-86** `documents` blocked-hardware, M: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested
+- [ ] **L-documents-87** `documents` blocked-hardware, M: Device check: writing desk Stop mid-pass against the real model via scratchpad/llama-dev.sh serve. From L889. Evidence: delayed reasoning stub: Stop reaches the model (hw889.js); llama-server not available here
+- [ ] **L-documents-88** `documents` blocked-hardware, M: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
 
 ## Plan session briefs
 
