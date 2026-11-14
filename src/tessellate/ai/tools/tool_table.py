@@ -158,10 +158,15 @@ def _save_skill(session: Session, args: dict) -> dict:
         raise ToolError(
             f"There are already {skills.MAX_SKILLS} saved skills: delete one first"
         )
+    before = next((s for s in stored if s.get("name") == skill["name"]), None)
     config.set_preference(
         "skills", [s for s in stored if s.get("name") != skill["name"]] + [skill]
     )
+    from tessellate.ai.tools.undo_inverses import skill_restore
+
     return {
+        #: A new skill is deleted again, an updated one put back as it was (L-chat-60).
+        "undo": skill_restore(before) if before else {"tool": "delete_skill", "arguments": {"name": skill["name"]}},
         "name": skill["name"],
         "updated": existed,
         "steps": len(skill["steps"]),

@@ -87,6 +87,7 @@ TOPIC_LEADS: dict[str, str] = {
     "wrap-lines": "Make wide tables and code fit the window instead of scrolling sideways.",
     "slash-commands": "Type a short command for an exact answer from your notes, with no AI.",
     "chat-acts": "Set reminders, tag notes or move them by saying so in one sentence.",
+    "chat-acts-boards": "Draw, connect and move things on a board, or add map nodes, by saying so.",
     "tasks": "Add, tick off or cancel tasks by telling Chat in plain words.",
     "nicknames": "Call Atlas whatever you like and it still answers.",
     "follow-up-trail": "See the chain of questions behind a follow-up and jump back to any of them.",

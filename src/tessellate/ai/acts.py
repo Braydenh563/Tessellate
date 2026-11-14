@@ -33,13 +33,14 @@ from tessellate.ai.act_registry import (
     ask_line,
     capability_line,
     guide_topic,
+    guide_topic_boards,
     palette_rows,
 )
 
 #: The table and its text are read through this module too (routes_chat,
 #: the tests), so the re-exports are named rather than incidental.
 __all__ = [
-    "ACTS", "CONFIRM_INTENTS", "Act", "_ACTS", "ask_line", "capability_line", "guide_topic", "palette_rows",
+    "ACTS", "CONFIRM_INTENTS", "Act", "_ACTS", "ask_line", "capability_line", "guide_topic", "guide_topic_boards", "palette_rows",
     "parse", "missing", "preview", "run", "inverse", "propose",
     "BOARD_ACTS", "BOARD", "board_parse", "board_label",
 ]

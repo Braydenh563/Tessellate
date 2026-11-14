@@ -53,7 +53,7 @@ _CONTRADICTION = re.compile(
     re.I,
 )
 _DOCUMENT = re.compile(
-    _LEAD + r"(?:make|create|write|draft|start|put together)(?: me)? (?:a |an )(?:new )?(?:long )?(?:document|doc|report|essay|write-up|writeup)\b.*$",
+    _LEAD + r"(?:make|create|write|draft|start|put together)(?: me)? (?:a |an )(?:new )?(?:long )?(?:document|doc|report|essay|write-up|writeup)\b[^:]*$",  # a colon gives the text: the document act (board_acts) saves it
     re.I,
 )
 _EXPORT = re.compile(
