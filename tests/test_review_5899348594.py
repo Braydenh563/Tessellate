@@ -80,3 +80,13 @@ def test_a_question_no_group_matches_gets_no_switched_off_line(ai_client):
     ai_client.put("/preferences", json={"disabled_tools": every})
     assert tool_off._top_groups("good morning to you") == []
     assert tool_off.switched_off_line("good morning to you") is None
+
+
+def test_the_apps_own_fallback_notes_are_never_called_unbacked():
+    """The fallback note names the assistant ("Atlas's answer"): the source check flagged that as a name
+    no note holds, so a fallback answer ended in a heads-up about the app itself (z69 on CI)."""
+    from tessellate.ai import validate
+    from tessellate.api.chat_said import MODEL_STOPPED_NOTE, MODEL_UNBACKED_NOTE
+
+    for note in (MODEL_UNBACKED_NOTE, MODEL_STOPPED_NOTE):
+        assert validate.check_model_answer(note, [], question="when is my dentist")["unbacked"] == [], note

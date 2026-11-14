@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
-from tessellate.ai import validate
+from tessellate.ai import librarian, validate
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, MODEL_UNBACKED_NOTE
 
 _SENTENCE = re.compile(r"(?<=[.?!])\s+")
@@ -25,7 +25,9 @@ def _unbacked_throughout(text: str, prepared: dict, question: str) -> bool:
     sentences = [s for s in _SENTENCE.split(text.strip()) if len(s.split()) >= 3]
     if not sentences:
         return False
-    sources = [question, *(str(note.get("content") or "") for note in prepared.get("notes") or [])]
+    #: The time words the prompt worked out for each note ("in 5 days") back the model as they do in the
+    #: final check (`chat_turn._note_with_hint`, Z69): without them a right answer was thrown away.
+    sources = [question, *(f"{note.get('content') or ''}{librarian._dates_hint(note)}" for note in prepared.get("notes") or [])]
     return all(validate.source_check(sentence, sources, question) for sentence in sentences)
 
 
