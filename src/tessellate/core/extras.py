@@ -634,6 +634,42 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    #: **Ruff (L-documents-50, DOCUMENTS_PLAN 25 row 4).** The Python linter, written in Rust and
+    #: compiled to WebAssembly (`@astral-sh/ruff-wasm-web`, MIT). Its `.wasm` is 10 MB, over the
+    #: 5 MB line for vendoring, so it is an optional download like Pyodide: an unused import, a
+    #: name that is not defined and the like underline in a .py document, with Ruff's own fix
+    #: where it has one. The page loads it lazily, from `api/run_sandbox.py`'s `/documents/ruff/`.
+    #: **To bump:** take the version from registry.npmjs.org, write its tarball `dist.size` and
+    #: `sha256sum`, and check the three member names still exist.
+    Extra(
+        id="ruff",
+        label="Python lint (Ruff)",
+        short_label="Ruff",
+        enables="Underlines in a .py document for an unused import or variable, a name that is "
+        "not defined and similar mistakes, with Ruff's own fix where it has one. It runs in the "
+        "page, on this computer, and works offline once installed.",
+        packages=("ruff-wasm-web 0.17.5",),
+        module="",
+        size="~3.7 MB download, 10 MB on disk",
+        caveat="Checks the rules Ruff turns on by default (syntax, imports, undefined names); "
+        "style rules are off.",
+        kind="download",
+        version="0.17.5",
+        licence="MIT",
+        downloads=(
+            Download(
+                url="https://registry.npmjs.org/@astral-sh/ruff-wasm-web/-/ruff-wasm-web-0.17.5.tgz",
+                sha256="5bdb5e6cc24ccb1036a637ebab9452338971ff5f7ed2bc7d5f293bcb3709e723",
+                size=3739705,
+                unpack="tar",
+                members=(
+                    ("package/ruff_wasm.js", "ruff_wasm.js"),
+                    ("package/ruff_wasm_bg.wasm", "ruff_wasm_bg.wasm"),
+                    ("package/LICENSE", "LICENSE.txt"),
+                ),
+            ),
+        ),
+    ),
     #: **LanguageTool (INBOX 1731 (f)).** The owner, 2026-11-10: "can we like
     #: incorporate all of it or whatever you suggest??". A second grammar
     #: checker, a separate Java program (LGPL-2.1, so it is run, never linked):
@@ -1130,8 +1166,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="code",
         label="Code",
-        about="Run Python files inside the app, offline.",
-        extras=("pyodide",),
+        about="Run Python files inside the app, and lint them, offline.",
+        extras=("pyodide", "ruff"),
     ),
 )
 

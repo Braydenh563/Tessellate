@@ -383,6 +383,8 @@ function docCodeLintSource(CM) {
     } else if (DOC_CHECK_TREE.has(ext)) {
       found = docTreeDiagnostics(CM, state);
       if (!found.length && ext === "ts") found = await sucraseFound();
+      //: A tree with no error: the small lint (documents-code-lint.js, lazy) for the mistakes that parse.
+      if (!found.length && (ext === "js" || ext === "ts") && (await lazyScript("/js/documents-code-lint.js"))) found = DOC_LINT_CONFIG.codeLint.js(CM, state);
       if (found.length && !(ext === "js" && docTreeHasJsx(CM, state))) {
         const scanned = docCodeFixes(text, ext, unit);
         if (scanned.length) found = docCodeActions("scan", scanned);
@@ -400,6 +402,8 @@ function docCodeLintSource(CM) {
           if (!fix) return d;
           return { ...d, actions: [{ name: fix.name, apply: (v, from) => docApplyCodeFix(v, "py-colon", "", fix.name, from) }] };
         });
+        //: The file compiles: Ruff, when its extra is installed (documents-code-lint.js, lazy), for what compiles and is still wrong.
+        if (!found.length && (await lazyScript("/js/documents-code-lint.js"))) found = await DOC_LINT_CONFIG.codeLint.py(CM, state);
       }
     } else if (DOC_CHECK_SCAN.has(ext)) {
       found = docCodeActions("scan", docCodeFixes(text, ext, unit));

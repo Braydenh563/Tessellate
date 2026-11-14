@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2790, tests 22379, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8540, frontend ids 2784, CSS sections 524, backend routes 714, backend modules 10890, test files 2791, tests 22387, plan headings 689, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8535)
+## Frontend functions (8540)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3792,181 +3792,191 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docLoadBeautify` | frontend/js/documents-code-format.js:20 |
 | `docYamlBlockLines` | frontend/js/documents-code-format.js:373 |
 
+### frontend/js/documents-code-lint.js (5)
+
+| Name | File:line |
+|---|---|
+| `found` | frontend/js/documents-code-lint.js:24 |
+| `js` | frontend/js/documents-code-lint.js:26 |
+| `load` | frontend/js/documents-code-lint.js:160 |
+| `py` | frontend/js/documents-code-lint.js:125 |
+| `ruffReady` | frontend/js/documents-code-lint.js:104 |
+
 ### frontend/js/documents-code.js (171)
 
 | Name | File:line |
 |---|---|
-| `DOC_CSS_COLORS` | frontend/js/documents-code.js:962 |
-| `docApplyCodeFix` | frontend/js/documents-code.js:5865 |
-| `docBalanceRange` | frontend/js/documents-code.js:1247 |
-| `docBracketColours` | frontend/js/documents-code.js:2381 |
-| `docBracketDepths` | frontend/js/documents-code.js:2364 |
-| `docCmSyncCodeTools` | frontend/js/documents-code.js:911 |
-| `docCodeActions` | frontend/js/documents-code.js:5880 |
-| `docCodeCompletionData` | frontend/js/documents-code.js:858 |
-| `docCodeCompletionSource` | frontend/js/documents-code.js:822 |
-| `docCodeEditing` | frontend/js/documents-code.js:5744 |
-| `docCodeFixNow` | frontend/js/documents-code.js:5847 |
-| `docCodeFixes` | frontend/js/documents-code.js:5469 |
-| `docCodeIndentAt` | frontend/js/documents-code.js:5729 |
-| `docCodeIndentLevel` | frontend/js/documents-code.js:5414 |
-| `docCodeInsertPoint` | frontend/js/documents-code.js:5460 |
-| `docCodeInsertPointForString` | frontend/js/documents-code.js:5547 |
-| `docCodeKeyPress` | frontend/js/documents-code.js:5965 |
-| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5530 |
-| `docCodeLineOf` | frontend/js/documents-code.js:5403 |
+| `DOC_CSS_COLORS` | frontend/js/documents-code.js:966 |
+| `docApplyCodeFix` | frontend/js/documents-code.js:5869 |
+| `docBalanceRange` | frontend/js/documents-code.js:1251 |
+| `docBracketColours` | frontend/js/documents-code.js:2385 |
+| `docBracketDepths` | frontend/js/documents-code.js:2368 |
+| `docCmSyncCodeTools` | frontend/js/documents-code.js:915 |
+| `docCodeActions` | frontend/js/documents-code.js:5884 |
+| `docCodeCompletionData` | frontend/js/documents-code.js:862 |
+| `docCodeCompletionSource` | frontend/js/documents-code.js:826 |
+| `docCodeEditing` | frontend/js/documents-code.js:5748 |
+| `docCodeFixNow` | frontend/js/documents-code.js:5851 |
+| `docCodeFixes` | frontend/js/documents-code.js:5473 |
+| `docCodeIndentAt` | frontend/js/documents-code.js:5733 |
+| `docCodeIndentLevel` | frontend/js/documents-code.js:5418 |
+| `docCodeInsertPoint` | frontend/js/documents-code.js:5464 |
+| `docCodeInsertPointForString` | frontend/js/documents-code.js:5551 |
+| `docCodeKeyPress` | frontend/js/documents-code.js:5969 |
+| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5534 |
+| `docCodeLineOf` | frontend/js/documents-code.js:5407 |
 | `docCodeLintSource` | frontend/js/documents-code.js:340 |
-| `docCodePairs` | frontend/js/documents-code.js:5718 |
-| `docCodeProblemMessage` | frontend/js/documents-code.js:5423 |
-| `docCodeProfile` | frontend/js/documents-code.js:4888 |
-| `docCodeScan` | frontend/js/documents-code.js:4976 |
-| `docCodeSnippetOptions` | frontend/js/documents-code.js:601 |
-| `docCodeSymbols` | frontend/js/documents-code.js:2448 |
-| `docCodeTools` | frontend/js/documents-code.js:878 |
-| `docColorAt` | frontend/js/documents-code.js:2019 |
-| `docColorSwatches` | frontend/js/documents-code.js:2059 |
-| `docCompleteTab` | frontend/js/documents-code.js:1880 |
-| `docCompletionExtras` | frontend/js/documents-code.js:4818 |
-| `docConsoleEval` | frontend/js/documents-code.js:3907 |
-| `docConsoleKey` | frontend/js/documents-code.js:3997 |
-| `docConsoleLang` | frontend/js/documents-code.js:3899 |
-| `docConsoleMessage` | frontend/js/documents-code.js:3967 |
-| `docConsoleOvertime` | frontend/js/documents-code.js:3952 |
-| `docCssColorFormat` | frontend/js/documents-code.js:1338 |
-| `docCssCompletionSource` | frontend/js/documents-code.js:1836 |
-| `docCssInBlock` | frontend/js/documents-code.js:1676 |
-| `docCssPropertyApply` | frontend/js/documents-code.js:1818 |
-| `docCssSources` | frontend/js/documents-code.js:1872 |
-| `docCssValueContext` | frontend/js/documents-code.js:1170 |
-| `docCssValueOptions` | frontend/js/documents-code.js:1211 |
-| `docCssValueTable` | frontend/js/documents-code.js:1182 |
-| `docCsvTableHtml` | frontend/js/documents-code.js:4465 |
-| `docDebugAct` | frontend/js/documents-code.js:3028 |
-| `docDebugBegin` | frontend/js/documents-code.js:2998 |
-| `docDebugBreakMenu` | frontend/js/documents-code.js:3234 |
-| `docDebugBreaks` | frontend/js/documents-code.js:3066 |
-| `docDebugEmpty` | frontend/js/documents-code.js:3381 |
-| `docDebugEnded` | frontend/js/documents-code.js:3016 |
-| `docDebugExtension` | frontend/js/documents-code.js:3118 |
-| `docDebugHere` | frontend/js/documents-code.js:3260 |
-| `docDebugKeepBreaks` | frontend/js/documents-code.js:3100 |
-| `docDebugKey` | frontend/js/documents-code.js:3056 |
-| `docDebugLineButton` | frontend/js/documents-code.js:3389 |
-| `docDebugOn` | frontend/js/documents-code.js:2967 |
-| `docDebugRemoveButton` | frontend/js/documents-code.js:3402 |
-| `docDebugRender` | frontend/js/documents-code.js:3418 |
-| `docDebugSavedBreaks` | frontend/js/documents-code.js:3089 |
-| `docDebugStopped` | frontend/js/documents-code.js:2985 |
-| `docDebugToggleAt` | frontend/js/documents-code.js:3213 |
-| `docDebugToggleHere` | frontend/js/documents-code.js:3227 |
-| `docDebugValueRow` | frontend/js/documents-code.js:3354 |
-| `docDebugView` | frontend/js/documents-code.js:3273 |
-| `docDefinitionsOf` | frontend/js/documents-code.js:2700 |
+| `docCodePairs` | frontend/js/documents-code.js:5722 |
+| `docCodeProblemMessage` | frontend/js/documents-code.js:5427 |
+| `docCodeProfile` | frontend/js/documents-code.js:4892 |
+| `docCodeScan` | frontend/js/documents-code.js:4980 |
+| `docCodeSnippetOptions` | frontend/js/documents-code.js:605 |
+| `docCodeSymbols` | frontend/js/documents-code.js:2452 |
+| `docCodeTools` | frontend/js/documents-code.js:882 |
+| `docColorAt` | frontend/js/documents-code.js:2023 |
+| `docColorSwatches` | frontend/js/documents-code.js:2063 |
+| `docCompleteTab` | frontend/js/documents-code.js:1884 |
+| `docCompletionExtras` | frontend/js/documents-code.js:4822 |
+| `docConsoleEval` | frontend/js/documents-code.js:3911 |
+| `docConsoleKey` | frontend/js/documents-code.js:4001 |
+| `docConsoleLang` | frontend/js/documents-code.js:3903 |
+| `docConsoleMessage` | frontend/js/documents-code.js:3971 |
+| `docConsoleOvertime` | frontend/js/documents-code.js:3956 |
+| `docCssColorFormat` | frontend/js/documents-code.js:1342 |
+| `docCssCompletionSource` | frontend/js/documents-code.js:1840 |
+| `docCssInBlock` | frontend/js/documents-code.js:1680 |
+| `docCssPropertyApply` | frontend/js/documents-code.js:1822 |
+| `docCssSources` | frontend/js/documents-code.js:1876 |
+| `docCssValueContext` | frontend/js/documents-code.js:1174 |
+| `docCssValueOptions` | frontend/js/documents-code.js:1215 |
+| `docCssValueTable` | frontend/js/documents-code.js:1186 |
+| `docCsvTableHtml` | frontend/js/documents-code.js:4469 |
+| `docDebugAct` | frontend/js/documents-code.js:3032 |
+| `docDebugBegin` | frontend/js/documents-code.js:3002 |
+| `docDebugBreakMenu` | frontend/js/documents-code.js:3238 |
+| `docDebugBreaks` | frontend/js/documents-code.js:3070 |
+| `docDebugEmpty` | frontend/js/documents-code.js:3385 |
+| `docDebugEnded` | frontend/js/documents-code.js:3020 |
+| `docDebugExtension` | frontend/js/documents-code.js:3122 |
+| `docDebugHere` | frontend/js/documents-code.js:3264 |
+| `docDebugKeepBreaks` | frontend/js/documents-code.js:3104 |
+| `docDebugKey` | frontend/js/documents-code.js:3060 |
+| `docDebugLineButton` | frontend/js/documents-code.js:3393 |
+| `docDebugOn` | frontend/js/documents-code.js:2971 |
+| `docDebugRemoveButton` | frontend/js/documents-code.js:3406 |
+| `docDebugRender` | frontend/js/documents-code.js:3422 |
+| `docDebugSavedBreaks` | frontend/js/documents-code.js:3093 |
+| `docDebugStopped` | frontend/js/documents-code.js:2989 |
+| `docDebugToggleAt` | frontend/js/documents-code.js:3217 |
+| `docDebugToggleHere` | frontend/js/documents-code.js:3231 |
+| `docDebugValueRow` | frontend/js/documents-code.js:3358 |
+| `docDebugView` | frontend/js/documents-code.js:3277 |
+| `docDefinitionsOf` | frontend/js/documents-code.js:2704 |
 | `docDiagnosticRange` | frontend/js/documents-code.js:82 |
-| `docEmmetAt` | frontend/js/documents-code.js:1107 |
-| `docEmmetBalance` | frontend/js/documents-code.js:1799 |
-| `docEmmetExpandAtCaret` | frontend/js/documents-code.js:1736 |
-| `docEmmetExpansion` | frontend/js/documents-code.js:1142 |
-| `docEmmetInfo` | frontend/js/documents-code.js:1699 |
-| `docEmmetIntended` | frontend/js/documents-code.js:1067 |
-| `docEmmetMarkupSyntax` | frontend/js/documents-code.js:1748 |
-| `docEmmetMatch` | frontend/js/documents-code.js:1685 |
-| `docEmmetPlace` | frontend/js/documents-code.js:1666 |
-| `docEmmetSnippets` | frontend/js/documents-code.js:1050 |
-| `docEmmetSource` | frontend/js/documents-code.js:1711 |
-| `docEmmetWrap` | frontend/js/documents-code.js:1761 |
-| `docEmmetWrapText` | frontend/js/documents-code.js:1268 |
-| `docFindInDocuments` | frontend/js/documents-code.js:2791 |
-| `docFormatCode` | frontend/js/documents-code.js:5814 |
-| `docGhostPlugin` | frontend/js/documents-code.js:1892 |
-| `docGhostSuffix` | frontend/js/documents-code.js:1229 |
-| `docGoToDefinition` | frontend/js/documents-code.js:2744 |
-| `docHoverDocs` | frontend/js/documents-code.js:2136 |
-| `docHoverLine` | frontend/js/documents-code.js:1587 |
+| `docEmmetAt` | frontend/js/documents-code.js:1111 |
+| `docEmmetBalance` | frontend/js/documents-code.js:1803 |
+| `docEmmetExpandAtCaret` | frontend/js/documents-code.js:1740 |
+| `docEmmetExpansion` | frontend/js/documents-code.js:1146 |
+| `docEmmetInfo` | frontend/js/documents-code.js:1703 |
+| `docEmmetIntended` | frontend/js/documents-code.js:1071 |
+| `docEmmetMarkupSyntax` | frontend/js/documents-code.js:1752 |
+| `docEmmetMatch` | frontend/js/documents-code.js:1689 |
+| `docEmmetPlace` | frontend/js/documents-code.js:1670 |
+| `docEmmetSnippets` | frontend/js/documents-code.js:1054 |
+| `docEmmetSource` | frontend/js/documents-code.js:1715 |
+| `docEmmetWrap` | frontend/js/documents-code.js:1765 |
+| `docEmmetWrapText` | frontend/js/documents-code.js:1272 |
+| `docFindInDocuments` | frontend/js/documents-code.js:2795 |
+| `docFormatCode` | frontend/js/documents-code.js:5818 |
+| `docGhostPlugin` | frontend/js/documents-code.js:1896 |
+| `docGhostSuffix` | frontend/js/documents-code.js:1233 |
+| `docGoToDefinition` | frontend/js/documents-code.js:2748 |
+| `docHoverDocs` | frontend/js/documents-code.js:2140 |
+| `docHoverLine` | frontend/js/documents-code.js:1591 |
 | `docHtmlDiagnostics` | frontend/js/documents-code.js:270 |
-| `docHtmlTextAt` | frontend/js/documents-code.js:1640 |
-| `docIndentGuides` | frontend/js/documents-code.js:2235 |
-| `docIndentMixFixes` | frontend/js/documents-code.js:5633 |
-| `docIndentSteps` | frontend/js/documents-code.js:2216 |
-| `docJsMemberSource` | frontend/js/documents-code.js:785 |
-| `docJsObjectKeys` | frontend/js/documents-code.js:780 |
+| `docHtmlTextAt` | frontend/js/documents-code.js:1644 |
+| `docIndentGuides` | frontend/js/documents-code.js:2239 |
+| `docIndentMixFixes` | frontend/js/documents-code.js:5637 |
+| `docIndentSteps` | frontend/js/documents-code.js:2220 |
+| `docJsMemberSource` | frontend/js/documents-code.js:789 |
+| `docJsObjectKeys` | frontend/js/documents-code.js:784 |
 | `docJsonDiagnostics` | frontend/js/documents-code.js:221 |
 | `docJsonErrorAt` | frontend/js/documents-code.js:103 |
-| `docJsonFixes` | frontend/js/documents-code.js:5557 |
-| `docJsxChildAt` | frontend/js/documents-code.js:1651 |
-| `docLoadEmmet` | frontend/js/documents-code.js:1619 |
-| `docMeasureNextFrame` | frontend/js/documents-code.js:2538 |
-| `docNamesIn` | frontend/js/documents-code.js:807 |
-| `docNativeSnippets` | frontend/js/documents-code.js:661 |
-| `docOpenCodeFixes` | frontend/js/documents-code.js:5895 |
-| `docOpenSymbols` | frontend/js/documents-code.js:4797 |
-| `docP5Source` | frontend/js/documents-code.js:645 |
-| `docPanelChord` | frontend/js/documents-code.js:3854 |
-| `docPanelToggle` | frontend/js/documents-code.js:3838 |
-| `docPickDefinition` | frontend/js/documents-code.js:2733 |
-| `docProblemsRender` | frontend/js/documents-code.js:3875 |
-| `docPyHost` | frontend/js/documents-code.js:2877 |
-| `docPyHover` | frontend/js/documents-code.js:2173 |
-| `docPyImports` | frontend/js/documents-code.js:708 |
-| `docPyStdlibRows` | frontend/js/documents-code.js:726 |
-| `docPyStdlibSource` | frontend/js/documents-code.js:734 |
-| `docPyStdlibTable` | frontend/js/documents-code.js:694 |
-| `docPyWarm` | frontend/js/documents-code.js:2897 |
-| `docPythonColonFix` | frontend/js/documents-code.js:5610 |
-| `docPythonDefines` | frontend/js/documents-code.js:2689 |
-| `docReferencesOf` | frontend/js/documents-code.js:2665 |
+| `docJsonFixes` | frontend/js/documents-code.js:5561 |
+| `docJsxChildAt` | frontend/js/documents-code.js:1655 |
+| `docLoadEmmet` | frontend/js/documents-code.js:1623 |
+| `docMeasureNextFrame` | frontend/js/documents-code.js:2542 |
+| `docNamesIn` | frontend/js/documents-code.js:811 |
+| `docNativeSnippets` | frontend/js/documents-code.js:665 |
+| `docOpenCodeFixes` | frontend/js/documents-code.js:5899 |
+| `docOpenSymbols` | frontend/js/documents-code.js:4801 |
+| `docP5Source` | frontend/js/documents-code.js:649 |
+| `docPanelChord` | frontend/js/documents-code.js:3858 |
+| `docPanelToggle` | frontend/js/documents-code.js:3842 |
+| `docPickDefinition` | frontend/js/documents-code.js:2737 |
+| `docProblemsRender` | frontend/js/documents-code.js:3879 |
+| `docPyHost` | frontend/js/documents-code.js:2881 |
+| `docPyHover` | frontend/js/documents-code.js:2177 |
+| `docPyImports` | frontend/js/documents-code.js:712 |
+| `docPyStdlibRows` | frontend/js/documents-code.js:730 |
+| `docPyStdlibSource` | frontend/js/documents-code.js:738 |
+| `docPyStdlibTable` | frontend/js/documents-code.js:698 |
+| `docPyWarm` | frontend/js/documents-code.js:2901 |
+| `docPythonColonFix` | frontend/js/documents-code.js:5614 |
+| `docPythonDefines` | frontend/js/documents-code.js:2693 |
+| `docReferencesOf` | frontend/js/documents-code.js:2669 |
 | `docRemoteDiagnostics` | frontend/js/documents-code.js:300 |
-| `docRgbToHex` | frontend/js/documents-code.js:1328 |
-| `docRunAfterSave` | frontend/js/documents-code.js:4053 |
-| `docRunArmTimeout` | frontend/js/documents-code.js:4410 |
-| `docRunAsk` | frontend/js/documents-code.js:4323 |
-| `docRunCell` | frontend/js/documents-code.js:4656 |
-| `docRunClear` | frontend/js/documents-code.js:4140 |
-| `docRunClearTab` | frontend/js/documents-code.js:3864 |
-| `docRunClose` | frontend/js/documents-code.js:4384 |
-| `docRunCode` | frontend/js/documents-code.js:4521 |
-| `docRunExtension` | frontend/js/documents-code.js:4060 |
-| `docRunJobArm` | frontend/js/documents-code.js:4102 |
-| `docRunJobCall` | frontend/js/documents-code.js:4095 |
-| `docRunJobEnd` | frontend/js/documents-code.js:4130 |
-| `docRunLiveOn` | frontend/js/documents-code.js:4031 |
-| `docRunLiveSchedule` | frontend/js/documents-code.js:4044 |
-| `docRunOpenPythonExtra` | frontend/js/documents-code.js:2946 |
-| `docRunPanel` | frontend/js/documents-code.js:3540 |
-| `docRunPythonMissing` | frontend/js/documents-code.js:4392 |
-| `docRunPythonReady` | frontend/js/documents-code.js:2861 |
-| `docRunRow` | frontend/js/documents-code.js:4149 |
-| `docRunSelectFrame` | frontend/js/documents-code.js:2906 |
-| `docRunSelection` | frontend/js/documents-code.js:4645 |
-| `docRunSend` | frontend/js/documents-code.js:4364 |
-| `docRunSetLive` | frontend/js/documents-code.js:4035 |
-| `docRunSetStatus` | frontend/js/documents-code.js:4080 |
-| `docRunShowStdin` | frontend/js/documents-code.js:4021 |
-| `docRunShowTab` | frontend/js/documents-code.js:3818 |
-| `docRunShowTestMarks` | frontend/js/documents-code.js:4309 |
-| `docRunStop` | frontend/js/documents-code.js:4373 |
-| `docRunSyncAvailability` | frontend/js/documents-code.js:2924 |
-| `docRunTable` | frontend/js/documents-code.js:4206 |
-| `docRunTestDiagnostics` | frontend/js/documents-code.js:4275 |
-| `docRunTestRow` | frontend/js/documents-code.js:4244 |
-| `docRunTestsDone` | frontend/js/documents-code.js:4288 |
-| `docRunnable` | frontend/js/documents-code.js:2854 |
-| `docShowReferences` | frontend/js/documents-code.js:2765 |
-| `docSqlCsvRows` | frontend/js/documents-code.js:4437 |
-| `docSqlCsvTable` | frontend/js/documents-code.js:4478 |
-| `docSqlCsvTables` | frontend/js/documents-code.js:4499 |
-| `docSqlTableName` | frontend/js/documents-code.js:4429 |
-| `docStickyHeaders` | frontend/js/documents-code.js:2522 |
-| `docStickyScroll` | frontend/js/documents-code.js:2556 |
-| `docTagLink` | frontend/js/documents-code.js:1950 |
-| `docTagRename` | frontend/js/documents-code.js:1279 |
+| `docRgbToHex` | frontend/js/documents-code.js:1332 |
+| `docRunAfterSave` | frontend/js/documents-code.js:4057 |
+| `docRunArmTimeout` | frontend/js/documents-code.js:4414 |
+| `docRunAsk` | frontend/js/documents-code.js:4327 |
+| `docRunCell` | frontend/js/documents-code.js:4660 |
+| `docRunClear` | frontend/js/documents-code.js:4144 |
+| `docRunClearTab` | frontend/js/documents-code.js:3868 |
+| `docRunClose` | frontend/js/documents-code.js:4388 |
+| `docRunCode` | frontend/js/documents-code.js:4525 |
+| `docRunExtension` | frontend/js/documents-code.js:4064 |
+| `docRunJobArm` | frontend/js/documents-code.js:4106 |
+| `docRunJobCall` | frontend/js/documents-code.js:4099 |
+| `docRunJobEnd` | frontend/js/documents-code.js:4134 |
+| `docRunLiveOn` | frontend/js/documents-code.js:4035 |
+| `docRunLiveSchedule` | frontend/js/documents-code.js:4048 |
+| `docRunOpenPythonExtra` | frontend/js/documents-code.js:2950 |
+| `docRunPanel` | frontend/js/documents-code.js:3544 |
+| `docRunPythonMissing` | frontend/js/documents-code.js:4396 |
+| `docRunPythonReady` | frontend/js/documents-code.js:2865 |
+| `docRunRow` | frontend/js/documents-code.js:4153 |
+| `docRunSelectFrame` | frontend/js/documents-code.js:2910 |
+| `docRunSelection` | frontend/js/documents-code.js:4649 |
+| `docRunSend` | frontend/js/documents-code.js:4368 |
+| `docRunSetLive` | frontend/js/documents-code.js:4039 |
+| `docRunSetStatus` | frontend/js/documents-code.js:4084 |
+| `docRunShowStdin` | frontend/js/documents-code.js:4025 |
+| `docRunShowTab` | frontend/js/documents-code.js:3822 |
+| `docRunShowTestMarks` | frontend/js/documents-code.js:4313 |
+| `docRunStop` | frontend/js/documents-code.js:4377 |
+| `docRunSyncAvailability` | frontend/js/documents-code.js:2928 |
+| `docRunTable` | frontend/js/documents-code.js:4210 |
+| `docRunTestDiagnostics` | frontend/js/documents-code.js:4279 |
+| `docRunTestRow` | frontend/js/documents-code.js:4248 |
+| `docRunTestsDone` | frontend/js/documents-code.js:4292 |
+| `docRunnable` | frontend/js/documents-code.js:2858 |
+| `docShowReferences` | frontend/js/documents-code.js:2769 |
+| `docSqlCsvRows` | frontend/js/documents-code.js:4441 |
+| `docSqlCsvTable` | frontend/js/documents-code.js:4482 |
+| `docSqlCsvTables` | frontend/js/documents-code.js:4503 |
+| `docSqlTableName` | frontend/js/documents-code.js:4433 |
+| `docStickyHeaders` | frontend/js/documents-code.js:2526 |
+| `docStickyScroll` | frontend/js/documents-code.js:2560 |
+| `docTagLink` | frontend/js/documents-code.js:1954 |
+| `docTagRename` | frontend/js/documents-code.js:1283 |
 | `docTreeDiagnostics` | frontend/js/documents-code.js:244 |
-| `docTreeHasJsx` | frontend/js/documents-code.js:5800 |
-| `docWordAt` | frontend/js/documents-code.js:2654 |
-| `docXmlAutoClose` | frontend/js/documents-code.js:1985 |
-| `docXmlOpenedBy` | frontend/js/documents-code.js:1302 |
-| `docXmlTextAt` | frontend/js/documents-code.js:1661 |
-| `docXmlUnclosed` | frontend/js/documents-code.js:1309 |
+| `docTreeHasJsx` | frontend/js/documents-code.js:5804 |
+| `docWordAt` | frontend/js/documents-code.js:2658 |
+| `docXmlAutoClose` | frontend/js/documents-code.js:1989 |
+| `docXmlOpenedBy` | frontend/js/documents-code.js:1306 |
+| `docXmlTextAt` | frontend/js/documents-code.js:1665 |
+| `docXmlUnclosed` | frontend/js/documents-code.js:1313 |
 
 ### frontend/js/documents-codekit.js (47)
 
@@ -13479,7 +13489,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (713)
+## Backend routes (714)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13641,9 +13651,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/dismissed/item/restore` | POST | `restore_one_dismissed` | src/tessellate/api/routes_inbox.py:430 |
 | `/dismissed/items` | GET | `dismissed_items` | src/tessellate/api/routes_inbox.py:382 |
 | `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:279 |
-| `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:336 |
-| `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:356 |
-| `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:348 |
+| `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:358 |
+| `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:378 |
+| `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:370 |
 | `/documents/run-sandbox` | GET | `run_sandbox` | src/tessellate/api/run_sandbox.py:147 |
 | `/documents/run-sandbox/python` | GET | `run_sandbox_python` | src/tessellate/api/run_sandbox.py:237 |
 | `/documents/{document_id}/code-assist` | POST | `code_assist_route` | src/tessellate/api/routes_code_assist.py:34 |
@@ -14197,9 +14207,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:183 |
 | `/{turn_id}` | GET | `get_ask_turn` | src/tessellate/api/routes_ask_history.py:92 |
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
-| `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
+| `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
+| `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (10888)
+## Backend modules (10890)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23759,21 +23770,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `web_stored_clear` | src/tessellate/api/routes_websearch.py:306 |
 | `web_stored_refetch` | src/tessellate/api/routes_websearch.py:289 |
 
-### src/tessellate/api/run_sandbox.py (11)
+### src/tessellate/api/run_sandbox.py (13)
 
 | Name | File:line |
 |---|---|
-| `RunJobBody` | src/tessellate/api/run_sandbox.py:323 |
+| `RunJobBody` | src/tessellate/api/run_sandbox.py:345 |
 | `_asset` | src/tessellate/api/run_sandbox.py:53 |
+| `_extra_file` | src/tessellate/api/run_sandbox.py:268 |
 | `_fill` | src/tessellate/api/run_sandbox.py:57 |
-| `_run_job` | src/tessellate/api/run_sandbox.py:327 |
-| `beat_run_job` | src/tessellate/api/run_sandbox.py:349 |
-| `end_run_job` | src/tessellate/api/run_sandbox.py:357 |
-| `pyodide_file` | src/tessellate/api/run_sandbox.py:268 |
+| `_run_job` | src/tessellate/api/run_sandbox.py:349 |
+| `beat_run_job` | src/tessellate/api/run_sandbox.py:371 |
+| `end_run_job` | src/tessellate/api/run_sandbox.py:379 |
+| `pyodide_file` | src/tessellate/api/run_sandbox.py:299 |
 | `python_csp` | src/tessellate/api/run_sandbox.py:194 |
+| `ruff_file` | src/tessellate/api/run_sandbox.py:314 |
 | `run_sandbox` | src/tessellate/api/run_sandbox.py:148 |
 | `run_sandbox_python` | src/tessellate/api/run_sandbox.py:238 |
-| `start_run_job` | src/tessellate/api/run_sandbox.py:337 |
+| `start_run_job` | src/tessellate/api/run_sandbox.py:359 |
 
 ### src/tessellate/api/schemas.py (15)
 
@@ -24781,73 +24794,73 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BulkState` | src/tessellate/core/extras.py:1190 |
-| `Bundle` | src/tessellate/core/extras.py:1054 |
+| `BulkState` | src/tessellate/core/extras.py:1226 |
+| `Bundle` | src/tessellate/core/extras.py:1090 |
 | `Extra` | src/tessellate/core/extras.py:363 |
-| `InstallState` | src/tessellate/core/extras.py:1142 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2379 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:2205 |
-| `_busy` | src/tessellate/core/extras.py:1954 |
-| `_canonical` | src/tessellate/core/extras.py:1493 |
-| `_claim` | src/tessellate/core/extras.py:1942 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1670 |
-| `_dispatch` | src/tessellate/core/extras.py:1960 |
-| `_extra_size` | src/tessellate/core/extras.py:1031 |
-| `_finish_bulk` | src/tessellate/core/extras.py:2258 |
-| `_forget_footprints` | src/tessellate/core/extras.py:1373 |
+| `InstallState` | src/tessellate/core/extras.py:1178 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2415 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:2241 |
+| `_busy` | src/tessellate/core/extras.py:1990 |
+| `_canonical` | src/tessellate/core/extras.py:1529 |
+| `_claim` | src/tessellate/core/extras.py:1978 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1706 |
+| `_dispatch` | src/tessellate/core/extras.py:1996 |
+| `_extra_size` | src/tessellate/core/extras.py:1067 |
+| `_finish_bulk` | src/tessellate/core/extras.py:2294 |
+| `_forget_footprints` | src/tessellate/core/extras.py:1409 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:259 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1758 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1731 |
-| `_install_refusal` | src/tessellate/core/extras.py:2039 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1688 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1794 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1767 |
+| `_install_refusal` | src/tessellate/core/extras.py:2075 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1724 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:195 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2294 |
-| `_no_build` | src/tessellate/core/extras.py:1409 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2330 |
+| `_no_build` | src/tessellate/core/extras.py:1445 |
 | `_pip_base_command` | src/tessellate/core/extras.py:316 |
 | `_pip_platforms` | src/tessellate/core/extras.py:280 |
 | `_pip_reason` | src/tessellate/core/extras.py:102 |
 | `_python_candidates` | src/tessellate/core/extras.py:171 |
-| `_read_footprint` | src/tessellate/core/extras.py:1328 |
-| `_release_captions_helper` | src/tessellate/core/extras.py:2031 |
-| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1498 |
-| `_requirement_name` | src/tessellate/core/extras.py:1487 |
-| `_requirements_path` | src/tessellate/core/extras.py:1656 |
-| `_roll_back` | src/tessellate/core/extras.py:1699 |
-| `_run_bulk` | src/tessellate/core/extras.py:2168 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:2232 |
-| `_run_download_install` | src/tessellate/core/extras.py:1886 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1928 |
-| `_run_install` | src/tessellate/core/extras.py:1799 |
-| `_run_single` | src/tessellate/core/extras.py:1981 |
-| `_run_uninstall` | src/tessellate/core/extras.py:1565 |
+| `_read_footprint` | src/tessellate/core/extras.py:1364 |
+| `_release_captions_helper` | src/tessellate/core/extras.py:2067 |
+| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1534 |
+| `_requirement_name` | src/tessellate/core/extras.py:1523 |
+| `_requirements_path` | src/tessellate/core/extras.py:1692 |
+| `_roll_back` | src/tessellate/core/extras.py:1735 |
+| `_run_bulk` | src/tessellate/core/extras.py:2204 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:2268 |
+| `_run_download_install` | src/tessellate/core/extras.py:1922 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:1964 |
+| `_run_install` | src/tessellate/core/extras.py:1835 |
+| `_run_single` | src/tessellate/core/extras.py:2017 |
+| `_run_uninstall` | src/tessellate/core/extras.py:1601 |
 | `_spell_pack_extras` | src/tessellate/core/extras.py:434 |
-| `_status_row` | src/tessellate/core/extras.py:1268 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:2198 |
+| `_status_row` | src/tessellate/core/extras.py:1304 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:2234 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:245 |
-| `bulk` | src/tessellate/core/extras.py:1392 |
-| `bulk_label` | src/tessellate/core/extras.py:2162 |
-| `bulk_status` | src/tessellate/core/extras.py:1377 |
-| `bundles` | src/tessellate/core/extras.py:1297 |
-| `cancel` | src/tessellate/core/extras.py:1434 |
-| `current` | src/tessellate/core/extras.py:1430 |
-| `download_mb` | src/tessellate/core/extras.py:1040 |
-| `download_ready` | src/tessellate/core/extras.py:2391 |
+| `bulk` | src/tessellate/core/extras.py:1428 |
+| `bulk_label` | src/tessellate/core/extras.py:2198 |
+| `bulk_status` | src/tessellate/core/extras.py:1413 |
+| `bundles` | src/tessellate/core/extras.py:1333 |
+| `cancel` | src/tessellate/core/extras.py:1470 |
+| `current` | src/tessellate/core/extras.py:1466 |
+| `download_mb` | src/tessellate/core/extras.py:1076 |
+| `download_ready` | src/tessellate/core/extras.py:2427 |
 | `find_system_python` | src/tessellate/core/extras.py:133 |
-| `footprint` | src/tessellate/core/extras.py:1305 |
+| `footprint` | src/tessellate/core/extras.py:1341 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:223 |
-| `install_blocking` | src/tessellate/core/extras.py:2352 |
-| `installed_bytes` | src/tessellate/core/extras.py:1358 |
-| `is_installed` | src/tessellate/core/extras.py:1221 |
-| `legacy_engine` | src/tessellate/core/extras.py:2090 |
-| `on_release` | src/tessellate/core/extras.py:2025 |
-| `removal_locked` | src/tessellate/core/extras.py:1396 |
-| `remove` | src/tessellate/core/extras.py:2052 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:2101 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2343 |
-| `start` | src/tessellate/core/extras.py:1988 |
-| `start_bulk` | src/tessellate/core/extras.py:2114 |
-| `status` | src/tessellate/core/extras.py:1249 |
-| `unavailable_reason` | src/tessellate/core/extras.py:1413 |
+| `install_blocking` | src/tessellate/core/extras.py:2388 |
+| `installed_bytes` | src/tessellate/core/extras.py:1394 |
+| `is_installed` | src/tessellate/core/extras.py:1257 |
+| `legacy_engine` | src/tessellate/core/extras.py:2126 |
+| `on_release` | src/tessellate/core/extras.py:2061 |
+| `removal_locked` | src/tessellate/core/extras.py:1432 |
+| `remove` | src/tessellate/core/extras.py:2088 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:2137 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2379 |
+| `start` | src/tessellate/core/extras.py:2024 |
+| `start_bulk` | src/tessellate/core/extras.py:2150 |
+| `status` | src/tessellate/core/extras.py:1285 |
+| `unavailable_reason` | src/tessellate/core/extras.py:1449 |
 
 ### src/tessellate/core/filetypes.py (6)
 
@@ -28116,7 +28129,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22379)
+## Tests (22387)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28478,6 +28491,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_code_editor_vc13.py | 4 |
 | tests/test_code_file_chords.py | 8 |
 | tests/test_code_ide_b42.py | 10 |
+| tests/test_code_lint_js.py | 7 |
 | tests/test_code_type_1101.py | 5 |
 | tests/test_code_vscode.py | 25 |
 | tests/test_codemap_closure_z10.py | 3 |
@@ -30312,7 +30326,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_debugger.py | 17 |
 | tests/test_run_job_heartbeat_d38.py | 2 |
 | tests/test_run_protocol.py | 18 |
-| tests/test_run_sandbox.py | 17 |
+| tests/test_run_sandbox.py | 18 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
 | tests/test_running_copies_1641.py | 26 |
@@ -31332,14 +31346,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1222 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:771 |
+| Needs hardware | docs/roadmap/LEDGER.md:770 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:764 |
+| Owner calls | docs/roadmap/LEDGER.md:763 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31519,7 +31533,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:941 |
+| Plan session briefs | docs/roadmap/LEDGER.md:940 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31573,25 +31587,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:957 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1041 |
+| chat | docs/roadmap/LEDGER.md:956 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1040 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:981 |
-| general | docs/roadmap/LEDGER.md:723 |
+| documents | docs/roadmap/LEDGER.md:980 |
+| general | docs/roadmap/LEDGER.md:722 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:945 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1053 |
+| graph | docs/roadmap/LEDGER.md:944 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1052 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:364 |
-| mindmap | docs/roadmap/LEDGER.md:993 |
-| timeline | docs/roadmap/LEDGER.md:485 |
-| timeline | docs/roadmap/LEDGER.md:1017 |
-| ui-modernisation | docs/roadmap/LEDGER.md:368 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1005 |
+| mindmap | docs/roadmap/LEDGER.md:363 |
+| mindmap | docs/roadmap/LEDGER.md:992 |
+| timeline | docs/roadmap/LEDGER.md:484 |
+| timeline | docs/roadmap/LEDGER.md:1016 |
+| ui-modernisation | docs/roadmap/LEDGER.md:367 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1004 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:969 |
-| world-class | docs/roadmap/LEDGER.md:487 |
-| world-class | docs/roadmap/LEDGER.md:1029 |
+| whiteboard | docs/roadmap/LEDGER.md:968 |
+| world-class | docs/roadmap/LEDGER.md:486 |
+| world-class | docs/roadmap/LEDGER.md:1028 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
