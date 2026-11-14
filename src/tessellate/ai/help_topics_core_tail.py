@@ -665,7 +665,7 @@ TAIL_TOPICS.extend(
                 "here, so it lands as a note with its size; open it in Inkscape or LibreOffice and save a PNG or SVG. "
                 "Files over the size cap or with XML entities are refused. Export board configuration saves the default styles, "
                 "grid, paper, palettes and which shape libraries are off as JSON, and Import board configuration applies one "
-                "after a check. It is data only; no plugin code runs."
+                "after a check. It is data only; no plugin code runs. A connector hung on another connector travels with it in a board export and comes back joined; a .drawio file gets its end as a free point."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

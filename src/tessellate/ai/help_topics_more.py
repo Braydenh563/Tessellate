@@ -2310,7 +2310,7 @@ MORE_TOPICS.extend([
             "an export carries the source words instead. Rich text in a shape: select a drawn shape, open Format, Label, and tick Rich text. "
             "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, and **bold**, *italic*, `code` and "
             "[links](https://example.com) show; links open in a new tab and only web, mail and phone addresses work. Labels you "
-            "have not ticked stay plain, and an export carries the markdown source words instead."
+            "have not ticked stay plain. An SVG, PNG or PDF export draws rich words as they look: rows, bullets, bold and italic."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a rich shape label exports as drawn words in SVG, PNG and PDF; a connector hung on another connector survives board and draw.io export, and lights the connector it will join while you drag its end.
 - Whiteboard: Format panel gains Text shadow, Glass, Picture fill (a saved image clipped to a drawn shape), Flip for stickies, pictures and frames (a sticky's words stay readable), frame Opacity, and a View menu Status bar (zoom, tool, selection count; off by default).
 - Whiteboard: a drawn shape's label can be rich text (Format, Label, Rich text: lists, indent, links, bold and italic as markdown, scripts and unsafe links inert), and a connector's end can sit on another connector's line, following it and floating free if it is deleted (L-whiteboard-46, L-whiteboard-43).
 - Whiteboard: a Rack layout, GraphML, Miro and EMF import, PlantUML in and out, and a board configuration JSON (default styles, palettes, library switches; data only, no plugin code) (L-whiteboard-41, 42, 44, 45).
