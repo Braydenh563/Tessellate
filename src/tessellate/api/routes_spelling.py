@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.ai import variants
 from tessellate.core import languagetool, spellpacks
 from tessellate.core.deps import get_session
 from tessellate.repo.spelling import own_words
@@ -35,6 +36,31 @@ def get_own_words(session: Session = Depends(get_session)) -> dict:
 class LanguageToolBody(BaseModel):
     text: str = Field(max_length=languagetool.MAX_CHARS)
     language: str = "en-US"
+
+
+class SpellCheckBody(BaseModel):
+    words: list[str] = Field(max_length=2000)
+    lang: str = "en"
+
+
+@router.post("/spelling/check")
+def post_spelling_check(body: SpellCheckBody) -> dict:
+    """The words the document's English list does not hold (L-chat-259).
+
+    `lang` is the document's tag: en-GB reads the British list, en-US the American one
+    (`variants.english`). Any other language, Japanese and Chinese included, is not checked
+    (`checked` false, no word flagged): no word list is read against it.
+    """
+    variant = variants.variant_of_lang(body.lang)
+    if variant is None:
+        return {"checked": False, "variant": None, "unknown": []}
+    known = variants.english(variant)
+    seen: list[str] = []
+    for word in body.words:
+        low = word.lower()
+        if low and low not in known and low not in seen:
+            seen.append(low)
+    return {"checked": True, "variant": variant, "unknown": seen}
 
 
 @router.post("/grammar/languagetool")

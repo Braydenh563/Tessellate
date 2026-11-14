@@ -12229,20 +12229,30 @@ function docProseFindings(text, lang = docProse.langOf(text)) {
   for (const [at, to] of chunks) {
     const chunk = sentences.slice(at, to);
     if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
+    //: A sentence ends at . ! ? and a space, or at 。！？ with none (L-chat-259), each piece keeping its own offset.
+    const ends = /(?<=[.!?])\s+|(?<=[。！？])\s*/g;
     let cursor = 0;
-    for (const sentence of chunk.split(/(?<=[.!?])\s+/)) {
-      const words = (sentence.match(/\S+/g) || []).length;
+    const pieces = [];
+    let cut;
+    while ((cut = ends.exec(chunk)) !== null) {
+      if (cut[0] === "") ends.lastIndex += 1;
+      if (cut.index > cursor) pieces.push([cursor, cut.index]);
+      cursor = cut.index + cut[0].length;
+    }
+    if (cursor < chunk.length) pieces.push([cursor, chunk.length]);
+    for (const [from, to] of pieces) {
+      const sentence = chunk.slice(from, to);
+      const words = docProse.words(sentence);
       if (words > DOC_LONG_SENTENCE_WORDS) {
         found.push({
           rule: "long-sentence",
           message: `${nounCount(words, "word")} in one sentence`,
-          start: at + cursor,
-          end: at + cursor + sentence.length,
-          text: text.slice(at + cursor, at + cursor + sentence.length),
+          start: at + from,
+          end: at + to,
+          text: text.slice(at + from, at + to),
           replacement: null,
         });
       }
-      cursor += sentence.length + 1;
     }
   }
   return found
@@ -12381,6 +12391,17 @@ const docProse = {
   //: as a word, `wordCount`).
   cjk(lang) {
     return /^(ja|zh|ko|yue)$/.test(lang);
+  },
+  //: **Words of a sentence, CJK included** (L-chat-259; no checker pack exists for Japanese or Chinese, so
+  //: the browser's own `Intl.Segmenter`: no download, no licence). "週末のゴルフについての考え" is 6 words
+  //: (週末 の ゴルフ について の 考え), where splitting on spaces gives 1 and the shared `wordCount` gives 13
+  //: (a character a word, the server's twin has no segmenter). Text with no CJK is counted by its spaces.
+  words(sentence) {
+    if (!/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(sentence) || typeof Intl !== "object" || typeof Intl.Segmenter !== "function") return (sentence.match(/\S+/g) || []).length;
+    docProse.segmenter ||= new Intl.Segmenter(undefined, { granularity: "word" });
+    let count = 0;
+    for (const part of docProse.segmenter.segment(sentence)) if (part.isWordLike) count += 1;
+    return count;
   },
   //: The edit that makes `tag` the document's language: replace or add the `lang` line of the
   //: leading properties block, add the block, or take the line (and an empty block) away when

@@ -847,7 +847,9 @@ MORE_TOPICS: list[dict] = [
             "also has an Install button. Once installed, spelling is checked in "
             "that language and grammar stays English. Add a word to the "
             "dictionary as usual to stop it being flagged. Japanese and Chinese "
-            "are not checked: they are not written in words split by spaces."
+            "are not spell checked and have no pack to install: they are not written in "
+            "words split by spaces. Their words are counted by the browser's own "
+            "segmenter, so a long-sentence check reads them by word."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },

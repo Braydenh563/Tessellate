@@ -153,6 +153,19 @@ def _spelling_pairs() -> tuple[tuple[str, str, object], ...]:
     return tuple(out)
 
 
+#: A document's language tag to the dialect list (the client's `docProse.variantOf`, same table).
+_LANG_VARIANT = {"en-gb": "uk", "en-us": "us", "en-au": "au", "en-nz": "au", "en-ca": "ca", "en-in": "in"}
+
+
+def variant_of_lang(tag: str) -> str | None:
+    """The dialect a language tag names ("en-GB" is "uk"); "all" for a bare "en"; None for any
+    other language, which no English list is read against (L-chat-259)."""
+    low = str(tag or "").strip().replace("_", "-").lower()
+    if low == "en":
+        return "all"
+    return _LANG_VARIANT.get(low)
+
+
 @lru_cache(maxsize=8)
 def english(variant: str = "all") -> frozenset:
     """The English list for one dialect (L-chat-236, D30): "us" without the British-only spellings,
