@@ -3466,6 +3466,9 @@ span > .chip {
   resize: vertical;
   flex: 1 1 auto;
   min-height: 11rem;
+  /* The app's textarea margin made a bare box 9.6px shorter than its mounted editor surface (no
+     margin), so a focused thoughts box stood 294.8 beside a 285.2 draft (L-documents-73, real model). */
+  margin: 0;
 }
 
 /* **The thoughts footer is as tall as the draft's, so the two boxes end on one line** (L303, L326:

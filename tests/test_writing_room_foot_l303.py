@@ -43,3 +43,11 @@ def test_the_earlier_drafts_row_is_one_fixed_line_and_the_thoughts_footer_makes_
     block = one[one.index("@media (max-width: 72rem) {") :]
     reset = re.search(r"\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", block)
     assert reset and "+ 2 * 0.4rem);" in reset.group(1) and "--control-h));" not in reset.group(1)
+
+
+def test_a_bare_box_has_no_margin_so_it_matches_its_mounted_surface():
+    """L-documents-73: the global textarea margin (9.6px) made the bare draft box 285.2 beside a
+    mounted thoughts surface of 294.8 (real-model run at 1440x900)."""
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    rule = re.search(r"\n\.draft-column textarea \{([^}]*)\}", css)
+    assert rule and "margin: 0;" in rule.group(1)
