@@ -4738,7 +4738,9 @@ function wbBoundArrowData(sx, sy, x, y, tol, blob) {
   for (const key of ["dash", "noStroke", "startCap", "endCap"]) if (blob[key] !== undefined) data[key] = blob[key];
   const end = (hit, px, py, name) => {
     if (!hit) {
-      data[`${name}Point`] = { x: Math.round(px), y: Math.round(py) };
+      const edge = wbFmtState.linkEdge?.hitAt(px, py);
+      data[`${name}Point`] = edge ? { x: edge.x, y: edge.y } : { x: Math.round(px), y: Math.round(py) };
+      if (edge) data[`${name}Edge`] = { id: edge.id, t: edge.t };
       return;
     }
     data[`${name}Id`] = hit[1].id;
@@ -4791,6 +4793,7 @@ function wbLinkEndpoints(sourceItem, sourceAnchor, targetItem, targetAnchor, sou
 //: Returns `null` for a stale reference (a card end whose id no longer
 //: exists), same as the two call sites already treated a missing node.
 function wbResolveLinkEndpoints(parsed) {
+  parsed = wbFmtState.linkEdge?.pinned(parsed) ?? parsed; // an end on another connector (whiteboard-link-edge.js)
   const sourceKind = parsed.sourceKind || "node";
   const targetKind = parsed.targetKind || "node";
   const sourceNode = wbLinkItem(sourceKind, parsed.sourceId);
@@ -11953,6 +11956,7 @@ async function wbApplyHistoryEntry(from, to) {
     //: And its links with it, re-ended on the new id (INBOX 537): the server
     //: drops a deleted item's links, so a card, box or shape came back alone.
     const linkIds = await wbRestoreLinks(entry.links, entry.kind, entry.oldId, restored.id);
+    if (entry.kind === "sketch") await wbFmtState.linkEdge?.reattach(entry.edgeEnds, restored.id);
     if (entry.oldId != null) {
       const ids = new Map([[entry.oldId, restored.id]]);
       const none = new Map();
@@ -19251,7 +19255,9 @@ async function initWhiteboard() {
       data.targetKind = hit[0] === "node" ? undefined : hit[0];
       data.targetAnchor = wbNearestAnchor(hit[0], hit[1], x, y) || undefined;
     } else {
-      data.targetPoint = { x: Math.round(x), y: Math.round(y) };
+      const edge = wbFmtState.linkEdge?.hitAt(x, y);
+      data.targetPoint = edge ? { x: edge.x, y: edge.y } : { x: Math.round(x), y: Math.round(y) };
+      if (edge) data.targetEdge = { id: edge.id, t: edge.t };
     }
     try {
       const made = await apiJson("/whiteboard/sketches", {
@@ -19262,7 +19268,7 @@ async function initWhiteboard() {
       wbPushUndo({ action: "create", kind: "sketch", id: made.id });
       renderWhiteboardNow();
       selectWbItem("sketch", made.id);
-      wbAnnounce(hit ? "Connected." : "Connector drawn to a free end.");
+      wbAnnounce(hit || data.targetEdge ? "Connected." : "Connector drawn to a free end.");
     } catch (error) {
       toast(error.message || "The connector could not be made.", true);
     }
@@ -20915,6 +20921,7 @@ function wbLayoutShapeLabel(groupEl) {
   if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
   wbFmtState.label?.backdrop(groupEl, label);
   wbFmtState.textMore?.mathLabel(groupEl, label, area, fontSize);
+  wbFmtState.richLabel?.paint(groupEl, label, area, fontSize);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -21202,6 +21209,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   else delete label.dataset.valign;
   label.setAttribute("text-anchor", align === "left" ? "start" : align === "right" ? "end" : "middle");
   wbFmtState.label?.paint(label, parsed);
+  wbFmtState.richLabel?.mark(label, parsed); // Rich text (whiteboard-label-rich.js)
   wbLayoutShapeLabel(groupEl);
 }
 
@@ -21853,11 +21861,14 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
               partial[end + "Kind"] = kind === "node" ? undefined : kind;
               partial[end + "Anchor"] = wbNearestAnchor(kind, item, live.x, live.y) || undefined;
               partial[end + "Point"] = undefined;
+              partial[end + "Edge"] = undefined;
             } else {
+              const edge = wbFmtState.linkEdge?.hitAt(live.x, live.y, sketch.id);
               partial[end + "Id"] = undefined;
               partial[end + "Kind"] = undefined;
               partial[end + "Anchor"] = undefined;
-              partial[end + "Point"] = { x: live.x, y: live.y };
+              partial[end + "Point"] = edge ? { x: edge.x, y: edge.y } : { x: live.x, y: live.y };
+              partial[end + "Edge"] = edge ? { id: edge.id, t: edge.t } : undefined;
             }
             await wbSaveSketchProps(sketch, partial);
             wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
@@ -22957,13 +22968,15 @@ async function wbDeleteSketch(d) {
   //: and taken off the stack by identity, not by `pop`: a second delete in
   //: flight may have pushed after this one.
   const links = wbLinksTouching("sketch", d.id);
-  const entry = { action: "delete", kind: "sketch", payload: WB_KIND_INFO.sketch.payload(d), oldId: d.id, links };
+  const edgeEnds = wbFmtState.linkEdge?.beforeDelete(d); // connector ends on this one float free (whiteboard-link-edge.js)
+  const entry = { action: "delete", kind: "sketch", payload: WB_KIND_INFO.sketch.payload(d), oldId: d.id, links, edgeEnds };
   const redoBefore = wbRedoStack;
   wbPushUndo(entry);
   try {
     await apiJson(`/whiteboard/sketches/${d.id}`, { method: "DELETE" });
     wbState.sketches = wbState.sketches.filter((s) => s.id !== d.id);
     wbForgetLinks(links);
+    await wbFmtState.linkEdge?.afterDelete(edgeEnds);
     wbScheduleRender();
   } catch (e) {
     wbDeleteFailed(entry, redoBefore, e, () => wbDeleteSketch(d)); // the delete never happened, so neither did the undo entry
@@ -25563,6 +25576,7 @@ function wbUpdateLinkedSketches(nodeId, precomputed) {
       entry.label = entry.el?.querySelector(":scope > .wb-link-label") || null;
     }
     if (entry.label) wbLayoutLinkLabel(entry.el);
+    wbFmtState.linkEdge?.follow(sketch.id, wbUpdateLinkedSketches); // the connectors that end on this one
   }
 }
 

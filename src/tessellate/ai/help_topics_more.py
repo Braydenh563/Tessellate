@@ -2298,7 +2298,7 @@ MORE_TOPICS.extend([
         "id": "board-text-more",
         "keywords": (
             "subscript", "superscript", "h2o on a board", "x squared on a board", "small raised text",
-            "maths on a board", "latex on a board", "equation in a shape", "dollar sign maths",
+            "maths on a board", "latex on a board", "equation in a shape", "dollar sign maths", "rich text in a shape", "list in a shape", "link in a shape", "bold in a shape label",
         ),
         "body": (
             "Subscript and superscript on a board, in a text box that shows its markdown and in a shape's text: "
@@ -2306,7 +2306,10 @@ MORE_TOPICS.extend([
             "strikethrough). To add them without typing the marks, select the words and choose Text style, then Subscript or Superscript. While you type you see the marks; when you finish they turn into small raised or lowered "
             "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
             "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
-            "an export carries the source words instead."
+            "an export carries the source words instead. Rich text in a shape: select a drawn shape, open Format, Label, and tick Rich text. "
+            "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, and **bold**, *italic*, `code` and "
+            "[links](https://example.com) show; links open in a new tab and only web, mail and phone addresses work. Labels you "
+            "have not ticked stay plain, and an export carries the markdown source words instead."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
