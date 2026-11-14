@@ -1438,9 +1438,9 @@ class Bookmark(Base, WorkspaceMixin):
     #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
     #: Loaded on demand (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
     #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
-    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred_group="favicon")
     excerpt: Mapped[str] = mapped_column(String(400), default="")
-    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred_group="page_text")
     has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
     has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
