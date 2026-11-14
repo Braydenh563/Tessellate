@@ -30,6 +30,9 @@ from tessellate.entry.manager import log_action
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
+#: How many versions of one answer a turn keeps (L165); the oldest is the first to go.
+VERSIONS_MAX = 20
+
 
 class TurnBody(BaseModel):
     #: The same bound as `ChatTurn` (routes_chat.py): a 2 MB answer was stored
@@ -69,6 +72,11 @@ class TurnBody(BaseModel):
     # something new. Bounded instead by only ever storing what the client sends
     # back from a `stats` event.
     stats: dict | None = None
+    #: The earlier versions of this answer when it is a regenerate or an edit and
+    #: resend (L165): each {text, sources, made_at}. The turn's own answer is
+    #: appended as the latest, so a checkpoint and the final save of one regenerate
+    #: send the same list and store one version, not two.
+    prior_versions: list[dict] | None = Field(default=None, max_length=VERSIONS_MAX - 1)
     # Wall-clock for the whole turn, measured by the client because it is the
     # only thing that saw all of it: the server reports per-round timings, and
     # an agent turn is several rounds plus the tool calls between them.
@@ -361,6 +369,30 @@ def _frame_fields(turn: TurnBody) -> dict:
     return {k: v for k, v in (("frame", frame if any(frame.values()) else None), ("objects", turn.objects)) if v}
 
 
+def _lean(source: dict) -> dict:
+    """A source as a version keeps it: the note's text cut, so ten versions stay small."""
+    return {**source, "content": str(source.get("content") or "")[:600]}
+
+
+def _versions(turn: TurnBody, now: datetime) -> list[dict]:
+    """The earlier versions as sent, bounded, then this answer as the latest."""
+    kept = [
+        {
+            "text": str(v.get("text") or "")[: bounds.TURN_TEXT_MAX],
+            "sources": [_lean(s) for s in (v.get("sources") or []) if isinstance(s, dict)][:40],
+            "made_at": str(v.get("made_at") or "")[:40],
+        }
+        for v in turn.prior_versions or []
+        if isinstance(v, dict)
+    ]
+    latest = {"text": turn.answer, "sources": [_lean(s) for s in (turn.raw_results or [])[:40]], "made_at": now.isoformat()}
+    return (kept + [latest])[-VERSIONS_MAX:]
+
+
+def _versions_field(turn: TurnBody, now: datetime) -> dict:
+    return {"versions": _versions(turn, now)} if turn.prior_versions else {}
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -402,7 +434,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     if persona:
         assistant["persona"] = persona
     assistant.update(_acts_field(turn))
-    assistant.update(_frame_fields(turn))
+    assistant.update(_frame_fields(turn) | _versions_field(turn, now))
     if turn.by:
         assistant["by"] = {
             "composed": bool(turn.by.get("composed")),

@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 68 | 30 | 10 | 59 | 274 |
+| chat | 176 | 66 | 29 | 10 | 59 | 271 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 442 | 99 | 10 | 183 | 1094 |
+| all | 553 | 440 | 98 | 10 | 183 | 1091 |
 
 ## graph
 
@@ -67,9 +67,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L162** `chat` open, L: Let composer analyse pages in the web panel. From OPEN.md:3827. Evidence: Not built
 - [ ] **L163** `chat` open, L: Build B80 new-tag suggestions, O10 tool history, O11 supersede links. From OPEN.md:3844. Evidence: Left after O5-O11 rest
 - [ ] **L164** `chat` open, L: Check web sources with a real search engine and contrast over .said and act card. From OPEN.md:851; OPEN.md:3644. Evidence: Needs a live search engine and owner's browser
-- [ ] **L165** `chat` open, L: Keep versions on edit and resend (E48 branches pager) and add regenerate-with menu (E60). From OPEN.md:4502; v1028-1.md Remaining. Evidence: Conversation branches need a stored shape and pager, owner design call Remaining 2026-11-14: needs an owner design call that is not written on the row, in HANDOVER or in CHAT_PLAN section 4: how a conversation stores more than one answer to a turn (a branch shape), and whether the pager shows on every regenerated turn.
 - [ ] **L168** `chat` open, L: Improve agent harness design and how tools are offered and named by the composer (OPEN O10). From INBOX.md:904 B47; INBOX.md:904 B48. Evidence: Open-ended (OPEN O10); no single defect named Remaining 2026-11-14: names no single defect (OPEN O10); an owner or audit finding is needed before a change can be tested.
-- [ ] **L171** `chat` open, L: Build chart maker (paste values, SVG/PNG/CSV export, save to note). From SESSION_BRIEFS.md:313. Evidence: No chart-maker code in frontend/js; ask-chart.js is inline composer charts only Remaining 2026-11-14: no decision on the chart maker's place (Ask, Chat or a note block) is written on the row, in HANDOVER or in CHAT_PLAN section 4; ask-chart.js draws counts only.
 - [ ] **L172** `chat` open, L: Bring graph at rest and companion long tasks to the zero target. From OPEN.md:671; OPEN.md:3786. Evidence: frames.js REST_BUDGET still over zero; no fix commit located
 - [ ] **L173** `chat` open, L: Lower body and nebula follow pose and position, distinct silhouettes, in-app and desk parity. From OPEN.md:4366; OPEN.md:4402; OPEN.md:4406; OPEN.md:1079 (+1). Evidence: E6 (OPEN.md:296) built pose-following; W34 left it owner-call (design) to judge.
 - [ ] **L174** `chat` open, L: Atlas round 5: hands and feet drawn as part of each limb outline, legs and hair. From OPEN.md:1064; OPEN.md:2268. Evidence: Visual redesign; commits show ongoing Atlas work (1607) but needs a human visual read to close
@@ -109,7 +107,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L251** `chat` partly, L: Masculine Atlas redesign: head, eyes, shoulder join and body shape (owner call on direction). From OPEN.md:4323; OPEN.md:4349; OPEN.md:4390; OPEN.md:4391 (+2). Evidence: W34 owner-call (design), w34-unv1-1111.md.
 - [ ] **L252** `chat` partly, L: Guide/Ask leads and poke-line table: G3, G5, G6, G8 to G14 wording unverified. From ledger-1112 P26; ledger-1112 G8; ledger-1112 G3; ledger-1112 G5. Remaining 2026-11-14: G3, G5, G6 and G8 to G14 wording lives in the ledger-1112 audit source, which is not in the repo; the Guide's first line is pinned by tests/test_help_retrieval.py and the help_1010 eval.
 - [ ] **L253** `chat` partly, L: Close remaining unverified audit rows (C35, W21, Z*, K*, B*, S*, w34 spoke lists). From ledger-1112 X13; ledger-1112 X12; ledger-1112 FX2; ledger-1112 X24 (+2). Remaining 2026-11-14: C35, W21, Z*, K*, B*, S* and w34 are defined only in the ledger-1112 audit source, which is not in the repo.
-- [ ] **L254** `chat` partly, L: Chart maker and answer shapes (only ask-chart.js exists); goals and lists have no surface at all. From ledger-1112 P15. Remaining 2026-11-14: same as L171 for the chart maker; goals and lists need an owner answer on where they show.
 - [ ] **L255** `chat` partly, L: Hold still, carry over, tail pull, toss up, pointer chase and drag skid need new desk frames and a human rater (the catalogue refuses one-sided acts; engine.py and engine_input.py are at their line caps, so a desk hook lives in extras.py). Catch mid-air is built (05b51746d, `caught` both sides). From ledger-1112 I21.
 - [ ] **L716** `chat` open, M: Decide model on/off disagreement on money and checklist answers (F6). From OPEN.md:4314. Evidence: Ledger owner call; needs a real model to compare. Owner decided 2026-11-12: Check on a small model (Run a few money and checklist questions on the small downloaded model (llama-dev.sh, your decision 11), then close). Build: run scratchpad/llama-dev.sh serve, ask 5 money and 5 checklist questions in Chat model on and off, compare figures, record in CHAT_PLAN.
 - [ ] **L742** `chat` open, M: Atlas wisps and nebula: constant layered motion, more body wrap and texture (owner call). From OPEN.md:4405; OPEN.md:1076; OPEN.md:1077. Evidence: Look/feel call; w34-unv2-1111.md owner-call; w34-gap4-1111.md:17 Owner decided 2026-11-12: Redraw, rest setting rules (Wisps wrap behind the body and the lower body gets texture; motion still pauses at rest per 'Motion at rest'). Build: atlas.js feminine wisp paths split into back and front layers, lower-body texture layer; motion stays gated by atlasTailCalm.rest; desk frames re-rendered.

@@ -40,6 +40,7 @@ from tessellate.ai import act_registry, act_steps
 from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
+from tessellate.ai import filed_name
 from tessellate.ai.filed_name import filed_listing
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
@@ -784,7 +785,8 @@ def _asks_an_order(text: str) -> bool:
     """"List my notes in order": the order is not a word to find (the composer lists them)."""
     from tessellate.ai import composer_lists
 
-    return composer_lists.list_order(text) is not None
+    #: "show my goals" and "list my lists" are the notes so headed (L254), listed by the composer too.
+    return (composer_lists.list_order(text) or filed_name.kept_word(text)) is not None
 
 
 def _find(text: str) -> dict | None:

@@ -135,6 +135,9 @@ def list_target(question: str) -> tuple[str, str] | None:
     #: listing is "list my X notes" and "notes tagged X".
     if filed_name.shows_the_lot(question):
         return None
+    kept = filed_name.kept_word(question)
+    if kept:
+        return kept, "either"
     lead = _LIST_LEAD.match(_q(question))
     if not lead:
         bare = filed_name.filed_listing(_q(question))
@@ -573,13 +576,18 @@ def _title(view) -> str:  # noqa: ANN001
     return _trim(first.strip().rstrip(":.!"), 70)
 
 
+def _and_titled(key: str, views: list, tagged: list) -> list:
+    """L254: for "goal" and "list", the notes headed so are filed there too."""
+    return tagged + [v for v in views if filed_name.titled(key, _title(v)) and v not in tagged]
+
+
 def _filed(name: str, how: str, views: list) -> tuple[list, str]:
     """The views filed under `name` and how that reads ("in Work" or
     "tagged launch")."""
     key = name.lower().strip()
     variants = {key, key.rstrip("s"), key + "s"}
     by_category = [v for v in views if str(v.note.get("category") or "").lower() in variants]
-    by_tag = [v for v in views if {str(t).lower() for t in v.note.get("tags") or []} & variants]
+    by_tag = _and_titled(key, views, [v for v in views if {str(t).lower() for t in v.note.get("tags") or []} & variants])
     if how == "tag" or (how == "either" and not by_category):
         return by_tag, f"tagged {name.lower()}"
     if by_category:
@@ -999,6 +1007,7 @@ def counted_filing(question: str) -> str | None:
 #: The shapes `kind` tries first, in this order. Defined last so that every
 #: test it names (`holding_ask` is near the end) exists by then.
 _ASKED_IN_ORDER = (
+    ("listed", filed_name.kept_word),  # L254: "show my lists" is not a "holding" question
     ("without", without_ask),
     ("until", utilities.until_subject),
     ("ordered", list_order),

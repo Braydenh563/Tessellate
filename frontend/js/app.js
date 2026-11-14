@@ -1575,6 +1575,8 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
+  //: The chart maker and the ```chart block it saves (ask-chart.js, `drawAskChart.maker`).
+  chartMaker: ["/js/ask-chart.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],

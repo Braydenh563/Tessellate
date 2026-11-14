@@ -267,6 +267,7 @@ chatSendTurn.stage = {
       history: chatHistoryToSend(),
       attempt: opts.attempt,
       persona: sentPersona,
+      oneModel: opts.oneModel,
       mode: $("response-mode-select").value || null,
       useTools: effectiveUseTools,
       isPrivate: convRef.private,
@@ -895,6 +896,10 @@ chatSendTurn.stage = {
     // Per-message actions: one shared list with the reopened-conversation path,
     // see `assistantMessageActions` for why that matters (it places the row).
     assistantMessageActions({ bubble, text: answerRaw, question });
+    bubble.answerSources = t.meta?.raw_results || [];
+    if (opts.priorVersions?.length) {
+      assistantMessageActions.pager(bubble, [...opts.priorVersions, { text: answerRaw, sources: bubble.answerSources, made_at: new Date().toISOString() }]);
+    }
 
     // Regenerate replaces the last turn; a normal send appends a new one.
     chatHistoryToSend.heldOffer = t.groundingSupport?.offer?.offer_id || "";
@@ -946,6 +951,7 @@ chatSendTurn.stage = {
         // thing that saw the whole turn: the server reports per-round timings,
         // and an agent turn is several rounds plus the tool calls between them.
         elapsed_ms: elapsedMs,
+        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         //: For a reload (W1).
         stopped: t.stopped,
         wrote: bubble.dataset.wrote,
@@ -1071,6 +1077,7 @@ chatSendTurn.stage = {
     const { question, opts, timeline, toolEvents, sentImages, sentDocuments, sentFiles, sentMediaFiles, sentAttachments, sentBoards, followupOf, sentPersona, convRef, viewing } = t;
     try {
       const partial = {
+        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         question,
         // A turn that ended by asking saves the question as its answer, so a
         // reloaded thread shows what was asked rather than an empty bubble
@@ -2619,8 +2626,57 @@ function addBubble(role, text, attachments = null) {
 //: flow (CHAT_PLAN B2: "actions in the head"): hung under the bubble or
 //: floated over its corner, a row lay over text (B2's review); a question's
 //: row stays under its bubble.
-function assistantMessageActions({ bubble, text, question, onEdit }) {
+assistantMessageActions.models = [];
+apiJson("/models/status", { cacheMs: 600, silent: true })
+  .then((s) => Object.assign(assistantMessageActions.models, (s.installed_models || []).map((m) => m.name), { current: s.chat_model }))
+  .catch(() => {});
+
+//: L165: every version of an answer is kept; the pager (answer-versions.js) shows past one.
+assistantMessageActions.versionsOf = function (bubble) {
+  if (bubble?.versions?.length) return bubble.versions;
+  if (!bubble || bubble.answerText === undefined) return [];
+  return [{ text: bubble.answerText, sources: bubble.answerSources || [], made_at: bubble.dataset.madeAt || new Date().toISOString() }];
+};
+
+assistantMessageActions.pager = function (bubble, versions) {
+  bubble.versions = versions;
+  bubble.querySelector(".answer-version-pager")?.remove();
+  if (!(versions.length > 1)) return;
+  const pager = document.createElement("div");
+  pager.className = "answer-version-pager row";
+  pager.setAttribute("role", "group");
+  pager.setAttribute("aria-label", "Versions of this answer");
+  const label = document.createElement("span");
+  label.className = "muted";
+  label.setAttribute("aria-live", "polite");
+  let at = versions.length - 1;
+  const show = (to) => {
+    at = Math.max(0, Math.min(versions.length - 1, to));
+    const version = versions[at];
+    const el = [...bubble.querySelectorAll(".bubble-answer")].pop();
+    if (el) {
+      el.replaceChildren();
+      renderMarkdown(el, version.text);
+    }
+    bubble.answerText = version.text;
+    const old = bubble.querySelector(".chat-sources");
+    const panel = chatSourcesPanel({ meta: { raw_results: version.sources || [] }, sources: chatSourcesFrom({ meta: { raw_results: version.sources || [] } }) });
+    if (old) (panel ? old.replaceWith(panel) : old.remove());
+    else if (panel) bubble.querySelector(".msg-body, .agent-steps")?.after(panel);
+    label.textContent = `${at + 1} of ${versions.length}`;
+    previous.disabled = at === 0;
+    next.disabled = at === versions.length - 1;
+  };
+  const previous = smallButton("ph:caret-left", "Earlier version", () => show(at - 1));
+  const next = smallButton("ph:caret-right", "Later version", () => show(at + 1));
+  pager.append(previous, label, next);
+  bubble.appendChild(pager);
+  show(at);
+};
+
+function assistantMessageActions({ bubble, text, question, onEdit, message }) {
   const off = aiIsOff();
+  bubble.answerText = text;
   //: Both are local here, not top-level: the shared scope has a name cap (test_global_scope_ratchet).
   //: **Not right on an answer** (audit 1028 E59): one correction per note it cited, against
   //: the question; the next question like it reads those notes last (and leaves them out
@@ -2667,6 +2723,22 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     };
   }
 
+  //: Regenerate with (L165): this answer only, on the same model, another, or none.
+  function regenerateWithItems(bubble) {
+    const run = (oneModel) => () => regenerateFromBubble(bubble, { oneModel });
+    const known = assistantMessageActions.models;
+    const others = known.filter((name) => name !== known.current);
+    return {
+      label: "ph:cpu",
+      title: "Regenerate with…",
+      items: [
+        { label: "ph:arrow-clockwise Same model", title: "Answer again with the same model", run: run(known.current || "") },
+        ...others.map((name) => ({ label: `ph:cpu ${name}`, title: `Answer this once with ${name}`, run: run(name) })),
+        { label: "ph:notebook Without a model", title: "Answer from your notes alone, no model", run: run("composer") },
+      ],
+    };
+  }
+
   const row = chatMessageActions([
     {
       label: "ph:copy",
@@ -2707,6 +2779,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     },
     //: **Regenerate in another persona** (audit 1028 E60): once, for this answer; the picker stays where it was.
     regenerateAsItems(bubble),
+    regenerateWithItems(bubble),
     {
       label: "ph:speaker-high",
       title: "Read aloud",
@@ -2746,6 +2819,11 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       onClick: () => deleteChatTurn(bubble),
     },
   ]);
+  //: A reopened turn (L165): its sources and, past one version, the pager.
+  if (message) {
+    bubble.answerSources = message.raw_results || [];
+    if (message.versions?.length > 1) assistantMessageActions.pager(bubble, message.versions);
+  }
   return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);
 }
 

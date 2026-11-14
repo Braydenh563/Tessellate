@@ -13,7 +13,7 @@ import itertools
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_lists, composer_small, composer_versus, resurface
+from tessellate.ai import composer, composer_lists, composer_small, composer_versus, filed_name, resurface
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, like_escape
 
 #: Notes read for one computed answer: the list's count and the mentions are
@@ -36,7 +36,15 @@ def _filed(session: Session, name: str, how: str) -> list[Entry]:
     if how in ("category", "either"):
         named = [c.id for c in session.scalars(select(Category)) if c.name.lower() in variants]
         clauses.append(Entry.category_id.in_(named))
-    return list(session.scalars(select(Entry).where(*_live(), or_(*clauses)).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
+    if key in filed_name.KEPT_WORDS:  # L254: a note headed "Goals" or "Shopping list" is one too
+        clauses.append(func.lower(Entry.content).like(f"%{key}%"))  # narrowed by title below
+    found = session.scalars(select(Entry).where(*_live(), or_(*clauses)).order_by(Entry.created_at.desc()).limit(LIST_LIMIT * 4))
+    keep = (lambda e: _tagged(e, variants) or filed_name.titled(key, str(e.content or "").strip().split("\n")[0])) if key in filed_name.KEPT_WORDS else (lambda e: True)
+    return [e for e in found if keep(e)][:LIST_LIMIT]
+
+
+def _tagged(entry: Entry, variants: set[str]) -> bool:
+    return any(f'"{v}"' in str(entry.tags or "").lower() for v in variants)
 
 
 def _mentioning(session: Session, question: str) -> list[Entry]:
@@ -166,5 +174,13 @@ def _computed(session: Session, question: str, entries: list) -> list:
         return entries
     if which == "mentions" and not found:
         return []  # nothing says it: the search's five near misses would be quoted as if they did
+    return _joined(found, entries, which, question)
+
+
+def _joined(found: list, entries: list, which: str, question: str) -> list:
+    """The computed pool, then the search's own notes; for "what are my goals"
+    the goals alone, not the near misses (L254)."""
     have = {e.id for e in found}
+    if found and which == "listed" and filed_name.kept_word(question):
+        return found
     return found + [e for e in entries if e.id not in have] if found else entries
