@@ -1282,7 +1282,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "calculator",
         "keywords": (
-            "calculator", "open the calculator", "keypad", "unit converter",
+            "calculator", "open the calculator", "get to the calculator", "do a sum", "keypad", "unit converter",
             "convert units", "currency converter", "work out a sum",
             "calculator and equations", "equation tab", "insert as equation",
         ),

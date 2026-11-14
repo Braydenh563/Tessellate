@@ -133,9 +133,20 @@ def _has_phrase(subject: str, topics: list[dict]) -> bool:
 
 
 _OPENINGS = (
-    (re.compile(r"\bscan(?:ning)?\b", re.I), "ocr-workspace"),
-    (re.compile(r"\b(?:make|create|add|start|write|use)\b.{0,20}\b(?:check ?lists?|to-?do lists?|task lists?)\b", re.I), "tasks"),
-    (re.compile(r"\bnothing (?:happens|works|responds)\b|\b(?:doesn'?t|does not|won'?t) (?:work|respond)\b", re.I), "troubleshooting"),
+    (re.compile(r"\bscan(?:ning)?\b", re.I), "ocr-workspace", ""),
+    (re.compile(r"\b(?:make|create|add|start|write|use)\b.{0,20}\b(?:check ?lists?|to-?do lists?|task lists?)\b", re.I), "tasks", ""),
+    (re.compile(r"\bnothing (?:happens|works|responds)\b|\b(?:doesn'?t|does not|won'?t) (?:work|respond)\b", re.I), "troubleshooting", ""),
+    #: A how-to whose words the keyword rules weigh against the topic's own point (L-chat-41): the third is the sentence
+    #: that is its first step, when that is not the topic's first ("Switch or create one from the picker").
+    (re.compile(r"\b(?:lock|protect|secure)\b.{0,30}\bpassword\b|\bpassword\b.{0,30}\b(?:lock|protect)\b", re.I), "security", ""),
+    (re.compile(r"\bundo\b.{0,20}\bdelet\w*", re.I), "undo-bin", ""),
+    (re.compile(r"\btour\b", re.I), "tour", ""),
+    (re.compile(r"\b(?:switch|change|go)\b.{0,15}\bspaces?\b", re.I), "spaces", r"Switch"),
+    (re.compile(r"\baction items?\b", re.I), "meetings", r"Write an action item"),
+    (re.compile(r"\bsearch\b.{0,12}\bby\b|\boperators?\b", re.I), "search", r"Operators"),
+    (re.compile(r"\btags?\b.{0,15}\b(?:as i (?:type|write)|while i (?:type|write))", re.I), "tags-categories", r"Type #word"),
+    (re.compile(r"\b(?:do|work out|calculate)\b.{0,6}\bsums?\b", re.I), "calculator", r"Sum takes"),
+    (re.compile(r"\b(?:get to|open|find)\b.{0,10}\bcalculator\b", re.I), "calculator", r"Open it from"),
 )
 _OFF = re.compile(r"\b(?:turn|switch|shut|get rid of|disable|hide|stop)\b.{0,10}\boff\b|\b(?:turn off|switch off|disable|hide|get rid of)\b", re.I)
 _OFF_SENTENCE = re.compile(r"\bOff\b|\bturn(?:ed)? off\b")
@@ -148,10 +159,11 @@ def _fronted(topic: dict, topics: list[dict]) -> list[dict]:
 def _opening_lead(question: str, topics: list[dict], by_id: dict[str, dict]) -> Led | None:
     """A how-to that opens with its topic's first sentence, or a "turn off"
     that leads with the sentence naming Off (the steps turn it on)."""
-    for pattern, topic_id in _OPENINGS:
+    for pattern, topic_id, starts in _OPENINGS:
         if pattern.search(question) and topic_id in by_id:
             first = _sentences(by_id[topic_id])
-            return Led(_fronted(by_id[topic_id], topics), first[0] if first else "")
+            step = next((s for s in first if re.match(starts, s)), "") if starts else ""
+            return Led(_fronted(by_id[topic_id], topics), step or (first[0] if first else ""))
     if _OFF.search(question):
         for topic in topics:
             line = next((s for s in _sentences(topic) if _OFF_SENTENCE.search(s)), "")
@@ -331,3 +343,29 @@ def related_titles(topics: list[dict], shown: str, title_of) -> list[str]:  # no
     said in the answer (G5 h: "Related: Set a reminder" under that answer)."""
     first, said = title_of(topics[0]), shown.lower()
     return [t for t in (title_of(topic) for topic in topics[1:]) if t != first and t.lower() not in said]
+
+
+# --- the topic's opening line, and where a place goes (L-chat-41) -----------
+
+_HOW_OR_WHERE = re.compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|can i|is there a way|where|which (?:tab|setting|menu))\b", re.I)
+_SHORT_VERB = re.compile(r"\b(?:is|are|keeps?|has|have|lets?|needs?|works?)\b")
+#: "Where do my notifications go", "where is my data stored": about what happens, not a place to open, so the topic's own sentence leads and the place follows it.
+_PLACE_LAST = re.compile(
+    r"^\s*where (?:do|does|will) .{2,40}\b(?:go|end up|show up|appear|live)\s*\W*$|^\s*where (?:is|are) .{2,40}\b(?:stored|saved|kept)\s*\W*$", re.I
+)
+
+
+def place_last(question: str) -> bool:
+    """Whether the lead sentence comes before "It's in ..." for this where-question."""
+    return bool(_PLACE_LAST.match(question or ""))
+
+
+def short_opening(question: str, topic: dict) -> str:
+    """A topic's own opening line when it is too short to be a help sentence
+    ("Web search is opt-in.", "Documents keep a history."): a how-to is
+    answered from the top of its topic, so that line leads."""
+    if not _HOW_OR_WHERE.match(question or ""):
+        return ""
+    first = re.split(r"(?<=[.!?])\s+(?=[A-Z\"“(])", str(topic.get("body") or "").strip(), maxsplit=1)[0]
+    #: A heading ("Settings, Import & export.") has no verb and is not a line.
+    return first if first.endswith(".") and 2 <= len(first.split()) < 5 and _SHORT_VERB.search(first) else ""
