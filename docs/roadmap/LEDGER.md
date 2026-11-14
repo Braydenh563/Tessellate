@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 67 | 22 | 10 | 59 | 265 |
+| chat | 176 | 70 | 22 | 10 | 59 | 268 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 441 | 91 | 10 | 183 | 1085 |
+| all | 553 | 444 | 91 | 10 | 183 | 1088 |
 
 ## graph
 
@@ -112,6 +112,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-59** `chat` open, M: Model path: draw composed_preview as a draft before the first token; give the model the composer's chosen sentences as ids. From CHAT_PLAN.md:1355-1360 recount 2026-11-14. Evidence: scout: routes_chat.py:736 yields composed_preview, no frontend consumer
 - [ ] **L-chat-60** `chat` open, M: F5 remainder: Ask draws the chart event (pass onChart in ask-compose.js); write tools beyond the acts run from a sentence. From CHAT_PLAN.md:1597 recount 2026-11-14. Evidence: scout: answer-kit.js:1267 handles, ask-compose.js passes none
 - [ ] **L-chat-61** `chat` open, S: X14 bulk act card: first five listed and Show all, with the cap 50 and partial-failure line. From CHAT_PLAN.md:1282 recount 2026-11-14. Evidence: scout: cap commands.py:81, wording commands.py:1582; no five plus Show all card
+- [ ] **L-chat-62** `chat` open, M: Phase 4 skills gate: Find loose ends 8 of 8 and 80% of built-in skills with no invalid call on a local 1.5 to 3B model. From CHAT_PLAN.md:363. Evidence: Phase 4 gate unmet: 3B found 2 of 8 (2026-10-05), 1.5B 2 of 8, skills 1/9 pass (2026-11-11); runnable headless on llama-server
+- [ ] **L-chat-63** `chat` open, M: Phase 5 (b): run the 25-question composer eval with the real embedder and set the cosine thresholds from it. From CHAT_PLAN.md:367. Evidence: Decision 19 cosine thresholds are reasoned, not measured; bge-small is runnable here (L-chat-43 measured it)
+- [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14)
 
 ## whiteboard
 

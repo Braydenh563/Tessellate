@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: chat plan recount, open lines point to LEDGER L-chat-58 to 64, built text moved to HISTORY (2026-11-14).
 - Guide: the where-question lead check is linear on runs of tabs (CodeQL 2296).
 - Chat: notes joined by neither link nor tag are themed by their category, never by one on every note or one the question names (L102).
 - Chat: a typo is read by the notebook's own word pairs ("oat diary" is "oat dairy" when the notes write it), and the no-model tools (sums, conversions, dates, the week, reminders, contradictions, the bin) and the all-matches list are pinned by tests (L222, L230, L110, L121, L212, L218).
