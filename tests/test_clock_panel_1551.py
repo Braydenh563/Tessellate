@@ -62,8 +62,8 @@ const sandbox = {
     get: (k, d) => (store.has(k) ? store.get(k) : d),
     remove: (k) => store.delete(k),
   },
-  setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
-  clearInterval: (id) => timers.delete(id),
+  //: The shared one-second clock (prefs.js `secondTick`): each added paint is one entry in `timers`.
+  secondTick: { add: (fn) => timers.set(fn, fn), remove: (fn) => timers.delete(fn) },
   setTimeout: () => nextTimer++,
   clearTimeout: () => {},
   document: { addEventListener() {} },

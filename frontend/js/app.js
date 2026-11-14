@@ -633,7 +633,7 @@ function startWithoutPassword() {
 }
 
 function enterWithoutPassword(body) {
-  localStorage.setItem("token", body.token);
+  prefs.set("token", body.token);
   vaultOpen = !!body.vault_open;
   lockedByHand = false;
   const opening = startApp();

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 143 | 29 | 3 | 10 | 172 |
+| world-class | 0 | 138 | 29 | 3 | 10 | 167 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 534 | 100 | 5 | 121 | 1039 |
+| all | 405 | 529 | 100 | 5 | 121 | 1034 |
 
 ## graph
 
@@ -550,16 +550,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-70** `world-class` open, S: Subset Phosphor.woff2 to the icons the app uses. From WORLD_CLASS_PLAN.md:1951. Evidence: Phosphor.woff2 147,380 bytes whole (:1951, :781)
 - [ ] **L-world-class-71** `world-class` open, S: Load the boot stylesheets a closed surface does not need lazily. From WORLD_CLASS_PLAN.md:1951. Evidence: 12 stylesheets linked eagerly in index.html (:1951)
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
-- [ ] **L-world-class-74** `world-class` open, S: Honour a pasted #/Manual or #/Statistics at load, and give both lowercase addresses. From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802: router.js at its gzip cap, router-overlays.js adds the routes after boot
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
 - [ ] **L-world-class-76** `world-class` open, S: Decide app-wide undo across a reload (recommendation: keep it session-only and say so in Help). From WORLD_CLASS_PLAN.md:802. Evidence: undo-store.js persists boards and documents only; 'by design' at :802 has no owner decision
 - [ ] **L-world-class-77** `world-class` open, S: Re-measure A8's other three items from the 2026-09-13 audit. From WORLD_CLASS_PLAN.md:764. Evidence: WORLD_CLASS_PLAN.md:764 'the other three A8 items were not re-measured'; HISTORY.md:6447
-- [ ] **L-world-class-78** `world-class` open, S: Route the last localStorage.setItem writes through prefs.set (F1). From WORLD_CLASS_PLAN.md:851. Evidence: 3 localStorage.setItem calls left in 2 frontend/js files (grep)
 - [ ] **L-world-class-79** `world-class` open, M: Move the model downloads, the scheduler, SearXNG and update threads onto the pool (F7). From WORLD_CLASS_PLAN.md:862. Evidence: tests/test_flaw_class_lints.py ratchet; 26 thread sites at :3775
 - [ ] **L-world-class-80** `world-class` open, S: One renderer in the Files card reading GET /files/readings (F10). From WORLD_CLASS_PLAN.md:864. Evidence: GET /files/readings exists (F10 view); the Files card does not read it (:864)
 - [ ] **L-world-class-81** `world-class` open, L: store.js: the next slices (reminders, the current note), each surface subscribing in place of its own copy (F12). From WORLD_CLASS_PLAN.md:866. Evidence: store.js has one slice, notes (:866)
-- [ ] **L-world-class-82** `world-class` open, S: Capture: the attachment row wraps at 1024px. From WORLD_CLASS_PLAN.md:936. Evidence: WORLD_CLASS_PLAN.md:936 '1024px still wraps ... the capture attachment row'
-- [ ] **L-world-class-84** `world-class` open, S: Settings: one heading indent. From WORLD_CLASS_PLAN.md:950. Evidence: WORLD_CLASS_PLAN.md:950 'Settings has two heading indents'
 - [ ] **L-world-class-85** `world-class` open, S: Trace dismissed link pairs and accepted neighbourhoods into the learning loop. From WORLD_CLASS_PLAN.md:1020. Evidence: WORLD_CLASS_PLAN.md:1020 'dismissed link pairs and accepted neighbourhoods were not traced'
 - [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
@@ -568,7 +564,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider
 - [ ] **L-world-class-92** `world-class` open, S: Run boottime.js in the CI workflow (H9). From WORLD_CLASS_PLAN.md:1851. Evidence: WORLD_CLASS_PLAN.md:1851; no boottime in .github/workflows (grep 0 hits)
-- [ ] **L-world-class-93** `world-class` open, S: Fold the four one-second clocks into one tick (19.4). From WORLD_CLASS_PLAN.md:2004. Evidence: WORLD_CLASS_PLAN.md:2004 'the four one-second clocks are still separate timers'
 - [ ] **L-world-class-94** `world-class` open, S: Escape on the image lightbox, reminders add form, note edit entry and graph node panel; the chat undo line; undo.js reading the mind map's own stack. From WORLD_CLASS_PLAN.md:2083. Evidence: WORLD_CLASS_PLAN.md:2083 'Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
