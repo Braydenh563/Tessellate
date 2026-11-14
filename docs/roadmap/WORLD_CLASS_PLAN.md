@@ -4191,13 +4191,10 @@ Brief 74 measured rules 1, 2 and 7 on 12 surfaces (`undo.js`, `reach.js`, `overl
      Placed: (1) full open inventory (every plan, BACKLOG, INBOX, OPEN ledger, HANDOVER) ranked by impact, sent to the owner; (2) composer: every past owner report clustered into failure classes, a class-level eval set, the worst classes fixed as classes (CHAT_PLAN); (3) grammar and spelling: K4, K4b, K11 with the vendoring call (Harper); (4) stop at 40% weekly, report open items and a recommendation. The "fix the class, not the case" rule is standing (HANDOVER owner block).
 
 ## Placed from L746, 2026-11-14: Atlas-only and generated-only acts, for the owner's review
-
-Measured from `NAME_MARK_BUDDY_ACTS` (avatars.js) and `ACTIVITIES` (behaviour.py). The picker keeps an Atlas-only act (`atlas: true`) off the generated faces (companion-menu.js:191, avatars.js:9140) and nothing keeps an act off Atlas, so the generated-only column is empty today.
-
+Measured from `NAME_MARK_BUDDY_ACTS` (avatars.js) and `ACTIVITIES` (behaviour.py). The picker keeps `atlas: true` acts off generated faces (companion-menu.js:191); nothing keeps an act off Atlas.
 | Track | Acts | Count |
 | --- | --- | --- |
-| Atlas-only (drawn for it) | juggle, map, meditate, pushups, weights, tea, snack, fish, journal, stars, blanket, plant, puzzle, agree, dance, proud, lookdown, tiptoe, sneeze, hiccup, hug, tap, firefly, starpile, cardnap, wavepointer, dinner, bubbles, knit, daydream, pace, game, tinker, dust | 34 |
-| Both (generic, prop-free) | blink, look, turn, glance, stretch, yawn, nap, hop, wave, scratch, dangle, kick, shrug, facepalm and the rest of the 56 `any` rows in behaviour.py | 56 |
-| Generated-only (proposed, none built) | groom, sniff, shake (an animal's coat and nose), ear twitch and tail flick (no ears; Atlas has its own tail layer), crouch_watch and lie_down (ground gait) | 7 |
-
-Remaining step, which only the owner can take: say which of the seven proposed rows leave Atlas (a `generated: true` flag read where `spec.atlas` is read now), then build them with a test.
+| Atlas-only | juggle, map, meditate, pushups, weights, tea, snack, fish, journal, stars, blanket, plant, puzzle, agree, dance, proud, lookdown, tiptoe, sneeze, hiccup, hug, tap, firefly, starpile, cardnap, wavepointer, dinner, bubbles, knit, daydream, pace, game, tinker, dust | 34 |
+| Both | blink, look, turn, glance, stretch, yawn, nap, hop, wave, scratch, dangle, kick, shrug, facepalm, the 56 `any` rows | 56 |
+| Generated-only (proposed, none built) | groom, sniff, shake, ear twitch, tail flick, crouch_watch, lie_down | 7 |
+The owner says which of the seven leave Atlas (a `generated: true` flag read beside `spec.atlas`); then it is built with a test.
