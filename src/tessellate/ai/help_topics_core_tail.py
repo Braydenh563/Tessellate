@@ -662,7 +662,7 @@ TAIL_TOPICS.extend(
                 "with a gap between, like a server rack; it needs no connectors, and one Undo takes it back. "
                 "Import reads GraphML (yEd too), Miro API items JSON and PlantUML (class, sequence, activity or named boxes) "
                 "into shapes and connectors; the Mermaid export has a PlantUML twin in the Diagram menu. An EMF cannot be drawn "
-                "here, so it lands as a note with its size; open it in Inkscape or LibreOffice and save a PNG or SVG. "
+                "here, so it lands as a note with its size and a link to the original, kept as a note's file; open it in Inkscape or LibreOffice and save a PNG or SVG. "
                 "Files over the size cap or with XML entities are refused. Export board configuration saves the default styles, "
                 "grid, paper, palettes and which shape libraries are off as JSON, and Import board configuration applies one "
                 "after a check. It is data only; no plugin code runs. A connector hung on another connector travels with it in a board export and comes back joined; a .drawio file gets its end as a free point."

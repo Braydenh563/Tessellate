@@ -203,3 +203,10 @@ def test_the_rack_command_needs_two_selected_and_is_in_the_layout_menu():
     assert 'id: "layout-rack"' in commands and 'needs: "rack"' in commands
     assert '"layout-circle", "layout-rack"' in commands
     assert "canRack" in frontend_text("whiteboard-layouts-more.js")
+
+
+def test_rack_is_in_the_right_click_arrange_menu():
+    from pathlib import Path
+
+    board = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert '"layout-circle", "layout-rack"]' in board
