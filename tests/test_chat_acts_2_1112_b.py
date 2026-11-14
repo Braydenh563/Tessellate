@@ -90,8 +90,9 @@ def test_a_rename_or_move_is_taken_back_by_saying_undo(client, notebook, ask, ch
     confirm(client, card_of(first))
     notebook.expire_all()
     out = stream(client, "undo that", history=[{"question": ask, "answer": "ok"}])
-    assert out.get("act"), out["text"]
-    confirm(client, card_of(out))
+    #: L-chat-107 made "undo that" a control that runs the confirmed card's inverse at once
+    #: (it is itself the undo, so no second card); the intent, the old title or category back, holds.
+    assert out["text"].startswith("Undone: "), out["text"]
     notebook.expire_all()
     entry = notebook.get(Entry, before.id)
     assert (entry.content or "").startswith("# Boiler service") and manager.category_name_for(notebook, entry) == old_category
@@ -137,4 +138,5 @@ def test_the_page_drops_the_card_label_only_when_the_line_said_it():
     from tests._app_js import app_js_text
 
     js = app_js_text()
-    assert "if (event.label_said) {" in js and "} else line(`ph:warning ${event.label}`, notice, row);" in js
+    #: L-chat-61 put the bulk act's note list between the notice and the buttons; the label rule is the same.
+    assert "if (event.label_said) {" in js and "} else line(`ph:warning ${event.label}`, notice, ...(itemList ? [itemList] : []), row);" in js

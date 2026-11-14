@@ -91,6 +91,9 @@ def test_execute_tool_refuses_before_the_handler(session):
     assert "note_id (integer)" in result["error"]
 
 
+from tessellate.ai import act_registry as agent_act_registry  # noqa: E402
+
+
 class _Session:
     def rollback(self):
         return None
@@ -319,6 +322,9 @@ def _offer(monkeypatch):
 
 def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
     _offer(monkeypatch)
+    #: The nudge path, for a claim the act reader cannot turn into a card: with the reader loaded
+    #: (any earlier test imports `acts`) the claim is the act's own card first (L114, actguard).
+    monkeypatch.setattr(agent_act_registry, "proposer", None)
     ran = []
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 5, "label": "made"})
     fake = _Claims()
@@ -332,6 +338,9 @@ def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
 
 def test_a_second_false_claim_still_gets_the_heads_up(monkeypatch, app_state):
     _offer(monkeypatch)
+    #: The nudge path, for a claim the act reader cannot turn into a card: with the reader loaded
+    #: (any earlier test imports `acts`) the claim is the act's own card first (L114, actguard).
+    monkeypatch.setattr(agent_act_registry, "proposer", None)
     monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {})
     fake = _Claims(obey=False)
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Models(), fake))

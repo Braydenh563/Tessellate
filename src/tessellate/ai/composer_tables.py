@@ -1275,7 +1275,7 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
 CONCEPTS: dict[str, tuple[str, ...]] = {
     "sport": ("swimming", "swam", "running", "ran", "football", "tennis", "cycling", "cycled", "gym", "yoga", "climbing", "hiking", "badminton", "rugby", "cricket", "golf"),
     "exercise": ("swimming", "swam", "running", "ran", "gym", "yoga", "cycling", "hiking", "climbing", "workout"),
-    "gym": ("swimming", "swam", "running", "ran", "yoga", "workout", "lifting", "weights"),
+    #: "gym" is a place, not a concept: a running note is not a gym note (test_engine_probe_step0 p7).
     "food": ("dinner", "lunch", "breakfast", "recipe", "pasta", "pizza", "soup", "curry", "salad", "cooked", "restaurant"),
     "meal": ("dinner", "lunch", "breakfast", "supper", "brunch"),
     "travel": ("flight", "hotel", "airport", "train", "itinerary", "passport", "trip", "holiday"),
