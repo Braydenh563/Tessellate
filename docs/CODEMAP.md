@@ -128,22 +128,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `formatFileSize` | frontend/js/att-chip.js:58 |
 | `isImageFile` | frontend/js/att-chip.js:162 |
 
-### frontend/js/note-cards.js (20)
+### frontend/js/note-cards.js (19)
 
 | Name | File:line |
 |---|---|
 | `answerTags` | frontend/js/note-cards.js:30 |
-| `askAtlasAboutNote` | frontend/js/note-cards.js:473 |
-| `askAtlasAboutThing` | frontend/js/note-cards.js:480 |
+| `askAtlasAboutThing` | frontend/js/note-cards.js:472 |
 | `binNoteWithUndo` | frontend/js/note-cards.js:338 |
-| `deducedStrength` | frontend/js/note-cards.js:540 |
-| `entryCardControls` | frontend/js/note-cards.js:493 |
-| `entryListFocusStop` | frontend/js/note-cards.js:506 |
-| `entryListSetStop` | frontend/js/note-cards.js:511 |
+| `deducedStrength` | frontend/js/note-cards.js:532 |
+| `entryCardControls` | frontend/js/note-cards.js:485 |
+| `entryListFocusStop` | frontend/js/note-cards.js:498 |
+| `entryListSetStop` | frontend/js/note-cards.js:503 |
 | `fitNoteMetas` | frontend/js/note-cards.js:381 |
 | `libraryListsBoard` | frontend/js/note-cards.js:228 |
 | `loadMapBoardIndex` | frontend/js/note-cards.js:163 |
-| `makeUnlinkAccessible` | frontend/js/note-cards.js:524 |
+| `makeUnlinkAccessible` | frontend/js/note-cards.js:516 |
 | `mapBoardById` | frontend/js/note-cards.js:191 |
 | `mapBoardRows` | frontend/js/note-cards.js:217 |
 | `mapBoardTitled` | frontend/js/note-cards.js:203 |
@@ -849,7 +848,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerPaintTitle` | frontend/js/router.js:166 |
 | `routerRestore` | frontend/js/router.js:245 |
 
-### frontend/js/settings-panes.js (31)
+### frontend/js/settings-panes.js (30)
 
 | Name | File:line |
 |---|---|
@@ -858,31 +857,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:937 |
+| `catalogueRun` | frontend/js/settings-panes.js:921 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
 | `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:622 |
-| `currentZoom` | frontend/js/settings-panes.js:838 |
-| `downloadExport` | frontend/js/settings-panes.js:812 |
+| `currentZoom` | frontend/js/settings-panes.js:822 |
+| `downloadExport` | frontend/js/settings-panes.js:796 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:884 |
+| `hud` | frontend/js/settings-panes.js:868 |
 | `initAutoGrow` | frontend/js/settings-panes.js:450 |
 | `initComposerResize` | frontend/js/settings-panes.js:364 |
 | `loadPreferences` | frontend/js/settings-panes.js:597 |
 | `markPrefsDirty` | frontend/js/settings-panes.js:770 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:786 |
-| `nudgeZoom` | frontend/js/settings-panes.js:905 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1026 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1003 |
-| `paletteKeys` | frontend/js/settings-panes.js:1012 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1037 |
+| `nudgeZoom` | frontend/js/settings-panes.js:889 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1010 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:987 |
+| `paletteKeys` | frontend/js/settings-panes.js:996 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1021 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `reportTimezone` | frontend/js/settings-panes.js:541 |
 | `savePrefs` | frontend/js/settings-panes.js:663 |
 | `setPreference` | frontend/js/settings-panes.js:645 |
-| `setZoom` | frontend/js/settings-panes.js:842 |
-| `updateProfileCount` | frontend/js/settings-panes.js:800 |
+| `setZoom` | frontend/js/settings-panes.js:826 |
 | `watchOverlays` | frontend/js/settings-panes.js:462 |
 
 ### frontend/js/media.js (9)
@@ -5406,10 +5404,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `searchHighlightTerms` | frontend/js/entry-card.js:1382 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
-### frontend/js/entry-menu.js (6)
+### frontend/js/entry-menu.js (7)
 
 | Name | File:line |
 |---|---|
+| `askAtlasAboutNote` | frontend/js/entry-menu.js:570 |
 | `fillEntryMenu` | frontend/js/entry-menu.js:8 |
 | `generateEntryTitle` | frontend/js/entry-menu.js:501 |
 | `inlineActionIs` | frontend/js/entry-menu.js:541 |
@@ -7935,7 +7934,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `voiceModelsPaint` | frontend/js/settings-packages.js:99 |
 | `voiceModelsWire` | frontend/js/settings-packages.js:123 |
 
-### frontend/js/settings-prefs.js (6)
+### frontend/js/settings-prefs.js (7)
 
 | Name | File:line |
 |---|---|
@@ -7944,6 +7943,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderWebSearch` | frontend/js/settings-prefs.js:114 |
 | `saveSearchProvider` | frontend/js/settings-prefs.js:155 |
 | `syncEmbeddingPickerState` | frontend/js/settings-prefs.js:216 |
+| `updateProfileCount` | frontend/js/settings-prefs.js:260 |
 | `wirePrefsDirtyMarks` | frontend/js/settings-prefs.js:181 |
 
 ### frontend/js/settings-rows.js (42)
