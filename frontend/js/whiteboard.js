@@ -2730,7 +2730,7 @@ async function wbGroupSelection() {
       rows.push({ kind: entries[i].kind, item: entries[i].item });
     }
     await wbSaveMany(rows);
-    toast("Grouped.");
+    toast(voiceLine("done", "Grouped"));
   });
   wbUpdateContextBar();
 }
@@ -2769,7 +2769,7 @@ async function wbUngroupSelection() {
     }
     await wbSaveMany(entries);
   });
-  toast("Ungrouped.");
+  toast(voiceLine("done", "Ungrouped"));
   wbUpdateContextBar();
 }
 
@@ -12380,7 +12380,7 @@ function wbOnLockPress(e) {
   const hit = wbLockedItemAt(x, y);
   if (!hit) return;
   wbBoardState.lockHintSaid = true;
-  toast("Locked. Right-click to unlock it.");
+  toast(voiceLine("done", "Locked. Right-click to unlock it"));
 }
 
 //: --- Comments (WHITEBOARD_PLAN decision 17) --------------------------------
@@ -14826,7 +14826,7 @@ async function wbSaveToLibrary(scope) {
   const blob = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   await uploadToLibrary(`whiteboard-${scope}-${stamp}.png`, blob, wbExportDescription(scope));
-  toast("Added to your image library.");
+  toast(voiceLine("done", "Added to your image library"));
 }
 
 //: The raster types beyond PNG (draw.io's export formats). JPEG has no alpha,
@@ -14861,7 +14861,7 @@ async function wbExportCopyImage(scope) {
   try {
     if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("no clipboard");
     await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
-    toast("Copied the picture. Paste it into another app.");
+    toast(voiceLine("done", "Copied the picture. Paste it into another app"));
   } catch {
     await saveFile(wbExportFileName(scope, "png"), await picture);
     toast("This browser would not copy a picture, so it was saved as a PNG instead.");
@@ -14888,7 +14888,7 @@ async function wbCopyAsSvg() {
     if (!navigator.clipboard?.writeText) throw new Error("This browser cannot copy text. Export an SVG instead.");
     const { svg } = wbBuildExportSvg(scope, { transparent: wbExportPngPrefs().transparent });
     await navigator.clipboard.writeText(svg);
-    toast("Copied the SVG. Paste it into an editor.");
+    toast(voiceLine("done", "Copied the SVG. Paste it into an editor"));
   } catch (err) {
     toast(err.message || voiceLine("failed", "copy the SVG"), true);
   }
@@ -23730,7 +23730,7 @@ async function wbFitImage(el) {
   await wbSaveObject(item);
   wbPushUndo({ action: "move", kind: "object", id: item.id, before });
   wbScheduleRender();
-  toast("Fitted to the picture.");
+  toast(voiceLine("done", "Fitted to the picture"));
 }
 
 async function wbFitToText(el) {
@@ -23773,7 +23773,7 @@ async function wbFitToText(el) {
     await wbSaveObject(item);
     wbPushUndo({ action: "move", kind: "object", id: item.id, before });
     wbScheduleRender();
-    toast("Sized to its text.");
+    toast(voiceLine("done", "Sized to its text"));
     return;
   }
   //: **The card's own `scrollHeight` is not the answer for a note card.**
@@ -23827,7 +23827,7 @@ async function wbFitToText(el) {
   else await wbSaveObject(item);
   wbPushUndo({ action: "move", kind: isNode ? "node" : "object", id: item.id, before });
   wbScheduleRender();
-  toast("Sized to its text.");
+  toast(voiceLine("done", "Sized to its text"));
 }
 
 async function wbSaveNode(node) {

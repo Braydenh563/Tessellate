@@ -1132,7 +1132,7 @@ function libraryActions(item) {
         if (back && item.subtype !== "reading") {
           pushBinPairUndo(`Restored “${item.title}” from the bin`, bin.bin, bin.restore, true, () => Promise.all([loadLibrary(), bin.reload()]));
         }
-        toast("Restored.");
+        toast(voiceLine("done", "Restored"));
         reload();
         bin.reload();
       }),
@@ -1167,7 +1167,7 @@ function libraryActions(item) {
             const archive = target.url.replace(/unarchive$/, "archive");
             pushRoutePairUndo(`Unarchived a ${target.noun}`, [archive, target.method], [target.url, target.method], () => Promise.all([loadLibrary(), target.reload()]));
           }
-          toast("Unarchived.");
+          toast(voiceLine("done", "Unarchived"));
           reload();
           target.reload();
         }
@@ -1204,7 +1204,7 @@ function libraryActions(item) {
         if (archived !== undefined) {
           pushRoutePairUndo("Archived a note", [`/entries/${item.id}/unarchive`, "POST"], [`/entries/${item.id}/archive`, "POST"], () => Promise.all([loadLibrary(), refreshEntries([item.id])]));
         }
-        toast(`Archived “${item.title}”.`);
+        toast(voiceLine("done", `Archived “${item.title}”`));
         reload();
         loadEntries();
       }),
@@ -1289,7 +1289,7 @@ function libraryActions(item) {
         if (!(await confirmDialog(`Delete "${item.title}"?\n\nIt moves out of the Library; Undo brings it back.`))) return;
         const gone = await apiJson(`/files/${item.id}`, { method: "DELETE" }).catch((e) => toast(e.message, true));
         if (gone) pushTokenUndo(`Deleted “${item.title}”`, [{ del: [`/files/${item.id}`, "DELETE"], restore: "/files/restore", token: gone.undo_token }], reload);
-        toast(`Deleted “${item.title}”.`);
+        toast(voiceLine("done", `Deleted “${item.title}”`));
         reload();
       }),
     ];
@@ -1334,7 +1334,7 @@ async function linkNoteFromLibrary(item) {
     toast(error.message, true);
     return;
   }
-  toast("Linked.");
+  toast(voiceLine("done", "Linked"));
   loadEntries();
 }
 
@@ -1940,7 +1940,7 @@ $("binned-restore").addEventListener("click", async () => {
   try {
     await apiJson(`/entries/${id}/restore`, { method: "POST" });
     pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
-    toast("Restored.");
+    toast(voiceLine("done", "Restored"));
   } catch (error) {
     toast(voiceLine("failed", "restore that note", error.message), true);
     return;
@@ -1959,7 +1959,7 @@ $("binned-purge").addEventListener("click", async () => {
   try {
     await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
     undoStoreClear.purged("note", id);
-    toast("Deleted for good.");
+    toast(voiceLine("done", "Deleted for good"));
   } catch (error) {
     toast(voiceLine("failed", "delete that note", error.message), true);
     return;
@@ -2856,7 +2856,7 @@ async function duplicateSkill(skill) {
     toast(error.message, true);
     return;
   }
-  toast(`Saved “${name}” under Yours. Edit it from its card.`);
+  toast(voiceLine("done", `Saved “${name}” under Yours. Edit it from its card`));
   skillKindFilter = "all";
   renderSkillsDashboard();
 }
@@ -2884,7 +2884,7 @@ async function deleteSkillWithUndo(skill) {
   toastAction(`Deleted “${skill.name}”.`, "Undo", async () => {
     settleUndoFromToast(action);
     await restore();
-    toast(`Restored “${skill.name}”.`);
+    toast(voiceLine("done", `Restored “${skill.name}”`));
   });
 }
 
@@ -11051,7 +11051,7 @@ onDomReady(() => {
         );
       }
       if (created.duplicate_of) {
-        toast(`Saved: you already had this bookmark (${created.title || created.url}).`);
+        toast(voiceLine("done", `Saved: you already had this bookmark (${created.title || created.url})`));
       }
       renderBookmarks();
       LinkShelf.afterSave();

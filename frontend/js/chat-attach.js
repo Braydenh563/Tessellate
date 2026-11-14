@@ -1149,7 +1149,7 @@ async function deleteCurrentChat() {
     try {
       gone = await apiJson(`/conversations/${chatConv.id}`, { method: "DELETE" });
     } catch {
-      toast("Couldn't delete this chat.", true);
+      toast(voiceLine("failed", "delete this chat"), true);
       return;
     }
   }

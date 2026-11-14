@@ -167,7 +167,8 @@
   //: Spelling findings for a document in `lang`, from its pack. `skipped(at)` is the prose pass's
   //: mask (code, addresses). A word the pack has not answered yet is asked and not flagged.
   function packFindings(text, lang, skipped) {
-    if (packState(lang) !== "ready") return [];
+    //: Never for Japanese or Chinese: `PACK_WORD` reads runs of letters between spaces, which is not how they are written.
+    if (docProse.cjk(lang) || packState(lang) !== "ready") return [];
     if (!pack.answers.has(lang)) pack.answers.set(lang, new Map());
     const known = pack.answers.get(lang);
     const own = docDictionary();

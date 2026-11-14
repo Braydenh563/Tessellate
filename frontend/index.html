@@ -10153,6 +10153,22 @@ Link to another note with [[its first few words]]."></textarea>
         <option value="in">Indian (colour, organise)</option>
       </select>
     </div>
+    <div class="doc-dictionary-setting">
+      <span class="doc-dictionary-setting-text">
+        <label for="doc-language">This document's language</label>
+        <small class="muted">Kept in its properties; sets the spelling and the editor's language.</small>
+      </span>
+      <select id="doc-language">
+        <option value="">Not set (English)</option>
+        <option value="en-GB">English, British</option>
+        <option value="en-US">English, American</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+      </select>
+    </div>
     <label class="setting-check doc-grammar-row">
       <input type="checkbox" id="doc-grammar-check" checked>
       <span>
@@ -13377,7 +13393,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <label class="setting-check">
                 <input type="checkbox" id="pref-search-suggest">
-                <span>Suggest as you type in search and chat boxes</span>
+                <span>Suggest as you type in search, chat and note boxes</span>
               </label>
               <p class="muted">Recent searches, then your note titles, tags and categories, with the best match in grey.</p>
               <div class="help-body hidden" id="search-suggest-help" role="dialog" aria-label="About search suggestions">

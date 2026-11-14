@@ -49,7 +49,7 @@ EXPECTED = {
         '`Describing a file needs the local AI. ${AI_OFFLINE_HINT}.`',
     ],
     'capture-ask.js': [
-        '"Couldn\'t read the clipboard, so that part of the template is empty."',
+        'voiceLine("failed", "read the clipboard") + " That part of the template is empty."',
     ],
     'companion-menu.js': [
         '"Give the companion a name first."',
@@ -296,7 +296,7 @@ FAULTS = {
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
     },
     'shell-reminders.js': {
-        '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
+        'voiceLine("failed", "load your reminders") + " Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },

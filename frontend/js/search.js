@@ -791,7 +791,7 @@ async function saveFinderSearch() {
   const already = finderSavedAs(query);
   if (already.length) {
     await persistSavedFinds(savedFinds().filter((item) => !already.includes(item)));
-    toast("Removed the saved search.");
+    toast(voiceLine("done", "Removed the saved search"));
     return;
   }
   const name = await promptDialog("Name this search", query.slice(0, 40), { confirmLabel: "Save search" });

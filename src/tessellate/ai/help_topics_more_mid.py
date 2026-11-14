@@ -80,7 +80,7 @@ MID_TOPICS.extend(
                 "small box over whatever tab you are on: type, press Ctrl+Enter, "
                 "and the note is saved and filed in the background while you stay "
                 "where you were. Escape closes it and keeps the words for next "
-                "time; Open in Capture moves them to the full composer. Private, in "
+                "time; Open in Capture moves them to the full composer. A word you are typing is finished in grey (Tab takes it). Private, in "
                 "Quick note, Capture and the card's foot, seals just that one note (it starts "
                 "on when Settings says new notes start private). The "
                 "dashboard's Quick capture card is the same take-a-note bar as the top of "

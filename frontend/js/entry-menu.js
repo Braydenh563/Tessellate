@@ -291,7 +291,7 @@ function fillEntryMenu(menu, entry) {
             pushUndo(`Kept a note in ${entry.category}`, settle(false), settle(true));
           }
           await refreshEntries([entry.id]);
-          toast(`Kept in ${entry.category}.`);
+          toast(voiceLine("done", `Kept in ${entry.category}`));
         },
       }]
       : []),
@@ -334,7 +334,7 @@ function fillEntryMenu(menu, entry) {
           await apiJson(`/entries/${entry.id}/unarchive`, { method: "POST" });
           pushRoutePairUndo("Unarchived a note", [`/entries/${entry.id}/archive`, "POST"], [`/entries/${entry.id}/unarchive`, "POST"], () => refreshEntries([entry.id]));
           await refreshEntries([entry.id]);
-          toast("Unarchived.");
+          toast(voiceLine("done", "Unarchived"));
         },
       }
     : {

@@ -1412,7 +1412,7 @@
       again.title = "Put this back in the fields";
       again.addEventListener("click", () => restore(item));
       const text = () => copy(item);
-      const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast("Copied."), () => toast(voiceLine("failed", "copy it"), "info")));
+      const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast(voiceLine("done", "Copied")), () => toast(voiceLine("failed", "copy it"), "info")));
       const edit = smallButton("ph:pencil-simple", "Edit this one", () => {
         replacing = item.key;
         editing = true;

@@ -839,12 +839,15 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "A document is checked as English unless its properties set a "
-            "language (a lang key, such as fr). For French, German and Spanish, "
+            "language (a lang key, such as fr); the Dictionary sheet's This "
+            "document's language row writes it, and en-GB or en-US picks British or "
+            "American spelling for that document alone. For French, German and Spanish, "
             "Settings, Packages offers a spelling pack each (about 340 KB, "
             "kept on this computer); the Suggestions panel of such a document "
             "also has an Install button. Once installed, spelling is checked in "
             "that language and grammar stays English. Add a word to the "
-            "dictionary as usual to stop it being flagged."
+            "dictionary as usual to stop it being flagged. Japanese and Chinese "
+            "are not checked: they are not written in words split by spaces."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
@@ -2724,7 +2727,9 @@ MORE_TOPICS.append({
         "lists) and what the last answer was about, so \"notes form last week\" is from and \"fill in the form\" "
         "stays form. When two readings stay close it answers the likelier and offers the other as a Did you mean "
         "chip; press it to ask again with that word. A word that is one of your own titles or tags is left as it is. "
-        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word."
+        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word. "
+        "The chat box and the Ask box underline a grammar slip as you pause (a double line); click it for the fix "
+        "or Ignore this one. The Grammar check switch in a document's writing panel turns it off."
     ),
 })
 TOPIC_META["chat-typos"] = {"title": "How Chat reads a slip", "path": "Chat tab"}

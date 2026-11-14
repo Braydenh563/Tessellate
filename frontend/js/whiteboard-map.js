@@ -1741,7 +1741,7 @@ async function wbMapMoveAmongSiblings(id, dir) {
   other.data = { ...other.data, order: mine };
   await Promise.all([wbSaveObject(node), wbSaveObject(other)]);
   if (wbMapLayout() === "free") {
-    toast("Moved in the outline. This map's layout is Free, so the canvas stays as it is.");
+    toast(voiceLine("done", "Moved in the outline. This map's layout is Free, so the canvas stays as it is"));
   } else {
     await wbMapTidyBranch(node.parent_id ?? null);
   }
@@ -1773,7 +1773,7 @@ async function wbMapSortChildren(id, dir = 1) {
   const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
   sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
   await wbSaveMany(sorted.map((item) => ({ kind: "object", item })));
-  if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
+  if (wbMapLayout() === "free") toast(voiceLine("done", "Sorted in the outline. This map's layout is Free, so the canvas stays as it is"));
   else await wbMapTidyBranch(id);
   renderWhiteboardNow();
   wbAnnounce(`Branches sorted ${dir > 0 ? "A to Z" : "Z to A"}.`);
@@ -5181,7 +5181,7 @@ async function wbMapCopyBranchOutline(id) {
   if (!node) return false;
   const { title, body } = wbMapTreeMarkdown([node]);
   const copied = await copyToClipboard(body ? `# ${title}\n\n${body}\n` : `# ${title}\n`);
-  if (copied) toast(`Copied “${title}” and its branch as an outline.`);
+  if (copied) toast(voiceLine("done", `Copied “${title}” and its branch as an outline`));
   return copied;
 }
 
@@ -5236,7 +5236,7 @@ async function wbMapWriteDocument() {
   pushBinPairUndo(`Wrote “${title}” as a document`, `/documents/${doc.id}`, `/documents/${doc.id}/restore`, true, () => (typeof loadDocuments === "function" ? loadDocuments() : null));
   switchTab("documents");
   await openDocument(doc.id);
-  toast(`Wrote “${title}” as a document.`);
+  toast(voiceLine("done", `Wrote “${title}” as a document`));
   return doc;
 }
 
@@ -5514,7 +5514,7 @@ async function wbMapAddReference(parentId) {
   selectWbItem("object", created.id);
   await wbMapTidyBranch(parentId);
   renderWhiteboardNow();
-  toast(`Added “${chosen.label}” to the map.`);
+  toast(voiceLine("done", `Added “${chosen.label}” to the map`));
   return created;
 }
 
@@ -9564,7 +9564,7 @@ async function wbMapReverseCrossLinkNow(sketchId) {
     return;
   }
   renderWhiteboardNow();
-  toast("Turned the cross-link around.");
+  toast(voiceLine("done", "Turned the cross-link around"));
 }
 
 //: **A cross-link promoted to a branch** (§13c). The one action that teaches
@@ -9620,7 +9620,7 @@ async function wbMapCutCrossLinkNow(sketchId) {
   wbState.sketches = (wbState.sketches || []).filter((x) => x.id !== sketchId);
   await wbRefreshMapState();
   renderWhiteboardNow();
-  toast("Cut the cross-link. Both topics kept their branches.");
+  toast(voiceLine("done", "Cut the cross-link. Both topics kept their branches"));
 }
 
 //: Turn a line around: the topic below becomes the one above.
@@ -9656,7 +9656,7 @@ async function wbMapReverseEdgeNow(childId) {
   }
   await wbMapTidy({ quiet: true });
   renderWhiteboardNow();
-  toast("Turned the line around.");
+  toast(voiceLine("done", "Turned the line around"));
 }
 
 function wbSyncMapChrome() {
@@ -10450,7 +10450,7 @@ function wbMapStudyMark(knew) {
   }
   const tally = wbMapStudyTally(wbStudy.steps, wbStudy.marks);
   wbStopPresenting();
-  toast(`Recalled ${tally.knew} of ${tally.of} branches.`);
+  toast(voiceLine("done", `Recalled ${tally.knew} of ${tally.of} branches`));
 }
 
 //: Called by `wbStopPresenting`: the map draws whole again.

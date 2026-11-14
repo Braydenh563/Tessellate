@@ -103,7 +103,7 @@ function editAndResend(bubble, text) {
         //: The copy is made before the cut, so a failed copy stops the edit (nothing is lost).
         if (keep?.checked) {
           await apiJson(`/conversations/${chatConv.id}/fork`, { method: "POST", body: JSON.stringify({ suffix: "before the edit" }) });
-          toast("Kept the earlier version as a copy in your chats.");
+          toast(voiceLine("done", "Kept the earlier version as a copy in your chats"));
         }
         const result = await apiJson(`/conversations/${chatConv.id}/truncate`, {
           method: "POST",

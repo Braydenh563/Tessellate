@@ -2868,7 +2868,7 @@ function openGraphLinkPanel(edge, nodes) {
       method: "PUT",
       body: JSON.stringify({ reason: textarea.value.trim() || null }),
     }).catch((e) => toast(e.message, true));
-    toast("Saved.");
+    toast(voiceLine("done", "Saved"));
     close();
     renderGraph();
   });
@@ -4830,7 +4830,7 @@ async function graphSaveCurrentView() {
   views.push({ name, ...graphCaptureView() });
   prefs.set(GRAPH_VIEWS_KEY, JSON.stringify(views));
   renderGraphViews();
-  toast(`Saved the view “${name}”.`);
+  toast(voiceLine("done", `Saved the view “${name}”`));
 }
 
 function graphApplyView(view) {
@@ -5627,7 +5627,7 @@ onSurface("graph", () => {
     recordTabVisit("graph", null);
     $("graph-focus-clear").classList.add("hidden");
     renderGraph();
-    toast("Exited Focus Mode.");
+    toast(voiceLine("done", "Exited Focus Mode"));
   });
   $("graph-highlight-clear").addEventListener("click", () => {
     graphHighlightIds = null;

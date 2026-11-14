@@ -941,12 +941,12 @@ function startApp() {
           // The lock screen already said what happened; a toast under it
           // repeating "Couldn't X: Locked" for every parallel step is noise
           // about one state dressed up as several failures.
-          if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+          if (!error.isLockout) toast(voiceLine("failed", label, error.message), true);
         });
       }
       return Promise.resolve(result);
     } catch (error) {
-      if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+      if (!error.isLockout) toast(voiceLine("failed", label, error.message), true);
       return Promise.resolve();
     }
   };
@@ -1558,7 +1558,7 @@ const LAZY_MODULES = {
   //: The "needs an optional package" notice (INBOX 1748): extra-notice.js.
   extraNotice: ["/js/extra-notice.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
-  quickNote: ["/js/quick-note.js", "/js/router-overlays.js", "/js/chat-ghost.js"],
+  quickNote: ["/js/quick-note.js", "/js/composer-lint.js", "/js/router-overlays.js", "/js/chat-ghost.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
   dateField: ["/js/date-field.js"],

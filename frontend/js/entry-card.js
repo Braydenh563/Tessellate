@@ -826,7 +826,7 @@ function entryItem(entry, options = {}) {
         await api(`/documents/${doc.id}/notes/${entry.id}`, { method: "DELETE" });
         pushRoutePairUndo(`Detached from “${doc.title}”`, [`/documents/${doc.id}/notes`, "POST", { entry_id: entry.id }], [`/documents/${doc.id}/notes/${entry.id}`, "DELETE"], () => refreshEntries([entry.id]));
         await refreshEntries([entry.id]);
-        toast(`Detached from “${doc.title}”.`);
+        toast(voiceLine("done", `Detached from “${doc.title}”`));
       });
       makeUnlinkAccessible(unlink);
       mark.appendChild(unlink);
@@ -1454,7 +1454,7 @@ async function publishDraft(entry) {
     entry.is_draft = false;
     pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
     await refreshEntries([entry.id]);
-    toast("Published.");
+    toast(voiceLine("done", "Published"));
   } catch (error) {
     toast(error.message || voiceLine("failed", "publish that draft"), true);
   }

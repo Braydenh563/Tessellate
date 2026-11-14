@@ -1587,7 +1587,7 @@
         method: "POST",
         body: JSON.stringify({ backend: "ollama", model: EMBEDDING_FALLBACK_MODEL }),
       });
-      toast(`Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now.`);
+      toast(voiceLine("done", `Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now`));
       setStatus("");
     } catch (error) {
       toast(error.message || voiceLine("failed", `switch to ${EMBEDDING_FALLBACK_MODEL}`), true);
@@ -4829,7 +4829,7 @@
         body: JSON.stringify({ text: next.trim() }),
       });
       pushRequestUndo("Edited a learned claim", `/learned/${fact.id}`, "PATCH", { text: fact.text }, { text: next.trim() }, () => renderLearnedList());
-      toast("Saved. No later run will overwrite it.");
+      toast(voiceLine("done", "Saved. No later run will overwrite it"));
       renderLearnedList();
     } catch (error) {
       toast(error.message, true);
@@ -4850,7 +4850,7 @@
           renderLearnedList();
         }
       );
-      toast("Put the model's own words back.");
+      toast(voiceLine("done", "Put the model's own words back"));
       renderLearnedList();
     } catch (error) {
       toast(error.message, true);

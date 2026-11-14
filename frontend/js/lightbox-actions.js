@@ -147,7 +147,7 @@
             method: "PUT",
             body: JSON.stringify({ content: nextContent }),
           });
-          toast(`Attached ${image.original_name}.`);
+          toast(voiceLine("done", `Attached ${image.original_name}`));
           done();
           await loadEntries();
           pushEntryPutUndo(

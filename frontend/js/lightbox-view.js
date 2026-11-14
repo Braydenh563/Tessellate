@@ -1266,7 +1266,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       lightboxEditTarget.text = saved.text || "";
       setLightboxEditing(false);
       lightboxLoadExtractedText?.();
-      toast("Saved.");
+      toast(voiceLine("done", "Saved"));
     } catch (error) {
       //: A 409 is the server declining to overwrite (`docview.editability`),
       //: and its `detail` is written to be read by a person, so it is shown

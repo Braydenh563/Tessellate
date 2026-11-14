@@ -90,13 +90,13 @@ async function appendSelectionToNote(text, { jump = true, message = null, what =
     pushEntryPutUndo(entry.id, "Added text to a note", { content: before }, { content: after });
     await refreshEntries([entry.id]);
     if (jump) {
-      toast("Added to the note.");
+      toast(voiceLine("done", "Added to the note"));
       flashEntry(entry.id);
     } else {
       toastAction("Added to the note.", "Open it", () => flashEntry(entry.id), { go: { open: "entry", id: entry.id } });
     }
   } catch (error) {
-    toast(error.message || `Couldn't add ${what} to the note.`, true);
+    toast(error.message || voiceLine("failed", `add ${what} to the note`), true);
   }
 }
 
@@ -444,7 +444,7 @@ async function remindFromSelection(text, entryId = null) {
     // stale out of the Reminders tab's in-memory list.
     loadReminders();
   } catch (error) {
-    toast(error.message || "Couldn't read a reminder from that.", true);
+    toast(error.message || voiceLine("failed", "read a reminder from that"), true);
   }
 }
 
@@ -561,7 +561,7 @@ function selectionMenuItems() {
     // runs in. (`tests/test_log_console.py` enforces this, and caught the
     // direct call that was here first.)
     makeMenuItem("ph:copy Copy", "Copy the selected text", async () => {
-      if (await copyToClipboard(text)) toast("Copied.");
+      if (await copyToClipboard(text)) toast(voiceLine("done", "Copied"));
     }),
     makeMenuItem("ph:magnifying-glass Search the notebook", "Find notes that match this", () => {
       switchTab("notes");

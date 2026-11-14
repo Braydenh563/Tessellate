@@ -547,7 +547,7 @@
   function wbShapeCopy(node) {
     if (!node) return;
     wbShapeCopied = wbShapePatch(node.data, WB_MAP_STYLE_KEYS);
-    toast("Copied this topic's shape. Choose another topic and paste it.");
+    toast(voiceLine("done", "Copied this topic's shape. Choose another topic and paste it"));
   }
 
   async function wbShapePaste(node) {
@@ -672,7 +672,7 @@
     const { title, body } = wbMapTreeMarkdown([found]);
     const name = `${(title || "branch").replace(/[^\w\- ]+/g, "").trim().slice(0, 60) || "branch"}.md`;
     downloadBlob(new Blob([body ? `# ${title}\n\n${body}\n` : `# ${title}\n`], { type: "text/markdown" }), name);
-    toast(`Saved “${title}” as ${name}.`);
+    toast(voiceLine("done", `Saved “${title}” as ${name}`));
   }
 
 

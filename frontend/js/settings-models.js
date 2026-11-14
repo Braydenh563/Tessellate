@@ -202,7 +202,7 @@
     try {
       await api(`/models/jobs/cancel?kind=pull&name=${encodeURIComponent(model.name)}`, { method: "POST" });
       //: The row used to vanish with nothing said (HR19).
-      toast(`Stopped downloading ${model.name}.`);
+      toast(voiceLine("done", `Stopped downloading ${model.name}`));
     } catch (error) {
       toast(error.message, true);
     }
@@ -235,7 +235,7 @@
     if (!(await confirmDialog(`Remove “${installedName}” from Ollama? This frees its disk space, you can re-download it any time.`))) return;
     try {
       await api("/models/delete", { method: "POST", body: JSON.stringify({ name: installedName }) });
-      toast(`Removed ${installedName}.`);
+      toast(voiceLine("done", `Removed ${installedName}`));
       refreshModelStatus();
     } catch (error) {
       toast(error.message, true);
@@ -283,7 +283,7 @@
       run: async () => {
         //: The shared helper: it falls back where the clipboard API is absent
         //: (the desktop window over plain http), as every copy path does.
-        if (await copyToClipboard(model.name)) toast("Copied the name.");
+        if (await copyToClipboard(model.name)) toast(voiceLine("done", "Copied the name"));
         else toast(voiceLine("failed", "copy it from here"), "info");
       },
     });

@@ -1256,7 +1256,7 @@ def test_a_skill_that_needs_a_model_is_greyed_with_why() -> None:
     my categories and it didnt work": a disabled row looked like the others and said nothing on a
     pick. The row is greyed, its tooltip says why, and the menu says it in a line under the list."""
     fill = app_js_text().split("function fillSkillSelect(", 1)[1].split("\nfunction ", 1)[0]
-    assert "Unavailable while no model is connected" in fill
+    assert "option.title = runSkill.why" in fill and 'runSkill.why = "Unavailable while no model is connected' in app_js_text()
     assert "chat-skills-note" in fill
     css = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
     rule = css.split("select option:disabled", 1)[1].split("}", 1)[0]

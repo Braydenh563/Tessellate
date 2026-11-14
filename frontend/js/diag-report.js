@@ -195,7 +195,7 @@ async function diagCollect() {
 async function diagCopy() {
   try {
     const text = await diagCollect();
-    if (await copyToClipboard(text)) toast(`Copied the diagnostics (${(text.length / 1024).toFixed(1)} KB). Paste it where you send your logs.`);
+    if (await copyToClipboard(text)) toast(voiceLine("done", `Copied the diagnostics (${(text.length / 1024).toFixed(1)} KB). Paste it where you send your logs`));
   } catch (error) {
     toast(error.message || voiceLine("failed", "build the diagnostics. Try again"), true);
   }

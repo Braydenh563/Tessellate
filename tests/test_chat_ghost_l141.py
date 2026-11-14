@@ -39,6 +39,17 @@ def test_it_is_lazy_one_switch_and_accept_rate_kept():
     #: their gzip cap); it wires its own focus listener, and catches a box already focused.
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert '"/js/router-overlays.js", "/js/chat-ghost.js"]' in app
-    assert 'document.activeElement?.id === "chat-input"' in SRC
+    assert "document.activeElement?.matches?.(CHAT_GHOST_BOXES)" in SRC
     assert 'prefs.get("searchSuggest", "on") !== "off"' in SRC
     assert "chatGhostTally" in SRC and '"Tab"' in SRC and '"Escape"' in SRC
+
+
+def test_the_quick_note_and_capture_card_complete_inside_their_own_surface():
+    """L-chat-156: a modal's top layer hides a span on the body, so the ghost is appended inside the dialog
+    or the capture card (measured 2026-11-14: quick note ghost at 625,395 inside #quick-note, card body
+    ghost inside #capture-card, both under the box and not covered; Tab took the word in both)."""
+    for box in ("#chat-input", "#quick-note-text", "#capture-card-body", ".capture-bar-input"):
+        assert box in SRC.split("CHAT_GHOST_BOXES =", 1)[1].split(";", 1)[0]
+    assert 'input.closest("dialog, .capture-card") || document.body' in SRC
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id="quick-note-text"' in html and html.index("<dialog id=\"quick-note\"") < html.index('id="quick-note-text"')
