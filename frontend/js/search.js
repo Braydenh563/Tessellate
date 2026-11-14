@@ -832,3 +832,22 @@ function renderSavedFinds() {
   }
 }
 renderSavedFinds();
+
+//: L592: the Notes sidebar's field. Enter hands its words to the finder, Escape clears it. The notes
+//: surface is built lazily, so the field is wired when it appears (or now, if it already has).
+//: A statement, not a named function: the shared scope is capped (test_global_scope_ratchet).
+onSurface("notes", () => {
+  const box = document.getElementById("sidebar-find");
+  if (!box || box.dataset.wired) return;
+  box.dataset.wired = "1";
+  box.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      openFinder(box.value.trim(), { kind: "" });
+      box.value = "";
+    } else if (event.key === "Escape" && box.value) {
+      event.stopPropagation();
+      box.value = "";
+    }
+  });
+});

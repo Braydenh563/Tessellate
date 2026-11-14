@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 94 | 38 | 0 | 18 | 262 |
+| world-class | 130 | 93 | 38 | 0 | 18 | 261 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 486 | 109 | 2 | 129 | 1148 |
+| all | 553 | 485 | 109 | 2 | 129 | 1147 |
 
 ## graph
 
@@ -505,7 +505,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
-- [ ] **L592** `world-class` open, M: Add a search field to the Notes sidebar (Brief 47). From OPEN.md:3739. Evidence: Routes built are no-match button and saved-search rows; field not added
 - [ ] **L593** `world-class` open, M: Drive lightbox Escape, reminders add form and graph node panel back. From OPEN.md:3876. Evidence: Not driven; chat undo not reproduced
 - [ ] **L594** `world-class` open, M: Count words written including edits to older notes (per-edit word delta). From OPEN.md:1928; OPEN.md:2814. Evidence: No per-edit word delta stored, per row
 - [ ] **L595** `world-class` open, M: Wire the 'Not used lately' list to the weekly offer. From OPEN.md:2812. Evidence: Verified open 2026-11-10

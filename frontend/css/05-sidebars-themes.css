@@ -6215,3 +6215,17 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    she melted into it, forehead 1.15:1 off the page; with the outline in
    atlas-lazy.css, 1.32. Still lilac, her rim unchanged. */
 :root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }
+
+/* L592: the sidebar's Find box, the chat sidebar's field in the Notes sidebar. */
+.search-field.sidebar-search {
+  margin-bottom: var(--space-3);
+  border-color: transparent;
+  background: var(--field-inset);
+  box-shadow: none;
+}
+.search-field.sidebar-search:focus-within {
+  background: var(--input-bg);
+}
+.search-field.sidebar-search > .search-field-input {
+  font-size: var(--text-md);
+}

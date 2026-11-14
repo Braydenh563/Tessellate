@@ -1494,6 +1494,13 @@
           <!-- INBOX 431 (e): the Manage categories panel (notes-list.js). -->
           <button type="button" id="manage-categories-btn" class="ghost small icon-only" title="Manage categories: rename, merge, split, delete" aria-label="Manage categories"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button>
         </div>
+        <!-- L592: Find anything from the sidebar. Enter opens the finder with these words (search.js
+             the notes-surface hook at the end of the file, lazy); the Notes filter in the dock is the one that narrows this list. -->
+        <div class="search-field sidebar-search">
+          <i class="ph ph-magnifying-glass search-field-icon" aria-hidden="true"></i>
+          <input id="sidebar-find" type="search" class="search-field-input" autocomplete="off"
+            placeholder="Search everything" aria-label="Search everything you keep. Press Enter to open the results">
+        </div>
         <ul id="category-list"></ul>
         <!-- The same action as the head's sliders button, for a sidebar too
              narrow to hold it beside "Categories" (the CSS shows one or the
