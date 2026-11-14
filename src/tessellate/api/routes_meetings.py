@@ -52,7 +52,7 @@ class MeetingCreate(BaseModel):
 @router.post("/meetings", response_model=EntryOut, status_code=201)
 def create_meeting(body: MeetingCreate, session: Session = Depends(get_session)) -> EntryOut:
     """A new meeting note in the one shape, tagged `meeting` and typed
-    Meeting, filed like any note (deferred, so the sheet never waits on a
+    Meeting, filed like any note (in the background, so the sheet never waits on a
     model)."""
     content = shape.compose(
         body.title, body.when.replace("T", " "), body.attendees, body.agenda, body.notes

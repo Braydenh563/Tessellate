@@ -176,7 +176,7 @@ def _names_line(line: str, names: list[str]) -> bool:
 
 
 def _open_items(session: Session, entity: Entity, notes: dict, names: list[str]) -> list[dict]:
-    """The unticked tasks in its notes and the reminders on them, not done.
+    """The unticked tasks in its notes and the reminders on them, not finished.
     A person's page keeps only the task lines and reminders that name them: a meeting note
     that names Sam holds ten tasks, and two are Sam's; a project's notes are
     about the project, so every open task in them is the project's."""

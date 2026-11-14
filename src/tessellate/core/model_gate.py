@@ -2,7 +2,7 @@
 
 A local model runner serves one request at a time. The background work that
 calls it (the night pass, entity extraction, captions, vision reading, a
-deferred filing) used to start its next call whenever it was ready, so a chat
+background filing) used to start its next call whenever it was ready, so a chat
 turn asked while an import of two hundred pictures was being captioned waited
 behind as many of those calls as reached the runner first, with nothing on
 screen to say why.

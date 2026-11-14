@@ -759,7 +759,7 @@ def require_unlock(
     `/jobs/stream`) is not a request in flight that a restore must wait for
     (audit 1031 BK5)."""
     if _no_password_yet_now(request):
-        return  # setup not done yet, nothing to protect
+        return  # setup has not run, nothing to protect
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     if not _token_valid(x_auth_token, idle_ttl):
         raise HTTPException(status_code=401, detail="The app is locked. Unlock it first.")

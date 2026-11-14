@@ -26,7 +26,7 @@ from tessellate.core import jobs
 
 logger = logging.getLogger("tessellate.afterunlock")
 
-#: How long after the token the deferred work waits, so the answer, the
+#: How long after the token the background work waits, so the answer, the
 #: browser's first burst of requests and the first paint go through first.
 SETTLE_SECONDS = 1.5
 

@@ -1457,10 +1457,10 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
     def command(self, name: str, now: float) -> bool:
         """A choice from the companion's menu, on the engine's own thread. True when it took
         effect; False when it cannot be done now (carried, no window to sit on, motion off), and it looks sad."""
-        done = self._command(name, now)
-        if not done:
+        ran = self._command(name, now)
+        if not ran:
             self.ex.fire("refused", now)
-        return done
+        return ran
 
     def _command(self, name: str, now: float) -> bool:
         if name == "come" and self.come is not None:  # a second "Come here" ends the following

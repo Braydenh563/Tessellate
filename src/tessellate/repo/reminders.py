@@ -250,7 +250,7 @@ def purge(session: Session, reminder: Reminder) -> None:
 
 
 def open_on_notes(session: Session, entry_ids: list[int]) -> list[Reminder]:
-    """The reminders on these notes not yet done, soonest first."""
+    """The reminders on these notes still pending, soonest first."""
     if not entry_ids:
         return []
     return list(

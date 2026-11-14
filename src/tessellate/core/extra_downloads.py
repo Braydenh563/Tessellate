@@ -1,7 +1,7 @@
 """The second kind of optional extra: a pinned download (INBOX 404, 302).
 
 The owner, 2026-09-24, on two decisions the repository read and the code
-editor's Run button had left open: "Run Python files: yes, as an opt-in
+editor's Run button had left undecided: "Run Python files: yes, as an opt-in
 extra" and, for needle, "Yes, as an extra". Neither one is a pip package.
 Pyodide is a WebAssembly build of CPython that runs in the browser, shipped
 as a release archive; needle is a native engine and a weights file on
@@ -111,7 +111,7 @@ def platform_key() -> str:
 
     `linux-x86_64`, `linux-x86_64-musl`, `linux-aarch64`, `macos-arm64`,
     `macos-x86_64`, `windows-x86_64`, `windows-arm64`; anything else comes
-    back as `<sys.platform>-<machine>` so the "not built for" message can
+    back as `<sys.platform>-<machine>` so the "no build for" message can
     name it.
     """
     machine = (_platform.machine() or "").lower()
@@ -155,12 +155,12 @@ def platform_reason(extra) -> str:
     offered: its Install button is greyed with this sentence beside it, and
     `extras.start` refuses it, the same two places `unavailable` is held.
     """
-    built = sorted({d.platform for d in extra.downloads if d.platform})
-    if not built or platform_key() in built:
+    shipped = sorted({d.platform for d in extra.downloads if d.platform})
+    if not shipped or platform_key() in shipped:
         return ""
     return (
         f"There is no prebuilt engine for this computer ({platform_key()}). "
-        f"It is built for {', '.join(built)}."
+        f"It is built for {', '.join(shipped)}."
     )
 
 

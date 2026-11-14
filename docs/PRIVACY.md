@@ -91,7 +91,7 @@ Off until you turn it on in **Settings, Web search**. When it is on:
   until you have one, so search works either way;
 - the results panel says which engine actually answered each search, so the
   choice you made in Settings is visible at the moment it applies;
-- a page read in a chat is kept on this computer for 7 days, so a follow-up
+- a page read in a chat is kept on this computer for 7 days, so a next question
   can use it without fetching it again. **Keep pages I read for 7 days**, in
   the same place, turns that off and **Clear kept pages** empties it.
 

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 0 | 136 | 29 | 3 | 10 | 165 |
-| general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 423 | 528 | 100 | 5 | 121 | 1051 |
+| world-class | 0 | 153 | 29 | 3 | 11 | 182 |
+| general | 0 | 35 | 2 | 0 | 4 | 37 |
+| all | 423 | 544 | 100 | 5 | 122 | 1067 |
 
 ## graph
 
@@ -617,6 +617,23 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
+- [ ] **L-world-class-170** `world-class` open, M: Miro-style reactions on map nodes, and the whiteboard half of the mc1 research. From docs/ROADMAP.md:264. Evidence: MINDMAP_PLAN 14.4; L275 holds linked symbols and layer effects only
+- [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-175** `world-class` open, S: Gravity and spread have no effect on the graph's other layouts. From IDEAS.md:113. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-176** `world-class` open, L: A visual timeline drawn as a branching line with off-shoots. From IDEAS.md:114. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-177** `world-class` open, S: Settings pages cannot be reached on a narrow phone view: check every page. From IDEAS.md:115. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-178** `world-class` open, S: No Markdown rendering in some of the dashboard's widgets. From IDEAS.md:117. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-179** `world-class` open, S: Pie charts for the dashboard. From IDEAS.md:118. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-184** `world-class` open, S: Check that the status dot's error state in the top bar can be reached. From IDEAS.md:127. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-186** `world-class` open, S: Check that a note like 'ai is cool' is not filed under sketches against the notebook's categories. From IDEAS.md:130. Evidence: IDEAS.md 'Still open' list, 2026-11-14
+- [ ] **L-world-class-187** `world-class` open, S: Check docs/index.html's text against the README. From IDEAS.md:132. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 
 ## general
 
@@ -656,7 +673,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
-- [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 
 ## Owner calls
@@ -807,6 +823,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-116** `world-class` blocked-hardware, S: Capture: verify the desktop window, real clipboards and a server crash between commit and answer. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'the desktop window, real clipboards and a server crash between commit and answer are not verified'
 - [ ] **L-world-class-117** `world-class` blocked-hardware, S: Desktop restart: treat the Chrome_WidgetWin unregister error as non-fatal and relaunch (reproduce on Windows). From WORLD_CLASS_PLAN.md:2986. Evidence: WORLD_CLASS_PLAN.md:2986 owner's report 'Failed to unregister class Chrome_WidgetWin_0. Error = 1411'; needs Windows
 - [ ] **L-world-class-134** `world-class` blocked-hardware, M: Live captions: a run on the reference laptop and the Windows, macOS and aarch64 wheels for real. From WORLD_CLASS_PLAN.md:3986. Evidence: 28.5 row 9 (:3986): 'open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real'
+- [ ] **L-world-class-171** `world-class` blocked-hardware, S: Build the Docker image once on a machine with a daemon and record what it says. From docs/DOCKER.md:5; docs/INSTALL.md:258. Evidence: no Docker daemon in the sandbox; tests/test_docker_files.py reads the files as text only
 
 ## Plan session briefs
 

@@ -2301,7 +2301,7 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     while any process has it mapped in, so pip can spawn, run, and still fail
     to actually replace those files; the failure then surfaces as a cryptic
     pip error in the install log rather than as this sentence. POSIX allows
-    replacing a file that is still open elsewhere, which is why this was
+    replacing a file that another process holds open, which is why this was
     never seen from this sandbox.
 
     Only "voice" holds a native model like this today, the other extras

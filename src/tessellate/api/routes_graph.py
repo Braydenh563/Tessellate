@@ -790,7 +790,7 @@ _GRAPH_COLUMNS = (
 def _payload_key(session: Session, similarity: bool, include_maps: bool, include_tags: bool) -> tuple:
     """Everything the default `/graph` payload is made of, as one digest.
 
-    GRAPH_PLAN "Still open": the payload at 5,000 notes is 0.7 to 1.0 s warm
+    GRAPH_PLAN (closed): the payload at 5,000 notes is 0.7 to 1.0 s warm
     and 3 MB, and the fingerprint the centrality cache uses (counts and the
     newest edit) misses what moves a node without editing a note: a pin, an
     access count, an attachment, a note put on a map, a link's reason, the

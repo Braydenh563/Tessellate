@@ -24,7 +24,7 @@ shape now, this one:
     ## Notes
     ## Decisions
     ## Action items
-    - [ ] Send the deck @Sam by Friday
+    `- [ ] Send the deck @Sam by Friday`
 
 **An action item is a task line** (`- [ ]`), which the editor already draws
 as a checkbox and the Dashboard's Outstanding widget already lists. Its owner
@@ -322,7 +322,7 @@ def reminder_text(item: dict) -> str:
 # Summarise used to answer 503 with no model, so "Find the decisions and
 # action items" was a dead control on every machine without one. These rules
 # read what a minute-taker reads: a sentence saying decided or agreed is a
-# decision, and one marked Action or TODO, or a person committing to a task,
+# decision, and one marked Action or To-do, or a person committing to a task,
 # is an action item. The day and the name are read by `ai/recognise.py`
 # (the one reader of dates); nothing here parses a date word. The model,
 # when there is one, rewrites the same list in its own words
@@ -338,7 +338,7 @@ _DECISION_WORDS = re.compile(
     re.I,
 )
 #: A person taking a task on: "Sam will", "Priya to book", "Alex needs to".
-#: A bare "Alex updates" counts only under an Action or TODO mark.
+#: A bare "Alex updates" counts only under an Action or To-do mark.
 _COMMIT = r"(?:will|'ll|to|needs to|need to|is going to|has to|must|should|agreed to|offered to)\b"
 _SUBJECT = re.compile(r"^@?([A-Z][a-z]+)(?:[ \t]+[A-Z][a-z]+)?[ \t]+" + _COMMIT)
 _MARKED_SUBJECT = re.compile(r"^@?([A-Z][a-z]+)\b")
