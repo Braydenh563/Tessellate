@@ -1,6 +1,8 @@
 // documents-save.js: saving a document, a conflict, and expanding a note into one.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: Counts edits, so a save that lands knows whether words were typed
+  //: while it was in flight (those keep the document dirty).
   let docEditSeq = 0;
   function markDocDirty() {
     docEditSeq += 1;
@@ -39,6 +41,9 @@
     docSaveTimer = setTimeout(() => saveDocument({ silent: true }), 1200);
   }
   let docConflictOpen = false;
+  //: One save at a time: a second PUT in flight carried the old base_hash (a
+  //: false 409). One asked for meanwhile runs once after (audit 1028 D1).
+  //: `newRetry`: the pause timer after a failed first save (`markDocDirty`); `newOffered`: the kept new document was offered.
   const docSaveQueue = { inFlight: null, again: null, newRetry: null, newOffered: false };
   async function saveDocument({ silent = false } = {}) {
     if (docConflictPending && docConflictPending.id !== currentDoc?.id) docConflictPending = null;
@@ -66,6 +71,7 @@
       release();
     }
   }
+  //: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
   function docFillBlankTitle() {
     const field = $("doc-title");
     if (!currentDoc || field.value.trim()) return false;
@@ -142,6 +148,12 @@
       }
     }
   }
+  //: The answer to an edit conflict on a document. "Keep mine" saves this
+  //: text from the other window's hash, so it goes through as a deliberate
+  //: overwrite (and the server keeps the other window's text as a revision,
+  //: as every content change does). "Take theirs" puts the other text in the
+  //: editor as saved. No answer leaves the text here, unsaved, and the next
+  //: edit asks again.
   async function docResolveConflict(current, mine, silent, fromSave = true) {
     $("doc-saved").textContent = "Not saved";
     if (silent) {

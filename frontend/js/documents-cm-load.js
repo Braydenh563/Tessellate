@@ -8,6 +8,12 @@
     return document.execCommand("redo");
   }
   const DOC_CM_BUNDLE = "/vendor/codemirror/codemirror.min.js";
+  //: **Warm on idle** (perf-1026): the Documents list is the signal that a
+  //: document is about to open, so the editor bundle (about 140 ms to evaluate)
+  //: is loaded in a spare moment and the checker's files are fetched into the
+  //: HTTP cache, rather than both on the first open. Phones too (L-documents-47:
+  //: the cold open there is the one a person waits on), but never on a metered
+  //: connection or a device with 2 GB or less, where the bytes cost more than the wait.
   let docWarmed = false;
   function warmDocumentEngine() {
     const link = navigator.connection || {};
@@ -22,6 +28,9 @@
       }
     }, { timeout: 2000 });
   }
+  //: The in-flight load, so two documents opened quickly do not inject two
+  //: script tags. Reset to null on failure, so a later attempt can retry after
+  //: whatever went wrong (a dropped connection on first paint, most likely).
   let docCmLoad = null;
   function loadCodeMirror() {
     if (window.CM6) return Promise.resolve(window.CM6);
@@ -52,6 +61,10 @@
     });
     return docCmLoad;
   }
+  //: The parts of the configuration that are swapped without rebuilding the
+  //: state: the language (a file's type can change while it is open), the theme
+  //: (light and dark), the gutter (a remembered preference), and line wrapping
+  //: (prose wraps, code does not).
   const docCmParts = {
     language: null,
     theme: null,
@@ -84,6 +97,10 @@
       docCmSyncLanguage();
     },
   };
+  //: The vendored modes, by the extension `GET /documents/file-types` uses.
+  //: Anything not here is plain text, which is the honest answer: several of
+  //: the file types this editor opens (csv) have no mode, and a wrong
+  //: highlighter is worse than none.
   function docCmLanguageFor(CM, ext) {
     const stream = (mode) => (mode ? CM.language.StreamLanguage.define(mode) : []);
     switch (ext) {
@@ -141,6 +158,30 @@
       default: return [];
     }
   }
+  //: **The editor's ink, from the app's own tokens.**
+  //:
+  //: A theme object rather than a stylesheet, and the reason is mechanical:
+  //: CodeMirror styles itself through `document.adoptedStyleSheets`, and
+  //: adopted sheets sort *after* every document stylesheet, so a rule in
+  //: 09-editor.css would lose to the library's own base rule at equal
+  //: specificity and nothing would say so. Layout lives in the file; colour,
+  //: type and the caret live here.
+  //:
+  //: `var(--…)` all the way through, so the density slider, a custom accent and
+  //: a theme change move the editor with the rest of the app rather than
+  //: leaving it as the one panel that did not follow.
+  //: The Live table's placement rules, one pair per column count.
+  //:
+  //: A CodeMirror line is the grid, and its children are whatever the
+  //: decorations left there: the cell marks, and behind every hidden pipe two
+  //: `cm-widgetBuffer` images and an empty `contenteditable=false` span. Those
+  //: three are zero-width and were still taking a `1fr` track each under
+  //: `grid-auto-flow: column`, which is why a table drew its cells 51.6px wide
+  //: with three empty columns of gap between them and wrapped every word.
+  //: Placing the cells by index and pinning everything else into the first
+  //: track at zero width is the only arrangement that stays right whatever the
+  //: decorations do: a mark the table does not know about (a spelling
+  //: underline, a search match) can be added tomorrow without taking a column.
   function docTableGridRules() {
     const rules = {};
     for (let n = 1; n <= DOC_TABLE_GRID_MAX; n += 1) {
@@ -191,6 +232,15 @@
     }
     return rules;
   }
+  //: **Indent guides under a nested list** (INBOX 392). A nested item was
+  //: told apart from its parent by its indent alone, and three levels deep a
+  //: reader was counting em widths to know which item a line belonged to. One
+  //: hairline per ancestor, down the column of that ancestor's own marker, is
+  //: what every outliner draws; it is a background rather than a border or a
+  //: widget because a line decoration can carry it without adding a node, and
+  //: it cannot move the text. The marker of level `k` sits at `k * 1.6em` (the
+  //: hanging indent in the theme), so the guide for level `j` is at that plus
+  //: 0.3em, under the bullet's middle.
   function docListGuides(depth) {
     const tone = "color-mix(in srgb, var(--muted) 35%, transparent)";
     const ink = `linear-gradient(${tone}, ${tone})`;
@@ -207,6 +257,10 @@
       backgroundRepeat: "no-repeat",
     };
   }
+  //: How many matches the find panel's query has, said in the panel (audit
+  //: 1028 U9): the library's panel finds without ever saying how many. Counted
+  //: only while the panel is open and only when the text or the query changed,
+  //: and stopped at 1,000 so a one-letter query in a long file stays cheap.
   const DOC_SEARCH_COUNT_CAP = 1000;
   function docSearchCountText(state, CM) {
     const query = CM.search.getSearchQuery(state);
@@ -251,6 +305,30 @@
       }
     });
   }
+  //: **Code colours from the app's own palette, and the reason this is not
+  //: optional.** The owner: "for code files, include code syntax and make it a
+  //: proper code editor like vs code."
+  //:
+  //: Without this the bundle falls back to CodeMirror's `defaultHighlightStyle`,
+  //: which is a fixed light-page palette: a keyword is `#770088`, a variable
+  //: name is `#0000ff`, a string `#aa1111`. Measured against this app's dark
+  //: ground, sampled off a screenshot at `rgb(27, 31, 44)`: the keyword reads
+  //: **1.76:1** and the variable name **1.91:1**, against WCAG AA's 4.5. Every
+  //: token was byte-identical in light and dark, because that style has no dark
+  //: variant to switch to. Nothing logged it, and a reader with the theme on
+  //: light would never see it, which is the shape this file keeps recording.
+  //:
+  //: Built here rather than in a stylesheet for the same reason the theme
+  //: itself is: adopted sheets sort after every document stylesheet, so a rule
+  //: in 09-editor.css would lose to the library's at equal specificity. The
+  //: roles are mapped onto tokens the app already defines for both themes, so
+  //: the density slider, a custom accent and a theme change move the code with
+  //: the rest of the app.
+  //: Built once, and **deliberately not inside the theme compartment.** Every
+  //: colour below is a `var(--…)`, so light and dark are already handled by the
+  //: cascade; rebuilding it on each mode change would define a fresh
+  //: `StyleModule` and adopt another stylesheet every time the theme was
+  //: toggled, which is a leak that only shows up after a few switches.
   let docCmHighlightCache = null;
   function docCmHighlight(CM) {
     if (docCmHighlightCache) return docCmHighlightCache;
@@ -303,6 +381,10 @@
     return docCmHighlightCache;
   }
   const docHistories = new Map();
+  //: `repaint: false` when the caller repaints the findings itself a frame
+  //: later (`openDocument`, through `renderDocTools`): the findings plugin is
+  //: rebuilt by `setState` from the same list, and the extra dispatch was a
+  //: second layout of the page (138ms of a 573ms open at 390).
   function docResetDocument(text, id = null, { repaint = true } = {}) {
     const CM = window.CM6;
     if (!docCmView || !CM) {
@@ -337,6 +419,13 @@
     //: that means "a different document is on screen now".
     docFoldMarkedCallouts();
   }
+  //: **A document's history survives a reload** (INBOX 553(b), the owner's
+  //: decision; WHITEBOARD_PLAN decision 17 as amended). Written a moment after
+  //: each edit (`docHistoryPersist`, from `docCmUpdate`), read back when the
+  //: document opens and nothing was kept this session, and given back only
+  //: over the very text it was taken against and only if no edit has been made
+  //: since the open. CodeMirror's history holds its last hundred events
+  //: (its own `minDepth`), which is the owner's "~100 steps".
   function docHistoryRestore(id, text) {
     if (typeof undoStoreGet !== "function") return;
     undoStoreGet(`doc:${id}`).then((stored) => {
@@ -365,6 +454,10 @@
       /* nothing to keep */
     }
   }
+  //: **Source view has to be measured after it is shown.** CodeMirror caches
+  //: the geometry it lays out with, and a view inside a `display: none` wrapper
+  //: measures as zero: switching back from Live or Read would leave every line
+  //: positioned against that zero until something else forced a reflow.
   function docCmViewShown() {
     if (!docCmView) return;
     docCmView.requestMeasure();

@@ -1,6 +1,5 @@
 // documents-live-table.js: the Live view's decorations switch and extension set (with the block drag handle), and the table's
-// select, remove and filter row. Moved out of documents.js and wrapped (L-documents-116): only what other files call goes on `window`.
-// Loaded after documents.js: at load it only declares and writes `docViewState.tableFilter`, so it needs that object first.
+// select and remove (the filter row stays in documents.js, where `docViewState` is made). Moved out of documents.js and wrapped (L-documents-116): only what other files call goes on `window`.
 (() => {
   //: The whole table, for the one command that is not an edit inside it. The
   //: newline after it goes too, or deleting a table leaves the blank line it was
@@ -33,41 +32,6 @@
     return true;
   }
 
-  //: **The filter row and the formula letters** (DOCUMENTS_PLAN gap row 12). A
-  //: filter is a view of the table, never an edit: it lives in `docViewState`
-  //: under the header's text (a table has no id in markdown, and the header is
-  //: what a person calls it), hides body rows in Live only, and is gone with the
-  //: page. `docViewState.tableFilter.set` repaints by re-sending the selection, which the
-  //: table decoration always rebuilds on.
-  docViewState.tableFilter = {
-    key: (table) => table.rows[0].cells.map((cell) => cell.trim()).join("|"),
-    of(table) {
-      const filter = docViewState.tableFilters && docViewState.tableFilters[this.key(table)];
-      return filter && filter.needle ? filter : null;
-    },
-    set(view, table, filter) {
-      docViewState.tableFilters = docViewState.tableFilters || {};
-      const key = this.key(table);
-      if (filter && filter.needle) docViewState.tableFilters[key] = filter;
-      else delete docViewState.tableFilters[key];
-      if (view) view.dispatch({ selection: view.state.selection });
-    },
-    letters(col) {
-      let letters = "";
-      for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
-      return letters;
-    },
-    async ask(context) {
-      const column = (context.table.rows[0].cells[context.cell.col] || "").trim() || `column ${this.letters(context.cell.col)}`;
-      const was = this.of(context.table);
-      const needle = await promptDialog(`Show rows where ${column} contains`, was ? was.needle : "", { confirmLabel: "Filter" });
-      if (needle !== null && needle !== undefined) {
-        this.set(context.surface.view, context.table, { col: context.cell.col, needle: needle.trim() });
-      }
-      context.surface.focus();
-    },
-  };
-
   //: The commands, as data, because three things read them: the cell menu, the
   //: "/" menu's table entry and the tests. `run` takes the live context rather
   //: than closing over one, so a menu built for the cell you opened it on still
@@ -80,7 +44,6 @@
   //: from scratch: DESIGN.md's index says a menu is `kebabMenu`, and a
   //: hand-built one here would be the eleventh thing in this app that opens a
   //: list of actions and the first that does it differently.
-
 
   //: **Grips on a Live table's edges** (INBOX 904 B23: "lines on the edges and
   //: rows and columns on the outside etc to select whole rows or columns, or to
@@ -95,7 +58,6 @@
   //: geometry is read from the rendered cells (`requestMeasure`), never guessed
   //: from the grid's template. Rebuilt only when that geometry changes, and never
   //: mid-press, because a press that loses its element loses its release.
-
 
   //: One command, by id, against a context the caller already holds. The named
   //: `docTableCommand` reads the caret itself; a grip has just moved it.
@@ -154,7 +116,6 @@
   //: widget's edge (it has no inside to land in), and the edge revealing it moved the page 235px at
   //: `[TOC]`; Left or Right from the edge steps in. A drag begun at the edge still shows it.
   docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range.anchor >= from && range.anchor <= to && (!range.empty || (range.anchor > from && range.anchor < to)));
-
 
   //: Live is three extensions rather than one now, and all three go in the same
   //: compartment, so a view switch turns them on and off together: the block

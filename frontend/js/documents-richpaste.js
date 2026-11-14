@@ -2,11 +2,21 @@
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
   const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|<p[^>]*>(?:\s|&nbsp;)*[·•▪§Ø](?:\s|&nbsp;)|MsoList|mso-list/i;
+  //: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
+  //: `<span style="font-weight:700">` arrived as plain text, because no tag in
+  //: the list above was in it). Not when the copy is code: an editor's copy is a
+  //: monospace, `white-space: pre` block whose coloured spans are sometimes bold
+  //: or italic, and those must stay code.
   const DOC_RICH_STYLE = /font-weight\s*:\s*(bold|bolder|[6-9]00)\b|font-style\s*:\s*italic/i;
   const DOC_CODE_HTML = /white-space\s*:\s*pre|font-family\s*:[^;"]*(mono|consolas|courier|menlo)/i;
   function docHtmlIsRich(html) {
     return DOC_RICH_TAGS.test(html) || (DOC_RICH_STYLE.test(html) && !DOC_CODE_HTML.test(html));
   }
+  //: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
+  //: `<p>` with `mso-list: l0 level2 lfo1` and a hidden marker span
+  //: (`mso-list: Ignore`) holding the bullet or "1.", so neither tag test saw a
+  //: list and "· item" arrived as plain text. Returns the Markdown line, indented
+  //: by the item's level, or "" for any other paragraph.
   function docWordListLine(el, styleOf, inline) {
     const style = styleOf(el, "mso-list");
     //: **A list paragraph with its `mso-list` style stripped is still a list**
@@ -172,6 +182,8 @@
     block(doc.body);
     return out.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
   }
+  //: The paste handler: after the table's own (which keeps a grid pasted into
+  //: a table's cells), before CodeMirror's plain-text default.
   function docRichPasteEvent(event, view) {
     const plain = docPastePlain;
     docPastePlain = false;

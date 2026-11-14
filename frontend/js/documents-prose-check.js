@@ -1,6 +1,12 @@
 // documents-prose-check.js: the prose check, spelling, word completion and autocorrect.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: **"whats" is "what's" with the apostrophe left out** (the owner,
+  //: 2026-10-19: "this should have been picked up as what's"). The word list
+  //: keeps "what" and drops the "'s" (`docWordKnown`), so no edit of "whats"
+  //: reaches it. Offered first in the menu only, never as the sure answer:
+  //: an apostrophe is a style choice (`DOC_AUTOCORRECT`), so typing never
+  //: rewrites it on its own.
   const DOC_CONTRACTION_BASES = {
     re: new Set(["you", "we", "they", "who", "what", "there"]),
     ll: new Set(["i", "you", "we", "they", "he", "she", "it", "that", "there", "who", "what"]),
@@ -19,6 +25,13 @@
     }
     return null;
   }
+  //: **The one answer, or none.** A correction this app is willing to make
+  //: without being asked, or to put behind a single check button, has to be the
+  //: only candidate of its kind: exactly one real word reachable by a swap of
+  //: two letters or by dropping one, and nothing else that close. "tets" has
+  //: exactly one ("test"); "tho" has several and gets a menu instead. Short
+  //: words are refused outright because almost every three-letter string is one
+  //: edit from several real words.
   const DOC_CONFIDENT_MIN = 4;
   function docSpellConfident(word) {
     if (!docWordlist) return null;
@@ -39,6 +52,9 @@
     if (!swaps.length && drops.length === 1) return drops[0];
     return null;
   }
+  //: Is this word one swap of two letters from exactly one real word? The test a
+  //: capitalised word in mid-sentence has to pass to be called a typo and not a
+  //: name (`docSpellNameKind`).
   function docSpellTransposed(word) {
     if (!docWordlist) return false;
     const lower = docSpellRoot(word);
@@ -72,6 +88,17 @@
     }
     return answer;
   }
+  //: Spans of the document the prose rules do not read. A fenced block is code,
+  //: an inline span in backticks is code, a URL is an address and a markdown
+  //: link's destination is a path: none of them is prose, and every one of them
+  //: is full of things that look like misspellings and missing spaces. Without
+  //: this a real dictionary would put a red underline under every identifier in
+  //: a code sample, which is the single fastest way to make a writer turn the
+  //: whole check off.
+  //:
+  //: A byte mask rather than a list of ranges because the test is asked once
+  //: per finding and once per word: a linear scan of ranges per word is the
+  //: shape that makes a long document slow.
   const DOC_PROSE_SKIP = [
     /(^|\n)[ \t]*(```|~~~)[^\n]*\n[\s\S]*?(\n[ \t]*\2[^\n]*|$)/g, // fenced code
     /`[^`\n]+`/g, // inline code
@@ -107,7 +134,18 @@
     /(?<=\d)[ \u00a0]?(?:min|mins|h|hr|hrs|sec|secs|s|ms|ns|kg|g|mg|km|m|cm|mm|ml|l|kb|mb|gb|tb|khz|mhz|ghz|hz|kw|w|v|mv|ma|px|pt|dpi|fps|rpm|mph|lb|lbs|oz|ft|kcal|cal|kj|mol|db|x|am|pm|st|nd|rd|th)\b/gi,
     /(?<=\d)[ \u00a0]?(?:%|°[CFKcfk]?|℃|℉)/g,
   ];
+  //: **The words of a link** are the writer's label for an address, a name or a
+  //: phrase pasted from somewhere ("something" in the owner's capture, K11), not
+  //: a sentence of theirs, so they are skipped like the address beside them.
+  //: `[text](address)`, `[text][ref]` and `![alt](source)`; not a `[[wiki link]]`
+  //: (masked above) and not a `[ ]` checkbox, which no `(` or `[` follows.
+  //: Settings, Writing, "Check link text" turns the check back on.
   const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\][\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
+  //: **One mask per text** (prose-1101): the rule pass, the extras' filter and the
+  //: grammar answer each asked for the mask of the same string, three regex walks
+  //: for one result. `docProseSkipMask.memo` holds the last one, keyed by the
+  //: string and the link-text setting; a reader only reads it. The keystroke path
+  //: (`docProse.near`) stores the mask it assembled for the new text here too.
   function docProseSkipMask(text) {
     const link = docCheckLinkText();
     const memo = docProseSkipMask.memo;
@@ -131,6 +169,12 @@
     }
     return mask;
   }
+  //: Findings, in document order, each with the exact span it is about so the
+  //: panel can jump to it and the fix can replace it without searching for the
+  //: text again (which would find the wrong occurrence in a document that says
+  //: the same thing twice).
+  //: `lang` is the document's, read from its frontmatter; a paragraph passed alone (`docProse.near`)
+  //: has none, so the caller says it.
   function docProseFindings(text, lang = docProse.langOf(text)) {
     const found = [];
     //: Kicked off here rather than at load: this is the first moment anything
@@ -309,6 +353,20 @@
       .filter((finding) => !docProseIgnored.has(docProseKey(finding)))
       .sort((a, b) => a.start - b.start);
   }
+  //: **Spelling in a code file: comments and the words inside strings, never
+  //: code** (the owner, 2026-10-11: `is_leap`, `urFucked` and the `f"The` of an
+  //: f-string were underlined). The squiggles were the browser's own, on because
+  //: the word list loads only on a prose pass and a code file never made one.
+  //: Now the browser's checker is off in a code file (`docCmSpellcheck`) and
+  //: this draws the app's own marks, which open the same suggestion popover as
+  //: prose. The text is masked to the comment and string nodes of the syntax
+  //: tree, everything else blanked at the same length so every offset still
+  //: names the document's characters: a string's prefix (f, r, b, u) and quotes
+  //: and a comment's marker are blanked too, and so is an f-string's `{expr}`.
+  //: `win`, past DOC_PROSE_WINDOW_CHARS, is the window the pass reads (audit 1031
+  //: CE3: the whole-file mask was 517 ms of a 20-key run in a 7,000-line file at
+  //: 4x): only the tree and the text inside it, and the mask returned is that
+  //: window's.
   function docCodeProseMask(text, win = null) {
     const CM = window.CM6;
     if (!CM || !docCmView || docCmView.state.doc.length !== text.length) return "";
@@ -519,7 +577,13 @@
       }, 700);
     },
   };
+  //: **Past this many characters the prose pass reads a window** (audit 1028
+  //: D7), centred on what is on screen and cut at blank lines, so the cost of a
+  //: pause is the window and not the document. Measured at 100,800 characters:
+  //: see docs/roadmap/agent-remaining/docux-1028.md.
   const DOC_PROSE_WINDOW_CHARS = 30000;
+  //: A code file's window (CE3): the same centre as the prose one and the
+  //: whole 30,000, cut at line ends (a blank line or a fence means nothing in code).
   function docCodeWindow(text) {
     if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
     const ranges = docCmView ? docCmView.visibleRanges : [];
@@ -529,6 +593,11 @@
     const end = to < text.length ? text.indexOf("\n", to) : -1;
     return { from: start ? text.lastIndexOf("\n", start) + 1 : 0, to: end < 0 ? text.length : end };
   }
+  //: **A prose window is the screen and a margin, not the whole 30,000** (audit
+  //: 1028 D18 to D20): a prose pass is paid on every pause, and a screen of text
+  //: is about 3,000 characters, so 14,000 keeps about two screens either side of
+  //: the view checked while the pass costs under half of what 30,000 did.
+  //: Scrolling out of it re-runs the pass (`docProseScrolled`).
   function docProseWindow(text) {
     if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
     const view = 14000;
@@ -560,6 +629,7 @@
     }
     return { from, to };
   }
+  //: Scrolling out of the window re-runs the pass once the view settles.
   function docProseScrolled() {
     if (!docProse.win) return;
     clearTimeout(docProse.timer);
@@ -621,6 +691,11 @@
     renderDocSuggestState();
     if (!panel.classList.contains("hidden")) docProsePanelSoon();
   }
+  //: **While the writer types, the open panel is redrawn at most every 400 ms**
+  //: (perf 1031 row 23, DC3: a 58,000-character document with the panel open,
+  //: 36 keys at 4x: 26 redraws of the rows, 95 long tasks, 15 s of them). The
+  //: first redraw is at once and the last one always lands; a click in the panel
+  //: (Fix, Dismiss) is not typing and redraws at once.
   const DOC_PROSE_PANEL_GAP_MS = 400;
   function docProsePanelSoon() {
     const soon = docProsePanelSoon;
@@ -636,8 +711,17 @@
       renderDocProsePanel();
     }, wait);
   }
+  //: A long sentence is the one finding that must not be underlined: the span
+  //: is a whole paragraph, and a wavy line under all of it says "everything
+  //: here is wrong", which is the opposite of what that finding means.
   const DOC_FINDING_SKIP = new Set(["long-sentence"]);
+  //: Findings "Fix all" never applies: a model's reading and an offer to link a
+  //: note are judgements for the writer, whatever replacement they carry.
   const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
+  //: Three kinds, because three is what a reader can decode at a glance from
+  //: the shape of a line. The rules are more numerous than that (there are
+  //: eight), but "a spacing slip" and "a UK/US spelling" are the same *kind* of
+  //: note as far as the eye is concerned, and both are answered the same way.
   function docFindingKind(finding) {
     if (finding.rule === "spelling") return "spelling";
     if (finding.rule === "grammar" || finding.rule === "confusion") return "grammar";
@@ -654,6 +738,13 @@
     if (finding.rule === "link-offer") return "link";
     return "style";
   }
+  //: **One head for both states of the panel** (INBOX 549 and 552, the
+  //: panel-head recipe): the name and its count as quiet text, then one row of
+  //: quiet icon buttons of one size, the X last, never wrapping: the panel is
+  //: 240px at its narrowest. Fix N is the one worded tool (its number is what
+  //: it says) and drops its words in a narrow panel; the Dictionary and the
+  //: dock side are in the ⋯, which also holds Check with AI for the width
+  //: where its own icon gives way.
   function docProseHeader() {
     const head = document.createElement("div");
     head.className = "row doc-prose-head";
@@ -743,6 +834,8 @@
     renderDocProse();
     renderDocProsePanel();
   }
+  //: The keys in `docProseIgnored` that belong to this document, as rows.
+  //: A key is `<doc>:<rule>:<text>`; the first two parts hold no colon.
   function docProseDismissed() {
     const scope = `${currentDoc && currentDoc.id ? currentDoc.id : "unsaved"}:`;
     const rows = [];
@@ -755,6 +848,8 @@
     }
     return rows;
   }
+  //: What the panel shows instead of the list: the hidden notice, or the
+  //: dismissed list with a Restore on each row.
   function docProseSideView() {
     const wrap = document.createElement("div");
     wrap.className = "doc-prose-side";
@@ -816,6 +911,8 @@
     //: status bar is gone, so that is the floating dock's own button.
     (docFocusOn() ? $("doc-focus-prose") : $("doc-prose"))?.focus();
   }
+  //: The floating dock's Suggestions says what the chip says: how many, and
+  //: whether the panel is open. Hidden for a code file, as the chip is.
   function docFocusSyncProse() {
     const button = $("doc-focus-prose");
     if (!button) return;
@@ -900,6 +997,9 @@
       docProseFocusAt = -1;
     }
   }
+  //: The three kinds the underlines already draw, in the order of how strong a
+  //: claim each one is. Named here rather than in the panel so the group title
+  //: and the squiggle can never drift apart.
   const DOC_FINDING_GROUPS = [
     ["spelling", "Spelling"],
     ["grammar", "Grammar"],
@@ -914,7 +1014,36 @@
     //: so by where it sits.
     ["ai", "Checked with AI"],
   ];
+  //: Sixty rows, over all the groups rather than per group: the cap is there so
+  //: a pathological document cannot build ten thousand elements, and a cap that
+  //: applied per group would let three kinds multiply it by three.
   const DOC_PROSE_ROWS = 60;
+  //: **The row of the panel, and the answers under it** (DOCUMENTS_PLAN 12 D3).
+  //:
+  //: Reported: "when I click on the issue from the suggestions thing, the box
+  //: just appears right there in my face." The row used to open the floating
+  //: menu, first at the row (which is at the foot of the window, under the
+  //: pointer) and then at the word, and both readings of "where" were answers to
+  //: the wrong question: a list at the foot of the window had no answers of its
+  //: own, so acting on any row meant drawing a 335px popup over the text being
+  //: discussed, on top of the 297px panel that asked. Measured: 70% of the
+  //: window's height spent on one misspelled word.
+  //:
+  //: So the row expands under itself, inside the panel, with the same answers the
+  //: menu offers (`docSuggestAnswers`), and the document scrolls the word to the
+  //: middle of the editor so the sentence is readable while its row is open. One
+  //: surface at a time, which is DESIGN.md's popover rule: a panel that has to
+  //: open a popover to be useful was breaking it structurally.
+  //: **Closing a row, once.** Three things close one (the second press on the
+  //: row, Escape inside the answers, and pressing an answer), and each of them
+  //: used to write the same four lines. They also have to agree about focus: a
+  //: row opened from the keyboard has the focus ring somewhere inside the block
+  //: that is about to be emptied, and an element removed while it has focus
+  //: hands it to `<body>`, which is the end of keyboard navigation for that
+  //: panel. So the row takes it back, but only when the row is where it came
+  //: from: a pointer press left focus in the editor on purpose (that is what
+  //: "show me this in the document" means) and stealing it here would move the
+  //: caret out of the sentence the reader was just shown.
   function docProseRowCollapse(row, control, answers) {
     control.setAttribute("aria-expanded", "false");
     row.removeAttribute("aria-current");
@@ -999,9 +1128,12 @@
     const first = answers.querySelector("button:not([disabled])");
     if (first) first.focus();
   }
+  //: What Ignore says: a link offer is put away by name everywhere, anything else
+  //: for this document until a restart.
   function docIgnoreLabel(finding) {
     return finding.rule === "link-offer" ? "Never offer a link to this name" : "Ignore in this document";
   }
+  //: Stop flagging this wording in this document (until a restart).
   function docProseIgnore(finding) {
     //: A link offer is put away by its name, for every document (the switch and
     //: the list of kept names are in Settings, Writing).
@@ -1013,7 +1145,11 @@
     renderDocProse();
     renderDocProsePanel();
   }
+  //: **Next, without a key for it**: after a row's Accept or Ignore the focus
+  //: lands on the row that took its place, so the keyboard walks the list
+  //: answer by answer. Set by the row's action, spent by the next paint.
   let docProseFocusAt = -1;
+  //: Up and Down walk the rows across the groups, Home and End the ends.
   function docProseRowKeys(event) {
     const jump = event.target.closest?.(".doc-prose-jump");
     const moves = { ArrowDown: 1, ArrowUp: -1, Home: -Infinity, End: Infinity };
@@ -1092,6 +1228,22 @@
     }
     return list;
   }
+  //: **Show me where: and make it obvious for a moment.**
+  //:
+  //: Asked for directly: "if I click on an issue flagged in the document
+  //: suggestions, it should auto scroll to the issue and temporarily highlight
+  //: the offending area." The scrolling half was here already; the highlight was
+  //: a text selection, which is the quietest mark a screen has, the same grey
+  //: as any other selection, in a box the pointer has just left, several
+  //: paragraphs from where the eye was. Landing in roughly the right place with
+  //: nothing saying "here" is what makes a jump feel like it did not happen.
+  //:
+  //: One way to say it now, because there is one editor. The selection is put
+  //: on the flagged span and the surface scrolls it into view: CodeMirror does
+  //: that itself as part of the transaction, and the underline is already there
+  //: to say which words are meant. The fallback textarea still needs the
+  //: `blur`+`focus` trick and the accent `::selection` flash, which is the only
+  //: mark a textarea can draw on a range it already holds.
   const DOC_FLASH_MS = 1600;
   function docProseJump(finding) {
     //: **No view switch.** This used to drop anyone in Live back into Source to
@@ -1177,6 +1329,9 @@
   function docCompleteEnabled() {
     return $("doc-complete")?.checked !== false;
   }
+  //: Rebuilt when the document changes rather than on every keystroke: a
+  //: 50,000-word document is a real thing to have here, and splitting it on each
+  //: character typed is the shape that makes an editor feel heavy.
   function docBuildVocabulary() {
     const counts = new Map();
     const add = (word, weight) => {
@@ -1200,6 +1355,16 @@
     }
     docCompleteWords = [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }
+  //: The half-typed word immediately before the caret, or null. Deliberately not
+  //: offered mid-word: a caret inside "compl|etion" is someone fixing a letter,
+  //: and a popup there is in the way.
+  //:
+  //: **Read from the caret's line, not from the start of the document.** This
+  //: ran on every keystroke and asked the surface for its whole text to slice
+  //: two short strings out of it, which on a 20k-word document is 130,000
+  //: characters materialised per character typed: measured, it was the single
+  //: biggest thing left between the engine and PLAN P4's 30 ms gate. A word
+  //: fragment cannot span a line break, so the line is all this ever needed.
   function docWordFragment(box) {
     const at = box.selection().from;
     const line = box.lineAt(at);
@@ -1222,6 +1387,13 @@
     docCompleteBox = null;
     if (typeof docProseGhostSet === "function") docProseGhostSet(null, "");
   }
+  //: **The autofill rows for the caret, if it is at a trigger** (the owner,
+  //: 2026-09-24: "if I type lorem and press enter ... it will autofill the lorem
+  //: ipsum filler text"). The token and the rows are documents-prose.js's pure
+  //: `PROSE-FILL` region; this is the part that knows the editor: the caret's
+  //: line, the name in Settings, the renderer's heading ids. Prose only: a code
+  //: file has its own list (`docCodeTools`), and two lists at one caret is the
+  //: thing this file keeps refusing.
   function docFillAt(box) {
     if (typeof docFillToken !== "function" || !docProseFillOn()) return null;
     const range = box.selection();
@@ -1375,6 +1547,8 @@
     box.focus();
     box.dispatchEvent(new Event("input", { bubbles: true }));
   }
+  //: Returns true when it handled the key, so the caller knows not to let the
+  //: editor's own bindings see it, the same contract the editor menu's keys use.
   function docCompleteKeydown(event, box) {
     const list = $("doc-complete-list");
     if (!list || list.classList.contains("hidden")) return false;
@@ -1415,6 +1589,9 @@
     //: an identifier as you typed it would be unusable.
     return $("doc-autocorrect")?.checked === true && docFileType().previewable;
   }
+  //: Fires on the keystroke that *finishes* a word, a space, a newline or
+  //: punctuation: which is the only moment a correction is unambiguous. Mid-word
+  //: it would rewrite "teh" while you were on your way to typing "tehran".
   function docAutocorrectAt(box) {
     if (!docAutocorrectEnabled()) return false;
     const caret = box.selection().from;
@@ -1573,6 +1750,11 @@
       docCompleteWords = null;
     }, 1200);
   }
+  //: **The editing box an event landed in, as a surface.** Three shapes reach
+  //: this: the fallback textarea, a live-view paragraph, and any node inside
+  //: CodeMirror's editable, which is a `div` and so matches none of the
+  //: textarea checks that used to be the whole of this function. Returning null
+  //: for anything else is what keeps the instruments off the note composer.
   function docToolsBoxFor(target) {
     //: A surface as well as a node, because half the callers now hold one
     //: already (`applyMarkdown`'s Undo branch is the one that caught this: with

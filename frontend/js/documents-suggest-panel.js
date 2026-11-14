@@ -1,11 +1,29 @@
 // documents-suggest-panel.js: the spelling variants, the dictionary reads, and where the suggestions panel sits.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: Painted once on load so the bar is not blank before the first keystroke,
+  //: and again whenever a document is opened, `openDocument` calls this.
+  //:
+  //: **The call that runs it at load time is the last line of this file**, not
+  //: this one. `const`/`let` at module scope are hoisted into a temporal dead
+  //: zone, so calling this here threw `Cannot access 'docDictionarySet' before
+  //: initialization` the moment the dictionary and the spelling tables were
+  //: added below: a real crash, caught in the browser, that no amount of
+  //: reading the function would have shown.
   function renderDocTools() {
     docCompleteWords = null;
     renderDocStatusBar();
     renderDocProse();
   }
+  //: **US and UK, as an explicit list rather than a rule.** The rules everyone
+  //: reaches for are wrong often enough to be useless: `-ise/-ize` turns "size"
+  //: into "sise", `-our/-or` turns "four" into "for". Every pair here is a word
+  //: whose two spellings are both real and mean the same thing, which is the only
+  //: case where suggesting the other one is safe.
+  //:
+  //: UK on the left, US on the right, and the direction is chosen by the setting
+  //:, the checker never has an opinion about which is correct, only about which
+  //: one this notebook was told to use.
   const DOC_SPELLING_PAIRS = [
     ["colour", "color"], ["colours", "colors"], ["coloured", "colored"],
     ["favourite", "favorite"], ["favourites", "favorites"], ["favour", "favor"],
@@ -36,9 +54,16 @@
   ];
   const DOC_VARIANT_FAMILY = { us: "us", uk: "uk", au: "uk", in: "uk", ca: "ca" };
   const DOC_VARIANT_LABEL = { us: "US", uk: "UK", au: "Australian", ca: "Canadian", in: "Indian" };
+  //: Canada spells -our, -re, -ce, grey, cheque and the doubled l the British
+  //: way and -ize and the rest the American way ("tyre" is "tire" there).
   const DOC_CA_KEEPS_UK =
     /^(?!tyre$)([a-z]*(our(s|ed|ite|ites)?|re|res|ce|ces|ll(ed|ing|er))|grey|cheque|jewellery|marvellous|catalogue)$/;
   let docVariantMap = null;
+  //: **"auto" is the default** (INBOX 1731): the dialect of the computer's own
+  //: language, so an Australian notebook is checked as Australian without the
+  //: owner finding the select first. Anything not English, or a tag with no
+  //: dialect of its own, is "off" (no preference); the rest of the English-
+  //: speaking world that spells the British way reads as British.
   function docSpellingVariant() {
     const set = (prefsCache && prefsCache.spelling_variant) || "auto";
     if (set !== "auto") return set;
@@ -62,7 +87,29 @@
     }
     return docVariantMap;
   }
+  //: The words the reader has told this to accept. A Set, lowercased, because a
+  //: word added at the start of a sentence must not have to be added again in
+  //: the middle of one.
   let docDictionarySet = null;
+  //: **The array the set was last built from, compared by identity.** This pair
+  //: is the fix for a report that was worse than it read: *"I swear I added
+  //: 'idk' to the dictionary last night, make sure it is persistent."*
+  //:
+  //: The set used to be memoised with `if (!docDictionarySet)`, and an empty
+  //: `Set` is truthy, so the first call won for the rest of the session. The
+  //: first call happens at the bottom of this file, which runs `renderDocTools`
+  //: at parse time; `prefsCache` is filled by an async fetch in app.js that has
+  //: not resolved yet. So the dictionary was built empty, every saved word was
+  //: unknown for the whole session, and, worse, `docDictionaryWrite` below sends
+  //: `[...docDictionary(), newWord]`: the first word you added after a reload
+  //: replaced your entire saved dictionary with that one word. Silent data loss,
+  //: and it is why a word added last night was being offered again today.
+  //:
+  //: Identity rather than a dirty flag, because `apiJson` returns a fresh object
+  //: on every read and `prefsCache` is reassigned in a dozen places across
+  //: app.js. Anything that reloads preferences therefore rebuilds this set
+  //: without having to know it exists, which is the property that stops the same
+  //: bug coming back through a new caller.
   let docDictionarySource = null;
   function docDictionary() {
     const source = (prefsCache && prefsCache.writing_dictionary) || null;
@@ -107,6 +154,9 @@
     await add();
     offerUndo(`Added “${clean}” to the dictionary`, `“${clean}” added to your dictionary.`, without, add);
   }
+  //: Findings dismissed for this sitting only. Not persisted, deliberately:
+  //: "not this time" is a statement about one sentence, and remembering it
+  //: forever would quietly turn a check off with no way to see that it is off.
   const docProseIgnored = new Set();
   function docProseKey(finding) {
     //: Scoped to the document, because the row says "in this document" and a
@@ -122,8 +172,26 @@
     docSuggestOpenFor = null;
   }
   const DOC_SUGGEST_MAX = 5;
+  //: Two edits. Three matches almost anything at these word lengths, and the
+  //: third suggestion for a five-letter word is noise a reader has to read
+  //: before dismissing.
   const DOC_SUGGEST_DISTANCE = 2;
+  //: The vocabulary of a big notebook is tens of thousands of words and this
+  //: runs while a menu is opening, so the scan is bounded. `docCompleteWords`
+  //: is sorted by how often you use a word, so the cap keeps the words most
+  //: likely to be the one you meant.
   const DOC_SUGGEST_CANDIDATES = 3000;
+  //: **Optimal string alignment**, which is Damerau-Levenshtein restricted to
+  //: adjacent transpositions. The restriction is the right one here: the typos
+  //: this is for are a swapped pair (`teh`), a doubled or dropped letter, or a
+  //: neighbouring key, and full Damerau's extra bookkeeping buys nothing for
+  //: those while costing more per candidate on a list scanned thousands of
+  //: times.
+  //:
+  //: `cap` is not an optimisation detail, it is what keeps the answer sensible:
+  //: a row whose minimum is already past the cap cannot produce a distance
+  //: under it, so the rest of the matrix is not computed, and any word more
+  //: than `cap` edits away is not a suggestion at all.
   function docEditDistance(a, b, cap) {
     if (Math.abs(a.length - b.length) > cap) return cap + 1;
     if (a === b) return 0;
@@ -159,11 +227,23 @@
     docKnownWordsCache = [...pool];
     return docKnownWordsCache;
   }
+  //: A typo at the start of a sentence must not be corrected into a lowercase
+  //: word, and a suggestion for `Recieve` that comes back as `receive` reads as
+  //: a second mistake. The same rule the built-in fixes already follow, pulled
+  //: out so every source of a suggestion follows it too.
   function docMatchCase(sample, word) {
     if (!sample || !word) return word;
     if (sample[0] !== sample[0].toUpperCase()) return word;
     return word[0].toUpperCase() + word.slice(1);
   }
+  //: `skip` is read, never written. It held the words already offered, and an
+  //: earlier draft also *added* each result to it as a way of not repeating
+  //: itself between the two candidate lists. That silently returned nothing at
+  //: all: the caller's own de-duplicating `push` reads the same set, so every
+  //: word this function found had already been marked as seen by the time it
+  //: was offered. Measured, not reasoned: the ranked list came back empty for a
+  //: word one edit from `environment` while `docNearestWords` on its own
+  //: returned it.
   function docNearestWords(word, candidates, limit, skip) {
     const lower = word.toLowerCase();
     const scored = [];
@@ -183,7 +263,12 @@
     scored.sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
     return scored.slice(0, limit).map(([candidate]) => candidate);
   }
+  //: Word-level rules only. "The nearest word to `,,` by edit distance" is not
+  //: a question with an answer, and the punctuation rules already carry the one
+  //: correct fix in `replacement`.
   const DOC_WORD_RULES = new Set(["spelling", "variant"]);
+  //: What the menu calls the thing it is about. Visible text wherever there is
+  //: any, and a description of the whitespace wherever there is not.
   function docFindingLabel(finding) {
     const text = finding.text || "";
     if (text.trim()) return text.replace(/\s+/g, " ").slice(0, 48);
@@ -263,6 +348,13 @@
     }
     return out.slice(0, DOC_SUGGEST_MAX);
   }
+  //: **One drawing of a finding, wherever one is drawn** (DOCUMENTS_PLAN 12 D1).
+  //: The panel row said the reason and then the words, the menu's head said the
+  //: words and then the reason, and the underline said neither, so one object was
+  //: described three ways and a reader had to re-read the list to match a row to
+  //: the word it was about. Here it is one line in one order: a dot in the same
+  //: colour as that kind's underline, the words, the reason. The dot is the link
+  //: back to the text, and it is the one mark the three surfaces share.
   function docFindingLine(finding, variant = "row") {
     const line = document.createElement("span");
     line.className = `doc-finding-line doc-finding-line-${variant}`;
@@ -288,6 +380,13 @@
     line.append(dot, words, why);
     return line;
   }
+  //: **Is this finding a passage or a word?** (DOCUMENTS_PLAN 12 D2.) A
+  //: misspelling's other wordings *are* the candidate list above it, and
+  //: "translate this passage" over one word is a dictionary lookup wearing the
+  //: wrong label: both rows belong to a finding that is a run of words (a
+  //: repeat, a long sentence), and offering them on every spelling made the
+  //: common menu nine rows deep. Whitespace-only findings (a double space) are
+  //: not passages either: there is nothing in them to rephrase.
   function docFindingIsPassage(finding) {
     //: A link offer's answer is the link; asking a model to reword a title
     //: would be a different question.
@@ -317,6 +416,29 @@
     if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docAiReview(...args)] });
     return docSuggestPiece.docAiReview(...args);
   }
+  //: **A popup placed in viewport coordinates has to live in the viewport's own
+  //: frame, and inside this tab it did not.** INBOX 168, with a screenshot: the
+  //: word menu for "tets" drawn at the right edge of the window with its column
+  //: cut off past it and its list under the bottom bar. Every clamp in
+  //: `placeDocSuggest` is unconditional, so the menu cannot leave the viewport
+  //: by arithmetic; what it can do is be laid out against something that is not
+  //: the viewport. A `position: fixed` element is laid out against the nearest
+  //: ancestor carrying a `filter`, `transform` or `backdrop-filter`, and
+  //: `.card.doc-main` is exactly that whenever the background art is on
+  //: (`:root[data-bg-art="on"]:not([data-glass="off"]) .card`, which is the
+  //: default pair of settings the moment someone turns the art on). Measured at
+  //: 1440x900 with the art on, before this: the menu asked for `left 952, top
+  //: 322` and rendered at `1245..1485, 399`, 45px past the right edge of the
+  //: window and 53px away from the word it belongs to, which is also INBOX 128's
+  //: "wide gap". The same blur makes the card a stacking context, so no z-index
+  //: could lift the menu over the bars outside it either.
+  //:
+  //: So the popup leaves the card while it is open and goes back on a comment
+  //: placeholder on the way out, the same move `buildTableBlock`'s full view
+  //: makes for the same reason. It has to be a move rather than a stylesheet
+  //: change: the card's blur is a deliberate part of the background-art look,
+  //: and a viewport popup has no business being a descendant of a surface that
+  //: can be blurred, transformed or scaled at any time.
   const docLiftedHome = new WeakMap();
   function docLiftToViewport(el) {
     if (!el || el.parentElement === document.body) return el;
@@ -332,6 +454,14 @@
     home.replaceWith(el);
     docLiftedHome.delete(el);
   }
+  //: **Ask for a viewport position, then check the popup landed there.** The
+  //: belt to the braces above: body itself can carry a transform (a page
+  //: animation, a future shell), and one ancestor with a filter anywhere in the
+  //: chain silently turns every number here into an offset from somewhere else.
+  //: Measuring what was drawn and correcting by the difference costs one rect
+  //: read and is exact for any containing block that only translates the frame,
+  //: which is what a filter, a backdrop-filter and a translate all do. It is a
+  //: no-op, and reads as one, when the frame is the viewport.
   function docPlaceFixed(el, left, top) {
     el.style.left = `${Math.round(left)}px`;
     el.style.top = `${Math.round(top)}px`;
@@ -343,8 +473,23 @@
       el.style.top = `${Math.round(top + dy)}px`;
     }
   }
+  //: The gap the menu keeps from the word, and from every edge it is clamped to.
   const DOC_SUGGEST_GAP = 4;
   const DOC_SUGGEST_EDGE = 8;
+  //: **The band the menu is allowed to occupy: the editor's own box first, the
+  //: window second** (DOCUMENTS_PLAN 12 D4).
+  //:
+  //: Reported as "the popup edit suggestions menu screws upn the screen and make
+  //: sit go out of bounds", and measured: a flagged word at the end of a long
+  //: line sits at `left 1161` in a card whose right edge is `1255`, and clamping
+  //: to the *window* put the menu at `1161..1401`, so 146 of its 240px hung past
+  //: the card into the window's own gutter, pointing at a document it was no
+  //: longer over. The window is not the frame this menu belongs to; the text is.
+  //:
+  //: Only when the card is actually wide enough to hold it: below that the band
+  //: would be narrower than the menu and every placement inside it would be a
+  //: lie, so a narrow window falls back to the viewport, which is the one frame
+  //: that always exists.
   function docSuggestBand(width) {
     const band = {
       min: DOC_SUGGEST_EDGE,
@@ -397,6 +542,20 @@
 
     docPlaceFixed(menu, left, top);
   }
+  //: **A menu about a word goes where the word goes, or it goes away.** The
+  //: anchor is copied at open time, so anything that moves the text under an
+  //: open menu leaves it pointing at whatever has scrolled into that spot: the
+  //: editor scrolled with the wheel, the window resized, the sidebar or the chat
+  //: dock opened beside it. None of those reach the mousedown and input
+  //: listeners that close this menu, which is why it could be left stranded.
+  //:
+  //: Re-measured rather than re-clamped: the stored rect is the stale thing, so
+  //: placing it again would only move a wrong answer. The mark is found again
+  //: from the finding the menu is open on, and when it has left the editor's
+  //: visible box, or is no longer drawn at all, the menu closes, which is
+  //: DOCUMENTS_PLAN 12 D4's rule ("a menu that points at a word that is off
+  //: screen is a menu pointing at nothing") applied after the open rather than
+  //: only during it.
   function docSuggestFollowAnchor(event) {
     const menu = $("doc-suggest-menu");
     if (!menu || menu.classList.contains("hidden") || !docSuggestOpenFor) return;
