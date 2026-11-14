@@ -7466,12 +7466,14 @@ input[type="color"].wb-mixed {
    The dock is the container; under 820px the actions drop their words (each
    keeps its title and aria-label), the save state and its rule leave the row,
    and the row stays one line. */
-.doc-dock {
+/* Named by id since the dock joined `.dock` (L-world-class-351): the recipe's
+   `.dock:has(.toolbar-word)` names its own container `dock` and beat the bare
+   class, so every `docdock` query below stopped matching. */
+#tab-documents .doc-dock {
   container: docdock / inline-size;
 }
 @container docdock (max-width: 819.98px) {
-  .doc-ai-label,
-  .doc-actions > .doc-toolbar-sep {
+  .doc-ai-label {
     display: none;
   }
   #doc-format-show > span {

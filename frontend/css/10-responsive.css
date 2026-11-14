@@ -2338,10 +2338,15 @@ header#top-bar[data-scrolled="1"],
     flex: 1 1 0;
     min-width: 0;
   }
+  /* The dock recipe's bar (L-world-class-351) keeps one step of inset on a
+     phone, not its desktop three and four: measured at 390, its padding took
+     the title from 85px to 57 and the row from 44 to 62. */
+  #tab-documents .dock.doc-dock {
+    padding: var(--space-1);
+  }
   #tab-documents .doc-back-label,
   #tab-documents .doc-ai-label,
   #tab-documents .doc-dock-status,
-  #tab-documents .doc-actions > .doc-toolbar-sep,
   #tab-documents .doc-hint,
   #tab-documents #doc-caret {
     display: none;
