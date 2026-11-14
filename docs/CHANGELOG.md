@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: Gravity and Spread now shape the Tree and Radial layouts, and Spread the Arc; Link force and the other layouts stay dimmed with their reason (L-world-class-175).
 - Note menu: grouped Atlas, structure, share and export, then archive and bin, eight rows at the top instead of ten (L-world-class-129, decision 64).
 - Dashboard: a Category mix widget draws the category counts as a pie, through the chart recipe's new pie kind; a slice opens its notes (L-world-class-179).
 - Dashboard: the Reminders widget draws its text as inline Markdown, and note rows drop a task's box with its bullet; 0 raw bold, link or box tokens across 35 widgets (L-world-class-178).

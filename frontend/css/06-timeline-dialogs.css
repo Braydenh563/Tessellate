@@ -726,11 +726,14 @@
   color: var(--muted);
   font-size: var(--text-base);
 }
-/* Gravity/Spread under a tree layout, where they have nothing to act on.
+/* A Physics control under a layout it has nothing to act on (Link force and
+   the toggles under Tree, Radial and Arc; every slider under the rest).
    Dimmed rather than hidden: a control that vanishes reads as a bug, while
    one that is visibly unavailable teaches what it belongs to. The labels are
    dimmed with it: greying the slider alone leaves the words looking live. */
-.graph-physics.is-disabled {
+.graph-physics.is-disabled,
+.graph-physics.is-partial .graph-toggle-grid,
+.graph-physics .graph-option-row:has(> input:disabled) {
   opacity: 0.45;
 }
 .graph-physics.is-disabled label,

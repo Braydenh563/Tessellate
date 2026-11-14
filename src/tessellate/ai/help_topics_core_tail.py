@@ -1428,7 +1428,7 @@ TAIL_TOPICS.extend(
             "body": (
                 "Every section of the graph's Options (View, Physics, Show, Display, Filter, Time, "
                 "Groups and Minimap) has a ? beside its name that says in a line what each of its "
-                "controls does to the map. Physics shapes only the Force layout; its Tidy spacing "
+                "controls does to the map. Physics shapes the Force layout; Gravity and Spread shape Tree and Radial, and Spread the Arc. Its Tidy spacing "
                 "(off by default) keeps dots off the lines but a large notebook settles slower. Show, "
                 "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
                 "Reset to defaults puts them all back."
