@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 145 | 29 | 3 | 10 | 174 |
+| world-class | 0 | 144 | 29 | 3 | 10 | 173 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 536 | 100 | 5 | 121 | 1041 |
+| all | 405 | 535 | 100 | 5 | 121 | 1040 |
 
 ## graph
 
@@ -572,7 +572,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider
 - [ ] **L-world-class-92** `world-class` open, S: Run boottime.js in the CI workflow (H9). From WORLD_CLASS_PLAN.md:1851. Evidence: WORLD_CLASS_PLAN.md:1851; no boottime in .github/workflows (grep 0 hits)
-- [ ] **L-world-class-93** `world-class` open, S: Fold the four one-second clocks into one tick (19.4). From WORLD_CLASS_PLAN.md:2004. Evidence: WORLD_CLASS_PLAN.md:2004 'the four one-second clocks are still separate timers'
 - [ ] **L-world-class-94** `world-class` open, S: Escape on the image lightbox, reminders add form, note edit entry and graph node panel; the chat undo line; undo.js reading the mind map's own stack. From WORLD_CLASS_PLAN.md:2083. Evidence: WORLD_CLASS_PLAN.md:2083 'Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)

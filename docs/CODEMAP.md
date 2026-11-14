@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11024, test files 2838, tests 22546, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11024, test files 2838, tests 22547, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8507)
 
@@ -8314,24 +8314,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `countSelection` | frontend/js/utility-tools.js:405 |
-| `insertTemplate` | frontend/js/utility-tools.js:422 |
+| `countSelection` | frontend/js/utility-tools.js:408 |
+| `insertTemplate` | frontend/js/utility-tools.js:425 |
 | `paintUtilityChip` | frontend/js/utility-tools.js:57 |
-| `startStopwatch` | frontend/js/utility-tools.js:137 |
-| `startUtilityTimer` | frontend/js/utility-tools.js:131 |
-| `stopUtilityClock` | frontend/js/utility-tools.js:146 |
+| `startStopwatch` | frontend/js/utility-tools.js:140 |
+| `startUtilityTimer` | frontend/js/utility-tools.js:134 |
+| `stopUtilityClock` | frontend/js/utility-tools.js:149 |
 | `utilityClockRun` | frontend/js/utility-tools.js:80 |
 | `utilityClockSeconds` | frontend/js/utility-tools.js:35 |
-| `utilityDrop` | frontend/js/utility-tools.js:107 |
+| `utilityDrop` | frontend/js/utility-tools.js:110 |
 | `utilityEnsureTick` | frontend/js/utility-tools.js:93 |
-| `utilityOps` | frontend/js/utility-tools.js:185 |
-| `utilityRestore` | frontend/js/utility-tools.js:115 |
-| `utilityResume` | frontend/js/utility-tools.js:161 |
+| `utilityOps` | frontend/js/utility-tools.js:188 |
+| `utilityRestore` | frontend/js/utility-tools.js:118 |
+| `utilityResume` | frontend/js/utility-tools.js:164 |
 | `utilitySave` | frontend/js/utility-tools.js:43 |
-| `utilitySelectedText` | frontend/js/utility-tools.js:397 |
+| `utilitySelectedText` | frontend/js/utility-tools.js:400 |
 | `utilityShown` | frontend/js/utility-tools.js:51 |
 | `utilityTimeText` | frontend/js/utility-tools.js:24 |
-| `utilityTimerDone` | frontend/js/utility-tools.js:169 |
+| `utilityTimerDone` | frontend/js/utility-tools.js:172 |
 
 ### frontend/js/value-field.js (11)
 
@@ -28290,7 +28290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22546)
+## Tests (22547)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29406,7 +29406,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extractive_answer.py | 9 |
 | tests/test_extras.py | 50 |
 | tests/test_extras_1029_row59.py | 9 |
-| tests/test_extras_1030.py | 17 |
+| tests/test_extras_1030.py | 18 |
 | tests/test_extras_bundles.py | 30 |
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 26 |
@@ -31550,14 +31550,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:682 |
+| Needs hardware | docs/roadmap/LEDGER.md:681 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:672 |
+| Owner calls | docs/roadmap/LEDGER.md:671 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31737,7 +31737,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:819 |
+| Plan session briefs | docs/roadmap/LEDGER.md:818 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31791,25 +31791,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:835 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:919 |
+| chat | docs/roadmap/LEDGER.md:834 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:918 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:859 |
-| general | docs/roadmap/LEDGER.md:632 |
+| documents | docs/roadmap/LEDGER.md:858 |
+| general | docs/roadmap/LEDGER.md:631 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:823 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:931 |
+| graph | docs/roadmap/LEDGER.md:822 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:930 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:871 |
+| mindmap | docs/roadmap/LEDGER.md:870 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:895 |
+| timeline | docs/roadmap/LEDGER.md:894 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:883 |
+| ui-modernisation | docs/roadmap/LEDGER.md:882 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:847 |
+| whiteboard | docs/roadmap/LEDGER.md:846 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:907 |
+| world-class | docs/roadmap/LEDGER.md:906 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
