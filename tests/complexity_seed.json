@@ -47,7 +47,7 @@
  "src/tessellate/api/routes_entities.py::entity_page": 21,
  "src/tessellate/api/routes_entries.py::list_entries": 26,
  "src/tessellate/api/routes_entries_refs.py::_board_reference_rows_batch": 19,
- "src/tessellate/api/routes_files.py::caption_media": 23,
+ "src/tessellate/api/routes_files.py::caption_media": 22,
  "src/tessellate/api/routes_graph.py::_hop_reasons": 19,
  "src/tessellate/api/routes_insights.py::_ai_greeting": 19,
  "src/tessellate/api/routes_map_from_notes.py::map_from_notes": 19,
