@@ -12,6 +12,16 @@ under `src/tessellate/vendor/` or `frontend/vendor/` is missing from this page.
 | --- | --- | --- | --- | --- | --- |
 | FlashText | `flashtext.py` | 2.7 | MIT (`flashtext.LICENSE.txt`) | https://github.com/vi3k6i5/flashtext | `ai/taxonomy.py`, matching the taxonomy pack's phrases in a note |
 
+## Python packages (`requirements.txt`)
+
+Installed with pip, not vendored; each licence is in the package's own metadata. All MIT, AGPL-compatible, each added with its first use (L-chat-64).
+
+| Library | Files | Version | Licence | Source | Used by |
+| --- | --- | --- | --- | --- | --- |
+| holidays | the `holidays` package | 0.108 | MIT | https://github.com/vacanza/holidays | `ai/recognise_windows.py`, the dates of Easter, Good Friday, Boxing Day and Thanksgiving |
+| inflect | the `inflect` package | 7.6.0 | MIT | https://github.com/jaraco/inflect | `ai/realise.py`, plurals and "a" or "an" in counted nouns |
+| rapidfuzz | the `rapidfuzz` package | 3.14.6 | MIT | https://github.com/rapidfuzz/RapidFuzz | `ai/object_acts.py`, the close names a missing tag or category offers |
+
 ## Browser (`frontend/vendor/`)
 
 | Library | Files | Version | Licence | Source | Used by |

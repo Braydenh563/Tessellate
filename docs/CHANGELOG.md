@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Composer libraries: holidays gives Easter, Good Friday, Boxing Day and Thanksgiving their dates, inflect handles plurals and a/an, rapidfuzz ranks near-miss object names; each has its THIRD_PARTY line (L-chat-64).
 - Chat evals: the loose-ends fixture is now half short jottings and half long writing (35 each, four planted loose ends in each), as decision 27 says; the real-model run is still to do (L-chat-176).
 - Chat: "what are those tags", "those categories" and "those documents" with none to list are composed in the chat voice (ten wordings each) instead of fixed text (L-chat-233).
 - Chat: the needle test pins the no-model act line by "remind", which both its wordings say (L-chat-232); the composer decides the tool, needle fills slots, the composer writes the reply: 9 tests with a fake engine, a real needle model not run.

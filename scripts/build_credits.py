@@ -28,6 +28,7 @@ def _plain(cell: str) -> str:
 #: folders, which mean nothing to the person reading the credits).
 TITLES = {
     "Python": "In the server",
+    "Python packages": "In the server, installed with pip",
     "Browser": "In the app",
     "Optional downloads": "Optional downloads",
     "Board library": "The whiteboard's shapes",

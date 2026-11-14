@@ -266,14 +266,38 @@ def relative_day(day: date, today: date) -> str:
 _IRREGULAR_PLURALS = {"day": "days", "week": "weeks", "person": "people", "child": "children", "entry": "entries", "copy": "copies"}
 
 
+_INFLECT: list = []
+
+
+def _engine():  # noqa: ANN202
+    """`inflect`'s engine, built on first use: the import costs over a second, and most turns count no noun."""
+    if not _INFLECT:
+        import inflect
+
+        _INFLECT.append(inflect.engine())
+    return _INFLECT[0]
+
+
+def _plural_of(noun: str) -> str:
+    """A lower-case plain word pluralised by `inflect` ("box" to "boxes", "analysis" to "analyses"); a unit or a
+    name ("km", "MP") takes the plain "s"."""
+    if noun in _IRREGULAR_PLURALS:
+        return _IRREGULAR_PLURALS[noun]
+    if noun.isalpha() and noun.islower() and len(noun) >= 3:
+        return _engine().plural_noun(noun) or noun + "s"
+    return noun[:-1] + "ies" if noun.endswith("y") and noun[-2:-1] not in "aeiou" else noun + "s"
+
+
+def _with_article(noun: str) -> str:
+    """"an hour", "a user": by the sound, which `inflect` knows and the first letter does not."""
+    return _engine().a(noun) if noun.isalpha() and noun.islower() else f"{'an' if noun[:1].lower() in 'aeiou' else 'a'} {noun}"
+
+
 def count_noun(n: int, noun: str, *, article: bool = False) -> str:
     """"one note", "two notes"; with `article`, "a day", "three days"."""
     if n == 1:
-        if article:
-            return f"{'an' if noun[:1].lower() in 'aeiou' else 'a'} {noun}"
-        return f"one {noun}"
-    plural = _IRREGULAR_PLURALS.get(noun) or (noun[:-1] + "ies" if noun.endswith("y") and noun[-2:-1] not in "aeiou" else noun + "s")
-    return f"{count_word(n)} {plural}"
+        return _with_article(noun) if article else f"one {noun}"
+    return f"{count_word(n)} {_plural_of(noun)}"
 
 
 def join_items(items: list[str]) -> str:
