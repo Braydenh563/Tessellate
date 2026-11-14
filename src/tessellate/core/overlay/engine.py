@@ -98,6 +98,7 @@ __all__ = [
     "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
     "perch_room", "LAND_FOR", "ld", "wisps",
 ]
+from .engine_beats import BeatsMixin
 from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
@@ -112,7 +113,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, BeatsMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -1225,6 +1226,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
                 self._face(-self.facing, now)
         if self.mind.shift_due(now, self.var_rng):
             self.shift_at = now  # A4: the same lean and settle as a sit's, the window does not move
+        self._spell_beat_due(now)
         if self.act in bh.YIELD_TO_SIT and now - self.last_active >= IDLE_SIT:
             self.state_until = now  # a long seated act gives way to the ten-minute sit
         if now >= self.state_until:
@@ -2770,7 +2772,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge", "crouch", "warp", "land") or self.turn_to:  # land: its squash eases at 60 Hz (INBOX 1683 j: one 170 ms draw jumped it 18 px)
             return self._moving_wake(s)
         if s == "act":
-            soonest = min(self.state_until, self._next_pose_change(now, 0.5))
+            soonest = min(self.state_until, self._next_pose_change(now, 0.5), self._spell_beat_wake(now))
             return max(REST_DRAW_MS if self.ex.calm(self.act) else TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS
