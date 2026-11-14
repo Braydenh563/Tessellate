@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The speculative warm test proves the background load without a wall-clock bound (2026-11-14).
 - Chat scope: thirteen open_scan hits that were history or decisions reworded (2026-11-14).
 - The NDJSON stream reader loads on first use (ndjson-read.js), bringing the boot scripts back under the gzip cap (2026-11-14).
 - Docs: 17 open-reading comments in the Ask, capture, reply and skills scripts reworded (feature words, not open work); the Ask foot announces suggested questions (2026-11-14).
