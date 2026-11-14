@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 0 | 150 | 29 | 3 | 11 | 179 |
+| world-class | 0 | 150 | 29 | 3 | 10 | 179 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 423 | 541 | 100 | 5 | 122 | 1064 |
+| all | 423 | 541 | 100 | 5 | 121 | 1064 |
 
 ## graph
 
@@ -820,7 +820,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-116** `world-class` blocked-hardware, S: Capture: verify the desktop window, real clipboards and a server crash between commit and answer. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'the desktop window, real clipboards and a server crash between commit and answer are not verified'
 - [ ] **L-world-class-117** `world-class` blocked-hardware, S: Desktop restart: treat the Chrome_WidgetWin unregister error as non-fatal and relaunch (reproduce on Windows). From WORLD_CLASS_PLAN.md:2986. Evidence: WORLD_CLASS_PLAN.md:2986 owner's report 'Failed to unregister class Chrome_WidgetWin_0. Error = 1411'; needs Windows
 - [ ] **L-world-class-134** `world-class` blocked-hardware, M: Live captions: a run on the reference laptop and the Windows, macOS and aarch64 wheels for real. From WORLD_CLASS_PLAN.md:3986. Evidence: 28.5 row 9 (:3986): 'open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real'
-- [ ] **L-world-class-171** `world-class` blocked-hardware, S: Build the Docker image once on a machine with a daemon and record what it says. From docs/DOCKER.md:5; docs/INSTALL.md:258. Evidence: no Docker daemon in the sandbox; tests/test_docker_files.py reads the files as text only
 
 ## Plan session briefs
 

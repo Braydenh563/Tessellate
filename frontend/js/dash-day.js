@@ -150,7 +150,7 @@
     const failed = run?.ran && run.status === "failed";
     if (failed) sub.push(`The last try failed${run.error ? `: ${run.error}` : ""}.`);
     const due = new Date(at.getTime() + 24 * 3600 * 1000);
-    sub.push(due.getTime() <= now.getTime() ? "Due at the next start." : `Next due ${due.toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit" })}.`);
+    sub.push(due.getTime() <= now.getTime() ? "Due at the next start." : `Next due ${due.toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit", ...clockOptions() })}.`);
     return { state: failed ? "failed" : "ok", big: `Last backup ${relativeTime(newest.created_at)}`, sub: sub.join(" ") };
   }
   //: end dashBackupWords

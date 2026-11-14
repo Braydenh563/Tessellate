@@ -27,7 +27,7 @@ def test_each_control_outside_background_tasks_is_filled_when_its_pane_opens():
     show = show[: show.index("\n}\n")]
     controls = re.findall(r'\$\("(pref-[a-z-]+)"\)', body)
     outside = {c: _pane_of(c) for c in controls if _pane_of(c) != "tasks"}
-    assert outside == {"pref-mcp-writes": "tools", "pref-smart-model-routing": "models"}
+    assert outside == {"pref-mcp-writes": "tools", "pref-smart-model-routing": "models", "pref-learned-audit": "learned"}
     for control, pane in outside.items():
         branch = show[show.index(f'if (name === "{pane}")') :]
         branch = branch[: branch.index("\n  }\n")]

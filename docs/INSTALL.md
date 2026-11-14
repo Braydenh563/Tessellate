@@ -255,7 +255,7 @@ For a server or a NAS. From the repository root, `TESSELLATE_FIRST_PASSWORD=choo
 - Behind a reverse proxy, set `TESSELLATE_ALLOWED_HOSTS` to the public name it forwards (`memory.example.com`; several are comma-separated, names only). Without it the app answers 421 to a Host that is not the container's own. A page on that name, on port 443 or 80, is then treated as the app's own page.
 - The default image has no built-in search engine (about 400 MB on disk): search by keyword and an Ollama embedder on the host (`OLLAMA_URL`). `--build-arg WITH_EMBEDDER=1` adds fastembed and ONNX Runtime (about 120 MB more); the model downloads after a yes in the app.
 - What a container cannot do: the desktop window and tray, native file dialogs, the Start menu shortcuts and Repair, and the "Allow other devices" switch (use the port mapping instead).
-- No build has run in the sandbox it was written in (no Docker daemon, needs device; L-world-class-171); `tests/test_docker_files.py` reads the files as text. Report what the first build says.
+- Built and run on 2026-11-14 (L924): a 560 MB image that runs as `mm`, answers `/` and `/health` on port 8000 and writes to `/data`; `tests/test_docker_files.py` reads the files as text.
 
 ## Running it
 
