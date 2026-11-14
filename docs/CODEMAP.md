@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11006, test files 2820, tests 22519, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11006, test files 2821, tests 22523, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -2825,16 +2825,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatAttachmentStrip` | frontend/js/chat-turn.js:2291 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
 | `commitStagedImages` | frontend/js/chat-turn.js:2194 |
-| `continueRunControls` | frontend/js/chat-turn.js:2846 |
+| `continueRunControls` | frontend/js/chat-turn.js:2852 |
 | `deleteChatTurn` | frontend/js/chat-turn.js:2794 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2891 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2920 |
-| `markFollowup` | frontend/js/chat-turn.js:2946 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2897 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2926 |
+| `markFollowup` | frontend/js/chat-turn.js:2952 |
 | `mountChatTimer` | frontend/js/chat-turn.js:2243 |
 | `offerFollowups` | frontend/js/chat-turn.js:2129 |
 | `offerReminder` | frontend/js/chat-turn.js:2068 |
 | `paintChatTimer` | frontend/js/chat-turn.js:2230 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2970 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2976 |
 | `renderAgentQuestion` | frontend/js/chat-turn.js:1856 |
 | `renderMemoryProposal` | frontend/js/chat-turn.js:1940 |
 | `renderRecordsDetails` | frontend/js/chat-turn.js:2751 |
@@ -2851,9 +2851,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `chatArchiveUndo` | frontend/js/chat-undo.js:31 |
 | `chatDocumentUndo` | frontend/js/chat-undo.js:49 |
-| `chatEditUndo` | frontend/js/chat-undo.js:82 |
+| `chatEditUndo` | frontend/js/chat-undo.js:86 |
 | `chatForkUndo` | frontend/js/chat-undo.js:37 |
-| `chatHistoryTyped` | frontend/js/chat-undo.js:125 |
+| `chatHistoryTyped` | frontend/js/chat-undo.js:129 |
 | `chatPinUndo` | frontend/js/chat-undo.js:26 |
 | `chatPut` | frontend/js/chat-undo.js:13 |
 | `chatRepaint` | frontend/js/chat-undo.js:6 |
@@ -28242,7 +28242,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22519)
+## Tests (22523)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28498,7 +28498,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_calc_redesign_1584.py | 11 |
 | tests/test_calc_ux_1530.py | 16 |
 | tests/test_calculator_equations.py | 10 |
-| tests/test_caption_sentence_1599.py | 4 |
+| tests/test_caption_sentence_1599.py | 5 |
 | tests/test_caption_whole_1555.py | 3 |
 | tests/test_captioning.py | 18 |
 | tests/test_captions.py | 16 |
@@ -28555,6 +28555,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_checkpoint_race.py | 2 |
 | tests/test_chat_chips_cost_d28_1111.py | 1 |
 | tests/test_chat_degrades.py | 1 |
+| tests/test_chat_delete_tokens_1010.py | 3 |
 | tests/test_chat_dock.py | 12 |
 | tests/test_chat_edit_lock_1112.py | 2 |
 | tests/test_chat_failed_step.py | 1 |

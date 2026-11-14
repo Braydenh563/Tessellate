@@ -2798,10 +2798,11 @@ async function deleteChatTurn(assistantBubble) {
   if (index === -1) return;
   if (!(await confirmDialog("Delete this message?"))) return;
 
+  let result = null;
   if (chatConv.id !== null) {
     try {
       const id = chatConv.id;
-      const result = await apiJson(`/conversations/${id}/turns/${index}`, {
+      result = await apiJson(`/conversations/${id}/turns/${index}`, {
         method: "DELETE",
       });
       chatWriteRecord("chatTurnUndo", id, index, result);
@@ -2822,7 +2823,12 @@ async function deleteChatTurn(assistantBubble) {
   if (userBubble?.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
-  renderChatTurnCount();
+  //: The chat counts the turns that are left, said at once (L-chat-19, the owner: "the token
+  //: usage I was at for that chat has lowered??"); the undo toast says the change.
+  if (result && Number.isFinite(result.tokens)) renderChatUsage(result.tokens);
+  else renderChatTurnCount();
+  //: The meter read the last turn's prompt: with that turn gone it describes nothing left.
+  if (index === bubbles.length - 1) renderChatContextMeter(null);
   // The turn below is the end of the thread now, so its saved chips come back.
   refreshFollowupVisibility();
   if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
