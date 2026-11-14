@@ -60,13 +60,17 @@ _CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my 
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
 
 
-def _changes_of_mind(session: Session, now: datetime) -> str:
+def _changes_of_mind(session: Session, now: datetime, question: str = "") -> str:
     """The insights reader's dated changes of mind, then each subject a newer
     note replaced (`supersede.changes`, the pairing answers are read through), L-chat-8."""
     from tessellate.ai import insights, supersede
 
-    lines = [i.text for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift")][:4]
-    lines += [supersede.changes_line(r, now.date()) for r in supersede.changes(_notes(session))[-4:]]
+    subject = supersede.ask_subject(question)
+    #: A named subject keeps only its own changes (L-chat-245): the words in the line or in either note.
+    lines = [i.text for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift") and supersede.about(subject, i.text)][:4]
+    lines += [supersede.changes_line(r, now.date()) for r in supersede.changes(_notes(session)) if supersede.about(subject, str(r.older.get("content")), str(r.newer.get("content")))][-4:]
+    if not lines and subject:
+        return f"I found no change of mind about {subject} in your dated notes."
     if not lines:
         return "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here."
     return "Each change of mind in your dated notes:\n\n" + "\n".join(f"- {line}" for line in lines)
@@ -87,7 +91,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
             reply = composer_plan._left(ctx)  # noqa: SLF001
             said = reply.text if reply else ""
         elif _CONTRADICTIONS.search(text):
-            said = _changes_of_mind(session, now)
+            said = _changes_of_mind(session, now, text)
         elif _PATTERNS.search(text):
             found = insights.from_session(session, now.date(), limit=4)
             said = ("\n".join(f"- {line}" for line in insights.listed(found)) if found else

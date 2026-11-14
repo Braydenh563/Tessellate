@@ -174,6 +174,29 @@ def _one_thing(found: Replaced) -> bool:
     return bool(a | b) and _same(a, b)
 
 
+#: "contradict each other about the passport", "the passport contradiction", "inconsistencies on my passport".
+_ASK_TAIL = re.compile(r"\b(?:about|on|over|regarding|concerning|around|with)\s+(?:(?:my|the|our)\s+)?(?P<s>[^?.!,]+?)\W*$", re.I)
+_ASK_HEAD = re.compile(r"\b(?:the|my|our)\s+(?P<s>[\w'-]+(?:\s+[\w'-]+){0,2}?)\s+(?:contradictions?|inconsistenc(?:y|ies)|conflicts?|disagreements?)\b", re.I)
+_ASK_NOISE = frozenset({"note", "each", "other", "one", "another", "contradict", "contradiction", "inconsist", "conflict", "disagre", "chang", "mind"})
+
+
+def ask_subject(question: str) -> str:
+    """The words of the subject a contradiction ask names, or "" for the whole
+    notebook ("do my notes contradict each other" names none; L-chat-245)."""
+    from tessellate.ai import study
+
+    found = _ASK_TAIL.search(" ".join(question.split())) or _ASK_HEAD.search(" ".join(question.split()))
+    words = re.findall(r"[\w'-]+", found.group("s")) if found else []
+    return " ".join(w for w in words if study.content_stems(w) and not set(study.content_stems(w)) <= _ASK_NOISE)
+
+
+def about(subject: str, *texts: str) -> bool:
+    """Whether every word of `subject` (stemmed) is in the texts."""
+    from tessellate.ai import study
+
+    return set(study.content_stems(subject)) <= set(study.content_stems(" ".join(texts)))
+
+
 def changes_line(found: Replaced, today: date) -> str:
     """One change said with both days and both values, newest first."""
     newer = _day(found.newer)
