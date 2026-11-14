@@ -510,6 +510,7 @@ EXEMPT: dict[str, str] = {
     "settings-data.js:saveBackupCopyDir": "settings: a setting with its own Reset or the settings history",
     "tag-suggest.js:noteTagChoices": "read: asks the model for tag suggestions, shown for review",
     "wiring.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
+    "documents-subpages.js:place": "inverse: the one door for a page's parent; Move under and Move to the top level offer Undo and Redo, which call it with the parent before and after",
     "graph.js:graphUnpinAllNow": "inverse: the one door for Unpin all; its callers (Reset, the More menu) offer Undo, which writes the released rows back",
     "lag-watch.js:lagFlush": "telemetry: sends lag reports to this app's own log file; nothing of the person's",
     "chat-docs.js:keepUnreadableChatFile": "send: keeps a dropped file the chat cannot read in Library > Files, which says so in its toast; deleting it there is the way back",

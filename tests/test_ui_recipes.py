@@ -7919,3 +7919,15 @@ def test_a_document_in_a_list_is_a_page_not_a_line_of_grey() -> None:
     js = frontend_text("library.js")
     assert 'page.setAttribute("aria-hidden", "true")' in js and "open.append(top, page, body, menu)" in js
     assert "innerHTML" not in js[js.index('page.className = "doc-list-page"') :][:900]
+
+
+def test_a_row_with_rows_under_it_has_a_disclosure() -> None:
+    """DOCUMENTS_PLAN D14 (L-documents-44): a parent row's disclosure is a quiet icon button with `aria-expanded`
+    whose caret turns, and a child steps in by a spacing token per level (DESIGN.md "A list row with rows under it")."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    rules = dict(_rules(css))
+    assert "margin-inline-start: var(--space-7)" in rules["#library-docs-list > li.doc-tree-child"]
+    assert "rotate(90deg)" in rules['.doc-tree-toggle[aria-expanded="true"] .ph']
+    js = (ROOT / "frontend" / "js" / "documents-subpages.js").read_text(encoding="utf-8")
+    assert 'toggle.className = "ghost icon-btn doc-tree-toggle"' in js and 'toggle.setAttribute("aria-expanded"' in js
+    assert "calc(${at.depth} * var(--space-7))" in js and "style=" not in js

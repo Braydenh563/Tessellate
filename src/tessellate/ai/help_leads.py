@@ -118,6 +118,7 @@ TOPIC_LEADS: dict[str, str] = {
     "document-base": "Show notes that share a property as a table, board or calendar in a document.",
     "document-query": "Keep a saved search's results as a live list inside a document.",
     "document-synced": "Show one paragraph of another document inside this one, and edit it from either place.",
+    "document-subpages": "Put a document under another one and find it again in the Library's tree.",
     "document-board": "Show a whiteboard or a mind map in a document and edit it there in a panel.",
     "document-graph": "Plot y = f(x) in a document, with sliders you can move and a plot you can pan and zoom.",
     "documents-replace": "Find and replace words across all your documents in one go, with one Undo.",

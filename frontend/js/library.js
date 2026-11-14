@@ -3602,6 +3602,9 @@ function libraryDocsNewMount() {
   slot.replaceChildren(wrap);
 }
 
+//: Sub-pages (D14): the tree, its kebab rows, `/subpage` and the breadcrumb, lazy (documents-subpages.js). Fetched as
+//: this file loads, so an editor opened without the list still draws its parents.
+lazyScript("/js/documents-subpages.js");
 async function renderLibraryDocuments() {
   const list = document.getElementById("library-docs-list");
   const empty = document.getElementById("library-docs-empty");
@@ -3616,6 +3619,7 @@ async function renderLibraryDocuments() {
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
   await loadDocTypeTable();
+  await lazyScript("/js/documents-subpages.js");
   libraryDocsNewMount();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
@@ -3688,6 +3692,9 @@ async function renderLibraryDocuments() {
   //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
   //: an array another reader holds.
   docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
+  //: The tree, collapsed by default (D14), only on the whole list: a search or a property shows its matches flat.
+  const tree = !needle && !propertyFiltered ? window.docSubpagesPiece : null;
+  if (tree) docs = tree.order(docs);
   if (libraryDocsPageSize === "all" || !docs.length) {
     pageBar?.classList.add("hidden");
   } else {
@@ -3862,6 +3869,7 @@ async function renderLibraryDocuments() {
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
           renderLibraryDocuments();
         }),
+        ...(window.docSubpagesPiece?.menuItems(doc) || []),
         makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
           downloadFromApi(`/documents/${doc.id}/export.md`, "document.md");
         }),
@@ -3897,6 +3905,7 @@ async function renderLibraryDocuments() {
     // MutationObservers on one menu, which do the same reparent twice.
 
     open.append(top, page, body, menu);
+    tree?.decorate(item, open, doc, renderLibraryDocuments);
     item.appendChild(open);
     list.appendChild(item);
   }

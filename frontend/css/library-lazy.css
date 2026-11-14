@@ -9665,3 +9665,41 @@ input[type="color"].wb-mixed {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
 }
+
+/* --- sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") ---------------
+   A child row steps in by one `--space-7` per level from its parent; the parent's disclosure is a quiet icon button
+   before the tick whose caret turns a quarter with `aria-expanded`, as `.disclosure-row`'s does. */
+#library-docs-list > li.doc-tree-child {
+  /* One level; `decorate` writes deeper levels on the row as a multiple of the same token. */
+  margin-inline-start: var(--space-7);
+}
+.doc-list-top > .doc-tree-toggle {
+  flex: 0 0 auto;
+}
+.doc-tree-toggle .ph {
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+.doc-tree-toggle[aria-expanded="true"] .ph {
+  transform: rotate(90deg);
+}
+/* The breadcrumb in the document head: the parents after the way back, each a quiet link that clips its own long
+   title, so the row stays one row and the title field keeps the room. */
+.doc-dock-identity > .doc-crumbs {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--space-1);
+  margin-inline-end: var(--space-2);
+}
+.doc-crumbs > .doc-crumb {
+  min-width: 0;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.doc-crumbs > .doc-crumb:hover {
+  color: var(--ink);
+}

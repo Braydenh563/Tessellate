@@ -761,3 +761,21 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
     for word in ("Sort the file", "Filters adds a box", "Header row says", "Drag the edge of a column", "Pasting text with tabs"):
         assert word in html, word
+
+
+def test_sub_pages_are_in_the_guide_and_the_popovers_in_the_controls_words() -> None:
+    """L-documents-44: New sub-page, Move under, /subpage and the breadcrumb are named in the Guide, the Library's
+    Documents help and the document bar's help, in the words the menu rows carry."""
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "frontend" / "js" / "documents-subpages.js").read_text(encoding="utf-8")
+    for label in ("ph:file-plus New sub-page", "ph:tree-view Move under", "ph:arrow-line-left Move to the top level"):
+        assert f'"{label}"' in js, label
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+
+    #: The topic's body as the Guide shows it (the source splits its sentences across lines).
+    text = next(t["body"] for t in MORE_TOPICS if t["id"] == "document-subpages")
+    for word in ("New sub-page", "Move under", "Move to the top level", "type /subpage", "its parents are shown after Documents", "cannot go under itself"):
+        assert word in text, word
+    html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
+    for word in ("New sub-page and Move under", "its parents follow Documents", "/subpage makes a sub-page here"):
+        assert word in html, word

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat: the file picker offers Stylus files (.styl), which import already reads (L-documents-76 added the type on one side only).
+- Documents: sub-pages (DOCUMENTS_PLAN D14, L-documents-44). A document can sit under another (`documents.parent_id`, migration b6d2f8a4c1e9); the server refuses a loop with a sentence. The Library's Documents list is a tree, collapsed by default with a disclosure per parent; the row menu has New sub-page, Move under and Move to the top level, `/subpage` makes a child and links it, and a sub-page's parents show after Documents in its bar. Binning a parent bins its subtree and restore brings it back; purging lifts the children to the top level.
 - Documents list: the page card's cover is found by a linear scan instead of a pattern that slowed to quadratic time on a long run of "![" (CodeQL 2305); a test counts the characters scanned.
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.
 - Diagram pan: a drag sums its moves and writes the scroll once a frame with no layout read in the handler, and the overview frame moves by a transform instead of re-measuring on every scroll; at 4x CPU the 390 touch pan is p50 5 to 6 ms, p95 8 to 10 ms (was p50 7 to 9, p95 11 to 28) (L-documents-89).
