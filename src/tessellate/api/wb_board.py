@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Literal
 
 from tessellate.repo.content import BOARDS
 from pydantic import BaseModel, Field, field_validator
@@ -572,6 +573,18 @@ def _clean_defaults(value, *, strict: bool = False) -> dict:
     return out
 
 
+#: The grid's spacing when a board sets none (the client's `WB_GRID_SPACING`).
+BOARD_DEFAULT_GRID = 24
+#: The switches a board's settings keep, each with the one value that is stored (the other is the default and is not).
+BOARD_PAPERS = ("a4", "a3", "letter", "legal", "custom")
+BOARD_ORIENTATIONS = ("portrait", "landscape")
+BOARD_UNITS = ("px", "mm", "cm", "in", "pt")
+#: Choices whose default is not stored (A4, portrait), with the client's table of sizes in `wbPdf`.
+BOARD_CHOICE_DEFAULT = {"paper": "a4", "orientation": "portrait", "units": "px"}
+BOARD_CUSTOM_MM = (50, 2000)
+BOARD_SWITCH_STORED = {"sticky_fold": False, "rough": True, "guides": False, "page_view": True, "shadow_default": True}
+
+
 class BoardBackground(BaseModel):
     """A board's look (WHITEBOARD_PLAN decision 24, FEAT-06): a colour, an
     image from this notebook's uploads, or both. A patch: a field sent as
@@ -591,6 +604,32 @@ class BoardBackground(BaseModel):
     #: of the style values a new item of that kind starts with. A patch like the rest: `null` takes
     #: them all off. Kept opaque beyond its shape (see `_clean_defaults`), as a sketch's data is.
     defaults: dict | None = None
+    #: **Board options** (wbformat2): the grid's spacing in board units (24 is the default and is not stored) and its
+    #: colour. Snap, Shift+arrow nudging and the drawn grid all read the spacing.
+    grid_size: int | None = Field(default=None, ge=4, le=200)
+    grid_color: str | None = Field(default=None, max_length=7)
+    #: **Board options, switches** (wbformat2). Each stores only its non-default value: alignment guides default on,
+    #: page view (the page frames) and the shadow new shapes start with default off.
+    guides: bool | None = None
+    page_view: bool | None = None
+    shadow_default: bool | None = None
+    #: **Paper** (wbformat2): the page the page view draws and the PDF export starts from. A4 portrait is the default
+    #: and is not stored; a custom size is in millimetres.
+    paper: Literal["a4", "a3", "letter", "legal", "custom"] | None = None
+    orientation: Literal["portrait", "landscape"] | None = None
+    #: The unit the position and size fields and the rulers show lengths in (96 px to the inch); px is the default.
+    units: Literal["px", "mm", "cm", "in", "pt"] | None = None
+    paper_w: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
+    paper_h: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
+
+    @field_validator("grid_color")
+    @classmethod
+    def _grid_hex(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not BOARD_BG_COLOR_RE.match(value):
+            raise ValueError("A grid colour is #rrggbb")
+        return value.lower()
 
     @field_validator("defaults")
     @classmethod
@@ -619,6 +658,35 @@ class BoardBackground(BaseModel):
         return text
 
 
+def _background_flags_and_grid(stored: dict) -> dict:
+    """The switches and the grid out of a stored background, only valid values."""
+    out = {}
+    if defaults := _clean_defaults(stored.get("defaults")):
+        out["defaults"] = defaults
+    size, grid = stored.get("grid_size"), stored.get("grid_color")
+    if isinstance(size, int) and not isinstance(size, bool) and 4 <= size <= 200 and size != BOARD_DEFAULT_GRID:
+        out["grid_size"] = size
+    if isinstance(grid, str) and BOARD_BG_COLOR_RE.match(grid):
+        out["grid_color"] = grid
+    out.update({key: kept for key, kept in BOARD_SWITCH_STORED.items() if stored.get(key) is kept})
+    out.update(_background_paper(stored))
+    return out
+
+
+def _background_paper(stored: dict) -> dict:
+    """The paper fields out of a stored background: a known size or direction that is not the default, a custom
+    size inside the bounds."""
+    out = {}
+    for key, choices in (("paper", BOARD_PAPERS), ("orientation", BOARD_ORIENTATIONS), ("units", BOARD_UNITS)):
+        if stored.get(key) in choices and stored[key] != BOARD_CHOICE_DEFAULT[key]:
+            out[key] = stored[key]
+    for key in ("paper_w", "paper_h"):
+        mm = stored.get(key)
+        if isinstance(mm, int) and not isinstance(mm, bool) and BOARD_CUSTOM_MM[0] <= mm <= BOARD_CUSTOM_MM[1]:
+            out[key] = mm
+    return out
+
+
 def _board_background(entry: Entry | None) -> dict:
     """The board's stored background, only the fields that hold a value."""
     if entry is None:
@@ -636,12 +704,7 @@ def _board_background(entry: Entry | None) -> dict:
         out["color"] = color
     if isinstance(image, str) and MEDIA_URL_RE.match(image):
         out["image"] = image
-    if stored.get("sticky_fold") is False:
-        out["sticky_fold"] = False
-    if stored.get("rough") is True:
-        out["rough"] = True
-    if defaults := _clean_defaults(stored.get("defaults")):
-        out["defaults"] = defaults
+    out.update(_background_flags_and_grid(stored))
     return out
 
 
@@ -651,10 +714,14 @@ def _store_board_background(entry: Entry, patch: BoardBackground) -> dict:
     merged = _board_background(entry)
     for field in patch.model_fields_set:
         value = getattr(patch, field)
-        if value is None or value == {} or (field == "sticky_fold" and value is True) or (field == "rough" and value is False):
+        if value is None or value == {} or (field in BOARD_SWITCH_STORED and value is not BOARD_SWITCH_STORED[field]) or (field == "grid_size" and value == BOARD_DEFAULT_GRID) or BOARD_CHOICE_DEFAULT.get(field) == value:
             merged.pop(field, None)
         else:
             merged[field] = value
+    # A custom size means nothing on a named paper; kept, it would come back the day the paper is custom again.
+    if merged.get("paper") != "custom":
+        merged.pop("paper_w", None)
+        merged.pop("paper_h", None)
     try:
         existing = json.loads(entry.board_settings or "{}")
     except (TypeError, ValueError):

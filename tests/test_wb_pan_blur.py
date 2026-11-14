@@ -17,9 +17,9 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import FRONTEND_DIR, JS_DIR
+from tests._app_js import FRONTEND_DIR, frontend_text
 
-WB = (JS_DIR / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (FRONTEND_DIR / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 

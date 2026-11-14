@@ -1,4 +1,5 @@
 """INBOX 1322a: a Format button beside Library in the whiteboard top bar."""
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ def test_format_button_in_help():
 
 def test_a_map_hides_the_format_button() -> None:
     """The owner, 2026-10-19: on a map the Format panel was "useless and empty"."""
-    source = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    source = frontend_text("whiteboard-map.js")
     body = source[source.index("function wbSyncToolSurfaces(") :]
     body = body[: body.index("\n}\n")]
     assert 'const format = $("wb-format-btn");' in body

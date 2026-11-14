@@ -7,6 +7,7 @@ anywhere in the app."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -51,7 +52,7 @@ def test_the_browser_says_it_the_same():
 def test_the_moved_surfaces_fail_in_the_voice():
     calls = 0
     for name in MOVED:
-        src = (JS / name).read_text(encoding="utf-8")
+        src = frontend_text(name)
         calls += src.count('voiceLine("failed", ')
         for line in src.split("\n"):
             if "toast(" in line:

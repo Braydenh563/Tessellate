@@ -6,9 +6,9 @@ kind is now set in `fetchWhiteboardState`, the one fetch every way onto a
 board goes through. `scratchpad/ui-sweeps/maprail657.js`: 4 FAIL before,
 PASS after, from the picker and from `openWhiteboardBoard`."""
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_every_board_fetch_sets_the_rail_for_its_kind():

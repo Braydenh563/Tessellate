@@ -15,6 +15,7 @@ The browser half is the sweep; this pins the pure state function and the
 three wiring points.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -23,7 +24,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 
 

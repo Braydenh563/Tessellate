@@ -575,9 +575,9 @@ async function run() {
         await ev((t) => wbFormatOpen(t, { focus: false }), tab); await settle(700); }, [...LIB, '#wb-format'], tab === 'style' ? '#wb-format' : null);
     }
     await ev(() => document.getElementById('wb-format-close')?.click());
-    await S('wb/board/search', async () => { await wbB(); await ev(() => document.getElementById('wb-search-toggle')?.click()); await settle(400); await page.fill('#wb-search-input', 'desks').catch(() => {}); }, LIB);
+    await S('wb/board/search', async () => { await wbB(); await ev(() => wbOpenBoardSearch()); await settle(400); await page.fill('#wb-search-input', 'desks').catch(() => {}); }, LIB);
     await ev(() => document.getElementById('wb-search-close')?.click());
-    await S('wb/board/navigator', async () => { await wbB(); await ev(() => document.getElementById('wb-navigator-toggle')?.click()); await settle(500); }, LIB);
+    await S('wb/board/navigator', async () => { await wbB(); await ev(() => wbToggleNavigator()); await settle(500); }, LIB);
     await ev(() => document.getElementById('wb-navigator-close')?.click());
     await S('wb/board/help', async () => { await wbB(); await ev(() => document.getElementById('wb-help-btn')?.click()); await settle(600); }, ['#wb-help-overlay', ...LIB], '#wb-help-overlay');
     await ev(() => document.getElementById('wb-help-close')?.click());

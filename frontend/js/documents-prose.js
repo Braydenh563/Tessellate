@@ -2927,11 +2927,29 @@ function pasteParseDelimited(text, delim) {
   return rows.map((row) => row.map((c) => c.replace(/\s*\n\s*/g, " ").trim()));
 }
 
+//: A Markdown (pipe) table: a header line, a `| --- | :-: |` rule, then rows.
+//: The rule is dropped, a `\|` stays a pipe inside a cell, short rows are
+//: padded to the header. Null for anything that is not one.
+//: Hung on pasteGrid (hoisted) so the shared scope gains no name (global-scope ratchet).
+pasteGrid.pipe = function (text) {
+  const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim()).filter(Boolean);
+  const cells = (line) => line.replace(/^\|/, "").replace(/(?<!\\)\|$/, "").split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|").trim());
+  if (lines.length < 2 || !lines.every((l) => l.includes("|")) || !/^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(lines[1])) return null;
+  const head = cells(lines[0]);
+  if (head.length < 2 || cells(lines[1]).length !== head.length) return null;
+  return [head, ...lines.slice(2).map((l) => {
+    const row = cells(l);
+    return Array.from({ length: head.length }, (_, i) => row[i] || "");
+  })];
+};
+
 //: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
 //: only when every row has the same number of cells). Null for anything else.
 function pasteGrid(text) {
   const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
   if (!clean.trim()) return null;
+  const piped = pasteGrid.pipe(clean);
+  if (piped) return piped;
   const tabbed = clean.includes("\t");
   const rows = pasteParseDelimited(clean, tabbed ? "\t" : ",");
   if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;

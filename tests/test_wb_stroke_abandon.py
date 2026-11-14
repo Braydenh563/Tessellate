@@ -3,9 +3,9 @@ away. Measured before (r27 sweep, pen down, `v`, release): the live path stayed
 in `#wb-overlay-zoom-group` (1 orphan, 0 sketches) and, with the pen picked
 again, a bare hover kept extending it because `isDrawing` was still true."""
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parent.parent / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_abandon_helper_clears_every_piece_of_the_stroke():

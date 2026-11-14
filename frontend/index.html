@@ -1139,9 +1139,9 @@
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
-    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file, or an SVG a board here exported.</p>
+    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid or PlantUML diagram, or choose a .mmd, .puml, GraphML, Miro JSON, an EMF, a draw.io file or CSV, or an SVG or PNG a board here exported.</p>
     <textarea id="wb-import-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid diagram" aria-describedby="wb-import-about" placeholder="flowchart TD&#10;  A[Start] --> B{Ready?}&#10;  B -->|yes| C[Ship it]"></textarea>
-    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.svg,.drawio,.xml,text/plain,image/svg+xml" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
+    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.csv,.svg,.png,.drawio,.xml,.graphml,.json,.puml,.plantuml,.pu,.emf,text/plain,text/csv,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost quiet small" id="wb-import-choose">Choose a file…</button>
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
@@ -7033,9 +7033,6 @@ Link to another note with [[its first few words]]."></textarea>
         <span id="wb-map-chip" class="dock-chip" hidden><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> Map</span>
       </div>
       <div class="wb-topbar-right">
-        <button id="wb-search-toggle" class="ghost small icon-button" type="button" title="Find on this board (Ctrl+F)" aria-label="Find on this board" aria-expanded="false" aria-controls="wb-search-bar"><i class="ph ph-magnifying-glass" aria-hidden="true"></i></button>
-        <button id="wb-navigator-toggle" class="ghost small icon-button" type="button" title="Board overview (Shift+N)" aria-label="Board overview (Shift+N)" aria-expanded="false" aria-controls="wb-navigator"><i class="ph ph-map-trifold" aria-hidden="true"></i></button>
-        <span class="wb-topbar-divider" aria-hidden="true"></span>
         <!-- Three grouped menus, Insert, View, Board, see whiteboard.js
              (`menuWraps`). Rows are name-left / control-right throughout. -->
         <div class="wb-board-menu-wrap">
@@ -7047,9 +7044,13 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="insert-polygon" data-wb-surface="board"><i class="ph ph-polygon ph-lead" aria-hidden="true"></i><span>Polygon</span></button>
               <div class="wb-menu-section" data-wb-submenu="ph:flow-arrow Diagram" data-wb-submenu-title="Build one, or bring in Mermaid, draw.io or a board SVG">
                 <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Diagram builder…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="import-diagram" data-wb-surface="board"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Mermaid, draw.io or board SVG…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="export-plantuml" data-wb-surface="board"><i class="ph ph-file-code ph-lead" aria-hidden="true"></i><span>Export as PlantUML</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="export-board-config" data-wb-surface="board"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Export board configuration</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="import-board-config" data-wb-surface="board"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Import board configuration</span></button>
               </div>
               <div class="wb-menu-section" data-wb-submenu="ph:shapes Shapes and icons" data-wb-submenu-title="The shape library, emoji and icons">
                 <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
@@ -7099,7 +7100,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="wb-menu-section" role="group" aria-label="The item" data-wb-surface="board">
               <button type="button" class="wb-menu-item" data-wb-cmd="text"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i><span>Write in the shape or label the connector</span><kbd>Enter</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="comment"><i class="ph ph-chat-teardrop-text ph-lead" aria-hidden="true"></i><span>Comment on the item</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="comment"><i class="ph ph-chat-teardrop-text ph-lead" aria-hidden="true"></i><span>Comment on the item</span><kbd>Alt+Shift+N</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="copy-style"><i class="ph ph-eyedropper ph-lead" aria-hidden="true"></i><span>Copy style</span><kbd>Ctrl+Alt+C</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="paste-style"><i class="ph ph-paint-bucket ph-lead" aria-hidden="true"></i><span>Paste style</span><kbd>Ctrl+Alt+V</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="reset-style"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i><span>Reset style</span></button>
@@ -7136,6 +7137,15 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-h"><i class="ph ph-arrows-left-right ph-lead" aria-hidden="true"></i><span>Layout, left to right</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-v"><i class="ph ph-arrows-down-up ph-lead" aria-hidden="true"></i><span>Layout, top to bottom</span></button>
             </div>
+            <div class="wb-menu-section" data-wb-submenu="ph:graph Layout" data-wb-submenu-title="Lay the connected shapes out; with nothing selected, the whole board">
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-h"><i class="ph ph-arrow-right ph-lead" aria-hidden="true"></i><span>Flow, left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-v"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Flow, top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-radial"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial tree</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-rack"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Rack</span></button>
+            </div>
             <div class="wb-menu-section" data-wb-submenu="ph:tree-structure Tidy and connect" data-wb-submenu-title="Lay shapes out as a tree, join them or measure">
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
@@ -7171,6 +7181,7 @@ Link to another note with [[its first few words]]."></textarea>
                  under Canvas and is hidden on a whiteboard. -->
             <div class="wb-menu-col">
             <div class="wb-menu-section" role="group" aria-label="Panels">
+              <div class="wb-menu-row" id="wb-workspaces" title="Save which panels are open and switch between saved layouts"><span><i class="ph ph-layout ph-lead" aria-hidden="true"></i>Workspaces</span></div>
               <button type="button" class="wb-menu-item" data-wb-cmd="format-panel"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
               <label class="wb-menu-row wb-snap-label" title="Show the context bar above the selection, and above the rail while a drawing tool is held"><span><i class="ph ph-selection-plus ph-lead" aria-hidden="true"></i>Context bar</span><input type="checkbox" id="wb-panel-props" checked></label>
               <label class="wb-menu-row wb-snap-label" title="The board overview (Shift+N)"><span><i class="ph ph-map-trifold ph-lead" aria-hidden="true"></i>Overview</span><input type="checkbox" id="wb-panel-overview"></label>
@@ -7212,6 +7223,8 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <label class="wb-menu-row wb-snap-label" title="Snap items to the grid while dragging"><span><i class="ph ph-magnet ph-lead" aria-hidden="true"></i>Snap to grid</span><input type="checkbox" id="wb-snap-toggle"></label>
+              <label class="wb-menu-row wb-snap-label" title="Show a ruler along the top and down the left, in this board's unit (Format, Board)"><span><i class="ph ph-ruler ph-lead" aria-hidden="true"></i>Rulers</span><input type="checkbox" id="wb-view-rulers"></label>
+              <label class="wb-menu-row wb-snap-label" title="Show a small bar with the zoom, the tool in hand and how much is selected"><span><i class="ph ph-info ph-lead" aria-hidden="true"></i>Status bar</span><input type="checkbox" id="wb-view-status"></label>
               <label class="wb-menu-row wb-snap-label" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
               <label class="wb-menu-row wb-snap-label" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw the bottom corner of this board's sticky notes folded over; a note's Format panel can differ"><span><i class="ph ph-note ph-lead" aria-hidden="true"></i>Folded sticky corners</span><input type="checkbox" id="wb-sticky-fold" checked></label>
@@ -7664,7 +7677,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button id="wb-add-sticker" class="ghost icon-button" type="button" title="Emoji and icons: press one to place it, or drag it onto the board" aria-label="Emoji and icons">
           <i class="ph ph-smiley-sticker" aria-hidden="true"></i>
         </button>
-        <input type="file" id="wb-image-file-input" aria-label="Choose an image to place on the board" title="Choose an image to place on the board" accept="image/*" class="hidden" aria-hidden="true">
+        <input type="file" id="wb-image-file-input" aria-label="Choose an image or PDF to place on the board" title="Choose an image or PDF to place on the board" accept="image/*,application/pdf" class="hidden" aria-hidden="true">
         <!-- The picture that goes *in* a map topic (MINDMAP_PLAN.md §12.1
              item 2's fourth), as against the one above, which goes on the
              board as an object of its own. In the markup rather than built in
@@ -7754,6 +7767,7 @@ Link to another note with [[its first few words]]."></textarea>
       <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
       <input type="range" id="wb-history-slider" data-unit="" data-value-of min="0" max="1" step="1" value="1" aria-label="Board history, from the oldest moment to now" title="Drag back in time; the arrows step one moment, End comes back to now">
       <span id="wb-history-when" class="wb-present-count" aria-live="polite">Now</span>
+      <button type="button" id="wb-history-narrate" class="ghost small icon-only" title="Say what changed between this version and now" aria-label="Say what changed since this version"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>
       <button type="button" id="wb-history-restore" class="ghost small icon-only" title="Put the whole board back as it was then (one Undo step)" aria-label="Put the whole board back as it was then" disabled><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i></button>
       <button type="button" id="wb-history-restore-selection" class="ghost small icon-only" title="Put back only what was selected when History opened" aria-label="Put back only what was selected" disabled><i class="ph ph-selection-background" aria-hidden="true"></i></button>
       <button type="button" id="wb-history-end" class="ghost small icon-only" title="Back to now (Esc)" aria-label="Back to now"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -7766,6 +7780,12 @@ Link to another note with [[its first few words]]."></textarea>
       <button type="button" id="wb-study-knew" class="ghost small hidden" title="You recalled it: on to the next branch">Knew it</button>
       <button type="button" id="wb-study-missed" class="ghost small hidden" title="Marked for next time: on to the next branch">Not yet</button>
       <button type="button" id="wb-present-end" class="ghost small icon-only" title="End the presentation (Esc)" aria-label="End the presentation"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+
+    <div id="wb-status-bar" class="dock wb-status-bar hidden" role="status" aria-label="Board status">
+      <span id="wb-status-zoom" class="dock-chip" title="Zoom"></span>
+      <span id="wb-status-tool" class="dock-chip" title="The tool in hand"></span>
+      <span id="wb-status-count" class="dock-chip" title="What is selected"></span>
     </div>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
@@ -8037,10 +8057,10 @@ Link to another note with [[its first few words]]."></textarea>
           <button type="button" class="ghost small icon-only wb-menu-toggle" data-wb-menu-toggle title="More, for this selection" aria-label="More, for this selection" aria-haspopup="true" aria-expanded="false" aria-controls="wb-context-menu"><i class="ph ph-dots-three" aria-hidden="true"></i></button>
           <div id="wb-context-menu" class="wb-board-menu wb-context-menu hidden" role="menu" aria-label="More">
             <button type="button" class="wb-menu-item" data-wb-cmd="format-panel"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
-            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-link" data-wb-cmd="item-link"><i class="ph ph-link-simple ph-lead" aria-hidden="true"></i><span>Link…</span></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-link" data-wb-cmd="item-link"><i class="ph ph-link-simple ph-lead" aria-hidden="true"></i><span>Link…</span><kbd>Alt+Shift+L</kbd></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="change-shape"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Change the shape…</span></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="replace-library"><i class="ph ph-swap ph-lead" aria-hidden="true"></i><span>Replace with a library shape…</span></button>
-            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="edit-ports"><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i><span>Edit connection points</span></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="edit-ports"><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i><span>Edit connection points</span><kbd>Alt+Shift+Q</kbd></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="edit-points"><i class="ph ph-polygon ph-lead" aria-hidden="true"></i><span>Edit shape points</span></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="reset-ports"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i><span>Reset connection points</span></button>
             <div class="wb-menu-section" data-wb-ctx="more-style">
@@ -8088,9 +8108,16 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" id="wb-mindmap-radial" title="Radial layout, root at the centre"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial</span></button>
             </div>
             <div class="wb-menu-section hidden" data-wb-ctx="more-tidy">
-              <span class="wb-panel-group-label">Tidy as a tree</span>
+              <span class="wb-panel-group-label">Layout and tidy</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-h"><i class="ph ph-arrow-right ph-lead" aria-hidden="true"></i><span>Flow, left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-v"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Flow, top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-radial"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial tree</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-rack"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Rack</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">This selection</span>
@@ -8448,7 +8475,7 @@ Link to another note with [[its first few words]]."></textarea>
           <span id="wb-lib-status" class="visually-hidden" role="status" aria-live="polite"></span>
           <div id="wb-lib-list" class="wb-lib-list" role="listbox" aria-label="Library" aria-describedby="wb-lib-keys"></div>
           <p id="wb-lib-keys" class="muted wb-lib-keys">Click or Enter places it, drag to put it anywhere, Shift+Enter joins it to the selection.</p>
-          <input type="file" id="wb-lib-import" accept=".json,application/json" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a library file" title="Choose a library file">
+          <input type="file" id="wb-lib-import" accept=".json,.xml,application/json,text/xml" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a library file" title="Choose a library file">
         </section>
         <section class="wb-side-section" data-side-panel="notes" aria-label="Notes" hidden>
           <p class="muted wb-lib-keys">Drag a note onto the board to place it as a card.</p>
@@ -8523,6 +8550,21 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
           <div id="wb-board-style-list" class="wb-board-style-list" role="group" aria-label="Board styles"></div>
         </section>
+        <section id="wb-board-options" class="wb-fmt-section" aria-label="Board options" hidden>
+          <h4 class="wb-fmt-head"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span>Board</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-boardopts" aria-controls="wb-fmt-help-boardopts" aria-expanded="false" title="About board options" aria-label="About board options"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+          <div class="help-body hidden" id="wb-fmt-help-boardopts" role="dialog" aria-label="About board options">
+            <p><b>Board options</b> belong to this board, not to this device. The grid size and colour are what Snap to grid, Shift and the arrow keys, and the drawn grid all use. Guides are the alignment lines while you drag. Page view shows the page frames. Shadow gives new shapes and text boxes a shadow. Paper and Direction set the page frames and where a PDF export starts; a custom size is in millimetres. Units set what the rulers (View, Rulers) and the position and size fields show.</p>
+          </div>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Grid size (px)</span><input type="number" id="wb-bo-grid-size" min="4" max="200" step="1" placeholder="24" aria-label="Grid size, in pixels" title="Space between grid lines, always in pixels whatever the units, so grid lines and snapping land on whole pixels; empty is 24"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Guides</span><input type="checkbox" id="wb-bo-guides" aria-label="Alignment guides" title="Lines that appear and pull a shape into line with others while you drag or resize; off, only the grid snaps"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Page view</span><input type="checkbox" id="wb-bo-pageview" aria-label="Page view" title="Show the printed page frames on the board; they are the pages a PDF export uses"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Shadow</span><input type="checkbox" id="wb-bo-shadow" aria-label="Shadow for new shapes" title="New shapes and text boxes on this board start with a shadow"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Paper</span><select id="wb-bo-paper" aria-label="Paper size" title="The page the page view draws and a PDF export starts from"><option value="a4">A4</option><option value="a3">A3</option><option value="letter">Letter</option><option value="legal">Legal</option><option value="custom">Custom</option></select></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Direction</span><select id="wb-bo-orient" aria-label="Paper direction" title="Portrait or landscape"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label>
+          <div class="wb-fmt-row" id="wb-bo-custom" role="group" aria-label="Custom paper size in millimetres" hidden><span class="wb-fmt-label">Size (mm)</span><span class="wb-fmt-buttons"><input type="number" id="wb-bo-paper-w" min="50" max="2000" step="1" placeholder="210" aria-label="Paper width, millimetres" title="Paper width in millimetres"><input type="number" id="wb-bo-paper-h" min="50" max="2000" step="1" placeholder="297" aria-label="Paper height, millimetres" title="Paper height in millimetres"></span></div>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Units</span><select id="wb-bo-units" aria-label="Units for lengths" title="The unit the rulers and the position and size fields show; boards store pixels, 96 to the inch"><option value="px">Pixels</option><option value="mm">Millimetres</option><option value="cm">Centimetres</option><option value="in">Inches</option><option value="pt">Points</option></select></label>
+          <div class="wb-fmt-row" role="group" aria-label="Grid colour"><span class="wb-fmt-label">Grid colour</span><span class="wb-fmt-buttons"><input type="color" id="wb-bo-grid-color" class="wb-color-picker" aria-label="Grid colour" title="Grid colour"><button type="button" id="wb-bo-grid-reset" class="ghost small" aria-label="Default grid colour" title="Use the theme's own grid colour">Default</button></span></div>
+        </section>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
           <div class="wb-fmt-group" data-fmt-group="fill">
@@ -8532,6 +8574,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Fill opacity</b>: how solid the fill is, 0 clear to 100 solid; the line keeps its own.</p>
               <p><b>Fill style</b>: solid, or hatching, dots or dashes in the fill's colour.</p>
               <p><b>Gradient</b>: the colour the fill fades to, and which way it fades.</p>
+              <p><b>Picture fill</b>: a picture from your computer fills the shape, cut to its outline; the fill colour is hidden while it is there, and the x removes it.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
               <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
@@ -8550,6 +8593,13 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="zigzag">Zigzag</option>
               </select>
             </label>
+            <div class="wb-fmt-row" data-fmt="fillimg"><span class="wb-fmt-label">Picture fill</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-fillimg" class="ghost small" aria-label="Choose picture to fill the shape" title="Pick a picture to fill the shape; it is cut to the shape's outline"><i class="ph ph-image-square ph-lead" aria-hidden="true"></i>Choose picture</button>
+                <button type="button" id="wb-fmt-fillimg-clear" class="ghost small icon-only" aria-label="Remove the picture fill" title="Remove the picture fill"><i class="ph ph-x" aria-hidden="true"></i></button>
+                <input type="file" id="wb-fmt-fillimg-file" accept="image/*" class="hidden" aria-label="Choose the picture that fills the shape" tabindex="-1">
+              </span>
+            </div>
             <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
               <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
                 <option value="none">None</option>
@@ -8601,12 +8651,15 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Opacity</b>: how see-through the whole item is.</p>
               <p><b>Folded corner</b>: a sticky note's bottom corner drawn turned over.</p>
               <p><b>Shadow, Shadow offset</b>: a soft shadow under it, how far it sits across and down, and its blur, in pixels.</p>
+              <p><b>Glass</b>: a glossy sheen over the top half of a shape, on top of its fill and line; it never takes a click.</p>
               <p><b>Hand-drawn</b>: rough lines, as if sketched; the View menu sets it for the whole board.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
               <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
             </label>
             <div class="wb-fmt-row" data-fmt="fold"><span class="wb-fmt-label">Folded corner</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw this note's bottom corner folded over; off, the paper is flat"><input type="checkbox" id="wb-fmt-fold" aria-label="Folded corner"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="tableheader"><span class="wb-fmt-label">Header row</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Bold the table's first row on a tint"><input type="checkbox" id="wb-fmt-tableheader" aria-label="Header row"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="stripes"><span class="wb-fmt-label">Striped rows</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Tint every other row of the table"><input type="checkbox" id="wb-fmt-stripes" aria-label="Striped rows"></label></span></div>
             <div class="wb-fmt-row" data-fmt="shadow"><span class="wb-fmt-label">Shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under it"><input type="checkbox" id="wb-fmt-shadow" aria-label="Shadow"></label></span></div>
             <div class="wb-fmt-row" data-fmt="shadowset"><span class="wb-fmt-label">Shadow offset</span>
               <span class="wb-fmt-quad">
@@ -8615,6 +8668,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
               </span>
             </div>
+            <div class="wb-fmt-row" data-fmt="glass"><span class="wb-fmt-label">Glass</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A glossy sheen over the top half of the shape, as in draw.io"><input type="checkbox" id="wb-fmt-glass" aria-label="Glass"></label></span></div>
             <div class="wb-fmt-row" data-fmt="rough"><span class="wb-fmt-label">Hand-drawn</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw its lines rough, as by hand; the View menu sets it for the whole board"><input type="checkbox" id="wb-fmt-rough" aria-label="Hand-drawn"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="box">
@@ -8628,6 +8682,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b>, in the next row, draws a saved picture's caption under it, on every board and under the pictures in a note's popup in the Graph and its timeline view (the popup's menu has the same switch).</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
               <p><b>Padding</b>: space between the box's edge and its words, or a frame's edge and what it holds when fitted, in pixels.</p>
+              <p><b>Stack</b>: marks a frame as a lane. What it holds stays in one column, 16 pixels apart (or its Padding), top to bottom as they sit now; add, move or resize something inside and the column closes up, and the frame grows to hold it. The change and the stacking are one Undo step.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
               <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
@@ -8682,17 +8737,25 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
               </span>
             </div>
+            <div class="wb-fmt-row" data-fmt="imageborder" role="group" aria-label="Picture border"><span class="wb-fmt-label">Border</span>
+              <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-ibcolor" class="wb-color-picker" aria-label="Border colour" title="Border colour"><input type="number" id="wb-fmt-ibwidth" min="0" max="40" step="1" placeholder="None" aria-label="Border width, in pixels" title="Border width in pixels; empty takes the border off"></span>
+            </div>
             <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding, in pixels" title="Space between a box's edge and its text, or between a frame's edge and what it holds when you fit it, in pixels; empty is the default"></label>
+            <div class="wb-fmt-row" data-fmt="collapse"><span class="wb-fmt-label">Collapsed</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Fold this frame to its title bar and hide what it holds; one Undo step"><input type="checkbox" id="wb-fmt-collapse" aria-label="Collapse the frame to its title bar"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="stack"><span class="wb-fmt-label">Stack</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Keep what this frame holds in one column with an even gap, whenever something is added, moved or resized"><input type="checkbox" id="wb-fmt-stack" aria-label="Stack what the frame holds in a column"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="connector">
             <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
             <div class="help-body hidden" id="wb-fmt-help-connector" role="dialog" aria-label="About connector">
               <p><b>Line shape</b>: curved, straight, elbow, entity relation or isometric: the path the connector takes. The last two run from end to end and take no bends.</p>
+              <p><b>End on a connector</b>: drop an end on another connector's line to attach it there; it moves with that line, and floats free where it was if that line is deleted.</p>
               <p><b>Loop side</b>: the side a loop (Arrange, Loop on the shape) leaves its shape by.</p>
               <p><b>Line jumps</b>: a hop where this line crosses one under it; Jump size is its width.</p>
               <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
               <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
+              <p><b>Connector shape</b>: draw the connector as a line, a double line, a block, flex or tapered arrow, a pipe or a wire; an arrow's head is at the end, or at any end that has a mark.</p>
               <p><b>Label along</b>: where the connector's label sits along it.</p>
+              <p><b>Text on path</b>: set the label along the line, turning with it.</p>
               <p><b>Second label, Second label along</b>: a second label for the other end of the connector, and where it sits along it (it takes the first label's size and colour).</p>
               <p><b>Label size, colour and look</b>: the connector label's own size, colour, bold, and a chip behind the words.</p>
             </div>
@@ -8703,6 +8766,17 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="elbow">Elbow</option>
                 <option value="er">Entity relation</option>
                 <option value="iso">Isometric</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="edgeshape"><span class="wb-fmt-label">Connector shape</span>
+              <select id="wb-fmt-edgeshape" aria-label="Connector shape" title="Draw the connector as a plain line, a double line, an arrow, a pipe or a wire">
+                <option value="line">Line</option>
+                <option value="double">Double line</option>
+                <option value="block">Block arrow</option>
+                <option value="flex">Flex arrow</option>
+                <option value="tapered">Tapered arrow</option>
+                <option value="pipe">Pipe</option>
+                <option value="wire">Wire</option>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="loop"><span class="wb-fmt-label">Loop side</span>
@@ -8721,6 +8795,9 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="sharp">Sharp</option>
               </select>
             </label>
+            <label class="wb-fmt-row" data-fmt="waypoints"><span class="wb-fmt-label">Bend points</span><input type="text" id="wb-fmt-waypoints" maxlength="600" placeholder="None" aria-label="Bend points as x, y pairs" title="The line's bends in board units, one x, y pair each, separated by semicolons; empty clears them"></label>
+            <label class="wb-fmt-row" data-fmt="arrowbody" data-unit="px"><span class="wb-fmt-label">Arrow body</span><input type="number" id="wb-fmt-arrowbody" min="2" max="200" step="1" placeholder="Auto" aria-label="Arrow body width" title="How thick the body of a block or flex arrow is; empty sizes it from the line width"></label>
+            <label class="wb-fmt-row" data-fmt="arrowhead" data-unit="px"><span class="wb-fmt-label">Arrow head</span><input type="number" id="wb-fmt-arrowhead" min="2" max="400" step="1" placeholder="Auto" aria-label="Arrow head width" title="How wide the head of a block or flex arrow is; empty sizes it from the line width"></label>
             <label class="wb-fmt-row" data-fmt="jumpsize" data-unit="px"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
             <label class="wb-fmt-row" data-fmt="gapstart" data-unit="px"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
             <label class="wb-fmt-row" data-fmt="gapend" data-unit="px"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
@@ -8733,6 +8810,7 @@ Link to another note with [[its first few words]]."></textarea>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
               <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
             </label>
+            <div class="wb-fmt-row" data-fmt="textpath"><span class="wb-fmt-label">Text on path</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Set the label along the line, turning with it, instead of flat"><input type="checkbox" id="wb-fmt-textpath" aria-label="Text on path"></label></span></div>
             <label class="wb-fmt-row" data-fmt="label2"><span class="wb-fmt-label">Second label</span><input type="text" id="wb-fmt-label2" maxlength="120" placeholder="Near the end" aria-label="Second label" title="A second label on this connector"></label>
             <label class="wb-fmt-row" data-fmt="label2-t"><span class="wb-fmt-label">Second label along</span>
               <input type="range" id="wb-fmt-label2-t" data-unit="%" min="5" max="95" step="5" aria-label="Second label position along the line" title="Second label position along the line">
@@ -8798,6 +8876,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Align, Vertical</b>: where the words sit across and down the box.</p>
               <p><b>Direction</b>: left to right, right to left, or set vertically.</p>
               <p><b>Text opacity</b>: how solid the words are; the box keeps its own.</p>
+              <p><b>Text shadow</b>: a soft shadow under the words only; the box keeps its own Shadow.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
               <span class="wb-fmt-buttons">
@@ -8828,6 +8907,7 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="text" data-unit="%"><span class="wb-fmt-label">Text opacity</span><input type="number" id="wb-fmt-inkalpha" min="10" max="100" step="5" aria-label="Text opacity, in percent" title="How solid the words are; 100 is solid"></label>
+            <div class="wb-fmt-row" data-fmt="tshadow"><span class="wb-fmt-label">Text shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under the words, not the box"><input type="checkbox" id="wb-fmt-tshadow" aria-label="Text shadow"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="shapelabel">
             <h4 class="wb-fmt-head"><i class="ph ph-selection-background" aria-hidden="true"></i><span>Label</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-shapelabel" aria-controls="wb-fmt-help-shapelabel" aria-expanded="false" title="About the label" aria-label="About the label"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
@@ -8836,6 +8916,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Position</b>: inside the shape, or above, below, left or right of it.</p>
               <p><b>Width</b>: where the words wrap, in pixels; empty follows the shape.</p>
               <p><b>Wrap words</b>: off keeps each line whole until you break it yourself.</p>
+              <p><b>Rich text</b>: reads the words as markdown, so a dash starts a list, an indent nests it, and bold, italic and links show. Links open in a new tab.</p>
               <p><b>Spacing</b>: pixels kept clear of the words at the top, right, bottom and left.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Background</span>
@@ -8855,6 +8936,7 @@ Link to another note with [[its first few words]]."></textarea>
             </label>
             <label class="wb-fmt-row" data-fmt="shapelabel" data-unit="px"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-lwidth" min="24" max="2000" step="4" placeholder="Auto" aria-label="Width the words wrap at, in pixels" title="Width the words wrap at, in pixels; empty follows the shape"></label>
             <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Wrap words</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Off keeps each line whole until you break it"><input type="checkbox" id="wb-fmt-lwrap" checked aria-label="Wrap words"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Rich text</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Read the words as markdown: lists, links, bold and italic"><input type="checkbox" id="wb-fmt-lmd" aria-label="Rich text"></label></span></div>
             <div class="wb-fmt-row" data-fmt="shapelabel" role="group" aria-label="Spacing around the words"><span class="wb-fmt-label">Spacing</span>
               <span class="wb-fmt-quad">
                 <label class="wb-fmt-num"><span class="wb-fmt-label">T</span><input type="number" id="wb-fmt-lpad0" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the top of the words, in pixels" title="Pixels kept clear at the top"></label>
@@ -8873,7 +8955,8 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Size</b>: width and height; the chain between them keeps the proportions, on for a shape it stays on.</p>
               <p><b>Aspect</b>: sets the height from the width to a common ratio.</p>
               <p><b>Angle</b>: turns it about its centre, in degrees.</p>
-              <p><b>Flip</b>: mirrors it left to right or top to bottom.</p>
+              <p><b>Flip</b>: mirrors it left to right or top to bottom. A picture flips its pixels, a sticky note turns its folded corner (the words stay readable), and a frame mirrors what it holds about its middle.</p>
+              <p><b>Connection points</b> (one shape): the points a connector can join. Pick one to hold it on the outline when the shape is resized, or nudge it by pixels; add one by pressing the outline, or remove the chosen one. Each change is one Undo step, and draw.io files keep them.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="geometry" data-unit="px" role="group" aria-label="Position"><span class="wb-fmt-label">Position</span>
               <span class="wb-fmt-pair">
@@ -8907,6 +8990,22 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" id="wb-fmt-flip-v" class="ghost small icon-only" title="Flip top to bottom" aria-label="Flip top to bottom"><i class="ph ph-flip-vertical" aria-hidden="true"></i></button>
               </span>
             </div>
+            <label class="wb-fmt-row" data-fmt="ports" hidden><span class="wb-fmt-label">Connection point</span>
+              <select id="wb-fmt-port" aria-label="Connection point" title="The shape's connection points, where a connector can join; choose one to change it"></select>
+            </label>
+            <div class="wb-fmt-row" data-fmt="ports" hidden><span class="wb-fmt-label">Edit points</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-port-add" class="ghost small icon-only" title="Add a point: press the outline, then Escape to finish; from the keyboard, Enter adds one after the chosen point, ready to nudge" aria-label="Add a connection point"><i class="ph ph-plus" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-port-del" class="ghost small icon-only" title="Remove the chosen point" aria-label="Remove the chosen connection point"><i class="ph ph-minus" aria-hidden="true"></i></button>
+                <label class="wb-snap-label" title="Keep the chosen point on the outline when the shape is resized"><input type="checkbox" id="wb-fmt-port-perim" aria-label="Chosen point on the outline"><span>On outline</span></label>
+              </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="ports"><span class="wb-fmt-label">Nudge</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-port-dx" min="-2000" max="2000" step="1" placeholder="0" aria-label="Chosen point, pixels across" title="Pixels across from its place on the shape; negative is left"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-port-dy" min="-2000" max="2000" step="1" placeholder="0" aria-label="Chosen point, pixels down" title="Pixels down from its place on the shape; negative is up"></label>
+              </span>
+            </div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="order">
             <h4 class="wb-fmt-head"><i class="ph ph-stack" aria-hidden="true"></i><span>Order and align</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-order" aria-controls="wb-fmt-help-order" aria-expanded="false" title="About order and align" aria-label="About order and align"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
@@ -8926,6 +9025,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="help-body hidden" id="wb-fmt-help-data" role="dialog" aria-label="About data">
               <p><b>Tooltip</b>: words shown when the pointer rests on the item.</p>
               <p><b>Properties</b>: named values kept with the item and in its exports; %name% in its text shows one.</p>
+              <p><b>Tags</b>: words on the item. Press a tag to remove it. The find bar's tag list dims everything without the one you pick.</p>
               <p><b>Style as text</b>: the item's look as JSON; change it and press Apply style. Its path, ends, words and properties are not in it.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
@@ -8933,6 +9033,11 @@ Link to another note with [[its first few words]]."></textarea>
               <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
               <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
               <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
+            </div>
+            <div class="wb-fmt-props" data-fmt="tags">
+              <p class="muted wb-lib-keys">Words on this item. The find bar can show one tag and dim the rest.</p>
+              <div id="wb-fmt-tags" class="wb-fmt-tag-row" role="group" aria-label="Tags on this item"></div>
+              <input type="text" id="wb-fmt-tag-input" maxlength="40" placeholder="Add a tag" aria-label="Add a tag" autocomplete="off" title="Type a tag and press Enter; a comma adds several">
             </div>
             <div class="wb-fmt-props" data-fmt="rawstyle">
               <label class="wb-fmt-label" for="wb-fmt-raw">Style as text</label>

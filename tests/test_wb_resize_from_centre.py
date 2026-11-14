@@ -14,9 +14,9 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 
-WB = (JS_DIR / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _fn(name: str) -> str:
