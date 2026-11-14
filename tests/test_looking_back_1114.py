@@ -105,3 +105,14 @@ def test_archive_stale_notes_only_archives_what_the_person_names():
     skill = next(s for s in skills.BUILTIN_SKILLS if s["name"] == "Archive stale notes")
     archive = next(s for s in skills._step_specs(skill, None, skill["tools"]) if "archive_note" in s["text"])
     assert archive["expects"] == "tool_optional" and "named in my reply" in archive["text"]
+
+
+def test_the_look_back_tools_are_offered_to_a_skill_that_names_them_and_not_to_a_plain_turn():
+    """They exist to back four skills, so a plain chat turn does not pay for their schemas."""
+    names = ("find_stale_notes", "count_month_figures", "get_person_page")
+    plain = {t["function"]["name"] for t in tools.ollama_tools()}
+    assert not plain & set(names)
+    for name in names:
+        assert tools.TOOLS[name].skill_only
+        assert name in {t["function"]["name"] for t in tools.ollama_tools([name])}
+    assert "find_stale_notes" not in {t["function"]["name"] for t in tools.ollama_tools(["get_note"])}

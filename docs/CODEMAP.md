@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8522, frontend ids 2797, CSS sections 524, backend routes 722, backend modules 11302, test files 2937, tests 23034, plan headings 692, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8522, frontend ids 2797, CSS sections 524, backend routes 722, backend modules 11302, test files 2937, tests 23035, plan headings 692, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8522)
 
@@ -20896,20 +20896,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `ToolError` | src/tessellate/ai/tools/_common.py:80 |
 | `ToolSpec` | src/tessellate/ai/tools/_common.py:108 |
-| `_category_clause` | src/tessellate/ai/tools/_common.py:380 |
-| `_clip` | src/tessellate/ai/tools/_common.py:149 |
-| `_keyword_context` | src/tessellate/ai/tools/_common.py:168 |
-| `_limit_arg` | src/tessellate/ai/tools/_common.py:370 |
-| `_note_summary` | src/tessellate/ai/tools/_common.py:264 |
-| `_readable` | src/tessellate/ai/tools/_common.py:255 |
-| `_refresh_embedding` | src/tessellate/ai/tools/_common.py:465 |
-| `_require_note` | src/tessellate/ai/tools/_common.py:330 |
-| `_since_clause` | src/tessellate/ai/tools/_common.py:426 |
-| `_since_days` | src/tessellate/ai/tools/_common.py:398 |
-| `_span_not_category` | src/tessellate/ai/tools/_common.py:450 |
-| `_undo_edit` | src/tessellate/ai/tools/_common.py:309 |
-| `_visible` | src/tessellate/ai/tools/_common.py:236 |
-| `board_top_z` | src/tessellate/ai/tools/_common.py:353 |
+| `_category_clause` | src/tessellate/ai/tools/_common.py:385 |
+| `_clip` | src/tessellate/ai/tools/_common.py:154 |
+| `_keyword_context` | src/tessellate/ai/tools/_common.py:173 |
+| `_limit_arg` | src/tessellate/ai/tools/_common.py:375 |
+| `_note_summary` | src/tessellate/ai/tools/_common.py:269 |
+| `_readable` | src/tessellate/ai/tools/_common.py:260 |
+| `_refresh_embedding` | src/tessellate/ai/tools/_common.py:470 |
+| `_require_note` | src/tessellate/ai/tools/_common.py:335 |
+| `_since_clause` | src/tessellate/ai/tools/_common.py:431 |
+| `_since_days` | src/tessellate/ai/tools/_common.py:403 |
+| `_span_not_category` | src/tessellate/ai/tools/_common.py:455 |
+| `_undo_edit` | src/tessellate/ai/tools/_common.py:314 |
+| `_visible` | src/tessellate/ai/tools/_common.py:241 |
+| `board_top_z` | src/tessellate/ai/tools/_common.py:358 |
 | `mark_outside` | src/tessellate/ai/tools/_common.py:69 |
 | `outside_seen` | src/tessellate/ai/tools/_common.py:75 |
 
@@ -21189,13 +21189,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_describe_tool` | src/tessellate/ai/tools/tool_table.py:60 |
-| `_example_value` | src/tessellate/ai/tools/tool_table.py:1479 |
-| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1459 |
+| `_example_value` | src/tessellate/ai/tools/tool_table.py:1474 |
+| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1454 |
 | `_list_skills` | src/tessellate/ai/tools/tool_table.py:73 |
 | `_list_tools` | src/tessellate/ai/tools/tool_table.py:43 |
 | `_save_skill` | src/tessellate/ai/tools/tool_table.py:122 |
 | `_tool_group` | src/tessellate/ai/tools/tool_table.py:34 |
-| `call_example` | src/tessellate/ai/tools/tool_table.py:1427 |
+| `call_example` | src/tessellate/ai/tools/tool_table.py:1422 |
 
 ### src/tessellate/ai/tools/tool_turn.py (13)
 
@@ -28719,7 +28719,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23034)
+## Tests (23035)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30382,7 +30382,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_long_runs.py | 12 |
 | tests/test_look_mix_1108.py | 7 |
 | tests/test_look_share_1108.py | 11 |
-| tests/test_looking_back_1114.py | 7 |
+| tests/test_looking_back_1114.py | 8 |
 | tests/test_lower_flow_1683b.py | 3 |
 | tests/test_lower_pose_1111.py | 5 |
 | tests/test_magic_add_wording.py | 2 |

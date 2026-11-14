@@ -136,9 +136,9 @@ def _person_page(session: Session, args: dict) -> dict:
 _DAYS = {"type": "integer", "description": "Untouched for at least this many days, e.g. 90 for three months"}
 LOOKBACK_SPECS = (
     ToolSpec("find_stale_notes", "Notes not written, edited or opened for a span, oldest first. Favourites and archived notes are left out.",
-             {"type": "object", "properties": {"days": _DAYS, "limit": {"type": "integer", "description": f"Most notes to list (default {MAX_ROWS})"}}, "required": ["days"]}, _stale_notes),
+             {"type": "object", "properties": {"days": _DAYS, "limit": {"type": "integer", "description": f"Most notes to list (default {MAX_ROWS})"}}, "required": ["days"]}, _stale_notes, skill_only=True),
     ToolSpec("count_month_figures", "A month in numbers: notes written, reminders done, spending, with note ids.",
-             {"type": "object", "properties": {"month": {"type": "string", "description": "March, March 2025, last month or this month (default last month)"}}, "required": []}, _month_figures),
+             {"type": "object", "properties": {"month": {"type": "string", "description": "March, March 2025, last month or this month (default last month)"}}, "required": []}, _month_figures, skill_only=True),
     ToolSpec("get_person_page", "What the notes hold about one person, with linked notes and reminders.",
-             {"type": "object", "properties": {"name": {"type": "string", "description": "The person's name, as in the notes"}}, "required": ["name"]}, _person_page),
+             {"type": "object", "properties": {"name": {"type": "string", "description": "The person's name, as in the notes"}}, "required": ["name"]}, _person_page, skill_only=True),
 )
