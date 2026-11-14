@@ -134,6 +134,11 @@ ALIASES = {
     "htm": "html",
     "scss": "css",
     "sass": "css",
+    #: Less, Sass and SCSS open as CSS so their rules, comments and Emmet
+    #: shorthands (`df`, `m10`) work. Stylus is not here: it has no highlighter
+    #: in the editor to open it as, and Emmet's `stylus` output form would need
+    #: a type of its own to be chosen.
+    "less": "css",
     "patch": "diff",
 }
 

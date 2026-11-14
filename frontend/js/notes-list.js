@@ -1004,6 +1004,8 @@ function appendInlineRun(element, text, terms, compact, options) {
         element.appendChild(document.createTextNode(imageAlt || "Image"));
       } else if (isRemoteImage(imageUrl)) {
         appendPictureBox(element, remoteImageNote(imageUrl));
+      } else if (isRenderableUrl(imageUrl) && window.imageLayout?.isVideo(imageUrl)) {
+        appendPictureBox(element, window.imageLayout.video(imageUrl, imageAlt));
       } else if (isRenderableUrl(imageUrl)) {
         const img = document.createElement("img");
         img.src = mediaSrc(imageUrl);

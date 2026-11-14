@@ -1003,6 +1003,16 @@
     margin: 2cm;
   }
 
+  /* A video has no picture to print: its name line stands in, with no poster. */
+  /* Past the screen rule in library-lazy.css, which loads later. */
+  #doc-preview .doc-video video {
+    display: none;
+  }
+  #doc-preview .doc-video-name {
+    display: block;
+    font-style: italic;
+  }
+
   /* `\newpage` (DOCUMENTS_PLAN D4): the next part on a new page, and no
      trace of the on-screen line. */
   .md-page-break {

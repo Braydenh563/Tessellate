@@ -106,6 +106,7 @@ function docLivePlugin(CM) {
       return other.src === this.src && other.alt === this.alt && other.underSource === this.underSource;
     }
     toDOM(view) {
+      if (imageLayout.isVideo(this.src)) return imageLayout.video(this.src, this.alt);
       const img = document.createElement("img");
       img.className = this.underSource ? "cm-md-image cm-md-image-under" : "cm-md-image";
       //: **Through `mediaSrc`, like every other image in this app.** An
