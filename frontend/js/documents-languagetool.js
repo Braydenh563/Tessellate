@@ -10,7 +10,10 @@
 (() => {
   //: `off`: the server said it is not installed (or has no Java); asked again
   //: only after a reload, which is also what installing it asks for.
-  const state = { off: false };
+  //: `warm`: the program has answered once this session; until then a check
+  //: waits for Java to start (12.3 s measured), which the status line says.
+  const state = { off: false, warm: false };
+  const STARTING = "Starting the second grammar checker, which takes a few seconds the first time.";
   const LANGUAGE = { us: "en-US", uk: "en-GB", au: "en-AU", ca: "en-CA" };
 
   //: A match as a Harper lint, so the rest of the pipeline treats both alike.
@@ -47,12 +50,18 @@
     //: A second opinion while typing, not a person's action: a failed check
     //: returns null and the caller keeps Harper's lints alone.
     let body;
+    const line = !state.warm && $("doc-status");
+    const told = line && !line.textContent && !line.classList.contains("error");
+    if (told) line.textContent = STARTING;
     try {
       body = await apiJson("/grammar/languagetool", { method: "POST", body: JSON.stringify({ text, language }), silent: true });
     } catch {
       return null;
+    } finally {
+      if (told && line.textContent === STARTING) line.textContent = "";
     }
     if (body && !body.available) state.off = true;
+    if (body && body.available) state.warm = true;
     return body && body.available ? body.matches || [] : null;
   }
 
@@ -96,7 +105,12 @@
     for (const p of paras) {
       for (const m of byText.get(p.text)) all.push({ ...m, start: m.start + p.at, end: m.end + p.at });
     }
-    const extra = all.map(asLint).filter((lint) => !lints.some((own) => overlaps(own, lint)));
+    //: Not over Harper's, and not over one already kept: LanguageTool can
+    //: report two rules on the same words, which would be two underlines.
+    const extra = [];
+    for (const lint of all.map(asLint)) {
+      if (!lints.some((own) => overlaps(own, lint)) && !extra.some((own) => overlaps(own, lint))) extra.push(lint);
+    }
     return lints.concat(extra);
   }
 

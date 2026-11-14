@@ -210,7 +210,7 @@ def test_a_system_proxy_never_sees_the_text(monkeypatch):
 
 def test_the_page_merges_without_duplicating_a_harper_span():
     script = r"""
-    global.window = {docSpell: {}}; global.docSpellingVariant = () => "au";
+    global.window = {docSpell: {}}; global.$ = () => null; global.docSpellingVariant = () => "au";
     let sent;
     global.apiJson = async (u, o) => { sent = JSON.parse(o.body);
       return {available: true, matches: [{start: 0, end: 4, message: "m", suggestions: ["a"]}, {start: 10, end: 12, message: "n", suggestions: []}]}; };
@@ -230,7 +230,7 @@ def test_the_page_merges_without_duplicating_a_harper_span():
 
 def test_a_second_check_sends_only_the_paragraphs_touched_and_maps_them_back():
     script = r"""
-    global.window = {docSpell: {}}; global.docSpellingVariant = () => "us";
+    global.window = {docSpell: {}}; global.$ = () => null; global.docSpellingVariant = () => "us";
     const sent = [];
     global.apiJson = async (u, o) => { const b = JSON.parse(o.body); sent.push(b.text);
       return {available: true, matches: [...b.text.matchAll(/bad/g)].map((m) => ({start: m.index, end: m.index + 3, message: "m", suggestions: []}))}; };
@@ -250,3 +250,56 @@ def test_a_second_check_sends_only_the_paragraphs_touched_and_maps_them_back():
     assert got["sent"] == ["bad one\n\nfine two\nbad three", "fine two edited"]
     assert got["a"] == [0, 18]
     assert got["b"] == [0, 25]
+
+
+def test_only_english_data_is_kept_but_every_language_class_and_the_identifier_words(tmp_path):
+    """L-documents-110: 392 MB on disk before, 196 MB with the real server started."""
+    import zipfile
+
+    from tessellate.core.extra_downloads import _unpack_tree
+
+    p = languagetool_files.PREFIX + "org/languagetool/"
+    kept = ["resource/en/x.dict", "resource/de/common_words.txt", "rules/de/Rule.class",
+            "rules/en/grammar.xml", "rules/Rule.class", "language/German.class", "rules/pt-BR/A.class"]
+    dropped = ["resource/de/german.dict", "resource/pt/hunspell/a.dic", "rules/de/grammar.xml",
+               "rules/pt-BR/grammar.xml"]
+    path = tmp_path / "a.zip"
+    with zipfile.ZipFile(path, "w") as archive:
+        for name in kept + dropped:
+            archive.writestr(p + name, b"x")
+    staging = tmp_path / "s"
+    staging.mkdir()
+    with zipfile.ZipFile(path) as archive:
+        _unpack_tree(archive, languagetool_files.PREFIX + "org/", "org", staging,
+                     languagetool_files.TREE_SKIP)
+    got = {str(f.relative_to(staging / "org/languagetool")) for f in staging.rglob("*") if f.is_file()}
+    assert got == set(kept)
+    assert extras.EXTRAS_BY_ID["languagetool"].downloads[0].tree_skip == languagetool_files.TREE_SKIP
+    assert "~200 MB on disk" in extras.EXTRAS_BY_ID["languagetool"].size
+
+
+def test_overlapping_matches_are_one_underline_and_the_cold_start_wait_is_shown_then_cleared():
+    """L-documents-111: measured in the page, a cold Java start held every grammar
+    underline for 12.3 s (request at 3.4 s, answer at 15.6 s) with nothing said."""
+    script = r"""
+    const el = {textContent: "", classList: {contains: () => false}}; const seen = [];
+    global.window = {docSpell: {}}; global.docSpellingVariant = () => "us"; global.$ = () => el;
+    global.apiJson = async () => { seen.push(el.textContent);
+      return {available: true, matches: [{start: 0, end: 8, message: "a", suggestions: []}, {start: 5, end: 12, message: "b", suggestions: []}, {start: 20, end: 24, message: "c", suggestions: []}]}; };
+    eval(require("fs").readFileSync(process.argv[1], "utf8"));
+    window.docSpell.languageTool([], "x".repeat(30)).then((r) => {
+      console.log(JSON.stringify({spans: r.map((l) => [l.start, l.end]), during: seen[0], after: el.textContent}));
+    });
+    """
+    path = str(ROOT / "frontend/js/documents-languagetool.js")
+    out = subprocess.run(["node", "-e", script, path], capture_output=True, text=True, check=True)
+    got = json.loads(out.stdout)
+    assert got["spans"] == [[0, 8], [20, 24]]
+    assert got["during"] == "Starting the second grammar checker, which takes a few seconds the first time."
+    assert got["after"] == ""
+
+
+def test_harper_findings_are_drawn_before_languagetool_answers():
+    text = (ROOT / "frontend/js/documents-prose.js").read_text()
+    assert "if (early && lints !== null) early(lints);" in text
+    assert "docGrammarAsk(text, early).then" in text

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- LanguageTool takes half the disk and its wait is shown (L-documents-110, 111): only English data and each language's `common_words.txt` (which the language identifier needs to start) are kept, so the folder is 196 MB on disk, not 392 (the real server started and answered en-US; the card says ~200 MB on disk); in the page a cold Java start held every grammar underline for 12.3 s with nothing said, now Harper's findings draw at 2 s, the status line says the checker is starting and clears at 12.5 s when LanguageTool's join, and two LanguageTool matches over the same words are one underline; four tests in `tests/test_languagetool_1731.py`.
 - CodeQL on PR 234: the diagram describer's line readers (`composer_mermaid`) read right-stripped lines and single-spaced sentences, so no two parts of a pattern share a space run; a linearity test on long tab runs.
 - Run takes top-level await in a .js document (L-documents-108): a script that parses only as an async body runs as one, opened on its own first line, so rows keep the document's lines; a plain script keeps its globals for the console.
 - Stop reaches the model when the stream is dropped between lines, not only mid-step: `stop_when_gone` closes the source in its `finally` (Starlette 1.10 never acloses a dropped body); two tests, one per way out.

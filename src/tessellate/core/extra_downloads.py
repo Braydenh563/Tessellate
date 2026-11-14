@@ -103,6 +103,9 @@ class Download:
     #: unpacked folders beside its jars, not jars; without them the server
     #: dies at start with "'es' is not a language code known").
     trees: tuple[tuple[str, str], ...] = ()
+    #: A regex over a tree file's path below its prefix: a match is not kept
+    #: (LanguageTool's other-language data, L-documents-110).
+    tree_skip: str = ""
 
     def __post_init__(self) -> None:
         if self.unpack not in {"file", "tar", "zip", "gzip"}:
@@ -426,7 +429,9 @@ def _check_engine(download: Download, written: list[str], staging: Path, state) 
     state.log.append(f"{download.url.rsplit('/', 1)[-1]} imports no network calls")
 
 
-def _unpack_tree(archive: zipfile.ZipFile, prefix: str, dest: str, staging: Path) -> list[str]:
+def _unpack_tree(
+    archive: zipfile.ZipFile, prefix: str, dest: str, staging: Path, skip: str = ""
+) -> list[str]:
     """Write every file under `prefix` into `staging/dest`, keeping its path
     below the prefix. A part that is not a plain name (`..`, an empty part, a
     drive letter) fails the install; nothing is written outside `staging`.
@@ -435,7 +440,10 @@ def _unpack_tree(archive: zipfile.ZipFile, prefix: str, dest: str, staging: Path
     for info in archive.infolist():
         if not info.filename.startswith(prefix) or info.is_dir():
             continue
-        parts = info.filename[len(prefix) :].split("/")
+        rel = info.filename[len(prefix) :]
+        if skip and re.search(skip, rel):
+            continue
+        parts = rel.split("/")
         if not all(_TREE_PART_RE.fullmatch(part) and part not in {".", ".."} for part in parts):
             raise DownloadFailed("missing_member")
         target = staging.joinpath(dest, *parts)
@@ -481,7 +489,7 @@ def _unpack(download: Download, fetched: Path, staging: Path) -> list[str]:
                         shutil.copyfileobj(handle, out)
                     written.append(name)
                 for prefix, dest in download.trees:
-                    written += _unpack_tree(archive, prefix, dest, staging)
+                    written += _unpack_tree(archive, prefix, dest, staging, download.tree_skip)
     except KeyError as exc:
         raise DownloadFailed("missing_member") from exc
     except (tarfile.TarError, zipfile.BadZipFile, gzip.BadGzipFile, EOFError) as exc:

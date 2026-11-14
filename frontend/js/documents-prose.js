@@ -97,10 +97,15 @@ async function docGrammarWhy() {
 
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
-function docGrammarAsk(text) {
+//: `early` is given Harper's lints the moment they are in, before LanguageTool
+//: (which may be starting Java, 12.3 s cold) has answered.
+function docGrammarAsk(text, early) {
   const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
-  return asked.then((lints) => docSpell.languageTool(lints, text));
+  return asked.then((lints) => {
+    if (early && lints !== null) early(lints);
+    return docSpell.languageTool(lints, text);
+  });
 }
 
 //: One message to the worker and its answer, or null when there is no checker
@@ -337,7 +342,12 @@ function docGrammarRequest(text) {
   if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarWire.asking = text;
   const asked = performance.now();
-  docGrammarAsk(text).then((lints) => {
+  //: Harper's findings are drawn at once; the merged ones replace them.
+  const early = (first) => {
+    docGrammarCache = { text, findings: docGrammarFindings(first, text), linkText: docCheckLinkText() };
+    if ((docProse.typedAt || 0) <= asked) renderDocProse(true);
+  };
+  docGrammarAsk(text, early).then((lints) => {
     docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a

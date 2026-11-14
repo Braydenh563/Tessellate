@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8947, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2849, tests 22916, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8947, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2849, tests 22919, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
 ## Frontend functions (8947)
 
@@ -4419,12 +4419,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `asLint` | frontend/js/documents-languagetool.js:17 |
-| `ask` | frontend/js/documents-languagetool.js:46 |
-| `matchesByParagraph` | frontend/js/documents-languagetool.js:63 |
-| `merge` | frontend/js/documents-languagetool.js:89 |
-| `overlaps` | frontend/js/documents-languagetool.js:27 |
-| `paragraphs` | frontend/js/documents-languagetool.js:36 |
+| `asLint` | frontend/js/documents-languagetool.js:20 |
+| `ask` | frontend/js/documents-languagetool.js:49 |
+| `matchesByParagraph` | frontend/js/documents-languagetool.js:72 |
+| `merge` | frontend/js/documents-languagetool.js:98 |
+| `overlaps` | frontend/js/documents-languagetool.js:30 |
+| `paragraphs` | frontend/js/documents-languagetool.js:39 |
 
 ### frontend/js/documents-links-panels.js (5)
 
@@ -4646,139 +4646,139 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docAccessFindings` | frontend/js/documents-prose.js:950 |
-| `docApplyWholeText` | frontend/js/documents-prose.js:2778 |
-| `docBulletRetype` | frontend/js/documents-prose.js:2252 |
-| `docCheckLinkText` | frontend/js/documents-prose.js:186 |
-| `docCopyFormatted` | frontend/js/documents-prose.js:2821 |
-| `docDateText` | frontend/js/documents-prose.js:2641 |
-| `docEaseLabel` | frontend/js/documents-prose.js:2730 |
-| `docEditorMenuItems` | frontend/js/documents-prose.js:3531 |
-| `docEditorPaste` | frontend/js/documents-prose.js:3442 |
-| `docEmojiList` | frontend/js/documents-prose.js:1661 |
-| `docEmojiMatches` | frontend/js/documents-prose.js:1672 |
-| `docFenceCloseIndent` | frontend/js/documents-prose.js:2261 |
-| `docFillDate` | frontend/js/documents-prose.js:1588 |
-| `docFillGhost` | frontend/js/documents-prose.js:1778 |
-| `docFillOptions` | frontend/js/documents-prose.js:1712 |
-| `docFillSig` | frontend/js/documents-prose.js:1645 |
-| `docFillTable` | frontend/js/documents-prose.js:1605 |
-| `docFillToc` | frontend/js/documents-prose.js:1619 |
-| `docFillToken` | frontend/js/documents-prose.js:1693 |
-| `docGrammarAsk` | frontend/js/documents-prose.js:100 |
+| `docAccessFindings` | frontend/js/documents-prose.js:960 |
+| `docApplyWholeText` | frontend/js/documents-prose.js:2788 |
+| `docBulletRetype` | frontend/js/documents-prose.js:2262 |
+| `docCheckLinkText` | frontend/js/documents-prose.js:191 |
+| `docCopyFormatted` | frontend/js/documents-prose.js:2831 |
+| `docDateText` | frontend/js/documents-prose.js:2651 |
+| `docEaseLabel` | frontend/js/documents-prose.js:2740 |
+| `docEditorMenuItems` | frontend/js/documents-prose.js:3541 |
+| `docEditorPaste` | frontend/js/documents-prose.js:3452 |
+| `docEmojiList` | frontend/js/documents-prose.js:1671 |
+| `docEmojiMatches` | frontend/js/documents-prose.js:1682 |
+| `docFenceCloseIndent` | frontend/js/documents-prose.js:2271 |
+| `docFillDate` | frontend/js/documents-prose.js:1598 |
+| `docFillGhost` | frontend/js/documents-prose.js:1788 |
+| `docFillOptions` | frontend/js/documents-prose.js:1722 |
+| `docFillSig` | frontend/js/documents-prose.js:1655 |
+| `docFillTable` | frontend/js/documents-prose.js:1615 |
+| `docFillToc` | frontend/js/documents-prose.js:1629 |
+| `docFillToken` | frontend/js/documents-prose.js:1703 |
+| `docGrammarAsk` | frontend/js/documents-prose.js:102 |
 | `docGrammarEnabled` | frontend/js/documents-prose.js:59 |
 | `docGrammarFail` | frontend/js/documents-prose.js:65 |
-| `docGrammarFindings` | frontend/js/documents-prose.js:269 |
-| `docGrammarKeeps` | frontend/js/documents-prose.js:219 |
-| `docGrammarMessage` | frontend/js/documents-prose.js:161 |
-| `docGrammarOutside` | frontend/js/documents-prose.js:175 |
-| `docGrammarRequest` | frontend/js/documents-prose.js:335 |
-| `docGrammarSend` | frontend/js/documents-prose.js:110 |
+| `docGrammarFindings` | frontend/js/documents-prose.js:274 |
+| `docGrammarKeeps` | frontend/js/documents-prose.js:224 |
+| `docGrammarMessage` | frontend/js/documents-prose.js:166 |
+| `docGrammarOutside` | frontend/js/documents-prose.js:180 |
+| `docGrammarRequest` | frontend/js/documents-prose.js:340 |
+| `docGrammarSend` | frontend/js/documents-prose.js:115 |
 | `docGrammarWhy` | frontend/js/documents-prose.js:82 |
-| `docHeadingRows` | frontend/js/documents-prose.js:2623 |
-| `docInCodeAt` | frontend/js/documents-prose.js:2296 |
-| `docIsoDay` | frontend/js/documents-prose.js:1578 |
-| `docLinkOfferAsk` | frontend/js/documents-prose.js:426 |
-| `docLinkOfferCurrent` | frontend/js/documents-prose.js:463 |
-| `docLinkOfferEnabled` | frontend/js/documents-prose.js:377 |
-| `docLinkOfferFindings` | frontend/js/documents-prose.js:412 |
-| `docLinkOfferIgnore` | frontend/js/documents-prose.js:389 |
-| `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:381 |
-| `docLinkOfferQuiet` | frontend/js/documents-prose.js:365 |
-| `docLinkOfferRequest` | frontend/js/documents-prose.js:451 |
-| `docListEnter` | frontend/js/documents-prose.js:2169 |
-| `docListExitText` | frontend/js/documents-prose.js:2246 |
-| `docListFenceExtensions` | frontend/js/documents-prose.js:2452 |
-| `docLorem` | frontend/js/documents-prose.js:1566 |
-| `docMinutesLabel` | frontend/js/documents-prose.js:2724 |
-| `docNumberHeadings` | frontend/js/documents-prose.js:2603 |
-| `docOpenStatistics` | frontend/js/documents-prose.js:2757 |
-| `docPairBackspace` | frontend/js/documents-prose.js:2154 |
-| `docPairInput` | frontend/js/documents-prose.js:2114 |
-| `docPasteChipClose` | frontend/js/documents-prose.js:3094 |
-| `docPasteChipKey` | frontend/js/documents-prose.js:3161 |
-| `docPasteChipMenu` | frontend/js/documents-prose.js:3146 |
-| `docPasteChipPlace` | frontend/js/documents-prose.js:3106 |
-| `docPasteChoose` | frontend/js/documents-prose.js:3126 |
-| `docPasteFence` | frontend/js/documents-prose.js:2986 |
-| `docPasteGuessLang` | frontend/js/documents-prose.js:2976 |
-| `docPasteIsLinewise` | frontend/js/documents-prose.js:3239 |
-| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3234 |
-| `docPasteMatch` | frontend/js/documents-prose.js:2995 |
-| `docPasteMenuOpen` | frontend/js/documents-prose.js:3154 |
-| `docPasteOffer` | frontend/js/documents-prose.js:3181 |
-| `docPasteOfferRich` | frontend/js/documents-prose.js:3295 |
-| `docPasteOfferTable` | frontend/js/documents-prose.js:3307 |
-| `docPasteSpecial` | frontend/js/documents-prose.js:3328 |
-| `docPasteSpecialApply` | frontend/js/documents-prose.js:3312 |
-| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3352 |
-| `docPasteTextVariants` | frontend/js/documents-prose.js:3222 |
-| `docPasteTransform` | frontend/js/documents-prose.js:3032 |
-| `docPasteUrlEvent` | frontend/js/documents-prose.js:3245 |
-| `docPasteVariant` | frontend/js/documents-prose.js:3090 |
-| `docPasteWrite` | frontend/js/documents-prose.js:3209 |
-| `docPlainText` | frontend/js/documents-prose.js:2650 |
-| `docProseExtras` | frontend/js/documents-prose.js:476 |
-| `docProseFillExtensions` | frontend/js/documents-prose.js:2491 |
-| `docProseFillOn` | frontend/js/documents-prose.js:2282 |
-| `docProseGhostPlugin` | frontend/js/documents-prose.js:2379 |
-| `docProseGhostSet` | frontend/js/documents-prose.js:2364 |
-| `docProseInputHandler` | frontend/js/documents-prose.js:2312 |
-| `docProsePairKeymap` | frontend/js/documents-prose.js:2393 |
-| `docProseRemap` | frontend/js/documents-prose.js:306 |
-| `docProseToolExtensions` | frontend/js/documents-prose.js:1501 |
-| `docReadAloudExtension` | frontend/js/documents-prose.js:1457 |
-| `docReadAloudNext` | frontend/js/documents-prose.js:1386 |
-| `docReadAloudSentences` | frontend/js/documents-prose.js:1309 |
-| `docReadAloudStart` | frontend/js/documents-prose.js:1366 |
-| `docReadAloudStop` | frontend/js/documents-prose.js:1435 |
-| `docReadAloudVoice` | frontend/js/documents-prose.js:1346 |
-| `docRunTextTool` | frontend/js/documents-prose.js:2789 |
-| `docSentenceCase` | frontend/js/documents-prose.js:2548 |
-| `docSmartPasteEvent` | frontend/js/documents-prose.js:3264 |
-| `docSmartPunct` | frontend/js/documents-prose.js:1795 |
-| `docSmartPunctOn` | frontend/js/documents-prose.js:2289 |
-| `docSortLines` | frontend/js/documents-prose.js:2566 |
-| `docSpeakable` | frontend/js/documents-prose.js:1288 |
-| `docStatistics` | frontend/js/documents-prose.js:2695 |
-| `docStatsRows` | frontend/js/documents-prose.js:2735 |
-| `docStructuralBlank` | frontend/js/documents-prose.js:207 |
-| `docStructuralMask` | frontend/js/documents-prose.js:197 |
-| `docSuggestActive` | frontend/js/documents-prose.js:1034 |
-| `docSuggestAll` | frontend/js/documents-prose.js:1205 |
-| `docSuggestApply` | frontend/js/documents-prose.js:1162 |
-| `docSuggestCodeMask` | frontend/js/documents-prose.js:672 |
-| `docSuggestEdit` | frontend/js/documents-prose.js:778 |
-| `docSuggestExtensions` | frontend/js/documents-prose.js:1067 |
-| `docSuggestFindingFor` | frontend/js/documents-prose.js:890 |
-| `docSuggestForRead` | frontend/js/documents-prose.js:872 |
-| `docSuggestMenu` | frontend/js/documents-prose.js:1173 |
-| `docSuggestMenuItems` | frontend/js/documents-prose.js:909 |
-| `docSuggestModes` | frontend/js/documents-prose.js:1018 |
-| `docSuggestNext` | frontend/js/documents-prose.js:1220 |
-| `docSuggestNormalize` | frontend/js/documents-prose.js:741 |
-| `docSuggestParse` | frontend/js/documents-prose.js:694 |
-| `docSuggestResolve` | frontend/js/documents-prose.js:854 |
-| `docSuggestResolveAll` | frontend/js/documents-prose.js:860 |
-| `docSyllables` | frontend/js/documents-prose.js:2675 |
-| `docTitleCase` | frontend/js/documents-prose.js:2534 |
-| `docTopWords` | frontend/js/documents-prose.js:2683 |
-| `docTurnInto` | frontend/js/documents-prose.js:3399 |
-| `docTurnIntoLines` | frontend/js/documents-prose.js:3384 |
-| `docTurnIntoMenu` | frontend/js/documents-prose.js:3420 |
-| `docUniqueLines` | frontend/js/documents-prose.js:2572 |
-| `noteGrammarMenu` | frontend/js/documents-prose.js:603 |
-| `noteGrammarPlugin` | frontend/js/documents-prose.js:522 |
-| `pasteClean` | frontend/js/documents-prose.js:2862 |
-| `pasteGrid` | frontend/js/documents-prose.js:2916 |
-| `pasteLines` | frontend/js/documents-prose.js:2871 |
-| `pasteOutline` | frontend/js/documents-prose.js:2936 |
-| `pasteParseDelimited` | frontend/js/documents-prose.js:2877 |
-| `pasteStripMark` | frontend/js/documents-prose.js:2928 |
-| `pasteUrl` | frontend/js/documents-prose.js:2866 |
-| `renderDocReadAloudState` | frontend/js/documents-prose.js:1443 |
-| `renderDocSuggestState` | frontend/js/documents-prose.js:1239 |
-| `setDocSuggestMode` | frontend/js/documents-prose.js:1039 |
+| `docHeadingRows` | frontend/js/documents-prose.js:2633 |
+| `docInCodeAt` | frontend/js/documents-prose.js:2306 |
+| `docIsoDay` | frontend/js/documents-prose.js:1588 |
+| `docLinkOfferAsk` | frontend/js/documents-prose.js:436 |
+| `docLinkOfferCurrent` | frontend/js/documents-prose.js:473 |
+| `docLinkOfferEnabled` | frontend/js/documents-prose.js:387 |
+| `docLinkOfferFindings` | frontend/js/documents-prose.js:422 |
+| `docLinkOfferIgnore` | frontend/js/documents-prose.js:399 |
+| `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:391 |
+| `docLinkOfferQuiet` | frontend/js/documents-prose.js:375 |
+| `docLinkOfferRequest` | frontend/js/documents-prose.js:461 |
+| `docListEnter` | frontend/js/documents-prose.js:2179 |
+| `docListExitText` | frontend/js/documents-prose.js:2256 |
+| `docListFenceExtensions` | frontend/js/documents-prose.js:2462 |
+| `docLorem` | frontend/js/documents-prose.js:1576 |
+| `docMinutesLabel` | frontend/js/documents-prose.js:2734 |
+| `docNumberHeadings` | frontend/js/documents-prose.js:2613 |
+| `docOpenStatistics` | frontend/js/documents-prose.js:2767 |
+| `docPairBackspace` | frontend/js/documents-prose.js:2164 |
+| `docPairInput` | frontend/js/documents-prose.js:2124 |
+| `docPasteChipClose` | frontend/js/documents-prose.js:3104 |
+| `docPasteChipKey` | frontend/js/documents-prose.js:3171 |
+| `docPasteChipMenu` | frontend/js/documents-prose.js:3156 |
+| `docPasteChipPlace` | frontend/js/documents-prose.js:3116 |
+| `docPasteChoose` | frontend/js/documents-prose.js:3136 |
+| `docPasteFence` | frontend/js/documents-prose.js:2996 |
+| `docPasteGuessLang` | frontend/js/documents-prose.js:2986 |
+| `docPasteIsLinewise` | frontend/js/documents-prose.js:3249 |
+| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3244 |
+| `docPasteMatch` | frontend/js/documents-prose.js:3005 |
+| `docPasteMenuOpen` | frontend/js/documents-prose.js:3164 |
+| `docPasteOffer` | frontend/js/documents-prose.js:3191 |
+| `docPasteOfferRich` | frontend/js/documents-prose.js:3305 |
+| `docPasteOfferTable` | frontend/js/documents-prose.js:3317 |
+| `docPasteSpecial` | frontend/js/documents-prose.js:3338 |
+| `docPasteSpecialApply` | frontend/js/documents-prose.js:3322 |
+| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3362 |
+| `docPasteTextVariants` | frontend/js/documents-prose.js:3232 |
+| `docPasteTransform` | frontend/js/documents-prose.js:3042 |
+| `docPasteUrlEvent` | frontend/js/documents-prose.js:3255 |
+| `docPasteVariant` | frontend/js/documents-prose.js:3100 |
+| `docPasteWrite` | frontend/js/documents-prose.js:3219 |
+| `docPlainText` | frontend/js/documents-prose.js:2660 |
+| `docProseExtras` | frontend/js/documents-prose.js:486 |
+| `docProseFillExtensions` | frontend/js/documents-prose.js:2501 |
+| `docProseFillOn` | frontend/js/documents-prose.js:2292 |
+| `docProseGhostPlugin` | frontend/js/documents-prose.js:2389 |
+| `docProseGhostSet` | frontend/js/documents-prose.js:2374 |
+| `docProseInputHandler` | frontend/js/documents-prose.js:2322 |
+| `docProsePairKeymap` | frontend/js/documents-prose.js:2403 |
+| `docProseRemap` | frontend/js/documents-prose.js:311 |
+| `docProseToolExtensions` | frontend/js/documents-prose.js:1511 |
+| `docReadAloudExtension` | frontend/js/documents-prose.js:1467 |
+| `docReadAloudNext` | frontend/js/documents-prose.js:1396 |
+| `docReadAloudSentences` | frontend/js/documents-prose.js:1319 |
+| `docReadAloudStart` | frontend/js/documents-prose.js:1376 |
+| `docReadAloudStop` | frontend/js/documents-prose.js:1445 |
+| `docReadAloudVoice` | frontend/js/documents-prose.js:1356 |
+| `docRunTextTool` | frontend/js/documents-prose.js:2799 |
+| `docSentenceCase` | frontend/js/documents-prose.js:2558 |
+| `docSmartPasteEvent` | frontend/js/documents-prose.js:3274 |
+| `docSmartPunct` | frontend/js/documents-prose.js:1805 |
+| `docSmartPunctOn` | frontend/js/documents-prose.js:2299 |
+| `docSortLines` | frontend/js/documents-prose.js:2576 |
+| `docSpeakable` | frontend/js/documents-prose.js:1298 |
+| `docStatistics` | frontend/js/documents-prose.js:2705 |
+| `docStatsRows` | frontend/js/documents-prose.js:2745 |
+| `docStructuralBlank` | frontend/js/documents-prose.js:212 |
+| `docStructuralMask` | frontend/js/documents-prose.js:202 |
+| `docSuggestActive` | frontend/js/documents-prose.js:1044 |
+| `docSuggestAll` | frontend/js/documents-prose.js:1215 |
+| `docSuggestApply` | frontend/js/documents-prose.js:1172 |
+| `docSuggestCodeMask` | frontend/js/documents-prose.js:682 |
+| `docSuggestEdit` | frontend/js/documents-prose.js:788 |
+| `docSuggestExtensions` | frontend/js/documents-prose.js:1077 |
+| `docSuggestFindingFor` | frontend/js/documents-prose.js:900 |
+| `docSuggestForRead` | frontend/js/documents-prose.js:882 |
+| `docSuggestMenu` | frontend/js/documents-prose.js:1183 |
+| `docSuggestMenuItems` | frontend/js/documents-prose.js:919 |
+| `docSuggestModes` | frontend/js/documents-prose.js:1028 |
+| `docSuggestNext` | frontend/js/documents-prose.js:1230 |
+| `docSuggestNormalize` | frontend/js/documents-prose.js:751 |
+| `docSuggestParse` | frontend/js/documents-prose.js:704 |
+| `docSuggestResolve` | frontend/js/documents-prose.js:864 |
+| `docSuggestResolveAll` | frontend/js/documents-prose.js:870 |
+| `docSyllables` | frontend/js/documents-prose.js:2685 |
+| `docTitleCase` | frontend/js/documents-prose.js:2544 |
+| `docTopWords` | frontend/js/documents-prose.js:2693 |
+| `docTurnInto` | frontend/js/documents-prose.js:3409 |
+| `docTurnIntoLines` | frontend/js/documents-prose.js:3394 |
+| `docTurnIntoMenu` | frontend/js/documents-prose.js:3430 |
+| `docUniqueLines` | frontend/js/documents-prose.js:2582 |
+| `noteGrammarMenu` | frontend/js/documents-prose.js:613 |
+| `noteGrammarPlugin` | frontend/js/documents-prose.js:532 |
+| `pasteClean` | frontend/js/documents-prose.js:2872 |
+| `pasteGrid` | frontend/js/documents-prose.js:2926 |
+| `pasteLines` | frontend/js/documents-prose.js:2881 |
+| `pasteOutline` | frontend/js/documents-prose.js:2946 |
+| `pasteParseDelimited` | frontend/js/documents-prose.js:2887 |
+| `pasteStripMark` | frontend/js/documents-prose.js:2938 |
+| `pasteUrl` | frontend/js/documents-prose.js:2876 |
+| `renderDocReadAloudState` | frontend/js/documents-prose.js:1453 |
+| `renderDocSuggestState` | frontend/js/documents-prose.js:1249 |
+| `setDocSuggestMode` | frontend/js/documents-prose.js:1049 |
 
 ### frontend/js/documents-replace.js (9)
 
@@ -25662,101 +25662,101 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Download` | src/tessellate/core/extra_downloads.py:81 |
-| `DownloadFailed` | src/tessellate/core/extra_downloads.py:257 |
-| `_check_engine` | src/tessellate/core/extra_downloads.py:411 |
-| `_fetch` | src/tessellate/core/extra_downloads.py:383 |
-| `_is_musl` | src/tessellate/core/extra_downloads.py:143 |
-| `_mb` | src/tessellate/core/extra_downloads.py:308 |
-| `_open_retrying` | src/tessellate/core/extra_downloads.py:359 |
-| `_open_url` | src/tessellate/core/extra_downloads.py:250 |
-| `_retry_after` | src/tessellate/core/extra_downloads.py:326 |
-| `_unpack` | src/tessellate/core/extra_downloads.py:451 |
-| `_unpack_tree` | src/tessellate/core/extra_downloads.py:429 |
-| `_wait` | src/tessellate/core/extra_downloads.py:347 |
-| `downloads_for` | src/tessellate/core/extra_downloads.py:160 |
-| `effective_url` | src/tessellate/core/extra_downloads.py:242 |
-| `folder` | src/tessellate/core/extra_downloads.py:209 |
-| `install` | src/tessellate/core/extra_downloads.py:494 |
-| `is_installed` | src/tessellate/core/extra_downloads.py:213 |
-| `platform_key` | src/tessellate/core/extra_downloads.py:124 |
-| `platform_reason` | src/tessellate/core/extra_downloads.py:166 |
-| `reason` | src/tessellate/core/extra_downloads.py:302 |
-| `root_dir` | src/tessellate/core/extra_downloads.py:201 |
-| `source` | src/tessellate/core/extra_downloads.py:226 |
-| `uninstall` | src/tessellate/core/extra_downloads.py:536 |
-| `url_allowed` | src/tessellate/core/extra_downloads.py:182 |
+| `DownloadFailed` | src/tessellate/core/extra_downloads.py:260 |
+| `_check_engine` | src/tessellate/core/extra_downloads.py:414 |
+| `_fetch` | src/tessellate/core/extra_downloads.py:386 |
+| `_is_musl` | src/tessellate/core/extra_downloads.py:146 |
+| `_mb` | src/tessellate/core/extra_downloads.py:311 |
+| `_open_retrying` | src/tessellate/core/extra_downloads.py:362 |
+| `_open_url` | src/tessellate/core/extra_downloads.py:253 |
+| `_retry_after` | src/tessellate/core/extra_downloads.py:329 |
+| `_unpack` | src/tessellate/core/extra_downloads.py:459 |
+| `_unpack_tree` | src/tessellate/core/extra_downloads.py:432 |
+| `_wait` | src/tessellate/core/extra_downloads.py:350 |
+| `downloads_for` | src/tessellate/core/extra_downloads.py:163 |
+| `effective_url` | src/tessellate/core/extra_downloads.py:245 |
+| `folder` | src/tessellate/core/extra_downloads.py:212 |
+| `install` | src/tessellate/core/extra_downloads.py:502 |
+| `is_installed` | src/tessellate/core/extra_downloads.py:216 |
+| `platform_key` | src/tessellate/core/extra_downloads.py:127 |
+| `platform_reason` | src/tessellate/core/extra_downloads.py:169 |
+| `reason` | src/tessellate/core/extra_downloads.py:305 |
+| `root_dir` | src/tessellate/core/extra_downloads.py:204 |
+| `source` | src/tessellate/core/extra_downloads.py:229 |
+| `uninstall` | src/tessellate/core/extra_downloads.py:544 |
+| `url_allowed` | src/tessellate/core/extra_downloads.py:185 |
 
 ### src/tessellate/core/extras.py (67)
 
 | Name | File:line |
 |---|---|
-| `BulkState` | src/tessellate/core/extras.py:1227 |
-| `Bundle` | src/tessellate/core/extras.py:1091 |
+| `BulkState` | src/tessellate/core/extras.py:1228 |
+| `Bundle` | src/tessellate/core/extras.py:1092 |
 | `Extra` | src/tessellate/core/extras.py:363 |
-| `InstallState` | src/tessellate/core/extras.py:1179 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2416 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:2242 |
-| `_busy` | src/tessellate/core/extras.py:1991 |
-| `_canonical` | src/tessellate/core/extras.py:1530 |
-| `_claim` | src/tessellate/core/extras.py:1979 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1707 |
-| `_dispatch` | src/tessellate/core/extras.py:1997 |
-| `_extra_size` | src/tessellate/core/extras.py:1068 |
-| `_finish_bulk` | src/tessellate/core/extras.py:2295 |
-| `_forget_footprints` | src/tessellate/core/extras.py:1410 |
+| `InstallState` | src/tessellate/core/extras.py:1180 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2417 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:2243 |
+| `_busy` | src/tessellate/core/extras.py:1992 |
+| `_canonical` | src/tessellate/core/extras.py:1531 |
+| `_claim` | src/tessellate/core/extras.py:1980 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1708 |
+| `_dispatch` | src/tessellate/core/extras.py:1998 |
+| `_extra_size` | src/tessellate/core/extras.py:1069 |
+| `_finish_bulk` | src/tessellate/core/extras.py:2296 |
+| `_forget_footprints` | src/tessellate/core/extras.py:1411 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:259 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1795 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1768 |
-| `_install_refusal` | src/tessellate/core/extras.py:2076 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1725 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1796 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1769 |
+| `_install_refusal` | src/tessellate/core/extras.py:2077 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1726 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:195 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2331 |
-| `_no_build` | src/tessellate/core/extras.py:1446 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2332 |
+| `_no_build` | src/tessellate/core/extras.py:1447 |
 | `_pip_base_command` | src/tessellate/core/extras.py:316 |
 | `_pip_platforms` | src/tessellate/core/extras.py:280 |
 | `_pip_reason` | src/tessellate/core/extras.py:102 |
 | `_python_candidates` | src/tessellate/core/extras.py:171 |
-| `_read_footprint` | src/tessellate/core/extras.py:1365 |
-| `_release_captions_helper` | src/tessellate/core/extras.py:2068 |
-| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1535 |
-| `_requirement_name` | src/tessellate/core/extras.py:1524 |
-| `_requirements_path` | src/tessellate/core/extras.py:1693 |
-| `_roll_back` | src/tessellate/core/extras.py:1736 |
-| `_run_bulk` | src/tessellate/core/extras.py:2205 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:2269 |
-| `_run_download_install` | src/tessellate/core/extras.py:1923 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1965 |
-| `_run_install` | src/tessellate/core/extras.py:1836 |
-| `_run_single` | src/tessellate/core/extras.py:2018 |
-| `_run_uninstall` | src/tessellate/core/extras.py:1602 |
+| `_read_footprint` | src/tessellate/core/extras.py:1366 |
+| `_release_captions_helper` | src/tessellate/core/extras.py:2069 |
+| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1536 |
+| `_requirement_name` | src/tessellate/core/extras.py:1525 |
+| `_requirements_path` | src/tessellate/core/extras.py:1694 |
+| `_roll_back` | src/tessellate/core/extras.py:1737 |
+| `_run_bulk` | src/tessellate/core/extras.py:2206 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:2270 |
+| `_run_download_install` | src/tessellate/core/extras.py:1924 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:1966 |
+| `_run_install` | src/tessellate/core/extras.py:1837 |
+| `_run_single` | src/tessellate/core/extras.py:2019 |
+| `_run_uninstall` | src/tessellate/core/extras.py:1603 |
 | `_spell_pack_extras` | src/tessellate/core/extras.py:434 |
-| `_status_row` | src/tessellate/core/extras.py:1305 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:2235 |
+| `_status_row` | src/tessellate/core/extras.py:1306 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:2236 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:245 |
-| `bulk` | src/tessellate/core/extras.py:1429 |
-| `bulk_label` | src/tessellate/core/extras.py:2199 |
-| `bulk_status` | src/tessellate/core/extras.py:1414 |
-| `bundles` | src/tessellate/core/extras.py:1334 |
-| `cancel` | src/tessellate/core/extras.py:1471 |
-| `current` | src/tessellate/core/extras.py:1467 |
-| `download_mb` | src/tessellate/core/extras.py:1077 |
-| `download_ready` | src/tessellate/core/extras.py:2428 |
+| `bulk` | src/tessellate/core/extras.py:1430 |
+| `bulk_label` | src/tessellate/core/extras.py:2200 |
+| `bulk_status` | src/tessellate/core/extras.py:1415 |
+| `bundles` | src/tessellate/core/extras.py:1335 |
+| `cancel` | src/tessellate/core/extras.py:1472 |
+| `current` | src/tessellate/core/extras.py:1468 |
+| `download_mb` | src/tessellate/core/extras.py:1078 |
+| `download_ready` | src/tessellate/core/extras.py:2429 |
 | `find_system_python` | src/tessellate/core/extras.py:133 |
-| `footprint` | src/tessellate/core/extras.py:1342 |
+| `footprint` | src/tessellate/core/extras.py:1343 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:223 |
-| `install_blocking` | src/tessellate/core/extras.py:2389 |
-| `installed_bytes` | src/tessellate/core/extras.py:1395 |
-| `is_installed` | src/tessellate/core/extras.py:1258 |
-| `legacy_engine` | src/tessellate/core/extras.py:2127 |
-| `on_release` | src/tessellate/core/extras.py:2062 |
-| `removal_locked` | src/tessellate/core/extras.py:1433 |
-| `remove` | src/tessellate/core/extras.py:2089 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:2138 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2380 |
-| `start` | src/tessellate/core/extras.py:2025 |
-| `start_bulk` | src/tessellate/core/extras.py:2151 |
-| `status` | src/tessellate/core/extras.py:1286 |
-| `unavailable_reason` | src/tessellate/core/extras.py:1450 |
+| `install_blocking` | src/tessellate/core/extras.py:2390 |
+| `installed_bytes` | src/tessellate/core/extras.py:1396 |
+| `is_installed` | src/tessellate/core/extras.py:1259 |
+| `legacy_engine` | src/tessellate/core/extras.py:2128 |
+| `on_release` | src/tessellate/core/extras.py:2063 |
+| `removal_locked` | src/tessellate/core/extras.py:1434 |
+| `remove` | src/tessellate/core/extras.py:2090 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:2139 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2381 |
+| `start` | src/tessellate/core/extras.py:2026 |
+| `start_bulk` | src/tessellate/core/extras.py:2152 |
+| `status` | src/tessellate/core/extras.py:1287 |
+| `unavailable_reason` | src/tessellate/core/extras.py:1451 |
 
 ### src/tessellate/core/filetypes.py (6)
 
@@ -29035,7 +29035,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22916)
+## Tests (22919)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30524,7 +30524,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_timer_named_1741.py | 4 |
 | tests/test_lag_wblib_1726.py | 2 |
 | tests/test_lan.py | 130 |
-| tests/test_languagetool_1731.py | 11 |
+| tests/test_languagetool_1731.py | 14 |
 | tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_port_stuck_1637.py | 8 |
@@ -32310,14 +32310,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:711 |
+| Needs hardware | docs/roadmap/LEDGER.md:709 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:704 |
+| Owner calls | docs/roadmap/LEDGER.md:702 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32496,7 +32496,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:869 |
+| Plan session briefs | docs/roadmap/LEDGER.md:867 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32552,25 +32552,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:885 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:969 |
+| chat | docs/roadmap/LEDGER.md:883 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:967 |
 | documents | docs/roadmap/LEDGER.md:285 |
-| documents | docs/roadmap/LEDGER.md:909 |
-| general | docs/roadmap/LEDGER.md:663 |
+| documents | docs/roadmap/LEDGER.md:907 |
+| general | docs/roadmap/LEDGER.md:661 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:873 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:981 |
+| graph | docs/roadmap/LEDGER.md:871 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:979 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:305 |
-| mindmap | docs/roadmap/LEDGER.md:921 |
-| timeline | docs/roadmap/LEDGER.md:425 |
-| timeline | docs/roadmap/LEDGER.md:945 |
-| ui-modernisation | docs/roadmap/LEDGER.md:308 |
-| ui-modernisation | docs/roadmap/LEDGER.md:933 |
+| mindmap | docs/roadmap/LEDGER.md:303 |
+| mindmap | docs/roadmap/LEDGER.md:919 |
+| timeline | docs/roadmap/LEDGER.md:423 |
+| timeline | docs/roadmap/LEDGER.md:943 |
+| ui-modernisation | docs/roadmap/LEDGER.md:306 |
+| ui-modernisation | docs/roadmap/LEDGER.md:931 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:897 |
-| world-class | docs/roadmap/LEDGER.md:427 |
-| world-class | docs/roadmap/LEDGER.md:957 |
+| whiteboard | docs/roadmap/LEDGER.md:895 |
+| world-class | docs/roadmap/LEDGER.md:425 |
+| world-class | docs/roadmap/LEDGER.md:955 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
