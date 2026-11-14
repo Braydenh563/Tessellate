@@ -18,6 +18,7 @@ from tessellate.ai import captioning, vision_ocr
 from tessellate.api import routes_files as rf
 from tessellate.api.routes_files import AttachmentGalleryOut, MediaUploadOut, OcrPageReadOut
 from tessellate.core import (
+    activity,
     deps,
     ocr,
     pdfpages,
@@ -121,10 +122,20 @@ def _read_range(
     requested = len(indices)
     limit = MAX_TESSERACT_RANGE_PAGES if reader in rf.LOCAL_READERS else MAX_RANGE_PAGES
     capped = indices[:limit]
-    pages = [rf._read_page(path, index, reader, key) for index in capped]
+    pages: list[OcrPageReadOut] = []
+    #: An Activity-panel job (decision 70): it lists, counts pages done, and Stop
+    #: ends it between two pages, keeping what was read.
+    with activity.track("ocr-range", f"Reading {len(capped)} page(s) of {path.name[:60]}") as job:
+        for done, index in enumerate(capped):
+            if job.stopped:
+                break
+            job.update(done, len(capped), f"Reading page {index + 1}")
+            pages.append(rf._read_page(path, index, reader, key))
     read = sum(1 for page in pages if page.text)
     note = ""
-    if requested > len(capped):
+    if len(pages) < len(capped):
+        note = f" Stopped after {len(pages)} page(s)."
+    elif requested > len(capped):
         last = capped[-1] + 1
         note = (
             f" Stopped after {len(capped)} pages (the limit for one go), "

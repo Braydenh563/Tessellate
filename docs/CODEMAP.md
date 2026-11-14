@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2789, CSS sections 525, backend routes 721, backend modules 11030, test files 2859, tests 22630, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8509, frontend ids 2789, CSS sections 525, backend routes 721, backend modules 11030, test files 2859, tests 22631, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8509)
 
@@ -13665,7 +13665,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/files/exports/{filename}` | GET | `download_export` | src/tessellate/api/routes_files.py:1226 |
 | `/files/gallery` | GET | `list_attachment_gallery` | src/tessellate/api/routes_files.py:303 |
 | `/files/open-exports-folder` | POST | `open_exports_folder` | src/tessellate/api/routes_files.py:1237 |
-| `/files/readings` | GET | `file_readings` | src/tessellate/api/routes_files_readings.py:470 |
+| `/files/readings` | GET | `file_readings` | src/tessellate/api/routes_files_readings.py:481 |
 | `/files/restore` | POST | `restore_file` | src/tessellate/api/routes_files.py:1002 |
 | `/files/save` | POST | `save_generated_file` | src/tessellate/api/routes_files.py:1140 |
 | `/files/{attachment_id}` | DELETE | `delete_file` | src/tessellate/api/routes_files.py:965 |
@@ -13673,17 +13673,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/files/{attachment_id}` | PUT | `rename_file` | src/tessellate/api/routes_files.py:1034 |
 | `/files/{attachment_id}/analyse` | POST | `analyse_attachment` | src/tessellate/api/routes_files.py:629 |
 | `/files/{attachment_id}/html-preview` | GET | `attached_file_html_preview` | src/tessellate/api/routes_files.py:920 |
-| `/files/{attachment_id}/ocr-clean-loops` | POST | `clean_attachment_reading_loops` | src/tessellate/api/routes_files_readings.py:673 |
-| `/files/{attachment_id}/ocr-page-read` | POST | `attachment_ocr_page_read` | src/tessellate/api/routes_files_readings.py:202 |
-| `/files/{attachment_id}/ocr-range-read` | POST | `attachment_ocr_range_read` | src/tessellate/api/routes_files_readings.py:166 |
+| `/files/{attachment_id}/ocr-clean-loops` | POST | `clean_attachment_reading_loops` | src/tessellate/api/routes_files_readings.py:684 |
+| `/files/{attachment_id}/ocr-page-read` | POST | `attachment_ocr_page_read` | src/tessellate/api/routes_files_readings.py:213 |
+| `/files/{attachment_id}/ocr-range-read` | POST | `attachment_ocr_range_read` | src/tessellate/api/routes_files_readings.py:177 |
 | `/files/{attachment_id}/ocr-regions` | GET | `attachment_ocr_regions` | src/tessellate/api/routes_files_ocr.py:637 |
-| `/files/{attachment_id}/page-caption` | POST | `attachment_page_caption` | src/tessellate/api/routes_files_readings.py:422 |
-| `/files/{attachment_id}/page-reads` | GET | `attachment_page_reads` | src/tessellate/api/routes_files_readings.py:494 |
-| `/files/{attachment_id}/page-reads/{page}` | DELETE | `delete_attachment_page_read` | src/tessellate/api/routes_files_readings.py:551 |
+| `/files/{attachment_id}/page-caption` | POST | `attachment_page_caption` | src/tessellate/api/routes_files_readings.py:433 |
+| `/files/{attachment_id}/page-reads` | GET | `attachment_page_reads` | src/tessellate/api/routes_files_readings.py:505 |
+| `/files/{attachment_id}/page-reads/{page}` | DELETE | `delete_attachment_page_read` | src/tessellate/api/routes_files_readings.py:562 |
 | `/files/{attachment_id}/pdf-info` | GET | `attached_file_pdf_info` | src/tessellate/api/routes_files.py:826 |
 | `/files/{attachment_id}/pdf-page/{index}` | GET | `attached_file_pdf_page` | src/tessellate/api/routes_files.py:862 |
-| `/files/{attachment_id}/readings/{source}` | DELETE | `delete_attachment_reading` | src/tessellate/api/routes_files_readings.py:610 |
-| `/files/{attachment_id}/region-read` | POST | `attachment_region_read` | src/tessellate/api/routes_files_readings.py:388 |
+| `/files/{attachment_id}/readings/{source}` | DELETE | `delete_attachment_reading` | src/tessellate/api/routes_files_readings.py:621 |
+| `/files/{attachment_id}/region-read` | POST | `attachment_region_read` | src/tessellate/api/routes_files_readings.py:399 |
 | `/files/{attachment_id}/text` | GET | `attached_file_text` | src/tessellate/api/routes_files.py:710 |
 | `/files/{attachment_id}/text` | PUT | `save_attached_file_text` | src/tessellate/api/routes_files.py:760 |
 | `/files/{name}` | GET | `translate_file` | src/tessellate/api/routes_translate.py:27 |
@@ -13803,16 +13803,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/{upload_id}/caption` | POST | `caption_media` | src/tessellate/api/routes_files.py:2024 |
 | `/media/{upload_id}/library` | POST | `save_media_to_library` | src/tessellate/api/routes_files.py:2001 |
 | `/media/{upload_id}/ocr` | POST | `ocr_media` | src/tessellate/api/routes_files.py:2129 |
-| `/media/{upload_id}/ocr-clean-loops` | POST | `clean_media_reading_loops` | src/tessellate/api/routes_files_readings.py:699 |
-| `/media/{upload_id}/ocr-page-read` | POST | `media_ocr_page_read` | src/tessellate/api/routes_files_readings.py:219 |
-| `/media/{upload_id}/ocr-range-read` | POST | `media_ocr_range_read` | src/tessellate/api/routes_files_readings.py:184 |
+| `/media/{upload_id}/ocr-clean-loops` | POST | `clean_media_reading_loops` | src/tessellate/api/routes_files_readings.py:710 |
+| `/media/{upload_id}/ocr-page-read` | POST | `media_ocr_page_read` | src/tessellate/api/routes_files_readings.py:230 |
+| `/media/{upload_id}/ocr-range-read` | POST | `media_ocr_range_read` | src/tessellate/api/routes_files_readings.py:195 |
 | `/media/{upload_id}/ocr-regions` | GET | `media_ocr_regions` | src/tessellate/api/routes_files_ocr.py:603 |
-| `/media/{upload_id}/page-caption` | POST | `media_page_caption` | src/tessellate/api/routes_files_readings.py:443 |
-| `/media/{upload_id}/page-reads` | GET | `media_page_reads` | src/tessellate/api/routes_files_readings.py:510 |
-| `/media/{upload_id}/page-reads/{page}` | DELETE | `delete_media_page_read` | src/tessellate/api/routes_files_readings.py:565 |
-| `/media/{upload_id}/readings/{source}` | DELETE | `delete_media_reading` | src/tessellate/api/routes_files_readings.py:600 |
-| `/media/{upload_id}/region-read` | POST | `media_region_read` | src/tessellate/api/routes_files_readings.py:408 |
-| `/media/{upload_id}/vision-ocr` | POST | `vision_ocr_media` | src/tessellate/api/routes_files_readings.py:790 |
+| `/media/{upload_id}/page-caption` | POST | `media_page_caption` | src/tessellate/api/routes_files_readings.py:454 |
+| `/media/{upload_id}/page-reads` | GET | `media_page_reads` | src/tessellate/api/routes_files_readings.py:521 |
+| `/media/{upload_id}/page-reads/{page}` | DELETE | `delete_media_page_read` | src/tessellate/api/routes_files_readings.py:576 |
+| `/media/{upload_id}/readings/{source}` | DELETE | `delete_media_reading` | src/tessellate/api/routes_files_readings.py:611 |
+| `/media/{upload_id}/region-read` | POST | `media_region_read` | src/tessellate/api/routes_files_readings.py:419 |
+| `/media/{upload_id}/vision-ocr` | POST | `vision_ocr_media` | src/tessellate/api/routes_files_readings.py:801 |
 | `/meetings` | POST | `create_meeting` | src/tessellate/api/routes_meetings.py:52 |
 | `/memory` | GET | `list_memory` | src/tessellate/api/routes_settings.py:1728 |
 | `/memory` | POST | `add_memory` | src/tessellate/api/routes_settings.py:1762 |
@@ -13879,8 +13879,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/read/near` | POST | `near_rows` | src/tessellate/api/routes_read.py:139 |
 | `/read/offers` | POST | `note_offers` | src/tessellate/api/routes_read.py:71 |
 | `/read/words` | GET | `setting_words` | src/tessellate/api/routes_read.py:124 |
-| `/reading-bin/{bin_id}/purge` | DELETE | `purge_binned_reading` | src/tessellate/api/routes_files_readings.py:644 |
-| `/reading-bin/{bin_id}/restore` | POST | `restore_binned_reading` | src/tessellate/api/routes_files_readings.py:626 |
+| `/reading-bin/{bin_id}/purge` | DELETE | `purge_binned_reading` | src/tessellate/api/routes_files_readings.py:655 |
+| `/reading-bin/{bin_id}/restore` | POST | `restore_binned_reading` | src/tessellate/api/routes_files_readings.py:637 |
 | `/receipt` | GET | `receipt` | src/tessellate/api/routes_privacy.py:103 |
 | `/recent` | DELETE | `forget_recent_question` | src/tessellate/api/routes_chat_meta.py:49 |
 | `/recent` | GET | `recent_questions` | src/tessellate/api/routes_chat_meta.py:43 |
@@ -22607,46 +22607,46 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FileReadingOut` | src/tessellate/api/routes_files_readings.py:460 |
-| `OcrRangeReadOut` | src/tessellate/api/routes_files_readings.py:33 |
-| `OcrRegionReadOut` | src/tessellate/api/routes_files_readings.py:236 |
-| `ReadingBinnedOut` | src/tessellate/api/routes_files_readings.py:577 |
-| `ReadingRestoredOut` | src/tessellate/api/routes_files_readings.py:619 |
-| `VisionOcrBody` | src/tessellate/api/routes_files_readings.py:716 |
-| `_bin_file_reading` | src/tessellate/api/routes_files_readings.py:586 |
-| `_clean_reading_fields` | src/tessellate/api/routes_files_readings.py:653 |
-| `_forget_page_read` | src/tessellate/api/routes_files_readings.py:520 |
-| `_media_out` | src/tessellate/api/routes_files_readings.py:776 |
-| `_parse_page_spec` | src/tessellate/api/routes_files_readings.py:57 |
-| `_read_range` | src/tessellate/api/routes_files_readings.py:92 |
-| `_read_region` | src/tessellate/api/routes_files_readings.py:337 |
-| `_region_image` | src/tessellate/api/routes_files_readings.py:267 |
-| `_region_model` | src/tessellate/api/routes_files_readings.py:300 |
-| `_region_text` | src/tessellate/api/routes_files_readings.py:322 |
-| `_require_region_reader` | src/tessellate/api/routes_files_readings.py:290 |
-| `_require_vision_model` | src/tessellate/api/routes_files_readings.py:764 |
-| `_store_typed_reading` | src/tessellate/api/routes_files_readings.py:744 |
-| `_stored_range` | src/tessellate/api/routes_files_readings.py:142 |
-| `attachment_ocr_page_read` | src/tessellate/api/routes_files_readings.py:203 |
-| `attachment_ocr_range_read` | src/tessellate/api/routes_files_readings.py:167 |
-| `attachment_page_caption` | src/tessellate/api/routes_files_readings.py:423 |
-| `attachment_page_reads` | src/tessellate/api/routes_files_readings.py:495 |
-| `attachment_region_read` | src/tessellate/api/routes_files_readings.py:389 |
-| `clean_attachment_reading_loops` | src/tessellate/api/routes_files_readings.py:674 |
-| `clean_media_reading_loops` | src/tessellate/api/routes_files_readings.py:700 |
-| `delete_attachment_page_read` | src/tessellate/api/routes_files_readings.py:552 |
-| `delete_attachment_reading` | src/tessellate/api/routes_files_readings.py:611 |
-| `delete_media_page_read` | src/tessellate/api/routes_files_readings.py:566 |
-| `delete_media_reading` | src/tessellate/api/routes_files_readings.py:601 |
-| `file_readings` | src/tessellate/api/routes_files_readings.py:471 |
-| `media_ocr_page_read` | src/tessellate/api/routes_files_readings.py:220 |
-| `media_ocr_range_read` | src/tessellate/api/routes_files_readings.py:185 |
-| `media_page_caption` | src/tessellate/api/routes_files_readings.py:444 |
-| `media_page_reads` | src/tessellate/api/routes_files_readings.py:511 |
-| `media_region_read` | src/tessellate/api/routes_files_readings.py:409 |
-| `purge_binned_reading` | src/tessellate/api/routes_files_readings.py:645 |
-| `restore_binned_reading` | src/tessellate/api/routes_files_readings.py:627 |
-| `vision_ocr_media` | src/tessellate/api/routes_files_readings.py:791 |
+| `FileReadingOut` | src/tessellate/api/routes_files_readings.py:471 |
+| `OcrRangeReadOut` | src/tessellate/api/routes_files_readings.py:34 |
+| `OcrRegionReadOut` | src/tessellate/api/routes_files_readings.py:247 |
+| `ReadingBinnedOut` | src/tessellate/api/routes_files_readings.py:588 |
+| `ReadingRestoredOut` | src/tessellate/api/routes_files_readings.py:630 |
+| `VisionOcrBody` | src/tessellate/api/routes_files_readings.py:727 |
+| `_bin_file_reading` | src/tessellate/api/routes_files_readings.py:597 |
+| `_clean_reading_fields` | src/tessellate/api/routes_files_readings.py:664 |
+| `_forget_page_read` | src/tessellate/api/routes_files_readings.py:531 |
+| `_media_out` | src/tessellate/api/routes_files_readings.py:787 |
+| `_parse_page_spec` | src/tessellate/api/routes_files_readings.py:58 |
+| `_read_range` | src/tessellate/api/routes_files_readings.py:93 |
+| `_read_region` | src/tessellate/api/routes_files_readings.py:348 |
+| `_region_image` | src/tessellate/api/routes_files_readings.py:278 |
+| `_region_model` | src/tessellate/api/routes_files_readings.py:311 |
+| `_region_text` | src/tessellate/api/routes_files_readings.py:333 |
+| `_require_region_reader` | src/tessellate/api/routes_files_readings.py:301 |
+| `_require_vision_model` | src/tessellate/api/routes_files_readings.py:775 |
+| `_store_typed_reading` | src/tessellate/api/routes_files_readings.py:755 |
+| `_stored_range` | src/tessellate/api/routes_files_readings.py:153 |
+| `attachment_ocr_page_read` | src/tessellate/api/routes_files_readings.py:214 |
+| `attachment_ocr_range_read` | src/tessellate/api/routes_files_readings.py:178 |
+| `attachment_page_caption` | src/tessellate/api/routes_files_readings.py:434 |
+| `attachment_page_reads` | src/tessellate/api/routes_files_readings.py:506 |
+| `attachment_region_read` | src/tessellate/api/routes_files_readings.py:400 |
+| `clean_attachment_reading_loops` | src/tessellate/api/routes_files_readings.py:685 |
+| `clean_media_reading_loops` | src/tessellate/api/routes_files_readings.py:711 |
+| `delete_attachment_page_read` | src/tessellate/api/routes_files_readings.py:563 |
+| `delete_attachment_reading` | src/tessellate/api/routes_files_readings.py:622 |
+| `delete_media_page_read` | src/tessellate/api/routes_files_readings.py:577 |
+| `delete_media_reading` | src/tessellate/api/routes_files_readings.py:612 |
+| `file_readings` | src/tessellate/api/routes_files_readings.py:482 |
+| `media_ocr_page_read` | src/tessellate/api/routes_files_readings.py:231 |
+| `media_ocr_range_read` | src/tessellate/api/routes_files_readings.py:196 |
+| `media_page_caption` | src/tessellate/api/routes_files_readings.py:455 |
+| `media_page_reads` | src/tessellate/api/routes_files_readings.py:522 |
+| `media_region_read` | src/tessellate/api/routes_files_readings.py:420 |
+| `purge_binned_reading` | src/tessellate/api/routes_files_readings.py:656 |
+| `restore_binned_reading` | src/tessellate/api/routes_files_readings.py:638 |
+| `vision_ocr_media` | src/tessellate/api/routes_files_readings.py:802 |
 
 ### src/tessellate/api/routes_folder_sync.py (3)
 
@@ -28296,7 +28296,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22630)
+## Tests (22631)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30153,7 +30153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ocr_find_marks.py | 3 |
 | tests/test_ocr_model.py | 17 |
 | tests/test_ocr_old_cache_hint.py | 3 |
-| tests/test_ocr_page.py | 24 |
+| tests/test_ocr_page.py | 25 |
 | tests/test_ocr_pdf_regions.py | 6 |
 | tests/test_ocr_prep_1568.py | 26 |
 | tests/test_ocr_rapidocr.py | 9 |
@@ -31577,14 +31577,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:652 |
+| Needs hardware | docs/roadmap/LEDGER.md:651 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:642 |
+| Owner calls | docs/roadmap/LEDGER.md:641 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31764,7 +31764,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:789 |
+| Plan session briefs | docs/roadmap/LEDGER.md:788 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31818,25 +31818,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:805 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:889 |
+| chat | docs/roadmap/LEDGER.md:804 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:888 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:829 |
-| general | docs/roadmap/LEDGER.md:602 |
+| documents | docs/roadmap/LEDGER.md:828 |
+| general | docs/roadmap/LEDGER.md:601 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:793 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:901 |
+| graph | docs/roadmap/LEDGER.md:792 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:900 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:841 |
+| mindmap | docs/roadmap/LEDGER.md:840 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:865 |
+| timeline | docs/roadmap/LEDGER.md:864 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:853 |
+| ui-modernisation | docs/roadmap/LEDGER.md:852 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:817 |
+| whiteboard | docs/roadmap/LEDGER.md:816 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:877 |
+| world-class | docs/roadmap/LEDGER.md:876 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

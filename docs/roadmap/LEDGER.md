@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 117 | 29 | 3 | 10 | 146 |
+| world-class | 0 | 116 | 29 | 3 | 10 | 145 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 506 | 100 | 5 | 121 | 978 |
+| all | 372 | 505 | 100 | 5 | 121 | 977 |
 
 ## graph
 
@@ -534,7 +534,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'
-- [ ] **L-world-class-67** `world-class` open, M: OCR reading, engine installs and transcription as Activity-panel jobs with progress per page and Stop (decision 70). From WORLD_CLASS_PLAN.md:3954. Evidence: 28.4 row 6 (:3954) and 28.5 row 8 (:3985) not marked built; decision 70 (:3909)
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
