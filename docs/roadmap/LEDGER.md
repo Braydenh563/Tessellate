@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 0 | 7 | 4 | 0 | 0 | 11 |
+| ui-modernisation | 0 | 6 | 4 | 0 | 0 | 10 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 439 | 430 | 130 | 2 | 162 | 999 |
+| all | 439 | 429 | 130 | 2 | 162 | 998 |
 
 ## graph
 
@@ -361,7 +361,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-61** `ui-modernisation` partly, M: Map perf budgets still failing (built: the View menu, 587px to 427px with the seven branch and report rows behind one Branches and reports submenu row and the map's Present row in the Map group, mapviewmenu.js 8 of 8 at 1440 and 390; the theme dialog fit: four group blocks in two columns from 1100px, 1002px to 669px tall at 1440x900, maptheme.js 24 of 24) after the L-ui-modernisation-77 repairs. From L-ui-modernisation-77. Evidence: mapviewmenu.js: the map's View menu is 587px (25 rows, columns 452 and 572) against a 450 ceiling, the board's is 427px, so the Map group (9 rows) wants a submenu and the columns a rebalance; maptheme.js: the theme dialog is 924px tall in a 900px window and scrolls (23 of 24 pass); mapperf.js: worst zoom frame 100ms at 200 topics and 667ms at 500, and open to painted 1238ms at 500, against 50ms and 1s on this runner (36 of 39, 78s) Renamed from L-general-57 2026-11-14 (general ids clashed across branches).
 - [ ] **L-ui-modernisation-62** `ui-modernisation` open, S: Companion act hand-over after a tab switch forces 24 to 46 ms at 4x. From scratchpad buddylag.js 2026-11-14. Evidence: With Atlas on at 4x CPU, the perch look after a tab switch (avatars.js afterClean, nameMarkBuddyAfterCleanTask) forced 74 ms of layout on a repeat Home visit and 26 on Library (13 on Notes); it waits for a frame with no page writes (nmb.pageAt) but Home's widgets fill after that frame Narrowed 2026-11-14 (scratchpad perch2 to perch5): every slow look found the page clean on its first try (nmb.afterClean wrapped: fn, tries 6), no tab-page mutation in the 120 ms before the worst read, and content-visibility off changed nothing (5 to 46 ms either way). A CDP trace over three rounds of four tabs (126 looks) puts the top two at 46 and 43 ms, both UpdateLayoutTree under nameMarkBuddyBlend (avatars.js 9971) called from nameMarkBuddyAct: getAnimations and the parts' computed styles recalc the figure's own svg after the act's class write; the third (19.5 ms) is the tab page's focus (navigation.js tabPageScroller). Fix is in Blend: skip the reads when the figure has no running act or walk animation. Renamed from L-general-67 2026-11-14 (general ids clashed across branches).
 - [ ] **L-ui-modernisation-76** `ui-modernisation` open, M: Companion sweeps still failing (interact, life, menu, pin, sleeptab, scroll, smooth, react, perf): compare each asserted behaviour with the current buddy, then change the sweep or the app. From L-ui-modernisation-75. Evidence: scratchpad/ui-sweeps/companioninteract.js, companionlife.js, companionmenu.js, companionpin.js, companionsleeptab.js, companionscroll.js, companionsmooth.js, companionreact.js, companionperf.js fail after the nmb hooks; behaviour drifted Renamed from L-ui-modernisation-76 2026-11-14 (ids clashed across branches).
-- [ ] **L-ui-modernisation-93** `ui-modernisation` open, S: Delete the dead SVG-graph CSS (.graph-node, .graph-edge, .graph-core, .graph-label rules) with the tests that pin them. From L-ui-modernisation-30. Evidence: frontend/css/02-chat-graph.css, 04-chat-dock-appearance.css, 07-whiteboard-misc.css, graph-lazy.css hold about 30 rules for .graph-node, .graph-edge, .graph-core and .graph-label; the graph is a canvas (graph-canvas.js) and no JS creates those elements (grep: only comments and graph-edge-hover on the canvas). The unused-names test passes them because comments name the tokens. Rules are dead but tests/test_graph_hover_fade.py, test_motion_tokens.py and test_svg_paint_attributes.py read some. Renamed from L-ui-modernisation-93 2026-11-14 (ids clashed across branches).
 
 ## timeline
 

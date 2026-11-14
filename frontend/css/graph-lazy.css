@@ -316,13 +316,7 @@
   margin-inline: var(--space-2);
   background: var(--border);
 }
-/* A category heading in a tree layout, a real node in the drawing, but not
-   a note: hollow, so it never reads as something you can open. */
-.graph-core.graph-group {
-  fill-opacity: 0.25;
-  stroke: currentColor;
-  stroke-width: 2;
-}
+
 /* Filing edges (category → note) are quieter than a link the user made. */
 .graph-edge-filing {
   stroke-dasharray: 3 3;

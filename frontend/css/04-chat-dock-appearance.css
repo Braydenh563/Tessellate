@@ -1523,30 +1523,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   height: 100%;
 }
 
-/* --- graph: depth, halos and legible labels -------------------------------- */
-/* These come after the base .graph-node rules so they win the specificity tie
-   and the halo never picks up the node's stroke. */
-.graph-node text.graph-label {
-  font-weight: 500;
-  fill: var(--ink);
-  paint-order: stroke;
-  stroke: #ffffff;
-  stroke-width: 4px;
-  stroke-opacity: 0.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-:root[data-mode="dark"] .graph-node text.graph-label {
-  fill: #ffffff;
-  stroke: #000000;
-}
-
-/* Dimmed nodes fade rather than vanish, so context is never lost. */
-.graph-node.graph-dim {
-  opacity: 0.18;
-}
-
 /* --- graph: physics sliders + node popup ----------------------------------- */
 /* Kept for the timeline's own popup, which still shows one date chip. The
    graph node panel's facts are a muted line now (.graph-popup-meta below). */

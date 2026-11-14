@@ -1141,11 +1141,6 @@ body.graph-fullscreen-on .sidebar-panel {
 #graph-empty.hidden {
   display: none;
 }
-.graph-edge {
-  stroke: var(--muted);
-  stroke-opacity: 0.55;
-  stroke-width: 1.6;
-}
 /* A line's peek (`openGraphLinkPeek`, graph.js): the popover shell at the
    pointer, parked on a one-pixel anchor where the click was. The kind, then
    the two notes as quiet rows, then the reason and its facts line, then a
@@ -1250,101 +1245,12 @@ body.graph-fullscreen-on .sidebar-panel {
 .graph-trace-route-chip[data-route="2"] .graph-trace-route-swatch {
   background: var(--warn);
 }
-.graph-node {
-  cursor: pointer;
-}
-/* --- hovering a node --------------------------------------------------------
-   Asked for: "can you make graph nodes temporarily expand to fill their glow
-   bubble when I hover over them or smth?? I feel like the graph nodes could
-   look slightly nicer, cooler, more professional and more modern. visually".
-   The dot grows half way out to the halo it already had, and the halo steps
-   back a little further and brightens slightly, so the glow is still a glow
-   around it rather than something the dot has eaten. It went the whole
-   distance first and was shown: "the halo growth on the nodes is a bit
-   visually jarring tbh", so it is half the travel and half the light now.
-   The dot grows by 1.2, the middle of the 1.15 to 1.33 that half the way
-   out to the halo makes over the radii a node can have (nothing sets a
-   per-node factor any more, so the token that carried it was retired).
-   `transform-box: fill-box` is what makes `transform-origin: center` mean the
-   circle's own centre. Without it the origin is the SVG viewport's, and every
-   node would fly across the canvas instead of growing in place. */
-.graph-node:hover .graph-core,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
-  transform: scale(1.2);
-}
-.graph-node .graph-core {
-  stroke: var(--card);
-  stroke-width: 2px;
-  transform-box: fill-box;
-  transform-origin: center;
-  /* The filter is one node's hover glow: it repaints that circle's own box,
-     not a blurred surface and what lies behind it. */
-  transition:
-    r var(--motion-fast) var(--ease-out),
-    stroke-width var(--motion-fast) var(--ease-out),
-    filter var(--motion-fast) var(--ease-out),
-    transform var(--motion-base) var(--ease-out);
-}
-/* The growth is the whole point of the effect, so it is not removed under this
-   preference, only the animating of it: the node is simply already large while
-   the pointer is on it. Taking the scale away as well would leave a reader who
-   has asked for less motion with no hover feedback on the graph at all beyond
-   a slightly brighter halo. */
-:where(:root[data-motion="reduced"]) .graph-node .graph-core {
-  transition: none;
-}
-/* Well-connected "hub" notes get a bright ring so structure is visible. */
-.graph-node .graph-core.graph-hub {
-  stroke: var(--accent);
-  stroke-width: 2.5px;
-}
-.graph-node:hover .graph-core,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3px;
-}
-/* The node the pointer is over: a bright accent ring + glow (hover-spotlight). */
-.graph-node.graph-focus .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3.5px;
-  filter: drop-shadow(0 0 6px var(--accent));
-}
-/* Labels-off mode: hide labels until a node is hovered/spotlit.
-   The label layer is a sibling of the node-circle layer (graph.js appends
-   both directly under <canvas>, one node per <g> in each), never a
-   descendant of .graph-node: so this can't be scoped through .graph-node
-   the way the focus ring on the circle itself is. graphLabelSelection in
-   graph.js mirrors the "graph-focus" class from the hovered node onto the
-   matching label's own <g> instead. */
-.graph-labels-hidden .graph-label {
-  opacity: 0;
-  transition: opacity var(--motion-slow) var(--ease-out);
-}
-.graph-labels-hidden g.graph-focus .graph-label {
-  opacity: 1;
-}
+
 /* The stats line is a chip in the dock's identity zone now (GRAPH_PLAN.md
    Phase 2), not a paragraph between the controls and the map, so it carries
    no margins of its own and takes the dock's own type scale. */
 .graph-stats {
   margin: 0;
-}
-.graph-node text,
-.graph-label {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  fill: var(--ink);
-  text-anchor: middle;
-  pointer-events: none;
-  user-select: none;
-  /* A subtle halo so labels stay legible over edges and other nodes */
-  paint-order: stroke;
-  stroke: var(--card);
-  stroke-width: 4px;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 .legend-item {
   margin-right: 0.8rem;
@@ -2918,20 +2824,7 @@ html {
   opacity: 0.4;
   text-decoration: line-through;
 }
-.graph-edge.graph-dim {
-  opacity: 0.06;
-}
-/* The hover's dimming fades in and out rather than flipping (the owner,
-   2026-10-04: "the labels and stuff just suddenly appear"); the canvas
-   renderer does the same per frame (GC_FADE_MS in graph-canvas.js). */
-.graph-node,
-.graph-edge {
-  transition: opacity var(--motion-slow) var(--ease-out);
-}
-.graph-node.graph-held .graph-core {
-  stroke: var(--ink);
-  stroke-dasharray: 3 2;
-}
+
 /* A highlight box, not a filter: it stays short beside the map's name. The
    field is the dock's `.search-field` now (INBOX 621), so the cap is on it. */
 .dock[data-dock-name="graph"] .dock-search {

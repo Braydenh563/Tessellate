@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
 - LEDGER: every row this branch made under `general` (35 to 66) and L-graph-19 is now L-ui-modernisation-63 to 93, because general ids clashed across parallel branches.

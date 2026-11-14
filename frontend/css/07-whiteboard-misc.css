@@ -2184,9 +2184,6 @@ body.scroll-top-visible .skills-split > .tab-main {
    while it is on. It was reported as unusable, and the largest part of that
    was that the map never responded at all, the two ends were chosen from
    select boxes listing every note in the notebook. */
-#graph-card.is-tracing .graph-node {
-  cursor: crosshair;
-}
 #graph-card.is-tracing {
   outline: 2px solid var(--accent-soft);
   outline-offset: -2px;
