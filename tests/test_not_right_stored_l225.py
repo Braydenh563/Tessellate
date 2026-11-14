@@ -16,9 +16,11 @@ def test_the_marks_are_counted_and_cleared_together(client):
     one = client.post("/entries", json={"content": "sourdough starter schedule"}).json()["id"]
     two = client.post("/entries", json={"content": "sourdough loaf shaping"}).json()["id"]
     assert client.get("/learned/answer-verdicts").json() == {"count": 0}
-    assert _mark(client, one).status_code == 201 and _mark(client, two, "loaf").status_code == 201
+    marked = [_mark(client, one).status_code, _mark(client, two, "loaf").status_code]
+    assert marked == [201, 201]
     assert client.get("/learned/answer-verdicts").json() == {"count": 2}
-    assert client.delete("/learned/answer-verdicts").json() == {"removed": 2}
+    removed = client.delete("/learned/answer-verdicts").json()
+    assert removed == {"removed": 2}
     assert client.get("/learned/answer-verdicts").json() == {"count": 0}
 
 

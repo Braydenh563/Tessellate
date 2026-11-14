@@ -8,7 +8,6 @@ import pytest
 
 from tessellate.ai import composer, help_chat
 
-_DANGLING = re.compile(r"^(?:Press|Open|Click|Use)\b[^.]*\b(?:there|it)\b", re.I)
 
 
 @pytest.mark.parametrize("question", ["how do I record a meeting"])

@@ -785,8 +785,13 @@ def recurring_schedule(sentence: str) -> bool:
 
 #: A "now" scope on the end of an ask ("what is most important today"), as regex source for the composer's
 #: plan asks (composer_plan `_PLAN`), so the day words stay in this file (tests/test_one_reader.py).
-NOW_SCOPE = r"right now|now|today|at the moment|at present|this morning|this afternoon|tonight"
-NOW_SCOPE_SHORT = r"right now|now|today"
+_NOW_SCOPE = r"right now|now|today|at the moment|at present|this morning|this afternoon|tonight"
+_NOW_SCOPE_SHORT = r"right now|now|today"
+
+
+def now_scope(short: bool = False) -> str:
+    """The "now" scope words as regex source (`short`: only "right now", "now", "today")."""
+    return _NOW_SCOPE_SHORT if short else _NOW_SCOPE
 _EVENING_SAID = lazy_compile(r"\b(?:after work|in the evening|this evening|tonight|after dinner)\b", re.IGNORECASE)
 _MORNING_SAID = lazy_compile(r"\b(?:before work|in the morning|this morning|early morning|at dawn)\b", re.IGNORECASE)
 

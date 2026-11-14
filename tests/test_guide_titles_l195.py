@@ -47,3 +47,18 @@ def test_the_lead_for_a_title_is_a_sentence_that_stands_alone(topic_id):
     assert len(line.split()) >= 5, (topic_id, line)
     assert not line.startswith(DANGLING), (topic_id, line)
     assert len(line.split()) <= 60, (topic_id, line)
+
+
+def test_the_title_reading_has_no_open_ended_group_and_a_bounded_input() -> None:
+    """CodeQL: "(.+?)\\s*[?.!]*\\s*$" backtracked on runs of tabs. The lead is now the only pattern: its
+    alternatives are fixed words with no repeat at all, and the question is cut to 300 characters before it."""
+    import re as _re
+
+    from tessellate.ai import guide_titles
+
+    pats = [v.pattern for v in vars(guide_titles).values() if isinstance(v, _re.Pattern)]
+    assert pats == [guide_titles._TITLE_LEAD.pattern]
+    assert not _re.search(r"[*+]|\{\d*,", guide_titles._TITLE_LEAD.pattern)
+    long = "tell me about " + "\t" * 50_000 + "x"
+    assert guide_titles.asked_title(long) == "about"  # cut at 300: the tabs fold away, so no title is left past "tell me"
+    assert guide_titles.asked_title("Tell me about  Managing tags ?!") == "managing tags"
