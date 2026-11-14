@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 87 | 171 | 2 | 59 | 258 |
+| chat | 0 | 86 | 171 | 2 | 59 | 257 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 461 | 240 | 2 | 183 | 1060 |
+| all | 359 | 460 | 240 | 2 | 183 | 1059 |
 
 ## graph
 
@@ -36,7 +36,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L146** `chat` open, M: Interrupted glide restarts at ease peak speed. From OPEN.md:1489. Evidence: No fix found in atlas.js by grep (13-16px vs 7px step recorded)
 - [ ] **L148** `chat` open, M: Atlas props contrast, throw restitution/friction variety (Brief 88). From SESSION_BRIEFS.md:251. Evidence: avatars.js:6618 throw squash on landing; no per-throw restitution/spin; props contrast unmeasured
 - [ ] **L149** `chat` open, M: atlasSmooth/atlasStem string building per drawn frame 3-5 ms at 4x. From a30v-1103.md Found, not fixed. Evidence: Source recommends coarser stem samples; no commit found
-- [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found Progress 2026-11-14: renderer repaired and a full re-render measured. Built: scripts/render_desk_frames.js drives the tail through atlasTailFrame.kit, pins the orbit rings, restores the dropped tumble frame and pins the face's fit scale (it shot half the takes at 0.75); the feminine idle wrap is then 1.9 times the median step (limit 3), both looks. Not shipped: the full set moves the registered geometry (canvas 290x308 and 269x308 against 289x304 and 275x298), and 20 tests tied to the old frames fail (test_overlay_rest_1670 feet line and rest, test_overlay_ride_1670, test_overlay_bob_1670, test_overlay_life_1670 veil, test_overlay_desk_acts_1710, test_overlay_deskface_1704, test_overlay_palette_1724, test_overlay_tumble_1670, test_desk_wave_visible); idle-only replacement fails the veil, bob and feet-line tests. Exact step: re-render the whole set (PYTHONPATH=src BASE=<app> .venv/bin/python scripts/render_desk_frames.py), update sprites.LID_EYES and the engine's registered offsets to the new canvas, fix those tests' measured anchors (not thresholds), then drop the strict xfail in tests/test_overlay_seams_1683e.py and check the masculine blush ring with scratchpad/pngpixel.py.
 - [ ] **L151** `chat` open, M: Non-Atlas companions in the desk overlay (picker rows disabled). From overlay-1104.md Remaining. Evidence: INBOX 1656 item 3 'not done' in source; no later commit found
 - [ ] **L152** `chat` open, M: D5 edge spots/perch spells, A2 far-move sweep, A4 in-app presence spells, warps counts. From presence-desk-1108.md Left. Evidence: Source lists as not built; no later commit found
 - [ ] **L153** `chat` open, M: Vertical follow-through on landing/hop; settle exhale after startle (STARTLE_FOR). From life-1109.md Remaining. Evidence: No STARTLE_FOR in core/overlay/engine.py; follow-through not found
