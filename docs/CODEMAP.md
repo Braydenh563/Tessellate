@@ -31467,25 +31467,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
-| chat | docs/roadmap/LEDGER.md:24 |
+| chat | docs/roadmap/LEDGER.md:25 |
 | chat | docs/roadmap/LEDGER.md:955 |
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1039 |
-| documents | docs/roadmap/LEDGER.md:327 |
+| documents | docs/roadmap/LEDGER.md:328 |
 | documents | docs/roadmap/LEDGER.md:979 |
-| general | docs/roadmap/LEDGER.md:702 |
+| general | docs/roadmap/LEDGER.md:703 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:943 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1051 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:343 |
+| mindmap | docs/roadmap/LEDGER.md:344 |
 | mindmap | docs/roadmap/LEDGER.md:991 |
-| timeline | docs/roadmap/LEDGER.md:464 |
+| timeline | docs/roadmap/LEDGER.md:465 |
 | timeline | docs/roadmap/LEDGER.md:1015 |
-| ui-modernisation | docs/roadmap/LEDGER.md:347 |
+| ui-modernisation | docs/roadmap/LEDGER.md:348 |
 | ui-modernisation | docs/roadmap/LEDGER.md:1003 |
-| whiteboard | docs/roadmap/LEDGER.md:281 |
+| whiteboard | docs/roadmap/LEDGER.md:282 |
 | whiteboard | docs/roadmap/LEDGER.md:967 |
-| world-class | docs/roadmap/LEDGER.md:466 |
+| world-class | docs/roadmap/LEDGER.md:467 |
 | world-class | docs/roadmap/LEDGER.md:1027 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |

@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 0 | 0 | 0 | 0 | 0 |
+| graph | 0 | 0 | 1 | 0 | 0 | 1 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
@@ -16,10 +16,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 36 | 3 | 0 | 4 | 39 |
+| general | 0 | 36 | 2 | 0 | 4 | 38 |
 | all | 535 | 567 | 130 | 2 | 183 | 1232 |
 
 ## graph
+- [ ] **L-graph-19** `graph` partly, M: Sweep the 211 unowned open_scan hits in tests/test_[a-c]* to zero: reword, log or build each. From hub 2026-11-14 12:32Z, open_scan over tests/test_[a-c]*. Evidence: 211 hits listed 2026-11-14; b7248254 rewords 39 comments and renames 2 code names (173 left, nearly all fixture string literals); strict xfails at pa_1112:76 and r1_dates_1107:65 already rows L-chat-9 and L-chat-10
 
 ## chat
 
@@ -739,7 +740,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
-- [ ] **L-general-35** `general` partly, M: Sweep the 211 unowned open_scan hits in tests/test_[a-c]* to zero: reword, log or build each. From hub 2026-11-14 12:32Z, open_scan over tests/test_[a-c]*. Evidence: 211 hits listed 2026-11-14; b7248254 rewords 39 comments and renames 2 code names (173 left, nearly all fixture string literals); strict xfails at pa_1112:76 and r1_dates_1107:65 already rows L-chat-9 and L-chat-10
 
 ## Owner calls
 
