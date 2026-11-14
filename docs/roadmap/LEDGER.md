@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 143 | 29 | 3 | 10 | 172 |
+| world-class | 0 | 144 | 29 | 3 | 10 | 173 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 534 | 100 | 5 | 121 | 1039 |
+| all | 405 | 535 | 100 | 5 | 121 | 1040 |
 
 ## graph
 
@@ -549,7 +549,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-68** `world-class` open, S: Library and Reminders lists page by cursor on scroll; hide every control whose backend is not installed (B7, F2). From WORLD_CLASS_PLAN.md:649. Evidence: notes-list.js:3115 and timeline.js:715 page by cursor; Library and Reminders do not; settings-controls.js:2281 reads /capabilities for one control
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-70** `world-class` open, S: Subset Phosphor.woff2 to the icons the app uses. From WORLD_CLASS_PLAN.md:1951. Evidence: Phosphor.woff2 147,380 bytes whole (:1951, :781)
-- [ ] **L-world-class-71** `world-class` open, S: Load the boot stylesheets a closed surface does not need lazily. From WORLD_CLASS_PLAN.md:1951. Evidence: 12 stylesheets linked eagerly in index.html (:1951)
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
 - [ ] **L-world-class-74** `world-class` open, S: Honour a pasted #/Manual or #/Statistics at load, and give both lowercase addresses. From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802: router.js at its gzip cap, router-overlays.js adds the routes after boot
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
@@ -626,6 +625,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
+- [ ] **L-world-class-231** `world-class` open, S: Reproduce the 486 ms first document open at 2,000 notes and profile it before choosing a warm. From L-world-class-40, 2026-11-14. Evidence: Cold probe (fresh page each, Documents tab idle 6.5 s, 6 docs of 80 sections, 1440 wide): openDocument first call 35, 49, 46, 39 ms, second call 53 to 81 ms, so the 486 ms first open does not reproduce without the 2,000-note data; the cost is the data size, not a cold compile a warm can remove. Needs a profile at 2,000 notes before any third warm is written.
+- [ ] **L-world-class-232** `world-class` open, M: Move the next closed-surface rule blocks out of the boot stylesheets into their bundles' lazy sheets (Skills tab, run list, space dialogs, Connections dialog). From L-world-class-71, 2026-11-14. Evidence: L-world-class-71 moved only the OCR workspace's own rules (40 rules, 18 KB, boot CSS gzip 181,064 to 180,504). Still eager in the boot sheets: the Skills tab block (07, about 270 lines), the run list, the whiteboard and timeline blocks that only their bundles draw, the space dialogs and the Connections dialog. Each move needs the computed-style diff of the built surface (scratchpad probe: every property of every element, three widths, 0 different) and exclusion of any rule that shares a selector or a tie with a boot rule.
 
 ## general
 

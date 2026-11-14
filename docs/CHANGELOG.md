@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Start-up: the OCR workspace's own styles load with the Library bundle instead of at boot (boot CSS gzip 181,064 to 180,504 bytes); the first document open does not reproduce slow without a large library (L-world-class-71, L-world-class-40).
 - Start-up: the Guide's word index is built at the first question, not at import; the rest of the 2.1 s app import is 632 FastAPI route builds and third-party code (L-world-class-150).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
 - Undo: every preference written outside Settings (dock switches, saved lists, dictionary words) now reaches the one history and Ctrl+Z; 31 of 287 undo-coverage exemptions removed (L-world-class-31).

@@ -5596,31 +5596,6 @@ button.connection-row:is(:hover, :focus-visible) {
   /* The file name is allowed to run out of room; the title is not. */
   flex: 1 1 auto;
 }
-/* **The header, in two rows.** Reported: "fix the ui of the top bar". Measured
-   before touching it: with nine controls in one flex row, `Read this page with
-   AI` rendered 42.8px tall around 41px of content, and `Copy all` and `Save as
-   note` the same: every wide label had broken across two lines inside a
-   button sized for one, which is what made the bar look like a pile rather
-   than a toolbar. Identity and the exit belong on top; the tools belong on
-   their own row, grouped by what they do. */
-.ocr-head {
-  /* **One height for the strip and everything in it.** Reported: "none of the
-     top elements in the ocr workspace are aligned and are different heights."
-     Measured, and exactly right, in one row there were five: the Regions
-     checkbox label at 32px, the Fit/100% segment's buttons at 27.2, every
-     `.ghost.small` at 28, the enhanced dropdown at 35.6 and the pages box
-     somewhere else again. Nothing was wrong with any of them individually;
-     the strip simply never declared a height, so each control's size fell out
-     of whichever class it happened to carry. Same fix and same token as
-     `.library-head`, for the same reason its comment gives: one card, one
-     control height. 2.25rem = 36px, a whole multiple at 125% and 150% display
-     scaling, which is what keeps a 1px border off a half pixel. */
-  --control-h: var(--control-h-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
-}
 /* The sizing itself. `align-items: center` on the rows above only centres
    boxes of different heights against each other, it cannot make them the
    same height, which is what was actually reported. */
@@ -5661,26 +5636,6 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-3);
   min-width: 0;
 }
-
-/* Which file you are reading. Four surfaces open this dialog, so a header that
-   only said "Text on the page" was a header you had to close to understand. */
-.ocr-file {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-/* Where you are in the document, beside the two controls that change it. */
-
-.ocr-page-label {
-  min-width: 7.5rem;
-  text-align: center;
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
 /* Continuous mode: every page stacked, in the order they are in the file. */
 
 /* The reading's own actions, under the reading. `margin-top: auto` pins them
@@ -5691,255 +5646,12 @@ button.connection-row:is(:hover, :focus-visible) {
   padding-top: var(--space-2);
   border-top: 1px solid var(--border);
 }
-/* Delete sits apart from the three constructive actions beside it, a
-   destructive one does not belong in the middle of them, and `margin-left:
-   auto` is the same "push this one to the far end" rule the story-mode
-   button and the board panel's primary action already use elsewhere. */
-#ocr-delete-reading {
-  margin-left: auto;
-}
-/* Find, over the reading rather than over the picture, the one search this
-   workspace can answer that a text search over a transcription cannot, because
-   a hit here also dims every box it is not. */
-.ocr-find {
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--inner);
-  min-width: 0;
-}
-
-/* Same (0,1,1) rule as above, wanted this time, but spelled at the same
-   specificity so it cannot be read as accidental. */
-.ocr-find .ocr-find-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  background: none;
-  padding: 0;
-  /* **`border: none` measured as `3px solid rgb(240,242,245)`**, the bright
-     ring reported around this box ("fix the hard line around the find in what
-     was read textbox"). Same cause and same answer as `.ask-composer >
-     #question`, which documents it at length: the Appearance system sets
-     `border-style: var(--border-style) !important` on every input
-     (00-tokens-shell.css) so a user's chosen border style cannot be defeated
-     by a stray local rule, and forcing the style back to `solid` restores the
-     initial `medium` width, 3px, on a control every stylesheet involved
-     believes has no border. An `!important` can only be answered by another.
-     Right everywhere else; wrong here, where the input is the *interior* of
-     the `.ocr-find` field rather than a field of its own, so the ring drew
-     inside the wrapper's own border and read as a hard second box.
-     `box-shadow` goes with it: the recessed inset says "this is the field",
-     and the wrapper is already saying that. */
-  box-shadow: none;
-}
-/* **The id is load-bearing, and `!important` alone was not enough.** Two
-   `!important` declarations are settled by specificity, and the Appearance
-   rule's selector, `input` plus five `:not([type=…])`, is (0,5,1), which
-   beats `.ocr-find .ocr-find-input` at (0,2,0). Measured: `border: none
-   !important` at the class selector still computed as `3px solid
-   rgb(240,242,245)`. `#ocr-find` is (1,0,0) and wins outright, which is the
-   same reason `.ask-composer > #question` had to be written with its id.
-   This repo has now paid for the enumerated-`:not()`-chain specificity trap
-   three times; if a fourth borderless input appears, give it an id. */
-.ocr-find #ocr-find {
-  border: none !important;
-}
-.ocr-find-input:focus {
-  outline: none;
-}
-/* The focus ring belongs to the whole row, not to the bare input inside it, 
-   otherwise focusing the box lights up the interior and leaves the wrapper,
-   which is what the eye reads as the control, unchanged. Same treatment
-   `.ask-composer` uses for the same reason. */
-.ocr-find:focus-within {
-  border-color: var(--accent);
-}
-
-/* A row the filter kept, marked so the eye lands on it, not a colour change,
-   which would collide with `.is-active`'s own meaning (this is the region you
-   clicked), but a rule down the edge. */
-.ocr-region.is-found {
-  border-left: 3px solid var(--accent);
-}
-/* And its counterpart on the picture: a box whose row the filter dropped
-   fades rather than disappearing, because a page with half its boxes missing
-   reads as a failed read. */
-.ocr-box.is-dimmed {
-  opacity: 0.2;
-}
-.ocr-head h2 {
-  margin: 0;
-}
-.ocr-panes {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr) minmax(18rem, 26rem);
-  gap: var(--space-5);
-}
-/* One page per row, thumbnail first, the same rail shape the Library's own
-   rows view uses, so a page list is not a third thing to learn. Hidden
-   entirely for a single page: an index of one is furniture. */
-
-.ocr-page {
-  min-width: 0;
-  min-height: 0;
-  /* The containing block for the region offer (Phase 7.4). Absolute against
-     this rather than fixed against the viewport, so the offer scrolls with the
-     page it is anchored to, a fixed panel would stay put while the rectangle
-     it points at slid away underneath it. */
-  position: relative;
-  /* `hidden` in Fit (nothing overflows, so a scrollbar would be furniture),
-     `auto` at Actual size: set on the mode class below rather than here. */
-  overflow: auto;
-  display: flex;
-  align-items: flex-start;
-  /* **`safe center`, not `center`.** Reported twice, the second time as "the
-     pdf and file is still cut off to the left when generating ocr". A flex
-     item centred inside a scroll container that is narrower than the item
-     overflows *both* ways: and the left overflow is unreachable, because a
-     scroll container's origin is its left edge and there is no negative
-     scroll to get back to it. So at Actual size the left third of a wide page
-     was not merely off-screen, it could not be scrolled to at all.
-     `safe` means "centre while it fits, align to the start when it does not",
-     which is exactly the rule that was wanted and is why the keyword exists.
-     The earlier Fit-mode work made this rare rather than fixing it; Fit is a
-     mode, and Actual size is the one you switch to when you need the pixels. */
-  justify-content: safe center;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--chip-bg);
-}
-/* The overlay's containing block. `position: relative` on a box that shrinks
-   to the image is what makes a percentage box land on the pixels it names, 
-   put it on the scroller instead and every region drifts as the pane
-   resizes. */
-.ocr-stage {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-  /* A flex item shrinks by default, and this one is inside a centring flex
-     pane: at Actual size the stage was told to be 800px and rendered 757, 
-     the pane had shrunk it to fit, which is the one thing "actual size" must
-     not do. Measured before this line existed. */
-  flex: 0 0 auto;
-}
-.ocr-stage img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-.ocr-boxes {
-  position: absolute;
-  inset: 0;
-  /* **Transparent to the pointer, so the drag layer underneath can be
-     reached** (UI_MODERNISATION_PLAN Phase 7.4). This layer is `inset: 0` over
-     the whole page, so with the default `pointer-events: auto` it swallowed
-     every press on the page, including the ones meant to start a region
-     drag. The boxes themselves put it back (below), so clicking a region still
-     selects that region: the layer stops being a lid and becomes exactly the
-     boxes it draws. */
-  pointer-events: none;
-}
-.ocr-boxes.is-hidden {
-  display: none;
-}
-/* **Drag here to outline a region.** Asked as a question (Phase 7.4): "can
-   there be a way for the user to manually outline and single out regions on a
-   pdf or similar document and then the ai will read what is in those
-   regions??"
-   Its own layer rather than `#ocr-boxes`, because that one is `display: none`
-   whenever Regions is unticked, and a gesture that stops existing because of a
-   checkbox is a feature nobody finds twice. `crosshair` is the whole
-   affordance: nothing else on this stage says a drag will do something. */
-.ocr-select {
-  position: absolute;
-  inset: 0;
-  cursor: crosshair;
-  /* A drag is a drag, not a text selection or a picture drag, without this,
-     dragging across a page picks up the browser's own image-drag ghost. */
-  touch-action: none;
-  user-select: none;
-}
-/* A text file has no page raster to crop, so there is nothing here to outline
-   - and a crosshair over a wall of text promising a gesture that leads nowhere
-   is the affordance problem this workspace keeps fixing elsewhere. */
-.ocr-stage-text .ocr-select {
-  display: none;
-}
-/* A button, not a div: a region is clickable, and the thing that reads out
-   "region 3: Invoice total" to a screen reader has to be focusable. No
-   ground of its own, an opaque box over a scan hides the very thing it is
-   pointing at. */
-.ocr-box {
-  position: absolute;
-  /* Put back what `.ocr-boxes` gives up: the layer is transparent to the
-     pointer so a region drag can reach the layer beneath it, and the boxes are
-     the part that still has to be clickable. */
-  pointer-events: auto;
-  padding: 0;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  cursor: pointer;
-}
-.ocr-box:hover,
-.ocr-box:focus-visible {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.ocr-box.is-active {
-  border-width: 2.5px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
-}
-/* A heading reads differently, so it is drawn differently, the one place
-   the "kind" is more than a label. */
-
-.ocr-regions {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.ocr-region:hover {
-  border-color: var(--accent);
-}
-.ocr-region.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
 /* A disabled control has to read as disabled, the `<input>` greys itself, and
    without this the words beside it stayed at full strength and the pair looked
    like a live control that had stopped responding. */
 .checkbox-label.is-disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.ocr-message:not(.hidden) {
-  margin: 0;
-}
-/* **The engine line** (INBOX 443 (3)), drawn by ocr-engine.js under the
-   toolbar and again, smaller, in the Packages row for Tesseract. A state chip
-   (`chip item-label`, `is-ok` for ready and `is-warn` for not), one muted sentence, and the one control that fits the state:
-   the language when it can read, Install when it cannot. It wraps rather than
-   scrolls: unlike the toolbar above it, this line is words. */
-
-.ocr-engine-line {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  min-width: 0;
-}
-.ocr-engine-detail {
-  flex: 1 1 14rem;
-  min-width: 0;
-  font-size: var(--text-sm);
-  overflow-wrap: anywhere;
 }
 /* In Settings the picker is also a <label> in `.settings-section`, whose rule
    top-aligns a wrapped caption; the second selector keeps this row's centre
@@ -5949,15 +5661,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.ocr-engine-note {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--muted);
-}
-.ocr-engine-note.is-error {
-  color: var(--error);
 }
 /* **On a phone the reading's actions are icons, and keep their words for a
    screen reader** (the `.toolbar-word` recipe, DESIGN.md: hidden, not
@@ -5985,22 +5688,6 @@ button.connection-row:is(:hover, :focus-visible) {
   margin-inline-end: 0;
   translate: none;
 }
-/* The reading as editable text, in place of the sections while it is open. */
-.ocr-edit-panel:not(.hidden) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-/* **The picture's other stored reading** (INBOX 421 e), under the message:
-   the region row's own card (border, radius, padding) without its pointer,
-   because it is not a section of the page and does not select a box. Its
-   label is the lightbox byline's words, so the two name the same reader. */
-.ocr-other-readings:not(.hidden) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
 /* **The offer, once a rectangle exists** (Phase 7.4). The app's floating-panel
    material: `--modal-bg` over the glass border and shadow, exactly what
    `.help-popover`, the action menus and the toolbar menus are made of, rather
@@ -6023,48 +5710,6 @@ button.connection-row:is(:hover, :focus-visible) {
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
-}
-.ocr-region-popover.hidden {
-  display: none;
-}
-/* What was outlined, in the page's own terms. Sits with the actions rather
-   than above them: it is the subject of the two buttons, not a heading. */
-
-/* Answers about outlined regions, above the page's own reading. Separated by
-   tone and a rule rather than by a border round each card, the reading pane
-   is already a list of bordered panels, and a second bordered list inside it
-   is the "borders inside borders" the modernisation plan is subtracting. */
-.ocr-region-results {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--divider);
-}
-.ocr-region-results.hidden {
-  display: none;
-}
-/* Under 1100px the rail is the first thing to go, which page you are on is
-   answerable from the title, where a line sits on the page is not.
-   **The column goes, not just the rail.** Hiding `.ocr-rail` alone left
-   `.ocr-rail-column` in the grid as an empty item, and a grid of three items
-   in two columns puts the third in an implicit *row*: measured at 1024, the
-   empty column took 593px, the page was squeezed into the 320px column
-   beside it, and the reading pane dropped to a second row under both. At 390
-   the arithmetic was worse: the 1fr column collapsed to 0, so the reading had
-   no width at all. Two panes, two columns. */
-@media (max-width: 1099.98px) {
-  .ocr-panes {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
-  }
-  /* `> .ocr-rail-column`, not the bare class: the column's own
-     `display: flex` is declared further down this same stylesheet, so at
-     equal specificity it would win over a rule in a band above it and the
-     column would stay in the grid at every width. */
-  .ocr-panes > .ocr-rail-column {
-    display: none;
-  }
 }
 /* The selection toolbar (editor.js). Positioned in viewport coordinates
    against the caret, so it is `fixed`, an absolutely-positioned bar would be
@@ -6716,22 +6361,6 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px solid var(--border);
-}
-/* --- the OCR rail's own switch --------------------------------------------
-   Reported: "I cant always switch between viewing files or images, and if I
-   open it from the lightbox when viewing an image, no other files or images
-   show." The rail used to be whatever list the caller passed in, and three of
-   the four call sites passed nothing, so the workspace was navigable only
-   when opened from the gallery grid. It loads its own siblings now, and this
-   is the control that says which list you are looking at.
-   A column, so the switch is pinned above a rail that scrolls under it: the
-   rail can be two hundred pages long, and a switch that scrolls away with it
-   is a switch you cannot reach from page 180. */
-.ocr-rail-column {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  gap: var(--space-2);
 }
 .ocr-rail-switch {
   display: flex;
@@ -7819,13 +7448,6 @@ button.connection-row:is(:hover, :focus-visible) {
   margin-left: 0;
   margin-right: auto;
 }
-.ocr-caption {
-  margin: 0 0 var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--inner);
-  font-size: var(--text-sm);
-}
 .wb-text-content.wb-text-md > :first-child {
   margin-top: 0;
 }
@@ -7878,13 +7500,6 @@ button.connection-row:is(:hover, :focus-visible) {
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
-}
-/* The sections belonging to the page on screen, in the reading panel beside
-   it. A tone, not a border: this marks *where you are*, and the panel already
-   has a selected state (`.is-found`) that a second outline would compete
-   with. See `ocrRevealRegionsForPage` in library.js. */
-.ocr-region.is-current-page {
-  background: var(--surface-3);
 }
 /* --- the tab strip is centred on the window, not on whatever is left of it --
    Reported: "the top nav bar with all the tabs isnt actuallly centred and is
