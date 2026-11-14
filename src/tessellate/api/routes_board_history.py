@@ -161,6 +161,14 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
     return out
 
 
+def _begins(row: AuditLog) -> bool:
+    """An event that made the item: `created`, or a card's `placed` that did
+    not find the note already on the board (`existing` false)."""
+    if row.action == "placed":
+        return (row.payload or {}).get("existing") is False
+    return row.action == "created"
+
+
 def _is_delete(row: AuditLog) -> bool:
     after = (row.payload or {}).get("after")
     return row.action == "deleted" or after == events.DELETED
@@ -183,7 +191,7 @@ def _states_at(
                 states[key] = _state_of(kind, row_now)
             continue
         first = rows[0]
-        present = first.action != "created"
+        present = not _begins(first)
         state: dict = {}
         unknown = False
         if present:
@@ -202,7 +210,7 @@ def _states_at(
             payload = row.payload or {}
             if events.is_compacted(row):
                 unknown = True
-                if row.action == "created":
+                if _begins(row):
                     present = True
                 elif _is_delete(row):
                     present = False
@@ -215,7 +223,7 @@ def _states_at(
                 #: A `created` starts the row afresh: SQLite hands a deleted
                 #: row's id to the next row made (no AUTOINCREMENT), so one
                 #: id's log can hold two items, the second starting here.
-                if payload.get(events.COMPACTED) or row.action == "created":
+                if payload.get(events.COMPACTED) or _begins(row):
                     state, unknown = dict(after), False
                 else:
                     state.update(after)
@@ -245,7 +253,7 @@ def _moments(rows: list[AuditLog]) -> list[dict]:
             out.append(current)
         current["first_id"] = row.id
         current["count"] += 1
-        if row.action == "created":
+        if _begins(row):
             current["added"] += 1
         elif _is_delete(row):
             current["removed"] += 1
@@ -402,6 +410,41 @@ def board_at(event_id: int, board_id: int | None = None, db: Session = Depends(g
         if row is not None:
             out[{"node": "nodes", "sketch": "sketches", "object": "objects"}[kind]].append(row)
     return out
+
+
+@router.post("/history/{event_id}/narrate")
+def narrate_change(event_id: int, board_id: int | None = None, against: int | None = None, db: Session = Depends(get_session)) -> dict:
+    """What changed between this version and `against` (the board now when
+    absent), in words (L-whiteboard-11): the composer's sentences from the
+    diff, rewritten by the local model when one runs, on a job thread with a
+    timeout. Nothing is saved."""
+    from tessellate.ai.ollama_client import OllamaError
+    from tessellate.api import wb_narrate
+    from tessellate.core import deps, jobs
+
+    board_id = _board_param(board_id)
+    _require_board(db, board_id)
+    for wanted in (event_id, against):
+        if wanted is not None and db.get(AuditLog, wanted) is None:
+            raise HTTPException(status_code=404, detail="That version could not be found.")
+    current = _current_rows(db, board_id)
+    logs = _board_events(db, board_id, current)
+    first, second = sorted((event_id, against if against is not None else 2**62))
+    older, known_a = _states_at(board_id, current, logs, first)
+    newer, known_b = _states_at(board_id, current, logs, second)
+    if not (known_a and known_b):
+        raise HTTPException(status_code=410, detail="That version is older than the board's history keeps in full, so it cannot be compared.")
+    text = wb_narrate.summary(wb_narrate.diff(db, older, newer))
+    ollama = deps.get_ollama()
+    if text != wb_narrate.NOTHING and ollama.is_running():
+        flight = jobs.future("board changes", wb_narrate.rewrite, text, deps.get_model_manager(), ollama)
+        try:
+            told = flight.result(timeout=wb_narrate.NARRATE_SECONDS)
+        except (OllamaError, TimeoutError):
+            told = ""
+        if told:
+            return {"summary": told, "by": "model"}
+    return {"summary": text, "by": "composer"}
 
 
 class RestoreBody(BaseModel):

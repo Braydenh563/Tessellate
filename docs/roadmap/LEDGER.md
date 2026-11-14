@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 0 | 1 | 0 | 1 | 31 |
+| whiteboard | 30 | 0 | 1 | 0 | 0 | 31 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 528 | 126 | 2 | 173 | 1207 |
+| all | 553 | 528 | 126 | 2 | 172 | 1207 |
 
 ## graph
 
@@ -870,7 +870,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-5** `world-class` blocked-hardware, S: Verify Tessellate --mcp from the packaged Windows exe with a real MCP client (hardware). From open-work sweep 2026-11-12, docs/INSTALL.md:297. Evidence: The packaged windowed exe's stdio MCP mode has not been checked on a real Windows build. L687 covers the HTTP transport, not this check.
 - [ ] **L-general-23** `general` blocked-hardware, L: Add LEDGER rows for the 0.9 public beta and 1.0 exit criteria. From open-work sweep 2026-11-12, docs/ROADMAP.md:184. Evidence: The 0.5 to 0.8 milestones point to briefs in the plans. The 0.9 and 1.0 exit criteria have no LEDGER rows: non-owner clean-machine installs, the iOS and Android QR flow, the 0.8 to 0.9 update path, te
 - [ ] **L-general-29** `general` blocked-hardware, L: Move the 0.9 and 1.0 release gates into BACKLOG or LEDGER rows. From open-work sweep 2026-11-12, docs/ROADMAP.md:171. Evidence: The 0.5 to 1.0 milestone exit criteria are open gates that exist only in ROADMAP's milestone table, with no LEDGER rows
-- [ ] **L-whiteboard-11** `whiteboard` blocked-hardware, M: Have the local model narrate what changed between board versions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:765. Evidence: the board time machine is built, but the local-model summary of what changed is not built or tracked
 - [ ] **L-documents-5** `documents` blocked-hardware, M: Have the local model summarise a document's revisions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:847. Evidence: version history exists, but there is no model-written account of the revisions; lines 847 to 849 are untracked
 - [ ] **L-world-class-24** `world-class` blocked-hardware, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done.
 - [ ] **L-chat-17** `chat` blocked-hardware, L: Personal wording switch and per-surface composer evals. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:655. Evidence: Open line in the plan's prose a session could miss. Items 1-11 leftovers; item 10 needs a local model.
