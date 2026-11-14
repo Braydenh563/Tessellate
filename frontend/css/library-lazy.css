@@ -16,6 +16,224 @@
 /* --- moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal
    specificity, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
+/* From 07-whiteboard-misc.css */
+/* Reported directly, with screenshots: the Outline visibly disappeared
+   whenever the "Where are my documents kept?" disclosure below it was
+   opened. The comment above this block already said the help disclosure
+   should "give up its space first", but `flex: 0 0 auto` means
+   flex-shrink: 0, which is the opposite of giving anything up; it is
+   *exempt* from shrinking, so the whole deficit landed on the one sibling
+   that could shrink and had no floor of its own. Measured live before
+   fixing: 10 headings' worth of outline went from 258px tall to exactly
+   0px the instant the disclosure opened. */
+.doc-sidebar-tabs {
+  /* This is now the first thing in the card, which puts it exactly where
+     .sidebar-head used to sit, so it needs .sidebar-head's own two fixes
+     for the same reason (05-sidebars-themes.css): pulled up to sit level
+     with the collapse toggle (positioned against the card's border box,
+     one --space-6 above where this card's content box starts), and a
+     reserved lane past the toggle so the tab strip doesn't run under it.
+     Reported live: the strip was sitting under/clipped by the toggle. */
+  margin-top: calc(var(--sidebar-toggle-inset) - var(--space-6));
+  /* The bare lane (toggle width + one --space-2) put "Outline" close enough
+     to read as crowding the toggle at narrower sidebar widths, reported
+     directly. An extra --space-3 of clearance on top of the lane everywhere
+     else already reserves. */
+  padding-right: calc(var(--sidebar-toggle-lane) + var(--space-3));
+  min-height: var(--sidebar-toggle-size);
+  /* The sidebar's own row gap is the space under the strip: a margin on top of
+     it was a band of 18px between the strip and the first heading. */
+  margin-bottom: 0;
+  flex: 0 0 auto;
+  /* Redesigned away from .seg's filled-pill look (reported live, with a
+     photo): it is the app's one underline recipe, `.tabs-line`
+     (05-sidebars-themes.css), now shared by the Notes and Library strips,
+     which supplies the hairline, the tab metrics and the 2px line. */
+  padding-left: 0;
+  gap: var(--space-1);
+}
+
+@container doc-sidebar (width < 14rem) {
+.doc-sidebar-tabs {
+    margin-top: calc(var(--sidebar-toggle-inset) + var(--sidebar-toggle-size) + var(--space-2) - var(--space-6));
+    padding-right: 0;
+  }
+}
+
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
+/* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
+   auto` below still has a flex context stretching the height the tab strip
+   left behind: the same nested-flex-column shape .doc-sidebar itself uses
+   against the page. */
+.doc-sidebar-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.doc-sidebar-section.hidden {
+  display: none;
+}
+#tab-documents.doc-focus > .doc-layout {
+  gap: 0;
+}
+/* The floating dock. A `.card.glass` pill, the recipe for a panel floating
+   over a surface, parked at the top centre of the window. Hidden whenever the
+   mode is off. */
+.doc-focus-bar {
+  display: none;
+}
+/* Idle: gone, and out of the pointer's way, until a move brings it back.
+   Never while the pointer is on it or the focus is in it, which is what lets
+   Tab walk into a dock that had faded. Opacity only: a fade that moved or
+   resized the bar would be a layout change on every wake. */
+#tab-documents.doc-focus.doc-focus-idle > .doc-focus-bar:not(:hover):not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+:where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
+  transition: none;
+}
+.doc-focus-facts {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.doc-focus-facts > span + span:not(:empty)::before {
+  content: "\00B7";
+  margin-inline-end: var(--space-2);
+}
+#tab-documents.doc-focus > .doc-focus-bar .ghost.small {
+  height: var(--control-h-lg);
+  border-radius: var(--radius-pill);
+}
+#tab-documents.doc-focus > .doc-focus-bar .icon-only {
+  width: var(--control-h-lg);
+}
+/* **Tools, inside the mode** (INBOX 426 a). The owner: "in the documents
+   full screen mode, I cant access the formatting toolbar or any of the other
+   key tools or controls". The dock (view, AI edit, the document's menu) and
+   the formatting strip come back in their own places above the page, at the
+   window's width, under the floating dock's band; the sidebar, the app's own
+   bars and the status bar stay away, so this is still the page with nothing
+   around it. A collapsed strip stays collapsed (its rule in
+   07-whiteboard-misc.css), which is why pressing Tools also expands it. */
+#tab-documents.doc-focus.doc-focus-tools .doc-dock {
+  display: flex;
+}
+#tab-documents.doc-focus.doc-focus-tools #doc-toolbar:not(.is-collapsed) {
+  display: flex;
+}
+#tab-documents.doc-focus > .doc-focus-bar [aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+  display: flex;
+  position: fixed;
+  top: var(--doc-focus-panel-top);
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  width: var(--doc-focus-sidebar-w);
+  height: auto;
+  max-height: none;
+  margin: 0;
+  background: var(--modal-bg-opaque);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+  /* Below 820 the sidebar is an edge sheet (translated off screen, its rows
+     `visibility: hidden`, a rail left showing); here it is the panel, so the
+     sheet's own state is put back. */
+  transform: none;
+  border-radius: var(--radius);
+}
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
+  display: none;
+}
+/* The phone's floating formatting bar (fixed, above the keyboard) is drawn
+   over a panel that reaches the bottom of the window, cutting its last row;
+   the panel is for finding a document, not for writing, so the bar waits. */
+#tab-documents.doc-focus.doc-focus-sidebar .doc-phone-bar {
+  display: none;
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
+    right: var(--space-4);
+    width: auto;
+  }
+}
+
+@media (min-width: 820px) {
+#tab-documents.doc-focus.doc-focus-sidebar .doc-main {
+    padding-left: calc(var(--doc-focus-sidebar-w) + var(--space-4) * 2);
+  }
+}
+
+@media (max-width: 819.98px) {
+#tab-documents.doc-focus > .doc-focus-bar {
+    gap: var(--space-1);
+    padding-left: var(--space-3);
+  }
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-word {
+    display: none;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button:has(.doc-focus-word) {
+    width: var(--control-h-lg);
+    padding-inline: 0;
+  }
+#tab-documents.doc-focus > .doc-focus-bar button > .ph-lead:has(~ .doc-focus-word) {
+    margin: 0;
+  }
+}
+
+@media (max-width: 340px) {
+#tab-documents.doc-focus > .doc-focus-bar .doc-focus-facts {
+    display: none;
+  }
+}
+
+/* The "show me this one" flash lived here as two rules: a keyframe pulse on
+   the Live view's `<mark>` and a `::selection` colour on the Source view's
+   textarea. DOCUMENTS_PLAN Phase 2 left one editor, and it answers the
+   question itself: `docProseJump` puts the selection on the flagged span and
+   the engine scrolls it into view as part of the same transaction, with the
+   underline already saying which words are meant. `.doc-selection-flash` is
+   kept below for the fallback textarea, which still cannot mark a range it
+   already holds any other way. */
+.doc-selection-flash::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.doc-statusbar {
+  background: var(--surface-2);
+  border-color: transparent;
+}
+.doc-statusbar-button {
+  min-height: var(--target-min);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+@media (max-width: 819.98px) {
+.doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+.doc-layout > :not(.sidebar-panel) {
+    grid-column: 1;
+  }
+}
+
 /* From 08-consistency.css */
 .doc-dock-identity {
   --identity-h: var(--control-h-lg);

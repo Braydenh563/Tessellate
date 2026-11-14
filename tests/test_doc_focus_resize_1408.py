@@ -19,7 +19,7 @@ def _read(*parts: str) -> str:
 
 
 def test_the_sidebar_grip_is_not_hidden_in_focus_mode() -> None:
-    css = _read("frontend", "css", "07-whiteboard-misc.css")
+    css = _read("frontend", "css", "library-lazy.css")  # moved with the Library bundle (L308)
     start = css.index(".doc-sidebar > .sidebar-collapse-toggle,")
     selectors = css[css.rfind("}", 0, start) + 1 : css.index("{", start)]
     assert "sidebar-resize" not in selectors, "the grip must stay drawn in focus mode"
