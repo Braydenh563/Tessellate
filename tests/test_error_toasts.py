@@ -65,18 +65,20 @@ EXPECTED = {
     'chat.js': [
         '"Turn on Web search first, reading a page needs it."',
     ],
-    'documents-code.js': [
-        '`Emmet cannot read "${abbr}" as an abbreviation.`',
+    'documents-code-format.js': [
         '"Formatting is for code documents."',
         '"Select the lines to format first."',
         'refusal',
         '"The text changed while it was being checked. Format again."',
         'result.error',
+    ],
+    'documents-code.js': [
+        '`Emmet cannot read "${abbr}" as an abbreviation.`',
         '"That fix no longer applies: the text has changed since it was offered."',
     ],
     'documents-prose.js': [
-        '"That text has changed since it was checked."',
         '"Save the document first."',
+        '"That text has changed since it was checked."',
         '"This window has no speech voices to read with."',
     ],
     'documents-embeds.js': [
@@ -91,8 +93,6 @@ EXPECTED = {
         '"Full screen is not available in this window."',
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',
-        '"Save the document first."',
-        '(body && body.message) || "No other wordings came back for that one."',
     ],
     'documents-blockref.js': [
         '"Give the document a title first, a block link is named by it."',
@@ -100,6 +100,8 @@ EXPECTED = {
         '"That block is not in this document any more."',
     ],
     'documents-suggest.js': [
+        '"Save the document first."',
+        '(body && body.message) || "No other wordings came back for that one."',
         '"Nothing to discuss yet."',
         '"Nothing to check yet."',
     ],
@@ -215,7 +217,7 @@ EXPECTED = {
 
 #: Rule 4 (2026-10-10): situations the app expects, moved here from FAULTS.
 EXPECTED_RULE4 = {'settings-wiring.js': ['body.warning'], 'attachment-actions.js': ['"That upload is no longer in the Library; it may have been deleted."',
-        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents-suggest.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
+        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code-format.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents-suggest.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
 for _name, _messages in EXPECTED_RULE4.items():
     EXPECTED.setdefault(_name, []).extend(_messages)
 
@@ -248,6 +250,7 @@ FAULTS = {
         '"Couldn\'t delete this chat."': 'delete request failed',
     },
     'documents-code.js': {
+        '"The formatter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Emmet could not be loaded, so nothing was wrapped."': 'the Emmet module failed to load: a broken asset',
     },
     'documents-history.js': {

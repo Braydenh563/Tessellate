@@ -160,7 +160,7 @@ def stand_ins_source() -> str:
 #: own text (`docLivePlugin`, `docCmTheme`; audit 1031 DC13): a test that means
 #: "the documents editor's code" reads them joined, so a piece moving between
 #: these files does not move its tests.
-DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-spell.js", "documents-languagetool.js", "documents-outline.js", "documents-callouts.js", "documents-view.js", "documents-dictionary.js", "documents-backlinks.js", "documents-suggest.js", "documents-blockref.js")
+DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-spell.js", "documents-languagetool.js", "documents-outline.js", "documents-callouts.js", "documents-view.js", "documents-dictionary.js", "documents-backlinks.js", "documents-suggest.js", "documents-blockref.js", "documents-code-format.js")
 
 
 def documents_text() -> str:

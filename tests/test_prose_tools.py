@@ -29,15 +29,19 @@ HARPER = FRONTEND / "vendor" / "harper"
 #: "Add to dictionary" row both menus draw, so the one-literal check still sees it.
 DOCUMENTS = "\n".join(
     (FRONTEND / "js" / name).read_text(encoding="utf-8")
-    for name in ("documents.js", "documents-view.js", "documents-prose.js", "documents-spell.js")
+    for name in ("documents.js", "documents-view.js", "documents-prose.js", "documents-spell.js", "documents-suggest.js")
 )
 WORKER = (FRONTEND / "js" / "harper-worker.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:
-    start = DOCUMENTS.index(f"function {name}(")
-    end = DOCUMENTS.find("\n}\n", start)
-    return DOCUMENTS[start:end]
+    """The function's text; a lazy piece indents it and a stand-in of the same name sits in another file, so the longest wins."""
+    text = DOCUMENTS
+    found = []
+    for m in re.finditer(rf"^( *)(?:async )?function {name}\(", text, re.M):
+        end = text.index("\n" + m.group(1) + "}\n", m.start())
+        found.append(text[m.start() : end])
+    return max(found, key=len)
 
 
 # --- grammar -------------------------------------------------------------------
