@@ -7,9 +7,10 @@ calls run (plan §4).
 
 from __future__ import annotations
 
+import collections
 import contextlib
 import dataclasses
-import functools
+import hashlib
 import json
 import logging
 import re
@@ -287,7 +288,50 @@ def _reasons_for(content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], 
     return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits, note_stems, own)))
 
 
-_cached_reasons = functools.lru_cache(maxsize=1024)(_reasons_for)
+#: Rows the reasons cache keeps: more than a whole `GET /entries` page, or a list
+#: read in order evicts each row before the next load reaches it and hits nothing.
+REASONS_CACHE_ROWS = 5200
+
+
+class _ReasonsCache:
+    """`_reasons_for` remembered per (text, tags), keyed by a 16-byte digest of
+    the text so 5,000 rows cost about 3 MB whatever the notes' length (L-world-class-161:
+    the `lru_cache` it replaces held the text itself and was 1,024 rows, so a
+    5,000 page thrashed it). Same `cache_clear` / `cache_info` as `lru_cache`."""
+
+    Info = collections.namedtuple("Info", "hits misses maxsize currsize")
+
+    def __init__(self, maxsize: int) -> None:
+        self._rows: OrderedDict[tuple[bytes, tuple[str, ...]], tuple[tuple[str, str], ...]] = OrderedDict()
+        self._maxsize, self._hits, self._misses = maxsize, 0, 0
+        self._lock = threading.Lock()
+
+    def __call__(self, content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+        key = (hashlib.blake2b(content.encode("utf-8", "surrogatepass"), digest_size=16).digest(), tags)
+        with self._lock:
+            found = self._rows.get(key)
+            if found is not None:
+                self._rows.move_to_end(key)
+                self._hits += 1
+                return found
+            self._misses += 1
+        value = _reasons_for(content, tags)  # outside the lock: it is the slow part
+        with self._lock:
+            self._rows[key] = value
+            while len(self._rows) > self._maxsize:
+                self._rows.popitem(last=False)
+        return value
+
+    def cache_clear(self) -> None:
+        with self._lock:
+            self._rows.clear()
+            self._hits = self._misses = 0
+
+    def cache_info(self) -> tuple:
+        return self.Info(self._hits, self._misses, self._maxsize, len(self._rows))
+
+
+_cached_reasons = _ReasonsCache(REASONS_CACHE_ROWS)
 
 
 def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  # noqa: ANN001

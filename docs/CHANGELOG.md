@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- `GET /entries?limit=5000` (L-world-class-161): the tag-reasons cache is 5,200 rows keyed by a 16-byte digest of the note (was 1,024 rows holding the text, so a full page evicted every row before the next load reached it). 5,000 notes with two suggested tags each, warm: 4.2 to 4.5 s before, 0.54 to 0.67 s after; cold 7.3 s to 3.7 s.
 - Saved searches in the Notes sidebar (L-world-class-160): after a reload the list stayed empty, because `search.js` ran before the Notes surface existed and drew into nothing; it now draws when the surface is built. Measured at 5,000 notes: 0 rows before, 3 after; the row menu is 198 x 83 px inside 1440 x 900 with Rename and Forget, and a click opens the finder with its words (30 results, 513 to 899 ms).
 - Import at 5,000 notes (L-world-class-119): `tests/test_import_commit_batches.py` now counts a 5,000-note zip import at 103 commits (writer 51, embedding 50) against 5,000 and more before; the row was already built as L508.
 - Silent broad excepts at zero (L-world-class-122, decision 57): the 60 handlers in `tests/test_no_silent_except.py`'s seed now log at debug with the reason (41 files), the log-buffer filter catches the named format errors, and `SEED` is empty so a new silent `except Exception` fails the test; `_answer_voice` reads the composer's own `voice_now` (routes_chat stays at its line cap).

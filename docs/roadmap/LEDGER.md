@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 105 | 29 | 0 | 0 | 134 |
+| world-class | 0 | 104 | 29 | 0 | 0 | 133 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 495 | 100 | 2 | 111 | 967 |
+| all | 372 | 494 | 100 | 2 | 111 | 966 |
 
 ## graph
 
@@ -565,7 +565,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
 - [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
