@@ -112,7 +112,9 @@ def sealed_aware(path, media_type=None, headers=None, filename=None, request_ran
         total = sealed_files.plain_size(path)
         span = _span(request_range, total)
         if span is None:
-            body = sealed_files.iter_plain(path)
+            #: The size and the frames from one snapshot: a recording still
+            #: growing streams what it held when the response began.
+            total, body = sealed_files.open_plain(path)
             return StreamingResponse(body, media_type=media_type, headers={**headers, "Content-Length": str(total)})
         if span is False:
             return Response(status_code=416, headers={**headers, "Content-Range": f"bytes */{total}"})

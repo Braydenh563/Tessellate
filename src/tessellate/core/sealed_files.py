@@ -15,7 +15,11 @@ back (at a frame boundary or inside one) raises `SealedDamaged` instead of
 reading as a shorter file. An append writes its frames (the new last one
 flagged), then re-seals the old last frame as not last; a crash between the
 two leaves a "last" frame in the middle, which a reader accepts, since only
-the key holder can write one.
+the key holder can write one (an accepted trade-off). A crash part way
+through writing a frame leaves a partial frame at the end: readers ignore
+those bytes and the next append drops them. A reader works from a snapshot
+of the frames taken under the file's lock, so an append while it streams
+does not break it.
 
 A file without the magic is plain and is read as it is, so files written
 before this, or outside a private space, keep working; a plain write that
@@ -192,22 +196,44 @@ def seal_bytes(data: bytes) -> bytes:
     return MAGIC + _encrypt(_key(), data, 0)
 
 
-def iter_plain(path: Path, start: int = 0, end: int | None = None) -> Iterator[bytes]:
-    """The plain bytes `start` to `end` inclusive of a sealed file, a frame at
-    a time. The key and the last frame are checked before this returns, so a
-    locked or cut file fails before a response starts, not part way."""
+def open_plain(path: Path, start: int = 0, end: int | None = None) -> tuple[int, Iterator[bytes]]:
+    """(plain size, the plain bytes `start` to `end` inclusive a frame at a
+    time) of a sealed file, from one snapshot of its frames taken under the
+    file's lock, so the size and the stream agree while an append runs. The
+    key and the last frame are checked before this returns, so a locked or
+    cut file fails before a response starts, not part way."""
+    path = Path(path)
     aead = AESGCM(_key())
-    fh = open(path, "rb")  # noqa: SIM115  # closed by the generator
-    try:
-        frames = _whole(fh)
-        _open_frame(aead, fh, *frames[-1], last=True)
-    except BaseException:
-        fh.close()
-        raise
-    return _stream(aead, fh, frames, start, end)
+    with _lock_for(path):
+        fh = open(path, "rb")  # noqa: SIM115  # closed by the generator
+        try:
+            frames = _whole(fh)
+            _open_frame(aead, fh, *frames[-1], last=True)
+        except BaseException:
+            fh.close()
+            raise
+    total = sum(length - _TAG for _i, _o, length in frames)
+    return total, _stream(path, aead, fh, frames, start, end)
 
 
-def _stream(aead: AESGCM, fh, frames, start: int, end: int | None) -> Iterator[bytes]:  # noqa: ANN001
+def iter_plain(path: Path, start: int = 0, end: int | None = None) -> Iterator[bytes]:
+    """`open_plain` without the size."""
+    return open_plain(path, start, end)[1]
+
+
+def _open_snapshot_last(path: Path, aead: AESGCM, fh, frame: tuple[int, int, int]) -> bytes:  # noqa: ANN001
+    """The snapshot's last frame, read under the lock (an append re-seals it
+    in place). Once the file has grown past it, it is a middle frame: still
+    bound to its index, now flagged as not the last."""
+    index, offset, length = frame
+    with _lock_for(path):
+        grown = os.fstat(fh.fileno()).st_size > offset + _NONCE + length
+        if not grown:
+            return _open_frame(aead, fh, index, offset, length, True)
+        return _open_frame(aead, fh, index, offset, length, False)
+
+
+def _stream(path: Path, aead: AESGCM, fh, frames, start: int, end: int | None) -> Iterator[bytes]:  # noqa: ANN001
     at = 0
     with fh:
         for index, offset, length in frames:
@@ -215,7 +241,10 @@ def _stream(aead: AESGCM, fh, frames, start: int, end: int | None) -> Iterator[b
             if end is not None and at > end:
                 return
             if at + size > start:
-                plain = _open_frame(aead, fh, index, offset, length, index == len(frames) - 1)
+                if index == len(frames) - 1:
+                    plain = _open_snapshot_last(path, aead, fh, (index, offset, length))
+                else:
+                    plain = _open_frame(aead, fh, index, offset, length, False)
                 yield plain[max(0, start - at) : None if end is None else end - at + 1]
             at += size
 
@@ -233,7 +262,7 @@ def plain_size(path: Path) -> int:
     path = Path(path)
     if not is_sealed(path):
         return path.stat().st_size
-    with open(path, "rb") as fh:
+    with _lock_for(path), open(path, "rb") as fh:
         return sum(length - _TAG for _i, _o, length in _whole(fh))
 
 
