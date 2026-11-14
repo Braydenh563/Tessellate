@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The SKILL.md snippet shell-quotes the data folder and the command, so a quote, dollar or backtick in a path cannot break the line (review).
 - Cleaning up unused media no longer stops at a revision that will not decrypt: it is skipped like a locked private note (review).
 - A save no longer runs Tidy's switched-on reviews on its own request: they run after it in their own session, so a failing review cannot roll back the save (review 5899359161).
 - Overdue batch moves, ticks and bins try every reminder; one refusal no longer stops the reload or the Undo, which covers only the rows that changed, and the menu toasts if its tools cannot load (review 5899359161).

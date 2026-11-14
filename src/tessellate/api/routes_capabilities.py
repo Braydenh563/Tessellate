@@ -58,7 +58,7 @@ def _mcp() -> dict:
             "installed": True,
             "command": "Tessellate --mcp",
             "config": {"command": sys.executable, "args": ["--mcp"], "env": env},
-            "skill": mcp_server.skill_md(f'"{sys.executable}"', data_dir),
+            "skill": mcp_server.skill_md([sys.executable], data_dir),
         }
     return {
         "installed": True,
@@ -68,7 +68,7 @@ def _mcp() -> dict:
             "args": ["-m", "tessellate.mcp_server"],
             "env": env,
         },
-        "skill": mcp_server.skill_md(f'"{sys.executable}" -m tessellate', data_dir),
+        "skill": mcp_server.skill_md([sys.executable, "-m", "tessellate"], data_dir),
     }
 
 

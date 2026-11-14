@@ -464,18 +464,23 @@ def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
             stdout.flush()
 
 
-def skill_md(command: str, data_dir: str) -> str:
+def skill_md(command: list[str], data_dir: str) -> str:
     """A SKILL.md an agent (Claude Code and the like) keeps in its skills folder
     (L-general-34): its description routes "my notes" intents here, and its body
     runs `tool NAME --json` per offered tool. No token: the CLI runs in the
     person's own shell, the same boundary as stdio."""
+    import shlex
+
     rows = "\n".join(
         f"- `{spec.name}`: {spec.description.strip().splitlines()[0]}" for spec in offered_tools()
     )
+    #: Shell-quoted, not wrapped in double quotes: a `"`, `$` or backtick in
+    #: the folder or the interpreter's path broke out of them (review).
+    command, env = shlex.join(command), shlex.quote(f"TESSELLATE_DATA_DIR={data_dir}")
     return (
         "---\nname: tessellate\ndescription: Read and search the person's Tessellate "
         "notebook. Use when they ask about their notes, what they wrote, or what is due.\n---\n\n"
-        f"Run with TESSELLATE_DATA_DIR=\"{data_dir}\" set:\n\n"
+        f"Run with {env} set:\n\n"
         f"    {command} tool NAME --args '{{\"key\": \"value\"}}' --json\n\n"
         f"`{command} tool --json` lists every tool with its arguments. "
         "Output is one JSON line; exit 1 means the tool failed.\n\n"
