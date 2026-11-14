@@ -1801,12 +1801,20 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     storage = resolved_data_dir() / "webview"
     storage.mkdir(parents=True, exist_ok=True)
     try:
-        webview.start(  # blocks until the window closes; daemon dies with us
-            _boot_and_swap,  # runs on its own thread once the window is open
-            window,
-            private_mode=False,
-            storage_path=str(storage),
-            **(({"icon": _icon}) if _icon else {}),
+        from tessellate.core.window_teardown import run_window
+
+        run_window(
+            lambda: webview.start(  # blocks until the window closes; daemon dies with us
+                _boot_and_swap,  # runs on its own thread once the window is open
+                window,
+                private_mode=False,
+                storage_path=str(storage),
+                **(({"icon": _icon}) if _icon else {}),
+            ),
+            # A restart's new copy that hit WebView2's benign teardown error
+            # starts its window again (L-world-class-117).
+            restarting="--restart-after" in sys.argv,
+            relaunch=lambda: _spawn_detached(_relaunch_argv()),
         )
     except TypeError:
         # An older pywebview without one of the keyword arguments above

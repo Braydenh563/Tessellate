@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 1 | 4 | 148 |
+| world-class | 0 | 119 | 29 | 1 | 3 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 3 | 115 | 980 |
+| all | 372 | 508 | 100 | 3 | 114 | 980 |
 
 ## graph
 
@@ -778,7 +778,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
 - [ ] **L-world-class-72** `world-class` blocked-hardware, S: Profile the Windows frozen build's startup. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the Windows frozen startup is open'; needs a Windows machine
 - [ ] **L-world-class-116** `world-class` blocked-hardware, S: Capture: verify the desktop window, real clipboards and a server crash between commit and answer. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'the desktop window, real clipboards and a server crash between commit and answer are not verified'
-- [ ] **L-world-class-117** `world-class` blocked-hardware, S: Desktop restart: treat the Chrome_WidgetWin unregister error as non-fatal and relaunch (reproduce on Windows). From WORLD_CLASS_PLAN.md:2986. Evidence: WORLD_CLASS_PLAN.md:2986 owner's report 'Failed to unregister class Chrome_WidgetWin_0. Error = 1411'; needs Windows
 
 ## Plan session briefs
 
