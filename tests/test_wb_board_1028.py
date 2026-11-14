@@ -190,7 +190,7 @@ def test_the_node_action_buttons_floor_is_24_not_20():
 def test_far_out_the_fold_chevron_waits_for_the_zoom_or_the_selection():
     """INBOX 1450, the owner: "buttons get oversized at zoom". Below half zoom a
     24px chevron is wider than its topic, so only a selected topic keeps it."""
-    assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
+    assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse,\n.wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
 
 
 # B33 -------------------------------------------------------------------------

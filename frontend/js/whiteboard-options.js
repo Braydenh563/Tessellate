@@ -142,8 +142,9 @@
   const MAX_PAGES = 100;
   let pagesKey = "";
   function drawPages(bg) {
-    const zoom = $("wb-zoom-group");
-    let group = $("wb-page-view");
+    //: The active board's zoom group and its page view inside it (L-whiteboard-56).
+    const zoom = wbInstances.layer("wb-zoom-group");
+    let group = zoom?.querySelector(".wb-page-view") || null;
     if (!zoom || bg.page_view !== true || typeof wbContentBounds !== "function") {
       group?.remove();
       pagesKey = "";
@@ -158,7 +159,7 @@
     pagesKey = key;
     if (!group) {
       group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      group.setAttribute("id", "wb-page-view");
+      group.setAttribute("class", "wb-page-view");
       group.setAttribute("aria-hidden", "true");
     }
     if (group.parentNode !== zoom || zoom.firstChild !== group) zoom.insertBefore(group, zoom.firstChild);

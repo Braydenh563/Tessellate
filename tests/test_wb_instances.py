@@ -302,10 +302,10 @@ def test_board_code_finds_its_container_and_layers_through_the_active_instance()
         hits = len(_CONTAINER_LOOKUP.findall(text)) + len(_LAYER_LOOKUP.findall(text))
         if hits:
             left[path.name] = hits
-    #: whiteboard-options.js draws the page view with `$`, which builds the board's
-    #: template on demand (settings-body.js `surfaceFind`); its `wb-page-view` group is
-    #: an id too, so an embed's page view is L-documents-104's to scope.
-    assert left == {"whiteboard-options.js": 1}, left
+    #: whiteboard-options.js drew the page view into `$("wb-zoom-group")`, the page's
+    #: only; it draws into the active board's zoom group since L-whiteboard-56, and
+    #: its group is a class, since an id can appear once on a page.
+    assert left == {}, left
     assert 'const PAGE_CONTAINER = "whiteboard-container";' in SRC and "document.getElementById(PAGE_CONTAINER)" in SRC
 
 
@@ -591,3 +591,40 @@ def test_no_board_file_looks_up_a_layer_or_an_item_document_wide():
     wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
     assert 'd3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))' in wb
     assert "d3.select(wbInstances.query(layer))" in wb
+
+
+def test_each_board_keeps_its_own_inverse_zoom():
+    """L-whiteboard-56: the grips' `--wb-inv-zoom` is written per board, an embed's
+    scoped to its own box, so a zoomed embed never resizes the page board's grips
+    (or the reverse); the far-zoom rules that read it name an embed too."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    grips = re.search(r"const WB_INV_ZOOM_GRIPS = \[.*?\];", wb, re.S).group(0)
+    rules = wb[wb.index("function wbInvZoomRules()") :]
+    rules = rules[: rules.index("\n}\n") + 3]
+    publish = wb[wb.index("function wbSyncGridToTransform(") :]
+    publish = publish[: publish.index("\n}\n") + 3]
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = grips + rules + """
+const page = { container: null, invZoom: "1" };
+const a = { container: {}, key: 2, invZoom: "0.5" }, b = { container: {}, key: 3, invZoom: "4" };
+const wbInstances = { list: [page, a, b] };
+process.stdout.write(JSON.stringify(wbInvZoomRules().split("\\n")));
+"""
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    assert len(out) == 3
+    assert out[0].startswith(".wb-object-frame .wb-frame-title, ") and out[0].endswith("{ --wb-inv-zoom: 1; }")
+    assert out[1].startswith('[data-wb-embed="2"] :is(.wb-object-frame .wb-frame-title, ') and out[1].endswith(") { --wb-inv-zoom: 0.5; }")
+    assert out[2].startswith('[data-wb-embed="3"] :is(') and out[2].endswith(") { --wb-inv-zoom: 4; }")
+    #: The value, the timer and the attribute are the instance's, not one global.
+    assert "const inst = wbInstances.active;" in publish and "inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), 120);" in publish
+    assert "wbInvZoomValue" not in wb and "wbInvZoomTimer" not in wb
+    assert '".wb-embed[data-wb-zoom-far] .wb-map-actions"' in grips
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-embed[data-wb-zoom-far] .wb-map-ref {" in css and ".wb-embed[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {" in css
+    assert 'box.setAttribute("data-wb-embed", String(inst.key));' in SRC
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    assert 'const zoom = wbInstances.layer("wb-zoom-group");' in opts

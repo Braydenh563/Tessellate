@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 5 | 0 | 0 | 0 | 5 |
+| whiteboard | 0 | 4 | 0 | 0 | 0 | 4 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 532 | 125 | 2 | 172 | 1129 |
+| all | 472 | 531 | 125 | 2 | 172 | 1128 |
 
 ## graph
 
@@ -280,7 +280,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
-- [ ] **L-whiteboard-55** `whiteboard` open, S: Scope the board's compound selectors (#wb-html-layer .wb-object in export, record, search) to the active instance's container. From L-whiteboard-53 report (f29369c83). Evidence: export, record and search use '#wb-html-layer .wb-object' document-wide
 - [ ] **L-whiteboard-56** `whiteboard` open, S: Inverse-zoom selectors (whiteboard.js:904-905) and whiteboard-options.js wb-zoom-group lookup reach the active instance, not only the page. From L-whiteboard-53 report (f29369c83). Evidence: whiteboard.js:904-905 inverse-zoom selectors; whiteboard-options.js $("wb-zoom-group")
 - [ ] **L-whiteboard-57** `whiteboard` open, S: A multi-row nudge save captures its board id before the await, so activating another instance mid-save cannot send it to the wrong board. From L-whiteboard-53 report (f29369c83). Evidence: multi-row nudge save reads currentBoardId after an await
 - [ ] **L-whiteboard-58** `whiteboard` open, S: An embedded board's draw leaves the page board's chrome (empty hint, counts) untouched. From L-whiteboard-53 report (f29369c83). Evidence: page chrome (empty hint, counts) re-renders after an embed draw

@@ -21,12 +21,14 @@
   const ZOOM_EVENTS = ["zoom", "start.companion", "end.shield"];
   const list = [];
   let active = null;
+  let made = 0;
 
   function create(container, boardId) {
     return {
       container, boardId: boardId ?? null, state: { nodes: [], sketches: [], objects: [] },
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
       mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
+      invZoom: "1", invTimer: 0, key: ++made,
     };
   }
 
@@ -125,7 +127,7 @@
   }
 
   //: **The board's own listeners, on every instance's container** (L-whiteboard-54).
-  //: initWhiteboard binds its pointer, key, wheel and drop handlers through `on`,
+  //: initWhiteboard binds its pointer, key, wheel and drop handlers through `on` (`bindBoard` here),
   //: once; each instance, the page's and every embed's, gets its own copy, which
   //: makes that instance live before the handler runs, so a handler reads the
   //: board the event happened on. A read-only embed gets only the `view` ones
@@ -142,7 +144,7 @@
     el.addEventListener(entry.type, fn, entry.opts);
     inst.listeners.push([el, entry.type, fn, entry.opts]);
   }
-  function on(type, fn, opts, view = false) {
+  function bindBoard(type, fn, opts, view = false) {
     const entry = { type, fn, opts, view };
     handlers.push(entry);
     for (const inst of list) bindOne(inst, entry);
@@ -164,6 +166,7 @@
     if (active === inst) activate(wbInstances.page);
     d3.select(inst.container).on(".zoom", null);
     unbind(inst);
+    clearTimeout(inst.invTimer);
     const at = list.indexOf(inst);
     if (at >= 0) list.splice(at, 1);
   }
@@ -182,10 +185,10 @@
   //: so an embed's cards (same ids, same classes) are never found for the page.
   const LAYER_IDS = /#(wb-(?:svg-layer|zoom-group|shapes-group|lines-group|strokes-group|html-layer|overlay-layer|overlay-zoom-group))(?![\w-])/g;
   const scoped = (selector) => (active.container ? selector.replace(LAYER_IDS, '[data-wb-layer="$1"]') : selector);
-  function query(selector) {
+  function queryOne(selector) {
     return container()?.querySelector(scoped(selector)) ?? null;
   }
-  function queryAll(selector) {
+  function queryEvery(selector) {
     return container()?.querySelectorAll(scoped(selector)) ?? [];
   }
 
@@ -261,6 +264,7 @@
     host.append(box);
     if (list.length === 1) pageListeners(true);
     const inst = mount(box, boardId, editable);
+    box.setAttribute("data-wb-embed", String(inst.key));
     inst.destroyed = false;
     const wake = () => activate(inst);
     for (const type of ["pointerdown", "focusin"]) box.addEventListener(type, wake, { capture: true, passive: true });
@@ -313,7 +317,7 @@
   active = page;
 
   const wbInstances = {
-    page, list, mount, unmount, activate, container, layer, query, queryAll, changed, on, embedFor,
+    page, list, mount, unmount, activate, container, layer, query: queryOne, queryAll: queryEvery, changed, on: bindBoard, embedFor,
     get active() { return active; },
   };
 

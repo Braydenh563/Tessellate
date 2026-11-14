@@ -837,8 +837,6 @@ let WB_GRID_SPACING = 24;
 //: assumed all along (see the drop handler and `dragStart`'s own comments).
 const WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };
 
-let wbInvZoomTimer = 0;
-
 function wbSyncGridToTransform(transform) {
   const el = wbInstances.container();
   if (!el) return;
@@ -867,10 +865,12 @@ function wbSyncGridToTransform(transform) {
   //: writes nothing; a zoom writes once, 120ms after its last step, so the
   //: grips ride the board's scale for the length of the gesture and snap to
   //: their true size when it stops.
+  //: Per board (L-whiteboard-56): an embed keeps its own scale, value and timer.
+  const inst = wbInstances.active;
   const inv = String(1 / (t.k || 1));
-  clearTimeout(wbInvZoomTimer);
-  if (wbInvZoomValue === inv) return;
-  wbInvZoomTimer = setTimeout(() => wbPublishInvZoom(el, inv), 120);
+  clearTimeout(inst.invTimer);
+  if (inst.invZoom === inv) return;
+  inst.invTimer = setTimeout(() => wbPublishInvZoom(el, inv, inst), 120);
 }
 
 //: **Written onto the grips, not inherited down the whole board** (INBOX
@@ -903,13 +903,14 @@ const WB_INV_ZOOM_GRIPS = [
   //: Their small-zoom and downward-flow placements (L360) read it too.
   "#whiteboard-container[data-wb-zoom-far] .wb-map-actions",
   "#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions",
+  ".wb-embed[data-wb-zoom-far] .wb-map-actions",
+  ".wb-embed .wb-map-node[data-flow=down] .wb-map-actions",
   ".wb-map-collapse",
   ".wb-map-count",
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
 let wbInvZoomSheet = null;
-let wbInvZoomValue = "1";
 
 //: **The board's layers are rasterised again once a zoom has settled**
 //: (INBOX 791, "labels look pixelated"). A layer promoted with `will-change:
@@ -918,17 +919,18 @@ let wbInvZoomValue = "1";
 //: is SVG text, as a stretched bitmap. Dropping the hint for one frame and
 //: restoring the sheet's own makes the next paint at the current scale; all
 //: three go in the same frame so the pan pipelines stay together.
-function wbRefreshRaster() {
-  const layers = ["wb-html-layer", "wb-svg-layer", "wb-overlay-layer"].map((id) => document.getElementById(id)).filter(Boolean);
+function wbRefreshRaster(el) {
+  const layers = ["wb-html-layer", "wb-svg-layer", "wb-overlay-layer"]
+    .map((id) => el.querySelector(`#${id}, [data-wb-layer="${id}"]`)).filter(Boolean);
   for (const layer of layers) layer.style.willChange = "auto";
   requestAnimationFrame(() => {
     for (const layer of layers) layer.style.willChange = "";
   });
 }
 
-function wbPublishInvZoom(el, inv) {
-  wbInvZoomValue = inv;
-  wbRefreshRaster();
+function wbPublishInvZoom(el, inv, inst = wbInstances.page) {
+  inst.invZoom = inv;
+  wbRefreshRaster(el);
   //: Below half zoom a topic's link button goes (INBOX 816): `inv` is 1 / zoom.
   el.toggleAttribute("data-wb-zoom-far", Number(inv) > 2);
   //: The clone arrows stand a fixed number of screen pixels off their sides.
@@ -945,7 +947,17 @@ function wbPublishInvZoom(el, inv) {
     wbInvZoomSheet = new CSSStyleSheet();
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, wbInvZoomSheet];
   }
-  wbInvZoomSheet.replaceSync(`${WB_INV_ZOOM_GRIPS.join(", ")} { --wb-inv-zoom: ${inv}; }`);
+  wbInvZoomSheet.replaceSync(wbInvZoomRules());
+}
+
+//: The page board's rule, then one per embed, scoped to its box: `:is()` takes
+//: its most specific argument's weight (an id), so an embed's own scale wins
+//: over the page's inside it (L-whiteboard-56).
+function wbInvZoomRules() {
+  const grips = WB_INV_ZOOM_GRIPS.join(", ");
+  return wbInstances.list.map((inst) => (inst.container
+    ? `[data-wb-embed="${inst.key}"] :is(${grips}) { --wb-inv-zoom: ${inst.invZoom}; }`
+    : `${grips} { --wb-inv-zoom: ${inst.invZoom}; }`)).join("\n");
 }
 
 function wbGridType() {
