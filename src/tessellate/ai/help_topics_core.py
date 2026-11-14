@@ -190,7 +190,7 @@ HELP_TOPICS: list[dict] = [
             "on them; the desktop app notifies with its window closed. If the "
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
-            "Remind me is on a note's, a document's and a board's ⋯ "
+            "Remind me is on a note's, document's, board's and file's ⋯ "
             "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about. "
             "Select words in a note and Set a reminder in the selection menu "
             "reads a reminder out of them, linked to that note. When you tell "

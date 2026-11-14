@@ -3293,9 +3293,9 @@ function graphPopupDragEnd(ev) {
 //: cannot.
 //: A note (or a document's node) found and framed on the map: the half of
 //: `showNoteInGraph` (note-cards.js) that runs once the bundle is here.
-async function graphShowNote(id, { document: isDocument = false } = {}) {
-  if (isDocument) {
-    const box = $("graph-documents");
+async function graphShowNote(id, { document: isDocument = false, maps = false } = {}) {
+  if (isDocument || maps) {
+    const box = isDocument ? $("graph-documents") : $("graph-maps");
     if (box && !box.checked) {
       box.checked = true;
       box.dispatchEvent(new Event("change", { bubbles: true }));

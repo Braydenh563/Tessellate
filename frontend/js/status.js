@@ -3019,8 +3019,8 @@ function renderSettings() {
   }
   //: K13: with no model, the line says what answers instead (ai/composer.py).
   if (aiIsOff()) {
-    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
-  }
+    ollamaLine.title = "Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.";
+  } else ollamaLine.title = "";
   renderBackendPicker(status);
   //: The one-time question before search by meaning is downloaded
   //: (semantic-notice.js, lazy): opened while the server says it is owed,
@@ -3035,14 +3035,11 @@ function renderSettings() {
   //: the owner's report was exactly that case ("no nomic-embed-text
   //: suggested") and the button below only exists while it is.
   //: The notice recipe's icon first (section 21 rows 1 and 2), then the line.
+  embeddingError.title = "";
   const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
   if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
-    say(
-      `${withoutEndStop(status.embedding_error)}. ` +
-      (status.ollama_running
-        ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
-        : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)
-    );
+    say(`${withoutEndStop(status.embedding_error)}.`);
+    embeddingError.title = `Or ${status.ollama_running ? "" : "start Ollama and "}pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`;
   } else if (status.embedding_error) {
     say(
       `Search engine problem: ${status.embedding_error}: semantic search is ` +

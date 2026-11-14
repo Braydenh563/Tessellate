@@ -657,7 +657,7 @@
       ? ` ${nounCount(hw.models_installed, "model")} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
       : "";
     const fixed = hw.override ? " You corrected these numbers." : "";
-    return `This computer: ${parts.join(", ")}.${here}${fixed} Each card says whether a model fits.`;
+    return `This computer: ${parts.join(", ")}.${here}${fixed}`;
   }
 
   function paintModelHardware() {
