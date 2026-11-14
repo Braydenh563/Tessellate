@@ -435,6 +435,24 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("“{said}” has me stumped as a date. Give me a day and a time and I will set it.", "p"),
         c("I cannot make a date out of “{said}”. Try “Friday at 3pm”.", "p"),
     ),
+    "none_tags": (
+        c("None of your notes carry a tag yet.", "w"), c("No tags yet: none of your notes has one.", "w"), c("Nothing is tagged so far, but that is easy to change.", "w"),
+        c("No tags.", "t"), c("Untagged, all of it.", "t"), c("Tags: none.", "t"),
+        c("None of your notes has been given a tag.", "f"), c("No note in the notebook carries a tag at present.", "f"),
+        c("Not one tag yet, so every note is a blank label.", "p"), c("The tag drawer is empty.", "p"),
+    ),
+    "none_categories": (
+        c("None of your notes are filed in a category yet.", "w"), c("No categories yet: nothing is filed anywhere.", "w"), c("Nothing is filed in a category so far.", "w"),
+        c("No categories.", "t"), c("Nothing filed.", "t"), c("Categories: none.", "t"),
+        c("None of your notes has been filed in a category.", "f"), c("No note in the notebook sits in a category at present.", "f"),
+        c("The filing cabinet is empty so far.", "p"), c("Not a single category has any notes yet.", "p"),
+    ),
+    "none_documents": (
+        c("You have no documents yet.", "w"), c("No documents so far: none have been added.", "w"), c("There are no documents here yet.", "w"),
+        c("No documents.", "t"), c("Documents: none.", "t"), c("Nothing uploaded.", "t"),
+        c("No documents have been added to the notebook.", "f"), c("The notebook holds no documents at present.", "f"),
+        c("The document shelf is bare.", "p"), c("No documents yet, only notes.", "p"),
+    ),
     "act_none": (
         c("That is not something I can do from here with no model. I can search, count, list and set reminders.", "w"),
         c("I cannot do that without a model, but I can search, count, list and set reminders.", "w"),

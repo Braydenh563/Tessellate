@@ -14,11 +14,11 @@ nothing above it.
 
 from __future__ import annotations
 
-import difflib
 import re
 
 from typing import NamedTuple
 
+from rapidfuzz import fuzz, process
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -214,7 +214,8 @@ def _close(wanted: str, names: list[str]) -> list[str]:
     """The names near `wanted`: a slip away or holding it, nearest first."""
     key = wanted.casefold()
     by_key = {n.casefold(): n for n in names}
-    near = difflib.get_close_matches(key, list(by_key), n=3, cutoff=0.6)
+    #: `rapidfuzz`'s WRatio reads a slip, a part of a name and the words in another order (L-chat-64).
+    near = [k for k, _score, _at in process.extract(key, list(by_key), scorer=fuzz.WRatio, score_cutoff=60, limit=3)]
     near += [k for k in by_key if key in k and k not in near]
     return [by_key[k] for k in near[:3]]
 

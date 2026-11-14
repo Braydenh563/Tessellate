@@ -21,13 +21,14 @@ from __future__ import annotations
 import calendar
 import re
 from collections import Counter
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import consent, consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
+from tessellate.ai import composer_compose, consent, consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
 from tessellate.ai import recognise_questions
 
 #: The charts the app can already draw from the notes, in the order offered.
@@ -187,10 +188,19 @@ def _chart_by(session: Session, question: str, prev: Prev, today: date, *, whole
 # --- parts of an answer -------------------------------------------------------
 
 
+#: The chat's voice and the words asked, while `reply` runs: the "none yet" lines are composed in that voice (L-chat-233).
+_SAYING: ContextVar[tuple[str, str]] = ContextVar("composer_talk_saying", default=("natural", ""))
+
+
+def _none_yet(ability: str) -> list[dict]:
+    voice, asked = _SAYING.get()
+    return [{"type": "answer", "delta": composer_compose.frame(ability, composer_compose.mood_of(asked, voice=voice, seed=f"{ability}|{asked}", intent="none"))}]
+
+
 def _tag_list(session: Session, today: date) -> list[dict] | None:
     counts = slash_more.tag_counts(session)
     if not counts:
-        return [{"type": "answer", "delta": "None of your notes carry a tag yet."}]
+        return _none_yet("none_tags")
     top = counts.most_common(SHOWN_TAGS)
     lines = "\n".join(f"- {tag} ({n})" for tag, n in top)
     more = f"\n\n{realise.count_word(len(counts) - len(top)).capitalize()} more are in Notes." if len(counts) > len(top) else ""
@@ -202,7 +212,7 @@ def _tag_list(session: Session, today: date) -> list[dict] | None:
 def _category_list(session: Session, today: date) -> list[dict] | None:
     rows, unfiled = slash_more.category_counts(session)
     if not rows:
-        return [{"type": "answer", "delta": "None of your notes are filed in a category yet."}]
+        return _none_yet("none_categories")
     lines = "\n".join(f"- {name} ({n})" for name, n in rows)
     left = f"\n\n{realise.count_noun(unfiled, 'note').capitalize()} {'is' if unfiled == 1 else 'are'} filed nowhere." if unfiled else ""
     return [{"type": "answer", "delta": f"Your notes sit in {len(rows)} {'category' if len(rows) == 1 else 'categories'}:\n\n{lines}{left}"}]
@@ -213,7 +223,7 @@ def _document_list(session: Session, today: date) -> list[dict] | None:
 
     titles = [str(d.title) for d in session.scalars(select(Document).order_by(Document.updated_at.desc()).limit(SHOWN_TAGS))]
     if not titles:
-        return [{"type": "answer", "delta": "You have no documents yet."}]
+        return _none_yet("none_documents")
     return [{"type": "answer", "delta": f"Your {_n(len(titles), 'document')}, newest first:\n\n" + "\n".join(f"- {t}" for t in titles)}]
 
 
@@ -276,7 +286,7 @@ def from_history(history: list[dict], today: date) -> Prev:
     return last
 
 
-def reply(session: Session, question: str, history: list[dict], today: date) -> list[dict] | None:
+def reply(session: Session, question: str, history: list[dict], today: date, *, voice: str = "natural") -> list[dict] | None:
     """The events for a question that reads against the turn before it (or names a chart), else None."""
     said = _clean(question).rstrip("?!. ")
     if not said:
@@ -284,10 +294,14 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     if asks := follow_items.read(question, history, datetime.combine(today, time(9)))[1]:
         return [{"type": "answer", "delta": asks}]
     prev = from_history(history, today)
-    for read in _READERS:
-        events = read(session, said, prev, today)
-        if events is not None:
-            return events
+    held = _SAYING.set((voice, said))
+    try:
+        for read in _READERS:
+            events = read(session, said, prev, today)
+            if events is not None:
+                return events
+    finally:
+        _SAYING.reset(held)
     return None
 
 

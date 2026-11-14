@@ -1232,6 +1232,14 @@ _VERSUS = re.compile(
 )
 
 
+#: "walked compared to ran", "my walks versus my runs": the same difference with no "how much" in front. Read here,
+#: before `composer_ask.compare_sides` takes it for two words to list (L-chat-234).
+_VERSUS_BARE = re.compile(
+    r"^(?:and )?(?P<cmp>)(?:(?:my|our|the) )?(?P<a>[a-z]+) (?:than|compared (?:to|with)|versus|vs\.?) (?:(?:my|our|the) )?(?P<b>[a-z]+)\W*$",
+    re.I,
+)
+
+
 class _Versus(NamedTuple):
     dimension: str
     comparative: str
@@ -1239,13 +1247,21 @@ class _Versus(NamedTuple):
     b: str
 
 
+def _doing(word: str) -> str:
+    """"walks", "ran", "running" as the verb the dimension table holds ("walk", "run"); the word itself when none."""
+    w = _BASE.get(_SPENT_FORMS.get(word, word), _SPENT_FORMS.get(word, word))
+    return next((v for v in _VERB_DIMENSION if w in _forms(v)), w)
+
+
 def _versus_asked(q: str) -> _Versus | None:
-    m = _VERSUS.match(q)
+    m = _VERSUS.match(q) or _VERSUS_BARE.match(q)
     if not m:
         return None
-    a, b = (_BASE.get(_SPENT_FORMS.get(w, w), _SPENT_FORMS.get(w, w)) for w in (m.group("a").lower(), m.group("b").lower()))
-    a, b = (next((v for v in _VERB_DIMENSION if w in _forms(v)), w) for w in (a, b))
+    a, b = (_doing(m.group(side).lower()) for side in ("a", "b"))
     dimension = _VERB_DIMENSION.get(a)
+    #: "how much more did I read than write": two doings with no amount the engine measures; said, not listed as notes.
+    if m.re is _VERSUS and a not in _VERB_DIMENSION and b not in _VERB_DIMENSION and a != b:
+        return _Versus("", (m.group("cmp") or "more").lower(), m.group("a").lower(), m.group("b").lower())
     if not dimension or dimension == "money" or _VERB_DIMENSION.get(b) != dimension or a == b:
         return None
     return _Versus(dimension, (m.group("cmp") or "more").lower(), a, b)
@@ -1253,6 +1269,9 @@ def _versus_asked(q: str) -> _Versus | None:
 
 def _versus(out, v: _Versus, views: list) -> bool:  # noqa: ANN001
     """Two sums, one per doing, and their difference, both cited."""
+    if not v.dimension:
+        out.lines.append(f"I can only subtract amounts I can measure (distance, time, weight), and your notes give none for {v.a} or {v.b}.")
+        return True
     sides = [_items(views, None, [], dimension=v.dimension, forms=frozenset(_forms(verb))) for verb in (v.a, v.b)]
     if not sides[0] and not sides[1]:
         out.lines.append(f"I found no {_DIMENSION_NOUN.get(v.dimension, 'amounts')} for {_done(v.a)} or {_done(v.b)} in your notes.")

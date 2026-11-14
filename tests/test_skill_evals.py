@@ -66,6 +66,16 @@ def test_the_fixture_is_seventy_notes_with_eight_planted_loose_ends():
     assert "list_notes" in json.dumps(skill["steps"])
 
 
+def test_the_fixture_weighs_short_jottings_and_long_writing_equally():
+    """CHAT_PLAN decision 27 (L-chat-176): notes are a mix. Half the notes are short jottings (20 words or fewer)
+    and half long writing (60 or more), and the planted loose ends sit in both halves."""
+    words = [len(n["content"].split()) for n in FIXTURE["notes"]]
+    short, long = sum(w <= 20 for w in words), sum(w >= 60 for w in words)
+    assert short == long == len(words) // 2, (short, long)
+    planted = [len(n["content"].split()) for n in FIXTURE["notes"] if n["loose_end"]]
+    assert sum(w <= 20 for w in planted) == sum(w >= 60 for w in planted) == len(planted) // 2, planted
+
+
 @pytest.fixture()
 def real_model(app_state, fake_embeddings):
     from tessellate.ai.openai_client import OpenAICompatClient
