@@ -60,7 +60,7 @@
     if (job.stoppable || job.report) {
       const actions = document.createElement("span");
       actions.className = "entry-actions";
-      if (job.stoppable) actions.appendChild(smallButton("ph:stop-circle Stop", `Stop ${job.label.toLowerCase()} at its next step`, () => stopActivityJob(job.id)));
+      if (job.stoppable) actions.appendChild(smallButton("ph:stop-circle Stop", `Stop ${job.label.toLowerCase()} at its next step`, () => stopActivityJob(job.id, job.kind)));
       //: A finished job with a page (an import's report, WORLD_CLASS 25b).
       if (job.report) actions.appendChild(smallButton("ph:file-text Report", `Open the report of ${job.label.toLowerCase()}`, () => openActivityReport(job.report)));
       row.appendChild(actions);
@@ -129,12 +129,14 @@
     if (await ensureModule("appImport")) openImportReport(id);
   }
 
-  async function stopActivityJob(id) {
+  async function stopActivityJob(id, kind) {
     try {
       const result = await apiJson(`/activity/${encodeURIComponent(id)}/stop`, { method: "POST" });
       toast(result.detail || (result.stopped ? "Stopping." : "It had already finished."), "info");
+      //: A view that shows this job's work (the OCR workspace's partial pages) repaints now.
+      if (result.stopped) window.dispatchEvent(new CustomEvent("activity-stopped", { detail: { id, kind } }));
     } catch (e) {
-      toastAction(voiceLine("failed", { what: "stop that job", why: e.message }), "Try again", () => stopActivityJob(id));
+      toastAction(voiceLine("failed", { what: "stop that job", why: e.message }), "Try again", () => stopActivityJob(id, kind));
     }
     renderActivity();
   }

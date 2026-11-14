@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- OCR workspace: Stop in the Activity panel shows the pages read so far at once (the panel announces `activity-stopped`; the workspace repaints from `/page-reads` while the range request is still finishing), instead of when the call returns. L-world-class-353.
 - Ask time travel: the slider runs back to the oldest note (`oldest_day` on /insights/stats), not a fixed 365 days, and a typed day moves it; `showAskAsOf` moved to the lazy gesture-kit.js behind a stand-in (boot gzip 250,562 to under the cap, cap unchanged). Measured rtl drag in a browser: left end 90 days (the oldest note), right end today. L-world-class-352.
 - World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).

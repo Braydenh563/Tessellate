@@ -395,3 +395,19 @@ def test_a_range_read_is_an_activity_job_with_progress_and_stop(monkeypatch, tmp
     assert seen[0]["stoppable"] is True and not seen[0]["progress"]
     assert seen[2]["progress"] == pytest.approx(2 / 6)
     assert not [row for row in activity.snapshot() if row["kind"] == "ocr-range"]
+
+
+def test_stop_in_the_activity_panel_shows_the_pages_read_so_far_at_once():
+    """L-world-class-353: the workspace's Read pages awaits the whole request, so after Stop in the Activity panel
+    the partial pages showed only when the call returned. The panel announces the stop of an ocr-range job and the
+    workspace repaints from the stored readings (`/page-reads`) then, while the request is still in flight."""
+    from pathlib import Path
+
+    js = Path(__file__).resolve().parent.parent / "frontend" / "js"
+    panel = (js / "activity-panel.js").read_text(encoding="utf-8")
+    assert 'new CustomEvent("activity-stopped", { detail: { id, kind } })' in panel
+    assert "stopActivityJob(job.id, job.kind)" in panel
+    library = (js / "library.js").read_text(encoding="utf-8")
+    assert 'addEventListener("activity-stopped"' in library
+    handler = library[library.index('addEventListener("activity-stopped"') :][:900]
+    assert 'kind !== "ocr-range"' in handler and "/page-reads" in handler and "ocrShowReadPages" in handler

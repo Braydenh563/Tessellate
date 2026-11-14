@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 116 | 29 | 1 | 4 | 145 |
+| world-class | 0 | 115 | 29 | 1 | 4 | 144 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 505 | 100 | 3 | 115 | 977 |
+| all | 372 | 504 | 100 | 3 | 115 | 976 |
 
 ## graph
 
@@ -596,7 +596,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-321** `world-class` open, L: Parse untrusted files in a child process with a time and memory limit, so a parser bug in a crafted PDF, Word file or picture cannot run with the notebook's rights. From SECURITY.md, Threat model T19 (L-world-class-18). Evidence: A crafted PDF, Word file or picture is parsed inside the server process: pypdfium2 (core/pdfpages.py), markitdown (entry/importer.py), Pillow and the OCR readers. The guards are size caps only (core/docview.py:334, entry/app_import.py:55, api/wb_import.py:404, BodyCapMiddleware core/security.py:211); no child process, no time limit, no memory limit, so a parser bug runs with the notebook's rights.
 - [ ] **L-world-class-350** `world-class` open, M: Give the run list, the Connections dialog and the whiteboard blocks a lazy sheet and a loader, then move their boot rules. From L-world-class-232, 2026-11-14. Evidence: L-world-class-232 moved the Skills tab's 07 and 08 rules into library-lazy.css (boot CSS gzip 178,984 to 178,610). Not moved: the run list (.monitor-runs and .agent-run-*, drawn by agent-activity.js, a boot script, so it has no bundle to ride), the space dialogs (.space-dialog is every dialog's shell), the Connections dialog (its rows are also drawn in the Notes rail at boot, connections.js is a lazyScript not a bundle), and the whiteboard and timeline blocks (whiteboard.js is a boot script with no lazy sheet). Each needs a lazy sheet and a loader first, then the computed-style diff (scratchpad probe: every property of every element, three widths, 0 different).
 - [ ] **L-world-class-351** `world-class` open, M: Zoom order across graph, board and map, and the documents dock onto the .dock recipe (left from the dock audit 479). From L-world-class-113. Evidence: 113 built 4 of 6 (Graph View in the gear, one New split button, '?' on every Library dock, one Add per Reminders card; index.html 3985-4100, 6695+, 5990-6060); left: one zoom order across graph, board and map (graph.js:5124 vertical, board pill index.html ~7758) and the documents dock (index.html:5087 row space-between doc-dock) onto .dock, re-measuring dark-mode kebab (04-chat-dock-appearance.css:4272-4380)
-- [ ] **L-world-class-353** `world-class` open, S: OCR workspace: Read pages shows the pages read so far the moment Stop lands. From L-world-class-67 follow-on (batch S3). Evidence: the workspace Read pages button awaits the whole request, so after Stop in the Activity panel it shows the partial pages only when the call returns
 
 ## general
 

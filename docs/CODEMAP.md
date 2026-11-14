@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2789, CSS sections 526, backend routes 721, backend modules 11030, test files 2860, tests 22637, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8510, frontend ids 2789, CSS sections 526, backend routes 721, backend modules 11030, test files 2860, tests 22638, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8509)
+## Frontend functions (8510)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1789,10 +1789,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openActivityReport` | frontend/js/activity-panel.js:128 |
 | `paintActivity` | frontend/js/activity-panel.js:109 |
 | `renderActivity` | frontend/js/activity-panel.js:20 |
-| `setActivityTab` | frontend/js/activity-panel.js:181 |
+| `setActivityTab` | frontend/js/activity-panel.js:183 |
 | `stopActivityJob` | frontend/js/activity-panel.js:132 |
-| `stopActivityModel` | frontend/js/activity-panel.js:142 |
-| `stopAllActivity` | frontend/js/activity-panel.js:153 |
+| `stopActivityModel` | frontend/js/activity-panel.js:144 |
+| `stopAllActivity` | frontend/js/activity-panel.js:155 |
 
 ### frontend/js/answer-kit.js (88)
 
@@ -5973,55 +5973,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pickMediaDialog` | frontend/js/library-pick.js:197 |
 | `pickerRememberedSource` | frontend/js/library-pick.js:19 |
 
-### frontend/js/library.js (270)
+### frontend/js/library.js (271)
 
 | Name | File:line |
 |---|---|
 | `activityDetailText` | frontend/js/library.js:1566 |
 | `activitySettingValue` | frontend/js/library.js:1550 |
-| `allBookmarkGroups` | frontend/js/library.js:11777 |
-| `analyseMediaRow` | frontend/js/library.js:8724 |
+| `allBookmarkGroups` | frontend/js/library.js:11793 |
+| `analyseMediaRow` | frontend/js/library.js:8740 |
 | `applyLibraryMediaView` | frontend/js/library.js:4111 |
-| `attachBoardTick` | frontend/js/library.js:11381 |
+| `attachBoardTick` | frontend/js/library.js:11397 |
 | `binRoutes` | frontend/js/library.js:1321 |
 | `bookmarkAddress` | frontend/js/library.js:4317 |
-| `bookmarkRow` | frontend/js/library.js:12176 |
-| `bookmarkSiteSection` | frontend/js/library.js:12139 |
-| `bookmarkSort` | frontend/js/library.js:12057 |
-| `buildFileReadingSummary` | frontend/js/library.js:8882 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11420 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11673 |
-| `bulkDeleteLibraryMedia` | frontend/js/library.js:9049 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11721 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11695 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11412 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11577 |
-| `clearLibraryMediaSelection` | frontend/js/library.js:9043 |
+| `bookmarkRow` | frontend/js/library.js:12192 |
+| `bookmarkSiteSection` | frontend/js/library.js:12155 |
+| `bookmarkSort` | frontend/js/library.js:12073 |
+| `buildFileReadingSummary` | frontend/js/library.js:8898 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11436 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11689 |
+| `bulkDeleteLibraryMedia` | frontend/js/library.js:9065 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11737 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11711 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11428 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11593 |
+| `clearLibraryMediaSelection` | frontend/js/library.js:9059 |
 | `closeBinnedReader` | frontend/js/library.js:1949 |
 | `closeOcrWorkspace` | frontend/js/library.js:6102 |
-| `contentsBuildSection` | frontend/js/library.js:12913 |
-| `contentsDocRow` | frontend/js/library.js:12826 |
-| `contentsGlyph` | frontend/js/library.js:12761 |
-| `contentsGroupMark` | frontend/js/library.js:12897 |
-| `contentsGroups` | frontend/js/library.js:12600 |
-| `contentsMonthKey` | frontend/js/library.js:12593 |
-| `contentsNoteFacts` | frontend/js/library.js:12788 |
-| `contentsNoteMark` | frontend/js/library.js:12768 |
-| `contentsNoteName` | frontend/js/library.js:12701 |
-| `contentsNoteRow` | frontend/js/library.js:12800 |
-| `contentsOpenDocument` | frontend/js/library.js:12719 |
-| `contentsOrderedKeys` | frontend/js/library.js:12672 |
-| `contentsRenameTopic` | frontend/js/library.js:12989 |
-| `contentsRowBody` | frontend/js/library.js:12748 |
-| `contentsSectionLabel` | frontend/js/library.js:12652 |
-| `contentsSetAll` | frontend/js/library.js:13199 |
-| `contentsTopicNames` | frontend/js/library.js:12661 |
-| `contentsTreeItem` | frontend/js/library.js:12734 |
-| `contentsTreeKeys` | frontend/js/library.js:13214 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12963 |
-| `createLibrarySelectbar` | frontend/js/library.js:11316 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11816 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11632 |
+| `contentsBuildSection` | frontend/js/library.js:12929 |
+| `contentsDocRow` | frontend/js/library.js:12842 |
+| `contentsGlyph` | frontend/js/library.js:12777 |
+| `contentsGroupMark` | frontend/js/library.js:12913 |
+| `contentsGroups` | frontend/js/library.js:12616 |
+| `contentsMonthKey` | frontend/js/library.js:12609 |
+| `contentsNoteFacts` | frontend/js/library.js:12804 |
+| `contentsNoteMark` | frontend/js/library.js:12784 |
+| `contentsNoteName` | frontend/js/library.js:12717 |
+| `contentsNoteRow` | frontend/js/library.js:12816 |
+| `contentsOpenDocument` | frontend/js/library.js:12735 |
+| `contentsOrderedKeys` | frontend/js/library.js:12688 |
+| `contentsRenameTopic` | frontend/js/library.js:13005 |
+| `contentsRowBody` | frontend/js/library.js:12764 |
+| `contentsSectionLabel` | frontend/js/library.js:12668 |
+| `contentsSetAll` | frontend/js/library.js:13215 |
+| `contentsTopicNames` | frontend/js/library.js:12677 |
+| `contentsTreeItem` | frontend/js/library.js:12750 |
+| `contentsTreeKeys` | frontend/js/library.js:13230 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12979 |
+| `createLibrarySelectbar` | frontend/js/library.js:11332 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11832 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11648 |
 | `deleteSkillWithUndo` | frontend/js/library.js:2885 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
@@ -6031,12 +6031,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
 | `duplicateSkill` | frontend/js/library.js:2857 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11754 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11770 |
 | `ensureLibraryGridStop` | frontend/js/library.js:1811 |
-| `fetchAllBookmarks` | frontend/js/library.js:11534 |
+| `fetchAllBookmarks` | frontend/js/library.js:11550 |
 | `fileMetaLine` | frontend/js/library.js:4298 |
-| `filterBookmarks` | frontend/js/library.js:12072 |
-| `filterLibraryImagesGallery` | frontend/js/library.js:9307 |
+| `filterBookmarks` | frontend/js/library.js:12088 |
+| `filterLibraryImagesGallery` | frontend/js/library.js:9323 |
 | `flashLibraryItem` | frontend/js/library.js:1995 |
 | `focusLibraryFile` | frontend/js/library.js:4245 |
 | `importLibraryDocuments` | frontend/js/library.js:3483 |
@@ -6052,13 +6052,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `libraryDocsMatchesProperty` | frontend/js/library.js:3380 |
 | `libraryDocsNewMount` | frontend/js/library.js:3558 |
 | `libraryDocsPropertyOptions` | frontend/js/library.js:3365 |
-| `libraryImageOrigin` | frontend/js/library.js:9240 |
+| `libraryImageOrigin` | frontend/js/library.js:9256 |
 | `libraryImagesFingerprint` | frontend/js/library.js:4016 |
 | `libraryKeyOf` | frontend/js/library.js:439 |
-| `libraryLightboxItems` | frontend/js/library.js:8826 |
-| `libraryMediaBinItem` | frontend/js/library.js:9022 |
-| `libraryMediaRepaint` | frontend/js/library.js:9027 |
-| `libraryMediaSort` | frontend/js/library.js:9197 |
+| `libraryLightboxItems` | frontend/js/library.js:8842 |
+| `libraryMediaBinItem` | frontend/js/library.js:9038 |
+| `libraryMediaRepaint` | frontend/js/library.js:9043 |
+| `libraryMediaSort` | frontend/js/library.js:9213 |
 | `libraryNewDocument` | frontend/js/library.js:3538 |
 | `librarySelectedItems` | frontend/js/library.js:1396 |
 | `librarySorted` | frontend/js/library.js:627 |
@@ -6067,45 +6067,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linkNoteFromLibrary` | frontend/js/library.js:1339 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
 | `loadLibrary` | frontend/js/library.js:455 |
-| `manageBookmarkGroups` | frontend/js/library.js:11823 |
+| `manageBookmarkGroups` | frontend/js/library.js:11839 |
 | `mediaFileIcon` | frontend/js/library.js:4259 |
 | `mediaFileKind` | frontend/js/library.js:4341 |
-| `mediaHasBeenRead` | frontend/js/library.js:8752 |
-| `mediaReading` | frontend/js/library.js:8748 |
-| `mediaReadingBadge` | frontend/js/library.js:8760 |
-| `mediaReadingSummary` | frontend/js/library.js:8789 |
-| `mediaRowDeleteEndpoint` | frontend/js/library.js:9015 |
-| `mediaRowKey` | frontend/js/library.js:9008 |
+| `mediaHasBeenRead` | frontend/js/library.js:8768 |
+| `mediaReading` | frontend/js/library.js:8764 |
+| `mediaReadingBadge` | frontend/js/library.js:8776 |
+| `mediaReadingSummary` | frontend/js/library.js:8805 |
+| `mediaRowDeleteEndpoint` | frontend/js/library.js:9031 |
+| `mediaRowKey` | frontend/js/library.js:9024 |
 | `metaLine` | frontend/js/library.js:4281 |
-| `noteAnyImage` | frontend/js/library.js:13385 |
-| `noteFirstImage` | frontend/js/library.js:13375 |
-| `ocrAllText` | frontend/js/library.js:8026 |
+| `noteAnyImage` | frontend/js/library.js:13401 |
+| `noteFirstImage` | frontend/js/library.js:13391 |
+| `ocrAllText` | frontend/js/library.js:8042 |
 | `ocrApplyFind` | frontend/js/library.js:7382 |
 | `ocrApplyPageCount` | frontend/js/library.js:5727 |
 | `ocrApplyZoom` | frontend/js/library.js:6630 |
-| `ocrAskRange` | frontend/js/library.js:7915 |
-| `ocrBase` | frontend/js/library.js:8639 |
-| `ocrBinField` | frontend/js/library.js:8699 |
-| `ocrBinPage` | frontend/js/library.js:8694 |
+| `ocrAskRange` | frontend/js/library.js:7931 |
+| `ocrBase` | frontend/js/library.js:8655 |
+| `ocrBinField` | frontend/js/library.js:8715 |
+| `ocrBinPage` | frontend/js/library.js:8710 |
 | `ocrBuildPageRail` | frontend/js/library.js:6027 |
 | `ocrBuildScrollPages` | frontend/js/library.js:6863 |
 | `ocrCan` | frontend/js/library.js:7229 |
 | `ocrCanOpen` | frontend/js/library.js:6245 |
 | `ocrChooseReader` | frontend/js/library.js:7265 |
-| `ocrCleanLoops` | frontend/js/library.js:8707 |
+| `ocrCleanLoops` | frontend/js/library.js:8723 |
 | `ocrClearRegionSelection` | frontend/js/library.js:5293 |
-| `ocrCloseEdit` | frontend/js/library.js:8020 |
-| `ocrDockApply` | frontend/js/library.js:7709 |
-| `ocrDockFits` | frontend/js/library.js:7685 |
+| `ocrCloseEdit` | frontend/js/library.js:8036 |
+| `ocrDockApply` | frontend/js/library.js:7725 |
+| `ocrDockFits` | frontend/js/library.js:7701 |
 | `ocrDocumentReading` | frontend/js/library.js:5585 |
-| `ocrEmptyLine` | frontend/js/library.js:7961 |
+| `ocrEmptyLine` | frontend/js/library.js:7977 |
 | `ocrFetchFileText` | frontend/js/library.js:6252 |
-| `ocrFieldText` | frontend/js/library.js:8654 |
+| `ocrFieldText` | frontend/js/library.js:8670 |
 | `ocrFillPageCaptions` | frontend/js/library.js:5674 |
 | `ocrFindMarkRegion` | frontend/js/library.js:7359 |
 | `ocrFindShowCurrent` | frontend/js/library.js:7409 |
 | `ocrFindStep` | frontend/js/library.js:7438 |
-| `ocrFitDock` | frontend/js/library.js:7719 |
+| `ocrFitDock` | frontend/js/library.js:7735 |
 | `ocrFitLiveText` | frontend/js/library.js:4788 |
 | `ocrFitStage` | frontend/js/library.js:6526 |
 | `ocrIsLocal` | frontend/js/library.js:7222 |
@@ -6123,15 +6123,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrMoveOverlays` | frontend/js/library.js:5285 |
 | `ocrNaturalScale` | frontend/js/library.js:6626 |
 | `ocrNoRendererLink` | frontend/js/library.js:6017 |
-| `ocrOfferBinUndo` | frontend/js/library.js:8678 |
-| `ocrOfferTextUndo` | frontend/js/library.js:8672 |
-| `ocrOpenEdit` | frontend/js/library.js:8010 |
-| `ocrOpenReaderSettings` | frontend/js/library.js:7845 |
+| `ocrOfferBinUndo` | frontend/js/library.js:8694 |
+| `ocrOfferTextUndo` | frontend/js/library.js:8688 |
+| `ocrOpenEdit` | frontend/js/library.js:8026 |
+| `ocrOpenReaderSettings` | frontend/js/library.js:7861 |
 | `ocrOpenSibling` | frontend/js/library.js:6399 |
 | `ocrPageImageUrl` | frontend/js/library.js:4433 |
 | `ocrPaintBoxes` | frontend/js/library.js:4748 |
 | `ocrPaintCaption` | frontend/js/library.js:5651 |
-| `ocrPaintEmpty` | frontend/js/library.js:7934 |
+| `ocrPaintEmpty` | frontend/js/library.js:7950 |
 | `ocrPaintLiveText` | frontend/js/library.js:4658 |
 | `ocrPaintRegionRect` | frontend/js/library.js:5303 |
 | `ocrPlaceRegionPopover` | frontend/js/library.js:5320 |
@@ -6139,8 +6139,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrRailKey` | frontend/js/library.js:6084 |
 | `ocrReadImage` | frontend/js/library.js:7450 |
 | `ocrReadInFlight` | frontend/js/library.js:4516 |
-| `ocrReadMenuItems` | frontend/js/library.js:7860 |
-| `ocrReadRange` | frontend/js/library.js:7589 |
+| `ocrReadMenuItems` | frontend/js/library.js:7876 |
+| `ocrReadRange` | frontend/js/library.js:7627 |
 | `ocrReader` | frontend/js/library.js:7215 |
 | `ocrReaderName` | frontend/js/library.js:7253 |
 | `ocrReaderNameFor` | frontend/js/library.js:7242 |
@@ -6153,12 +6153,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrRenderRail` | frontend/js/library.js:6350 |
 | `ocrRenderRailSwitch` | frontend/js/library.js:6266 |
 | `ocrRenderRegions` | frontend/js/library.js:4830 |
-| `ocrRepaintReading` | frontend/js/library.js:8643 |
+| `ocrRepaintReading` | frontend/js/library.js:8659 |
 | `ocrRevealRegionsForPage` | frontend/js/library.js:7324 |
-| `ocrRoveKeys` | frontend/js/library.js:7981 |
-| `ocrRoveSync` | frontend/js/library.js:7972 |
+| `ocrRoveKeys` | frontend/js/library.js:7997 |
+| `ocrRoveSync` | frontend/js/library.js:7988 |
 | `ocrRunRegion` | frontend/js/library.js:5482 |
-| `ocrScheduleFitDock` | frontend/js/library.js:7765 |
+| `ocrScheduleFitDock` | frontend/js/library.js:7781 |
 | `ocrScrollToPage` | frontend/js/library.js:6925 |
 | `ocrSelectImage` | frontend/js/library.js:5275 |
 | `ocrSelectRegion` | frontend/js/library.js:4543 |
@@ -6166,11 +6166,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrSetBox` | frontend/js/library.js:4773 |
 | `ocrSetLiveWord` | frontend/js/library.js:4694 |
 | `ocrSetViewMode` | frontend/js/library.js:6800 |
-| `ocrSetZoom` | frontend/js/library.js:7850 |
+| `ocrSetZoom` | frontend/js/library.js:7866 |
+| `ocrShowReadPages` | frontend/js/library.js:7590 |
 | `ocrShowRegionResult` | frontend/js/library.js:5405 |
 | `ocrShownZoom` | frontend/js/library.js:6668 |
 | `ocrSizeStage` | frontend/js/library.js:6543 |
-| `ocrStageRead` | frontend/js/library.js:7910 |
+| `ocrStageRead` | frontend/js/library.js:7926 |
 | `ocrStepPage` | frontend/js/library.js:6965 |
 | `ocrStepZoom` | frontend/js/library.js:6698 |
 | `ocrStopRead` | frontend/js/library.js:4523 |
@@ -6179,16 +6180,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrSyncCanRead` | frontend/js/library.js:7179 |
 | `ocrSyncMoreMenu` | frontend/js/library.js:7522 |
 | `ocrSyncPager` | frontend/js/library.js:6939 |
-| `ocrSyncReadMenu` | frontend/js/library.js:7881 |
+| `ocrSyncReadMenu` | frontend/js/library.js:7897 |
 | `ocrSyncReaderButton` | frontend/js/library.js:7131 |
 | `ocrSyncStopButton` | frontend/js/library.js:4533 |
-| `ocrSyncToolsMenu` | frontend/js/library.js:7792 |
+| `ocrSyncToolsMenu` | frontend/js/library.js:7808 |
 | `ocrSyncViewButtons` | frontend/js/library.js:6789 |
 | `ocrSyncZoomButtons` | frontend/js/library.js:6729 |
 | `ocrTearDownScroll` | frontend/js/library.js:6845 |
-| `ocrTextWriter` | frontend/js/library.js:8663 |
+| `ocrTextWriter` | frontend/js/library.js:8679 |
 | `ocrVisibleStages` | frontend/js/library.js:6533 |
-| `ocrWatchDock` | frontend/js/library.js:7778 |
+| `ocrWatchDock` | frontend/js/library.js:7794 |
 | `ocrWatchPane` | frontend/js/library.js:6592 |
 | `ocrWatchScroll` | frontend/js/library.js:6900 |
 | `ocrWireRegionJump` | frontend/js/library.js:7304 |
@@ -6198,23 +6199,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLibraryItem` | frontend/js/library.js:1834 |
 | `openOcrWorkspace` | frontend/js/library.js:6432 |
 | `openPageReader` | frontend/js/library.js:6148 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11685 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11701 |
 | `refreshLibraryPhrase` | frontend/js/library.js:2074 |
 | `refreshLibrarySemantic` | frontend/js/library.js:674 |
 | `refreshLibraryServerSearch` | frontend/js/library.js:2048 |
-| `remindAbout` | frontend/js/library.js:13340 |
-| `renameBookmarkGroup` | frontend/js/library.js:11789 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11927 |
-| `renderBookmarks` | frontend/js/library.js:11545 |
-| `renderContents` | frontend/js/library.js:13043 |
+| `remindAbout` | frontend/js/library.js:13356 |
+| `renameBookmarkGroup` | frontend/js/library.js:11805 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11943 |
+| `renderBookmarks` | frontend/js/library.js:11561 |
+| `renderContents` | frontend/js/library.js:13059 |
 | `renderIncrementally` | frontend/js/library.js:245 |
 | `renderLibrary` | frontend/js/library.js:748 |
 | `renderLibraryContextBars` | frontend/js/library.js:1358 |
 | `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3397 |
 | `renderLibraryDocuments` | frontend/js/library.js:3818 |
 | `renderLibraryFilters` | frontend/js/library.js:545 |
-| `renderLibraryImageOrigins` | frontend/js/library.js:9258 |
-| `renderLibraryImagesGallery` | frontend/js/library.js:9086 |
+| `renderLibraryImageOrigins` | frontend/js/library.js:9274 |
+| `renderLibraryImagesGallery` | frontend/js/library.js:9102 |
 | `renderLibraryOverview` | frontend/js/library.js:523 |
 | `renderLibraryView` | frontend/js/library.js:443 |
 | `renderSkillCards` | frontend/js/library.js:2932 |
@@ -6223,24 +6224,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reopenOcrWorkspace` | frontend/js/library.js:6121 |
 | `runLibrarySearch` | frontend/js/library.js:2087 |
 | `seedLibraryDocsAll` | frontend/js/library.js:3527 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11765 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11781 |
 | `setLibraryCardStop` | frontend/js/library.js:1807 |
 | `setLibraryMediaKind` | frontend/js/library.js:4183 |
 | `setLibraryMediaView` | frontend/js/library.js:4141 |
-| `showDetailDialog` | frontend/js/library.js:13291 |
-| `shownTicksIn` | frontend/js/library.js:11285 |
+| `showDetailDialog` | frontend/js/library.js:13307 |
+| `shownTicksIn` | frontend/js/library.js:11301 |
 | `skillCard` | frontend/js/library.js:2648 |
 | `skillColumnCount` | frontend/js/library.js:2911 |
 | `skillLastRunIndex` | frontend/js/library.js:2637 |
 | `skillSort` | frontend/js/library.js:2844 |
 | `startLibraryImagesPoll` | frontend/js/library.js:4046 |
 | `stopLibraryImagesPoll` | frontend/js/library.js:4059 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11367 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11383 |
 | `syncLibraryDocsSelectbar` | frontend/js/library.js:3934 |
 | `syncLibraryFilterButton` | frontend/js/library.js:2124 |
-| `syncLibraryMediaSelectbar` | frontend/js/library.js:9032 |
-| `syncSelectAllLabels` | frontend/js/library.js:11289 |
-| `syncSelectbarCount` | frontend/js/library.js:11262 |
+| `syncLibraryMediaSelectbar` | frontend/js/library.js:9048 |
+| `syncSelectAllLabels` | frontend/js/library.js:11305 |
+| `syncSelectbarCount` | frontend/js/library.js:11278 |
 | `toggleLibrarySelection` | frontend/js/library.js:1400 |
 | `trackOcrRead` | frontend/js/library.js:4485 |
 | `updateLibraryCreateButton` | frontend/js/library.js:2586 |
@@ -28297,7 +28298,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22637)
+## Tests (22638)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30155,7 +30156,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ocr_find_marks.py | 3 |
 | tests/test_ocr_model.py | 17 |
 | tests/test_ocr_old_cache_hint.py | 3 |
-| tests/test_ocr_page.py | 25 |
+| tests/test_ocr_page.py | 26 |
 | tests/test_ocr_pdf_regions.py | 6 |
 | tests/test_ocr_prep_1568.py | 26 |
 | tests/test_ocr_rapidocr.py | 9 |
@@ -31579,14 +31580,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:649 |
+| Needs hardware | docs/roadmap/LEDGER.md:648 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:641 |
+| Owner calls | docs/roadmap/LEDGER.md:640 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31766,7 +31767,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:780 |
+| Plan session briefs | docs/roadmap/LEDGER.md:779 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31820,25 +31821,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:796 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:880 |
+| chat | docs/roadmap/LEDGER.md:795 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:879 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:820 |
-| general | docs/roadmap/LEDGER.md:601 |
+| documents | docs/roadmap/LEDGER.md:819 |
+| general | docs/roadmap/LEDGER.md:600 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:784 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:892 |
+| graph | docs/roadmap/LEDGER.md:783 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:891 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:832 |
+| mindmap | docs/roadmap/LEDGER.md:831 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:856 |
+| timeline | docs/roadmap/LEDGER.md:855 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:844 |
+| ui-modernisation | docs/roadmap/LEDGER.md:843 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:808 |
+| whiteboard | docs/roadmap/LEDGER.md:807 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:868 |
+| world-class | docs/roadmap/LEDGER.md:867 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |
