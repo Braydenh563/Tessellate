@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2790, CSS sections 528, backend routes 714, backend modules 10915, test files 2872, tests 22578, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2790, CSS sections 528, backend routes 714, backend modules 10915, test files 2872, tests 22579, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -2104,8 +2104,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMicroMay` | frontend/js/atlas-micro.js:87 |
 | `atlasMicroPick` | frontend/js/atlas-micro.js:51 |
 | `atlasMicroPlay` | frontend/js/atlas-micro.js:99 |
-| `atlasMicroStart` | frontend/js/atlas-micro.js:300 |
-| `atlasMicroTick` | frontend/js/atlas-micro.js:281 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:313 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:294 |
 
 ### frontend/js/atlas-motion.js (18)
 
@@ -28106,7 +28106,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22578)
+## Tests (22579)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28224,7 +28224,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_masc_1607.py | 7 |
 | tests/test_atlas_masculine_1607.py | 10 |
-| tests/test_atlas_micro.py | 10 |
+| tests/test_atlas_micro.py | 11 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_named_face_l_ui_101.py | 3 |
 | tests/test_atlas_rest_1402.py | 10 |

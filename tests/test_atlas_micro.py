@@ -249,3 +249,20 @@ process.stdout.write(JSON.stringify({ casts: calls.anim.filter((a) => /atl-cast-
 """
     )
     assert out["casts"] > 0
+
+
+@needs_node
+def test_an_ear_flick_gives_the_ear_its_own_pivot_back_when_it_ends() -> None:
+    # L-ui-modernisation-171: the flick tips the ear about its root (fill-box, 50% 90%) and left that pivot on it for
+    # good, so every later mood's turn of the ear pivoted 35 to 47 px from its drawn one (a desk capture of a sleep).
+    out = _run(
+        r"""
+for (const e of ears) e.style.transformOrigin = "21px 7px";
+vm.runInContext("atlasMicroDo('ear', document.querySelector())", ctx);
+const during = ears.map((e) => [e.style.transformBox || "", e.style.transformOrigin]);
+ends.splice(0).forEach((done) => done());
+setTimeout(() => process.stdout.write(JSON.stringify({ during, after: ears.map((e) => [e.style.transformBox || "", e.style.transformOrigin]) })), 0);
+"""
+    )
+    assert ["fill-box", "50% 90%"] in out["during"], out
+    assert out["after"] == [["", "21px 7px"], ["", "21px 7px"]], out

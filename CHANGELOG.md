@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
+- Companion: an ear flick gives the ear its own pivot back when it ends, so a later mood's turn of the ear no longer pivots 35 to 47 px elsewhere (L-ui-modernisation-171).
 - Copy: the open-work scan's lowercase to-do names are reworded (INBOX 1811): the capture bar's list button is `capture-bar-list`, a redundant callout ink rule went, queue and step locals are renamed, and typed words (`/todo`, `[!todo]`, saved draft modes) still work.
 
 - Maps open sooner: the board is asked for during the canvas settle and the picker list is rebuilt after the first render, so a 500-topic render starts at about 118ms instead of 185 to 300ms (L-ui-modernisation-61)
