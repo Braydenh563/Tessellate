@@ -1987,13 +1987,6 @@ async function renderDashboard({ refresh = false } = {}) {
   }));
 }
 
-//: `fn` once `count` animation frames have passed: the first has painted what
-//: was just changed. The one frame loop for "after it has drawn" in this file
-//: (tests/test_frontend_wake_sources.py counts them).
-function afterFrames(fn, count = 2) {
-  requestAnimationFrame(() => (count > 1 ? afterFrames(fn, count - 1) : fn()));
-}
-
 //: **While the grid fills unseen, its outline shows** (INBOX 596, the owner:
 //: "some skeleton loaders are missing like on the dashboard"). The grid is
 //: hidden until its widgets settle (`.dash-filling`, so the cards do not move
