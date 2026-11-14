@@ -257,6 +257,42 @@ def _sources_block(sources: list[dict] | None) -> str:
     )
 
 
+_PLACEHOLDER = re.compile(r"\[([^\]\n]{2,40})\](?!\()")
+_TIME = re.compile(r"\b\d{1,2}(?::\d{2})?\s*[ap]\.?m\b", re.IGNORECASE)
+_NUMBER = re.compile(r"\b\d[\d,]*(?:\.\d+)?\b")
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"[\s,.]", "", text.lower())
+
+
+def unsourced_specifics(draft: str, *given: str) -> list[str]:
+    """Times, numbers and `[Your Name]` placeholders in `draft` that none of
+    `given` (thoughts, the old draft, the notes) holds (L-documents-77).
+
+    A real 1.5B model invented "9 AM" against a prompt that forbids it; a
+    prompt cannot make a small model obey, so the pass names what to check.
+    Times are read before bare numbers, so "9 AM" is one item, not two."""
+    source = "\n".join(given)
+    times = {_norm(m.group()) for m in _TIME.finditer(source)}
+    numbers = {_norm(m.group()) for m in _NUMBER.finditer(_TIME.sub(" ", source))}
+    numbers |= {_norm(n) for t in times for n in re.findall(r"\d+", t)}
+    lowered = source.lower()
+    found: list[str] = []
+    for m in _PLACEHOLDER.finditer(draft):
+        if re.search(r"[a-z]", m.group(1), re.IGNORECASE) and m.group(1).lower() not in lowered:
+            found.append(m.group())
+    for m in _TIME.finditer(draft):
+        if _norm(m.group()) not in times:
+            found.append(m.group().strip())
+    for m in _NUMBER.finditer(_TIME.sub(" ", draft)):
+        if _norm(m.group()) not in numbers:
+            found.append(m.group())
+    # The draft's own order, each once.
+    order = {item: draft.find(item) for item in found}
+    return sorted(dict.fromkeys(found), key=lambda item: order[item])
+
+
 def build_messages(
     thoughts: str,
     draft: str | None,
@@ -402,6 +438,7 @@ def compose_stream(
         "thinking": "".join(thinking),
         "message": "",
         "ollama_running": True,
+        "unsourced": unsourced_specifics(text, thoughts or "", draft or "", instruction, *[s.get("content") or "" for s in sources or []]),
     }
 
 

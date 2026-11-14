@@ -983,7 +983,9 @@ HELP_TOPICS: list[dict] = [
             "The Writing room is for turning rough, unstructured thoughts into "
             "a proper note before it's saved: Suggest a title there takes the "
             "title from your own words with no model, while Draft and Refine "
-            "need one and say so when pressed. A document's menu, a selection of "
+            "need one and say so when pressed. After a Draft the status line "
+            "names any time, number or [placeholder] your thoughts and notes do not hold, to check before sending. "
+            "A document's menu, a selection of "
             "text, a note under review and a selection of cards on a board have "
             "Extract notes, which does the same for a document, the text or those cards."
         ),

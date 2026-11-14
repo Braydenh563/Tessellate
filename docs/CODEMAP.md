@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8523, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10884, test files 2778, tests 22314, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8523, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10886, test files 2779, tests 22320, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8523)
 
@@ -10034,21 +10034,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addDraftSource` | frontend/js/writing-desk.js:490 |
+| `addDraftSource` | frontend/js/writing-desk.js:494 |
 | `composeDraft` | frontend/js/writing-desk.js:19 |
-| `draftSaveMenuInit` | frontend/js/writing-desk.js:366 |
-| `draftWithHeading` | frontend/js/writing-desk.js:260 |
-| `drawDraftDiagram` | frontend/js/writing-desk.js:141 |
-| `gateDraftSelect` | frontend/js/writing-desk.js:463 |
-| `markDraftComposed` | frontend/js/writing-desk.js:156 |
-| `markDraftQuickstart` | frontend/js/writing-desk.js:446 |
-| `renderDraftQuickstarts` | frontend/js/writing-desk.js:416 |
-| `saveDraftAsNote` | frontend/js/writing-desk.js:265 |
-| `setDraftBusy` | frontend/js/writing-desk.js:349 |
-| `setDraftWorking` | frontend/js/writing-desk.js:344 |
-| `streamDraft` | frontend/js/writing-desk.js:169 |
-| `suggestDraftTitle` | frontend/js/writing-desk.js:207 |
-| `syncDraftGate` | frontend/js/writing-desk.js:475 |
+| `draftSaveMenuInit` | frontend/js/writing-desk.js:370 |
+| `draftWithHeading` | frontend/js/writing-desk.js:264 |
+| `drawDraftDiagram` | frontend/js/writing-desk.js:145 |
+| `gateDraftSelect` | frontend/js/writing-desk.js:467 |
+| `markDraftComposed` | frontend/js/writing-desk.js:160 |
+| `markDraftQuickstart` | frontend/js/writing-desk.js:450 |
+| `renderDraftQuickstarts` | frontend/js/writing-desk.js:420 |
+| `saveDraftAsNote` | frontend/js/writing-desk.js:269 |
+| `setDraftBusy` | frontend/js/writing-desk.js:353 |
+| `setDraftWorking` | frontend/js/writing-desk.js:348 |
+| `streamDraft` | frontend/js/writing-desk.js:173 |
+| `suggestDraftTitle` | frontend/js/writing-desk.js:211 |
+| `syncDraftGate` | frontend/js/writing-desk.js:479 |
 
 ### frontend/sw.js (6)
 
@@ -12916,7 +12916,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2480 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4034 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4059 |
-| Live preview | frontend/css/04-chat-dock-appearance.css:4714 |
+| Live preview | frontend/css/04-chat-dock-appearance.css:4717 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:742 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3457 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3265 |
@@ -12971,10 +12971,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6259 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4622 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
-| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5721 |
+| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5724 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5583 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2351 |
-| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5768 |
+| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5771 |
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:5017 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3618 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3805 |
@@ -13112,7 +13112,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1508 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4267 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1988 |
-| documents tab | frontend/css/04-chat-dock-appearance.css:3784 |
+| documents tab | frontend/css/04-chat-dock-appearance.css:3787 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2840 |
 | documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8924 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3770 |
@@ -13247,7 +13247,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the app's one help popover | frontend/css/03-dashboard-widgets.css:4078 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3883 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9970 |
-| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4970 |
+| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4973 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:743 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:425 |
 | the bar's three zones | frontend/css/00-tokens-shell.css:3295 |
@@ -13264,10 +13264,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4807 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1513 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3825 |
-| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4573 |
+| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4576 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5292 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
-| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5348 |
+| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5351 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7243 |
 | the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7568 |
@@ -13275,10 +13275,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10615 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10593 |
 | the dashboard's three densities | frontend/css/07-whiteboard-misc.css:11285 |
-| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3618 |
+| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3621 |
 | the dialog | frontend/css/sketch-pad.css:9 |
 | the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9428 |
-| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4253 |
+| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4256 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:10021 |
 | the document editor's instruments | frontend/css/05-sidebars-themes.css:4574 |
 | the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:5117 |
@@ -13300,7 +13300,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2297 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3144 |
 | the graph's options panel | frontend/css/08-consistency.css:3360 |
-| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5826 |
+| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5829 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1009 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2571 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1164 |
@@ -13389,7 +13389,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/01-forms-settings.css | 6336 |
 | frontend/css/02-chat-graph.css | 5283 |
 | frontend/css/03-dashboard-widgets.css | 4931 |
-| frontend/css/04-chat-dock-appearance.css | 6650 |
+| frontend/css/04-chat-dock-appearance.css | 6653 |
 | frontend/css/05-sidebars-themes.css | 6224 |
 | frontend/css/06-timeline-dialogs.css | 3764 |
 | frontend/css/07-whiteboard-misc.css | 12056 |
@@ -14185,7 +14185,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10884)
+## Backend modules (10886)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17559,24 +17559,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_document_and_store` | src/tessellate/ai/docreader.py:41 |
 | `read_in_background` | src/tessellate/ai/docreader.py:140 |
 
-### src/tessellate/ai/drafter.py (15)
+### src/tessellate/ai/drafter.py (17)
 
 | Name | File:line |
 |---|---|
 | `_kind_prompt` | src/tessellate/ai/drafter.py:186 |
-| `_parse_rephrasings` | src/tessellate/ai/drafter.py:605 |
+| `_norm` | src/tessellate/ai/drafter.py:265 |
+| `_parse_rephrasings` | src/tessellate/ai/drafter.py:642 |
 | `_sources_block` | src/tessellate/ai/drafter.py:237 |
 | `_steer` | src/tessellate/ai/drafter.py:221 |
-| `build_messages` | src/tessellate/ai/drafter.py:260 |
-| `compose` | src/tessellate/ai/drafter.py:294 |
-| `compose_document_edit` | src/tessellate/ai/drafter.py:470 |
-| `compose_stream` | src/tessellate/ai/drafter.py:331 |
-| `composed` | src/tessellate/ai/drafter.py:408 |
+| `build_messages` | src/tessellate/ai/drafter.py:296 |
+| `compose` | src/tessellate/ai/drafter.py:330 |
+| `compose_document_edit` | src/tessellate/ai/drafter.py:507 |
+| `compose_stream` | src/tessellate/ai/drafter.py:367 |
+| `composed` | src/tessellate/ai/drafter.py:445 |
 | `offline_message` | src/tessellate/ai/drafter.py:32 |
-| `parse_review_line` | src/tessellate/ai/drafter.py:659 |
-| `rephrase` | src/tessellate/ai/drafter.py:564 |
-| `review_stream` | src/tessellate/ai/drafter.py:690 |
-| `suggest_title` | src/tessellate/ai/drafter.py:526 |
+| `parse_review_line` | src/tessellate/ai/drafter.py:696 |
+| `rephrase` | src/tessellate/ai/drafter.py:601 |
+| `review_stream` | src/tessellate/ai/drafter.py:727 |
+| `suggest_title` | src/tessellate/ai/drafter.py:563 |
+| `unsourced_specifics` | src/tessellate/ai/drafter.py:269 |
 | `was_offline` | src/tessellate/ai/drafter.py:39 |
 
 ### src/tessellate/ai/due_summary.py (6)
@@ -28098,7 +28100,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22314)
+## Tests (22320)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29122,6 +29124,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dogfood_round2_ui.py | 13 |
 | tests/test_download_filenames.py | 6 |
 | tests/test_draft_links.py | 6 |
+| tests/test_draft_unsourced_l77.py | 5 |
 | tests/test_drafts_api.py | 21 |
 | tests/test_drifted_copies_1031.py | 8 |
 | tests/test_due_chips_1102.py | 6 |
@@ -30874,7 +30877,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_writing_dictionary_persists.py | 4 |
 | tests/test_writing_nomodel_1488.py | 19 |
 | tests/test_writing_offline_view_1488.py | 7 |
-| tests/test_writing_room_foot_l303.py | 2 |
+| tests/test_writing_room_foot_l303.py | 3 |
 | tests/test_writing_room_one_offline_note_1111.py | 2 |
 | tests/test_writing_room_tray_1696.py | 2 |
 | tests/test_xfix_1031.py | 11 |
@@ -31302,14 +31305,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1222 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:782 |
+| Needs hardware | docs/roadmap/LEDGER.md:783 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:775 |
+| Owner calls | docs/roadmap/LEDGER.md:776 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31547,20 +31550,20 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1053 |
 | documents | docs/roadmap/LEDGER.md:327 |
 | documents | docs/roadmap/LEDGER.md:993 |
-| general | docs/roadmap/LEDGER.md:734 |
+| general | docs/roadmap/LEDGER.md:735 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:957 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1065 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:375 |
+| mindmap | docs/roadmap/LEDGER.md:376 |
 | mindmap | docs/roadmap/LEDGER.md:1005 |
-| timeline | docs/roadmap/LEDGER.md:496 |
+| timeline | docs/roadmap/LEDGER.md:497 |
 | timeline | docs/roadmap/LEDGER.md:1029 |
-| ui-modernisation | docs/roadmap/LEDGER.md:379 |
+| ui-modernisation | docs/roadmap/LEDGER.md:380 |
 | ui-modernisation | docs/roadmap/LEDGER.md:1017 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
 | whiteboard | docs/roadmap/LEDGER.md:981 |
-| world-class | docs/roadmap/LEDGER.md:498 |
+| world-class | docs/roadmap/LEDGER.md:499 |
 | world-class | docs/roadmap/LEDGER.md:1041 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
