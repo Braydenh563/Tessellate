@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 35 | 0 | 19 | 229 |
+| world-class | 130 | 65 | 34 | 0 | 19 | 229 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 106 | 2 | 130 | 1117 |
+| all | 553 | 459 | 105 | 2 | 130 | 1117 |
 
 ## graph
 
@@ -527,7 +527,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms); first open 964 ms and others need quiet-machine trace.
 - [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: CHANGELOG.md:234-236: 2,348 elements at first paint, Library menus/first chunk fixed; rest is stylesheet recalc, blocked on owner decision; x15-1111.md
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
-- [ ] **L678** `world-class` partly, M: Cut import cost 3.3 s to 1.5 s; ai.autonomous pulls ai.agent. From OPEN.md:1710; OPEN.md:3785. Evidence: autonomous.py:48 still imports ai.agent at module level; heavy imports not lazily deferred
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
@@ -564,6 +563,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-32** `world-class` open, M: Settings sweep: two avatar look pickers and the web search switch do not undo. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-12. Evidence: profile-look-look and profile-look-mood (companion-settings.js:146 markPrefsDirty) and pref-web-search stay NOT UNDONE in the sweep; the first two keep the style in memory, so a later autosave re-sends it
 - [ ] **L-world-class-39** `world-class` open, M: Overlap sweep: doc-dock-identity 7px at 320 and doc-sidebar-tabs 5px at 820 still overflow. From overlap.js 2026-11-14 after L-world-class-36. Evidence: scratchpad/ui-sweeps/overlap.js ONLY=documents: span.doc-dock-identity 7px at 320, div#doc-sidebar-tabs 5px at 820
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50
+- [ ] **L-world-class-42** `world-class` open, M: Cut import cost 2.2 s to 1.5 s: compile composer regex tables lazily. From L678. Evidence: importtime self-time: composer_money 173 ms (67 regex compiles), core.database 111 ms, routes_learned 96 ms, fastapi 240 ms; total 2.2 s
 
 ## general
 

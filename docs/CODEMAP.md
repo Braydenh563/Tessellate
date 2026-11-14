@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2827, tests 22491, plan headings 689, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11017, test files 2828, tests 22492, plan headings 689, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8501)
 
@@ -14163,7 +14163,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11016)
+## Backend modules (11017)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14547,47 +14547,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_agent_pass` | src/tessellate/ai/autonomous.py:598 |
-| `_agent_persona` | src/tessellate/ai/autonomous.py:497 |
-| `_drive_agent` | src/tessellate/ai/autonomous.py:544 |
-| `_enabled_tasks` | src/tessellate/ai/autonomous.py:255 |
-| `_enqueue_pass` | src/tessellate/ai/autonomous.py:969 |
-| `_event_stops_pass` | src/tessellate/ai/autonomous.py:519 |
-| `_loop` | src/tessellate/ai/autonomous.py:846 |
-| `_optimization_pass` | src/tessellate/ai/autonomous.py:630 |
-| `_remember_pass` | src/tessellate/ai/autonomous.py:708 |
-| `_run_optimization` | src/tessellate/ai/autonomous.py:266 |
-| `_say_tool_event` | src/tessellate/ai/autonomous.py:536 |
-| `_settled_detail` | src/tessellate/ai/autonomous.py:697 |
-| `_stage_capture` | src/tessellate/ai/autonomous.py:353 |
-| `_stage_entities` | src/tessellate/ai/autonomous.py:301 |
-| `_stage_learned_audit` | src/tessellate/ai/autonomous.py:475 |
-| `_stage_link_audit` | src/tessellate/ai/autonomous.py:322 |
-| `_stage_night_shift` | src/tessellate/ai/autonomous.py:436 |
-| `_stage_stale` | src/tessellate/ai/autonomous.py:376 |
-| `_stage_words_review` | src/tessellate/ai/autonomous.py:408 |
-| `_stopped_before` | src/tessellate/ai/autonomous.py:488 |
-| `_vacuum` | src/tessellate/ai/autonomous.py:739 |
-| `cancelled` | src/tessellate/ai/autonomous.py:164 |
-| `clean_orphaned_board_cards` | src/tessellate/ai/autonomous.py:813 |
-| `clear_snooze` | src/tessellate/ai/autonomous.py:226 |
-| `forget_last_pass` | src/tessellate/ai/autonomous.py:733 |
-| `freeze_hold` | src/tessellate/ai/autonomous.py:196 |
-| `is_running` | src/tessellate/ai/autonomous.py:154 |
-| `last_pass` | src/tessellate/ai/autonomous.py:723 |
-| `purge_old_conversations` | src/tessellate/ai/autonomous.py:759 |
-| `request_stop` | src/tessellate/ai/autonomous.py:173 |
-| `reset_state` | src/tessellate/ai/autonomous.py:233 |
-| `run_pass` | src/tessellate/ai/autonomous.py:977 |
-| `scheduler_alive` | src/tessellate/ai/autonomous.py:249 |
-| `snoozed_for` | src/tessellate/ai/autonomous.py:214 |
-| `start` | src/tessellate/ai/autonomous.py:903 |
-| `stop` | src/tessellate/ai/autonomous.py:924 |
-| `stop_for_quit` | src/tessellate/ai/autonomous.py:1027 |
-| `stop_pass` | src/tessellate/ai/autonomous.py:1007 |
-| `thaw_hold` | src/tessellate/ai/autonomous.py:206 |
-| `trigger_now` | src/tessellate/ai/autonomous.py:952 |
-| `wake` | src/tessellate/ai/autonomous.py:940 |
+| `_agent_pass` | src/tessellate/ai/autonomous.py:602 |
+| `_agent_persona` | src/tessellate/ai/autonomous.py:501 |
+| `_drive_agent` | src/tessellate/ai/autonomous.py:548 |
+| `_enabled_tasks` | src/tessellate/ai/autonomous.py:259 |
+| `_enqueue_pass` | src/tessellate/ai/autonomous.py:973 |
+| `_event_stops_pass` | src/tessellate/ai/autonomous.py:523 |
+| `_loop` | src/tessellate/ai/autonomous.py:850 |
+| `_optimization_pass` | src/tessellate/ai/autonomous.py:634 |
+| `_remember_pass` | src/tessellate/ai/autonomous.py:712 |
+| `_run_optimization` | src/tessellate/ai/autonomous.py:270 |
+| `_say_tool_event` | src/tessellate/ai/autonomous.py:540 |
+| `_settled_detail` | src/tessellate/ai/autonomous.py:701 |
+| `_stage_capture` | src/tessellate/ai/autonomous.py:357 |
+| `_stage_entities` | src/tessellate/ai/autonomous.py:305 |
+| `_stage_learned_audit` | src/tessellate/ai/autonomous.py:479 |
+| `_stage_link_audit` | src/tessellate/ai/autonomous.py:326 |
+| `_stage_night_shift` | src/tessellate/ai/autonomous.py:440 |
+| `_stage_stale` | src/tessellate/ai/autonomous.py:380 |
+| `_stage_words_review` | src/tessellate/ai/autonomous.py:412 |
+| `_stopped_before` | src/tessellate/ai/autonomous.py:492 |
+| `_vacuum` | src/tessellate/ai/autonomous.py:743 |
+| `cancelled` | src/tessellate/ai/autonomous.py:168 |
+| `clean_orphaned_board_cards` | src/tessellate/ai/autonomous.py:817 |
+| `clear_snooze` | src/tessellate/ai/autonomous.py:230 |
+| `forget_last_pass` | src/tessellate/ai/autonomous.py:737 |
+| `freeze_hold` | src/tessellate/ai/autonomous.py:200 |
+| `is_running` | src/tessellate/ai/autonomous.py:158 |
+| `last_pass` | src/tessellate/ai/autonomous.py:727 |
+| `purge_old_conversations` | src/tessellate/ai/autonomous.py:763 |
+| `request_stop` | src/tessellate/ai/autonomous.py:177 |
+| `reset_state` | src/tessellate/ai/autonomous.py:237 |
+| `run_pass` | src/tessellate/ai/autonomous.py:981 |
+| `scheduler_alive` | src/tessellate/ai/autonomous.py:253 |
+| `snoozed_for` | src/tessellate/ai/autonomous.py:218 |
+| `start` | src/tessellate/ai/autonomous.py:907 |
+| `stop` | src/tessellate/ai/autonomous.py:928 |
+| `stop_for_quit` | src/tessellate/ai/autonomous.py:1031 |
+| `stop_pass` | src/tessellate/ai/autonomous.py:1011 |
+| `thaw_hold` | src/tessellate/ai/autonomous.py:210 |
+| `trigger_now` | src/tessellate/ai/autonomous.py:956 |
+| `wake` | src/tessellate/ai/autonomous.py:944 |
 
 ### src/tessellate/ai/backend_hint.py (2)
 
@@ -18228,6 +18228,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `settled_state` | src/tessellate/ai/janitor.py:129 |
 | `warm_filing_model` | src/tessellate/ai/janitor.py:832 |
 
+### src/tessellate/ai/lazy.py (1)
+
+| Name | File:line |
+|---|---|
+| `LazyModule` | src/tessellate/ai/lazy.py:8 |
+
 ### src/tessellate/ai/learned_audit.py (15)
 
 | Name | File:line |
@@ -19714,61 +19720,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Verification` | src/tessellate/ai/skill_runner.py:162 |
-| `_RunSetup` | src/tessellate/ai/skill_runner.py:815 |
-| `_RunState` | src/tessellate/ai/skill_runner.py:844 |
-| `_Seen` | src/tessellate/ai/skill_runner.py:919 |
-| `_StepState` | src/tessellate/ai/skill_runner.py:890 |
-| `_absorb` | src/tessellate/ai/skill_runner.py:458 |
-| `_absorb_change` | src/tessellate/ai/skill_runner.py:512 |
-| `_after_done` | src/tessellate/ai/skill_runner.py:1226 |
-| `_announce_early` | src/tessellate/ai/skill_runner.py:694 |
-| `_begin_step` | src/tessellate/ai/skill_runner.py:938 |
-| `_clamp_only_step` | src/tessellate/ai/skill_runner.py:1404 |
-| `_close_run` | src/tessellate/ai/skill_runner.py:1616 |
-| `_collect` | src/tessellate/ai/skill_runner.py:1664 |
-| `_contract_met` | src/tessellate/ai/skill_runner.py:568 |
-| `_count_step` | src/tessellate/ai/skill_runner.py:878 |
-| `_done_event` | src/tessellate/ai/skill_runner.py:1116 |
-| `_event_mark` | src/tessellate/ai/skill_runner.py:777 |
-| `_fallback_replan` | src/tessellate/ai/skill_runner.py:627 |
-| `_halt` | src/tessellate/ai/skill_runner.py:964 |
-| `_judge_turn` | src/tessellate/ai/skill_runner.py:1135 |
-| `_note_event` | src/tessellate/ai/skill_runner.py:1012 |
-| `_observe_turn` | src/tessellate/ai/skill_runner.py:1043 |
-| `_open_turn` | src/tessellate/ai/skill_runner.py:975 |
-| `_pages_left` | src/tessellate/ai/skill_runner.py:520 |
-| `_paging_nudge` | src/tessellate/ai/skill_runner.py:550 |
-| `_plan_event` | src/tessellate/ai/skill_runner.py:1437 |
-| `_plan_step_offer` | src/tessellate/ai/skill_runner.py:710 |
-| `_plan_step_tools` | src/tessellate/ai/skill_runner.py:705 |
-| `_reading` | src/tessellate/ai/skill_runner.py:211 |
-| `_record_run` | src/tessellate/ai/skill_runner.py:318 |
-| `_remember` | src/tessellate/ai/skill_runner.py:448 |
-| `_replan_or_stop` | src/tessellate/ai/skill_runner.py:1200 |
-| `_replan_step` | src/tessellate/ai/skill_runner.py:641 |
-| `_reword_step` | src/tessellate/ai/skill_runner.py:1419 |
-| `_run_one_step` | src/tessellate/ai/skill_runner.py:1243 |
-| `_run_skill` | src/tessellate/ai/skill_runner.py:1273 |
-| `_run_stepless` | src/tessellate/ai/skill_runner.py:1518 |
-| `_step_answer` | src/tessellate/ai/skill_runner.py:101 |
-| `_step_tools` | src/tessellate/ai/skill_runner.py:717 |
-| `_stop_reason` | src/tessellate/ai/skill_runner.py:1065 |
-| `_stopped_by` | src/tessellate/ai/skill_runner.py:1589 |
-| `_tag_arguments` | src/tessellate/ai/skill_runner.py:439 |
-| `_touched_clause` | src/tessellate/ai/skill_runner.py:90 |
-| `_touched_ids` | src/tessellate/ai/skill_runner.py:86 |
-| `_truncation_note` | src/tessellate/ai/skill_runner.py:1109 |
-| `_turn_for` | src/tessellate/ai/skill_runner.py:1471 |
-| `_turn_instruction` | src/tessellate/ai/skill_runner.py:946 |
-| `_unchecked_reason` | src/tessellate/ai/skill_runner.py:1600 |
-| `_undo_span` | src/tessellate/ai/skill_runner.py:786 |
-| `_unmet_reason` | src/tessellate/ai/skill_runner.py:379 |
-| `_usage` | src/tessellate/ai/skill_runner.py:885 |
-| `_walk_steps` | src/tessellate/ai/skill_runner.py:1567 |
-| `_where` | src/tessellate/ai/skill_runner.py:251 |
-| `run_skill` | src/tessellate/ai/skill_runner.py:734 |
-| `verify` | src/tessellate/ai/skill_runner.py:266 |
+| `Verification` | src/tessellate/ai/skill_runner.py:166 |
+| `_RunSetup` | src/tessellate/ai/skill_runner.py:819 |
+| `_RunState` | src/tessellate/ai/skill_runner.py:848 |
+| `_Seen` | src/tessellate/ai/skill_runner.py:923 |
+| `_StepState` | src/tessellate/ai/skill_runner.py:894 |
+| `_absorb` | src/tessellate/ai/skill_runner.py:462 |
+| `_absorb_change` | src/tessellate/ai/skill_runner.py:516 |
+| `_after_done` | src/tessellate/ai/skill_runner.py:1230 |
+| `_announce_early` | src/tessellate/ai/skill_runner.py:698 |
+| `_begin_step` | src/tessellate/ai/skill_runner.py:942 |
+| `_clamp_only_step` | src/tessellate/ai/skill_runner.py:1408 |
+| `_close_run` | src/tessellate/ai/skill_runner.py:1620 |
+| `_collect` | src/tessellate/ai/skill_runner.py:1668 |
+| `_contract_met` | src/tessellate/ai/skill_runner.py:572 |
+| `_count_step` | src/tessellate/ai/skill_runner.py:882 |
+| `_done_event` | src/tessellate/ai/skill_runner.py:1120 |
+| `_event_mark` | src/tessellate/ai/skill_runner.py:781 |
+| `_fallback_replan` | src/tessellate/ai/skill_runner.py:631 |
+| `_halt` | src/tessellate/ai/skill_runner.py:968 |
+| `_judge_turn` | src/tessellate/ai/skill_runner.py:1139 |
+| `_note_event` | src/tessellate/ai/skill_runner.py:1016 |
+| `_observe_turn` | src/tessellate/ai/skill_runner.py:1047 |
+| `_open_turn` | src/tessellate/ai/skill_runner.py:979 |
+| `_pages_left` | src/tessellate/ai/skill_runner.py:524 |
+| `_paging_nudge` | src/tessellate/ai/skill_runner.py:554 |
+| `_plan_event` | src/tessellate/ai/skill_runner.py:1441 |
+| `_plan_step_offer` | src/tessellate/ai/skill_runner.py:714 |
+| `_plan_step_tools` | src/tessellate/ai/skill_runner.py:709 |
+| `_reading` | src/tessellate/ai/skill_runner.py:215 |
+| `_record_run` | src/tessellate/ai/skill_runner.py:322 |
+| `_remember` | src/tessellate/ai/skill_runner.py:452 |
+| `_replan_or_stop` | src/tessellate/ai/skill_runner.py:1204 |
+| `_replan_step` | src/tessellate/ai/skill_runner.py:645 |
+| `_reword_step` | src/tessellate/ai/skill_runner.py:1423 |
+| `_run_one_step` | src/tessellate/ai/skill_runner.py:1247 |
+| `_run_skill` | src/tessellate/ai/skill_runner.py:1277 |
+| `_run_stepless` | src/tessellate/ai/skill_runner.py:1522 |
+| `_step_answer` | src/tessellate/ai/skill_runner.py:105 |
+| `_step_tools` | src/tessellate/ai/skill_runner.py:721 |
+| `_stop_reason` | src/tessellate/ai/skill_runner.py:1069 |
+| `_stopped_by` | src/tessellate/ai/skill_runner.py:1593 |
+| `_tag_arguments` | src/tessellate/ai/skill_runner.py:443 |
+| `_touched_clause` | src/tessellate/ai/skill_runner.py:94 |
+| `_touched_ids` | src/tessellate/ai/skill_runner.py:90 |
+| `_truncation_note` | src/tessellate/ai/skill_runner.py:1113 |
+| `_turn_for` | src/tessellate/ai/skill_runner.py:1475 |
+| `_turn_instruction` | src/tessellate/ai/skill_runner.py:950 |
+| `_unchecked_reason` | src/tessellate/ai/skill_runner.py:1604 |
+| `_undo_span` | src/tessellate/ai/skill_runner.py:790 |
+| `_unmet_reason` | src/tessellate/ai/skill_runner.py:383 |
+| `_usage` | src/tessellate/ai/skill_runner.py:889 |
+| `_walk_steps` | src/tessellate/ai/skill_runner.py:1571 |
+| `_where` | src/tessellate/ai/skill_runner.py:255 |
+| `run_skill` | src/tessellate/ai/skill_runner.py:738 |
+| `verify` | src/tessellate/ai/skill_runner.py:270 |
 
 ### src/tessellate/ai/skills.py (34)
 
@@ -21134,17 +21140,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_agent_events` | src/tessellate/api/chat_agent.py:30 |
-| `_close_quietly` | src/tessellate/api/chat_agent.py:125 |
-| `_first_agent_event` | src/tessellate/api/chat_agent.py:87 |
-| `_refuse_failed` | src/tessellate/api/chat_agent.py:148 |
-| `_refuse_if_off` | src/tessellate/api/chat_agent.py:140 |
-| `_starter_read` | src/tessellate/api/chat_agent.py:22 |
-| `_stoppable` | src/tessellate/api/chat_agent.py:134 |
-| `_typed_tool_events` | src/tessellate/api/chat_agent.py:180 |
-| `_undo_steps` | src/tessellate/api/chat_agent.py:163 |
-| `consent_events` | src/tessellate/api/chat_agent.py:197 |
-| `run_card_events` | src/tessellate/api/chat_agent.py:169 |
+| `_agent_events` | src/tessellate/api/chat_agent.py:34 |
+| `_close_quietly` | src/tessellate/api/chat_agent.py:129 |
+| `_first_agent_event` | src/tessellate/api/chat_agent.py:91 |
+| `_refuse_failed` | src/tessellate/api/chat_agent.py:152 |
+| `_refuse_if_off` | src/tessellate/api/chat_agent.py:144 |
+| `_starter_read` | src/tessellate/api/chat_agent.py:26 |
+| `_stoppable` | src/tessellate/api/chat_agent.py:138 |
+| `_typed_tool_events` | src/tessellate/api/chat_agent.py:184 |
+| `_undo_steps` | src/tessellate/api/chat_agent.py:167 |
+| `consent_events` | src/tessellate/api/chat_agent.py:201 |
+| `run_card_events` | src/tessellate/api/chat_agent.py:173 |
 
 ### src/tessellate/api/chat_attach.py (20)
 
@@ -28258,7 +28264,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22491)
+## Tests (22492)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29650,6 +29656,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_directory_roots.py | 7 |
 | tests/test_import_idempotent.py | 5 |
 | tests/test_import_job.py | 3 |
+| tests/test_import_lazy_agent.py | 1 |
 | tests/test_import_markdown_links.py | 3 |
 | tests/test_import_module_cycles.py | 2 |
 | tests/test_import_name_tags.py | 4 |
