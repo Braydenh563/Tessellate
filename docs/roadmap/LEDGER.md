@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 93 | 38 | 0 | 18 | 261 |
+| world-class | 130 | 92 | 38 | 0 | 18 | 260 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 485 | 109 | 2 | 129 | 1147 |
+| all | 553 | 484 | 109 | 2 | 129 | 1146 |
 
 ## graph
 
@@ -486,7 +486,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L559** `world-class` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
 - [ ] **L560** `world-class` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
 - [ ] **L561** `world-class` open, M: Condense HANDOVER (over 300 lines) and create NEXT_FABLE_WINDOW.md (Brief 14). From OPEN.md:3594. Evidence: HANDOVER.md is 599 lines (lint cap 600); docs/roadmap/NEXT_FABLE* does not exist
-- [ ] **L562** `world-class` open, M: Make chat search hits open the matching turn, not only the chat. From OPEN.md:3737. Evidence: search/index.py:935 _conversation_row builds one row per conversation
 - [ ] **L563** `world-class` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.

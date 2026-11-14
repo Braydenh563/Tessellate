@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8503, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11012, test files 2817, tests 22452, plan headings 689, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8503, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11012, test files 2818, tests 22454, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8503)
 
@@ -7324,35 +7324,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeFinder` | frontend/js/search.js:668 |
-| `finderActions` | frontend/js/search.js:118 |
-| `finderFeatureOffer` | frontend/js/search.js:364 |
-| `finderKindOffer` | frontend/js/search.js:307 |
-| `finderMove` | frontend/js/search.js:623 |
-| `finderOffer` | frontend/js/search.js:298 |
-| `finderOverlay` | frontend/js/search.js:113 |
-| `finderRender` | frontend/js/search.js:440 |
-| `finderRenderEmpty` | frontend/js/search.js:244 |
-| `finderRenderFilters` | frontend/js/search.js:384 |
-| `finderRenderNothing` | frontend/js/search.js:272 |
-| `finderResultsRole` | frontend/js/search.js:240 |
-| `finderSavedAs` | frontend/js/search.js:681 |
-| `finderSearch` | frontend/js/search.js:140 |
-| `finderSorted` | frontend/js/search.js:222 |
-| `finderSpellingOffer` | frontend/js/search.js:351 |
-| `finderSpellings` | frontend/js/search.js:339 |
-| `finderUse` | frontend/js/search.js:318 |
-| `finderWhyNothing` | frontend/js/search.js:290 |
-| `finderWordlist` | frontend/js/search.js:328 |
-| `forgetSavedFind` | frontend/js/search.js:790 |
-| `openFinder` | frontend/js/search.js:650 |
-| `persistSavedFinds` | frontend/js/search.js:751 |
-| `renameSavedFind` | frontend/js/search.js:781 |
-| `renderSavedFinds` | frontend/js/search.js:799 |
-| `saveFinderSearch` | frontend/js/search.js:760 |
-| `savedFinds` | frontend/js/search.js:747 |
-| `syncFinderStar` | frontend/js/search.js:685 |
-| `wireFinder` | frontend/js/search.js:695 |
+| `closeFinder` | frontend/js/search.js:675 |
+| `finderActions` | frontend/js/search.js:125 |
+| `finderFeatureOffer` | frontend/js/search.js:371 |
+| `finderKindOffer` | frontend/js/search.js:314 |
+| `finderMove` | frontend/js/search.js:630 |
+| `finderOffer` | frontend/js/search.js:305 |
+| `finderOverlay` | frontend/js/search.js:120 |
+| `finderRender` | frontend/js/search.js:447 |
+| `finderRenderEmpty` | frontend/js/search.js:251 |
+| `finderRenderFilters` | frontend/js/search.js:391 |
+| `finderRenderNothing` | frontend/js/search.js:279 |
+| `finderResultsRole` | frontend/js/search.js:247 |
+| `finderSavedAs` | frontend/js/search.js:688 |
+| `finderSearch` | frontend/js/search.js:147 |
+| `finderSorted` | frontend/js/search.js:229 |
+| `finderSpellingOffer` | frontend/js/search.js:358 |
+| `finderSpellings` | frontend/js/search.js:346 |
+| `finderUse` | frontend/js/search.js:325 |
+| `finderWhyNothing` | frontend/js/search.js:297 |
+| `finderWordlist` | frontend/js/search.js:335 |
+| `forgetSavedFind` | frontend/js/search.js:797 |
+| `openFinder` | frontend/js/search.js:657 |
+| `persistSavedFinds` | frontend/js/search.js:758 |
+| `renameSavedFind` | frontend/js/search.js:788 |
+| `renderSavedFinds` | frontend/js/search.js:806 |
+| `saveFinderSearch` | frontend/js/search.js:767 |
+| `savedFinds` | frontend/js/search.js:754 |
+| `syncFinderStar` | frontend/js/search.js:692 |
+| `wireFinder` | frontend/js/search.js:702 |
 
 ### frontend/js/semantic-notice.js (5)
 
@@ -28256,7 +28256,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22452)
+## Tests (22454)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29415,6 +29415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_final_pass_bugs.py | 5 |
 | tests/test_find_it.py | 8 |
 | tests/test_find_repaint_1526.py | 6 |
+| tests/test_finder_chat_turn_l562.py | 2 |
 | tests/test_finder_private_copy_w6.py | 2 |
 | tests/test_finder_star_790.py | 3 |
 | tests/test_first_note_says_search_model_loading.py | 2 |
@@ -31498,14 +31499,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:648 |
+| Needs hardware | docs/roadmap/LEDGER.md:647 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:641 |
+| Owner calls | docs/roadmap/LEDGER.md:640 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31686,7 +31687,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:782 |
+| Plan session briefs | docs/roadmap/LEDGER.md:781 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31740,25 +31741,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:798 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:882 |
+| chat | docs/roadmap/LEDGER.md:797 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:881 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:822 |
-| general | docs/roadmap/LEDGER.md:600 |
+| documents | docs/roadmap/LEDGER.md:821 |
+| general | docs/roadmap/LEDGER.md:599 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:786 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:894 |
+| graph | docs/roadmap/LEDGER.md:785 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:893 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:834 |
+| mindmap | docs/roadmap/LEDGER.md:833 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:858 |
+| timeline | docs/roadmap/LEDGER.md:857 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:846 |
+| ui-modernisation | docs/roadmap/LEDGER.md:845 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:810 |
+| whiteboard | docs/roadmap/LEDGER.md:809 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:870 |
+| world-class | docs/roadmap/LEDGER.md:869 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

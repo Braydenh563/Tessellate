@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Find anything: a chat hit opens the chat at the turn that holds your words and rings it (L562)
 - Notes: the sidebar has a Search everything field; Enter opens Find anything with your words (L592)
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).
 - The documents dictionary dialog is built on its first open, not parsed at boot: the boot page is back under its element cap after the base merge.

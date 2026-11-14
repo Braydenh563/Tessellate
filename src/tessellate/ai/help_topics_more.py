@@ -926,7 +926,7 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Find anything (Ctrl+P, or the magnifying glass in the status bar) searches notes, "
             "files, documents, chats and actions in one box as you type (the Notes sidebar has its own \"Search everything\" field: Enter opens it with your words): Enter opens "
-            "the top result, the arrows move, Esc closes, and the star keeps the "
+            "the top result (a chat opens at the turn that holds your words), the arrows move, Esc closes, and the star keeps the "
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
             "their kind), Newest first and Oldest first. Its '?' lists "
