@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 50 | 1 | 0 | 4 | 71 |
+| documents | 20 | 47 | 1 | 0 | 4 | 68 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 605 | 129 | 2 | 167 | 1237 |
+| all | 503 | 602 | 129 | 2 | 167 | 1234 |
 
 ## graph
 
@@ -374,9 +374,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-66** `documents` open, S: Underline a link while the modifier key is held (VS Code style Mod+click cue). From DOCUMENTS_PLAN.md:749, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-67** `documents` open, S: A how far through figure for long documents (s17d). From DOCUMENTS_PLAN.md:812, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-68** `documents` open, M: Video in a document: an embed with a player (attachments allowlist and a player). From DOCUMENTS_PLAN.md:1269, hub 2026-11-14: session-decided unbuilt, reopened.
-- [ ] **L-documents-69** `documents` open, L: Synced blocks: a copy that stays in step in both places (decision 82 a). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
-- [ ] **L-documents-70** `documents` open, S: Synced blocks: a pencil on the block in its own document (decision 82 b). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
-- [ ] **L-documents-71** `documents` open, M: Synced blocks: live refresh of other open windows after a save (decision 82 c). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
 
 ## mindmap
 
