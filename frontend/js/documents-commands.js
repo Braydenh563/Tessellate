@@ -740,9 +740,9 @@
         : "Headings you write appear here, and each one jumps to its place in the document.";
     }
     docOutlineRows = [];
-    //: Built off the page and put in once (L-documents-26): a row appended to the live list is a
-    //: structural change the `.doc-layout:has(> #doc-sidebar...)` rules re-check, 2 invalidations a
-    //: row, 2,352 in one pass over a 20k-word document's 1,176 headings.
+    //: Built off the page and put in once (L-documents-26): the pass over a 20k-word document's
+    //: 1,176 headings measured 23.6 ms appending each row to the live list and 16 ms through one
+    //: fragment (median of nine, load 3.5 to 4). The `:has()` invalidations stay (about 3,500 a pass).
     const rows = document.createDocumentFragment();
     headings.forEach((heading, index) => {
       const li = document.createElement("li");

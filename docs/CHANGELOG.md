@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents typing (L-documents-26): the caret readout redraws on a pause instead of inside each key (layouts 3.3 to 2.4 a key, paints 3.4 to 2.7 in a 20k-word document at 4x CPU), the columns, fence, mermaid and suggestion decorations check only the edited lines for their markers instead of the whole text, and the outline rows go in through one fragment (23.6 to 16 ms a pass); `test_doc_key_path_26.py` pins them.
 - Section graph nodes name their paragraph class literally, so the unused-class lint sees it; three HISTORY lines quote a fence name as code so the archive link check pairs fences correctly.
 - Boot CSS back under its cap (a duplicate `height: auto` in the fullscreen graph card removed); three documents tests follow the lazy sections module, the `none` chord and the shared ink selector list.
 - Tests: the claim check's hostile-line test counts the characters handed to each regex at n and 2n instead of timing them (#222 ae427a9b took 2.76 s on hostile4 on a loaded runner; locally it is linear, 0.019, 0.023 and 0.047 s at n, 2n and 4n), and pins the list marker's pattern so it cannot backtrack over a run of tabs.

@@ -5,8 +5,8 @@ tracking): every key read the whole 130,000-character text five times over in
 the decorations that look for markers it does not hold (columns, four fence
 languages, mermaid, suggestions), wrote the caret readout inside the key's own
 frame (a status-bar layout and restyle on each key), and the outline pass after
-a pause appended 1,176 rows one at a time to the live list, 2 `:has()`
-invalidations a row.
+a pause appended 1,176 rows one at a time to the live list (23.6 ms a pass;
+16 ms through one fragment).
 """
 
 import json
