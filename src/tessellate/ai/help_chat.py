@@ -1021,8 +1021,8 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     #: gets its own sentence (audit 1031 AI12).
     if state.endswith(" is on now."):
         lead = re.sub(r"^Turn it on\b", "Turn it off", lead)
-    #: A stated switch opens on its state, which says what the short opening would.
-    return " ".join(x for x in (state or guide_lead.short_opening(question, topics[0]), lead) if x)
+    #: The topic's own short line leads a how-to (L-chat-41), then the state.
+    return " ".join(x for x in (guide_lead.short_opening(question, topics[0]), state, lead) if x)
 
 
 def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:
