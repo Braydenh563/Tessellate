@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Atlas takes a face it has a mood for (L-ui-modernisation-101): a pet's happy, love, laughing and surprised now show on Atlas the quiet way, excited as delighted, and a face it has no mood for is passed over rather than read as calm; probe101 at 4x CPU: 0 of 6 faces taken before, 5 of 6 after at 2 to 10 ms each (tests/test_atlas_named_face_l_ui_101.py).
 - uipolish-0924 item D closed (L469): the per-surface pass measured with no finding at 1440 and 390, light and dark: 22 surfaces, 0 horizontal scroll, 0 off-screen or clipped text, 0 console errors, touch floor 0 under (28 and 44px), 0 dead or covered buttons, contrast ok (L469).
 - Companion activity and lower-body motion (L-ui-modernisation-59): the design pass measured a seeded desk hour (28 to 32 acts, but presence spells fill 81% and the sit frame 73 to 78%) and the wisp sway (2.9 to 4.0 px at size 192, 1.52 of the 4 degree cap); the builds are L-ui-modernisation-99 and 100; plan item 1721 moved to HISTORY.
 - Companion life (L-ui-modernisation-58): the life-1109 ranked list and the composer audit round are confirmed built (vertical follow-through, startle exhale, micro-saccades, stand drift; 49 tests passed; media stays the hardware row L-chat-4); plan item 1719 moved to HISTORY.

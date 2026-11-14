@@ -24,7 +24,7 @@ const { boot } = require('./lib.js');
   await page.mouse.move(f[0], f[1], { steps: 4 });
   await page.waitForTimeout(1400);
   // A face drawn from a name wears `data-expr` happy; Atlas has no `data-expr` (its face is its mood, and
-  // `nameMarkBuddyExpress` passes a pet's happy over on Atlas), so its pet reads as the wiggle on the figure.
+  // a pet's happy is its mood, L-ui-modernisation-101), so its pet reads as the wiggle on the figure.
   const pet = await page.evaluate(() => { const b = document.getElementById('nm-buddy'); return { act: nmb.act, wiggle: b.classList.contains('nmb-act-wiggle'), atlas: !!b.querySelector('.nm-atlas'), expr: b.dataset.expr || '' }; });
   if (pet.act !== 'wiggle' || !pet.wiggle || (!pet.atlas && pet.expr !== 'happy')) fails.push(`petted: ${JSON.stringify(pet)}`);
   await page.mouse.move(100, 100);

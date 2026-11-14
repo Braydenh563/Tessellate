@@ -9302,8 +9302,11 @@
     const seed = buddy.dataset.seed || "";
     if (isAtlasSeed(seed)) {
       //: The faces Atlas has no name for take the nearest it has: a pout, a grumble or a shake is miffed, a nervous one worried.
-      const face = { unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk" }[expr] || expr;
-      if ((drift || face !== expr) && typeof setAtlasMood === "function" && typeof atlasMoodNow !== "undefined" && atlasMoodNow === "calm") setAtlasMood(face, ms, { quiet: true });
+      const face = { unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk", excited: "delighted" }[expr] || expr;
+      //: Any face it has a mood for, not only a drift or a renamed one (L-ui-modernisation-101: a pet's happy never showed);
+      //: a face it has none for is passed over, since `setAtlasMood` would read it as calm.
+      const named = typeof ATLAS_MOODS !== "undefined" && ATLAS_MOODS[face];
+      if (named && (ms || drift) && typeof setAtlasMood === "function" && typeof atlasMoodNow !== "undefined" && atlasMoodNow === "calm") setAtlasMood(face, ms, { quiet: true });
       return;
     }
     if (characterRendererFor(seed)) return;

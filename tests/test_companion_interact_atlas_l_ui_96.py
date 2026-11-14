@@ -21,9 +21,9 @@ def test_pet_check_reads_the_wiggle_and_only_asks_a_named_face_for_happy():
     assert "if (pet.act !== 'wiggle' || !pet.wiggle || (!pet.atlas && pet.expr !== 'happy'))" in SWEEP
 
 
-def test_a_pet_is_a_wiggle_and_atlas_takes_only_drifts_and_renamed_faces():
-    """Source text: the app side the sweep reads: a pet asks for happy and a wiggle; on Atlas only a drift or a renamed face is applied."""
+def test_a_pet_is_a_wiggle_and_atlas_takes_a_named_face():
+    """Source text: the app side the sweep reads: a pet asks for happy and a wiggle; on Atlas a face it has a mood for is applied (L-ui-modernisation-101 moved this)."""
     start = AV.index("function nameMarkBuddyPet() {")
     pet = AV[start:AV.index("\n  }\n", start)]
     assert 'nameMarkBuddyExpress("happy", 1800);' in pet and 'nameMarkBuddyAct("wiggle");' in pet
-    assert "if ((drift || face !== expr) && typeof setAtlasMood" in AV
+    assert "if (named && (ms || drift) && typeof setAtlasMood" in AV
