@@ -236,7 +236,7 @@ async function answerSuggestedTags(entry, body) {
       toast("Tags can be suggested for this note again.");
     } else if (body.take) {
       pushEntryPutUndo(entry.id, `Tagged a note #${tag}`, { tags: wasTags }, { tags: [...new Set([...wasTags, ...body.take])] });
-      toast(`Tagged #${tag}.`);
+      toast(voiceLine("done", `Tagged #${tag}`));
     } else if (body.restore) {
       pushUndo(`Allowed #${tag} to be suggested again`, post({ discard: body.restore }), post(body));
       toast(`#${tag} can be suggested for this note again.`);
@@ -445,7 +445,7 @@ async function addTagTo(entry, tag) {
   try {
     await api(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ tags: [...entry.tags, tag] }) });
     pushEntryPutUndo(entry.id, `Tagged a note “${tag}”`, { tags: [...entry.tags] }, { tags: [...entry.tags, tag] });
-    toast(`Tagged “${tag}”.`);
+    toast(voiceLine("done", `Tagged “${tag}”`));
     loadEntries();
     return true;
   } catch (error) {

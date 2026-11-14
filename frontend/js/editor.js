@@ -2489,7 +2489,7 @@ async function offerToCreateWikiTarget(name) {
       });
       await refreshEntries([entry.id]);
       pushEntryCreateUndo(entry, `Created the note “${wanted}”`);
-      toast(`Created “${wanted}”.`);
+      toast(voiceLine("done", `Created “${wanted}”`));
       if (entry?.id) flashEntry(entry.id);
       return;
     }
@@ -2503,7 +2503,7 @@ async function offerToCreateWikiTarget(name) {
     if (doc) {
       editorDocumentCache = [...(editorDocumentCache || []), doc];
       offerCreateUndo(doc);
-      toast(`Created “${wanted}”.`);
+      toast(voiceLine("done", `Created “${wanted}”`));
       openDocument(doc.id);
     }
   } catch (error) {

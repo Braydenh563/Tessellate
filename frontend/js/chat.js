@@ -671,7 +671,7 @@ async function citeWebPage(pageOrResult) {
     try {
       page = await apiJson(`/websearch/read?url=${encodeURIComponent(page.url)}`);
     } catch (error) {
-      toast(error.message || "Couldn't read that page.", true);
+      toast(error.message || voiceLine("failed", "read that page"), true);
       return;
     }
   }
@@ -1170,7 +1170,7 @@ async function compressChatContext() {
     });
     showCompressReview(result, covered);
   } catch (error) {
-    toast(error?.message || "Couldn't summarise this conversation.");
+    toast(error?.message || voiceLine("failed", "summarise this conversation"));
   } finally {
     setBusy(button, false);
   }

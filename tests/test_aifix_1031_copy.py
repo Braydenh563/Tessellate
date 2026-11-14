@@ -42,7 +42,7 @@ def test_ai19_a_cancelled_rename_says_nothing_and_a_blank_one_cannot_be_saved():
 
 
 def test_hr11_the_download_toast_has_no_stray_comma():
-    assert "to your browser's downloads." in _text("skills.js")
+    assert "to your browser's downloads`))" in _text("skills.js")
     assert ", to your browser's downloads" not in _text("skills.js")
 
 
@@ -61,7 +61,7 @@ def test_hr10_the_task_chip_title_does_not_repeat_the_label():
 def test_hr19_a_cancelled_download_says_so():
     src = _text("settings-models.js")
     body = src[src.index("async function modelCancel"):]
-    assert "toast(`Stopped downloading ${model.name}.`)" in body.split("refreshModelStatus")[0]
+    assert "toast(voiceLine(\"done\", `Stopped downloading ${model.name}`))" in body.split("refreshModelStatus")[0]
 
 
 @needs_node

@@ -176,7 +176,7 @@
             replace.addEventListener("click", () => {
               close();
               translateReplace(caught, answer.text);
-              toast("Replaced the selection with its translation. Ctrl+Z puts it back.");
+              toast(voiceLine("done", "Replaced the selection with its translation. Ctrl+Z puts it back"));
             });
           }
         });

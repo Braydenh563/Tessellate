@@ -1799,7 +1799,7 @@ async function docLinkMention(row, button) {
       } else await loadDocuments(currentDoc?.id);
     }
     mentionUndo();
-    toast(`Linked from ${row.title}.`);
+    toast(voiceLine("done", `Linked from ${row.title}`));
   } catch (error) {
     toast(error.message, true);
   } finally {
@@ -2855,7 +2855,7 @@ async function expandNoteIntoDocument(entry) {
     offerCreateUndo(doc);
     switchTab("documents");
     await loadDocuments(doc.id);
-    toast(`Started a document from this note, the note itself is untouched.`);
+    toast(voiceLine("done", "Started a document from this note, the note itself is untouched"));
   } catch (error) {
     toast(error.message, true);
   }
@@ -8166,7 +8166,7 @@ async function openDocAiHistory() {
           }
           docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
           renderDocList();
-          toast("Reverted.");
+          toast(voiceLine("done", "Reverted"));
           dialog.close();
         } catch (error) {
           toast(error.message || voiceLine("failed", "revert that"), true);
@@ -13288,7 +13288,7 @@ function docProseFixAll() {
   markDocDirty();
   box.dispatchEvent(new Event("input", { bubbles: true }));
   renderDocProse();
-  toast(`Fixed ${applied}. Ctrl+Z undoes it.`);
+  toast(voiceLine("done", `Fixed ${applied}. Ctrl+Z undoes it`));
 }
 
 // --- inline completion --------------------------------------------------------

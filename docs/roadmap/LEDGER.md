@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 48 | 18 | 0 | 0 | 66 |
+| chat | 0 | 47 | 18 | 0 | 0 | 65 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 419 | 87 | 0 | 124 | 832 |
+| all | 326 | 418 | 87 | 0 | 124 | 831 |
 
 ## graph
 
@@ -674,7 +674,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-24** `world-class` blocked-hardware, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done.
 - [ ] **L-chat-17** `chat` open, L: Personal wording switch and per-surface composer evals. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:655. Evidence: Open line in the plan's prose a session could miss. Items 1-11 leftovers; item 10 needs a local model. Emulable 2026-11-14: start the model with `scratchpad/llama-dev.sh serve` (llama-server built at scratchpad/llama.cpp/build/bin, qwen2.5-1.5b GGUF at /tmp/memorymap-llama; answered on :8791 here), item 10 runs against it; the other items are fake-transport work.
 - [ ] **L-chat-23** `chat` open, M: Chat latency budgets and small-model tool use. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1614. Evidence: Open line in the plan's prose a session could miss. Budgets unmet and small-model tool use unverified. Emulable 2026-11-14: start the model with `scratchpad/llama-dev.sh serve` (llama-server built at scratchpad/llama.cpp/build/bin, qwen2.5-1.5b GGUF at /tmp/memorymap-llama; answered on :8791 here), time the turns (four cores shared, so a ceiling) and run the small-model tool-use cases of tests/test_harness_evals.py.
-- [ ] **L-chat-255** `chat` open, M: Failure and info toasts in the 29 boot scripts and about 66 verb-first success toasts still bypass voiceLine (needs boot gzip headroom). From verify-d-1114. Evidence: tests/test_voice_tables.py: 29 boot scripts keep toast literals, boot gzip headroom under 100 bytes
 - [ ] **L-documents-6** `documents` blocked-hardware, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open.
 - [ ] **L-whiteboard-14** `whiteboard` blocked-hardware, S: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
 - [ ] **L-ui-modernisation-8** `ui-modernisation` blocked-hardware, S: Check the composer above a soft keyboard and iPad landscape on real devices. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:619. Evidence: Open line in the plan's prose a session could miss. A phone gate left unmeasured, with phone.md's real iPad landscape look. There is no hardware row.

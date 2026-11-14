@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", "save that notification setting"), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast(voiceLine("failed", "go back to the space it was made in"), "info", { action: ["Try again", backThenRun] });
     };
   }
   if (!record) return () => run();
@@ -1145,6 +1145,7 @@ let lastToastKey = "";
 const VOICE = {
   failed: "Couldn't {what}.",
   failed_why: "Couldn't {what}: {why}",
+  done: "{what}.",
 };
 
 //: **A toast names the thing** (CHAT_PLAN section 1 row 3): `“Passport
@@ -1169,7 +1170,7 @@ function toastName(text, fallback = "it", limit = 48) {
 function voiceLine(key, what = "", why = "") {
   //: `voiceLine("failed", "open that", why)`: the sentence the realiser's table says, "Couldn't open that: why".
   why = String(why || "").trim();
-  return (VOICE[key === "failed" && why ? "failed_why" : key] || "").replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : what));
+  return VOICE[key === "failed" && why ? "failed_why" : key].replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : what));
 }
 
 function toast(message, isError = false, { exempt = false, action = null } = {}) {
@@ -1703,7 +1704,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", `undo “${action.label}”`), true);
   }
   renderUndoBar();
 }
@@ -1724,7 +1725,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", "redo that"), true);
   }
   renderUndoBar();
 }

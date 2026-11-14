@@ -523,7 +523,7 @@
       return null;
     });
     if (!result) return;
-    if (result.queued) return toast("Saved here; it is sent when the app's server is back.");
+    if (result.queued) return toast(voiceLine("done", "Saved here; it is sent when the app's server is back"));
     const id = result.saved.id;
     refreshEntries([id]);
     const bin = async () => {
@@ -616,7 +616,7 @@
     keep.textContent = "Keep the map";
     keep.addEventListener("click", () => {
       bar.remove();
-      toast(`Kept \u201c${board.title}\u201d.`);
+      toast(voiceLine("done", `Kept \u201c${board.title}\u201d`));
     });
     const drop = document.createElement("button");
     drop.type = "button";
@@ -651,7 +651,7 @@
         body: JSON.stringify({ content, tags: ["chat"], is_draft: true, defer_filing: true }),
       });
       pushEntryCreateUndo(made, "Saved a chat answer as a note");
-      toast("Saved as a draft note.");
+      toast(voiceLine("done", "Saved as a draft note"));
       // Unconditional, not gated on the Notes tab being the one currently
       // open. Reported: a note saved from Chat "didn't show up in the
       // drafts" - it *was* saved, but `entries` (the in-memory list Notes

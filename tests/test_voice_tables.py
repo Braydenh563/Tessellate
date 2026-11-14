@@ -70,20 +70,19 @@ def test_no_toast_in_the_app_says_oops_or_shouts():
     assert not found, found
 
 
-def test_every_lazy_failure_toast_goes_through_the_voice():
-    """L-chat-205 and 211 (decision 55): no toast or toast action in a lazily
-    loaded script spells out "Couldn't ..." or "Could not ..." itself; each says
-    it through `voiceLine("failed", what, why)` (about 150 literal failures moved
-    on 2026-11-14). The 29 boot scripts keep their literals: the table call
-    cost about 100 bytes gzipped there, over the boot cap
-    (`test_static_compression`), which is never raised."""
-    from tests._app_js import app_js_files
+STANDALONE = re.compile(r"^(capture|clip|standalone-undo|theme-boot|prefs|desk-.*|companion-.*)\.js$")
 
-    boot = {path.name for path in app_js_files()}
+
+def test_every_failure_toast_goes_through_the_voice():
+    """L-chat-205, 211 and 255 (decision 55): no toast or toast action in any script of the app
+    spells out "Couldn't ..." or "Could not ..." itself; each says it through
+    `voiceLine("failed", what, why)` (about 150 literal failures in the lazy scripts moved on
+    2026-11-14, the 29 boot ones the same day, with `focusFirstIn` moved to its one caller,
+    notifications.js, to win the gzip bytes back: `test_static_compression`'s cap is never raised)."""
     loose = []
     calls = 0
     for path in sorted(JS.glob("*.js")):
-        if path.name in boot:
+        if STANDALONE.match(path.name):
             continue
         for number, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
             if line.lstrip().startswith("//"):
@@ -92,4 +91,23 @@ def test_every_lazy_failure_toast_goes_through_the_voice():
             if re.search(r"toast(?:Action)?\(", line) and re.search(r"[\"`']Could(?:n't| not) ", line):
                 loose.append(f"{path.name}:{number}: {line.strip()[:90]}")
     assert not loose, loose
-    assert calls >= 200
+    assert calls >= 220
+
+
+def test_a_plain_success_toast_goes_through_the_voice():
+    """L-chat-255: `toast("Saved.")` and its kin (a verb-first past tense, one argument, a full stop)
+    say it through `voiceLine("done", what)`, so the full stop and the sentence shape are the table's."""
+    plain = re.compile(r'\btoast\(\s*(["`])([A-Z][a-z]+ed\b[^"`\n]*?)\.\1\s*\)')
+    loose, calls = [], 0
+    for path in sorted(JS.glob("*.js")):
+        if STANDALONE.match(path.name):
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
+            if line.lstrip().startswith("//"):
+                continue
+            calls += line.count('voiceLine("done"')
+            if plain.search(line):
+                loose.append(f"{path.name}:{number}: {line.strip()[:90]}")
+    assert not loose, loose
+    assert calls >= 66
+    assert realise.say("done", what="Saved") == "Saved."

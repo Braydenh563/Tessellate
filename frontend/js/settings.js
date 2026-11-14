@@ -2123,7 +2123,7 @@ settingsLook.lookFile = (() => {
     toastAction(message, "Undo", () => {
       settleUndoFromToast(action);
       restoreLook(before);
-      toast("Put your look back.");
+      toast(voiceLine("done", "Put your look back"));
     });
   }
 
@@ -2199,7 +2199,7 @@ async function saveCurrentLook() {
   if (prefsCache) prefsCache.custom_themes = next;
   input.value = "";
   renderCustomThemes();
-  toast(`Saved “${name}”.`);
+  toast(voiceLine("done", `Saved “${name}”`));
 }
 
 function applySavedTheme(theme, announce = true) {
@@ -2216,7 +2216,7 @@ function applySavedTheme(theme, announce = true) {
   // The same functions startup uses, so a restored look is applied by exactly
   // the path that would have applied it on a fresh load.
   settingsLook.lookFile.repaint();
-  if (announce) toast(`Applied “${theme.name}”.`);
+  if (announce) toast(voiceLine("done", `Applied “${theme.name}”`));
 }
 
 async function deleteSavedTheme(name) {
@@ -2227,7 +2227,7 @@ async function deleteSavedTheme(name) {
   });
   if (prefsCache) prefsCache.custom_themes = next;
   renderCustomThemes();
-  toast(`Deleted “${name}”.`);
+  toast(voiceLine("done", `Deleted “${name}”`));
 }
 
 function renderCustomThemes() {

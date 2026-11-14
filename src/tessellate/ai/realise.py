@@ -50,6 +50,7 @@ _WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 VOICE = {
     "failed": "Couldn't {what}.",
     "failed_why": "Couldn't {what}: {why}",
+    "done": "{what}.",
 }
 
 

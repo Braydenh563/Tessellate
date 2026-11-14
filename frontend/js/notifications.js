@@ -433,3 +433,14 @@ async function openExportsFromNotification() {
   }
   openSettingsModal("data", "exports-recent");
 }
+
+//: The first thing worth typing into or pressing in a dialog: `preferred`
+//: (selector) when it is there, else the first field, else the first button.
+function focusFirstIn(root, preferred = null) {
+  const pick = (selector) => [...root.querySelectorAll(selector)].find((el) => !el.disabled && el.getClientRects().length);
+  const el = (preferred && pick(preferred))
+    || pick("input:not([type=hidden]), textarea, select, [contenteditable=true]")
+    || pick("button, [href], [tabindex]:not([tabindex='-1'])");
+  el?.focus();
+  return !!el;
+}

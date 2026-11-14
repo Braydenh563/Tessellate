@@ -1074,7 +1074,7 @@ async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
+  if (!all) return toast(voiceLine("failed", "load your reminders") + " Try again.", true, { action: ["Try again", clearDoneReminders] });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1090,7 +1090,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { action: ["Try again", () => drop(left)] });
+    if (left.length) toast(voiceLine("failed", `delete ${left.length} of the reminders`), true, { action: ["Try again", () => drop(left)] });
     loadReminders();
   };
   const remake = async (rows = done) => {
@@ -1098,7 +1098,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { action: ["Try again", () => remake(left)] });
+    if (left.length) toast(voiceLine("failed", `bring back ${left.length} of the reminders`), true, { action: ["Try again", () => remake(left)] });
     loadReminders();
   };
   await drop();
@@ -1151,7 +1151,7 @@ function reminderItem(reminder, label) {
       };
       pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
       loadReminders();
-      toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+      toast(voiceLine("done", `Rescheduled to ${whenText(rolled.due_at)}`));
       return;
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
@@ -1264,7 +1264,7 @@ function reminderItem(reminder, label) {
     {
       label: "ph:copy Copy text",
       run: async () => {
-        if (await copyToClipboard(reminder.text)) toast("Copied.");
+        if (await copyToClipboard(reminder.text)) toast(voiceLine("done", "Copied"));
       },
       group: "go",
     },
@@ -1321,7 +1321,7 @@ async function openCalendarPage(id, provider) {
     else window.open(links[provider], "_blank", "noopener,noreferrer");
   } catch (error) {
     tab?.close();
-    toast(error.message || "Couldn't open the calendar page.", true);
+    toast(error.message || voiceLine("failed", "open the calendar page"), true);
   }
 }
 

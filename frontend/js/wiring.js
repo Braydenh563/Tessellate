@@ -630,7 +630,7 @@ onSurface("chat", () => {
       chatWriteRecord("chatForkUndo", fork);
       toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
     } catch (error) {
-      toast(error.message || "Couldn't fork this conversation.", true);
+      toast(error.message || voiceLine("failed", "fork this conversation"), true);
     }
   });
 });
@@ -662,7 +662,7 @@ async function renameCurrentConversation() {
   if (chatConv.id === null) {
     chatPendingTitle = next;
     $("chat-title").textContent = next;
-    toast("Named. It is saved with your first message.");
+    toast(voiceLine("done", "Named. It is saved with your first message"));
     return;
   }
   try {
@@ -674,7 +674,7 @@ async function renameCurrentConversation() {
     chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
     loadConversationList();
   } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
+    toast(error.message || voiceLine("failed", "rename this conversation"), true);
   }
 }
 

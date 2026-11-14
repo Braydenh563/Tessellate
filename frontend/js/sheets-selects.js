@@ -2025,7 +2025,7 @@ async function loadConversationList() {
         });
         if (!named) return;
         if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        if (named.title === conversation.title) toast("Kept the first question as the title.");
+        if (named.title === conversation.title) toast(voiceLine("done", "Kept the first question as the title"));
         else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
         loadConversationList();
       })
@@ -2482,7 +2482,7 @@ document.addEventListener("change", (event) => {
 
 // --- where focus goes when a dialog closes (SH5, SH2, BD13, DC11, GR6) -------------
 //: One pair for every dialog and panel that is not a sheet: `focusBackTo`
-//: on close and `focusFirstIn` on open. An opener that is gone, hidden or
+//: on close and `focusFirstIn` (notifications.js, its only caller) on open. An opener that is gone, hidden or
 //: just `<body>` (a dialog opened by a key, the palette or the API) falls
 //: to `fallback`, a selector or element, so a close never leaves the page
 //: with nothing focused. Returns whether anything took focus.
@@ -2495,16 +2495,6 @@ function focusBackTo(opener, fallback = null) {
     if (document.activeElement === el) return true;
   }
   return false;
-}
-//: The first thing worth typing into or pressing in a dialog: `preferred`
-//: (selector) when it is there, else the first field, else the first button.
-function focusFirstIn(root, preferred = null) {
-  const pick = (selector) => [...root.querySelectorAll(selector)].find((el) => !el.disabled && el.getClientRects().length);
-  const el = (preferred && pick(preferred))
-    || pick("input:not([type=hidden]), textarea, select, [contenteditable=true]")
-    || pick("button, [href], [tabindex]:not([tabindex='-1'])");
-  el?.focus();
-  return !!el;
 }
 
 // --- a switch says "switch" (APG switch, Radix Switch) ----------------------------

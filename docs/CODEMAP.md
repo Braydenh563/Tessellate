@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11346, test files 2962, tests 23137, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11346, test files 2962, tests 23138, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -564,7 +564,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setNotePickerSource` | frontend/js/chat-attach.js:829 |
 | `syncChatPrivate` | frontend/js/chat-attach.js:1082 |
 
-### frontend/js/sheets-selects.js (54)
+### frontend/js/sheets-selects.js (53)
 
 | Name | File:line |
 |---|---|
@@ -583,7 +583,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `enhanceDateField` | frontend/js/sheets-selects.js:1113 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:735 |
 | `focusBackTo` | frontend/js/sheets-selects.js:2489 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2501 |
 | `focusSelect` | frontend/js/sheets-selects.js:1176 |
 | `formatTokens` | frontend/js/sheets-selects.js:1795 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
@@ -628,54 +627,54 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
-| `askSkillInputs` | frontend/js/skills.js:220 |
-| `batchArchive` | frontend/js/skills.js:1099 |
-| `batchDelete` | frontend/js/skills.js:1142 |
-| `batchEach` | frontend/js/skills.js:1066 |
-| `batchExport` | frontend/js/skills.js:1136 |
-| `batchFavourite` | frontend/js/skills.js:1093 |
-| `batchMove` | frontend/js/skills.js:1044 |
-| `batchNoun` | frontend/js/skills.js:1089 |
-| `batchPublish` | frontend/js/skills.js:1110 |
-| `batchPut` | frontend/js/skills.js:1085 |
-| `batchSelection` | frontend/js/skills.js:1038 |
-| `batchTag` | frontend/js/skills.js:1058 |
-| `blobToBase64` | frontend/js/skills.js:844 |
-| `buildSkillsPanel` | frontend/js/skills.js:431 |
+| `askSkillInputs` | frontend/js/skills.js:221 |
+| `batchArchive` | frontend/js/skills.js:1100 |
+| `batchDelete` | frontend/js/skills.js:1143 |
+| `batchEach` | frontend/js/skills.js:1067 |
+| `batchExport` | frontend/js/skills.js:1137 |
+| `batchFavourite` | frontend/js/skills.js:1094 |
+| `batchMove` | frontend/js/skills.js:1045 |
+| `batchNoun` | frontend/js/skills.js:1090 |
+| `batchPublish` | frontend/js/skills.js:1111 |
+| `batchPut` | frontend/js/skills.js:1086 |
+| `batchSelection` | frontend/js/skills.js:1039 |
+| `batchTag` | frontend/js/skills.js:1059 |
+| `blobToBase64` | frontend/js/skills.js:845 |
+| `buildSkillsPanel` | frontend/js/skills.js:432 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:793 |
-| `downloadBlob` | frontend/js/skills.js:881 |
-| `downloadFromApi` | frontend/js/skills.js:860 |
-| `downloadJson` | frontend/js/skills.js:759 |
-| `enterSelectMode` | frontend/js/skills.js:1008 |
-| `exitSelectMode` | frontend/js/skills.js:1026 |
-| `fillBatchCategories` | frontend/js/skills.js:981 |
-| `fillBatchMore` | frontend/js/skills.js:1116 |
-| `fillSkillSelect` | frontend/js/skills.js:376 |
-| `healthFacts` | frontend/js/skills.js:783 |
+| `desktopShell` | frontend/js/skills.js:794 |
+| `downloadBlob` | frontend/js/skills.js:882 |
+| `downloadFromApi` | frontend/js/skills.js:861 |
+| `downloadJson` | frontend/js/skills.js:760 |
+| `enterSelectMode` | frontend/js/skills.js:1009 |
+| `exitSelectMode` | frontend/js/skills.js:1027 |
+| `fillBatchCategories` | frontend/js/skills.js:982 |
+| `fillBatchMore` | frontend/js/skills.js:1117 |
+| `fillSkillSelect` | frontend/js/skills.js:377 |
+| `healthFacts` | frontend/js/skills.js:784 |
 | `inputsToText` | frontend/js/skills.js:45 |
-| `loadChatSkills` | frontend/js/skills.js:302 |
+| `loadChatSkills` | frontend/js/skills.js:303 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:618 |
-| `markOtherDevice` | frontend/js/skills.js:809 |
-| `onOtherDevice` | frontend/js/skills.js:826 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:834 |
-| `renderChatNudge` | frontend/js/skills.js:661 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:619 |
+| `markOtherDevice` | frontend/js/skills.js:810 |
+| `onOtherDevice` | frontend/js/skills.js:827 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:835 |
+| `renderChatNudge` | frontend/js/skills.js:662 |
 | `renderSkillToolPicker` | frontend/js/skills.js:84 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `resetChatNudge` | frontend/js/skills.js:729 |
+| `resetChatNudge` | frontend/js/skills.js:730 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:897 |
-| `saveSkillList` | frontend/js/skills.js:747 |
+| `saveFile` | frontend/js/skills.js:898 |
+| `saveSkillList` | frontend/js/skills.js:748 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:628 |
-| `skillPacePill` | frontend/js/skills.js:516 |
-| `skillSummary` | frontend/js/skills.js:734 |
+| `skillMatchingDraft` | frontend/js/skills.js:629 |
+| `skillPacePill` | frontend/js/skills.js:517 |
+| `skillSummary` | frontend/js/skills.js:735 |
 | `startEditingSkill` | frontend/js/skills.js:51 |
-| `startSkill` | frontend/js/skills.js:170 |
+| `startSkill` | frontend/js/skills.js:171 |
 | `stopEditingSkill` | frontend/js/skills.js:69 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:957 |
+| `updateBatchCount` | frontend/js/skills.js:958 |
 
 ### frontend/js/shell-reminders.js (50)
 
@@ -905,114 +904,114 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2872 |
-| `aiIsOff` | frontend/js/status.js:2138 |
-| `aiOffGlyph` | frontend/js/status.js:2510 |
-| `aiOfflineDismissed` | frontend/js/status.js:2311 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2307 |
-| `aiStatusState` | frontend/js/status.js:2396 |
+| `agentModeAvailable` | frontend/js/status.js:2873 |
+| `aiIsOff` | frontend/js/status.js:2139 |
+| `aiOffGlyph` | frontend/js/status.js:2511 |
+| `aiOfflineDismissed` | frontend/js/status.js:2312 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2308 |
+| `aiStatusState` | frontend/js/status.js:2397 |
 | `announcedReminders` | frontend/js/status.js:42 |
-| `appStackIsNewer` | frontend/js/status.js:1659 |
+| `appStackIsNewer` | frontend/js/status.js:1660 |
 | `armReminderTimer` | frontend/js/status.js:534 |
 | `askNotificationPermission` | frontend/js/status.js:396 |
-| `backendLabel` | frontend/js/status.js:2962 |
-| `boardHistoryActive` | frontend/js/status.js:1624 |
+| `backendLabel` | frontend/js/status.js:2963 |
+| `boardHistoryActive` | frontend/js/status.js:1625 |
 | `checkDueReminders` | frontend/js/status.js:600 |
-| `closeModelGate` | frontend/js/status.js:2157 |
+| `closeModelGate` | frontend/js/status.js:2158 |
 | `closeNotifications` | frontend/js/status.js:368 |
-| `dismissAiOffline` | frontend/js/status.js:2319 |
+| `dismissAiOffline` | frontend/js/status.js:2320 |
 | `dismissToast` | frontend/js/status.js:962 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2581 |
-| `embeddingToastDue` | frontend/js/status.js:2587 |
+| `embeddingProblemDetail` | frontend/js/status.js:2582 |
+| `embeddingToastDue` | frontend/js/status.js:2588 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
-| `insightLine` | frontend/js/status.js:1541 |
-| `insightSend` | frontend/js/status.js:1512 |
-| `insightVerdictItems` | frontend/js/status.js:1507 |
-| `insightVerdicts` | frontend/js/status.js:1518 |
-| `integrityWords` | frontend/js/status.js:1343 |
+| `insightLine` | frontend/js/status.js:1542 |
+| `insightSend` | frontend/js/status.js:1513 |
+| `insightVerdictItems` | frontend/js/status.js:1508 |
+| `insightVerdicts` | frontend/js/status.js:1519 |
+| `integrityWords` | frontend/js/status.js:1344 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1976 |
+| `jobsRunning` | frontend/js/status.js:1977 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3140 |
-| `lastAnswerLine` | frontend/js/status.js:2532 |
-| `loadMostUsed` | frontend/js/status.js:1839 |
-| `loadRecentQuestions` | frontend/js/status.js:1811 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3141 |
+| `lastAnswerLine` | frontend/js/status.js:2533 |
+| `loadMostUsed` | frontend/js/status.js:1840 |
+| `loadRecentQuestions` | frontend/js/status.js:1812 |
 | `lockFieldWants` | frontend/js/status.js:1018 |
-| `noteDamagedNotebook` | frontend/js/status.js:1347 |
-| `noteServerDown` | frontend/js/status.js:1403 |
-| `noteServerUp` | frontend/js/status.js:1412 |
-| `noticeTaskTransitions` | frontend/js/status.js:3240 |
+| `noteDamagedNotebook` | frontend/js/status.js:1348 |
+| `noteServerDown` | frontend/js/status.js:1404 |
+| `noteServerUp` | frontend/js/status.js:1413 |
+| `noticeTaskTransitions` | frontend/js/status.js:3241 |
 | `notificationsMuted` | frontend/js/status.js:722 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:477 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2597 |
-| `offerUndo` | frontend/js/status.js:1566 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2598 |
+| `offerUndo` | frontend/js/status.js:1567 |
 | `openLanPanel` | frontend/js/status.js:673 |
-| `openModelGate` | frontend/js/status.js:2167 |
+| `openModelGate` | frontend/js/status.js:2168 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:3338 |
+| `paintPrivacyChip` | frontend/js/status.js:3339 |
 | `paintReminderList` | frontend/js/status.js:569 |
-| `paintStatusItem` | frontend/js/status.js:2653 |
+| `paintStatusItem` | frontend/js/status.js:2654 |
 | `paintTitle` | frontend/js/status.js:510 |
-| `paintUndoDoor` | frontend/js/status.js:1761 |
-| `performRedo` | frontend/js/status.js:1680 |
-| `performRedoNow` | frontend/js/status.js:1711 |
-| `performUndo` | frontend/js/status.js:1674 |
-| `performUndoNow` | frontend/js/status.js:1686 |
+| `paintUndoDoor` | frontend/js/status.js:1762 |
+| `performRedo` | frontend/js/status.js:1681 |
+| `performRedoNow` | frontend/js/status.js:1712 |
+| `performUndo` | frontend/js/status.js:1675 |
+| `performUndoNow` | frontend/js/status.js:1687 |
 | `plainHttpError` | frontend/js/status.js:1099 |
 | `playReminderChime` | frontend/js/status.js:439 |
 | `pollReminders` | frontend/js/status.js:563 |
-| `pollServerHealth` | frontend/js/status.js:1440 |
+| `pollServerHealth` | frontend/js/status.js:1441 |
 | `primeReminderAudio` | frontend/js/status.js:412 |
-| `pushEntryPutUndo` | frontend/js/status.js:1599 |
-| `pushUndo` | frontend/js/status.js:1477 |
+| `pushEntryPutUndo` | frontend/js/status.js:1600 |
+| `pushUndo` | frontend/js/status.js:1478 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3159 |
-| `refreshModelStatus` | frontend/js/status.js:2004 |
-| `refreshPrivacyChip` | frontend/js/status.js:3352 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3160 |
+| `refreshModelStatus` | frontend/js/status.js:2005 |
+| `refreshPrivacyChip` | frontend/js/status.js:3353 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2334 |
-| `renderAiPill` | frontend/js/status.js:2540 |
-| `renderChatModeSeg` | frontend/js/status.js:2900 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2335 |
+| `renderAiPill` | frontend/js/status.js:2541 |
+| `renderChatModeSeg` | frontend/js/status.js:2901 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2973 |
-| `renderStatusBar` | frontend/js/status.js:2703 |
-| `renderUndoBar` | frontend/js/status.js:1743 |
-| `renderWebSearchToggle` | frontend/js/status.js:2880 |
+| `renderSettings` | frontend/js/status.js:2974 |
+| `renderStatusBar` | frontend/js/status.js:2704 |
+| `renderUndoBar` | frontend/js/status.js:1744 |
+| `renderWebSearchToggle` | frontend/js/status.js:2881 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
-| `resetStatusCadence` | frontend/js/status.js:1927 |
-| `retryServerNow` | frontend/js/status.js:1453 |
-| `sayChatModelChosen` | frontend/js/status.js:1890 |
-| `scheduleServerDownRetry` | frontend/js/status.js:1427 |
-| `scheduleUndoBar` | frontend/js/status.js:1735 |
-| `setChatMode` | frontend/js/status.js:2946 |
+| `resetStatusCadence` | frontend/js/status.js:1928 |
+| `retryServerNow` | frontend/js/status.js:1454 |
+| `sayChatModelChosen` | frontend/js/status.js:1891 |
+| `scheduleServerDownRetry` | frontend/js/status.js:1428 |
+| `scheduleUndoBar` | frontend/js/status.js:1736 |
+| `setChatMode` | frontend/js/status.js:2947 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
 | `setTitleView` | frontend/js/status.js:520 |
-| `settingsOpen` | frontend/js/status.js:1943 |
+| `settingsOpen` | frontend/js/status.js:1944 |
 | `settleNotification` | frontend/js/status.js:116 |
-| `settleUndoFromToast` | frontend/js/status.js:1587 |
-| `showAgentNoModelHint` | frontend/js/status.js:2941 |
-| `showServerDownBanner` | frontend/js/status.js:1386 |
-| `startPrivacyChip` | frontend/js/status.js:3362 |
+| `settleUndoFromToast` | frontend/js/status.js:1588 |
+| `showAgentNoModelHint` | frontend/js/status.js:2942 |
+| `showServerDownBanner` | frontend/js/status.js:1387 |
+| `startPrivacyChip` | frontend/js/status.js:3363 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
-| `surfaceHistory` | frontend/js/status.js:1641 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2378 |
-| `syncModelGatedControls` | frontend/js/status.js:2193 |
+| `surfaceHistory` | frontend/js/status.js:1642 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2379 |
+| `syncModelGatedControls` | frontend/js/status.js:2194 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3220 |
-| `toast` | frontend/js/status.js:1175 |
-| `toastAction` | frontend/js/status.js:1319 |
-| `toastActionButton` | frontend/js/status.js:1299 |
-| `toastActions` | frontend/js/status.js:1290 |
+| `taskKey` | frontend/js/status.js:3221 |
+| `toast` | frontend/js/status.js:1176 |
+| `toastAction` | frontend/js/status.js:1320 |
+| `toastActionButton` | frontend/js/status.js:1300 |
+| `toastActions` | frontend/js/status.js:1291 |
 | `toastAtTop` | frontend/js/status.js:826 |
 | `toastCloseButton` | frontend/js/status.js:983 |
 | `toastHold` | frontend/js/status.js:972 |
@@ -1021,17 +1020,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastLive` | frontend/js/status.js:830 |
 | `toastMark` | frontend/js/status.js:909 |
 | `toastMerge` | frontend/js/status.js:883 |
-| `toastName` | frontend/js/status.js:1163 |
-| `toastProgress` | frontend/js/status.js:1254 |
+| `toastName` | frontend/js/status.js:1164 |
+| `toastProgress` | frontend/js/status.js:1255 |
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2846 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2847 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
-| `voiceLine` | frontend/js/status.js:1169 |
-| `whenText` | frontend/js/status.js:1158 |
-| `withoutEndStop` | frontend/js/status.js:2577 |
+| `voiceLine` | frontend/js/status.js:1170 |
+| `whenText` | frontend/js/status.js:1159 |
+| `withoutEndStop` | frontend/js/status.js:2578 |
 
 ### frontend/js/ai-tools.js (30)
 
@@ -6734,11 +6733,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notesSpyPick` | frontend/js/notes-rail-spy.js:45 |
 | `notesSpySchedule` | frontend/js/notes-rail-spy.js:83 |
 
-### frontend/js/notifications.js (9)
+### frontend/js/notifications.js (10)
 
 | Name | File:line |
 |---|---|
 | `dismissNotification` | frontend/js/notifications.js:407 |
+| `focusFirstIn` | frontend/js/notifications.js:439 |
 | `noticeLiveValid` | frontend/js/notifications.js:9 |
 | `notificationActionButton` | frontend/js/notifications.js:55 |
 | `notificationGoes` | frontend/js/notifications.js:46 |
@@ -19721,53 +19721,53 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_case_like` | src/tessellate/ai/realise.py:102 |
-| `_cell` | src/tessellate/ai/realise.py:452 |
-| `_clip_spaceless` | src/tessellate/ai/realise.py:322 |
-| `_first_five` | src/tessellate/ai/realise.py:548 |
-| `_named` | src/tessellate/ai/realise.py:500 |
-| `_rows_form` | src/tessellate/ai/realise.py:438 |
-| `_say_count` | src/tessellate/ai/realise.py:540 |
-| `_say_found` | src/tessellate/ai/realise.py:601 |
-| `_say_listed` | src/tessellate/ai/realise.py:575 |
-| `_say_named` | src/tessellate/ai/realise.py:531 |
-| `_say_overview` | src/tessellate/ai/realise.py:552 |
-| `_say_reminders` | src/tessellate/ai/realise.py:564 |
-| `_say_structure` | src/tessellate/ai/realise.py:558 |
-| `_say_time` | src/tessellate/ai/realise.py:617 |
-| `_say_worked` | src/tessellate/ai/realise.py:622 |
-| `_shift_part` | src/tessellate/ai/realise.py:161 |
-| `_shift_words` | src/tessellate/ai/realise.py:150 |
-| `_title_and_line` | src/tessellate/ai/realise.py:591 |
-| `_when` | src/tessellate/ai/realise.py:504 |
-| `_with_you` | src/tessellate/ai/realise.py:128 |
-| `after_comma` | src/tessellate/ai/realise.py:301 |
-| `bullets` | src/tessellate/ai/realise.py:466 |
-| `card` | src/tessellate/ai/realise.py:470 |
-| `chart` | src/tessellate/ai/realise.py:477 |
-| `count_noun` | src/tessellate/ai/realise.py:269 |
-| `count_word` | src/tessellate/ai/realise.py:223 |
-| `counted` | src/tessellate/ai/realise.py:227 |
-| `cut_title` | src/tessellate/ai/realise.py:333 |
-| `drop_dangling` | src/tessellate/ai/realise.py:347 |
-| `first_person` | src/tessellate/ai/realise.py:187 |
-| `form_of` | src/tessellate/ai/realise.py:425 |
-| `join_items` | src/tessellate/ai/realise.py:279 |
-| `mend_stops` | src/tessellate/ai/realise.py:359 |
-| `named_lead` | src/tessellate/ai/realise.py:520 |
-| `opener` | src/tessellate/ai/realise.py:385 |
-| `past_plan` | src/tessellate/ai/realise.py:209 |
-| `protected` | src/tessellate/ai/realise.py:379 |
-| `relative_day` | src/tessellate/ai/realise.py:241 |
-| `render` | src/tessellate/ai/realise.py:484 |
-| `say` | src/tessellate/ai/realise.py:56 |
-| `shift_person` | src/tessellate/ai/realise.py:172 |
-| `table` | src/tessellate/ai/realise.py:457 |
-| `todo_titled` | src/tessellate/ai/realise.py:651 |
-| `tool_answer` | src/tessellate/ai/realise.py:636 |
-| `variety` | src/tessellate/ai/realise.py:402 |
-| `weeks_gone` | src/tessellate/ai/realise.py:233 |
-| `wording` | src/tessellate/ai/realise.py:396 |
+| `_case_like` | src/tessellate/ai/realise.py:103 |
+| `_cell` | src/tessellate/ai/realise.py:453 |
+| `_clip_spaceless` | src/tessellate/ai/realise.py:323 |
+| `_first_five` | src/tessellate/ai/realise.py:549 |
+| `_named` | src/tessellate/ai/realise.py:501 |
+| `_rows_form` | src/tessellate/ai/realise.py:439 |
+| `_say_count` | src/tessellate/ai/realise.py:541 |
+| `_say_found` | src/tessellate/ai/realise.py:602 |
+| `_say_listed` | src/tessellate/ai/realise.py:576 |
+| `_say_named` | src/tessellate/ai/realise.py:532 |
+| `_say_overview` | src/tessellate/ai/realise.py:553 |
+| `_say_reminders` | src/tessellate/ai/realise.py:565 |
+| `_say_structure` | src/tessellate/ai/realise.py:559 |
+| `_say_time` | src/tessellate/ai/realise.py:618 |
+| `_say_worked` | src/tessellate/ai/realise.py:623 |
+| `_shift_part` | src/tessellate/ai/realise.py:162 |
+| `_shift_words` | src/tessellate/ai/realise.py:151 |
+| `_title_and_line` | src/tessellate/ai/realise.py:592 |
+| `_when` | src/tessellate/ai/realise.py:505 |
+| `_with_you` | src/tessellate/ai/realise.py:129 |
+| `after_comma` | src/tessellate/ai/realise.py:302 |
+| `bullets` | src/tessellate/ai/realise.py:467 |
+| `card` | src/tessellate/ai/realise.py:471 |
+| `chart` | src/tessellate/ai/realise.py:478 |
+| `count_noun` | src/tessellate/ai/realise.py:270 |
+| `count_word` | src/tessellate/ai/realise.py:224 |
+| `counted` | src/tessellate/ai/realise.py:228 |
+| `cut_title` | src/tessellate/ai/realise.py:334 |
+| `drop_dangling` | src/tessellate/ai/realise.py:348 |
+| `first_person` | src/tessellate/ai/realise.py:188 |
+| `form_of` | src/tessellate/ai/realise.py:426 |
+| `join_items` | src/tessellate/ai/realise.py:280 |
+| `mend_stops` | src/tessellate/ai/realise.py:360 |
+| `named_lead` | src/tessellate/ai/realise.py:521 |
+| `opener` | src/tessellate/ai/realise.py:386 |
+| `past_plan` | src/tessellate/ai/realise.py:210 |
+| `protected` | src/tessellate/ai/realise.py:380 |
+| `relative_day` | src/tessellate/ai/realise.py:242 |
+| `render` | src/tessellate/ai/realise.py:485 |
+| `say` | src/tessellate/ai/realise.py:57 |
+| `shift_person` | src/tessellate/ai/realise.py:173 |
+| `table` | src/tessellate/ai/realise.py:458 |
+| `todo_titled` | src/tessellate/ai/realise.py:652 |
+| `tool_answer` | src/tessellate/ai/realise.py:637 |
+| `variety` | src/tessellate/ai/realise.py:403 |
+| `weeks_gone` | src/tessellate/ai/realise.py:234 |
+| `wording` | src/tessellate/ai/realise.py:397 |
 
 ### src/tessellate/ai/recognise.py (106)
 
@@ -28796,7 +28796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23137)
+## Tests (23138)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31556,7 +31556,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_voice_api.py | 11 |
 | tests/test_voice_models.py | 3 |
 | tests/test_voice_readers_1114.py | 13 |
-| tests/test_voice_tables.py | 6 |
+| tests/test_voice_tables.py | 7 |
 | tests/test_voice_variants_l97.py | 3 |
 | tests/test_waiting_cards.py | 4 |
 | tests/test_warm12_1101.py | 10 |
@@ -32186,14 +32186,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:532 |
+| Needs hardware | docs/roadmap/LEDGER.md:531 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:527 |
+| Owner calls | docs/roadmap/LEDGER.md:526 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32374,7 +32374,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:688 |
+| Plan session briefs | docs/roadmap/LEDGER.md:687 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32428,25 +32428,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:704 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:788 |
-| documents | docs/roadmap/LEDGER.md:113 |
-| documents | docs/roadmap/LEDGER.md:728 |
-| general | docs/roadmap/LEDGER.md:486 |
+| chat | docs/roadmap/LEDGER.md:703 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:787 |
+| documents | docs/roadmap/LEDGER.md:112 |
+| documents | docs/roadmap/LEDGER.md:727 |
+| general | docs/roadmap/LEDGER.md:485 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:692 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:800 |
+| graph | docs/roadmap/LEDGER.md:691 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:799 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:129 |
-| mindmap | docs/roadmap/LEDGER.md:740 |
-| timeline | docs/roadmap/LEDGER.md:249 |
-| timeline | docs/roadmap/LEDGER.md:764 |
-| ui-modernisation | docs/roadmap/LEDGER.md:132 |
-| ui-modernisation | docs/roadmap/LEDGER.md:752 |
-| whiteboard | docs/roadmap/LEDGER.md:67 |
-| whiteboard | docs/roadmap/LEDGER.md:716 |
-| world-class | docs/roadmap/LEDGER.md:251 |
-| world-class | docs/roadmap/LEDGER.md:776 |
+| mindmap | docs/roadmap/LEDGER.md:128 |
+| mindmap | docs/roadmap/LEDGER.md:739 |
+| timeline | docs/roadmap/LEDGER.md:248 |
+| timeline | docs/roadmap/LEDGER.md:763 |
+| ui-modernisation | docs/roadmap/LEDGER.md:131 |
+| ui-modernisation | docs/roadmap/LEDGER.md:751 |
+| whiteboard | docs/roadmap/LEDGER.md:66 |
+| whiteboard | docs/roadmap/LEDGER.md:715 |
+| world-class | docs/roadmap/LEDGER.md:250 |
+| world-class | docs/roadmap/LEDGER.md:775 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

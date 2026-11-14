@@ -120,7 +120,7 @@
     } catch {
       const src = source.file ? "" : await source.src;
       const link = src && !/^(?:blob|data):/.test(src) ? new URL(src, location.href).href : "";
-      if (link && (await copyToClipboard(link))) toast("Copied the image's link: this picture cannot be copied as an image.");
+      if (link && (await copyToClipboard(link))) toast(voiceLine("done", "Copied the image's link: this picture cannot be copied as an image"));
       else toast("This picture cannot be copied.", "info");
     }
   }
@@ -247,7 +247,7 @@
             pushRequestUndo("Renamed a file", `/media/${upload.id}`, "PUT", { original_name: label }, { original_name: next });
           }
         }
-        toast(`Renamed to “${next}”.`);
+        toast(voiceLine("done", `Renamed to “${next}”`));
       } catch (error) {
         toast(error.message || voiceLine("failed", "rename that file"), true);
       }
@@ -310,7 +310,7 @@
     copy: async (spec) => {
       const bang = attachmentKind(spec.name, spec.url) === "image" ? "!" : "";
       const markdown = `${bang}[${attachmentLabel(spec)}](${spec.url})`;
-      if (await copyToClipboard(markdown)) toast("Copied. Paste it into any note or document.");
+      if (await copyToClipboard(markdown)) toast(voiceLine("done", "Copied. Paste it into any note or document"));
     },
 
     //: **Out of the text at once, with an Undo; off the disk only once nothing
