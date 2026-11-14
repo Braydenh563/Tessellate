@@ -231,8 +231,51 @@ def _more(ctx: Ctx, found: re.Match) -> Reply | None:
     return Reply(f"{lead} in {m1}: {facts}")
 
 
+#: "how much is Plus a year", "what does Plus cost annually", "the yearly cost of Plus": the subject is the words between.
+_YEARLY = re.compile(
+    r"^(?:so |and )?(?:how much|what)(?:'s| is| does| would| will| do| are)?\s+(?:the\s+)?(?:(?:yearly|annual)\s+(?:cost|price)\s+(?:of\s+)?(?P<a>.+?)"
+    r"|(?:(?:is|does|would|will|for)\s+)*(?P<b>.+?)\s+(?:cost\s+|be\s+|come to\s+)?(?:a|per|each|for a|in a|over a)\s+year|(?P<c>.+?)\s+(?:cost\s+)?(?:annually|yearly|per annum))\W*$",
+    re.I,
+)
+_MONTHLY = re.compile(r"(?P<cur>[$£€])\s?(?P<n>\d[\d,]*(?:\.\d+)?)\s*(?:a|per|/|each|every)\s*month\b|(?P<cur2>[$£€])\s?(?P<m>\d[\d,]*(?:\.\d+)?)\s*monthly\b", re.I)
+_YEARLY_PRICE = re.compile(r"(?P<cur>[$£€])\s?(?P<n>\d[\d,]*(?:\.\d+)?)(?=[^.\n]{0,24}\b(?:a year|per year|yearly|annual\w*)\b)|\b(?:a year|per year|yearly|annual\w*)\b[^.\n$£€]{0,24}(?P<cur2>[$£€])\s?(?P<m>\d[\d,]*(?:\.\d+)?)", re.I)
+_FILLER = frozenset({"plan", "plans", "subscription", "price", "cost", "cost", "membership", "fee", "tier"})
+
+
+def _monthly_price(ctx: Ctx, subject: list[str]) -> tuple[dict, re.Match] | None:
+    """The first note sentence naming the subject with a price per month, and that price."""
+    for note in ctx.notes:
+        for sentence in re.split(r"(?<=[.!?])\s+|\n+", str(note.get("content") or "")):
+            monthly = _MONTHLY.search(sentence)
+            if monthly and set(subject) <= set(study.content_stems(sentence)):
+                return note, monthly
+    return None
+
+
+def _yearly(ctx: Ctx, text: str) -> Reply | None:
+    """A year of a price the notes state per month: twelve times it, with the note it came from (L-chat-244)."""
+    found = _YEARLY.match(text)
+    name = ((found.group("a") or found.group("b") or found.group("c") or "").strip()) if found else ""
+    subject = [w for w in study.content_stems(name) if w not in _FILLER]
+    hit = _monthly_price(ctx, subject) if subject else None
+    if hit is None:
+        return None
+    note, monthly = hit
+    price = float((monthly.group("n") or monthly.group("m")).replace(",", ""))
+    cur = monthly.group("cur") or monthly.group("cur2")
+    said = f"{cur}{_amount(price * 12)} a year. {name[:1].upper() + name[1:]} is {cur}{_amount(price)} a month, and a year is twelve of those ({composer_study._link(note)})."  # noqa: SLF001
+    plain = _YEARLY_PRICE.search(str(note.get("content") or ""))
+    if plain:
+        said += f" The note also names {plain.group('cur') or plain.group('cur2')}{_amount(float((plain.group('n') or plain.group('m')).replace(',', '')))} for a year."
+    return Reply(said)
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
+    return _yearly(ctx, text) or _labelled_answer(ctx, text)
+
+
+def _labelled_answer(ctx: Ctx, text: str) -> Reply | None:
     which, more = _WHICH.match(text), _MORE.match(text)
     if which or more:
         return _which(ctx, which) if which else _more(ctx, more)

@@ -20,6 +20,8 @@ _REMINDERS = re.compile(r"\breminders?\b")
 #: What a reminder question can ask besides "how many are open": the late ones and
 #: the ticked-off ones. Answering either with the open total is a substitution
 #: (audit 1031 Z8).
+#: "how many open reminders and how many are overdue" asks both counts (L252 G3).
+_OPEN_TOO = re.compile(r"\bopen\b")
 _OVERDUE = re.compile(r"\b(?:overdue|over due|past due|late|missed|behind)\b")
 _FINISHED = re.compile(r"\b(?:done|completed?|finished|ticked(?: off)?|checked off)\b")
 _THINGS = r"(?:tasks?|items?|to-?dos?|boxes|checkboxes|tick ?boxes)"
@@ -65,7 +67,7 @@ def _reminders_answer(session: Session, now: datetime, ahead: tuple[str, int] | 
     moment = now.replace(tzinfo=None)
     due = [at.replace(tzinfo=None) for at in session.scalars(select(Reminder.due_at).where(Reminder.done.is_(False)))]
     late = sum(1 for at in due if at < moment)
-    if _OVERDUE.search(text):
+    if _OVERDUE.search(text) and not _OPEN_TOO.search(text):
         return "reminder-count", f"You have {_noun(late, 'overdue reminder')}.", [{"label": "overdue reminders", "count": late}]
     if _FINISHED.search(text):
         done = session.scalar(select(func.count(Reminder.id)).where(Reminder.done.is_(True))) or 0
