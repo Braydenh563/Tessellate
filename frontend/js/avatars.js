@@ -6503,8 +6503,17 @@
     const band = document.getElementById("nm-buddy-band");
     if (!band) return;
     const kind = nmb.ride ? "" : nmb.perch;
-    const { top, bottom } = on && (kind === "hang" || kind === "bar") ? nameMarkBuddyLedges() : {};
+    const want = on && (kind === "hang" || kind === "bar");
+    //: **The bars are read once per perch and window** (L-ui-modernisation-62): every act's state write calls this
+    //: after the act's class went on, and the bars' box read was the task's first layout read, settling the figure's
+    //: restyle and the page's layout (660ms of it over 30 acts at 4x on Atlas, a CPU profile). The bars' edges move
+    //: with the window; the clip is kept while the perch, the window and the written clip are as they were, 15s at most.
+    const key = want ? `${kind}|${innerWidth}x${innerHeight}` : "";
+    const kept = nameMarkBuddyAloft.kept;
+    if (kept && kept.key === key && kept.clip === band.style.clipPath && performance.now() - kept.at < NMB_COVERS_MAX_MS) return;
+    const { top, bottom } = want ? nameMarkBuddyLedges() : {};
     band.style.clipPath = kind === "hang" && top ? `inset(${Math.ceil(top.bottom)}px -9999px -9999px -9999px)` : kind === "bar" && bottom ? `inset(-9999px -9999px -${Math.floor(bottom.top)}px -9999px)` : "";
+    nameMarkBuddyAloft.kept = { key, clip: band.style.clipPath, at: performance.now() };
   };
 
   //: **How it gets there: by the way its body moves, never a slide** (the
@@ -8510,7 +8519,15 @@
       if (![...buddy.classList].some((c) => c.startsWith("nmb-act-") && !NMB_FACELESS_ACTS.includes(c.slice(8)))) buddy.classList.remove("nmb-arms");
     };
     let joined = !!was && !!act && act !== was;
-    if (was && !joined) nameMarkBuddyBlend(buddy, leave);
+    //: **A blink, a glance or a turn is not handed over** (L-ui-modernisation-62, buddylag.js: the act hand-over after
+    //: a tab switch forced 24 to 46ms at 4x with Atlas on). Their classes move only the lids (a plain `scale: 0`, or
+    //: the lids' own `scaleY` loop) and `data-turn` is written outside the hand-over, so between them and rest it
+    //: eased nothing in every run (a per-act probe: 0 eases) and read every part twice, 10 to 370ms at 4x on Atlas.
+    const lidsOnly = [was, act].every((a) => !a || ["blink", "glance", "turn"].includes(a));
+    if (was && !joined) {
+      if (lidsOnly) leave();
+      else nameMarkBuddyBlend(buddy, leave);
+    }
     if (was === "lie" && act !== "lie" && !buddy.classList.contains("nmb-sleep")) nameMarkBuddyGetUp(buddy);
     if (act !== "emerge") buddy.classList.remove("nmb-duck");
     if (was === "turn" || was === "glance") delete buddy.dataset.turn;
@@ -8586,7 +8603,11 @@
     if (act === "land" && nmb.afterLand) {
       if (joined) nameMarkBuddyBlend(buddy, leave);
       into();
-    } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);
+    } else {
+      const change = joined ? () => (leave(), into()) : into;
+      if (lidsOnly) change();
+      else nameMarkBuddyBlend(buddy, change, NMB_BLEND_IN_MS);
+    }
     //: A new act starts with its arms (INBOX 469): a small lift and back.
     if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
     nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);

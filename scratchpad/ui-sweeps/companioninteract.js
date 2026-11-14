@@ -12,7 +12,10 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.avatarFollow = 'on'; });
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3000);
-  const put = (x, y) => page.evaluate(([px, py]) => { const b = document.getElementById('nm-buddy'); nameMarkBuddyMoveTo(b, { kind: 'air', pose: 'stand', x: px, y: py }, true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, y]);
+  // Atlas flies: set down standing in the air, its perch check found nothing under its feet and walked it off
+  // before the pet (L-ui-modernisation-96), so it is put there floating, which needs no perch.
+  const pose = process.env.KIND === 'atlas' ? 'float' : 'stand';
+  const put = (x, y) => page.evaluate(([px, py, pp]) => { const b = document.getElementById('nm-buddy'); nameMarkBuddyMoveTo(b, { kind: 'air', pose: pp, x: px, y: py }, true); clearTimeout(nmb.timer); nmb.placeTimer = 1; nameMarkBuddyAct(''); clearTimeout(nmb.timer); }, [x, y, pose]);
   const faceMid = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
   // Petted.
   await put(700, 420);
@@ -20,8 +23,10 @@ const { boot } = require('./lib.js');
   let f = await faceMid();
   await page.mouse.move(f[0], f[1], { steps: 4 });
   await page.waitForTimeout(1400);
-  const pet = await page.evaluate(() => ({ act: nmb.act, expr: document.getElementById('nm-buddy').dataset.expr || '' }));
-  if (pet.act !== 'wiggle' || pet.expr !== 'happy') fails.push(`petted: ${JSON.stringify(pet)}`);
+  // A face drawn from a name wears `data-expr` happy; Atlas has no `data-expr` (its face is its mood, and
+  // `nameMarkBuddyExpress` passes a pet's happy over on Atlas), so its pet reads as the wiggle on the figure.
+  const pet = await page.evaluate(() => { const b = document.getElementById('nm-buddy'); return { act: nmb.act, wiggle: b.classList.contains('nmb-act-wiggle'), atlas: !!b.querySelector('.nm-atlas'), expr: b.dataset.expr || '' }; });
+  if (pet.act !== 'wiggle' || !pet.wiggle || (!pet.atlas && pet.expr !== 'happy')) fails.push(`petted: ${JSON.stringify(pet)}`);
   await page.mouse.move(100, 100);
   await page.waitForTimeout(1200);
   await page.mouse.move(f[0], f[1], { steps: 3 });
