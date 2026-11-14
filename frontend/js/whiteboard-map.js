@@ -25,6 +25,29 @@
 // top-level wiring names functions defined here. Listed first, every one of
 // them exists before whiteboard.js runs.
 
+//: **One registry for the Undo-recorded gestures** (L-whiteboard-49). A gesture is bound as
+//: `const f = wbRecorded("f", async function f() {...})` and exported, so a call from inside
+//: its own wrapped file and a call through `window` are the same function: both run through
+//: `wbRecordGesture` (whiteboard.js, reached at call time only; a gesture inside another runs
+//: plain there). `Object.assign` carries helper properties (`wbMapFoldToLevel.open`, `.sync`).
+//: whiteboard.js's `WB_RECORDED` loop skips a name registered here.
+const wbRecordedNames = new Set();
+function wbRecorded(name, fn) {
+  wbRecordedNames.add(name);
+  return Object.assign((...args) => wbRecordGesture(fn, args), fn);
+}
+//: The depth-only twin, for `wbMapTransplant`: it records its own entry, so what it calls runs plain.
+function wbRecordedDepth(fn) {
+  return Object.assign(async (...args) => {
+    wbRecordDepth += 1;
+    try {
+      return await fn(...args);
+    } finally {
+      wbRecordDepth -= 1;
+    }
+  }, fn, { depthOnly: true });
+}
+
 // --- maps: a board with a real tree on it (MINDMAP_PLAN.md §5, Phase 2) -----
 //
 // The backend half (§9) already stores, serves and exports all of this. Until

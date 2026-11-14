@@ -15785,20 +15785,13 @@ const WB_RECORDED = [
   "wbPasteCopiedStyle", "wbMapUseLookForLevel", "wbArrangeMindMap", "wbMindMapAddCard", "wbBucketFillSketch", "wbFitToText",
 ];
 for (const name of WB_RECORDED) {
+  if (wbRecordedNames.has(name)) continue; //: Already bound through `wbRecorded` in its own file.
   const plain = window[name];
   //: `Object.assign` carries a gesture's helper properties (`wbMapFoldToLevel.open`, `.sync`) across.
   if (typeof plain === "function") window[name] = Object.assign((...args) => wbRecordGesture(plain, args), plain);
 }
-{
-  const plain = window.wbMapTransplant;
-  window.wbMapTransplant = async (...args) => {
-    wbRecordDepth += 1;
-    try {
-      return await plain(...args);
-    } finally {
-      wbRecordDepth -= 1;
-    }
-  };
+if (typeof window.wbMapTransplant === "function" && !window.wbMapTransplant.depthOnly) {
+  window.wbMapTransplant = wbRecordedDepth(window.wbMapTransplant);
 }
 
 // ---- from selection.js (search-boot-1005): pickNotesDialog, addBoardToNote ----
