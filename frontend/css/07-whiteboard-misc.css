@@ -1504,7 +1504,20 @@ body.has-agent-monitor #timeline-scroll {
   white-space: nowrap;
 }
 /* The agent activity monitor. */
+/* The head is the handle (activity-drag.js); its buttons keep their own cursor. */
+#agent-monitor.is-dragging .monitor-header {
+  cursor: grabbing;
+}
+#agent-monitor .monitor-header button {
+  cursor: pointer;
+}
+#agent-monitor.is-dragging {
+  animation: none;
+  user-select: none;
+}
 #agent-monitor .monitor-header {
+  cursor: grab;
+  touch-action: none;
   margin: 0;
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--glass-border);

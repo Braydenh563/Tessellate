@@ -737,7 +737,7 @@ MORE_TOPICS: list[dict] = [
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
-            "headed by a glyph and a title. Its Agent runs tab lists each run this session "
+            "headed by a glyph and a title. Drag its head to move the panel; it stays on screen, remembers where you left it, and a double-click on the head puts it back. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
