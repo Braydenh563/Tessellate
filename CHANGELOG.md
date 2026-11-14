@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- LEDGER: chat plan recount filed as rows (176 from the catalogue and prose audits), plan-file cell 0, pinned by tests/test_chat_plan_recount.py (2026-11-14).
 - Fix E2E: ask-search spec reads the Atlas answerer chip (L737 copy), help topics name it the same; Guide path lint green (2026-11-14).
 - Docs: chat plan recount, open lines point to LEDGER L-chat-58 to 64, built text moved to HISTORY (2026-11-14).
 - Guide: the where-question lead check is linear on runs of tabs (CodeQL 2296).
