@@ -326,7 +326,18 @@
   const CONNECTOR_SHAPE_WORDS = { line: "Line", double: "Double line", block: "Block arrow", flex: "Flex arrow", tapered: "Tapered arrow", pipe: "Pipe", wire: "Wire" };
 
   //: The half-width of the body and of the head, the head's length, and how the body is painted, for a line `w` thick.
-  function connectorProfile(shape, w) {
+  //: `geom` is the connector's own `arrowBody` and `arrowHead` (full widths in px; draw.io's width and arrow size on a
+  //: flex arrow): the body of a block or flex arrow and its head, each 0 or absent for the shape's own proportion.
+  function connectorProfile(shape, w, geom = {}) {
+    const profile = connectorBaseProfile(shape, w);
+    if (!profile || (shape !== "block" && shape !== "flex")) return profile;
+    const body = Number(geom.body), head = Number(geom.head);
+    if (body > 0) profile.half = () => Math.min(200, body) / 2;
+    if (head > 0 && profile.head) profile.head = { ...profile.head, half: Math.min(400, head) / 2 };
+    return profile;
+  }
+
+  function connectorBaseProfile(shape, w) {
     switch (shape) {
       case "double": return { half: () => w * 1.75, paint: "outline", stroke: w };
       case "pipe": return { half: () => w * 2.2, paint: "tube", stroke: Math.max(1, w * 0.6) };
@@ -368,9 +379,9 @@
 
   //: The outline of a connector shape round the centre line `pts`, or null for the plain line (or a line with no length).
   //: `heads`: which ends carry an arrowhead on a shape that has one. Answers `{ d, paint, stroke }`.
-  function connectorOutline(shape, pts, width, heads = { start: false, end: true }) {
+  function connectorOutline(shape, pts, width, heads = { start: false, end: true }, geom = {}) {
     const w = Number(width) > 0 ? Number(width) : 3;
-    const profile = connectorProfile(shape, w);
+    const profile = connectorProfile(shape, w, geom);
     if (!profile || !pts || pts.length < 2) return null;
     const cum = [0];
     for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
@@ -419,7 +430,7 @@
   function shapedLink(parsed, endpoints) {
     if (!CONNECTOR_SHAPES.includes(parsed.shape) || parsed.shape === "line") return null;
     const centre = wbLinkPathD(parsed.type, endpoints.source, endpoints.target, { startCap: "none", endCap: "none" }, parsed.width, parsed.bend, wbLinkShape(parsed));
-    const out = connectorOutline(parsed.shape, wbShaftPoints(centre), parsed.width, connectorHeads(wbLinkCaps(parsed)));
+    const out = connectorOutline(parsed.shape, wbShaftPoints(centre), parsed.width, connectorHeads(wbLinkCaps(parsed)), { body: parsed.arrowBody, head: parsed.arrowHead });
     return out && { ...out, centre };
   }
 
@@ -431,9 +442,29 @@
   }
 
 
+  //: A connector's bends as the numeric list the panel shows and takes (draw.io's `addEdgeWaypoints` list): "120, 80; 200, 80".
+  //: `waypointsText` writes it; `parseWaypoints` answers the points, [] for an empty field and null for text that is not
+  //: pairs of numbers (so the panel says so and keeps the old bends). Rounded to whole pixels, at most 50.
+  function waypointsText(points) {
+    if (!Array.isArray(points)) return "";
+    return points.filter((p) => Number.isFinite(Number(p?.x)) && Number.isFinite(Number(p?.y))).map((p) => `${Math.round(p.x)}, ${Math.round(p.y)}`).join("; ");
+  }
+  function parseWaypoints(text) {
+    const parts = String(text || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 50) return null;
+    const out = [];
+    for (const part of parts) {
+      const m = /^(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)$/.exec(part);
+      if (!m) return null;
+      out.push({ x: Math.round(Number(m[1])), y: Math.round(Number(m[2])) });
+    }
+    return out;
+  }
+
   wbFmtState.shapeMore = {
+    waypointsText, parseWaypoints,
     tableRowPorts, rowOf, rowAfter, carryPatch, carryRowPorts,
     polygonPoints, polygonD, nearestCorner, nearestOnSide, pointsTarget, editPoints,
-    connectorOutline, connectorHeads, shapedLink, CONNECTOR_SHAPES, CONNECTOR_SHAPE_WORDS,
+    connectorOutline, connectorProfile, connectorHeads, shapedLink, CONNECTOR_SHAPES, CONNECTOR_SHAPE_WORDS,
   };
 })();

@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "arrowbody", "arrowhead", "waypoints", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "tags", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props", "tags"],
   frame: ["pad", "stack", "collapse", "geometry", "props", "tags"],
@@ -177,6 +177,9 @@ function wbFmtValue(entry, field) {
     case "textpath": return Boolean(s?.label_path);
     //: Empty for "automatic", so the field shows its placeholder.
     case "jumpsize": return s?.jumpSize != null && s.jumpSize !== "" ? wbJumpSize(s) : "";
+    case "waypoints": return wbFmtState.shapeMore?.waypointsText(s?.points) || "";
+    case "arrowbody": return Number(s?.arrowBody) > 0 ? Number(s.arrowBody) : "";
+    case "arrowhead": return Number(s?.arrowHead) > 0 ? Number(s.arrowHead) : "";
     case "tip": return typeof s?.tip === "string" ? s.tip : "";
     case "gapstart": return wbLinkGap(s)?.start || 0;
     case "gapend": return wbLinkGap(s)?.end || 0;
@@ -707,7 +710,7 @@ function wbFormatSync() {
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-edgeshape", "edgeshape", "edgeshape"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
-    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"], ["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"],
+    ["wb-fmt-waypoints", "waypoints", "waypoints"], ["wb-fmt-arrowbody", "arrowbody", "arrowbody"], ["wb-fmt-arrowhead", "arrowhead", "arrowhead"], ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"], ["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
@@ -1311,6 +1314,23 @@ onSurface("board", () => {
     const shape = wbFmtState.shapeMore?.CONNECTOR_SHAPES.includes(e.target.value) ? e.target.value : "line";
     wbFmtApply("edgeshape", () => ({ shape: shape === "line" ? undefined : shape }), `Connector shape: ${wbFmtState.shapeMore.CONNECTOR_SHAPE_WORDS[shape]}.`);
   });
+  //: The bends as numbers: one line of "x, y" pairs; empty clears them (the connector runs as its route would).
+  on("wb-fmt-waypoints", "change", (e) => {
+    const points = wbFmtState.shapeMore.parseWaypoints(e.target.value);
+    if (!points) {
+      toast("Bend points are pairs of numbers, like 120, 80; 200, 80.");
+      wbFormatSyncSoon();
+      return;
+    }
+    wbFmtApply("waypoints", () => ({ points: points.length ? points : undefined, bend: undefined }), points.length ? `${points.length === 1 ? "1 bend point" : `${points.length} bend points`} set.` : "Bends cleared.");
+  });
+  //: Arrow shape geometry (draw.io's `addArrowGeometry`): empty is the shape's own proportion, so it stores nothing.
+  for (const [id, field, key, word, max] of [["wb-fmt-arrowbody", "arrowbody", "arrowBody", "Arrow body", 200], ["wb-fmt-arrowhead", "arrowhead", "arrowHead", "Arrow head", 400]]) {
+    on(id, "change", (e) => {
+      const size = e.target.value === "" ? null : Math.max(2, Math.min(max, Math.round(Number(e.target.value) || 0)));
+      wbFmtApply(field, () => ({ [key]: size || undefined }), size ? `${word} ${size}.` : `${word} automatic.`);
+    });
+  }
   on("wb-fmt-textpath", "change", (e) => wbFmtApply("textpath", () => ({ label_path: e.target.checked || undefined }), e.target.checked ? "Label set along the line." : "Label flat again."));
   on("wb-fmt-jumps", "change", (e) => {
     const style = WB_JUMP_STYLES.includes(e.target.value) ? e.target.value : "none";
@@ -1579,28 +1599,46 @@ function wbPasteSize() {
 }
 
 //: Copy data and Paste data (draw.io's Alt+Shift+B and E): the custom properties
-//: (`data.props`) of one item put on every selected one, as one Undo step. A
-//: paste replaces what the target had, as the Data tab does when you retype it.
+//: (`data.props`), tooltip (`tip`) and link of one item put on every selected one, as one
+//: Undo step. A paste replaces what the target had, as the Data tab does when you retype it.
 wbFmtState.dataClip = null;
 wbFmtState.dataKeys = (() => {
+  //: What Copy data takes from one item: its properties, its tooltip (draw.io's note) and its link.
+  function read(entry) {
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    const clip = {};
+    if (data?.props && typeof data.props === "object" && Object.keys(data.props).length) clip.props = { ...data.props };
+    if (typeof data?.tip === "string" && data.tip) clip.tip = data.tip;
+    const link = wbItemLink(entry.kind, entry.item);
+    if (link) clip.link = link;
+    return clip;
+  }
   function copy() {
     const [entry] = wbFmtEntries();
-    const props = entry && (entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {}).props;
-    if (!props || typeof props !== "object" || !Object.keys(props).length) {
+    const clip = entry ? read(entry) : {};
+    if (!Object.keys(clip).length) {
       toast("That item has no data to copy.");
       return;
     }
-    wbFmtState.dataClip = { ...props };
-    const n = Object.keys(props).length;
-    wbAnnounce(`Data copied: ${n === 1 ? "1 property" : `${n} properties`}.`);
+    wbFmtState.dataClip = clip;
+    const n = Object.keys(clip.props || {}).length;
+    const parts = [n ? (n === 1 ? "1 property" : `${n} properties`) : "", clip.tip ? "the tooltip" : "", clip.link ? "the link" : ""].filter(Boolean);
+    wbAnnounce(`Data copied: ${parts.join(", ")}.`);
   }
+  //: A paste replaces what the target had for each part the copy held; the tooltip goes only where the item has the field.
   function paste() {
     if (!wbFmtState.dataClip) {
       toast("Copy an item's data first.");
       return Promise.resolve();
     }
     const clip = wbFmtState.dataClip;
-    return wbFmtApply("props", () => ({ props: { ...clip } }), "Data pasted.");
+    return wbFmtApply("props", (entry, kind) => {
+      const patch = {};
+      if (clip.props) patch.props = { ...clip.props };
+      if (clip.tip && (WB_FMT_FIELDS[kind] || []).includes("tip")) patch.tip = clip.tip;
+      if (clip.link && wbTakesLink(entry.kind, entry.item)) patch.link = clip.link;
+      return patch;
+    }, "Data pasted.");
   }
   //: draw.io's Alt+Shift+T (edit tooltip): the Data tab, on its Tooltip field when the selection has one (WB_FMT_FIELDS "tip").
   function tooltip() {
@@ -1611,6 +1649,27 @@ wbFmtState.dataKeys = (() => {
   }
   return { copy, paste, tooltip };
 })();
+
+//: Swap size (draw.io's `swap`): two selected items trade their widths and heights, as one Undo step.
+wbFmtState.swapSize = function wbSwapSize() {
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+  if (entries.length !== 2) {
+    toast("Select two shapes, notes or pictures to swap their sizes.");
+    return Promise.resolve();
+  }
+  const dims = entries.map((e) => ({ w: e.bbox.maxX - e.bbox.minX, h: e.bbox.maxY - e.bbox.minY }));
+  return wbRecordGesture(async () => {
+    const rows = [];
+    entries.forEach((e, i) => {
+      const other = dims[1 - i], own = dims[i];
+      for (const [dim, target, size] of [["width", Math.max(8, other.w), own.w], ["height", Math.max(8, other.h), own.h]]) {
+        if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
+      }
+    });
+    await wbSaveMany(rows);
+    wbAnnounce("Sizes swapped.");
+  }).then(() => wbScheduleRender());
+};
 
 //: How much a shape must grow for its words to fit: the factor on each axis,
 //: 1 when they already fit. The words' area scales with the shape, so the

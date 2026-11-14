@@ -7,6 +7,55 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-14 (whiteboard plan re-ground)
+
+The "Build first" phases of WHITEBOARD_PLAN, all built (see each phase's own HISTORY entry), moved whole:
+
+### Build first
+
+Ten phases for Brief 44 part 2 (Opus), in this order. Every phase is gated
+by `bash scratchpad/ui-sweeps/wbregress.sh` (and `wbports.js`,
+`wbrotatelinks.js` where ports or links move), the matrix rows it names in
+the retired analysis doc "Parity matrix, 2026-10-10", and a measurement written in the
+commit. Help moves with each control (standing order 13).
+
+1. **Ports from the shape.** `wbPortFractions` returns `parsed.ports` when
+   present; port names as tooltips; the Library inserts the converted rows
+   with `data.ports`. Gate: `wbports.js` plus a node test that a Decision
+   shape's four ports are its tips. Matrix rows: connection points, library
+   at scale.
+2. **Stencil libraries load.** Ship the five converted sets in the
+   Library: a "Shape libraries" dialog, search over names and tags, the five
+   listed in `index.json`, the NOTICE shown in Help. Gate: the library test
+   (`test_board_library.py`) with a new count, `wb1005-lib.js`.
+3. **Format panel Text tab to draw.io's.** Vertical align, underline,
+   strike, font family, label background, spacing, auto-size (the owner's
+   open bug is vertical centring). Gate: `wb1005-format.js`, a
+   `getBoundingClientRect` offset after a resize.
+4. **Format panel Style tab to draw.io's.** Gradient, fill styles, custom
+   dash pattern, corner rounding, swatches, default style, flow animation.
+   Gate: SVG export keeps every one (`wb1005-export.js`).
+5. **Connectors: arrowheads and routes.** Filled and sized heads, the full
+   draw.io set, jump size, perimeter gap, entity and isometric routes,
+   reverse, clear waypoints. Gate: `wbrotatelinks.js`, both ends rendered
+   during drag (the owner's "edge arrows" bug).
+6. Built 2026-11-12: the obstacle-avoiding elbow router (HISTORY, wbconnectors3).
+7. **Edit data, placeholders, tooltips, tags.** `data.props`, an Edit data
+   dialog and Ctrl+M, `%key%` in labels, a tooltip, tag filter; the AI tools
+   read `props`. Gate: search finds a property; the assistant's board read
+   includes it.
+8. **Find and replace.** Labels, connector text and props, regex, all
+   frames, one undo step. Gate: `wbkeywalk.js` plus a replace-all test over
+   a 100-item board.
+9. **Layers, containers, swimlanes.** Named layers with visibility and
+   lock, frames as containers (built: drop highlight, fit to children, collapse),
+   a Lane preset with a stack layout (built: the Stack toggle on a frame). Gate: `wb1005-layers.js`,
+   `wbframes.js`.
+10. **`.drawio` import and export, then the templates.** Built 2026-11-12 (HISTORY, "Moved from the plans, 2026-11-12 (wbdrawio3)"):
+    nothing open; VSDX, Lucid and Gliffy are dropped (the not-doing list).
+
+After the ten: tables (L), the shape picker, and the shortcut gaps in section 11.
+
 ## Moved from the plans, 2026-11-12 (wblayouts3: board layouts and the lane stack)
 
 From WHITEBOARD_PLAN sections 15 and 16 and step 9. Evidence per row:

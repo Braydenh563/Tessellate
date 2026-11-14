@@ -46,7 +46,7 @@ def test_the_command_is_a_row_and_its_function_exists(cmd_id):
 def test_the_needs_tests_exist():
     for need in ("reversible", "grouped", "sizeCopied"):
         assert f"  {need}: " in CMD, need
-    for cmd_id, need in (("reverse", "reversible"), ("remove-from-group", "grouped"), ("paste-size", "sizeCopied"), ("copy-size", "one")):
+    for cmd_id, need in (("reverse", "reversible"), ("remove-from-group", "grouped"), ("paste-size", "sizeCopied"), ("swap-size", "two"), ("copy-size", "one")):
         row = next(line for line in CMD.splitlines() if f'{{ id: "{cmd_id}"' in line)
         assert f'needs: "{need}"' in row, cmd_id
 
@@ -131,3 +131,11 @@ console.log(JSON.stringify([
     assert out[1] == {"sx": 1, "sy": 1.5}
     assert out[2] == {"sx": 1.5, "sy": 1}
     assert out[3] == {"sx": 1, "sy": 1}
+
+
+def test_swap_size_is_a_row_on_the_format_state_and_one_undo_step():
+    """Not a global function: the shared scope has a ratchet (test_global_scope_ratchet)."""
+    row = next(line for line in CMD.splitlines() if '{ id: "swap-size"' in line)
+    assert 'group: "Edit"' in row and 'needs: "two"' in row and "wbFmtState.swapSize()" in row
+    body = FMT[FMT.index("wbFmtState.swapSize = function"):][:1500]
+    assert "wbRecordGesture(" in body and "wbSizeItemTo(" in body

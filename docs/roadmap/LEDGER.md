@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 0 | 1 | 0 | 0 | 31 |
+| whiteboard | 0 | 0 | 1 | 11 | 0 | 1 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 528 | 126 | 2 | 172 | 1207 |
+| all | 523 | 528 | 126 | 13 | 172 | 1177 |
 
 ## graph
 
@@ -704,6 +704,17 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
+- [ ] **L-whiteboard-37** `whiteboard` owner-call, S: Glass effect on a shape (draw.io glass): owner decides build or drop. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 1 Glass row
+- [ ] **L-whiteboard-38** `whiteboard` owner-call, M: Text shadow on labels (draw.io textShadow): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 2 Text shadow row; no label_shadow in whiteboard-format.js
+- [ ] **L-whiteboard-39** `whiteboard` owner-call, L: SVG image styles and CSS variables on an embedded SVG (addSvgStyles): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 1 SVG image styles row
+- [ ] **L-whiteboard-40** `whiteboard` owner-call, M: Image as a fill on any shape (draw.io shape=image): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 13 image as a shape fill row
+- [ ] **L-whiteboard-41** `whiteboard` owner-call, L: PlantUML in and out: owner decides (needs a local renderer). From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 14 Mermaid row; PlantUML needs a renderer
+- [ ] **L-whiteboard-42** `whiteboard` owner-call, M: Rack layout (draw.io rackLayout): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 12 child layouts row; no rack in whiteboard-layouts-more.js
+- [ ] **L-whiteboard-43** `whiteboard` owner-call, M: A connector that joins another connector (edge to edge): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 4 source and target row: edge to edge
+- [ ] **L-whiteboard-44** `whiteboard` owner-call, L: Plugins and configuration JSON (draw.io): owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 plugins row
+- [ ] **L-whiteboard-45** `whiteboard` owner-call, L: Miro, graphml and emf import: owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 Miro, graphml and emf import have no owner line
+- [ ] **L-whiteboard-46** `whiteboard` owner-call, L: Rich (HTML) text in shapes: lists, indent, links in a shape label. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 2 formatted text row; shapes keep plain labels
+- [ ] **L-whiteboard-47** `whiteboard` owner-call, S: Mirror a note, image or frame; frame opacity; a status bar: owner decides. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md Phase 3 resize paragraph: mirrored note, image or frame, an opaque frame and a status bar were reasoned out 2026-09-20
 
 ## Needs hardware
 

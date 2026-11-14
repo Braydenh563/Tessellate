@@ -62,6 +62,7 @@ TAIL_TOPICS.extend(
                 "remove from group",
                 "copy size",
                 "paste size",
+                "swap sizes",
                 "reverse a connector",
                 "auto size",
             ),
@@ -77,7 +78,7 @@ TAIL_TOPICS.extend(
                 "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
-                "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
+                "the group, copy, paste and swap the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Groups nest (Ungroup takes off one level, a double-click goes in); a turn near upright snaps. "
                 "Selecting, menus, presenting: Whiteboard selection and menus."
             ),
@@ -479,6 +480,10 @@ TAIL_TOPICS.extend(
                 "right angle",
                 "orthogonal",
                 "connector shape",
+                "arrow width",
+                "bend points",
+                "waypoint list",
+                "arrow head size",
                 "bend",
                 "waypoint",
                 "crow's foot",
@@ -644,6 +649,7 @@ TAIL_TOPICS.extend(
                 "copy as svg",
                 "copy size",
                 "paste size",
+                "swap sizes",
                 "copy data",
                 "paste data",
                 "turn 90",
@@ -653,7 +659,7 @@ TAIL_TOPICS.extend(
                 "arrange on a phone",
             ),
             "body": (
-                "Keys on a board that draw.io has too: Ctrl+M edits the data, F2 writes in the shape like Enter, Ctrl+Shift+I selects all shapes, Ctrl+R turns 90 degrees, Ctrl+Shift+U ungroups, Ctrl+Shift+End opens a group and Ctrl+Shift+Home leaves it, Ctrl+Shift+Plus and Ctrl+Shift+Minus change the text size, Ctrl+Alt+X and Ctrl+Alt+Shift+X copy as an image or as SVG, Alt+Shift+F and V copy and paste a size, Alt+Shift+B and E copy and paste the data, Alt+Shift+R clears a connector's bends, Alt+Shift+L, T and N edit the link, the tooltip and the comment, Alt+Shift+K edits the tags (Ctrl+K stays the command palette), Ctrl+arrows resize by 1 px (Ctrl+Shift: further) and / goes to the Library search; Ctrl+F finds on the board. Ctrl+Shift+A, E, R and Y stay the app's keys, so select none, select all connectors, grow to fit and clear the default style are in the palette; Ctrl+R still reloads the page when nothing is selected. On a phone the Arrange groups (Order, Align, Distribute, Layout, Tidy, Group) are in the top bar's More sheet, each opening as its own level with a back row."
+                "Keys on a board that draw.io has too: Ctrl+M edits the data, F2 writes in the shape like Enter, Ctrl+Shift+I selects all shapes, Ctrl+R turns 90 degrees, Ctrl+Shift+U ungroups, Ctrl+Shift+End opens a group and Ctrl+Shift+Home leaves it, Ctrl+Shift+Plus and Ctrl+Shift+Minus change the text size, Ctrl+Alt+X and Ctrl+Alt+Shift+X copy as an image or as SVG, Alt+Shift+F and V copy and paste a size, Alt+Shift+B and E copy and paste the data (properties, tooltip and link), Alt+Shift+R clears a connector's bends, Alt+Shift+L, T and N edit the link, the tooltip and the comment, Alt+Shift+K edits the tags (Ctrl+K stays the command palette), Ctrl+arrows resize by 1 px (Ctrl+Shift: further) and / goes to the Library search; Ctrl+F finds on the board. Ctrl+Shift+A, E, R and Y stay the app's keys, so select none, select all connectors, grow to fit and clear the default style are in the palette; Ctrl+R still reloads the page when nothing is selected. On a phone the Arrange groups (Order, Align, Distribute, Layout, Tidy, Group) are in the top bar's More sheet, each opening as its own level with a back row."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

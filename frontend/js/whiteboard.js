@@ -6080,7 +6080,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
-  "dashPattern", "round", "curve", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "dashPattern", "round", "curve", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd", "arrowBody", "arrowHead",
   "shadow", "shadow_x", "shadow_y", "shadow_blur",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size", "radii", "pad", "shadow", "shadow_x", "shadow_y", "shadow_blur"];
@@ -6171,7 +6171,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "curve", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "curve", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd", "arrowBody", "arrowHead",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_dir", "label_alpha",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
