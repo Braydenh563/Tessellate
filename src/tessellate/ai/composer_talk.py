@@ -296,7 +296,18 @@ def chart_ask(session: Session, question: str, history: list[dict], today: date)
     75). A model handed the ask called the notes list with the category "week"
     and said there were none (the owner, 2026-11-12)."""
     said = _clean(question).rstrip("?!. ")
-    return _chart_by(session, said, from_history(history, today), today, whole=True) if said else None
+    drawn = _chart_by(session, said, from_history(history, today), today, whole=True) if said else None
+    return drawn if drawn is not None else _graph_pasted(question, history)
+
+
+def _graph_pasted(question: str, history: list[dict]) -> list[dict] | None:
+    """"Chart this: Mon 3, Tue 5": the values given (or the answer before) as
+    the chart maker's fence, with a model up too (L158, INBOX 1847)."""
+    from tessellate.ai import composer_graph
+
+    previous = str((history or [{}])[-1].get("answer") or "") if history else ""
+    made = composer_graph.pasted(question or "", previous=previous)
+    return [{"type": "answer", "delta": made["text"]}] if made else None
 
 
 # --- an offer taken up (B23) ----------------------------------------------------

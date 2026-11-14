@@ -2459,12 +2459,14 @@ MORE_TOPICS.extend([
         "id": "chart-maker",
         "keywords": (
             "chart maker", "make a chart", "bar chart", "line chart", "chart block", "paste values chart",
-            "chart from csv", "save chart as svg", "save chart as png", "slash chart",
+            "chart from csv", "save chart as svg", "save chart as png", "slash chart", "chart this", "chart my notes", "graph my notes",
         ),
         "body": (
             "The \"/\" menu's Chart takes pasted values (a label and a number a line, or CSV), draws a bar or line chart, "
             "and adds it to the note as a chart block that draws in the note view. Press a drawn chart to change its values or "
-            "its kind. Save as SVG, PNG or CSV is under the chart."
+            "its kind. Save as SVG, PNG or CSV is under the chart. Chat and Ask draw one too: \"chart this:\" with the values after it "
+            "(or after an answer that lists them), or \"chart my notes on running\" for the measure those notes share, one point a note; "
+            "the answer's Save as a note keeps it as a chart block."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
