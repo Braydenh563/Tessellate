@@ -4790,6 +4790,9 @@ body .chip.item-label,
 .finder-summary {
   margin-bottom: var(--space-2);
 }
+.entry-gist {
+  margin: 0 0 var(--space-1);
+}
 .finder-answer {
   display: flex;
   align-items: baseline;

@@ -97,3 +97,28 @@ def test_finder_draws_the_answer_line_above_the_results_l170():
     body = js[js.index("async function finderAnswerLine") : js.index("async function finderSearch")]
     assert "/read/answer?q=" in body and "run !== finderState.run" in body and "FINDER_OPEN.note" in body
     assert "finderAnswerLine(query, run);" in js
+
+
+def test_a_long_note_has_a_gist_under_ninety_characters_l158():
+    from tessellate.ai import composer_gist
+
+    long = (
+        "# Garden plan\n\nThe raised beds need new soil before the first frost arrives in October, "
+        "and the compost bin should be turned twice a week until then. " + "More detail follows here. " * 12
+    )
+    line = composer_gist.gist(long)
+    assert line and len(line) < 90 and line.startswith("The raised beds need new soil")
+    assert "Garden plan" not in line
+    assert composer_gist.gist("A short note about milk.") == ""
+    assert composer_gist.gist("- one\n- two\n" * 40) == ""
+
+
+def test_the_list_sends_the_gist_and_the_card_draws_it_l158(client, session):
+    from tessellate.core.database import Entry
+    from tests._app_js import app_js_text
+
+    session.add(Entry(content="Plan the trip to the coast with the whole family this summer, booking the cottage early. " + "Details go here. " * 30))
+    session.commit()
+    rows = client.get("/entries", params={"preview": 120}).json()
+    assert any(r["gist"].startswith("Plan the trip to the coast") for r in rows)
+    assert "entry.gist && isLong" in app_js_text()

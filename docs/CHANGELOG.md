@@ -7,7 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
-- Find anything shows a one-line answer from your notes above the results when the query is a question; a reminder notification says which note it is about; the light rewrite spells out "b4" and similar shorthand.
+- A long note's card opens with a one-line gist. Find anything shows a one-line answer from your notes above the results when the query is a question; a reminder notification says which note it is about; the light rewrite spells out "b4" and similar shorthand.
 
 - Chat recount batch 1: digest counts link to their notes, no repeated sentences in a row, remark bubbles wait while you type and open their source, and the command palette previews a typed act.
 - Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
