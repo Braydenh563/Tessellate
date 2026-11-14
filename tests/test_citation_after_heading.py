@@ -88,3 +88,23 @@ def test_live_and_reopened_grounding_agree_for_a_heading_then_list(ai_client, fa
 
     #: The exact comparison the coordinator asked for: live vs reopened.
     assert reopened["grounding"] == live_grounding
+
+
+#: A real answer, from qwen2.5-1.5b via `scratchpad/llama-dev.sh serve` (L-chat-11, 2026-11-14): nested
+#: "###"/"####" headings, bold lead-ins and no [n] markers of its own. The last, cut-off bullet is dropped.
+REAL_MODEL_ANSWER = '### Overview of My Week\n\nThis week, I have a schedule and frequency of activities that I can share with you. It includes attending university lectures, attending cloud computing lectures, attending lab sessions, and going to the gym.\n\n### Schedule and Frequency\n\n#### University Schedule\n- **Tuesday and Thursday**: These are my university days this term. I attend lectures on these days.\n\n#### Cloud Computing Schedule\n- **Last Week**: I attended three lectures on different days of the week. There were no labs on these days.\n- **This Week**: I plan to attend these lectures again, and there will be labs on the Fridays of these days.\n\n#### Gym Schedule\n- **Monday and Wednesday**: I go to the gym on these mornings. There are no specific days for other times of the week.\n\n### Frequency of Activities\n- **Attending University Lectures**: I attend university lectures on Tuesday and Thursday, with no specific day for other weeks.\n'
+
+
+def test_live_and_reopened_grounding_agree_for_a_real_small_model_answer(ai_client, fake_ollama, session):
+    manager.create_entry(session, "Uni timetable: Tuesday and Thursday are my university days this term.")
+    manager.create_entry(session, "Cloud computing: three lectures attended last week, labs on Friday.")
+    manager.create_entry(session, "Gym: Monday and Wednesday mornings.")
+    session.commit()
+
+    fake_ollama.librarian_reply = REAL_MODEL_ANSWER
+    events = _ask(ai_client, "overview of my week: university days, cloud computing lectures, gym mornings")
+    live = next(e["sentences"] for e in events if e.get("type") == "grounding")
+    assert any("Tuesday and Thursday" in row["sentence"] for row in live), live
+
+    turn_id = ai_client.get("/ask-history").json()["turns"][0]["id"]
+    assert ai_client.get(f"/ask-history/{turn_id}").json()["grounding"] == live
