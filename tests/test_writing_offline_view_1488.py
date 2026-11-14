@@ -93,7 +93,7 @@ def _gated(off: bool, value: str) -> dict:
 def test_with_no_model_the_select_loses_model_entries_and_moves_off_one_it_was_on():
     done = _gated(True, "continue")
     assert done["values"] == ["note", "tidy", "plain", "expand"] and done["value"] == "note"
-    assert done["events"] == ["change"] and not done["hidden"]
+    assert done["events"] == ["change"] and done["hidden"] is False
     assert _gated(True, "tidy")["events"] == []  # a kept choice stays, and says nothing
 
 

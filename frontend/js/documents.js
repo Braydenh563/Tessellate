@@ -11544,7 +11544,7 @@ const DOC_PROSE_RULES = [
     id: "confusion",
     english: true,
     //: your/you're, the one confusion Harper let through on the fixture
-    //: (`tests/grammar_fixture_1026.json`): "Your going to love it", "your
+    //: (`tests/fixtures/grammar/grammar_fixture_1026.json`): "Your going to love it", "your
     //: not late", "your welcome". Only the forms that cannot be possessive
     //: ("your going to", "your not", "your welcome." closing a clause),
     //: because "your welcome mat" and "your right to vote" are fine. No `fix`:
@@ -11635,7 +11635,7 @@ const DOC_EXTRA_WORDS = [
   "gmail", "markitdown", "nomic", "ollama", "qwen", "searxng", "tesseract",
   //: INBOX 1407: the words an interface note uses (a draggable, resizable
   //: panel with scrollbars and a debounce) and the file names' own parts,
-  //: found by the false-positive fixture `tests/grammar_fixture_1407.json`.
+  //: found by the false-positive fixture `tests/fixtures/grammar/grammar_fixture_1407.json`.
   "backoff", "clickable", "cron", "debounce", "draggable", "gitignore",
   "hoverable", "makefile", "pytest", "resizable", "scrollbars", "searchable",
   "sortable", "txt", "md", "bat",
@@ -12011,7 +12011,7 @@ const DOC_PROSE_SKIP = [
   /\{--[\s\S]*?--\}/g,
   /\{\+\+|\+\+\}/g,
   //: **Things that are not prose** (INBOX 1357, K11; measured on
-  //: `tests/grammar_fixture_1026.json`): an email address, a file path and a
+  //: `tests/fixtures/grammar/grammar_fixture_1026.json`): an email address, a file path and a
   //: file name, and a unit written after a number. Harper read `/etc/nginx/
   //: conf.d` as "config" and `uni` as a negative prefix, and called "min" and
   //: "mL" words to fix; the dictionary read the host of an address.

@@ -1,6 +1,6 @@
 """INBOX 720 (the owner, 2026-10-06): "I accidentally pressed ctrl v randomly
 on the app when on the ask tab and it started captioning the image". A board
-left open in the Library kept its view and canvas un-hidden while another tab
+still showing in the Library kept its view and canvas un-hidden while another tab
 was on screen, so the board's document-level paste took the image. The board
 answers a paste only while its canvas is rendered. And the Ask history's
 buttons are rounded squares like every other quiet icon button."""

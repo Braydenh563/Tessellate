@@ -1,7 +1,7 @@
 """The address's QR code (core/qrsvg.py) and its route.
 
 WORLD_CLASS_PLAN "Placed from Brief 40" fix 2, lansafe-1011's leftover
-("QR code of the address: not built"). The encoder was checked, while it was
+(the QR code of the address), now built. The encoder was checked, while it was
 written, against the `qrcode` package (not a dependency) for every mask of
 versions 1 to 10 at level M: 112 matrices, 0 different. One of them is kept
 here as rows, so a change to the encoder that a phone's camera would no

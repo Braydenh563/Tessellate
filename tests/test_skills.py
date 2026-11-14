@@ -623,7 +623,7 @@ def test_what_changed_comes_back_as_a_list_with_a_way_to_undo_it(
 # --- manual (step-through) mode ----------------------------------------------
 #
 # "a manual mode", asked for directly, and named in ROADMAP.md as "the
-# single most-requested unbuilt thing on the list": a pause after every
+# single most-requested missing thing on the list": a pause after every
 # completed step with a Continue button, so a person can add what the agent
 # missed or answer a question it raised before the next step starts, rather
 # than the run barrelling straight through five steps unattended.

@@ -3,7 +3,7 @@ the new range at its first 100 rows.
 
 `renderTimeline` asks for the rest of the first 300 a frame after the rows
 paint. One flag (`timelinePaging`) said "a request is out", for any range, so
-a page still on its way for the old range made the new range's follow-up
+a page still on its way for the old range made the new range's next page
 return at once; the old page was then dropped (it belongs to a superseded
 render) and nothing asked again until a scroll.
 """
@@ -39,7 +39,7 @@ const paintTimeline = () => {};
   const first = timelineLoadMore(200);            // the old range's page, in flight
   timelineRenders.n = 2;                          // the range changes
   timelineNextCursor = "new";
-  const second = timelineLoadMore(200);           // the new range's follow-up
+  const second = timelineLoadMore(200);           // the new range's next page
   const askedBeforeAnswers = asked.length;
   pending.forEach((resolve, i) => resolve({ next_cursor: null, rows: [{ key: "r" + i, at: "2026-01-0" + (i + 1) }] }));
   await Promise.all([first, second]);

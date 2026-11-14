@@ -1,4 +1,4 @@
-"""New document makes a new document, and that is the one left open (found
+"""New document makes a new document, and that is the one showing (found
 by the e2e suite, tests-e2e/specs/documents.spec.js, 2026-10-05).
 
 Library, Create, New document on a session that had not opened Documents

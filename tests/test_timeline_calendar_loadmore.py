@@ -3,7 +3,7 @@
 A 1,000-note month measured with `scratchpad/ui-sweeps/calcount1018.js`: the
 dock's count read "1000 items · October 2026" for a moment, then "192 notes · 7
 days", the hidden feed's. `timelineLoadMore` (the scroll handler's, and the
-follow-up page a render asks for) appended its rows to the feed whichever view
+next page a render asks for) appended its rows to the feed whichever view
 was showing, and the feed's painter writes the count. In the calendar the feed
 is emptied and hidden, and the calendar reads its own period; a page for the
 feed has nothing to draw into and no right to the chip.

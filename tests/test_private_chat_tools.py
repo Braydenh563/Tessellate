@@ -243,7 +243,7 @@ def test_the_same_plan_run_not_private_is_recorded(ai_client, fake_ollama, beans
     assert beans.query(AuditLog).filter(AuditLog.entity_type == "skill").count() == 1
 
 
-# --- the non-streaming route, and the follow-up chips -----------------------
+# --- the non-streaming route, and the follow-on chips ------------------------
 
 
 def test_a_private_chat_post_leaves_nothing(ai_client, fake_ollama, beans, caplog, before):

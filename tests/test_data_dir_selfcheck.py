@@ -8,7 +8,6 @@ starts the app again on it. Nothing here touches the repo's `data/`.
 
 from __future__ import annotations
 
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -205,7 +204,14 @@ def test_a_clean_quit_folds_the_log_into_the_database(client, app_state):
     assert backup.notebook_counts(Path(app_state.db_path))["notes"] == 1
 
 
-def test_the_check_is_cheap_at_two_thousand_notes(app_state, session):
+def test_the_check_is_cheap_at_two_thousand_notes(app_state, session, monkeypatch):
+    """Cheap means the work does not grow with the notes: a fixed number of
+    queries, two directory listings and no file check per row. Counted, not
+    timed (a 50 ms bound failed at 140.6 ms on a loaded CI runner, 2026-11-14)."""
+    import os
+
+    from sqlalchemy import event
+
     from tessellate.core.database import Attachment, Entry
 
     for number in range(2000):
@@ -215,12 +221,41 @@ def test_the_check_is_cheap_at_two_thousand_notes(app_state, session):
         if number % 4 == 0:
             session.add(Attachment(entry_id=entry.id, filename=f"f{number}.txt", stored_name=f"s{number}.txt", mime="text/plain", size=1))
     session.commit()
-    started = time.perf_counter()
-    report = selfcheck.run(app_state, session)
-    elapsed = (time.perf_counter() - started) * 1000
+    queries: list[str] = []
+    listings: list[str] = []
+    file_checks: list[str] = []
+    real_scandir = os.scandir
+
+    def scandir(path):
+        listings.append(str(path))
+        return real_scandir(path)
+
+    def counted(name):
+        real = getattr(Path, name)
+
+        def check(self, *a, **k):
+            file_checks.append(f"{name} {self}")
+            return real(self, *a, **k)
+
+        monkeypatch.setattr(Path, name, check)
+
+    monkeypatch.setattr(selfcheck.os, "scandir", scandir)
+    for name in ("exists", "is_file", "is_dir", "stat"):
+        counted(name)
+    engine = session.get_bind()
+    listen = lambda *a: queries.append(a[2])  # noqa: E731
+    event.listen(engine, "before_cursor_execute", listen)
+    try:
+        report = selfcheck.run(app_state, session)
+    finally:
+        event.remove(engine, "before_cursor_execute", listen)
     assert report["missing_files"]["count"] == 500
     assert len(report["missing_files"]["items"]) == selfcheck.MISSING_LISTED
-    assert elapsed < 50, f"{elapsed:.1f} ms"
+    # Three "is it in use" probes and the two lists, whatever the note count.
+    assert len(queries) <= 5, queries
+    assert len(listings) == 2, listings
+    # The owned folders' checks only: a file check per attachment would be 500.
+    assert len(file_checks) < 4 * len(selfcheck.OWNED_FOLDERS) + 4, file_checks
 
 
 def test_the_check_runs_in_the_start_up_housekeeping():

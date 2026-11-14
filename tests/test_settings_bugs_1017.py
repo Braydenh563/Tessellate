@@ -219,7 +219,7 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
 # B55 (first half, the smallest honest part of "hard to find"): the clipper's
 # bookmark lived only in Settings, Import & export. Typing clip, clipper or
 # bookmarklet in the palette now offers a row that opens it. A redesign of the
-# clipper's flow is not done.
+# clipper's flow is unfinished.
 def test_b55_the_palette_finds_the_web_clipper():
     palette = _js_scope.unwrapped((ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8"))
     assert "Web clipper" in palette and 'openSettingsModal("data", "web-clip-box")' in palette

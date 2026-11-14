@@ -188,7 +188,7 @@ def test_write_up_from_one_year_back_names_the_year():
 def test_the_new_kinds_run_with_no_model(ai_client, fake_ollama, body, has):
     fake_ollama.running = False
     done = ai_client.post("/drafts/compose", json=body).json()
-    assert done["draft"] == has and done["by"] == "composer" and done["said"] and not done["message"]
+    assert done["draft"] == has and done["by"] == "composer" and done["said"] and done["message"] in (None, "")
     assert not fake_ollama.chat_calls
 
 

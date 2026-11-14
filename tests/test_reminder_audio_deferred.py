@@ -1,4 +1,4 @@
-"""The reminder chime's AudioContext is not built inside the first gesture.
+"""The reminder chime's AudioContext is not made inside the first gesture.
 
 Performance pass, 2026-10-03 (INBOX 441, item 6). `new AudioContext()` opens the
 audio device synchronously, and as the session's first pointerdown it was the
@@ -9,7 +9,7 @@ listeners stay on until the context is running so a browser that wants the
 gesture itself can still resume it.
 
 The suite cannot see a browser, so this pins the shape of the source: the
-constructor sits in a deferred callback, and the listeners are not `once`.
+constructor sits in a delayed callback, and the listeners are not `once`.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ def test_the_context_is_built_in_a_deferred_callback_not_in_the_gesture():
     body = _prime_function()
     constructor = body.index("new (window.AudioContext")
     before = body[:constructor]
-    assert "const build = () =>" in before, "the constructor must sit inside a deferred `build`"
+    assert "const build = () =>" in before, "the constructor must sit inside a delayed `build`"
     assert "requestIdleCallback" in body and "setTimeout(build" in body
 
 

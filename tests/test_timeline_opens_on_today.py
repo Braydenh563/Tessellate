@@ -22,7 +22,7 @@ def test_it_runs_again_once_the_strip_and_recall_row_have_moved_the_window() -> 
 
 
 def test_switching_to_the_feed_view_lands_on_today() -> None:
-    """INBOX 1733 follow-up: opening the Feed from Table or Calendar repainted
+    """INBOX 1733, second part: opening the Feed from Table or Calendar repainted
     the feed with scrollTop 0, so the seven empty days ahead filled the window
     and Today sat 415 px down (measured at 2000x1250). The view switch and the
     bucket picker land on Today as a fresh read does."""

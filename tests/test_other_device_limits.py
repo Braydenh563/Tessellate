@@ -7,7 +7,7 @@ my computer" and "do a really deep security and bug scan". The route guard
 itself is `api/this_computer.py`; tests/test_this_computer_only.py lists the
 routes. These are the cases a route list cannot see: a preference that
 points the computer somewhere, a page that thought it was the desktop app,
-a notebook with no password while the network port is still open.
+a notebook with no password while the network port is listening.
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ def test_health_says_the_desktop_only_to_this_computer(app, monkeypatch):
     assert theirs["os_notify"] is False
 
 
-# --- no password, network still open -----------------------------------------
+# --- no password, network listening ------------------------------------------
 
 
 def test_a_notebook_with_no_password_answers_no_other_device(app):

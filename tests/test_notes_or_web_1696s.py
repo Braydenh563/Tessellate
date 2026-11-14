@@ -83,7 +83,7 @@ def test_each_chip_text_routes_to_its_side():
 
 
 def test_a_chip_sends_its_own_text_as_the_next_message():
-    """The strip is the existing follow-up recipe: a press sends exactly the chip's text."""
+    """The strip is the existing follow-on chip recipe: a press sends exactly the chip's text."""
     from tests._app_js import app_js_text
 
     js = app_js_text()

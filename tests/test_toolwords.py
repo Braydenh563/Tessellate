@@ -133,7 +133,7 @@ def test_a_broad_request_gets_everything():
 
 def test_a_follow_through_reads_the_previous_turn():
     """Reported: asking for category suggestions and then "implement those"
-    produced the suggestions again, the follow-up named no category, so no
+    produced the suggestions again, the follow-on named no category, so no
     category tool was offered and the model had nothing it could call.
 
     What matters is that the tool ends up reachable, not that the focus stayed

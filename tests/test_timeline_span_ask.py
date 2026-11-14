@@ -1,4 +1,4 @@
-"""The span review has a keyboard and phone way in (L-timeline-2 follow-up).
+"""The span review has a keyboard and phone way in (L-timeline-2, second part).
 
 The brush is Shift and a mouse drag on the strip, and the strip is hidden on a
 phone; Options, Review some days asks for the two days on the sheet recipe and
