@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 35 | 1 | 0 | 2 | 36 |
+| documents | 0 | 36 | 1 | 0 | 2 | 37 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 590 | 129 | 2 | 165 | 1202 |
+| general | 0 | 37 | 2 | 0 | 4 | 39 |
+| all | 483 | 592 | 129 | 2 | 165 | 1204 |
 
 ## graph
 
@@ -339,7 +339,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 - [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
 - [ ] **L-documents-47** `documents` open, M: Documents cold open under 800 ms at 1440 and 390 (24 row 5). From DOCUMENTS_PLAN.md:1115, audit 2026-11-14. Evidence: documents.js:15482 warm-on-idle skips under 720px; no re-measurement in HISTORY
-- [ ] **L-documents-48** `documents` open, M: Long-form choice at first run (24 row 8). From DOCUMENTS_PLAN.md:1118, audit 2026-11-14. Evidence: no first-run note-style choice in onboarding.js or settings.js
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
 - [ ] **L-documents-50** `documents` open, M: Code linters: ruff-wasm and a JS linter (25 row 4). From DOCUMENTS_PLAN.md:1157, audit 2026-11-14. Evidence: no ruff or eslint in frontend/vendor; only in-house docCodeScan documents-code.js:4951
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
@@ -362,6 +361,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-78** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
 - [ ] **L-documents-79** `documents` open, M: Frame measurement of the document editor: scroll and typing frames against the 14 rAF, 7 scroll, 3 RO and 4 MO wake sources (Brief 60). From DOCUMENTS_PLAN.md:1239 Brief 60, audit 2026-11-14. Evidence: documents.js 14 rAF, 7 scroll, 3 ResizeObserver, 4 MutationObserver sites; no frame sweep in scratchpad/ui-sweeps for the editor
 - [ ] **L-documents-80** `documents` open, S: Library Documents page card: the document's first embedded image as the page's cover. From L-documents-54 remainder, agent docs7446 2026-11-14. Evidence: the plan's recommendation names a cover from the first image; .doc-list-page draws title and preview text only
+- [ ] **L-documents-81** `documents` open, S: Export and print styling for the base block's board and calendar views. From L-documents-52 follow-up. Evidence: documents-export.js ~101-110 styles only .db-scroll and .db-label
+- [ ] **L-documents-82** `documents` open, S: Base table refreshes on doc-saved, and drive the Read-view board drag. From L-documents-52 follow-up. Evidence: board drag write driven in Live only; Read view drag not driven
 
 ## mindmap
 
@@ -762,6 +763,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
+- [ ] **L-general-35** `general` open, S: Pre-existing lint failures: drafter.py complexity and PERF401. From L-documents-48 gate. Evidence: drafter.py compose_stream complexity, PERF401 x3, test_codeql_shapes cap
 
 ## Owner calls
 
