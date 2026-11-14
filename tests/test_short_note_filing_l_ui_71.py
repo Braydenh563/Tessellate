@@ -1,4 +1,4 @@
-"""L-general-43 (IDEAS.md): "I wrote 'ai is cool' as a note and it was filed
+"""L-ui-modernisation-71 (IDEAS.md): "I wrote 'ai is cool' as a note and it was filed
 under sketches". With no model, a short note goes where its one topic word
 points, and nowhere when no category matches; it never lands in Sketches."""
 

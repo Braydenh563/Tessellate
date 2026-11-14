@@ -1,4 +1,4 @@
-"""Source text: the dashboard's note text is drawn in a browser (L-general-39;
+"""Source text: the dashboard's note text is drawn in a browser (L-ui-modernisation-67;
 measured with 35 widgets, none left showing `_x_`, `[ ]` or `[[x]]` literally).
 These pin the three rules that measurement depended on."""
 

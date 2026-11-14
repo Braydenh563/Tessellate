@@ -342,7 +342,7 @@ def test_the_gallery_reads_only_rows_that_could_name_a_file(ai_client):
 
 
 def test_an_upload_in_a_binned_note_is_not_orphaned(ai_client):
-    # The bin restores a note with its pictures; L-general-46 found the check read live notes only.
+    # The bin restores a note with its pictures; L-ui-modernisation-74 found the check read live notes only.
     uploaded = _upload(ai_client)
     created = ai_client.post("/entries", json={"content": f"![img]({uploaded['url']})"}).json()
     binned = ai_client.delete(f"/entries/{created['id']}")

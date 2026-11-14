@@ -249,7 +249,7 @@ async function renderStorageBreakdown() {
   renderStorageBreakdown.orphans();
 }
 
-//: **Files nothing uses** (L-general-46), a property rather than a new global name. Counted when About opens, deleted only
+//: **Files nothing uses** (L-ui-modernisation-74), a property rather than a new global name. Counted when About opens, deleted only
 //: when asked: a picture uploaded to the gallery alone is one of these and may be
 //: wanted, so the background pass never deletes uploads. The server counts the
 //: bin and older versions as uses, and refuses while a private note is locked.

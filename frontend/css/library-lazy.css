@@ -12052,7 +12052,7 @@ input[type="color"].wb-mixed {
 }
 
 /* The document list's New split and the map's resize grip reach the 44px floor under a finger
-   (L-general-52, `iconfloor.js`). The grip keeps its 10px square; only the button around it grows. */
+   (L-ui-modernisation-80, `iconfloor.js`). The grip keeps its 10px square; only the button around it grows. */
 @media (pointer: coarse) {
   .split-button > .split-button-main,
   .split-button .split-button-caret {

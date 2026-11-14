@@ -134,7 +134,7 @@ def test_the_dashboards_note_widgets_read_past_the_block():
 
     text = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert "const raw = stripFrontmatter(entry.content || \"\")" in text
-    #: L-general-39 unwraps `[[links]]` between the strip and the cut; the strip still comes first.
+    #: L-ui-modernisation-67 unwraps `[[links]]` between the strip and the cut; the strip still comes first.
     assert "truncateMarkdownSafe(stripFrontmatter(note.content).replace(" in text
     #: The unfinished-checklists title is a note's name, which `noteNamePlain` (INBOX 820) cuts
     #: past the block itself; the shared helper replaced a hand-rolled `.split("\n")[0]`.

@@ -3217,7 +3217,7 @@ follows the active filter chip for the four unambiguous kinds
 remaining gap precisely: a real "choose what to create" picker for
 Everything and every kind with no single obvious answer (Files, Tags,
 Drafts, Activity, the bin). Built since: `openLibraryCreatePicker`
-(library.js), a dialog of rich-picker rows (L-general-35, 2026-11-12).
+(library.js), a dialog of rich-picker rows (L-ui-modernisation-63, 2026-11-12).
 
 **A second competitor-analysis pass (Kortex/Granola/Mem.ai) was re-pasted
 this session, from a different subagent run than §102's**: cross-checked
@@ -4409,7 +4409,7 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 
 Each row is the one step that needs hardware or a real model; everything that runs here is built and tested.
 
-- **"ai is cool" with a real model (L-general-43).** No-model filing is pinned by `tests/test_short_note_filing_l_general_43.py` (AI, then Technology, else nothing; never Sketches). **Check:** `scratchpad/llama-dev.sh serve`, a notebook with Sketches, Work and Technology, save "ai is cool", and confirm it is not filed under Sketches.
+- **"ai is cool" with a real model (L-ui-modernisation-71).** No-model filing is pinned by `tests/test_short_note_filing_l_general_43.py` (AI, then Technology, else nothing; never Sketches). **Check:** `scratchpad/llama-dev.sh serve`, a notebook with Sketches, Work and Technology, save "ai is cool", and confirm it is not filed under Sketches.
 
 - **model2vec potion against bge-small (L-general-19).** The research verdict in docs/ARCHITECTURE.md (search by meaning) has never been measured. **Check:** with a real model set up (`scratchpad/llama-dev.sh serve`), embed the eval notebook with each, run `pytest -m evals` for search by meaning, and record recall at 5 and the embed time per 100 notes; keep bge-small unless potion is within 2 points at a fraction of the time.
 - **0.9 public beta gates (L-general-23, L-general-29).** From ROADMAP's milestone table, each one a person or a device: (1) Windows, macOS and Linux launchers and the Docker image installed on a clean machine by someone who is not the owner, timed, with the first-run queue measured; (2) the phone over HTTPS trusted by the QR and guide flow on iOS and Android; (3) the update path from 0.8 with data in place; (4) a local, opt-in crash and feedback bundle sent by hand; (5) ten testers for two weeks, their reports placed and the bugs closed.
@@ -4421,7 +4421,7 @@ Each row is the one step that needs hardware or a real model; everything that ru
 
 The owner named Fable 5.2 for one task: a read-only review and deep dive of the whole app, in a session of its own. It is parked here, not run, because the UI modernisation session runs at tier `pro` (no Opus or Fable agents; CLAUDE.md standing order 4 and section 8). **Run:** in a fresh `max`-tier session the owner opens for it; the `deep-audit` skill's per-surface agents are the shape, findings to one file under `docs/roadmap/agent-remaining/`, each finding then a LEDGER row.
 
-## In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41)
+## In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-ui-modernisation-69)
 
 - A browser pane inside Tessellate whose pages an MCP client could read and act on. Parked: a large security surface for a local-first app; web clip and web search cover reading the web now. Revisit only with an owner request.
 

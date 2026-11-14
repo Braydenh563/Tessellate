@@ -11597,7 +11597,7 @@
   })();
   // pull-grab:end
 
-  //: Handles for the ui sweeps, which drive the tick and the pat from outside this closure (L-general-47).
+  //: Handles for the ui sweeps, which drive the tick and the pat from outside this closure (L-ui-modernisation-75).
   nmb.tick = nameMarkBuddyTick;
   nmb.pet = nameMarkBuddyPet;
   nmb.inner = { nameMarkBuddyBand, nameMarkBuddyBeat, nameMarkBuddyBellErrand, nameMarkBuddyChatErrand, nameMarkBuddyCheck, nameMarkBuddyDrift, nameMarkBuddyHeadAt, nameMarkBuddyCovers, nameMarkBuddyHits, nameMarkBuddyIndexReset, nameMarkBuddyObstacles, nameMarkBuddyOrigin, nameMarkBuddyPerches, nameMarkBuddyShape, nameMarkBuddyWordsUnder, nameMarkBuddyScroller, nameMarkBuddySeen, NMB_EXPR_EVENTS };

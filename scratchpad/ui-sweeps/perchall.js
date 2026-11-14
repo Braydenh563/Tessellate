@@ -150,7 +150,7 @@ function verdict(r, label = "") {
   if (r.err) return r.err;
   const bad = [];
   //: Only on a visit: a resting cat takes the window's hang and bar first (INBOX 1674, the owner's
-  //: blind run, after this rule was written; `nmb.restOrder`), so a bar at rest is the design (L-general-55).
+  //: blind run, after this rule was written; `nmb.restOrder`), so a bar at rest is the design (L-ui-modernisation-83).
   if (PANELLED.test(label) && !phone && !process.env.PANEL_OPTIONAL && r.free && r.visit) bad.push(`window bar while a panel was free (${r.free})`);
   if (r.gap === "air" || Math.abs(r.gap) > 4) bad.push(`gap ${r.gap}`);
   if (!r.paint && r.legs !== "peek") bad.push("no painted edge");

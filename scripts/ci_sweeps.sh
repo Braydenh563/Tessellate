@@ -4,7 +4,7 @@
 #   NODE_PATH=... bash scripts/ci_sweeps.sh /tmp/ci-sweeps
 # The list is the sweeps that exited 0 in under a minute in the 2026-11-12
 # stability run, in the order they ran (some read state an earlier one left).
-# A sweep or flow joins once it passes; L-general-47 repairs the rest (deepflows'
+# A sweep or flow joins once it passes; L-ui-modernisation-75 repairs the rest (deepflows'
 # note, private, link, graph, settings, tabs and picker among them).
 FLOWS=mindmap,whiteboard,document,ask,notifications,dashboard,palette,select,views,find
 set -uo pipefail

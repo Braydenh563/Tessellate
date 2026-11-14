@@ -27,7 +27,7 @@ never lost to the smaller stuff.
 The 2026-09-09 to 2026-09-13 batches (110, 111, 114, 174, 176, 177, 180)
 are in HISTORY's "INBOX resolved" with every sub-report marked; the three
 residues they left are owned elsewhere: the graph agent popup redesign
-(GRAPH_PLAN Phase 6), the mind map ring (MINDMAP_PLAN "Decisions made,
+(GRAPH_PLAN Phase 6, built: its "Built, Phase 6" block), the mind map ring (MINDMAP_PLAN "Decisions made,
 2026-09-13 night", the mapux agent), and the second batch's five
 not-reproduced visuals (BACKLOG, "Reported, not reproduced"). Everything
 below is open work from the night of 2026-09-13 and the morning after,
@@ -36,12 +36,12 @@ with its owner named in the entry.
 ## Open items
 
 ## Placed (last 20, newest first)
-- 2026-11-12: L-general-36 (group notes by hand): recommendation taken under standing order 3, not built: a hand-made group is a tag (or a space, or Favourites), the sidebar's tags and `tag:` filter are the grouped view, and section headings in the windowed, threaded list would be a second ordering beside the sort.
-- 2026-11-12: L-general-37 (more than one category): recommendation taken, not built: a category stays single (filing picks one, the graph and the dashboard pie colour by one); tags are the many-labels mechanism.
-- 2026-11-12: L-general-38 (compress on disk): recommendation taken, not built: the live SQLite file needs random access and its FTS index; backups are already VACUUMed and stripped, exports are deflated zips; whole-disk compression is the operating system's job.
-- 2026-11-12: L-general-41 (in-app browser with MCP tools): recommendation taken, parked in BACKLOG: a browser inside a local-first notebook is a large security surface; web clip and web search cover the need now.
-- 2026-11-12: L-general-42 (VS Code extension): recommendation taken: no extension, VS Code runs MCP servers itself; docs/MCP.md gives the `.vscode/mcp.json` entry.
-- 2026-11-12: L-general-46 (sweep orphaned attachments on the background pass): recommendation taken under standing order 3, the pass never deletes uploads (a gallery-only picture is wanted); Settings, About counts them and deletes on a confirmed click. Found and fixed with it: the orphan check skipped the bin, revisions and locked private documents.
+- 2026-11-12: L-ui-modernisation-64 (group notes by hand): recommendation taken under standing order 3, not built: a hand-made group is a tag (or a space, or Favourites), the sidebar's tags and `tag:` filter are the grouped view, and section headings in the windowed, threaded list would be a second ordering beside the sort.
+- 2026-11-12: L-ui-modernisation-65 (more than one category): recommendation taken, not built: a category stays single (filing picks one, the graph and the dashboard pie colour by one); tags are the many-labels mechanism.
+- 2026-11-12: L-ui-modernisation-66 (compress on disk): recommendation taken, not built: the live SQLite file needs random access and its FTS index; backups are already VACUUMed and stripped, exports are deflated zips; whole-disk compression is the operating system's job.
+- 2026-11-12: L-ui-modernisation-69 (in-app browser with MCP tools): recommendation taken, parked in BACKLOG: a browser inside a local-first notebook is a large security surface; web clip and web search cover the need now.
+- 2026-11-12: L-ui-modernisation-70 (VS Code extension): recommendation taken: no extension, VS Code runs MCP servers itself; docs/MCP.md gives the `.vscode/mcp.json` entry.
+- 2026-11-12: L-ui-modernisation-74 (sweep orphaned attachments on the background pass): recommendation taken under standing order 3, the pass never deletes uploads (a gallery-only picture is wanted); Settings, About counts them and deletes on a confirmed click. Found and fixed with it: the orphan check skipped the bin, revisions and locked private documents.
 - 2026-11-12: L-general-25 (question_noise misspelling table's source): recommendation taken under standing order 3, keep and credit as a CC BY-SA 4.0 adaptation (GPLv3-compatible one way, combinable under AGPLv3 section 13); docs/THIRD_PARTY.md and the block's comment say so.
 - 2026-11-05: 1685 (the shape bar, Filled keeps its colour, the app's own colour popover with hex and opacity) to WHITEBOARD_PLAN "Placed from INBOX, 2026-11-04"; 1686 (Atlas perches on every mind map node) to MINDMAP_PLAN "Placed from INBOX, 2026-11-04".
 
