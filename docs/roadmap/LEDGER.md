@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 1 | 0 | 0 | 0 | 31 |
+| whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
 | documents | 0 | 23 | 1 | 0 | 7 | 24 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 432 | 539 | 125 | 2 | 159 | 1096 |
+| all | 402 | 539 | 125 | 2 | 159 | 1066 |
 
 ## graph
 

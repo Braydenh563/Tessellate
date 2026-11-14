@@ -55,7 +55,8 @@ def test_upload_refuses_svg_markup_named_like_a_picture(ai_client, name):
 
 def test_the_upload_list_has_no_svg_and_the_object_rule_matches_it():
     assert ".svg" not in routes_files.MEDIA_SUFFIXES
-    assert set(wb_model.MEDIA_PICTURE_SUFFIXES) == set(routes_files.MEDIA_SUFFIXES)
+    #: Uploads also take the two video types (L-documents-75), which a board picture never is.
+    assert set(wb_model.MEDIA_PICTURE_SUFFIXES) == set(routes_files.MEDIA_SUFFIXES) - set(routes_files.VIDEO_TYPES)
 
 
 def test_a_stray_svg_in_the_media_folder_is_not_served(ai_client):
