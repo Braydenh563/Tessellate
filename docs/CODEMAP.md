@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8513, frontend ids 2795, CSS sections 524, backend routes 714, backend modules 11170, test files 2905, tests 22890, plan headings 692, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8514, frontend ids 2795, CSS sections 524, backend routes 714, backend modules 11170, test files 2907, tests 22894, plan headings 692, app scripts 29, boot scripts 38, script files 305.
 
-## Frontend functions (8513)
+## Frontend functions (8514)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1817,26 +1817,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `actNavigate` | frontend/js/answer-kit.js:2285 |
-| `addAssistantBubble` | frontend/js/answer-kit.js:1829 |
+| `actNavigate` | frontend/js/answer-kit.js:2287 |
+| `addAssistantBubble` | frontend/js/answer-kit.js:1831 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2907 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2885 |
-| `agentRunTool` | frontend/js/answer-kit.js:2939 |
+| `agentRunStep` | frontend/js/answer-kit.js:2909 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2887 |
+| `agentRunTool` | frontend/js/answer-kit.js:2941 |
 | `answerFigure` | frontend/js/answer-kit.js:763 |
 | `answerObject` | frontend/js/answer-kit.js:856 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2859 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2877 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2861 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2879 |
 | `askNotesOnTheRight` | frontend/js/answer-kit.js:950 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
-| `assistantLabel` | frontend/js/answer-kit.js:1375 |
-| `buildFollowupStrip` | frontend/js/answer-kit.js:2768 |
-| `chatHistoryToSend` | frontend/js/answer-kit.js:1334 |
-| `chatMessageActions` | frontend/js/answer-kit.js:1380 |
-| `chatScrollToEnd` | frontend/js/answer-kit.js:1768 |
-| `chatSourcesFrom` | frontend/js/answer-kit.js:2334 |
-| `chatSourcesPanel` | frontend/js/answer-kit.js:2497 |
-| `chatTurnObjects` | frontend/js/answer-kit.js:2725 |
+| `assistantLabel` | frontend/js/answer-kit.js:1377 |
+| `buildFollowupStrip` | frontend/js/answer-kit.js:2770 |
+| `chatHistoryToSend` | frontend/js/answer-kit.js:1336 |
+| `chatMessageActions` | frontend/js/answer-kit.js:1382 |
+| `chatScrollToEnd` | frontend/js/answer-kit.js:1770 |
+| `chatSourcesFrom` | frontend/js/answer-kit.js:2336 |
+| `chatSourcesPanel` | frontend/js/answer-kit.js:2499 |
+| `chatTurnObjects` | frontend/js/answer-kit.js:2727 |
 | `citationInsertionPoint` | frontend/js/answer-kit.js:165 |
 | `citationKey` | frontend/js/answer-kit.js:123 |
 | `citationMarker` | frontend/js/answer-kit.js:287 |
@@ -1847,63 +1847,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearCitedPassage` | frontend/js/answer-kit.js:424 |
 | `clickableResult` | frontend/js/answer-kit.js:57 |
 | `collapseCitationRuns` | frontend/js/answer-kit.js:252 |
-| `deactivateControls` | frontend/js/answer-kit.js:2305 |
+| `deactivateControls` | frontend/js/answer-kit.js:2307 |
 | `drawAnswerPanels` | frontend/js/answer-kit.js:958 |
 | `everyRowScored` | frontend/js/answer-kit.js:987 |
 | `evidenceChecksOn` | frontend/js/answer-kit.js:650 |
 | `evidenceRows` | frontend/js/answer-kit.js:696 |
 | `evidenceToggle` | frontend/js/answer-kit.js:664 |
 | `finishReply` | frontend/js/answer-kit.js:965 |
-| `followupChain` | frontend/js/answer-kit.js:2794 |
-| `followupParent` | frontend/js/answer-kit.js:2788 |
+| `followupChain` | frontend/js/answer-kit.js:2796 |
+| `followupParent` | frontend/js/answer-kit.js:2790 |
 | `groundingThumbs` | frontend/js/answer-kit.js:514 |
-| `isStreamingConversation` | frontend/js/answer-kit.js:2811 |
-| `livingInterval` | frontend/js/answer-kit.js:1647 |
-| `markToolStep` | frontend/js/answer-kit.js:2092 |
+| `isStreamingConversation` | frontend/js/answer-kit.js:2813 |
+| `livingInterval` | frontend/js/answer-kit.js:1649 |
+| `markToolStep` | frontend/js/answer-kit.js:2094 |
 | `matchReasonBadge` | frontend/js/answer-kit.js:991 |
-| `messageMetaLine` | frontend/js/answer-kit.js:1470 |
-| `metaItem` | frontend/js/answer-kit.js:1436 |
+| `messageMetaLine` | frontend/js/answer-kit.js:1472 |
+| `metaItem` | frontend/js/answer-kit.js:1438 |
 | `notePictures` | frontend/js/answer-kit.js:502 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2841 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2843 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:441 |
-| `paintNamedHead` | frontend/js/answer-kit.js:1809 |
-| `paintPersonaAvatar` | frontend/js/answer-kit.js:1797 |
+| `paintNamedHead` | frontend/js/answer-kit.js:1811 |
+| `paintPersonaAvatar` | frontend/js/answer-kit.js:1799 |
 | `placeAnswerFigures` | frontend/js/answer-kit.js:798 |
 | `placeResultBadge` | frontend/js/answer-kit.js:52 |
-| `planProposalCard` | frontend/js/answer-kit.js:1904 |
-| `planStepWrites` | frontend/js/answer-kit.js:1877 |
-| `progressLine` | frontend/js/answer-kit.js:1668 |
-| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1885 |
-| `reattachStreamingTurn` | frontend/js/answer-kit.js:2822 |
-| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2295 |
-| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2748 |
+| `planProposalCard` | frontend/js/answer-kit.js:1906 |
+| `planStepWrites` | frontend/js/answer-kit.js:1879 |
+| `progressLine` | frontend/js/answer-kit.js:1670 |
+| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1887 |
+| `reattachStreamingTurn` | frontend/js/answer-kit.js:2824 |
+| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2297 |
+| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2750 |
 | `renderAnswerGrounding` | frontend/js/answer-kit.js:549 |
 | `renderAnswerSupport` | frontend/js/answer-kit.js:476 |
 | `renderAskAnswerFoot` | frontend/js/answer-kit.js:896 |
 | `renderEvidenceView` | frontend/js/answer-kit.js:718 |
-| `renderFollowups` | frontend/js/answer-kit.js:2734 |
-| `renderToolConfirm` | frontend/js/answer-kit.js:2209 |
-| `restoreChatPosition` | frontend/js/answer-kit.js:1757 |
-| `rewriteAnswerWith` | frontend/js/answer-kit.js:1628 |
-| `savedPersona` | frontend/js/answer-kit.js:1793 |
+| `renderFollowups` | frontend/js/answer-kit.js:2736 |
+| `renderToolConfirm` | frontend/js/answer-kit.js:2211 |
+| `restoreChatPosition` | frontend/js/answer-kit.js:1759 |
+| `rewriteAnswerWith` | frontend/js/answer-kit.js:1630 |
+| `savedPersona` | frontend/js/answer-kit.js:1795 |
 | `scheduleCitationPeek` | frontend/js/answer-kit.js:378 |
 | `setAnsweredBy` | frontend/js/answer-kit.js:977 |
 | `showCitedPassage` | frontend/js/answer-kit.js:393 |
-| `sourceLines` | frontend/js/answer-kit.js:2321 |
-| `sourcesByFirstMention` | frontend/js/answer-kit.js:2456 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2836 |
+| `sourceLines` | frontend/js/answer-kit.js:2323 |
+| `sourcesByFirstMention` | frontend/js/answer-kit.js:2458 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2838 |
 | `streamChat` | frontend/js/answer-kit.js:1033 |
 | `streamChatEvents` | frontend/js/answer-kit.js:1077 |
-| `toolCardChips` | frontend/js/answer-kit.js:2007 |
-| `toolCardsRow` | frontend/js/answer-kit.js:2066 |
-| `toolChip` | frontend/js/answer-kit.js:2097 |
-| `toolPhaseVerb` | frontend/js/answer-kit.js:1661 |
-| `toolPreviewBody` | frontend/js/answer-kit.js:1950 |
-| `toolPreviewPanel` | frontend/js/answer-kit.js:1985 |
-| `toolTouchedRow` | frontend/js/answer-kit.js:2080 |
-| `userMarkEl` | frontend/js/answer-kit.js:1780 |
-| `verificationRow` | frontend/js/answer-kit.js:2897 |
-| `webPageContextBlock` | frontend/js/answer-kit.js:1636 |
+| `toolCardChips` | frontend/js/answer-kit.js:2009 |
+| `toolCardsRow` | frontend/js/answer-kit.js:2068 |
+| `toolChip` | frontend/js/answer-kit.js:2099 |
+| `toolPhaseVerb` | frontend/js/answer-kit.js:1663 |
+| `toolPreviewBody` | frontend/js/answer-kit.js:1952 |
+| `toolPreviewPanel` | frontend/js/answer-kit.js:1987 |
+| `toolTouchedRow` | frontend/js/answer-kit.js:2082 |
+| `userMarkEl` | frontend/js/answer-kit.js:1782 |
+| `verificationRow` | frontend/js/answer-kit.js:2899 |
+| `webPageContextBlock` | frontend/js/answer-kit.js:1638 |
 
 ### frontend/js/app-features.js (9)
 
@@ -2025,42 +2025,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawAskChart` | frontend/js/ask-chart.js:295 |
 | `renderAskChart` | frontend/js/ask-chart.js:279 |
 
-### frontend/js/ask-compose.js (33)
+### frontend/js/ask-compose.js (34)
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1479 |
+| `actItemList` | frontend/js/ask-compose.js:148 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1505 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
-| `askAnswerMenu` | frontend/js/ask-compose.js:660 |
-| `askAsOf` | frontend/js/ask-compose.js:1492 |
-| `askFromNotesFold` | frontend/js/ask-compose.js:884 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:692 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:714 |
-| `askKeptTitle` | frontend/js/ask-compose.js:687 |
-| `askPreAnswerCard` | frontend/js/ask-compose.js:874 |
-| `askQuestion` | frontend/js/ask-compose.js:928 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1417 |
-| `askStatusText` | frontend/js/ask-compose.js:1504 |
-| `citationVerdictRow` | frontend/js/ask-compose.js:631 |
-| `digestMore` | frontend/js/ask-compose.js:467 |
-| `digestOffer` | frontend/js/ask-compose.js:507 |
-| `digestShape` | frontend/js/ask-compose.js:427 |
-| `drawWhyTrail` | frontend/js/ask-compose.js:795 |
-| `fetchComposedPeek` | frontend/js/ask-compose.js:903 |
+| `askAnswerMenu` | frontend/js/ask-compose.js:686 |
+| `askAsOf` | frontend/js/ask-compose.js:1518 |
+| `askFromNotesFold` | frontend/js/ask-compose.js:910 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:718 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:740 |
+| `askKeptTitle` | frontend/js/ask-compose.js:713 |
+| `askPreAnswerCard` | frontend/js/ask-compose.js:900 |
+| `askQuestion` | frontend/js/ask-compose.js:954 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1443 |
+| `askStatusText` | frontend/js/ask-compose.js:1530 |
+| `citationVerdictRow` | frontend/js/ask-compose.js:657 |
+| `digestMore` | frontend/js/ask-compose.js:493 |
+| `digestOffer` | frontend/js/ask-compose.js:533 |
+| `digestShape` | frontend/js/ask-compose.js:453 |
+| `drawWhyTrail` | frontend/js/ask-compose.js:821 |
+| `fetchComposedPeek` | frontend/js/ask-compose.js:929 |
 | `markSaidSentences` | frontend/js/ask-compose.js:115 |
-| `readWebPage` | frontend/js/ask-compose.js:361 |
-| `renderActCard` | frontend/js/ask-compose.js:145 |
-| `renderAskBoth` | frontend/js/ask-compose.js:863 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:813 |
-| `renderAskHint` | frontend/js/ask-compose.js:1454 |
-| `renderAskInsights` | frontend/js/ask-compose.js:741 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1523 |
+| `readWebPage` | frontend/js/ask-compose.js:387 |
+| `renderActCard` | frontend/js/ask-compose.js:170 |
+| `renderAskBoth` | frontend/js/ask-compose.js:889 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:839 |
+| `renderAskHint` | frontend/js/ask-compose.js:1480 |
+| `renderAskInsights` | frontend/js/ask-compose.js:767 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1549 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
-| `renderAskWhy` | frontend/js/ask-compose.js:765 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1313 |
-| `renderWebSources` | frontend/js/ask-compose.js:285 |
-| `setAsking` | frontend/js/ask-compose.js:1513 |
+| `renderAskWhy` | frontend/js/ask-compose.js:791 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1339 |
+| `renderWebSources` | frontend/js/ask-compose.js:311 |
+| `setAsking` | frontend/js/ask-compose.js:1539 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -2832,32 +2833,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2530 |
-| `agentTimeline` | frontend/js/chat-turn.js:1339 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2424 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2677 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2299 |
+| `addBubble` | frontend/js/chat-turn.js:2543 |
+| `agentTimeline` | frontend/js/chat-turn.js:1352 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2437 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2690 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2312 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2202 |
-| `continueRunControls` | frontend/js/chat-turn.js:2935 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2877 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2980 |
-| `manualPauseControls` | frontend/js/chat-turn.js:3009 |
-| `markFollowup` | frontend/js/chat-turn.js:3035 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2251 |
-| `offerFollowups` | frontend/js/chat-turn.js:2137 |
-| `offerReminder` | frontend/js/chat-turn.js:2076 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2238 |
-| `removeChatBubble` | frontend/js/chat-turn.js:3059 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1864 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1948 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2833 |
-| `revalidateSelection` | frontend/js/chat-turn.js:2020 |
-| `saveFollowups` | frontend/js/chat-turn.js:2223 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2175 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2283 |
-| `startChatTimer` | frontend/js/chat-turn.js:2264 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2273 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2215 |
+| `continueRunControls` | frontend/js/chat-turn.js:2948 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2890 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2993 |
+| `manualPauseControls` | frontend/js/chat-turn.js:3022 |
+| `markFollowup` | frontend/js/chat-turn.js:3048 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2264 |
+| `offerFollowups` | frontend/js/chat-turn.js:2150 |
+| `offerReminder` | frontend/js/chat-turn.js:2089 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2251 |
+| `removeChatBubble` | frontend/js/chat-turn.js:3072 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1877 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1961 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2846 |
+| `revalidateSelection` | frontend/js/chat-turn.js:2033 |
+| `saveFollowups` | frontend/js/chat-turn.js:2236 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2188 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2296 |
+| `startChatTimer` | frontend/js/chat-turn.js:2277 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2286 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -13377,7 +13378,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/answer-foot-lazy.css | 161 |
 | frontend/css/appearance-panel-lazy.css | 333 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
-| frontend/css/ask-compose-lazy.css | 329 |
+| frontend/css/ask-compose-lazy.css | 335 |
 | frontend/css/atlas-lazy.css | 1228 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
@@ -18340,7 +18341,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_act_topic` | src/tessellate/ai/help_topics_more.py:2636 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2789 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2790 |
 
 ### src/tessellate/ai/help_words.py (6)
 
@@ -28498,7 +28499,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22890)
+## Tests (22894)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28761,6 +28762,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bubble_label_l729.py | 2 |
 | tests/test_buddy_grip_cursor_1107.py | 1 |
 | tests/test_budgets.py | 6 |
+| tests/test_bulk_act_card_chatplan61.py | 2 |
 | tests/test_calc_fit_1622.py | 5 |
 | tests/test_calc_panel_1102.py | 13 |
 | tests/test_calc_redesign_1584.py | 11 |
@@ -28987,6 +28989,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_x8_1112.py | 3 |
 | tests/test_complexity.py | 5 |
 | tests/test_complexity_ratchet.py | 1 |
+| tests/test_composed_draft_chatplan59.py | 2 |
 | tests/test_composer_1028.py | 24 |
 | tests/test_composer_1324.py | 19 |
 | tests/test_composer_688.py | 40 |
@@ -31831,14 +31834,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:674 |
+| Needs hardware | docs/roadmap/LEDGER.md:669 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:661 |
+| Owner calls | docs/roadmap/LEDGER.md:656 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32019,7 +32022,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:831 |
+| Plan session briefs | docs/roadmap/LEDGER.md:826 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32073,25 +32076,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:847 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:931 |
-| documents | docs/roadmap/LEDGER.md:246 |
-| documents | docs/roadmap/LEDGER.md:871 |
-| general | docs/roadmap/LEDGER.md:620 |
+| chat | docs/roadmap/LEDGER.md:842 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:926 |
+| documents | docs/roadmap/LEDGER.md:241 |
+| documents | docs/roadmap/LEDGER.md:866 |
+| general | docs/roadmap/LEDGER.md:615 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:835 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:943 |
+| graph | docs/roadmap/LEDGER.md:830 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:938 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:262 |
-| mindmap | docs/roadmap/LEDGER.md:883 |
-| timeline | docs/roadmap/LEDGER.md:382 |
-| timeline | docs/roadmap/LEDGER.md:907 |
-| ui-modernisation | docs/roadmap/LEDGER.md:265 |
-| ui-modernisation | docs/roadmap/LEDGER.md:895 |
-| whiteboard | docs/roadmap/LEDGER.md:200 |
-| whiteboard | docs/roadmap/LEDGER.md:859 |
-| world-class | docs/roadmap/LEDGER.md:384 |
-| world-class | docs/roadmap/LEDGER.md:919 |
+| mindmap | docs/roadmap/LEDGER.md:257 |
+| mindmap | docs/roadmap/LEDGER.md:878 |
+| timeline | docs/roadmap/LEDGER.md:377 |
+| timeline | docs/roadmap/LEDGER.md:902 |
+| ui-modernisation | docs/roadmap/LEDGER.md:260 |
+| ui-modernisation | docs/roadmap/LEDGER.md:890 |
+| whiteboard | docs/roadmap/LEDGER.md:195 |
+| whiteboard | docs/roadmap/LEDGER.md:854 |
+| world-class | docs/roadmap/LEDGER.md:379 |
+| world-class | docs/roadmap/LEDGER.md:914 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |
