@@ -76,43 +76,18 @@ def test_the_phrasings_name_nobody_and_carry_no_digits():
             assert 2 <= len(phrase.split()) <= 14 and "\n" not in phrase, (name, phrase)
 
 
-JOKE_ABOUT = "A joke about a named subject cannot be made with no model: the canned jokes are not about it, and the sentence falls through to a search of the notes for the subject."
-STRAY = (
-    "The notebook holds nothing on this (no leave balance, no meeting schedule); the answer offers the nearest note on a shared everyday word "
-    "('day', 'days', 'meeting'). A coverage gate on the nearest-note answer is open work."
+DATE = "The misspelt 'calender' lead-in with a trailing 'is' is no question the dates utility reads."
+MEETING_TODAY = (
+    "A meeting ask with no named thing is read as 'what is on today' and led by a verdict; the notebook's only meeting "
+    "note is quoted under 'No, not today'. Whether that quote is a stray note is the owner's call."
 )
-SHARED_WORD = "An out-of-scope question that shares an everyday word with a note ('ship', 'mean', 'event', 'flight') is answered with that note: the same coverage gate."
-ALARM = "The app's alarm is an ordinary reminder, but a question about alarms is not yet read as a question about reminders (tool ranking); open work."
-DATE = "A number spelt in words, and the misspelt 'calender' lead-in, are not read by the dates utility."
 BARE_EVENT = "A bare statement of an event has no verb to say what to do with it: it is neither a reminder nor a question."
 
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
 XFAIL = {
-    "tell me something funny about politics": JOKE_ABOUT,
-    "tell me a joke about cows": JOKE_ABOUT,
-    "tell me a joke about cats": JOKE_ABOUT,
-    "tell me something funny about cats": JOKE_ABOUT,
-    "who is the current captain of this ship": SHARED_WORD,
-    "what does it mean to be an alpha male": SHARED_WORD,
-    "how do i change my flight": SHARED_WORD,
-    "i want to book tickets for an event.": SHARED_WORD,
-    "what alarms do i have set.": ALARM,
-    "what day is it gonna be in twenty-one days": DATE,
     "calender says tomorrow is": DATE,
+    "do i have any meeting to go to today": MEETING_TODAY,
     "lunch with my friend at noon today": BARE_EVENT,
-    "when is the meeting with my boss scheduled for": STRAY,
-    "share my meeting schedule with me": STRAY,
-    "do i have any meeting to go to today": STRAY,
-    "how many vacation days do i have remaining, please": STRAY,
-    "how many vacation days have i accrued": STRAY,
-    "hoe many vacation days are left for me": STRAY,
-    "i have how many vacation days left this year": STRAY,
-    "what is my remaining pto days": STRAY,
-    "is my day off request approved": STRAY,
-    "has my vacation time been signed off on": STRAY,
-    "has my day off request been approved or denied yet": STRAY,
-    "any status update on my day off request": STRAY,
-    "has my day off request been looked at yet": STRAY,
 }
 
 

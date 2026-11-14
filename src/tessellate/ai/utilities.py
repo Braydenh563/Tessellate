@@ -477,8 +477,12 @@ def _heard(question: str) -> str:
     #: each of its words for a slip cost 0.5 s a pass (the route makes seven).
     if len(question.split()) > _UTILITY_MAX_WORDS:
         return question
-    from tessellate.ai import question_noise
+    from tessellate.ai import composer_numbers, question_noise
 
+    #: "in twenty-one days" is read as 21 (a number spelt in words, phrasing_1111).
+    counted = composer_numbers.normalise(question)
+    if counted != question and _kind_of(counted) is not None:
+        return counted
     fixed = question_noise.repair(question)
     if fixed != question and _kind_of(fixed) is not None:
         return fixed

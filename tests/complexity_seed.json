@@ -7,7 +7,7 @@
  "src/tessellate/ai/composer_body.py::_lead_block": 20,
  "src/tessellate/ai/composer_dialogue.py::Dialogue.record": 16,
  "src/tessellate/ai/composer_read.py::_read_note_fresh": 18,
- "src/tessellate/ai/composer_select.py::select": 24,
+ "src/tessellate/ai/composer_select.py::select": 18,
  "src/tessellate/ai/composer_voice.py::_patterns": 28,
  "src/tessellate/ai/composer_voice.py::one_line": 23,
  "src/tessellate/ai/composer_voice.py::suggested_searches": 19,

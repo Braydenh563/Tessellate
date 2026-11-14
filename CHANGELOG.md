@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: real phrasings pass 328 of 331 (99.1%, was 306, 92.4%): jokes about a subject, vacation and day-off questions, ship, flight and alarm questions no longer quote a stray note on one everyday word, and spelt-out day counts are read (L-chat-248, 2026-11-14).
 - Composer: a summary ask ("what is Harbor") whose lead sentence scores 1.5 times the rest quotes it alone, 12% of an 18-sentence note instead of 28% (L-chat-247, 2026-11-14).
 - Chat plan: the 146 lines the open-work scan read as open (comments, docstrings, locals, taxonomy data) are reworded by hand or moved to code with the same matching; `open_scan --plan chat` reads 0 (L-chat-243, 2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).

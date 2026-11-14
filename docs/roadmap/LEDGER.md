@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 71 | 132 | 2 | 59 | 203 |
+| chat | 0 | 72 | 132 | 2 | 59 | 204 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 445 | 201 | 2 | 183 | 1005 |
+| all | 359 | 446 | 201 | 2 | 183 | 1006 |
 
 ## graph
 
@@ -215,9 +215,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-239** `chat` open, S: Find rows as carried facts for Ask-mode search acts: carry rows as facts. From CHAT_PLAN.md:1880. Evidence: Recount 2026-11-14 (audit, verify in code first): not found (grep)
 - [ ] **L-chat-240** `chat` partly, S: Date and time wording in fact_check: design open; needs real-model evals. From CHAT_PLAN.md:1881. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/fact_check.py:555 _moments (nearest unit, year rule)
 - [ ] **L-chat-246** `chat` open, S: Atlas props contrast: measure the rendered props' contrast ratio in both themes and fix any under 3:1. From L148 split. Evidence: restitution built 2026-11-14; contrast not measured
-- [ ] **L-chat-247** `chat` open, M: Summary asks quote fewer sentences of one note (L219 remainder). From L219 split 2026-11-14. Evidence: Measured 2026-11-14 on an 18-sentence note: 'what is Harbor' quotes 28% of the note (3 sentences, one a background filler), 'tell me about Harbor' 23%. Acceptance: a summary ask quotes at most 2 sentences and at most 20% of a note of 18 sentences when one sentence scores 1.5 times the others; tests/test_composer_fact_quote_l219.py gains the summary case.
 - [ ] **L-chat-248** `chat` open, M: Composer phrasing pass share: measure, then raise by 10 points (L159 split). From L159 split 2026-11-14. Evidence: Measured 2026-11-14 before: tests/test_phrasing_real_1111.py 306 of 331 phrasings pass (92.4%), 25 strict xfails in 7 families; +10 points is above the 7.6-point ceiling. Acceptance: record the pass share of tests/test_phrasing_real_1111.py and the phrasing evals today in this row, widen the failing phrasings, and raise the share by 10 points with a test per widened family; no new phrasing without a failing test first.
 - [ ] **L-chat-249** `chat` open, M: Composer follow-ups keep the subject across two turns (L249 split). From L249 split 2026-11-14. Evidence: Acceptance: every case of tests/fixtures/composer/spoken_1010.json and the follow-up tests (test_composer_r9_follow_1109.py, test_spoken_followups.py) pass, and 10 new two-turn follow-ups (and the other one, who wrote it, what about last month) keep the subject; owner states what else 'smart chatbot' covers or the row closes at that measure.
+- [ ] **L-chat-250** `chat` open, M: Phrasing xfails left: misspelt calender lead-in, bare event statement, meeting-today quotes the Meeting note. From L-chat-248 remainder. Evidence: tests/test_phrasing_real_1111.py XFAIL: 'calender says tomorrow is', 'lunch with my friend at noon today', 'do i have any meeting to go to today' (3 of 331)
+- [ ] **L-chat-251** `chat` open, M: A window follow-up with no note in the window answers the overview instead of saying none. From L-chat-249 probe. Evidence: chain 'what did I write about running' then 'what about last month': follow_on reads 'running last month?' (composer_dialogue.py _follow_window) yet the answer is the 5 Sep to 8 Nov overview; asked alone it says nothing last month
 
 ## whiteboard
 

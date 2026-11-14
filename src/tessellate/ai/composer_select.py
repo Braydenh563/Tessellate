@@ -77,6 +77,25 @@ NOTE_COVERAGE = 0.5
 FILED_WEIGHT = 0.5
 
 
+#: Everyday words a question shares with a note by chance ("vacation days left" and a note on "Water
+#: every second day"). When they are the only words of a question any note holds, the notes do not
+#: cover it and nothing is quoted (L-chat-248: PTO, meeting and ship questions quoted a stray note).
+EVERYDAY = frozenset(
+    "day days meeting meetings ship mean flight event set sets book ticket schedule left year time vacation holiday off sign signed".split()
+)
+
+
+@functools.cache
+def _everyday_stems() -> frozenset[str]:
+    return frozenset(_stem(w) for w in EVERYDAY)
+
+
+def _only_everyday(stems: set[str], views: list[NoteView]) -> bool:
+    """A question of two words or more whose only words any note holds are everyday ones."""
+    held = {t for t in stems if any(_holds(t, v.words | v.title_words | v.filed_words) for v in views)}
+    return len(stems) >= 2 and len(held) < len(stems) and held <= _everyday_stems()
+
+
 #: Two sentences sharing this share of their words say the same thing; the
 #: second is dropped. Token Jaccard, because it needs no model.
 NEAR_DUPLICATE = 0.6
@@ -296,6 +315,22 @@ def _jaccard(a: list[str], b: list[str]) -> float:
     return len(sa & sb) / len(sa | sb) if sa and sb else 0.0
 
 
+def _covering(stems: set[str], views: list[NoteView]) -> list[NoteView]:
+    """The notes that hold more than `NOTE_COVERAGE` of the question's words; every note when none does
+    (a question the notes only half answer), none when the only words held are everyday ones."""
+    if len(stems) < 2:
+        return views
+    if _only_everyday(stems, views):
+        return []
+    covering = [
+        v for v in views
+        if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
+    ]
+    #: None covering is a question the notes only half answer: every note
+    #: stays in, and the closing line says which words none of them hold.
+    return covering or views
+
+
 def select(
     shape: str,
     terms: list[str],
@@ -314,14 +349,7 @@ def select(
     notes say it. `said` is an earlier answer's text ("tell me more"): a
     sentence it already quoted is left for something new."""
     stems = {_stem(t) for t in terms}
-    if len(stems) >= 2:
-        covering = [
-            v for v in views
-            if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
-        ]
-        #: None covering is a question the notes only half answer: every note
-        #: stays in, and the closing line says which words none of them hold.
-        views = covering or views
+    views = _covering(stems, views)
     scored = sorted(_score(shape, terms, views), key=lambda s: (-s.score, s.rank, s.order))
     if said:
         scored = [s for s in scored if not _was_said(s, said)]
