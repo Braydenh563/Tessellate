@@ -233,6 +233,13 @@
   }
 
   //: After each board render: the page frames follow content that has grown past the last page.
-  wbFmtState.opts = { sync, afterRender: () => drawPages(wbBoardBackground()), show, read, ticks, drawRulers };
+  //: The unit and the page view's key are this board's (L-whiteboard-67): `view()` reads them, `view(v)` sets them and returns the old pair,
+  //: which `wbInstances` swaps with the rest of a board's state.
+  function view(next = null) {
+    const was = { unit, pagesKey };
+    if (next) ({ unit, pagesKey } = next);
+    return was;
+  }
+  wbFmtState.opts = { sync, view, afterRender: () => drawPages(wbBoardBackground()), show, read, ticks, drawRulers };
   onSurface("board", wire);
 })();

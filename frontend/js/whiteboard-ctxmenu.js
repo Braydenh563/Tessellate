@@ -882,5 +882,5 @@
   }
 
   //: The file's surface: what other files call (L286).
-  Object.assign(window, { wbKeepMenuBesideBar, wbCloseContextMenu, wbMenuAnchorOk, wbMapNodeScreenBox, wbOpenMapNodeMenu, wbIsEditingTarget, wbWireContextMenu });
+  Object.assign(window, { wbKeepMenuBesideBar, wbCloseContextMenu, wbMenuAnchorOk, wbMapNodeScreenBox, wbOpenMapNodeMenu, wbIsEditingTarget, wbWireContextMenu, wbOpenContextMenuFor });
 })();

@@ -77,6 +77,7 @@
     inst.mapState = window.wbMapState ?? null;
     inst.historyBoard = wbStacks.historyBoard;
     inst.tool = window.currentTool;
+    inst.optsView = wbFmtState.opts?.view();
   }
 
   function restoreGlobals(inst) {
@@ -92,6 +93,8 @@
     window.wbMapState = inst.mapState;
     wbStacks.historyBoard = inst.historyBoard;
     window.currentTool = inst.tool;
+    //: A board never shown starts on pixels and no page frames (L-whiteboard-67).
+    wbFmtState.opts?.view(inst.optsView || { unit: "px", pagesKey: "" });
   }
 
   //: The same caches openWhiteboardBoard drops on a board switch: each answers

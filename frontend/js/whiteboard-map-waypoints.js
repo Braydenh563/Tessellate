@@ -213,13 +213,13 @@
     hit.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      wbOpenMapLinkRadial(childId, event.clientX, event.clientY);
+      wbOpenMapLinkOrMenu(childId, event.clientX, event.clientY);
     });
     //: Touch has no right-click, so a hold stands in: `wireLongPress` (navigation.js),
     //: which is the same 500ms and the same cancel-on-move this used to write
     //: for itself, plus the one thing the hand-rolled version could not do,
     //: swallowing the click the lift synthesises.
-    wireLongPress(hit, (event, point) => wbOpenMapLinkRadial(childId, point.x, point.y));
+    wireLongPress(hit, (event, point) => wbOpenMapLinkOrMenu(childId, point.x, point.y));
     //: **Double-click a line to say what it means** (the conventions pass:
     //: Miro, tldraw and XMind all label a connector this way). The label
     //: itself already answered a double-click; a line with no label yet had
@@ -232,6 +232,11 @@
       event.stopPropagation();
       wbMapLabelEdge(childId);
     });
+  }
+
+  //: The ring where the page board has one; an embed's line has none (L-whiteboard-68), so it gets the topic's plain menu.
+  function wbOpenMapLinkOrMenu(childId, clientX, clientY) {
+    if (wbOpenMapLinkRadial(childId, clientX, clientY) === false) wbOpenContextMenuFor("node", childId, clientX, clientY);
   }
 
   function wbOpenMapLinkRadial(childId, clientX, clientY) {

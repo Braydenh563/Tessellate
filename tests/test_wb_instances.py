@@ -97,6 +97,7 @@ const wbMultiSelection = new Set(["object:10", "node:1"]);
 let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
 let wbRedoStack = [];
 let wbHistoryBoard = null;
+const wbFmtState = { opts: null };
 window.currentBoardId = 1;
 //: whiteboard-undo.js keeps the stacks as its own lets behind `wbStacks` (L-whiteboard-52); the stand-in reads these lets the same way.
 window.wbStacks = {
@@ -1077,3 +1078,84 @@ process.exit(0);
     assert out["b"] == {"reloads": [], "pageStale": True}
     assert out["c"] == {"reloads": [1], "pageStale": False, "scheduled": 1}
     assert out["d"] == [1, 1]
+
+
+def test_the_board_options_view_is_kept_per_instance():
+    """L-whiteboard-67: the unit the fields and rulers show and the page view's key are the
+    options file's own state; they swap with the board, so an embed's units and page frames
+    never change the page board's."""
+    opts = (JS / "whiteboard-options.js").read_text(encoding="utf-8")
+    stubs = r"""
+const window = globalThis;
+const document = { getElementById: () => null, querySelectorAll: () => [], createElementNS: () => ({}) };
+const wbFmtState = {};
+const onSurface = () => {};
+const wbInstances = { page: {}, active: null };
+"""
+    body = r"""
+const o = wbFmtState.opts;
+const first = o.view();
+const was = o.view({ unit: "mm", pagesKey: "k" });
+const mm = o.view();
+const shown = o.show(96);
+o.view(first);
+process.stdout.write(JSON.stringify({ first, was, mm, shown, after: o.show(96), back: o.view() }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + opts + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    out = json.loads(got.stdout)
+    base = {"unit": "px", "pagesKey": ""}
+    assert out == {"first": base, "was": base, "mm": {"unit": "mm", "pagesKey": "k"}, "shown": "25.4", "after": "96", "back": base}
+    #: The instances swap it with the other globals; a board never shown starts on pixels.
+    out2 = _run("""
+const calls = [];
+let live = { unit: "cm", pagesKey: "page" };
+wbFmtState.opts = { view: (next) => { const was = live; if (next) live = next; calls.push(next ? ["set", next.unit] : ["get"]); return was; } };
+const B = I.mount(node("embed"), 7);
+I.activate(B);
+out.inEmbed = live;
+live = { unit: "mm", pagesKey: "emb" };
+I.activate(I.page);
+out.onPage = live;
+I.activate(B);
+out.backInEmbed = live;
+""")
+    assert out2["inEmbed"] == {"unit": "px", "pagesKey": ""}
+    assert out2["onPage"] == {"unit": "cm", "pagesKey": "page"}
+    assert out2["backInEmbed"] == {"unit": "mm", "pagesKey": "emb"}
+
+
+def test_a_map_line_in_an_embed_gets_the_plain_menu():
+    """L-whiteboard-68: a line's right-click and hold ask the ring first; where the ring opens
+    nothing (an embed) they fall back to the node's plain menu, as a topic's already does."""
+    text = (JS / "whiteboard-map-waypoints.js").read_text(encoding="utf-8")
+    fn = text[text.index("function wbWireMapEdgeGestures"):text.index("function wbOpenMapLinkRadial")]
+    stubs = r"""
+const asked = [];
+let ringTakes = true;
+const wbOpenMapLinkRadial = () => (ringTakes ? undefined : false);
+const wbOpenContextMenuFor = (...a) => asked.push(a);
+const wbMapLabelEdge = () => {};
+let hold = null;
+const wireLongPress = (el, fn) => { hold = fn; };
+const handlers = {};
+const hit = { addEventListener: (t, f) => { handlers[t] = f; } };
+const ev = { preventDefault() {}, stopPropagation() {}, clientX: 5, clientY: 6 };
+"""
+    body = r"""
+wbWireMapEdgeGestures(hit, 42);
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+const onPage = asked.length;
+ringTakes = false;
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+process.stdout.write(JSON.stringify({ onPage, asked }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + fn + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    assert json.loads(got.stdout) == {"onPage": 0, "asked": [["node", 42, 5, 6], ["node", 42, 7, 8]]}

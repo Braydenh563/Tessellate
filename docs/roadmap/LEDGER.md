@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 4 | 0 | 0 | 0 | 4 |
+| whiteboard | 0 | 2 | 0 | 0 | 0 | 2 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 531 | 125 | 2 | 172 | 1128 |
+| all | 472 | 529 | 125 | 2 | 172 | 1126 |
 
 ## graph
 
@@ -280,8 +280,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
-- [ ] **L-whiteboard-67** `whiteboard` open, S: Keep the board options' unit and page-view key per board instance. From L-whiteboard-60 to 62 agent report, 2026-11-14. Evidence: whiteboard-options.js:15 let unit and :143 pagesKey are module state; sync() and drawPages run for whichever board is live
-- [ ] **L-whiteboard-68** `whiteboard` open, S: Give a map line's right-click in an embed the plain menu. From L-whiteboard-60 to 62 agent report, 2026-11-14. Evidence: whiteboard-map-waypoints.js wbOpenMapLinkRadial returns false in an embed and its contextmenu prevents the native menu, so nothing opens
 - [ ] **L-whiteboard-69** `whiteboard` open, S: Drive an embed made with the board tab never opened and check initWhiteboard leaves the page chrome alone. From L-whiteboard-59 to 66 agent report, 2026-11-14. Evidence: whiteboard-instances.js createEmbed awaits window.initWhiteboard(), which runs surfaceBuild('board') and binds the page container; never driven from a document with the board tab closed
 - [ ] **L-whiteboard-70** `whiteboard` open, S: Persist an embed's undo history under its own key so it survives a reload. From L-whiteboard-66 agent report, 2026-11-14. Evidence: whiteboard.js wbUpdateUndoRedoButtons persists only for the page instance; an embed's undo history lasts the session
 

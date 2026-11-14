@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Boards: the rulers and the map rings are the page board's only: an embed's pan no longer moves the page's rulers, and in an embed a topic's right-click opens the plain menu instead of a ring placed in the hidden board view (L-whiteboard-60).
+- Boards: right-clicking or holding a map line in an embed opens the topic's plain menu instead of nothing (L-whiteboard-68).
+- Boards: the unit the fields and rulers show and the page view's frames are kept per board, so an embed's units no longer change the page board's (L-whiteboard-67).
 - Boards: each board instance keeps its own tool, so a tool picked in an embedded board leaves the page board's tool, toolbar mark and cursor as they were; a swap repaints the toolbar without dropping a stroke (L-whiteboard-61).
 - Boards: window and document board listeners act on the board the event happened on: one window capture router makes the embed or the page board live before any of them runs, and a swap drops the cached canvas box (L-whiteboard-62).
 - Boards: a failed multi-row save on a board that is no longer live reloads that board (an embed at once, the page board when it is next live) instead of skipping the reload (L-whiteboard-65).
