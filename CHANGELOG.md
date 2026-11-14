@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Run takes top-level await in a .js document (L-documents-108): a script that parses only as an async body runs as one, opened on its own first line, so rows keep the document's lines; a plain script keeps its globals for the console.
 - Stop reaches the model when the stream is dropped between lines, not only mid-step: `stop_when_gone` closes the source in its `finally` (Starlette 1.10 never acloses a dropped body); two tests, one per way out.
 - CI leg 1: the sub-page loop refusal is a fixed sentence at its raise; the crumb hover has its focus twin; a board window's kind class is its own literal; the shape caret's touch rule joins the board grips' coarse block; two removed sweeps leave gate.sh; the marquee lint reads the wrapped whiteboard-bar.js.
 - CodeQL: the whiteboard fixes come in as whiteboard's 93cb96da (one forward scan for PlantUML comments, the GraphML size fallback named, `__all__` re-exports, CSS through `Path`); the draft-stop test passes the manager class, not a lambda (alert 2314).

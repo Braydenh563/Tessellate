@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8947, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2848, tests 22911, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8947, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2849, tests 22913, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
 ## Frontend functions (8947)
 
@@ -29034,7 +29034,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22911)
+## Tests (22913)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31248,6 +31248,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_sandbox.py | 18 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
+| tests/test_run_top_level_await.py | 2 |
 | tests/test_running_copies_1641.py | 26 |
 | tests/test_sample_notebook.py | 3 |
 | tests/test_sampling.py | 17 |

@@ -1846,7 +1846,7 @@ TOPIC_META: dict[str, dict] = {
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
-        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
+        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays. A script with top-level await runs as one async body, so the console sees only what it put on self.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
     "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
