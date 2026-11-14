@@ -132,7 +132,7 @@ class _Answer:
         usable = fresh or usable
         session = _SESSION.get()
         digest = hashlib.sha1(f"voice:{lead}:{self.question.strip().lower()}{':' + session if session else ''}".encode()).digest()
-        return mine[usable[digest[0] % len(usable)]]
+        return mine[usable[(digest[0] + _RETRY.get()) % len(usable)]]
 
     def t(self, *names: str) -> _Answer:
         for name in names:
@@ -392,6 +392,9 @@ def _count_word(n: int) -> str:
 #: openers and joins are chosen again; empty outside a conversation, where the
 #: same question gets the same words every time.
 _SESSION: contextvars.ContextVar[str] = contextvars.ContextVar("composer_session", default="")
+#: Ask again's count (`compose(retry=)`): added to every wording pick, so the nth regeneration of one question
+#: is the nth variant on from the first rather than another throw of the same hash (L-chat-191). 0 changes nothing.
+_RETRY: contextvars.ContextVar[int] = contextvars.ContextVar("composer_retry", default=0)
 
 
 def figures_of(text: str) -> frozenset:

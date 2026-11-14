@@ -238,6 +238,9 @@ def _help_one(w: str, h: str) -> bool:
     return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
 
 
+_TURNING = frozenset({"turn", "switch", "enable", "disable", "activate", "toggle"})
+
+
 def _help_shared(line: str, ask: dict) -> float:
     """How much of the question a sentence says: a word each, a weak or topic
     word less, a verb of the same doing ("make" for "set") half a word (INBOX
@@ -246,7 +249,10 @@ def _help_shared(line: str, ask: dict) -> float:
     name) half a word more."""
     wanted, named = ask["wanted"], ask["named"]
     have = _help_have(line, ask["doing"])
-    hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(_help_one(w, h) for h in have))
+    #: A bare "turn on" or "switch" is the doing, not what is done: it earns a quarter, so "how do I turn on dark mode" is the sentence
+    #: that says dark, not the one that says "turns off" (L-chat-182).
+    light = _HELP_WEAK | (_TURNING & ask["doing"])
+    hits = sum(0.25 if w in light else 0.5 if w in named else 1 for w in wanted if any(_help_one(w, h) for h in have))
     kin = sum(1 for w in wanted if not any(_help_one(w, h) for h in have) and any(_help_one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
     said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
     return hits + 0.5 * kin + 0.5 * sum(1 for p in ask["pairs"] if f" {p} " in said)

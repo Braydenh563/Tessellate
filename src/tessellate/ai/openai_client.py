@@ -680,6 +680,7 @@ class OpenAICompatClient(Provider):
             "total_ms": round((time.monotonic() - started) * 1000),
             "eval_ms": None,
             "context_tokens": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             "usage_source": "real" if measured else "estimated",
         }
 

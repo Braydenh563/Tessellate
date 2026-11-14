@@ -622,28 +622,6 @@ function clearWebSearchHistory() {
   ensureModule("searchSuggest").then(() => clearRecentSearches("web"));
 }
 
-// "Ask about this" used to drop `About <url>, ` into the chat box and stop
-// there. The model cannot open a URL, so it answered from the address text,
-// which is why this read as simply not working (user-reported). It now closes
-// the web panel, writes a question naming the page, and lets the agent's
-// read_url tool fetch it. The tool needs web search on, so that is checked
-// first and offered rather than failing silently.
-async function askAboutPage(url, title) {
-  if (!(prefsCache && prefsCache.web_search_enabled)) {
-    toast("Turn on Web search first, reading a page needs it.", "info");
-    return;
-  }
-  // Reading a page is a tool call, so agent mode has to be on for this turn.
-  const input = $("chat-input");
-  const label = (title || "").trim() || url;
-  input.value = `Read ${url} and tell me about it, "${label}".`;
-  toggleWebPanel(false);
-  input.focus();
-  // Sent with tools forced on, whatever the toggle says: the request is
-  // meaningless without the one tool that can fetch the page.
-  await sendChatMessage(undefined, { useTools: true });
-}
-
 //: The reader itself is in web-clip.js (lazy; the boot gzip ratchet).
 function openWebReader(url) {
   $("web-status").textContent = "Opening…";

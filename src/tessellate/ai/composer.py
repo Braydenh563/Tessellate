@@ -84,13 +84,13 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, help_surface, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
 from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
-from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
+from tessellate.ai.composer_answer import _Answer, asks_now, _RETRY, _SESSION
 from tessellate.ai.composer_unfound import _missing
 from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compare, _confirmed_lead, _disagreement, _disagreements, _insight_close, _insight_lead, _newest, _still_open, _until_note, _versus_answer, length_wish, _LEARNED
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
@@ -320,6 +320,8 @@ def compose(
         if helped:
             return helped
         voice = composer_tables.DEFAULT_VOICE
+    if help_surface.asks_about_a_part(question, notes) and (helped := _help_result(question, salt=salt, turn=turn, dialogue=dialogue, previous=previous)):
+        return helped
     #: In a conversation (decisions 34, 35): turn and salt choose the wording; a terse turn is read against the ones before.
     names = composer_names.names_of(notes)
     asked, question = question, composer_small.only_list_question(composer_names.respell(composer_numbers.normalise(question), names), notes)
@@ -328,6 +330,7 @@ def compose(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
         )
     token = _SESSION.set(f"{salt}:{turn}" if (salt or turn) else "")
+    again = _RETRY.set(retry)
     registered = _REGISTER.set(register)
     #: `learned`: what the person said of insights (`insights.memory`).
     known = _LEARNED.set(learned)
@@ -344,6 +347,7 @@ def compose(
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
     finally:
         _SESSION.reset(token)
+        _RETRY.reset(again)
         _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)

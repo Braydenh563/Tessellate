@@ -762,6 +762,8 @@ class OllamaClient(Provider):
             "total_ms": _ns_to_ms(payload.get("total_duration")),
             "eval_ms": _ns_to_ms(payload.get("eval_duration")),
             "context_tokens": self.usable_context(model),
+            #: Why the window is that size, for the token pill's popover (L-chat-179).
+            "context_reason": self.context_explanation(model),
             # Ollama counts tokens itself, so these are measured rather than
             # guessed. The OpenAI path cannot always say the same, and the UI
             # marks an estimate as one.
