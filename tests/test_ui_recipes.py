@@ -2358,7 +2358,7 @@ def test_a_selection_bubble_returns_on_one_right_click_helper():
 # summary from their own surroundings. Frozen, like the hand-built menus
 # above: a folded group of settings is `details.settings-fold`, and a new
 # unnamed one is a second disclosure shape nobody styled.
-BARE_DISCLOSURES = 14
+BARE_DISCLOSURES = 0
 
 # The families 08-consistency.css dresses as "a heading with a chevron" rather
 # than as a control in a row. Every one of its four disclosure rules has to
@@ -8014,3 +8014,65 @@ def test_every_canvas_has_one_zoom_order():
     assert "event.ctrlKey || event.metaKey" in keys
     assert all(code in keys for code in ("Equal:", "Minus:", "Digit0:"))
     assert 'strip.setAttribute("aria-orientation", "horizontal")' in graph_js
+
+
+# --- the Help accordion is one named family (LEDGER L-world-class-114) ---------------
+
+#: The thirteen groups of Settings, Help, in order. Each is one `h3` and one
+#: `.help-accordion` that `renderHelpTopics` draws from `GET /help/topics`; a
+#: topic is a `details[data-topic]` in it. A fourteenth group, or a rename, is
+#: a decision for the Guide's table (`HELP_GROUPS`) and this list together.
+HELP_ACCORDIONS = (
+    "Getting started",
+    "Writing notes",
+    "Filing, tags and categories",
+    "Asking Atlas",
+    "Documents and code",
+    "Boards and maps",
+    "Library and files",
+    "Graph, Timeline, Reminders and Dashboard",
+    "Small tools",
+    "Look and feel",
+    "Models and the AI",
+    "Privacy and your data",
+    "Settings and support",
+)
+
+#: Topics whose own title does not bring the Guide's chat to them (the Guide ranks by
+#: keywords, and these titles are phrased for a reader of the list, not an asker).
+#: May only fall: LEDGER L-world-class-420 gives each its keywords.
+GUIDE_MISSES_BY_TITLE = 51
+
+
+def test_the_help_accordion_is_thirteen_named_groups_drawn_by_one_builder() -> None:
+    from tessellate.ai.help_topics_more import HELP_GROUPS
+
+    assert tuple(title for title, _ in HELP_GROUPS) == HELP_ACCORDIONS
+    js = frontend_text("settings-find.js")
+    draw = js[js.index("function renderHelpTopics()") :][:1800]
+    assert 'list.className = "help-accordion"' in draw and "list.dataset.helpGroup = group.title" in draw
+    assert 'document.createElement("h3")' in draw, "a group head is an h3 above its accordion"
+    row = js[js.index("function helpTopicRow(") :][:600]
+    assert "details.dataset.topic = topic.id" in row
+    raw = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    markup = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
+    assert 'id="help-topics"' in markup
+    pane = markup[markup.index('id="help-topics"') : markup.index('id="help-empty"')]
+    assert "<details" not in pane, "a help topic is drawn from the table, never written into index.html"
+
+
+def test_every_accordion_id_is_a_guide_topic_and_the_guide_finds_most_by_title() -> None:
+    from tessellate.ai import help_chat
+    from tessellate.ai.help_topics_more import HELP_GROUPS
+
+    guide = {topic["id"] for topic in help_chat.HELP_TOPICS}
+    listed = [topic_id for _, ids in HELP_GROUPS for topic_id in ids]
+    assert sorted(listed) == sorted(guide), "an accordion row with no Guide topic, or a topic with no row"
+    served = [t["id"] for g in help_chat.help_listing()["groups"] for t in g["topics"]]
+    assert sorted(served) == sorted(guide), "help_listing dropped a topic the Guide has"
+    misses = [
+        topic["id"]
+        for topic in help_chat.HELP_TOPICS
+        if topic["id"] not in [t["id"] for t in help_chat.topics_for(help_chat.topic_title(topic))][: help_chat.MAX_TOPICS]
+    ]
+    assert len(misses) <= GUIDE_MISSES_BY_TITLE, f"{len(misses)} topics the Guide cannot find by their own title: {misses[:12]}"
