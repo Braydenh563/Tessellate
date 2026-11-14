@@ -175,8 +175,20 @@ async function steadyShot(page, file, clip) {
       //: the pose between a frame being set and shot: a third of a look's idle frames came out as a
       //: half-hidden sit (INBOX 1670: the "blinking" at 8 a second). Anything but the frame's pose is put back at once.
       window.__want = "stand";
+      //: And its eyes (L-ui-modernisation-151): the pointer's aim and the saccades write the eyes' and head's offsets at any
+      //: moment (one capture of a hang had the irises 0.9 px right of the other's). Both stop here; each frame clears them.
+      if (typeof nameMarkBuddyAim === "function") nameMarkBuddyAim.set = () => {};
+      if (typeof atlasBlink === "function" && atlasBlink.saccade) atlasBlink.saccade.step = () => false;
+      //: The figure's own Web Animations (no CSS name: the micro expressions, the props' loops, a tail's settle) froze at any
+      //: moment (the body 0.19 px over in one capture): each is cancelled at the freeze, and no micro expression starts.
+      window.atlasMicroPlay = () => {};
+      window.atlasMicroMay = () => false;
+      window.__ownWaapi = (a) => !a.animationName && !a.transitionProperty && !!a.effect?.target?.closest?.("#nm-buddy");
       //: And its face: a page expression (hearts, a blush) came and went over four idle frames in a row.
       if (typeof setAtlasMood === "function") { setAtlasMood("calm", 0); window.setAtlasMood = () => {}; }
+      //: Every other way in too (L-ui-modernisation-151: one feminine run went sleepy part-way, its whole set another pose):
+      //: a mood written to the figure is written as calm, and each frame writes calm again.
+      if (typeof atlasApply === "function") { const apply = atlasApply; window.__calm = () => { for (const svg of clone.querySelectorAll(".nm-atlas")) apply(svg, "calm"); }; window.atlasApply = (svg) => apply(svg, "calm"); window.__calm(); }
       //: The lower body, wisps, tail, hair and nebula take their pose's own arrangement, the same every run (L-ui-modernisation-57,
       //: UI_MODERNISATION_PLAN.md decision 7): the rig runs its still path (reduced motion's: the state's first authored row, no
       //: drift path). Live it picked a variant at random per capture and froze its drift at any moment (3,900 to 7,800 px apart
@@ -194,7 +206,11 @@ async function steadyShot(page, file, clip) {
       new MutationObserver(() => {
         for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n) && !(n === "data-side" && window.__keepSide)) clone.removeAttribute(n);
         if (clone.dataset.pose !== window.__want) clone.dataset.pose = window.__want;
-      }).observe(clone, { attributes: true, attributeFilter: ["data-pose", "data-perch", "data-legs", "data-side"] });
+        if (clone.dataset.atlasVariant !== "0") clone.dataset.atlasVariant = "0";
+      }).observe(clone, { attributes: true, attributeFilter: ["data-pose", "data-perch", "data-legs", "data-side", "data-atlas-variant"] });
+      //: The arms' hold for the mood (`data-atlas-variant`, one of three picked at random as a mood begins) is the first, every
+      //: run (L-ui-modernisation-151: two captures of stand had the right arm at 16 and 52 deg).
+      clone.dataset.atlasVariant = "0";
       return { look: atlasLook(), rect: JSON.stringify(clone.getBoundingClientRect()) };
     }, BOX);
     report[look] = got;
@@ -209,6 +225,7 @@ async function steadyShot(page, file, clip) {
         //: The page's blink clock closes the eyes at any moment, and the freeze below then holds that blink:
         //: a masculine `stand` shipped with shut eyes (INBOX 1696). No blink in any frame but the engine's own lids.
         if (typeof atlasState !== "undefined") { clearTimeout(atlasState.blinkTimer); atlasState.blinkTimer = 0; }
+        for (const el of [b, ...b.querySelectorAll("*")]) for (const k of ["--nmb-ex", "--nmb-ey", "--nmb-hx"]) el.style.removeProperty(k);
         for (const el of b.querySelectorAll(".atl-blinking, .atl-blinking-slow")) el.classList.remove("atl-blinking", "atl-blinking-slow");
         for (const el of b.querySelectorAll(".nm-buddy-char, .atl-lw-tail, .atl-lw-lower, .nm-atlas.atl-layer-lower")) { el.style.removeProperty("transform"); el.style.removeProperty("transform-origin"); }
         //: The page's own timers write `style.transform` (a plain write replaces the important
@@ -223,6 +240,14 @@ async function steadyShot(page, file, clip) {
         //: Extra `data-` attributes the pose reads (the lean's side, a drift's variant).
         for (const [k, v] of Object.entries(frame.data || {})) b.dataset[k] = v;
         b.dataset.feel = "calm";
+        if (window.__calm) window.__calm();
+        //: An ear's flick before the capture began (atlas-micro.js) left its pivot moved for good (`fill-box`, 50% 90%), so a
+        //: sleeping frame's ear turned about another point (35 to 47 px apart): each ear is put back on its drawn pivot.
+        if (typeof ATLAS_GEO !== "undefined") for (const ear of b.querySelectorAll(".atl-ear")) {
+          const [x, y] = ATLAS_GEO.ear[ear.classList.contains("atl-ear-l") ? 0 : 1];
+          ear.style.removeProperty("transform-box");
+          ear.style.transformOrigin = `${x}px ${y}px`;
+        }
       }, f);
       await page.waitForTimeout(60);
       //: The arms are eased toward their pose by the page's own loop, so the frame after a
@@ -239,6 +264,7 @@ async function steadyShot(page, file, clip) {
           //: the torso at the old value: white blank eyes and a missing body.
           //: A transition is finished instead, so the frame shows where it went.
           if (a.transitionProperty) { a.finish(); continue; }
+          if (window.__ownWaapi(a)) { a.cancel(); continue; }
           a.pause();
           if (a.animationName && /neb|wisp|glint/.test(a.animationName)) { a.currentTime = 0; continue; } // the same moment in every frame and in the stream pass
           //: The rig's own sways (`atl-lw-sway-*`, `atl-sway-body`) sit at one moment in every frame: `at` is the
@@ -246,8 +272,12 @@ async function steadyShot(page, file, clip) {
           //: out with a lower body 5 to 7 px apart (INBOX 1696 w, "framey"); stand's ran on at its live time.
           //: A sway is held at the middle of its swing (no lean), so the walk frames' own swing (inline) is the only one.
           if (a.animationName && /^atl-(lw-)?sway/.test(a.animationName)) {
-            a.effect.updateTiming({ delay: 0 });
-            a.currentTime = (a.effect.getComputedTiming().duration || 0) * 0.5;
+            //: Half a swing from where its own (negative) delay starts it, the delay left alone: two captures had the lower
+            //: body at 0 and 2.6 deg at one held time, the rewritten delay kept in one and back at -3.2 s in the other (row 151).
+            const t = a.effect.getComputedTiming();
+            let at = 0.5 * (t.duration || 0) + (t.delay || 0);
+            while (at < 0) at += t.duration || 1;
+            a.currentTime = at;
             continue;
           }
           if (a.animationName && !/^nmb-/.test(a.animationName)) { a.currentTime = 0; continue; }
@@ -273,31 +303,34 @@ async function steadyShot(page, file, clip) {
         {
           const w = (frame.idle || 0) * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
-          if (!box && frame.idle !== undefined) throw new Error("no live tail to sample");
-          //: atlas-life.js is an IIFE now (its tail drawing is no longer a global): without it the tail is left as the page has it, and the idle frames cannot be re-sampled.
-          if (box && typeof atlasTailDraw === "function") {
-          const tail = box.atlasTail;
-          //: Stop the live loop and the compositor sway so nothing redraws over the sample.
-          clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;
-          if (tail.sway) { tail.sway.cancel(); tail.sway = null; }
-          tail.svg.style.removeProperty("transform");
-          //: The page's own loop redraws the tail between the sample and the shot (INBOX 1683 e: four of the
-          //: 24 idle frames carried a tail from another moment, a seam of 5x an ordinary step at the wrap): its
-          //: draws are dropped while a frame is held, only this one's pass through.
-          const draw = window.__tailDraw || (window.__tailDraw = atlasTailDraw);
-          window.atlasTailDraw = (t, ...a) => (t === tail && window.__tailSample ? draw(t, ...a) : undefined);
-          window.__tailSample = false;
-          const p = Object.fromEntries(Object.entries(ATLAS_TAIL_ACTS.sway).map(([k, v]) => [k, v]));
-          window.__tailSample = true;
-          draw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
-          window.__tailSample = false;
-          { // the breath and the lower wisp too: stand sat 5 px below idle with only the tail pinned
+          //: atlas-life.js keeps its tail drawing in its closure: the figure's own hook draws the sample and holds the loop
+          //: (L-ui-modernisation-151). The page's loop otherwise redrew the tail between the sample and the shot (INBOX 1683 e),
+          //: and with the old window binding gone the idle cycle went unsampled (24 copies of the stand, run to run noise apart).
+          if (!box || typeof atlasTailFrame !== "function" || !atlasTailFrame.hold) throw new Error("no tail hold to sample");
+          box.atlasTail.svg.style.removeProperty("transform");
+          const swell = atlasTailFrame.hold(box.atlasTail, w);
+          //: The breath and the lower wisp too: stand sat 5 px below idle with only the tail pinned.
           const k = (1 - Math.cos(w)) / 2;
-          for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
+          for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + swell[0] * k).toFixed(4)} ${(1 + swell[1] * k).toFixed(4)}`);
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
-          }
-          }
+        }
+        //: The arms on their mark (L-ui-modernisation-151): settleArms waits for them to stop, not for their pose, so two
+        //: captures had the left arm at 8 and 87.5 deg. Every animation is held now; the rig takes one still frame from the
+        //: held probe (not live: each joint is set on its target, and no next frame is asked for).
+        const rigBox = b.querySelector(".atl-figure-box");
+        const rig = rigBox && rigBox.atlasRig;
+        if (rig) {
+          cancelAnimationFrame(rig.raf);
+          rig.raf = 0;
+          rig.fresh = true;
+          rig.at = 0;
+          //: The wrist trails the shoulder's speed: the last live speed made the hands 0.3 to 0.8 deg apart run to run.
+          for (const arm of rig.arms) { arm.antic = null; for (const j of Object.values(arm.j)) j.v = 0; }
+          //: Read here, not by the rig's own look: that one waits while the page is settling or the figure is behind cover.
+          rig.reads = rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: false }));
+          rig.turnMatrix = rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
+          atlasRigFrame(rig, performance.now());
         }
         if (frame.lower) {
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
@@ -328,6 +361,7 @@ async function steadyShot(page, file, clip) {
       await page.evaluate(() => {
         for (const a of document.getAnimations()) {
           if (a.transitionProperty) { a.finish(); continue; }
+          if (window.__ownWaapi(a)) { a.cancel(); continue; }
           a.pause();
           if (a.animationName && /neb|wisp|glint/.test(a.animationName)) a.currentTime = 0;
         }
