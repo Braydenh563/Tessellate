@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8502, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2828, tests 22495, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8504, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2831, tests 22502, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8502)
+## Frontend functions (8504)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1890,18 +1890,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `verificationRow` | frontend/js/answer-kit.js:2919 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1664 |
 
-### frontend/js/app-features.js (9)
+### frontend/js/app-features.js (10)
 
 | Name | File:line |
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:225 |
-| `paletteCommands` | frontend/js/app-features.js:298 |
+| `notificationsUnreadSaid` | frontend/js/app-features.js:299 |
+| `paletteCommands` | frontend/js/app-features.js:306 |
 | `popupToolMaths` | frontend/js/app-features.js:256 |
-| `quickAccessCurrent` | frontend/js/app-features.js:611 |
-| `quickAccessItems` | frontend/js/app-features.js:602 |
-| `quickCatalogue` | frontend/js/app-features.js:580 |
-| `renderQuickLinks` | frontend/js/app-features.js:616 |
+| `quickAccessCurrent` | frontend/js/app-features.js:623 |
+| `quickAccessItems` | frontend/js/app-features.js:614 |
+| `quickCatalogue` | frontend/js/app-features.js:592 |
+| `renderQuickLinks` | frontend/js/app-features.js:628 |
 | `renderToolShortcutList` | frontend/js/app-features.js:272 |
 
 ### frontend/js/app-import.js (6)
@@ -1933,7 +1934,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteFeatureRows` | frontend/js/app-palette.js:447 |
 | `paletteFind` | frontend/js/app-palette.js:716 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:192 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:960 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:981 |
 | `paletteKeydown` | frontend/js/app-palette.js:837 |
 | `paletteLight` | frontend/js/app-palette.js:802 |
 | `paletteMatches` | frontend/js/app-palette.js:226 |
@@ -1943,7 +1944,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteNearestRows` | frontend/js/app-palette.js:685 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:39 |
 | `paletteNoteRows` | frontend/js/app-palette.js:46 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:950 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:971 |
 | `palettePick` | frontend/js/app-palette.js:622 |
 | `palettePicks` | frontend/js/app-palette.js:603 |
 | `palettePool` | frontend/js/app-palette.js:422 |
@@ -5121,17 +5122,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `entryItem` | frontend/js/entry-card.js:198 |
-| `entryOverflowMenu` | frontend/js/entry-card.js:1395 |
-| `favouriteButton` | frontend/js/entry-card.js:1298 |
+| `entryItem` | frontend/js/entry-card.js:214 |
+| `entryOverflowMenu` | frontend/js/entry-card.js:1411 |
+| `favouriteButton` | frontend/js/entry-card.js:1314 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
-| `noteMetaMore` | frontend/js/entry-card.js:1360 |
-| `noteReviewActions` | frontend/js/entry-card.js:1264 |
-| `notesSpanSpaces` | frontend/js/entry-card.js:1378 |
-| `publishDraft` | frontend/js/entry-card.js:1449 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1334 |
-| `renderInlineAction` | frontend/js/entry-card.js:82 |
-| `searchHighlightTerms` | frontend/js/entry-card.js:1388 |
+| `noteMetaMore` | frontend/js/entry-card.js:1376 |
+| `noteReviewActions` | frontend/js/entry-card.js:1280 |
+| `notesSpanSpaces` | frontend/js/entry-card.js:1394 |
+| `publishDraft` | frontend/js/entry-card.js:1465 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1350 |
+| `renderInlineAction` | frontend/js/entry-card.js:98 |
+| `searchHighlightTerms` | frontend/js/entry-card.js:1404 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
 ### frontend/js/entry-menu.js (7)
@@ -7095,14 +7096,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `magicAddReminder` | frontend/js/quickadd.js:459 |
-| `noteOfferCalendar` | frontend/js/quickadd.js:804 |
-| `noteOfferKey` | frontend/js/quickadd.js:691 |
-| `noteOfferReplace` | frontend/js/quickadd.js:781 |
-| `noteOfferTake` | frontend/js/quickadd.js:809 |
-| `noteOffersAttach` | frontend/js/quickadd.js:699 |
-| `noteOffersDraw` | frontend/js/quickadd.js:760 |
-| `noteOffersFetch` | frontend/js/quickadd.js:730 |
-| `noteOffersSchedule` | frontend/js/quickadd.js:725 |
+| `noteOfferCalendar` | frontend/js/quickadd.js:832 |
+| `noteOfferKey` | frontend/js/quickadd.js:719 |
+| `noteOfferReplace` | frontend/js/quickadd.js:809 |
+| `noteOfferTake` | frontend/js/quickadd.js:837 |
+| `noteOffersAttach` | frontend/js/quickadd.js:727 |
+| `noteOffersDraw` | frontend/js/quickadd.js:788 |
+| `noteOffersFetch` | frontend/js/quickadd.js:758 |
+| `noteOffersSchedule` | frontend/js/quickadd.js:753 |
 | `qaChipValue` | frontend/js/quickadd.js:149 |
 | `qaChipWords` | frontend/js/quickadd.js:163 |
 | `qaDateTime` | frontend/js/quickadd.js:89 |
@@ -7117,8 +7118,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `qaMissing` | frontend/js/quickadd.js:375 |
 | `qaNow` | frontend/js/quickadd.js:54 |
 | `qaPad` | frontend/js/quickadd.js:85 |
-| `qaPaletteRemind` | frontend/js/quickadd.js:595 |
-| `qaPrewarm` | frontend/js/quickadd.js:626 |
+| `qaPaletteRemind` | frontend/js/quickadd.js:623 |
+| `qaPrewarm` | frontend/js/quickadd.js:654 |
 | `qaRange` | frontend/js/quickadd.js:136 |
 | `qaRead` | frontend/js/quickadd.js:222 |
 | `qaRecurring` | frontend/js/quickadd.js:123 |
@@ -7207,25 +7208,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildShortcutList` | frontend/js/reveal-targets.js:722 |
-| `flashRevealed` | frontend/js/reveal-targets.js:826 |
-| `foldedText` | frontend/js/reveal-targets.js:638 |
-| `markNotePassage` | frontend/js/reveal-targets.js:667 |
-| `notePassageFor` | frontend/js/reveal-targets.js:624 |
-| `openShortcuts` | frontend/js/reveal-targets.js:780 |
-| `packagesNoticeOpen` | frontend/js/reveal-targets.js:702 |
-| `packagesNoticeTarget` | frontend/js/reveal-targets.js:688 |
-| `passageRange` | frontend/js/reveal-targets.js:653 |
-| `renderShortcutList` | frontend/js/reveal-targets.js:710 |
+| `buildShortcutList` | frontend/js/reveal-targets.js:724 |
+| `flashRevealed` | frontend/js/reveal-targets.js:828 |
+| `foldedText` | frontend/js/reveal-targets.js:640 |
+| `markNotePassage` | frontend/js/reveal-targets.js:669 |
+| `notePassageFor` | frontend/js/reveal-targets.js:626 |
+| `openShortcuts` | frontend/js/reveal-targets.js:782 |
+| `packagesNoticeOpen` | frontend/js/reveal-targets.js:704 |
+| `packagesNoticeTarget` | frontend/js/reveal-targets.js:690 |
+| `passageRange` | frontend/js/reveal-targets.js:655 |
+| `renderShortcutList` | frontend/js/reveal-targets.js:712 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
-| `revealBoardsGallery` | frontend/js/reveal-targets.js:541 |
+| `revealBoardsGallery` | frontend/js/reveal-targets.js:543 |
 | `revealDashWidget` | frontend/js/reveal-targets.js:174 |
 | `revealDetails` | frontend/js/reveal-targets.js:65 |
 | `revealDocument` | frontend/js/reveal-targets.js:145 |
 | `revealEntryMenu` | frontend/js/reveal-targets.js:82 |
-| `revealFeature` | frontend/js/reveal-targets.js:554 |
+| `revealFeature` | frontend/js/reveal-targets.js:556 |
 | `revealGraphOptions` | frontend/js/reveal-targets.js:135 |
-| `revealLibrarySub` | frontend/js/reveal-targets.js:550 |
+| `revealLibrarySub` | frontend/js/reveal-targets.js:552 |
 | `revealQuery` | frontend/js/reveal-targets.js:72 |
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
@@ -7966,7 +7967,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `speakNatural` | frontend/js/studio.js:26 |
 | `stopReading` | frontend/js/studio.js:14 |
 
-### frontend/js/suggestions-inbox.js (22)
+### frontend/js/suggestions-inbox.js (23)
 
 | Name | File:line |
 |---|---|
@@ -7974,24 +7975,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `inboxCount` | frontend/js/suggestions-inbox.js:159 |
 | `inboxDone` | frontend/js/suggestions-inbox.js:191 |
 | `inboxEmpty` | frontend/js/suggestions-inbox.js:183 |
+| `inboxGridRow` | frontend/js/suggestions-inbox.js:254 |
 | `inboxHead` | frontend/js/suggestions-inbox.js:113 |
-| `inboxLinkRow` | frontend/js/suggestions-inbox.js:637 |
-| `inboxLinksPane` | frontend/js/suggestions-inbox.js:514 |
+| `inboxLinkRow` | frontend/js/suggestions-inbox.js:687 |
+| `inboxLinksPane` | frontend/js/suggestions-inbox.js:564 |
 | `inboxLoad` | frontend/js/suggestions-inbox.js:101 |
-| `inboxMergeRow` | frontend/js/suggestions-inbox.js:245 |
+| `inboxMergeRow` | frontend/js/suggestions-inbox.js:285 |
+| `inboxPairName` | frontend/js/suggestions-inbox.js:240 |
 | `inboxRows` | frontend/js/suggestions-inbox.js:173 |
-| `inboxScore` | frontend/js/suggestions-inbox.js:237 |
 | `inboxScoreBar` | frontend/js/suggestions-inbox.js:220 |
 | `inboxShow` | frontend/js/suggestions-inbox.js:147 |
-| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:352 |
-| `inboxTypeRow` | frontend/js/suggestions-inbox.js:284 |
+| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:402 |
+| `inboxTypeRow` | frontend/js/suggestions-inbox.js:327 |
 | `inboxWhy` | frontend/js/suggestions-inbox.js:210 |
-| `jobLineEl` | frontend/js/suggestions-inbox.js:754 |
+| `jobLineEl` | frontend/js/suggestions-inbox.js:804 |
 | `openSuggestionsInbox` | frontend/js/suggestions-inbox.js:36 |
-| `tensionCard` | frontend/js/suggestions-inbox.js:404 |
-| `tensionGapText` | frontend/js/suggestions-inbox.js:475 |
-| `tensionResolve` | frontend/js/suggestions-inbox.js:463 |
-| `tensionSide` | frontend/js/suggestions-inbox.js:483 |
+| `tensionCard` | frontend/js/suggestions-inbox.js:454 |
+| `tensionGapText` | frontend/js/suggestions-inbox.js:525 |
+| `tensionResolve` | frontend/js/suggestions-inbox.js:513 |
+| `tensionSide` | frontend/js/suggestions-inbox.js:533 |
 
 ### frontend/js/sync-folder.js (3)
 
@@ -8013,11 +8015,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `chooseTagSheet` | frontend/js/tag-manager.js:99 |
 | `drawManageSuggestions` | frontend/js/tag-manager.js:346 |
-| `drawTagFooter` | frontend/js/tag-manager.js:699 |
-| `drawTagRows` | frontend/js/tag-manager.js:574 |
-| `drawTurnedDown` | frontend/js/tag-manager.js:543 |
+| `drawTagFooter` | frontend/js/tag-manager.js:698 |
+| `drawTagRows` | frontend/js/tag-manager.js:573 |
+| `drawTurnedDown` | frontend/js/tag-manager.js:542 |
 | `fetchTagCounts` | frontend/js/tag-manager.js:30 |
-| `manageCountButton` | frontend/js/tag-manager.js:384 |
+| `manageCountButton` | frontend/js/tag-manager.js:383 |
 | `manageListControls` | frontend/js/tag-manager.js:287 |
 | `manageLookAlikeKey` | frontend/js/tag-manager.js:323 |
 | `manageLookAlikes` | frontend/js/tag-manager.js:330 |
@@ -8027,8 +8029,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `manageStore` | frontend/js/tag-manager.js:260 |
 | `manageStored` | frontend/js/tag-manager.js:252 |
 | `mergeTagsInto` | frontend/js/tag-manager.js:176 |
-| `openBulkTags` | frontend/js/tag-manager.js:728 |
-| `openTagsSheet` | frontend/js/tag-manager.js:427 |
+| `openBulkTags` | frontend/js/tag-manager.js:727 |
+| `openTagsSheet` | frontend/js/tag-manager.js:426 |
 | `refreshAfterTagEdit` | frontend/js/tag-manager.js:35 |
 | `removeTagFromNote` | frontend/js/tag-manager.js:205 |
 | `removeTagsEverywhere` | frontend/js/tag-manager.js:189 |
@@ -8036,11 +8038,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `retargetTagFilter` | frontend/js/tag-manager.js:47 |
 | `runTagEdit` | frontend/js/tag-manager.js:65 |
 | `showTagNotes` | frontend/js/tag-manager.js:209 |
-| `tagManagerHead` | frontend/js/tag-manager.js:402 |
+| `tagManagerHead` | frontend/js/tag-manager.js:401 |
 | `tagMenuItems` | frontend/js/tag-manager.js:215 |
 | `tagNamesWords` | frontend/js/tag-manager.js:22 |
 | `tagNotesWord` | frontend/js/tag-manager.js:19 |
-| `wireTagKeys` | frontend/js/tag-manager.js:665 |
+| `wireTagKeys` | frontend/js/tag-manager.js:664 |
 
 ### frontend/js/tag-suggest.js (14)
 
@@ -12954,7 +12956,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2258 |
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6259 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4631 |
-| TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:252 |
+| TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:257 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5710 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5583 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2347 |
@@ -13408,7 +13410,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 132 |
 | frontend/css/improve-lazy.css | 110 |
-| frontend/css/inbox-lazy.css | 314 |
+| frontend/css/inbox-lazy.css | 319 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
 | frontend/css/library-lazy.css | 9560 |
@@ -28269,7 +28271,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22495)
+## Tests (22502)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29676,6 +29678,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_inbox_675_hero.py | 11 |
 | tests/test_inbox_677_quick_access.py | 3 |
 | tests/test_inbox_732_733.py | 14 |
+| tests/test_inbox_row_grid_l668_l596.py | 2 |
 | tests/test_indexes_at_5000.py | 3 |
 | tests/test_injection_fence.py | 17 |
 | tests/test_injection_guard.py | 3 |
@@ -29945,7 +29948,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_media_process.py | 17 |
 | tests/test_media_size.py | 3 |
 | tests/test_media_size_backfill.py | 3 |
-| tests/test_meeting_card_glance.py | 4 |
+| tests/test_meeting_card_glance.py | 5 |
 | tests/test_meeting_notes.py | 15 |
 | tests/test_meeting_rules_81.py | 12 |
 | tests/test_meeting_undo.py | 2 |
@@ -30251,10 +30254,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_page_captions.py | 12 |
 | tests/test_page_read_lifecycle.py | 4 |
 | tests/test_pair_passes_paths.py | 5 |
+| tests/test_palette_act_rows_l656.py | 1 |
 | tests/test_palette_contract.py | 3 |
 | tests/test_palette_coverage.py | 7 |
 | tests/test_palette_guide_after_action_1449.py | 4 |
 | tests/test_palette_head_gap.py | 2 |
+| tests/test_palette_l693.py | 3 |
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_corner_1552.py | 2 |
 | tests/test_panel_min_close_quiet.py | 2 |
@@ -31522,14 +31527,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:618 |
+| Needs hardware | docs/roadmap/LEDGER.md:614 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:611 |
+| Owner calls | docs/roadmap/LEDGER.md:607 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31710,7 +31715,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:753 |
+| Plan session briefs | docs/roadmap/LEDGER.md:749 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31764,25 +31769,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:769 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:853 |
+| chat | docs/roadmap/LEDGER.md:765 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:849 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:793 |
-| general | docs/roadmap/LEDGER.md:568 |
+| documents | docs/roadmap/LEDGER.md:789 |
+| general | docs/roadmap/LEDGER.md:564 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:757 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:865 |
+| graph | docs/roadmap/LEDGER.md:753 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:861 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:805 |
+| mindmap | docs/roadmap/LEDGER.md:801 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:829 |
+| timeline | docs/roadmap/LEDGER.md:825 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:817 |
+| ui-modernisation | docs/roadmap/LEDGER.md:813 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:781 |
+| whiteboard | docs/roadmap/LEDGER.md:777 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:841 |
+| world-class | docs/roadmap/LEDGER.md:837 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
