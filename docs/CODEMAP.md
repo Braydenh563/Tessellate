@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11006, test files 2821, tests 22525, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11011, test files 2822, tests 22534, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -14132,7 +14132,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11006)
+## Backend modules (11011)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14510,11 +14510,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `NotArithmetic` | src/tessellate/ai/arithmetic.py:44 |
-| `_walk` | src/tessellate/ai/arithmetic.py:48 |
-| `evaluate` | src/tessellate/ai/arithmetic.py:70 |
-| `spoken` | src/tessellate/ai/arithmetic.py:109 |
-| `sum_in` | src/tessellate/ai/arithmetic.py:91 |
+| `NotArithmetic` | src/tessellate/ai/arithmetic.py:46 |
+| `_walk` | src/tessellate/ai/arithmetic.py:50 |
+| `evaluate` | src/tessellate/ai/arithmetic.py:72 |
+| `spoken` | src/tessellate/ai/arithmetic.py:111 |
+| `sum_in` | src/tessellate/ai/arithmetic.py:93 |
 
 ### src/tessellate/ai/ask_chips.py (2)
 
@@ -20942,76 +20942,81 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `server_unreachable` | src/tessellate/ai/unreachable.py:10 |
 
-### src/tessellate/ai/utilities.py (66)
+### src/tessellate/ai/utilities.py (71)
 
 | Name | File:line |
 |---|---|
-| `_Ask` | src/tessellate/ai/utilities.py:822 |
-| `_answer_age` | src/tessellate/ai/utilities.py:851 |
-| `_answer_chance` | src/tessellate/ai/utilities.py:867 |
-| `_answer_percent` | src/tessellate/ai/utilities.py:860 |
-| `_answer_root` | src/tessellate/ai/utilities.py:842 |
-| `_answer_sum` | src/tessellate/ai/utilities.py:833 |
-| `_between` | src/tessellate/ai/utilities.py:318 |
-| `_between_answer` | src/tessellate/ai/utilities.py:327 |
-| `_calculation_kind` | src/tessellate/ai/utilities.py:494 |
-| `_clean` | src/tessellate/ai/utilities.py:167 |
-| `_clock` | src/tessellate/ai/utilities.py:750 |
-| `_clock_swap` | src/tessellate/ai/utilities.py:417 |
-| `_compile_convert` | src/tessellate/ai/utilities.py:50 |
-| `_compile_money` | src/tessellate/ai/utilities.py:93 |
-| `_convert` | src/tessellate/ai/utilities.py:218 |
-| `_currency` | src/tessellate/ai/utilities.py:239 |
-| `_date_kind` | src/tessellate/ai/utilities.py:518 |
-| `_dates` | src/tessellate/ai/utilities.py:304 |
-| `_day_words` | src/tessellate/ai/utilities.py:188 |
-| `_days_to_or_from` | src/tessellate/ai/utilities.py:266 |
-| `_edits` | src/tessellate/ai/utilities.py:673 |
-| `_generative` | src/tessellate/ai/utilities.py:531 |
-| `_heading_at` | src/tessellate/ai/utilities.py:1007 |
-| `_heard` | src/tessellate/ai/utilities.py:428 |
-| `_hm` | src/tessellate/ai/utilities.py:709 |
-| `_in_symbols` | src/tessellate/ai/utilities.py:366 |
-| `_is_clock` | src/tessellate/ai/utilities.py:713 |
-| `_kind_of` | src/tessellate/ai/utilities.py:487 |
-| `_kind_of_cached` | src/tessellate/ai/utilities.py:483 |
-| `_list_answer` | src/tessellate/ai/utilities.py:917 |
-| `_list_of` | src/tessellate/ai/utilities.py:408 |
-| `_month_days` | src/tessellate/ai/utilities.py:930 |
-| `_nearest_place` | src/tessellate/ai/utilities.py:660 |
-| `_number` | src/tessellate/ai/utilities.py:175 |
-| `_numbers` | src/tessellate/ai/utilities.py:399 |
-| `_offset_day` | src/tessellate/ai/utilities.py:283 |
-| `_one` | src/tessellate/ai/utilities.py:199 |
-| `_other_day` | src/tessellate/ai/utilities.py:745 |
-| `_other_kind` | src/tessellate/ai/utilities.py:538 |
-| `_patterns` | src/tessellate/ai/utilities.py:104 |
-| `_place_said` | src/tessellate/ai/utilities.py:721 |
-| `_plural` | src/tessellate/ai/utilities.py:192 |
-| `_said` | src/tessellate/ai/utilities.py:179 |
-| `_salted` | src/tessellate/ai/utilities.py:261 |
-| `_sum_of` | src/tessellate/ai/utilities.py:374 |
-| `_swap_answer` | src/tessellate/ai/utilities.py:939 |
-| `_temperature` | src/tessellate/ai/utilities.py:213 |
-| `_twelve` | src/tessellate/ai/utilities.py:700 |
-| `_utility_words` | src/tessellate/ai/utilities.py:456 |
-| `_web_capability` | src/tessellate/ai/utilities.py:807 |
-| `_weekday_of` | src/tessellate/ai/utilities.py:293 |
-| `_where` | src/tessellate/ai/utilities.py:737 |
-| `_zone_cities` | src/tessellate/ai/utilities.py:630 |
-| `_zone_said` | src/tessellate/ai/utilities.py:727 |
-| `answer` | src/tessellate/ai/utilities.py:906 |
-| `configure_rates` | src/tessellate/ai/utilities.py:73 |
-| `counts` | src/tessellate/ai/utilities.py:980 |
-| `current_rates` | src/tessellate/ai/utilities.py:86 |
-| `kind_of` | src/tessellate/ai/utilities.py:473 |
-| `now_day` | src/tessellate/ai/utilities.py:338 |
-| `outline` | src/tessellate/ai/utilities.py:1023 |
-| `place_name_for` | src/tessellate/ai/utilities.py:642 |
-| `reading_time` | src/tessellate/ai/utilities.py:995 |
-| `until_subject` | src/tessellate/ai/utilities.py:347 |
-| `web_on` | src/tessellate/ai/utilities.py:793 |
-| `zone_for` | src/tessellate/ai/utilities.py:686 |
+| `_Ask` | src/tessellate/ai/utilities.py:872 |
+| `_answer_age` | src/tessellate/ai/utilities.py:912 |
+| `_answer_chance` | src/tessellate/ai/utilities.py:928 |
+| `_answer_factorial` | src/tessellate/ai/utilities.py:907 |
+| `_answer_percent` | src/tessellate/ai/utilities.py:921 |
+| `_answer_root` | src/tessellate/ai/utilities.py:892 |
+| `_answer_sum` | src/tessellate/ai/utilities.py:883 |
+| `_between` | src/tessellate/ai/utilities.py:330 |
+| `_between_answer` | src/tessellate/ai/utilities.py:339 |
+| `_calculation_kind` | src/tessellate/ai/utilities.py:536 |
+| `_clean` | src/tessellate/ai/utilities.py:168 |
+| `_clock` | src/tessellate/ai/utilities.py:800 |
+| `_clock_swap` | src/tessellate/ai/utilities.py:459 |
+| `_compile_convert` | src/tessellate/ai/utilities.py:51 |
+| `_compile_money` | src/tessellate/ai/utilities.py:94 |
+| `_convert` | src/tessellate/ai/utilities.py:219 |
+| `_currency` | src/tessellate/ai/utilities.py:240 |
+| `_date_kind` | src/tessellate/ai/utilities.py:568 |
+| `_dates` | src/tessellate/ai/utilities.py:316 |
+| `_day_words` | src/tessellate/ai/utilities.py:189 |
+| `_days_to_or_from` | src/tessellate/ai/utilities.py:278 |
+| `_edits` | src/tessellate/ai/utilities.py:723 |
+| `_factorial_of` | src/tessellate/ai/utilities.py:901 |
+| `_function_kind` | src/tessellate/ai/utilities.py:561 |
+| `_generative` | src/tessellate/ai/utilities.py:581 |
+| `_heading_at` | src/tessellate/ai/utilities.py:1069 |
+| `_heard` | src/tessellate/ai/utilities.py:470 |
+| `_hm` | src/tessellate/ai/utilities.py:759 |
+| `_in_symbols` | src/tessellate/ai/utilities.py:403 |
+| `_is_clock` | src/tessellate/ai/utilities.py:763 |
+| `_kind_of` | src/tessellate/ai/utilities.py:529 |
+| `_kind_of_cached` | src/tessellate/ai/utilities.py:525 |
+| `_list_answer` | src/tessellate/ai/utilities.py:979 |
+| `_list_of` | src/tessellate/ai/utilities.py:450 |
+| `_month_days` | src/tessellate/ai/utilities.py:992 |
+| `_nearest_place` | src/tessellate/ai/utilities.py:710 |
+| `_number` | src/tessellate/ai/utilities.py:176 |
+| `_numbers` | src/tessellate/ai/utilities.py:441 |
+| `_offset_day` | src/tessellate/ai/utilities.py:295 |
+| `_one` | src/tessellate/ai/utilities.py:200 |
+| `_other_day` | src/tessellate/ai/utilities.py:795 |
+| `_other_kind` | src/tessellate/ai/utilities.py:588 |
+| `_patterns` | src/tessellate/ai/utilities.py:105 |
+| `_place_said` | src/tessellate/ai/utilities.py:771 |
+| `_plural` | src/tessellate/ai/utilities.py:193 |
+| `_said` | src/tessellate/ai/utilities.py:180 |
+| `_salted` | src/tessellate/ai/utilities.py:262 |
+| `_sum_of` | src/tessellate/ai/utilities.py:412 |
+| `_swap_answer` | src/tessellate/ai/utilities.py:1001 |
+| `_temperature` | src/tessellate/ai/utilities.py:214 |
+| `_twelve` | src/tessellate/ai/utilities.py:750 |
+| `_utility_words` | src/tessellate/ai/utilities.py:498 |
+| `_web_capability` | src/tessellate/ai/utilities.py:857 |
+| `_weekday_of` | src/tessellate/ai/utilities.py:305 |
+| `_weeks_and_days` | src/tessellate/ai/utilities.py:267 |
+| `_where` | src/tessellate/ai/utilities.py:787 |
+| `_word_number` | src/tessellate/ai/utilities.py:388 |
+| `_zone_cities` | src/tessellate/ai/utilities.py:680 |
+| `_zone_said` | src/tessellate/ai/utilities.py:777 |
+| `answer` | src/tessellate/ai/utilities.py:968 |
+| `configure_rates` | src/tessellate/ai/utilities.py:74 |
+| `counts` | src/tessellate/ai/utilities.py:1042 |
+| `current_rates` | src/tessellate/ai/utilities.py:87 |
+| `kind_of` | src/tessellate/ai/utilities.py:515 |
+| `now_day` | src/tessellate/ai/utilities.py:350 |
+| `outline` | src/tessellate/ai/utilities.py:1085 |
+| `place_name_for` | src/tessellate/ai/utilities.py:692 |
+| `reading_time` | src/tessellate/ai/utilities.py:1057 |
+| `until_subject` | src/tessellate/ai/utilities.py:359 |
+| `web_on` | src/tessellate/ai/utilities.py:843 |
+| `zone_for` | src/tessellate/ai/utilities.py:736 |
 
 ### src/tessellate/ai/validate.py (16)
 
@@ -28242,7 +28247,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22525)
+## Tests (22534)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30823,6 +30828,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_upgrade_pre_brief7_db.py | 4 |
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |
+| tests/test_utilities_gaps_1114.py | 9 |
 | tests/test_utilities_zones.py | 4 |
 | tests/test_utility_leads_1550.py | 5 |
 | tests/test_utility_timers_1029.py | 10 |

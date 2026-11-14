@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import math
 import re
 
 from tessellate.core.lazyre import lazy_compile
@@ -263,7 +264,18 @@ def _salted(salt: str, text: str, low: int, high: int) -> int:
     return low + int.from_bytes(digest[:4], "big") % (high - low + 1)
 
 
-def _days_to_or_from(asked: tuple, today: date) -> list[tuple] | None:
+def _weeks_and_days(days: int) -> str:
+    """17 days as "2 weeks and 3 days": "how many weeks until" is answered in weeks (L-chat-22)."""
+    whole, left = divmod(days, 7)
+    if not whole:
+        return _plural(left, "day")
+    return _plural(whole, "week") + (f" and {_plural(left, 'day')}" if left else "")
+
+
+_IN_WEEKS = lazy_compile(r"^(?:how many|(?:the )?(?:number of |count of )?)\s*weeks\b", re.I)
+
+
+def _days_to_or_from(asked: tuple, today: date, weeks: bool = False) -> list[tuple] | None:
     """"How many days until X" (future) or "since X" (past), or None when X is no day."""
     found = when_words.span(asked[1], today, asked[0] if asked[0] == "future" else "past")
     if found is None:
@@ -275,7 +287,7 @@ def _days_to_or_from(asked: tuple, today: date) -> list[tuple] | None:
     if days < 0:
         return [("computed", f"{_day_words(found[0])} was {_plural(-days, 'day')} ago."), ("computed", f"\nRead as the days from today to {recognise.proper_days(asked[1])}.")]
     return [
-        ("computed", f"{_day_words(found[0])} is {_plural(days, 'day')} away." if days else "That is today."),
+        ("computed", f"{_day_words(found[0])} is {_weeks_and_days(days) if weeks else _plural(days, 'day')} away." if days else "That is today."),
         ("computed", f"\nRead as the days from today to {recognise.proper_days(asked[1])}."),
     ]
 
@@ -305,7 +317,7 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
     today = now.date()
     asked = recognise_questions.days_question(text)
     if asked:
-        return _days_to_or_from(asked, today)
+        return _days_to_or_from(asked, today, bool(_IN_WEEKS.match(text)))
     offset = recognise_questions.offset_question(text)
     if offset:
         return _offset_day(offset, today)
@@ -360,12 +372,38 @@ def until_subject(question: str) -> tuple[str, str] | None:
 _SAID_OPS = (
     (r"\bmultiplied by\b|\btimes\b", "*"), (r"\bdivided by\b|\bover\b", "/"), (r"\bplus\b|\badded to\b", "+"),
     (r"\bminus\b|\btake away\b", "-"), (r"\bto the power of\b|\bto the\b", "^"), (r"\bsquared\b", "^ 2"), (r"\bcubed\b", "^ 3"),
+    (r"\bmod(?:ulo)?\b", "%"),
 )
+
+#: Numbers said in words ("twelve plus thirty", "one hundred and five"), up to
+#: the thousands: read as digits before the sum is (L-chat-22).
+_UNITS_WORDS = ("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen "
+                "sixteen seventeen eighteen nineteen").split()
+_TENS_WORDS = "twenty thirty forty fifty sixty seventy eighty ninety".split()
+_WORD_VALUE = {**{w: i for i, w in enumerate(_UNITS_WORDS)}, **{w: 20 + 10 * i for i, w in enumerate(_TENS_WORDS)}}
+_WORD = "(?:" + "|".join(sorted(_WORD_VALUE, key=len, reverse=True)) + ")"
+_WORD_NUMBER = lazy_compile(rf"\b{_WORD}(?:[ -](?:{_WORD}|hundred|thousand|and(?= {_WORD}\b)))*\b", re.I)
+
+
+def _word_number(said: str) -> str:
+    """"one hundred and five" as "105"; words that are no number stay as they were."""
+    total = part = 0
+    for word in re.split(r"[ -]", said.lower()):
+        if word == "and":
+            continue
+        if word == "hundred":
+            part = (part or 1) * 100
+        elif word == "thousand":
+            total, part = total + (part or 1) * 1000, 0
+        else:
+            part += _WORD_VALUE[word]
+    return str(total + part)
 
 
 def _in_symbols(text: str) -> str:
     text = re.sub(r"^(?:how much is|what(?:'?s| is| does)|calculate|compute|work out)\s+", "", text, flags=re.I)
     text = re.sub(r" (?:equal|make|come to)$", "", " ".join(text.split()), flags=re.I)
+    text = _WORD_NUMBER.sub(lambda m: _word_number(m.group(0)), text)
     for words, symbol in _SAID_OPS:
         text = re.sub(words, symbol, text, flags=re.I)
     return text
@@ -388,6 +426,10 @@ _LIST_OF = lazy_compile(
 )
 _LIST_WORDS = {"average": "mean", "biggest": "largest", "max": "largest", "maximum": "largest", "smallest": "smallest", "min": "smallest", "minimum": "smallest", "total": "sum"}
 _ROOT = lazy_compile(r"^(?:what(?:'?s| is) )?(?:the )?(square|cube) root of (-?\d+(?:\.\d+)?)$", re.I)
+#: "what is 7!", "factorial of 5": `_clean` drops a closing "!", so this reads the question (L-chat-22).
+_FACTORIAL = lazy_compile(r"^(?:what(?:'?s| is) )?(?:(\d{1,3})!|(?:the )?factorial of (\d{1,3}))$", re.I)
+#: 17! is the last below `arithmetic.MAX_MAGNITUDE`.
+_FACTORIAL_MAX = 17
 _MONTH_DAYS = lazy_compile(r"^how many days (?:are )?(?:there )?in (?P<month>[a-z]+)(?: (?P<year>\d{4}))?$", re.I)
 _BORN = lazy_compile(r"^how old (?:is (?:someone|somebody|a person)|would i be|am i|are you)(?: if (?:i was|you were))? born in (?P<year>\d{4})$", re.I)
 _CLOCK_SWAP = lazy_compile(
@@ -496,8 +538,9 @@ def _calculation_kind(question: str, text: str) -> str | None:
         return "sum"
     if _list_of(text):
         return "list"
-    if _ROOT.match(text):
-        return "root"
+    found = _function_kind(question, text)
+    if found:
+        return found
     if _MONTH_DAYS.match(text) and _MONTH_DAYS.match(text).group("month").lower()[:3] in {m[:3].lower() for m in _MONTH_NAMES}:
         return "month_days"
     if _BORN.match(text):
@@ -513,6 +556,13 @@ def _calculation_kind(question: str, text: str) -> str | None:
     if any(p.match(text) for p in _patterns("money")):
         return "currency"
     return None
+
+
+def _function_kind(question: str, text: str) -> str | None:
+    """A root or a factorial: a function of one number."""
+    if _ROOT.match(text):
+        return "root"
+    return "factorial" if _factorial_of(question) is not None else None
 
 
 def _date_kind(text: str) -> str | None:
@@ -833,7 +883,7 @@ class _Ask(NamedTuple):
 def _answer_sum(ask: _Ask) -> list[tuple]:
     expr = _sum_of(ask.question, ask.text)
     value = arithmetic.spoken(arithmetic.evaluate(expr))
-    read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").split())
+    read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").replace("%", " mod ").split())
     said = [("computed", f"{expr.strip()} is {value}.")]
     #: A sum typed in symbols is its own reading; one said in words is shown as read.
     return said if arithmetic.sum_in(ask.question) or arithmetic.sum_in(ask.text) else [*said, ("computed", f"\nRead as {read}.")]
@@ -846,6 +896,17 @@ def _answer_root(ask: _Ask) -> list[tuple] | None:
         return None
     value = abs(number) ** (1 / 2 if which.lower() == "square" else 1 / 3) * (-1 if number < 0 else 1)
     return [("computed", f"The {which.lower()} root of {raw} is {_said(value)}."), ("computed", f"\nRead as the {which.lower()} root of {raw}.")]
+
+
+def _factorial_of(question: str) -> int | None:
+    found = _FACTORIAL.match(" ".join(str(question or "").replace("?", " ").split()).strip(" ."))
+    n = int(found.group(1) or found.group(2)) if found else None
+    return n if n is not None and n <= _FACTORIAL_MAX else None
+
+
+def _answer_factorial(ask: _Ask) -> list[tuple]:
+    n = _factorial_of(ask.question)
+    return [("computed", f"{n}! is {arithmetic.spoken(math.factorial(n))}."), ("computed", f"\nRead as {n} factorial.")]
 
 
 def _answer_age(ask: _Ask) -> list[tuple] | None:
@@ -888,6 +949,7 @@ _ANSWERERS = {
     "sum": _answer_sum,
     "list": lambda ask: _list_answer(*_list_of(ask.text)),
     "root": _answer_root,
+    "factorial": _answer_factorial,
     "month_days": lambda ask: _month_days(_MONTH_DAYS.match(ask.text), ask.now),
     "age": _answer_age,
     "clock_swap": lambda ask: _swap_answer(*_clock_swap(ask.text), ask.now),

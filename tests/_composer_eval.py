@@ -1359,16 +1359,21 @@ def _run_utilities(utilities, datetime) -> list[dict]:
 
 
 def hostile_utilities() -> list[dict]:
-    """Each hostile expression, asked after one warm-up call (the first compiles patterns lazily), with its time."""
+    """Each hostile expression, asked after a warm-up (patterns compile and word lists load lazily), with its time."""
     import time
     from datetime import datetime
 
     from tessellate.ai import utilities
 
     now = datetime(2026, 10, 11, 10, 0)
-    utilities.answer("what is 1 + 1", now=now)
+    hostile = _fixture("utilities_1010.json")["hostile"]
+    #: Patterns compile and the speller's word lists load once per process (about 120 ms in a
+    #: fresh worker). Each row is warmed with a trailing space: the same path, but a different key
+    #: for `_kind_of_cached`, so the timed call below is not a cache hit.
+    for text in hostile:
+        utilities.answer(text + " ", now=now, salt="w")
     out = []
-    for text in _fixture("utilities_1010.json")["hostile"]:
+    for text in hostile:
         start = time.perf_counter()
         got = utilities.answer(text, now=now, salt="s")
         out.append({"input": text, "got": got, "ms": (time.perf_counter() - start) * 1000})
