@@ -1,4 +1,4 @@
-"""L304 follow-up: the Source view's Wrap toggle is reachable in the Source view.
+"""L304, its second part: the Source view's Wrap toggle is reachable in the Source view.
 
 The dock and its ... menu are hidden in Source (`.dgm-dialog[data-view="source"] .dgm-dock`), so the
 menu's Wrap row could not be reached where it matters. A Wrap toggle sits beside the view buttons, shown

@@ -1,4 +1,4 @@
-"""Follow-up question chips: the scrubbing, and the endpoint's failure paths.
+"""Suggested-question chips: the scrubbing, and the endpoint's failure paths.
 
 `parse_followups` is the part worth most of these tests. The model call itself
 is one line; what decides whether a reader sees something useful or three lines

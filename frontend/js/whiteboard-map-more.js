@@ -715,7 +715,7 @@
         wbGrammar.found.set(text, hits[0] || null);
       };
       const lints = await docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); }).catch(() => null);
-      //: No answer (the worker is off or failed): leave the text unasked so a later pass can try.
+      //: No answer (the worker is off or failed): leave the text unasked so the next check asks again.
       if (lints === null) continue;
       keep(lints);
     }
