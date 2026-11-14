@@ -278,19 +278,18 @@ def unsourced_specifics(draft: str, *given: str) -> list[str]:
     numbers = {_norm(m.group()) for m in _NUMBER.finditer(_TIME.sub(" ", source))}
     numbers |= {_norm(n) for t in times for n in re.findall(r"\d+", t)}
     lowered = source.lower()
-    found: list[str] = []
-    for m in _PLACEHOLDER.finditer(draft):
-        if re.search(r"[a-z]", m.group(1), re.IGNORECASE) and m.group(1).lower() not in lowered:
-            found.append(m.group())
-    for m in _TIME.finditer(draft):
-        if _norm(m.group()) not in times:
-            found.append(m.group().strip())
-    for m in _NUMBER.finditer(_TIME.sub(" ", draft)):
-        if _norm(m.group()) not in numbers:
-            found.append(m.group())
+    found = [m.group() for m in _PLACEHOLDER.finditer(draft) if re.search(r"[a-z]", m.group(1), re.IGNORECASE) and m.group(1).lower() not in lowered]
+    found += [m.group().strip() for m in _TIME.finditer(draft) if _norm(m.group()) not in times]
+    found += [m.group() for m in _NUMBER.finditer(_TIME.sub(" ", draft)) if _norm(m.group()) not in numbers]
     # The draft's own order, each once.
     order = {item: draft.find(item) for item in found}
     return sorted(dict.fromkeys(found), key=lambda item: order[item])
+
+
+def _unsourced(text: str, thoughts: str, draft: str | None, instruction: str, sources: list[dict] | None) -> list[str]:
+    """`unsourced_specifics` against everything the pass was given."""
+    notes = [s.get("content") or "" for s in sources or []]
+    return unsourced_specifics(text, thoughts or "", draft or "", instruction, *notes)
 
 
 def build_messages(
@@ -438,7 +437,7 @@ def compose_stream(
         "thinking": "".join(thinking),
         "message": "",
         "ollama_running": True,
-        "unsourced": unsourced_specifics(text, thoughts or "", draft or "", instruction, *[s.get("content") or "" for s in sources or []]),
+        "unsourced": _unsourced(text, thoughts, draft, instruction, sources),
     }
 
 

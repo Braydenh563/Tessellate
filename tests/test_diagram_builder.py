@@ -157,10 +157,12 @@ def test_a_kept_line_stays_in_its_group_when_blocks_are_added_above_it():
 
 
 def test_the_layout_places_each_kept_line_where_it_stood():
-    got = _script(KEPT, "return JSON.stringify(o.layout(m));")
-    layout = json.loads(got["result"])
+    """Since L-documents-60 a group's `direction` is the group's own `dir`, read
+    and printed inside it (not a kept line); the lines still kept stay put."""
+    got = _script(KEPT, "return JSON.stringify([o.layout(m), m.subgraphs[0].dir]);")
+    layout, way = json.loads(got["result"])
     kids = layout[0]["kids"]
-    assert [k["type"] for k in kids] == ["k", "n", "n"] and kids[0]["line"] == "direction LR"
+    assert [k["type"] for k in kids] == ["n", "n"] and way == "LR"
     assert any(x["type"] == "k" and x["line"].startswith("style A") for x in layout)
 
 

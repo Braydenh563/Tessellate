@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 37 | 1 | 0 | 2 | 38 |
+| documents | 0 | 36 | 1 | 0 | 2 | 37 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 592 | 129 | 2 | 165 | 1204 |
+| all | 483 | 591 | 129 | 2 | 165 | 1203 |
 
 ## graph
 
@@ -363,7 +363,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-79** `documents` open, M: Frame measurement of the document editor: scroll and typing frames against the 14 rAF, 7 scroll, 3 RO and 4 MO wake sources (Brief 60). From DOCUMENTS_PLAN.md:1239 Brief 60, audit 2026-11-14. Evidence: documents.js 14 rAF, 7 scroll, 3 ResizeObserver, 4 MutationObserver sites; no frame sweep in scratchpad/ui-sweeps for the editor
 - [ ] **L-documents-80** `documents` open, S: Library Documents page card: the document's first embedded image as the page's cover. From L-documents-54 remainder, agent docs7446 2026-11-14. Evidence: the plan's recommendation names a cover from the first image; .doc-list-page draws title and preview text only
 - [ ] **L-documents-81** `documents` open, S: Diagram per-edge label position (1679 gap 4, needs an owner call on a non-Mermaid field). From L-documents-58 build, 2026-11-14. Evidence: Mermaid flowcharts have no edge-label position syntax (documents-mermaid.js dgmLink reads only |text| and worded labels); a position would need a comment-carried field
-- [ ] **L-documents-82** `documents` open, S: Stale kept-line test after L-documents-60 (test_the_layout_places_each_kept_line_where_it_stood) and the drafter complexity ratchet. From L-documents-78 gate run, 2026-11-14. Evidence: tests/test_diagram_builder.py:159 fails on the base: its KEPT text has direction LR inside a subgraph, which L-documents-60 made the group's own, so no kept line stands first; tests/test_complexity.py fails on src/tessellate/ai/drafter.py compose_stream and PERF401 (not this branch)
 
 ## mindmap
 
