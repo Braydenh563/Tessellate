@@ -98,6 +98,12 @@ let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
 let wbRedoStack = [];
 let wbHistoryBoard = null;
 window.currentBoardId = 1;
+//: whiteboard-undo.js keeps the stacks as its own lets behind `wbStacks` (L-whiteboard-52); the stand-in reads these lets the same way.
+window.wbStacks = {
+  get undo() { return wbUndoStack; }, set undo(v) { wbUndoStack = v; },
+  get redo() { return wbRedoStack; }, set redo(v) { wbRedoStack = v; },
+  get historyBoard() { return wbHistoryBoard; }, set historyBoard(v) { wbHistoryBoard = v; },
+};
 window.currentTool = "draw";
 //: whiteboard.js's tool switch; an activation repaints the toolbar through it without a stroke being dropped.
 const toolSyncs = [];
@@ -754,7 +760,8 @@ def test_each_board_keeps_its_own_history_across_activations():
     the incoming embed's stacks were filed under the page's board and the page
     got them back: Ctrl+Z in the embed popped its step and sent nothing. The key
     is an instance's, swapped with its stacks."""
-    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    #: The history swap moved to whiteboard-undo.js with the carve (L-whiteboard-52).
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
     hist = wb[wb.index("const wbHistoryByBoard = new Map();") :]
     hist = hist[: hist.index("function wbHistoryRestore(")].replace("let wbHistoryBoard = null;", "")
     out = _run(hist + """
@@ -1003,9 +1010,10 @@ process.exit(0);
 
 
 def _history_buttons_fn() -> str:
-    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
-    at = wb.index("function wbUpdateUndoRedoButtons() {")
-    return wb[at : wb.index("\n}\n", at) + 3]
+    #: Moved to whiteboard-undo.js, which is wrapped, so the body ends at a two-space brace (L-whiteboard-52).
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
+    at = wb.index("  function wbUpdateUndoRedoButtons() {")
+    return wb[at : wb.index("\n  }\n", at) + 5]
 
 
 def test_only_the_page_board_writes_the_persisted_history_key():

@@ -1417,7 +1417,7 @@ function wbPasteChipPlace(chip) {
 //: board that has moved on since (the top undo step is not the paste) closes
 //: the chip rather than undo something else.
 async function wbPasteChipChoose(chip, variant) {
-  if (wbUndoStack[wbUndoStack.length - 1] !== chip.entry) {
+  if (wbStacks.undo[wbStacks.undo.length - 1] !== chip.entry) {
     wbPasteChipClose();
     return;
   }
@@ -1425,7 +1425,7 @@ async function wbPasteChipChoose(chip, variant) {
   const next = await chip.apply(variant.id);
   if (!next || wbPasteChip !== chip) return;
   chip.current = variant.id;
-  chip.entry = wbUndoStack[wbUndoStack.length - 1];
+  chip.entry = wbStacks.undo[wbStacks.undo.length - 1];
   chip.at = next.at || chip.at;
   wbPasteChipPlace(chip);
 }
@@ -1546,7 +1546,7 @@ async function wbPasteText(text, at) {
   const made = await wbPasteMake(first, text, at);
   if (!made) return 0;
   const variants = wbPasteVariantList([first, ...ids.filter((id) => id !== first)]);
-  wbPasteChipOffer(variants, first, made.at, wbUndoStack[wbUndoStack.length - 1], (id) => wbPasteMake(id, text, at));
+  wbPasteChipOffer(variants, first, made.at, wbStacks.undo[wbStacks.undo.length - 1], (id) => wbPasteMake(id, text, at));
   return made.count;
 }
 
@@ -1578,7 +1578,7 @@ async function wbPasteSpecialApply(id) {
     return;
   }
   const made = await wbPasteMake(id, text, null);
-  if (made) wbPasteChipOffer(wbPasteVariantList(wbPasteVariants(text)), id, made.at, wbUndoStack[wbUndoStack.length - 1], (v) => wbPasteMake(v, text, null));
+  if (made) wbPasteChipOffer(wbPasteVariantList(wbPasteVariants(text)), id, made.at, wbStacks.undo[wbStacks.undo.length - 1], (v) => wbPasteMake(v, text, null));
 }
 
 const WB_PASTE_SPECIAL = ["stickies", "textbox", "bullets", "branch", "table", "plain"];
@@ -1636,7 +1636,7 @@ async function wbMapPasteWithChip(text) {
   if (!n) return;
   const variants = ["branches", "oneTopic"].map((id) => ({ id, label: WB_MAP_PASTE_LABELS[id], key: WB_MAP_PASTE_KEYS[id] }));
   const [x, y] = wbViewCentre();
-  wbPasteChipOffer(variants, "branches", [x, y], wbUndoStack[wbUndoStack.length - 1], (id) => wbMapPasteMake(id, text));
+  wbPasteChipOffer(variants, "branches", [x, y], wbStacks.undo[wbStacks.undo.length - 1], (id) => wbMapPasteMake(id, text));
 }
 
 async function wbMapPasteSpecial() {

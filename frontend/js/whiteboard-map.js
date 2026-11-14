@@ -39,11 +39,11 @@ function wbRecorded(name, fn) {
 //: The depth-only twin, for `wbMapTransplant`: it records its own entry, so what it calls runs plain.
 function wbRecordedDepth(fn) {
   return Object.assign(async (...args) => {
-    wbRecordDepth += 1;
+    wbStacks.depth += 1;
     try {
       return await fn(...args);
     } finally {
-      wbRecordDepth -= 1;
+      wbStacks.depth -= 1;
     }
   }, fn, { depthOnly: true });
 }
@@ -1549,7 +1549,7 @@ function wbBuildMapNode(el, d) {
         //: The add is a recorded gesture, so its create is usually inside a
         //: batch with the tidy's moves.
         wbHistoryFor();
-        const top = wbUndoStack[wbUndoStack.length - 1];
+        const top = wbStacks.undo[wbStacks.undo.length - 1];
         const madeIt = (e) => e?.action === "create" && e.kind === "object" && e.id === live.id;
         if (!(live._fresh && (madeIt(top) || (top?.action === "batch" && top.entries.some(madeIt))))) {
           wbPushUndo({ action: "move", kind: "object", id: live.id, before: WB_KIND_INFO.object.payload(live) });
@@ -3377,7 +3377,7 @@ async function wbMapInsertParent(id) {
   const created = await wbMapCreateNode({ parentId });
   if (!created) return null;
   //: Folded into the batch below, so one Ctrl+Z takes both back.
-  if (wbUndoStack[wbUndoStack.length - 1]?.action === "create") wbUndoStack.pop();
+  if (wbStacks.undo[wbStacks.undo.length - 1]?.action === "create") wbStacks.undo.pop();
   created.data = { ...created.data, order: wbMapOrderKey(node) };
   await wbSaveObject(created);
   try {
@@ -3638,7 +3638,7 @@ async function wbMapDeleteSubtree(id) {
   const count = deleted.length;
   //: Inside a recorded gesture the gesture pushes the one step for the whole
   //: act; the toast's Undo is then the board's own.
-  if (wbRecordDepth > 0) {
+  if (wbStacks.depth > 0) {
     toastAction(`Deleted ${nounCount(count, "node")}.`, "Undo", () => wbUndo());
     return;
   }
@@ -3647,13 +3647,13 @@ async function wbMapDeleteSubtree(id) {
     `Deleted ${nounCount(count, "node")}.`,
     "Undo",
     async () => {
-      const at = wbUndoStack.lastIndexOf(entry);
+      const at = wbStacks.undo.lastIndexOf(entry);
       if (at === -1) return; // already taken back with Ctrl+Z
-      if (at === wbUndoStack.length - 1) {
+      if (at === wbStacks.undo.length - 1) {
         await wbUndo();
         return;
       }
-      wbUndoStack.splice(at, 1);
+      wbStacks.undo.splice(at, 1);
       wbUpdateUndoRedoButtons();
       await wbMapRestoreRows(deleted, links);
       await wbRefreshMapState();
@@ -4401,11 +4401,11 @@ async function wbMapTidyFresh() {
   //: Run as plain rather than as a recorded gesture (`wbRecordGesture`): the
   //: map arrived this way, and an Undo that un-tidied it would be a step
   //: nobody took.
-  wbRecordDepth += 1;
+  wbStacks.depth += 1;
   try {
     await wbMapTidy({ quiet: true });
   } finally {
-    wbRecordDepth -= 1;
+    wbStacks.depth -= 1;
   }
   wbFrameMapOnOpen();
 }
@@ -6089,7 +6089,7 @@ async function wbOutlineCommit(node, field) {
   if (live.data.content === edited) return;
   if (live._creating) await live._creating;
   wbHistoryFor();
-  const top = wbUndoStack[wbUndoStack.length - 1];
+  const top = wbStacks.undo[wbStacks.undo.length - 1];
   const madeIt = (e) => e?.action === "create" && e.kind === "object" && e.id === live.id;
   if (!(live._fresh && (madeIt(top) || (top?.action === "batch" && top.entries.some(madeIt))))) {
     wbPushUndo({ action: "move", kind: "object", id: live.id, before: WB_KIND_INFO.object.payload(live) });

@@ -71,11 +71,11 @@
     inst.boardId = window.currentBoardId ?? null;
     inst.selectedItem = wbSelectedItem;
     inst.multiSelection = new Set(wbMultiSelection);
-    inst.undoStack = wbUndoStack;
-    inst.redoStack = wbRedoStack;
+    inst.undoStack = wbStacks.undo;
+    inst.redoStack = wbStacks.redo;
     inst.zoom = wbZoom;
     inst.mapState = window.wbMapState ?? null;
-    inst.historyBoard = wbHistoryBoard;
+    inst.historyBoard = wbStacks.historyBoard;
     inst.tool = window.currentTool;
   }
 
@@ -86,11 +86,11 @@
     //: A const Set other code holds by reference: refilled, never replaced.
     wbMultiSelection.clear();
     for (const key of inst.multiSelection) wbMultiSelection.add(key);
-    wbUndoStack = inst.undoStack;
-    wbRedoStack = inst.redoStack;
+    wbStacks.undo = inst.undoStack;
+    wbStacks.redo = inst.redoStack;
     wbZoom = inst.zoom;
     window.wbMapState = inst.mapState;
-    wbHistoryBoard = inst.historyBoard;
+    wbStacks.historyBoard = inst.historyBoard;
     window.currentTool = inst.tool;
   }
 

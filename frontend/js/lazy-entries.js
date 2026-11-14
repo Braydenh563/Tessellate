@@ -8,6 +8,7 @@ Object.assign(LAZY_MODULES, {
   boards: [
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/js/whiteboard-undo.js", //: Before whiteboard-map.js: the undo stacks (`wbStacks`) and the gesture recorder.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.
@@ -216,7 +217,8 @@ document.addEventListener("keydown", (event) => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
   const box = event.target;
   //: By the box's id while the adapters are still on their way (maths1527: about 1 s after a fresh note box's first focus, Alt+= did nothing).
-  const kind = (typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
+  //: editor.js is a boot script, so by the first key press `editorSurfaceKind` is defined.
+  const kind = editorSurfaceKind(box) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
   if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
   event.preventDefault();
   openMathEditor({ target: box });

@@ -792,7 +792,7 @@
       //: re-made mid-batch with a new id is followed by the steps that name it.
       const reverse = [];
       const pending = [...entry.entries];
-      if (!wbHistoryInFlight.length) wbRemapSeen = new WeakMap();
+      if (!wbHistoryInFlight.length) wbStacks.remapSeen = new WeakMap();
       wbHistoryInFlight.push(pending, reverse);
       try {
         while (pending.length) {
@@ -933,7 +933,7 @@
       }
       //: Already in the new id space: a later item's translation must not touch it.
       const made = { action: "create", kind: entry.kind, id: restored.id };
-      wbRemapSeen.set(made, new Set(["id"]));
+      wbStacks.remapSeen.set(made, new Set(["id"]));
       to.push(made);
     } else if (entry.action === "move") {
       // A drag, resize, or nudge's own undo: asked for directly ("account
@@ -1007,8 +1007,8 @@
   //: And whether there is anything on either stack, so the status bar's two
   //: buttons can be lit or dimmed by the board's own history rather than by the
   //: app's, which knows nothing about a shape that moved.
-  window.wbCanUndo = () => (wbHistoryFor(), wbUndoStack.length > 0);
-  window.wbCanRedo = () => (wbHistoryFor(), wbRedoStack.length > 0);
+  window.wbCanUndo = () => (wbHistoryFor(), wbStacks.undo.length > 0);
+  window.wbCanRedo = () => (wbHistoryFor(), wbStacks.redo.length > 0);
 
 
 
@@ -1041,7 +1041,7 @@
     wbCommitOpenEdit();
     wbUndoParents = [];
     try {
-      if (!(await wbApplyHistoryEntry(wbUndoStack, wbRedoStack))) return;
+      if (!(await wbApplyHistoryEntry(wbStacks.undo, wbStacks.redo))) return;
       wbUpdateUndoRedoButtons();
       wbInstances.changed();
       //: C32: no labels on a board's history, so the notice names the place; "info" shows even when muted.
@@ -1057,15 +1057,15 @@
   }
 
   // Reapplies whatever the most recent undo took back, asked for directly
-  // (`wbUndoStack` "exists; nothing analogous does"). Pushes the reverse onto
-  // `wbUndoStack`, so undo/redo/undo/redo keeps working rather than only
+  // (`wbStacks.undo` "exists; nothing analogous does"). Pushes the reverse onto
+  // `wbStacks.undo`, so undo/redo/undo/redo keeps working rather than only
   // ever reversing once.
   async function wbRedo() {
     await wbDeleting.settled();
     wbHistoryFor();
     wbCommitOpenEdit();
     try {
-      if (!(await wbApplyHistoryEntry(wbRedoStack, wbUndoStack))) return;
+      if (!(await wbApplyHistoryEntry(wbStacks.redo, wbStacks.undo))) return;
       wbUpdateUndoRedoButtons();
       wbInstances.changed();
       toast("Redone: last change on this board", "info");

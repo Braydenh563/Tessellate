@@ -903,4 +903,5 @@ def test_a_history_remap_translates_each_id_once():
         "items brought back reuse the ids just deleted (8 comes back as 9 and 9 as 8); "
         "a second translation of an already translated id duplicates and drops steps"
     )
-    assert 'wbRemapSeen.set(made, new Set(["id"]))' in board, "a recreated item's own step is already in the new ids"
+    #: L-whiteboard-52: the remap memory is read through the `wbStacks` surface outside whiteboard-undo.js.
+    assert 'wbStacks.remapSeen.set(made, new Set(["id"]))' in board, "a recreated item's own step is already in the new ids"
