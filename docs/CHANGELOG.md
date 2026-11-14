@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Status dot: a test drives both red paths (server stops answering, search model fails) through the real state function (L-world-class-184).
 - Filing: a test pins that "ai is cool" is never filed or offered under Sketches on the words path (L-world-class-186).
 - Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
 - open_scan hits in tests/test_[a-c]* swept from 211 to 2: comments reworded, names changed, dead strict-xfail machinery with empty OPEN sets removed; tests/test_open_scan_tests_ac.py allows only strict xfails naming an open LEDGER row (L-graph-19).
