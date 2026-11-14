@@ -128,7 +128,10 @@ const { boot, PW } = require('./lib.js');
       const b = document.getElementById('nm-buddy');
       localStorage.removeItem('nm-buddy-spots');
       nmb.pinned = false;
-      nameMarkBuddyMoveTo(b, { kind: 'air', pose: 'float', x: px, y: py }, !w);
+      // A real perch near the point, as a drag drops it: a pin in the open air is dropped onto one when it is next placed (`nameMarkBuddyNextSpot`, INBOX 1640), so a float is not a place anyone can pin.
+      nameMarkBuddyIndexReset();
+      const dd = nameMarkBuddyDrop(px, py);
+      nameMarkBuddyMoveTo(b, dd, !w);
     }, [x, y, walk]);
     await page.waitForTimeout(walk ? 120 : 200);
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });
