@@ -1480,7 +1480,7 @@ function docProseToolExtensions(CM) {
 //
 // - **Expansions**: `lorem` (a paragraph), `lorem20` (twenty words),
 //   `table 3x4` (three columns, four rows; `/table 3x4` too), and, on a line of
-//   their own, `today`, `date`, `now`, `time`, `iso`, `todo`, `callout`, `hr`,
+//   their own, `today`, `date`, `now`, `time`, `iso`, the task word, `callout`, `hr`,
 //   `toc` (the headings as links) and `sig` (the name from Settings). Tab or
 //   Enter takes the chosen row; its first line is drawn after the caret in
 //   muted ink first, as the code side's ghost text is.
@@ -1493,7 +1493,7 @@ function docProseToolExtensions(CM) {
 //   Preferences (the app's own no-em-dash rule is about the app's copy, not the
 //   writer's).
 //
-// **Why a bare word only counts on a line of its own.** `now`, `date`, `todo`
+// **Why a bare word only counts on a line of its own.** `now`, `date`, the task word
 // and `hr` are words people write. Offered after any occurrence, Enter at the
 // end of "I will do it now" would stamp a time into the sentence. A line that
 // is nothing but `now` is somebody asking. `lorem` and the shortcodes are not

@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 41 | 1 | 0 | 2 | 62 |
+| documents | 0 | 42 | 1 | 0 | 2 | 43 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 596 | 129 | 2 | 165 | 1228 |
+| all | 483 | 597 | 129 | 2 | 165 | 1209 |
 
 ## graph
 
@@ -368,6 +368,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-74** `documents` open, S: A block embed drawn before the document list has loaded stays a chip: redraw it when the list lands. From agent docssync 2026-11-14. Evidence: docEmbedTarget (documents-embeds.js) cannot resolve a title before the document list loads; seen in a second window
 - [ ] **L-documents-75** `documents` open, S: A video in a note card before the library bundle loads shows a player, not a broken img. From agent docsvid 2026-11-14, L-documents-68. Evidence: a note card drawn before the library bundle (image-layout.js) loads falls back to an img for a video
 - [ ] **L-documents-78** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
+- [ ] **L-documents-79** `documents` open, M: Frame measurement of the document editor: scroll and typing frames against the 14 rAF, 7 scroll, 3 RO and 4 MO wake sources (Brief 60). From DOCUMENTS_PLAN.md:1239 Brief 60, audit 2026-11-14. Evidence: documents.js 14 rAF, 7 scroll, 3 ResizeObserver, 4 MutationObserver sites; no frame sweep in scratchpad/ui-sweeps for the editor
 
 ## mindmap
 
