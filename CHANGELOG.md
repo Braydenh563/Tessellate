@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- uipolish-0924 item D closed (L469): the per-surface pass measured with no finding at 1440 and 390, light and dark: 22 surfaces, 0 horizontal scroll, 0 off-screen or clipped text, 0 console errors, touch floor 0 under (28 and 44px), 0 dead or covered buttons, contrast ok (L469).
 - Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
