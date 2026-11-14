@@ -1232,7 +1232,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 - **VC5, FlashText link offers** (rank 5): built 2026-10-18, see HISTORY.md "OPEN.md rows closed, 2026-10-18 (open-1018)". Tag offers were not built (a document has no tags).
 - **VC6, Harper's own dictionary and the other three dialects**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
 - **VC13, the lint panel and fold-all in the palette**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
-- **VC17, Emmet's stylesheet syntaxes**: built 2026-11-14 for SCSS and Less (docsvid); see HISTORY.md, "Moved from the plans, 2026-11-14 (docsvid: L-documents-51)".
+- **VC17, Emmet's stylesheet syntaxes**: built 2026-11-14 for SCSS and Less (docsvid), Sass and Stylus as types of their own (L-documents-76); see HISTORY.md, "Moved from the plans, 2026-11-14 (docsvid: L-documents-51)".
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 

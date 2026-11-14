@@ -1861,7 +1861,7 @@ HELP_TOPICS.extend(
                 "You get syntax colours (PHP loads on first open), error underlines listed in the Problems "
                 "panel, hover notes, colour swatches, indent guides and brackets "
                 "that close themselves. Spelling covers comments and strings only. Completions and snippets open as you type "
-                "(the Code completions topic). HTML, CSS, SCSS and Less have Emmet: type ! or ul>li*3 "
+                "(the Code completions topic). HTML, CSS, SCSS, Sass, Stylus and Less have Emmet: type ! or ul>li*3 "
                 "and press Enter or Tab; the command palette (Ctrl+K) has Emmet "
                 "wrap and balance inward or outward. Keys: Shift+Alt+F formats, "
                 "Ctrl+/ toggles a line comment, Shift+Alt+A a block comment, Alt+Z "

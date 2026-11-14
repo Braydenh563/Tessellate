@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Sass (indented, `.sass`) and Stylus (`.styl`) are code types of their own, with Emmet's `sass` and `stylus` forms (`df` is `display: flex` and `display flex`); no highlighter for either is bundled, so they edit as plain text with Emmet (L-documents-76).
 - Documents: a video in a note card drawn before the library bundle loads is a `<video controls preload="metadata">`, not a broken img (L-documents-75).
 - Documents: the diagram shelf sweep drives a touch hold-and-drag of a tile onto the picture with CDP touch events (L-documents-72): 3 to 4 blocks in a flowchart and a mind map at 390.
 - Documents: Emmet in `.scss`, `.sass` and `.less` (L-documents-51): Less now opens as the CSS type (SCSS and Sass already did), so `df` and `m10` expand there, nested rules included; help names SCSS and Less. Measured in Chromium: `df` then Tab in a `.less` and a `.scss` document's `&:hover` rule wrote `display: flex;`. Sass and Stylus keep CSS punctuation or stay out (see HISTORY).

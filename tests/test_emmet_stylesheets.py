@@ -3,8 +3,9 @@
 A stylesheet dialect opens as the CSS type (`filetypes.ALIASES`), whose syntax
 is the one Emmet is mounted on, so the shorthands expand there with no table of
 their own. SCSS nests, so the abbreviation is read inside a rule within a rule.
-Stylus has no type here; Emmet's `sass` and `stylus` forms (no braces) would
-need one each, which is why `.sass` still gets CSS punctuation.
+Indented Sass and Stylus are types of their own (L-documents-76), because
+Emmet's `sass` and `stylus` forms have no braces or semicolons. No highlighter
+for either is bundled, so they edit as plain text with Emmet.
 """
 
 from __future__ import annotations
@@ -15,14 +16,30 @@ from tessellate.core import filetypes
 from tests.test_code_completion import node, one
 
 
-@pytest.mark.parametrize("name", ["theme.scss", "theme.sass", "theme.less", ".LESS", "less"])
+@pytest.mark.parametrize("name", ["theme.scss", "theme.less", ".LESS", "less"])
 def test_a_stylesheet_dialect_opens_as_css(name):
     assert filetypes.normalise(name) == "css"
     assert filetypes.require(name) == "css"
 
 
-def test_stylus_is_not_aliased_to_a_type_it_would_be_wrong_in():
-    assert filetypes.normalise("a.styl") == filetypes.DEFAULT_FILE_TYPE
+@pytest.mark.parametrize(("name", "ext"), [("a.sass", "sass"), ("a.styl", "styl"), ("stylus", "styl"), (".SASS", "sass")])
+def test_sass_and_stylus_are_types_of_their_own(name, ext):
+    assert filetypes.require(name) == ext
+    assert filetypes.get(ext).line_comment == "//"
+
+
+@node
+@pytest.mark.parametrize(
+    ("syntax", "expected"),
+    [("sass", "display: flex"), ("stylus", "display flex")],
+)
+def test_emmet_writes_the_indented_forms_without_braces_or_semicolons(syntax, expected):
+    line = "  df"
+    found = one("at", line, len(line), syntax, False)
+    assert found and found[0] == "df"
+    assert one("expand", "df", syntax)[0] == expected
+    assert one("expand", "m10", syntax)[0] == ("margin: 10px" if syntax == "sass" else "margin 10px")
+    assert one("at", "  hello", 7, syntax, False) is None
 
 
 @node

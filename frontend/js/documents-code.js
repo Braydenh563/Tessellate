@@ -1061,15 +1061,16 @@ function docEmmetSnippets(E, type) {
 //: into an empty `columns: ;`.
 function docEmmetIntended(abbr, syntax, E, anywhere = false) {
   if (!abbr || /^\d/.test(abbr)) return false;
-  if (syntax === "css") {
+  if (syntax === "css" || syntax === "sass" || syntax === "stylus") {
     if (abbr.length < 2 || !/^[a-z]/i.test(abbr)) return false;
     let out = "";
     try {
-      out = E.expand(abbr, { type: "stylesheet" });
+      out = E.expand(abbr, syntax === "css" ? { type: "stylesheet" } : { type: "stylesheet", syntax });
     } catch {
       return false;
     }
-    const declaration = /^([a-z-]+): (.+);$/.exec(out);
+    //: CSS ends in `;`; indented Sass is `name: value`, Stylus `name value`.
+    const declaration = { css: /^([a-z-]+): (.+);$/, sass: /^([a-z-]+): (.+)$/, stylus: /^([a-z-]+) (.+)$/ }[syntax].exec(out);
     return Boolean(declaration) && !declaration[1].startsWith(abbr.toLowerCase());
   }
   //: XML has no vocabulary to check a name against, so on typing only an
@@ -1100,7 +1101,7 @@ function docEmmetIntended(abbr, syntax, E, anywhere = false) {
 //: `anywhere`, because a Tab on a word is a request.
 function docEmmetAt(line, col, syntax, E, anywhere) {
   if (/^[\w$-]/.test(line.slice(col))) return null;
-  const css = syntax === "css";
+  const css = syntax === "css" || syntax === "sass" || syntax === "stylus";
   let found = null;
   try {
     found = E.extract(line, col, { type: css ? "stylesheet" : "markup", lookAhead: !css });
@@ -1134,8 +1135,8 @@ function docEmmetAt(line, col, syntax, E, anywhere) {
 //: abbreviation): a string goes in whole, an array of lines one per repeat
 //: (`ul>li*` makes a list item of each line).
 function docEmmetExpansion(E, abbr, syntax, text) {
-  const type = syntax === "css" ? "stylesheet" : "markup";
-  const config = type === "markup" ? { type, syntax } : { type };
+  const type = syntax === "css" || syntax === "sass" || syntax === "stylus" ? "stylesheet" : "markup";
+  const config = type === "markup" ? { type, syntax } : syntax === "css" ? { type } : { type, syntax };
   if (text !== undefined) config.text = text;
   try {
     const preview = E.expand(abbr, config);
@@ -1602,8 +1603,9 @@ const DOC_EMMET_BUNDLE = "/vendor/emmet/emmet.min.js";
 //: The file types Emmet serves, and the dialect for each (INBOX 402). A
 //: `.js` file is mounted with JSX, so there it is `className` and only
 //: inside JSX; TypeScript is mounted without JSX and gets none. SCSS, Less
-//: and SVG are not file types here, so they are not in the list.
-const DOC_EMMET_SYNTAX = { html: "html", css: "css", xml: "xml", js: "jsx" };
+//: and SVG are not file types here, so they are not in the list. Sass and
+//: Stylus are (L-documents-76): their own Emmet output forms, no braces.
+const DOC_EMMET_SYNTAX = { html: "html", css: "css", xml: "xml", js: "jsx", sass: "sass", styl: "stylus" };
 let docEmmetLoad = null;
 
 //: Fire and forget. The sources read `window.EMMET` when they are asked, so
@@ -1658,6 +1660,8 @@ function docXmlTextAt(state, pos) {
 
 function docEmmetPlace(CM, state, pos, syntax) {
   if (syntax === "css") return docCssInBlock(CM, state, pos);
+  //: Indented Sass and Stylus have no highlighter, so no block node: a declaration starts a line (docEmmetAt).
+  if (syntax === "sass" || syntax === "stylus") return true;
   if (syntax === "jsx") return docJsxChildAt(CM, state, pos);
   if (syntax === "xml") return docXmlTextAt(state, pos);
   return docHtmlTextAt(CM, state, pos);
@@ -1740,7 +1744,7 @@ function docEmmetMarkupSyntax() {
   const type = docFileType();
   const syntax = DOC_EMMET_SYNTAX[type.ext];
   if (!docCmView || !window.CM6 || type.previewable || docView === "plain") return null;
-  return syntax && syntax !== "css" ? syntax : null;
+  return syntax && !["css", "sass", "stylus"].includes(syntax) ? syntax : null;
 }
 
 //: **Wrap with abbreviation**, VS Code's Emmet command: the selection (or
@@ -4808,6 +4812,9 @@ let docEmmetXmlData = null;
 
 function docCompletionExtras(CM, type) {
   if (DOC_EMMET_SYNTAX[type.ext]) docLoadEmmet();
+  //: Indented Sass and Stylus are plain text here, so their Emmet source rides as language data, one stable array each.
+  const sheet = DOC_EMMET_SYNTAX[type.ext] === "sass" || DOC_EMMET_SYNTAX[type.ext] === "stylus" ? DOC_EMMET_SYNTAX[type.ext] : null;
+  if (sheet && !docEmmetSourceCache[`data-${sheet}`]) docEmmetSourceCache[`data-${sheet}`] = [{ autocomplete: docEmmetSource(CM, sheet) }];
   if (!docEmmetXmlData) docEmmetXmlData = [{ autocomplete: docEmmetSource(CM, "xml") }];
   const config = { activateOnTyping: true, maxRenderedOptions: 60 };
   if (type.ext === "css") config.override = docCssSources(CM);
@@ -4818,6 +4825,7 @@ function docCompletionExtras(CM, type) {
     //: `.js` file; the source itself answers only inside JSX.
     type.ext === "js" ? CM.javascript.javascriptLanguage.data.of({ autocomplete: docEmmetSource(CM, "jsx") }) : [],
     type.ext === "xml" ? CM.state.EditorState.languageData.of(() => docEmmetXmlData) : [],
+    sheet ? CM.state.EditorState.languageData.of(() => docEmmetSourceCache[`data-${sheet}`]) : [],
     type.ext === "xml" ? docXmlAutoClose(CM) : [],
     ["css", "html"].includes(type.ext) ? docColorSwatches(CM) : [],
     ["css", "html", "py"].includes(type.ext) ? docHoverDocs(CM) : [],
