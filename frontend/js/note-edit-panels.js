@@ -496,12 +496,21 @@ function renderEditForm(li, entry) {
   //: Escape closes the form, asking first when it has changes (INBOX 432:
   //: it did nothing). Bubbling, and only when nothing inside took it first,
   //: so the "/" menu, the [[ list and the editor's own Escape still win.
-  li.addEventListener("keydown", async (event) => {
+  const escapeForm = async (event) => {
     if (event.key !== "Escape" || event.defaultPrevented || editingId !== entry.id) return;
     if (document.querySelector(".action-menu:not(.hidden), #editor-menu:not(.hidden)")) return;
     event.preventDefault();
     if (await noteFormMayClose()) closeNoteForm();
-  });
+  };
+  li.addEventListener("keydown", escapeForm);
+  //: With the caret nowhere (a click on the page's blank, a closed popover
+  //: handing focus to <body>) the key never reaches the form; the page
+  //: takes it for as long as this form is the one on screen.
+  const escapeFromBody = (event) => {
+    if (!li.isConnected) return document.removeEventListener("keydown", escapeFromBody);
+    if (event.target === document.body && !document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) escapeForm(event);
+  };
+  document.addEventListener("keydown", escapeFromBody);
   row.append(
     smallButton("Cancel", "Discard changes", async () => {
       if (await noteFormMayClose()) closeNoteForm();

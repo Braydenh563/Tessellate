@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Escape closes the note edit form when the caret is on the page, not in the form; the lightbox, graph popup and reminders add form were measured to close already (L-world-class-94).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
 - The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).
 - Tag chips on note cards say in their hover how many notes carry the tag, counted from the notes already loaded (L-world-class-47).

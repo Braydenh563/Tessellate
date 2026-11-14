@@ -573,7 +573,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider
 - [ ] **L-world-class-92** `world-class` open, S: Run boottime.js in the CI workflow (H9). From WORLD_CLASS_PLAN.md:1851. Evidence: WORLD_CLASS_PLAN.md:1851; no boottime in .github/workflows (grep 0 hits)
 - [ ] **L-world-class-93** `world-class` open, S: Fold the four one-second clocks into one tick (19.4). From WORLD_CLASS_PLAN.md:2004. Evidence: WORLD_CLASS_PLAN.md:2004 'the four one-second clocks are still separate timers'
-- [ ] **L-world-class-94** `world-class` open, S: Escape on the image lightbox, reminders add form, note edit entry and graph node panel; the chat undo line; undo.js reading the mind map's own stack. From WORLD_CLASS_PLAN.md:2083. Evidence: WORLD_CLASS_PLAN.md:2083 'Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
 - [ ] **L-world-class-97** `world-class` open, S: Leave guard for a board mid-drag (22.1.4). From WORLD_CLASS_PLAN.md:2264. Evidence: WORLD_CLASS_PLAN.md:2264 'a board mid-drag, which has no such flag yet'
@@ -628,6 +627,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-187** `world-class` open, S: Check docs/index.html's text against the README. From IDEAS.md:132. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
+- [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
 
 ## general
 

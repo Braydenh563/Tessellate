@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11024, test files 2838, tests 22546, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8507, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11024, test files 2839, tests 22550, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8507)
 
@@ -6609,13 +6609,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:640 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:667 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:626 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:663 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:763 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:649 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:676 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:635 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:672 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:772 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:693 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:702 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
@@ -28290,7 +28290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22546)
+## Tests (22550)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29387,6 +29387,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_error_log_1549.py | 5 |
 | tests/test_error_toasts.py | 10 |
 | tests/test_escape_closes.py | 3 |
+| tests/test_escape_open_surfaces.py | 4 |
 | tests/test_events.py | 25 |
 | tests/test_events_undo.py | 19 |
 | tests/test_every_route_is_locked.py | 4 |
