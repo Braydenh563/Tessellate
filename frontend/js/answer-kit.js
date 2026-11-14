@@ -563,6 +563,7 @@ function renderAnswerGrounding(
       digestShape(answerEl, support.shape, support.figure);
       digestMore(answerEl, support.more);
       digestOffer(answerEl, support.offer);
+      digestMore.threads(support.threads);
     }).catch(() => {});
     return;
   }

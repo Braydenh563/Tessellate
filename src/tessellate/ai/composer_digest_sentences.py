@@ -743,17 +743,17 @@ class _Out:
     #: are, said once, before the offer.
     closing: list[str] = field(default_factory=list)
     #: Lines past the short answer (B5): sent, cited, and folded behind one
-    #: "Show two more" the page draws, so the answer is short by default and
-    #: the rest is a press away rather than only in the notes on the right.
+    #: "Show two more" the page draws; the rest is a press away.
     more: list[str] = field(default_factory=list)
     #: The one clarifying chip (B9): the other reading, shown only on a tie.
     next: list[str] = field(default_factory=list)
     #: Volunteered insights said (decision 73), for Confirm and Not right.
     insights: list[dict] = field(default_factory=list)
-    #: Said by theme (INBOX 1310): a facet gap on one note is not the answer's.
+    #: Said by theme (INBOX 1310).
     framed: bool = False
     #: The insight a woven overview keeps in reserve (INBOX 1743): (line, row).
     spare: tuple = ()
+    threads: list = field(default_factory=list)  # the page's thread chips (L-chat-58): {label, note_ids}
 
 
 _KIND_NOUN = {"document": "document", "board": "board", "map": "mind map", "picture": "picture"}

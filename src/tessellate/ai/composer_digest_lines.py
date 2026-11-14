@@ -2445,6 +2445,7 @@ def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # 
         return False
     dated, plan, units, first = told
     out.framed = True
+    out.threads = composer_story.threads(dated)
     composer_story.story(out, _count(composer_overview.pooled(len(members))), units, [v.written for v in dated], _topic(question, members), plan, composer_story.themed(dated), (first, lead.written if first else None))
     if (whole := composer_overview.pooled(len(members))) > len(dated) + (lead is not None):
         #: The lead counts every note; the story tells the pool it read, and says so.

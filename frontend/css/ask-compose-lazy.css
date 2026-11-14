@@ -333,3 +333,22 @@
   padding-left: var(--space-7);
   font-size: var(--text-sm);
 }
+
+/* Thread chips above Matching records (L-chat-58): one wrapping row of the
+   counted filter chip, the column below is what they filter. */
+.ask-threads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+.ask-threads .graph-filter-chip {
+  gap: var(--space-1);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ask-threads .graph-filter-chip.is-lit {
+  box-shadow: inset 0 0 0 1px var(--accent-text);
+}

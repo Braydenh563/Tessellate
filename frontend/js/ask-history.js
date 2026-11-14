@@ -163,6 +163,9 @@ async function viewAskHistoryTurn(id) {
   //: both read `#raw-results`, and this used to fill it after both ran.
   const rawList = $("raw-results");
   rawList.replaceChildren();
+  //: A reopened turn draws no thread chips (the threads are not saved with it): clear the last answer's.
+  $("ask-threads")?.classList.add("hidden");
+  $("ask-records-shown")?.classList.add("hidden");
   // Same badges as a live Ask answer: this turn's own match_info/connected_ids
   // were saved alongside it (routes_chat.py's _save_ask_turn) for exactly
   // this reason: browsing back shouldn't lose the "why" a result showed up.

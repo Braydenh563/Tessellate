@@ -1095,6 +1095,7 @@ async function askQuestion(preset) {
   searching.className = "muted";
   setLabel(searching, "ph:spin Searching your notes…");
   $("raw-results").replaceChildren(searching);
+  digestMore.threads?.(null);
   document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
@@ -1427,6 +1428,7 @@ function renderChatMeta(meta) {
   } else setAnsweredBy("", "");
   const rawList = $("raw-results");
   rawList.replaceChildren();
+  digestMore.threads?.(null);
   if (meta.raw_results.length === 0 && meta.search_mode === "none") {
     // Nothing was searched for, the message was not a question about the
     // notes. "No matching records" would report a failed search that never

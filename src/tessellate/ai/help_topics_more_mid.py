@@ -741,7 +741,11 @@ MID_TOPICS.extend(
                 "Beside an Ask answer, each Matching records card is the "
                 "note's title, two lines of it (Show more for the rest), one "
                 "line of its category, date and match percentage, the reason "
-                "it was found, and N links, which opens the notes it links to."
+                "it was found, and N links, which opens the notes it links to. "
+                "When an answer tells a story of several threads, one chip per "
+                "thread sits above the cards: press one to show only its notes "
+                "(the heading says 3 of 9), press it again to show them all. "
+                "The answer itself does not change."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
