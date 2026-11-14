@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 69 | 66 | 0 | 0 | 135 |
+| chat | 0 | 68 | 65 | 0 | 0 | 133 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 441 | 135 | 0 | 124 | 902 |
+| all | 326 | 440 | 134 | 0 | 124 | 900 |
 
 ## graph
 
@@ -114,7 +114,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-232** `chat` partly, S: composer6-1026 (4) needle under composer control: composer picks tool call not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): needle_control.py, needle_provider.py exist
 - [ ] **L-chat-233** `chat` partly, S: composer6-1026 (5) composer reach into fixed-text surfaces: fixed text still present elsewhere. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
 - [ ] **L-chat-234** `chat` partly, S: Quantity engine replaces composer_money: open tail: compare_sides order, goal with no doing, unknown dimension. From CHAT_PLAN.md:1853. Evidence: Recount 2026-11-14 (audit, verify in code first): HISTORY 2026-10-30 (quantity engine built)
-- [ ] **L-chat-235** `chat` partly, S: Phrasing tests from real conversations: 26 strict xfails open. From CHAT_PLAN.md:1855. Evidence: Recount 2026-11-14 (audit, verify in code first): fixtures/composer/phrasing_1111.json and tests/test_phrasing_real_1111.py per plan
 - [ ] **L-chat-236** `chat` open, S: 1564 D30 language packs, per-document language, UK and US variants: packs, variants. From CHAT_PLAN.md:1870. Evidence: Recount 2026-11-14 (audit, verify in code first): no language pack code (grep src, frontend)
 - [ ] **L-chat-237** `chat` partly, S: 1691 background tasks run in Quick mode (BACKGROUND_MODE): meeting_summary.py:162 has no mode; real-model before and after not run. From CHAT_PLAN.md:1874. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/presets.py:145-192; reminder_parser.py:153, speakers.py:78, skill_runner.py:679, entities.py:90, drafter.py:537, captioning.py:150, passive_capture.py:203, tensions.py:238
 - [ ] **L-chat-238** `chat` open, S: Negative-claim check before no-notes reply: refuse unfounded find claims. From CHAT_PLAN.md:1879. Evidence: Recount 2026-11-14 (audit, verify in code first): no reader found (grep)
@@ -743,7 +742,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-24** `world-class` blocked-hardware, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done.
 - [ ] **L-chat-17** `chat` open, L: Personal wording switch and per-surface composer evals. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:655. Evidence: Open line in the plan's prose a session could miss. Items 1-11 leftovers; item 10 needs a local model. Emulable 2026-11-14: start the model with `scratchpad/llama-dev.sh serve` (llama-server built at scratchpad/llama.cpp/build/bin, qwen2.5-1.5b GGUF at /tmp/memorymap-llama; answered on :8791 here), item 10 runs against it; the other items are fake-transport work.
 - [ ] **L-chat-23** `chat` open, M: Chat latency budgets and small-model tool use. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1614. Evidence: Open line in the plan's prose a session could miss. Budgets unmet and small-model tool use unverified. Emulable 2026-11-14: start the model with `scratchpad/llama-dev.sh serve` (llama-server built at scratchpad/llama.cpp/build/bin, qwen2.5-1.5b GGUF at /tmp/memorymap-llama; answered on :8791 here), time the turns (four cores shared, so a ceiling) and run the small-model tool-use cases of tests/test_harness_evals.py.
-- [ ] **L-chat-250** `chat` open, M: Phrasing xfails left: misspelt calender lead-in, bare event statement, meeting-today quotes the Meeting note. From L-chat-248 remainder. Evidence: tests/test_phrasing_real_1111.py XFAIL: 'calender says tomorrow is', 'lunch with my friend at noon today', 'do i have any meeting to go to today' (3 of 331)
 - [ ] **L-chat-251** `chat` open, M: A window follow-up with no note in the window answers the overview instead of saying none. From L-chat-249 probe. Evidence: chain 'what did I write about running' then 'what about last month': follow_on reads 'running last month?' (composer_dialogue.py _follow_window) yet the answer is the 5 Sep to 8 Nov overview; asked alone it says nothing last month
 - [ ] **L-documents-6** `documents` blocked-hardware, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open.
 - [ ] **L-whiteboard-14** `whiteboard` blocked-hardware, S: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.

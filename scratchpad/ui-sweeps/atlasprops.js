@@ -47,7 +47,14 @@ const { boot } = require('./lib.js');
       for (const el of g.querySelectorAll('path, circle, ellipse, rect, line, polyline, polygon')) {
         if (/glow/.test(el.getAttribute('class') || '')) continue;
         const cs = getComputedStyle(el);
-        let op = Number(cs.opacity); for (let p = el.parentElement; p && p !== g.parentElement; p = p.parentElement) op *= Number(getComputedStyle(p).opacity);
+        // A part that is fully hidden at rest and fades in during its act (the dust motes) is read at the most its
+        // act's animation reaches: the act class is on only for that read, since its fade-in would hide the rest.
+        let op = Number(cs.opacity);
+        if (op === 0) {
+          buddy.classList.add(`nmb-act-${name.slice(4)}`);
+          for (const a of el.getAnimations()) for (const k of (a.effect.getKeyframes ? a.effect.getKeyframes() : [])) if (k.opacity !== undefined) op = Math.max(op, Number(k.opacity));
+          buddy.classList.remove(`nmb-act-${name.slice(4)}`);
+        }
         for (const [paint, alpha] of [[cs.stroke, Number(cs.strokeOpacity)], [cs.fill, Number(cs.fillOpacity)]]) {
           if (!paint || paint === 'none') continue;
           if (paint === cs.stroke && parseFloat(cs.strokeWidth) < 0.5) continue;

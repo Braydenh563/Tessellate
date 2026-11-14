@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Atlas: every prop is now 4 to 1 or more against its body and 14px or more in both looks (the desk props, 18 of 30 were 1 to 2.5 to 1 or under 14px): a navy keyline under each fill, navy line-art, and the note, gear, puzzle piece, snack and nap Zs drawn larger; `scratchpad/ui-sweeps/atlasprops.js` reads color-mix paints and a hidden part at its act's peak (L-chat-246).
 - Chat: the last three phrasing xfails are answered ("calender says tomorrow is" is the date question, "lunch with my friend at noon today" offers a reminder card, a meeting ask with no named thing and no list for the day says none instead of quoting a note); `tests/test_phrasing_real_1111.py` has no xfail left (L-chat-235, L-chat-250).
 - Atlas cost, measured in a real browser at 4x CPU (L232, L233, L238): a class change on the buddy restyles 113 to 166 elements (was 1,244), a mood change is 3 to 5 restyles, and a click's handlers run in 0.1 to 7.6 ms; `tests/test_atlas_cost_live_1114.py` keeps those budgets.
 - Chat: the chat box shows grey ghost text for the end of its last word (from your tags, titles and recent searches, no model; Tab or Right takes it, typing or Escape drops it; the existing "Suggest as you type" switch turns it off). What it learned: each fact is one line (chip, text and meta, actions) instead of four, 63px a row instead of 142, stacked below 600px. L-chat-141, 143.

@@ -1824,6 +1824,15 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 
+def _find_act_facts(req: _StreamRequest, prepared: dict) -> list[dict]:
+    """A find said as an act ("find my gym notes", L-chat-239): its rows are facts the model words under
+    the figure check, as a list is; no model, or the Ask box, keeps the act's own path."""
+    if prepared["intent"] != intent.ACT or req.body.notes_only:
+        return []
+    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
+    return list(_act_planned_events(req, parsed)) if parsed and parsed["intent"] == "find" else []
+
+
 def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     """A read tool's answer (decision 59) is the whole notebook's, so the
     notes retrieval found are not its sources. Read with a model up too: a
@@ -1836,7 +1845,7 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     ("list my work notes") with a model up to say it: that is facts too."""
     reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
     if prepared["stats"] is None and reads and not req.skill:
-        prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
+        prepared["tool_read"] = _tool_read_events(req, prepared["notes"]) or _find_act_facts(req, prepared)
         if not prepared["tool_read"] and t.ollama_running and not t.composed and prepared["intent"] != intent.ACT:
             #: A figure or a tick the notes settle (a sum, a day, "did I"):
             #: the engine's own, handed to the model as facts too, so the
