@@ -314,6 +314,7 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "profile", "my profile", "my name", "display name", "your look",
             "shuffle", "change my name", "what to call me", "greeting name",
+            "call me", "what you call me", "call me by", "make atlas call me",
         ),
         "body": (
             "Settings, Profile is you, kept on this computer: Your name (shown "
@@ -322,7 +323,8 @@ MORE_TOPICS: list[dict] = [
             "undoes that, Choose parts yourself sets each part), and About me, "
             "which Atlas reads for more personal answers only while \"Let Atlas "
             "read your name and About me\" is on. Delete my profile data clears "
-            "it; answers just get less personal."
+            "it; answers just get less personal. Telling Atlas \"call me Sam\" "
+            "sets Your name for you."
         ),
         "badge": {"label": "Profile", "section": "preferences"},
     },
@@ -1941,6 +1943,7 @@ TOPIC_META: dict[str, dict] = {
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
     "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
         "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
+    "ask-answerer": {"title": "Who answers plain Ask", "path": "Settings, Models, Who answers plain Ask"},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},

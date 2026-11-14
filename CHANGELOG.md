@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)
 Learning: the five filing reads are timed on 3,000 notes and 3,000 corrections, the slowest 78 ms (L133)
 Chat: the help-popover sweep opens a closed fold and waits out the smooth scroll (146 popovers, 0 findings); the money meta payload is pinned (400 rows, 425 KB for 450 notes) (L134, L248)
 Chat: the typed yes forms, the Ask answerer setting, one assistant name on reply chips, hidden match percents, a scrolling sources grid, SearXNG auto retry, the tools engine shown with no model, and proofs for starters, the silent probe, checkpoint refetch and Guide ranking (L715 to L737, L166, L167, L118, L128, L130, L196, L198)
