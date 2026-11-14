@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: "how much more did I walk than run" is two sums and a subtraction over the same notes, citing both, and "how close am I to my 10k goal" counts the runs the goal note names instead of every distance written (L-chat-234).
 - Chart maker: area, pie, scatter, histogram and table join bar and line, in the / menu, a chart block, and Chat's chart answer ("chart this as a pie" draws a pie instead of saying it is bars); the pie's slices are 5.9 to 1 or more against the card in both looks (L-chat-252).
 - Chat: every wording slot now has 20 or more distinct sentences across the four voices and five moods (23 abilities had 7 to 19; the quiz lines, the welcome, the small talk and the act lines now vary), and the terse voice's lines average 3.8 words against 8.4 for formal (L-chat-229, 230).
 - Atlas: every prop is now 4 to 1 or more against its body and 14px or more in both looks (the desk props, 18 of 30 were 1 to 2.5 to 1 or under 14px): a navy keyline under each fill, navy line-art, and the note, gear, puzzle piece, snack and nap Zs drawn larger; `scratchpad/ui-sweeps/atlasprops.js` reads color-mix paints and a hidden part at its act's peak (L-chat-246).
