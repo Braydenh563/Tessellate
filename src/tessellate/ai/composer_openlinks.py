@@ -31,6 +31,13 @@ _NAMED = re.compile(
     _LEAD + r"(?:what|which notes?|which)(?: else)?(?:'s| is| are)? (?:linked|links?|connected|connects?|related|relates|joined|points?|backlinks?) (?:back )?(?:to|with)\s+(?P<name>.+?)\s*[?.!]*$",
     re.I,
 )
+#: "what backlinks does orchard have", "show the backlinks of orchard" (L236): the word is the noun, not the verb.
+_BACKLINKS = re.compile(
+    _LEAD + r"(?:what|which)(?: are| is)?(?: the)? backlinks? (?:does|do|has|have|are there)\s+(?P<name>.+?)(?:\s+(?:have|got|has))?\s*[?.!]*$"
+    r"|" + _LEAD + r"(?:what|which)(?: are| is)? (?:the )?backlinks? (?:for|of|to)\s+(?P<name2>.+?)\s*[?.!]*$"
+    r"|" + _LEAD + r"(?:show|list|give|find|get)(?: me)?(?: all)?(?: the| my)? backlinks? (?:for|of|to)\s+(?P<name3>.+?)\s*[?.!]*$",
+    re.I,
+)
 _WHY = re.compile(_LEAD + r"(?:why|how) (?:is|are) (?:they|these|those|it|the two|the notes) (?:linked|connected|related|joined)(?: together)?\s*[?.!]*$", re.I)
 
 
@@ -104,16 +111,24 @@ def _titled(session: Session, name: str) -> list[int]:
     return exact[:1] or (holding if len(holding) == 1 else [])
 
 
+def _by_name(session: Session, text: str) -> list[int] | None:
+    """The note a "links of X" or "backlinks of X" question names: its id in a list, [] when no note has
+    that name, None when the question names none."""
+    named, back = _NAMED.match(text), _BACKLINKS.match(text)
+    if back and not named:
+        return _titled(session, next((g for g in back.groups() if g), ""))
+    return _titled(session, named.group("name")) if named and not _LINKS.match(text) else None
+
+
 def answer(session: Session, typed: str, history: list[dict] | None, open_ids: list[int]) -> str | None:
     """The links of the note "it" (or a note by name) is, or why the notes just shown are linked."""
     text = " ".join(str(typed or "").split())
     why = bool(_WHY.match(text))
-    named = _NAMED.match(text)
-    if not (why or _LINKS.match(text) or named):
+    by_name = _by_name(session, text)
+    if by_name is not None:
+        return _listed(session, by_name[0], False) if by_name else None
+    if not (why or _LINKS.match(text)):
         return None
-    if named and not _LINKS.match(text):
-        ids = _titled(session, named.group("name"))
-        return _listed(session, ids[0], False) if ids else None
     ids = _subject(session, history or [], list(open_ids or []))
     if not ids:
         return None

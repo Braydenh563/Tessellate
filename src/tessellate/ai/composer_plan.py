@@ -52,6 +52,9 @@ _KINDS = {"birthday": "birthday", "appointment": "appointment", "meeting": "meet
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
+    #: "what is most important right now", "what's urgent", "what matters most" (L155): the day's plan.
+    rf"^{_LEAD}what(?:'s|’s| is| are)? (?:(?:the|my) )?(?P<imp>(?:most |more )?(?:important|urgent|pressing)(?: (?:thing|things|task|tasks|item|items|job|jobs))?(?: to do)?|(?:top |main |biggest )?priorit(?:y|ies)|matters? most)(?: (?:right now|now|today|at the moment|at present|this morning|this afternoon|tonight))?\W*$|"
+    rf"^{_LEAD}what(?:'s|’s| is)? my (?P<imp2>most (?:important|urgent|pressing) (?:thing|task|item|job))(?: to do)?(?: (?:right now|now|today))?\W*$|"
     #: "spread these over the week", "how should I spread my tasks this week" (audit 1030 Z57).
     rf"^{_LEAD}(?:how (?:should|do|can|could) i |help me |can you )?spread (?:out )?(?P<sp>.*)$|"
     rf"^{_LEAD}(?:what does|how does) (?P<w>my (?:week|day|schedule|weekend|month))(?: look| looks)?(?: like)?.*$|"
@@ -847,6 +850,15 @@ def _not_reminded(reminders: list[dict], tasks: list[tuple[str, dict]]) -> list[
     return [(task, note) for task, note in tasks if study.clean(task).lower() not in said]
 
 
+#: "my to-do list" names the note called Todo when there is one (its own items, L103); else every open item.
+_TODO_LIST = re.compile(r"\bto[- ]?do list\b", re.I)
+
+
+def _has_todo_note(ctx: Ctx) -> bool:
+    first = lambda n: re.sub(r"^#+\s*", "", str(n.get("title") or str(n.get("content") or "").split("\n", 1)[0]).strip())  # noqa: E731
+    return any(re.fullmatch(r"to[- ]?do", first(n), re.I) for n in ctx.notes[:300])
+
+
 def _left(ctx: Ctx) -> Reply | None:
     if ctx.open_ids:
         return None  # with a note open, that note's own list (composer_open)
@@ -964,7 +976,7 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if _BARE_ON.match(text):
         return _due(ctx, ahead_default(today))
     if _LEFT.match(text):
-        return _left(ctx)
+        return None if _TODO_LIST.search(text) and _has_todo_note(ctx) else _left(ctx)
     if _OVERDUE.match(text):
         return _overdue(ctx)
     until = _UNTIL.match(text)
@@ -984,4 +996,6 @@ def _plan_reply(ctx: Ctx, text: str, plan: re.Match, today: date) -> Reply | Non
         return None
     if plan.group("st") is not None:
         return _plan(ctx, ahead_default(today))
+    if plan.group("imp") or plan.group("imp2"):
+        return _plan(ctx, (today, today, "today"))
     return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))

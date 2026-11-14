@@ -39,7 +39,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, question_noise, realise
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_notime, composer_clean, composer_event_verdict, factgraph
-from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
+from tessellate.ai import composer_aliases, composer_assign, composer_chip_subject, composer_overview
 from tessellate.ai import composer_close, composer_jokes, composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
@@ -666,7 +666,7 @@ def _titled_body(view, name: str, sentence) -> str:  # noqa: ANN001
 def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     """Every note that names the person: how many, then a line from each."""
     out.lines.append(PHRASES["who_many"].format(name=_name_said(name), count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
-    said: set[str] = set()
+    said, told = set[str](), list[str]()  # the lines read as one paragraph (L210)
     for v, s2 in found[:LINES["overview"]]:
         body = _titled_body(v, name, s2) or _tidy(_second_person(composer_refer.resolved(v, s2)), v.written)
         if not _TIMED.get() and body.lower() in said:
@@ -676,10 +676,11 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
         if v.title and re.match(rf"{re.escape(name)}\s*:", body, re.I) and not _defines(v, name.split()):
             body = f"your {v.title} note has {body}"
         body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
-        out.lines.append(f"{_lead_day(v.written, today)}{body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
+        told.append(f"{_lead_day(v.written, today)}{body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
         #: Each line cites its own note (second eye F2: one row, for the lead,
         #: stood behind sentences taken from several notes).
         out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})
+    out.lines.append(" ".join(told))
 
 
 def _who_found(name: str, views) -> list:  # noqa: ANN001
@@ -1142,7 +1143,7 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     stands for, who someone is, a comparison, what a category holds): the
     result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
     names = _NAMES.get()
-    if _no_number(out, question, views) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
+    if _no_number(out, question, views) or composer_assign.answer(out, asked, views, today) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
         return _result(out, "fact", asked)
     kind, asked = _which_names(kind, asked)
     kind, asked = _as_who(kind, asked, names, views)

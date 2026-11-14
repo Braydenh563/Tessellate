@@ -7,6 +7,13 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Guide: the where-question lead check is linear on runs of tabs (CodeQL 2296).
+- Chat: notes joined by neither link nor tag are themed by their category, never by one on every note or one the question names (L102).
+- Chat: a typo is read by the notebook's own word pairs ("oat diary" is "oat dairy" when the notes write it), and the no-model tools (sums, conversions, dates, the week, reminders, contradictions, the bin) and the all-matches list are pinned by tests (L222, L230, L110, L121, L212, L218).
+- Chat: "what are the backlinks of X" lists the notes linking to X, and a joke names the note it comes from by its own title (L236).
+- Chat: "what is the most important thing to do" and its phrasings answer with today's plan (L155).
+- Chat: a "Name: thing" checklist answers who has what, what a person has, and who is still open; "how many are left on the to-do list" finds a note titled Todo (L103).
+- Chat: "what else is there about X" lists the topic's notes, a who-is overview reads as one paragraph, and quotes are checked verbatim (L156, L154, L188, L210).
+- Chat: a saved chat keeps its frame on reopen (tested), and a frame's subject is a noun phrase, not "book am I reading" (L125).
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
 Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)

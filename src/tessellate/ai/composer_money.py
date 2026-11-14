@@ -643,6 +643,9 @@ def _total_rest(q: str):  # noqa: ANN202
     if m := _SPENT.match(q) or _TOTAL.match(q):
         return m.group(1)
     if (m := _ADD_UP.match(q)):
+        #: Two named things ("the dentist and the car service") are summed by composer_sum, not scoped here.
+        if " and " in (m.group("thing") or ""):
+            return None
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
     if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
         return f"{kind[0]} {kind[1]}"

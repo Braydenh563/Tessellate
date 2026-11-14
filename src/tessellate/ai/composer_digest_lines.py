@@ -2344,8 +2344,8 @@ def _counted_groups(question: str, members, kind: str) -> tuple[list, list | Non
     count and the list share one set (audit 1030 Z9). A note the question's
     own category holds is never loose: it is in the pool, so it is counted
     and told like the rest (INBOX 1665 a: "seven notes" over eleven)."""
-    groups = composer_frame.groups([v.note for v in members]) if kind == "overview" and not _GOING.search(question) else []
     held = _in_named_category(question, members)
+    groups = composer_frame.groups([v.note for v in members], composer_frame.skip_words(clean(question), [v.note for v in members if v.id in held])) if kind == "overview" and not _GOING.search(question) else []
     for g in groups:
         g.in_topic = g.band == "loose" and set(g.ids) <= held
     loose = {i for g in groups if g.band == "loose" and not g.in_topic for i in g.ids}
