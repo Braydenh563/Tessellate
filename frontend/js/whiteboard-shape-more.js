@@ -442,7 +442,27 @@
   }
 
 
+  //: A connector's bends as the numeric list the panel shows and takes (draw.io's `addEdgeWaypoints` list): "120, 80; 200, 80".
+  //: `waypointsText` writes it; `parseWaypoints` answers the points, [] for an empty field and null for text that is not
+  //: pairs of numbers (so the panel says so and keeps the old bends). Rounded to whole pixels, at most 50.
+  function waypointsText(points) {
+    if (!Array.isArray(points)) return "";
+    return points.filter((p) => Number.isFinite(Number(p?.x)) && Number.isFinite(Number(p?.y))).map((p) => `${Math.round(p.x)}, ${Math.round(p.y)}`).join("; ");
+  }
+  function parseWaypoints(text) {
+    const parts = String(text || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 50) return null;
+    const out = [];
+    for (const part of parts) {
+      const m = /^(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)$/.exec(part);
+      if (!m) return null;
+      out.push({ x: Math.round(Number(m[1])), y: Math.round(Number(m[2])) });
+    }
+    return out;
+  }
+
   wbFmtState.shapeMore = {
+    waypointsText, parseWaypoints,
     tableRowPorts, rowOf, rowAfter, carryPatch, carryRowPorts,
     polygonPoints, polygonD, nearestCorner, nearestOnSide, pointsTarget, editPoints,
     connectorOutline, connectorProfile, connectorHeads, shapedLink, CONNECTOR_SHAPES, CONNECTOR_SHAPE_WORDS,

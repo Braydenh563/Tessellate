@@ -479,6 +479,8 @@ TAIL_TOPICS.extend(
                 "orthogonal",
                 "connector shape",
                 "arrow width",
+                "bend points",
+                "waypoint list",
                 "arrow head size",
                 "bend",
                 "waypoint",
