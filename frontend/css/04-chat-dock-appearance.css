@@ -2908,6 +2908,16 @@ span > .chip {
   }
 }
 
+@media (max-width: 599.98px) {
+  #category-list li .category-actions {
+    flex: 0 0 auto;
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 /* --- attaching notes to a chat message --------------------------------------- */
 .note-picker {
   position: relative;
@@ -6485,6 +6495,13 @@ button.manage-cat-count:hover,
 button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
   text-decoration: underline;
+}
+
+@media (max-width: 819.98px), (pointer: coarse) {
+  button.manage-cat-count {
+    min-width: var(--target-min);
+    min-height: var(--target-min);
+  }
 }
 
 /* The tool row wraps on a narrow sheet: the field keeps a line's worth. */

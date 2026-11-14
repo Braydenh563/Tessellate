@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- CSS (L-ui-modernisation-29): the last 64 component rules left `10-responsive.css` (1,079 to 515 lines; it keeps only the shell: the tab strip, the phone dock and More sheet, the status bar bands) for the component files that draw them (01, 04, 06, 07, 09); each conflicting pair was resolved at its cause, not by order, and a same-DOM computed-style A/B (19 surfaces at 390, 700, 900 and 1280) found no difference. Boot CSS gzip 163,785 to 163,438 bytes.
 - A companion tucking behind the status bar or the phone dock is cut only at the bar's edge: the clip above its head that sliced it as it sank is gone, and its handle still starts at the head (L-ui-modernisation-48).
 - Two reminder outcomes added at once both land in the note: they append under one lock from a fresh read (review).
 - /health tells another device which build runs and which folder it uses only when that device is signed in (review).

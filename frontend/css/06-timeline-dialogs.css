@@ -3797,6 +3797,16 @@ aside[data-resizable="1"] {
     font-size: var(--text-xs);
   }
 }
+
+/* 5. **The day strip's well asks for less under 1100.** `flex: 1 1 26rem` is
+      the row break: at 720 the arrows, the month (a fixed 9.5rem) and the year
+      select take 330px, so 416px more sent the seven days under them. Seven
+      44px days need 308px (they stack weekday over number below 34rem). */
+@media (max-width: 1099.98px) {
+  .timeline-days {
+    flex-basis: 19rem;
+  }
+}
 /* On a phone the arrows take the row's two ends and the month the middle. And
    the strip's own spacing steps down a token (the head to the days, the strip
    to the list): the list began at y=340 of 844, 2.4px past the first-screen
@@ -3815,6 +3825,30 @@ aside[data-resizable="1"] {
      the run instead of wrapping to a row of its own. */
   .timeline-daystrip-label.ghost.small {
     min-width: 7.5rem;
+  }
+}
+/* Below 380, Peek keeps its eye and gives up its word (the word stays the
+   button's name), so Appearance's head is one row at 360 and 320 too. */
+@media (max-width: 379.98px) {
+  #settings-peek {
+    width: var(--target-min);
+    padding: 0;
+    font-size: 0;
+  }
+  #settings-peek > .ph {
+    margin: 0;
+    font-size: var(--text-body);
+  }
+  /* The timeline's day strip (INBOX 1314, measured at 360x740): the head's
+     fixed-width month and the year menu made it 322px in a 300px card, and
+     seven days in 300px were 41.8px targets. The year menu wraps under the
+     month, and the well takes the card's inner padding, so each day is
+     44.5px. At 390 both fit as they are (330px of card). */
+  .timeline-daystrip-head {
+    flex-wrap: wrap;
+  }
+  .timeline-days {
+    margin-inline: calc(-1 * var(--space-4));
   }
 }
 /* A daily note's head: the day before and the day after, under its title

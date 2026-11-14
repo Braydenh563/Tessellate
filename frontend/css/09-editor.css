@@ -196,6 +196,39 @@
      not move. */
 }
 
+/* Reminders below 1100: the list is the page, and the add form is the sheet
+   "New reminder" opens (`openReminderCompose`, app.js; the floating + below
+   600, the dock's filled button above). While the form is on the page it is
+   not shown in this band; in the sheet it sheds its card, since the sheet is
+   the card. */
+@media (max-width: 1099.98px) {
+  #tab-reminders > #reminder-compose {
+    display: none;
+  }
+}
+
+.reminder-compose-card > #reminder-compose {
+  /* It scrolls (`overflow-y: auto` below, so `overflow-x` clips too): the
+     fields' 2px ring and its 2px gap need the ring-room doctrine's room, or
+     the first and last column lose 4px of ring (measured at 768: Reminder
+     text cut 4px each side, the Add button 4px on the left). The room is
+     padding, pulled back out by the same negative margin, so the form does
+     not move. */
+  margin: calc(-1 * var(--ring-room));
+  padding: var(--ring-room);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow-y: auto;
+}
+
+/* The heading duplicates the sheet's own title. */
+.reminder-compose-card > #reminder-compose .reminders-head > h2 {
+  display: none;
+}
+
 /* **A table in the Read view is set like the prose around it** (audit 1102
    DX12). It was a grey code card (border, tint, a monospace "TABLE" bar) that
    shrank to its content: 86 px in a 736 px pane, where Live draws the same
@@ -359,6 +392,29 @@
 
 .doc-col > :last-child {
   margin-bottom: 0;
+}
+
+/* A ⋯ menu as an action sheet below 600 (`openKebabSheet`, app.js): the menu
+   is moved into the sheet's card and sheds the popover it is elsewhere; its
+   rows take the card's width at the band's 44px floor, and its hairlines
+   between groups stay. */
+.action-menu-card > .action-menu {
+  position: static;
+  inset: auto;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow-y: auto;
+  transform: none;
+  animation: none;
 }
 
 /* Two classes: `.card h2` (a class and a tag) out-ranked a bare
@@ -939,6 +995,79 @@
   }
 }
 
+/* --- Phase 11 item 12: a dock's head is one row on a phone --------------------
+   A phone's navigation bar is one row: the way back or the drawer at the
+   leading edge, the title, and at most three icons at the trailing edge,
+   with the search field under it (the HIG's navigation bar, and what Mail,
+   Notes and Files draw). The docks here drew three rows (Notes, measured at
+   390: 166px for an opener, a title, a search box and three icons), because
+   the actions zone was sent to a row of its own and its hairline divider
+   was drawn at the start of every row it wrapped to. Now the actions share
+   the title's row and the find zone takes the second. No zone draws a
+   divider at any width now (INBOX 621); on a phone, where the zones stack,
+   the gap between them is the tighter `--space-4` the phone docks were
+   measured at. */
+@media (max-width: 599.98px) {
+  .dock {
+    column-gap: var(--space-4);
+  }
+  /* Never wider than the dock: a zone of many actions (the Writing room's,
+     515px of them) takes a row of its own and wraps inside it, right
+     aligned, rather than running off the window (errors.js at 390). */
+  .dock > .dock-actions {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+  .dock > .dock-find {
+    order: 1;
+  }
+  /* Chat's title is the conversation's name over the model it runs on, the
+     way a phone's navigation bar puts a subtitle under its title, so the two
+     share the width the three actions leave rather than each wanting it. */
+  .chat-toolbar .chat-headline {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 0;
+  }
+  .chat-toolbar .chat-headline > :first-child,
+  .chat-toolbar #chat-title {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .chat-toolbar .chat-subline {
+    flex: 0 1 auto;
+    max-width: 100%;
+    font-size: var(--text-xs);
+    overflow: hidden;
+  }
+  /* The model and the turn count leave the head: both are the model's
+     business, and the model is named and chosen in the "How it answers"
+     sheet a phone opens from the gear (`dockChatTools`). Measured with them
+     stacked under the title, the head was 86px for a 24px title, since the
+     model's name is a button at the band's 44px floor. The "reading a
+     summary" pill stays, since it is about this conversation and shows only
+     when it is true. */
+  .chat-toolbar #chat-active-model,
+  .chat-toolbar #chat-turns {
+    display: none;
+  }
+  /* The lane the toolbar kept for the sidebar's own toggle: below 600 that
+     toggle is not on the page (the opener in the head stands for it), so the
+     lane was 42px of nothing before the opener. */
+  #tab-chat .chat-toolbar {
+    padding-left: var(--space-3);
+  }
+}
+
+.action-menu-card .action-menu .menu-item {
+  width: 100%;
+  min-height: var(--target-min);
+}
+
 /* **A box the page was stretching keeps its height when the engine arrives**
    (INBOX 240). `mountNoteSurface` stamps this class when the textarea it is
    wrapping was a growing item of a flex parent, which the wrapper then has to
@@ -1136,6 +1265,49 @@
 
 .doc-margin.hidden {
   display: none;
+}
+
+.chat-dock-more-toggles,
+.chat-dock-more-toggles > .chat-tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* --- Phase 11 item 3: the chat composer on a phone ---------------------------
+   04-chat-dock-appearance.css's 820 band wraps the composer, with a reason
+   from when the row held four icon buttons and Send: squeezed beside them the
+   autogrow box went 26px wide and 295px tall. The row holds the box, the
+   microphone and Send now, and measured at 390 the wrap put the box on one
+   44px line and the two buttons on another, 100px of composer for one line
+   of text. One row: the box gives, the two buttons are fixed. The mode
+   segment comes first in the scrolling controls strip, because it is the
+   control that decides what the next message does and it was the one
+   parked off the right edge (x 309 to 457 in a 390 window). */
+@media (max-width: 599.98px) {
+  .chat-composer {
+    flex-wrap: nowrap;
+    align-items: flex-end;
+  }
+  /* The attachments follow the mode (`dockChatAttachments`, app.js). */
+  .chat-dock-controls > .chat-tool-group-attach {
+    order: -1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 599.98px) {
+  [data-dock-name="writing-room"] .dock-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 .doc-margin-cards {
@@ -1464,6 +1636,13 @@
   }
 }
 
+@media (max-width: 599.98px) {
+  .dock-nav > button {
+    min-height: var(--target-min);
+    min-width: var(--target-min);
+  }
+}
+
 @media (max-width: 599.98px) and (pointer: coarse) {
 }
 
@@ -1678,4 +1857,27 @@
       on one line. */
 .dgm-foot {
   column-gap: var(--space-1);
+}
+
+@media (max-width: 599.98px) and (pointer: coarse) {
+  #wb-gestures {
+    display: none;
+  }
+}
+
+/* ...and from 1100 up, where the form is on the page, "New reminder" only
+   put the caret in it: a second filled "add" 200px under the form's own Add,
+   two primaries for one action on one screen (INBOX 437 (4)). */
+@media (min-width: 1100px) {
+  #reminders-new {
+    display: none;
+  }
+}
+
+.chat-dock-more-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--divider);
 }

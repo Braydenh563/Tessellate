@@ -3608,8 +3608,29 @@ dialog::backdrop {
 .dash-widget-row:last-child {
   border-bottom: none;
 }
+
+/* --- Wrap and zoom sweep of the mind map and the Dashboard (owner, 2026-11-11) ---
+   Measured in the running app at 360, 390 (touch), 768, 1280, 1920, 2560 and
+   the 125, 150 and 200 % windows, both themes (every control's rect against
+   every clipping ancestor, every one-line row's items, every short label's
+   line rects; the sweep is `wrapzoom-shell.js`'s detector driven over the map
+   and Dashboard states). What it found is fixed here, by cause. */
+/* 1. **The Widgets dialog's rows give the controls a line of their own when
+       they do not fit.** At 360 the row's title column was 31px wide (the
+       Wide toggle, three icon buttons and two 1rem gaps took the rest of the
+       272px), so "Notebook constellation" ran 37px under the Wide button and
+       the description was one letter and an ellipsis. The text keeps 10rem or
+       more; the controls drop under it, at the row's end. */
+.dash-widget-row {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
 .dash-widget-row-main {
   min-width: 0;
+}
+
+.dash-widget-row-main {
+  flex: 1 1 10rem;
 }
 .dash-widget-row-title {
   font-weight: 600;
@@ -11628,6 +11649,20 @@ summary > .ph-lead,
   }
 }
 
+/* 4. **A finger's floor for what was still under it.** Measured at 390 with
+      touch after 1 to 3: the prompt dialog's field 32px tall, the agent
+      sheet's 31, the Guide's box 40 (07-whiteboard-misc.css takes it to the
+      floor beside its Send); a note's facts folded to their icons were 24px
+      squares, which the chip's overhang lengthens but cannot widen; the
+      Categories sheet's counts were 21 to 24px of text. A dialog's fields
+      join its buttons on the floor (band 1 above); a search well's input is
+      the text inside the well, which is already the target. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  :is(.modal-card, .space-dialog) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], .search-field-input), textarea:not(.search-field-input)) {
+    min-height: var(--target-min);
+  }
+}
+
 #settings-modal .modal-content .row > :is(input, select, textarea) {
   max-width: 100%;
   min-width: 0;
@@ -11706,6 +11741,20 @@ summary > .ph-lead,
    card, and the menus sweep could not click "More actions" at 1440 or 390). */
 #entry-list > li .entry-meta-end > .entry-actions {
   pointer-events: auto;
+}
+
+@media (max-width: 599.98px) {
+  /* No auto margin: the time before it has one (07-whiteboard-misc.css), and
+     two in one row split the room, which moved the time on every card. */
+  /* The end cluster (time and menu) is the meta line's last item, in the
+     flow: absolute against the meta line (the swipe's transform makes it the
+     containing block) it stood the ⋯ on the note's time. */
+  #entry-list > li :is(.entry-actions, .entry-meta-end) {
+    position: static;
+    margin-left: 0;
+    background: none;
+    opacity: 1;
+  }
 }
 
 /* The time ends the details line, at the right, and stays when the card is
@@ -12927,6 +12976,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   min-height: 0;
 }
 
+/* The list scrolls, so its rows must not shrink to fit it: a long one (the diagram's Add sheet) drew each name
+   over the hint above (INBOX 1661, 2026-11-08). */
+.sheet-list > * {
+  flex-shrink: 0;
+}
+
 /* ---------------------------------------------------------------------------
    5. The Write-with-AI footers are one row, primary on the right
    ---------------------------------------------------------------------------
@@ -13127,6 +13182,13 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .dock .chat-context-pill {
     min-height: auto;
   }
+}
+
+.chat-dock-more-tools button,
+.chat-answers-card .chat-dock-more-row select,
+.chat-answers-card #persona-peek,
+.chat-answers-card #chat-tune-search {
+  min-height: var(--target-min);
 }
 
 /* ---------------------------------------------------------------------------
@@ -13378,6 +13440,24 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 @media (max-width: 819.98px), (pointer: coarse) {
   #wb-topbar .icon-button {
     min-width: var(--target-min);
+  }
+}
+
+/* --- the board's bar takes the floor of the whole touch band, not just 600 --
+   It was written in the 600 band with Phase 11 item 7, and the band above it
+   is the one whose own rule reads "below 820 the pointer is a finger"
+   (07-whiteboard-misc.css redeclares `--target-min` at 2.75rem there). The
+   bar was exempt from it by accident, exactly the way `#tab-bar` was:
+   measured on an open board at 768x1180, `--target-min` resolved to 2.75rem
+   and all thirteen of the bar's controls still came back **36px tall**,
+   because the bar declares its own control height and that wins over a token
+   nothing in the bar reads. The icon-only ones had taken the width (44) and
+   not the height, which is how it stayed invisible.
+   It costs one step of height for thirteen targets that can be hit, the same
+   trade item 7 made at 390 (88px to 104px there). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  #wb-topbar :is(button, summary, select) {
+    min-height: var(--target-min);
   }
 }
 
@@ -14930,6 +15010,28 @@ body .chip.item-label,
   box-shadow: none;
 }
 
+/* --- Phase 11 item 4: the graph's controls are one sheet on a phone --------
+   Measured at 390x844 before this: the gear's floating panel opened at
+   (20,224) 350x288 over a map of 362x653, 42% of the map covered, with 795px
+   of content scrolling inside 286px of panel; the View menu's list drew
+   280x257 and the ⋯ menu's 256x311, both of them over the same map. Three
+   surfaces, each answering a question about the thing it hides.
+   `openGraphControlsSheet` (wiring.js) moves all three into one sheet and puts
+   them back on close, so what is inside here is the app's own markup rather
+   than a phone copy of it: the panel arrives as `.graph-options` with its
+   class, and each menu's rows arrive inside a holder wearing the menu list's
+   classes, so every rule written for those two containers still reaches them.
+   What this band has to undo is only the part of each that is about floating:
+   a menu list is absolutely positioned under its opener and carries a card's
+   own edge, ground and shadow, and inside a sheet that is a card drawn on a
+   card. The panel's cap goes the same way, because the sheet is the scroller
+   now. */
+.graph-controls-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 /* **The x is drawn, not typed** (INBOX 482: "the x buttons on these
    suggested tags are ugly and not even centred"). The glyph was Phosphor's
    x nudged 0.14em to centre its ink, a number tuned to one font's metrics
@@ -15339,8 +15441,14 @@ h3.wb-sidebar-title {
    four and then five identical "v" buttons in a row, which no one can tell
    apart without opening each (INBOX 392's screenshot). Each carries an icon
    now, drawn only where its word is not, so the wide bar is what it was. */
+.wb-topbar .wb-menu-icon {
+  display: none;
+}
 
 @media (max-width: 56rem) {
+  .wb-topbar .wb-menu-icon {
+    display: inline-block;
+  }
 }
 
 .doc-dock-menu-list .doc-dock-menu-item[aria-pressed="true"],
@@ -16359,6 +16467,17 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     white-space: normal;
+  }
+}
+
+/* Ask's buttons join the title's line and the picker alone takes the next
+   (L384: measured at 390 the group wrapped whole, three lines for two). */
+@media (max-width: 599.98px) {
+  #ask .ask-header-actions {
+    display: contents;
+  }
+  #ask h2 {
+    flex: 1;
   }
 }
 .wb-layer-row:hover .wb-layer-eye,
@@ -19294,6 +19413,20 @@ input[type="file"]:active::file-selector-button {
   display: none;
 }
 
+/* **An open board or map is a full editor, like a document: the Library's
+   sub-tab strip goes** (INBOX 476: "the library submenu bar shows on the
+   whiteboard and mindmap but not on the documents editor"). The document
+   editor is its own page and never showed the strip; a board lives inside the
+   Library, so the strip is hidden while the canvas view (not the list of
+   boards) is open, at every width. "Boards", the bar's own button, is the way
+   back, and it brings the strip with it. It was phone-only first (52px of a
+   604px canvas); a desktop board takes the same row for itself now. The
+   map's gesture hint names two keys a phone does not have; there the +
+   handles on a selected node are the gesture, and they are already 44px. */
+#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) {
+  display: none;
+}
+
 /* --- motion: the opening curtain lifts (INBOX 577) --------------------------
    After the password, the lock screen stays up while the first tab draws
    (`curtainShell`, app.js) and then fades once over the finished page;
@@ -19855,6 +19988,42 @@ input[type="file"]:active::file-selector-button {
      strip opens, and with the picker first it pushed Agent past the edge. */
   .chat-dock-controls .select-shell:has(> .feature-model-select) {
     order: 1;
+  }
+}
+
+/* The Library on a phone is for finding a thing and opening it (INBOX 392).
+   Measured at 390 before: the first card began at y=407, under the sub-tab
+   strip, a framed card holding the dock, a "22 words written" line and the
+   kind chips; and a card's preview ran eight lines, so two cards filled a
+   screen. The controls lose their frame (the page is the frame), the words
+   count goes (it is the dashboard's number, and on a phone this line is the
+   difference between a card on the first screen and none), and a preview
+   is three lines, enough to recognise a thing by, with the whole of it one
+   tap away. The first two hold on a tablet as well (below 1100, where the
+   first card began at y=371 of 768 in landscape); the clamp is the phone's,
+   where the cards are one column. */
+@media (max-width: 1099.98px) {
+  #tab-library .library-controls {
+    padding-inline: 0;
+    padding-top: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #tab-library .library-overview {
+    display: none;
+  }
+  /* The kind chips are one sideways row, as they already are below 820
+     (07-whiteboard-misc.css): at 1024 thirteen of them wrapped to two rows,
+     48px of the first screen spent on a filter. */
+  #tab-library .library-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  #tab-library .library-filters > * {
+    flex: 0 0 auto;
   }
 }
 
@@ -20453,6 +20622,39 @@ header#top-bar[data-scrolled="1"],
 }
 
 @media (max-width: 599.98px) {
+  /* **Over the sheets, which are drawn one layer above whatever opened them.**
+     `openSheet` (phone-shell.js) takes the opener's highest ancestor layer
+     plus one, so a sheet opened from a menu (the pointer menu host, 2600) is
+     at 2601 and the toast box at 1050 was behind it: what the sheet's own
+     action had just done was confirmed under the sheet that did it. Measured
+     at 390x844 (`scratchpad/ui-sweeps/toastsheet.js`, `elementFromPoint` at
+     the toast's centre): covered when the opener sat at 1050 or higher,
+     at 1050 and every layer above it. 2700 clears the highest opener and stays under the boot splash
+     (3000); `tests/test_toast_over_sheets.py` holds both ends. */
+  #toast-box {
+    z-index: 2700;
+    align-items: stretch;
+  }
+  #toast-box > .toast {
+    max-width: none;
+  }
+  /* Above the floating + too, not over it: measured at 390 on Notes, the
+     toast box stood on the tab bar (bottom 64px) and the New note button's
+     centre (y 752) answered the toast. The page's own fab sets the line:
+     its offset (07-whiteboard-misc.css's `.dock-fab`), its height, a step. */
+  /* The five pages that own a floating button; it floats only at 421px tall
+     and up (phone-shell.js PHONE_FAB), hence the height query. */
+  @media (min-height: 421px) {
+    body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box {
+      bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+    }
+  }
+  .agent-monitor {
+    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 599.98px) {
   #sidebar:not(.sidebar-sheet-open),
   #chat-sidebar:not(.sidebar-sheet-open),
   #doc-sidebar:not(.sidebar-sheet-open),
@@ -20597,6 +20799,88 @@ header#top-bar[data-scrolled="1"],
   }
 }
 
+@media (max-width: 599.98px) {
+  /* The 44px touch floor made the menu button taller than the meta line it
+     sits in, so it hung 21px below the card's corner (owner, "half off the
+     corner"). It is the line's own height here, as the table meatball is. */
+  #entry-list > li .menu-wrap > button {
+    min-height: 0;
+    height: var(--control-h);
+  }
+  /* The list is the page: the card that framed it on a desktop is a second
+     frame inside the window's own, and cost each row 33px of its width. */
+  #tab-notes #browse,
+  #tab-chat #chat-main {
+    padding-inline: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+  #tab-notes #browse {
+    padding-block: 0;
+  }
+  #tab-notes .layout > .tab-main {
+    /* Not 0: the cards stand on this edge, and their focus ring needs
+       `--ring-room` (08-consistency.css, "Ring room"; the margin there takes
+       it back out). */
+    padding-right: var(--ring-room);
+  }
+  /* The list ends above the floating New note, 53.6px of back-to-top
+     clearance being less than the fab's own height, offset and a step. Only
+     while scrolled (the clearance rule's own condition). */
+  body.scroll-top-visible #tab-notes .layout > .tab-main {
+    padding-bottom: max(var(--scroll-top-clearance), calc(var(--target-min) + var(--space-5) + var(--space-3)));
+  }
+}
+
+/* The toggles go icon-only while the mode group still fits beside them
+   (wrap/zoom sweep, 2026-11-11). With the web panel open at 1280 the strip
+   is 522px: Skills, Web and Plan with their words (270px) and the mode
+   group's 16rem basis are 550px, so the mode group took a second line (72px
+   of strip for 32px of controls). Squares take 130px, and the line holds. */
+@container chat-dock (width < 35rem) {
+  .chat-dock-controls > .chat-tool-group:not(.chat-tool-group-mode, .chat-tool-group-attach) > button,
+  .chat-dock-controls #chat-skills-btn {
+    width: var(--control-h);
+    min-width: var(--control-h);
+    padding-inline: 0;
+    gap: 0;
+    font-size: 0;
+    justify-content: center;
+  }
+  .chat-dock-controls > .chat-tool-group:not(.chat-tool-group-mode, .chat-tool-group-attach) > button > .ph,
+  .chat-dock-controls #chat-skills-btn > .ph {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+  .chat-dock-controls .chat-tool-group + .chat-tool-group:not(.chat-tool-group-mode)::before {
+    margin-inline: var(--space-1);
+  }
+}
+
+@media (max-width: 1099.98px) {
+  .doc-dock .doc-actions button > .ph-lead:has(~ .toolbar-word),
+  #doc-sidebar-list button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
+}
+
+@media (max-width: 599.98px) {
+  #entry-list > li .entry-actions > :not(.menu-wrap) {
+    display: none;
+  }
+}
+
+@media (max-width: 1099.98px) {
+  .doc-dock .doc-actions button:has(> .toolbar-word),
+  #doc-sidebar-list button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+}
+
 /* **A label cut short ends in an ellipsis wherever it is cut** (INBOX 1646,
    the owner: "the tray items dont have an elipsis at the cutoff"). `setLabel`
    puts an icon's label in `span.ph-text`, a flex item of its button, so a
@@ -20620,4 +20904,43 @@ header#top-bar[data-scrolled="1"],
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   font-variant-numeric: tabular-nums;
+}
+
+/* --- `.seg-multi`'s word, and the width that decides it -------------------
+   UI_MODERNISATION_PLAN.md Phase 11, INBOX 186. Measured on the running app
+   at 1440 / 1024 / 820 / 390, Timeline dock, after the four chips became one
+   well:
+   The dock's other three zones (identity, arrange, actions) want about 460px
+   at every width and do not shrink with the window, so the find zone gets
+   what is left: 778px at 1440, 447px at 1024, 288px at 820. The search box
+   will not go below 8rem (128px), and the four segments with their words in
+   measure about 430px. 128 + 430 is 558, which fits at 1440 and does not fit
+   at 1024 or at 820: with the words in, this control wraps everywhere below
+   about 1150, which is the four-line chip row it was built to end.
+   1200 rather than 1150, and for the reason `#graph-concept-maps`'s own label
+   rule gives nine lines away in 07-whiteboard-misc.css: the margin at 1150 is a
+   handful of pixels, the zones do not shrink, and a word that appears and
+   disappears twice across one drag of a window edge reads as a glitch.
+   Not `display: none`: the segment's accessible name is its text, and a
+   hidden name is a button a screen reader announces as "button". */
+@media (max-width: 1199.98px) {
+  /* Browser zoom, rule 9 below: the Recent head's title is the tab above it; kept for a screen reader. */
+  #doc-sidebar-list > .sidebar-head > h2 {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #doc-sidebar-list > .sidebar-head {
+    justify-content: flex-end;
+  }
+  /* Square, so four icons read as four cells of one well rather than four
+     pills with air between them. */
+  .seg-multi > button {
+    justify-content: center;
+    min-width: var(--control-h-lg);
+    padding-inline: var(--space-3);
+  }
 }
