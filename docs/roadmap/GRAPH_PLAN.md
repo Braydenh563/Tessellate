@@ -58,8 +58,8 @@ community pass) and `/graph/path`. The dock is on the Phase 8 grammar.
    timeline scrub with a *play*; no local-graph pane beside an open note;
    no export of the picture that matches the screen.
 
-- `clearanceForce` (2,000 notes, 3,999 links) costs 28 ms a call: the corridor walk and tests take 11 ms and the hits 17 ms. A coarser corridor cannot cut the hits, and fewer hits needs an owner quality decision (a long line's push every other tick was tried and reverted). (from `gr1b-1101.md` (git history))
-- The board's remaining layers: 138 at rest come from Chrome's sparsity rule, which will not merge far-apart cards into one layer. A transparent backdrop measured 54 layers, but it relies on an internal heuristic, so it was left. (from `graph-wb-0926.md` (git history))
+- `clearanceForce` coarser push: built 2026-11-12 (L-graph-5, owner yes), moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
+- The board's remaining layers: parked in BACKLOG.md §9 ("Parked from the graph plan, 2026-11-12").
 
 ## 3. The target, in one paragraph
 
@@ -99,7 +99,7 @@ the map's node graph, so the three cannot disagree.
 
 Phases 1, 2, 3 and 6 are built; their text moved to HISTORY.md ("Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)"), beside the Built blocks pointed to below.
 
-### Phase 5: backend (built; one row deliberately deferred, see below)
+### Phase 5: backend (built; one row parked in BACKLOG §9, see below)
 Built 2026-09-09 (HISTORY.md, "Built, Phase 5 (backend)"): the per-node
 fields, `/graph/structure` cached per notebook version, and the payload
 gate. Two more rows of the original phase were re-read against the code on
@@ -120,10 +120,7 @@ gate. Two more rows of the original phase were re-read against the code on
   continued (positions on a saved view), 2026-09-21", GRAPH_PLAN.md); the
   decision it turned on ("Decision made, 2026-09-21: a restored view holds,
   it does not re-settle", below) stays here.
-- **A `?since=` cursor.** Still nothing polls `/graph`: every call is
-  `renderGraph()` behind a control, a tab activation or a save. A query
-  parameter with no caller is the "feature that never ran once" shape
-  CLAUDE.md section 6 puts second on its list. Left until something polls.
+- A `?since=` cursor: parked in BACKLOG.md §9 until something polls.
 
 ## 6. Consistency rules (learnability)
 
@@ -225,10 +222,8 @@ edge, and no board in the centrality pass or the path index. The switch is
 labelled Boards rather than Mind maps, because a whiteboard is a board too and
 a switch that hides one and not the other is the same confusion one step over.
 
-Still open, and deliberately: `/graph/local` has no such switch, so focus mode
-and the local pane still walk boards as notes. They are a neighbourhood of one
-note rather than a picture of the notebook, and nothing has been asked about
-them.
+`/graph/local` takes the same switch (L-graph-8, built 2026-11-12:
+`include_maps`, sent by `graphLocalQuery`; `tests/test_graph_local_boards.py`).
 
 ## Decision changed, 2026-09-09: a drag places, Shift pins
 
@@ -257,7 +252,7 @@ drag is still a click, and only a real pin is written to
 appears only on real pins, which is the last line of the owner's own
 description of what they wanted.
 
-The group drag this entry left open is built: moved to HISTORY.md ("Moved
+The group drag this entry had not covered is built: moved to HISTORY.md ("Moved
 from the plans, 2026-09-23", GRAPH_PLAN.md).
 
 ## Decision made, 2026-10-11: a drag moves, a double-click pins
@@ -289,7 +284,7 @@ fixed. Moved to HISTORY.md ("INBOX resolved, 2026-09-21").
 
 ## Decision made, 2026-09-21: a restored view holds, it does not re-settle
 
-The open question Phase 5's "positions on a saved view" row left ("whether a
+The question Phase 5's "positions on a saved view" row left ("whether a
 restored arrangement then holds or settles") is decided: **it holds.** A
 person saved a picture of the map; reopening it must give them that picture,
 not a fresh relaxation of the same forces that happens to start from it. So
@@ -398,9 +393,11 @@ INBOX 443 (1) (the owner: "the graph shape could look nicer"), measured with
   the nearest linked note, in the cluster's own median spacings: 3.0 to 1.8.
 - **Links wear a category.** Same colour at both ends takes that colour;
   a bridge stays neutral; a reasoned link is 1.9px at 0.62; curved by default
-  (a note that never touched the switch is on). Tapered strokes were not built:
-  a taper is one polygon per link, and the batched stroke per colour is what
-  keeps a 2,000-link map inside a frame.
+  (a note that never touched the switch is on). Tapered strokes: moot by measurement
+  (2026-11-14, headless Chromium, 1440x900 at 2x, 2,000 curved links in 8
+  colours, 80 frames): one batched stroke per colour 68.0 to 68.7 ms median,
+  tapered polygons batched into one fill per colour 85.1 to 88.6 ms, so a
+  taper adds 25 to 30% to the link pass that holds the 2,000-link frame.
 - **One size scale, 5 to 15**, and a glow at roughly two thirds of its old
   strength.
 - **Not changed, on purpose:** the fit (`fitGraphToView` pads each dot by its
@@ -477,10 +474,7 @@ warm `/graph` p50 3,273 to 4,127 ms before, 720 to 1,017 ms after; cold 6.9 to
 1.1 s after; focus mode warm 80 to 101 ms either way; the payload is 3.0 MB
 (234 KB gzipped in the browser, ARCH-14). Profiled warm handler: 2.77 s to
 0.89 s, of which building the node dicts is now the largest part (0.37 s) and
-`json.dumps` 0.15 s. Left: the payload itself (a fingerprint-keyed cache of the
-encoded bytes needs the pins, access counts, attachments and board members in
-its key, none of which moves the fingerprint), and the canvas side at 5,000
-(FE-04, the frontend agent's).
+`json.dumps` 0.15 s. The fingerprint-keyed payload cache is since built (tests/test_graph_payload_cache.py: pins, access counts, attachments, board members and the vault in its key); the canvas side at 5,000 is FE-04's.
 
 ## Placed from INBOX, 2026-10-04: parity with Obsidian's graph
 
@@ -501,18 +495,19 @@ Every phase, KG1 to KG9, is built (2026-10-04). The spec as it was written
 ((a) what existed, (b) research, (c) the gap table, (d) the target design,
 (e) the build order) moved whole to HISTORY.md, "Moved from the plans,
 2026-10-04 (the knowledge graph, INBOX 528)", beside each phase's Built
-block. What stays here is the standing decisions and what is still open.
+block. What stays here is the standing decisions and the KG residue, all closed or parked.
 
-### Still open after KG1 to KG9
+### After KG1 to KG9
 
 - A real local model's `name|kind` entity extraction and a topic's sentence
   were run once, on a 1.5B (2026-11-11): recall 17 of 22, 4 junk names, topic
-  sentence usable 4 of 4, HTML entities in the output; a 3B is not measured.
+  sentence usable 4 of 4, HTML entities in the output. The 3B run is parked
+  in BACKLOG.md §9 (needs a real model).
 - `/graph` at 5,000 notes: the map's read is slim (`slim=1`, 1,767 KB from
   3,145; built, HISTORY.md "Moved from the plans, 2026-10-05 (op3-1005)").
   The generic encoder is skipped and the PageRank's links are read as
   columns (same HISTORY block): the first build after a change is about
-  0.7 s on this sandbox at load 7. Open: nothing measured worth a step;
+  0.7 s on this sandbox at load 7. Nothing measured was worth a step;
   PageRank itself is 0.13 s.
 - The note field's picker and the query table's rollups are built
   (2026-10-05): moved to HISTORY.md ("Moved from the plans, 2026-10-05
@@ -583,24 +578,37 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 - The graph at rest and `/graph` at 5,000 notes: measured 2026-10-18, nothing left to build. Moved to HISTORY.md ("Moved from the plans, 2026-10-18 (graph-1018)", GRAPH_PLAN.md).
 
-## Placed from INBOX, 2026-10-10 (the owner on the graph, again)
+## Placed from INBOX, 2026-10-10 and 2026-10-11 (the owner on the graph's motion and drag)
 
-- INBOX 798, the owner 2026-10-10 23:27Z, screenshot: "the graph is still completely broken 😞 I miss how it used to move 😞 look at how the movement is in main and base and refine off that" (34 notes in one vertical line, topic labels stacked on it) and "there is no smooth transition, I just change views or reset it and it just suddenly changes or disappears and reappears". Owner: the graphfeel agent, round 2 (root cause of the line; main's motion as the reference; animated view changes). **Per part, s58left3-1110:** (a) the vertical line, built (`graphfeel.js` MODE=feel, 34 notes: box 399 by 519, 0 overlaps); (b) no smooth transition on a view change, built (MODE=viewchange: 0 hidden samples over tree, radial, arc, force and Refresh; largest single-sample move 76 to 133 px, 0 on Refresh). Struck.
-- INBOX 799, the owner 2026-10-10 23:45Z: "Alright work autonomously to fix, finish,redesign, improve and extend everything. I will be at work. Impress me! :D" (the standing order for the day: the queue in HANDOVER, three Opus agents at most, Sonnet for well-defined work).
-
-## Placed from INBOX, 2026-10-11 (the owner on dragging the force graph)
-
-Owner: the graph agent (Opus), when a slot frees.
-
-- INBOX 802, graph, the owner 2026-10-11 03:35Z, verbatim: "The graph movement is a lot closer to how it is on main and better than you had it, but I still cant move the force graph as well. Can you like copy the physics of the force graph on main?? like if cant drag parts of the graph to different areas of the graph and have it kinda settle into place there. idk but I quite like how it is on the main branch. also the resetting or re-centering of the force graph is not smooth and doesnt smoothlly pan over." Recommendation, taken: port main's force simulation and its drag (a dragged node pins while held, the simulation reheats, neighbours follow, it settles where dropped); reset and recentre ease the view transform over the motion token, never jump. Then, 03:50Z, screenshot (the graph sits right of centre, an empty minimap top left): "why's the graph so positioned to the right and not in the middle??" Fit centres on the visible canvas, reserving only what a showing panel covers. **Per part, s58left3-1110:** drag physics (neighbours follow, `carryForce`, graph-worker.js, graph-canvas.js `fx`), eased reset and recentre (`graphGlideMs`, Brief 100) and fit centred on the visible canvas (MODE=feel: free-area fill 0.887, nothing under an overlay) are built in the code and HISTORY; a live drag was not driven this pass. Struck.
+- INBOX 798 and 802 built and struck (s58left3-1110); 799 was the day's standing order. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (graph-counts)").
 
 ## Placed from the owner, 2026-10-11: a tessellation view (built)
 
 Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and the Map's link-weighted tiles and uncut names; see HISTORY.md, "Moved from the plans, 2026-11-10 (q31-1110)". Left: `q31-1110.md` (git history).
 
+## Decisions made, 2026-11-12 (graph-plan session)
+
+1. **No balance pass riding the layer paint** (the owner, 2026-11-12: no).
+   Measured: it removed one 30 ms frame but left composed frames at 46 and
+   59 ms (total 188 to 167 ms) and put the layer boxes' bounds at risk.
+2. **No `?since=` cursor on `/graph`** (the task's own rule, standing order
+   3). Nothing polls `/graph`: the map reloads on a notebook-version change
+   and the payload is cached per version (`tests/test_graph_payload_cache.py`),
+   so a delta parameter would have no caller and would never run.
+3. **No further ring or hub tuning in `applyGrouping`** (L15, closed).
+   The best candidate (a brute-force category ring order for eight or fewer
+   categories, plus `hubForce` on Organic) won a 100-seed holdout with the
+   shipped worker under node: crossings 9.9 to 9.1, 23.3 to 22.1 and 20.5
+   to 19.1 per map, overlaps 0. It lost on the guards already in the suite:
+   the 2,000-note map's close dots went from 35 to 41 pairs
+   (`test_graph_untangle_scale.py`), and the untangle fixture ended with one
+   crossing instead of none (`test_graph_untangle_1400.py`). About one
+   crossing a small map does not pay for that; the harness and variants are
+   in the session scratchpad (`g15/cmp.sh`), not the repo.
+
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
 
-- INBOX 1400, the owner 2026-10-26, verbatim: "Also see if you can fix or better redesign the composition of the force graph and also how the node popup panels work and other stuff, idk the graph just feels very messy to look at on the force view, the popup panels could be improved, alse access to the tools and controls and different mechanisms in it aren't really easy to understand and I do it just feels a little off. Keep improving the other main features. Do other features also need an upgrade?? Like the code editor l, recordings and other things?? Can the composer be expanded and improved any more?? I'm just chucking things at you. Please make sure you hit all high impact items, be very token efficient! I'm going so sleep so impress me. And I'll give you to 43% weekly usage" Placed with INBOX 1306 (default settings messy, toast faint over the legend). Run: an Opus redesign of force composition (layout defaults, label density, hub edges), the node popup panel, and the control surface (discoverable tools, one dock per DESIGN.md), measured before and after; then a dogfood pass on the code editor and recordings; composer expansion continues in composer9-1026.md. Budget: stop at 43% weekly.
+- INBOX 1400, closed 2026-11-14: composition by the landscape decision below and hub crossings; the popup's Save row, discard prompt and touch chip (INBOX 1769, CHANGELOG); the code and recordings parts in CHANGELOG (owner 1400). Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (graph-counts)").
 
 ## Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays
 
@@ -608,17 +616,15 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `graph-1026.md` (git hist
 
 ## Placed from INBOX, 2026-10-31
 
-1306. **The owner, 2026-10-18, verbatim** (screenshots: dark theme graph; a toast "Map settings reset to defaults. Undo" drawn faint and see-through over the colour legend, under the zoom controls; the graph with default settings, about 40 nodes, labels on long note titles crowding the lower half, a brown hub with many crossing edges). "notifications are hard to see on the graph, and my graph is messy and a bit hard to read and these are the default settings."
-     Owner: a graph agent (GRAPH_PLAN): the toast over the map must be opaque and clear of the legend and controls (measure contrast and overlap); default layout and labels readable at 40 nodes (label collisions, edge crossings, hub spread), measured before and after.
-     **Part fixed** 2026-10-19 (graph1306, c623544): toasts are opaque (dark rgb(24,27,37), about 14:1 text) and lifted clear of the zoom strip, legend and dock on the Graph tab. Default layout measured on a 36-note seed: 0 dot and 0 label overlaps, 77 link crossings (49 at the hub), fills 0.48 of the width; two tunings tried and reverted (no clear win). Open: crossings and hub spokes (graph-worker.js applyGrouping), label density (graph-canvas.js label gate); the owner's crowding did not reproduce without their data. Owner: next graph agent.
+- INBOX 1306, closed 2026-11-14: toasts fixed (graph1306), hub crossings built (W34), ring tuning closed (decision 3), label fades built (`gcDrawLabels.frame`). Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (graph-counts)").
 
 ## Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision)
 
-- Decision needed from the owner (INBOX is at its cap of 19, so it lives here): graph hover p50 is about 50 ms against a 16 ms target at 500 notes and 4x CPU; the hover card's refill on each new note is about 17 ms of it. Recommendation (taken unless the owner says otherwise): refill the card only once the pointer rests, keep the highlight instant, then re-measure on an idle machine with a real GPU. Check: hover p50 at 4x CPU before and after, and the card still appears on rest.
-- Still open from audit row 19 (2,000 notes, 4x): the worker's own settle is 11 to 14 s (the d3 charge and collide are most of a tick), and wheel and hover at rest cost the at-rest scene repaint (true strokes, 21 ms of raster at 1x). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
+- Hover refill on rest: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
+- Audit row 19 (2,000 notes, 4x): the wheel settle repaint is sliced (L-graph-16) and the worker's settle cut by the untangle gates (5.7 to 3.4 s under node, 2026-11-12); the browser settle is 5.3 s (from 11 to 14) with the meet scan cut, moved to HISTORY.md (L-graph-18). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
 
 ## Placed from W34, 2026-11-11 (gap5: the open graph rows, sized)
 
-- **Hub crossings (L).** `UNTANGLE_HUB_RINGS` (graph-worker.js:2379, used at :3382) places a hub's neighbours on rings in the order they arrive. The default 36-note seed still has 34 to 36 link crossings of 49 to 55 at the hub (graph-1030.md:35). First step: order each hub's neighbours by angle around the hub (sort by the angle to the neighbour's own other neighbours' centroid) before the ring placement, in the worker only. Check: re-run the 36-note seed (`graph-1030.md` recipe) and count crossings with `crossingsOn` (graph-worker.js:2476); done when crossings at the hub fall by a third with 0 dot and 0 label overlaps kept. The old sweep `graphdefault1306.js` is gone: write the count as a pytest on the worker function instead.
-- **Balance pass riding the layer paint (M, a risk call).** At rest the chain is a whole frame, then composed, then a balance pass and composed again. Making pass 2 ride the layer paint (`again()` asking `gcRequestDraw(s, true)` once shown) removed one whole frame (30 ms) but left the composed frames at 46 and 59 ms: tasks over 50 ms unchanged, total 188 to 167 ms. Reverted (graph-1111.md:24) as a risk for 11% of the work. Needs the owner's yes that 21 ms of the total is worth the risk; first step then is a test that layer boxes keep their bounds after the balance runs inside the paint.
-- **Incremental crossing count per turned category (M).** `crossingsOn` (graph-worker.js:2476) recounts every edge pair when a category turns. First step: a trace on a 2,000-note notebook (`measure-seed.py` makes one) to learn if it is on the settle path; only then count only pairs that touch a moved node. Done when the trace shows the count under 5% of the settle.
+- Hub crossings: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
+- Balance pass riding the layer paint: the owner said no 2026-11-12; parked in BACKLOG.md §9.
+- Incremental crossing count: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").

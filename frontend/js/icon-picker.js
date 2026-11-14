@@ -23,8 +23,8 @@
 // **Nothing is fetched.** The icons are the vendored Phosphor font's names,
 // read off its own stylesheet (`/vendor/phosphor/style.css`, already loaded at
 // boot), so there is no second list to keep in step with the font. The emoji
-// are a curated set with their Unicode names, written as escapes, as
-// `DOC_EMOJI_SOURCE` (documents-prose.js) is.
+// are a curated set with their Unicode names, written as escapes; the document
+// editor's `:shortcode:` names are aliases of them (`ICON_SHORTCODES`).
 //
 // **Keys:** arrows move through the grid (Up and Down by a row), Home and End,
 // Enter or Space picks, Escape closes and hands focus back to whatever opened
@@ -57,7 +57,7 @@
       "unamused_face=\u{1F612},face_with_rolling_eyes=\u{1F644},grimacing_face=\u{1F62C}," +
       "relieved_face=\u{1F60C},pensive_face=\u{1F614},sleepy_face=\u{1F62A},sleeping_face=\u{1F634}," +
       "face_with_medical_mask=\u{1F637},face_with_thermometer=\u{1F912},nerd_face=\u{1F913}," +
-      "face_with_monocle=\u{1F9D0},smiling_face_with_sunglasses=\u{1F60E}," +
+      "face_with_monocle=\u{1F9D0},confounded_face=\u{1F616},smiling_face_with_sunglasses=\u{1F60E}," +
       "face_with_party_horn_and_party_hat=\u{1F973},face_with_cowboy_hat=\u{1F920}," +
       "confused_face=\u{1F615},worried_face=\u{1F61F},slightly_frowning_face=\u{1F641}," +
       "face_with_open_mouth=\u{1F62E},astonished_face=\u{1F632},flushed_face=\u{1F633}," +
@@ -65,7 +65,7 @@
       "face_screaming_in_fear=\u{1F631},shocked_face_with_exploding_head=\u{1F92F}," +
       "face_with_open_mouth_and_cold_sweat=\u{1F630},overheated_face=\u{1F975},freezing_face=\u{1F976}," +
       "face_with_uneven_eyes_and_wavy_mouth=\u{1F974},tired_face=\u{1F62B},yawning_face=\u{1F971}," +
-      "face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
+      "confounded_face=\u{1F616},face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
       "money_mouth_face=\u{1F911},skull=\u{1F480},pile_of_poo=\u{1F4A9},clown_face=\u{1F921}," +
       "ghost=\u{1F47B},extraterrestrial_alien=\u{1F47D},robot_face=\u{1F916}," +
       "see_no_evil_monkey=\u{1F648},hear_no_evil_monkey=\u{1F649},speak_no_evil_monkey=\u{1F64A},"],
@@ -90,7 +90,7 @@
       "panda_face=\u{1F43C},koala=\u{1F428},tiger_face=\u{1F42F},lion_face=\u{1F981}," +
       "unicorn_face=\u{1F984},horse_face=\u{1F434},pig_face=\u{1F437},cow_face=\u{1F42E}," +
       "frog_face=\u{1F438},monkey_face=\u{1F435},chicken=\u{1F414},penguin=\u{1F427},bird=\u{1F426}," +
-      "eagle=\u{1F985},owl=\u{1F989},honeybee=\u{1F41D},butterfly=\u{1F98B},lady_beetle=\u{1F41E}," +
+      "eagle=\u{1F985},owl=\u{1F989},honeybee=\u{1F41D},butterfly=\u{1F98B},lady_beetle=\u{1F41E},bug=\u{1F41B}," +
       "turtle=\u{1F422},snake=\u{1F40D},octopus=\u{1F419},spouting_whale=\u{1F433},dolphin=\u{1F42C}," +
       "shark=\u{1F988},tropical_fish=\u{1F420},seedling=\u{1F331},evergreen_tree=\u{1F332}," +
       "deciduous_tree=\u{1F333},palm_tree=\u{1F334},cactus=\u{1F335},four_leaf_clover=\u{1F340}," +
@@ -98,7 +98,7 @@
       "cherry_blossom=\u{1F338},tulip=\u{1F337},herb=\u{1F33F},mushroom=\u{1F344}," +
       "earth_globe_europe_africa=\u{1F30D},crescent_moon=\u{1F319},black_sun_with_rays=\u{2600}\u{FE0F}," +
       "white_medium_star=\u{2B50}\u{FE0F},glowing_star=\u{1F31F},cloud=\u{2601}\u{FE0F}," +
-      "rainbow=\u{1F308},high_voltage_sign=\u{26A1}\u{FE0F},snowflake=\u{2744}\u{FE0F},fire=\u{1F525}," +
+      "rainbow=\u{1F308},high_voltage_sign=\u{26A1}\u{FE0F},snowflake=\u{2744}\u{FE0F},umbrella=\u{2602}\u{FE0F},fire=\u{1F525}," +
       "droplet=\u{1F4A7},water_wave=\u{1F30A},"],
     ["food", "Food and drink",
       "red_apple=\u{1F34E},tangerine=\u{1F34A},lemon=\u{1F34B},banana=\u{1F34C},watermelon=\u{1F349}," +
@@ -295,6 +295,104 @@
   //: emoji groups, parsed once on first open as `[{key, label, items: [{name, glyph}]}]`,
   //: the icon groups likewise, and the open panel.
   const iconPickerState = { emojiGroups: null, symbolGroups: null, phGroups: null, open: null };
+
+  //: **GitHub's `:shortcode:` names for the emoji above**, `shortcode=unicode_name`
+  //: (MINDMAP_PLAN, folded from the document editor's own 248-entry table). The
+  //: glyphs live once, in `ICON_EMOJI_SOURCE`; a shortcode is an alias of one.
+  const ICON_SHORTCODES =
+    "smile=smiling_face_with_open_mouth_and_smiling_eyes,grin=grinning_face_with_smiling_eyes," +
+    "joy=face_with_tears_of_joy,rofl=rolling_on_the_floor_laughing,smiley=smiling_face_with_open_mouth," +
+    "laughing=smiling_face_with_open_mouth_and_tightly_closed_eyes," +
+    "sweat_smile=smiling_face_with_open_mouth_and_cold_sweat,wink=winking_face," +
+    "blush=smiling_face_with_smiling_eyes,innocent=smiling_face_with_halo," +
+    "slightly_smiling_face=slightly_smiling_face,upside_down_face=upside_down_face," +
+    "heart_eyes=smiling_face_with_heart_shaped_eyes,star_struck=grinning_face_with_star_eyes," +
+    "kissing_heart=face_throwing_a_kiss,yum=face_savouring_delicious_food," +
+    "stuck_out_tongue=face_with_stuck_out_tongue," +
+    "zany_face=grinning_face_with_one_large_and_one_small_eye,hugs=hugging_face,thinking=thinking_face," +
+    "shushing_face=face_with_finger_covering_closed_lips,zipper_mouth_face=zipper_mouth_face," +
+    "raised_eyebrow=face_with_one_eyebrow_raised,neutral_face=neutral_face," +
+    "expressionless=expressionless_face,no_mouth=face_without_mouth,smirk=smirking_face," +
+    "unamused=unamused_face,roll_eyes=face_with_rolling_eyes,grimacing=grimacing_face," +
+    "relieved=relieved_face,pensive=pensive_face,sleepy=sleepy_face,sleeping=sleeping_face," +
+    "mask=face_with_medical_mask,nerd_face=nerd_face,face_with_monocle=face_with_monocle," +
+    "sunglasses=smiling_face_with_sunglasses,partying_face=face_with_party_horn_and_party_hat," +
+    "cowboy_hat_face=face_with_cowboy_hat,confused=confused_face,worried=worried_face," +
+    "slightly_frowning_face=slightly_frowning_face,open_mouth=face_with_open_mouth," +
+    "astonished=astonished_face,flushed=flushed_face,pleading_face=face_with_pleading_eyes," +
+    "cry=crying_face,sob=loudly_crying_face,scream=face_screaming_in_fear," +
+    "exploding_head=shocked_face_with_exploding_head,cold_sweat=face_with_open_mouth_and_cold_sweat," +
+    "hot_face=overheated_face,cold_face=freezing_face,woozy_face=face_with_uneven_eyes_and_wavy_mouth," +
+    "confounded=confounded_face,tired_face=tired_face,yawning_face=yawning_face," +
+    "triumph=face_with_look_of_triumph,rage=pouting_face,angry=angry_face," +
+    "money_mouth_face=money_mouth_face,skull=skull,poop=pile_of_poo,clown_face=clown_face,ghost=ghost," +
+    "alien=extraterrestrial_alien,robot=robot_face,see_no_evil=see_no_evil_monkey," +
+    "hear_no_evil=hear_no_evil_monkey,speak_no_evil=speak_no_evil_monkey,wave=waving_hand_sign," +
+    "raised_hand=raised_hand,ok_hand=ok_hand_sign,v=victory_hand," +
+    "crossed_fingers=hand_with_index_and_middle_fingers_crossed,point_up=white_up_pointing_index," +
+    "point_right=white_right_pointing_backhand_index,point_left=white_left_pointing_backhand_index," +
+    "point_down=white_down_pointing_backhand_index,thumbsup=thumbs_up_sign,+1=thumbs_up_sign," +
+    "thumbsdown=thumbs_down_sign,-1=thumbs_down_sign,fist=fisted_hand_sign,clap=clapping_hands_sign," +
+    "raised_hands=person_raising_both_hands_in_celebration,open_hands=open_hands_sign," +
+    "pray=person_with_folded_hands,handshake=handshake,muscle=flexed_biceps,writing_hand=writing_hand," +
+    "eyes=eyes,brain=brain,heart=heavy_black_heart,orange_heart=orange_heart,yellow_heart=yellow_heart," +
+    "green_heart=green_heart,blue_heart=blue_heart,purple_heart=purple_heart,black_heart=black_heart," +
+    "broken_heart=broken_heart,sparkling_heart=sparkling_heart,100=hundred_points_symbol," +
+    "boom=collision_symbol,sparkles=sparkles,star=white_medium_star,star2=glowing_star," +
+    "dizzy=dizzy_symbol,fire=fire,zap=high_voltage_sign,rainbow=rainbow,sunny=black_sun_with_rays," +
+    "cloud=cloud,umbrella=umbrella,snowflake=snowflake,droplet=droplet,ocean=water_wave," +
+    "earth_africa=earth_globe_europe_africa,seedling=seedling,evergreen_tree=evergreen_tree," +
+    "deciduous_tree=deciduous_tree,four_leaf_clover=four_leaf_clover,rose=rose,sunflower=sunflower," +
+    "cherry_blossom=cherry_blossom,apple=red_apple,banana=banana,avocado=avocado,pizza=slice_of_pizza," +
+    "hamburger=hamburger,taco=taco,cake=shortcake,birthday=birthday_cake,coffee=hot_beverage," +
+    "tea=teacup_without_handle,beer=beer_mug,wine_glass=wine_glass,tada=party_popper," +
+    "confetti_ball=confetti_ball,balloon=balloon,gift=wrapped_present,trophy=trophy," +
+    "medal_sports=sports_medal,soccer=soccer_ball,basketball=basketball_and_hoop,dart=direct_hit," +
+    "video_game=video_game,musical_note=musical_note,headphones=headphone,art=artist_palette," +
+    "camera=camera,movie_camera=movie_camera,tv=television,computer=personal_computer,keyboard=keyboard," +
+    "iphone=mobile_phone,phone=black_telephone,bulb=electric_light_bulb,flashlight=electric_torch," +
+    "book=open_book,books=books,notebook=notebook,memo=memo,pencil2=pencil,pen=lower_left_ballpoint_pen," +
+    "paperclip=paperclip,pushpin=pushpin,scissors=black_scissors,calendar=calendar,clipboard=clipboard," +
+    "file_folder=file_folder,chart_with_upwards_trend=chart_with_upwards_trend," +
+    "chart_with_downwards_trend=chart_with_downwards_trend,bar_chart=bar_chart,email=e_mail_symbol," +
+    "envelope=envelope,inbox_tray=inbox_tray,outbox_tray=outbox_tray,package=package,bell=bell," +
+    "mega=cheering_megaphone,lock=lock,unlock=open_lock,key=key,hammer=hammer,wrench=wrench,gear=gear," +
+    "link=link_symbol,mag=left_pointing_magnifying_glass,hourglass=hourglass,alarm_clock=alarm_clock," +
+    "watch=watch,money_with_wings=money_with_wings,moneybag=money_bag,dollar=banknote_with_dollar_sign," +
+    "credit_card=credit_card,rocket=rocket,airplane=airplane,car=automobile,bike=bicycle,train=train," +
+    "house=house_building,office=office_building,school=school,hospital=hospital," +
+    "globe_with_meridians=globe_with_meridians,world_map=world_map,round_pushpin=round_pushpin," +
+    "warning=warning_sign,no_entry=no_entry,x=cross_mark,heavy_check_mark=heavy_check_mark," +
+    "white_check_mark=white_heavy_check_mark,ballot_box_with_check=ballot_box_with_check," +
+    "question=black_question_mark_ornament,exclamation=heavy_exclamation_mark_symbol," +
+    "bangbang=double_exclamation_mark,heavy_plus_sign=heavy_plus_sign,heavy_minus_sign=heavy_minus_sign," +
+    "arrow_right=black_rightwards_arrow,arrow_left=leftwards_black_arrow,arrow_up=upwards_black_arrow," +
+    "arrow_down=downwards_black_arrow,recycle=black_universal_recycling_symbol," +
+    "red_circle=large_red_circle,green_circle=large_green_circle,yellow_circle=large_yellow_circle," +
+    "blue_circle=large_blue_circle,white_circle=medium_white_circle,black_circle=medium_black_circle," +
+    "cat=cat_face,dog=dog_face,fox_face=fox_face,bear=bear_face,panda_face=panda_face," +
+    "unicorn=unicorn_face,bee=honeybee,butterfly=butterfly,turtle=turtle,snake=snake,octopus=octopus," +
+    "whale=spouting_whale,penguin=penguin,owl=owl,bug=bug,checkered_flag=chequered_flag," +
+    "triangular_flag_on_post=triangular_flag_on_post,";
+
+  //: `[shortcode, glyph]` pairs for the document editor's completion, built on
+  //: first call. A window property, because documents-prose.js is a different
+  //: script that may run before this lazy one is in (it asks, and loads it).
+  window.iconShortcodes = () => {
+    if (!iconPickerState.shortcodes) {
+      const glyphs = new Map();
+      for (const [, , source] of ICON_EMOJI_SOURCE) {
+        for (const pair of source.split(",").filter(Boolean)) {
+          const at = pair.indexOf("=");
+          if (!glyphs.has(pair.slice(0, at))) glyphs.set(pair.slice(0, at), pair.slice(at + 1));
+        }
+      }
+      iconPickerState.shortcodes = ICON_SHORTCODES.split(",").filter(Boolean)
+        .map((pair) => [pair.slice(0, pair.indexOf("=")), glyphs.get(pair.slice(pair.indexOf("=") + 1))])
+        .filter(([, glyph]) => glyph);
+    }
+    return iconPickerState.shortcodes;
+  };
 
   //: **The symbols tab** (INBOX 1544): characters a keyboard does not have, in
   //: groups, `[key, heading, "name=glyph name=glyph ..."]` as the emoji are. A pick

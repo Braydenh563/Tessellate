@@ -777,7 +777,6 @@ const LOCK_PURGE_IDS = [
   "timeline-table-body",
   "reminder-groups", // reminders
   "timeline-calendar",
-  "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
   "dash-glance", // the dashboard's recent note titles
@@ -1589,7 +1588,7 @@ const LAZY_MODULES = {
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
   //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
-  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js"],
+  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js", "/js/library-links.js"],
   //: The Capture box's template picker (note-templates.js's header).
   noteTemplates: ["/js/note-templates.js"],
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],

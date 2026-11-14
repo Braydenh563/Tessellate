@@ -519,23 +519,36 @@ MID_TOPICS.extend(
             "keywords": (
                 "bookmark", "bookmarks", "reading list", "saved links", "saved link",
                 "read later", "by site", "web links", "my links", "mark read",
-                "bookmark link",
+                "bookmark link", "link folder", "bookmark folder", "duplicate bookmarks", "cards view",
             ),
             "body": (
                 "Library, Bookmarks is a reading list of web links; Add bookmark "
                 "saves one. Unread and Pinned narrow the list (with counts), and "
-                "opening a link marks it read. Sort by newest, oldest, title or By "
-                "site, which groups links under their site in folds you can close. "
-                "Each link shows its kind, Details opens in place with a note "
-                "field, and selecting several offers Move to group, Mark read and "
+                "opening a link marks it read; the menu's Read later puts a read "
+                "link back. Sort by newest, oldest, title or By site, which groups "
+                "links under their site in folds you can close, and view the shelf "
+                "as a List or as Cards. Details opens a card: icon, title, "
+                "site, two lines of the page, the note, and Show page text, a "
+                "reading column with find. With "
+                "the web on (Settings, Web search) a save fetches the page for its "
+                "icon, excerpt and text, and Refresh fetches again; with it off "
+                "nothing is requested. Icon and colour, in a link's menu or its card, picks an icon "
+                "or emoji and a highlight colour; a folder has the same in its menu. "
+                "Folders: drag a link onto a folder chip, onto another link "
+                "(filed together) or onto All to take it out; drag a folder onto "
+                "another to nest it, one level; double-click or F2 renames in "
+                "place; New folder makes one. Duplicates appears when the same "
+                "address is saved twice (a www, a trailing slash or tracking marks "
+                "do not make it different) and Keep one of each deletes the extra "
+                "copies. Selecting several offers Move to folder, Mark read and "
                 "Pin; pinned links lead every order but By site, and every delete "
                 "has Undo. In a note or document, the / menu's Bookmark link "
                 "inserts a saved bookmark as a link. The ... menu's Import "
                 "bookmarks file adds the links of a file your browser exported, "
-                "folders as groups, skipping ones already saved, with Undo; "
+                "folders as folders, skipping ones already saved, with Undo; "
                 "Export bookmarks saves them all as a file a browser can import. "
                 "A link can carry tags (commas, in the Add form or Edit): each tag is a chip "
-                "that filters across groups, search finds them, and the file keeps them."
+                "that filters across folders, search finds them, and the file keeps them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -932,7 +945,7 @@ MID_TOPICS.extend(
                 "The tray in the status bar holds cards across pages: "
                 "drop one on it (held over, it opens) "
                 "or choose Add to tray, then drag cards out or click "
-                "one to paste it where you were typing, or attach it to the chat. "
+                "one to paste it where you typed, or attach it to the chat or open it. "
                 "In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
                 "on a board) opens a list beside it: rest the pointer on it, click it, "
@@ -1028,8 +1041,9 @@ MID_TOPICS.extend(
                 "Not yet marks it and moves on. Branches with topics under "
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
-                "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops. "
+                "for that map on this device, and the next run is spaced: what you missed first, then what is due "
+                "again (a day, 3, a week, 2, a month), then new ones; the palette's Study the map in map order "
+                "asks in the map's order. The end says how many you recalled. Esc stops. "
                 "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1105,7 +1119,8 @@ MID_TOPICS.extend(
                 "Emoji and icons… keeps it open: press one to place it "
                 "in the middle of the view, or drag it where it goes. An emoji lands "
                 "as a sticker (no card, resize it like any item), an icon as a shape "
-                "you can recolour; dropped on a map topic, either becomes that "
+                "you can recolour (select one with copies, then Insert, Emoji and icons, "
+                "Match all copies, makes every copy look like it; Swap everywhere changes an icon or an emoji in every place); dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
                 "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
@@ -1151,7 +1166,7 @@ MID_TOPICS.extend(
                 "the Text menu's Icon row has eleven, and More icons and emoji… "
                 "opens every Phosphor icon and about 470 emoji, searchable, with "
                 "your recent ones first; an emoji or an icon, one per topic. How this map looks, Colour every level, "
-                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use."
+                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use. Save this look there names a map's whole look to apply to another map. In a topic's text, bold, italic, code, an equation and a link written in Markdown draw as such; Ctrl+click opens a link."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1175,12 +1190,13 @@ MID_TOPICS.extend(
                 "removed, not checked; SQL runs against a SQLite database made for "
                 "the run, each statement's result a table, and a CSV document the "
                 "query names is a table in it (Sales 2026.csv is sales_2026, its "
-                "first row the columns); Python runs "
+                "first row the columns; a CSV's panel has Query as SQL, which opens a SQL "
+                "document selecting its first 50 rows); Python runs "
                 "once Python is installed in Settings, Packages (until then Run is "
                 "greyed and the line beside it goes there), and input() reads its "
                 "lines from the panel's Input box. HTML, CSS (over a sample page), "
                 "SVG and a p5.js sketch (New from a template, p5.js sketch) show as "
-                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
+                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (Tab and the arrows move; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
                 "tests (describe, it and expect in JavaScript or TypeScript; "
                 "unittest or test_ functions in Python) runs its tests, each "
                 "listed with its time and a failure underlined on its line; Run "
@@ -1214,7 +1230,7 @@ MID_TOPICS.extend(
                 "its breakpoints on this device after a reload. Press F5, or "
                 "Start debugging in the run panel's Debug tab; the stopped line is lit, and "
                 "the Debug tab shows Variables (the frame's names, then Globals; a "
-                "list, dict or object opens into its items), "
+                "list, dict or object opens into its items, three levels down; a Watch opens too), "
                 "Watch (type an expression under it; each stop evaluates it), the "
                 "Call stack (a row goes to its line) and Breakpoints. F10 steps "
                 "over a line, F11 into a call, Shift+F11 out of the function, F5 "
@@ -1226,9 +1242,9 @@ MID_TOPICS.extend(
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
-                "functions and template strings are rewritten for it, and a class, "
-                "destructuring or async code is named with its line and only Run "
-                "takes it. A script that uses the page debugs against a stand-in "
+                "functions, template strings, classes with fields, destructuring "
+                "and spread are rewritten for it, and async code, generators and "
+                "getters are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},

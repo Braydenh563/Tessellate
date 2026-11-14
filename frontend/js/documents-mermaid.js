@@ -504,37 +504,16 @@
     return null;
   }
 
+  //: The sheet of existing diagrams and "New diagram" (diagram-suggest.js `choose`): a row, `true` for New, or null.
+  async function chooseDiagram(options) {
+    return (await ensureModule("diagramSuggest")) ? diagramModel.suggest.choose(options) : null;
+  }
+
   //: **The one door to the Diagram builder** (INBOX 1588). Every list that offers it (the palette, Find anything, Tools and
   //: features, Quick access, both "/" menus, Chat, the Library's Create, the board's Insert) ends here, through the `diagram`
   //: row of `POPUP_TOOLS`. Over a board or a mind map it is the board's own `wbEditDiagram` (a diagram object lands on Done);
   //: over a text box it opens the builder on the starter and makes a .mmd document and writes `![[Title]]` at the caret on Done (1621 D5); anywhere else (or `doc`) it
   //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
-  //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
-  async function pickExistingDiagram() {
-    //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
-    //: The Library's list when it is in, else the server's.
-    let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
-    if (!all) {
-      try {
-        all = await apiPagedList("/documents", 200);
-      } catch (error) {
-        toast(`Couldn't load your diagrams: ${error?.message || error}`, "info");
-        return null;
-      }
-    }
-    const shell = pickerDialog({ title: "Open a diagram", placeholder: "Search your diagrams…", searchLabel: "Search your diagrams" });
-    const box = pickerListbox(shell, "Diagrams");
-    const rows = all.filter((d) => d.file_type === "mmd");
-    const paint = () => {
-      const needle = shell.search.value.trim().toLowerCase();
-      const items = rows.filter((d) => (d.title || "Untitled").toLowerCase().includes(needle)).map((d) => ({ icon: "ph:graph", label: d.title || "Untitled", about: "", value: d }));
-      box.fill(items, needle, { icon: "ph:graph", title: "No diagrams yet", text: "Make one with the blocks and it will be listed here." });
-    };
-    shell.search.addEventListener("input", paint);
-    paint();
-    return new Promise((resolve) => shell.open(resolve));
-  }
-
   //: A diagram made from the builder is a document the lists do not know yet: the Library's `docs` (the sidebar, the Live view's link
   //: resolver) and the `[[` picker's cache are given the row, so `![[Title]]` draws in Read view at once and not after a reload.
   function diagramMadeKnown(made) {
@@ -550,6 +529,13 @@
     if (onBoard && typeof wbEditDiagram === "function") return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
     const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
+    //: A text box asks first (R12, owner 2026-11-12): a diagram already made is embedded at once, "New diagram" opens the empty builder.
+    const pick = box ? await chooseDiagram({ verb: "Embed" }) : null;
+    if (box && !pick) return null;
+    if (box && pick !== true) {
+      box.focus?.();
+      return editorBlock(box, `![[${pick.title}]]`, "", "");
+    }
     //: **Anywhere else, the builder itself, then a .mmd document on Done** (the owner: "searching up and clicking
     //: the diagram builder in the find anything search took me to the documents editor and did nothing else, it
     //: didnt even show the panel"). A blank .mmd page is made by its first keystroke, so the door used to show
@@ -562,7 +548,7 @@
         title: "Diagram builder",
         named: true,
         draft: "new",
-        existing: { pick: pickExistingDiagram, open: async (row) => (await ensureModule("library"), switchTab("documents"), loadDocuments(row.id)) },
+        existing: { pick: () => chooseDiagram({ fresh: false }), open: async (row) => (await ensureModule("library"), switchTab("documents"), loadDocuments(row.id)) },
         //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
         onDone: async (next, _changed, name) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
@@ -575,13 +561,14 @@
       });
     }
     return openDiagramBuilder({
-      source: diagramModel.starter,
+      source: "",
       title: "Diagram builder",
       named: true,
       draft: "new-embed",
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
       //: The window hands back a clean, unused title, so `![[Title]]` finds this row.
       onDone: async (next, _changed, name) => {
+        if (!String(next).trim()) return toast("Add a block first, or Cancel.", "info");
         const title = name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
@@ -618,9 +605,9 @@
   }
 
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { wireToolbarRoving, docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
+  Object.assign(window, { wireToolbarRoving, docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder, chooseDiagram });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"], diagramAiKinds: ["/js/diagram-ai-kinds.js"] });
 })();

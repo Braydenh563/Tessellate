@@ -720,6 +720,80 @@ def similar_pairs(
     return found
 
 
+def _same_width(derived: dict, notes: dict) -> tuple[list[int], list[str]]:
+    """Note ids and derived keys whose vectors have the commonest note width."""
+    widths: dict[int, int] = {}
+    for vector in notes.values():
+        widths[vector.shape[0]] = widths.get(vector.shape[0], 0) + 1
+    width = max(widths, key=lambda w: widths[w])
+    dropped = sum(n for w, n in widths.items() if w != width) + sum(1 for v in derived.values() if v.shape[0] != width)
+    if dropped:
+        # Two backends' vectors side by side (a model switch mid-re-embed):
+        # the minority is left out of the lines, which should show somewhere.
+        logger.info("similarity: left out %d vectors not %d wide (widths seen: %s)", dropped, width, sorted(widths))
+    return sorted(i for i, v in notes.items() if v.shape[0] == width), sorted(k for k, v in derived.items() if v.shape[0] == width)
+
+
+def _keep_best(best: dict[tuple, float], key: str, scores, candidates: list, threshold: float, per_node: int) -> None:
+    """One derived node's `per_node` best partners at or above `threshold`, into `best`."""
+    import numpy as np
+
+    keep = min(per_node, len(candidates) - 1)
+    for col in np.argpartition(-scores, keep - 1)[:keep]:
+        score = float(scores[col])
+        if score < threshold:
+            continue
+        other = candidates[int(col)]
+        pair = (key, other) if isinstance(other, int) or key < other else (other, key)
+        best[pair] = max(score, best.get(pair, -1.0))
+
+
+def derived_pairs(
+    derived: dict[str, np.ndarray],
+    notes: dict[int, np.ndarray],
+    threshold: float,
+    per_node: int,
+    skip: set[tuple[str, int]] = frozenset(),
+) -> list[tuple[str, int | str, float]]:
+    """Pairs scoring at or above `threshold` where at least one end is a
+    derived vector (a document's or an entity's, the mean of its notes').
+
+    A separate sweep from `similar_pairs`: it keeps each derived node's own
+    `per_node` best partners, so the note-to-note pairs never use up its
+    places. `skip` holds (node, note) pairs already joined by what made the
+    vector, a document is trivially like the notes attached to it. Best first;
+    a derived-to-derived pair is kept once, the lower key as the source.
+    """
+    import numpy as np
+
+    if not derived or not notes:
+        return []
+    note_ids, keys = _same_width(derived, notes)
+    if not note_ids or not keys:
+        return []
+
+    def unit(rows: list[np.ndarray]) -> np.ndarray:
+        matrix = np.stack(rows).astype("float32")
+        norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+        return matrix / np.where(norms == 0, 1.0, norms)
+
+    candidates: list[int | str] = [*note_ids, *keys]
+    everything = unit([*(notes[i] for i in note_ids), *(derived[k] for k in keys)])
+    column = {note: col for col, note in enumerate(note_ids)}
+    joined: dict[str, set[int]] = {}
+    for node, note in skip:
+        joined.setdefault(node, set()).add(note)
+    best: dict[tuple, float] = {}
+    for start in range(0, len(keys), SIMILARITY_BLOCK):
+        block = keys[start : start + SIMILARITY_BLOCK]
+        scores = everything[len(note_ids) + start : len(note_ids) + start + len(block)] @ everything.T
+        for row, key in enumerate(block):
+            scores[row, len(note_ids) + start + row] = -np.inf
+            scores[row, [column[n] for n in joined.get(key, ()) if n in column]] = -np.inf
+            _keep_best(best, key, scores[row], candidates, threshold, per_node)
+    return sorted(((a, b, s) for (a, b), s in best.items()), key=lambda t: t[2], reverse=True)
+
+
 #: How many times a model whose files would not load is fetched again before
 #: the person is asked to reinstall it themselves.
 REPAIR_ATTEMPTS = 2

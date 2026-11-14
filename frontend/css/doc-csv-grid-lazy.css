@@ -1,0 +1,102 @@
+/* doc-csv-grid-lazy.css: the editable grid for a csv or tsv document (documents-csvgrid.js; L328, D42). Loaded with it
+   (`LAZY_MODULES.docCsvGrid`), never at boot. The bar is the `.dock` recipe; the table is the page's own tokens. The grid
+   takes the editor's place in `#doc-panes` (the editor stays mounted underneath: the grid writes to its text). */
+
+#doc-panes.csv-grid-on > .doc-source-wrap,
+#doc-panes.csv-grid-on > #doc-preview {
+  display: none;
+}
+
+.csv-grid {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.csv-grid.hidden {
+  display: none;
+}
+
+.csv-grid-scroll {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.csv-grid-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.csv-grid-cell,
+.csv-grid-num {
+  min-inline-size: 7rem;
+  max-inline-size: 24rem;
+  padding: var(--space-1) var(--space-2);
+  border-inline-end: 1px solid var(--border);
+  border-block-end: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.csv-grid-num {
+  position: sticky;
+  inset-inline-start: 0;
+  min-inline-size: 2.5rem;
+  max-inline-size: none;
+  background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
+  color: var(--muted);
+  font-weight: 400;
+  text-align: end;
+  user-select: none;
+}
+
+.csv-grid-table thead .csv-grid-cell {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
+  font-weight: 600;
+}
+
+.csv-grid-cell:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--card);
+}
+
+.csv-grid-empty,
+.csv-grid-more {
+  margin: 0;
+  padding: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* A phone: the four buttons are icons (their titles name them), so the bar stays one row, and a cell is a touch target. */
+@media (max-width: 599.98px) {
+  .csv-grid-bar .toolbar-word {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  /* A table cell ignores min-height; its height is already a floor, so the touch target is set as the height (27px before, 44px after at 390). */
+  .csv-grid-cell,
+  .csv-grid-num {
+    block-size: var(--target-min);
+  }
+
+  .csv-grid-num {
+    min-inline-size: var(--target-min);
+  }
+}

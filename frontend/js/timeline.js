@@ -71,8 +71,8 @@
 // where I can see notes visually by what time they were made. Maybe I can even
 // group them by events or related places etc."
 //
-// What this replaced, and why, because the shape that went is the shape the
-// next session would otherwise reach for again (TIMELINE_PLAN.md §2, measured
+// What this replaced, and why, because the shape that went is the shape a
+// later change would otherwise reach for again (TIMELINE_PLAN.md §2, measured
 // over 48 notes and six months): a **grid** of one column per bucket and one
 // card per note, 8,800px wide against a 1,358px viewport with 79% of its cells
 // empty, and a **line** view drawn in SVG, 14 text nodes for 48 notes, no
@@ -113,6 +113,16 @@ function timelineRowMoment(entry) {
 const TIMELINE_ROW_FULL_DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", year: "numeric" });
 //: The same without the year, for a date in the current one (unslop 1103, 23): the table's Date column took the width the titles needed. A property, not a global of its own.
 TIMELINE_ROW_FULL_DATE.thisYear = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+
+//: A written range as "3 Mar to 7 Mar" (decision 13): the year only when the
+//: last day is not in this one. `until` is the server's "YYYY-MM-DD". A
+//: property like `thisYear`, not a global of its own (the scope ratchet).
+TIMELINE_ROW_FULL_DATE.span = function timelineSpanLabel(from, until) {
+  const [y, m, d] = until.split("-").map(Number);
+  const last = new Date(y, m - 1, d);
+  const format = last.getFullYear() === new Date().getFullYear() && from.getFullYear() === last.getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE;
+  return `${format.format(from)} to ${format.format(last)}`;
+};
 
 function timelineRow(entry) {
   // A board *is* an `Entry` (MINDMAP_PLAN.md §2) and `/timeline` has always
@@ -159,6 +169,8 @@ function timelineRow(entry) {
     placedBy: entry.placed_by,
     //: The other days the note names (the row sits on the first): the calendar draws an "also on" chip there.
     alsoOn: entry.also_on || [],
+    //: The last day of a written range ("3 to 7 March"); the row sits on the first.
+    until: entry.until || null,
     phrase: entry.phrase || "",
     tags: Array.isArray(entry.tags) ? entry.tags : [],
     category: entry.category || "",
@@ -562,13 +574,16 @@ function timelineQuery() {
 }
 
 async function renderTimeline() {
-  timelineRenders.n += 1;
+  const render = (timelineRenders.n += 1);
   const url = `${timelineQuery()}&limit=${TIMELINE_FIRST}`;
   //: Which of these entries are maps, awaited alongside the timeline rather
   //: than before it, because neither needs the other's answer.
   const feed = $("timeline-feed");
   if (!feed.closest(".hidden")) showSkeletons(feed, 5);
   const [body] = await Promise.all([apiJson(url).catch(() => null), loadMapBoardIndex()]);
+  //: A newer render started while this one waited (a range chosen after the
+  //: tab's own render, L483): its answer is the one painted, this one is not.
+  if (render !== timelineRenders.n) return;
   clearSkeletons(feed);
   //: A null here is a request that failed, not a notebook with nothing in it,
   //: and the two used to look identical on screen: "Nothing to plot yet" over
@@ -596,6 +611,7 @@ async function renderTimeline() {
   }
   fillTimelineBandOptions();
   renderTimelineKinds();
+  timelineRecall.hold();
   paintTimeline();
   if (timelineViewMode() === "feed") timelineScrollToToday();
   //: The rows are the answer to the click (TIMELINE_PLAN 10 row 8): they
@@ -628,9 +644,22 @@ async function renderTimeline() {
 //: How long after the rows the recall row and the second page are asked.
 const TIMELINE_LATE_MS = 1500;
 const timelineRecall = { day: "", memories: [], years: {} };
+//: **No 44px jump on a phone** (LEDGER L479). The chips arrive after the rows,
+//: so on a phone the row pushed the list down by one chip. The day's answer
+//: is remembered ("MM-DD:1" had chips, ":0" had none); a later open that day
+//: holds the row's one-chip slot from the first frame, and the chips fill it.
+//: Only the first open of a day can still move the list.
+timelineRecall.today = (now = new Date()) => `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+timelineRecall.hold = () => {
+  const row = $("timeline-recall");
+  if (!row || !window.matchMedia("(max-width: 599.98px)").matches || row.children.length) return;
+  const held = prefs.get("timeline-recall-day", "") === `${timelineRecall.today()}:1`;
+  row.classList.toggle("is-held", held);
+  row.classList.toggle("hidden", !held);
+};
 async function renderTimelineRecall() {
   const now = new Date();
-  const md = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const md = timelineRecall.today(now);
   if (timelineRecall.day !== md) {
     const [on, all] = await Promise.all([
       apiJson(`/timeline?days=0&on=${md}&tz=${-now.getTimezoneOffset()}&group=none&kind=note&limit=20`, { silent: true }).catch(() => null),
@@ -671,7 +700,9 @@ async function renderTimelineRecall() {
   }
   syncTimelineYears(range);
   row.replaceChildren(...chips);
+  row.classList.remove("is-held");
   row.classList.toggle("hidden", !chips.length);
+  prefs.set("timeline-recall-day", `${md}:${chips.length ? 1 : 0}`);
 }
 
 //: **The years, in the strip's head** (INBOX 842: "that year button in the
@@ -774,21 +805,25 @@ function timelineCountLine(shown, loaded, tail, rows = []) {
 //: 2,000 rows). `left` is how many of the first rows are built as they land,
 //: a screenful and some, the rest come with the first look. `guess` is a
 //: shell's height until its row has drawn once (`heights`, by key).
-const TIMELINE_ROW_GUESS = { full: 64, compact: 44, dense: 42 };
+const TIMELINE_ROW_GUESS = { full: 64, compact: 44, dense: 42, table: 34 };
 const TIMELINE_ROWS_BUILT_FIRST = 40;
 const timelineWindow = { win: null, heights: new Map(), density: "", left: 0 };
 
+//: The table is windowed the same way (L491): 1,214 rows were 13,375 nodes and
+//: a 246ms sort; its shells are `<tr>`s, its density "table".
 function newTimelineWindow(density) {
   timelineWindow.win?.stop();
   if (timelineWindow.density !== density) timelineWindow.heights.clear();
   timelineWindow.density = density;
   timelineWindow.left = TIMELINE_ROWS_BUILT_FIRST;
+  const table = density === "table";
   timelineWindow.win = windowRows($("timeline-scroll"), {
     heights: timelineWindow.heights,
     guess: TIMELINE_ROW_GUESS[density] || TIMELINE_ROW_GUESS.full,
+    shell: table ? "tr" : "li",
     keyOf: (row) => row.key,
     tag: (li, row) => { li.dataset.key = row.key; },
-    build: (row) => timelineRowElement(row, density),
+    build: table ? timelineTableRow : (row) => timelineRowElement(row, density),
     stays: (li) => li.contains(document.activeElement) || li.getAttribute("aria-expanded") === "true",
   });
   return timelineWindow.win;
@@ -831,6 +866,9 @@ function appendTimelineRows(fresh) {
   for (const run of runs) {
     const section = feed.lastElementChild;
     if (!section || section.dataset.bucket !== run.key) {
+      //: The gap before a section a later page brings (L-timeline-1).
+      const gap = section && timelineSpans.gapMarker(section.dataset.bucket, run.key, scale);
+      if (gap) feed.appendChild(gap);
       feed.appendChild(timelineBucketSection(run, scale, feed.dataset.density, false));
       continue;
     }
@@ -1017,8 +1055,12 @@ function paintTimelineFeed(rows) {
   //: "this week" and "this month" already contain today by definition.
   const todayKey = timelineBucketKey(new Date(), "day");
   const showsToday = scale === "day" && !timelineFilter && !$("timeline-search").value.trim();
+  let newer = null;
   for (const bucket of showsToday ? timelineAheadBuckets(buckets, todayKey) : buckets) {
+    const gap = newer && timelineSpans.gapMarker(newer, bucket.key, scale);
+    if (gap) fragment.appendChild(gap);
     fragment.appendChild(timelineBucketSection(bucket, scale, density, showsToday && bucket.key === todayKey));
+    newer = bucket.key;
   }
   feed.appendChild(fragment);
   applyTimelineRowTabOrder();
@@ -1034,6 +1076,8 @@ function timelineAheadBuckets(buckets, todayKey) {
   }
   return all.sort((a, b) => (a.key < b.key ? 1 : -1));
 }
+
+
 
 //: One bucket: its header, its rows, and, on today, the journal's own action.
 function timelineBucketSection(bucket, scale, density, isToday = bucket.rows.length === 0) {
@@ -1255,9 +1299,22 @@ async function renderTimelineDayStrip() {
   if (!timelineStripEnd || timelineStripEnd > today) timelineStripEnd = today;
   const end = timelineStripEnd;
   const first = timelineDayShift(end, 1 - TIMELINE_STRIP_DAYS);
-  const hasPage = await timelineDayPages(first, end);
+  //: The streak is asked through today over the endpoint's whole window, so a
+  //: run longer than the strip's seven days is not cut to seven.
+  const [hasPage, journal] = await Promise.all([
+    timelineDayPages(first, end),
+    apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null),
+  ]);
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;
+  const streak = $("timeline-streak");
+  if (streak) {
+    //: Hidden under two days: one day is not a run.
+    const days = journal?.streak;
+    const said = Number.isFinite(days) && days >= 2 ? `${nounCount(days, "day")} in a row` : "";
+    streak.textContent = said;
+    streak.classList.toggle("hidden", !said);
+  }
 
   const lastDay = new Date(`${end}T00:00:00`);
   const firstDay = new Date(`${first}T00:00:00`);
@@ -1506,30 +1563,7 @@ function timelineRowElement(row, density) {
   li.tabIndex = -1;
   li.setAttribute("aria-expanded", "false");
 
-  const mark = document.createElement("span");
-  mark.className = "timeline-row-mark";
-  mark.setAttribute("aria-hidden", "true");
-  const glyph = document.createElement("i");
-  //: The kind is carried by the glyph, and the *placement* by the clock: a
-  //: note plotted on a Friday it mentions is a different fact from one
-  //: plotted on the day it was typed, and the old view said so only in a
-  //: tooltip. Colour is deliberately not the signal here (decision 10 asks
-  //: for category tokens, and this app has none: the Library's chips are
-  //: accent-and-surface, not one hue per category), so the marker takes its
-  //: colour from `--accent` or `--ink-soft` and the icon does the work.
-  //: One glyph per kind (TIMELINE_PLAN Phase 4), with the two placement cases
-  //: keeping theirs: a note plotted on a Friday it mentions and a reminder due
-  //: on that Friday are both "here for what it is about", and the clock is
-  //: what says so. A document and a board are always plotted where they were
-  //: made, so their own glyph is free to say what they are.
-  glyph.className = `ph ${TIMELINE_KIND_GLYPHS[row.kind] || "ph-note"}`;
-  if (row.kind === "note" && row.placedBy === "mentioned") glyph.className = "ph ph-clock-countdown";
-  //: A meeting sits at its own `date:` (INBOX 644), and says it is a meeting.
-  if (row.kind === "note" && row.placedBy === "meeting") glyph.className = "ph ph-users-three";
-  //: The day's page carries the calendar whichever store holds it
-  //: (DOCUMENTS_PLAN section 14); `timelineIsDailyNote` is what knows the set.
-  if (timelineIsDailyNote(row)) glyph.className = "ph ph-calendar-dot";
-  mark.appendChild(glyph);
+  const mark = timelineRowElement.kindMark(row);
 
   const main = document.createElement("span");
   main.className = "timeline-row-main";
@@ -1583,10 +1617,12 @@ function timelineRowElement(row, density) {
   // header no longer says.
   when.textContent =
     density === "full"
-      ? row.allDay ? "All day" : TIMELINE_ROW_TIME.format(row.when)
-      : TIMELINE_ROW_DAY.format(row.when);
+      ? row.until ? `To ${TIMELINE_ROW_DAY.format(new Date(`${row.until}T00:00:00`))}` : row.allDay ? "All day" : TIMELINE_ROW_TIME.format(row.when)
+      : row.until ? TIMELINE_ROW_FULL_DATE.span(row.when, row.until) : TIMELINE_ROW_DAY.format(row.when);
   when.title =
-    row.placedBy === "mentioned"
+    row.until
+      ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.span(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
+      : row.placedBy === "mentioned"
       ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "meeting"
         ? `A meeting on ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
@@ -1799,6 +1835,140 @@ function timelineDensitySpan() {
   timelineSpanCache = { density: timelineDensity, head, span };
   return span;
 }
+
+
+//: The timeline's gap lines and its brushed span (L-timeline-1, L-timeline-2),
+//: one name in the shared scope rather than four (the global-scope ratchet).
+const timelineSpans = {
+  //: **A run of empty weeks says so** (L-timeline-1, ANALYSIS 1190). Two
+  //: sections three weeks apart read as neighbours; the gap between them is the
+  //: part of the year a reader most wants to fill in. A week or more with
+  //: nothing, on the day and week scales only (a month bucket is too coarse to
+  //: name a gap in). `first` is the first empty day, the page the button opens.
+  gap(newerKey, olderKey, scale) {
+    if (scale !== "day" && scale !== "week") return null;
+    const step = scale === "week" ? 7 : 1;
+    const first = timelineDayShift(olderKey, step);
+    const days = Math.round((new Date(`${newerKey}T00:00:00`) - new Date(`${first}T00:00:00`)) / 86400000);
+    return days >= 7 ? { days, first } : null;
+  },
+  //: The line between two sections, or null. Not under a filter or a search,
+  //: where an empty week only means nothing matched. The button is
+  //: `openDayPage`: the composer for that day, nothing saved until Save.
+  gapMarker(newerKey, olderKey, scale) {
+    if (timelineFilter || $("timeline-search").value.trim()) return null;
+    const gap = timelineSpans.gap(newerKey, olderKey, scale);
+    if (!gap || gap.first >= timelineBucketKey(new Date(), "day")) return null;
+    const marker = document.createElement("div");
+    marker.className = "timeline-gap";
+    marker.dataset.gapFirst = gap.first;
+    const line = document.createElement("span");
+    line.className = "muted";
+    line.textContent = gap.days < 14 ? `Nothing written for ${nounCount(gap.days, "day")}` : `Nothing written for ${nounCount(Math.floor(gap.days / 7), "week")}`;
+    const long = new Date(`${gap.first}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    marker.append(line, smallButton("ph:question What happened here?", `Start a page for ${long}`, () => openDayPage(gap.first)));
+    return marker;
+  },
+  //: **A brush on the strip** (L-timeline-2, ANALYSIS 1186): Shift and a drag
+  //: marks a stretch of the strip, and its days are the span the sheet reads.
+  //: The top of the strip is the newest day, so whichever way the drag ran the
+  //: lower edge is the start. A press that hardly moved is the plain click's
+  //: jump, not a span of one pixel (under 4px).
+  fromBrush(y0, y1, box, span) {
+    if (!span || Math.abs(y1 - y0) < 4) return null;
+    const at = (y) => span.newest - Math.min(1, Math.max(0, (y - box.top) / Math.max(box.height, 1))) * span.width;
+    const key = (time) => timelineBucketKey(new Date(time), "day");
+    return { start: key(at(Math.max(y0, y1))), end: key(at(Math.min(y0, y1))) };
+  },
+  //: The brush is a mouse gesture and the strip is hidden on a phone, so
+  //: Options, Review some days asks for the two days on the sheet recipe:
+  //: the keyboard's and the phone's way to the same review. The last week
+  //: is filled in; From after To is turned round rather than refused.
+  ask() {
+    const key = (offset) => timelineBucketKey(new Date(Date.now() - offset * 86400000), "day");
+    openSheet({
+      label: "Review some days",
+      sub: "What you wrote between two days, with the notes beside it.",
+      name: "timeline-span-ask",
+      build: (card, close) => {
+        card.classList.add("inbox-card");
+        const body = document.createElement("div");
+        body.className = "inbox-body";
+        const field = (label, id, value) => {
+          const row = document.createElement("div");
+          row.className = "prop-row";
+          const name = Object.assign(document.createElement("label"), { className: "prop-key muted", textContent: label, htmlFor: id });
+          const input = Object.assign(document.createElement("input"), { type: "date", id, value, className: "prop-value" });
+          row.append(name, input);
+          body.appendChild(row);
+          return input;
+        };
+        const from = field("From", "timeline-span-from", key(6));
+        const to = field("To", "timeline-span-to", key(0));
+        //: A model says the review when one runs, which takes seconds: the
+        //: button waits busy (DESIGN.md's spinner recipe) and the sheet closes
+        //: as the review opens.
+        const go = async () => {
+          if (!from.value || !to.value || review.disabled) return;
+          const [start, end] = [from.value, to.value].sort();
+          setBusy(review, true, "Reading…");
+          await timelineSpans.open(start, end);
+          setBusy(review, false);
+          close();
+        };
+        for (const input of [from, to]) input.addEventListener("keydown", (event) => event.key === "Enter" && (event.preventDefault(), go()));
+        const actions = document.createElement("div");
+        actions.className = "row right space-dialog-actions";
+        const cancel = smallButton("Cancel", "Close without reviewing", close, false);
+        cancel.className = "ghost small";
+        const review = smallButton("ph:magnifying-glass Review", "Review what you wrote in these days", () => go(), false);
+        review.className = "accent small";
+        actions.append(cancel, review);
+        card.append(body, actions);
+      },
+    });
+  },
+  //: The brushed span on the sheet recipe: the composed review (no model,
+  //: `/timeline/digest`) with the span's notes listed beside it, each one a
+  //: connection row that opens the note. Nothing is written.
+  async open(start, end) {
+    //: The rows are connections.js's (lazy, the Connections sheet's own bundle).
+    const [body] = await Promise.all([
+      apiJson(`/timeline/digest?start=${start}&end=${end}`).catch(() => null),
+      lazyScript("/js/connections.js"),
+    ]);
+    if (!body) return;
+    const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    openSheet({
+      label: start === end ? day(start) : `${day(start)} to ${day(end)}`,
+      sub: body.notes.length + (body.more || 0) === 1 ? "One note in these days." : `${nounCount(body.notes.length + (body.more || 0), "note")} in these days.`,
+      name: "timeline-span",
+      build: (card, close) => {
+        card.classList.add("inbox-card");
+        const grid = document.createElement("div");
+        grid.className = "timeline-span-body";
+        const said = document.createElement("div");
+        said.className = "timeline-span-review";
+        renderMarkdown(said, body.text);
+        const notes = document.createElement("div");
+        notes.className = "timeline-span-notes";
+        notes.setAttribute("role", "list");
+        notes.setAttribute("aria-label", "Notes in these days");
+        for (const note of body.notes) {
+          const row = connectionRowEl("ph:note", note.title, `Open ${note.title}`, [day(note.day), note.category].filter(Boolean).join(" · "), () => {
+            close();
+            flashEntry(note.id);
+          });
+          row.setAttribute("role", "listitem");
+          notes.appendChild(row);
+        }
+        grid.append(said, notes);
+        card.appendChild(grid);
+      },
+    });
+  },
+};
+
 function timelineDensitySpanOf(density, head = -Infinity) {
   const days = Object.keys(density);
   if (!days.length) return null;
@@ -2000,9 +2170,8 @@ function paintTimelineTable(rows) {
     ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`, rows)
     : "";
   const sorted = timelineSortedRows(rows);
-  const fragment = document.createDocumentFragment();
-  for (const row of sorted) fragment.appendChild(timelineTableRow(row));
-  body.appendChild(fragment);
+  const win = newTimelineWindow("table");
+  win.add(body, sorted, (row, i) => i < TIMELINE_ROWS_BUILT_FIRST);
   //: No other year on the page: the Date column can be narrow (06-timeline-dialogs.css).
   $("timeline-table").classList.toggle("timeline-this-year", sorted.every((row) => row.when.getFullYear() === new Date().getFullYear()));
 
@@ -2053,6 +2222,37 @@ function syncTimelineDetailSpans() {
   }
 }
 
+//: **The kind's marker, one builder for the feed rail and the table** (LEDGER
+//: L485: the table said "Note" for a meeting until it wore the feed's mark).
+//: A property of the row builder, not a global of its own (the scope ratchet).
+timelineRowElement.kindMark = function timelineKindMark(row) {
+  const mark = document.createElement("span");
+  mark.className = "timeline-row-mark";
+  mark.setAttribute("aria-hidden", "true");
+  const glyph = document.createElement("i");
+  //: The kind is carried by the glyph, and the *placement* by the clock: a
+  //: note plotted on a Friday it mentions is a different fact from one
+  //: plotted on the day it was typed, and the old view said so only in a
+  //: tooltip. Colour is deliberately not the signal here (decision 10 asks
+  //: for category tokens, and this app has none: the Library's chips are
+  //: accent-and-surface, not one hue per category), so the marker takes its
+  //: colour from `--accent` or `--ink-soft` and the icon does the work.
+  //: One glyph per kind (TIMELINE_PLAN Phase 4), with the two placement cases
+  //: keeping theirs: a note plotted on a Friday it mentions and a reminder due
+  //: on that Friday are both "here for what it is about", and the clock is
+  //: what says so. A document and a board are always plotted where they were
+  //: made, so their own glyph is free to say what they are.
+  glyph.className = `ph ${TIMELINE_KIND_GLYPHS[row.kind] || "ph-note"}`;
+  if (row.kind === "note" && row.placedBy === "mentioned") glyph.className = "ph ph-clock-countdown";
+  //: A meeting sits at its own `date:` (INBOX 644), and says it is a meeting.
+  if (row.kind === "note" && row.placedBy === "meeting") glyph.className = "ph ph-users-three";
+  //: The day's page carries the calendar whichever store holds it
+  //: (DOCUMENTS_PLAN section 14); `timelineIsDailyNote` is what knows the set.
+  if (timelineIsDailyNote(row)) glyph.className = "ph ph-calendar-dot";
+  mark.appendChild(glyph);
+  return mark;
+};
+
 function timelineKindName(row) {
   return row.kind === "note" && row.placedBy === "meeting" ? "Meeting" : TIMELINE_KIND_NAMES[row.kind] || "Note";
 }
@@ -2096,9 +2296,11 @@ function timelineTableRow(row) {
   const time = document.createElement("time");
   time.dateTime = row.whenIso;
   //: The year only when it is not this one; the hover below keeps the whole date either way.
-  time.textContent = (row.when.getFullYear() === new Date().getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when);
+  time.textContent = row.until ? TIMELINE_ROW_FULL_DATE.span(row.when, row.until) : (row.when.getFullYear() === new Date().getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when);
   time.title =
-    row.placedBy === "mentioned"
+    row.until
+      ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.span(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
+      : row.placedBy === "mentioned"
       ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "meeting"
         ? `A meeting on ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
@@ -2108,7 +2310,13 @@ function timelineTableRow(row) {
 
   const title = document.createElement("td");
   title.className = "timeline-col-title";
-  title.textContent = row.title;
+  //: The Kind column is hidden on a phone, so the mark rides with the title and
+  //: names the kind for a screen reader (a meeting is not a Note).
+  const mark = timelineRowElement.kindMark(row);
+  mark.removeAttribute("aria-hidden");
+  mark.setAttribute("role", "img");
+  mark.setAttribute("aria-label", timelineKindName(row));
+  title.append(mark, row.title);
   title.title = row.title;
   tr.appendChild(title);
 
@@ -2365,15 +2573,46 @@ onSurface("timeline", () => {
     },
     { passive: false },
   );
+  //: Shift and a drag brushes a span (L-timeline-2) instead of jumping; the
+  //: brush is drawn on its own rect and read on release.
+  let brushFrom = null;
+  const brushRect = $("timeline-scrubber-brush");
+  const drawBrush = (y) => {
+    const box = $("timeline-scrubber").getBoundingClientRect();
+    const unit = (v) => (Math.min(Math.max(v - box.top, 0), box.height) / Math.max(box.height, 1)) * 1000;
+    const top = unit(Math.min(brushFrom, y));
+    brushRect.setAttribute("y", String(top));
+    brushRect.setAttribute("height", String(unit(Math.max(brushFrom, y)) - top));
+  };
   $("timeline-scrubber").addEventListener("pointerdown", (event) => {
     // Pointer capture, so a drag that leaves the 40px strip keeps scrubbing
     // instead of stopping the moment the pointer wanders into the feed.
     $("timeline-scrubber").setPointerCapture(event.pointerId);
+    if (event.shiftKey) {
+      brushFrom = event.clientY;
+      drawBrush(event.clientY);
+      brushRect.classList.remove("hidden");
+      return;
+    }
     timelineScrubTo(event.clientY);
   });
   $("timeline-scrubber").addEventListener("pointermove", (event) => {
     if (!event.buttons) return;
-    timelineScrubTo(event.clientY);
+    if (brushFrom !== null) drawBrush(event.clientY);
+    else timelineScrubTo(event.clientY);
+  });
+  const endBrush = (event, read) => {
+    if (brushFrom === null) return;
+    const span = read && timelineSpans.fromBrush(brushFrom, event.clientY, $("timeline-scrubber").getBoundingClientRect(), timelineDensitySpan());
+    brushFrom = null;
+    brushRect.classList.add("hidden");
+    if (span) timelineSpans.open(span.start, span.end);
+  };
+  $("timeline-scrubber").addEventListener("pointerup", (event) => endBrush(event, true));
+  $("timeline-scrubber").addEventListener("pointercancel", (event) => endBrush(event, false));
+  $("timeline-span-btn").addEventListener("click", () => {
+    $("timeline-options-menu").open = false;
+    timelineSpans.ask();
   });
   $("timeline-select-btn").addEventListener("click", () => {
     if (selectMode) exitSelectMode();

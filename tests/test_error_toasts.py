@@ -192,7 +192,7 @@ EXPECTED = {
         '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
-        '"That day has gone: pick a later due date for a reminder."',
+        '"That time has gone: pick a later due date for a reminder."',
     ],
     'whiteboard.js': [
         '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
@@ -260,6 +260,7 @@ FAULTS = {
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',
         '"The pins were not saved."': 'the selection bar\'s Pin or Unpin write failed: the pins shown are not the pins kept',
+        '`The topics were not changed: ${e?.message || e}`': 'a topic merge, removal or reset request failed: the grouping shown is not the grouping kept',
     },
     'library.js': {
         '`The topic was not renamed: ${e?.message || e}.`': 'the rename request failed: the name shown is not the name kept',

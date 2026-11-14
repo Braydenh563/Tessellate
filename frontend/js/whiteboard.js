@@ -894,6 +894,9 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-map-edge-handle",
   ".wb-map-resize-grip",
   ".wb-map-actions",
+  //: Their small-zoom and downward-flow placements (L360) read it too.
+  "#whiteboard-container[data-wb-zoom-far] .wb-map-actions",
+  "#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions",
   ".wb-map-collapse",
   ".wb-map-count",
   ".wb-sketch-rotate-handle",
@@ -1956,6 +1959,7 @@ function wbSvgVotes(obj) {
 }
 
 function wbPaintVotes(el, d) {
+  wbMapLazy.paintStamps(el, d);
   const n = d.data?.votes || 0;
   let badge = el.querySelector(":scope > .wb-votes");
   if (!n) {
@@ -4053,6 +4057,10 @@ function wbSearchItem(match) {
 }
 
 function wbApplySearchHighlight() {
+  //: No search and nothing marked: every render called this and walked every
+  //: object to toggle two classes off that were never on (about 7 ms of the
+  //: 108 ms Tab-to-editable at 390, 6x, 41 topics; L-mindmap-13).
+  if (!wbBoardSearch.matches.length && !document.querySelector(".wb-search-hit, .wb-search-current")) return;
   const wanted = new Set(wbBoardSearch.matches.map((m) => wbMultiKey(m.kind, m.id)));
   const current = wbBoardSearch.index >= 0 ? wbBoardSearch.matches[wbBoardSearch.index] : null;
   const currentKey = current ? wbMultiKey(current.kind, current.id) : null;
@@ -6901,12 +6909,16 @@ function wbApplySelectionHighlight() {
   //: (INBOX 278, and the earlier report it has to keep answering).
   for (const [el, grouped] of wanted) {
     if (!grouped) wbEnsureHandles(el);
+    //: A topic's resize grip is made when it is first selected or pointed at (`wbMapCache.part`).
+    if (el.classList.contains("wb-map-node")) wbMapCache.part(el, "grip");
     marked.add(el);
     if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
     if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
   }
 }
 
+//: Never moves focus: a map add (`wbMapAddChild`) opens the new topic's editor
+//: first and selects it after, so a focus here would take the typing away.
 function selectWbItem(kind, id) {
   if (kind !== "node" || id !== wbAddGate.cardRetypeId) wbAddGate.cardRetypeId = null;
   wbSelectedItem = { kind, id };
@@ -7890,7 +7902,11 @@ function wbStackCompare(a, b) {
   return wbStackBand(a.kind, a.item) - wbStackBand(b.kind, b.item)
     || (Number(a.item.z) || 0) - (Number(b.item.z) || 0)
     || WB_STACK_KIND_RANK[a.kind] - WB_STACK_KIND_RANK[b.kind]
-    || a.item.id - b.item.id;
+    //: An item still waiting for its id holds a negative one and is the newest
+    //: of its tie, not the oldest: by its own number a new map topic moved every
+    //: sibling's rank up by one, and back on the server's answer (L-mindmap-13).
+    || (a.item.id < 0) - (b.item.id < 0)
+    || (a.item.id < 0 ? b.item.id - a.item.id : a.item.id - b.item.id);
 }
 
 //: Every item on the board, bottom first, as `{ kind, item, key }`.
@@ -9725,6 +9741,7 @@ function wbBuildContextMenu(kind) {
       //: Markers (MINDMAP_PLAN decision 34): priority, progress, a flag, icons.
       sub(wbMapMarkerWords(wbMapMarkerParts(mapNode.data)) ? "Change the markers…" : "Markers…",
         "A priority, how far along it is, a flag and icons", () => wbMapOpenMarkers(mapNode.id));
+      for (const fix of wbMapLazy.grammarFixes(mapNode)) sub(fix.label, fix.title, fix.run);
       const comments = wbItemComments("object", mapNode).length;
       sub(comments ? `Comments (${comments})…` : "Comment…", "A thread on this topic, behind the mark on its corner", () =>
         wbOpenComments("object", mapNode.id)
@@ -9734,6 +9751,7 @@ function wbBuildContextMenu(kind) {
       if (!WB_MAP_REFERENCE_KINDS.has(mapNode.kind)) {
         sub(mapNode.data?.image ? "Change this topic's picture…" : "Put a picture in this topic…",
           "An image from this computer", () => wbMapEditPicture(mapNode));
+        sub("Put a picture from a link…", "An address; fetched here and kept with the board", () => wbMapLazy.imageFromLink(mapNode));
         if (mapNode.data?.image) {
           sub("Take the picture out of this topic", "The upload stays in the library", () =>
             wbMapRemovePicture(mapNode)
@@ -9825,6 +9843,11 @@ function wbBuildContextMenu(kind) {
       sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
         wbMapExportBranch(mapNode.id)
       );
+      sub("Save this branch as Markdown", "A .md file of this topic and everything under it", () => wbMapLazy.saveBranch(mapNode));
+      sub("Copy this topic's shape", "Its look and branch layout, to paste onto another", () => wbMapLazy.copyShape(mapNode));
+      sub("Paste the copied shape here", "One Undo step", () => wbMapLazy.pasteShape(mapNode));
+      sub("Add a template branch…", "Pros and cons, SWOT, the five questions, a meeting agenda", () => wbMapLazy.pickTemplate(mapNode));
+      sub("Add a second central topic…", "Joined to this one by a link that can carry words", () => wbMapLazy.secondRoot(mapNode));
       if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("Move under…", "M: pick the topic to put this branch under", () =>
         wbMapMoveUnder(mapNode.id)
       );
@@ -9836,6 +9859,9 @@ function wbBuildContextMenu(kind) {
       );
       //: A boundary round the branch (MINDMAP_PLAN decision 19).
       const boundary = mapNode.data?.boundary;
+      if (!boundary && wbMapLazy.boundaryTargets().length > 1) {
+        sub("Draw a boundary round the selected topics", "One shape round just these topics, whichever branches they are on", () => wbMapLazy.boundaryDraw());
+      }
       if (!boundary) {
         sub("Draw a boundary round this branch", "A shaded shape round this topic and everything under it, in the branch colour", () =>
           wbMapSetStructure(mapNode, { boundary: "rounded" }, "Boundary drawn."));
@@ -9846,7 +9872,7 @@ function wbBuildContextMenu(kind) {
         sub(mapNode.data?.boundary_label ? "Change the boundary's label…" : "Label the boundary…", "Words over its top edge", () =>
           wbMapAskStructureWords(mapNode, "boundary_label", "What should the boundary say?", "Label it"));
         sub("Remove the boundary", "The topics stay; Ctrl+Z brings it back", () =>
-          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null }, "Boundary removed."));
+          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null, boundary_set: null }, "Boundary removed."));
       }
       //: A summary beside a run of siblings (decision 20); a root takes none.
       if (!rooted && mapNode.data?.summary) {
@@ -11127,8 +11153,19 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl, ownText) {
-  if (!contentEl || contentEl.isContentEditable) return;
+//: `early`: only the part that restyles (the attribute and the class), for a
+//: render to write before its measure read; the call that follows opens the editor.
+function wbBeginTextEdit(contentEl, ownText, early = false) {
+  if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
+  if (early) {
+    //: The class before the attribute: setting `contenteditable` restyles the
+    //: tree there and then, so a class written after it was a second restyle
+    //: at the measure (L-mindmap-13: 11 elements, 4 to 7 ms at 6x).
+    contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+    contentEl._wbPreEdit = true;
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    return;
+  }
   //: Back to the source while editing, whatever the rendered view showed.
   //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
@@ -11137,8 +11174,9 @@ function wbBeginTextEdit(contentEl, ownText) {
     contentEl.textContent = ownText;
   } else if (item) {
     contentEl.classList.remove("wb-text-md");
-    contentEl.textContent = item.data.content || "";
+    if (contentEl.textContent !== (item.data.content || "")) contentEl.textContent = item.data.content || "";
   }
+  contentEl._wbPreEdit = false;
   //: **Plain text, so a line break stays a line break.** With
   //: `contenteditable="true"` Enter inserts a `<div>`, and the blur handlers
   //: read `textContent`, which has no line breaks for those: measured,
@@ -11146,12 +11184,23 @@ function wbBeginTextEdit(contentEl, ownText) {
   //: the box a run of text with real "\n"s (Chromium, WebView2 and WebKit
   //: all support it); where it is refused the attribute falls back to
   //: "true" and `wbEditedText` still reads the lines back correctly.
-  contentEl.setAttribute("contenteditable", "plaintext-only");
-  if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  if (contentEl.getAttribute("contenteditable") !== "plaintext-only") {
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  }
   contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
   wbAttachEditorMenu(contentEl);
   contentEl.focus({ preventScroll: true });
 }
+
+//: An early edit (`early` above) the editor never took over: the attribute and
+//: class come off, so the topic is not left typeable with no editor behind it.
+wbBeginTextEdit.drop = (el) => {
+  if (!el?._wbPreEdit) return;
+  el._wbPreEdit = false;
+  el.removeAttribute("contenteditable");
+  el.closest(".wb-object")?.classList.remove("wb-text-editing");
+};
 
 //: **The editor's "/" and "[[" menus, in a box on the board** (the owner,
 //: 2026-10-10: "/ command menus don't appear in text boxes in the
@@ -11786,7 +11835,16 @@ async function wbApplyHistoryEntry(from, to) {
     if (!item) return true;
     const payload = toPayload(item);
     const links = wbLinksTouching(entry.kind, entry.id);
-    const res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    //: Marked first: a save of this item still on its way (a topic just added, then undone) is dropped by
+    //: `wbSaveObject` instead of racing the DELETE into a stale write (L-whiteboard-18).
+    item._undoing = true;
+    let res;
+    try {
+      res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    } catch (err) {
+      delete item._undoing;
+      throw err;
+    }
     //: **A topic that has gained a branch since goes, and comes back, whole**
     //: (INBOX 537). The server takes a map topic's subtree with it; this step
     //: used to keep only the one row, so the branch under it was lost for good.
@@ -13528,12 +13586,15 @@ function wbSvgWrapLines(text, maxWidth, maxLines = 6, charWidth = 7) {
   return lines;
 }
 
-function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif" } = {}) {
+function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif", fontWeight, fontStyle } = {}) {
   const dy = lineHeight || fontSize + 3;
   const tspans = lines
     .map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : dy}">${wbSvgEscape(l)}</tspan>`)
     .join("");
-  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}" fill="${fill}">${tspans}</text>`;
+  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}"${Object.entries({
+    "font-weight": fontWeight && fontWeight !== "400" && fontWeight !== "normal" ? String(fontWeight) : "",
+    "font-style": fontStyle === "italic" ? "italic" : "",
+  }).filter(([, v]) => v).map(([k, v]) => ` ${k}="${wbSvgEscape(v)}"`).join("")} fill="${fill}">${tspans}</text>`;
 }
 
 
@@ -14082,10 +14143,31 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: the board's own export shadow, the glow as a ring and a blur in the
       //: branch colour, read off the drawn topic as the shape is.
       const fx = wbExportTopicEffect(topicEl, colour, rx, ry, size, parts);
-      parts.push(
-        `<rect width="${size.w}" height="${size.h}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${topicPaint?.fill || "#ffffffee"}" ` +
-          `stroke="${wbSvgEscape(topicPaint?.edge || colour)}" stroke-width="1.5"${fx} />`
-      );
+      //: **The cut shapes are polygons, as the canvas clips them** (L365): a
+      //: diamond, hexagon or chevron paints its face on `::after` and its
+      //: rim on `::before`, with the topic's own background off, so the rect
+      //: path read "none" for all three and drew them as bare boxes. Same
+      //: outlines as library-lazy.css's clip-paths; a cloud keeps its ellipse.
+      const cut = topicEl?.dataset.shape;
+      const fill = topicPaint?.fill || "#ffffffee";
+      const edge = wbSvgEscape(topicPaint?.edge || colour);
+      const sw = size.w, sh = size.h;
+      const slant = Math.min(20, sw * 0.22);
+      const outline = cut === "diamond" ? `M ${sw / 2} 0 L ${sw} ${sh / 2} L ${sw / 2} ${sh} L 0 ${sh / 2} Z`
+        : cut === "hexagon" ? `M ${slant} 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L ${slant} ${sh} L 0 ${sh / 2} Z`
+        : cut === "chevron" ? `M 0 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L 0 ${sh} Z` : "";
+      if (outline) {
+        const face = wbExportColour(getComputedStyle(topicEl, "::after").backgroundColor) || fill;
+        const rim = wbExportColour(getComputedStyle(topicEl, "::before").backgroundColor) || colour;
+        parts.push(`<path d="${outline}" fill="${face}" stroke="${wbSvgEscape(rim)}" stroke-width="1.5"${fx} />`);
+      } else if (cut === "underline") {
+        parts.push(`<path d="M 0 ${sh} L ${sw} ${sh}" stroke="${wbSvgEscape(colour)}" stroke-width="2"${fx} />`);
+      } else if (cut !== "none") {
+        parts.push(
+          `<rect width="${sw}" height="${sh}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${fill}" ` +
+            `stroke="${edge}" stroke-width="1.5"${fx} />`
+        );
+      }
       parts.push(
         `<rect width="4" height="${size.h}" rx="2" fill="${wbSvgEscape(colour)}" />`
       );
@@ -14121,6 +14203,32 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         );
         labelTop = py + ph + 16;
       }
+      //: **A callout and labels travel as drawn** (L377; the export left both out): each is
+      //: placed from its live box inside the card, as the picture above is, and the words
+      //: move down to where the card really sets them when a callout sits over them.
+      const cardEl = objectEls.get(String(obj.id));
+      if (cardEl) {
+        const cardBox = cardEl.getBoundingClientRect();
+        const k = cardBox.width ? size.w / cardBox.width : 1;
+        const inCard = (el) => { const b = el.getBoundingClientRect(); return { x: (b.left - cardBox.left) * k, y: (b.top - cardBox.top) * k, w: b.width * k, h: b.height * k }; };
+        const callout = cardEl.querySelector(".wb-map-callout");
+        if (callout && !callout.hidden && callout.textContent.trim()) {
+          const c = inCard(callout);
+          parts.push(
+            `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="6" fill="${wbSvgEscape(wbExportColour(getComputedStyle(callout).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText(wbSvgWrapLines(callout.textContent.trim(), c.w - 16, 4, 6.2), c.x + 8, c.y + 15, { fontSize: 12, fill: topicPaint?.ink || "#1f2430", lineHeight: 15 })
+          );
+          const words = cardEl.querySelector(".wb-map-text");
+          if (words) labelTop = inCard(words).y + 15;
+        }
+        for (const tag of cardEl.querySelectorAll(".wb-map-tags .wb-map-tag")) {
+          const t = inCard(tag);
+          parts.push(
+            `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="${t.h / 2}" fill="${wbSvgEscape(wbExportColour(getComputedStyle(tag).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText([tag.textContent], t.x + t.w / 2, t.y + t.h / 2 + 4, { fontSize: 11, fill: topicPaint?.ink || "#1f2430" }).replace("<text ", '<text text-anchor="middle" ')
+          );
+        }
+      }
       //: A task's box travels as the ballot-box glyph (MINDMAP_PLAN.md
       //: decision 15): the icon font does not follow the topic into the file.
       const box = obj.data?.task === "done" ? "☑ " : obj.data?.task === "open" ? "☐ " : "";
@@ -14141,9 +14249,15 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: In the map's own face when it has one (§13e's remainder): the file is
       //: the second place a map's text is drawn, and a serif map exported in
       //: sans-serif is two pictures of one map.
+      //: **Its level's type**, read off the drawn label (L365): a main topic
+      //: is larger and bolder than a leaf, a core topic bolder again; the
+      //: export drew every topic at 14px regular. Line height follows.
+      const textStyle = topicEl ? getComputedStyle(topicEl.querySelector(".wb-map-text") || topicEl) : null;
+      const level = textStyle ? Math.min(40, Math.max(9, parseFloat(textStyle.fontSize) || 14)) : 14;
       parts.push(wbSvgText(lines, textLeft, labelTop, {
-        fontSize: 14, fill: topicPaint?.ink || "#1f2430", lineHeight: 17,
+        fontSize: level, fill: topicPaint?.ink || "#1f2430", lineHeight: Math.round(level * 1.2),
         fontFamily: wbMapFontStack() || "sans-serif",
+        fontWeight: textStyle?.fontWeight, fontStyle: textStyle?.fontStyle,
       }));
     } else if (obj.kind === "text" && obj.data.sticker) {
       //: A sticker exports as its glyph, centred, at the size it is drawn.
@@ -14176,6 +14290,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
+    if (obj.data?.stamps) parts.push(wbMapLazy.svgStamps(obj));
     parts.push("</g>");
   };
   for (const e of stack) {
@@ -14987,12 +15102,15 @@ function wbExportBoard() {
   //: The whole board when nothing is selected (audit 1028 U48): "On screen" put "(view)" in a first export's
   //: file name and cut off what was past the edge; it stays one press away.
   let scope = hasSelection ? "selection" : "whole";
+  //: A map branch's menu row says "Export this branch" and hands that title over for this one opening (L267).
+  const title = wbExportBoard.title || "Export this board";
+  wbExportBoard.title = null;
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Export this board");
+  overlay.setAttribute("aria-label", title);
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card wb-export-card";
@@ -15127,7 +15245,7 @@ function wbExportBoard() {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
+  card.append(dialogHead(title, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
@@ -15408,8 +15526,29 @@ async function initWhiteboard() {
   //: kind nothing in the segment could match (INBOX 197).
   $("wb-new-board")?.addEventListener("click", () => createNewBoard());
   $("wb-rename-board")?.addEventListener("click", renameCurrentBoard);
+  //: L348: the model names the board from what is on it, else its first words do; renamed through Rename's undoable path.
+  $("wb-suggest-board-name")?.addEventListener("click", async () => {
+    const boardId = window.currentBoardId;
+    if (!boardId) return;
+    const current = document.getElementById("wb-board-select")?.selectedOptions?.[0]?.dataset.title || "";
+    const got = await apiJson(`/whiteboard/boards/${boardId}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+    if (!got?.title || got.title === current || window.currentBoardId !== boardId) return;
+    try {
+      const board = await apiJson(`/whiteboard/boards/${boardId}`, { method: "PUT", body: JSON.stringify({ title: got.title }) });
+      await refreshBoardList(board);
+      wbBoardPutStep(`Renamed the board to \u201c${board.title}\u201d`, boardId, { title: current }, { title: board.title });
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+    }
+  });
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
+  for (const type of ["pointerover", "focusin"]) {
+    $("whiteboard-container")?.addEventListener(type, (e) => {
+      const node = e.target.closest?.(".wb-map-node");
+      if (node) wbMapCache.part(node, "grip");
+    }, { passive: true });
+  }
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
   //: board chrome rather than inside their own render functions, which is the
   //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added
@@ -15769,6 +15908,22 @@ async function initWhiteboard() {
     await wbMapSetNodeStyle(node, { edge_dashed: wbMapToggleValue(node, "edge_dashed") });
     renderWhiteboardNow();
   });
+  //: The label's look on that line (the board connector's four: size, colour,
+  //: bold, chip), written beside `edge_label` and painted by `wbRenderMapEdges`.
+  const labelLook = async (patch) => {
+    const node = wbSelectedMapNode();
+    if (!node) return;
+    await wbMapSetNodeStyle(node, patch);
+    renderWhiteboardNow();
+  };
+  $("wb-map-label-size")?.addEventListener("change", (e) => {
+    const size = Math.max(8, Math.min(72, Math.round(Number(e.target.value) || 0)));
+    labelLook({ edge_label_size: size && size !== 12 ? size : null });
+  });
+  $("wb-map-label-color")?.addEventListener("change", (e) => labelLook({ edge_label_color: e.target.value }));
+  for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
+    $(id)?.addEventListener("click", (e) => labelLook({ [key]: e.currentTarget.getAttribute("aria-pressed") === "true" ? null : true }));
+  }
   $("wb-map-edge-arrow")?.addEventListener("click", async () => {
     const node = wbSelectedMapNode();
     if (!node) return;
@@ -16131,6 +16286,7 @@ async function initWhiteboard() {
   $("wb-delete-board")?.addEventListener("click", wbDeleteCurrentBoard);
   $("wb-add-to-note")?.addEventListener("click", wbAddBoardToNote);
   $("wb-map-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
+  $("wb-board-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
   $("wb-map-study")?.addEventListener("click", () => wbMapStartStudy());
   $("wb-map-build")?.addEventListener("click", () => wbMapBuild.start());
   $("wb-copy-link")?.addEventListener("click", () => {
@@ -19695,6 +19851,8 @@ async function refreshBoardList(justCreated = null) {
   // rename: `rename_board` 404s on anything that isn't a real positive id.
   const renameBtn = document.getElementById("wb-rename-board");
   if (renameBtn) renameBtn.disabled = !window.currentBoardId;
+  const suggestBtn = document.getElementById("wb-suggest-board-name");
+  if (suggestBtn) suggestBtn.disabled = !window.currentBoardId;
 }
 
 //: **What the picker says a board holds** (audit 2026-10-05, UX-06). A map
@@ -23701,6 +23859,7 @@ async function wbSaveObject(d) {
   //: A topic still on its way to the server (`wbMapAddChild`'s optimistic
   //: add) is saved once it has its real id.
   if (d._creating) return d._creating.then((ok) => (ok ? wbSaveObject(d) : undefined));
+  if (d._undoing) return;
   delete d._unsaved;
   const body = {
     kind: d.kind, data: d.data, board_id: d.board_id,
@@ -24384,7 +24543,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     .attr("class", (d) => `wb-object wb-object-${d.kind}`)
     .attr("data-id", (d) => d.id)
     .style("transform", wbItemTransform)
-    .style("width", (d) => `${d.width}px`)
+    .style("width", (d) => `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`)
     .style("height", objectHeight)
     .style("z-index", (d) => stackRank.get(`object:${d.id}`))
     .call(objDrag)
@@ -24670,7 +24829,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
     const el = d3.select(this);
     this.style.transform = wbItemTransform(d);
-    this.style.width = `${d.width}px`;
+    this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
     this.style.height = objectHeight(d);
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
@@ -24689,6 +24848,18 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
         .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
+      //: The topic an add is about to type in is made editable here, before
+      //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
+      const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
+      if (typing) {
+        //: Selected, the old selection let go, in the same pass and before the
+        //: editable attribute (which restyles at once): the `selectWbItem` that
+        //: follows then finds the classes already right.
+        for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
+        this.classList.add("wb-selected");
+        (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+        wbBeginTextEdit(typing, undefined, true);
+      }
     } else if (d.kind === "frame") {
       const title = this.querySelector(".wb-frame-title");
       if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);
@@ -25425,6 +25596,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbRememberBoardView();
   //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
   if (!opts?.stay) {
+    openWhiteboardBoard.at = performance.now(); // read by boards-gallery.js `show`: its landing must not hide this board
     switchTab("library");
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
   }

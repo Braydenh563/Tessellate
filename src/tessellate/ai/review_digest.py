@@ -17,25 +17,29 @@ from sqlalchemy.orm import Session
 from tessellate.ai import activity, composer_voice, notebook_stats, realise
 from tessellate.ai.review_words import kind  # noqa: F401  (the review words live in a leaf the Guide also reads)
 
-def _notes(session: Session, start: date, zone) -> list[dict]:  # noqa: ANN001
-    """Notes made from `start` on the person's clock; no private note, board,
-    map topic or draft."""
+def _notes(session: Session, start: date, zone, end: date | None = None) -> list[dict]:  # noqa: ANN001
+    """Notes made from `start` (to `end`, when given) on the person's clock; no
+    private note, board, map topic or draft. Both bounds are in SQL with a
+    day's slack for the zone, so a span far in the past reads its own days,
+    not every note since."""
     from tessellate.core.database import Category, Entry
 
     lo = datetime.combine(start, time(0))
+    hi = datetime.combine(end + timedelta(days=1), time(0)) if end is not None else None
+    bound = [Entry.created_at < hi + timedelta(days=1)] if hi is not None else []
     rows = session.execute(
         select(Entry.id, Entry.content, Entry.created_at, Category.name)
         .select_from(Entry)
         .outerjoin(Category, Category.id == Entry.category_id)
         .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False,  # noqa: E712
                Entry.map_topic == False, Entry.is_draft == False,  # noqa: E712
-               Entry.created_at >= lo - timedelta(days=1))
+               Entry.created_at >= lo - timedelta(days=1), *bound)
         .order_by(Entry.created_at)
     ).all()
     out = []
     for ident, content, made, category in rows:
         local = activity._local(made, zone)
-        if local is not None and local >= lo:
+        if local is not None and local >= lo and (hi is None or local < hi):
             out.append({"id": ident, "content": content or "", "created_at": local.isoformat(), "category": category or ""})
     return out
 
@@ -125,6 +129,15 @@ def week(session: Session, now: datetime) -> str:
     if not paras:
         paras.append("No notes were written in the last seven days.")
     return "\n\n".join(paras + (["\n".join(tail)] if tail else []))
+
+
+def span(session: Session, start: date, end: date, now: datetime) -> tuple[str, list[dict]]:
+    """The days from `start` to `end` as a review, and the notes in them,
+    oldest first (L-timeline-2: a span brushed on the timeline's strip)."""
+    zone = now.tzinfo or timezone.utc
+    notes = _notes(session, start, zone, end)
+    said = composer_voice.span_review(notes, start=start, end=end, today=now.date(), unlinked=_unlinked(session))
+    return said["text"].strip(), notes
 
 
 def day(session: Session, now: datetime) -> str:

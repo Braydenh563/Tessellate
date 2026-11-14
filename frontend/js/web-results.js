@@ -190,6 +190,7 @@
       const saved = await apiJson("/bookmarks", {
         method: "POST",
         body: JSON.stringify({
+          fetch: true,
           url: result.url,
           title: (result.title || "").slice(0, 200),
           note: (result.snippet || "").slice(0, 2000),

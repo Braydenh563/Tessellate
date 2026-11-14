@@ -137,18 +137,18 @@ TAIL_TOPICS.extend(
                 "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
                 "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                 "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
+                "and paste a style, Delete or a bin drop removes, Esc cancels a drag."
                 " Double-click empty board for a text box, double-click a closed shape (or select "
-                "it and press Enter) to write in it, right-click (or hold) for the menu, double-"
+                "it and press Enter) to write in it, right-click or hold for the menu, double-"
                 "click a line to bend it, select a connector and press Label (or Enter) to"
                 " label it. A frame's title drags it and what is inside it, its top handle turns both; a click on a panel's body or a frame's edge selects it; its "
                 "menu exports it or fits it to its contents, and a double-click on a resize "
                 "handle fits that edge to what it holds; a note, text box or picture fits its content. Ctrl+Shift+L "
                 "locks the selection. Right-click an item, "
                 "Comment…, starts a thread. View, Present frames: one frame at a "
-                "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
+                "time, the bar lists pages; ? shows every key; Ctrl+K finds a board action. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (new, export). Rename a board: Board, Rename."
+                "snap, zoom) and Board (new, export). Rename a board: Board, Rename or Suggest a name."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -613,12 +613,22 @@ TAIL_TOPICS.extend(
                 "timebox",
                 "retro",
                 "brainstorm",
+                "reaction stamps on a note",
+                "react with a stamp",
+                "affinity sort",
+                "group stickies by theme",
+                "group by theme",
             ),
             "body": (
                 "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
                 "choose Board, Workshop, Add a vote dot: each takes a dot, drawn as a count on its top-right "
                 "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
-                "Clear all vote dots empties the board; one Undo takes back a press. Workshop timer… opens "
+                "Clear all vote dots empties the board; one Undo takes back a press. React with a stamp adds "
+                "a thumb, heart, star, tick, question or flame chip under the item (a press on it takes yours "
+                "back), as on a mind map topic. Group by theme… sorts the selected stickies into named themes and shows "
+                "each sticky with the notes in your notebook that back it; tick the themes to keep, rename them if "
+                "you like, and each becomes a frame holding its stickies, in one Undo step. With no model running "
+                "the stickies are grouped by the words they share. Workshop timer… opens "
                 "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
                 "when time is up; its X stops it. The timer is for this window only and is not saved."
             ),
@@ -798,21 +808,28 @@ TAIL_TOPICS.extend(
                 "audio note",
                 "audio on a topic",
                 "recording on a topic",
+                "brainstorm timer",
+                "copy the shape of a branch",
+                "topic template",
+                "picture from a link",
+                "second central topic",
+                "save a branch as markdown",
+                "proposed map",
             ),
             "body": (
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "View sets Colour by (branch, category, age, note) and opens every "
                 "folded branch (Alt+1: fold every branch); Present branches shows it branch by branch. A topic's menu, "
-                "Content, Markers sets a priority (1 to 5), how far along it is, a "
-                "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
-                "a bar from start to due for each topic with both, and a dragged bar moves its dates; "
-                "a topic's menu, Audio note attaches a recording from Recordings, its mic mark plays it; "
+                "Content, Markers sets a priority (1 to 5), progress, a "
+                "flag, a start day, a due day (and time) and up to six icons; View, Gantt chart draws "
+                "a bar from start to due for each topic with both; "
+                "a topic's menu, Audio note attaches a recording, its mic mark plays it; "
                 "View, Filter by marker dims every topic "
-                "without the one you pick, and View, Dim all but the selected branch "
+                "without the markers or labels you press, and View, Dim all but the selected branch "
                 "dims everything outside the selected branch and its path to "
                 "the centre, following the selection. The sidebar's Outline tab (View, "
-                "Outline) lists the map as an indented outline: F2 renames, "
+                "Outline) lists the map as an indented outline with each topic's markers: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
                 "A topic's menu makes "
                 "it a task: press its box to tick it, and every topic above "
@@ -852,10 +869,14 @@ TAIL_TOPICS.extend(
                 "export a branch",
             ),
             "body": (
+                "A topic's menu also has Put a picture from a link, Copy this topic's shape with Paste the copied shape here, "
+                "Add a template branch, Add a second central topic (joined by a link with words) and Save this branch as Markdown; "
+                "the palette starts a five minute brainstorm timer. "
                 "Start from a "
                 "template, import an OPML, FreeMind, XMind, Markdown or text outline "
                 "(it opens as a tree), paste an indented "
-                "list onto a topic to add it as that topic's branch, let the "
+                "list onto a topic to add it as that topic's branch, use "
+                "Topics from a recording for one topic per transcript line, let the "
                 "local AI propose a map from notes you pick, or on a topic choose "
                 "Add, Branches from my notes… for up to five children found in your "
                 "notes, each saying which note it came from; on a topic that is "
@@ -954,7 +975,8 @@ TAIL_TOPICS.extend(
                 "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
                 "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
                 "A bullet pasted from elsewhere becomes a list item. In a markdown "
-                "document, typing # and a letter offers the tags you have used."
+                "document, typing # and a letter offers the tags you have used, and "
+                "in Read a #tag is a chip: press it to find the documents that have it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1081,6 +1103,8 @@ TAIL_TOPICS.extend(
                 "remark",
                 "remarks",
                 "reply to a remark",
+                "edit a reply",
+                "delete a reply",
                 "resolve a remark",
                 "resolved remarks",
                 "reopen a remark",
@@ -1094,6 +1118,8 @@ TAIL_TOPICS.extend(
                 "The sidebar's Outline lists every remark with the words it is "
                 "about, who wrote it (your name from Settings, Profile) and when. "
                 "Reply on a row adds a line under it; Enter posts, Esc cancels. "
+                "A reply has a pencil to reword it and a bin to delete it (Undo "
+                "brings it back); the paperclip in a reply attaches a bookmark, note, document or board. A resolved remark can still be replied to. "
                 "Resolve takes the remark out of the text and keeps the thread: "
                 "Show resolved lists it, and Reopen puts the remark back on its "
                 "words (Ctrl+Z right after a resolve does the same). Replies and "
@@ -1123,6 +1149,28 @@ TAIL_TOPICS.extend(
                 "bar, press Turn into on a phone's formatting bar, or choose Turn "
                 "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
                 "caret inside a code block is left alone."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-to-note",
+            "keywords": (
+                "selection to a note",
+                "new note from selection",
+                "add to note",
+                "append to a note",
+                "turn a selection into a note",
+                "highlight text and make a note",
+                "send text to a note",
+            ),
+            "body": (
+                "Select text in a document or a code file and choose New note from "
+                "selection to start a note from it, or Add to note to pick an "
+                "existing note and append it. Both are on the selection bar (the "
+                "note button) and in the right-click menu. The text lands as a "
+                "quote, or as a code block in a code file, with a From [[Title]] "
+                "line under it that links back to the document. Undo on the "
+                "notice, or Ctrl+Z, takes it back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1186,6 +1234,21 @@ TAIL_TOPICS.extend(
                 "and pictures, its tracked changes as suggestions; other downloads "
                 "are .md, .html, a .zip "
                 "with images, and print or save as PDF."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-2: its own entry, the documents entry is at the reply cap.
+        {
+            "id": "writing-streak",
+            "keywords": ("daily goal", "daily word goal", "writing streak", "streak", "words today"),
+            "body": (
+                "Right-click the counts in a document's status bar (or press the menu key on them) "
+                "for the daily word goal: 250, 500, 1,000 or 2,000 words, or none. The bar then adds "
+                "how far today is, such as 120 of 500 today. Only words you add to a text document "
+                "count, a paste does not, and the tally starts again each day. A day that reaches the goal "
+                "adds to your streak; a missed day starts it again from one. The menu's first row "
+                "says today's words and the streak. It is counted on this device only. "
+                "The per-document word goal beside the counts is separate."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1323,13 +1386,15 @@ TAIL_TOPICS.extend(
                 "the tag, person or word its notes share most, and its legend entry "
                 "finds those notes and opens its card, where Summarise asks your "
                 "local model for one sentence (with none, Summary (no AI)), "
-                "File as a category files its notes under one category, "
-                "and the pencil renames it (the arrow brings the found name back). "
+                "File as a category files its notes under one category (the card names where most sit), "
+                "and the pencil renames it (the arrow restores it). "
+                "Its dots hold Merge with and Remove topic; "
+                "the legend's Reset topic edits undoes both. "
                 "On the map, drag a topic's name to move all its notes together "
-                "(they stay put; Unpin all releases them), double-click it to rename, "
+                "(they stay put until Unpin all), double-click to rename, "
                 "click it for its card. A note's card and its panel show its topic; "
                 "pressing it opens the graph on that topic. "
-                "No note's name is drawn over a topic's name. Filter holds a chip per "
+                "Filter holds a chip per "
                 "kind of link on the map (press one to take those links off, again "
                 "to bring them back) and per property value (press to light those "
                 "notes). Colour: Note type paints each note its type's colour "
@@ -1367,6 +1432,32 @@ TAIL_TOPICS.extend(
                 "(off by default) keeps dots off the lines but a large notebook settles slower. Show, "
                 "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
                 "Reset to defaults puts them all back."
+            ),
+            "badge": {"label": "Graph", "tab": "graph"},
+        },
+        #: L-graph-1 and L-graph-2: its own entry, since graph-controls and
+        #: graph-display both sit at the reply budget.
+        {
+            "id": "graph-draft-map",
+            "keywords": (
+                "compose into a draft",
+                "draft from notes",
+                "notes into a document",
+                "cluster to document",
+                "map of meaning",
+                "map of my notes",
+                "notes by meaning",
+                "projection",
+                "similar notes reason",
+            ),
+            "body": (
+                "Select notes on the graph (Shift and drag on empty map), open the selection bar's ⋯ "
+                "menu and choose Compose into a draft: one document opens with a section per note, "
+                "oldest first, and a line naming the notes it came from. The notes stay as they are, "
+                "private notes are left out, and no AI is needed. Options, View, Layout, Map of meaning "
+                "places each note by what it means, so notes about the same thing sit together; "
+                "notes with no meaning data yet wait in a row at the bottom. In Similar notes, hover "
+                "a note to see why it is offered: a shared tag, name or week, else similar in meaning."
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },

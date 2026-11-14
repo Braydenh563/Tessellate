@@ -25,7 +25,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_worker, unwrapped
 
 GRAPH = Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph.js"
 GRAPH_CANVAS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph-canvas.js"
@@ -97,7 +97,7 @@ def test_gc_start_worker_can_start_at_rest_and_freeze_saved_notes():
         "gcStartWorker must take a viewSeed ({alpha, freezeIds} or null) "
         "rather than always sending the worker alpha: 1"
     )
-    body = fn.group(0)
+    body = gc_worker(source)  # gcStartWorker and the pieces split out of it (L14)
     assert "viewSeed ? viewSeed.alpha : 1" in body or "viewSeed.alpha" in body, (
         "a restored view with nothing left unplaced must be able to start "
         "the worker's simulation at alpha 0, not the unconditional 1 every "
@@ -117,8 +117,9 @@ def test_the_worker_thaws_the_view_s_notes_once_it_settles():
         "simulation ends (`thaw`, the same release a drag's freeze gets), "
         "or every restored note stays permanently held"
     )
-    end_branch = re.search(r'(?s)message\.type === "end".*?\n\s*\}\n\s*\}', source)
-    assert end_branch and "thaw" in end_branch.group(0), (
+    # The "end" branch of onmessage is a call to `gcOnWorkerEnd` (L14), which holds the thaw.
+    end_branch = re.search(r'(?s)message\.type === "end"\) \{\s*gcOnWorkerEnd\(s\);\s*\}', source)
+    assert end_branch and "thaw" in gc_worker(source)[gc_worker(source).index("function gcOnWorkerEnd(") :], (
         "the thaw belongs in the worker's \"end\" message handling: releasing "
         "before the reheat is done would let the saved notes drift while the "
         "new one is still being placed"
@@ -131,8 +132,7 @@ def test_a_restore_holds_its_notes_from_the_first_step_and_never_warms():
     # every saved note moved (726px with a note added since). The hold rides
     # in the init and a restore neither warms nor plays an intro.
     source = _text(GRAPH_CANVAS)
-    fn = re.search(r"(?s)function gcStartWorker\(nodes, edges, world, s = gcTab, viewSeed = null\) \{.*?\n\}\n", source)
-    body = fn.group(0)
+    body = gc_worker(source)
     assert "held: held.has(n.id)," in body
     assert "warm: reframe && !restoring &&" in body
     assert "intro: !gcStill() && !restoring," in body

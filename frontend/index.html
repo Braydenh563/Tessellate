@@ -2005,6 +2005,7 @@ Link to another note with [[its first few words]]."></textarea>
                    own strip under its composer uses, rather than four controls
                    invented here. Each of these used to be something you had to
                    type into a free-text instruction and hope for. -->
+              <div class="draft-foot">
               <div class="row draft-controls draft-desk-controls">
                 <select id="draft-kind" class="small-select" aria-label="What to write"
                   title="What Atlas does with what is in the box">
@@ -2073,6 +2074,7 @@ Link to another note with [[its first few words]]."></textarea>
                    then (writing-desk.js `syncDraftGate`). -->
               <p id="draft-rule-line" class="muted draft-rule-line hidden">With no model the writer works by rule: tidy, notes by date, bullets and prose, plain or formal, diagrams.</p>
               <p id="draft-status" class="status" role="status"></p>
+              </div>
             </div>
             <div class="draft-column">
               <div class="row space-between draft-column-head">
@@ -3724,6 +3726,10 @@ Link to another note with [[its first few words]]."></textarea>
                    move `#select-btn` and `#graph-trace-toggle` made. It only
                    appears in the table view, which is the one with rows you
                    can tick. -->
+              <!-- The span review's keyboard and phone way in (L-timeline-2):
+                   the strip's Shift and drag needs a mouse. -->
+              <button id="timeline-span-btn" class="doc-dock-menu-item" type="button"
+                title="Review what you wrote between two days, with the notes beside it"><i class="ph ph-calendar-blank ph-lead" aria-hidden="true"></i> Review some days</button>
               <button id="timeline-select-btn" class="doc-dock-menu-item hidden" type="button"
                 title="Select several notes to move, tag, favourite, archive or delete together"><i class="ph ph-check-square ph-lead" aria-hidden="true"></i> Select</button>
               <!-- "Time range", not "Show": the group filter above was also
@@ -3766,7 +3772,8 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="help-body hidden" id="timeline-intro" role="dialog" aria-label="How to read this">
   <p>A note sits where it is about when it says so, "the deadline
         is next Friday" plots on that Friday, marked with a clock, and at when it was
-        written otherwise. The feed opens on today with the week ahead above it (scroll up),
+        written otherwise. A range, "away 3 to 7 March", sits on its first day and runs
+        through the last in the calendar. The feed opens on today with the week ahead above it (scroll up),
         and an empty day ahead has an Add for a reminder or an event.
         Arrow keys walk the rows, Enter opens one where it sits.
         The strip below shows the last seven days: a dot marks a day with a page,
@@ -3774,9 +3781,12 @@ Link to another note with [[its first few words]]."></textarea>
         month walk a week, and the month opens a calendar to jump to any earlier day.
         In the feed, Ctrl and the mouse wheel, or a pinch, makes the date
         groups finer or coarser, as do + and - on a row. The thin strip at the feed's right edge shows how much you wrote
-        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump. The chips under the strip show what you
+        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump, and Shift and drag reads a span: what you wrote
+        in those days, with the notes beside it (Options, Review some days, asks for the two days instead). The chips under the strip show what you
         wrote on today's date in earlier years, and the year menu beside the month narrows the list to one year;
         Options, Time range, On this day does the same.
+        A week or more with nothing written shows a line between the dates; What happened here?
+        starts a page for the first empty day.
   </p>
   <p>The calendar shows a month, a week or a day: reminders and meetings at
         their time, a day's page at the top of its day and a chip with its title for
@@ -3810,6 +3820,9 @@ Link to another note with [[its first few words]]."></textarea>
                while the notebook has no dated notes. -->
           <select id="timeline-year" class="small-select timeline-year hidden" aria-label="Show one year"
             title="Narrow the timeline to one year"></select>
+          <!-- The journal streak (D6, L495): quiet text, not a control; hidden
+               under two days. Filled by `renderTimelineDayStrip`. -->
+          <span id="timeline-streak" class="timeline-streak muted hidden"></span>
         </div>
         <div class="timeline-days" id="timeline-daystrip-days"></div>
       </div>
@@ -3899,10 +3912,11 @@ Link to another note with [[its first few words]]."></textarea>
         </table>
       </div>
         <div id="timeline-scrubber" class="timeline-scrubber hidden" aria-hidden="true"
-          title="How much you wrote, over the whole range. Click or drag to jump.">
+          title="How much you wrote, over the whole range. Click or drag to jump; Shift and drag to read a span.">
           <svg class="timeline-scrubber-svg" viewBox="0 0 40 1000" preserveAspectRatio="none">
             <path id="timeline-density-path" class="timeline-density-path"></path>
             <rect id="timeline-scrubber-window" class="timeline-scrubber-window" x="0" y="0" width="40" height="0"></rect>
+            <rect id="timeline-scrubber-brush" class="timeline-scrubber-brush hidden" x="0" y="0" width="40" height="0"></rect>
           </svg>
         </div>
       </div>
@@ -4087,6 +4101,7 @@ Link to another note with [[its first few words]]."></textarea>
           <button id="graph-selection-link" class="ghost small" type="button" title="Link the selected notes to each other"><i class="ph ph-link ph-lead" aria-hidden="true"></i> <span class="dock-word">Link together</span></button>
           <button id="graph-selection-unlink" class="ghost small" type="button" title="Remove every link between the selected notes (undoable)"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i> <span class="dock-word">Unlink</span></button>
           <button id="graph-selection-map" class="ghost small" type="button" title="Make a mind map of these notes, shaped by their links"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> <span class="dock-word">Mind map</span></button>
+          <span id="graph-selection-more"></span>
           <button id="graph-selection-clear" class="ghost small icon-only" type="button" title="Clear the selection" aria-label="Clear the selection"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
         <div id="graph-help-panel" class="help-body hidden" role="dialog" aria-label="How to use this map">
@@ -4107,14 +4122,14 @@ Link to another note with [[its first few words]]."></textarea>
               thought, dotted are notes that mean similar things.</li>
             <li>A bigger dot has more links (Size in the options changes that).
               Click a legend colour to hide it.</li>
-            <li>Tree, Radial, Arc, Treemap and Tessellation layouts stay still; change
+            <li>Tree, Radial, Arc, Map of meaning, Treemap and Tessellation layouts stay still; change
               them in the toolbar. Treemap sizes categories by links;
               Tessellation gives each note a cell.</li>
             <li>In Treemap and Tessellation, click a category's name bar to
               select its notes, double-click to zoom, right-click for its
               menu; C steps through them.</li>
-            <li>To draw a map yourself, open the <strong>mind map</strong>
-              button in the toolbar.</li>
+            <li>To draw a map yourself, use <strong>mind map</strong>
+              in the toolbar.</li>
           </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
@@ -4178,6 +4193,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="tree">Tree</option>
                 <option value="radial">Radial</option>
                 <option value="arc">Arc</option>
+                <option value="map">Map of meaning</option>
                 <option value="treemap">Treemap</option>
                 <option value="tessellation">Tessellation</option>
               </select>
@@ -4308,7 +4324,7 @@ Link to another note with [[its first few words]]."></textarea>
                  actions (Trace, Legend, Suggest links, Reset). -->
             <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
-              <p>These shape the Force layout; under Tree, Radial, Arc, Treemap and Tessellation they are dimmed.</p>
+              <p>These shape the Force layout; under Tree, Radial, Arc, Map of meaning, Treemap and Tessellation they are dimmed.</p>
               <ul>
                 <li>Gravity: how hard every note is drawn toward the middle, so the map packs tighter or spreads wider.</li>
                 <li>Spread: how far apart linked notes sit.</li>
@@ -4705,11 +4721,8 @@ Link to another note with [[its first few words]]."></textarea>
             </svg>
           </div>
         <!-- The map is the Canvas 2D renderer (graph-canvas.js, GRAPH_PLAN.md
-             section 5 Phase 1). The empty SVG below is what the removed SVG
-             renderer drew into; it stays hidden until its click handlers,
-             styles and lock-list entries go (audit 1029 row 60 follow-up). -->
+             section 5 Phase 1). -->
         <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
-        <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
           aria-label="Note">
@@ -5199,6 +5212,10 @@ Link to another note with [[its first few words]]."></textarea>
                  (syncDocFileType swaps the two). -->
             <button id="doc-code-format" class="ghost small hidden" type="button"
               title="Format the selected lines, or the whole file when nothing is selected (Shift+Alt+F)" aria-label="Format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Format</span></button>
+            <!-- Grid (L328, D42): a .csv or .tsv document as an editable table (documents-csvgrid.js, a lazy module).
+                 Shown for that type only (syncDocFileType); every edit is a change to the editor's own text. -->
+            <button id="doc-csv-grid" class="ghost small hidden" type="button" aria-pressed="false"
+              title="Edit this file as a table of cells" aria-label="Grid"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Grid</span></button>
             <!-- Run (INBOX 404, Brief 69): a code document in the sandbox
                  through the one run protocol (run-core.js), its output in a
                  panel under the editor. Shown for the types that run or
@@ -5246,6 +5263,7 @@ Link to another note with [[its first few words]]."></textarea>
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
                 Focus hides everything but the page (F11).</p>
+              <p>A .csv or .tsv file adds Grid: the file as a table of cells you type in. Tab and the arrow keys move between cells, Enter moves down, and Alt+Enter breaks a line inside a cell. Add row, Add column, Delete row and Delete column act on the cell you are in. Every edit is a change to the text, so Ctrl+Z undoes it, and Escape goes back to the text.</p>
               <p>A diagram (.mmd) opens the builder: blocks on one side, the picture on the other. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Add puts a block in, Connect to… draws an arrow, and a drag on the picture reorders the blocks because the picture lays itself out. Shift, Ctrl or Cmd and click picks several blocks; Shift and drag on empty space picks the ones it touches; a press on empty space or Escape lets go of them. Expand, at the end of the diagram's toolbar, opens the diagram full screen with the same saving; Collapse or Escape returns to the document where you left it. Save as SVG or PNG, Copy as picture and Copy as Mermaid are under More for this diagram. In another document, type /diagram, or write a diagram's title in double square brackets after an exclamation mark to show one you already have.</p>
               <p>Find and replace (Ctrl+F, the magnifier) opens the editor's search: every match is marked, Enter goes to the next and Shift+Enter to the previous, Replace all is one undo step, and Esc closes it. To change a word across every document, use Replace in every document in the ⋯ menu.</p>
               <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
@@ -5276,6 +5294,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="doc-focus-toggle"><i class="ph ph-corners-out ph-lead" aria-hidden="true"></i> Focus mode</button>
                 <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#tab-documents .doc-actions > [data-help-for=doc-dock-help]"><i class="ph ph-question ph-lead" aria-hidden="true"></i> About these controls</button>
                 <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i> Format</button>
+                <button class="menu-item doc-dock-menu-item doc-phone-only hidden" type="button" data-click-proxy="doc-csv-grid"><i class="ph ph-table ph-lead" aria-hidden="true"></i> Edit as a grid</button>
                 <button class="menu-item doc-dock-menu-item doc-phone-only doc-code-only" type="button" data-click-proxy="doc-code-assist-open"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Assistant</button>
                 <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=live]"><i class="ph ph-article ph-lead" aria-hidden="true"></i> Edit as Live</button>
                 <button class="menu-item doc-dock-menu-item doc-phone-only" type="button" data-click-proxy="#doc-view-menu [data-doc-view=source]"><i class="ph ph-code ph-lead" aria-hidden="true"></i> Edit as Source</button>
@@ -7015,6 +7034,8 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="shape-picker" data-wb-surface="board"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Shape picker…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="sticker-match" data-wb-surface="board"><i class="ph ph-copy-simple ph-lead" aria-hidden="true"></i><span>Match all copies</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="sticker-swap" data-wb-surface="board"><i class="ph ph-swap ph-lead" aria-hidden="true"></i><span>Swap everywhere</span></button>
               </div>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
@@ -7202,7 +7223,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" id="wb-map-theme-item" hidden><i class="ph ph-palette ph-lead" aria-hidden="true"></i><span>How this map looks</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-expand-all" hidden><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Open every folded branch</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-fold-all" hidden title="Show the trunks only (Alt+1)"><i class="ph ph-arrows-in-line-vertical ph-lead" aria-hidden="true"></i><span>Fold every branch</span></button>
-              <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that does not carry one marker"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
+              <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that carries none of the markers or labels you pick"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-gantt-item" data-wb-surface="map" hidden title="A bar from start to due for each topic that has both"><i class="ph ph-chart-bar-horizontal ph-lead" aria-hidden="true"></i><span>Gantt chart…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-stats-item" hidden><i class="ph ph-chart-bar ph-lead" aria-hidden="true"></i><span>What this map is made of</span></button>
             </div>
@@ -7226,11 +7247,15 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Boards</span>
               <button id="wb-rename-board" type="button" class="wb-menu-item" title="Rename this board"><i class="ph ph-pencil-simple ph-lead" aria-hidden="true"></i><span>Rename this board</span></button>
+              <button id="wb-suggest-board-name" type="button" class="wb-menu-item" title="A name from what is on this board"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i><span>Suggest a name</span></button>
               <button id="wb-new-board" type="button" class="wb-menu-item" title="Create a new board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span>New board</span></button>
             </div>
             <div class="wb-menu-section" data-wb-submenu="ph:users-three Workshop" data-wb-submenu-title="Vote dots and a timer" data-wb-surface="board">
               <button type="button" class="wb-menu-item" data-wb-cmd="vote"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Add a vote dot</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="clear-votes"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all vote dots</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="affinity-sort"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Group by theme…</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="react"><i class="ph ph-thumbs-up ph-lead" aria-hidden="true"></i><span>React with a stamp</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="clear-stamps"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all stamps</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="timer"><i class="ph ph-timer ph-lead" aria-hidden="true"></i><span>Workshop timer…</span></button>
             </div>
             <!-- **Plain icon rows, never a label with an action beside it**
@@ -7275,6 +7300,8 @@ Link to another note with [[its first few words]]."></textarea>
                      depth, then lists, notes as paragraphs, the map's card at
                      the head. Maps only. -->
                 <button id="wb-map-to-doc" data-wb-closes data-wb-surface="map" type="button" class="wb-menu-item" title="Write this map as a new document: its branches as headings, the rest as lists"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
+                <!-- A board's frames as a document draft (L-documents-4): a heading per frame, a paragraph per sticky inside it. Boards only. -->
+                <button id="wb-board-to-doc" data-wb-closes data-wb-surface="board" type="button" class="wb-menu-item" title="Write this board as a new document: a heading for each frame, a paragraph for each sticky or note in it"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
                 <button id="wb-copy-link" data-wb-closes type="button" class="wb-menu-item" title="Copy this board's or mind map's address to open it in the app"><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Copy app link</span></button>
                 <!-- The whole board into the library as a template (decision 25). -->
                 <button type="button" class="wb-menu-item" data-wb-cmd="save-template"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Save this board as a template…</span></button>
@@ -7436,7 +7463,7 @@ Link to another note with [[its first few words]]."></textarea>
             topic (select several side by side to summarise them together);
             More, Topic, Comment… starts a thread on it. More, Look copies a
             topic's style, pastes it, or gives it to every topic at its level;
-            View, How this map looks sets the hierarchy and each level. View, Present
+            View, How this map looks sets the hierarchy and each level, and saves a look to apply to another map. View, Present
             branches shows the map one branch at a time; Esc ends it.
           </p>
           <p>
@@ -8222,7 +8249,7 @@ Link to another note with [[its first few words]]."></textarea>
            says which of its two kinds of connection it is talking about,
            everywhere it talks about one. This is the branch. -->
       <div class="wb-board-menu-wrap" data-wb-map-line>
-        <button type="button" class="ghost small wb-menu-toggle" data-wb-menu-toggle title="The branch line into this topic: how thick it is, whether it is dashed, its arrowhead and its shape" aria-label="Branch line: the line into this topic" aria-haspopup="true" aria-expanded="false" aria-controls="wb-map-line-menu"><span class="wb-menu-label">Branch line</span><i class="ph ph-caret-down wb-menu-caret" aria-hidden="true"></i></button>
+        <button type="button" class="ghost small wb-menu-toggle" data-wb-menu-toggle title="The branch line into this topic: how thick it is, whether it is dashed, its arrowhead, its shape and its label" aria-label="Branch line: the line into this topic" aria-haspopup="true" aria-expanded="false" aria-controls="wb-map-line-menu"><span class="wb-menu-label">Branch line</span><i class="ph ph-caret-down wb-menu-caret" aria-hidden="true"></i></button>
         <div id="wb-map-line-menu" class="wb-board-menu wb-map-strip-menu hidden" role="menu" aria-label="Branch line">
           <div class="wb-menu-section">
             <div class="wb-menu-row">
@@ -8251,6 +8278,26 @@ Link to another note with [[its first few words]]."></textarea>
               <span>Arrowhead</span>
               <span class="wb-menu-controls">
                 <button type="button" id="wb-map-edge-arrow" class="ghost small icon-only" title="Put an arrowhead on the line into this topic" aria-label="Put an arrowhead on the line into this topic" aria-pressed="false"><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <div class="wb-menu-row">
+              <span>Label size</span>
+              <input type="number" id="wb-map-label-size" class="ghost small" min="8" max="72" step="1" placeholder="12" aria-label="Size of this line's label" title="Size of the label on the line into this topic">
+            </div>
+            <div class="wb-menu-row">
+              <span>Label colour</span>
+              <input type="color" id="wb-map-label-color" class="wb-color-picker" aria-label="Colour of this line's label" title="Colour of the label on the line into this topic">
+            </div>
+            <div class="wb-menu-row">
+              <span>Label bold</span>
+              <span class="wb-menu-controls">
+                <button type="button" id="wb-map-label-bold" class="ghost small icon-only" title="Bold the label on the line into this topic" aria-label="Bold the label on this line" aria-pressed="false"><i class="ph ph-text-b" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <div class="wb-menu-row">
+              <span>Label chip</span>
+              <span class="wb-menu-controls">
+                <button type="button" id="wb-map-label-chip" class="ghost small icon-only" title="Put a chip behind the label on the line into this topic" aria-label="Put a chip behind the label on this line" aria-pressed="false"><i class="ph ph-tag" aria-hidden="true"></i></button>
               </span>
             </div>
           </div>
@@ -9085,13 +9132,17 @@ Link to another note with [[its first few words]]."></textarea>
             <option value="za">Title Z → A</option>
             <option value="site">By site</option>
           </select>
+          <select id="bookmark-view" aria-label="View bookmarks as" title="Show the bookmarks as a list or as cards">
+            <option value="list">List</option>
+            <option value="cards">Cards</option>
+          </select>
         </div>
         <div class="dock-actions">
           <button type="button" id="bookmark-help-toggle" class="icon-only ghost small graph-help-toggle"
             data-help-for="bookmark-help" aria-controls="bookmark-help" aria-expanded="false"
             title="About bookmarks" aria-label="About bookmarks"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="bookmark-help" role="dialog" aria-label="About bookmarks">
-            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups and tag them (commas, then press a tag to filter): New group and Manage groups are in the more menu, with Import bookmarks file (from your browser's export) and Export bookmarks.</p>
+            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, view it as a list or cards, and file bookmarks in folders: drag a bookmark onto a folder, onto another bookmark or onto All, drag a folder onto another to nest it (one level), and double-click a folder to rename it. Icon and colour is in a bookmark's menu and in a folder's. Duplicates appears when the same address is saved twice. Import bookmarks file (from your browser's export) and Export bookmarks are in the more menu.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="bookmark-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -9101,9 +9152,9 @@ Link to another note with [[its first few words]]."></textarea>
                    rename or retire one was to edit every link carrying it, one
                    at a time. -->
               <button type="button" id="bookmark-group-new" class="doc-dock-menu-item">
-                <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New group</button>
+                <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New folder</button>
               <button type="button" id="bookmark-group-manage" class="doc-dock-menu-item">
-                <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage groups</button>
+                <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage folders</button>
               <button type="button" id="bookmark-import" class="doc-dock-menu-item" title="Add the links from a bookmarks file your browser exported">
                 <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import bookmarks file</button>
               <button type="button" id="bookmark-export" class="doc-dock-menu-item" title="Save every bookmark as a file your browser can import">
@@ -9128,7 +9179,7 @@ Link to another note with [[its first few words]]."></textarea>
         <input id="bookmark-title-input" type="text"
           placeholder="Title (optional)" aria-label="Bookmark title">
         <input id="bookmark-group-input" type="text" list="bookmark-group-options"
-          placeholder="Group (optional, e.g. Work/Reading)" aria-label="Bookmark group">
+          placeholder="Folder (optional, e.g. Work/Reading)" aria-label="Bookmark folder">
         <datalist id="bookmark-group-options"></datalist>
         <input id="bookmark-tags-input" type="text"
           placeholder="Tags (optional, commas)" aria-label="Bookmark tags" maxlength="400">
@@ -9138,6 +9189,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button type="button" id="bookmark-form-done" class="ghost small" title="Fold the form away (Esc)">Done</button>
       </form>
       <div id="bookmark-group-chips" class="row bookmark-group-chips" role="group" aria-label="Filter bookmarks"></div>
+      <div id="bookmark-folder-bar" class="row bookmark-folder-bar hidden"></div>
       <p id="bookmark-count" class="muted text-xs bookmark-count" role="status" aria-live="polite"></p>
       <div id="bookmark-list" class="bookmark-list"></div>
       <div id="bookmark-empty" class="empty-state hidden">
@@ -9183,11 +9235,14 @@ Link to another note with [[its first few words]]."></textarea>
           <!-- Live captions' door where a person looks for audio (V6). -->
           <button id="recordings-captions" class="small ghost" type="button" title="Live captions: what the microphone hears, written as it is said">
             <i class="ph ph-closed-captioning ph-lead" aria-hidden="true"></i> Captions</button>
+          <button id="recordings-import" class="small ghost" type="button" title="Keep an audio file from this computer as a recording">
+            <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import audio</button>
+          <input type="file" id="recordings-import-file" accept="audio/*,.webm,.ogg,.mp4,.wav" multiple class="hidden" aria-label="Audio files to import">
           <button type="button" class="icon-only ghost small graph-help-toggle"
             data-help-for="recordings-help" aria-controls="recordings-help" aria-expanded="false"
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="recordings-help" role="dialog" aria-label="About recordings">
-            <p>Everything recorded in the app: meetings, lectures and voice notes. Captions, beside this, writes what the microphone hears as it is said; it is shown once Live captions is installed (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
+            <p>Everything recorded in the app: meetings, lectures and voice notes. Import audio keeps a file from this computer as a recording. Captions, beside this, writes what the microphone hears as it is said; it is shown once Live captions is installed (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
             <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the Speakers bundle installed (Settings, Packages), the transcript labels who speaks, by voice, as Speaker 1, Speaker 2 and so on, all on this computer; Label speakers by voice does it for a transcript you already have, and Rename a speaker gives a label a name that stays for that recording. Without it, and with the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
           <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
@@ -10048,6 +10103,11 @@ Link to another note with [[its first few words]]."></textarea>
         spelling follows this computer's language.
       </p>
       <p>
+        Kinds of suggestion turns whole groups of Harper's grammar suggestions off
+        (style and readability, punctuation, capital letters, word choice). Spelling
+        and plain mistakes such as a repeated word stay on.
+      </p>
+      <p>
         In a document, autocorrect and word suggestions are per document, in
         the editor's ⋯ menu; in notes, chat and titles autocorrect is one
         switch in Settings, General, Writing. Import takes a .txt file with one word per line and
@@ -10087,6 +10147,25 @@ Link to another note with [[its first few words]]."></textarea>
         <small class="muted">In documents and notes, on this computer (Harper).</small>
       </span>
     </label>
+    <fieldset id="doc-prose-groups" class="doc-prose-groups">
+      <legend>Kinds of suggestion</legend>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="style" checked>
+        <span>Style and readability<small class="muted">Wordy or hard-to-read phrasing.</small></span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="punctuation" checked>
+        <span>Punctuation</span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="capitalization" checked>
+        <span>Capital letters</span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="wording" checked>
+        <span>Word choice<small class="muted">Wrong or non-standard words and usage.</small></span>
+      </label>
+    </fieldset>
     <label class="setting-check">
       <input type="checkbox" id="doc-check-link-text">
       <span>
@@ -13066,6 +13145,10 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row">
+                <label for="pref-birthday" class="muted">My birthday</label>
+                <input id="pref-birthday" type="date" title="So a reminder on my birthday knows the day">
+              </div>
+              <div class="row">
                 <label for="pref-season-hemisphere" class="muted">Seasons</label>
                 <select id="pref-season-hemisphere" title="Which half of the year summer and winter mean">
                   <option value="auto">From my language and region (default)</option>
@@ -13207,6 +13290,12 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row space-between setting-row">
+                <label for="pref-read-aloud-voice-name">Browser voice</label>
+                <select id="pref-read-aloud-voice-name" class="small-select">
+                  <option value="">Automatic</option>
+                </select>
+              </div>
+              <div class="row space-between setting-row">
                 <label for="pref-read-aloud-rate">Speaking speed</label>
                 <select id="pref-read-aloud-rate" class="small-select">
                   <option value="0.75">Slower (0.75x)</option>
@@ -13221,7 +13310,9 @@ Link to another note with [[its first few words]]."></textarea>
                   it again, now Stop reading, to stop. The speed is remembered on this
                   device. The natural voice is a package you install in Settings,
                   Packages: it reads on this computer, a sentence or two behind the
-                  press, and the speed above applies to the browser's voices only.
+                  press, and the speed above applies to the browser's voices only. Browser
+                  voice picks which of this computer's voices speaks, in chat and in
+                  documents; Automatic follows the page's language.
                 </p>
               </div>
             </div>

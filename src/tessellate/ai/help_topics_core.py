@@ -386,12 +386,16 @@ HELP_TOPICS: list[dict] = [
             "as do + and - on a row. The thin strip at the feed's right edge shows how "
             "much you wrote over the whole range, labelled by month or year (Options, "
             "Dates beside the strip, hides the labels and remembers it); click or "
-            "drag it to jump. The strip under the bar walks your daily pages, and the "
+            "drag it to jump; Shift and drag reads a span, what you wrote in those days with the notes beside it; Options, Review some days asks for the two days, by keyboard or on a phone. The strip under the bar walks your daily pages, and the "
             "chip under it offers On this day, and the year menu beside the month narrows the list to one year. A note that names a "
             'day ("on Friday") sits on that day and says All day; one that '
             'names a time too ("on Friday at 3pm") shows that time. '
+            'A range ("away 3 to 7 March") sits on its first day and runs through the last in the calendar. '
             "A daily note is an ordinary note whose title is its day, such as 2026-09-13; "
-            "the strip under the bar opens or starts one, and its head steps to the day before and after."
+            "the strip under the bar opens or starts one, and its head steps to the day before and after; "
+            "after two days running with a daily note, the strip's head says how many days in a row. "
+            "A week or more with nothing written shows a line between the dates; its What happened here? "
+            "starts a page for the first empty day."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },
@@ -809,14 +813,14 @@ HELP_TOPICS: list[dict] = [
             "notification says when it is done; Stop ends it) and the "
             "transcript is offered to save; saved, the recorder shows its "
             "first lines with Open. "
-            "Library, Recordings searches names and transcripts (a hit plays from its line) and plays them "
-            "at 0.5 to 2x with a playhead and the time; drag the waveform to "
+            "Library, Recordings searches names and transcripts (a hit plays from its line), Import audio keeps a file; "
+            "play at 0.5 to 2x with a playhead and the time; drag the waveform to "
             "seek, press M to mark a moment with a comment, Trim, and Download audio (in the more menu); a "
             "transcribed one lists its lines with their times (press one to "
             "play from it; a line's copy button copies it, Shift-click picks a run of "
             "lines, and the transcript's more menu copies the picked lines or all of "
             "them, with or without times) and downloads them as SRT or VTT subtitles; with "
-            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on (Label speakers by voice in the menu does an old one); "
+            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on (Label speakers by voice does an old one); "
             "with only the AI on, turns are labelled from what is said. Rename a speaker names a label for good. "
             "In a document, ![[a recording's name]] plays it there. "
             "Read aloud plays an answer back to you; its item turns to Stop "
@@ -1124,15 +1128,15 @@ HELP_TOPICS: list[dict] = [
             "one scrolls to it and opens its answers, the check on a row accepts "
             "its one clear fix and the crossed eye ignores it, and the arrow keys "
             "walk the rows. Fix applies every clear fix at once; the ... in the "
-            "panel's head holds Check with AI, Hide all suggestions (quiets every "
-            "underline and the list until shown), Dismissed (the "
-            "suggestions put away in this document, each with a Restore), the "
+            "panel's head holds Check with AI, Check claims against my notes "
+            "(each sentence marked supported, contradicted or not found, with "
+            "its note), Hide all suggestions, Dismissed, the "
             "Dictionary and which side the panel docks on. For an awkward "
             'sentence with no mechanical fix, "Ask the AI for wordings" offers '
             "two or three alternatives; nothing changes until you choose. "
             "Manage the dictionary and the spelling preference (American, "
-            "British, Australian, Canadian or Indian) from the editor's own "
-            "dictionary dialog. LanguageTool, an optional second grammar "
+            "British, Australian, Canadian or Indian) from the "
+            "dictionary dialog (names are known). LanguageTool, an optional second grammar "
             "checker, is in Settings, Packages."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -1824,6 +1828,8 @@ HELP_TOPICS.extend(
                 "Each row has two controls at its right edge: the circle "
                 "marks it read or unread, the cross removes just that one; the bin at the bottom "
                 "clears them all. "
+                "A reminder's row also has Done, which completes it here (a repeating "
+                "one moves to its next time). "
                 "Reminders also pop up on their own while a tab or the "
                 "desktop app is open."
             ),
@@ -1871,16 +1877,16 @@ HELP_TOPICS.extend(
                 "steps in (Focus mode otherwise), Shift+F11 steps out, Shift+F5 "
                 "stops); Stop ends it, and the panel's top edge drags its height "
                 "(kept for each tab). Blocks fold from the "
-                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+[ "
+                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+. toggles one, Ctrl+Alt+[ "
                 "and Ctrl+Alt+] all of them). "
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "
                 "in what the run left) and Debug. Ctrl+J shows it, Ctrl+Shift+M "
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
                 "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
-                "editor, Ctrl+K Ctrl+S lists every key, and Outline follows the "
+                "editor, Ctrl+K Ctrl+S lists the keys here, and Outline follows the "
                 "caret. Minimap (Editor and layout, "
-                "off at first) maps the whole file; Compare with a saved version "
-                "(palette) shows the changes inline, with Reject to put a hunk back."
+                "off at first) maps the whole file; Compare with a saved version or another document "
+                "(palette) shows changes inline; Reject undoes a hunk."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

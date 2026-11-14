@@ -60,14 +60,14 @@ const check = (label, ok, detail) => {
       if (running) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-    const before = document.querySelectorAll('.timeline-row').length;
+    const before = timelineRows.length;
     // Four pages: scroll to the end, wait for the rows, again.
     for (let i = 0; i < 4; i++) {
       box.scrollTop = box.scrollHeight;
       await new Promise((r) => setTimeout(r, 1200));
     }
     running = false;
-    const after = document.querySelectorAll('.timeline-row').length;
+    const after = timelineRows.length;
     // The first frame after the counter starts includes whatever the page was
     // already doing, so it is dropped: what is being measured is the paging.
     const measured = frames.slice(1);
@@ -121,7 +121,7 @@ const check = (label, ok, detail) => {
   const far = await page.evaluate(async () => {
     const strip = document.getElementById('timeline-scrubber');
     const box = strip.getBoundingClientRect();
-    const rowsBefore = document.querySelectorAll('.timeline-row').length;
+    const rowsBefore = timelineRows.length;
     strip.dispatchEvent(new PointerEvent('pointerdown', {
       clientX: box.left + box.width / 2,
       clientY: box.top + box.height * 0.98,
@@ -132,10 +132,12 @@ const check = (label, ok, detail) => {
     const scroll = document.getElementById('timeline-scroll');
     return {
       rowsBefore,
-      rowsAfter: document.querySelectorAll('.timeline-row').length,
+      rowsAfter: timelineRows.length,
       atEnd: scroll.scrollTop + scroll.clientHeight > scroll.scrollHeight - 1200,
     };
   });
+  // Loaded rows (timelineRows), not DOM rows: the feed is windowed, so the DOM
+  // holds a moving slice whatever was fetched.
   // The page arriving is the answer, not where the scroll ended up: appending
   // 300 rows moves the end of the feed further away than the scroll that asked
   // for them, which is the whole point of fetching early.

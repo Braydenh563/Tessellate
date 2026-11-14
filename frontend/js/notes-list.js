@@ -33,7 +33,8 @@ function foldNoteToolbarForFirstPaint() {
     if (!bar.querySelector(".doc-toolbar-tools") && !event.target.closest("button")) startNewNote();
   });
 }
-foldNoteToolbarForFirstPaint();
+//: The strip is in the Notes surface's template, built on first use, so it is not in the page when this file loads.
+onSurface("notes", foldNoteToolbarForFirstPaint);
 
 //: Read by navigation.js's `hasUnsavedWork` (WORLD_CLASS_PLAN 22.1 item 4).
 //: `editingId` alone says a form is *open*, not that anything in it has
@@ -835,9 +836,12 @@ function safeHref(url) {
 //: applies afterwards; the point of the check here is to leave anything else
 //: (an HTML tag, `<3`, a generic like `Array<T>`) exactly as it was.
 function expandAngleAutolinks(text) {
+  //: Not after `](`: `[text](<url>)` is CommonMark's angle destination, the
+  //: form the slash menu's Web link writes on a line of its own so the lone
+  //: link card rule (CHAT_PLAN decision 12) leaves it an inline link.
   return String(text || "").replace(
-    /<(https?:\/\/[^\s<>]{1,500})>/g,
-    (whole, url) => `[${url}](${url})`,
+    /(\]\()?<(https?:\/\/[^\s<>]{1,500})>/g,
+    (whole, dest, url) => (dest ? whole : `[${url}](${url})`),
   );
 }
 
@@ -987,6 +991,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     } else {
       [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, runSpec, runText] = match;
     }
+    //: `[text](<url>)`, the angle destination expandAngleAutolinks leaves alone.
+    if (linkUrl && /^<[^<>]+>$/.test(linkUrl)) linkUrl = linkUrl.slice(1, -1);
     // Images and links are their own element kinds, not a wrap-in-a-tag like
     // the four above: built and appended directly rather than falling
     // through to the generic `tag`/`node` shape below, since neither one
@@ -1853,8 +1859,9 @@ function windowRows(root, o) {
     for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
     return to;
   };
+  //: `o.shell` names the shell's tag: a `<tbody>` takes `tr` (L491, the Timeline table).
   const shellFor = (items, i, from) => {
-    const li = document.createElement("li");
+    const li = document.createElement(o.shell || "li");
     li.className = "row-shell";
     li.setAttribute("aria-hidden", "true");
     //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
@@ -2188,6 +2195,17 @@ function setNotesViewMode(mode) {
 const expandedRows = new Set();
 
 onSurface("notes", () => {
+  //: **The open note on card view is the last card clicked or focused**
+  //: (L709, the owner 2026-11-12): it stays open until another card is
+  //: clicked or Notes is left (`switchTab`), and search ranks its linked
+  //: notes higher (`refreshNoteSearchWhy`).
+  const list = $("entry-list");
+  const remember = (event) => {
+    const li = event.target.closest?.("li[data-id]");
+    if (li && list?.contains(li)) list.dataset.lastCard = li.dataset.id;
+  };
+  list?.addEventListener("pointerdown", remember);
+  list?.addEventListener("focusin", remember);
   $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
   $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
   $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));

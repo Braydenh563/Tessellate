@@ -31,6 +31,10 @@ class HangingModel:
         self.url = f"http://127.0.0.1:{self.server.getsockname()[1]}"
         self.closed_by_client = 0
         self.held = 0
+        #: Set when a request is held and when a client closes one: the tests
+        #: wait on these, not on a wall-clock poll a loaded runner can miss.
+        self.holding = threading.Event()
+        self.client_closed = threading.Event()
         self._stop = False
         threading.Thread(target=self._accept, daemon=True).start()
 
@@ -56,13 +60,16 @@ class HangingModel:
                 conn.sendall(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n" % len(body) + body)
                 return
             self.held += 1
+            self.holding.set()
             while True:
                 chunk = conn.recv(65536)  # the rest of the body, then silence
                 if not chunk:
                     self.closed_by_client += 1
+                    self.client_closed.set()
                     return
         except OSError:
             self.closed_by_client += 1
+            self.client_closed.set()
         finally:
             conn.close()
 
@@ -78,13 +85,13 @@ def hanging():
     model.close()
 
 
-def _wait(check, seconds=3.0) -> bool:
-    end = time.monotonic() + seconds
-    while time.monotonic() < end:
-        if check():
-            return True
-        time.sleep(0.02)
-    return check()
+#: Only a guard against a hung test, never a speed claim: the timed claims
+#: are the `took` and `started` asserts, unchanged.
+HANG_GUARD = 30.0
+
+
+def _seen(event: threading.Event) -> bool:
+    return event.wait(HANG_GUARD)
 
 
 def test_stop_cuts_a_call_still_waiting_for_the_first_byte(hanging):
@@ -95,7 +102,7 @@ def test_stop_cuts_a_call_still_waiting_for_the_first_byte(hanging):
     with activity.bind(job), pytest.raises(provider_http.RequestException):
         provider_http.post(f"{hanging.url}/api/chat", json={"x": 1}, stream=True, timeout=(3, 60))
     assert time.monotonic() - started < 2.0
-    assert _wait(lambda: hanging.closed_by_client == 1)
+    assert _seen(hanging.client_closed) and hanging.closed_by_client == 1
 
 
 def test_a_call_with_no_flag_is_the_plain_request_path(hanging, monkeypatch):
@@ -123,7 +130,7 @@ def test_a_utility_route_answers_within_its_deadline_and_cuts_the_model(app_stat
     took = time.monotonic() - started
     assert response.status_code == 200 and response.json()["title"] == ""
     assert took < 4.0
-    assert hanging.held >= 1 and _wait(lambda: hanging.closed_by_client >= 1)
+    assert hanging.held >= 1 and _seen(hanging.client_closed)
 
 
 def test_a_route_with_no_fallback_answers_504_after_its_deadline(app_state, hanging, monkeypatch):
@@ -161,11 +168,11 @@ def test_a_stopped_chat_stream_ends_and_the_model_sees_the_close(app_state, hang
 
     worker = threading.Thread(target=run)
     worker.start()
-    assert _wait(lambda: hanging.held == 1)
+    assert _seen(hanging.holding) and hanging.held == 1
     event.set()
-    worker.join(3)
+    worker.join(HANG_GUARD)
     assert not worker.is_alive() and seen
-    assert _wait(lambda: hanging.closed_by_client == 1)
+    assert _seen(hanging.client_closed) and hanging.closed_by_client == 1
 
 
 def test_a_closed_browser_sets_the_flag(app_state, monkeypatch):
@@ -231,7 +238,14 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     from tessellate.search import searxng_manager
 
     release = threading.Event()
-    monkeypatch.setattr(searxng_manager, "docker_available", lambda: release.wait(10) and False)
+    answered = threading.Event()
+
+    def docker_available() -> bool:
+        release.wait(10)
+        answered.set()
+        return False
+
+    monkeypatch.setattr(searxng_manager, "docker_available", docker_available)
     monkeypatch.setattr(routes_websearch, "STATUS_BUDGET", 0.1)
     api = TestClient(create_app())
     # The app's first request pays its own start-up; on a loaded CI runner that
@@ -241,7 +255,14 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     # Far under the 10 s hang, with room for a loaded runner (-n auto).
     assert first.status_code == 503 and took < 2.0
     release.set()
-    assert _wait(lambda: api.get("/websearch/searxng/status").status_code == 200)
+    assert _seen(answered)
+    # The probe has answered; its result is stored a moment after it returns.
+    for _ in range(600):
+        if api.get("/websearch/searxng/status").status_code == 200:
+            break
+        time.sleep(0.05)
+    else:
+        pytest.fail("the stored probe answer never reached the route")
     second, took = _timed(api, "/websearch/searxng/status")
     assert second.status_code == 200 and took < 1.0
 
@@ -260,4 +281,4 @@ def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(ap
     took = time.monotonic() - started
     assert response.status_code in (200, 504), response.text[:200]
     assert took < 5.0
-    assert hanging.held >= 1 and _wait(lambda: hanging.closed_by_client >= 1)
+    assert hanging.held >= 1 and _seen(hanging.client_closed)

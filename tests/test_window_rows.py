@@ -154,3 +154,23 @@ process.stdout.write(JSON.stringify({
     assert out["rows"] == 10 and out["filledId"] == "10" and out["filledBuilt"] is True
     assert out["numbered"] == 9, "the second add numbers its rows on from the first"
     assert out["stillShell"] is True and out["off"] is True
+
+
+def test_a_table_body_gets_row_shells_of_its_own_tag():
+    """L491: the Timeline table windows its rows, and a `<li>` in a `<tbody>` is not a row."""
+    out = _run("""
+const { items, list, win } = make(300, { shell: 'tr' });
+win.add(list, items, (item, i) => i < 40);
+process.stdout.write(JSON.stringify({ tags: [...new Set(shells(list).map((k) => k.tag))], shells: shells(list).length, built: built.length }));
+""")
+    assert out == {"tags": ["tr"], "shells": 260, "built": 40}
+
+
+def test_the_timeline_table_paints_through_the_window():
+    """L491: `paintTimelineTable` adds its sorted rows to a window, not every row built."""
+    js = (JS_DIR / "timeline.js").read_text(encoding="utf-8")
+    paint = js[js.index("function paintTimelineTable(") :]
+    paint = paint[: paint.index("\n}\n")]
+    assert "win.add($(\"timeline-table-body\")" in paint or "win.add(body" in paint
+    assert "fragment.appendChild(timelineTableRow(row))" not in paint
+    assert 'shell: table ? "tr"' in js[js.index("function newTimelineWindow(") :][:1200]

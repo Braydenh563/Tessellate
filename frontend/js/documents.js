@@ -238,6 +238,9 @@ function syncDocFileType({ prose = true } = {}) {
   //: stays: a code file prints its own listing (`docCodePrintFill`).
   for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-export-slides")?.classList.toggle("hidden", docIsCodeFile());
+  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid left open on another file closes.
+  for (const grid of document.querySelectorAll("#doc-csv-grid, [data-click-proxy=doc-csv-grid]")) grid.classList.toggle("hidden", type.ext !== "csv");
+  if (docViewState.csvGrid?.isOpen() && (type.ext !== "csv" || docViewState.csvGrid.forDoc() !== (currentDoc?.id ?? null))) docViewState.csvGrid.close();
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -731,8 +734,6 @@ function textareaSurface(el) {
     get dataset() { return el.dataset; },
     get scrollTop() { return el.scrollTop; },
     set scrollTop(at) { el.scrollTop = at; },
-    get scrollLeft() { return el.scrollLeft; },
-    set scrollLeft(at) { el.scrollLeft = at; },
     get scrollHeight() { return el.scrollHeight; },
     get clientHeight() { return el.clientHeight; },
     selection() { return { from: el.selectionStart, to: el.selectionEnd }; },
@@ -759,7 +760,6 @@ function textareaSurface(el) {
     },
     focus() { el.focus(); },
     blur() { el.blur(); },
-    rect() { return el.getBoundingClientRect(); },
     getBoundingClientRect() { return el.getBoundingClientRect(); },
     //: A programmatic write fires no `input`, and half this editor hangs off
     //: one. The name is the DOM's so the shared helpers need no edit.
@@ -827,8 +827,6 @@ function cmSurface(view, meta = null) {
     get dataset() { return view.dom.dataset; },
     get scrollTop() { return view.scrollDOM.scrollTop; },
     set scrollTop(at) { view.scrollDOM.scrollTop = at; },
-    get scrollLeft() { return view.scrollDOM.scrollLeft; },
-    set scrollLeft(at) { view.scrollDOM.scrollLeft = at; },
     get scrollHeight() { return view.scrollDOM.scrollHeight; },
     get clientHeight() { return view.scrollDOM.clientHeight; },
     selection() {
@@ -881,7 +879,6 @@ function cmSurface(view, meta = null) {
     },
     focus() { view.focus(); },
     blur() { view.contentDOM.blur(); },
-    rect() { return view.dom.getBoundingClientRect(); },
     getBoundingClientRect() { return view.dom.getBoundingClientRect(); },
     //: **Nothing to dispatch, and that is not a stub.** Callers written for a
     //: textarea end a scripted write with an `input` event, because writing
@@ -1028,6 +1025,9 @@ function setDocView(mode, { persist = true } = {}) {
   docViewState.held = !type.previewable && (docView === "source" || type.ext === "mmd");
   if (persist) try {
     if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
+    //: Plain stored on a code file, then Source chosen back: Source is held (not stored), so the
+    //: old "plain" outlived the choice and every later file opened uncoloured (L-documents-12).
+    else if (docView === "source" && prefs.get(DOC_VIEW_KEY, null) === "plain") prefs.remove(DOC_VIEW_KEY);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
     // change view: the choice just does not survive the reload.
@@ -2824,6 +2824,20 @@ async function docResolveConflict(current, mine, silent, fromSave = true) {
 // not a move, and quietly deleting someone's note to "convert" it is the
 // kind of helpfulness nobody asks for twice.
 async function expandNoteIntoDocument(entry) {
+  //: Several notes (a graph cluster or its selection) compose into one draft,
+  //: a section each, on the server; one note keeps the path below.
+  if (Array.isArray(entry)) {
+    try {
+      const doc = await apiJson("/documents/from-notes", { method: "POST", body: JSON.stringify({ note_ids: entry }) });
+      offerCreateUndo(doc);
+      switchTab("documents");
+      await loadDocuments(doc.id);
+      toast(`Started a draft from ${nounCount(entry.length, "note")}, the notes themselves are untouched.`);
+    } catch (error) {
+      toast(error.message, true);
+    }
+    return;
+  }
   const text = entry.content || "";
   // The first line makes a reasonable title; the rest is the body.
   const [firstLine, ...rest] = text.split("\n");
@@ -3270,8 +3284,12 @@ const DOC_COMMANDS = [
     code: true, run: () => docIdeCall("docIdeFoldAll", false) },
   { id: "unfold-all", icon: "ph:arrows-out-line-vertical", label: "Unfold every block in a code file", keys: "Ctrl+Alt+]",
     code: true, run: () => docIdeCall("docIdeFoldAll", true) },
+  { id: "toggle-fold", icon: "ph:caret-line-down", label: "Fold or unfold the block at the caret", keys: "Ctrl+Alt+.",
+    code: true, run: () => docIdeCall("docIdeFoldAll", "toggle") },
   { id: "problems", icon: "ph:warning-circle", label: "List every problem in this file", keys: "Ctrl+Shift+M",
     code: true, run: () => docPanelToggle("problems") },
+  { id: "problems-inline", icon: "ph:list-bullets", label: "List every problem in this file, inside the editor", keys: "none",
+    code: true, run: () => docIdeCall("docIdeProblemsInline") },
   //: Brief 71 (I3, D8): the panel and its Console on VS Code's chords, the
   //: editor's palette, the split and this table as a sheet. The chords are
   //: answered in documents-ide.js (`docIdeKeydown`), which stops them before
@@ -4301,6 +4319,7 @@ function renderDocPreview() {
   docMathRender.graphIn(preview);
   docMathRender.baseIn(preview);
   docEmbedFill.editButtons(preview);
+  docEmbedFill.tagChips(preview);
   docWireReadTasks(preview, text);
 }
 
@@ -9334,6 +9353,80 @@ $("doc-counts")?.addEventListener("keydown", (event) => {
 //: away in the document menu. Watched by `docGutterObserver`, whose callback
 //: knows this one element.
 watchDocGutter($("doc-counts"));
+//: **A word goal for the day, and a streak** (L-documents-2). Words added to prose documents are counted per local day in
+//: prefs (`docWriting`); a day that reaches the goal extends the streak, and a missed day starts it again. A jump of
+//: more than WB words in one count is a paste or a load, not writing, and is not credited. Set from the word count's
+//: menu (right-click, or the menu key); everything stays on this device. Fed by `renderDocCounts` with a `doc:counted` event.
+// writing-streak:begin
+(() => {
+  const counts = $("doc-counts");
+  if (!counts) return;
+  const KEY = "docWriting";
+  const GOALS = [250, 500, 1000, 2000];
+  const PASTE = 200;
+  let seen = { id: null, words: 0 };
+  const dayOf = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  const today = () => dayOf(new Date());
+  const yesterday = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return dayOf(date);
+  };
+  const read = () => {
+    let state = {};
+    try {
+      state = JSON.parse(prefs.get(KEY, "{}")) || {};
+    } catch {
+      state = {};
+    }
+    const day = today();
+    return { goal: Number(state.goal) || 0, day, words: state.day === day ? Number(state.words) || 0 : 0, streak: Number(state.streak) || 0, last: state.last || "" };
+  };
+  const write = (state) => prefs.set(KEY, JSON.stringify(state));
+  //: A streak that was last extended before yesterday has ended, whatever it was.
+  const live = (state) => (state.last === state.day || state.last === yesterday() ? state.streak : 0);
+  const line = (state) => {
+    const days = live(state);
+    const streak = days ? `, ${days}-day streak` : "";
+    return state.goal ? `${state.words.toLocaleString()} of ${state.goal.toLocaleString()} words today${streak}` : `${state.words.toLocaleString()} words added today`;
+  };
+  counts.addEventListener("doc:counted", (event) => {
+    const { id, words } = event.detail;
+    const before = seen.id === id ? seen.words : null;
+    seen = { id, words };
+    const state = read();
+    const delta = before === null ? 0 : words - before;
+    if (delta > 0 && delta <= PASTE) {
+      state.words += delta;
+      if (state.goal && state.words >= state.goal && state.last !== state.day) {
+        state.streak = state.last === yesterday() ? state.streak + 1 : 1;
+        state.last = state.day;
+      }
+      write(state);
+    }
+    if (state.goal) counts.textContent += ` · ${state.words.toLocaleString()} of ${state.goal.toLocaleString()} today`;
+    counts.title = `${DOC_COUNTS_TITLE_PROSE}. Right-click for the daily word goal`;
+  });
+  const openMenu = (x, y) => {
+    if (docIsCodeFile()) return false;
+    const state = read();
+    const set = (goal) => () => write({ ...state, goal });
+    const items = [{ group: "Today", label: "ph:pencil-simple-line " + line(state), disabled: true, run: () => {} }];
+    for (const goal of GOALS) {
+      items.push({ group: "Daily word goal", label: `${state.goal === goal ? "ph:check" : "ph:flag"} ${goal.toLocaleString()} words`, run: set(goal) });
+    }
+    items.push({ group: "Daily word goal", label: "ph:x No daily goal", run: set(0) });
+    openMenuAtPoint(items, "Daily word goal", x, y, counts);
+    return true;
+  };
+  counts.addEventListener("contextmenu", (event) => {
+    const box = counts.getBoundingClientRect();
+    if (openMenu(event.clientX || box.left, event.clientY || box.top)) event.preventDefault();
+  });
+  //: A finger's twin of the right-click (a hold on the counts).
+  wireLongPress(counts, (event, point) => openMenu(point.x, point.y));
+})();
+// writing-streak:end
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
   //: The field's own limits say what is wrong (1031 DC9: a negative goal
@@ -10146,6 +10239,7 @@ $("doc-ai").addEventListener("click", () => docAiLazy("openDocAiPanel"));
 //: whole file (`docFormatCode`). The press takes the focus from the editor,
 //: so it is handed back: formatting is a step in the middle of typing.
 $("doc-code-run")?.addEventListener("click", () => docRunCode());
+$("doc-csv-grid")?.addEventListener("click", () => ensureModule("docCsvGrid").then(() => docViewState.csvGrid?.toggle()));
 //: DOCUMENTS_PLAN 25 row 2: Run on a .py document with no Python yet is
 //: disabled, and this line beside it is the way to the install.
 $("doc-code-run-why")?.addEventListener("click", () => docRunOpenPythonExtra());
@@ -11278,6 +11372,8 @@ function renderDocCounts() {
   ]
     .filter(Boolean)
     .join(" · ");
+  //: The day's tally and streak read the same count (the writing-streak block above).
+  counts.dispatchEvent(new CustomEvent("doc:counted", { detail: { id: currentDoc?.id ?? null, words } }));
   //: Focus mode's floating dock carries the count too, since the status bar
   //: is hidden while it is on; and the title, which is how a document opened
   //: from the palette while the mode is on relabels the dock.
@@ -12577,7 +12673,14 @@ const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
 function docFindingKind(finding) {
   if (finding.rule === "spelling") return "spelling";
   if (finding.rule === "grammar" || finding.rule === "confusion") return "grammar";
-  if (finding.rule === "ai") return "ai";
+  //: A claim check's verdict (MINDMAP_PLAN Phase G) rides the same finding: marked
+  //: when no note backs it or one says otherwise, quiet when a note supports it.
+  if (finding.rule === "ai") {
+    const claim = finding.aiItem?.claim;
+    if (!claim) return "ai";
+    if (claim.verdict === "supported") return "backed";
+    return "claim";
+  }
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
   if (finding.rule === "link-offer") return "link";
@@ -12641,6 +12744,7 @@ function docProseHeader() {
   const right = docProseDockSide() === "right";
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
+    makeMenuItem("ph:seal-check Check claims against my notes", "Mark each sentence supported, contradicted or not found in your notes", () => docAiCheck.claims()),
     makeMenuItem(
       docProse.hidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
       docProse.hidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
@@ -12860,6 +12964,9 @@ const DOC_FINDING_GROUPS = [
   ["style", "Style and spacing"],
   ["access", "Accessibility"],
   ["link", "Links to your notes"],
+  //: Claim check (Phase G): what the notebook does not back, then what it does.
+  ["claim", "Checked against your notes"],
+  ["backed", "Supported by your notes"],
   //: Last: a model's reading is the weakest claim in the panel, and it says
   //: so by where it sits.
   ["ai", "Checked with AI"],
@@ -13051,6 +13158,10 @@ function docProseGroupList(findings) {
       button.setAttribute("aria-label", title);
       return button;
     };
+    if (finding.aiItem?.claim?.note) {
+      const note = finding.aiItem.claim.note;
+      acts.appendChild(act("ph:note", `Open the note \u201c${note.title}\u201d`, () => openNoteEditor(note.id), "doc-prose-open-note"));
+    }
     if (finding.replacement !== null) {
       acts.appendChild(act("ph:check", `Change it to \u201c${finding.replacement}\u201d`, () => docProseFix(finding), "doc-prose-fix"));
     }
@@ -14072,11 +14183,15 @@ function docEditorMenuAtPoint(event, point) {
   if (event.shiftKey || !(event.target instanceof Element)) return false;
   const surface = docToolsBoxFor(event.target);
   const view = surface && surface.view;
-  if (!view || view.dom.classList.contains("doc-content-code") || typeof docEditorMenuItems !== "function") return false;
+  if (!view || typeof docEditorMenuItems !== "function") return false;
+  //: A code file keeps the browser's menu, except over a selection: there the menu carries the two note rows.
+  const code = view.dom.classList.contains("doc-content-code");
   const sel = view.state.selection.main;
+  if (code && sel.empty) return false;
   const at = view.posAtCoords(point);
-  if (at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
-  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y, view.contentDOM);
+  if (!code && at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
+  const items = code ? [...docClipboardMenuItems(view), ...docSelectionNoteItems(surface)] : docEditorMenuItems(view, point.x, point.y);
+  openMenuAtPoint(items, "Document editor actions", point.x, point.y, view.contentDOM);
   return true;
 }
 
@@ -14344,6 +14459,17 @@ $("doc-spelling-variant")?.addEventListener("change", async (event) => {
   //: lookup has to be rebuilt before the next pass reads it.
   docVariantFor = null;
   //: And the grammar checker's dialect with it (British or American rules).
+  docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
+//: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
+//: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+$("doc-prose-groups")?.addEventListener("change", async (event) => {
+  const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ prose_kinds_off: off }),
+  }).catch(() => prefsCache);
   docGrammarCache = { text: null, findings: [] };
   renderDocProse();
 });
@@ -15235,12 +15361,10 @@ function docSuggestAnswers(finding, opts = {}) {
     });
     actions.appendChild(askAi);
 
-    //: **Translation, through the chat rather than behind it.** There is no
-    //: offline translator in this app and inventing one would be a lie; what
-    //: there *is* is a local model that can translate, and the honest way to
-    //: offer that is to hand the passage to it with the question already
-    //: written, where the answer is visible and correctable, not to silently
-    //: rewrite the document with something nobody checked.
+    //: **Translation: the offline translator when it is installed, else the chat.**
+    //: Without the package the honest offer is the local model, with the question
+    //: already written, where the answer is visible and correctable, not a silent
+    //: rewrite of the document with something nobody checked.
     const translate = document.createElement("button");
     translate.type = "button";
     translate.className = "doc-suggest-item";
@@ -15485,9 +15609,15 @@ window.addEventListener("resize", docSuggestFollowAnchor);
 //: event does not bubble.
 window.addEventListener("scroll", docSuggestFollowAnchor, true);
 
-//: A passage, a language, and the local model, asked in the chat so the
-//: answer is somewhere you can read, keep or ignore.
+//: A passage, translated by the offline translator (the "Translate this" sheet) when its package is
+//: installed; otherwise a language and the local model, asked in the chat so the answer is somewhere
+//: you can read, keep or ignore.
 async function docTranslatePassage(text) {
+  const status = await apiJson("/translate/status", { silent: true }).catch(() => null);
+  if (status?.installed && status.pairs?.length) {
+    await ensureModule("translate");
+    return translateCaught({ selection: text });
+  }
   const language = await promptDialog(
     "Translate this passage into which language?",
     docLastTranslateLanguage || "French"
@@ -15597,7 +15727,36 @@ function docAiDiscussInChat() {
 //: `state` is idle, running, done, stopped, offline or failed; `items` are
 //: `{text, message, replacement, near}` as they arrived, located afresh on every
 //: pass (`docAiFindings`) because the writer may keep typing while it runs.
-const docAiCheck = { state: "idle", items: [], message: "", controller: null, docId: null };
+//: `mode` is "ai" or "claims" (Check claims against my notes, Phase G): the claim
+//: check puts its verdicts in the same `items`, each with a `claim` `{verdict, note}`.
+const docAiCheck = {
+  state: "idle", items: [], message: "", controller: null, docId: null, mode: "ai",
+  //: One request, no stream: the server writes nothing and answers every sentence.
+  async claims() {
+    if (docAiCheck.state === "running") return;
+    const box = docSurface();
+    const full = box?.text || "";
+    if (!full.trim()) return toast("Nothing to check yet.", "info");
+    const doc = currentDoc || (await ensureDocumentExists().catch(() => null));
+    if (!doc) return toast("Nothing to check yet.", "info");
+    Object.assign(docAiCheck, { state: "running", items: [], message: "", controller: null, docId: doc.id, mode: "claims" });
+    $("doc-prose-panel")?.classList.remove("hidden");
+    $("doc-prose")?.setAttribute("aria-expanded", "true");
+    renderDocProse();
+    try {
+      const got = await apiJson(`/documents/${doc.id}/claim-check`, { method: "POST", body: JSON.stringify({ text: full }), readOnly: true });
+      docAiCheck.items = got.claims.map((c) => ({
+        text: c.text, message: c.message, replacement: "", near: c.start, claim: { verdict: c.verdict, note: c.note },
+      }));
+      docAiCheck.state = "done";
+      docAiCheck.message = got.source === "words" ? "No AI model ran, so sentences were matched to notes by their words." : "";
+    } catch (error) {
+      docAiCheck.state = "failed";
+      docAiCheck.message = error.message || "The check did not finish.";
+    }
+    renderDocProse();
+  },
+};
 
 //: The streamed items as findings against the text as it is now. An item whose
 //: words are gone (applied, or edited away) is simply not drawn; one dismissed
@@ -15643,7 +15802,7 @@ async function docAiReview() {
   const selection = range.to > range.from ? full.slice(range.from, range.to) : "";
   const controller = new AbortController();
   Object.assign(docAiCheck, {
-    state: "running", items: [], message: "", controller, docId: doc.id,
+    state: "running", items: [], message: "", controller, docId: doc.id, mode: "ai",
   });
   //: The panel opens on the check, so the findings land where the writer
   //: can see them arrive.
@@ -15736,7 +15895,15 @@ function docAiCheckStatus() {
   } else {
     const line = document.createElement("span");
     line.className = "doc-prose-ai-line";
-    if (docAiCheck.state === "running") {
+    if (docAiCheck.mode === "claims") {
+      const marked = docAiCheck.items.filter((item) => item.claim.verdict !== "supported").length;
+      line.textContent = docAiCheck.state === "running"
+        ? "Checking sentences against your notes…"
+        : docAiCheck.state === "failed"
+          ? docAiCheck.message || "The check did not finish."
+          : `${nounCount(n, "sentence")} checked, ${marked} not backed by a note.${docAiCheck.message ? ` ${docAiCheck.message}` : ""}`;
+      if (docAiCheck.state === "failed") line.classList.add("error");
+    } else if (docAiCheck.state === "running") {
       line.textContent = n ? `Checking with AI, ${found} so far…` : "Checking with AI…";
     } else if (docAiCheck.state === "stopped") {
       line.textContent = `Stopped. ${n ? `${found} before it stopped.` : "Nothing found before it stopped."}`;
@@ -15786,6 +15953,10 @@ async function openDocDictionary() {
         : "Grammar and style rules, checked on this computer by Harper"
     );
   }
+  const kindsOff = (prefsCache && prefsCache.prose_kinds_off) || [];
+  $("doc-prose-groups")?.querySelectorAll("[data-prose-group]").forEach((box) => {
+    box.checked = !kindsOff.includes(box.dataset.proseGroup);
+  });
   const smart = $("doc-smart-punctuation");
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
   const linkOffers = $("doc-link-offers");

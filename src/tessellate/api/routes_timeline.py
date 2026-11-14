@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import threading
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from functools import partial
@@ -226,6 +227,9 @@ def _place_notes(
                 "date": at.date().isoformat(),
                 "time": at.strftime("%H:%M") if timed else None,
                 "all_day": not timed,
+                #: A written range's last day (decision 13): the row sits on
+                #: the first and the calendar draws it through to this one.
+                "until": until.date().isoformat() if (until := getattr(mention, "until", None)) else None,
             }
         else:
             when = {"at": at.isoformat()}
@@ -745,7 +749,9 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     clauses = [and_(first.is_(None), *written), and_(first.is_not(None), *placed)]
     if also:
         named = [EntryDate.entry_id == Entry.id]
-        named += [EntryDate.at >= since + wall] if since is not None else []
+        #: A span overlaps the window when it starts before the window ends and
+        #: ends after it starts (decision 13); a day's end is its own start.
+        named += [func.coalesce(EntryDate.until, EntryDate.at) >= since + wall] if since is not None else []
         named += [EntryDate.at <= until + wall] if until is not None else []
         clauses.append(select(EntryDate.id).where(*named).correlate(Entry).exists())
     return query.where(or_(*clauses))
@@ -854,3 +860,124 @@ def _thread_bands(notes: list[dict]) -> list[dict]:
     if other:
         bands.append({"name": THREAD_BAND, "count": len(other), "ids": sorted(other)})
     return bands
+
+
+#: The longest span a brush may ask about: a year and a day, the strip's own
+#: longest reach (`/entries/daily`'s window has the same bound).
+SPAN_DIGEST_MAX_DAYS = 366
+#: The sheet lists the span's notes beside the review; past this many it lists
+#: the oldest and `more` says how many were left out.
+SPAN_NOTES_MAX = 200
+
+#: Seconds the span sheet waits for the model before it shows the composed
+#: review instead: the call runs inside a GET the sheet is waiting on, and a
+#: cold or busy model would otherwise hold the sheet for minutes.
+SPAN_MODEL_TIMEOUT = 8.0
+
+
+SPAN_QUESTION = (
+    "Today is {today}. Give me a short review of what I wrote from {start} to "
+    "{end}, grouped by topic, calling out anything that looks important or "
+    "unfinished. Each note shows the day it was written. Start with the review "
+    "itself: no greeting, and no sentence announcing it."
+)
+
+
+def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
+    """The model's review of the span's notes, or "" for the composer: no
+    notes, no model running, or a call that failed or timed out (librarian
+    answers those with its offline line, which is not a review)."""
+    from tessellate.ai import librarian
+    from tessellate.ai.answer_trim import trim_assistant_padding
+    from tessellate.core import deps
+
+    ollama = deps.get_ollama()
+    if not notes or not ollama.is_running():
+        return ""
+    day = lambda d: f"{d.day} {d:%B %Y}"  # noqa: E731
+    shown = notes[-30:]  # the newest 30, the weekly digest's cap; the budget trims further
+    question = SPAN_QUESTION.format(today=day(now), start=day(first), end=day(last))
+    rows = [{"content": n["content"], "category": n["category"], "written": n["created_at"][:10]} for n in shown]
+    said, _thinking = librarian.answer(
+        question, rows, deps.get_model_manager(), ollama,
+        style=deps.get_config().get_preference("communication_style", "friendly"),
+        persona_prompt=None, use_utility_model=True,
+    )
+    if said in (librarian.OFFLINE_MESSAGE, librarian.BUSY_MESSAGE, librarian.NO_RESULTS_MESSAGE):
+        return ""
+    return trim_assistant_padding(said)
+
+
+#: One model call per span (review 5899369381): the call left running past
+#: SPAN_MODEL_TIMEOUT is reused by the next open of the same span, and its
+#: review is kept, keyed by the span's ends and its newest note, so a note
+#: written into the span asks again. Small: one sheet is open at a time.
+_SPAN_FLIGHTS: dict[tuple, object] = {}
+_SPAN_SAID: dict[tuple, str] = {}
+_SPAN_KEPT_MAX = 16
+_SPAN_LOCK = threading.Lock()
+
+
+def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
+    """`_span_said_by_model`, or "" when it takes longer than
+    SPAN_MODEL_TIMEOUT or fails. On `jobs.future`, so the call is listed and a
+    late one is left to finish, never joined; at most one runs per span."""
+    from concurrent.futures import TimeoutError as FutureTimeout
+
+    from tessellate.core import jobs
+
+    key = (first, last, max((n["id"] for n in notes), default=None))
+    with _SPAN_LOCK:
+        if key in _SPAN_SAID:
+            return _SPAN_SAID[key]
+        flight = _SPAN_FLIGHTS.get(key)
+        if flight is None:
+            flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
+            _SPAN_FLIGHTS[key] = flight
+    try:
+        said = flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
+    except FutureTimeout:
+        return ""
+    except Exception:  # noqa: BLE001  # a failed call is the composer's turn
+        said = ""
+    with _SPAN_LOCK:
+        _SPAN_FLIGHTS.pop(key, None)
+        if said:
+            _SPAN_SAID[key] = said
+            while len(_SPAN_SAID) > _SPAN_KEPT_MAX:
+                _SPAN_SAID.pop(next(iter(_SPAN_SAID)))
+    return said
+
+
+@router.get("/digest")
+def span_digest(start: str, end: str, session: Session = Depends(get_session)) -> dict:
+    """What was written from `start` to `end` (L-timeline-2): the review, said
+    by the model when one is running and by the composer (`review_digest.span`)
+    otherwise or when the call fails, and the notes in it, oldest first, which
+    the sheet lists beside the review (CHAT_PLAN decision 75: both paths)."""
+    from datetime import date
+
+    from tessellate.ai import activity, review_digest
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    try:
+        first, last = date.fromisoformat(start), date.fromisoformat(end)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Pick a first day and a last day.") from exc
+    if last < first or (last - first).days >= SPAN_DIGEST_MAX_DAYS:
+        raise HTTPException(status_code=422, detail=f"Pick a last day after the first, at most {SPAN_DIGEST_MAX_DAYS} days on.")
+    now = user_now(deps.get_config())
+    text, notes = review_digest.span(session, first, last, now)
+    said = _span_said_in_time(notes, first, last, now)
+    return {
+        "start": first.isoformat(),
+        "end": last.isoformat(),
+        "text": said or text,
+        "composed": not said,
+        "notes": [
+            {"id": n["id"], "title": activity._note_name(n["content"]), "day": n["created_at"][:10], "category": n["category"]}
+            for n in notes[:SPAN_NOTES_MAX]
+        ],
+        "more": max(0, len(notes) - SPAN_NOTES_MAX),
+    }
