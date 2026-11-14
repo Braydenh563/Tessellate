@@ -316,7 +316,7 @@
         () => flashEntry(done.entry_id)
       );
     } catch (error) {
-      toast(error.message || "Couldn't save the captions.", true);
+      toast(error.message || voiceLine("failed", { what: "save the captions" }), true);
     }
   }
 

@@ -5370,7 +5370,7 @@
         body: JSON.stringify({ name, note_ids: [...ids], edges, root_id: picked }),
       }).catch(() => null);
       if (!board?.id) {
-        toast("Couldn't create the map.");
+        toast(voiceLine("failed", { what: "create the map" }));
         return;
       }
       pushBinPairUndo(`Made the mind map “${name}”`, `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => (typeof refreshBoardList === "function" ? refreshBoardList() : null));
@@ -5882,7 +5882,7 @@
       toastAction(`Wrote “${node.preview}”.`, "Open", () => flashEntry(created.id), { go: { open: "entry", id: created.id } });
       await renderGraph();
     } catch (error) {
-      toast(error.message || "Couldn't write that note.", true);
+      toast(error.message || voiceLine("failed", { what: "write that note" }), true);
     }
   }
 

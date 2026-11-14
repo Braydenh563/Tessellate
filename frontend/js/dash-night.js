@@ -68,7 +68,7 @@
           toast("Linked as disagreeing");
         } catch (error) {
           keep.disabled = false;
-          toast(error.message || "Couldn't link those notes.", true);
+          toast(error.message || voiceLine("failed", { what: "link those notes" }), true);
         }
       });
       actions.append(keep);
@@ -95,7 +95,7 @@
         onGone();
       } catch (error) {
         dismiss.disabled = false;
-        toast(error.message || "Couldn't dismiss that.", true);
+        toast(error.message || voiceLine("failed", { what: "dismiss that" }), true);
       }
     });
     actions.append(open, dismiss);

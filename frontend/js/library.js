@@ -3487,7 +3487,7 @@ async function importLibraryDocuments(files) {
         });
       made.push(document_);
     } catch (error) {
-      toast(`Couldn't import “${file.name}”: ${error.message || "the file could not be read."}`, true);
+      toast(voiceLine("failed", { what: `import “${file.name}”`, why: error.message || "the file could not be read" }), true);
     }
   }
   if (!made.length) return;
@@ -11536,7 +11536,7 @@ renderBookmarks.file = {
       if (!response.ok) throw new Error(`The server answered ${response.status}`);
       await saveFile("tessellate-bookmarks.html", await response.blob());
     } catch (e) {
-      toast(`Couldn't export your bookmarks: ${e.message}.`, true, { action: ["Try again", () => renderBookmarks.file.save()] });
+      toast(voiceLine("failed", { what: "export your bookmarks", why: e.message }), true, { action: ["Try again", () => renderBookmarks.file.save()] });
     }
   },
 };

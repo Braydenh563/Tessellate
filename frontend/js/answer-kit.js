@@ -2155,7 +2155,7 @@ function toolChip(label, ok = true, event = null) {
         again.replaceWith(Object.assign(document.createElement("span"), { className: "muted", textContent: "Fetched again." }));
       } catch (error) {
         again.disabled = false;
-        toast(error.message || "Couldn't fetch that page.", "info");
+        toast(error.message || voiceLine("failed", { what: "fetch that page" }), "info");
       }
     });
     wrap.append(chip, again);
@@ -2549,7 +2549,7 @@ function chatSourcesPanel(input) {
               const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
               show(fresh.ages[url] || new Date().toISOString());
             } catch (error) {
-              toast(error.message || "Couldn't fetch that page.", "info");
+              toast(error.message || voiceLine("failed", { what: "fetch that page" }), "info");
             }
             again.disabled = false;
           });

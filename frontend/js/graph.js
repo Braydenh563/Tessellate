@@ -2723,7 +2723,7 @@ function openGraphLinkPeek(edge, event, nodes) {
       try {
         await apiJson(`/entries/${sourceId}/links/${edge.id}`, { method: "PATCH", body: JSON.stringify({ two_way: next }) });
       } catch (error) {
-        toast(error.message || "Couldn't change the link's direction.", true);
+        toast(error.message || voiceLine("failed", { what: "change the link's direction" }), true);
         return;
       }
       pushRequestUndo(
@@ -3995,7 +3995,7 @@ async function exportGraphPng() {
     await saveFile("graph.png", blob);
     toast("Graph exported as PNG.");
   } catch (error) {
-    toast(error.message || "Couldn't export the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "export the graph" }), true);
   }
 }
 
@@ -5480,7 +5480,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
       () => graphUnpinAllNow()
     );
   } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
+    toast(error.message || voiceLine("failed", { what: "unpin the graph" }), true);
   }
 });
 

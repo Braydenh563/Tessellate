@@ -66,7 +66,7 @@
           offerUndo(`Marked a question ${state}`, SAID[state], () => send(was).then(() => loadQuestions()), () => send(state, entry_id).then(() => loadQuestions()));
           return loadQuestions().then(() => questionsFocusAfter(at));
         })
-        .catch((error) => toast(error.message || "Couldn't change that question.", true));
+        .catch((error) => toast(error.message || voiceLine("failed", { what: "change that question" }), true));
     };
     actions.append(questionButton("ph:arrow-square-out", "Open the note that asks it", () => flashEntry(item.entry_id)));
     if (item.state === "open") {

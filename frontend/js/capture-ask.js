@@ -457,7 +457,7 @@ async function noteTemplateForUse(template) {
     try {
       clipboard = (await navigator.clipboard.readText()) || "";
     } catch {
-      toast("Couldn't read the clipboard, so that part of the template is empty.", "info");
+      toast(voiceLine("failed", { what: "read the clipboard", why: "that part of the template is empty" }), "info");
     }
   }
   const full = noteTemplateText(raw, clipboard);

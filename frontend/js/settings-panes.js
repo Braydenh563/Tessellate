@@ -659,7 +659,7 @@ async function setPreference(key, value) {
       $("autonomous-settings-panel")?.classList.toggle("hidden", !value);
     }
   } catch (error) {
-    toast(error.message || "Couldn't save that setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that setting" }), true);
   }
 }
 

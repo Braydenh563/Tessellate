@@ -355,7 +355,7 @@
       await saveFile(docExportName(currentDoc.title, "docx"), blob);
       return true;
     } catch (error) {
-      toast(`Couldn't write the Word file: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "write the Word file", why: error.message }), true);
       return false;
     }
   }

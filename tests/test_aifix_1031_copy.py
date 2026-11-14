@@ -148,7 +148,7 @@ def test_hr12_an_import_the_server_refuses_says_why():
     body = src[src.index("function pickJsonFile"):src.index("function textToSteps")]
     assert "await apply(data);" in body
     assert "apply(JSON.parse(" not in body
-    assert 'toast(error?.message || "Couldn\'t import that file.", "info");' in body
+    assert 'toast(error?.message || voiceLine("failed", { what: "import that file" }), "info");' in body
 
 
 def test_ai21_archiving_a_chat_from_its_row_repaints_the_list():

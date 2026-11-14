@@ -197,7 +197,7 @@ async function diagCopy() {
     const text = await diagCollect();
     if (await copyToClipboard(text)) toast(`Copied the diagnostics (${(text.length / 1024).toFixed(1)} KB). Paste it where you send your logs.`);
   } catch (error) {
-    toast(error.message || "Couldn't build the diagnostics. Try again.", true);
+    toast(error.message || voiceLine("failed", { what: "build the diagnostics" }), true);
   }
 }
 
@@ -207,6 +207,6 @@ async function diagSave() {
     await saveFile("tessellate-diagnostics.txt", new Blob([text], { type: "text/plain" }));
     toast("Diagnostics saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the diagnostics. Try again.", true);
+    toast(error.message || voiceLine("failed", { what: "build the diagnostics" }), true);
   }
 }

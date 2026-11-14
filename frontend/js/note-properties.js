@@ -42,7 +42,7 @@
       apiJson("/note-types").catch(() => []),
     ]);
     if (!got) {
-      toast("Couldn't read this note's properties.", true, { action: ["Try again", () => openNotePropertiesSheet(entry)] });
+      toast(voiceLine("failed", { what: "read this note's properties" }), true, { action: ["Try again", () => openNotePropertiesSheet(entry)] });
       return;
     }
     const rows = [];

@@ -239,7 +239,7 @@ function editChatAnswer(handles, turnIndex, current) {
 //: with the model off; a link nobody gave a reason says so.
 async function explainNote(entry) {
   const full = await apiJson(`/entries/${entry.id}`).catch(() => null);
-  if (!full) return toast("Couldn't read this note.", true, { action: ["Try again", () => explainNote(entry)] });
+  if (!full) return toast(voiceLine("failed", { what: "read this note" }), true, { action: ["Try again", () => explainNote(entry)] });
   const words = stripFrontmatter(full.content || "").replace(/^#+\s*/gm, "").trim();
   const links = full.links || [];
   const name = (link) => noteNamePlain(link.preview).slice(0, 80) || "a note";

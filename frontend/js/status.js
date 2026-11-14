@@ -298,7 +298,7 @@ $("notif-activity-mode")?.addEventListener("change", async (event) => {
       body: JSON.stringify({ agent_activity_notices: value }),
     });
   } catch (error) {
-    toast(error.message || "Couldn't save that notification setting.", true);
+    toast(error.message || voiceLine("failed", { what: "save that notification setting" }), true);
   }
   renderAgentActivityMode();
 });
@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { retry: backThenRun });
+      toast(voiceLine("failed", { what: "go back to the space it was made in" }), "info", { retry: backThenRun });
     };
   }
   if (!record) return () => run();
@@ -1724,7 +1724,7 @@ async function performRedoNow() {
     toast(`Redone: ${action.label}`);
   } catch (error) {
     redoStack.push(action);
-    toast(error.message || "Couldn't redo that.", true);
+    toast(error.message || voiceLine("failed", { what: "redo that" }), true);
   }
   renderUndoBar();
 }

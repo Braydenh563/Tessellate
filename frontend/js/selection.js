@@ -444,7 +444,7 @@ async function remindFromSelection(text, entryId = null) {
     // stale out of the Reminders tab's in-memory list.
     loadReminders();
   } catch (error) {
-    toast(error.message || "Couldn't read a reminder from that.", true);
+    toast(error.message || voiceLine("failed", { what: "read a reminder from that" }), true);
   }
 }
 

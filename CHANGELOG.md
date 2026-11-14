@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Failure toasts in 78 more files say it in the app's one voice (Couldn't X: why), 262 calls (L-world-class-42; the last 16 are L-world-class-140).
 - Meeting cards no longer count a template's blank `- ` and `- [ ] ` lines as decisions or open actions (L-world-class-48).
 - Errors: the last 19 failure toasts that offered only Open the logs now offer a fix of their own (Try again, Copy the answer, Reload the list); the cap is 0 (L-world-class-43).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).

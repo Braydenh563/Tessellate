@@ -336,7 +336,7 @@ async function toggleSpaceHidden(id, hidden) {
     // screen, so it has to be re-read rather than left stale.
     if (activeSpaceId() === SPACE_ALL) await loadEntries();
   } catch (error) {
-    toast(error.message || "Couldn't change that space.", true);
+    toast(error.message || voiceLine("failed", { what: "change that space" }), true);
   }
 }
 

@@ -1074,7 +1074,7 @@ async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Couldn't load your reminders. Try again.", true, { retry: clearDoneReminders });
+  if (!all) return toast(voiceLine("failed", { what: "load your reminders" }), true, { retry: clearDoneReminders });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1321,7 +1321,7 @@ async function openCalendarPage(id, provider) {
     else window.open(links[provider], "_blank", "noopener,noreferrer");
   } catch (error) {
     tab?.close();
-    toast(error.message || "Couldn't open the calendar page.", true);
+    toast(error.message || voiceLine("failed", { what: "open the calendar page" }), true);
   }
 }
 

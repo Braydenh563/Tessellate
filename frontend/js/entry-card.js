@@ -134,7 +134,7 @@ function renderInlineAction(entry) {
         try {
           if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
         } catch (error) {
-          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          if (!error.isLockout) toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
           return;
         }
         inlineAction = null;
@@ -453,7 +453,7 @@ function entryItem(entry, options = {}) {
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Couldn't remove that image.", true);
+      toast(err.message || voiceLine("failed", { what: "remove that image" }), true);
     }
   });
   if (glance) {
@@ -1473,6 +1473,6 @@ async function publishDraft(entry) {
     await refreshEntries([entry.id]);
     toast("Published.");
   } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
+    toast(error.message || voiceLine("failed", { what: "publish that draft" }), true);
   }
 }

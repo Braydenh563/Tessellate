@@ -484,6 +484,7 @@ let here = "alpha";
 const ctx = {
   Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
   recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  voiceLine: (key, slots) => `Couldn't ${slots.what}.`,
   spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
 };
 vm.createContext(ctx);

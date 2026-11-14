@@ -143,7 +143,7 @@
       renderLanState(await apiJson("/auth/lan-certificate", { method: "POST" }));
       toast("New certificate made. Compare its fingerprint on the other device.");
     } catch (error) {
-      toast(error.message || "Couldn't make a new certificate.", true);
+      toast(error.message || voiceLine("failed", { what: "make a new certificate" }), true);
     }
   });
 
@@ -472,7 +472,7 @@
       // button stuck disabled over a real network error someone can just
       // retry once they're back online.
       button.disabled = false;
-      toast((status && status.textContent) || "Couldn't apply the update.", true, { action: ["Try again", () => button.click()] });
+      toast((status && status.textContent) || voiceLine("failed", { what: "apply the update" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -554,7 +554,7 @@
     if (!ok) {
       button.disabled = false;
       select.disabled = false;
-      toast(status.textContent || "Couldn't install that version.", true, { action: ["Try again", () => button.click()] });
+      toast(status.textContent || voiceLine("failed", { what: "install that version" }), true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -578,7 +578,7 @@
       );
     } catch (error) {
       e.target.checked = !checked; // the change didn't take: don't leave the switch lying
-      toast(error.message || "Couldn't switch view.", true);
+      toast(error.message || voiceLine("failed", { what: "switch view" }), true);
     }
   });
 
@@ -637,7 +637,7 @@
       const result = await apiJson("/files/open-exports-folder", { method: "POST" });
       toast(`Opened ${result.path}`);
     } catch (error) {
-      toast(error.message || "Couldn't open the exports folder.", true);
+      toast(error.message || voiceLine("failed", { what: "open the exports folder" }), true);
     }
   });
 
@@ -1209,7 +1209,7 @@
   $("import-dir")?.addEventListener("click", importDirectory);
 
   $("export-backup-zip")?.addEventListener("click", () =>
-    exportFullBackup().catch((error) => toast(error.message || "Couldn't save the backup.", true))
+    exportFullBackup().catch((error) => toast(error.message || voiceLine("failed", { what: "save the backup" }), true))
   );
 
   $("restore-bundle")?.addEventListener("click", () => $("restore-bundle-file").click());
@@ -1476,7 +1476,7 @@
       renderModelSpec(modelContextModel);
       toast(value ? `${modelContextModel} will run at ${value.toLocaleString()} tokens.` : `${modelContextModel} is back on auto.`);
     } catch (e) {
-      toast(e.message || "Couldn't save that window.", true);
+      toast(e.message || voiceLine("failed", { what: "save that window" }), true);
     }
   }
 
@@ -1593,7 +1593,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't reset those models.", true);
+      toast(error.message || voiceLine("failed", { what: "reset those models" }), true);
     }
   }
 
@@ -1628,7 +1628,7 @@
       );
       refreshModelStatus();
     } catch (error) {
-      toast(error.message || "Couldn't set that model.", true);
+      toast(error.message || voiceLine("failed", { what: "set that model" }), true);
     }
   }
 
@@ -1799,7 +1799,7 @@
         toast("Restart isn't available in this build, close and reopen Tessellate by hand.", "info");
       }
     } catch (error) {
-      toast(error.message || "Couldn't restart.", true);
+      toast(error.message || voiceLine("failed", { what: "restart" }), true);
     }
   }
 
@@ -1868,7 +1868,7 @@
       toast(value ? `Exports will now be saved to ${prefsCache.export_save_dir}` : "Exports will save to the default location.");
     } catch (error) {
       input.value = prefsCache?.export_save_dir || "";
-      toast(error.message || "Couldn't save that folder.", true);
+      toast(error.message || voiceLine("failed", { what: "save that folder" }), true);
     }
   }
 
@@ -2404,7 +2404,7 @@
       if (address.startsWith("http://")) await api("/auth/lan-trust-page", { method: "POST", silent: true });
       blob = await (await api(`/privacy/lan-qr.svg?address=${encodeURIComponent(address)}`, { silent: true })).blob();
     } catch (error) {
-      toast(`Couldn't draw the QR code: ${error.message}`, true);
+      toast(voiceLine("failed", { what: "draw the QR code", why: error.message }), true);
       button.setAttribute("aria-expanded", "false");
       settingsControlState.lanQrShown = "";
       return;
@@ -2791,7 +2791,7 @@
       try {
         await apply(data);
       } catch (error) {
-        toast(error?.message || "Couldn't import that file.", "info");
+        toast(error?.message || voiceLine("failed", { what: "import that file" }), "info");
       }
     };
     input.click();
@@ -2974,7 +2974,7 @@
             await apiJson(`/memory/${pref.id}/answer`, {
               method: "POST",
               body: JSON.stringify({ accept }),
-            }).catch((error) => toast(error.message || "Couldn't save that answer.", true));
+            }).catch((error) => toast(error.message || voiceLine("failed", { what: "save that answer" }), true));
             renderMemorySettings();
           };
           const yes = document.createElement("button");
@@ -3002,7 +3002,7 @@
           const flipped = await apiJson(`/memory/${pref.id}`, {
             method: "PATCH",
             body: JSON.stringify({ active: !pref.active }),
-          }).catch((error) => toast(error.message || "Couldn't change that.", true));
+          }).catch((error) => toast(error.message || voiceLine("failed", { what: "change that" }), true));
           if (flipped) {
             pushRequestUndo(pref.active ? "Turned a memory off" : "Turned a memory on", `/memory/${pref.id}`, "PATCH", { active: pref.active }, { active: !pref.active }, () => renderMemorySettings());
           }
@@ -3038,7 +3038,7 @@
               }
             );
           } catch (error) {
-            toast(error.message || "Couldn't forget that.", true);
+            toast(error.message || voiceLine("failed", { what: "forget that" }), true);
           }
           renderMemorySettings();
         });
@@ -3842,7 +3842,7 @@
       });
     } catch (error) {
       check.checked = !check.checked;
-      toast(error.message || "Couldn't save that tool setting. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save that tool setting" }), true);
       return;
     }
     // The "N of 51 on" count is only true until someone flips one.
@@ -3887,7 +3887,7 @@
         body: JSON.stringify({ disabled_tools: [...next] }),
       });
     } catch (error) {
-      toast(error.message || "Couldn't save those tool settings. Try again.", true);
+      toast(error.message || voiceLine("failed", { what: "save those tool settings" }), true);
       return;
     }
     for (const check of boxes) check.checked = turnOn;
@@ -4443,7 +4443,7 @@
       if (Object.keys(was).length) pushRequestUndo("Reset the sampling settings", "/models/sampling", "PUT", { overrides: was }, { overrides: {} }, loadSamplingSettings);
       toast("Back to what each model recommends.");
     } catch {
-      toast("Couldn't reset those settings.", true, { action: ["Reload them", loadSamplingSettings] });
+      toast(voiceLine("failed", { what: "reset those settings" }), true, { action: ["Reload them", loadSamplingSettings] });
     }
     await loadSamplingSettings();
   });
