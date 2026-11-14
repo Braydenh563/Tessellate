@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a suggested change carries who made it and when (L-documents-34), stored as CriticMarkup's own comment after the mark, `{>>name, 2026-11-14T09:30:00Z<<}`: read by docSuggestParse, written by docSuggestEdit with the name from Settings and the moment (none written for a name left empty, the date alone), shown as a first row of the change's menu and in its hover text, kept by accept and reject, and written to the Word file as the w:ins and w:del author and date; a .docx's own author and date arrive as the stamp. Spelling and grammar skip the stamp, and Read aloud does not say it.
 - Documents: a base block's board and calendar export and print in their own layout (L-documents-84: calendar 1293px to 554px tall in the HTML file at 794px, a day's note name no longer clipped on paper, cards and days kept on one sheet), and the block's table, board and calendar read the notes again after each save of the document, keeping the rows on screen meanwhile (L-documents-85; a Read-view board drag writes the property, driven).
 - Diagram: a per-edge label position is not built by decision (INBOX 1811); the source stays plain Mermaid.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.

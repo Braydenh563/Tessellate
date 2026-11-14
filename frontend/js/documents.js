@@ -11814,6 +11814,7 @@ const DOC_PROSE_SKIP = [
   //: on its way out and not worth a finding, and the markers are syntax.
   /\{--[\s\S]*?--\}/g,
   /\{\+\+|\+\+\}/g,
+  /\{>>[^<\n]*<<\}/g, // a change's stamp or a reviewer's comment: names and dates are not prose
   //: **Things that are not prose** (INBOX 1357, K11; measured on
   //: `tests/grammar_fixture_1026.json`): an email address, a file path and a
   //: file name, and a unit written after a number. Harper read `/etc/nginx/
