@@ -67,9 +67,28 @@ from tessellate.ai.composer_digest_lines import (
 )
 
 
+_ALL_CONTEXT = re.compile(r"^\W*(?:what|which)\s+(?:are|were)\s+(?:all\s+)?(?:my|the)\s+(?:\w+\s+)?(?:jokes|quotes|poems)\b|\b(?:list|show me)\s+(?:all\s+)?(?:of\s+)?my\s+(?:jokes|quotes|poems)\b", re.I)
+_ONE_OF = re.compile(r"\b(?:one|a|an|any|some)\s+(?:of\s+)?(?:my\s+)?(?:\w+\s+)?(?:jokes?|quotes?|poems?)\b", re.I)
+
+
+def _context_pick(facts: list[Fact], stems: set[str]) -> Fact | None:
+    """A joke or quote asked for (L-chat-19): "one of my jokes" is the top matching record's (members
+    come in the search's order, `_pick_members`); "the chicken joke" is the one that says chicken."""
+    named = stems - _CONTEXT_STEMS
+    if not facts or not stems or named == stems:
+        return None
+    if not named:
+        return facts[0]
+    held = [f for f in facts if all(composer._holds(st, set(f.sentence.words) | f.view.title_words) for st in named)]  # noqa: SLF001
+    return held[0] if held else None
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
+    picked = _context_pick(facts, stems)
+    if picked is not None:
+        return picked
     asks = _ask_stems(question) if not _LATEST_ASK.search(question) else set()
     predicate = _predicate_stems(question)
     if isinstance(cue, _MoneyCue):
@@ -617,6 +636,10 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
     else:
         _say_fact(out, lead, today, question)
         rest = [f for f in rest if f.view.id == lead.view.id and _same_label_asked(lead, f, question)]
+        #: "the skeleton joke" is that one, not the noodle joke listed under it.
+        named = set(_subject(question)) - _CONTEXT_STEMS
+        if named and _context_pick([lead], set(_subject(question))) is lead:
+            rest = []
     _lines(out, rest, LINES.get(kind, 2))
     _single_close(out, kind, rest, members, question)
 
@@ -1201,6 +1224,9 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
 
 
+_CONTEXT_STEMS = frozenset(composer._stem(t) for t in CONTEXT_TAGS)  # noqa: SLF001
+
+
 def _title_holds(view, words: list[str]) -> bool:  # noqa: ANN001
     """Whether the note's title has every word of the subject in it."""
     held = getattr(view, "title_words", None)
@@ -1212,7 +1238,10 @@ def _defines(view, words: list[str]) -> float:
     subject ("Sara", "Uni"), 1 when an opening sentence says what it is
     ("Sara is my sister") or it is filed under the subject, else 0 (a passing
     mention). Saying what it is (1.5) outranks being filed under it (1)."""
-    if not words:
+    #: "Tell me one of my jokes": every joke note is as much about jokes as any other, so the
+    #: search's order stands and the top matching record is the one said (the owner, 2026-10-10:
+    #: "it got jokes from another note but not the separate one from the top of the matching records").
+    if not words or {composer._stem(t) for t in words} <= _CONTEXT_STEMS:  # noqa: SLF001
         return 0
     title = re.sub(r"^(?:the|my|a|an)\s+", "", (view.title or "").strip().lower()) if getattr(view, "titled", False) else ""
     if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
@@ -1363,11 +1392,12 @@ _KIND_WORDS = frozenset({"list", "checklist", "note", "tasklist"})
 
 
 def _pick_members(asked: str, views: list, wants_context: bool) -> list:
-    """The notes the question is about, oldest first."""
+    """The notes the question is about, oldest first; jokes and quotes in the search's order, so
+    the top matching record is the one said (the owner's 2026-10-10 jokes bug, L-chat-19)."""
     if wants_context:
         members = [v for v in views if _context_note(v) or any(composer._holds(st, v.words) for st in composer._words(asked))]
-    else:
-        members = _members(asked, views)
+        return sorted(members, key=lambda v: v.rank)
+    members = _members(asked, views)
     members.sort(key=lambda v: (v.written or date.min, v.rank))
     return members
 
@@ -1462,6 +1492,9 @@ def _answer(
     if reply is not _ORDINARY:
         return reply
     kind = _kind_if_mine(asked)
+    #: "What are my jokes" asks for all of them, as "what jokes have I saved" does; "one of my jokes" is one.
+    if kind == "fact" and _ALL_CONTEXT.search(question) and not _ONE_OF.search(question):
+        kind = "overview"
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
     #: the subject, it would find the gym log and summarise it.
     if kind is None or composer._lead_act_verb(question):
@@ -2015,7 +2048,12 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
     text = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), text)
     text = _DAY_OF_MONTH.sub(lambda m: m.group(0).title() if m.group(1) or m.group(3) else m.group(0), text)
     text = _SENTENCE_START.sub(_capital, text)
-    return realise.mend_stops(re.sub("(\\d+)", lambda m: held[int(m.group(1))], text))
+    #: A held quote can hold a kept phrase ("“Why don't skeletons fight? ...”"): restored until none is left.
+    for _ in range(len(held) + 1):
+        if "" not in text:
+            break
+        text = re.sub("(\\d+)", lambda m: held[int(m.group(1))], text)
+    return realise.mend_stops(text)
 
 
 #: A note's own emphasis marks (`*Bring wine*`, a one-word `cash` code span)

@@ -85,7 +85,10 @@ def _context_note(view: composer.NoteView) -> bool:
 
 def _context_facts(view: composer.NoteView) -> list[Fact]:
     """A joke or a quote is one piece (decision 67): its question and its
-    punchline are never two facts."""
+    punchline are never two facts. A list of them ("Jokes I like" with a joke a bullet) is one piece a
+    bullet: run together, one joke's punchline ran into the next one's question (L-chat-19)."""
+    if len(view.sentences) > 1 and all(s.kind == "item" for s in view.sentences):
+        return [Fact(view, s, "Joke", s.text.strip().rstrip("."), "") for s in view.sentences]
     whole = " ".join(s.text.strip() for s in view.sentences)
     head = _PREFIX.match(whole)
     label = head.group(1).strip() if head else "Joke"
@@ -2047,7 +2050,24 @@ def _list_gist(view: composer.NoteView, items: list[Fact]) -> list[Fact]:
         #: "a list: how did that go?, what happened next? And ..." (1420).
         asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in items]
         return [Fact(view, items[0].sentence, "", PHRASES["a_list_asked"].format(name=name, count=realise.count_word(len(items)), items=_listed(asked)))]
+    if _context_note(view) or all(_SENTENCES_INSIDE.search(f.body) for f in items):
+        #: Each item is whole sentences, a joke's question and its answer: quoted as written, never
+        #: run into "and what do you call a fake noodle" (L-chat-19).
+        quoted = [Fact(f.view, f.sentence, f.label, f"“{f.body.rstrip().rstrip('.')}”") for f in items]
+        return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=_quoted_listed(quoted)))]
     return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=_listed(items)))]
+
+
+#: "Why don't skeletons fight? They don't have the guts": a sentence ends inside the item.
+_SENTENCES_INSIDE = re.compile(r"[?.!] +[A-Z]")
+
+
+def _quoted_listed(facts: list[Fact]) -> str:
+    shown = facts[:GIST_ITEMS + 1] if len(facts) == GIST_ITEMS + 1 else facts[:GIST_ITEMS]
+    items = [f.body for f in shown]
+    if len(facts) > len(shown):
+        items.append(f"{realise.count_word(len(facts) - len(shown))} more")
+    return realise.join_items(items)
 
 
 def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shape: str, sort: _Sorted, chosen: list[Fact], material: bool) -> list[Fact]:

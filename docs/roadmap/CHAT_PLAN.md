@@ -890,10 +890,10 @@ ms with the status call held 4000 ms); "show them" lands on Your notes from 4
 of 4 sub-tabs; hovering an in-text reference opened the Sources disclosure,
 now it previews and a press opens it (the mark is a white digit on a blue
 pill, 10 by 13px); the web panel's Try again holds (2 requests, 1 result).
-Still open: the web-search store (only a 60 s one-shot prefetch exists, no
-stored page text, fetch time or re-fetch control) and a per-item
-suppressed-suggestions list (Settings, Data has counts by kind and Clear all
-with Undo; no list of the items).
+Both built since: the web-search store (decision 1692,
+`tests/test_web_store_1111.py`) and the per-item suppressed list
+(`tests/test_dismissed_list_1110.py`); a joke is said from the top matching
+record (`tests/test_joke_source_1114.py`).
 
 ## The assistant catalogue, 2026-10-10
 
