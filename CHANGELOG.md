@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Margin reader typing latency measured in Chromium (1440x900, 120 keystrokes a run, keydown to next frame, 3 runs, a 30-paragraph document, margin on): p50 17.3 to 17.4 ms, p95 22.5 to 43.1 ms against the 150 ms keystroke-to-margin budget, same as with the margin off (p50 11 to 18, p95 29 to 74); the card lands 1,216 to 1,257 ms after the last key, 1,200 of them the deliberate pause (L-world-class-86).
 - Back with a sheet open over Settings at 390 (phone emulation): Back closed Settings and left the sheet open over the Library (hash `#/library`, sheet still shown); the sheet, the shortcuts overlay or a dialog now takes that Back and Settings stays, the next Back closes Settings (`router-overlays.js` `routerBackHook`, `tests/test_router_overlays.py`); the real-phone check is a BACKLOG row (L-world-class-75).
 - Event log measured (19.5): there is no pub/sub bus, `core/events.py` is a synchronous append; one INSERT per event, no per-event read, constant at 500 rows, one row per write scope, zero subscribers so no back-pressure; pinned by counted statements in `tests/test_event_log_cost.py` (L-world-class-73).
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
