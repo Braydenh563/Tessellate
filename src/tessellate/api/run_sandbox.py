@@ -258,32 +258,28 @@ def run_sandbox_python(request: Request) -> Response:
 
 _PYODIDE_TYPES = {
     ".mjs": "text/javascript; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
     ".wasm": "application/wasm",
     ".zip": "application/zip",
     ".json": "application/json",
 }
 
 
-@router.get(PYODIDE_PATH + "{name}")
-def pyodide_file(name: str) -> FileResponse:
-    """One of the Pyodide runtime's files, once the extra is installed.
+def _extra_file(extra_id: str, name: str) -> FileResponse:
+    """One file of an installed download extra, by a name the extra itself lists.
 
     Only the names the extra's entry unpacks are served (not its marker, not
     anything else in the folder), and `name` is looked up in that set rather
-    than joined onto a path, so no spelling of `..` reaches the disk. Open
-    without the unlock, like the page that loads them: the sandbox is an
-    opaque origin and cannot send the token, and these are the public
-    Pyodide release, nothing of the notebook's. `Access-Control-Allow-Origin`
-    because that same opaque origin makes every fetch cross-origin.
+    than joined onto a path, so no spelling of `..` reaches the disk. The
+    path is built from the release's own list, never from the request:
+    `name` only picks an entry, so what reaches the disk is a string this
+    file wrote (CodeQL reads a membership test as no guard at all).
     """
     from tessellate.core import extras
 
-    extra = extras.EXTRAS_BY_ID["pyodide"]
-    #: The path is built from the release's own list, never from the request:
-    #: `name` only picks an entry, so what reaches the disk is a string this
-    #: file wrote (CodeQL reads a membership test as no guard at all).
+    extra = extras.EXTRAS_BY_ID[extra_id]
     served = {file: file for download in extra.downloads for _member, file in download.members}
-    folder = extras.download_ready("pyodide")
+    folder = extras.download_ready(extra_id)
     listed = served.get(name)
     if folder is None or listed is None or not (folder / listed).is_file():
         raise HTTPException(status_code=404, detail="Not installed.")
@@ -297,6 +293,32 @@ def pyodide_file(name: str) -> FileResponse:
             "Cache-Control": "no-cache",
         },
     )
+
+
+@router.get(PYODIDE_PATH + "{name}")
+def pyodide_file(name: str) -> FileResponse:
+    """One of the Pyodide runtime's files, once the extra is installed.
+
+    Open without the unlock, like the page that loads them: the sandbox is an
+    opaque origin and cannot send the token, and these are the public
+    Pyodide release, nothing of the notebook's. `Access-Control-Allow-Origin`
+    because that same opaque origin makes every fetch cross-origin.
+    """
+    return _extra_file("pyodide", name)
+
+
+RUFF_PATH = "/documents/ruff/"
+
+
+@router.get(RUFF_PATH + "{name}")
+def ruff_file(name: str) -> FileResponse:
+    """Ruff's module and wasm, once the extra is installed (L-documents-50).
+
+    Open without the unlock for the same reason as Pyodide's files: the page
+    `import()`s the module, and an import cannot send the token. They are the
+    public release, nothing of the notebook's.
+    """
+    return _extra_file("ruff", name)
 
 
 # --- A long run is a job in the Activity panel (DOCUMENTS_PLAN 25 row 9) ------

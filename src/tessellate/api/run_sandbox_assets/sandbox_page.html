@@ -192,7 +192,7 @@ iframe{border:0;width:100%;height:100%;display:block;background:#fff}</style>
       e.preventDefault();
       if (id === current) up(id, { t: "log", level: "error", text: "The debugger stopped: " + e.message, line: null, uncaught: true });
     };
-    worker.postMessage({ source: pad(d) + code, breaks: Array.isArray(d.breaks) ? d.breaks : [], watches: Array.isArray(d.watches) ? d.watches : [], dom: Boolean(d.dom) });
+    worker.postMessage({ source: pad(d) + code, breaks: Array.isArray(d.breaks) ? d.breaks : [], watches: Array.isArray(d.watches) ? d.watches : [], dom: Boolean(d.dom), tests: Boolean(d.tests) });
   }
   var RUNNERS = { js: runJs, html: runHtml, sql: runSql, css: runCss, svg: runSvg, p5: runP5, jsdebug: runJsDebug };
   window.onmessage = function (e) {

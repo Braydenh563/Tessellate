@@ -1258,14 +1258,14 @@ MID_TOPICS.extend(
                 "continues and Shift+F5 stops; the same five are buttons at the "
                 "top of the tab. An error nothing catches stops on the line that "
                 "raised it, with its traceback and the frame's variables. A Python "
-                "file of tests debugs through its tests: a breakpoint inside one "
+                "file of tests, and a JavaScript or TypeScript one, debugs through its tests: a breakpoint inside one "
                 "stops there, and the Tests tab lists each result. Python's "
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
                 "functions, template strings, classes with fields, destructuring, "
                 "spread, getters and setters and private members are rewritten for it, "
-                "and async code and generators are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
+                "and generators, async and await, tagged templates and spread in new are stepped too; async generators, for await, top-level await and the arguments object inside them are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1328,6 +1328,23 @@ MID_TOPICS.extend(
                 "Nothing is fetched from the web; a schema not in the Library is one note."
             ),
             "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-50: documents-code-lint.js, the Ruff extra.
+        {
+            "id": "code-lint",
+            "keywords": ("lint", "linter", "ruff", "unused import", "undefined name", "duplicate key", "unreachable code", "python lint"),
+            "body": (
+                "A .js or .ts file that parses is also checked for the mistakes that "
+                "parse: a duplicate key in an object, an assignment where a condition "
+                "goes, code after a return, a duplicate case, a comparison with NaN and "
+                "a typeof compared with a word it never gives, each underlined as a "
+                "warning. A .py file that compiles is checked by Ruff once you install "
+                "Python lint (Ruff) in Settings, Extras (a 3.7 MB download, 10 MB on "
+                "disk): an unused import or variable or a name that is not defined is "
+                "underlined, with Ruff's own fix in the hover card where it has one. "
+                "It runs on this computer and works offline."
+            ),
+            "badge": {"label": "Settings", "tab": "settings"},
         },
     ]
 )
