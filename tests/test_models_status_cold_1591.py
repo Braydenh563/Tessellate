@@ -1,6 +1,6 @@
 """INBOX 1591, a31m: `/models/status` 3908ms cold.
 
-The route itself answers in ~15ms on a cold process (its slow parts were already cached, deferred or
+The route itself answers in ~15ms on a cold process (its slow parts were already cached, made lazy or
 budgeted: `_installed_state`, `INSTALLED_COLD_BUDGET`, `prewarm_installed`). The time was FastAPI's lazy
 route state: the first dispatch of any request builds the effective routes for all ~240 paths under one
 lock (~0.9s here, about four times that on the owner's machine), and the browser's boot burst of ~30

@@ -1,6 +1,6 @@
 """A word that only a help line's examples hold is not an app feature (composer9
 Remaining, the dialogue turn "what about running?" answered "Running is one of
-the app's own tools": the follow-up topic gives "(what about running?, and
+the app's own tools": the next-question topic gives "(what about running?, and
 Oppenheimer?, ...)" as examples). The class: any short message whose word sits
 in a help topic only inside brackets or quotes, said to a notebook that does
 not hold it, is a missing word, not a request for the feature."""

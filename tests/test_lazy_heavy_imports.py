@@ -15,7 +15,7 @@ had anything worth embedding yet.
 Each of those four files now imports numpy inside the specific functions and
 methods that call `np.*`, the same shape `_load_builtin_model` in
 `ai/embeddings.py` already used for its engine, `fastembed` (a heavy,
-optional import deferred to the one place that needs it) and `__main__.py`
+optional import moved into the one place that needs it) and `__main__.py`
 uses for `uvicorn`/`create_app`. `from __future__ import annotations` is
 already present in all four files, so every remaining module-level `np.`
 reference is a type annotation, stored as a string and never evaluated,
@@ -99,7 +99,7 @@ class TestNumpyStaysOutUntilSomethingNeedsIt:
 
 
 class TestNumpyStillLoadsOnFirstRealUse:
-    """The other half of 'lazy', not 'skipped'. A deferred import that never
+    """The other half of 'lazy', not 'skipped'. A lazy import that never
     fires would make the modules above technically numpy-free and actually
     broken: this proves each still gets a working numpy the first time a
     function that needs it is called, in the same fresh subprocess used

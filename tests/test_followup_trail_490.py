@@ -1,8 +1,8 @@
-"""A question asked from a suggested follow-up says where it came from (INBOX 490).
+"""A question asked from a suggested next question says where it came from (INBOX 490).
 
 The owner: "I feel like there should be hyperlinked bread crumbs or a file tree
 sort of thing for if a suggested follow suggested question is used." Chat
-draws a trail of the questions a follow-up chain came from above the question,
+draws a trail of the questions a chain of suggested questions came from above the question,
 each a link that scrolls to its turn and lights it; Ask draws the same trail
 above its answer, each crumb opening that earlier answer in place. Driven in
 Chromium by the session's `trail490.js`; this is the server half (the link is

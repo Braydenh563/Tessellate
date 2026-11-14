@@ -144,7 +144,7 @@ def test_digest_never_sends_a_private_note_to_the_model(ai_client, fake_ollama):
 
 
 def test_digest_empty_week_is_cacheable(client):
-    # An empty week is a stable fact → safe to cache (Wave J follow-up).
+    # An empty week is a stable fact → safe to cache (from Wave J).
     assert client.post("/insights/digest").json()["cacheable"] is True
 
 
