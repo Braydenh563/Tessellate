@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram pan: measured input-to-paint at 4x CPU (pan, release; 1440 mouse p50 13 and p95 21 ms, 390 touch p50 31 and p95 41 ms) and the existing release glide checked in the app, with a test that reduced motion stops dead (L-documents-61).
 - Diagram builder: Gantt, pie, state, class and ER are block kinds (kind bar entry with a starter, add and rename as blocks, printed back byte-identical on a round trip, the picture drawn by Mermaid), in a lazy `diagram-kinds-more.js`; a source the blocks cannot read still opens in Source (L-documents-57).
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).

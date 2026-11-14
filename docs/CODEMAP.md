@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8564, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22383, plan headings 689, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8564, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22384, plan headings 689, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8564)
 
@@ -28150,7 +28150,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22383)
+## Tests (22384)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29012,7 +29012,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
 | tests/test_diagram_panel.py | 8 |
-| tests/test_diagram_panzoom.py | 8 |
+| tests/test_diagram_panzoom.py | 9 |
 | tests/test_diagram_phone_targets_l15.py | 2 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r12_1112.py | 6 |

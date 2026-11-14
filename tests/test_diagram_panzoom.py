@@ -114,3 +114,11 @@ def test_a_pan_settles_a_gesture_first_and_a_slow_glide_is_not_an_edge():
     assert "if (move) settle();" in VIEW[keys : keys + 600]
     glide = VIEW[VIEW.index("const glide = (v)") : VIEW.index("const now = ")]
     assert "let [x, y]" in glide and "scrollLeft === x0" not in glide
+
+
+def test_a_release_under_reduced_motion_stops_dead():
+    # L-documents-61: the glide starts only from a pointerup that was moving, and never when less motion is asked for;
+    # measured in the app at 4x CPU: 94 px (1440) and 57 px (390, touch) of glide after release, 0 px under reduced motion.
+    lift = VIEW[VIEW.index("const lift = (event)") :][:900]
+    assert "!reduced()" in lift and "glide(math.velocity(trail))" in lift
+    assert "reducedMotionWanted()" in VIEW
