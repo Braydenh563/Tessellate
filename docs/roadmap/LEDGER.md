@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 63 | 35 | 0 | 19 | 228 |
+| world-class | 130 | 62 | 35 | 0 | 19 | 227 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 457 | 106 | 2 | 130 | 1116 |
+| all | 553 | 456 | 106 | 2 | 130 | 1115 |
 
 ## graph
 
@@ -553,7 +553,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-7** `world-class` open, S: Measure footnotes, Mermaid and rich paste in the note composers. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:966. Evidence: docRichPasteEvent is wired only in documents-view.js:313; the capture-stage paste handler takes only files, so rich paste in note composers was never measured or fixed
 - [ ] **L-world-class-9** `world-class` open, S: Re-run the Settings prose length metric. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:442. Evidence: Open line in the plan's prose a session could miss. Measurement promised in D13 never re-run after the copy pass.
 - [ ] **L-world-class-12** `world-class` open, M: Run MCP tool tests and confirm outside agents' destructive calls. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:800. Evidence: Open line in the plan's prose a session could miss. Section 8 table row left open (also at 1796).
-- [ ] **L-world-class-13** `world-class` open, S: Sweep the five whiteboard menus. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:986. Evidence: Open line in the plan's prose a session could miss. Hand-off to other plans that no LEDGER row records (the SVG graph flag part is stale).
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
@@ -561,7 +560,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-31** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
-- [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50
+- [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50. 2026-11-14 attempt (probe 8801, small data, noisy): two warms tried and not kept, no gain. Hover on the Library tab starting the paced warm at 150 ms gaps: first open median 457 ms without, 455 with. Mounting the CodeMirror view in idle after loadCodeMirror: 220/214/225 ms without, 204/290/246 with. After 5 s idle the first open is ~220 ms against ~100 for the second, so what remains is first-call compile and IC warm-up, not a bundle or the view mount
 - [ ] **L-world-class-42** `world-class` open, M: Settings undo sweep is order or timing dependent: a different control fails each run. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-14. Evidence: four runs on one head: NOT UNDONE set differs each time (learned-pause-all, pref-web-search, pref-web-store, check_learned, pref-date-order, font-seg); each undoes alone
 
 ## general

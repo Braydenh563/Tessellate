@@ -9561,3 +9561,10 @@ input[type="color"].wb-mixed {
   flex-wrap: wrap;
   gap: var(--space-1);
 }
+
+/* The View menu's background reset and image buttons stood 32px tall on a touch screen (wbmenus5.js: 65 of 66, then 66 of 66). Lazy on purpose: the boot stylesheets are at their gzip cap. */
+@media (pointer: coarse) {
+  .wb-board-menu .wb-menu-controls > button {
+    min-height: var(--target-min);
+  }
+}
