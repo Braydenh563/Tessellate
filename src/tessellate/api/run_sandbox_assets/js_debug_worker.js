@@ -25,6 +25,8 @@
     }
     if (v.class === "Error") return String(interp.getProperty(v, "name") || "Error") + ": " + String(interp.getProperty(v, "message") || "");
     if (v.class === "RegExp" || v.class === "Date") return String(v.data);
+    if (v.gs) return "Generator {}";
+    if (p.__st !== undefined) return "Promise { " + (p.__st === 0 ? "<pending>" : (p.__st === 2 ? "<rejected> " : "") + show(p.__v, depth + 1)) + " }";
     if (depth > 1) return v.class === "Array" ? "[...]" : "{...}";
     var parts = [];
     if (v.class === "Array") {
@@ -65,8 +67,9 @@
       total = Number(p.length) || 0;
       for (var i = 0; i < Math.min(total, limit); i++) rows.push(row("[" + i + "]", p[i]));
     } else {
+      if (v.gs) return null;
       for (var k in p) {
-        if (!own(p, k)) continue;
+        if (!own(p, k) || (p.__st !== undefined && k.indexOf("__") === 0)) continue;
         total++;
         if (rows.length < limit) rows.push(row(k, p[k]));
       }
@@ -77,7 +80,7 @@
   function names(props, skip) {
     var rows = [];
     for (var k in props) {
-      if (!own(props, k) || (skip && skip[k])) continue;
+      if (!own(props, k) || (skip && skip[k]) || k.indexOf("__") === 0) continue;
       var row = { name: k, value: clip(show(props[k])), type: kind(props[k]) };
       var kids = children(props[k]);
       if (kids) row.children = kids;
@@ -93,9 +96,13 @@
     var out = [{ name: "(top level)", line: null, scope: interp.getGlobalScope() }];
     for (var i = 0; i < stack.length; i++) {
       var s = stack[i], n = s.node, top = out[out.length - 1];
-      if (n.loc) top.line = n.loc.start.line;
-      if (s.scope) top.scope = s.scope;
-      if ((n.type === "CallExpression" || n.type === "NewExpression") && s.doneExec_ && s.func_ && s.func_.node) {
+      if (n.loc && n.end) {
+        top.line = n.loc.start.line;
+        if (s.scope) top.scope = s.scope;
+      }
+      //: The helpers below (promises, generators, spread) are the debugger's:
+      //: their calls are not frames of the program.
+      if ((n.type === "CallExpression" || n.type === "NewExpression") && s.doneExec_ && s.func_ && s.func_.node && s.func_.node.end) {
         var fn = s.func_.node;
         out.push({ name: (fn.id && fn.id.name) || "(anonymous)", line: top.line, scope: s.scope });
       }
@@ -170,11 +177,247 @@
   }
   function lineNow() {
     var stack = interp.getStateStack();
-    for (var i = stack.length - 1; i >= 0; i--) if (stack[i].node.loc) return stack[i].node.loc.start.line;
+    for (var i = stack.length - 1; i >= 0; i--) if (stack[i].node.loc && stack[i].node.end) return stack[i].node.loc.start.line;
     return null;
   }
   //: Console rows, with the line that called them.
   function fmt(v) { return typeof v === "string" ? v : show(v); }
+  //: Ordinary ES5, read by the interpreter itself ahead of the program: the
+  //: helpers the lowering pass calls (spread, rest, for...of, `new` with a
+  //: spread, tagged templates), a Promise, and the drivers of an async
+  //: function and `yield*`. Its nodes carry no `end`, so the interpreter runs
+  //: through it in one go, the stepper never stops in it and its calls are not frames of the program.
+  function POLY() {
+    var g = this;
+    function drain(v, what) {
+      if (v == null) throw new TypeError("Debug steps " + what + " over an array or a string only, or a generator");
+      if (typeof v.length === "number") return v;
+      if (typeof v.next !== "function") throw new TypeError("Debug steps " + what + " over an array or a string only, or a generator");
+      var out = [], r;
+      while (!(r = v.next()).done) out.push(r.value);
+      return out;
+    }
+    g.__spr = function (v) { return Array.prototype.slice.call(drain(v, "spread")); };
+    g.__forOf = function (v) { return drain(v, "destructuring"); };
+    g.__iter = function (v) {
+      if (v != null && typeof v.length !== "number" && typeof v.next === "function") return v;
+      if (v == null || typeof v.length !== "number") throw new TypeError("Debug steps for...of over an array or a string only, or a generator");
+      var i = 0;
+      return { next: function () { return i < v.length ? { value: v[i++], done: false } : { value: undefined, done: true }; } };
+    };
+    g.__rest = function (o, ks) { var r = {}; for (var k in o) { if (Object.prototype.hasOwnProperty.call(o, k) && ks.indexOf(k) < 0) r[k] = o[k]; } return r; };
+    g.__ospr = function (t) { for (var i = 1; i < arguments.length; i++) { var s = arguments[i]; if (s != null) { for (var k in s) { if (Object.prototype.hasOwnProperty.call(s, k)) t[k] = s[k]; } } } return t; };
+    g.__tt = function (c, r) { c.raw = r; return c; };
+    g.__new = function (F, a) {
+      switch (a.length) {
+        case 0: return new F();
+        case 1: return new F(a[0]);
+        case 2: return new F(a[0], a[1]);
+        case 3: return new F(a[0], a[1], a[2]);
+        case 4: return new F(a[0], a[1], a[2], a[3]);
+        case 5: return new F(a[0], a[1], a[2], a[3], a[4]);
+        case 6: return new F(a[0], a[1], a[2], a[3], a[4], a[5]);
+        case 7: return new F(a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+      }
+      var o = Object.create(F.prototype), r = F.apply(o, a);
+      return r !== null && typeof r === "object" ? r : o;
+    };
+    g.__yieldStar = function (it) {
+      it = g.__iter(it);
+      var r, sent;
+      while (!(r = it.next(sent)).done) sent = g.__yield(r.value);
+      return r.value;
+    };
+    g.String.raw = function (s) {
+      var out = s.raw[0];
+      for (var i = 1; i < s.raw.length; i++) out += (i < arguments.length ? String(arguments[i]) : "") + s.raw[i];
+      return out;
+    };
+    function settle(p, st, v) {
+      p.__st = st; p.__v = v;
+      var q = p.__q;
+      p.__q = [];
+      if (st === 2 && !q.length) g.__unhandled(p);
+      for (var i = 0; i < q.length; i++) react(p, q[i]);
+    }
+    function react(p, h) {
+      g.__micro(function () {
+        var cb = p.__st === 1 ? h.ok : h.no, out;
+        if (typeof cb !== "function") { if (p.__st === 1) adopt(h.p, p.__v); else settle(h.p, 2, p.__v); return; }
+        try { out = cb(p.__v); } catch (e) { settle(h.p, 2, e); return; }
+        adopt(h.p, out);
+      });
+    }
+    function adopt(p, v) {
+      if (v === p) { settle(p, 2, new TypeError("Chaining cycle detected for promise")); return; }
+      if (v !== null && (typeof v === "object" || typeof v === "function")) {
+        var then;
+        try { then = v.then; } catch (e) { settle(p, 2, e); return; }
+        if (typeof then === "function") {
+          g.__micro(function () {
+            var once = false;
+            try {
+              then.call(v, function (x) { if (!once) { once = true; adopt(p, x); } }, function (e) { if (!once) { once = true; settle(p, 2, e); } });
+            } catch (e) { if (!once) { once = true; settle(p, 2, e); } }
+          });
+          return;
+        }
+      }
+      settle(p, 1, v);
+    }
+    function Promise(executor) {
+      if (!(this instanceof Promise)) throw new TypeError("Promise constructor cannot be invoked without 'new'");
+      if (typeof executor !== "function") throw new TypeError("Promise resolver " + executor + " is not a function");
+      this.__st = 0; this.__v = undefined; this.__q = [];
+      var self = this, once = false;
+      try {
+        executor(function (v) { if (!once) { once = true; adopt(self, v); } }, function (e) { if (!once) { once = true; settle(self, 2, e); } });
+      } catch (e) { if (!once) { once = true; settle(self, 2, e); } }
+    }
+    Promise.prototype.then = function (ok, no) {
+      var child = new Promise(function () {}), h = { ok: ok, no: no, p: child };
+      if (this.__st === 0) this.__q.push(h);
+      else { if (this.__st === 2) g.__handled(this); react(this, h); }
+      return child;
+    };
+    Promise.prototype["catch"] = function (no) { return this.then(undefined, no); };
+    Promise.prototype["finally"] = function (f) {
+      return this.then(function (v) { return Promise.resolve(f()).then(function () { return v; }); },
+        function (e) { return Promise.resolve(f()).then(function () { throw e; }); });
+    };
+    Promise.resolve = function (v) { return v instanceof Promise ? v : new Promise(function (res) { res(v); }); };
+    Promise.reject = function (e) { return new Promise(function (res, rej) { rej(e); }); };
+    function each(xs, fn) {
+      var list = Array.prototype.slice.call(drain(xs, "Promise combinators")), out = new Array(list.length), left = list.length;
+      return { list: list, out: out, left: left };
+    }
+    Promise.all = function (xs) {
+      return new Promise(function (res, rej) {
+        var e = each(xs), n = e.left;
+        if (!n) return res([]);
+        e.list.forEach(function (x, i) { Promise.resolve(x).then(function (v) { e.out[i] = v; if (--n === 0) res(e.out); }, rej); });
+      });
+    };
+    Promise.allSettled = function (xs) {
+      return new Promise(function (res) {
+        var e = each(xs), n = e.left;
+        if (!n) return res([]);
+        e.list.forEach(function (x, i) {
+          Promise.resolve(x).then(function (v) { e.out[i] = { status: "fulfilled", value: v }; if (--n === 0) res(e.out); },
+            function (r) { e.out[i] = { status: "rejected", reason: r }; if (--n === 0) res(e.out); });
+        });
+      });
+    };
+    Promise.race = function (xs) {
+      return new Promise(function (res, rej) { each(xs).list.forEach(function (x) { Promise.resolve(x).then(res, rej); }); });
+    };
+    Promise.any = function (xs) {
+      return new Promise(function (res, rej) {
+        var e = each(xs), n = e.left;
+        if (!n) return rej(new Error("All promises were rejected"));
+        e.list.forEach(function (x, i) {
+          Promise.resolve(x).then(res, function (r) { e.out[i] = r; if (--n === 0) { var err = new Error("All promises were rejected"); err.errors = e.out; rej(err); } });
+        });
+      });
+    };
+    g.Promise = Promise;
+    g.__async = function (self, fn) {
+      var gen = g.__gen(self, fn);
+      return new Promise(function (res, rej) {
+        function step(how, arg) {
+          var r;
+          try { r = gen[how](arg); } catch (e) { rej(e); return; }
+          if (r.done) { res(r.value); return; }
+          Promise.resolve(r.value).then(function (v) { step("next", v); }, function (e) { step("throw", e); });
+        }
+        step("next");
+      });
+    };
+  }
+
+  //: Generators (and async functions, which are generators a promise drives).
+  //: The interpreter keeps its call stack as data, so a generator is a slice
+  //: of it: `next` pushes the slice back above the call, `yield` takes it off
+  //: again and hands the call its value. A marker state sits under the slice
+  //: so a body that returns is told from one that yields.
+  var unhandled = [];
+  function coroutines(it, g) {
+    function result(v, done) {
+      var o = it.createObjectProto(it.OBJECT_PROTO);
+      it.setProperty(o, "value", v);
+      it.setProperty(o, "done", done);
+      return o;
+    }
+    it.stepFunctions_.GenFrame_ = function (stack, state) {
+      var st = state.gen;
+      stack.pop();
+      st.done = true; st.running = false; st.frames = null;
+      stack[stack.length - 1].value = result(state.value, true);
+    };
+    function resume(gen, how, v) {
+      var st = gen && gen.gs, stack = it.getStateStack(), call = stack[stack.length - 1];
+      if (!st) it.throwException(it.TYPE_ERROR, how + " method called on incompatible receiver");
+      if (st.running) it.throwException(it.TYPE_ERROR, "Generator is already running");
+      if (st.done || (!st.started && how !== "next")) {
+        st.done = true;
+        if (how === "throw") it.throwException(v);
+        return result(how === "return" ? v : undefined, true);
+      }
+      if (how === "return") { st.done = true; st.frames = null; return result(v, true); }
+      st.running = true;
+      if (!st.started) {
+        st.started = true;
+        var mark = new I.State({ type: "GenFrame_", end: 1 }, call.scope), node = it.newNode(), at = new I.State(node, call.scope);
+        mark.gen = st;
+        node.type = "CallExpression";
+        at.doneCallee_ = 2; at.funcThis_ = st.self; at.func_ = st.fn; at.doneArgs_ = true; at.arguments_ = [];
+        stack.push(mark, at);
+        return undefined;
+      }
+      var frames = st.frames;
+      st.frames = null;
+      for (var i = 0; i < frames.length; i++) stack.push(frames[i]);
+      if (how === "throw") it.throwException(v);
+      frames[frames.length - 1].value = v;
+      return undefined;
+    }
+    var proto = it.createObjectProto(it.OBJECT_PROTO);
+    ["next", "return", "throw"].forEach(function (how) {
+      it.setProperty(proto, how, it.createNativeFunction(function (v) { return resume(this, how, v); }), I.NONENUMERABLE_DESCRIPTOR);
+    });
+    it.setProperty(g, "__gen", it.createNativeFunction(function (self, fn) {
+      var gen = it.createObjectProto(proto);
+      gen.gs = { self: self, fn: fn, started: false, done: false, running: false, frames: null };
+      return gen;
+    }));
+    it.setProperty(g, "__yield", it.createNativeFunction(function (v) {
+      var stack = it.getStateStack(), m = stack.length - 1;
+      while (m >= 0 && stack[m].node.type !== "GenFrame_") m--;
+      if (m < 1) it.throwException(it.SYNTAX_ERROR, "yield or await outside a generator or an async function");
+      var st = stack[m].gen;
+      st.frames = stack.splice(m);
+      st.running = false;
+      stack[stack.length - 1].value = result(v, false);
+    }));
+    //: A reaction runs before any timer: a task due since the start of time,
+    //: queued behind the ones already waiting.
+    it.setProperty(g, "__micro", it.createNativeFunction(function (fn) {
+      var node = it.newNode(), task = new I.Task(fn, [], it.globalScope, node, -1), at = 0;
+      node.type = "CallExpression";
+      task.time = 0;
+      while (at < it.tasks.length && it.tasks[at].time === 0) at++;
+      it.tasks.splice(at, 0, task);
+    }));
+    //: A rejection nothing has caught by the time the program is idle is
+    //: reported, as node does.
+    it.setProperty(g, "__unhandled", it.createNativeFunction(function (p) { unhandled.push(p); }));
+    it.setProperty(g, "__handled", it.createNativeFunction(function (p) {
+      var at = unhandled.indexOf(p);
+      if (at >= 0) unhandled.splice(at, 1);
+    }));
+    it.polyfills_.push("(" + POLY + ").call(this);");
+  }
+
   function init(it, g) {
     var con = it.nativeToPseudo({});
     ["log", "info", "warn", "error", "debug"].forEach(function (k) {
@@ -185,6 +428,7 @@
       }));
     });
     it.setProperty(g, "console", con);
+    coroutines(it, g);
     if (DOM) stubDocument(it, g);
   }
   //: Scripts that use the DOM debug against a stand-in: every element is a
@@ -224,6 +468,12 @@
   //: unwound, so the stop has the frame it was raised in and its variables.
   var unwind = I.prototype.unwind;
   I.prototype.unwind = function (type, value, label) {
+    if (type === I.Completion.THROW) {
+      var live = this.getStateStack();
+      for (var j = live.length - 1; j >= 0 && live[j].node.type !== "TryStatement"; j--) {
+        if (live[j].node.type === "GenFrame_") { live[j].gen.done = true; live[j].gen.running = false; }
+      }
+    }
     if (type === I.Completion.THROW && !thrown) {
       var stack = this.getStateStack(), caught = false;
       for (var i = 0; i < stack.length; i++) if (stack[i].node.type === "TryStatement") caught = true;
@@ -272,9 +522,14 @@
     try {
       while (budget-- > 0) {
         var more = interp.step();
-        if (!more) return finish("done");
+        if (!more) {
+          for (var u = 0; u < unhandled.length; u++) {
+            postMessage({ t: "log", level: "error", text: "Uncaught (in promise) " + show(unhandled[u].properties.__v).replace(/^"|"$/g, ""), line: null, uncaught: true });
+          }
+          return finish(unhandled.length ? "error" : "done");
+        }
         var stack = interp.getStateStack(), top = stack[stack.length - 1];
-        if (top && top.node.loc && !seen.has(top)) {
+        if (top && top.node.loc && top.node.end && !seen.has(top)) {
           seen.add(top);
           if (isStatement(top.node)) {
             var stop = decide(top);
@@ -322,6 +577,7 @@
     setBreaks(d.breaks || []);
     watches = (d.watches || []).map(String).slice(0, 50);
     DOM = Boolean(d.dom);
+    unhandled = [];
     builtins = {};
     var bare = new I("", function (it, g) { init(it, g); });
     for (var k in bare.getGlobalScope().object.properties) builtins[k] = 1;

@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8530, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2790, tests 22374, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8535, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2790, tests 22377, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8530)
+## Frontend functions (8535)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7302,26 +7302,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runVendorFetch` | frontend/js/run-core.js:35 |
 | `runVendorScript` | frontend/js/run-core.js:53 |
 
-### frontend/js/run-debug.js (16)
+### frontend/js/run-debug.js (21)
 
 | Name | File:line |
 |---|---|
-| `runDebugAssign` | frontend/js/run-debug.js:207 |
-| `runDebugBind` | frontend/js/run-debug.js:94 |
-| `runDebugClass` | frontend/js/run-debug.js:373 |
-| `runDebugDeclaration` | frontend/js/run-debug.js:185 |
-| `runDebugEdit` | frontend/js/run-debug.js:54 |
-| `runDebugHead` | frontend/js/run-debug.js:178 |
-| `runDebugKids` | frontend/js/run-debug.js:66 |
-| `runDebugLower` | frontend/js/run-debug.js:513 |
-| `runDebugMark` | frontend/js/run-debug.js:85 |
-| `runDebugObjectSpread` | frontend/js/run-debug.js:316 |
-| `runDebugParams` | frontend/js/run-debug.js:226 |
-| `runDebugPlainDefault` | frontend/js/run-debug.js:76 |
-| `runDebugQuote` | frontend/js/run-debug.js:61 |
-| `runDebugSpreadCall` | frontend/js/run-debug.js:351 |
-| `runDebugSpreadList` | frontend/js/run-debug.js:273 |
-| `runDebugSuperCall` | frontend/js/run-debug.js:486 |
+| `runDebugAssign` | frontend/js/run-debug.js:202 |
+| `runDebugBind` | frontend/js/run-debug.js:92 |
+| `runDebugBlank` | frontend/js/run-debug.js:369 |
+| `runDebugClass` | frontend/js/run-debug.js:485 |
+| `runDebugCoroutine` | frontend/js/run-debug.js:463 |
+| `runDebugDeclaration` | frontend/js/run-debug.js:181 |
+| `runDebugEdit` | frontend/js/run-debug.js:52 |
+| `runDebugEnclosing` | frontend/js/run-debug.js:452 |
+| `runDebugHead` | frontend/js/run-debug.js:175 |
+| `runDebugKids` | frontend/js/run-debug.js:64 |
+| `runDebugLower` | frontend/js/run-debug.js:625 |
+| `runDebugMark` | frontend/js/run-debug.js:83 |
+| `runDebugObjectSpread` | frontend/js/run-debug.js:313 |
+| `runDebugParams` | frontend/js/run-debug.js:220 |
+| `runDebugPlainDefault` | frontend/js/run-debug.js:74 |
+| `runDebugQuote` | frontend/js/run-debug.js:59 |
+| `runDebugSpreadCall` | frontend/js/run-debug.js:347 |
+| `runDebugSpreadList` | frontend/js/run-debug.js:271 |
+| `runDebugSpreadNew` | frontend/js/run-debug.js:398 |
+| `runDebugSuperCall` | frontend/js/run-debug.js:598 |
+| `runDebugTagged` | frontend/js/run-debug.js:411 |
 
 ### frontend/js/run-tests.js (3)
 
@@ -28111,7 +28116,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22374)
+## Tests (22377)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30303,7 +30308,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_row_room_1696.py | 8 |
 | tests/test_rows_676.py | 6 |
 | tests/test_run_caps.py | 7 |
-| tests/test_run_debug_js.py | 14 |
+| tests/test_run_debug_js.py | 17 |
 | tests/test_run_debugger.py | 17 |
 | tests/test_run_job_heartbeat_d38.py | 2 |
 | tests/test_run_protocol.py | 18 |

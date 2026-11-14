@@ -12,8 +12,8 @@
 // shorthand property or method its long form. What is left that ES5 cannot
 // say is named, with its line, and Debug does not start: Run still runs the
 // file as it is. Also lowered (data-1011): `**` as Math.pow, `??` through one
-// temporary, `for (x of array)` as an indexed loop (an array or a string; the
-// stepper has no iterators), a simple default parameter as a first line of
+// temporary, `for (x of array)` as a loop over the worker's `__iter` (an array, a string
+// or a generator), a simple default parameter as a first line of
 // the body, and a class (methods, static methods, `extends`, `super(...)`
 // and `super.m(...)`) as a constructor function with its prototype. Also lowered
 // (L334): class fields (instance ones as hidden methods the constructor calls;
@@ -26,7 +26,10 @@
 // other half), and private members (`#x` fields, methods and accessors) as
 // hidden properties named for their class (`__A_x`, not enumerable), so the
 // program steps the same though the names are not private while debugging.
-// Async, await, generators and `#x in o` stay named. TypeScript reaches here
+// Also lowered (L-documents-36, 38): generators, `async`/`await` (a body run as a
+// coroutine by the worker), tagged templates, `new X(...xs)` and an arrow
+// whose first parameter is a pattern with a default. Async generators,
+// `for await`, top-level await and `#x in o` stay named. TypeScript reaches here
 // after sucrase has taken its types.
 
 //: The constructs the pass does not lower, by the parse tree's node name,
@@ -37,11 +40,6 @@
   const RUN_DEBUG_REFUSED = {
     get: "getters and setters",
     set: "getters and setters",
-    AwaitExpression: "async functions and await",
-    async: "async functions and await",
-    YieldExpression: "generators",
-    Star: "generators",
-    TaggedTemplateExpression: "tagged templates",
     ImportDeclaration: "import and export",
     ExportDeclaration: "import and export",
     NewTarget: "new.target",
@@ -101,7 +99,7 @@
       if (node.name === "VariableDefinition") list.push(`${text(node)} = ${access}`);
       else if (node.name === "ObjectPattern" || node.name === "ArrayPattern") {
         const t = temp();
-        list.push(`${t} = ${node.name === "ArrayPattern" ? `__forOf(${(ctx.need.forOf = true, access)})` : access}`);
+        list.push(`${t} = ${node.name === "ArrayPattern" ? `__forOf(${access})` : access}`);
         fill(node, t);
       } else refuse("destructuring into something other than names", node.from);
     };
@@ -123,7 +121,6 @@
           const parts = runDebugKids(pp);
           if (parts[0]?.name === "Spread") {
             if (parts[1]?.name !== "VariableDefinition" || computed) refuse("an object rest in this pattern", pp.from);
-            ctx.need.rest = true;
             list.push(`${text(parts[1])} = __rest(${base}, [${keys.join(", ")}])`);
             continue;
           }
@@ -176,7 +173,6 @@
 
   //: `[k, v] = x` declarators for a bound pattern: its own temporary first.
   function runDebugHead(ctx, b, root) {
-    if (b.array) ctx.need.forOf = true;
     return `${b.t} = ${b.array ? `__forOf(${root})` : root}`;
   }
 
@@ -194,7 +190,6 @@
       runDebugMark(ctx, p);
       runDebugEdit(ctx.edits, p.from, p.to, b.t, 0);
       if (b.array) {
-        ctx.need.forOf = true;
         runDebugEdit(ctx.edits, init.from, init.from, "__forOf(", depth + 1);
         runDebugEdit(ctx.edits, init.to, init.to, ")", -(depth + 1));
       }
@@ -215,7 +210,6 @@
     runDebugMark(ctx, p);
     for (let n = first + 1; n <= ctx.temps; n++) ctx.assignTemps.push(`__d${n}`);
     runDebugEdit(ctx.edits, p.from, eq.to, `(${b.t} =${b.array ? " __forOf(" : ""}`, depth);
-    if (b.array) ctx.need.forOf = true;
     runDebugEdit(ctx.edits, rhs.to, rhs.to, `${b.array ? ")" : ""}${b.list.map((x) => `, ${x}`).join("")}, ${b.t})`, -depth);
   }
 
@@ -246,21 +240,25 @@
         lines.push(`var ${text(slot[1])} = Array.prototype.slice.call(arguments, Math.min(${n}, arguments.length));`);
         return;
       }
-      const isPattern = first.name === "ObjectPattern" || first.name === "ArrayPattern";
+      //: An arrow whose first parameter is a pattern with a default was read
+      //: with its pattern blanked (see `runDebugBlank`); the pattern is put back.
+      const blank = ctx.blanks.get(first.from);
+      const isPattern = Boolean(blank) || first.name === "ObjectPattern" || first.name === "ArrayPattern";
       if (first.name !== "VariableDefinition" && !isPattern) refuse("this parameter", first.from);
       const eq = slot[1];
       const value = slot[2];
       if (eq && (eq.name !== "Equals" || !value)) refuse("this parameter", eq.from);
       if (value && !runDebugPlainDefault(value, source)) refuse("default parameter values other than a plain value (a number, string, name, {} or a list of those)", eq.from);
       const name = isPattern ? `__p${++ctx.paramNames}` : text(first);
-      if (isPattern) runDebugEdit(edits, first.from, first.to, name, 0);
+      const pat = blank || first;
+      if (isPattern) runDebugEdit(edits, first.from, pat.to, name + "\n".repeat((source.slice(pat.from, pat.to).match(/\n/g) || []).length), 0);
       if (value) {
-        runDebugEdit(edits, isPattern ? first.to : first.to, value.to, "", 0);
+        runDebugEdit(edits, pat.to, value.to, "", 0);
         lines.push(`if (${name} === undefined) ${name} = ${text(value)};`);
       }
       if (isPattern) {
-        const b = runDebugBind(ctx, first);
-        runDebugMark(ctx, first);
+        const b = runDebugBind(ctx, pat);
+        runDebugMark(ctx, pat);
         lines.push(`var ${[runDebugHead(ctx, b, name), ...b.list].join(", ")};`);
       }
     });
@@ -304,7 +302,6 @@
       }
       flush();
       if (slot.length !== 2) refuse("this spread", slot[0].from);
-      ctx.need.spr = true;
       ctx.handled.add(slot[0].from);
       runDebugEdit(edits, slot[0].from, slot[0].to, "__spr(", depth + 1);
       runDebugEdit(edits, slot[1].to, slot[1].to, ")", -(depth + 1));
@@ -324,7 +321,6 @@
       const last = commas[commas.length - 1];
       runDebugEdit(edits, last.from, last.to, "", 0);
     }
-    ctx.need.ospr = true;
     runDebugEdit(edits, open.from, open.to, "__ospr({}, ", depth);
     runDebugEdit(edits, close.from, close.to, ")", -depth);
     let run = [];
@@ -363,6 +359,122 @@
     runDebugEdit(ctx.edits, callee.to, callee.to, ".apply", 0);
     const parts = runDebugKids(args);
     runDebugSpreadList(ctx, args, parts[0], parts[parts.length - 1], `(${recv}, [].concat(`, "))", depth + 1);
+  }
+
+  //: Lezer cannot read an arrow whose first parameter is a pattern with a
+  //: default (`([a] = [1]) => a`): it recovers with a parenthesised assignment
+  //: and an error node. The pattern is blanked (`__` and spaces, newlines kept,
+  //: so every position holds) and the text read again; `blanks` maps the blank
+  //: back to the pattern of the first reading, which the parameter pass binds.
+  function runDebugBlank(parser, source) {
+    let text = source;
+    let tree = parser.parse(text);
+    const blanks = new Map();
+    for (let round = 0; round < 8; round++) {
+      const fixes = [];
+      tree.iterate({
+        enter(ref) {
+          if (!ref.type.isError || text.slice(ref.from, ref.to) !== "=>") return;
+          const paren = ref.node.prevSibling;
+          if (!paren || paren.name !== "ParenthesizedExpression") return;
+          const seq = runDebugKids(paren).find((c) => c.name === "SequenceExpression");
+          for (const c of runDebugKids(seq || paren)) {
+            const pat = c.name === "AssignmentExpression" ? c.firstChild : null;
+            if (pat && (pat.name === "ArrayPattern" || pat.name === "ObjectPattern")) fixes.push(pat);
+          }
+        },
+      });
+      if (!fixes.length) break;
+      for (const f of fixes) {
+        blanks.set(f.from, f);
+        text = text.slice(0, f.from) + "__" + text.slice(f.from + 2, f.to).replace(/[^\n]/g, " ") + text.slice(f.to);
+      }
+      tree = parser.parse(text);
+    }
+    return { tree, blanks };
+  }
+
+  //: `new A(...xs)` as `__new(A, [].concat(...))`; the helper sits in the worker.
+  function runDebugSpreadNew(ctx, node, depth) {
+    const kids = runDebugKids(node);
+    const args = kids.find((c) => c.name === "ArgList");
+    if (!kids[1] || !args || !runDebugKids(args).some((c) => c.name === "Spread")) return;
+    runDebugEdit(ctx.edits, kids[0].from, kids[0].to, "__new(", 0);
+    const parts = runDebugKids(args);
+    runDebugSpreadList(ctx, args, parts[0], parts[parts.length - 1], ", [].concat(", "))", depth + 1);
+  }
+
+  //: A tagged template, `tag\`a${x}b\``, as `tag(__tt(["a", "b"], ["a", "b"]), (x))`:
+  //: the cooked and the raw strings in one helper call, the values after. The
+  //: line breaks of the text parts are put back where they were, so every line
+  //: after keeps its number.
+  function runDebugTagged(ctx, node, depth) {
+    const { source, edits } = ctx;
+    const [tag, tpl] = runDebugKids(node);
+    if (!tag || !tpl || tpl.name !== "TemplateString") ctx.refuse("this tagged template", node.from);
+    ctx.handled.add(tpl.from);
+    const cooked = [];
+    const raw = [];
+    const breaks = [];
+    const cuts = [];
+    let at = tpl.from + 1;
+    const part = (to) => {
+      const text = source.slice(at, to);
+      //: Escapes are copied as they are (a template's escapes read as a string's);
+      //: a line continuation is nothing; a bare quote or line break is escaped.
+      cooked.push(`"${text.replace(/\\(?:\r?\n|[\s\S])|"|\r?\n/g, (m) => (m === '"' ? '\\"' : m[0] === "\\" ? (/\n/.test(m) ? "" : m) : "\\n"))}"`);
+      raw.push(`"${text.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, "\\n")}"`);
+      breaks.push("\n".repeat((text.match(/\n/g) || []).length));
+    };
+    for (const c of runDebugKids(tpl)) {
+      if (c.name !== "Interpolation") continue;
+      part(c.from);
+      cuts.push(c);
+      at = c.to;
+    }
+    part(tpl.to - 1);
+    const head = `(__tt([${cooked.join(", ")}], [${raw.join(", ")}])`;
+    if (!cuts.length) {
+      runDebugEdit(edits, tpl.from, tpl.to, head + breaks[0] + ")", 0);
+      return;
+    }
+    runDebugEdit(edits, tpl.from, cuts[0].firstChild.to, `${head}${breaks[0]}, (`, 0);
+    for (let i = 0; i < cuts.length; i++) {
+      const end = cuts[i].lastChild;
+      if (i + 1 < cuts.length) runDebugEdit(edits, end.from, cuts[i + 1].firstChild.to, `)${breaks[i + 1]}, (`, 0);
+      else runDebugEdit(edits, end.from, tpl.to, `)${breaks[i + 1]})`, 0);
+    }
+  }
+
+  //: The function a node is in, for `await`, `yield` and `arguments`.
+  const RUN_DEBUG_FUNCTIONS = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunction", "MethodDeclaration", "Property"]);
+
+  function runDebugEnclosing(node) {
+    for (let p = node.parent; p; p = p.parent) {
+      if (RUN_DEBUG_FUNCTIONS.has(p.name) && (p.name !== "Property" || runDebugKids(p).some((c) => c.name === "ParamList"))) return p;
+    }
+    return null;
+  }
+
+  //: `async` and `*` mean a body run as a coroutine by the worker: the keyword
+  //: goes, and the body becomes `return __async(this, function () { ... });`
+  //: (`__gen` for a generator) on its own lines. An arrow with an expression
+  //: body is wrapped by the arrow's own pass, which asks for `kind`.
+  function runDebugCoroutine(ctx, node, depth) {
+    const kids = runDebugKids(node);
+    const tokens = kids.filter((c) => c.name === "async" || c.name === "Star");
+    if (!tokens.length) return "";
+    const isAsync = tokens.some((c) => c.name === "async");
+    const isGen = tokens.some((c) => c.name === "Star");
+    if (isAsync && isGen) ctx.refuse("async generators", node.from);
+    for (const t of tokens) runDebugEdit(ctx.edits, t.from, t.to, "", 0);
+    const block = kids[kids.length - 1];
+    const helper = isAsync ? "__async" : "__gen";
+    if (block.name === "Block") {
+      runDebugEdit(ctx.edits, block.from + 1, block.from + 1, ` return ${helper}(this, function () {`, 1);
+      runDebugEdit(ctx.edits, block.to - 1, block.to - 1, " });", 0);
+    }
+    return helper;
   }
 
   //: A class as a constructor function, its methods on the prototype:
@@ -513,7 +625,7 @@
   function runDebugLower(source) {
     const CM = window.CM6;
     if (!CM?.javascript) throw new Error("The editor's JavaScript parser is not loaded.");
-    const tree = CM.javascript.javascriptLanguage.parser.parse(source);
+    const { tree, blanks } = runDebugBlank(CM.javascript.javascriptLanguage.parser, source);
     const lineAt = (pos) => source.slice(0, pos).split("\n").length;
     const refuse = (what, pos) => {
       const error = new Error(`Debug cannot step ${what} yet (line ${lineAt(pos)}): Run runs this file as it is.`);
@@ -523,7 +635,7 @@
     const edits = [];
     //: What the pass shares with its helpers: patterns and spreads it lowered,
     //: temporaries, and the line-1 helpers a lowering needs.
-    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], need: {}, done: new Set() };
+    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], done: new Set(), blanks };
     let depth = 0;
     let dom = false;
     //: The classes being lowered, innermost last; helpers a lowering needs on
@@ -531,7 +643,6 @@
     const classes = [];
     const powDone = new Set();
     let needNc = false;
-    let needForOf = false;
     let loops = 0;
     tree.iterate({
       enter(ref) {
@@ -540,7 +651,7 @@
         const text = () => source.slice(ref.from, ref.to);
         //: The parser recovers from what it cannot read (an arrow whose parameter
         //: is a pattern with a default); lowering that tree would write garbage.
-        if (ref.type.isError) refuse("syntax the editor's parser could not read here (an arrow parameter that is a pattern with a default value?)", ref.from);
+        if (ref.type.isError) refuse("syntax the editor's parser could not read here", ref.from);
         if (Object.prototype.hasOwnProperty.call(RUN_DEBUG_REFUSED, name) && !ctx.handled.has(ref.from)) refuse(RUN_DEBUG_REFUSED[name], ref.from);
         if (name === "Spread" && !ctx.handled.has(ref.from)) refuse("spread and rest (...) here", ref.from);
         if ((name === "ObjectPattern" || name === "ArrayPattern") && !ctx.handled.has(ref.from)) refuse("destructuring here", ref.from);
@@ -552,10 +663,55 @@
           if (parts.some((c) => c.name === "Spread")) runDebugSpreadList(ctx, ref.node, parts[0], parts[parts.length - 1], "[].concat(", ")", depth);
         }
         if (name === "CallExpression") runDebugSpreadCall(ctx, ref.node, depth);
+        if (name === "NewExpression") runDebugSpreadNew(ctx, ref.node, depth);
+        if (name === "TaggedTemplateExpression") runDebugTagged(ctx, ref.node, depth);
         if (name === "UpdateOp" && /^(?:\?\?|&&|\|\|)=$/.test(text())) refuse("logical assignment", ref.from);
         if (name === "UpdateOp" && text() === "**=") refuse("the ** operator", ref.from);
         if (name === "Number" && /[n_]/i.test(text()) && !/^0x/i.test(text())) refuse("BigInt and numeric separators", ref.from);
         if (name === "VariableName" && /^(?:document|window)$/.test(text())) dom = true;
+        if (RUN_DEBUG_FUNCTIONS.has(name) && name !== "ArrowFunction") runDebugCoroutine(ctx, ref.node, depth);
+        if (name === "AwaitExpression" || name === "YieldExpression" || (name === "VariableName" && text() === "yield")) {
+          const fn = runDebugEnclosing(ref.node);
+          const kids = fn ? runDebugKids(fn) : [];
+          const tag = (n) => kids.some((c) => c.name === n);
+          //: The keyword is deleted after the opening is put in, so another
+          //: construct opening at the same place (`await a ?? b`) stays outside.
+          const open = (at, text, rank) => {
+            runDebugEdit(edits, at, at, text, rank);
+          };
+          if (name === "AwaitExpression") {
+            if (!tag("async")) refuse(fn ? "await outside an async function" : "await at the top level of a file", ref.from);
+            open(ref.from, "__yield(", depth);
+            runDebugEdit(edits, ref.from, ref.from + 5, "", 1e6);
+            runDebugEdit(edits, ref.to, ref.to, ")", -depth);
+          } else {
+            if (!tag("Star") || (name === "VariableName" && !fn)) refuse("yield outside a generator", ref.from);
+            if (name === "VariableName") {
+              open(ref.from, "__yield()", depth);
+              runDebugEdit(edits, ref.from, ref.to, "", 1e6);
+            } else {
+              //: The parse tree ends a `yield` at its first operand (`yield a + b`
+              //: is `(yield a) + b` to it); it takes the whole expression.
+              const star = runDebugKids(ref.node).find((c) => c.name === "Star");
+              let top = ref.node;
+              let up = 0;
+              while (top.parent && top.parent.from === top.from && /^(?:BinaryExpression|ConditionalExpression|PostfixExpression|MemberExpression|CallExpression)$/.test(top.parent.name)) {
+                top = top.parent;
+                up += 1;
+              }
+              open(ref.from, star ? "__yieldStar(" : "__yield(", depth - up - 0.5);
+              runDebugEdit(edits, ref.from, star ? star.to : ref.from + 5, "", 1e6);
+              runDebugEdit(edits, top.to, top.to, ")", -(depth - up - 0.5));
+            }
+          }
+        }
+        if (name === "VariableName" && text() === "arguments") {
+          const fn = runDebugEnclosing(ref.node);
+          let at = fn;
+          while (at && at.name === "ArrowFunction") at = runDebugEnclosing(at);
+          if (at && runDebugKids(at).some((c) => c.name === "async" || c.name === "Star")) refuse("arguments inside an async function or a generator", ref.from);
+        }
+        if (name === "await" && ref.node.parent?.name === "ForStatement") refuse("for await loops", ref.from);
         if (name === "let" || name === "const") runDebugEdit(edits, ref.from, ref.to, "var", 0);
         if (name === "ParamList" && !ctx.done.has(ref.from)) {
           const pre = runDebugParams(ctx, ref.node);
@@ -566,7 +722,7 @@
         }
         if (name === "Property") {
           const kids = [];
-          for (let c = ref.node.firstChild; c; c = c.nextSibling) kids.push(c);
+          for (let c = ref.node.firstChild; c; c = c.nextSibling) if (c.name !== "async" && c.name !== "Star") kids.push(c);
           if (kids[0]?.name === "[") refuse("computed property names", ref.from);
           const def = kids[0]?.name === "PropertyDefinition" ? kids[0] : null;
           if (def && kids.length === 1) runDebugEdit(edits, def.to, def.to, `: ${source.slice(def.from, def.to)}`, 0);
@@ -576,7 +732,8 @@
           const kids = [];
           for (let c = ref.node.firstChild; c; c = c.nextSibling) kids.push(c);
           const arrow = kids.find((c) => c.name === "Arrow");
-          const params = kids[0];
+          const params = kids.find((c) => c.name === "ParamList");
+          const co = runDebugCoroutine(ctx, ref.node, depth);
           const body = kids[kids.length - 1];
           if (!arrow || !params || !body || body === arrow) refuse("this arrow function", ref.from);
           //: `x => ...` is a ParamList too, without its brackets.
@@ -596,8 +753,8 @@
           if (body.name === "Block") {
             if (usesThis) runDebugEdit(edits, ref.to, ref.to, ".bind(this)", -depth);
           } else {
-            runDebugEdit(edits, body.from, body.from, `{ ${prelude ? `${prelude} ` : ""}return (`, depth);
-            runDebugEdit(edits, body.to, body.to, `); }${usesThis ? ".bind(this)" : ""}`, -depth);
+            runDebugEdit(edits, body.from, body.from, `{ ${prelude ? `${prelude} ` : ""}return ${co ? `${co}(this, function () { return (` : "("}`, depth);
+            runDebugEdit(edits, body.to, body.to, `); }${co ? "); }" : ""}${usesThis ? ".bind(this)" : ""}`, -depth);
           }
         }
         if (name === "BinaryExpression") {
@@ -645,18 +802,17 @@
           const loop = ref.node.parent;
           const body = loop ? runDebugKids(loop).slice(-1)[0] : null;
           if ((!target && !pattern) || !iterable || !body || body === ref.node) refuse("this for...of loop", ref.from);
-          needForOf = true;
           loops += 1;
-          const i = `__i${loops}`;
-          const a = `__a${loops}`;
-          let pick = target ? `var ${source.slice(target.from, target.to)} = ${a}[${i}];` : "";
+          const it = `__it${loops}`;
+          const r = `__r${loops}`;
+          let pick = target ? `var ${source.slice(target.from, target.to)} = ${r}.value;` : "";
           if (pattern) {
             const b = runDebugBind(ctx, pattern);
             runDebugMark(ctx, pattern);
-            pick = `var ${[runDebugHead(ctx, b, `${a}[${i}]`), ...b.list].join(", ")};`;
+            pick = `var ${[runDebugHead(ctx, b, `${r}.value`), ...b.list].join(", ")};`;
           }
-          runDebugEdit(edits, ref.from, iterable.from, `(var ${i} = 0, ${a} = __forOf(`, 0);
-          runDebugEdit(edits, iterable.to, ref.to, `); ${i} < ${a}.length; ${i}++)`, 0);
+          runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __iter(`, 0);
+          runDebugEdit(edits, iterable.to, ref.to, `), ${r}; !(${r} = ${it}.next()).done; )`, 0);
           if (body.name === "Block") {
             runDebugEdit(edits, body.from + 1, body.from + 1, ` ${pick}`, 0);
           } else {
@@ -679,7 +835,7 @@
           const parentName = ref.node.parent?.name;
           if (parentName !== "CallExpression") refuse("super property access", ref.from);
         }
-        if (name === "TemplateString") {
+        if (name === "TemplateString" && !ctx.handled.has(ref.from)) {
           let at = ref.from + 1;
           runDebugEdit(edits, ref.from, ref.from + 1, '("', depth);
           for (let c = ref.node.firstChild; c; c = c.nextSibling) {
@@ -703,12 +859,6 @@
     });
     if (needNc) runDebugEdit(edits, 0, 0, "var __nc; ", -1e9);
     if (ctx.assignTemps.length) runDebugEdit(edits, 0, 0, `var ${ctx.assignTemps.join(", ")}; `, -1e9 + 2);
-    if (ctx.need.spr) runDebugEdit(edits, 0, 0, 'function __spr(v) { if (v == null || typeof v.length !== "number") throw new TypeError("Debug steps spread over an array or a string only"); return Array.prototype.slice.call(v); } ', -1e9 + 3);
-    if (ctx.need.rest) runDebugEdit(edits, 0, 0, "function __rest(o, ks) { var r = {}; for (var k in o) { if (Object.prototype.hasOwnProperty.call(o, k) && ks.indexOf(k) < 0) r[k] = o[k]; } return r; } ", -1e9 + 4);
-    if (ctx.need.ospr) runDebugEdit(edits, 0, 0, "function __ospr(t) { for (var i = 1; i < arguments.length; i++) { var s = arguments[i]; if (s != null) { for (var k in s) { if (Object.prototype.hasOwnProperty.call(s, k)) t[k] = s[k]; } } } return t; } ", -1e9 + 5);
-    if (needForOf || ctx.need.forOf) {
-      runDebugEdit(edits, 0, 0, 'function __forOf(v) { if (v == null || typeof v.length !== "number") throw new TypeError("Debug steps for...of over an array or a string only"); return v; } ', -1e9 + 1);
-    }
     //: Applied in one pass, front to back. At one place the ranks order them:
     //: an inner construct's closing (most negative) first, then an outer one's,
     //: then a plain replacement (0), then the openings, outer before inner.
