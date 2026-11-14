@@ -296,7 +296,7 @@ def update_object(
     #: **A delete can land between the read above and the write** (an undo of a
     #: just-added map topic against its own late PUT): the UPDATE then matches no
     #: row, or the refresh finds none. That is "no such item", the same 404 an
-    #: unknown id gets, not a 500 (L-whiteboard-18).
+    #: unknown id gets, not a 500 (L-whiteboard-50).
     try:
         _save_object(db, obj, body)
         db.commit()

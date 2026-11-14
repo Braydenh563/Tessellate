@@ -940,7 +940,7 @@
       const payload = toPayload(item);
       const links = wbLinksTouching(entry.kind, entry.id);
       //: Marked first: a save of this item still on its way (a topic just added, then undone) is dropped by
-      //: `wbSaveObject` instead of racing the DELETE into a stale write (L-whiteboard-18).
+      //: `wbSaveObject` instead of racing the DELETE into a stale write (L-whiteboard-50).
       item._undoing = true;
       let res;
       try {
