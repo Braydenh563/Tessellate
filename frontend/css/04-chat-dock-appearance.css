@@ -3863,6 +3863,9 @@ span > .chip {
 .doc-sidebar {
   container: doc-sidebar / inline-size;
 }
+.doc-sidebar .doc-head-more {
+  display: none;
+}
 /* The Outline tab's "This document" head (the owner, 2026-11-11: "the ? tooltip isnt aligned to the left or
    right and is cut off at the top"). The collapse toggle sits in the tab strip above this tab, so the head
    needs no lane for it: the ? ends the row (it floated 38px short of the right edge), and the head starts a

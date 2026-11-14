@@ -27,8 +27,7 @@ def test_a_narrow_sidebar_sheds_the_word_then_folds_the_icons_into_a_kebab():
     fold = DOCK.split("@container doc-sidebar (max-width: 16rem)", 1)[1].split("\n}\n", 1)[0]
     assert ".toolbar-word" in fold
     assert "#doc-new-template" in fold and "#doc-new-diagram" in fold and ".doc-head-more" in fold
-    # The kebab's resting rule moved to library-lazy.css with the Library bundle (L308).
-    assert ".doc-sidebar .doc-head-more {\n  display: none;" in LAZY
+    assert ".doc-sidebar .doc-head-more {\n  display: none;" in DOCK
 
 
 def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():
