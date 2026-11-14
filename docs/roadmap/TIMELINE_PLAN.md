@@ -297,7 +297,7 @@ with a coarse pointer (`isMobile`, `hasTouch`; `(pointer: coarse)` and
 `draggable` (125 by 24 px); the dragstart, dragover and drop path moves it one
 day (Fri 13 to Sat 14, time kept, toast "Moved ... to Sat, Nov 14, 3:30 PM").
 The browser's own long-press-to-drag is the one step emulation cannot press;
-that is LEDGER L910.
+that is BACKLOG L910 (a real tablet).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
