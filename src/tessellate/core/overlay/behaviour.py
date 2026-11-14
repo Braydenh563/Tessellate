@@ -746,6 +746,34 @@ FLOW_ARR_EASE = 2.4
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
 FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("dangle", 0.95, 1.1), ("kick", 1.0, 1.7), ("meditate", 0.5, 0.55), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
+#: The lean each desk frame bakes into its lower body, degrees off the torso, + the hem to the right of the frame as
+#: shipped (facing right): the app's first row of the frame's lower state, `0.4 * (skew - rot)` (atlas-life.js
+#: `ATLAS_LOWER_STATES`, decision 7 of the UI modernisation plan), by the start of the frame's name, longest first;
+#: and the most px a strand's tip leans toward it (its middle 0.7 of that), what is left of `FLOW_LEAN` on that family's
+#: pictures with the largest rise, whole eighths (`FLOW_Q`) so the rounding never passes it, to 3.84 to 3.95 degrees
+#: in all (tests/test_flow_baked_shear_l_ui_150.py, the frames of 2026-11-14). A clamp, not a
+#: scale: the ordinary sway keeps its range and only a throw or a gust stops short (L-ui-modernisation-150: the two
+#: added to 4.22 degrees).
+FLOW_BAKED = (
+    ("hang_sloth", -2.4, 1.625), ("back_float", -2.4, 2.0), ("meditate", -2.4, 2.0), ("tumble", 3.2, 0.875),
+    ("dangle", -1.8, 3.25), ("sleep", -2.4, 1.75), ("stand", 1.8, 2.375), ("blink", 1.8, 2.375), ("look", 1.8, 2.375),
+    ("idle", 1.8, 2.375), ("walk", 1.8, 2.375), ("hop", 1.8, 2.875), ("land", 1.8, 2.5), ("card", 1.8, 2.375),
+    ("sit", -2.4, 1.625), ("held", 6.0, 0.0), ("fall", 3.2, 1.125), ("kick", -1.8, 3.0), ("hang", -1.4, 3.25),
+    ("lean", 1.6, 3.375), ("wave", 3.6, 0.375),
+)
+#: A side with no baked lean: further than any strand reaches (the follow-through's cap and the posed worst).
+FLOW_FREE = 16.0
+#: A strand's middle may lean this share of its tip's limit.
+FLOW_BAKED_MID = 0.7
+
+
+def flow_baked(frame: str) -> tuple[float, float]:
+    """The lean `frame` bakes into its lower body, degrees, and the most px a strand leans toward it (`FLOW_BAKED`):
+    (0, `FLOW_FREE`) for a frame with none."""
+    row = next((r for r in FLOW_BAKED if frame.startswith(r[0])), None)
+    return (row[1], row[2]) if row else (0.0, FLOW_FREE)
+
+
 #: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
 #: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A
 #: state names the lower body's own sway and offset: it takes the place of the frame's `FLOW_POSE` row while it lasts, and
@@ -942,6 +970,7 @@ class Flow:
         # The pose's reach and speed, eased; `skew` is the time the speed has added, so a change of speed is no jump.
         self.k_reach, self.k_speed, self.skew, self.seen = 1.0, 1.0, 0.0, None
         self.k_tip, self.k_rise = 0.0, 0.0  # the lower state's offsets, eased (`FLOW_LOWER`)
+        self.k_lim = [FLOW_FREE, FLOW_FREE]  # the most px a tip leans right and left on screen, eased (`FLOW_BAKED`)
 
     def reach(self, i: int) -> float:
         """How far strand `i` sways: the outer ones (the streams) most."""
@@ -1012,6 +1041,12 @@ class Flow:
         if lower in FLOW_LOWER:
             reach, speed, tip, rise = FLOW_LOWER[lower]
             tip *= side
+        #: The frame's own lean on screen (mirrored facing left, `side` = -facing) limits the side it leans to; the first
+        #: read takes it at once, after that it eases with the rest.
+        baked, lim = flow_baked(frame)
+        want = (lim if -side * baked > 0 else FLOW_FREE, lim if -side * baked < 0 else FLOW_FREE)
+        k = 1.0 if self.seen is None else 1.0 - math.exp(-min(0.25, max(0.0, now - self.seen)) / FLOW_POSE_EASE)
+        self.k_lim = [a + (b - a) * k for a, b in zip(self.k_lim, want)]
         dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
         self.seen = now
         k = 1.0 - math.exp(-dt / FLOW_POSE_EASE)
@@ -1040,6 +1075,16 @@ class Flow:
                 share = min(share, (math.copysign(cap, fx) - g) / fx)
         return max(0.0, share)
 
+    @classmethod
+    def _baked_clamp(cls, tip: float, mid: float, fx: float, hi: float, lo: float) -> tuple[float, float]:
+        """A strand's tip and middle with the follow-through `fx` folded in, inside what the frame's own lean leaves
+        (`hi` right, `lo` left, px; L-ui-modernisation-150)."""
+        tip, mid = min(hi, max(lo, tip)), min(FLOW_BAKED_MID * hi, max(FLOW_BAKED_MID * lo, mid))
+        fx *= cls._lean_share(tip, 4 * mid - tip, fx)
+        room = min(hi - tip, 2 * (FLOW_BAKED_MID * hi - mid)) if fx > 0 else max(lo - tip, 2 * (FLOW_BAKED_MID * lo - mid))
+        fx = min(fx, max(0.0, room)) if fx > 0 else max(fx, min(0.0, room))
+        return tip + fx, mid + fx * 0.5
+
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
@@ -1052,6 +1097,8 @@ class Flow:
             self.pose(frame, t, lower, side)
         t = t + self.t0 + (self.skew if frame else 0.0)
         reach = self.k_reach if frame else 1.0
+        #: What the frame's own lean leaves of 4 degrees on each side (`pose`, L-ui-modernisation-150), px.
+        hi, lo = (self.k_lim[0], -self.k_lim[1]) if frame else (FLOW_FREE, -FLOW_FREE)
         out: list[int] = []
         for i in range(FLOW_BANDS):
             fx, fy = self.pos[i]
@@ -1059,8 +1106,7 @@ class Flow:
             ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0) + (self.k_tip if frame else 0.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0) + (self.k_rise if frame else 0.0)
             tip = self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax
             mid = self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6
-            fx *= self._lean_share(tip, 4 * mid - tip, fx)
-            tip, mid = tip + fx, mid + fx * 0.5
+            tip, mid = self._baked_clamp(tip, mid, fx, hi, lo)
             drop = self.rise(i, t, calm) * reach + ay + fy
             drop += self.breath_drop(i, breath if frame else None, reach, calm)
             w = math.tau * t / (self.glint_periods[i] * (FLOW_CALM_SLOW if calm else 1.0)) + i * 1.3

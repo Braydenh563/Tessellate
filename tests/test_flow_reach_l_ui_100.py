@@ -52,10 +52,15 @@ def test_source_text_the_ambient_sway_is_about_two_and_a_half_degrees(look: str)
 @pytest.mark.parametrize("look", LOOKS)
 def test_source_text_the_posed_worst_stays_under_four_degrees(look: str) -> None:
     """Source text: "the angle test widened to the pose ... worst cases, still under 4": the arrangement's lean on the
-    sway's share, plus the largest lean a lower-body state adds (`FLOW_LOWER`), every strand at once."""
+    sway's share, plus the largest lean a lower-body state adds (`FLOW_LOWER`), every strand at once, off the torso:
+    the stand's baked lean counts (L-ui-modernisation-150): toward it the most `Flow` lets a strand lean, away from it
+    all of the sway with the baked lean taken back."""
     lean = max(v[2] for v in bh.FLOW_LOWER.values())
-    rise = max(v[3] for v in bh.FLOW_LOWER.values())
+    rise = bh.FLOW_RISE + bh.FLOW_ARR_RISE + max(v[3] for v in bh.FLOW_LOWER.values())
     tip = bh.FLOW_TIP * bh.FLOW_ARR_SWAY + bh.FLOW_ARR_TIP + lean
     mid = bh.FLOW_TIP * bh.FLOW_ARR_SWAY * 0.65 + bh.FLOW_ARR_TIP * 0.6 + lean
-    a = _angle(look, tip, mid, bh.FLOW_RISE + bh.FLOW_ARR_RISE + rise)
-    assert a < 4.0, a
+    baked, lim = bh.flow_baked("stand")
+    toward = _angle(look, min(tip, lim), min(mid, bh.FLOW_BAKED_MID * lim), rise)
+    away = _angle(look, tip, mid, rise)
+    assert toward + abs(baked) < 4.0, (toward, baked)
+    assert away - abs(baked) < 4.0, (away, baked)
