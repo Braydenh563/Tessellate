@@ -92,3 +92,18 @@ def test_a19_a_definition_is_the_sentence_that_says_is_a():
 def test_a6_from_when_to_when_gives_the_span_and_the_count_of_the_dated_notes(ask):
     said = ask("from when to when did I write about running")
     assert said.startswith("You have three notes about running, 1 to 25 October."), said
+
+
+def test_a17_then_and_now_quotes_the_old_claim_and_the_current_one(client, session, monkeypatch):
+    from tessellate.core.database import Entry
+    from tessellate.entry import manager
+
+    seed.seed(session)
+    made = manager.create_entry(session, "# Austria trip\n\nWe travel to Vienna in June by train.", category_name="Travel", tags=[])
+    session.commit()
+    manager.record_revision(session, made)
+    manager.update_entry(session, made, content="# Austria trip\n\nWe travel to Vienna in August by plane.")
+    session.commit()
+    said = seed.asker(client, monkeypatch)("what did I say about the Austria trip then and now")[0]
+    assert "by train" in said and "by plane" in said and "Then" in said and "Now" in said, said
+    assert "three notes mention" not in said

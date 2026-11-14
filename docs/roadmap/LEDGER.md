@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 129 | 2 | 59 | 204 |
+| chat | 0 | 75 | 128 | 2 | 59 | 203 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 198 | 2 | 183 | 1006 |
+| all | 359 | 449 | 197 | 2 | 183 | 1005 |
 
 ## graph
 
@@ -81,7 +81,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-88** `chat` partly, S: A11: as-of from a parameter only (plan). From CHAT_PLAN.md:1244. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/timetravel.py Measured 2026-11-14: 'what changed this week' is answered from note dates (ten notes made, grouped by day), but as_of still comes from the request parameter in routes_chat, not from 'what did my plan say last month'. Remaining step: read the window through recognise_windows in routes_chat and pass it as as_of to timetravel.rewind.
 - [ ] **L-chat-92** `chat` partly, S: A15: six rules not all verified. From CHAT_PLAN.md:1248. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_voice.py:481 _patterns Measured 2026-11-14: recurrence (tests/test_uax_probes_a_1114.py::test_a15) is built and dated; streak, drift, contrast, load, time of day, first and last mention, co-occurrence and silence are not asked of the composer. Remaining step: one reader per rule in composer_voice._patterns, each with a measured dated line.
 - [ ] **L-chat-93** `chat` partly, S: A16: one Measure shape not found. From CHAT_PLAN.md:1249. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/notebook_stats.py Measured 2026-11-14: counts print as lines (test_a16) but no Measure(kind, value, derived_from) type exists; notebook_stats.StatAnswer.facts is the nearest. Remaining step: add Measure in notebook_stats, have the 15 handlers return it, and the eval re-derive from derived_from.
-- [ ] **L-chat-94** `chat` partly, S: A17: then-and-now line unverified. From CHAT_PLAN.md:1250. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/timetravel.py Measured 2026-11-14: 'what did I say about the trip then and now' answers 'three notes mention the trip then and one mentions now' (a word split), not an old and a current claim from timetravel.then_and_now. Remaining step: route then-and-now phrasing to timetravel.then_and_now in composer_small and render one line quoting both.
 - [ ] **L-chat-95** `chat` partly, S: A18: stats inside a topic or window missing. From CHAT_PLAN.md:1251. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/notebook_stats.py Measured 2026-11-14: 'how many gym notes this month' answers '2 notes are tagged gym' (a flat tag count, no window). Remaining step: notebook_stats.answer takes the planner's window and topic and counts entries by created_at in the window; test first.
 - [ ] **L-chat-99** `chat` open, S: A23: entity card aggregate (guess from absence). From CHAT_PLAN.md:1256. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'tell me about Priya' gives the three sentences that name her and the note count (A10), but no first and last mention date and no related entities by co-occurrence. Remaining step: an entity-card block in composer_notes (first and last dated mention, count, top 2 sentences, co-occurring names).
 - [ ] **L-chat-105** `chat` partly, S: X13: variables and quick-adds unverified. From CHAT_PLAN.md:1280. Evidence: Recount 2026-11-14 (audit, verify in code first): template variables not verified Measured 2026-11-14: no {date} {weekday} {week} {title} {n} filler exists in the template path and no saved-phrasing chip. Remaining step: a fill(template, now) function by rule beside the four built-in templates, a test first, then the saved phrasing with slots as a chip.

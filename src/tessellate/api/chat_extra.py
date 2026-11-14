@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, composer_web, realise
+from tessellate.ai import activity, composer_cancel, composer_thennow, composer_extra, composer_suggest, composer_talk, composer_web, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
@@ -128,6 +128,8 @@ def _early_events(session: Session, typed: str, history: list[dict], now: dateti
         return dropped
     if (undone := composer_cancel.undo_reply(session, typed, history)) is not None:
         return undone
+    if (changed := composer_thennow.answer(session, typed)) is not None:
+        return [{"type": "answer", "delta": changed}]
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
     if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
         return talked
