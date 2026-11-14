@@ -591,7 +591,6 @@ EXEMPT: dict[str, str] = {
     "ai-tools.js:applyFeatureModel": "settings: a setting with its own Reset or the settings history",
     "chat-tasks.js:renderTasks": "job: starts or stops work or a model; deletes no user data",
     "improve-panel.js:runImprove": "read: reads or asks the model; shows a result, writes nothing",
-    "ai-tools.js:saveUiState": "settings: a setting with its own Reset or the settings history",
     "ai-tools.js:wireReindexButton": "job: starts or stops work or a model; deletes no user data",
     "app-palette.js:openPalette": "telemetry: telemetry or a background warm-up; no user data",
     "app.js:lockNow": "auth: sign-in, recovery or lock; no user data",
@@ -873,4 +872,5 @@ def test_every_preferences_write_reaches_the_history_wrapper():
     assert "settingsRepaintDock(body)" in data, "an Undo of a dock switch must repaint it"
     #: A write that opts out has its own Undo, is the Undo's own write, or is a setup step.
     opted = {p.name for p in JS.glob("*.js") if "noHistory" in p.read_text(encoding="utf-8")}
-    assert opted == {"ai-tools.js", "dashboard.js", "documents-prose.js", "first-run.js", "onboarding.js", "settings-data.js", "status.js"}
+    #: Not ai-tools.js: its `ui_state` mirror is how a look change is noted (L-world-class-49).
+    assert opted == {"dashboard.js", "documents-prose.js", "first-run.js", "onboarding.js", "settings-data.js", "status.js"}

@@ -1221,6 +1221,16 @@ async function settingsHistoryApply(change, side) {
       if (bgArtOn()) startBgArt();
       else stopBgArt();
       renderAppearance();
+      //: The Undo's own copy to the notebook, sent now and marked, so the
+      //: debounced mirror has nothing left to send. A 2.5 s busy window used to
+      //: cover it and swallowed the next real change too (L-world-class-49).
+      clearTimeout(uiStateSaveTimer);
+      if (uiStateSeeded) {
+        const state = uiStatePayload();
+        await apiJson("/preferences", { method: "PUT", noHistory: true, silent: true, body: JSON.stringify({ ui_state: state }) });
+        uiStateOnServer = JSON.stringify(state);
+        uiStateRememberSynced(state);
+      }
     } else if (kept.kind === "recents") {
       await ensureModule("searchSuggest");
       if (side === "old") searchRecentRestore(kept.data.before);
@@ -1242,10 +1252,7 @@ async function settingsHistoryApply(change, side) {
       else helpChatNewChat();
     }
   } finally {
-    //: A look is mirrored to the notebook 800 ms after it is written: that PUT
-    //: is this Undo's own, not a new change.
-    if (kept.kind === "look") setTimeout(() => (settingsHistoryBusy = false), 2500);
-    else settingsHistoryBusy = false;
+    settingsHistoryBusy = false;
   }
   kept.undone = side === "old";
   if (held) {

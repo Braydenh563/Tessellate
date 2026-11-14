@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2793, CSS sections 525, backend routes 720, backend modules 11027, test files 2856, tests 22610, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8509, frontend ids 2793, CSS sections 525, backend routes 720, backend modules 11027, test files 2856, tests 22611, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8509)
 
@@ -1034,17 +1034,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `applyFeatureModel` | frontend/js/ai-tools.js:359 |
-| `applyPalette` | frontend/js/ai-tools.js:996 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:930 |
+| `applyPalette` | frontend/js/ai-tools.js:995 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:929 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:353 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:396 |
 | `featureModelRow` | frontend/js/ai-tools.js:335 |
 | `featureModelState` | frontend/js/ai-tools.js:343 |
 | `fillModelSelect` | frontend/js/ai-tools.js:60 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:965 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:964 |
 | `mirroredUiKeys` | frontend/js/ai-tools.js:742 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:215 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:951 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:950 |
 | `renderAutonomousModelPicker` | frontend/js/ai-tools.js:532 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:140 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:93 |
@@ -1054,13 +1054,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:260 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:283 |
 | `saveUiState` | frontend/js/ai-tools.js:800 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:878 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:877 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:430 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
 | `uiStateFingerprint` | frontend/js/ai-tools.js:789 |
 | `uiStatePayload` | frontend/js/ai-tools.js:776 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:919 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:846 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:918 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:845 |
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:495 |
 | `wireReindexButton` | frontend/js/ai-tools.js:554 |
 
@@ -7528,7 +7528,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
 | `renderSettingsClear` | frontend/js/settings-data.js:758 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1329 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1336 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
 | `restoreGuideTurns` | frontend/js/settings-data.js:938 |
@@ -7547,10 +7547,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsHistoryEntry` | frontend/js/settings-data.js:1138 |
 | `settingsHistoryFind` | frontend/js/settings-data.js:1168 |
 | `settingsHistoryLoad` | frontend/js/settings-data.js:1127 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1281 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1295 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1288 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1302 |
 | `settingsHistorySave` | frontend/js/settings-data.js:1131 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1264 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1271 |
 | `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
 | `undoImport` | frontend/js/settings-data.js:546 |
 
@@ -28296,7 +28296,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22610)
+## Tests (22611)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30618,7 +30618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_panes_indexed_1111.py | 1 |
 | tests/test_settings_path_wording.py | 1 |
 | tests/test_settings_prefs_split.py | 3 |
-| tests/test_settings_recent_changes.py | 10 |
+| tests/test_settings_recent_changes.py | 11 |
 | tests/test_settings_reset_gaps.py | 3 |
 | tests/test_settings_row_bar.py | 7 |
 | tests/test_settings_row_heads.py | 2 |
@@ -31574,14 +31574,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:665 |
+| Needs hardware | docs/roadmap/LEDGER.md:664 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:655 |
+| Owner calls | docs/roadmap/LEDGER.md:654 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31761,7 +31761,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:802 |
+| Plan session briefs | docs/roadmap/LEDGER.md:801 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31815,25 +31815,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:818 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:902 |
+| chat | docs/roadmap/LEDGER.md:817 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:901 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:842 |
-| general | docs/roadmap/LEDGER.md:615 |
+| documents | docs/roadmap/LEDGER.md:841 |
+| general | docs/roadmap/LEDGER.md:614 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:806 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:914 |
+| graph | docs/roadmap/LEDGER.md:805 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:913 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:854 |
+| mindmap | docs/roadmap/LEDGER.md:853 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:878 |
+| timeline | docs/roadmap/LEDGER.md:877 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:866 |
+| ui-modernisation | docs/roadmap/LEDGER.md:865 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:830 |
+| whiteboard | docs/roadmap/LEDGER.md:829 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:890 |
+| world-class | docs/roadmap/LEDGER.md:889 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
