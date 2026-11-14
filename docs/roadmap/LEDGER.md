@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 94 | 38 | 0 | 18 | 262 |
+| world-class | 130 | 93 | 38 | 0 | 18 | 261 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 486 | 109 | 2 | 129 | 1148 |
+| all | 553 | 485 | 109 | 2 | 129 | 1147 |
 
 ## graph
 
@@ -496,7 +496,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L578** `world-class` open, M: Recorder: keep timed lines in saved transcripts (transcribe-meeting returns text only). From OPEN.md:1619; OPEN.md:2623. Evidence: No transcribe-meeting route in src now (grep none); core/recordings.py transcription_of:111 holds timed data
 - [ ] **L579** `world-class` open, M: Let notes link or embed a recording and make search find recordings. From OPEN.md:1621; OPEN.md:2739. Evidence: No recording link or search hits in core/search.py or routes_search; only entry_id on Recording
 - [ ] **L580** `world-class` open, M: Replace deprecated ScriptProcessorNode in live captions (AudioWorklet blocked by CSP). From OPEN.md:1630; OPEN.md:2767. Evidence: captions.js:239 still createScriptProcessor, kept deliberately (comment at :237); CSP worker-src is 'self' only
-- [ ] **L581** `world-class` open, M: Route whole-reading delete from lightbox and gallery through the bin. From OPEN.md:1632; OPEN.md:2846. Evidence: library.js:9885 and :10073 still send analyseMediaRow(..., {text: next}) with empty text; only workspace paths use ocrBinField (:8598)
 - [ ] **L582** `world-class` open, M: Add more translation pairs and a pair picker beyond English to Spanish. From OPEN.md:2749. Evidence: translate-worker.js pair-based; no picker built
 - [ ] **L583** `world-class` open, M: Sweep the remaining literal toast("...", true) error calls so each carries a what-to-do action instead of the default Open the logs. From OPEN.md:4247; OPEN.md:1389; OPEN.md:1396; OPEN.md:3465. Evidence: toast action support exists (status.js:347); per-error call-site sweep not done.
 - [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
