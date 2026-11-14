@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 28 | 1 | 0 | 2 | 29 |
+| documents | 0 | 29 | 1 | 0 | 2 | 30 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 583 | 129 | 2 | 165 | 1195 |
+| all | 483 | 584 | 129 | 2 | 165 | 1196 |
 
 ## graph
 
@@ -350,11 +350,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L891** `documents` open, M: Docs audit needing real print dialog, clipboard image paste, phone IME, Safari/Firefox, screen reader, harper cost. From audit-1102-docs.md 6. Evidence: Needs real browsers/devices and a human. Device-only remainder: real print dialog, Safari, screen reader, phone IME; Firefox, harper cost and image paste run here.
 - [ ] **L893** `documents` open, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human. Device-only remainder: real inference, Windows, screen reader; >10 block perf, light 390, touch emulation and print to PDF run here.
 - [ ] **L894** `documents` open, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost. Device-only remainder: a Windows display for ClearType; the 12 ms per key CodeMirror cost is measured here.
-- [ ] **L-documents-5** `documents` open, M: Have the local model summarise a document's revisions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:847. Evidence: version history exists, but there is no model-written account of the revisions; lines 847 to 849 are untracked. Unbuilt feature, not a hardware item; a model is needed only to judge summary quality.
 - [ ] **L-documents-6** `documents` open, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open. Doable here: a LanguageTool server can be installed and run here if its download host is allowed.
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
+- [ ] **L-documents-86** `documents` open, S: History summary: tell the reader when the model timed out, and let a slow local model have longer than 45 seconds for it. From L-documents-5 real-model check. Evidence: Cold first call to the 1.5B model passed bounded_chat's 45 s limit (MODEL_SECONDS) and fell back to the counts; warm it answered in about 30 s.
+- [ ] **L-documents-87** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
 
 ## mindmap
 
