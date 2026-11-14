@@ -983,6 +983,17 @@ def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
     return days[:FRAME_NOTES]
 
 
+#: The question's own words inside or at the edge of a subject span: "book am I reading" holds
+#: "am I", "left on my todo list" starts with a state word and "on my" (L125).
+_SPAN_VERB = re.compile(r"\b(?:am|is|are|do|does|did|have|has|was|were|will|can|could|would)\s+(?:i|we|you)\s+", re.I)
+_SPAN_EDGE = re.compile(r"^(?:(?:left|on|in|my|the|of|about|for)\s+)+", re.I)
+
+
+def _noun_span(span: str) -> str:
+    """A subject span as a noun phrase: no question verb inside it, no leading state word."""
+    return _SPAN_EDGE.sub("", _SPAN_VERB.sub("", span)).strip()
+
+
 def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # noqa: ANN001  # a date
     """What a composed answer showed, sent with it and echoed back by the page with the next
     turn: the notes it used (ids, at most five), the thing and person it was about, the
@@ -994,7 +1005,7 @@ def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # n
         return {}
     by_id = {n.get("source_id", n.get("id")): n for n in notes or []}
     lead = by_id.get(ids[0]) or {}
-    span = _asked_span(asked, subject_terms(asked)).strip(" “”\"'") if asked else ""
+    span = _noun_span(_asked_span(asked, subject_terms(asked)).strip(" “”\"'")) if asked else ""
     text = str(result.get("text") or "")
     return {
         "note_ids": ids,

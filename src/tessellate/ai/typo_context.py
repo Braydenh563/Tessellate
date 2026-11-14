@@ -26,6 +26,7 @@ from typing import NamedTuple
 from tessellate.core.lazyre import lazy_compile
 
 _WORD = lazy_compile(r"[^\W\d_]{3,}")
+_PAIR_WEIGHT = 1.0
 _TITLE_WEIGHT = 2.0
 _TEXT_WEIGHT = 0.5
 _PREVIOUS_WEIGHT = 0.8
@@ -45,6 +46,9 @@ class Context:
 
     own: dict[str, float] = field(default_factory=dict)
     previous: frozenset[str] = frozenset()
+    #: Every two words the notes write side by side ("oat", "dairy"): a slip next to a word it has
+    #: stood beside in the notebook is read as that word (L222).
+    pairs: frozenset[tuple[str, str]] = frozenset()
 
 
 CTX: ContextVar[Context | None] = ContextVar("typo_context", default=None)
@@ -68,7 +72,10 @@ def of_notes(notes: Iterable[dict] | None, names: Iterable[str] = (), previous: 
     """The context of a question asked of `notes`: titles, tags, categories, people and list names are the
     notebook's own words (strong), the rest of the text is its topic (weak)."""
     own: dict[str, float] = {}
+    pairs: set[tuple[str, str]] = set()
     for note in notes or []:
+        text = re.findall(r"[^\W\d_]+", f"{note.get('title') or ''} {note.get('content') or ''}".lower())
+        pairs.update(zip(text, text[1:]))
         _grow(own, _WORD.findall(f"{note.get('title') or ''} {note.get('content') or ''}".lower()), _TEXT_WEIGHT)
         tags = [str(t) for t in note.get("tags") or []]
         _grow(own, _WORD.findall(" ".join([str(note.get("title") or ""), str(note.get("category") or ""), *tags]).lower()), _TITLE_WEIGHT)
@@ -78,7 +85,7 @@ def of_notes(notes: Iterable[dict] | None, names: Iterable[str] = (), previous: 
     #: The turn before: what it asked and what it answered.
     last = list(history)[-1:] or [{}]
     said = f"{previous} {last[0].get('question') or ''}"
-    return Context(own, frozenset(_WORD.findall(said.lower())))
+    return Context(own, frozenset(_WORD.findall(said.lower())), frozenset(pairs))
 
 
 class Cues(NamedTuple):
@@ -207,6 +214,13 @@ def _score(hits: set[tuple[str, str]], word: str, ctx: Context | None) -> float:
     return total
 
 
+def _pair_fit(word: str, left: str, right: str, ctx: Context | None) -> float:
+    """What the notebook's own word pairs add to `word` standing between `left` and `right`."""
+    if not ctx or not ctx.pairs:
+        return 0.0
+    return _PAIR_WEIGHT * ((left, word) in ctx.pairs) + _PAIR_WEIGHT * ((word, right) in ctx.pairs)
+
+
 def speaks_for(readings) -> bool:  # noqa: ANN001
     """Whether context can choose among a misspelling's readings: only when it has cues for each. One-sided cues
     would outvote the speller ("i need ot to be": "not" has cues, "it" none), so the speller's order stands."""
@@ -224,7 +238,8 @@ def lean(typed: str, readings: list[str], before: str, after_raw: str, sentence:
     lead = _COMMON_LEAD if low in _STAYS else _TYPED_LEAD
     hits = {w: _hits(w, left, right, after_raw, words) for w in pool}
     scored = {
-        w: _score(hits[w].difference(*(hits[o] for o in pool if o != w)), w, ctx) + (lead if real and w == low else 0.0) for w in pool
+        w: _score(hits[w].difference(*(hits[o] for o in pool if o != w)), w, ctx) + _pair_fit(w, left, right, ctx) + (lead if real and w == low else 0.0)
+        for w in pool
     }
     ranked = sorted(pool, key=lambda w: (-scored[w], pool.index(w)))
     best, other = ranked[0], (ranked[1] if len(ranked) > 1 else None)

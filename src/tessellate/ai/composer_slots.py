@@ -144,7 +144,7 @@ def _counted_ask(q: str) -> tuple[list[str], bool] | None:
     """"How many grocery items are checked off" -> (grocery stems, True);
     "how many things on the packing list are still open" -> (packing, False).
     Read word by word (CodeQL)."""
-    tokens = re.sub(r"[^\w' ]", " ", q.lower()).split()
+    tokens = re.sub(r"\bto[- ]dos?(?= list\b)", "todo", re.sub(r"[^\w' -]", " ", q.lower())).replace("-", " ").split()
     if tokens[:2] != ["how", "many"]:
         return None
     at = next((i for i, t in enumerate(tokens) if i > 1 and t in _COUNT_VERBS), None)
@@ -152,8 +152,17 @@ def _counted_ask(q: str) -> tuple[list[str], bool] | None:
     ticked, still = bool(tail & _TICKED_WORDS), bool(tail & _OPEN_WORDS) or "to do" in " ".join(tokens[at or 0:])
     if at is None or ticked == still:
         return None
-    stems = _stems(" ".join(t for t in tokens[2:at] if t not in _COUNT_FILLER))
+    stems = _stems(" ".join(t for t in tokens[2:at] if t not in _COUNT_FILLER)) or _list_after_state(tokens, at)
     return (stems, ticked) if stems else None
+
+
+def _list_after_state(tokens: list[str], at: int) -> list[str]:
+    """"How many items are left on the shopping list": the list is named after the state (L103)."""
+    marked = next((i for i, t in enumerate(tokens) if i > at and t in ("on", "in", "from")), None)
+    if marked is None:
+        return []
+    after = [t for t in tokens[marked + 1 :] if t not in _COUNT_FILLER]
+    return _stems(" ".join(after)) or [w for w in ("todo", "checklist") if w in after]
 
 
 def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001

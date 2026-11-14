@@ -729,6 +729,9 @@ def is_topic_word(term: str) -> bool:
 _LEADING_COMMAND = lazy_compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
 
 
+_TODO_NAME = re.compile(r"\bto[- ]dos?(?= (?:list|lists|note|notes|items?)\b)")
+
+
 def search_terms(text: str) -> list[str]:
     """The words worth matching on, in the order they were typed.
 
@@ -740,6 +743,8 @@ def search_terms(text: str) -> list[str]:
     #: "pull up my uni notes": the command is not a word to find ("up" is in a
     #: dozen notes); only at the start, so "look up" inside a subject stays.
     plain = without_contractions(_LEADING_COMMAND.sub("", (text or "").lower()))
+    #: "to-do list" is the note called Todo, not the stop words "to" and "do" (L103).
+    plain = _TODO_NAME.sub("todo", plain)
     #: A piece before a hyphen is a prefix, not half a contraction: "re-measured"
     #: keeps its "re", which the composer's sentence lengths count (test_select_score_paths).
     words = [(m.group(), plain[m.end():m.end() + 1] == "-") for m in re.finditer(r"\w+", plain)]
