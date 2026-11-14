@@ -644,7 +644,7 @@ MID_TOPICS.extend(
             "body": (
                 (
                     "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
-                    "answer, with From your notes under it; off, the answer is From your notes, with no AI. It opens with the answer, or for"
+                    "answer, marked Atlas and the model's name; off, it is marked Atlas's assistant, from your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which months (You have eleven notes about uni, and they follow one"
                     " semester, July to early November). Three or more dated notes then read as a few short paragraphs, notes that go together in one sentence, and one"
                     " closing insight (your slang is quoted, a finish congratulated). One source mark lights its note. "
@@ -680,7 +680,7 @@ MID_TOPICS.extend(
                 "Settings, Models, Who answers plain Ask: Your model (the default) or Quoted from your notes. With your model, "
                 "Ask writes the answer and cites your notes. With Quoted from your notes, a plain question is answered by "
                 "Atlas's assistant, quoting your notes with no AI; a small model (3B and under) answers best this way. It is "
-                "the Ask box's own switch beside the answer length, set from Settings, and it is this computer's choice. "
+                "the Ask box's own switch beside the answer length, and this computer keeps its own choice. "
                 "With no model running the answer is always from your notes."
             ),
             "badge": {"label": "Models", "section": "models", "target": "ask-answerer-row"},

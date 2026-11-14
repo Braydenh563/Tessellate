@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix E2E: ask-search spec reads the Atlas answerer chip (L737 copy), help topics name it the same; Guide path lint green (2026-11-14).
 - Docs: chat plan recount, open lines point to LEDGER L-chat-58 to 64, built text moved to HISTORY (2026-11-14).
 - Guide: the where-question lead check is linear on runs of tabs (CodeQL 2296).
 - Chat: notes joined by neither link nor tag are themed by their category, never by one on every note or one the question names (L102).

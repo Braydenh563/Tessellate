@@ -83,7 +83,7 @@ HELP_TOPICS: list[dict] = [
             "it is there; in Ask, "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
-            "picks who answers: off, the answer is From your notes, quoted from your "
+            "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "
             "notes' own sentences with no AI, and it is the answer when no model runs, "
             "in Ask and in Chat. "
             "They also see your tab and last actions, locally. "
