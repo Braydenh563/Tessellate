@@ -8252,15 +8252,28 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
     const p = pair.parsed;
     const ends = [`${p.sourceKind || "node"}:${p.sourceId}`, `${p.targetKind || "node"}:${p.targetId}`];
     if (!ends.every((end) => moving.has(end))) return false;
-    const el = document.querySelector(`.sketch-group[data-id="${pair.sketch.id}"]`);
+    //: The groups are indexed by id once for the capture: a document query
+    //: per link was 17ms of the pick-up of 300.
+    linkGroups ||= new Map([...document.querySelectorAll(".sketch-group")].map((g) => [g.dataset.id, g]));
+    const el = linkGroups.get(String(pair.sketch.id));
     const path = el?.querySelector(".sketch-path");
     const hit = el?.querySelector(".sketch-hitbox");
     if (!path || el.querySelector(":scope > .wb-link-label")) return false;
-    const at = wbTransformPathD.translator(path.getAttribute("d"));
-    const hitAt = hit ? wbTransformPathD.translator(hit.getAttribute("d")) : null;
-    if (!at || (hit && !hitAt)) return false;
-    rigidLinks.push({ pair, path, hit, at, hitAt });
+    //: Only a path of absolute points is rigid; the check is a text test, and
+    //: the path is compiled on the moves after the pick-up (`compileRigid`),
+    //: because tokenising 300 of them was 58ms of the pick-up frame.
+    if (!pointsOnly.test(path.getAttribute("d")) || (hit && !pointsOnly.test(hit.getAttribute("d")))) return false;
+    rigidLinks.push({ pair, path, hit, group: el, state: "" });
     return true;
+  };
+  let linkGroups = null;
+  const pointsOnly = /^[MLCQSTZ\d\s.,eE+-]+$/;
+  //: A link the translator cannot compile is drawn from its two topics, as a
+  //: link that was never rigid is (`state` "bad").
+  origin.compileRigid = (rigid) => {
+    rigid.at = wbTransformPathD.translator(rigid.path.getAttribute("d"));
+    rigid.hitAt = rigid.hit ? wbTransformPathD.translator(rigid.hit.getAttribute("d")) : null;
+    rigid.state = rigid.at && (!rigid.hit || rigid.hitAt) ? "ok" : "bad";
   };
   //: The same for a tree line with both topics moving: its two paths are
   //: compiled like a link's, and its end dots, handle and label are points
@@ -8456,21 +8469,37 @@ function wbApplyBulkMove(origin, dx, dy) {
     // See this entry's own comment in `wbCaptureBulkMoveOrigin`: without
     // this, only the card the pointer is actually on kept its edges live
     // during a multi-select drag.
-    wbUpdateLinkedSketches(entry.id, entry.movedLinks || entry.linked);
+    const moved = entry.movedLinks || entry.linked;
+    if (moved.length) wbUpdateLinkedSketches(entry.id, moved);
     // Same for a map's tree edges, which are not sketches at all: a marquee
     // drag of half a branch left every one of its curves behind.
     if (entry.mapEdges?.length) wbUpdateMapEdges(entry.mapEdges);
   }
   //: The links that travel with the move (`wbCaptureBulkMoveOrigin`). One a
   //: render replaced mid-gesture is drawn from its ends instead.
+  //: Compiled a slice a move after the first (`compileRigid`), the rest at the drop.
+  let compiling = origin.rigidAt ? 15 : 0;
   for (const rigid of origin.rigidLinks || []) {
-    if (!rigid.path.isConnected) {
+    if (!rigid.state && compiling-- > 0) origin.compileRigid(rigid);
+    if (!rigid.path.isConnected || rigid.state === "bad") {
+      rigid.group.removeAttribute("transform");
       wbUpdateLinkedSketches(null, [rigid.pair]);
       continue;
     }
-    rigid.path.setAttribute("d", rigid.at(dx, dy));
-    rigid.hit?.setAttribute("d", rigid.hitAt(dx, dy));
+    //: One `transform` on the link's group a move, not two `d` rewrites (a
+    //: bare page: 300 transforms 0.5ms, 600 paths 1.7ms; on the map the
+    //: paths were a 1143-element style recalc each move). The `d` is written
+    //: where the drag lands, `wbSaveBulkMove`, or put back here at 0, 0.
+    if (dx || dy) {
+      rigid.group.setAttribute("transform", `translate(${dx} ${dy})`);
+    } else {
+      rigid.group.removeAttribute("transform");
+      if (!rigid.state) origin.compileRigid(rigid);
+      rigid.path.setAttribute("d", rigid.at(0, 0));
+      rigid.hit?.setAttribute("d", rigid.hitAt(0, 0));
+    }
   }
+  origin.rigidAt = dx || dy ? [dx, dy] : null;
   const write = wbTransformPathD.translator.write;
   const x100 = Math.round(dx * 100), y100 = Math.round(dy * 100);
   for (const rigid of origin.rigidEdges || []) {
@@ -9003,6 +9032,20 @@ async function wbSaveMapBulkMove(origin) {
 }
 
 async function wbSaveBulkMove(origin) {
+  //: A link that travelled by its group's transform (`wbApplyBulkMove`) is
+  //: written where it landed, the `d` a full recompute gives, and the
+  //: transform cleared, before anything below reads or replaces the paths.
+  if (origin.rigidAt) {
+    for (const rigid of origin.rigidLinks || []) {
+      if (!rigid.path.isConnected) continue;
+      rigid.group.removeAttribute("transform");
+      if (!rigid.state) origin.compileRigid(rigid);
+      if (rigid.state === "bad") { wbUpdateLinkedSketches(null, [rigid.pair]); continue; }
+      rigid.path.setAttribute("d", rigid.at(...origin.rigidAt));
+      rigid.hit?.setAttribute("d", rigid.hitAt(...origin.rigidAt));
+    }
+    origin.rigidAt = null;
+  }
   //: **And is rebuilt where the items landed, before the save goes out.** The
   //: translate above is a view of the drag, not the truth: the items' own
   //: coordinates have moved, so the outline has to be recomputed from them or
