@@ -1226,7 +1226,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
 | U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
 | U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
-| U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
+| U18 | Out-of-domain | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | | | |
 
 #### Answering
 
@@ -1256,7 +1256,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
 | A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
-| A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
+| A25 | No answer | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | | | |
 
 #### Acting
 
@@ -1477,7 +1477,7 @@ capability.
 | 8 | Corrections, ellipsis, references (U4, U7, U8) | `ai/composer.py` `follow_on` growing into `Dialogue` | "no, the gym one" demotes quoted notes and boosts the named one; "and last week?" re-runs the last plan with a new window | M |
 | 9 | Recall kinds: by time, due, open, contradicts (A9, A12 to A14) | `ai/composer.py` plan kinds calling `routes_reminders`, `questions.py`, `tensions.listing` | Each is a window or a status filter over rows that already exist, with the count stated | S each |
 | 10 | Captions are content (sources) | `ai/composer.read_note`, retrieval text in `search/` | A picture's stored caption joins the note's sentences, labelled as a picture reading | S |
-| 11 | Out-of-domain and the capability line (U18, A25, X18) | `ai/composer._nothing`, act registry | Plain no-answer, the closest note, and one line listing the acts and utilities that run, generated from the registry | S |
+| 11 | Out-of-domain and the capability line (U18, A25, X18) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | |
 | 12 | The fact layer, first six kinds (step 1) | new `ai/factgraph.py` | event, date, quantity, entity, negation and mode, list item, each with a span and cached by `entry_edited_at` | L |
 | 13 | Insights: recurrence, silence, first and last (A15) | new `ai/insights.py` | A topic in at least 3 notes across at least 3 weeks, one fixed hedge, every slot a count, date or quoted span | M |
 | 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` (built), result lines in `ai/tool_say.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: an out-of-domain question (an act the app has no tool for, a question about the world) gets the plain no-answer, the closest note called the closest, and a line on what the app can do; a model answer backed by its prompt's date words is kept, not replaced (L-chat-40, z69).
 - Social turns read right: "that worked" and "it works" are gladness, "wrong again" and "still wrong" frustration, "you are brilliant" praise, and "briefly" alone asks for a shorter answer (chat row L-chat-22).
 - Review 5899348594 (3, 4): a model answer the notes do not back falls back under its own note, not "the model stopped"; a tool group scoring zero never counts as the best match.
 - Review 5899348594 (1, 2): an anchored reminder narrows by name in SQL before its 500-row cap, and reads `now` and each row as the writer's wall clock, so a zoned clock (Brisbane) no longer raises (`tests/test_review_5899348594.py`).
