@@ -100,7 +100,8 @@ def test_f13_a_what_did_i_write_after_a_subject_turn_stays_bound_to_that_note(qu
 def test_f13_h_and_the_week_before_is_the_question_over_the_week_earlier(notebook):
     last, before = notebook("what did I write last week", "and the week before")
     assert "last week" in last.lower(), last
-    assert before.startswith("You wrote five notes from 26 October to 1 November"), before
+    # Intent moved (L-chat-229, 30095f5d9): the opener varies turn to turn (a second recent-notes line is not worded like the first); the span and the count are the question.
+    assert before.startswith(("You wrote", "Your notebook grew by")) and "five notes from 26 October to 1 November" in before, before
     assert "feeling pretty tired" not in before, "the mood note of 10 November is not in the week before"
 
 
