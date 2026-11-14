@@ -138,7 +138,7 @@
         offset += (reply.items || []).length;
         more.classList.toggle("hidden", offset >= (reply.total || 0));
       } catch (error) {
-        toast(error.message || "Couldn't read that list.", true);
+        toast(error.message || voiceLine("failed", { what: "read that list" }), true, { retry: page });
       } finally {
         more.disabled = false;
       }

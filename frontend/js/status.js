@@ -344,7 +344,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
     run = async function backThenRun() {
       if (await spaceEnterFor({ space })) return inner();
       //: The space may have been deleted since: a situation, not a fault.
-      toast("Couldn't go back to the space it was made in.", "info", { action: ["Try again", backThenRun] });
+      toast("Couldn't go back to the space it was made in.", "info", { retry: backThenRun });
     };
   }
   if (!record) return () => run();
@@ -1172,7 +1172,7 @@ function voiceLine(key, slots = {}) {
   return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
 }
 
-function toast(message, isError = false, { exempt = false, action = null } = {}) {
+function toast(message, isError = false, { exempt = false, retry, action = retry && ["Try again", retry] } = {}) {
   //: A read dropped by a space switch (app.js, the request helper) is nothing to report.
   if (isError && String(message).endsWith("Space changed.")) return;
   if (isError === "info" || (isError === true && [...toast.refused].some((m) => String(message).includes(m)))) {

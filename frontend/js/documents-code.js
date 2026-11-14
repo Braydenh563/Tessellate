@@ -1794,7 +1794,7 @@ async function docEmmetWrap() {
   const view = docCmView;
   const CM = window.CM6;
   if (!(await docLoadEmmet()) || !window.EMMET) {
-    toast("Emmet could not be loaded, so nothing was wrapped.", true);
+    toast("Emmet could not be loaded, so nothing was wrapped.", true, { action: ["Try again", docEmmetWrap] });
     return false;
   }
   let { from, to } = view.state.selection.main;

@@ -109,7 +109,7 @@
     try {
       page = await apiJson(`/whiteboard/history?board_id=${boardId ?? 0}`);
     } catch (error) {
-      toast(error.message || "The board's history could not be read.", true);
+      toast(error.message || voiceLine("failed", { what: "read the board's history" }), true, { retry: wbOpenHistory });
       return;
     }
     if (!page?.moments?.length) {

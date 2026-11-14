@@ -340,7 +340,7 @@
     try {
       data = await apiJson(`/entries/${entryId}/meeting`);
     } catch (error) {
-      toast(error.message || "Couldn't open that meeting.", true);
+      toast(error.message || "Couldn't open that meeting.", true, { retry: () => openMeetingSheet(entryId) });
       return;
     }
     const entry = (typeof allEntries !== "undefined" ? allEntries : []).find((e) => e.id === entryId);
