@@ -3,14 +3,13 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
-  //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
-  //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
+  //: Boards and maps (audit D22): the `library` files, then d3 and the whiteboard files a first document open no longer pays for (tests/test_lazy_boards_split.py).
   boards: [
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
-    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
-    "/js/whiteboard-map-marks.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table (stamps, stickers, affinity, boundary).
+    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table.
     "/js/whiteboard.js",
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
@@ -23,8 +22,8 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-layers-more.js",
     "/js/whiteboard-draw-more.js",
     "/js/whiteboard-arrange-more.js", //: After whiteboard-draw-more.js: it reads that file's loop sides at run time.
-    "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
-    "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
+    "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points.
+    "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape.
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],
@@ -177,7 +176,7 @@ document.addEventListener("keydown", (event) => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
   const box = event.target;
   //: By the box's id while the adapters are still on their way (maths1527: about 1 s after a fresh note box's first focus, Alt+= did nothing).
-  const kind = (typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
+  const kind = (typeof editorSurfaceKind === "function" && editorSurfaceKind(box)) || (typeof EDITOR_SURFACES === "object" && EDITOR_SURFACES[box?.id]);
   if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
   event.preventDefault();
   openMathEditor({ target: box });
@@ -220,10 +219,7 @@ const characterFallbacks = new Map();
 function afterCharacters(fn, fallback) {
   if (charactersLoaded) fn();
   else if (characterWaiters.failed) fallback?.();
-  else {
-    characterWaiters.add(fn);
-    if (fallback) characterFallbacks.set(fn, fallback);
-  }
+  else characterWaiters.add(fn), fallback && characterFallbacks.set(fn, fallback);
 }
 
 function charactersLost() {
@@ -243,8 +239,7 @@ function emblemHead(holder, size) {
 function plainHead(holder, name) {
   const initial = document.createElement("span");
   initial.className = "plain-head";
-  initial.textContent = String(name || "?").trim().charAt(0).toUpperCase() || "?";
-  holder.replaceChildren(initial);
+  initial.textContent = String(name || "?").trim().charAt(0).toUpperCase() || "?";  holder.replaceChildren(initial);
   ensureModule("plainHead");
 }
 
@@ -259,8 +254,7 @@ function runCharacterJob(fn, args = []) {
 
 function loadCharactersIdle() {
   const load = () => ensureModule("characters").then((ok) => ok || charactersLost());
-  if (window.requestIdleCallback) requestIdleCallback(load, { timeout: 3000 });
-  else setTimeout(load, 400);
+  window.requestIdleCallback ? requestIdleCallback(load, { timeout: 3000 }) : setTimeout(load, 400);
 }
 
 function installCharacterStandIns(names, replay) {
@@ -287,10 +281,10 @@ installCharacterStandIns([
 function nameMarkBuddyShowing() {
   try {
     if ((prefs.get("avatar-buddy", null) || "off") !== "off") return true;
-  } catch (e) {
+  } catch {
     //: Unreadable stays off.
   }
-  return !!document.getElementById("nm-buddy");
+  return !!$("nm-buddy");
 }
 
 //: What a person reads when a lazy file could not be fetched; said once a few
@@ -312,28 +306,26 @@ function onDomReady(fn) {
   else queueMicrotask(fn);
 }
 
-//: The library bundle (documents and the list; the boards, d3 and the whiteboard files are `boards`, fetched on a first board) is
-//: not fetched at boot at all (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
-//: parsed in the first nine seconds on a tab that opened nothing). It is warmed
-//: after the person first touches the page, and only with four cores or more
-//: and no data saving (audit 1030 Y16); a visit to a surface that needs it
-//: fetches it on the spot (`ensureModule`). One file at a time, the graph's
+//: The library bundle (not `boards`, fetched on a first board) is not fetched at boot (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
+//: parsed in nine seconds on a tab that opened nothing). Warmed after the first touch, with four cores or more
+//: and no data saving (audit 1030 Y16); a surface that needs it fetches it on the spot (`ensureModule`). One file at a time, the graph's
 //: first, each after 2.5 s without a press (INBOX 1516: a tab switch ran twenty).
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
   const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
-  //: Calm is asked again in an idle slot, just before the file: a file's eval
-  //: is 50 to 200 ms at 4x CPU, and one that started as a pane opened landed
-  //: inside its first show (graph.js in Settings -> Data, L-world-class-355).
+  //: Calm is asked again in an idle slot, just before the file: an eval is 50 to 200 ms at 4x CPU
+  //: (graph.js landed inside Settings -> Data's first show, L-world-class-355).
   const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 0));
+  //: The first document open's bytes come before its code (L-world-class-40): prefetched, nothing run.
   const warmNext = () =>
     Date.now() < calmAt ? setTimeout(warmNext, 600) : idle(() => (Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600))));
   const warm = (event) => {
     //: Typing the password is not the person arriving: the lock screen is over
     //: the page until they are in.
     if (event.target?.closest?.("#lock-overlay")) return;
-    calmAt || setTimeout(warmNext);
+    //: Queued before warmNext's own slot, so `files` is still whole.
+    calmAt || (setTimeout(warmNext), idle(() => [...files.map((f) => f + lazyAssetStamp(f)), "/vendor/codemirror/codemirror.min.js"].map((u) => fetch(u, { priority: "low" }).catch(() => 0))));
     calmAt = Date.now() + 2500;
   };
   //: `click` too: a screen reader's activation is a click with no pointerdown.
