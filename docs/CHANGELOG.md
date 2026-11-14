@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Filing: a note saved without defer_filing gives its database connection back while the model thinks (L690).
 - Search: a test pins that tag: narrows the keyword candidates before the depth cut (L626).
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).
 - Reminders at 320: a row's time may wrap to a second line instead of running 6px past its column

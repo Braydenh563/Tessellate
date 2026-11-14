@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 93 | 38 | 0 | 18 | 261 |
+| world-class | 130 | 93 | 36 | 0 | 18 | 259 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 485 | 109 | 2 | 129 | 1147 |
+| all | 553 | 485 | 107 | 2 | 129 | 1145 |
 
 ## graph
 
@@ -564,8 +564,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L686** `world-class` partly, M: Finish INBOX 1748: one optional-package notice recipe for every package (dismissable, back after an uninstall), Q10, Q11 (30 s cache reset on the model coming up), Q25 first-run calibration step, row 22 drafts pick-up. From INBOX 1748. Evidence: Verify each part in code first; built parts move to HISTORY
 - [ ] **L687** `world-class` partly, L: MCP: add HTTP transport and restricted token/URL setup, drop embedder load at startup, decide trust model. From OPEN.md:723; OPEN.md:1007; INBOX.md:904 B52. Evidence: Resources and prompts built (mcp_server.py:28-30,173); embedder load and stdio-only not confirmed changed
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
-- [ ] **L689** `world-class` partly, L: Make filing against a never-answering model non-serial for a 20-note burst. From OPEN.md:1715. Evidence: Commit c26b090b4/902ffcbcc: late answer replaces stand-in, wait is a preference; serial burst of 20 not shown fixed
-- [ ] **L690** `world-class` partly, L: Release the DB session on bare POST /entries while waiting on the model. From OPEN.md:1716. Evidence: UI paths send defer_filing (capture-ask.js:666,770; ask-compose.js:571); routes_entries.py:828 bare POST /entries still waits holding the session
 - [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added

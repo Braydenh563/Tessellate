@@ -399,6 +399,7 @@ def _file_entry_now(
     content: str,
     on_late_llm=None,  # noqa: ANN001
     model_deadline: float | None = None,
+    release_session: bool = False,
 ) -> tuple[str, int, str]:
     """Ask the janitor where a note belongs. Whatever goes wrong in AI land,
     the note still gets saved (plan §4)."""
@@ -411,6 +412,7 @@ def _file_entry_now(
             deps.get_ollama(),
             on_late_llm=on_late_llm,
             model_deadline=model_deadline,
+            release_session=release_session,
         )
     except Exception:
         # `categorise` handles a model that is down on its own (a keyword
@@ -862,7 +864,7 @@ def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, in
         #: request holds a database connection while the model thinks, and the
         #: unbounded wait it had (three minutes) let twenty at once fill the pool.
         category, confidence, filed_by = _file_entry_now(
-            session, body.content, model_deadline=janitor.filing_deadline()
+            session, body.content, model_deadline=janitor.filing_deadline(), release_session=True
         )
     return category, confidence, filed_by, defer
 
