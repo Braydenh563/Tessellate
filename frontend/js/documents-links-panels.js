@@ -1,7 +1,16 @@
 // documents-links-panels.js: the Notes and Bookmarks panels and the backlink insert.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: One request at a time, and the last one wins. Switching documents quickly
+  //: used to be safe because this was synchronous over `allEntries`; it is a
+  //: fetch now, and two in flight would paint the slower one's answer under the
+  //: faster one's document. The same shape `renderDocBookmarks` uses.
   let docBacklinksToken = 0;
+  //: **Link back: insert `[[Source]]` at the caret.** Deliberately the caret and
+  //: not the end of the document: every other insert in this editor (the "/"
+  //: menu, the table command, the properties command) writes where you are, and
+  //: an action that alone appended to the bottom would be the one place in the
+  //: editor where "insert" means something else.
   function docInsertReferenceLink(bookmark) {
     const surface = docSurface();
     if (!surface) return;
@@ -33,6 +42,8 @@
     if (!(await lazyScript("/js/documents-backlinks.js"))) return toast("The links panel could not be loaded.", true, { action: ["Try again", renderDocBacklinks] });
     if (token === docBacklinksToken) docBacklinksPaint(links, mentions);
   }
+  // The notes this document draws on. Shown beside the outline because both
+  // answer the same question, what is this document made of.
   function renderDocNotes() {
     const wrap = $("doc-notes-wrap");
     const list = $("doc-notes");
@@ -62,6 +73,8 @@
       list.appendChild(item);
     }
   }
+  // References (§30): saved links attached to this document, the Documents
+  // half of the same concept notes' own edit form already got this session.
   async function renderDocBookmarks() {
     const list = $("doc-bookmarks");
     if (!list || !currentDoc) return;

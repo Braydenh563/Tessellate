@@ -8,8 +8,10 @@ on a small page. A hidden strip is fitted when it is shown: the width observer s
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _fn(name: str, end: str = "\n}\n") -> str:

@@ -595,6 +595,41 @@ const docViewState = {
   allows: (type, mode) => type.previewable || DOC_VIEWS_UNRENDERED.includes(mode) || (type.ext === "mmd" && ["split", "rendered", "canvas", "blocks"].includes(mode)),
 };
 
+//: **The filter row and the formula letters** (DOCUMENTS_PLAN gap row 12). A
+//: filter is a view of the table, never an edit: it lives in `docViewState`
+//: under the header's text (a table has no id in markdown, and the header is
+//: what a person calls it), hides body rows in Live only, and is gone with the
+//: page. `docViewState.tableFilter.set` repaints by re-sending the selection, which the
+//: table decoration always rebuilds on.
+docViewState.tableFilter = {
+  key: (table) => table.rows[0].cells.map((cell) => cell.trim()).join("|"),
+  of(table) {
+    const filter = docViewState.tableFilters && docViewState.tableFilters[this.key(table)];
+    return filter && filter.needle ? filter : null;
+  },
+  set(view, table, filter) {
+    docViewState.tableFilters = docViewState.tableFilters || {};
+    const key = this.key(table);
+    if (filter && filter.needle) docViewState.tableFilters[key] = filter;
+    else delete docViewState.tableFilters[key];
+    if (view) view.dispatch({ selection: view.state.selection });
+  },
+  letters(col) {
+    let letters = "";
+    for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
+    return letters;
+  },
+  async ask(context) {
+    const column = (context.table.rows[0].cells[context.cell.col] || "").trim() || `column ${this.letters(context.cell.col)}`;
+    const was = this.of(context.table);
+    const needle = await promptDialog(`Show rows where ${column} contains`, was ? was.needle : "", { confirmLabel: "Filter" });
+    if (needle !== null && needle !== undefined) {
+      this.set(context.surface.view, context.table, { col: context.cell.col, needle: needle.trim() });
+    }
+    context.surface.focus();
+  },
+};
+
 //: One-time reset (owner, 2026-10-25: Live should be the default, but their
 //: browser held "source" from before). A view stored before this version key
 //: existed is dropped once, so Live shows; every choice made afterwards is
@@ -1647,45 +1682,12 @@ function docRestorePosition(id) {
 // shape this plan exists to stop. The endpoint's own reasoning is in
 // routes_documents.py; what is here is the panel and the two actions.
 
-//: One request at a time, and the last one wins. Switching documents quickly
-//: used to be safe because this was synchronous over `allEntries`; it is a
-//: fetch now, and two in flight would paint the slower one's answer under the
-//: faster one's document. The same shape `renderDocBookmarks` uses.
-
-//: **Link back: insert `[[Source]]` at the caret.** Deliberately the caret and
-//: not the end of the document: every other insert in this editor (the "/"
-//: menu, the table command, the properties command) writes where you are, and
-//: an action that alone appended to the bottom would be the one place in the
-//: editor where "insert" means something else.
-
-
-// The notes this document draws on. Shown beside the outline because both
-// answer the same question, what is this document made of.
-
-// References (§30): saved links attached to this document, the Documents
-// half of the same concept notes' own edit form already got this session.
-
-
-//: **Templates: a starting shape for the five documents people make most.**
-//: Plain markdown with two placeholders; the whole feature is these strings,
-//: the dialog in index.html and `createDocument(template)` below. Kept as
-//: data rather than a server resource because a template is nothing but
-//: text, and text that lives in one file is text a fresh session can read.
-
 
 //: **A new document needs no name** (INBOX 739, the owner: "auto naming of
 //: the whiteboards, mindmaps and documents like \"untitled #\" so the user
 //: isnt forced to name a new object"). The next free number after every
 //: "Untitled document N" there is, as `wbUntitledNames` does for boards and
 //: maps, so a deleted one's number is not reused while a higher one exists.
-//: Leaving a document that was made and never written in (a keystroke in the
-//: title, then undone; New, then another document) bins it, so the list does
-//: not fill with "Untitled document N". Anything with a word in it stays.
-
-//: **A blank document is not made until it is written in** (dog1-1025 item
-//: 16, decided): the editor opens empty and the first keystroke in the title
-//: or the text creates the row (`ensureDocumentExists`), so cancelling or
-//: walking away leaves nothing behind. A template has content, so it posts.
 
 
 //: **Choosing is not making** (INBOX 410, the owner: "when selecting a
@@ -1701,7 +1703,6 @@ function docRestorePosition(id) {
 //: on a row, so the Use button (wired once, beside the other document
 //: controls) can read it.
 let docTemplateMade = false;
-
 
 
 function docTemplateListKeys(event) {
@@ -1830,9 +1831,6 @@ async function ensureDocumentExists() {
   }
 }
 
-//: Counts edits, so a save that lands knows whether words were typed
-//: while it was in flight (those keep the document dirty).
-
 
 //: While the edit-conflict prompt is up, autosave waits for its answer
 //: rather than asking again every 1.2s of typing behind it.
@@ -1844,21 +1842,6 @@ async function ensureDocumentExists() {
 //: current }`: the other window's version, for the document it is about.
 let docConflictPending = null;
 
-//: One save at a time: a second PUT in flight carried the old base_hash (a
-//: false 409). One asked for meanwhile runs once after (audit 1028 D1).
-//: `newRetry`: the pause timer after a failed first save (`markDocDirty`); `newOffered`: the kept new document was offered.
-
-
-//: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
-
-
-
-//: The answer to an edit conflict on a document. "Keep mine" saves this
-//: text from the other window's hash, so it goes through as a deliberate
-//: overwrite (and the server keeps the other window's text as a revision,
-//: as every content change does). "Take theirs" puts the other text in the
-//: editor as saved. No answer leaves the text here, unsaved, and the next
-//: edit asks again.
 
 // A note that outgrew itself becomes a document. Notes and documents were
 // two islands: the only way across was copy and paste, which loses the link
@@ -2090,84 +2073,6 @@ appendPlainText.icon = (name) => {
   return !known[name] ? null : Object.assign(document.createElement("i"), { className: `ph ph-${name} md-inline-icon`, role: "img", ariaLabel: name.replace(/-/g, " ") });
 };
 
-//: The table. `keys` is the chord the editor already listens for, or "" where
-//: the action has no chord: the shortcut sheet draws the rows that have one
-//: and the palette draws all of them, which is the division the plan asks for
-//: ("every editor action with its shortcut").
-
-//: **Only while a document is open and on screen.** The palette is reachable
-//: from every tab, and "Bold" run from the Notes tab would wrap a selection in
-//: a document nobody is looking at. `activeTab` is where the app keeps which
-//: tab is showing (navigation.js's `switchTab` writes it), so this asks the same
-//: question the tab bar answers.
-//:
-//: A row with no `run` is a keyboard-only move (Tab, Alt with an arrow): it
-//: belongs in the shortcut sheet, which is a list of what the keys do, and not
-//: in a palette, which is a list of things a press can perform.
-
-//: The `?` sheet's editor section, from the same table, so the two cannot
-//: disagree. Called by `openShortcuts` (settings-wiring.js) rather than wired here,
-//: because this file is in the Library's lazy bundle and the dialog can be
-//: opened before it has ever loaded: the section then simply says so.
-
-//: **Reordering the document from its outline** (DOCUMENTS_PLAN Phase 4 item
-//: 3, PLAN D6). Dragging a row moves the *section*, the heading and everything
-//: under it down to the next heading at the same level or shallower, which is
-//: what a reader means by "move Results above Method".
-//:
-//: **The lines are re-scanned at the moment of the drop, never taken from the
-//: outline's own rows.** The outline is rebuilt on a pause in typing, so a row
-//: dragged a keystroke after an edit carries line numbers from the document as
-//: it was, and moving that run would cut the wrong paragraphs out of the
-//: middle of the text. `docScanHeadings` costs one pass over a string this
-//: file already holds.
-//:
-//: The write goes through the surface's own `text` setter, which diffs prefix
-//: and suffix and dispatches the smallest change that gets there, so a move is
-//: one undo step rather than a whole-document replacement.
-
-//: Which side of a row the pointer is on. The midpoint, which is the rule
-//: every list with a drop line uses, and the only one that lets a reader
-//: place a section at the very end of a document.
-
-
-//: **The keyboard half, which a drag can never be.** Alt with an arrow moves
-//: the focused row's section past its neighbour, which is the same move the
-//: drag makes and the only one this panel can offer somebody who is not using
-//: a pointer. Alt because a bare arrow moves between rows and Ctrl+arrow is
-//: the browser's own word jump; the same chord Notion and Obsidian use for
-//: moving a block.
-//:
-//: Past its *neighbour in the outline*, not its sibling at the same level: the
-//: rows are what the reader can see, and a rule that skipped rows would move
-//: a section past things it looked like it was next to.
-
-//: **Alt+Up and Alt+Down in a markdown document move a block** (INBOX 904 B20,
-//: the owner's "manage mode for lined documents", taken as the keyboard half
-//: the owner's recommendation names). The editor's own line move is right for
-//: code and wrong for prose: it swaps a line with the *blank line* beside it,
-//: so `beta` moved up from under `alpha` lands between them and the next press
-//: welds the two paragraphs. The unit here is what a reader sees as one thing:
-//: a paragraph or quote or table (a run of lines), a fenced block (its blank
-//: lines included), a list item with everything nested under it, a heading's
-//: whole section. It swaps with the neighbour of the same kind and leaves the
-//: blank lines between them where they were, so a move is one edit and moving
-//: back is byte-exact.
-//:
-//: Pure: the text, the caret offset and a direction in; `{from, to, insert,
-//: caret}` out, `{noop: true}` for "there is nothing to swap with" (swallowed,
-//: so the default move cannot weld what this one refused), or null for "not
-//: mine" (a blank line, the frontmatter), which leaves the key to the default.
-//: Numbered items swap their *text* and keep their numbers.
-
-//: The key's half: only a markdown document (a code file keeps the editor's
-//: own line move, which is what code wants), only a caret rather than a
-//: selection (a selection of lines moves as lines, as it always did), and a
-//: decline hands the key back so the default still answers it.
-
-//: The palette's door to the same move: focus is in the palette, so it aims at
-//: the editor and says what to do when the caret is not in a block.
-
 
 //: **Where you are in the document, marked in its outline.** The owner, of
 //: the sidebar redesign: "mostly outline". Measured before this existed:
@@ -2184,26 +2089,12 @@ appendPlainText.icon = (name) => {
 let docOutlineRows = [];
 //: What the rows were last drawn from; see the early return in renderDocOutline.
 let docOutlineMarked = -1;
-//: The row a move asked to keep the focus ring on, as a fold key (level and
-//: text), because that is the one name for a heading that survives the
-//: document being rewritten around it.
 
 //: Which row is in the air. One number rather than a `dataTransfer` payload,
 //: because the payload a browser hands back on `drop` is a string and the one
 //: thing this needs is an index into the list the drag started from.
 let docOutlineSpyFrame = 0;
 
-//: The first line of the document that is on screen, zero-based.
-//:
-//: CodeMirror is asked where the top-left of its own scroller lands, which is
-//: exact and costs one hit test. `posAtCoords` with `precise` false never
-//: returns null, so a coordinate above the first line or below the last still
-//: answers with the nearest position rather than with nothing.
-//:
-//: The textarea fallback has no line-to-pixel map at all, so it estimates
-//: from the scroll fraction. That is honestly approximate, and it is the
-//: surface nobody has when the engine loads; saying so here is cheaper than a
-//: reader wondering why one branch is exact and the other is not.
 
 //: The filter box's own wiring, once. `input` rather than a debounce: the
 //: work behind it is a pass over the headings this file already holds, not a
@@ -2225,143 +2116,12 @@ onDomReady(() => {
   });
 });
 
-//: **The caret's line, but only while the caret is on screen.**
-//:
-//: Reported (OPEN.md, doc-sidebar.md): typing in a section below the one at
-//: the top of the view marked the wrong heading until the view scrolled.
-//: Measured on a twelve-section document in a 512px box before this existed:
-//: the caret in Section 3 with the view still at `scrollTop` 0, the outline
-//: marked Section 1.
-//:
-//: **Which wins when the two disagree**, the question the next step had not answered:
-//: the caret does, while it is visible. A caret you can see is where you are
-//: writing, and every editor this is measured against (Obsidian, Typora)
-//: follows it. Scroll far enough that the caret leaves the box and it is no
-//: longer where you are looking, so the top of the view takes over again: that
-//: is reading, not writing, and the same rule covers the Read pane, where
-//: there is no caret to see at all.
-//:
-//: Null rather than a line number when there is nothing to say, so the caller
-//: reads as the rule: "the caret's line if it is visible, otherwise the top of
-//: the view".
-
-//: **The line the breadcrumb is about**: the caret's while it is on screen,
-//: the top of the view otherwise, which is the rule the outline's mark has
-//: always used (`markDocOutline`) and now the trail follows it too. Measured
-//: (`doccrumbview.js`) in a 21k-word document scrolled to 60% with the caret
-//: left on line 1: the outline marked the section in view and the trail above
-//: the writing still said `Top > Annual report`, two rows that both answer
-//: "where am I" giving two answers. The textarea fallback keeps the caret, its
-//: only honest answer (it has no line-to-pixel map).
-
-//: The marked row, kept inside whichever box in the sidebar actually scrolls.
-//: Bounded by `#doc-sidebar` on purpose: `scrollIntoView` walks every
-//: scrolling ancestor, and the page is one of them, so the tidy one-liner
-//: would yank the whole tab under the person's caret while they typed.
-
-//: `known` is `docWhereLine()` read by a caller before it wrote anything; a
-//: render passes it, and the row is then brought into view after the frame's
-//: layout rather than measured against rows it has just built.
-
-//: One mark per frame. A scroll fires far faster than anything needs to be
-//: repainted, and the work behind it is a hit test plus a class swap.
-
-// Put the caret at the start of a line and scroll it into view. Done by
-// character offset because that is the one coordinate both surfaces share: a
-// textarea has no anchors, and CodeMirror's own `scrollIntoView` is reached
-// through `setSelection` below rather than by arithmetic.
-
-// Answers "where is this actually kept?" with the real path, once.
-
-
-// PLAN.md P4. With the preview open (Split/Rendered) every keystroke used to
-// re-parse and re-render the whole document: measured on a 20k-word document
-// with scratchpad/ui-sweeps/doctype.js, 44 keystrokes → 44 full renders,
-// keydown p50 176ms / p95 272ms, the caret visibly lagged the typing. The
-// preview is display, not state, so it can wait for the typing to pause:
-// a 120ms trailing debounce, then an idle callback (with a ceiling, so a
-// busy tab still repaints within a third of a second). Anything that needs
-// the preview *now*, a view switch, a load, still calls renderDocPreview
-// directly.
 
 //: Set by `renderDocPreview`, read by `docScrollAnchors`. Zero until the
 //: preview has been drawn once, which is also when there are no stamps to
 //: read, so the default is never used as an answer.
 let docPreviewLineShift = 0;
 
-
-
-//: **Tick a task in the Read view.** The renderer draws every task box
-//: disabled (it is shared with notes and chat, which have no source to write
-//: back to). Here the document is open, so the Nth box is matched to the Nth
-//: task line of the text, outside the properties and any code fence, and
-//: switched on only when the counts agree: a box that cannot be traced to its
-//: line stays as it was rather than ticking the wrong one.
-
-
-
-//: **The document, rendered, with its columns side by side.** `renderMarkdown`
-//: is the app's one markdown renderer and knows nothing about `:::columns`;
-//: teaching it would put a documents-editor construct into the renderer every
-//: note card and every chat message uses. So the text is split here, at the
-//: blocks the model finds, and each column is rendered by that same renderer
-//: into its own element. The result is one pass over the document either way,
-//: and a document with no columns in it takes exactly the path it always did.
-
-//: `![[Document#^an-id]]` on its own line (DOCUMENTS_PLAN Phase 4 item 2).
-//: The id shape is the model's, so a `#^` that is not a block reference stays
-//: an ordinary embed and goes to the app's renderer as before.
-
-//: A run of markdown with its block embeds drawn by `docEmbedNode` rather
-//: than by `renderMarkdown`.
-//:
-//: The app's one markdown renderer resolves an `![[name]]` through
-//: `resolveWikiTarget`, which knows notes, boards and documents and cannot
-//: know about a block: a block reference is written into a document's own
-//: text by this editor, and `Doc#^abc123` is not a name anything can look up.
-//: Left to it, a block embed rendered as "Nothing called that yet" in Read
-//: view while the same line drew the block in Live, which is the two panes
-//: disagreeing about what the document says. Split out here and handed to the
-//: same filler the Live view's widget uses, so they cannot.
-//:
-//: `lineBase` is the line this piece starts on in the whole rendered text.
-//: **Every block's `data-src-line` is a line of the whole text, not of its
-//: piece.** `renderMarkdown` counts from the start of the string it is given,
-//: and this renders the page in pieces (around block embeds and columns), so
-//: every block after the first piece carried a line counted from the wrong
-//: zero: the split view's anchors dropped them (`docScrollAnchors` skips a
-//: line that goes backwards) and the block bar could not find them in the
-//: text at all (INBOX 421 b's "change it from the rendered block").
-
-//: `renderMarkdown` replaces its container's children, so a second call into
-//: the same one would take the first's work away. Rendered into a spare
-//: element and moved across, which is also what keeps every piece in document
-//: order.
-
-//: The properties as they read rather than as they are edited: the same rows,
-//: without the fields. Read view has no editing surface at all, so a panel of
-//: inputs there would be a form that saves into a document you are not in.
-
-// [[Document title]] as clickable links in the preview, the same idea as a
-// note's [[wiki link]] (renderNoteText) but resolving against `docs` by
-// title instead of by content prefix, documents have real titles. A
-// post-process over renderMarkdown's already-built DOM rather than a change
-// to the parser itself: renderMarkdown is a hand-rolled block parser shared
-// with notes/chat/dashboard, and layering a second concern into its inline
-// pass is exactly the kind of touch that's cheap to get subtly wrong for
-// every other caller. Skips text inside <code>/<pre> so a literal "[[x]]" in
-// a fenced snippet isn't turned into a button.
-
-// The PDF export needs the rendered pane on screen for the duration of the
-// print, whatever view the user was in, and puts them back afterwards. It is
-// the only remaining caller of anything toggle-shaped, the Preview tickbox
-// itself became the four-way #doc-view-seg (see setDocView), because with four
-// modes a tickbox could not say which one you were in.
-//
-// It borrows "rendered" rather than "split": what gets printed is the preview
-// pane, and at full width it lays out the way the PDF will. If the user is
-// already in a mode showing the preview, leave them there, reflowing a pane
-// mid-print is how a page break lands in the wrong place.
 
 // --- the code editor: line numbers, indent, comment toggle ---------------------
 //
@@ -2379,74 +2139,6 @@ let docPreviewLineShift = 0;
 // decision with a real dependency behind it, and pretending otherwise by
 // half-highlighting a few keywords would look worse than plain monospace.
 
-//: Every gutter in the document, paired with the textarea it numbers. The
-//: documents editor's gutter is the original (`#doc-gutter` beside
-//: `#doc-content`); the note capture box and the note edit form get one each
-//: from `mountGutterFor`, which records the pairing in `data-for`
-//: (UI_MODERNISATION_PLAN Phase 7 item 2: "one toggle, remembered, working
-//: for any file type, in all three").
-
-//: Everything that decides where a *row* sits. The stylesheet carries a static
-//: copy of these so the column is not unstyled before this runs, but the
-//: static copy is what went wrong: it said `padding-top: 0.5rem` while the
-//: textarea's own padding is `--space-4`, which is `calc(0.6rem *
-//: var(--density))`. Measured, at density 1, every number sat 1.59px above its
-//: line, and the density setting could widen that at will. A number beside the
-//: wrong line is not a small cosmetic error: it is the one thing a gutter is
-//: for.
-//:
-//: Only what places a row (INBOX 590): the figures are smaller than the text
-//: and set in the stylesheet, and a line box of the text's own height in px
-//: centres each one on its row whatever size it is drawn at.
-
-//: **The gutter is clipped to the textarea, not to the row it sits in.**
-//: Reported with a screenshot: numbers 1 to 18 continuing below a textarea
-//: that ended at 11. Both wrappers (`.doc-source-wrap` and `.gutter-wrap`) are
-//: `align-items: stretch` flex rows, so the gutter took the row's height while
-//: the textarea took its own; dragging `#doc-content`'s native resize handle
-//: shorter left the column running on down the card. Measured before this: a
-//: 260px textarea beside a 585px gutter, 325.4px of numbers past the end of
-//: the box they number, and even untouched the gutter was 9.6px too tall.
-//:
-//: The height is also what makes the scroll lock-step possible at all. A
-//: gutter that is taller than its textarea has a *shorter* scrollable range,
-//: so `gutter.scrollTop = box.scrollTop` silently clamps: measured, the box at
-//: 200 and the gutter stuck at 139, which is two and a half lines of drift
-//: that grows the further down you scroll. Same height, same content height,
-//: same range, and the assignment is then exact.
-//: **Every read, then every write** (OPEN 1076, perfpolish): a write and a
-//: layout read per gutter forced one layout per gutter; read all of them
-//: first and the writes cost one layout after.
-//:
-//: **`only` is one box or a list of them** (lag trace, 2026-11-11): the observer below
-//: hands over every box that resized in one delivery. A call per box put the
-//: second box's reads after the first box's writes, a style and layout pass of
-//: the whole page each (two numbered boxes beside 30k nodes, 4x CPU: 141ms over
-//: a 20-frame drag); one call per delivery reads all of them, then writes.
-
-//: **The box changes height for reasons no event reports.** Dragging
-//: `#doc-content`'s own `resize: vertical` handle, opening or closing the chat
-//: dock, switching to Split, a note's textarea growing as it is typed into: a
-//: `window.resize` listener sees none of them, and the height is exactly what
-//: was wrong. One observer, every numbered box.
-
-
-
-//: Give a plain textarea a line-number gutter: wrap it, put the gutter
-//: before it, and keep the two in step on input and scroll. The gutter copies
-//: the textarea's own type metrics and top padding through the CSSOM (an
-//: inline `style=` would be refused by the CSP), that, not a shared class,
-//: is what makes "1" sit exactly beside the first line whatever font the box
-//: uses. Idempotent, so the note edit form can call it on every open.
-
-//: The lines a selection touches, as [firstLine, lastLine] and the character
-//: offsets that bracket them. Indent, dedent and comment-toggle all work on
-//: whole lines, and all three need exactly this.
-
-//: Replace a run of the textarea through the browser's own edit pipeline, so
-//: the native undo stack keeps working. Assigning `.value` wipes it, which
-//: would make Ctrl+Z stop working in exactly the editor where people press it
-//: most: the single most important detail in this whole section.
 
 //: **The way out of an editor that takes the Tab key.** Owner: "on the
 //: documents editor, I can't press tab to indent without it selecting an
@@ -2467,42 +2159,6 @@ let docPreviewLineShift = 0;
 //: line with no indentation to remove falls through to the browser's own
 //: focus-backwards rather than doing nothing.
 let docTabEscapes = false;
-
-//: Reads the arming *and* clears it, so one Escape buys one Tab: an armed
-//: flag left standing would make the next Tab after any Escape, minutes and
-//: paragraphs later, throw the writer out of the editor.
-
-//: Shift+Tab has something to do only when there is indentation under the
-//: selection (or a selection at all, which re-indents its lines). Otherwise
-//: it is the browser's, which is what keeps a flush-left caret from being a
-//: keyboard trap.
-//: A markdown list item, at whatever depth. Tab and Shift+Tab treat one of
-//: these as a *block* rather than as a run of characters: pressing Tab with
-//: the caret in the middle of "- alpha" indents the bullet, it does not push
-//: two spaces into the middle of the word, which is what every editor a
-//: writer has used does and what this one did not (measured, 2026-09-12:
-//: "- al|pha" plus Tab gave "- al  pha").
-
-//: The number an ordered item at `indent` columns should carry, from the
-//: lines above `start`: its previous sibling's plus one, or 1 when a shallower
-//: line (the parent) or a break in the list comes first. Deeper lines are the
-//: sibling's children and are skipped over.
-
-
-
-
-//: **A code document comments by the language at the caret** (INBOX 402),
-//: as VS Code does: one HTML file is three languages, so a line inside its
-//: `<script>` takes `//`, inside `<style>` `/* */`, and the markup
-//: `<!-- -->`; a JSX child takes `{/* */}`. The file-type table above has one
-//: marker per file and cannot know that; CodeMirror's own command reads the
-//: `commentTokens` of the grammar at the cursor. It keeps this function's
-//: rules (uncomment only when every non-blank line is commented, the marker
-//: after the indentation, a round trip exact; `tests/test_code_vscode.py`),
-//: with one difference, VS Code's: a block of lines takes its marker at the
-//: block's own indent, so the block keeps its shape. A grammar with no tokens
-//: falls through to the file-type marker; prose, Plain and the textarea
-//: fallback never come here.
 
 
 // --- Live preview: the same editor, with decorations on -----------------------
@@ -2546,58 +2202,6 @@ let docTabEscapes = false;
 // what keeps Live and Source the same document rather than two renderings of
 // one.
 
-//: The table the caret is in, with the cell it is in, or null.
-
-//: One transaction for a whole operation, so Ctrl+Z takes back "insert a
-//: column" rather than the seven cell edits it was made of.
-
-//: Run an operation and put the caret in a named cell, with that cell's text
-//: selected so the next keystroke replaces it, which is what Tab does in every
-//: table editor the plan names.
-//:
-//: The selection is worked out *after* the edits have landed rather than
-//: predicted from the edits themselves: an insertion earlier in the table
-//: moves every offset after it, and a caret computed in the old coordinates is
-//: the classic way a table editor drops the caret a column to the left.
-
-//: Tab moves to the next cell and Shift+Tab to the previous one, which is the
-//: one gesture every editor in the plan's competitor table shares. Tab in the
-//: last cell adds a row, for the same reason: a table you have to reach for a
-//: menu to extend is a table people stop extending. The keydown listener at
-//: the end of this file is what calls it (`docTableTab`), because that
-//: listener already covers both surfaces.
-
-//: The caret at the end of a cell's words, for the gestures that move rather
-//: than select (Enter and the arrows): Tab selects the cell it lands in so
-//: typing replaces it, and an arrow that did the same would turn the next
-//: keystroke into a deletion.
-
-//: Leave a table downwards through `docTableExitEdit`, the way out as data.
-
-
-//: **Enter and the arrows in a Live table** (INBOX 425 i: "tables are still
-//: really annoying to use and edit in the documents live view"). Measured
-//: before this in `scratchpad/ui-sweeps/doctablework.js`: ArrowDown from the
-//: third column landed in the fourth and ArrowUp into the header a column
-//: off, because the editor moves by pixels over cells a grid has laid out;
-//: Enter in the last row made a row but sent the caret to its first column;
-//: and a table that ended the document (or began it) could not be left by
-//: the arrows at all, so the only way to write under it was Source view.
-//:
-//: Now, in Live, the arrows keep the column from row to row (a cell whose
-//: words wrap over several lines is walked through first, as any paragraph
-//: is), Enter goes to the same column one row down and adds the row at the
-//: end, and past the table's edge the arrows leave it, making the blank line
-//: markdown needs when there is nothing on that side yet. Source keeps the
-//: plain editor's keys: there the rows are text, and moving by column over
-//: unaligned pipes would be the surprise.
-
-//: A paste that is a spreadsheet's rows. Into a table, it fills cells from
-//: the caret's (`docTablePasteEdits`); anywhere else in a markdown document,
-//: it becomes a table of its own when the clipboard also carries an HTML
-//: table (which every spreadsheet puts there) and the rows are a rectangle
-//: of at least two by two, so tab-indented text pasted from a code editor is
-//: still pasted as the text it was. Never in a code file.
 
 // --- rich paste: HTML from a web page, Word or Google Docs, as Markdown -------
 //
@@ -2615,24 +2219,10 @@ let docTabEscapes = false;
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-//: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
-//: `<span style="font-weight:700">` arrived as plain text, because no tag in
-//: the list above was in it). Not when the copy is code: an editor's copy is a
-//: monospace, `white-space: pre` block whose coloured spans are sometimes bold
-//: or italic, and those must stay code.
 
 
 let docPastePlain = false;
 
-//: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
-//: `<p>` with `mso-list: l0 level2 lfo1` and a hidden marker span
-//: (`mso-list: Ignore`) holding the bullet or "1.", so neither tag test saw a
-//: list and "· item" arrived as plain text. Returns the Markdown line, indented
-//: by the item's level, or "" for any other paragraph.
-
-
-//: The paste handler: after the table's own (which keeps a grid pasted into
-//: a table's cells), before CodeMirror's plain-text default.
 
 //: **A pasted block starts its own line** (DX3, audit 1102). `## Heading` or a
 //: fence written after "please" is not a heading or a fence, it is text with
@@ -2645,104 +2235,6 @@ docRichPasteEvent.fit = (markdown, before, after) => {
   if (!block) return markdown;
   return `${before.trim() ? "\n\n" : ""}${markdown}${after.trim() ? "\n\n" : ""}`;
 };
-
-//: The whole table, for the one command that is not an edit inside it. The
-//: newline after it goes too, or deleting a table leaves the blank line it was
-//: separated from the next paragraph by.
-function docTableRemoveEdits(context) {
-  const { table, text } = context;
-  let to = table.to;
-  if (text[to] === "\n") to += 1;
-  return [{ from: table.from, to, insert: "" }];
-}
-
-//: Select a row, a column (one range per cell, so Delete clears them and
-//: copy reads them) or the table. A textarea has one range only: the first
-//: to the last.
-function docTableSelect(context, kind) {
-  const index = kind === "row" ? context.cell.row : kind === "column" ? context.cell.col : 0;
-  const ranges = docTableSelectRanges(context.table, kind, index);
-  if (!ranges.length) return false;
-  const view = context.surface.view;
-  const CM = window.CM6;
-  if (view && CM) {
-    const { EditorSelection } = CM.state;
-    view.dispatch({
-      selection: EditorSelection.create(ranges.map((range) => EditorSelection.range(range.from, range.to))),
-      scrollIntoView: true,
-    });
-  } else {
-    context.surface.setSelectionRange(ranges[0].from, ranges[ranges.length - 1].to);
-  }
-  return true;
-}
-
-//: **The filter row and the formula letters** (DOCUMENTS_PLAN gap row 12). A
-//: filter is a view of the table, never an edit: it lives in `docViewState`
-//: under the header's text (a table has no id in markdown, and the header is
-//: what a person calls it), hides body rows in Live only, and is gone with the
-//: page. `docViewState.tableFilter.set` repaints by re-sending the selection, which the
-//: table decoration always rebuilds on.
-docViewState.tableFilter = {
-  key: (table) => table.rows[0].cells.map((cell) => cell.trim()).join("|"),
-  of(table) {
-    const filter = docViewState.tableFilters && docViewState.tableFilters[this.key(table)];
-    return filter && filter.needle ? filter : null;
-  },
-  set(view, table, filter) {
-    docViewState.tableFilters = docViewState.tableFilters || {};
-    const key = this.key(table);
-    if (filter && filter.needle) docViewState.tableFilters[key] = filter;
-    else delete docViewState.tableFilters[key];
-    if (view) view.dispatch({ selection: view.state.selection });
-  },
-  letters(col) {
-    let letters = "";
-    for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
-    return letters;
-  },
-  async ask(context) {
-    const column = (context.table.rows[0].cells[context.cell.col] || "").trim() || `column ${this.letters(context.cell.col)}`;
-    const was = this.of(context.table);
-    const needle = await promptDialog(`Show rows where ${column} contains`, was ? was.needle : "", { confirmLabel: "Filter" });
-    if (needle !== null && needle !== undefined) {
-      this.set(context.surface.view, context.table, { col: context.cell.col, needle: needle.trim() });
-    }
-    context.surface.focus();
-  },
-};
-
-//: The commands, as data, because three things read them: the cell menu, the
-//: "/" menu's table entry and the tests. `run` takes the live context rather
-//: than closing over one, so a menu built for the cell you opened it on still
-//: acts on the cell you are in when you choose an item.
-
-//: Named so the "/" menu, a shortcut or a test can run one without going
-//: through the menu's DOM.
-
-//: The cell menu, built from the app's own ⋯ recipe (`kebabMenu`) rather than
-//: from scratch: DESIGN.md's index says a menu is `kebabMenu`, and a
-//: hand-built one here would be the eleventh thing in this app that opens a
-//: list of actions and the first that does it differently.
-
-
-//: **Grips on a Live table's edges** (INBOX 904 B23: "lines on the edges and
-//: rows and columns on the outside etc to select whole rows or columns, or to
-//: add new rows or columns or even dragging icons to drag and rearrange
-//: columns and rows"). While the caret is in a table: a bar above each column
-//: and one beside each row (a click selects it, a drag moves it, a right-click
-//: or a hold opens the table's menu there), and a plus at the end of the
-//: header (a column) and under the last row (a row). Every drag has the menu's
-//: Move row and Move column as its keyboard and touch alternative (WCAG 2.5.7).
-//:
-//: A layer inside the editor's scroller, so it scrolls with the text; the
-//: geometry is read from the rendered cells (`requestMeasure`), never guessed
-//: from the grid's template. Rebuilt only when that geometry changes, and never
-//: mid-press, because a press that loses its element loses its release.
-
-
-//: One command, by id, against a context the caller already holds. The named
-//: `docTableCommand` reads the caret itself; a grip has just moved it.
 
 
 // Frontmatter and the properties panel: documents-props.js (DC13 remainder).
@@ -2776,66 +2268,9 @@ docViewState.tableFilter = {
 //: more likely to be a caret in prose ("2^31", "x ^ y") than a block id.
 //: The trailing `^id` on a line, with the space before it, so removing the id
 //: does not leave a space behind.
-//: A list item's own bullet. A block id on a list belongs to the item, not to
-//: the whole list, which is the one place "the block" is a single line.
 
-//: `Document title#^an-id` split into its halves. Returns `blockId: null` for
-//: a plain name, so every caller can use this and none has to know whether a
-//: link happens to carry one.
-
-//: Is this position inside a fenced code block? A `^id` written in one is an
-//: example of the syntax rather than a use of it, and a block id may not be
-//: put there at all: the text inside a fence is code, and appending to it
-//: changes what the code says.
-
-//: The block a position is in: `{from, to, lastFrom, lastTo}` over the text,
-//: or null when there is no block there (a blank line, or inside a fence).
-//:
-//: A block is the run of non-blank lines around the position, except in a
-//: list, where it is the item's own line. Both are what Obsidian does and
-//: both are what a person means by "this paragraph".
-
-//: The id a block already carries, as `{id, from, to}` over the text, or null.
-//: The span includes the space before the `^`, so it round-trips: removing it
-//: gives back exactly the line that was there before the id was added.
-
-//: Every id already in a document, so a new one cannot collide with one.
-
-//: A new id for this document. Six characters of base 36, which is 2.2 billion
-//: of them: short enough to read in the text it is appended to, and the
-//: collision check below makes the birthday problem somebody else's.
-//:
-//: `random` is a parameter so the test can make this total rather than
-//: probabilistic; nothing in the app passes it.
-
-//: The edits that give the block at `pos` an id, and the id itself. A block
-//: that already has one is not touched: the whole point of an id is that a
-//: link written yesterday still resolves.
-//:
-//: One `{from, to, insert}` over the end of the block's last line, which is
-//: the same shape the table and frontmatter models write, and for the same
-//: reason: it keeps every other byte of the document exactly as it was.
-
-//: The block carrying an id: `{from, to, text}` over the document, with the
-//: `^id` itself left out of the text (it is scaffolding, not content).
-//: Returns null when nothing carries it, which is what a link to a block
-//: somebody deleted looks like.
-
-//: The text as a *reader* sees it: every block marker taken out. A `^id` is
-//: scaffolding the same way `[[` and `]]` are, so it belongs in the source
-//: pane and in the file on disk, and nowhere in the rendered pane or the PDF
-//: printed from it. The Live view already hides it; this is the same rule for
-//: the pane that has no caret to bring it back.
-//:
-//: Markers inside a fence are left alone: there a `^id` is an example of the
-//: syntax rather than a use of it, and a preview that rewrites code is a
-//: preview saying something the file does not.
 
 // --- block references in the running editor ----------------------------------
-
-//: Another document's text, fetched once for the embeds that need it. A page
-//: holding six embeds of one document asks for it once, and the open document
-//: is never fetched at all: its text is what is being typed.
 
 
 //: Copy a link to the block at the caret, and put the caret on a block a link led to: documents-blockref.js,
@@ -2852,271 +2287,8 @@ docViewState.tableFilter = {
 let docPrintComments = false;
 
 
-
-
-//: The compartment decision 3 names: Live is this editor with the markdown
-//: decorations on, Source is the same editor with them off. Nothing else
-//: differs between the two views, which is the whole point.
-//: **A reconfigure that changes nothing is skipped** (DOCUMENTS 25 row 7).
-//: Each one is a view update that reads the DOM selection and lays the page
-//: out: measured on a 241-line file, the open spent 103ms here and 75ms in the
-//: gutter's twin below re-saying what `docCmExtensions` had just built. The
-//: live set is cached instances (`docLivePlugin`, the two fields), so on or
-//: off is the whole of its state, as the line numbers' preference is the
-//: gutter's.
-function docCmPartIs(part, on) {
-  const current = part.get(docCmView.state);
-  return Boolean(current && current.length) === Boolean(on);
-}
-
-function docSetLiveDecorations(on) {
-  const CM = window.CM6;
-  if (!docCmView || !CM || !docCmParts.live) return;
-  if (docCmPartIs(docCmParts.live, on)) return;
-  docCmView.dispatch({
-    effects: docCmParts.live.reconfigure(on ? docLiveExtensions(CM) : []),
-  });
-}
-
-//: **A span's marks show while a selection is in it or touching it**
-//: (INBOX 1473 b, the owner: "like obsidian where it does it per phrase,
-//: word, or whatever text string is formatted when clicked inside or next
-//: to"). Every range counts, not only the main one, so each cursor of a
-//: multi-cursor edit and every span a selection crosses reveal. Ends are
-//: inclusive: a caret just after the closing `**` is "next to" the span.
-function docLiveSpanTouched(ranges, from, to) {
-  for (const range of ranges) {
-    if (range.from <= to && range.to >= from) return true;
-  }
-  return false;
-}
-
-//: Whether a new selection reveals exactly what the last build revealed.
-//: `probes` is the flat `[from, to, revealed, ...]` list a build records for
-//: every reveal it decided; when none flips, a caret move changes no
-//: decoration and the plugin keeps the set it has.
-function docLiveRevealSame(probes, ranges) {
-  for (let i = 0; i < probes.length; i += 3) {
-    const v = probes[i + 2];
-    if ((v & 2 ? docLiveSpanTouched.anchorIn : docLiveSpanTouched)(ranges, probes[i], probes[i + 1]) !== Boolean(v & 1)) return false;
-  }
-  return true;
-}
-//: A rendered widget turns to source only while a selection starts in it (INBOX 1547): a caret
-//: there, or a drag begun there; a selection that crosses it leaves it drawn, height and all.
-//: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
-//: **A caret shows it only from strictly inside** (audit 1102 DX5): Up or Down lands a caret on a
-//: widget's edge (it has no inside to land in), and the edge revealing it moved the page 235px at
-//: `[TOC]`; Left or Right from the edge steps in. A drag begun at the edge still shows it.
-docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range.anchor >= from && range.anchor <= to && (!range.empty || (range.anchor > from && range.anchor < to)));
-
-
-//: Live is three extensions rather than one now, and all three go in the same
-//: compartment, so a view switch turns them on and off together: the block
-//: widget and the arrow keys that step into it belong to Live exactly as the
-//: markdown decorations do.
-function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docMathRender.graphField(CM), docMathRender.baseField(CM), docMathRender.queryField(CM), docMathRender.sectionsField(CM), docLiveExtensions.dragHandle(CM)];
-}
-
-//: **A drag handle for a Live block** (audit 1102 DX29; Notion's grip). Beside
-//: the block under the pointer a grip appears in the page margin; dragging it
-//: and letting go moves the whole block (a paragraph, a list item with what is
-//: nested under it, a fence, a heading's section) to the drop point.
-//:
-//: It is the keyboard move repeated, not a second model: `docBlockMoveEdit`
-//: (Alt+Up and Alt+Down) is applied to a copy of the text once per neighbour the
-//: drop is past, and the difference between the copy and the document is
-//: dispatched as ONE transaction, so one Undo puts the block back. The keyboard
-//: path already meets WCAG 2.5.7, so the grip is `aria-hidden` and its title
-//: names the keys. Pointer only: a phone has no hover (the stylesheet hides it
-//: too) and a code file keeps the editor's own line move.
-docLiveExtensions.dragHandle = (CM) => {
-  if (docViewState.blockHandle) return docViewState.blockHandle;
-  const { ViewPlugin } = CM.view;
-  docViewState.blockHandle = ViewPlugin.fromClass(
-    class {
-      constructor(view) {
-        this.view = view;
-        this.press = null;
-        this.plan = null;
-        this.unit = null;
-        this.seen = -1;
-        this.el = document.createElement("div");
-        this.el.className = "doc-block-handle hidden";
-        this.el.title = "Drag to move this block. Alt+Up and Alt+Down move it from the keyboard";
-        this.el.setAttribute("aria-hidden", "true");
-        const icon = document.createElement("i");
-        icon.className = "ph ph-dots-six-vertical";
-        this.el.appendChild(icon);
-        this.mark = document.createElement("div");
-        this.mark.className = "doc-block-drop hidden";
-        view.scrollDOM.append(this.el, this.mark);
-        this.on = {
-          hover: (event) => this.hover(event),
-          leave: () => this.press || this.hide(),
-          down: (event) => this.down(event),
-          move: (event) => this.drag(event),
-          up: (event) => this.drop(event),
-          cancel: () => this.end(),
-        };
-        view.contentDOM.addEventListener("pointermove", this.on.hover);
-        view.scrollDOM.addEventListener("pointerleave", this.on.leave);
-        this.el.addEventListener("pointerdown", this.on.down);
-        this.el.addEventListener("pointermove", this.on.move);
-        this.el.addEventListener("pointerup", this.on.up);
-        this.el.addEventListener("pointercancel", this.on.cancel);
-      }
-      update(update) {
-        if (!update.docChanged) return;
-        this.end();
-        this.hide();
-      }
-      destroy() {
-        this.view.contentDOM.removeEventListener("pointermove", this.on.hover);
-        this.view.scrollDOM.removeEventListener("pointerleave", this.on.leave);
-        this.el.remove();
-        this.mark.remove();
-      }
-
-      hide() {
-        this.unit = null;
-        this.seen = -1;
-        this.el.classList.add("hidden");
-      }
-
-      //: The block under the pointer. Recomputed only when the pointer changes
-      //: line (the block model reads the whole text), and a blank line between
-      //: two blocks leaves the grip where it was so the pointer can reach it.
-      hover(event) {
-        if (this.press || event.pointerType !== "mouse" || window.matchMedia("(hover: none)").matches) return;
-        if (!docFileType().previewable) return this.hide();
-        const view = this.view;
-        const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
-        if (pos == null) return;
-        const doc = view.state.doc;
-        const line = doc.lineAt(pos);
-        if (line.from === this.seen) return;
-        if (!line.text.trim()) return;
-        this.seen = line.from;
-        const text = docStr(doc);
-        let edit = docBlockMoveEdit(text, line.from, 1);
-        if (!edit || edit.noop) edit = docBlockMoveEdit(text, line.from, -1);
-        if (!edit || edit.noop || !edit.unit) return this.hide();
-        const box = view.coordsAtPos(edit.unit.from);
-        if (!box) return this.hide();
-        const scroller = view.scrollDOM;
-        const sr = scroller.getBoundingClientRect();
-        this.unit = edit.unit;
-        this.el.classList.remove("hidden");
-        this.el.style.top = `${Math.round(box.top - sr.top - scroller.clientTop + scroller.scrollTop)}px`;
-        this.el.style.height = `${Math.round(box.bottom - box.top)}px`;
-        this.el.style.left = `${Math.max(0, Math.round(box.left - sr.left - scroller.clientLeft + scroller.scrollLeft))}px`;
-      }
-
-      down(event) {
-        if (event.button !== 0 || !this.unit) return;
-        //: Not a text press: the editor keeps its focus and its caret.
-        event.preventDefault();
-        this.press = { id: event.pointerId, x: event.clientX, y: event.clientY, drag: false, unit: this.unit, text: docStr(this.view.state.doc) };
-        this.plan = null;
-        try {
-          this.el.setPointerCapture(event.pointerId);
-        } catch {
-          /* a pointer that is already gone: the release will not come, and the press is dropped */
-        }
-      }
-
-      //: Where a drop at this height lands: the nearest line edge, then as many
-      //: neighbours as that edge is past, each one the keyboard move.
-      planFor(drop) {
-        const press = this.press;
-        let text = press.text;
-        let at = press.unit.from;
-        let edge = null;
-        let steps = 0;
-        const delta = drop > at ? 1 : -1;
-        while (steps < 500) {
-          const edit = docBlockMoveEdit(text, at, delta);
-          if (!edit || edit.noop) break;
-          if (delta > 0 ? drop < edit.hopTo : drop > edit.hopFrom) break;
-          text = text.slice(0, edit.from) + edit.insert + text.slice(edit.to);
-          if (delta > 0 && drop >= edit.to) drop += edit.insert.length - (edit.to - edit.from);
-          at = edit.caret;
-          edge = delta > 0 ? edit.hopTo : edit.hopFrom;
-          steps += 1;
-        }
-        return { text, at, edge, steps };
-      }
-
-      drag(event) {
-        const press = this.press;
-        if (!press || event.pointerId !== press.id) return;
-        if (!press.drag && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= DOC_GRIP_DRAG_PX) {
-          press.drag = true;
-          this.el.classList.add("is-dragging");
-        }
-        if (!press.drag) return;
-        const view = this.view;
-        const scroller = view.scrollDOM;
-        const sr = scroller.getBoundingClientRect();
-        if (event.clientY < sr.top + 24) scroller.scrollTop -= 12;
-        else if (event.clientY > sr.bottom - 24) scroller.scrollTop += 12;
-        const doc = view.state.doc;
-        const block = view.lineBlockAtHeight(event.clientY - view.documentTop);
-        const line = doc.lineAt(block.from);
-        const upper = event.clientY - view.documentTop < (block.top + block.bottom) / 2;
-        const drop = upper ? line.from : Math.min(line.to + 1, doc.length);
-        if (!this.plan || this.plan.drop !== drop) this.plan = { ...this.planFor(drop), drop };
-        const edge = this.plan.steps ? view.lineBlockAt(this.plan.edge) : null;
-        this.mark.classList.toggle("hidden", !edge);
-        if (!edge) return;
-        const cr = view.contentDOM.getBoundingClientRect();
-        const y = this.plan.edge >= doc.length ? edge.bottom : edge.top;
-        this.mark.style.top = `${Math.round(view.documentTop + y - sr.top - scroller.clientTop + scroller.scrollTop)}px`;
-        this.mark.style.left = `${Math.round(cr.left - sr.left - scroller.clientLeft + scroller.scrollLeft)}px`;
-        this.mark.style.width = `${Math.round(cr.width)}px`;
-      }
-
-      drop(event) {
-        const press = this.press;
-        const plan = this.plan;
-        if (!press || event.pointerId !== press.id) return;
-        const view = this.view;
-        this.end();
-        if (!press.drag || !plan || !plan.steps || view.state.doc.length !== press.text.length) return;
-        //: The move is a swap of text the document already has, so the change is
-        //: the stretch that differs: one edit, one transaction, one Undo.
-        const old = press.text;
-        const next = plan.text;
-        const room = Math.min(old.length, next.length);
-        let from = 0;
-        while (from < room && old.charCodeAt(from) === next.charCodeAt(from)) from += 1;
-        let tail = 0;
-        while (tail < room - from && old.charCodeAt(old.length - 1 - tail) === next.charCodeAt(next.length - 1 - tail)) tail += 1;
-        view.dispatch({
-          changes: { from, to: old.length - tail, insert: next.slice(from, next.length - tail) },
-          selection: { anchor: plan.at },
-          userEvent: "move.line",
-        });
-      }
-
-      end() {
-        this.press = null;
-        this.plan = null;
-        this.el.classList.remove("is-dragging");
-        this.mark.classList.add("hidden");
-      }
-    },
-  );
-  return docViewState.blockHandle;
-};
-
 //: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
 const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
-
-
-
 
 
 // Markdown formatting from a toolbar, so you don't have to remember the
@@ -4134,184 +3306,8 @@ async function deleteCurrentDocument() {
 }
 
 // --- AI editing ---
+//: The running edit's abort; documents-ai.js assigns it, so it stays a shared `let` here. The panel's doors are documents-ai-edit.js.
 let docAiController = null;
-
-//: The Atlas panel's code is documents-ai.js, fetched on the first press of any
-//: of its controls (audit 1031 DC13): `docAiLazy` loads it, then calls the
-//: function of that name the file defines.
-async function docAiLazy(name, ...args) {
-  //: With the diff library beside it: the panel draws its proposal with `docRenderDiff`.
-  if (!(await Promise.all([lazyScript("/js/documents-ai.js"), lazyScript("/js/documents-history.js")])).every(Boolean)) return toast("The Atlas panel could not be loaded.", true, { action: ["Try again", () => docAiLazy(name, ...args)] });
-  return window[name](...args);
-}
-
-function closeDocAiPanel() {
-  $("doc-ai-panel").classList.add("hidden");
-}
-
-// Extract notes (BACKLOG.md §62): the same selection-or-whole-document scope
-// AI edit above already uses, select a passage first to extract from just
-// that, or leave nothing selected to extract from the whole document.
-function openDocExtractPreview() {
-  if (!currentDoc) return;
-  const box = docSurface();
-  const { from, to } = box.selection();
-  const selection = box.text.slice(from, to).trim();
-  openExtractPreview(selection || box.text, { sourceDocumentId: currentDoc.id });
-}
-
-// --- AI edit history (the changelog) ---------------------------------------
-
-function docAiVerbIcon(verb) {
-  return { edit: "ph-pencil-simple", write: "ph-plus-circle", remove: "ph-x-circle", revert: "ph-arrow-counter-clockwise" }[verb] || "ph-pencil-simple";
-}
-
-async function openDocAiHistory() {
-  if (!currentDoc) return;
-  const dialog = $("doc-ai-history-dialog");
-  const list = $("doc-ai-history-list");
-  const empty = $("doc-ai-history-empty");
-  list.replaceChildren();
-  empty.classList.add("hidden");
-  dialog.showModal();
-  const li = document.createElement("li");
-  li.className = "muted";
-  li.textContent = "Loading…";
-  list.appendChild(li);
-  try {
-    const entries = await apiJson(`/documents/${currentDoc.id}/ai-edit-log`);
-    list.replaceChildren();
-    if (!entries.length) {
-      empty.classList.remove("hidden");
-      return;
-    }
-    for (const entry of entries) {
-      const row = document.createElement("li");
-      row.className = "doc-ai-history-entry";
-      const icon = document.createElement("i");
-      icon.className = `ph ${docAiVerbIcon(entry.verb)}`;
-      icon.setAttribute("aria-hidden", "true");
-      const text = document.createElement("div");
-      text.className = "doc-ai-history-text";
-      const line = document.createElement("p");
-      line.textContent = entry.instruction || (entry.verb === "remove" ? "Removed a selection" : "AI edit");
-      const meta = document.createElement("p");
-      meta.className = "muted text-sm";
-      const when = whenText(entry.created_at);
-      meta.textContent = entry.selection_excerpt
-        ? `${when} · “${entry.selection_excerpt}”`
-        : when;
-      text.append(line, meta);
-      const revertBtn = document.createElement("button");
-      revertBtn.type = "button";
-      revertBtn.className = "ghost small";
-      revertBtn.textContent = "Revert";
-      revertBtn.addEventListener("click", async () => {
-        revertBtn.disabled = true;
-        try {
-          const saved = await apiJson(
-            `/documents/${currentDoc.id}/ai-edit-log/${entry.id}/revert`,
-            { method: "POST" }
-          );
-          if (currentDoc && currentDoc.id === saved.id) {
-            currentDoc = saved;
-            docSurface().text = saved.content;
-            $("doc-title").value = saved.title;
-            renderDocPreview();
-            docDirty = false;
-            $("doc-saved").textContent = "Saved";
-          }
-          docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-          renderDocList();
-          toast("Reverted.");
-          dialog.close();
-        } catch (error) {
-          toast(error.message || "Couldn't revert that.", true);
-        } finally {
-          revertBtn.disabled = false;
-        }
-      });
-      row.append(icon, text, revertBtn);
-      list.appendChild(row);
-    }
-  } catch (error) {
-    list.replaceChildren();
-    const errLi = document.createElement("li");
-    errLi.className = "muted";
-    errLi.textContent = error.message || "Couldn't load the history.";
-    list.appendChild(errLi);
-  }
-}
-
-//: The version history dialog and the line diff are documents-history.js,
-//: fetched on the first press of the dock's History or Name this version
-//: (audit 1031 DC13). The AI edit panel, the code assistant and the edit-conflict
-//: prompt wait on the same `lazyScript` before they draw a diff, so none of them
-//: can run ahead of `docRenderDiff`.
-for (const [id, name] of [["doc-history", "openDocHistory"], ["doc-history-name", "docNameCurrentVersion"]]) {
-  $(id)?.addEventListener("click", async () => {
-    if (!(await lazyScript("/js/documents-history.js"))) return toast("The history could not be loaded.", true, { action: ["Try again", () => $(id).click()] });
-    return window[name]();
-  });
-}
-//: The AI assistant's own model. `openFeatureModelSheet` lives in app.js,
-//: which loads first, and is the same sheet the Chat tab and the writing desk
-//: open: one picker, three ways in.
-$("doc-ai-model")?.addEventListener("click", () => window.openFeatureModelSheet?.("documents"));
-
-const DOC_SIDEBAR_SECTIONS = ["list", "outline"];
-const DOC_SIDEBAR_STORE = "docSidebarSection";
-
-function showDocSidebarSection(name) {
-  const wanted = DOC_SIDEBAR_SECTIONS.includes(name) ? name : "list";
-  for (const section of DOC_SIDEBAR_SECTIONS) {
-    $(`doc-sidebar-${section}`)?.classList.toggle("hidden", section !== wanted);
-  }
-  for (const button of document.querySelectorAll("#doc-sidebar-tabs button")) {
-    const active = button.dataset.section === wanted;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
-    button.tabIndex = active ? 0 : -1;
-  }
-  prefs.set(DOC_SIDEBAR_STORE, wanted);
-  //: A hidden list has no scroll position to correct, so the mark made while
-  //: the Documents tab was showing could not bring its row into view. Asked
-  //: again on the way in, when the outline has a box.
-  if (wanted === "outline") {
-    docOutlineMarked = -1;
-    markDocOutline();
-    //: The comments section is in this tab and is drawn from the document's own
-    //: text on every facts pass, so the same argument applies to it: a hidden
-    //: list has nothing to draw into, and the pass that ran while the Documents
-    //: tab was showing left it with nothing in it.
-    renderDocComments();
-  }
-}
-
-function initDocSidebarTabs() {
-  const strip = $("doc-sidebar-tabs");
-  if (!strip || strip.dataset.ready) return;
-  strip.dataset.ready = "1";
-  strip.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-section]");
-    if (button) showDocSidebarSection(button.dataset.section);
-  });
-  strip.addEventListener("keydown", (event) => {
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
-    if (!step) return;
-    event.preventDefault();
-    const index = DOC_SIDEBAR_SECTIONS.indexOf(
-      prefs.get(DOC_SIDEBAR_STORE, null) || "list"
-    );
-    const next =
-      DOC_SIDEBAR_SECTIONS[
-        (index + step + DOC_SIDEBAR_SECTIONS.length) % DOC_SIDEBAR_SECTIONS.length
-      ];
-    showDocSidebarSection(next);
-    strip.querySelector(`button[data-section="${next}"]`)?.focus();
-  });
-  showDocSidebarSection(prefs.get(DOC_SIDEBAR_STORE, null) || "list");
-}
 
 // --- documents wiring ---
 //: The code panel's ways in (INBOX 788), each fetching documents-codekit.js
@@ -6391,373 +5387,6 @@ $("doc-replace-everywhere").addEventListener("click", () => openDocReplace());
 initDocSidebarTabs();
 
 
-// --- Toolbar shape: expanded, or one scrolling row --------------------------
-//
-// Asked for directly: *"there should be the option to have the tool bar as a
-// horizontal scroll or expanded."* Expanded (wrapping) is the default, and not
-// only as a preference: a wrapping toolbar is not a scroll container, so it
-// cannot clip the `<details>` menus inside it: which was the other half of
-// the same report. See `.doc-toolbar`'s own comment for the `overflow-y:
-// visible` trap that caused both.
-
-const DOC_TOOLBAR_MODE_KEY = "doc-toolbar-mode";
-//: The default flipped from "row" to "wrap" on 2026-09-09 (see `.doc-toolbar`
-//: in 05-sidebars-themes.css), but a value saved before that still reads
-//: "row" from storage and renders the crushed single-line strip forever,
-//: which is exactly the "still gets clipped" report repeating on a build
-//: that already carries the fix. Migrated once: a bare stored "row" with no
-//: migration flag is the pre-2026-09-09 default, not a deliberate choice,
-//: so it is cleared back to the new default rather than honoured.
-const DOC_TOOLBAR_MODE_MIGRATED_KEY = "doc-toolbar-mode-migrated-2026-09-09";
-
-function docToolbarMode() {
-  try {
-    const stored = prefs.get(DOC_TOOLBAR_MODE_KEY, null);
-    if (stored === "row" && !prefs.get(DOC_TOOLBAR_MODE_MIGRATED_KEY, null)) {
-      prefs.remove(DOC_TOOLBAR_MODE_KEY);
-      prefs.set(DOC_TOOLBAR_MODE_MIGRATED_KEY, "1");
-      return "wrap";
-    }
-    if (stored === "row" || stored === "wrap") return stored;
-    //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
-    //: here at 700 px wide; dogfood item 10). The toggle always wins.
-    return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
-  } catch {
-    return "wrap"; // private mode: the safe shape, since it never clips
-  }
-}
-
-const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
-window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
-
-function applyDocToolbarMode(mode) {
-  const row = mode === "row";
-  for (const bar of document.querySelectorAll(".doc-toolbar")) {
-    //: An attribute rather than a class: the CSS keys off
-    //: `[data-toolbar-mode="row"]`, and the default (wrap) is the bare rule,
-    //: so an unset attribute is the safe shape rather than an unstyled one.
-    if (row) bar.dataset.toolbarMode = "row";
-    else delete bar.dataset.toolbarMode;
-  }
-  const button = document.getElementById("doc-toolbar-mode");
-  const label = document.getElementById("doc-toolbar-mode-label");
-  if (button) button.setAttribute("aria-pressed", row ? "true" : "false");
-  //: The label names what pressing it *does*, not the state it is in, the
-  //: state is carried by `aria-pressed` for a screen reader and by the
-  //: toolbar's own shape for everyone else.
-  if (label) label.textContent = row ? "Expand the toolbar" : "Use one row";
-  //: The strip's own layout button and this menu entry are two views of one
-  //: setting, so painting one without the other is how they drift.
-  applyDocToolbarLayoutButtons();
-  //: Refit now: the mode change alone does not resize the bar, so the width observer never fired and the
-  //: note editor's "fit on one row" button looked like it did nothing (reported at release). Once, after
-  //: the layout button moved, not once per strip before it as well.
-  fitDocToolbars();
-}
-
-function setDocToolbarMode(mode) {
-  try {
-    prefs.set(DOC_TOOLBAR_MODE_KEY, mode);
-    //: A choice made now is never the pre-2026-09-09 default the migration
-    //: in `docToolbarMode` clears. Without the flag, the first read after
-    //: choosing "row" cleared it back to "wrap": the next press chose "row"
-    //: again (the toggle could not go back) and a reload lost it.
-    prefs.set(DOC_TOOLBAR_MODE_MIGRATED_KEY, "1");
-  } catch {
-    /* private mode: it just won't be remembered */
-  }
-  applyDocToolbarMode(mode);
-}
-
-document.getElementById("doc-toolbar-mode")?.addEventListener("click", () => {
-  setDocToolbarMode(docToolbarMode() === "row" ? "wrap" : "row");
-});
-
-//: **The two controls that were asked for, on the toolbar itself.**
-//:
-//: Reported: *"cant collapse and make horizontally scrollable the tools bar in
-//: the notes capture subtab and documents editor."* Half of that was already
-//: built and unfindable: the wrap/scroll switch existed, buried in the
-//: document dock's ⋯ menu, four clicks from the strip it changes, and the note
-//: composer's toolbar had no way to reach it at all. The other half, collapse,
-//: did not exist: on a laptop the expanded strip is two rows of chrome above a
-//: three-row note box.
-//:
-//: Built in script rather than written into the markup twice, because there
-//: are two toolbars and a third would silently miss out. Pinned to the right
-//: edge with `position: sticky` so that in scroll mode the controls do not
-//: scroll away with the buttons they control.
-//: **Line numbers are a choice, not a file-type consequence.** Asked for
-//: directly: "line numbers should be togglable in the documents". They used to
-//: appear for code files and for nothing else, so a long markdown note -- the
-//: thing most likely to need "the paragraph around line 240" -- could not have
-//: them, and a .py file could not be rid of them.
-//:
-//: Default follows the old behaviour (on for code, off for prose), so nothing
-//: moves for anyone who never touches the control; once touched, the choice is
-//: remembered and wins for every file.
-const DOC_GUTTER_KEY = "doc-gutter";
-
-function docGutterPref() {
-  try {
-    return prefs.get(DOC_GUTTER_KEY, null); // "1", "0", or null for "follow the file type"
-  } catch {
-    return null;
-  }
-}
-
-function docGutterWanted(isCode) {
-  const pref = docGutterPref();
-  if (pref === "1") return true;
-  if (pref === "0") return false;
-  //: Plain numbers itself, like a code file does. Asked for directly:
-  //: "on the plain txt editor, they should show by default but be togglable
-  //: in the toolbar." Only the *default* moves: an explicit "0" above still
-  //: wins, so turning them off in Plain turns them off and stays off. Plain
-  //: is the view with no grammar and no decorations (docCmViewLanguage), so
-  //: the numbers are the only structure left to navigate by, which is why
-  //: this is the one view whose default differs from prose's.
-  if (typeof docView !== "undefined" && docView === "plain") return true;
-  return Boolean(isCode);
-}
-
-function setDocGutter(on) {
-  try {
-    prefs.set(DOC_GUTTER_KEY, on ? "1" : "0");
-  } catch {
-    /* private mode: the choice holds for this session only */
-  }
-  document.documentElement.dataset.noteGutter = on ? "on" : "off";
-  applyDocGutter();
-}
-
-//: Reads the *current* file's type rather than taking it as an argument, so
-//: the toggle and the file-open path cannot disagree about what "code" means.
-function applyDocGutter() {
-  // One remembered choice for every editor. The documents editor keeps its
-  // "follow the file type" default (code files number themselves); a note
-  // box has no file type, so there the choice alone decides.
-  let anyOn = false;
-  for (const { gutter, box } of docGutters()) {
-    const isDoc = box.id === "doc-content";
-    const on = isDoc
-      ? docGutterWanted(box.classList.contains("doc-content-code"))
-      : docGutterPref() === "1";
-    gutter.classList.toggle("hidden", !on);
-    //: Numbers only line up against hard lines, so a numbered box stops
-    //: soft-wrapping, which is the same rule `.doc-content-code` already
-    //: applies.
-    //:
-    //: **The documents editor used to be excluded from this**, on the
-    //: assumption that a numbered document is always a code file and so
-    //: already has `.doc-content-code`. It is not: `docGutterWanted` honours a
-    //: remembered "1", so anyone who turned line numbers on sees them on a
-    //: markdown document too, where the textarea soft-wraps and the column
-    //: does not. That is one number lost per wrapped line, accumulating down
-    //: the file, which is exactly the "line numbers drift out of sync with the
-    //: text" that was reported.
-    box.classList.toggle("has-gutter", on);
-    anyOn = anyOn || on;
-  }
-  syncDocGutterMetrics();
-  watchDocGutter(docBoxEl());
-  //: The document's own numbers come from the engine once it is mounted, so
-  //: the preference has to reach it as well as the two note columns.
-  docCmSyncGutter();
-  for (const { box } of docGutters()) {
-    const view = noteSurfaceViews.get(box);
-    if (view && box.noteGutterSlot && window.CM6) view.dispatch({ effects: box.noteGutterSlot.reconfigure(noteSurfaceGutter(window.CM6, box)) });
-  }
-  for (const button of document.querySelectorAll(".doc-toolbar-gutter")) {
-    const bar = button.closest(".doc-toolbar");
-    const own = bar?.id === "doc-toolbar"
-      ? docCmView
-        ? docGutterWanted(!docFileType().previewable)
-        : !$("doc-gutter")?.classList.contains("hidden")
-      : docGutterPref() === "1";
-    button.setAttribute("aria-pressed", own ? "true" : "false");
-    button.title = own ? "Hide line numbers" : "Show line numbers";
-    button.setAttribute("aria-label", button.title);
-  }
-  renderDocGutter();
-}
-
-const DOC_TOOLBAR_COLLAPSED_KEY = "doc-toolbar-collapsed";
-
-function docToolbarCollapsed() {
-  try {
-    // Collapsed until you ask for it (PLAN.md D1): Typora, iA Writer and
-    // Notion all start with no formatting strip on screen, the strip is a
-    // 30-control, three-row block that pushed the first line of text to
-    // y=284 at 1440px. The collapsed strip keeps its own name and the
-    // chevron that brings it back, and a choice either way is remembered.
-    return (prefs.get(DOC_TOOLBAR_COLLAPSED_KEY, null) ?? "1") === "1";
-  } catch {
-    return false; // private mode: the expanded shape is the safe default
-  }
-}
-
-//: `only`: one strip, which may not be in the document yet. Both appliers are
-//: what actually draw the wrap and collapse glyphs (`setLabel` lives here, not
-//: at the buttons' creation), and both used to walk the document -- so a bar
-//: mounted before insertion, which is exactly what the note edit form's cloned
-//: strip is, ended up with two blank buttons.
-function applyDocToolbarCollapsed(collapsed, only = null) {
-  // The documents dock's own strip has a toggle in the header row (PLAN.md
-  // D1); the strip itself hides entirely while collapsed, so the header
-  // button is the way back and must say which state it is in.
-  const headerToggle = $("doc-format-toggle");
-  if (headerToggle && (!only || only.id === "doc-toolbar")) {
-    headerToggle.setAttribute("aria-pressed", collapsed ? "false" : "true");
-    headerToggle.title = collapsed
-      ? "Show the formatting toolbar above the editor (Ctrl+Shift+X)"
-      : "Hide the formatting toolbar (Ctrl+Shift+X)";
-    headerToggle.setAttribute("aria-label", headerToggle.title);
-    const label = $("doc-format-toggle-label");
-    if (label) label.textContent = collapsed ? "Show formatting toolbar" : "Hide formatting toolbar";
-    docSyncFormatShow();
-  }
-  for (const bar of only ? [only] : document.querySelectorAll(".doc-toolbar")) {
-    //: **A note's strip never folds** (INBOX 616, the owner: "the formatting
-    //: toolbar looks really awkward when collapsed", an empty band with three
-    //: icons and a caret). It is one slim row of icons with the rest behind
-    //: More, in Capture and the edit form alike; the folded state and its
-    //: button are the document editor's, which has a dock to bring it back.
-    bar.classList.toggle("is-collapsed", collapsed && !bar.classList.contains("note-toolbar"));
-    const button = bar.querySelector(".doc-toolbar-collapse");
-    if (!button) continue;
-    button.setAttribute("aria-pressed", collapsed ? "true" : "false");
-    button.title = collapsed ? "Show the formatting tools" : "Hide the formatting tools";
-    button.setAttribute("aria-label", button.title);
-    setLabel(button, collapsed ? "ph:caret-down" : "ph:caret-up");
-  }
-  for (const bar of only ? [only] : document.querySelectorAll(".doc-toolbar")) fitDocToolbarRow(bar);
-}
-
-function setDocToolbarCollapsed(collapsed) {
-  try {
-    prefs.set(DOC_TOOLBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
-  } catch {
-    /* private mode: it just won't be remembered */
-  }
-  applyDocToolbarCollapsed(collapsed);
-  //: **Said once, the first time it is hidden** (INBOX 574): where it went
-  //: and the two ways back, so a strip closed by accident is not lost.
-  if (collapsed) {
-    let told = false;
-    try {
-      told = prefs.get(DOC_TOOLBAR_HINT_KEY, null) === "1";
-      prefs.set(DOC_TOOLBAR_HINT_KEY, "1");
-    } catch {
-      /* private mode: said every time, which is the safe side */
-    }
-    if (!told) toast("Formatting hidden. Bring it back from the Formatting button or Ctrl+Shift+X.");
-  }
-}
-
-const DOC_TOOLBAR_HINT_KEY = "doc-toolbar-hidden-hint";
-
-//: The dock's Formatting button (INBOX 574): there while the strip is hidden
-//: on a document that has one (a code file has no markdown strip at all, so
-//: no way back to it either).
-function docSyncFormatShow() {
-  const show = $("doc-format-show");
-  if (!show) return;
-  const strip = $("doc-toolbar");
-  const stripless = !strip || strip.classList.contains("hidden");
-  show.classList.toggle("hidden", !docToolbarCollapsed() || stripless || !currentDoc);
-}
-
-function toggleDocToolbar() {
-  const collapsed = !docToolbarCollapsed();
-  setDocToolbarCollapsed(collapsed);
-  if (!collapsed) $("doc-toolbar")?.querySelector("button:not([hidden])")?.focus({ preventScroll: true });
-  //: Hiding it from inside it must not strand the keyboard on <body>: the
-  //: focused button just vanished, and the next keystroke went nowhere.
-  else if (!document.activeElement || document.activeElement === document.body) docSurface()?.focus();
-}
-
-//: One strip's wrap/collapse group. Split out of the loop below so a bar that
-//: is *not* in the document yet can get one: the note edit form clones the
-//: capture strip, and a clone carries a copy of this group whose listeners did
-//: not survive cloning -- two dead arrow buttons, sitting mid-strip instead of
-//: at the end, because the loop's own `continue` then decided the bar already
-//: had its controls. Counted in the browser: the clone's group sat between the
-//: Preview button and the indent separator, where the capture strip's is last.
-function mountDocToolbarControlsFor(bar) {
-  {
-    if (bar.querySelector(".doc-toolbar-tools")) return;
-    const tools = document.createElement("span");
-    tools.className = "doc-toolbar-tools";
-
-    //: Shown only while collapsed, so the strip still says what it is rather
-    //: than becoming an unexplained bar with two arrows in it.
-    const name = document.createElement("span");
-    name.className = "doc-toolbar-collapsed-name";
-    name.textContent = "Formatting";
-    tools.appendChild(name);
-
-    //: **More, for a strip on one row** (INBOX 426 a). Hidden until
-    //: `fitDocToolbarRow` finds tools that do not fit; pressing it lets the
-    //: strip wrap to show them, and pressing it again folds them back.
-    const more = document.createElement("button");
-    more.type = "button";
-    more.className = "ghost small icon-only doc-toolbar-more";
-    more.hidden = true;
-    setLabel(more, "ph:dots-three");
-    more.addEventListener("click", () => {
-      bar.classList.toggle("is-more-open");
-      syncDocToolbarMore(bar);
-    });
-    tools.appendChild(more);
-
-    const layout = document.createElement("button");
-    layout.type = "button";
-    layout.className = "ghost small icon-only doc-toolbar-layout";
-    layout.addEventListener("click", () => {
-      setDocToolbarMode(docToolbarMode() === "row" ? "wrap" : "row");
-      applyDocToolbarLayoutButtons();
-    });
-    tools.appendChild(layout);
-
-    const gutter = document.createElement("button");
-    gutter.type = "button";
-    gutter.className = "ghost small icon-only doc-toolbar-gutter";
-    setLabel(gutter, "ph:list-numbers");
-    gutter.addEventListener("click", () => {
-      // The strip's own button reads its own gutter: the documents strip
-      // asks #doc-gutter, a note strip asks the remembered choice.
-      const own = bar.id === "doc-toolbar"
-        ? docCmView
-          ? !docGutterWanted(!docFileType().previewable)
-          : $("doc-gutter")?.classList.contains("hidden")
-        : docGutterPref() !== "1";
-      setDocGutter(own);
-    });
-    tools.appendChild(gutter);
-
-    const collapse = document.createElement("button");
-    collapse.type = "button";
-    collapse.className = "ghost small icon-only doc-toolbar-collapse";
-    collapse.addEventListener("click", () => setDocToolbarCollapsed(!docToolbarCollapsed()));
-    tools.appendChild(collapse);
-
-    bar.appendChild(tools);
-  }
-  //: **Both buttons are drawn here, not by the caller.** Reported with a
-  //: screenshot: "the note edit toolbar buttons on the bottom right dont
-  //: render and show as black boxes". Neither button is given an icon when it
-  //: is created -- `applyDocToolbarLayoutButtons` and `applyDocToolbarCollapsed`
-  //: are what call `setLabel` on them, and both used to run once at the end of
-  //: the document-wide loop below. A bar mounted on its own (the note edit
-  //: form's cloned strip) therefore got two empty buttons: correct size,
-  //: correct background, no glyph and no text.
-  applyDocToolbarLayoutButtons(bar);
-  applyDocToolbarCollapsed(docToolbarCollapsed(), bar);
-  applyDocGutter();
-  watchDocToolbarWidth(bar);
-}
-
 function mountDocToolbarControls() {
   $("doc-format-toggle")?.addEventListener("click", () =>
     setDocToolbarCollapsed(!docToolbarCollapsed())
@@ -6777,304 +5406,6 @@ function mountDocToolbarControls() {
   for (const bar of document.querySelectorAll(".doc-toolbar")) mountDocToolbarControlsFor(bar);
   applyDocToolbarLayoutButtons();
   applyDocToolbarCollapsed(docToolbarCollapsed());
-}
-
-function applyDocToolbarLayoutButtons(only = null) {
-  const row = docToolbarMode() === "row";
-  const scope = only || document;
-  for (const button of scope.querySelectorAll(".doc-toolbar-layout")) {
-    button.setAttribute("aria-pressed", row ? "true" : "false");
-    //: The tooltip names what pressing it *does*; `aria-pressed` carries the
-    //: state. Same rule the dock menu's own label follows.
-    button.title = row ? "Expand the toolbar over several rows" : "Fit the toolbar on one row, the rest behind More";
-    button.setAttribute("aria-label", button.title);
-    setLabel(button, row ? "ph:rows" : "ph:arrows-left-right");
-  }
-}
-
-//: **One row means one row, and what does not fit is behind More** (INBOX 426
-//: a). The owner, with a screenshot of this strip at about 1000px: "in the
-//: documents full screen mode, I cant access the formatting toolbar or any of
-//: the other key tools or controls". The one-row mode was a sideways scroller
-//: with the strip's own three buttons pinned over its right end
-//: (`position: sticky` on an opaque ground), so the pinned group sat on top
-//: of Insert, cut it in half, and every tool past it was behind a scrollbar
-//: that looks like decoration. The phone band (720px and under) made every
-//: strip that scroller, whatever the mode, with its scrollbar hidden.
-//:
-//: Now a strip that does not wrap is measured: its tools are laid out whole,
-//: and while the strip's own group runs past the strip's inner edge the last
-//: tool is folded away (`.doc-toolbar-over`, `display: none`), so the row
-//: ends where the strip does and nothing is drawn over anything. More (the
-//: first button of the group) says how many are folded; pressing it lets the
-//: strip wrap and shows them in place, the real controls with their own
-//: menus and handlers rather than copies in a list, so a `<details>` menu and
-//: a colour picker behave exactly as they do on the row. A group rule left at
-//: the end of the row with nothing after it is folded with its group.
-//:
-//: A wrapping strip (the default, and the note edit form's always) is left
-//: alone: it has nothing to fold.
-//: The index the fold starts from, worked out from positions read once: every item from it to the end
-//: folds. `lefts[i]` is item i's left edge, or null when it takes no room (hidden). Folding items i..end
-//: leaves the group (`toolsLeft`) where the first of them with room stood, so the row fits when the
-//: group's right edge, moved left by that much, is inside `edge`. A margin between items is not in
-//: `lefts` (measured: three of 94 widths folded one tool too many without it), so the start is one item
-//: short of what the positions say, and the caller folds one at a time from there to exactly the old row.
-//: `lefts.length` means nothing folds.
-//: A property of `fitDocToolbarRow`, its only caller (one global name fewer).
-fitDocToolbarRow.foldFrom = function (lefts, toolsLeft, toolsRight, edge) {
-  if (toolsRight <= edge + 0.5) return lefts.length;
-  let next = null;
-  for (let i = lefts.length - 1; i >= 0; i--) {
-    if (lefts[i] !== null) next = lefts[i];
-    if (next !== null && toolsRight - (toolsLeft - next) <= edge + 0.5) return Math.min(i + 1, lefts.length);
-  }
-  return 0;
-};
-
-function fitDocToolbarRow(bar) {
-  const tools = bar.querySelector(":scope > .doc-toolbar-tools");
-  const more = tools?.querySelector(".doc-toolbar-more");
-  if (!tools || !more) return;
-  //: **A strip nobody can see is fitted when it is shown** (INBOX 1716 lag log, 489 ms): fitting writes
-  //: classes and then reads, a style pass and a layout of the page, 120 ms a strip with the Library Images
-  //: tab drawn at 4x. The width observer sees a hidden strip go from 0 to its width and fits it then.
-  //: Read before any write, so it costs nothing when the page is clean.
-  if (!bar.getClientRects().length) return;
-  const items = [...bar.children].filter((el) => el !== tools);
-  const open = bar.classList.contains("is-more-open");
-  //: Measured as the closed row, whatever the reader has open: what fits is
-  //: a fact about the row, and the open state is put back afterwards.
-  bar.classList.remove("is-more-open", "is-layout-folded");
-  for (const el of items) el.classList.remove("doc-toolbar-over");
-  more.hidden = true;
-  const style = getComputedStyle(bar);
-  const measurable = bar.getClientRects().length > 0 &&
-    !bar.classList.contains("is-collapsed") &&
-    style.flexWrap === "nowrap";
-  if (measurable) {
-    const box = bar.getBoundingClientRect();
-    const edge = box.right -
-      parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth);
-    const fits = () => tools.getBoundingClientRect().right <= edge + 0.5;
-    if (!fits()) {
-      more.hidden = false;
-      //: **On a narrow strip the layout toggle is the first thing folded**
-      //: (INBOX 426 a, round 2). At 360 the strip's own group (More,
-      //: layout, line numbers, collapse) took 176 of a 300px row and left
-      //: room for two tools. The layout toggle is the one of the four a
-      //: reader sets once, so under 600px it goes behind More with the
-      //: tools, and comes back on the open strip's last row. Only when
-      //: something is folded anyway: a strip whose tools all fit keeps it,
-      //: so it is never out of reach.
-      //: A note strip has no layout toggle to fold (INBOX 616).
-      if (box.width < 600 && !bar.classList.contains("note-toolbar")) bar.classList.add("is-layout-folded");
-      //: **Folded in one batch, then checked** (INBOX 1716 lag log, 489 ms): a class and a
-      //: width read per item is a style pass and a layout each, 2 to 10 ms a pass with the
-      //: Library Images tab drawn. The positions are read once and the batch is what they say
-      //: must fold; any item still over after it folds one at a time, as before.
-      const fold = (el) => {
-        el.classList.add("doc-toolbar-over");
-        //: A menu folded while open would stay open with nothing to anchor
-        //: it: closed with its button.
-        if (el.tagName === "DETAILS" && !open) el.open = false;
-      };
-      const lefts = items.map((el) => (el.getClientRects().length ? el.getBoundingClientRect().left : null));
-      const row = tools.getBoundingClientRect();
-      const from = fitDocToolbarRow.foldFrom(lefts, row.left, row.right, edge);
-      for (let i = items.length - 1; i >= from; i--) fold(items[i]);
-      for (let i = from - 1; i >= 0 && !fits(); i--) fold(items[i]);
-      const shown = items.filter((el) => !el.classList.contains("doc-toolbar-over"));
-      for (let i = shown.length - 1; i >= 0 && shown[i].classList.contains("doc-toolbar-sep"); i--) {
-        shown[i].classList.add("doc-toolbar-over");
-      }
-    }
-  }
-  if (open && !more.hidden) bar.classList.add("is-more-open");
-  syncDocToolbarMore(bar);
-  trimDocToolbarGroup(bar, style);
-}
-
-//: **The strip's own group never takes a row to itself** (INBOX 426, round 4,
-//: A3). Expanded at 1024, the document strip's two rows of tools filled to
-//: 657 and 685 of 726px and its own three buttons (layout, line numbers,
-//: collapse) went down to a third row alone: a row of chrome under the tools
-//: it is chrome for. Two of the three have a row of their own in the
-//: document's ⋯ menu ("Use one row", "Always show formatting"), so on the
-//: document strip, when the group would be alone, those two are left to the
-//: menu and line numbers stays, which fits the second row's tail. Only the
-//: document strip: a note's strip has no menu holding the other two. Put
-//: back first and measured again on every fit, so a wider window gets them
-//: back.
-//:
-//: Where it goes then: the end of the first row, if that row has the room
-//: (the window-controls corner, and measured at 1024 the first row had 69px
-//: free where the trimmed group needs 48), else the end of the last. The
-//: group is put back at the end of the strip before every fit, so the
-//: one-row mode, which measures it there, always finds it there.
-function trimDocToolbarGroup(bar, style = getComputedStyle(bar)) {
-  const tools = bar.querySelector(":scope > .doc-toolbar-tools");
-  if (!tools) return;
-  bar.classList.remove("is-group-trimmed");
-  if (bar.lastElementChild !== tools) bar.appendChild(tools);
-  if (bar.id !== "doc-toolbar" || style.flexWrap === "nowrap") return;
-  if (!bar.getClientRects().length || bar.classList.contains("is-collapsed")) return;
-  const shown = () => [...bar.children].filter((el) => el !== tools && el.getClientRects().length);
-  //: Rows counted by the bottom of each item's line: the tallest item sets
-  //: it, and items centred on one row share it to within a pixel or two.
-  const rowTops = () => {
-    const bottoms = [...bar.children].filter((el) => el.getClientRects().length)
-      .map((el) => el.getBoundingClientRect().bottom).sort((a, b) => a - b);
-    let count = 0;
-    let edge = -Infinity;
-    for (const bottom of bottoms) if (bottom > edge + 12) { count += 1; edge = bottom; }
-    return { size: count };
-  };
-  const alone = () => {
-    const items = shown();
-    const last = items[items.length - 1];
-    return Boolean(last) && tools.getBoundingClientRect().top >= last.getBoundingClientRect().bottom - 1;
-  };
-  if (!alone()) return;
-  const rowsBefore = rowTops().size;
-  bar.classList.add("is-group-trimmed");
-  //: Rows are told apart by where an item's middle falls, not by its top:
-  //: the strip centres items of different heights, so two on one row can
-  //: have tops a few pixels apart.
-  const items = shown();
-  const first = items[0]?.getBoundingClientRect();
-  if (!first) return;
-  const middle = (el) => { const r = el.getBoundingClientRect(); return (r.top + r.bottom) / 2; };
-  const secondRow = items.find((el) => middle(el) > first.bottom);
-  if (!secondRow) return;
-  bar.insertBefore(tools, secondRow);
-  const onFirst = middle(tools) < first.bottom;
-  if (!onFirst || rowTops().size >= rowsBefore) bar.appendChild(tools);
-}
-
-//: More says what pressing it does and how many tools it holds, and carries
-//: its state on `aria-expanded`, the disclosure's own attribute.
-function syncDocToolbarMore(bar) {
-  const more = bar.querySelector(".doc-toolbar-more");
-  if (!more) return;
-  const open = bar.classList.contains("is-more-open");
-  const count = bar.querySelectorAll(".doc-toolbar-over:not(.doc-toolbar-sep)").length +
-    (bar.classList.contains("is-layout-folded") ? 1 : 0);
-  more.setAttribute("aria-expanded", String(open));
-  more.setAttribute("aria-pressed", String(open));
-  more.title = open
-    ? "Fold the extra tools away again"
-    : `${count} more tool${count === 1 ? "" : "s"}`;
-  more.setAttribute("aria-label", more.title);
-  markDocToolbarSepEdges(bar);
-}
-
-//: **A group rule never starts or ends a row** (the owner at release: "there
-//: is a vertical divider line at the start of the second row"). A wrapped
-//: strip breaks wherever the width runs out, which is often right after a
-//: rule, so the next row opened with one. Hidden rather than removed
-//: (visibility, not display): taking its width away could pull the next
-//: tool back up a row and move the break it was marking. All writes first,
-//: then all reads, then the writes they decide, so one pass lays out once.
-function markDocToolbarSepEdges(bar) {
-  const kids = [...bar.children];
-  for (const el of kids) el.classList.remove("doc-toolbar-sep-edge");
-  const shown = kids.filter((el) => el.getClientRects().length > 0);
-  const mids = shown.map((el) => {
-    const box = el.getBoundingClientRect();
-    return box.top + box.height / 2;
-  });
-  const newRow = (i) => i === 0 || Math.abs(mids[i] - mids[i - 1]) > 12;
-  const edges = shown.filter((el, i) => el.classList.contains("doc-toolbar-sep") &&
-    (newRow(i) || i === shown.length - 1 || newRow(i + 1)));
-  for (const el of edges) el.classList.add("doc-toolbar-sep-edge");
-}
-
-//: Refitted whenever a strip's width changes, and only then: the observer
-//: also fires when More makes the strip taller, and that is not a reason to
-//: measure again. A strip that was hidden and is shown (the tab, focus mode's
-//: Tools, the collapse) goes from 0 to its width, which counts. The width is
-//: kept on the strip itself and cleared here, because the note edit form's
-//: strip is a clone of the capture strip and would otherwise arrive carrying
-//: the width it was cloned at, and never be measured. Hoisted state only (a
-//: property of this function, a data attribute): the appliers above can run
-//: before this part of the file has, and a `let` here would be in its
-//: temporal dead zone for them.
-function watchDocToolbarWidth(bar) {
-  if (typeof ResizeObserver !== "function") return;
-  watchDocToolbarWidth.observer ||= new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      const width = String(Math.round(entry.contentRect.width));
-      if (entry.target.dataset.fitWidth === width) continue;
-      entry.target.dataset.fitWidth = width;
-      fitDocToolbarRow(entry.target);
-    }
-  });
-  delete bar.dataset.fitWidth;
-  watchDocToolbarWidth.observer.observe(bar);
-  watchDocToolbarContents(bar);
-}
-
-//: **Refitted when the row's contents change, too** (INBOX 426 a, round 2).
-//: A width is not the only thing that decides what fits: the extras
-//: (`mountEditorToolbarExtras`) are appended after the strip is first
-//: measured, and a control shown or hidden at a constant width (by file
-//: type, by a setting) moves the end of the row without resizing the strip,
-//: so the row stayed folded for tools that had gone, or ran under the end
-//: group for tools that had come, until the next resize.
-//:
-//: The observer sees every attribute change in the strip, and most of them
-//: are no reason to measure: the bold button gains `active` on every cursor
-//: move, and the fit itself folds tools with a class. So each change is
-//: reduced to a signature of what the row lays out (which direct children
-//: exist and whether each is hidden by the page, not by the fit) and the
-//: strip is refitted only when that signature moved, once per frame at most.
-function docToolbarLayoutSignature(bar) {
-  let sig = "";
-  for (const el of bar.children) {
-    if (el.classList.contains("doc-toolbar-tools")) continue;
-    const gone = el.hidden || el.classList.contains("hidden") || el.style.display === "none";
-    sig += `${el.tagName[0]}${gone ? 0 : 1}${el.textContent.length},`;
-  }
-  return sig;
-}
-
-function watchDocToolbarContents(bar) {
-  if (typeof MutationObserver !== "function") return;
-  //: Kept in a set, not marked on the element: the note edit form's strip is
-  //: a clone of the capture strip and a data attribute would arrive with it,
-  //: so the clone would think it was already watched. A property of this
-  //: function, for the same hoisting reason as the width observer's.
-  //: A map from the strip to its observer (audit 1028 D37): the handle is kept, not dropped.
-  watchDocToolbarContents.seen ||= new WeakMap();
-  if (watchDocToolbarContents.seen.has(bar)) return;
-  let sig = docToolbarLayoutSignature(bar);
-  let queued = false;
-  const observer = new MutationObserver(() => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      const next = docToolbarLayoutSignature(bar);
-      if (next === sig) return;
-      sig = next;
-      fitDocToolbarRow(bar);
-    });
-  });
-  watchDocToolbarContents.seen.set(bar, observer);
-  observer.observe(bar, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ["hidden", "class", "style"],
-  });
-}
-
-function fitDocToolbars() {
-  //: The reads first: a strip's fit writes classes, and the next strip's visibility read would pay for them.
-  const shown = [...document.querySelectorAll(".doc-toolbar")].filter((bar) => bar.getClientRects().length);
-  for (const bar of shown) fitDocToolbarRow(bar);
 }
 
 //: Applied on load as well as on click: the toolbar exists before a document
@@ -7591,26 +5922,6 @@ docSpellGuesses.hint = (finding) => {
   return finding.hint;
 };
 
-//: **"whats" is "what's" with the apostrophe left out** (the owner,
-//: 2026-10-19: "this should have been picked up as what's"). The word list
-//: keeps "what" and drops the "'s" (`docWordKnown`), so no edit of "whats"
-//: reaches it. Offered first in the menu only, never as the sure answer:
-//: an apostrophe is a style choice (`DOC_AUTOCORRECT`), so typing never
-//: rewrites it on its own.
-
-
-//: **The one answer, or none.** A correction this app is willing to make
-//: without being asked, or to put behind a single check button, has to be the
-//: only candidate of its kind: exactly one real word reachable by a swap of
-//: two letters or by dropping one, and nothing else that close. "tets" has
-//: exactly one ("test"); "tho" has several and gets a menu instead. Short
-//: words are refused outright because almost every three-letter string is one
-//: edit from several real words.
-
-
-//: Is this word one swap of two letters from exactly one real word? The test a
-//: capitalised word in mid-sentence has to pass to be called a typo and not a
-//: name (`docSpellNameKind`).
 
 //: One answer per word rather than per occurrence. A document says the same
 //: word many times, the answers cannot change between two of them inside one
@@ -7618,54 +5929,6 @@ docSpellGuesses.hint = (finding) => {
 //: does. Cleared when the dictionary changes, which is the only thing that
 //: can change an answer.
 let docSpellCache = new Map();
-
-
-//: Spans of the document the prose rules do not read. A fenced block is code,
-//: an inline span in backticks is code, a URL is an address and a markdown
-//: link's destination is a path: none of them is prose, and every one of them
-//: is full of things that look like misspellings and missing spaces. Without
-//: this a real dictionary would put a red underline under every identifier in
-//: a code sample, which is the single fastest way to make a writer turn the
-//: whole check off.
-//:
-//: A byte mask rather than a list of ranges because the test is asked once
-//: per finding and once per word: a linear scan of ranges per word is the
-//: shape that makes a long document slow.
-
-//: **The words of a link** are the writer's label for an address, a name or a
-//: phrase pasted from somewhere ("something" in the owner's capture, K11), not
-//: a sentence of theirs, so they are skipped like the address beside them.
-//: `[text](address)`, `[text][ref]` and `![alt](source)`; not a `[[wiki link]]`
-//: (masked above) and not a `[ ]` checkbox, which no `(` or `[` follows.
-//: Settings, Writing, "Check link text" turns the check back on.
-
-//: **One mask per text** (prose-1101): the rule pass, the extras' filter and the
-//: grammar answer each asked for the mask of the same string, three regex walks
-//: for one result. `docProseSkipMask.memo` holds the last one, keyed by the
-//: string and the link-text setting; a reader only reads it. The keystroke path
-//: (`docProse.near`) stores the mask it assembled for the new text here too.
-
-//: Findings, in document order, each with the exact span it is about so the
-//: panel can jump to it and the fix can replace it without searching for the
-//: text again (which would find the wrong occurrence in a document that says
-//: the same thing twice).
-//: `lang` is the document's, read from its frontmatter; a paragraph passed alone (`docProse.near`)
-//: has none, so the caller says it.
-
-//: **Spelling in a code file: comments and the words inside strings, never
-//: code** (the owner, 2026-10-11: `is_leap`, `urFucked` and the `f"The` of an
-//: f-string were underlined). The squiggles were the browser's own, on because
-//: the word list loads only on a prose pass and a code file never made one.
-//: Now the browser's checker is off in a code file (`docCmSpellcheck`) and
-//: this draws the app's own marks, which open the same suggestion popover as
-//: prose. The text is masked to the comment and string nodes of the syntax
-//: tree, everything else blanked at the same length so every offset still
-//: names the document's characters: a string's prefix (f, r, b, u) and quotes
-//: and a comment's marker are blanked too, and so is an f-string's `{expr}`.
-//: `win`, past DOC_PROSE_WINDOW_CHARS, is the window the pass reads (audit 1031
-//: CE3: the whole-file mask was 517 ms of a 20-key run in a 7,000-line file at
-//: 4x): only the tree and the text inside it, and the mask returned is that
-//: window's.
 
 
 let docProseFound = [];
@@ -7684,28 +5947,6 @@ let docProseFound = [];
 //: A method here rather than a function of its own: the shared scope is capped.
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
 
-//: **Past this many characters the prose pass reads a window** (audit 1028
-//: D7), centred on what is on screen and cut at blank lines, so the cost of a
-//: pause is the window and not the document. Measured at 100,800 characters:
-//: see docs/roadmap/agent-remaining/docux-1028.md.
-
-//: A code file's window (CE3): the same centre as the prose one and the
-//: whole 30,000, cut at line ends (a blank line or a fence means nothing in code).
-
-//: **A prose window is the screen and a margin, not the whole 30,000** (audit
-//: 1028 D18 to D20): a prose pass is paid on every pause, and a screen of text
-//: is about 3,000 characters, so 14,000 keeps about two screens either side of
-//: the view checked while the pass costs under half of what 30,000 did.
-//: Scrolling out of it re-runs the pass (`docProseScrolled`).
-
-//: Scrolling out of the window re-runs the pass once the view settles.
-
-
-//: **While the writer types, the open panel is redrawn at most every 400 ms**
-//: (perf 1031 row 23, DC3: a 58,000-character document with the panel open,
-//: 36 keys at 4x: 26 redraws of the rows, 95 long tasks, 15 s of them). The
-//: first redraw is at once and the last one always lands; a click in the panel
-//: (Fix, Dismiss) is not typing and redraws at once.
 
 // The prose tools (grammar, suggestion mode, the accessibility check, read
 // aloud) are in documents-prose.js, which the Library bundle loads before
@@ -7732,107 +5973,6 @@ let docProseFound = [];
 // that was never about the layer: which findings are drawable at all, and
 // what shape each kind gets.
 
-//: A long sentence is the one finding that must not be underlined: the span
-//: is a whole paragraph, and a wavy line under all of it says "everything
-//: here is wrong", which is the opposite of what that finding means.
-
-//: Findings "Fix all" never applies: a model's reading and an offer to link a
-//: note are judgements for the writer, whatever replacement they carry.
-
-//: Three kinds, because three is what a reader can decode at a glance from
-//: the shape of a line. The rules are more numerous than that (there are
-//: eight), but "a spacing slip" and "a UK/US spelling" are the same *kind* of
-//: note as far as the eye is concerned, and both are answered the same way.
-
-
-//: **One head for both states of the panel** (INBOX 549 and 552, the
-//: panel-head recipe): the name and its count as quiet text, then one row of
-//: quiet icon buttons of one size, the X last, never wrapping: the panel is
-//: 240px at its narrowest. Fix N is the one worded tool (its number is what
-//: it says) and drops its words in a narrow panel; the Dictionary and the
-//: dock side are in the ⋯, which also holds Check with AI for the width
-//: where its own icon gives way.
-
-
-//: The keys in `docProseIgnored` that belong to this document, as rows.
-//: A key is `<doc>:<rule>:<text>`; the first two parts hold no colon.
-
-//: What the panel shows instead of the list: the hidden notice, or the
-//: dismissed list with a Restore on each row.
-
-
-//: The floating dock's Suggestions says what the chip says: how many, and
-//: whether the panel is open. Hidden for a code file, as the chip is.
-
-
-//: The three kinds the underlines already draw, in the order of how strong a
-//: claim each one is. Named here rather than in the panel so the group title
-//: and the squiggle can never drift apart.
-
-//: Sixty rows, over all the groups rather than per group: the cap is there so
-//: a pathological document cannot build ten thousand elements, and a cap that
-//: applied per group would let three kinds multiply it by three.
-
-//: **The row of the panel, and the answers under it** (DOCUMENTS_PLAN 12 D3).
-//:
-//: Reported: "when I click on the issue from the suggestions thing, the box
-//: just appears right there in my face." The row used to open the floating
-//: menu, first at the row (which is at the foot of the window, under the
-//: pointer) and then at the word, and both readings of "where" were answers to
-//: the wrong question: a list at the foot of the window had no answers of its
-//: own, so acting on any row meant drawing a 335px popup over the text being
-//: discussed, on top of the 297px panel that asked. Measured: 70% of the
-//: window's height spent on one misspelled word.
-//:
-//: So the row expands under itself, inside the panel, with the same answers the
-//: menu offers (`docSuggestAnswers`), and the document scrolls the word to the
-//: middle of the editor so the sentence is readable while its row is open. One
-//: surface at a time, which is DESIGN.md's popover rule: a panel that has to
-//: open a popover to be useful was breaking it structurally.
-//: **Closing a row, once.** Three things close one (the second press on the
-//: row, Escape inside the answers, and pressing an answer), and each of them
-//: used to write the same four lines. They also have to agree about focus: a
-//: row opened from the keyboard has the focus ring somewhere inside the block
-//: that is about to be emptied, and an element removed while it has focus
-//: hands it to `<body>`, which is the end of keyboard navigation for that
-//: panel. So the row takes it back, but only when the row is where it came
-//: from: a pointer press left focus in the editor on purpose (that is what
-//: "show me this in the document" means) and stealing it here would move the
-//: caret out of the sentence the reader was just shown.
-
-
-//: What Ignore says: a link offer is put away by name everywhere, anything else
-//: for this document until a restart.
-
-//: Stop flagging this wording in this document (until a restart).
-
-//: **Next, without a key for it**: after a row's Accept or Ignore the focus
-//: lands on the row that took its place, so the keyboard walks the list
-//: answer by answer. Set by the row's action, spent by the next paint.
-
-//: Up and Down walk the rows across the groups, Home and End the ends.
-
-
-//: **Show me where: and make it obvious for a moment.**
-//:
-//: Asked for directly: "if I click on an issue flagged in the document
-//: suggestions, it should auto scroll to the issue and temporarily highlight
-//: the offending area." The scrolling half was here already; the highlight was
-//: a text selection, which is the quietest mark a screen has, the same grey
-//: as any other selection, in a box the pointer has just left, several
-//: paragraphs from where the eye was. Landing in roughly the right place with
-//: nothing saying "here" is what makes a jump feel like it did not happen.
-//:
-//: One way to say it now, because there is one editor. The selection is put
-//: on the flagged span and the surface scrolls it into view: CodeMirror does
-//: that itself as part of the transaction, and the underline is already there
-//: to say which words are meant. The fallback textarea still needs the
-//: `blur`+`focus` trick and the accent `::selection` flash, which is the only
-//: mark a textarea can draw on a range it already holds.
-
-
-
-
 
 // --- inline completion --------------------------------------------------------
 //
@@ -7850,41 +5990,8 @@ let docProseFound = [];
 let docCompleteWords = null;
 
 
-//: Rebuilt when the document changes rather than on every keystroke: a
-//: 50,000-word document is a real thing to have here, and splitting it on each
-//: character typed is the shape that makes an editor feel heavy.
-
-//: The half-typed word immediately before the caret, or null. Deliberately not
-//: offered mid-word: a caret inside "compl|etion" is someone fixing a letter,
-//: and a popup there is in the way.
-//:
-//: **Read from the caret's line, not from the start of the document.** This
-//: ran on every keystroke and asked the surface for its whole text to slice
-//: two short strings out of it, which on a 20k-word document is 130,000
-//: characters materialised per character typed: measured, it was the single
-//: biggest thing left between the engine and PLAN P4's 30 ms gate. A word
-//: fragment cannot span a line break, so the line is all this ever needed.
-
-
-//: **The autofill rows for the caret, if it is at a trigger** (the owner,
-//: 2026-09-24: "if I type lorem and press enter ... it will autofill the lorem
-//: ipsum filler text"). The token and the rows are documents-prose.js's pure
-//: `PROSE-FILL` region; this is the part that knows the editor: the caret's
-//: line, the name in Settings, the renderer's heading ids. Prose only: a code
-//: file has its own list (`docCodeTools`), and two lists at one caret is the
-//: thing this file keeps refusing.
-
-
-
-//: Returns true when it handled the key, so the caller knows not to let the
-//: editor's own bindings see it, the same contract the editor menu's keys use.
-
 // --- autocorrect --------------------------------------------------------------
 
-
-//: Fires on the keystroke that *finishes* a word, a space, a newline or
-//: punctuation: which is the only moment a correction is unambiguous. Mid-word
-//: it would rewrite "teh" while you were on your way to typing "tehran".
 
 // --- wiring -------------------------------------------------------------------
 //
@@ -7893,17 +6000,6 @@ let docCompleteWords = null;
 // shape that silently accumulates duplicates (tests/test_frontend_handlers.py
 // exists because of exactly that).
 
-
-
-
-
-
-
-//: **The editing box an event landed in, as a surface.** Three shapes reach
-//: this: the fallback textarea, a live-view paragraph, and any node inside
-//: CodeMirror's editable, which is a `div` and so matches none of the
-//: textarea checks that used to be the whole of this function. Returning null
-//: for anything else is what keeps the instruments off the note composer.
 
 docListen("input", (event) => {
   //: CodeMirror raises its own `input` on the contenteditable *and* tells us
@@ -8825,15 +6921,6 @@ for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {
   });
 }
 
-//: Painted once on load so the bar is not blank before the first keystroke,
-//: and again whenever a document is opened, `openDocument` calls this.
-//:
-//: **The call that runs it at load time is the last line of this file**, not
-//: this one. `const`/`let` at module scope are hoisted into a temporal dead
-//: zone, so calling this here threw `Cannot access 'docDictionarySet' before
-//: initialization` the moment the dictionary and the spelling tables were
-//: added below: a real crash, caught in the browser, that no amount of
-//: reading the function would have shown.
 
 // =============================================================================
 // The dictionary, the spelling variant, and the popup you get from a flagged word
@@ -8859,63 +6946,14 @@ for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {
 // list nobody adds to, and a variant that differs between the desktop shell and
 // a browser tab is a checker that contradicts itself.
 
-//: **US and UK, as an explicit list rather than a rule.** The rules everyone
-//: reaches for are wrong often enough to be useless: `-ise/-ize` turns "size"
-//: into "sise", `-our/-or` turns "four" into "for". Every pair here is a word
-//: whose two spellings are both real and mean the same thing, which is the only
-//: case where suggesting the other one is safe.
-//:
-//: UK on the left, US on the right, and the direction is chosen by the setting
-//:, the checker never has an opinion about which is correct, only about which
-//: one this notebook was told to use.
 
 //: The setting's five values (VC6) read the one table: Australian and Indian
 //: spell as the British column does for every pair here; Canadian is the
 //: mixed one (`DOC_CA_KEEPS_UK`). The label is what a finding says.
-//: Canada spells -our, -re, -ce, grey, cheque and the doubled l the British
-//: way and -ize and the rest the American way ("tyre" is "tire" there).
 
 //: Built once from the pairs above, in whichever direction the setting names.
 //: A map rather than a scan, because this runs per word of the document.
 let docVariantFor = null;
-
-//: **"auto" is the default** (INBOX 1731): the dialect of the computer's own
-//: language, so an Australian notebook is checked as Australian without the
-//: owner finding the select first. Anything not English, or a tag with no
-//: dialect of its own, is "off" (no preference); the rest of the English-
-//: speaking world that spells the British way reads as British.
-
-
-//: The words the reader has told this to accept. A Set, lowercased, because a
-//: word added at the start of a sentence must not have to be added again in
-//: the middle of one.
-
-//: **The array the set was last built from, compared by identity.** This pair
-//: is the fix for a report that was worse than it read: *"I swear I added
-//: 'idk' to the dictionary last night, make sure it is persistent."*
-//:
-//: The set used to be memoised with `if (!docDictionarySet)`, and an empty
-//: `Set` is truthy, so the first call won for the rest of the session. The
-//: first call happens at the bottom of this file, which runs `renderDocTools`
-//: at parse time; `prefsCache` is filled by an async fetch in app.js that has
-//: not resolved yet. So the dictionary was built empty, every saved word was
-//: unknown for the whole session, and, worse, `docDictionaryWrite` below sends
-//: `[...docDictionary(), newWord]`: the first word you added after a reload
-//: replaced your entire saved dictionary with that one word. Silent data loss,
-//: and it is why a word added last night was being offered again today.
-//:
-//: Identity rather than a dirty flag, because `apiJson` returns a fresh object
-//: on every read and `prefsCache` is reassigned in a dozen places across
-//: app.js. Anything that reloads preferences therefore rebuilds this set
-//: without having to know it exists, which is the property that stops the same
-//: bug coming back through a new caller.
-
-
-
-
-//: Findings dismissed for this sitting only. Not persisted, deliberately:
-//: "not this time" is a statement about one sentence, and remembering it
-//: forever would quietly turn a check off with no way to see that it is off.
 
 
 //: **The popup, and the four answers a person actually has.** Fix it, this is
@@ -8949,70 +6987,11 @@ let docSuggestOpenFor = null;
 // reader can feel (one letter out sorts above two).
 
 
-//: Two edits. Three matches almost anything at these word lengths, and the
-//: third suggestion for a five-letter word is noise a reader has to read
-//: before dismissing.
-
-//: The vocabulary of a big notebook is tens of thousands of words and this
-//: runs while a menu is opening, so the scan is bounded. `docCompleteWords`
-//: is sorted by how often you use a word, so the cap keeps the words most
-//: likely to be the one you meant.
-
-//: **Optimal string alignment**, which is Damerau-Levenshtein restricted to
-//: adjacent transpositions. The restriction is the right one here: the typos
-//: this is for are a swapped pair (`teh`), a doubled or dropped letter, or a
-//: neighbouring key, and full Damerau's extra bookkeeping buys nothing for
-//: those while costing more per candidate on a list scanned thousands of
-//: times.
-//:
-//: `cap` is not an optimisation detail, it is what keeps the answer sensible:
-//: a row whose minimum is already past the cap cannot produce a distance
-//: under it, so the rest of the matrix is not computed, and any word more
-//: than `cap` edits away is not a suggestion at all.
-
 //: The words this app can say it knows, as opposed to the words it has seen.
 //: Rebuilt when the dictionary changes, which is the only thing that can add
 //: to it.
 let docKnownWordsCache = null;
 
-
-//: A typo at the start of a sentence must not be corrected into a lowercase
-//: word, and a suggestion for `Recieve` that comes back as `receive` reads as
-//: a second mistake. The same rule the built-in fixes already follow, pulled
-//: out so every source of a suggestion follows it too.
-
-//: `skip` is read, never written. It held the words already offered, and an
-//: earlier draft also *added* each result to it as a way of not repeating
-//: itself between the two candidate lists. That silently returned nothing at
-//: all: the caller's own de-duplicating `push` reads the same set, so every
-//: word this function found had already been marked as seen by the time it
-//: was offered. Measured, not reasoned: the ranked list came back empty for a
-//: word one edit from `environment` while `docNearestWords` on its own
-//: returned it.
-
-//: Word-level rules only. "The nearest word to `,,` by edit distance" is not
-//: a question with an answer, and the punctuation rules already carry the one
-//: correct fix in `replacement`.
-
-//: What the menu calls the thing it is about. Visible text wherever there is
-//: any, and a description of the whitespace wherever there is not.
-
-
-//: **One drawing of a finding, wherever one is drawn** (DOCUMENTS_PLAN 12 D1).
-//: The panel row said the reason and then the words, the menu's head said the
-//: words and then the reason, and the underline said neither, so one object was
-//: described three ways and a reader had to re-read the list to match a row to
-//: the word it was about. Here it is one line in one order: a dot in the same
-//: colour as that kind's underline, the words, the reason. The dot is the link
-//: back to the text, and it is the one mark the three surfaces share.
-
-//: **Is this finding a passage or a word?** (DOCUMENTS_PLAN 12 D2.) A
-//: misspelling's other wordings *are* the candidate list above it, and
-//: "translate this passage" over one word is a dictionary lookup wearing the
-//: wrong label: both rows belong to a finding that is a run of words (a
-//: repeat, a long sentence), and offering them on every spelling made the
-//: common menu nine rows deep. Whitespace-only findings (a double space) are
-//: not passages either: there is nothing in them to rephrase.
 
 //: The answers to a finding (rows as data, and the buttons drawn from them): documents-suggest.js, fetched on first
 //: use. Each is a stand-in the piece's function of the same name replaces on load, so a caller awaits it.
@@ -9024,81 +7003,11 @@ let docKnownWordsCache = null;
 //: again after the fetch reaches the real one. Nothing reads their return.
 
 
-
-
-//: **A popup placed in viewport coordinates has to live in the viewport's own
-//: frame, and inside this tab it did not.** INBOX 168, with a screenshot: the
-//: word menu for "tets" drawn at the right edge of the window with its column
-//: cut off past it and its list under the bottom bar. Every clamp in
-//: `placeDocSuggest` is unconditional, so the menu cannot leave the viewport
-//: by arithmetic; what it can do is be laid out against something that is not
-//: the viewport. A `position: fixed` element is laid out against the nearest
-//: ancestor carrying a `filter`, `transform` or `backdrop-filter`, and
-//: `.card.doc-main` is exactly that whenever the background art is on
-//: (`:root[data-bg-art="on"]:not([data-glass="off"]) .card`, which is the
-//: default pair of settings the moment someone turns the art on). Measured at
-//: 1440x900 with the art on, before this: the menu asked for `left 952, top
-//: 322` and rendered at `1245..1485, 399`, 45px past the right edge of the
-//: window and 53px away from the word it belongs to, which is also INBOX 128's
-//: "wide gap". The same blur makes the card a stacking context, so no z-index
-//: could lift the menu over the bars outside it either.
-//:
-//: So the popup leaves the card while it is open and goes back on a comment
-//: placeholder on the way out, the same move `buildTableBlock`'s full view
-//: makes for the same reason. It has to be a move rather than a stylesheet
-//: change: the card's blur is a deliberate part of the background-art look,
-//: and a viewport popup has no business being a descendant of a surface that
-//: can be blurred, transformed or scaled at any time.
-
-
-
-//: **Ask for a viewport position, then check the popup landed there.** The
-//: belt to the braces above: body itself can carry a transform (a page
-//: animation, a future shell), and one ancestor with a filter anywhere in the
-//: chain silently turns every number here into an offset from somewhere else.
-//: Measuring what was drawn and correcting by the difference costs one rect
-//: read and is exact for any containing block that only translates the frame,
-//: which is what a filter, a backdrop-filter and a translate all do. It is a
-//: no-op, and reads as one, when the frame is the viewport.
-
 //: Kept so the menu can be re-placed after it changes size, the AI wordings
 //: arrive seconds after it opens and make it taller, and a menu that grew
 //: downwards off the bottom of the window is a menu whose best suggestion is
 //: unreachable.
 let docSuggestAnchor = null;
-
-//: The gap the menu keeps from the word, and from every edge it is clamped to.
-
-//: **The band the menu is allowed to occupy: the editor's own box first, the
-//: window second** (DOCUMENTS_PLAN 12 D4).
-//:
-//: Reported as "the popup edit suggestions menu screws upn the screen and make
-//: sit go out of bounds", and measured: a flagged word at the end of a long
-//: line sits at `left 1161` in a card whose right edge is `1255`, and clamping
-//: to the *window* put the menu at `1161..1401`, so 146 of its 240px hung past
-//: the card into the window's own gutter, pointing at a document it was no
-//: longer over. The window is not the frame this menu belongs to; the text is.
-//:
-//: Only when the card is actually wide enough to hold it: below that the band
-//: would be narrower than the menu and every placement inside it would be a
-//: lie, so a narrow window falls back to the viewport, which is the one frame
-//: that always exists.
-
-
-//: **A menu about a word goes where the word goes, or it goes away.** The
-//: anchor is copied at open time, so anything that moves the text under an
-//: open menu leaves it pointing at whatever has scrolled into that spot: the
-//: editor scrolled with the wheel, the window resized, the sidebar or the chat
-//: dock opened beside it. None of those reach the mousedown and input
-//: listeners that close this menu, which is why it could be left stranded.
-//:
-//: Re-measured rather than re-clamped: the stored rect is the stale thing, so
-//: placing it again would only move a wrong answer. The mark is found again
-//: from the finding the menu is open on, and when it has left the editor's
-//: visible box, or is no longer drawn at all, the menu closes, which is
-//: DOCUMENTS_PLAN 12 D4's rule ("a menu that points at a word that is off
-//: screen is a menu pointing at nothing") applied after the open rather than
-//: only during it.
 
 
 window.addEventListener("resize", docSuggestFollowAnchor);
@@ -9109,144 +7018,6 @@ window.addEventListener("scroll", docSuggestFollowAnchor, true);
 
 let docLastTranslateLanguage = "";
 
-// --- Check with AI, in place (INBOX 410) -----------------------------------
-//
-// The owner, 2026-09-24: "improve how the 'check with ai' feature works in the
-// documents editor." It used to leave the editor for the Chat tab, answer in a
-// bubble with nothing to apply, and raise a skill suggestion that did not fit
-// (INBOX 413). Now it stays: `POST /documents/{id}/ai-check` streams findings
-// (the exact words, a one-line reason, a one-line fix) and each becomes a
-// finding of kind `ai`, so it is underlined in the text, listed in the panel
-// under its own group, and answered by the same row and the same answers every
-// other finding has (`docFindingLine`, `docSuggestAnswers`), with Apply (the
-// row's check) and Dismiss. Stop is the button that started it. The model is
-// the documents feature's (Settings, Models, per feature).
-
-//: `state` is idle, running, done, stopped, offline or failed; `items` are
-//: `{text, message, replacement, near}` as they arrived, located afresh on every
-//: pass (`docAiFindings`) because the writer may keep typing while it runs.
-//: `mode` is "ai" or "claims" (Check claims against my notes, Phase G): the claim
-//: check puts its verdicts in the same `items`, each with a `claim` `{verdict, note}`.
-const docAiCheck = {
-  state: "idle", items: [], message: "", controller: null, docId: null, mode: "ai",
-  //: One request, no stream: the server writes nothing and answers every sentence.
-  async claims() {
-    if (docAiCheck.state === "running") return;
-    const box = docSurface();
-    const full = box?.text || "";
-    if (!full.trim()) return toast("Nothing to check yet.", "info");
-    const doc = currentDoc || (await ensureDocumentExists().catch(() => null));
-    if (!doc) return toast("Nothing to check yet.", "info");
-    Object.assign(docAiCheck, { state: "running", items: [], message: "", controller: null, docId: doc.id, mode: "claims" });
-    $("doc-prose-panel")?.classList.remove("hidden");
-    $("doc-prose")?.setAttribute("aria-expanded", "true");
-    renderDocProse();
-    try {
-      const got = await apiJson(`/documents/${doc.id}/claim-check`, { method: "POST", body: JSON.stringify({ text: full }), readOnly: true });
-      docAiCheck.items = got.claims.map((c) => ({
-        text: c.text, message: c.message, replacement: "", near: c.start, claim: { verdict: c.verdict, note: c.note },
-      }));
-      docAiCheck.state = "done";
-      docAiCheck.message = got.source === "words" ? "No AI model ran, so sentences were matched to notes by their words." : "";
-    } catch (error) {
-      docAiCheck.state = "failed";
-      docAiCheck.message = error.message || "The check did not finish.";
-    }
-    renderDocProse();
-  },
-};
-
-//: The streamed items as findings against the text as it is now. An item whose
-//: words are gone (applied, or edited away) is simply not drawn; one dismissed
-//: is gone from `items` itself.
-function docAiFindings(text) {
-  if (!docAiCheck.items.length || docAiCheck.docId !== (currentDoc?.id ?? null)) return [];
-  const out = [];
-  for (const item of docAiCheck.items) {
-    let start = text.indexOf(item.text, Math.max(0, item.near - 200));
-    if (start === -1) start = text.indexOf(item.text);
-    if (start === -1) continue;
-    const finding = {
-      rule: "ai",
-      start,
-      end: start + item.text.length,
-      text: item.text,
-      message: item.message,
-      replacement: item.replacement || null,
-      aiItem: item,
-    };
-    if (docProseIgnored.has(docProseKey(finding))) continue;
-    out.push(finding);
-  }
-  return out;
-}
-
-function docAiDismiss(finding) {
-  docAiCheck.items = docAiCheck.items.filter((item) => item !== finding.aiItem);
-  renderDocProse();
-}
-
-
-//: **The check's own line in the panel**: what it is doing or did, and the
-//: two ways on (again, or Discuss in chat). No model is a `.notice-warn` with
-//: the way to connect one, rather than a toast that is gone before it is read.
-function docAiCheckStatus() {
-  if (docAiCheck.state === "idle" || docAiCheck.docId !== (currentDoc?.id ?? null)) return null;
-  const wrap = document.createElement("div");
-  wrap.className = "doc-prose-ai";
-  wrap.setAttribute("role", "status");
-  const n = docAiCheck.items.length;
-  const found = nounCount(n, "finding");
-  if (docAiCheck.state === "offline") {
-    const notice = document.createElement("p");
-    notice.className = "notice notice-warn doc-prose-ai-notice";
-    const icon = document.createElement("i");
-    icon.className = "ph ph-plug";
-    icon.setAttribute("aria-hidden", "true");
-    const words = document.createElement("span");
-    words.textContent = "No AI model is connected, so Check with AI cannot read this yet.";
-    notice.append(icon, words);
-    const open = smallButton("ph:gear Open Settings, Models", "Connect or choose the model documents use", () => {
-      if (typeof openSettingsModal === "function") openSettingsModal("models");
-    });
-    open.classList.add("doc-prose-ai-settings");
-    wrap.append(notice, open);
-  } else {
-    const line = document.createElement("span");
-    line.className = "doc-prose-ai-line";
-    if (docAiCheck.mode === "claims") {
-      const marked = docAiCheck.items.filter((item) => item.claim.verdict !== "supported").length;
-      line.textContent = docAiCheck.state === "running"
-        ? "Checking sentences against your notes…"
-        : docAiCheck.state === "failed"
-          ? docAiCheck.message || "The check did not finish."
-          : `${nounCount(n, "sentence")} checked, ${marked} not backed by a note.${docAiCheck.message ? ` ${docAiCheck.message}` : ""}`;
-      if (docAiCheck.state === "failed") line.classList.add("error");
-    } else if (docAiCheck.state === "running") {
-      line.textContent = n ? `Checking with AI, ${found} so far…` : "Checking with AI…";
-    } else if (docAiCheck.state === "stopped") {
-      line.textContent = `Stopped. ${n ? `${found} before it stopped.` : "Nothing found before it stopped."}`;
-    } else if (docAiCheck.state === "failed") {
-      line.textContent = docAiCheck.message || "The check did not finish.";
-      line.classList.add("error");
-    } else {
-      line.textContent = n ? `Checked with AI: ${found}.` : "Checked with AI: nothing to flag.";
-    }
-    wrap.appendChild(line);
-  }
-  const chat = smallButton("ph:chat-circle Discuss in chat", "Open this document in a chat, to ask about it in your own words", () => docAiDiscussInChat());
-  chat.classList.add("doc-prose-ai-chat");
-  wrap.appendChild(chat);
-  return wrap;
-}
-
-
-//: **Managing the dictionary** (asked for by name): the sheet is documents-dictionary.js,
-//: fetched on the first press; the word list's reads stay here (`docDictionary`).
-async function openDocDictionary() {
-  if (!(await lazyScript("/js/documents-dictionary.js"))) return toast("The dictionary could not be loaded.", true, { action: ["Try again", openDocDictionary] });
-  return docDictionaryOpen();
-}
 
 //: Last line, deliberately: everything above has to exist before the first
 //: paint. See `renderDocTools`.
@@ -9389,104 +7160,16 @@ window.docCanRedo = () => (docCmView && window.CM6 ? window.CM6.commands.redoDep
 // first: this file must never be able to tell which one it is talking to.
 
 
-//: **Warm on idle** (perf-1026): the Documents list is the signal that a
-//: document is about to open, so the editor bundle (about 140 ms to evaluate)
-//: is loaded in a spare moment and the checker's files are fetched into the
-//: HTTP cache, rather than both on the first open. Phones too (L-documents-47:
-//: the cold open there is the one a person waits on), but never on a metered
-//: connection or a device with 2 GB or less, where the bytes cost more than the wait.
-
-//: The in-flight load, so two documents opened quickly do not inject two
-//: script tags. Reset to null on failure, so a later attempt can retry after
-//: whatever went wrong (a dropped connection on first paint, most likely).
-
 //: True once loading or mounting has failed. Checked before every attempt, so
 //: a broken bundle costs one request rather than one per document opened.
 let docCmBroken = false;
 
-
-//: The parts of the configuration that are swapped without rebuilding the
-//: state: the language (a file's type can change while it is open), the theme
-//: (light and dark), the gutter (a remembered preference), and line wrapping
-//: (prose wraps, code does not).
 
 //: How the prose findings tell the view to repaint. A `StateEffect` rather
 //: than a bare `dispatch({})`, so the plugin can rebuild for exactly this and
 //: ignore every other transaction that does not move the document or the
 //: viewport. Created with the first view, because it needs `CM.state`.
 let docFindingsEffect = null;
-
-//: The vendored modes, by the extension `GET /documents/file-types` uses.
-//: Anything not here is plain text, which is the honest answer: several of
-//: the file types this editor opens (csv) have no mode, and a wrong
-//: highlighter is worse than none.
-
-//: **The editor's ink, from the app's own tokens.**
-//:
-//: A theme object rather than a stylesheet, and the reason is mechanical:
-//: CodeMirror styles itself through `document.adoptedStyleSheets`, and
-//: adopted sheets sort *after* every document stylesheet, so a rule in
-//: 09-editor.css would lose to the library's own base rule at equal
-//: specificity and nothing would say so. Layout lives in the file; colour,
-//: type and the caret live here.
-//:
-//: `var(--…)` all the way through, so the density slider, a custom accent and
-//: a theme change move the editor with the rest of the app rather than
-//: leaving it as the one panel that did not follow.
-//: The Live table's placement rules, one pair per column count.
-//:
-//: A CodeMirror line is the grid, and its children are whatever the
-//: decorations left there: the cell marks, and behind every hidden pipe two
-//: `cm-widgetBuffer` images and an empty `contenteditable=false` span. Those
-//: three are zero-width and were still taking a `1fr` track each under
-//: `grid-auto-flow: column`, which is why a table drew its cells 51.6px wide
-//: with three empty columns of gap between them and wrapped every word.
-//: Placing the cells by index and pinning everything else into the first
-//: track at zero width is the only arrangement that stays right whatever the
-//: decorations do: a mark the table does not know about (a spelling
-//: underline, a search match) can be added tomorrow without taking a column.
-
-//: **Indent guides under a nested list** (INBOX 392). A nested item was
-//: told apart from its parent by its indent alone, and three levels deep a
-//: reader was counting em widths to know which item a line belonged to. One
-//: hairline per ancestor, down the column of that ancestor's own marker, is
-//: what every outliner draws; it is a background rather than a border or a
-//: widget because a line decoration can carry it without adding a node, and
-//: it cannot move the text. The marker of level `k` sits at `k * 1.6em` (the
-//: hanging indent in the theme), so the guide for level `j` is at that plus
-//: 0.3em, under the bullet's middle.
-
-//: How many matches the find panel's query has, said in the panel (audit
-//: 1028 U9): the library's panel finds without ever saying how many. Counted
-//: only while the panel is open and only when the text or the query changed,
-//: and stopped at 1,000 so a one-letter query in a long file stays cheap.
-
-
-
-//: **Code colours from the app's own palette, and the reason this is not
-//: optional.** The owner: "for code files, include code syntax and make it a
-//: proper code editor like vs code."
-//:
-//: Without this the bundle falls back to CodeMirror's `defaultHighlightStyle`,
-//: which is a fixed light-page palette: a keyword is `#770088`, a variable
-//: name is `#0000ff`, a string `#aa1111`. Measured against this app's dark
-//: ground, sampled off a screenshot at `rgb(27, 31, 44)`: the keyword reads
-//: **1.76:1** and the variable name **1.91:1**, against WCAG AA's 4.5. Every
-//: token was byte-identical in light and dark, because that style has no dark
-//: variant to switch to. Nothing logged it, and a reader with the theme on
-//: light would never see it, which is the shape this file keeps recording.
-//:
-//: Built here rather than in a stylesheet for the same reason the theme
-//: itself is: adopted sheets sort after every document stylesheet, so a rule
-//: in 09-editor.css would lose to the library's at equal specificity. The
-//: roles are mapped onto tokens the app already defines for both themes, so
-//: the density slider, a custom accent and a theme change move the code with
-//: the rest of the app.
-//: Built once, and **deliberately not inside the theme compartment.** Every
-//: colour below is a `var(--…)`, so light and dark are already handled by the
-//: cascade; rebuilding it on each mode change would define a fresh
-//: `StyleModule` and adopt another stylesheet every time the theme was
-//: toggled, which is a leak that only shows up after a few switches.
 
 
 //: A different document is a different history: carrying the previous one
@@ -9502,24 +7185,6 @@ let docFindingsEffect = null;
 //: made elsewhere since would make its steps wrong). A lock purges them all.
 let docHistoryOwner = null;
 
-//: `repaint: false` when the caller repaints the findings itself a frame
-//: later (`openDocument`, through `renderDocTools`): the findings plugin is
-//: rebuilt by `setState` from the same list, and the extra dispatch was a
-//: second layout of the page (138ms of a 573ms open at 390).
-
-//: **A document's history survives a reload** (INBOX 553(b), the owner's
-//: decision; WHITEBOARD_PLAN decision 17 as amended). Written a moment after
-//: each edit (`docHistoryPersist`, from `docCmUpdate`), read back when the
-//: document opens and nothing was kept this session, and given back only
-//: over the very text it was taken against and only if no edit has been made
-//: since the open. CodeMirror's history holds its last hundred events
-//: (its own `minDepth`), which is the owner's "~100 steps".
-
-
-//: **Source view has to be measured after it is shown.** CodeMirror caches
-//: the geometry it lays out with, and a view inside a `display: none` wrapper
-//: measures as zero: switching back from Live or Read would leave every line
-//: positioned against that zero until something else forced a reflow.
 
 //: **The lock screen has to empty the engine too, and it cannot know how.**
 //:
