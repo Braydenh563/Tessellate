@@ -62,6 +62,7 @@ TAIL_TOPICS.extend(
                 "remove from group",
                 "copy size",
                 "paste size",
+                "swap sizes",
                 "reverse a connector",
                 "auto size",
             ),
@@ -77,7 +78,7 @@ TAIL_TOPICS.extend(
                 "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
-                "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
+                "the group, copy, paste and swap the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Groups nest (Ungroup takes off one level, a double-click goes in); a turn near upright snaps. "
                 "Selecting, menus, presenting: Whiteboard selection and menus."
             ),
@@ -642,6 +643,7 @@ TAIL_TOPICS.extend(
                 "copy as svg",
                 "copy size",
                 "paste size",
+                "swap sizes",
                 "copy data",
                 "paste data",
                 "turn 90",

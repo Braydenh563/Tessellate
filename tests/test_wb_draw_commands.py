@@ -28,6 +28,7 @@ ROWS = {
     "remove-from-group": ("Arrange", "wbRemoveFromGroup"),
     "copy-size": ("Edit", "wbCopySize"),
     "paste-size": ("Edit", "wbPasteSize"),
+    "swap-size": ("Edit", "wbSwapSize"),
     "auto-size": ("Edit", "wbAutoSizeSelection"),
     "reverse": ("Item", "wbReverseSelection"),
 }
@@ -46,13 +47,13 @@ def test_the_command_is_a_row_and_its_function_exists(cmd_id):
 def test_the_needs_tests_exist():
     for need in ("reversible", "grouped", "sizeCopied"):
         assert f"  {need}: " in CMD, need
-    for cmd_id, need in (("reverse", "reversible"), ("remove-from-group", "grouped"), ("paste-size", "sizeCopied"), ("copy-size", "one")):
+    for cmd_id, need in (("reverse", "reversible"), ("remove-from-group", "grouped"), ("paste-size", "sizeCopied"), ("swap-size", "two"), ("copy-size", "one")):
         row = next(line for line in CMD.splitlines() if f'{{ id: "{cmd_id}"' in line)
         assert f'needs: "{need}"' in row, cmd_id
 
 
 def test_each_change_is_one_undo_step():
-    for fn in ("wbTurnSelection", "wbRemoveFromGroup", "wbPasteSize", "wbAutoSizeSelection", "wbReverseSelection"):
+    for fn in ("wbTurnSelection", "wbRemoveFromGroup", "wbPasteSize", "wbSwapSize", "wbAutoSizeSelection", "wbReverseSelection"):
         src = FMT if f"function {fn}(" in FMT else WB
         body = src[src.index(f"function {fn}("):][:2500]
         assert "wbRecordGesture(" in body, fn

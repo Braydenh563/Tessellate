@@ -847,7 +847,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
 | Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
-| Copy size, paste size, swap | copy size and paste size yes (commands `copy-size`, `paste-size`); swap size has no command | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | a `swap-size` command exchanging w and h of two selected items | S |
+| Copy size, paste size, swap | yes (commands `copy-size`, `paste-size`, `swap-size`; `wbSwapSize`, whiteboard-format.js, 2026-11-14) | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | a `swap-size` command exchanging w and h of two selected items | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
 | Constrain proportions | yes (`wb-fmt-link`, the W/H lock); size presets (`wb-fmt-aspect`: 1:1, 4:3, 3:2, 16:9, 3:4, A4), 2026-11-01 (board-1101) | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |

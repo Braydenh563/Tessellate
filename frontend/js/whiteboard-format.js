@@ -1612,6 +1612,27 @@ wbFmtState.dataKeys = (() => {
   return { copy, paste, tooltip };
 })();
 
+//: Swap size (draw.io's `swap`): two selected items trade their widths and heights, as one Undo step.
+function wbSwapSize() {
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+  if (entries.length !== 2) {
+    toast("Select two shapes, notes or pictures to swap their sizes.");
+    return Promise.resolve();
+  }
+  const dims = entries.map((e) => ({ w: e.bbox.maxX - e.bbox.minX, h: e.bbox.maxY - e.bbox.minY }));
+  return wbRecordGesture(async () => {
+    const rows = [];
+    entries.forEach((e, i) => {
+      const other = dims[1 - i], own = dims[i];
+      for (const [dim, target, size] of [["width", Math.max(8, other.w), own.w], ["height", Math.max(8, other.h), own.h]]) {
+        if (size > 0 && Math.abs(size - target) >= 0.5) wbSizeItemTo(e, dim, target, target / size, rows);
+      }
+    });
+    await wbSaveMany(rows);
+    wbAnnounce("Sizes swapped.");
+  }).then(() => wbScheduleRender());
+}
+
 //: How much a shape must grow for its words to fit: the factor on each axis,
 //: 1 when they already fit. The words' area scales with the shape, so the
 //: factor is the words' size over the area they have.
