@@ -463,7 +463,7 @@ def test_a_walk_is_paced_too() -> None:
     assert 'const busy = (!!nmb.act && !NMB_RESTING_ACTS.has(nmb.act)) || buddy.classList.contains("nm-buddy-dragging") || !!nmb.visit;' in tempo
     assert "nmb-walking" not in tempo[tempo.index("const busy") : tempo.index("const still")]
     move = _fn("nameMarkBuddyGo")
-    walk = move[move.index('nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);') :]
+    walk = move[move.index('nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);') :]
     assert "nmbTempo.seen = 0;" in walk[:300] and "setTimeout(nameMarkBuddyTempo, 0)" in walk[:400]
 
 
@@ -629,7 +629,7 @@ def test_it_sets_off_and_lands_and_eases_between_poses():
     assert "delay: setOff, fill: \"backwards\"" in AV
     assert "nameMarkBuddySquash(char, duration + setOff, underway);" in AV
     squash = _fn("nameMarkBuddySquash")
-    assert '.map((frame) => ({ ...frame, easing: "ease-in-out" })), { duration: total });' in squash
+    assert '.map((frame) => ({ ...frame, easing: NMB_CURVE.inOut })), { duration: total });' in squash
     assert "a instanceof CSSTransition" in AV
     assert "#nm-buddy :is(.nmb-leg, .nmb-arm, .nmb-hold, .atl-lower) { transition: transform calc(var(--motion-slow) * 2) var(--ease-spring)" in CSS08
 
@@ -711,7 +711,7 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
     # (INBOX 1463: never "across the screen ... on a new page").
     for way in ("if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
                 "if (route === \"float\") {", "if (d < size * NMB_HOP_SIZES && !poseChanged)",
-                'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);'):
+                'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);'):
         assert way in go, way
     # Distances are in its own size, not pixels.
     assert "const size = NMB_W * Math.max(0.7, nmb.scale || 1);" in go

@@ -490,7 +490,7 @@ function atlasStarsFade(rig, on) {
   }
   if (rig.fades) return;
   const stars = rig.tossEls?.stars || [...rig.box.querySelectorAll(".atl-layer .nmp-stars > .atl-juggle")];
-  rig.fades = stars.map((star, k) => star.animate?.([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 1500, delay: -k * 500, iterations: Infinity, easing: "ease-in-out" })).filter(Boolean);
+  rig.fades = stars.map((star, k) => star.animate?.([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 1500, delay: -k * 500, iterations: Infinity, easing: NMB_CURVE.inOut })).filter(Boolean);
 }
 //: **Where the CSS has the figure, read in a task after a drawn frame** (INBOX 1766; it was the top of
 //: `atlasRigFrame`). Every read of the probes and the pose is taken here, all before any write, and

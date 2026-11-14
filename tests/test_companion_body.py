@@ -254,7 +254,7 @@ def test_it_comes_in_three_ways_or_more_wherever_it_stands() -> None:
     fall = enter[enter.index('if (how === "fall") {') :]
     assert 'atlas ? "float" : "leap"' in fall
     tumble = enter[enter.index('if (how === "tumble") {') :]
-    assert '{ rotate: "0deg" },\n    ], { duration, easing: "ease-out" })' in tumble
+    assert '{ rotate: "0deg" },\n    ], { duration, easing: NMB_CURVE.out })' in tumble
 
 
 @needs_node

@@ -12,6 +12,7 @@ companion. It uses Web Animations and timers only: no frame loop.
 
 from __future__ import annotations
 
+from tests._js_scope import nmb_curve_js
 import json
 import shutil
 import subprocess
@@ -20,7 +21,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MICRO = (ROOT / "frontend" / "js" / "atlas-micro.js").read_text(encoding="utf-8")
+MICRO = nmb_curve_js() + (ROOT / "frontend" / "js" / "atlas-micro.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 HARNESS = r"""

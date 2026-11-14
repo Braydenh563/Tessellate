@@ -22,17 +22,17 @@
     if (!box.animate) return [];
     const { cx, cy, flat, tilt } = ATLAS_GEO.ringFrame;
     const loops = [];
-    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: "ease-in-out", ...opts }));
+    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: NMB_CURVE.inOut, ...opts }));
     ATLAS_GEO.rings.forEach((ring, k) => {
       const [secs, deg, squash] = ATLAS_RING_SWAY[k];
       const at = (d, f) => ({ transform: `translate(${cx}px, ${cy}px) rotate(${tilt + d}deg) scale(1, ${+(flat * f).toFixed(4)})` });
       const sway = Math.random();
       for (const el of box.querySelectorAll(`.atl-ring-frame-${k}, .atl-orbit-${k}`)) loop(el, [at(-deg, 1 - squash), at(deg, 1 + squash)], secs * 1000, sway);
       const spin = Math.random();
-      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: "linear" });
+      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: NMB_CURVE.linear });
     });
     for (const el of box.querySelectorAll(".atl-orbiter-glow")) loop(el, [{ scale: 0.8, opacity: 0.35 }, { scale: 1.2, opacity: 0.9 }], 2200 + Math.random() * 2400, Math.random());
-    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: "linear" }));
+    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: NMB_CURVE.linear }));
     return loops;
   }
 
@@ -714,7 +714,7 @@
     const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
     tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
     tail.sway = svg.animate(tail.swayKeys.map(at), {
-      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: "ease-in-out",
+      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: NMB_CURVE.inOut,
     });
   }
   function atlasTailUnrest(tail) {
@@ -737,7 +737,7 @@
     }
     tail.sway.cancel();
     tail.sway = null;
-    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
+    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: NMB_CURVE.settle });
   }
   function atlasTailDraw(tail, bend, stretch) {
     if (atlasTailFrame.kit.hold === tail) return;
@@ -822,7 +822,7 @@
           el.style.transformBox = "fill-box";
           el.style.transformOrigin = grip === "box" ? "50% 50%" : "50% 0";
         } else if (grip) el.style.transformOrigin = `${grip[0]}px ${grip[1]}px`;
-        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: "ease-in-out", id: "atl-prop" });
+        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: NMB_CURVE.inOut, id: "atl-prop" });
         anim.cancel();
         //: Staggered rows (a constellation's stars) start a step apart.
         loops.push({ anim, el, root: el.closest(".nmp, .atl-fx-bang") || el, lag: (k * stagger * ms) % ms, on: false });
@@ -1136,7 +1136,7 @@
           if (part === "neb") keys[j] = keys[j].map((v, k) => v + (j % 2 ? 1 : -1) * (k ? 0.6 : 1));
         }
         keys.push(start);
-        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: "ease-in-out" }));
+        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: NMB_CURVE.inOut }));
         const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity });
         Object.assign(anim, { keys, el });
         low.flow.push(anim);

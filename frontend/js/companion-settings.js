@@ -262,14 +262,14 @@ function nameMarkBuddyLeave(buddy, then) {
   }
   //: Less motion is a fade, never a cut.
   if (nameMarkBuddyNoTravel()) {
-    buddy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: "ease-in", fill: "forwards" });
+    buddy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: NMB_CURVE.in, fill: "forwards" });
     setTimeout(then, 280);
     return;
   }
   const char = buddy.querySelector(".nm-buddy-char");
   nmb.anim?.cancel();
   nameMarkBuddyBurst(buddy, 0, 0, 120);
-  char?.animate([{ scale: "1", opacity: 1 }, { scale: "1.05", opacity: 1, offset: 0.25 }, { scale: "0.45", opacity: 0 }], { duration: 380, easing: "ease-in", fill: "forwards" });
+  char?.animate([{ scale: "1", opacity: 1 }, { scale: "1.05", opacity: 1, offset: 0.25 }, { scale: "0.45", opacity: 0 }], { duration: 380, easing: NMB_CURVE.in, fill: "forwards" });
   setTimeout(then, 400);
 }
 

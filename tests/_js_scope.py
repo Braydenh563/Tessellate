@@ -13,6 +13,7 @@ Not named `test_*.py` on purpose, as `_app_js.py` and `_repo_files.py`.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js_comments
 
@@ -209,3 +210,10 @@ GC_WORKER_PIECES = ("gcStartWorker", "gcOnWorkerTick", "gcFitOnTick", "gcOnWorke
 
 def gc_worker(canvas: str) -> str:
     return gc_fns(canvas, *GC_WORKER_PIECES)
+
+
+def nmb_curve_js() -> str:
+    """avatars.js's `NMB_CURVE` table, for a node harness that runs a companion file's code alone."""
+    src = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    start = src.index("const NMB_CURVE = {")
+    return src[start : src.index("\n  };", start) + 5] + "\n"
