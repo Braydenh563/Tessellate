@@ -612,3 +612,10 @@ FRAMES["next_due"] = (
     c("The next dated item is {what} ({when}).", "f"), c("Thereafter: {what} ({when}).", "f"), c("The following entry is {what} ({when}).", "f"), c("Next in the notes is {what} ({when}).", "f"),
     c("Next on the horizon: {what} ({when}).", "p"), c("Further out: {what} ({when}).", "p"), c("Peeking ahead: {what} ({when}).", "p"), c("Spotted on the horizon: {what} ({when}).", "p"),
 )
+
+#: The wording that brings each thin ability to 20 distinct surfaces (L-chat-229); it lives apart so the
+#: pools above stay readable.
+from tessellate.ai.composer_lines_more import MORE  # noqa: E402
+
+for _ability, _rows in MORE.items():
+    FRAMES[_ability] = (*FRAMES[_ability], *(c(*row) for row in _rows))

@@ -4888,6 +4888,25 @@ button.answer-figure-open {
   stroke-width: 2;
 }
 
+/* An area is the line with its floor filled; a pie's slices step from the accent toward the text colour,
+   each a blend of the two so none fades into the card, parted from the next by the card's own colour (L-chat-252). */
+.ask-chart-area {
+  fill: color-mix(in oklab, var(--accent) 22%, transparent);
+  stroke: none;
+}
+
+.ask-chart-slice {
+  stroke: var(--card);
+  stroke-width: 1.5;
+}
+
+.ask-chart-slice-0 { fill: var(--accent); }
+.ask-chart-slice-1 { fill: color-mix(in oklab, var(--accent) 75%, var(--text)); }
+.ask-chart-slice-2 { fill: color-mix(in oklab, var(--accent) 50%, var(--text)); }
+.ask-chart-slice-3 { fill: color-mix(in oklab, var(--accent) 25%, var(--text)); }
+.ask-chart-slice-4 { fill: color-mix(in oklab, var(--text) 70%, var(--accent)); }
+.ask-chart-slice-5 { fill: color-mix(in oklab, var(--text) 90%, var(--accent)); }
+
 .ask-chart-numbers > summary {
   cursor: pointer;
   color: var(--muted);

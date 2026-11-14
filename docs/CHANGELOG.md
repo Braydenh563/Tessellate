@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chart maker: area, pie, scatter, histogram and table join bar and line, in the / menu, a chart block, and Chat's chart answer ("chart this as a pie" draws a pie instead of saying it is bars); the pie's slices are 5.9 to 1 or more against the card in both looks (L-chat-252).
+- Chat: every wording slot now has 20 or more distinct sentences across the four voices and five moods (23 abilities had 7 to 19; the quiz lines, the welcome, the small talk and the act lines now vary), and the terse voice's lines average 3.8 words against 8.4 for formal (L-chat-229, 230).
 - Atlas: every prop is now 4 to 1 or more against its body and 14px or more in both looks (the desk props, 18 of 30 were 1 to 2.5 to 1 or under 14px): a navy keyline under each fill, navy line-art, and the note, gear, puzzle piece, snack and nap Zs drawn larger; `scratchpad/ui-sweeps/atlasprops.js` reads color-mix paints and a hidden part at its act's peak (L-chat-246).
 - Chat: the last three phrasing xfails are answered ("calender says tomorrow is" is the date question, "lunch with my friend at noon today" offers a reminder card, a meeting ask with no named thing and no list for the day says none instead of quoting a note); `tests/test_phrasing_real_1111.py` has no xfail left (L-chat-235, L-chat-250).
 - Atlas cost, measured in a real browser at 4x CPU (L232, L233, L238): a class change on the buddy restyles 113 to 166 elements (was 1,244), a mood change is 3 to 5 restyles, and a click's handlers run in 0.1 to 7.6 ms; `tests/test_atlas_cost_live_1114.py` keeps those budgets.

@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8522, frontend ids 2797, CSS sections 524, backend routes 722, backend modules 11304, test files 2938, tests 23040, plan headings 692, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8524, frontend ids 2797, CSS sections 524, backend routes 722, backend modules 11304, test files 2941, tests 23048, plan headings 692, app scripts 29, boot scripts 38, script files 306.
 
-## Frontend functions (8522)
+## Frontend functions (8524)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2002,29 +2002,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `closeAppearancePanel` | frontend/js/appearance-panel.js:283 |
 | `openAppearancePanel` | frontend/js/appearance-panel.js:256 |
 
-### frontend/js/ask-chart.js (19)
+### frontend/js/ask-chart.js (21)
 
 | Name | File:line |
 |---|---|
-| `askChartChips` | frontend/js/ask-chart.js:261 |
+| `askChartBinned` | frontend/js/ask-chart.js:114 |
+| `askChartChips` | frontend/js/ask-chart.js:318 |
 | `askChartFit` | frontend/js/ask-chart.js:63 |
-| `askChartFollow` | frontend/js/ask-chart.js:387 |
-| `askChartInline` | frontend/js/ask-chart.js:208 |
+| `askChartFollow` | frontend/js/ask-chart.js:446 |
+| `askChartInline` | frontend/js/ask-chart.js:265 |
 | `askChartLabel` | frontend/js/ask-chart.js:70 |
-| `askChartPng` | frontend/js/ask-chart.js:224 |
+| `askChartPie` | frontend/js/ask-chart.js:127 |
+| `askChartPng` | frontend/js/ask-chart.js:281 |
 | `askChartStep` | frontend/js/ask-chart.js:97 |
-| `askChartSvg` | frontend/js/ask-chart.js:112 |
+| `askChartSvg` | frontend/js/ask-chart.js:162 |
 | `askChartSvgEl` | frontend/js/ask-chart.js:24 |
-| `askChartSvgText` | frontend/js/ask-chart.js:200 |
-| `askChartTable` | frontend/js/ask-chart.js:173 |
+| `askChartSvgText` | frontend/js/ask-chart.js:257 |
+| `askChartTable` | frontend/js/ask-chart.js:229 |
 | `askChartTextWidth` | frontend/js/ask-chart.js:52 |
 | `askChartTickLabel` | frontend/js/ask-chart.js:46 |
 | `askChartTicks` | frontend/js/ask-chart.js:34 |
 | `askChartTipText` | frontend/js/ask-chart.js:84 |
 | `askChartWidth` | frontend/js/ask-chart.js:107 |
-| `askChartWire` | frontend/js/ask-chart.js:331 |
-| `drawAskChart` | frontend/js/ask-chart.js:295 |
-| `renderAskChart` | frontend/js/ask-chart.js:279 |
+| `askChartWire` | frontend/js/ask-chart.js:390 |
+| `drawAskChart` | frontend/js/ask-chart.js:352 |
+| `renderAskChart` | frontend/js/ask-chart.js:336 |
 
 ### frontend/js/ask-compose.js (33)
 
@@ -13382,7 +13384,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/00-tokens-shell.css | 4337 |
 | frontend/css/01-forms-settings.css | 6289 |
 | frontend/css/02-chat-graph.css | 5298 |
-| frontend/css/03-dashboard-widgets.css | 4931 |
+| frontend/css/03-dashboard-widgets.css | 4950 |
 | frontend/css/04-chat-dock-appearance.css | 6639 |
 | frontend/css/05-sidebars-themes.css | 6217 |
 | frontend/css/06-timeline-dialogs.css | 3782 |
@@ -28721,7 +28723,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23040)
+## Tests (23048)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29029,6 +29031,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_changed_why_1569.py | 2 |
 | tests/test_changelog.py | 3 |
 | tests/test_characters_lazy.py | 5 |
+| tests/test_chart_kinds_1114.py | 3 |
 | tests/test_chart_maker_l171.py | 5 |
 | tests/test_chat_act_card_once.py | 1 |
 | tests/test_chat_acts_1108.py | 7 |
@@ -29446,6 +29449,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_suggest_2210.py | 13 |
 | tests/test_composer_summaries_1029b.py | 17 |
 | tests/test_composer_sums_1108.py | 5 |
+| tests/test_composer_surfaces_1114.py | 2 |
 | tests/test_composer_sweep_1028b.py | 3 |
 | tests/test_composer_sweep_1030.py | 8 |
 | tests/test_composer_tables.py | 32 |
@@ -31176,6 +31180,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_source_check.py | 8 |
 | tests/test_source_kinds_scroll_l730.py | 4 |
 | tests/test_source_structure_1026.py | 3 |
+| tests/test_sources_and_notice_744.py | 3 |
 | tests/test_space_delete_cascades.py | 1 |
 | tests/test_space_delete_confirm_1031.py | 2 |
 | tests/test_space_delete_safe_1029.py | 4 |
