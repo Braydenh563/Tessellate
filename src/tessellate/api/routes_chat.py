@@ -914,7 +914,7 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
     how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
-    welcome = address.greet(welcome, address.name_of(deps.get_config()), req.history)  # first hello only (G7)
+    welcome = address.greet(welcome, "" if _composer_voice() == "professional" else address.name_of(deps.get_config()), req.history)  # first hello only (G7); not in Neutral
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 

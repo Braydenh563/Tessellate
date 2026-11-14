@@ -107,3 +107,16 @@ def test_the_first_hello_of_a_chat_takes_the_name_once():
 
 def test_the_name_is_cut_at_forty_characters():
     assert len(address.clean("A" * 80)) <= address.CUT
+
+
+def test_a_welcome_with_a_comma_after_the_greeting_takes_the_name():
+    """L-chat-114 (C12): "Good afternoon, and welcome back." was left nameless."""
+    assert address.greet("Good afternoon, and welcome back. Nothing is due.", "Sam", []) == "Good afternoon, Sam, and welcome back. Nothing is due."
+
+
+@pytest.mark.parametrize(("voice", "named"), [("natural", True), ("professional", False)])
+def test_the_first_hello_names_you_unless_the_voice_is_professional(client, voice, named):
+    _name("Sam")
+    deps.get_config().set_preference("composer_voice", voice)
+    said = _ask(client, "hello")["text"]
+    assert ("Sam" in said.split(".")[0]) is named, said
