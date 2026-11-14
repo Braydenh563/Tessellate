@@ -2354,19 +2354,19 @@ MORE_TOPICS.extend([
             "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
         ),
         "body": (
-            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
-            "blocks. Mermaid is only its file format. Every door is the same row, "
+            "The Diagram builder makes a flowchart, mind map, timeline, sequence, Gantt, pie, state, class or ER diagram "
+            "from blocks. Mermaid is only its file format. Every door is the same row, "
             "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
+            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
-            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
+            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects). "
             "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},

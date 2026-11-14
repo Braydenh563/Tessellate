@@ -63,7 +63,7 @@
       const stamp = ++S.drawn;
       //: Empty: no block and only a header; a kept line is still drawn, so the picture says why.
       const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
-      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
+      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b|gantt\b|pie\b|stateDiagram|classDiagram|erDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
@@ -647,7 +647,7 @@
   //: flowchart path above never reads it. Any other text is a flowchart's, or a picture alone.
   function kindOf(text) {
     const first = diagramModel.front(String(text || "").replace(/\r/g, "")).rest.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("%%"));
-    const hit = /^(mindmap|timeline|sequenceDiagram)\b/i.exec(first || "");
+    const hit = /^(mindmap|timeline|sequenceDiagram|gantt|pie|stateDiagram|classDiagram|erDiagram)\b/i.exec(first || "");
     return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
   }
   //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
@@ -670,6 +670,7 @@
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
+      if (!(await diagramModel.kinds.load(kind))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
       S = diagramModel.kinds.show(host, io, text, kind, kit);
     } else {
       S = panes.get(host.querySelector(":scope > .dgm"));

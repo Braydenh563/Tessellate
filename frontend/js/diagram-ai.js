@@ -546,7 +546,8 @@
   //: pane Suggestions, and on a flowchart the Ask box too, built once per pane.
   function wire(S, h) {
     if (docOf(S)) S.io.menu = [...(S.io.menu || []).filter((row) => row.label !== VERSIONS), { label: VERSIONS, run: () => versions(S) }];
-    if (S.ai) return;
+    //: The Ask box and Suggestions cover the flowchart and the first three kinds; the Gantt, pie, state, class and ER panes have neither yet.
+    if (S.ai || (S.k && diagramModel.kinds.MORE.test(S.k.name))) return;
     S.ai = build(S, h);
   }
 

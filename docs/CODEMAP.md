@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8530, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2790, tests 22374, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8564, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22383, plan headings 689, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8530)
+## Frontend functions (8564)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3363,37 +3363,75 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:132 |
-| `decorate` | frontend/js/diagram-kindbar.js:94 |
-| `expand` | frontend/js/diagram-kindbar.js:159 |
-| `fold` | frontend/js/diagram-kindbar.js:174 |
-| `fresh` | frontend/js/diagram-kindbar.js:19 |
-| `historyKey` | frontend/js/diagram-kindbar.js:148 |
-| `lost` | frontend/js/diagram-kindbar.js:122 |
-| `mount` | frontend/js/diagram-kindbar.js:51 |
-| `open` | frontend/js/diagram-kindbar.js:79 |
-| `sample` | frontend/js/diagram-kindbar.js:36 |
-| `untouched` | frontend/js/diagram-kindbar.js:119 |
+| `blankOf` | frontend/js/diagram-kindbar.js:66 |
+| `choose` | frontend/js/diagram-kindbar.js:150 |
+| `decorate` | frontend/js/diagram-kindbar.js:112 |
+| `expand` | frontend/js/diagram-kindbar.js:177 |
+| `fold` | frontend/js/diagram-kindbar.js:192 |
+| `fresh` | frontend/js/diagram-kindbar.js:32 |
+| `historyKey` | frontend/js/diagram-kindbar.js:166 |
+| `lost` | frontend/js/diagram-kindbar.js:140 |
+| `mount` | frontend/js/diagram-kindbar.js:69 |
+| `open` | frontend/js/diagram-kindbar.js:97 |
+| `sample` | frontend/js/diagram-kindbar.js:54 |
+| `untouched` | frontend/js/diagram-kindbar.js:137 |
 
-### frontend/js/diagram-kinds.js (65)
+### frontend/js/diagram-kinds-more.js (33)
 
 | Name | File:line |
 |---|---|
-| `addTile` | frontend/js/diagram-kinds.js:900 |
-| `buildBlock` | frontend/js/diagram-kinds.js:748 |
-| `buildPalette` | frontend/js/diagram-kinds.js:1099 |
-| `buildRow` | frontend/js/diagram-kinds.js:758 |
-| `dropApply` | frontend/js/diagram-kinds.js:1056 |
-| `dropAt` | frontend/js/diagram-kinds.js:1027 |
-| `fieldsOf` | frontend/js/diagram-kinds.js:741 |
+| `kmAll` | frontend/js/diagram-kinds-more.js:35 |
+| `kmBase` | frontend/js/diagram-kinds-more.js:31 |
+| `kmClassNames` | frontend/js/diagram-kinds-more.js:205 |
+| `kmClassParse` | frontend/js/diagram-kinds-more.js:174 |
+| `kmClassPrint` | frontend/js/diagram-kinds-more.js:195 |
+| `kmClean` | frontend/js/diagram-kinds-more.js:13 |
+| `kmEnds` | frontend/js/diagram-kinds-more.js:259 |
+| `kmErNames` | frontend/js/diagram-kinds-more.js:251 |
+| `kmErParse` | frontend/js/diagram-kinds-more.js:218 |
+| `kmErPrint` | frontend/js/diagram-kinds-more.js:242 |
+| `kmErShow` | frontend/js/diagram-kinds-more.js:216 |
+| `kmErToken` | frontend/js/diagram-kinds-more.js:217 |
+| `kmFlag` | frontend/js/diagram-kinds-more.js:91 |
+| `kmFlags` | frontend/js/diagram-kinds-more.js:89 |
+| `kmFresh` | frontend/js/diagram-kinds-more.js:36 |
+| `kmGanttParse` | frontend/js/diagram-kinds-more.js:60 |
+| `kmGanttPrint` | frontend/js/diagram-kinds-more.js:83 |
+| `kmGanttSpec` | frontend/js/diagram-kinds-more.js:103 |
+| `kmKeep` | frontend/js/diagram-kinds-more.js:12 |
+| `kmLast` | frontend/js/diagram-kinds-more.js:14 |
+| `kmLine` | frontend/js/diagram-kinds-more.js:33 |
+| `kmMake` | frontend/js/diagram-kinds-more.js:11 |
+| `kmPair` | frontend/js/diagram-kinds-more.js:261 |
+| `kmPieParse` | frontend/js/diagram-kinds-more.js:41 |
+| `kmPiePrint` | frontend/js/diagram-kinds-more.js:52 |
+| `kmPieSum` | frontend/js/diagram-kinds-more.js:55 |
+| `kmRead` | frontend/js/diagram-kinds-more.js:17 |
+| `kmStItems` | frontend/js/diagram-kinds-more.js:151 |
+| `kmStMake` | frontend/js/diagram-kinds-more.js:341 |
+| `kmStateParse` | frontend/js/diagram-kinds-more.js:114 |
+| `kmStatePrint` | frontend/js/diagram-kinds-more.js:136 |
+| `kmStateRefs` | frontend/js/diagram-kinds-more.js:153 |
+| `kmStateRename` | frontend/js/diagram-kinds-more.js:164 |
+
+### frontend/js/diagram-kinds.js (66)
+
+| Name | File:line |
+|---|---|
+| `addTile` | frontend/js/diagram-kinds.js:906 |
+| `buildBlock` | frontend/js/diagram-kinds.js:751 |
+| `buildPalette` | frontend/js/diagram-kinds.js:1105 |
+| `buildRow` | frontend/js/diagram-kinds.js:761 |
+| `dropApply` | frontend/js/diagram-kinds.js:1062 |
+| `dropAt` | frontend/js/diagram-kinds.js:1033 |
+| `fieldsOf` | frontend/js/diagram-kinds.js:744 |
 | `find` | frontend/js/diagram-kinds.js:666 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1214 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1220 |
 | `glyph` | frontend/js/diagram-kinds.js:673 |
 | `icon` | frontend/js/diagram-kinds.js:661 |
-| `itemsFor` | frontend/js/diagram-kinds.js:825 |
-| `keptWords` | frontend/js/diagram-kinds.js:702 |
-| `keysOf` | frontend/js/diagram-kinds.js:710 |
+| `itemsFor` | frontend/js/diagram-kinds.js:830 |
+| `keptWords` | frontend/js/diagram-kinds.js:704 |
+| `keysOf` | frontend/js/diagram-kinds.js:713 |
 | `kxAdd` | frontend/js/diagram-kinds.js:359 |
 | `kxAddWho` | frontend/js/diagram-kinds.js:539 |
 | `kxCount` | frontend/js/diagram-kinds.js:310 |
@@ -3427,24 +3465,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:304 |
 | `kxWithin` | frontend/js/diagram-kinds.js:324 |
-| `menuAt` | frontend/js/diagram-kinds.js:997 |
-| `mount` | frontend/js/diagram-kinds.js:1128 |
+| `load` | frontend/js/diagram-kinds.js:1278 |
+| `menuAt` | frontend/js/diagram-kinds.js:1003 |
+| `mount` | frontend/js/diagram-kinds.js:1134 |
 | `nameOf` | frontend/js/diagram-kinds.js:669 |
-| `nestBlock` | frontend/js/diagram-kinds.js:943 |
-| `onKey` | frontend/js/diagram-kinds.js:962 |
+| `nestBlock` | frontend/js/diagram-kinds.js:949 |
+| `onKey` | frontend/js/diagram-kinds.js:968 |
 | `pick` | frontend/js/diagram-kinds.js:668 |
-| `pickWho` | frontend/js/diagram-kinds.js:811 |
-| `pictureDrop` | frontend/js/diagram-kinds.js:1021 |
-| `relabel` | frontend/js/diagram-kinds.js:886 |
-| `removeBlock` | frontend/js/diagram-kinds.js:949 |
-| `render` | frontend/js/diagram-kinds.js:714 |
-| `seedBlock` | frontend/js/diagram-kinds.js:1004 |
-| `show` | frontend/js/diagram-kinds.js:1237 |
-| `stepBlock` | frontend/js/diagram-kinds.js:937 |
-| `sync` | frontend/js/diagram-kinds.js:1190 |
+| `pickWho` | frontend/js/diagram-kinds.js:814 |
+| `pictureDrop` | frontend/js/diagram-kinds.js:1027 |
+| `relabel` | frontend/js/diagram-kinds.js:892 |
+| `removeBlock` | frontend/js/diagram-kinds.js:955 |
+| `render` | frontend/js/diagram-kinds.js:717 |
+| `seedBlock` | frontend/js/diagram-kinds.js:1010 |
+| `show` | frontend/js/diagram-kinds.js:1243 |
+| `stepBlock` | frontend/js/diagram-kinds.js:943 |
+| `sync` | frontend/js/diagram-kinds.js:1196 |
 | `whoLabel` | frontend/js/diagram-kinds.js:670 |
-| `withinNode` | frontend/js/diagram-kinds.js:1050 |
-| `words` | frontend/js/diagram-kinds.js:689 |
+| `withinNode` | frontend/js/diagram-kinds.js:1056 |
+| `words` | frontend/js/diagram-kinds.js:690 |
 
 ### frontend/js/diagram-letgo.js (1)
 
@@ -3459,11 +3498,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `build` | frontend/js/diagram-library.js:64 |
 | `compact` | frontend/js/diagram-library.js:13 |
 | `flow` | frontend/js/diagram-library.js:32 |
-| `hist` | frontend/js/diagram-library.js:232 |
+| `hist` | frontend/js/diagram-library.js:237 |
 | `idleLine` | frontend/js/diagram-library.js:14 |
-| `lazyKebab` | frontend/js/diagram-library.js:202 |
+| `lazyKebab` | frontend/js/diagram-library.js:207 |
 | `make` | frontend/js/diagram-library.js:24 |
-| `shelf` | frontend/js/diagram-library.js:106 |
+| `shelf` | frontend/js/diagram-library.js:111 |
 | `tileOf` | frontend/js/diagram-library.js:50 |
 
 ### frontend/js/diagram-minimap.js (2)
@@ -3627,25 +3666,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `choose` | frontend/js/diagram-suggest.js:487 |
-| `compose` | frontend/js/diagram-suggest.js:442 |
+| `choose` | frontend/js/diagram-suggest.js:488 |
+| `compose` | frontend/js/diagram-suggest.js:443 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:470 |
+| `describe` | frontend/js/diagram-suggest.js:471 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
-| `el` | frontend/js/diagram-suggest.js:476 |
+| `el` | frontend/js/diagram-suggest.js:477 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
-| `flowSpec` | frontend/js/diagram-suggest.js:154 |
-| `ghosts` | frontend/js/diagram-suggest.js:187 |
+| `flowSpec` | frontend/js/diagram-suggest.js:155 |
+| `ghosts` | frontend/js/diagram-suggest.js:188 |
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
-| `items` | frontend/js/diagram-suggest.js:287 |
-| `loadTemplates` | frontend/js/diagram-suggest.js:308 |
-| `notes` | frontend/js/diagram-suggest.js:457 |
-| `outlineOf` | frontend/js/diagram-suggest.js:430 |
+| `items` | frontend/js/diagram-suggest.js:288 |
+| `loadTemplates` | frontend/js/diagram-suggest.js:309 |
+| `notes` | frontend/js/diagram-suggest.js:458 |
+| `outlineOf` | frontend/js/diagram-suggest.js:431 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
-| `reason` | frontend/js/diagram-suggest.js:144 |
+| `reason` | frontend/js/diagram-suggest.js:145 |
 | `receive` | frontend/js/diagram-suggest.js:98 |
-| `templates` | frontend/js/diagram-suggest.js:319 |
+| `templates` | frontend/js/diagram-suggest.js:320 |
 
 ### frontend/js/diagram-touch.js (3)
 
@@ -28111,7 +28150,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22374)
+## Tests (22383)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28960,6 +28999,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_head_export_1110.py | 4 |
 | tests/test_diagram_head_menu.py | 2 |
 | tests/test_diagram_kinds.py | 33 |
+| tests/test_diagram_kinds_more.py | 9 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
