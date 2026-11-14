@@ -192,7 +192,7 @@ def test_an_edge_move_has_an_exit_an_entry_and_a_body() -> None:
     edge = _player("edge")
     assert "ctx.body = [" in edge  # the squeeze through the edge, not a bare slide
     assert "squeeze" in edge and "nmb-wisp" in edge
-    assert "ease-in" in edge and "ease-out" in edge  # eased, never linear
+    assert re.search(r"NMB_CURVE\.in\b", edge) and "NMB_CURVE.out" in edge  # eased, never linear
     assert "opacity" in edge
 
 

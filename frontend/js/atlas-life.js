@@ -22,17 +22,17 @@
     if (!box.animate) return [];
     const { cx, cy, flat, tilt } = ATLAS_GEO.ringFrame;
     const loops = [];
-    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: "ease-in-out", ...opts }));
+    const loop = (el, frames, ms, delay, opts = {}) => loops.push(el.animate(frames, { duration: ms, delay: -delay * ms, iterations: Infinity, direction: "alternate", easing: NMB_CURVE.inOut, ...opts }));
     ATLAS_GEO.rings.forEach((ring, k) => {
       const [secs, deg, squash] = ATLAS_RING_SWAY[k];
       const at = (d, f) => ({ transform: `translate(${cx}px, ${cy}px) rotate(${tilt + d}deg) scale(1, ${+(flat * f).toFixed(4)})` });
       const sway = Math.random();
       for (const el of box.querySelectorAll(`.atl-ring-frame-${k}, .atl-orbit-${k}`)) loop(el, [at(-deg, 1 - squash), at(deg, 1 + squash)], secs * 1000, sway);
       const spin = Math.random();
-      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: "linear" });
+      for (const el of box.querySelectorAll(`.atl-ring-frame-${k} .atl-ring-spin`)) loop(el, [{ rotate: "0deg" }, { rotate: `${k % 2 ? -360 : 360}deg` }], (34 + 9 * k) * 1000, spin, { direction: "normal", easing: NMB_CURVE.linear });
     });
     for (const el of box.querySelectorAll(".atl-orbiter-glow")) loop(el, [{ scale: 0.8, opacity: 0.35 }, { scale: 1.2, opacity: 0.9 }], 2200 + Math.random() * 2400, Math.random());
-    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: "linear" }));
+    box.querySelectorAll(".atl-orbiter-swirl").forEach((el, i) => loop(el, [{ rotate: "0deg", opacity: 0.45 }, { rotate: `${i % 2 ? -180 : 180}deg`, opacity: 0.9 }, { rotate: `${i % 2 ? -360 : 360}deg`, opacity: 0.45 }], 6000 + Math.random() * 5000, Math.random(), { direction: "normal", easing: NMB_CURVE.linear }));
     return loops;
   }
 
@@ -714,7 +714,7 @@
     const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
     tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
     tail.sway = svg.animate(tail.swayKeys.map(at), {
-      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: "ease-in-out",
+      duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: NMB_CURVE.inOut,
     });
   }
   function atlasTailUnrest(tail) {
@@ -737,7 +737,7 @@
     }
     tail.sway.cancel();
     tail.sway = null;
-    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
+    if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: NMB_CURVE.settle });
   }
   function atlasTailDraw(tail, bend, stretch) {
     if (atlasTailFrame.kit.hold === tail) return;
@@ -822,7 +822,7 @@
           el.style.transformBox = "fill-box";
           el.style.transformOrigin = grip === "box" ? "50% 50%" : "50% 0";
         } else if (grip) el.style.transformOrigin = `${grip[0]}px ${grip[1]}px`;
-        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: "ease-in-out", id: "atl-prop" });
+        const anim = el.animate(frames, { duration: ms, iterations: Infinity, easing: NMB_CURVE.inOut, id: "atl-prop" });
         anim.cancel();
         //: Staggered rows (a constellation's stars) start a step apart.
         loops.push({ anim, el, root: el.closest(".nmp, .atl-fx-bang") || el, lag: (k * stagger * ms) % ms, on: false });
@@ -887,22 +887,16 @@
   //: about the hips while the head, the arms and the face, other groups, keep
   //: their size: 0.7px on the companion, 1.5px in the large view.
   //:
-  //: **On the compositor, set once** (atlasidle2, 2026-11-07). It was written
-  //: ten times a second (a CSS loop inside the drawing was refused: it
-  //: repainted the large view every frame, 53 frames a second down to 20 to
-  //: 31), and that write was one of the two that kept the companion's ~70
-  //: animated elements restyling at rest: any style write restyles every
-  //: animated element, composited or not (3 torsos x 10 writes a second:
-  //: 90 restyles in 6 s of the hanging pose, 2.7 s of main thread at 4x CPU).
-  //: Now one Web Animation of `transform` per torso (not the individual
-  //: `scale`, which Chromium refuses on an svg box: compositeFailed bit 19),
-  //: started on the rise's own start time so the two share a clock for good,
-  //: and touched again only when the figure's look (its period) changes or it
-  //: comes back from being still. Ease-in-out sine, as the cosine was.
+  //: **Stepped with the lower body's morph, not a Web Animation** (L138, L231, 2026-11-14). A `transform`
+  //: animation on an svg `<g>` never runs on the compositor (measured with an invalidation trace: "Style
+  //: changed g.nmb-torso" every frame, 3,150 a minute), and one animation off the compositor restyles every
+  //: animated element each frame: 975 of 1,950 style recalcs a minute were the torso's alone. So the swell is
+  //: written as an inline `transform` in the morph's own 10 Hz task (`atlasRigLower.morph.run`), whose path
+  //: writes restyle that frame anyway, and by the tail's beat where no morph runs. At rest (`atlasTailCalm.rest`)
+  //: the morph holds, and so does the chest, like every other loop. 0.05px a step on the companion.
   //: It rides the tail's loop, which already knows when the figure is off
   //: screen, on a hidden tab, or still by setting (Avatar animation Off, reduced
-  //: motion, the companion's own Full motion); it cancels the animation then
-  //: and puts the chest back at rest.
+  //: motion, the companion's own Full motion); the chest goes back to rest then.
   //:
   //: On the rise's clock: the swell takes its phase from the box's own
   //: animation, so the chest fills as the shoulders lift.
@@ -910,37 +904,42 @@
   function atlasBreathFrame(box, live) {
     const look = box.dataset.atlasLook;
     if (!live) {
-      if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+      if (box.atlasBreath) for (const el of box.atlasTorsos || []) el.style.transform = "";
       box.atlasBreath?.rise?.updatePlaybackRate?.(1);
       box.atlasBreath = null;
       return;
     }
-    if (box.atlasBreath?.look === look) return;
-    //: Not under the entrance fade: started while `#nm-buddy` is opacity 0 the
-    //: torso counts as an empty box and the compositor refuses it for good
-    //: (Chromium status bit 17; both torsos on the reload path, none when
-    //: started a beat later). One style read, only at a start or a retune.
-    const faded = box.closest?.("#nm-buddy");
-    if (faded && +getComputedStyle(faded).opacity === 0) return;
-    box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
-    if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
-    box.atlasBreath?.rise?.updatePlaybackRate?.(1);
-    //: The rise's clock is read here only, at a start or a retune (`getAnimations`
-    //: and an animation's times bring the page's style up to date: B87a, 81
-    //: forced restyles in 1.3 s of a carry when this was read each step).
-    const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
-    const going = rise && rise.playState !== "idle";
-    const period = going ? +rise.effect.getComputedTiming().duration : look === "feminine" ? 4000 : 4600;
-    const [sx, sy] = ATLAS_BREATH_SWELL;
-    const frames = [{ transform: "scale(1, 1)" }, { transform: `scale(${1 + sx}, ${1 + sy})` }, { transform: "scale(1, 1)" }];
-    const anims = box.atlasTorsos.map((el) => {
-      const anim = el.animate(frames, { duration: period, iterations: Infinity, easing: "cubic-bezier(0.37, 0, 0.63, 1)", id: "atl-breath" });
-      if (going && rise.startTime !== null) anim.startTime = rise.startTime;
-      else if (going) anim.currentTime = rise.currentTime;
-      return anim;
-    });
-    box.atlasBreath = { look, anims, rise: going ? rise : null, rate: 1 };
+    if (box.atlasBreath?.look !== look) {
+      box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
+      box.atlasBreath?.rise?.updatePlaybackRate?.(1);
+      //: The rise's clock is read here only, at a start or a retune (`getAnimations`
+      //: and an animation's times bring the page's style up to date: B87a, 81
+      //: forced restyles in 1.3 s of a carry when this was read each step).
+      const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
+      const going = rise && rise.playState !== "idle";
+      const period = going ? +rise.effect.getComputedTiming().duration : look === "feminine" ? 4000 : 4600;
+      const now = performance.now();
+      const since = going ? (rise.startTime !== null ? now - rise.startTime : +rise.currentTime || 0) : 0;
+      box.atlasBreath = { look, anims: [], rise: going ? rise : null, rate: 1, period, ph: (((since / period) % 1) + 1) % 1, at: now, rode: 0 };
+    }
+    //: The tail's beat writes only where no morph has for a while (a figure without a lower rig).
+    if (performance.now() - box.atlasBreath.rode > 400) atlasBreathFrame.put(box, performance.now(), false);
   }
+  //: One step of the swell: the phase runs on at the breath's rate, so it keeps the rise's clock through a retune;
+  //: ease-in-out sine, peak at the half, as the keyframes were.
+  atlasBreathFrame.put = (box, now, rode = true) => {
+    const b = box.atlasBreath;
+    if (!b) return;
+    b.ph = (b.ph + ((now - b.at) * b.rate) / b.period) % 1;
+    b.at = now;
+    if (rode) b.rode = now;
+    const k = (1 - Math.cos(2 * Math.PI * b.ph)) / 2;
+    const [sx, sy] = ATLAS_BREATH_SWELL;
+    const v = `scale(${(1 + sx * k).toFixed(4)}, ${(1 + sy * k).toFixed(4)})`;
+    if (v === b.v) return;
+    b.v = v;
+    for (const el of box.atlasTorsos || []) el.style.transform = v;
+  };
   //: **The breath quickens and eases** (INBOX 1719 b): a walk, a carry or a lively act leaves the figure out of breath and
   //: it eases back over the table's half-life; sleepy it is slower, startled quicker (`atlasBlink.vitals`). The rate is
   //: the animations' playback rate, set only when its 0.05 step changes (`updatePlaybackRate` keeps the phase, so the
@@ -1137,7 +1136,7 @@
           if (part === "neb") keys[j] = keys[j].map((v, k) => v + (j % 2 ? 1 : -1) * (k ? 0.6 : 1));
         }
         keys.push(start);
-        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: "ease-in-out" }));
+        const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: NMB_CURVE.inOut }));
         const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity });
         Object.assign(anim, { keys, el });
         low.flow.push(anim);
@@ -1385,6 +1384,8 @@
       m.targets.forEach((t, i) => {
         if (t.kind === "ribbon" || (m.n + i) % 2) M.draw(t, m.clock, m.gain, m.ang);
       });
+      //: The chest's swell in the same task, so its write costs no frame of its own (`atlasBreathFrame.put`).
+      atlasBreathFrame.put(box, now);
       m.moved = true;
       m.timer = setTimeout(step, M.tick);
     };

@@ -593,7 +593,7 @@
         const r = ((((Number.parseFloat(char.style.rotate) || 0) + 180) % 360) + 360) % 360 - 180;
         char.style.rotate = "";
         char.style.animationDuration = "";
-        if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: "ease-out" });
+        if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: NMB_CURVE.out });
       },
     };
     //: Writes only: nothing in a frame reads the page.
@@ -621,12 +621,12 @@
       if (hit > 0.5 && char && typeof char.animate === "function") {
         //: Squashed by how hard it came down.
         const a = Math.min(0.22, hit * 0.09);
-        char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: "ease-out" });
+        char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: NMB_CURVE.out });
       }
       if (bump && !s.splat && char && typeof char.animate === "function") {
         //: A soft touch of a side presses it flat against that side for a moment (a stick has its own, `.nmb-splat`).
         const e = companionThrowLand.edgeFrames(bump, bump);
-        char.animate(e.frames, { duration: e.ms, easing: "ease-out" });
+        char.animate(e.frames, { duration: e.ms, easing: NMB_CURVE.out });
       }
       companionThrowFlat(buddy, char, s);
       if (s.bonk && !flight.bonked) nmb.throwBonk(buddy, char, flight);
@@ -683,7 +683,7 @@
     //: Its face a few frames on: the mood change is a restyle of the whole rig
     //: (38ms at 1x CPU), and shared the frame the splat's class change was.
     setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised", 1400, { drift: true }), 48);
-    if (char && typeof char.animate === "function") char.animate([{ scale: "0.6 1.2" }, { scale: "0.84 1.08" }], { duration: 240, easing: "ease-out" });
+    if (char && typeof char.animate === "function") char.animate([{ scale: "0.6 1.2" }, { scale: "0.84 1.08" }], { duration: 240, easing: NMB_CURVE.out });
   }
 
   //: **Bonked** (`int.ceiling_bonk`, 0.3 to 0.8 s): met the top bar hard and was not caught, so it is
@@ -694,7 +694,7 @@
     buddy.classList.add("nmb-bonk");
     setTimeout(() => buddy.classList.remove("nmb-bonk"), 600);
     setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised", 900, { drift: true }), 48);
-    if (char && typeof char.animate === "function") char.animate([{ scale: "1.18 0.7" }, { scale: "0.92 1.08", offset: 0.5 }, { scale: "1 1" }], { duration: 320, easing: "ease-out" });
+    if (char && typeof char.animate === "function") char.animate([{ scale: "1.18 0.7" }, { scale: "0.92 1.08", offset: 0.5 }, { scale: "1 1" }], { duration: 320, easing: NMB_CURVE.out });
   };
 
   //: Caught by its hands on a panel's top edge (going up, coming down past

@@ -100,7 +100,7 @@ function atlasMicroMay(box) {
 //: Plays `frames` on `el`, in place of whatever else moves that property
 //: (never added to it: `composite: "add"` is not the compositor's).
 function atlasMicroPlay(el, frames, ms) {
-  el?.animate?.(frames, { duration: ms, easing: "ease-in-out" });
+  el?.animate?.(frames, { duration: ms, easing: NMB_CURVE.inOut });
 }
 //: A function property, not a global: the shared scope has a cap on names (`tests/test_global_scope_ratchet.py`).
 atlasMicroDo.glance = function (box) {
@@ -164,7 +164,7 @@ function atlasMicroCast(only) {
         live -= 1;
         if (!live) box.atlasCasting = false;
       };
-      const anim = star.animate?.(frames, { duration: ms, delay: i * 260, easing: "ease-out", fill: "backwards" });
+      const anim = star.animate?.(frames, { duration: ms, delay: i * 260, easing: NMB_CURVE.out, fill: "backwards" });
       if (anim?.finished) {
         box.atlasCastAnims.push(anim);
         anim.finished.then(done, done);

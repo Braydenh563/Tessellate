@@ -559,7 +559,7 @@
     old.classList.add("nmv-leaving");
     old.after(next);
     const gone = () => old.remove();
-    if (typeof next.animate === "function") next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-in-out" }).finished.then(gone, gone);
+    if (typeof next.animate === "function") next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: NMB_CURVE.inOut }).finished.then(gone, gone);
     else gone();
     clearTimeout(figure.nmvFace);
     figure.nmvFace = ms ? setTimeout(() => nameMarkViewerFace(figure, seed, "", 0), ms) : 0;
@@ -572,7 +572,7 @@
     const run = () => {
       if (!figure.isConnected) return;
       for (const lid of figure.querySelectorAll(".nm-blinks")) {
-        lid.animate?.([{ transform: "scaleY(1)" }, { transform: "scaleY(0.1)", offset: 0.5 }, { transform: "scaleY(1)" }], { duration: 300, easing: "ease-in-out" });
+        lid.animate?.([{ transform: "scaleY(1)" }, { transform: "scaleY(0.1)", offset: 0.5 }, { transform: "scaleY(1)" }], { duration: 300, easing: NMB_CURVE.inOut });
       }
       timer = setTimeout(run, 4000 + Math.random() * 4000);
     };
@@ -846,7 +846,7 @@
       const char = buddy.querySelector(".nm-buddy-char");
       if (!char || typeof char.animate !== "function") return false;
       if (act === "wave" && nmb.pointer) nameMarkBuddyAim(nmb.pointer);
-      char.animate([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.6 }, { translate: "0 0" }], { duration: 300, easing: "ease-in-out", composite: "add" });
+      char.animate([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.6 }, { translate: "0 0" }], { duration: 300, easing: NMB_CURVE.inOut, composite: "add" });
       clearTimeout(nmb.timer);
       nmb.timer = setTimeout(() => {
         nmb.timer = 0;
@@ -865,7 +865,7 @@
         nameMarkBuddyExpress(atlas ? "thinking" : "confused", ms - 300, { drift: atlas });
       } else if (act === "sigh") {
         nameMarkBuddyLimbs(buddy, "sigh", ms);
-        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1.4px", offset: 0.35 }, { translate: "0 0.8px", offset: 0.7 }, { translate: "0 0" }], { duration: ms, easing: "ease-in-out", composite: "add" });
+        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1.4px", offset: 0.35 }, { translate: "0 0.8px", offset: 0.7 }, { translate: "0 0" }], { duration: ms, easing: NMB_CURVE.inOut, composite: "add" });
       }
     },
     //: **What it does about what you did** (INBOX 1581; the gate, the
@@ -895,11 +895,11 @@
         }, 380);
       } else if (kind === "carried") {
         const shake = (x) => ({ translate: `${x}px 0px` });
-        buddy.querySelector(".nm-buddy-char")?.animate?.([shake(0), shake(-1.6), shake(1.6), shake(-1.1), shake(0.8), shake(0)], { duration: 640, easing: "ease-in-out" });
+        buddy.querySelector(".nm-buddy-char")?.animate?.([shake(0), shake(-1.6), shake(1.6), shake(-1.1), shake(0.8), shake(0)], { duration: 640, easing: NMB_CURVE.inOut });
         nameMarkBuddyExpress(atlas ? "happy" : nmb.carriedMs > 5000 ? "dizzy" : "happy", 1800, { drift: atlas });
       } else if (kind === "caught") {
         //: Clutched (a sink and a small shiver), wide-eyed, then relieved (translate only, as the shake-off is).
-        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.25 }, { translate: "0.8px 1.4px", offset: 0.4 }, { translate: "-0.8px 1.4px", offset: 0.55 }, { translate: "0 -1px", offset: 0.8 }, { translate: "0 0" }], { duration: 760, easing: "ease-in-out" });
+        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.25 }, { translate: "0.8px 1.4px", offset: 0.4 }, { translate: "-0.8px 1.4px", offset: 0.55 }, { translate: "0 -1px", offset: 0.8 }, { translate: "0 0" }], { duration: 760, easing: NMB_CURVE.inOut });
         nameMarkBuddyExpress("surprised", 700);
         setTimeout(() => buddy.isConnected && !nameMarkBuddyStill() && nameMarkBuddyExpress("happy", 1100), 720);
       } else if (kind === "binned") {
@@ -913,7 +913,7 @@
     after(buddy, act, roll = Math.random(), now = Date.now()) {
       if (nameMarkBuddyStill()) return "";
       if ((NMB_MIND_LEAD.includes(act) || NMB_LOUD_ACTS.includes(act)) && !nameMarkIdleQuiet()) {
-        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1px", offset: 0.3 }, { translate: "0 0.6px", offset: 0.7 }, { translate: "0 0" }], { duration: 600, easing: "ease-in-out", composite: "add" });
+        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1px", offset: 0.3 }, { translate: "0 0.6px", offset: 0.7 }, { translate: "0 0" }], { duration: 600, easing: NMB_CURVE.inOut, composite: "add" });
       }
       if (nmb.visit || buddy.classList.contains("nmb-sleep") || nameMarkBuddyActions() === "off") return "";
       let r = roll;
@@ -972,11 +972,11 @@
         nmb.anim?.cancel();
         nameMarkBuddyWay(buddy, dx > 0 ? "1" : "-1");
         buddy.dataset.turn = dx > 0 ? "r" : "l";
-        nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+        nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);
         nmbTempo.seen = 0;
         clearTimeout(nmbTempo.timer);
         nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
-        const walk = buddy.animate([{ translate: "0px 0px" }, { translate: `${dx}px 0px` }], { duration: ms, easing: "cubic-bezier(0.4, 0, 0.7, 1)", fill: "forwards" });
+        const walk = buddy.animate([{ translate: "0px 0px" }, { translate: `${dx}px 0px` }], { duration: ms, easing: NMB_CURVE.swing, fill: "forwards" });
         nmb.anim = walk;
         let over = false;
         const end = (gone) => {
@@ -1058,7 +1058,7 @@
     const face = buddy.querySelector(":scope > .nm-buddy-face");
     const sway = [];
     if (face && typeof face.animate === "function" && !nameMarkIdleQuiet()) {
-      const loop = (frames, ms) => face.animate(frames, { duration: ms, delay: -ms / 2, iterations: Infinity, direction: "alternate", easing: "ease-in-out" });
+      const loop = (frames, ms) => face.animate(frames, { duration: ms, delay: -ms / 2, iterations: Infinity, direction: "alternate", easing: NMB_CURVE.inOut });
       sway.push(loop([{ rotate: "-2deg" }, { rotate: "2deg" }], 6700), loop([{ translate: "0 1.2px" }, { translate: "0 -1.4px" }], 4300));
     }
     const watch = new MutationObserver(mirror);
