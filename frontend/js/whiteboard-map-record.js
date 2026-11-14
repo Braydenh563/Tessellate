@@ -408,11 +408,16 @@
     wbAddGate.barDeferred = true;
     wbAddGate.renderHold = { moves: [], edges: false };
     try {
-      renderWhiteboardNow();
-      selectWbItem("object", created.id);
+      wbMapCache.renderAdd(created, origin, expand);
+      //: Opened before the selection is announced: the editor's focus then finds
+      //: the tree the measure left clean, and the selection's chrome (the dock,
+      //: the bar) is restyled after the topic is typeable, in the same task.
       wbMapEditNode(created.id, { now: true });
+      selectWbItem("object", created.id);
       wbMapRevealTopic(created);
     } finally {
+      //: A topic the render made editable that the editor never took over (it bailed) is put back.
+      wbBeginTextEdit.drop(wbItemElement("object", created.id)?.querySelector(".wb-map-text"));
       wbRenderRelease();
       wbSyncMapEdgeHandles();
       wbAddGate.barDeferred = false;

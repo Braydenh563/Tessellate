@@ -81,7 +81,8 @@ def test_siblings_sort_by_their_order_key_and_colours_by_creation():
     key = _function_body(MAP, "wbMapOrderKey")
     assert "data?.order" in key and "obj.id" in key
     # A branch keeps its colour when it moves: the palette walks by id.
-    assert "sort((a, b) => a.id - b.id)" in _function_body(MAP, "wbMapColors")
+    # Creation order by id, a provisional (negative) id counting as the newest (L-mindmap-13).
+    assert "sort((a, b) => idAge(a.id) - idAge(b.id))" in _function_body(MAP, "wbMapColors")
 
 
 def test_ctrl_shift_arrows_move_a_topic_and_enter_inserts_in_place():

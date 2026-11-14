@@ -59,12 +59,16 @@
     //: (INBOX 278, and the earlier report it has to keep answering).
     for (const [el, grouped] of wanted) {
       if (!grouped) wbEnsureHandles(el);
+      //: A topic's resize grip is made when it is first selected or pointed at (`wbMapCache.part`).
+      if (el.classList.contains("wb-map-node")) wbMapCache.part(el, "grip");
       marked.add(el);
       if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
       if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
     }
   }
 
+  //: Never moves focus: a map add (`wbMapAddChild`) opens the new topic's editor
+  //: first and selects it after, so a focus here would take the typing away.
   function selectWbItem(kind, id) {
     if (kind !== "node" || id !== wbAddGate.cardRetypeId) wbAddGate.cardRetypeId = null;
     wbSelectedItem = { kind, id };

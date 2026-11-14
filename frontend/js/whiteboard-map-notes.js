@@ -139,7 +139,7 @@
     //: Read off the node's own data, never the theme's: a task is content.
     const task = d.data?.task === "open" || d.data?.task === "done" ? d.data.task : null;
     node.classList.toggle("wb-map-task-done", task === "done");
-    const box = node.querySelector(".wb-map-task");
+    const box = wbMapCache.part(node, "task", Boolean(task));
     if (box) {
       box.hidden = !task;
       if (task) {
@@ -151,7 +151,7 @@
       }
     }
     //: Its markers (decision 34): content, read off the node's own data.
-    const markers = node.querySelector(".wb-map-markers");
+    const markers = wbMapCache.part(node, "markers", Boolean(wbMapMarkerWords(wbMapMarkerParts(d.data || {}))));
     if (markers) wbMapPaintMarkers(markers, d.data || {});
     // Px through CSSOM, which is what a text box's own `font_size` already
     // does (`renderWbObjects`): the value is per node and arbitrary, so it
@@ -167,8 +167,7 @@
     if (data.sized && d.height) node.style.minHeight = `${d.height}px`;
     else node.style.removeProperty("min-height");
 
-    const icon = node.querySelector(".wb-map-node-icon");
-    if (icon) {
+    {
       // A topic wears what it was given; a reference node falls back to the
       // icon for its kind, which is what says "this is a note, not a topic".
       //: **A star before the label on a core idea** (INBOX 201, the fourth of the
@@ -181,6 +180,8 @@
       const name = chosen || (WB_MAP_REFERENCE_KINDS.has(d.kind)
         ? (WB_MAP_ICONS[d.kind] || WB_MAP_ICONS.topic).replace(/^ph-/, "")
         : "");
+      const icon = wbMapCache.part(node, "icon", Boolean(name));
+      if (icon) {
       icon.hidden = !name;
       //: **An emoji is drawn as text** (MINDMAP_PLAN.md decision 45): one slot,
       //: a Phosphor name or one emoji, told apart by the name's own pattern.
@@ -191,6 +192,7 @@
         if (icon.textContent) icon.textContent = "";
         icon.className = name ? `ph ph-${name} wb-map-node-icon` : "wb-map-node-icon";
       }
+      }
     }
 
     //: The picture, and the node shape that goes with it (§12.1 item 2's
@@ -200,9 +202,9 @@
     //: drawn. The stylesheet turns the body from a row into a column on it, so a
     //: picture node is a second node *shape*, not a label with a thumbnail
     //: wedged in beside it.
-    const picture = node.querySelector(".wb-map-node-picture");
+    const url = typeof data.image === "string" ? data.image : "";
+    const picture = wbMapCache.part(node, "picture", Boolean(url));
     if (picture) {
-      const url = typeof data.image === "string" ? data.image : "";
       picture.hidden = !url;
       if (url) {
         // `mediaSrc`, never the raw url: media is served behind the unlock, so
@@ -221,18 +223,18 @@
     wbMapLazy.paintAudio(node, d.data || {});
     wbMapLazy.paintGrammar(node, d);
     //: A note (decision 18): read off the topic's own data, never the theme's.
-    const noteMark = node.querySelector(".wb-map-note");
+    const note = typeof d.data?.note === "string" ? d.data.note.trim() : "";
+    const noteMark = wbMapCache.part(node, "note", Boolean(note));
     if (noteMark) {
-      const note = typeof d.data?.note === "string" ? d.data.note.trim() : "";
       noteMark.hidden = !note;
       if (note) {
         noteMark.title = `Note: ${noteNamePlain(note, 80)}`;
         noteMark.setAttribute("aria-label", "Open the note behind this topic");
       }
     }
-    const link = node.querySelector(".wb-map-link");
+    const href = typeof data.link === "string" ? data.link : "";
+    const link = wbMapCache.part(node, "link", Boolean(href));
     if (link) {
-      const href = typeof data.link === "string" ? data.link : "";
       link.hidden = !href;
       if (href) {
         link.title = `Open ${href}`;

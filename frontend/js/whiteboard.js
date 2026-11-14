@@ -6188,6 +6188,12 @@ async function initWhiteboard() {
   });
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
+  for (const type of ["pointerover", "focusin"]) {
+    $("whiteboard-container")?.addEventListener(type, (e) => {
+      const node = e.target.closest?.(".wb-map-node");
+      if (node) wbMapCache.part(node, "grip");
+    }, { passive: true });
+  }
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
   //: board chrome rather than inside their own render functions, which is the
   //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added
@@ -14831,6 +14837,18 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
         .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
+      //: The topic an add is about to type in is made editable here, before
+      //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
+      const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
+      if (typing) {
+        //: Selected, the old selection let go, in the same pass and before the
+        //: editable attribute (which restyles at once): the `selectWbItem` that
+        //: follows then finds the classes already right.
+        for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
+        this.classList.add("wb-selected");
+        (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+        wbBeginTextEdit(typing, undefined, true);
+      }
     } else if (d.kind === "frame") {
       const title = this.querySelector(".wb-frame-title");
       if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);

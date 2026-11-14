@@ -315,9 +315,10 @@
         event.stopPropagation();
         wbAudioPlay(Number(el.dataset.id), mark);
       });
-      const after = el.querySelector(".wb-map-link");
-      if (after) after.after(mark);
-      else el.querySelector(".wb-map-body")?.append(mark);
+      //: After the link mark when the topic has one, else last in the body, where the link goes.
+      const link = wbMapCache.part(el, "link", false);
+      if (link) link.after(mark);
+      else el.querySelector(":scope > .wb-map-node-body")?.append(mark);
     }
     mark.hidden = !id;
     if (id) {
@@ -326,25 +327,21 @@
     }
   }
 
-  //: Pick a recording from the Library's and attach it to the topic.
-  async function wbAudioPick(node) {
+  //: The Library's recordings in a picker; the id picked, or null. One picker
+  //: for the audio note and for topics from a transcript.
+  async function wbAudioChoose(title, about) {
     let recordings;
     try {
       recordings = (await apiJson("/recordings?limit=500")).recordings || [];
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "read your recordings" }), true);
-      return;
+      return null;
     }
     if (!recordings.length) {
-      toast("No recordings yet. Record one in Library, Recordings, then attach it here.", "info");
-      return;
+      toast("No recordings yet. Record one in Library, Recordings, then pick it here.", "info");
+      return null;
     }
-    const shell = pickerDialog({
-      title: "Audio note",
-      about: `Pick the recording to attach to "${wbMapLabel(node) || "this topic"}". The audio stays in Recordings.`,
-      placeholder: "Search recordings…",
-      searchLabel: "Search recordings",
-    });
+    const shell = pickerDialog({ title, about, placeholder: "Search recordings…", searchLabel: "Search recordings" });
     const box = pickerListbox(shell, "Your recordings");
     const paint = () => {
       const term = shell.search.value.trim();
@@ -352,11 +349,45 @@
     };
     shell.search.addEventListener("input", paint);
     paint();
-    const id = await new Promise((resolve) => shell.open(resolve));
+    return new Promise((resolve) => shell.open(resolve));
+  }
+
+  //: Pick a recording from the Library's and attach it to the topic.
+  async function wbAudioPick(node) {
+    const id = await wbAudioChoose(
+      "Audio note",
+      `Pick the recording to attach to "${wbMapLabel(node) || "this topic"}". The audio stays in Recordings.`,
+    );
     const live = wbAudioLive(node.id);
     if (id == null || !live) return;
     await wbMapSetNodeStyle(live, { recording: id });
     toast("Audio note attached. Ctrl+Z takes it off.", "info");
+  }
+
+  //: **Voice to map** (12.4, reopened 2026-11-14): a recording's local
+  //: transcript becomes a branch under the topic, one topic per transcript
+  //: line, through the outline paste a pasted list takes (one Undo step).
+  async function wbMapTopicsFromRecording(node) {
+    const id = await wbAudioChoose(
+      "Topics from a recording",
+      `Pick a transcribed recording. Each line of its transcript becomes a topic under "${wbMapLabel(node) || "this topic"}".`,
+    );
+    if (id == null) return;
+    let segments;
+    try {
+      segments = (await apiJson(`/recordings/${id}/transcript`)).segments || [];
+    } catch (error) {
+      toast(error.message || voiceLine("failed", { what: "read that transcript" }), true);
+      return;
+    }
+    const lines = segments.map((seg) => String(seg.text || "").replace(/\s+/g, " ").trim()).filter(Boolean);
+    if (!lines.length) {
+      toast("That recording has no transcript yet. Transcribe it in Library, Recordings, then pick it here.", "info");
+      return;
+    }
+    if (wbAudioLive(node.id)) selectWbItem("object", node.id);
+    const made = await wbRecordGesture(wbMapPasteText, [lines.join("\n")]);
+    if (made) toast(`${nounCount(made, "topic")} from the transcript. Ctrl+Z takes them off.`, "info");
   }
 
   async function wbAudioRemove(node) {
@@ -1140,6 +1171,7 @@
     openGantt: wbMapOpenGantt,
     paintAudio: wbAudioPaint,
     pickAudio: wbAudioPick,
+    topicsFromRecording: wbMapTopicsFromRecording,
     removeAudio: wbAudioRemove,
     playAudio: wbAudioPlay,
     startTimer: wbBrainstormStart,
