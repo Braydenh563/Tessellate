@@ -184,7 +184,10 @@ def test_not_a_utility(question):
 
 def test_the_weather_is_said_not_known_never_guessed():
     result = composer.compose("what's the weather like", [], today=TODAY)
-    assert result["text"] == composer.PHRASES["utility_weather"] and result["shape"] == "utility"
+    #: Intent moved (CHAT_PLAN step 11, L-chat-40): the weather is out of domain, so the same line is
+    #: followed by what the app can do; it still guesses nothing.
+    assert result["text"].startswith(composer.PHRASES["utility_weather"]) and result["shape"] == "utility"
+    assert "I answer from your notes" in result["text"]
 
 
 # --- the route ------------------------------------------------------------------------

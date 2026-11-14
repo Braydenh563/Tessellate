@@ -357,7 +357,7 @@ def compose(
         if helped:
             result = helped
     #: Out of domain (step 11): the plain no-answer, the closest note, what the app can do.
-    result = composer_ood.framed(asked, result, notes, plan(question, today or user_today()).terms)
+    result = composer_ood.framed(asked, result, notes)
     if dialogue is not None:
         dialogue.record(asked, result)
     return result
