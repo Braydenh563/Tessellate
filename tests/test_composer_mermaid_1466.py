@@ -324,8 +324,6 @@ def test_the_line_readers_are_linear_on_long_tab_runs():
 def test_no_line_pattern_has_nested_or_adjacent_unbounded_repeats():
     """CodeQL (PR 234): a repeat inside a repeat, or two unbounded repeats that can match the same
     characters side by side, backtrack polynomially. Read off the patterns' own source."""
-    import re
-
     from tessellate.ai import composer_mermaid
 
     unbounded = r"(?:\\s|\.|\[[^\]]*\]|\\S|\\w)[*+]"
