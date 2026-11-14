@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 76 | 30 | 10 | 59 | 282 |
+| chat | 176 | 74 | 30 | 10 | 59 | 280 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 450 | 99 | 10 | 183 | 1102 |
+| all | 553 | 448 | 99 | 10 | 183 | 1100 |
 
 ## graph
 
@@ -71,8 +71,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L164** `chat` open, L: Check web sources with a real search engine and contrast over .said and act card. From OPEN.md:851; OPEN.md:3644. Evidence: Needs a live search engine and owner's browser
 - [ ] **L165** `chat` open, L: Keep versions on edit and resend (E48 branches pager) and add regenerate-with menu (E60). From OPEN.md:4502; v1028-1.md Remaining. Evidence: Conversation branches need a stored shape and pager, owner design call
 - [ ] **L168** `chat` open, L: Improve agent harness design and how tools are offered and named by the composer (OPEN O10). From INBOX.md:904 B47; INBOX.md:904 B48. Evidence: Open-ended (OPEN O10); no single defect named
-- [ ] **L169** `chat` open, L: Split the ~1,190-line chatSendTurn in chat-turn.js (E44). From OPEN.md:4500. Evidence: chat-turn.js (2,954 lines); no row-sized slice, refactor deferred
-- [ ] **L170** `chat` open, L: Merge five AI surface stream consumers into one AnswerStream (E45). From OPEN.md:4501. Evidence: One-AnswerStream refactor deferred
 - [ ] **L171** `chat` open, L: Build chart maker (paste values, SVG/PNG/CSV export, save to note). From SESSION_BRIEFS.md:313. Evidence: No chart-maker code in frontend/js; ask-chart.js is inline composer charts only
 - [ ] **L172** `chat` open, L: Bring graph at rest and companion long tasks to the zero target. From OPEN.md:671; OPEN.md:3786. Evidence: frames.js REST_BUDGET still over zero; no fix commit located
 - [ ] **L173** `chat` open, L: Lower body and nebula follow pose and position, distinct silhouettes, in-app and desk parity. From OPEN.md:4366; OPEN.md:4402; OPEN.md:4406; OPEN.md:1079 (+1). Evidence: E6 (OPEN.md:296) built pose-following; W34 left it owner-call (design) to judge.
