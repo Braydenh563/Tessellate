@@ -34,7 +34,7 @@ def test_the_picker_is_a_button_that_opens_a_dialog_not_a_select() -> None:
 
 
 def test_the_dialog_is_the_template_recipe() -> None:
-    dialog = re.search(r'<dialog id="note-template-dialog"[^>]*>(.*?)</dialog>', HTML, re.S)
+    dialog = re.search(r'<sheet-host id="note-template-dialog"[^>]*>(.*?)</sheet-host>', HTML, re.S)
     assert dialog, "the picker's dialog is missing"
     body = dialog.group(0)
     assert "doc-template-dialog" in body and "doc-template-body" in body

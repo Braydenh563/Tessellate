@@ -1468,13 +1468,13 @@ summary > .ph-lead,
 /* The widgets dialog: head and foot hold still, the body is the only thing
    that scrolls. Without this the heading and the filter field scrolled away
    with the twenty-four rows they are there to control.
-   `[open]`, and this is the whole bug: a closed <dialog> is display: none
+   `:not([hidden])`, and this is the whole bug: a closed host (once a <dialog>) is display: none
    only by the browser's own stylesheet, so an unconditional `display: flex`
    here painted the closed dialog inline on the Dashboard, behind the hero,
    with a Done button that had nothing to close (`.close()` on a dialog that
    was never opened is a no-op). Reported with a screenshot within an hour
    of merging. Any display rule on a <dialog> must be scoped to `[open]`. */
-.dash-widgets-dialog[open] {
+.dash-widgets-dialog:not([hidden]) {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);

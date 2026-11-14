@@ -1346,3 +1346,45 @@ function renderSettingsHistory() {
   }
   list.replaceChildren(...entries.map(settingsHistoryRow));
 }
+
+//: **The exports folder, as a list in Settings** (INBOX 159: "an area
+//: somewhere maybe in settings to open the exports folder location and access
+//: exported or downloaded files and images"). Fed by `GET /files/exports`,
+//: newest first; each row downloads its file through `GET
+//: /files/exports/{name}`, fetched with the app's own auth header and handed
+//: to the browser as a download, since a bare link cannot carry the token.
+async function renderExportsList() {
+  const list = $("exports-list");
+  const empty = $("exports-empty");
+  if (!list || !empty) return;
+  const body = await apiJson("/files/exports", { silent: true }).catch(() => null);
+  const files = (body && body.files) || [];
+  list.replaceChildren();
+  empty.classList.toggle("hidden", files.length > 0);
+  empty.textContent = body
+    ? `Nothing saved here yet. Saved files land in ${body.path}.`
+    : "The exports folder could not be read.";
+  for (const file of files) {
+    const row = document.createElement("li");
+    row.className = "row exports-row";
+    const name = document.createElement("span");
+    name.className = "exports-name";
+    name.textContent = file.filename;
+    name.title = file.filename;
+    const facts = document.createElement("span");
+    facts.className = "muted text-sm exports-facts";
+    const size = formatFileSize(file.bytes);
+    facts.textContent = `${size} · ${relativeTime(file.modified_at)}`;
+    const get = smallButton("ph:download-simple Download", `Download ${file.filename}`, async () => {
+      try {
+        const response = await api(`/files/exports/${encodeURIComponent(file.filename)}`);
+        downloadBlob(await response.blob(), file.filename);
+      } catch (error) {
+        toast(error.message || voiceLine("failed", { what: `fetch ${file.filename}` }), true);
+      }
+    });
+    get.classList.add("ghost");
+    row.append(name, facts, get);
+    list.appendChild(row);
+  }
+}

@@ -978,7 +978,7 @@
        The Cancel buttons were `onclick="…"` attributes, which this app's CSP
        (script-src 'self', no unsafe-inline) refuses outright, they were dead
        markup. Every handler is bound in app.js now. -->
-  <dialog id="space-create-dialog" class="card space-dialog">
+  <sheet-host id="space-create-dialog" class="space-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>New space</h2>
       <span class="dialog-head-actions">
@@ -998,9 +998,9 @@
       <button type="button" class="ghost small" data-close-dialog="space-create-dialog">Cancel</button>
       <button type="submit" form="space-create-form" class="accent small" id="space-create-submit">Create space</button>
     </div>
-  </dialog>
+  </sheet-host>
 
-  <dialog id="space-edit-dialog" class="card space-dialog">
+  <sheet-host id="space-edit-dialog" class="space-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-pencil-simple pop-glyph" aria-hidden="true"></i>Edit space</h2>
       <span class="dialog-head-actions">
@@ -1019,7 +1019,7 @@
       <button type="button" class="ghost small" data-close-dialog="space-edit-dialog">Cancel</button>
       <button type="submit" form="space-edit-form" class="accent small" id="space-edit-submit">Save</button>
     </div>
-  </dialog>
+  </sheet-host>
 
   <dialog id="space-delete-dialog" class="card space-dialog">
     <div class="dialog-head">
@@ -1051,7 +1051,7 @@
        Documents sidebar; open, its body was tall enough to push the document
        list down. Same content, now a dialog opened from a link-styled button
        so the sidebar height goes back to the list. -->
-  <dialog id="doc-storage-dialog" class="card space-dialog">
+  <sheet-host id="doc-storage-dialog" class="space-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-folder-open pop-glyph" aria-hidden="true"></i>Where are my documents kept?</h2>
       <span class="dialog-head-actions">
@@ -1070,14 +1070,14 @@
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="doc-storage-dialog">Close</button>
     </div>
-  </dialog>
+  </sheet-host>
 
   <!-- Was a bare window.prompt(), functional, but the one dialog in the app
        with no app styling at all: no theme, no font, not even a title.
        Asked for directly ("customise the set word goal popup... same design
        style as the rest of the application"). Same shape as the space
        dialogs above. -->
-  <dialog id="doc-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog">
+  <sheet-host id="doc-template-dialog" class="space-dialog doc-ai-history-dialog doc-template-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-file-plus pop-glyph" aria-hidden="true"></i>New from a template</h2>
       <span class="dialog-head-actions">
@@ -1101,14 +1101,14 @@
       <button type="button" class="ghost small" data-close-dialog="doc-template-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-template-use">Use this template</button>
     </div>
-  </dialog>
+  </sheet-host>
   <!-- The Capture box's own template picker (INBOX 410), the same recipe as
        the dialog above: radio rows, the chosen template's text beside them
        (`showNoteTemplatePreview`, through the `noteTemplateFill` the button
        uses), and only Use this template, Enter or a double click fills the
        box. Built by `openNoteTemplateDialog` in app.js. -->
-  <dialog id="note-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
-    aria-labelledby="note-template-title">
+  <sheet-host id="note-template-dialog" class="space-dialog doc-ai-history-dialog doc-template-dialog"
+    aria-labelledby="note-template-title" hidden>
     <div class="dialog-head">
       <h2 id="note-template-title" class="dialog-head-title"><i class="ph ph-note-pencil pop-glyph" aria-hidden="true"></i>Start from a template</h2>
       <span class="dialog-head-actions">
@@ -1125,13 +1125,13 @@
       <button type="button" class="ghost small" data-close-dialog="note-template-dialog">Cancel</button>
       <button type="button" class="accent small" id="note-template-use">Use this template</button>
     </div>
-  </dialog>
+  </sheet-host>
   <!-- New board, from a template or blank (BACKLOG 4b, WHITEBOARD_PLAN
        decision 25): the documents' template dialog recipe, its rows built by
        `wbOpenTemplateGallery` (whiteboard-library.js), its preview the same
        thumbnail the library's tile draws. -->
   <!-- Insert, Diagram, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
-  <dialog id="wb-import-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-import-title">
+  <sheet-host id="wb-import-dialog" class="space-dialog wb-import-dialog" aria-labelledby="wb-import-title" hidden>
     <div class="dialog-head">
       <h2 id="wb-import-title" class="dialog-head-title"><i class="ph ph-tree-structure pop-glyph" aria-hidden="true"></i>Bring in a diagram</h2>
       <span class="dialog-head-actions">
@@ -1146,10 +1146,10 @@
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
       <button type="button" class="accent small" id="wb-import-go">Bring in</button>
     </div>
-  </dialog>
+  </sheet-host>
 
-  <dialog id="wb-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
-    aria-labelledby="wb-template-title">
+  <sheet-host id="wb-template-dialog" class="space-dialog doc-ai-history-dialog doc-template-dialog"
+    aria-labelledby="wb-template-title" hidden>
     <div class="dialog-head">
       <h2 id="wb-template-title" class="dialog-head-title"><i class="ph ph-chalkboard-teacher pop-glyph" aria-hidden="true"></i>New board</h2>
       <span class="dialog-head-actions">
@@ -1176,10 +1176,10 @@
       <button type="button" class="ghost small" data-close-dialog="wb-template-dialog">Cancel</button>
       <button type="button" class="accent small" id="wb-template-create">Create</button>
     </div>
-  </dialog>
+  </sheet-host>
   <!-- Quick note (quick-note.js, INBOX 434): a note from any tab without
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
-  <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
+  <sheet-host id="quick-note" class="space-dialog quick-note-dialog" aria-labelledby="quick-note-title" hidden>
     <!-- Built when the dialog first opens (`surfaceBuild("quickNote")`, settings-body.js; the boot page is at its element cap). -->
     <script type="text/x-surface" data-surface="quickNote">
     <div class="dialog-head">
@@ -1220,7 +1220,7 @@
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
     </script>
-  </dialog>
+  </sheet-host>
   <!-- **These two live here, beside the other dialogs, and not inside
        `#tab-documents` where they were written.** A modal `<dialog>` is drawn
        in the top layer and centres itself with the UA's `position: fixed;
@@ -1243,7 +1243,7 @@
     <!-- The document's own history. Same shape as the AI edit log beside it,
          deliberately: two lists that answer "what happened to this document"
          should not be two different-looking things. -->
-    <dialog id="doc-history-dialog" class="card space-dialog doc-ai-history-dialog">
+    <sheet-host id="doc-history-dialog" class="space-dialog doc-ai-history-dialog doc-history-dialog" data-sheet-kind="panel" hidden>
       <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-clock-counter-clockwise pop-glyph" aria-hidden="true"></i>Document history</h2>
       <span class="dialog-head-actions">
@@ -1275,8 +1275,8 @@
       <div class="row right space-dialog-actions">
         <button type="button" class="ghost small" data-close-dialog="doc-history-dialog">Close</button>
       </div>
-    </dialog>
-    <dialog id="doc-ai-history-dialog" class="card space-dialog doc-ai-history-dialog">
+    </sheet-host>
+    <sheet-host id="doc-ai-history-dialog" class="space-dialog doc-ai-history-dialog" data-sheet-kind="panel" hidden>
       <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-sparkle pop-glyph" aria-hidden="true"></i>AI edit history</h2>
       <span class="dialog-head-actions">
@@ -1289,7 +1289,7 @@
       <div class="row right space-dialog-actions">
         <button type="button" class="ghost small" data-close-dialog="doc-ai-history-dialog">Close</button>
       </div>
-    </dialog>
+    </sheet-host>
   <!-- Replace in every document (DOCUMENTS_PLAN 24 row 9): VS Code's
        replace across files, as one undo step. Rows by `renderDocReplace`. -->
   <dialog id="doc-replace-dialog" class="card space-dialog doc-ai-history-dialog doc-replace-dialog" aria-labelledby="doc-replace-title">
@@ -1328,7 +1328,7 @@
     <dl class="doc-stats-list" id="doc-stats-list"></dl>
   </dialog>
 
-  <dialog id="doc-word-goal-dialog" class="card space-dialog">
+  <sheet-host id="doc-word-goal-dialog" class="space-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-target pop-glyph" aria-hidden="true"></i>Word-count goal</h2>
       <span class="dialog-head-actions">
@@ -1345,12 +1345,12 @@
       <button type="button" class="ghost small" data-close-dialog="doc-word-goal-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-word-goal-submit">Set goal</button>
     </div>
-  </dialog>
+  </sheet-host>
 
   <!-- Widget picker (roadmap §26): a dedicated surface for the same
        dashboard_layout preference the inline "Edit layout" mode writes.
        Rows are built by renderDashWidgetsList() in app.js. -->
-  <dialog id="dash-widgets-dialog" class="card space-dialog dash-widgets-dialog">
+  <sheet-host id="dash-widgets-dialog" class="space-dialog dash-widgets-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>Widgets</h2>
       <span class="dialog-head-actions">
@@ -1363,7 +1363,7 @@
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="dash-widgets-dialog">Done</button>
     </div>
-  </dialog>
+  </sheet-host>
 
   <!-- The one main landmark (WCAG 1.3.1 and 2.4.1, INBOX 433): the tab
        pages are the page's content, and before this a screen reader's "jump
@@ -10044,8 +10044,8 @@ Link to another note with [[its first few words]]."></textarea>
        each; and the list goes in and out as a .txt file. -->
   <!-- Built on its first open (openDocDictionary, surfaceBuild), not parsed at boot. -->
   <script type="text/x-surface" data-surface="docDictionary">
-  <dialog id="doc-dictionary-dialog" class="card space-dialog doc-dictionary-dialog"
-    aria-labelledby="doc-dictionary-title">
+  <sheet-host id="doc-dictionary-dialog" class="space-dialog doc-dictionary-dialog"
+    aria-labelledby="doc-dictionary-title" hidden>
     <div class="row space-between doc-dictionary-head dialog-head">
       <div class="row help-head">
         <h2 id="doc-dictionary-title" class="dialog-head-title"><i class="ph ph-book-open-text pop-glyph" aria-hidden="true"></i>Dictionary</h2>
@@ -10183,7 +10183,7 @@ Link to another note with [[its first few words]]."></textarea>
         <small class="muted">Curly quotes as you type, and two hyphens make a dash.</small>
       </span>
     </label>
-  </dialog>
+  </sheet-host>
   </script>
 
   <div id="extract-panel" class="modal-overlay hidden" role="dialog"

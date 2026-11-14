@@ -280,6 +280,12 @@ SHEET_RECIPE = {
     # The way out: `openSheet`'s close adds it for --motion-fast, then removes
     # the overlay (no exit under reduced motion).
     "sheet-leaving",
+    # A `<sheet-host>` lifted in by `showModal()` (LEDGER L-world-class-131): the variants
+    # `openSheet` stamps for a form, picker or setting ("hosted") and a history ("panel").
+    "sheet-hosted",
+    "sheet-panel",
+    "sheet-card-hosted",
+    "sheet-card-panel",
 }
 
 
@@ -655,7 +661,7 @@ def test_no_dialog_is_a_direct_child_of_a_page() -> None:
     )
     assert pages, "no .tab-page elements found; this lint has lost its subject"
     offenders = []
-    for match in re.finditer(r"<dialog[^>]*id=\"([^\"]+)\"", html):
+    for match in re.finditer(r"<(?:dialog|sheet-host)[^>]*id=\"([^\"]+)\"", html):
         before = html[: match.start()]
         # The nearest unclosed `.tab-page` opener, if any, is this dialog's page.
         opens = len(re.findall(r'class="[^"]*\btab-page\b', before))
@@ -3671,7 +3677,9 @@ def test_every_small_dialog_opens_with_the_dialog_head() -> None:
     eyebrow rule drew at 12px uppercase beside the 16px head of every other
     dialog."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    dialogs = re.findall(r"<dialog\b[^>]*space-dialog[^>]*>(.*?)</dialog>", html, re.S)
+    #: A popup that is a form or a picker is a `<sheet-host>` now (131), with the same head.
+    dialogs = re.findall(r"<(dialog|sheet-host)\b[^>]*space-dialog[^>]*>(.*?)</\1>", html, re.S)
+    dialogs = [body for _tag, body in dialogs]
     #: 12 since the Tensions dialog became the suggestions sheet (KG9).
     assert len(dialogs) >= 12, "the small dialogs moved: this lint is looking at the wrong markup"
     for body in dialogs:
@@ -8076,3 +8084,69 @@ def test_every_accordion_id_is_a_guide_topic_and_the_guide_finds_most_by_title()
         if topic["id"] not in [t["id"] for t in help_chat.topics_for(help_chat.topic_title(topic))][: help_chat.MAX_TOPICS]
     ]
     assert len(misses) <= GUIDE_MISSES_BY_TITLE, f"{len(misses)} topics the Guide cannot find by their own title: {misses[:12]}"
+
+
+# --- a popup is the kind 27.2's table rules (LEDGER L-world-class-131, decision 63) ----
+
+#: WORLD_CLASS_PLAN 27.2, the fifteen popups the table rules. A dialog only when it must
+#: interrupt (a key, an irreversible step); a form, a picker or a setting is a sheet; a history
+#: is a panel read beside the page. A sheet or a panel is a `<sheet-host>` in the markup, which
+#: `showModal()` lifts into `openSheet` (phone-shell.js), so the scrim, the tier, Escape, the
+#: backdrop press and the leaving fade are the recipe's and every caller keeps the dialog API.
+POPUP_KINDS = {
+    "recovery-key-dialog": "dialog",
+    "space-delete-dialog": "dialog",
+    "space-create-dialog": "sheet",
+    "space-edit-dialog": "sheet",
+    "doc-storage-dialog": "sheet",
+    "doc-template-dialog": "sheet",
+    "note-template-dialog": "sheet",
+    "wb-template-dialog": "sheet",
+    "wb-import-dialog": "sheet",
+    "quick-note": "sheet",
+    "doc-history-dialog": "panel",
+    "doc-ai-history-dialog": "panel",
+    "doc-word-goal-dialog": "sheet",
+    "doc-dictionary-dialog": "sheet",
+    "dash-widgets-dialog": "sheet",
+}
+#: Two dialogs the table does not rule (added after it was written): LEDGER L-world-class-421.
+#: May only fall.
+UNRULED_DIALOGS = {"doc-replace-dialog", "doc-stats-dialog"}
+
+
+def test_each_popup_is_the_kind_the_table_rules() -> None:
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    markup = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    native = set(re.findall(r'<dialog\b[^>]*\bid="([^"]+)"', markup))
+    hosts = dict(re.findall(r'<sheet-host\b[^>]*\bid="([^"]+)"([^>]*)>', markup))
+    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"} | UNRULED_DIALOGS, (
+        f"a popup is a native <dialog> only when it must interrupt: {sorted(native)}"
+    )
+    assert set(hosts) == {i for i, kind in POPUP_KINDS.items() if kind != "dialog"}, sorted(hosts)
+    for ident, kind in POPUP_KINDS.items():
+        if kind == "dialog":
+            continue
+        attrs = hosts[ident]
+        assert ("data-sheet-kind=\"panel\"" in attrs) == (kind == "panel"), f"{ident} is a {kind}"
+        assert "card" not in re.search(r'class="([^"]*)"', attrs).group(1).split(), f"{ident}: the sheet is the card, a host is not a second one"
+
+
+def test_a_sheet_host_is_lifted_into_the_one_sheet_recipe() -> None:
+    js = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
+    assert 'customElements.define("sheet-host", SheetHost)' in js
+    start = js.index("class SheetHost extends HTMLElement")
+    body = js[start : js.index('customElements.define("sheet-host"', start)]
+    for needed in ("get open()", "showModal()", "close()", "openSheet({", "headless: true", 'variant: panel ? "panel" : "hosted"', "modal: !panel", 'new Event("close")'):
+        assert needed in body, needed
+    sheet = js[js.index("function openSheet(") :][:9000]
+    assert "headless" in sheet and "if (!headless)" in sheet, "a host brings its own dialog head, so the sheet draws none"
+
+
+def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it() -> None:
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    for needed in ("sheet-host[hidden]", ".sheet-card.sheet-card-hosted", ".sheet-card.sheet-card-panel", ".sheet-overlay.sheet-hosted", ".sheet-overlay.sheet-panel"):
+        assert needed in css, needed
+    every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
+    assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
+    assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
