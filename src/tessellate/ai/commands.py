@@ -1961,7 +1961,7 @@ def _now_for_plan() -> datetime:
 
 def _parity_helpers() -> dict:
     """What `parity_acts` borrows: the card, the Confirm line, the note helpers and the time words."""
-    return {"card": _card, "confirm": _confirm, "item": _item, "note_title": note_title, "summarise_done": summarise_done, "clip": _clip,
+    return {"card": _card, "confirm": _confirm, "item": _item, "note_title": note_title, "summarise_done": summarise_done, "clip": _clip, "today": lambda: _now_for_plan().date(),
             "resolve_one": _resolve_one, "split_allowed": _split_allowed, "when_words": lambda due, now: reminder_when(due, now, False)}
 
 

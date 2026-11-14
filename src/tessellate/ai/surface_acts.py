@@ -14,7 +14,9 @@ import re
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-INTENTS = frozenset({"delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember"})
+from tessellate.ai import composer_counter
+
+INTENTS = frozenset({"delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember", "counter"})
 
 #: The theme is a preference of the page, not of the server (`prefs`, settings.js `applyThemeChoice`): the step is
 #: the card's Confirm, the page applies it, and patches the undo with the theme that was showing.
@@ -68,6 +70,8 @@ def _theme_of(text: str) -> str:
 
 def read(text: str, one_target) -> dict | None:  # noqa: ANN001
     """The act `text` is, or None. `one_target` names a note from words."""
+    if counted := composer_counter.read(text):
+        return counted
     if theme := _theme_of(text):
         return {"intent": "set_theme", "name": theme}
     if name := _named(_DOCUMENT, text):
@@ -115,6 +119,27 @@ def _one(rows: list[str], wanted: str) -> tuple[str | None, str]:
     return None, "Which one: " + " or ".join(f"“{r}”" for r in near[:3]) + "?"
 
 
+def _counter(session: Session, parsed: dict, c: dict) -> dict:
+    """One dated line on "Counter: <name>", or the note made with it; Undo is the edit's or the note's own."""
+    from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
+
+    pattern = f"%{like_escape(composer_counter.PREFIX)}%"
+    notes = [{"id": e.id, "content": e.content} for e in session.scalars(select(Entry).where(Entry.content.like(pattern, escape=LIKE_ESCAPE), Entry.is_private.is_(False))).all()]
+    today = c["today"]()
+    found = composer_counter.find(notes, parsed["name"])
+    line = composer_counter.line_for(parsed["n"], today)
+    if found is None:
+        label = f"Start a counter for {parsed['name']} with {parsed['n']} today"
+        steps = [{"name": "create_note", "arguments": {"content": composer_counter.new_content(parsed["name"], parsed["n"], today)}}]
+        return {"line": c["confirm"](label), "card": c["card"](label, steps)}
+    entry = session.get(Entry, found["id"])
+    from tessellate.ai import act_steps
+
+    steps = [act_steps.locked_edit(entry.id, entry.content, f"{entry.content.rstrip()}\n{line}")]
+    label = f"Add {parsed['n']} to your {parsed['name']} counter ({composer_counter.total(found, None, None) + parsed['n']} in all)"
+    return {"line": c["confirm"](label), "card": c["card"](label, steps, [], [c["item"](entry)])}
+
+
 def _delete_document(session: Session, parsed: dict, c: dict) -> dict:
     from tessellate.core.database import Document
 
@@ -154,6 +179,8 @@ def _note(session: Session, parsed: dict, note_ids: list[int] | None, c: dict): 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None, c: dict) -> dict:
     """The line and card for one of `INTENTS`. `c` is `commands`' lending (`commands._parity_helpers`)."""
     intent = parsed["intent"]
+    if intent == "counter":
+        return _counter(session, parsed, c)
     if intent == "set_theme":
         label = "Follow the system theme" if parsed["name"] == "system" else f"Switch to the {parsed['name']} theme"
         return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "set_theme", "arguments": {"theme": parsed["name"]}}])}

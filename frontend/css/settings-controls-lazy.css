@@ -339,3 +339,70 @@
 .searxng-host > .searxng-diy[open] > summary {
   margin-bottom: var(--space-3);
 }
+/* --- what it learned (WORLD_CLASS_PLAN I9; lazy with settings-controls.js, which draws the rows) ---
+   Rows on `.entry-item`, the list recipe, so this needs only what makes a
+   derived fact read as one: the text large enough to judge, the provenance
+   quiet under it, and the row's actions where every other list already puts
+   them. Nothing here sets a colour, a radius or a spacing that is not a
+   token. */
+.learned-row {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr) auto;
+  grid-template-areas: "head text acts" "head meta acts";
+  column-gap: var(--space-3);
+  align-items: center;
+}
+.learned-row > :last-child {
+  grid-area: acts;
+}
+.learned-row-head {
+  grid-area: head;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.learned-text {
+  grid-area: text;
+  margin: 0;
+  /* The claim is the row. A note title elsewhere in the app is `--text-lg`
+     inside a list row; a derived sentence is body copy, and reading it is
+     the whole action this screen asks for. */
+  font-size: var(--text-body);
+  color: var(--ink);
+  /* One derived claim can be three hundred characters (facts.py's
+     MAX_SENTENCE_CHARS) and can hold a pasted identifier with no spaces in
+     it, which would otherwise widen the row, the list and the modal. */
+  overflow-wrap: anywhere;
+}
+.learned-meta {
+  grid-area: meta;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+@media (max-width: 599.98px) {
+  .learned-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "text" "meta" "acts";
+    row-gap: var(--space-2);
+  }
+}
+/* The pager sits under the list, not beside it: the count belongs between
+   its two buttons, which is where a reader looks for "where am I". */
+#learned-pager {
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+}
+/* Each switch is a `.setting-check`, the app's own on/off recipe (DESIGN.md's
+   index), which already owns the row's padding, radius, hover and
+   fill-when-on. Settings' own `.setting-check + .setting-check` rule supplies
+   the gap between them, so all this group adds is the master's separation. */
+/* The master is not one of the seven and must not look like one: it is the
+   answer to "stop all of this now", and a person looking for that should not
+   have to read seven rows to find it. A gap is the whole separation, because
+   the seven below it are a stack (08-consistency.css: hairline between,
+   rounded at the two outer ends) and the master is a row on its own, which
+   that contract already draws correctly once it is not adjacent to them.
+   `.learned-switch-stack` in the markup is what makes it not adjacent. */
+#learned-switches .learned-master {
+  margin-bottom: var(--space-3);
+}

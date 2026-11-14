@@ -4014,7 +4014,7 @@
   //: 69), kept on this device: absent reads as on.
   $("pref-search-suggest")?.addEventListener("change", (event) => {
     prefs.set("searchSuggest", event.target.checked ? "on" : "off");
-    toast(event.target.checked ? "Search boxes suggest as you type." : "Search boxes no longer suggest.");
+    toast(event.target.checked ? "Search and chat boxes suggest as you type." : "Search and chat boxes no longer suggest.");
   });
   $("bg-art-toggle").addEventListener("change", (e) => {
     toggleBgArt(e.target.checked);

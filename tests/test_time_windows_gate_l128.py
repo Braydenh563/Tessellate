@@ -2,8 +2,7 @@
 share it: `search.query.understand` reads a day gone (what did I write ...) and
 `composer_plan.window` reads a day ahead (what is due ...). Today is Saturday
 14 November 2026; weeks run Monday to Sunday (the owner's Q24). The last three
-rows are the known misses, so the pass share is measured, not assumed: 57 of
-60 (95.0%), gate 95%."""
+rows were the known misses (now read); the pass share is measured: 60 of 60, gate 95%."""
 
 from datetime import date
 
@@ -80,7 +79,7 @@ AHEAD = [
     ("what is due this month", d(11, 14), d(11, 30)),
     ("what is due the day after tomorrow", d(11, 16), d(11, 16)),
 ]
-KNOWN_MISSES = [
+FORMER_MISSES = [
     ("what did I do at the end of last month", d(10, 25), d(10, 31)),
     ("what did I do at the start of the month", d(11, 1), d(11, 7)),
     ("what is coming up", d(11, 14), d(11, 20)),
@@ -88,7 +87,7 @@ KNOWN_MISSES = [
 
 
 def _read(question):
-    if question in {q for q, *_ in AHEAD}:
+    if question in {q for q, *_ in AHEAD} or question == "what is coming up":
         got = composer_plan.window(question, TODAY)
         return got and got[:2]
     got = query.understand(question, TODAY)
@@ -100,12 +99,12 @@ def _passes(rows):
 
 
 def test_the_sixty_phrasing_gate():
-    rows = PAST + AHEAD + KNOWN_MISSES
+    rows = PAST + AHEAD + FORMER_MISSES
     assert len(rows) == 60
     passed = _passes(rows)
     assert len(passed) / len(rows) >= 0.95, [q for q, *_ in rows if q not in passed]
 
 
-@pytest.mark.parametrize(("question", "first", "last"), PAST + AHEAD)
+@pytest.mark.parametrize(("question", "first", "last"), PAST + AHEAD + FORMER_MISSES)
 def test_each_phrasing_reads_to_its_window(question, first, last):
     assert _read(question) == (first, last)

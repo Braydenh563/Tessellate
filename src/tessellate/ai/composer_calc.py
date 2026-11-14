@@ -44,7 +44,7 @@ _PCT_CHANGE = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:the )?(?:percent(?:age
 _DISCOUNT = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:{_NUM}\s*%\s*(?:off|discount(?:ed)?(?: from| on| off)?)\s*(?:of |on |from )?\$?£?€?{_NUM}|{_NUM} with (?:a )?{_NUM}\s*%\s*(?:off|discount)|"
                        rf"\$?£?€?{_NUM}\s*(?:minus|less|-)\s*{_NUM}\s*%|(?:take|knock|reduce|discount)\s*{_NUM}\s*%\s*(?:off|from|of)\s*\$?£?€?{_NUM})\W*$", re.I)
 _RISE = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:(?:add|plus|increase|raise)\s*{_NUM}\s*%\s*(?:to|on|onto)\s*\$?£?€?{_NUM}|\$?£?€?{_NUM}\s*(?:plus|\+|with)\s*{_NUM}\s*%|\$?£?€?{_NUM} increased by {_NUM}\s*%|increase \$?£?€?{_NUM} by {_NUM}\s*%)\W*$", re.I)
-_TIP = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:a |the )?{_NUM}\s*%\s*tip (?:on|for|of)\s*\$?£?€?{_NUM}\W*$|{_LEAD}tip (?:of )?{_NUM}\s*%\s*(?:on|for)\s*\$?£?€?{_NUM}\W*$", re.I)
+_TIP = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:a |the )?{_NUM}\s*%\s*tip (?:on|for|of)\s*\$?£?€?{_NUM}\W*$|{_LEAD}tip (?:of )?{_NUM}\s*%\s*(?:on|for)\s*\$?£?€?{_NUM}\W*$|{_LEAD}(?:what(?:'s| is) )?(?:the )?tip (?:on|for|of)\s*\$?£?€?{_NUM}\s*(?:at|with|of)\s*{_NUM}\s*%\W*$", re.I)
 _SPLIT = re.compile(rf"{_LEAD}(?:split|divide|share)\s*\$?£?€?{_NUM}\s*(?:between|among|by|across|into|over)\s*(\d+)(?: people| ways)?\W*$|{_LEAD}\$?£?€?{_NUM}\s*(?:split|divided|shared)\s*(?:between|among|by|across)\s*(\d+)(?: people| ways)?\W*$", re.I)
 _NEED = re.compile(
     rf"{_LEAD}(?:what|how much|how many|which)\b.*\b(?:need|require|have to (?:get|score|make)|must (?:get|score))\b.*?(?:to (?:get|reach|pass with|score|make|finish with|end with|hit)|for|so that i (?:get|have|end up with))\s*{_NUM}\s*%?\s*(?:overall|in total|total|for the (?:module|unit|course|class)|in the (?:module|unit|course|class)|final|on average)?"
@@ -114,6 +114,8 @@ def _priced(match: re.Match, up: bool) -> Reply | None:
 def _tip(match: re.Match) -> Reply:
     nums = [float(g.replace(",", "")) for g in match.groups() if g]
     rate, bill = nums[0], nums[1]
+    if match.lastindex == 6:
+        bill, rate = nums[0], nums[1]  # "tip on 60 at 15%": the bill comes first
     tip = bill * rate / 100
     return _computed(f"A {_said(rate)}% tip on {_said(bill)} is {_said(round(tip, 2))}, so {_said(round(bill + tip, 2))} in all.", f"{_said(rate)}% of {_said(bill)}")
 
@@ -270,6 +272,22 @@ def _offset_question(text: str, today: date) -> Reply | None:
 
 # --- word counts and definitions ---------------------------------------------------------
 
+_READ_TIME = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?(?:the )?reading time (?:for|of) {_NUM} words\W*$|{_LEAD}how long (?:to read|does it take to read) {_NUM} words\W*$", re.I)
+_AS_DECIMAL = re.compile(rf"{_LEAD}(?:what(?:'s| is) )?{_NUM}\s*/\s*{_NUM} (?:as a decimal|in decimals?|as decimal)\W*$", re.I)
+
+
+def _reading(match: re.Match) -> Reply:
+    words = int(float(next(g for g in match.groups() if g).replace(",", "")))
+    return _computed(f"{words:,} words take about {utilities.reading_time(words).replace(' read', '') or 'a few seconds'} to read.", f"{words:,} words at {utilities.READING_WPM} words a minute")
+
+
+def _decimal(match: re.Match) -> Reply | None:
+    top, bottom = (float(g.replace(",", "")) for g in match.groups() if g)
+    if not bottom:
+        return None
+    return _computed(f"{_said(top)}/{_said(bottom)} is {round(top / bottom, 6):g} as a decimal.", f"{_said(top)} divided by {_said(bottom)}")
+
+
 def _pasted_count(text: str, mood: compose.Mood) -> Reply | None:
     quoted = _QUOTED.search(text)
     body = ((quoted.group(1) or quoted.group(2)) if quoted else "") or ""
@@ -353,7 +371,7 @@ def answer(ctx: Ctx) -> Reply | None:
     if not text or len(text) > 240:
         return None
     today = ctx.now.date()
-    for pattern, work in ((_PCT_OF_WHAT, _percent), (_PCT_CHANGE, _change), (_TIP, _tip), (_SPLIT, _split), (_NEED, _needed)):
+    for pattern, work in ((_PCT_OF_WHAT, _percent), (_PCT_CHANGE, _change), (_TIP, _tip), (_READ_TIME, _reading), (_AS_DECIMAL, _decimal), (_SPLIT, _split), (_NEED, _needed)):
         found = pattern.match(text)
         if found:
             return work(found)
