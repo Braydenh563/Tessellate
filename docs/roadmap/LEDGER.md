@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 15 | 1 | 0 | 20 | 86 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 571 | 129 | 2 | 183 | 1253 |
+| all | 553 | 570 | 129 | 2 | 183 | 1252 |
 
 ## graph
 
@@ -328,7 +328,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines. Analysis 2026-11-12 (docsG): "doc" selector lines per file: 00:35, 01:50, 02:86, 03:41, 04:353, 05:451, 06:33, 07:475, 08:319, 09:173, 10:277. Moving them into 09-editor.css reorders the cascade against 08-consistency and 10-responsive (later files override earlier ones at equal specificity), so a move needs a computed-style diff sweep per surface first; too wide to land safely in one step.
 - [ ] **L314** `documents` open, L: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows Blocker (docsJ 2026-11-13): the harness is async (await, Promise, arrow functions in 41 lines of run-tests.js) and JS-Interpreter has no Promise or event loop, so it needs a synchronous ES5 harness written separately plus a bridge that posts each test row from inside the interpreter; not a bounded change, size L.
-- [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: 2026-11-14 (agent/docs327-1114, b17e650d to 5adff2f9): documents.js 16,769 to 16,199 lines, 261,826 to 254,407 gzipped bytes; four lazy pieces built (documents-dictionary, -backlinks, -suggest, -blockref; stand-ins keep the hot callers) and the attach-bookmark picker's Escape listener leak fixed (AbortController). Left: documents-code.js and run_sandbox.py splits (not started); in documents.js the hot parts of the three sections stay because open or the prose panel calls them synchronously (block-id model read by embeds, docSuggestAnswers and docFindingAnswerRows drawn per panel row, docMatchCase and the word list per check), so a further cut needs those callers made async first; no `((` typing exists, the block reference is made by Copy link to block; the other documents.js listeners (docFocusWatch, observers, resize handle, pointer drags) were read and are paired.
 - [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open Analysis 2026-11-12 (docsG): the 4x CPU typing gate (p95 under 50 ms, no long task over 50 ms) needs a quiet machine; this shared four-core box runs agents and servers at once, so a figure here would be noise. Check: run the typing sweep with CDP Emulation.setCPUThrottlingRate 4 on an idle machine. Measured 2026-11-13 (docsK, doctype.js THROTTLE=4 AT_TOP=1, 20k-word document, three runs, load 1.7, 2.1, 2.2 on four cores shared with other agents so noisy): Live keydown and input event durations p95 64, 64, 64 ms (p50 40; 88 of 88 events over 16 ms; max 88, 80, 64); Source p95 80, 88, 80. Gate (p95 under 50, no long task over 50) not met in any run; a long-task count was not recorded by this sweep (the 40-key trace on a 120-paragraph document saw 1 to 2 long tasks, max 84 to 130 ms, mean 41 to 46, p95 53 to 72).

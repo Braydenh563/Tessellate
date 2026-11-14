@@ -12790,7 +12790,7 @@ function docProseRowCollapse(row, control, answers) {
   delete row.dataset.keyOpened;
 }
 
-function docProseRowAnswers(row, control, finding, opts = {}) {
+async function docProseRowAnswers(row, control, finding, opts = {}) {
   const panel = $("doc-prose-panel");
   const answers = row.querySelector(".doc-prose-answers");
   if (!panel || !answers) return;
@@ -12839,13 +12839,14 @@ function docProseRowAnswers(row, control, finding, opts = {}) {
   //: a list that says where you are), not with a class a screen reader cannot
   //: see.
   row.setAttribute("aria-current", "location");
-  answers.replaceChildren(
-    docSuggestAnswers(finding, {
-      inline: true,
-      close: () => docProseRowCollapse(row, control, answers),
-      current: () => control.getAttribute("aria-expanded") === "true",
-    })
-  );
+  const drawn = await docSuggestAnswers(finding, {
+    inline: true,
+    close: () => docProseRowCollapse(row, control, answers),
+    current: () => control.getAttribute("aria-expanded") === "true",
+  });
+  //: The piece may have been fetched meanwhile: a row closed or replaced by then is left alone.
+  if (control.getAttribute("aria-expanded") !== "true") return;
+  answers.replaceChildren(drawn);
   answers.classList.remove("hidden");
   //: Brought into view by the panel's own `scrollTop`, never `scrollIntoView`,
   //: which walks every scrolling ancestor including the page (DESIGN.md).
@@ -14964,179 +14965,16 @@ function docFindingIsPassage(finding) {
   return finding.rule !== "link-offer" && /\s/.test(String(finding.text || "").trim());
 }
 
-//: **The answers to a finding as data** (INBOX 689): the candidates that
-//: replace the word, then "Add to dictionary" (a spelling or a variant) and
-//: "Ignore in this document". `docSuggestAnswers` draws them as buttons in
-//: the popover and the panel row, and a suggested change that carries a
-//: finding lists the same rows in its own menu (`docSuggestMenu`), so the
-//: three can never offer different things. Each row's `run(close)` does the
-//: whole job, calling `close` in the order the surface needs: after a fix,
-//: before the dictionary write and the ignore.
-function docFindingAnswerRows(finding) {
-  const rows = docSuggestAlternatives(finding).map((option, index) => {
-    const removal = `Remove \u201c${finding.text}\u201d`;
-    return {
-      kind: "candidate",
-      best: index === 0,
-      label: option === " " ? "one space" : option === "" ? removal : option,
-      title: option === "" ? removal : `Replace with \u201c${option}\u201d`,
-      run: (close = () => {}) => {
-        docProseFix({ ...finding, replacement: option });
-        close();
-      },
-    };
-  });
-  if (finding.rule === "spelling" || finding.rule === "variant") {
-    rows.push(docSpell.dictionaryRow(finding.text));
-  }
-  rows.push({
-    kind: "action",
-    id: "ignore",
-    label: `ph:eye-slash ${docIgnoreLabel(finding)}`,
-    title: finding.rule === "link-offer"
-      ? "Never offer a link to this name, in any document"
-      : "Stop flagging this wording in this document until Tessellate is restarted",
-    run: (close = () => {}) => {
-      close();
-      docProseIgnore(finding);
-    },
-  });
-  return rows;
+//: The answers to a finding (rows as data, and the buttons drawn from them): documents-suggest.js, fetched on first
+//: use. Each is a stand-in the piece's function of the same name replaces on load, so a caller awaits it.
+async function docFindingAnswerRows(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docFindingAnswerRows(...args)] }), [];
+  return docFindingAnswerRows(...args);
 }
 
-//: **The answers to a finding, built once and drawn in two places**
-//: (DOCUMENTS_PLAN 12 D2 and D3): the floating menu over the word, and the
-//: expanded row in the panel. They were two code paths offering the same four
-//: things, which is how the panel ended up with no answers of its own and had
-//: to open the menu over the text to have any.
-//:
-//: `close` dismisses whichever surface this was drawn into, `current` says
-//: whether that surface is still showing this finding (the AI round-trip takes
-//: seconds and the reader may have moved on), and `reflow` lets a surface that
-//: positions itself do so again after the answers change size.
-function docSuggestAnswers(finding, opts = {}) {
-  const close = opts.close || (() => {});
-  const current = opts.current || (() => true);
-  const reflow = opts.reflow || (() => {});
-  const inline = opts.inline === true;
-  const frag = document.createDocumentFragment();
-
-  const list = document.createElement("div");
-  list.className = inline ? "doc-suggest-list doc-suggest-list-inline" : "doc-suggest-list";
-  //: **A candidate word is a word, not an action, and it used to be drawn as
-  //: one.** Every row carried the same `ph:check`, so five suggestions read as
-  //: five identical commands with different arguments, and the eye had nothing
-  //: to tell them apart by except the text it was meant to be comparing.
-  //: Reported as exactly that. Every other spell checker anyone has used shows
-  //: the candidates bare, and that is the point: the row IS the word. The
-  //: check mark stays where it means something, on the panel's own "apply this
-  //: fix" button, and the actions below this list keep their icons, so the
-  //: menu now separates into "which word" and "what to do about it" without a
-  //: divider having to say so. The first candidate carries the weight, because
-  //: it is the one Enter and a double-click take.
-  const answerRows = docFindingAnswerRows(finding);
-  answerRows.filter((row) => row.kind === "candidate").forEach((row) => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = row.best ? "doc-suggest-item doc-suggest-best" : "doc-suggest-item";
-    item.textContent = row.label;
-    item.title = row.title;
-    item.addEventListener("click", () => row.run(close));
-    list.appendChild(item);
-  });
-  if (!answerRows.some((row) => row.kind === "candidate")) {
-    const none = document.createElement("p");
-    none.className = "muted doc-suggest-none";
-    //: A rule with no fix still opens this menu, because "ignore it" and "this
-    //: is fine" are answers too: and because a row you cannot press at all
-    //: reads as a broken row.
-    none.textContent = "No single answer for this one, it is a place to look, not a correction.";
-    list.appendChild(none);
-  }
-  frag.appendChild(list);
-
-  const actions = document.createElement("div");
-  actions.className = inline ? "doc-suggest-actions doc-suggest-actions-inline" : "doc-suggest-actions";
-  for (const row of answerRows.filter((other) => other.kind === "action")) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "doc-suggest-item";
-    setLabel(button, row.label);
-    button.title = row.title;
-    button.addEventListener("click", () => row.run(close));
-    actions.appendChild(button);
-  }
-
-  if (docFindingIsPassage(finding)) {
-    //: **"Ask the AI for wordings", where the app itself has no answer.** Asked
-    //: for directly: "the listed errors in suggestions have no way to have the
-    //: ai write a suggested replacement or multiple for the user to choose."
-    //:
-    //: A row rather than an automatic call: this costs a model round-trip of
-    //: several seconds, and firing one every time a menu opens would make the
-    //: menu feel broken on a small local model. It replaces itself with the
-    //: options when they arrive, so the menu that asked is the menu that
-    //: answers: pressing an option applies it exactly as a built-in fix does,
-    //: through `docProseFix`, which re-checks the document before writing.
-    const askAi = document.createElement("button");
-    askAi.type = "button";
-    askAi.className = "doc-suggest-item doc-suggest-ai";
-    setLabel(askAi, "ph:sparkle Ask Atlas for wordings\u2026");
-    askAi.title = "Have the local model suggest two or three other ways to put this";
-    askAi.addEventListener("click", async () => {
-      if (!currentDoc || !currentDoc.id) return toast("Save the document first.", "info");
-      setLabel(askAi, "ph:hourglass Thinking\u2026");
-      askAi.disabled = true;
-      const body = await apiJson(`/documents/${currentDoc.id}/rephrase`, {
-        method: "POST",
-        body: JSON.stringify({ passage: finding.text, note: finding.message || "" }),
-      }).catch(() => null);
-      //: The surface may have been closed, or opened on something else, while
-      //: the model was thinking. Writing into it then would put one finding's
-      //: suggestions under another finding's heading.
-      if (!current()) return;
-      const options = (body && body.options) || [];
-      if (!options.length) {
-        setLabel(askAi, "ph:sparkle Ask Atlas for wordings\u2026");
-        askAi.disabled = false;
-        return toast(
-          (body && body.message) || "No other wordings came back for that one.",
-          "info"
-        );
-      }
-      askAi.remove();
-      for (const option of options) {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = "doc-suggest-item doc-suggest-ai-option";
-        setLabel(item, `ph:sparkle ${option}`);
-        item.title = `Replace with \u201c${option}\u201d`;
-        item.addEventListener("click", () => {
-          docProseFix({ ...finding, replacement: option });
-          close();
-        });
-        list.appendChild(item);
-      }
-      reflow();
-    });
-    actions.appendChild(askAi);
-
-    //: **Translation: the offline translator when it is installed, else the chat.**
-    //: Without the package the honest offer is the local model, with the question
-    //: already written, where the answer is visible and correctable, not a silent
-    //: rewrite of the document with something nobody checked.
-    const translate = document.createElement("button");
-    translate.type = "button";
-    translate.className = "doc-suggest-item";
-    setLabel(translate, "ph:translate Translate this passage\u2026");
-    translate.addEventListener("click", () => {
-      close();
-      docTranslatePassage(finding.text);
-    });
-    actions.appendChild(translate);
-  }
-  frag.appendChild(actions);
-  return frag;
+async function docSuggestAnswers(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docSuggestAnswers(...args)] }), document.createDocumentFragment();
+  return docSuggestAnswers(...args);
 }
 
 //: **The popup, the translate hand-off, Discuss in chat and the AI review** are

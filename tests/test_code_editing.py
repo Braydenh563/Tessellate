@@ -17,6 +17,7 @@ somebody's file, so nothing here is approximate.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -31,7 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 #: documents.js, so a test that reads "the documents editor" reads all three.
 DOCUMENTS_JS = tuple(
     ROOT / "frontend" / "js" / name
-    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js")
+    for name in ("documents.js", "documents-code-format.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js")
 )
 
 
@@ -53,6 +54,7 @@ def run(calls: list) -> list:
     script = (
         _region("// DOC-JSON-BEGIN", "// DOC-JSON-END")
         + _region("// DOC-CODE-BEGIN", "// DOC-CODE-END")
+        + _region("// DOC-FORMAT-BEGIN", "// DOC-FORMAT-END")
         + "\nconst fns = {docCodeScan, docCodeIndentLevel, docFormatCodeText, docFormatJsonText,"
         " docFormatMarkupText, docCodeFixes, docJsonFixes, docJsonErrorAt, docPythonColonFix,"
         " docIndentMixFixes};\n"
@@ -382,9 +384,13 @@ def _source() -> str:
 
 
 def _function(name: str) -> str:
+    """The function's text; a lazy piece indents it and a stand-in of the same name sits in another file, so the longest wins."""
     text = _source()
-    start = text.index(f"function {name}(")
-    return text[start : text.index("\n}\n", start)]
+    found = []
+    for m in re.finditer(rf"^( *)(?:async )?function {name}\(", text, re.M):
+        end = text.index("\n" + m.group(1) + "}\n", m.start())
+        found.append(text[m.start() : end])
+    return max(found, key=len)
 
 
 def test_pairs_and_the_indent_service_are_mounted_for_code_only():

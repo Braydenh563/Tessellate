@@ -1081,6 +1081,13 @@ row does today.
   second worker is not built. D47 is decided "Keep it": the textarea
   fallback stays, and only the dead surface aliases (`rect`, `scrollLeft`)
   were removed.
+- D13. **Lazy pieces stop at the open path** (L327, 2026-11-14): code that runs on
+  a user action loads on first use (dictionary, backlinks, suggest, blockref,
+  code format). Code that the editor's open path or every check calls
+  synchronously stays where it is: Run and Debug extensions, quick fixes and
+  go to definition, the block-id model, the word list, `docMatchCase`. Making
+  the open path async to move them would trade a working editor for a riskier
+  one for deferred, not removed, bytes. run_sandbox.py (362 lines) stays one file.
 
 ### Phases
 

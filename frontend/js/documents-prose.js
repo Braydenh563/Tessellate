@@ -1131,7 +1131,7 @@ function docSuggestApply(view, edit, message) {
 //: The answers to one suggestion, at the pointer (or at the change, from the
 //: keyboard). Recomputed from the text at the press: the mark is found again
 //: by where it starts, and a mark no longer there says so.
-function docSuggestMenu(view, start, x, y) {
+async function docSuggestMenu(view, start, x, y) {
   const mark = docSuggestParse(docStr(view.state.doc)).find((m) => m.start === start);
   if (!mark || typeof openMenuAtPoint !== "function") return;
   const what = mark.kind === "ins" ? "insertion" : "deletion";
@@ -1151,7 +1151,7 @@ function docSuggestMenu(view, start, x, y) {
   const answers = finding
     ? [
         ...(said ? [{ label: `ph:info ${said.length > 60 ? `${said.slice(0, 57)}\u2026` : said}`, title: said, disabled: true, run: () => {} }] : []),
-        ...docFindingAnswerRows(finding),
+        ...(await docFindingAnswerRows(finding)),
       ]
     : [];
   const items = docSuggestMenuItems(mark, count, answers, {
