@@ -143,17 +143,30 @@ def test_a_decimal_and_an_abbreviation_do_not_end_a_sentence():
 
 
 def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollama, monkeypatch):
-    import time
+    """Wall-clock free: the model blocks until the test releases it, so the
+    answer arriving while it is still held proves the route stopped waiting
+    on its own bound, whatever the machine's speed."""
+    import threading
 
     from tessellate.api import routes_board_affinity
 
     doc, note, other = _setup(ai_client)
     real = fake_ollama.chat
-    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    asked, release = threading.Event(), threading.Event()
+
+    def held(*a, **k):
+        asked.set()
+        release.wait(30)
+        return real(*a, **k)
+
+    monkeypatch.setattr(fake_ollama, "chat", held)
     monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
-    started = time.perf_counter()
-    got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
-    assert time.perf_counter() - started < 0.9
+    try:
+        got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
+        assert asked.is_set(), "the model was never asked"
+        assert not release.is_set()
+    finally:
+        release.set()
     assert got["source"] == "words" and got["reason"] == "failed"
     assert _verdicts(got)["Tomatoes need pruning"] == "supported"
 
