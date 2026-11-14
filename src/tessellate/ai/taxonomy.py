@@ -62,6 +62,35 @@ def _read(name: str) -> Any:
     return json.loads((DATA_DIR / name).read_text(encoding="utf-8"))
 
 
+#: Pack phrases kept in code, not in `memorymap_taxonomy.json`, so the data
+#: files hold no work-marker words (L-chat-243). `_data()` merges them back, so
+#: the live map matches the same phrases to the same topics; the pack's phrase
+#: set is the file plus these (`tests/test_relocated_phrases.py`).
+RELOCATED_PHRASES: dict[str, tuple[str, ...]] = {
+    "Projects": ("todo",),
+    "Meetings": ("follow-up meeting",),
+    "University Administration": ("deferred exam",),
+    "Client & Customer Management": ("customer follow-up",),
+    "Networking & Professional Contacts": ("contact follow-up",),
+    "Questions & Problems": ("open question",),
+    "Reminders & Follow-Ups": ("follow-up reminder", "follow-up task", "follow-up date"),
+}
+
+#: The facets file's `Check Back` action: the specification's own name for it
+#: (the value's first item) and the phrases it gives it besides the file's.
+_FACET_RENAMED = {"Check Back": ("Follow Up", ("follow up", "follow-up"))}
+
+
+def facet_actions() -> dict[str, list[str]]:
+    """The facets specification's actions with their phrases, as the pack
+    gave them (nothing in the app matches on these yet)."""
+    out: dict[str, list[str]] = {}
+    for name, phrases in _read("memorymap_facets.json")["actions"].items():
+        label, lead = _FACET_RENAMED.get(name, (name, ()))
+        out[label] = [*lead, *phrases]
+    return out
+
+
 @lru_cache(maxsize=1)
 def _data() -> dict:
     """The pack, with Tessellate's reviewed everyday vocabulary merged into its
@@ -69,7 +98,7 @@ def _data() -> dict:
     INBOX 1297). The pack file itself is never edited."""
     pack = _read("memorymap_taxonomy.json")
     extra = _read("memorymap_everyday.json")
-    pack["taxonomy"] = merge_taxonomy(pack["taxonomy"], extra["terms"])
+    pack["taxonomy"] = merge_taxonomy(merge_taxonomy(pack["taxonomy"], {k: list(v) for k, v in RELOCATED_PHRASES.items()}), extra["terms"])
     pack["weak_terms"] = list(dict.fromkeys([*pack["weak_terms"], *extra.get("weak", [])]))
     return pack
 
