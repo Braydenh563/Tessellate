@@ -212,6 +212,18 @@ def _skill_deleted(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _archive_state(session: Session, args: dict, result: dict) -> str | None:
+    """Each id the call says it moved is there and on the side it names."""
+    wanted = bool(result.get("now_archived", True))
+    for note_id in result.get("archived") or []:
+        entry = _row(session, Entry, note_id)
+        if entry is None:
+            return f"note {note_id} is not there"
+        if bool(entry.archived_at) != wanted:
+            return f"note {note_id} is {'not in' if wanted else 'still in'} the Archive"
+    return None
+
+
 #: The write tools `contracts.py` does not cover, each with the read that
 #: proves its result. A tool in both would be checked twice; the lint keeps
 #: the two tables apart.
@@ -233,6 +245,7 @@ VERIFIERS: dict[str, Verifier] = {
     "place_library_item": _library_placed,
     "audit_link_reasons": _links_audited,
     "check_learned": _learned_checked,
+    "archive_note": _archive_state,
     "save_skill": _skill_saved,
     "delete_skill": _skill_deleted,
 }

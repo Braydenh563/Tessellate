@@ -328,9 +328,9 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "list_notes",
-            "Walk the user's notes, newest first, by category, tag, age or untagged; "
-            "while has_more, call again with next_offset. search_notes finds "
-            "something specific.",
+            "Walk notes, newest first, by category, tag, age or untagged "
+            "('tag my untagged notes'); while has_more, call again with next_offset. "
+            "search_notes finds something specific.",
             {
                 "type": "object",
                 "properties": {

@@ -1,0 +1,83 @@
+{
+ "skill": "Everything about a person",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "priya",
+   "notebook": [
+    {
+     "content": "Lunch with Priya about the launch",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Priya prefers email over calls",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Buy milk",
+     "category": "Home",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "priya"
+    ]
+   },
+   "inputs": {
+    "person": "Priya"
+   }
+  },
+  {
+   "id": "tom",
+   "notebook": [
+    {
+     "content": "Tom is moving to Leeds in June",
+     "category": "Friends",
+     "tags": []
+    },
+    {
+     "content": "Call Tom about the flat",
+     "category": "Home",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "tom"
+    ]
+   },
+   "inputs": {
+    "person": "Tom"
+   }
+  },
+  {
+   "id": "nobody",
+   "notebook": [
+    {
+     "content": "Dentist on Thursday",
+     "category": "Health",
+     "tags": []
+    },
+    {
+     "content": "Sourdough starter fed",
+     "category": "Cooking",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "alex"
+    ]
+   },
+   "inputs": {
+    "person": "Alex"
+   }
+  }
+ ]
+}

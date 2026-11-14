@@ -49,6 +49,7 @@ FALSE_CLAIMS = {
     "audit_link_reasons": ({}, {"updated": 5}),
     "check_learned": ({}, {"retired": 3, "run": "2026-11-01T09:00:00"}),
     "save_skill": ({}, {"name": "never saved"}),
+    "archive_note": ({}, {"archived": [999_999], "now_archived": True}),
 }
 
 
