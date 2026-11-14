@@ -20,12 +20,12 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
-from tessellate.api.downloads import attachment_headers, sealed_aware
+from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
 from tessellate.core import activity, deps, jobs, recordings, sealed_files, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
@@ -167,7 +167,10 @@ def _append(session: Session, row: Recording, data: bytes) -> None:
     is cut back, so the retry starts where the saved audio ends. The error
     goes on to the app's handler, which answers a full disk with 507. A
     private space's recording is sealed from its first chunk (L-world-class-52)."""
-    sealed_files.append(recordings.path_of(row), data, sealed=sealed_files.wanted(session, row.workspace_id))
+    try:
+        sealed_files.append(recordings.path_of(row), data, sealed=sealed_files.wanted(session, row.workspace_id))
+    except sealed_files.LooksSealed as exc:
+        raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
 
 
 @router.post("/recordings/{recording_id}/chunk")
@@ -290,8 +293,8 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
             kept = transcript.clean(segments)
             if diarize.available():
                 kept = diarize.label_audio(kept, Path(audio))
-    except sealed_files.SealedLocked as exc:
-        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL) from exc
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:  # a bad clip must not 500 mysteriously
@@ -581,11 +584,29 @@ def transcript_vtt(recording_id: int, session: Session = Depends(get_session)) -
     return _subtitles(session, recording_id, "vtt")
 
 
+def _locked_away(session: Session, recording_id: int) -> bool:
+    """A recording hidden only because its private space is locked for this
+    caller: 423, so the player says "unlock" rather than "missing". A raw
+    statement is not narrowed by the space filter (`database._add_workspace_filter`)."""
+    sealed = session.info.get("sealed_workspaces")
+    if not sealed:
+        return False
+    space = session.execute(
+        text("SELECT workspace_id FROM recordings WHERE id = :id AND deleted_at IS NULL"), {"id": recording_id}
+    ).scalar()
+    return space in sealed
+
+
 @media_router.get("/media/recordings/{recording_id}")
 def recording_audio(
     recording_id: int, session: Session = Depends(get_session), range: str | None = Header(default=None)  # noqa: A002
 ) -> Response:
-    row = _get(session, recording_id)
+    try:
+        row = _get(session, recording_id)
+    except HTTPException as exc:
+        if _locked_away(session, recording_id):
+            raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL) from exc
+        raise
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")

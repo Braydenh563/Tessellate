@@ -30,7 +30,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
-from tessellate.api.downloads import sealed_aware
+from tessellate.api.downloads import sealed_aware, sealed_http
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
@@ -112,12 +112,12 @@ ATTACHMENT_SUFFIXES = frozenset(
 @contextmanager
 def _plain(path: Path, *, write: bool = False) -> Iterator[Path]:
     """A path the file readers can open, sealed or not (L-world-class-52);
-    `write`: what the block wrote goes back sealed. 423 while locked."""
+    `write`: what the block wrote goes back sealed. 423 while locked, 409 damaged."""
     try:
         with sealed_files.readable(path, write=write) as plain:
             yield plain
-    except sealed_files.SealedLocked as exc:
-        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL) from exc
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
 
 
 def _write_upload(file: UploadFile, destination: Path, sealed: bool) -> int:
@@ -131,7 +131,11 @@ def _write_upload(file: UploadFile, destination: Path, sealed: bool) -> int:
             if size > MAX_FILE_BYTES:
                 destination.unlink(missing_ok=True)
                 raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
-            sealed_files.append(destination, chunk, sealed=sealed)
+            try:
+                sealed_files.append(destination, chunk, sealed=sealed)
+            except sealed_files.LooksSealed as exc:
+                destination.unlink(missing_ok=True)
+                raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
     return size
 
 

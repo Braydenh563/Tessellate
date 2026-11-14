@@ -118,7 +118,7 @@ def _sha1_file(path: Path) -> str | None:
     if sealed_files.is_sealed(path):
         try:
             digest.update(sealed_files.read(path))
-        except sealed_files.SealedLocked:
+        except sealed_files.SealedError:
             return None
         return digest.hexdigest()
     with path.open("rb") as handle:
@@ -375,7 +375,7 @@ def _write_note(archive: zipfile.ZipFile, record: dict, uploads_dir: Path, store
             try:
                 archive.writestr(member, sealed_files.read(path))
                 files.append(member)
-            except sealed_files.SealedLocked:
+            except sealed_files.SealedError:
                 missing.append(member)
         else:
             missing.append(member)

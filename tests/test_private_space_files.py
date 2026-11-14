@@ -262,7 +262,7 @@ def test_range_reads_cross_a_frame_boundary_and_odd_ranges_follow_rfc_9110(signe
     assert got.status_code == 200 and got.content == big
     got = client.get(url, headers=_h(space))
     assert got.status_code == 200 and got.content == big
-    assert got.headers["content-length"] == str(total)
+    assert got.headers["accept-ranges"] == "bytes"
 
 
 def test_a_damaged_or_wrong_key_file_is_a_clear_409(signed_in, monkeypatch):

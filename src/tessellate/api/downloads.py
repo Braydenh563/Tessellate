@@ -41,16 +41,46 @@ def attachment_headers(name: str, disposition: str = "attachment") -> dict[str, 
 _RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
 
 
+def _span(request_range: str | None, total: int) -> tuple[int, int] | None | bool:
+    """A single `bytes=` range as (start, end); None to send the whole file
+    (no range, or one RFC 9110 says to ignore, such as `bytes=5-2`); False
+    when it cannot be satisfied (416)."""
+    found = _RANGE.match((request_range or "").strip())
+    if not found or not (found.group(1) or found.group(2)):
+        return None
+    first, last = found.group(1), found.group(2)
+    if first and last and int(first) > int(last):
+        return None
+    if not first:
+        size = int(last)
+        return (max(0, total - size), total - 1) if size and total else False
+    start = int(first)
+    if start >= total:
+        return False
+    return start, min(int(last), total - 1) if last else total - 1
+
+
+def sealed_http(exc: Exception):  # noqa: ANN201
+    """A sealed file this caller cannot read: 423 while locked, 409 when damaged."""
+    from fastapi import HTTPException
+
+    from tessellate.core import sealed_files
+
+    if isinstance(exc, sealed_files.SealedLocked):
+        return HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
+    return HTTPException(status_code=409, detail=sealed_files.DAMAGED_DETAIL)
+
+
 def sealed_aware(path, media_type=None, headers=None, filename=None, request_range=None):  # noqa: ANN001, ANN201
     """A file response for a file that may be sealed (L-world-class-52).
 
     A plain file is a `FileResponse` as before (Range included). A sealed one
-    is unsealed in memory, never to disk, and a single `bytes=` Range is
-    answered from only the frames it touches, so an `<audio>` element still
-    seeks. 423 while its key is not loaded for this caller.
+    is unsealed in memory, never to disk: streamed a frame at a time whole, or
+    a single `bytes=` Range answered from only the frames it touches, so an
+    `<audio>` element still seeks. 423 while its key is not loaded for this
+    caller, 409 when it is damaged.
     """
-    from fastapi import HTTPException
-    from fastapi.responses import FileResponse, Response
+    from fastapi.responses import FileResponse, Response, StreamingResponse
 
     from tessellate.core import sealed_files
 
@@ -62,15 +92,14 @@ def sealed_aware(path, media_type=None, headers=None, filename=None, request_ran
     headers["Accept-Ranges"] = "bytes"
     try:
         total = sealed_files.plain_size(path)
-        found = _RANGE.match((request_range or "").strip())
-        if not found or not (found.group(1) or found.group(2)):
-            return Response(sealed_files.read(path), media_type=media_type, headers=headers)
-        first, last = found.group(1), found.group(2)
-        start = int(first) if first else max(0, total - int(last))
-        end = min(int(last), total - 1) if first and last else total - 1
-        if start >= total or start > end:
+        span = _span(request_range, total)
+        if span is None:
+            body = sealed_files.iter_plain(path)
+            return StreamingResponse(body, media_type=media_type, headers={**headers, "Content-Length": str(total)})
+        if span is False:
             return Response(status_code=416, headers={**headers, "Content-Range": f"bytes */{total}"})
+        start, end = span
         headers["Content-Range"] = f"bytes {start}-{end}/{total}"
         return Response(sealed_files.read_range(path, start, end), status_code=206, media_type=media_type, headers=headers)
-    except sealed_files.SealedLocked as exc:
-        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL) from exc
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
