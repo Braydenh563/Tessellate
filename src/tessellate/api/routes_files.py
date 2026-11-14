@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
+from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
 from tessellate.api.this_computer import this_computer_only
@@ -701,6 +702,9 @@ class AttachedFileTextOut(BaseModel):
     #: disabled Edit button: §R7.1 item 2 asks for the honest reason in the UI
     #: rather than a control that does nothing.
     edit_message: str = ""
+    #: The hash of `text` (`edit_conflicts.content_hash`): a save sends it back
+    #: as `base_hash` so a file changed meanwhile is not overwritten unseen.
+    content_hash: str = ""
 
 
 @router.get("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -741,6 +745,7 @@ def attached_file_text(
         extra=viewed.extra,
         editable=editable,
         edit_message=edit_message,
+        content_hash=content_hash(viewed.text),
     )
 
 
@@ -748,6 +753,8 @@ class FileTextIn(BaseModel):
     """The edited text of a file, on its way back to disk."""
 
     text: str = Field(max_length=bounds.FILE_TEXT_MAX)
+    #: The `content_hash` of the text this edit started from (two windows, one file).
+    base_hash: str | None = Field(default=None, max_length=64)
 
 
 @router.put("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -773,6 +780,13 @@ def save_attached_file_text(
     editable, edit_message = docview.editability(path, viewed)
     if not editable:
         raise HTTPException(status_code=409, detail=edit_message)
+    refuse_if_stale(
+        base_hash=payload.base_hash,
+        current_text=viewed.text,
+        new_text=payload.text,
+        current=lambda: {"content": viewed.text, "content_hash": content_hash(viewed.text)},
+        noun="file",
+    )
     docview.write_text_file(path, payload.text)
     #: The row's `size` is what the Library shows beside the name, so it has to
     #: follow the file rather than stay at whatever was uploaded. Nothing here
@@ -789,6 +803,7 @@ def save_attached_file_text(
         truncated=saved.truncated,
         message=saved.message,
         editable=True,
+        content_hash=content_hash(saved.text),
     )
 
 

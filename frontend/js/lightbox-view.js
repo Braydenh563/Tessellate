@@ -1257,10 +1257,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     button.disabled = true;
     try {
       const wasText = lightboxEditTarget.text;
-      const saved = await apiJson(lightboxEditTarget.url, {
-        method: "PUT",
-        body: JSON.stringify({ text: docEdit.value }),
-      });
+      //: `base_hash`: the text this edit opened on, so a save over a file another window changed meanwhile is
+      //: asked about (keep mine, take theirs), not silently written over it (WORLD_CLASS_PLAN 22.1 item 5).
+      let saved = null;
+      while (!saved) {
+        try {
+          saved = await apiJson(lightboxEditTarget.url, {
+            method: "PUT",
+            body: JSON.stringify({ text: docEdit.value, base_hash: lightboxEditTarget.hash }),
+          });
+        } catch (error) {
+          if (!isEditConflict(error)) throw error;
+          const current = error.detail.current;
+          const answer = await editConflictPrompt({ noun: "file", mine: docEdit.value, theirs: current.content || "" });
+          if (answer === "mine") lightboxEditTarget.hash = current.content_hash;
+          else {
+            if (answer === "theirs") {
+              lightboxEditTarget.text = current.content || "";
+              lightboxEditTarget.hash = current.content_hash;
+              docEdit.value = lightboxEditTarget.text;
+            }
+            return;
+          }
+        }
+      }
+      lightboxEditTarget.hash = saved.content_hash || null;
       pushRequestUndo("Edited a file's text", lightboxEditTarget.url, "PUT", { text: wasText }, { text: saved.text ?? docEdit.value }, () => lightboxLoadExtractedText?.());
       //: Re-rendered from what the server wrote back, not from what was
       //: typed. They are the same today; if they ever differ, a normalised
@@ -1828,7 +1849,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (item.kind && item.text != null) {
         editFileBtn.classList.add("hidden");
       } else if (payload.editable) {
-        lightboxEditTarget = { url: textUrl, text: body };
+        lightboxEditTarget = { url: textUrl, text: body, hash: payload.content_hash || null };
         editFileBtn.classList.remove("hidden");
       } else {
         editFileBtn.classList.add("hidden");

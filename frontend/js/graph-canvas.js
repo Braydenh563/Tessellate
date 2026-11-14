@@ -5275,9 +5275,16 @@
         const wasTags = [...(node.tags || [])];
         // PUT: the entries route has no PATCH, and EntryUpdate leaves every
         // field it is not given alone.
-        const ok = await apiJson(`/entries/${node.id}`, { method: "PUT", body: JSON.stringify({ tags }) }).catch(() => null);
+        //: `base_tags`: the tags this node was drawn with. Another window's change since is a 409 with the note as it
+        //: is; adding a tag commutes, so it is added to what is there and sent again, once.
+        const put = (list, base) => apiJson(`/entries/${node.id}`, { method: "PUT", body: JSON.stringify({ tags: list, base_tags: base }) });
+        const ok = await put(tags, wasTags).catch((error) => {
+          if (!isEditConflict(error)) return null;
+          const now = error.detail.current.tags || [];
+          return put(Array.from(new Set([...now, tag])), now).catch(() => null);
+        });
         if (ok) {
-          node.tags = tags;
+          node.tags = ok.tags || tags;
           done += 1;
           changes.push({ id: node.id, before: { tags: wasTags }, after: { tags } });
         }

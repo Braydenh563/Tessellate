@@ -39,6 +39,7 @@ from tessellate.api.edit_conflicts import (
     content_hash,
     entity_tag,
     refuse_if_stale,
+    refuse_if_tags_stale,
     refuse_unless_match,
 )
 from tessellate.api.routes_entries_refs import REFERENCE_SOURCES_MAX, _reference_rows_batch
@@ -2313,6 +2314,13 @@ def update_entry(
             current=lambda: _to_out(session, entry),
             noun="note",
         )
+    refuse_if_tags_stale(
+        base_tags=body.base_tags,
+        current_tags=manager.entry_tags(entry),
+        new_tags=body.tags,
+        current=lambda: _to_out(session, entry),
+        noun="note",
+    )
     content_changed, new_content = _content_change(entry, body)
     tags_changed = body.tags is not None and body.tags != manager.entry_tags(entry)
     #: The note's [[name]] before the edit (a private note is never a target).

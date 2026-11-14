@@ -863,7 +863,7 @@ MORE_TOPICS: list[dict] = [
             "it last ran and whether that worked, and when the next is due (the "
             "Dashboard's Backups card, added from Edit layout, shows the last backup and the next due, with a Backup settings button); in the "
             "desktop app, Also copy each backup to sends a second copy to a folder "
-            "you choose, such as an external drive. Each backup row says when in words, marks "
+            "you choose, such as an external drive (the desktop app asks once on first run). Each backup row says when in words, marks "
             "the newest Latest, and says what made it (the daily backup, Back "
             "up now, before an update or a restore), its size and whether it "
             "was checked. App cache, at the bottom: Clear app cache "

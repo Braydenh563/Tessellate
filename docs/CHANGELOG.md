@@ -14,6 +14,9 @@ below). Versioning is `0.x` while the app stabilises.
 - Settings: the sign-in token is stored through prefs.set; app.js has no localStorage.setItem left (the ratchet cap is gone) and only the one-time origin carry keeps raw writes (L-world-class-78).
 - Router: a pasted #/Manual or #/Statistics opens at load in either case, and the address reads lowercase, #/manual and #/statistics (L-world-class-74).
 - Clocks: the status chip's timers and stopwatches ride the one shared second tick; the four one-second clocks are one wake and utility-tools.js has no interval of its own (L-world-class-93).
+- On the desktop, first run asks once where to keep a second copy of the backups (after the console question, only while none is set); the answer is saved as Settings, Data, "Also copy each backup to" (L-world-class-101).
+- A write while the server is unreachable is refused at once with the banner's message (`Can't reach Tessellate. Retrying…`) and asks the health poll to look now; sign-in and reads still go out. Measured offline: 0 PUT requests sent, banner cleared on the next poll (L-world-class-99).
+- Two windows, one note now covers the lightbox file-text save (409 with keep mine or take theirs), the graph's tag edit (`base_tags`, merged and sent again) and the card's Remove image; card task boxes are disabled, so there is no write there (L-world-class-98).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
 - The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).
 - Tag chips on note cards say in their hover how many notes carry the tag, counted from the notes already loaded (L-world-class-47).

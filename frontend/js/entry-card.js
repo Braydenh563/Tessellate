@@ -461,12 +461,18 @@ function entryItem(entry, options = {}) {
     const contentBefore = whole.content;
     const contentAfter = contentBefore.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
-      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter }) });
+      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter, base_hash: whole.content_hash }) });
       pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: contentAfter });
       await refreshEntries([entry.id]);
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
+      //: Changed in another window since the card read it: nothing was written; say so and let the list catch up.
+      if (isEditConflict(err)) {
+        toast("This note changed in another window. Nothing was removed; try again.", "info");
+        refreshEntries([entry.id]).catch(() => {});
+        return;
+      }
       toast(err.message || voiceLine("failed", { what: "remove that image" }), true);
     }
   });
