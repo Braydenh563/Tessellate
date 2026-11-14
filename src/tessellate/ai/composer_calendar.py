@@ -16,7 +16,7 @@ _LEAD = r"^(?:(?:hey|please|also|just|can you|could you|will you|would you|i nee
 _CAL = r"(?:calendar|schedule|planner|agenda|diary)"
 _LIST = r"(?:[\w ]{0,25}?(?:to[- ]?do|task) list|list of (?:reminders|chores|housework)|reminders? list)"
 _PLACE = rf"(?:my|the)\s+(?:{_CAL}|{_LIST})"
-#: The to-do list the task acts already read ("put buy milk on my todo list").
+#: The to-do list the task acts already read ("put buy milk on my to-do list").
 _PLAIN_TODO = lazy_compile(r"(?:^|\s)(?:my|the)\s+(?:to[- ]?do|task)\s+list$", re.IGNORECASE)
 _WHEN = r"(?P<when>\s+(?:for|on)\s+\S.*)?"
 

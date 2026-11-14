@@ -2,7 +2,7 @@
 week", "how long until the exam" (INBOX 1351).
 
 The week is read from three places and nothing is guessed: the person's
-reminders (not done, not binned), the dates their notes give in a sentence
+reminders (unfinished, not binned), the dates their notes give in a sentence
 ("Exam on 12 November.", read against the day the note was written, so
 "tomorrow" in an old note is not today's tomorrow), and the open checklist
 items in their notes. Every line of an answer is a reminder's text, a note's
@@ -79,7 +79,7 @@ _UNTIL = re.compile(
 _LEFT = re.compile(
     rf"^{_LEAD}(?:what(?:'s| is| do i have| have i got| have i| else)?\s+(?:still\s+)?(?:left|outstanding|open|unfinished|incomplete|remaining|pending|undone)(?:\s+to\s+do)?"
     r"|what(?:'s| is)?\s+(?:left\s+)?(?:on\s+)?(?:my\s+)?(?:to-?do|todo)(?:\s+list)?"
-    #: "what's still to do" (INBOX 1357, class I: it listed the newest notes).
+    #: "what's left to do" (INBOX 1357, class I: it listed the newest notes).
     r"|what(?:'s| is)?\s+(?:still|left)\s+to\s+do"
     r"|what\s+(?:do|should)\s+i\s+(?:still\s+)?(?:have|need)\s+to\s+(?:do|finish|get done|tick off)"
     r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items)"
@@ -818,7 +818,7 @@ def _open_tasks(ctx: Ctx, limit: int = OPEN_LIMIT) -> list[tuple[str, dict]]:
 
 def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
     """Leaves out an unticked line a later note records as done: "what is
-    still open" agrees with "is X still on my list" (fable-eye F15). The
+    left" agrees with "is X still on my list" (fable-eye F15). The
     notes are read only when there is an open line to check."""
     if not tasks:
         return tasks
@@ -850,7 +850,7 @@ def _not_reminded(reminders: list[dict], tasks: list[tuple[str, dict]]) -> list[
     return [(task, note) for task, note in tasks if study.clean(task).lower() not in said]
 
 
-#: "my to-do list" names the note called Todo when there is one (its own items, L103); else every open item.
+#: "my to-do list" names the to-do note when there is one (its own items, L103); else every open item.
 _TODO_LIST = re.compile(r"\bto[- ]?do list\b", re.I)
 
 
@@ -949,7 +949,7 @@ def _asks_due(text: str, today: date) -> bool:
     return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and win is not None and win[1] >= today and not _written_from(text, today))
 
 
-#: "what is in my todo" names the note called Todo (R3-8), not the next two weeks' dated items.
+#: The in-my-to-do ask (`_IN_TODO`) names the to-do note (R3-8), not the next two weeks' dated items.
 _IN_TODO = re.compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
 
 

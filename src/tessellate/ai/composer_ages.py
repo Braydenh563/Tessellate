@@ -89,14 +89,14 @@ def _says(name: str, how: str) -> str:
 
 
 
-#: "what is in my todo", "what's on my todo list": the note called Todo, or a checklist (R3-31).
+#: Asking what the to-do list holds (`_TODO_ASK`): the note titled by `_TODO_TITLES`, or a checklist (R3-31).
 _TODO_ASK = re.compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside|on)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
 _TODO_TITLES = frozenset({"todo", "to do", "to-do", "todos", "to dos", "to-dos", "todo list", "to do list", "to-do list"})
 _CHECKBOX = re.compile(r"^\s*[-*+]\s*\[[ xX]\]", re.M)
 
 
 def no_todo(question: str, notes: list[dict]) -> str | None:
-    """The plain miss for a todo ask when no note is called Todo and none holds a checklist, else None."""
+    """The plain miss for a to-do ask when no note has a `_TODO_TITLES` title and none holds a checklist, else None."""
     if not _TODO_ASK.match(" ".join((question or "").split())):
         return None
     for note in notes:

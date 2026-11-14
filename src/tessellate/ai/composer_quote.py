@@ -255,7 +255,7 @@ def _done_later_note(got: tuple, today) -> str:  # noqa: ANN001
 
 def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:
     """How many of a checklist are ticked. Zero is "none of its three", one
-    left unticked is "one item, not done": a count word before "of" is never
+    left unticked is "one item, not ticked": a count word before "of" is never
     "no" (audit 1029 C6). A line a later note records as done counts done."""
     ticked = sum(1 for s in tasks if s.done) + len(_done_later(out, view, tasks))
     opening = lead == "opening"

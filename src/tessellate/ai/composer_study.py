@@ -637,14 +637,14 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
     return Reply(f"{feedback}\n\n{_header(topic, n + 1, total, score, done, rounds)}\n\n{deck[n].q}", asks=QUIZ_CHIPS)
 
 
-def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int, done: int, *, lead: str = "", stopped: bool = False) -> Reply:
-    pct = round(100 * score / done) if done else 0
-    verdict = ("Strong." if pct >= 85 else "Solid." if pct >= 60 else "Worth another go.") if done else ""
+def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int, answered: int, *, lead: str = "", stopped: bool = False) -> Reply:
+    pct = round(100 * score / answered) if answered else 0
+    verdict = ("Strong." if pct >= 85 else "Solid." if pct >= 60 else "Worth another go.") if answered else ""
     lines = [lead, ""] if lead else []
-    if stopped and not done:
+    if stopped and not answered:
         lines.append("Stopped before any answer, so no score.")
     else:
-        lines.append(f"Quiz finished on {_link(note)}: you got {score} of {done} ({pct} percent). {verdict}".strip())
+        lines.append(f"Quiz finished on {_link(note)}: you got {score} of {answered} ({pct} percent). {verdict}".strip())
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
 
 

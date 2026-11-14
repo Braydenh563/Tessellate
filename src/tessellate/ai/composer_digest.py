@@ -1893,7 +1893,7 @@ def _lift_table(members, today: date) -> tuple[str, str] | None:
 
 
 def _still_open(views, listed) -> list[str]:  # noqa: ANN001
-    """The other things still to do that notes besides the list name."""
+    """The other open items that notes besides the list name."""
     open_bits = []
     for w in views:
         for t in w.sentences:
@@ -1908,7 +1908,7 @@ def _still_open(views, listed) -> list[str]:  # noqa: ANN001
 
 def _left(out: _Out, question: str, members, views, names: set[str], today: date) -> bool:  # noqa: ANN001
     """"What do I need to buy": the open list first, then the other things
-    still to do the notes name."""
+    the notes leave open."""
     lists = composer_lists.open_lists(question, views)
     if not lists:
         return False

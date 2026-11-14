@@ -453,7 +453,7 @@ def _from_dialogue(out: "_Answer", dialogue) -> None:  # noqa: ANN001  # a Dialo
 
 
 def _checklist_or_until(out: "_Answer", said: object, question: str, views: list, today: date) -> dict | None:
-    """What is still open on a checklist, or the days until a note's day,
+    """The unticked items of a checklist, or the days until a note's day,
     when the question asks that and nothing was said before; else None.
     Read as repaired: "hw many days til the dentst" is the same count."""
     if said:

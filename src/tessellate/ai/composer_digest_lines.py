@@ -1621,7 +1621,7 @@ def _answered(out: _Out, facts: list[Fact]) -> list[Fact]:
 
 
 def _open_actions(facts: list[Fact]) -> list[str]:
-    """The to-dos the facts hold that are still to do: a checklist line a later
+    """The to-dos the facts hold that are unticked: a checklist line a later
     note records as done is not (second eye F15)."""
     views = _VIEWS.get()
     return [
@@ -1668,8 +1668,8 @@ _SPECIFIC_CASED = re.compile(r"(?<=\s)[A-Z][a-z]+")
 def _task_of(f: Fact) -> str:
     """The to-do a fact states, or "". An open checkbox is one; an
     instruction in prose is one only when it names what it is about: "ask
-    the tutor on Thursday" is a task, "ask follow-up questions that reflect
-    genuine interest" (a guide's advice) is not (INBOX 1301 D5: it was
+    the tutor on Thursday" is a task, the advice sentence in the social-skills
+    guide of `tests/fixtures/gold_answers.json` is not (INBOX 1301 D5: it was
     offered as a reminder)."""
     if f.sentence.kind == "task":
         return "" if f.sentence.done else f.body
@@ -1828,7 +1828,7 @@ _HAS_SUBJECT = re.compile(r"(?:you|we|i|they|he|she|it|you're|we're|i'm|they're)
 def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[str, list[Fact]]:  # noqa: ANN001
     """The opening of an overview, and the facts still to say. It answers in
     the person's terms (INBOX 870): where they have got to, or how much is
-    still open, not only how many notes."""
+    left unticked, not only how many notes."""
     opening = PHRASES["overview"].format(count=_count(composer_overview.pooled(len(members))), topic=topic, span=_span(members, today))
     landed = next((f for f in facts if f.label == "Where you landed"), None)
     left = [f for f in facts if f.label == "Still to do"]
@@ -1855,7 +1855,7 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
 #: list item and quoted example it holds, glued with ";" ("not cheesy:;",
 #: "Follow- Up Questions:;", '"..."; "..."'), then its "Phase 1: ..." lines as
 #: notes of their own. A note is now at most two sentences: what it is, then
-#: its shape (its sections) or what is still to do on it, or a second line.
+#: its shape (its sections) or what is left to do on it, or a second line.
 #: Quoted examples are the note's material, never the person's facts.
 _QUOTED = re.compile(r'^["\u201c\u2018\']')
 _NUMBERED = re.compile(r"^(.*?\S)\s+(\d{1,2})$")

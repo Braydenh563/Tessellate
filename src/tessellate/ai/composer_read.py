@@ -649,12 +649,12 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     item = _ITEM.match(line)
     if item:
         box = item.group(2)
-        #: A plain "- " line under a to-do title is a task not yet done (bt-compcomp-1109 item 9).
-        todo = not box and realise.todo_titled(view.title)
+        #: A plain "- " line under a to-do title is a task not yet ticked (bt-compcomp-1109 item 9).
+        to_do_list = not box and realise.todo_titled(view.title)
         unit = _unit(
             view, content, line_start + item.end(), line_end,
-            "task" if box or todo else "item",
-            False if todo else None if not box else box.strip("[] \t").lower() == "x",
+            "task" if box or to_do_list else "item",
+            False if to_do_list else None if not box else box.strip("[] \t").lower() == "x",
         )
         if unit:
             unit.depth = _depth(line)
