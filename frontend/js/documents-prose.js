@@ -567,14 +567,16 @@ function noteGrammarPlugin(CM) {
       check() {
         const text = docStr(this.view.state.doc);
         if (!text.trim() || text === this.checked) return;
-        docGrammarAsk(text).then((lints) => {
+        //: Harper's findings are drawn first (`early`), LanguageTool's join and replace them.
+        const draw = (lints, final) => {
           if (lints === null || this.destroyed) return;
-          if (docStr(this.view.state.doc) !== text) return this.schedule();
+          if (docStr(this.view.state.doc) !== text) return final ? this.schedule() : undefined;
           const skip = docProseSkipMask(text);
-          this.checked = text;
+          if (final) this.checked = text;
           this.findings = docGrammarFindings(lints, text).filter((finding) => skip[finding.start] !== 1);
           this.view.dispatch({ effects: effect.of(null) });
-        });
+        };
+        docGrammarAsk(text, (first) => draw(first, false)).then((lints) => draw(lints, true));
       }
       update(update) {
         if (update.docChanged) {

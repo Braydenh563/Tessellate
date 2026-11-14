@@ -303,3 +303,12 @@ def test_harper_findings_are_drawn_before_languagetool_answers():
     text = (ROOT / "frontend/js/documents-prose.js").read_text()
     assert "if (early && lints !== null) early(lints);" in text
     assert "docGrammarAsk(text, early).then" in text
+
+
+def test_the_note_editor_and_whiteboard_draw_harper_first_too():
+    note = (ROOT / "frontend/js/documents-prose.js").read_text()
+    assert "docGrammarAsk(text, (first) => draw(first, false)).then((lints) => draw(lints, true))" in note
+    assert "docGrammarAsk(text).then" not in note
+    board = (ROOT / "frontend/js/whiteboard-map-more.js").read_text()
+    assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); })" in board
+    assert "docGrammarAsk(text).catch" not in board
