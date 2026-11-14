@@ -88,16 +88,22 @@ EXPECTED = {
     'documents.js': [
         '`${what} is not available here.`',
         '"That section cannot go inside itself."',
-        '"Give the document a title first, a block link is named by it."',
-        '"Put the caret in a paragraph first."',
-        '"That block is not in this document any more."',
         '"Full screen is not available in this window."',
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',
         '"Save the document first."',
         '(body && body.message) || "No other wordings came back for that one."',
+    ],
+    'documents-blockref.js': [
+        '"Give the document a title first, a block link is named by it."',
+        '"Put the caret in a paragraph first."',
+        '"That block is not in this document any more."',
+    ],
+    'documents-suggest.js': [
         '"Nothing to discuss yet."',
         '"Nothing to check yet."',
+    ],
+    'documents-dictionary.js': [
         '"One word at a time: letters, with an apostrophe or hyphen inside."',
         '"No words found in that file. One word per line."',
         '"The dictionary is empty, so there is nothing to export."',
@@ -209,7 +215,7 @@ EXPECTED = {
 
 #: Rule 4 (2026-10-10): situations the app expects, moved here from FAULTS.
 EXPECTED_RULE4 = {'settings-wiring.js': ['body.warning'], 'attachment-actions.js': ['"That upload is no longer in the Library; it may have been deleted."',
-        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
+        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents-suggest.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
 for _name, _messages in EXPECTED_RULE4.items():
     EXPECTED.setdefault(_name, []).extend(_messages)
 
@@ -254,6 +260,10 @@ FAULTS = {
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },

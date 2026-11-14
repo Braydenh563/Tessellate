@@ -104,8 +104,8 @@ def test_an_empty_document_is_refused(ai_client, fake_ollama):
 
 def test_the_panel_no_longer_sends_the_document_to_chat():
     """The check is in place; chat is the secondary "Discuss in chat"."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents-suggest.js").read_text(encoding="utf-8")  # the piece; documents.js has a stand-in
     start = docs.index("async function docAiReview(")
-    body = docs[start : docs.index("\n}\n", start)]
+    body = docs[start : docs.index("\n  }\n", start)]
     assert "switchTab(" not in body and "/ai-check" in body
     assert "function docAiDiscussInChat(" in docs

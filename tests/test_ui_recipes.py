@@ -1299,8 +1299,11 @@ def _function_body(text: str, name: str) -> str:
     brace-matching parse of 11,000 lines of JS to answer that would be a second
     thing to get wrong.
     """
-    start = text.index(f"function {name}(")
-    after = re.search(r"\n(?:async )?function ", text[start + 1 :])
+    #: The last definition: a lazy piece's stand-in in documents.js has the same name as the real function in
+    #: documents-suggest.js, and the lints ask about the real one. A wrapped piece indents its functions.
+    start = text.rindex(f"function {name}(")
+    indent = "  " if text[max(0, start - 8) : start].endswith("  ") or text[max(0, start - 8) : start].endswith("  async ") else ""
+    after = re.search(rf"\n{indent}(?:async )?function ", text[start + 1 :])
     return text[start : start + 1 + after.start()] if after else text[start:]
 
 

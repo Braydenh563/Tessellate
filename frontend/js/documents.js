@@ -1654,70 +1654,6 @@ function docRestorePosition(id) {
 //: faster one's document. The same shape `renderDocBookmarks` uses.
 let docBacklinksToken = 0;
 
-//: The unlinked-mentions section, made once and kept, for the same reason the
-//: properties panel is made in script: `tests/test_frontend_ids.py` pairs
-//: every `$("...")` with an element in index.html, and index.html belongs to
-//: another agent. Its shape is the backlinks section's exactly, so the two
-//: read as one panel and not as a panel and an add-on.
-function docMentionsHost(create = false) {
-  const anchor = $("doc-backlinks-wrap");
-  if (!anchor || !anchor.parentElement) return null;
-  let host = anchor.parentElement.querySelector(".doc-mentions-wrap");
-  if (!host && create) {
-    host = document.createElement("div");
-    host.className = "doc-outline-wrap doc-mentions-wrap";
-    const heading = document.createElement("h3");
-    heading.className = "doc-outline-title";
-    heading.append(
-      document.createTextNode("Unlinked mentions "),
-      docSectionCount("doc-mentions-count")
-    );
-    //: The one line of description a section gets (CLAUDE.md's copy rule);
-    //: anything longer belongs behind the '?' the heading carries.
-    const help = document.createElement("p");
-    help.className = "muted doc-outline-empty doc-mentions-help";
-    help.textContent = "Notes and documents that name this one without linking to it.";
-    const list = document.createElement("ul");
-    list.className = "doc-outline doc-mentions";
-    host.append(heading, help, list);
-    anchor.insertAdjacentElement("afterend", host);
-  }
-  return host;
-}
-
-//: A heading's count, from the same recipe the outline's own heading uses, so
-//: the four sidebar sections agree about what a count looks like.
-function docSectionCount(className) {
-  const count = document.createElement("span");
-  count.className = `doc-outline-count ${className}`;
-  return count;
-}
-
-//: Does the open document already point back at this source? Read from the
-//: text rather than remembered, because the answer changes with every
-//: keystroke and a stale "Linked both ways" is worse than no button.
-function docLinksTo(title) {
-  const wanted = (title || "").trim().toLowerCase();
-  if (!wanted) return false;
-  const pattern = /\[\[([^[\]]{1,120})\]\]/g;
-  const text = docText();
-  let match;
-  while ((match = pattern.exec(text)) !== null) {
-    if (wikiLinkTarget(match[1]).trim().toLowerCase() === wanted) return true;
-  }
-  return false;
-}
-
-function docOpenBacklinkSource(row) {
-  if (row.kind === "document") {
-    openDocument(row.id);
-    return;
-  }
-  switchTab("notes");
-  showNotesSection("browse"); // focusing inside a hidden section does nothing
-  flashEntry(row.id);
-}
-
 //: **Link back: insert `[[Source]]` at the caret.** Deliberately the caret and
 //: not the end of the document: every other insert in this editor (the "/"
 //: menu, the table command, the properties command) writes where you are, and
@@ -1734,113 +1670,6 @@ function docInsertReferenceLink(bookmark) {
   surface.focus();
 }
 
-function docLinkBack(title) {
-  const surface = docSurface();
-  if (!surface) return;
-  const at = surface.selectionStart;
-  docReplaceRange(surface, at, surface.selectionEnd, `[[${title}]]`);
-  markDocDirty();
-  surface.focus();
-  renderDocBacklinks();
-}
-
-//: **Link: rewrite the mention in the source that wrote it**, through that
-//: kind's own update route, so the note's revision, its `[[link]]` sync and
-//: its search vector all happen exactly as they do for a hand edit. Writing
-//: the row from here through a new endpoint would have been a second copy of
-//: machinery that already exists and already has guards.
-async function docLinkMention(row, button) {
-  const title = (currentDoc?.title || "").trim();
-  if (!title) return;
-  button.disabled = true;
-  try {
-    let content = null;
-    if (row.kind === "note") {
-      //: Whole text: the offsets are into it and it is written back (`fullEntry`, INBOX 1525).
-      content = (await fullEntry(row.id)).content;
-    } else {
-      content = (await apiJson(`/documents/${row.id}`)).content;
-    }
-    const slice = (content || "").slice(row.start, row.end);
-    //: The offsets were taken when the panel was drawn. A source edited in
-    //: another tab since would have this land in the middle of a sentence, so
-    //: the span is checked against the title before anything is written and
-    //: the panel is redrawn rather than guessed at.
-    if (slice.toLowerCase() !== title.toLowerCase()) {
-      toast("That mention has moved, the panel is refreshing.");
-      renderDocBacklinks();
-      return;
-    }
-    const next = content.slice(0, row.start) + `[[${title}]]` + content.slice(row.end);
-    const mentionUndo = () =>
-      pushRequestUndo(
-        `Linked a mention in ${row.title}`,
-        row.kind === "note" ? `/entries/${row.id}` : `/documents/${row.id}`,
-        "PUT",
-        { content },
-        { content: next },
-        () => (row.kind === "note" ? loadEntries() : loadDocuments(currentDoc?.id))
-      );
-    if (row.kind === "note") {
-      await apiJson(`/entries/${row.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ content: next }),
-      });
-      loadEntries();
-    } else {
-      const saved = await apiJson(`/documents/${row.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ content: next }),
-      });
-      //: The answer is the row (DC7): patched in place, read only when it is not in the list.
-      if (docs.some((d) => d.id === saved.id)) {
-        docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-        renderDocList();
-      } else await loadDocuments(currentDoc?.id);
-    }
-    mentionUndo();
-    toast(`Linked from ${row.title}.`);
-  } catch (error) {
-    toast(error.message, true);
-  } finally {
-    button.disabled = false;
-    renderDocBacklinks();
-  }
-}
-
-function docBacklinkItem(row, linked) {
-  const item = document.createElement("li");
-  item.className = "doc-backlink";
-  const open = document.createElement("button");
-  open.type = "button";
-  open.className = "outline-link doc-backlink-title";
-  setLabel(open, `${row.kind === "document" ? "ph:file-text" : "ph:note"} ${row.title}`);
-  open.title = row.kind === "document" ? "Open this document" : "Show this note";
-  open.addEventListener("click", () => docOpenBacklinkSource(row));
-  const foot = document.createElement("div");
-  foot.className = "doc-backlink-foot";
-  if (linked) {
-    const already = docLinksTo(row.title);
-    const back = smallButton(
-      already ? "Linked both ways" : "Link back",
-      already
-        ? "This document already links to it"
-        : `Insert [[${row.title}]] where the caret is`,
-      () => docLinkBack(row.title)
-    );
-    back.disabled = already;
-    back.classList.add("doc-backlink-action");
-    foot.appendChild(back);
-  } else {
-    const link = smallButton("Link", `Turn this mention into a link to ${currentDoc?.title || "this document"}`, () => {});
-    link.classList.add("doc-backlink-action");
-    link.addEventListener("click", () => docLinkMention(row, link));
-    foot.appendChild(link);
-  }
-  item.append(open, docBacklinkContext(row), foot);
-  return item;
-}
-
 async function renderDocBacklinks() {
   const wrap = $("doc-backlinks-wrap");
   const list = $("doc-backlinks");
@@ -1853,24 +1682,14 @@ async function renderDocBacklinks() {
   if (token !== docBacklinksToken) return; // a newer document answered first
   const links = (body && body.links) || [];
   const mentions = (body && body.mentions) || [];
-
-  wrap.classList.toggle("hidden", !links.length);
-  list.replaceChildren();
-  for (const row of links) list.appendChild(docBacklinkItem(row, true));
-  const count = wrap.querySelector(".doc-backlinks-count") || docSectionCount("doc-backlinks-count");
-  if (!count.parentElement) wrap.querySelector("h3")?.append(document.createTextNode(" "), count);
-  count.textContent = links.length ? String(links.length) : "";
-
-  const host = docMentionsHost(mentions.length > 0);
-  if (host) {
-    const mentionList = host.querySelector(".doc-mentions");
-    mentionList.replaceChildren();
-    for (const row of mentions) mentionList.appendChild(docBacklinkItem(row, false));
-    host.querySelector(".doc-mentions-count").textContent = mentions.length
-      ? String(mentions.length)
-      : "";
-    host.classList.toggle("hidden", !mentions.length);
+  //: Nothing to draw and nothing drawn before: the panel stays hidden without fetching its code
+  //: (documents-backlinks.js). Rows drawn for the last document are cleared by the piece.
+  if (!links.length && !mentions.length && !list.firstChild && !wrap.parentElement?.querySelector(".doc-mentions-wrap")) {
+    wrap.classList.add("hidden");
+    return;
   }
+  if (!(await lazyScript("/js/documents-backlinks.js"))) return toast("The links panel could not be loaded.", true, { action: ["Try again", renderDocBacklinks] });
+  if (token === docBacklinksToken) docBacklinksPaint(links, mentions);
 }
 
 // The notes this document draws on. Shown beside the outline because both
@@ -1976,6 +1795,9 @@ async function attachBookmarkToDocument() {
   //: own select". Opening it twice also stacked two selects, because nothing
   //: checked for one already there.
   const existing = wrap.querySelector(".doc-attach-row");
+  //: The row's Escape listener goes with it: removing the row alone left the document-level one
+  //: behind for every reopen (L327). One controller per picker, kept on this function.
+  attachBookmarkToDocument.escape?.abort();
   if (existing) existing.remove();
   const row = document.createElement("div");
   row.className = "row doc-attach-row";
@@ -1991,8 +1813,10 @@ async function attachBookmarkToDocument() {
     option.textContent = bookmark.title || bookmark.url;
     select.appendChild(option);
   }
+  const escape = new AbortController();
+  attachBookmarkToDocument.escape = escape;
   const close = () => {
-    document.removeEventListener("keydown", onEscape, true);
+    escape.abort();
     row.remove();
     $("doc-attach-bookmark").classList.remove("hidden");
     $("doc-attach-bookmark").focus();
@@ -2020,7 +1844,7 @@ async function attachBookmarkToDocument() {
     event.preventDefault();
     close();
   }
-  document.addEventListener("keydown", onEscape, true);
+  document.addEventListener("keydown", onEscape, { capture: true, signal: escape.signal });
   select.addEventListener("change", async () => {
     if (!select.value || !currentDoc) return;
     await docBookmarkWithUndo(Number(select.value), true).catch((e) => toast(e.message, true));
@@ -6536,62 +6360,16 @@ function docBlockDocumentText(doc) {
   return docBlockTextCache.has(doc.id) ? docBlockTextCache.get(doc.id) : null;
 }
 
-//: Give the block the caret is in an id, and hand back the reference a person
-//: can paste. The id is written into the document, which is the point: a block
-//: reference is a promise the text itself keeps, not an index this app holds.
-function docBlockRefAtCaret() {
-  const surface = docSurface();
-  if (!surface) return null;
-  const text = docText();
-  const made = docBlockEnsureIdEdits(text, surface.selectionStart);
-  if (!made.id) return { id: null, reason: made.reason };
-  if (made.edits.length) {
-    docTableDispatch({ surface, text }, made.edits);
-    markDocDirty();
-  }
-  return { id: made.id, reason: made.reason };
-}
-
-//: The `/` menu's "Link to this block". Copies `[[Title#^id]]`, because that
-//: is the form you paste into a note, a map node or a chat, and those three
-//: are what the plan asks a block reference to reach.
+//: Copy a link to the block at the caret, and put the caret on a block a link led to: documents-blockref.js,
+//: fetched on first use. Each name is a stand-in that the piece's function of the same name replaces on load.
 async function docCopyBlockRef() {
-  const title = (currentDoc?.title || "").trim();
-  if (!title) {
-    toast("Give the document a title first, a block link is named by it.", "info");
-    return;
-  }
-  const made = docBlockRefAtCaret();
-  if (!made || !made.id) {
-    toast("Put the caret in a paragraph first.", "info");
-    return;
-  }
-  const reference = `[[${title}#^${made.id}]]`;
-  //: Through the shared helper, not `navigator.clipboard`: it falls back to
-  //: the copy dialog in the contexts where the API is not there at all, which
-  //: is the desktop window's own case.
-  await copyToClipboard(reference);
-  toast(`Copied ${reference}`);
+  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", docCopyBlockRef] });
+  return docCopyBlockRef();
 }
 
-//: Put the caret on a block and say so. Used when a `[[Doc#^id]]` is followed:
-//: opening the document at the top and leaving the reader to find the
-//: paragraph is most of the way to not having followed the link at all.
-function docRevealBlock(blockId) {
-  const found = docBlockFind(docText(), blockId);
-  if (!found) {
-    toast("That block is not in this document any more.", "info");
-    return false;
-  }
-  const surface = docSurface();
-  if (!surface) return false;
-  surface.focus();
-  //: The selection is the reveal: `setSelectionRange` on this surface already
-  //: scrolls to what it selects, and selecting the block is both "here it is"
-  //: and a sensible place to be left, because the next thing a reader does is
-  //: copy it or edit it.
-  surface.setSelectionRange(found.from, found.to);
-  return true;
+async function docRevealBlock(blockId) {
+  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", () => docRevealBlock(blockId)] });
+  return docRevealBlock(blockId);
 }
 
 //: **True only while a print is being prepared** (`exportDocumentPdf`), which
@@ -14500,24 +14278,6 @@ $("doc-grammar-check")?.addEventListener("change", async (event) => {
   docGrammarCache = { text: null, findings: [] };
   renderDocProse();
 });
-//: The field finds and adds (`renderDocDictionary`, `docDictionaryAddTyped`);
-//: Add beside it is the same as Enter, for a pointer.
-$("doc-dictionary-add")?.addEventListener("click", () => docDictionaryAddTyped());
-$("doc-dictionary-search")?.addEventListener("input", () => renderDocDictionary());
-$("doc-dictionary-search")?.addEventListener("keydown", (event) => {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  docDictionaryAddTyped();
-});
-$("doc-dictionary-import")?.addEventListener("click", () => $("doc-dictionary-file")?.click());
-$("doc-dictionary-file")?.addEventListener("change", async (event) => {
-  const input = event.currentTarget;
-  const file = input.files?.[0];
-  //: Cleared first, so choosing the same file again still raises a change.
-  input.value = "";
-  await docDictionaryImport(file);
-});
-$("doc-dictionary-export")?.addEventListener("click", () => docDictionaryExport());
 //: The same preference Settings, Preferences sets (`smart_punctuation`), here
 //: beside the other writing checks; saved on the change, as the two above are.
 $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
@@ -15379,46 +15139,28 @@ function docSuggestAnswers(finding, opts = {}) {
   return frag;
 }
 
-function openDocSuggest(finding, anchorRect, focus = true) {
-  const menu = $("doc-suggest-menu");
-  if (!menu) return;
-  //: The last guard before the origin: a rect with nothing in it is asked of
-  //: the finding again, and with no answer the menu does not open rather
-  //: than opening at `8,8` (INBOX 421 c).
-  if (!docRectUsable(anchorRect)) anchorRect = docFindingAnchor(finding, null);
-  if (!docRectUsable(anchorRect)) return;
-  docSuggestOpenFor = finding;
-  menu.replaceChildren();
+//: **The popup, the translate hand-off, Discuss in chat and the AI review** are
+//: documents-suggest.js, fetched on first use. Each name here is a stand-in: the
+//: piece's own function of the same name replaces it on load, so calling the name
+//: again after the fetch reaches the real one. Nothing reads their return.
+async function openDocSuggest(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => openDocSuggest(...args)] });
+  return openDocSuggest(...args);
+}
 
-  const head = document.createElement("div");
-  head.className = "doc-suggest-head";
-  head.appendChild(docFindingLine(finding, "head"));
-  menu.appendChild(head);
-  menu.appendChild(
-    docSuggestAnswers(finding, {
-      close: closeDocSuggest,
-      current: () => docSuggestOpenFor === finding,
-      reflow: placeDocSuggest,
-    })
-  );
+async function docTranslatePassage(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docTranslatePassage(...args)] });
+  return docTranslatePassage(...args);
+}
 
-  docLiftToViewport(menu);
-  menu.classList.remove("hidden");
-  //: Copied rather than kept by reference, and with a right edge filled in:
-  //: `DOMRect`s are live for some sources and stale for others, and the caret
-  //: fallback hands over a point with no `right` at all, which the
-  //: right-alignment below would otherwise read as NaN and place nowhere.
-  docSuggestAnchor = {
-    left: anchorRect.left,
-    right: anchorRect.right ?? anchorRect.left,
-    top: anchorRect.top,
-    bottom: anchorRect.bottom,
-  };
-  placeDocSuggest();
-  //: Only when the gesture asked for the menu. A plain click on a word is
-  //: someone putting the caret in it, and taking the focus then sends their
-  //: next keystroke to a button (see the `click` listener below).
-  if (focus) menu.querySelector("button")?.focus();
+async function docAiDiscussInChat(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docAiDiscussInChat(...args)] });
+  return docAiDiscussInChat(...args);
+}
+
+async function docAiReview(...args) {
+  if (!(await lazyScript("/js/documents-suggest.js"))) return toast("The suggestions could not be loaded.", true, { action: ["Try again", () => docAiReview(...args)] });
+  return docAiReview(...args);
 }
 
 //: **A popup placed in viewport coordinates has to live in the viewport's own
@@ -15609,107 +15351,8 @@ window.addEventListener("resize", docSuggestFollowAnchor);
 //: event does not bubble.
 window.addEventListener("scroll", docSuggestFollowAnchor, true);
 
-//: A passage, translated by the offline translator (the "Translate this" sheet) when its package is
-//: installed; otherwise a language and the local model, asked in the chat so the answer is somewhere
-//: you can read, keep or ignore.
-async function docTranslatePassage(text) {
-  const status = await apiJson("/translate/status", { silent: true }).catch(() => null);
-  if (status?.installed && status.pairs?.length) {
-    await ensureModule("translate");
-    return translateCaught({ selection: text });
-  }
-  const language = await promptDialog(
-    "Translate this passage into which language?",
-    docLastTranslateLanguage || "French"
-  );
-  if (!language) return;
-  docLastTranslateLanguage = language;
-  const box = document.getElementById("chat-input");
-  if (!box) return toast("The chat isn't available right now.", "info");
-  switchTab("chat");
-  box.value = `Translate this into ${language}, and keep the formatting:\n\n${text}`;
-  box.focus();
-  box.dispatchEvent(new Event("input", { bubbles: true }));
-}
 
 let docLastTranslateLanguage = "";
-
-//: **The request the rules above cannot answer.** Handed to the chat rather
-//: than run silently, for the reason `docProseHeader`'s own comment gives:
-//: judging meaning takes real inference time, and this editor's whole
-//: character-count/word-goal/completion stack is built on being instant. A
-//: background pass that occasionally froze the UI for a few seconds mid-word
-//: would be a worse editor than one with no AI review at all.
-//:
-//: Asks for a list rather than a rewrite, the same reason `docProseFix`
-//: never silently replaces text without the exact span matching first: an
-//: editor that hands your document to a model and gets a different document
-//: back, with no way to see what changed or why, is not reviewing your
-//: writing, it is overwriting it. A list of numbered issues, each with what
-//: is wrong and one suggested fix, is a thing you can read, agree or
-//: disagree with, and apply by hand, same shape as everything else this
-//: checker offers.
-//: **A badge, not a wall of text.** Asked for directly: "the 'check with ai'
-//: button in the documents should attach a link to the document or an excerpt
-//: from the document to read but in a little attached badge that can be
-//: removed so the document text isnt just pasted below."
-//:
-//: This used to write the whole document into the composer. Three things were
-//: wrong with that and the report names the first: the question you are about
-//: to ask is buried under six thousand characters you did not type, so the
-//: composer stops being somewhere you can write. The second is that there was
-//: no way to change your mind, the text was *in* the box, so unattaching it
-//: meant finding where the prompt ended and the document began. The third is
-//: that it sends a snapshot: the model reads whatever the document said at the
-//: moment the button was pressed, not what it says when the question is
-//: actually asked.
-//:
-//: `attachedDocuments` fixes all three and it already existed, the composer
-//: has staged documents as removable chips since files could be dropped into
-//: chat, and `sendChat` already passes their ids to the backend, which reads
-//: them itself. So this attaches rather than pastes, and the composer is left
-//: holding one short sentence: the question.
-//:
-//: A *selection* is the one case that still travels as text. It is short by
-//: definition, it is the passage the question is about, and there is nothing
-//: in the document's id to say which part of it was meant.
-const DOC_AI_REVIEW_SELECTION_CHARS = 1200;
-
-//: **Discuss in chat, the secondary way now** (INBOX 410). Everything above
-//: about the badge still holds; what changed is the prompt. The long ask that
-//: used to go with it ("Read this for the things a spellchecker can't
-//: catch...") shared enough words with a proofreading skill to raise "You have
-//: a skill for this" over the composer, which the owner reported as not
-//: accurate (INBOX 413). The check itself runs in place now (`docAiReview`),
-//: so this opens the conversation and leaves the question to the writer: the
-//: document as a chip, a selection as a quote, and nothing else typed for them.
-function docAiDiscussInChat() {
-  const box = docSurface();
-  const text = (box?.text || "").trim();
-  if (!text) return toast("Nothing to discuss yet.", "info");
-  const input = document.getElementById("chat-input");
-  if (!input) return toast("The chat isn't available right now.", "info");
-  const range = box ? box.selection() : null;
-  const selection = range ? box.text.slice(range.from, range.to).trim() : "";
-  switchTab("chat");
-  if (selection) {
-    const quoted =
-      selection.length > DOC_AI_REVIEW_SELECTION_CHARS
-        ? `${selection.slice(0, DOC_AI_REVIEW_SELECTION_CHARS)}…`
-        : selection;
-    input.value = `${quoted.split("\n").map((line) => `> ${line}`).join("\n")}\n\n`;
-  } else {
-    const attached = attachDocumentToChat(currentDoc && currentDoc.id, (currentDoc && currentDoc.title) || $("doc-title")?.value || "This document");
-    if (!attached) {
-      //: The one case where pasting is still the honest answer: the chip
-      //: cannot be added (four already staged, or an unsaved document with no
-      //: id yet), and silently asking about nothing would be worse.
-      input.value = `${text.slice(0, 6000)}${text.length > 6000 ? "…" : ""}\n\n`;
-    }
-  }
-  input.focus();
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-}
 
 // --- Check with AI, in place (INBOX 410) -----------------------------------
 //
@@ -15788,85 +15431,6 @@ function docAiDismiss(finding) {
   renderDocProse();
 }
 
-async function docAiReview() {
-  if (docAiCheck.state === "running") {
-    docAiCheck.controller?.abort();
-    return;
-  }
-  const box = docSurface();
-  const full = box?.text || "";
-  if (!full.trim()) return toast("Nothing to check yet.", "info");
-  const doc = currentDoc || (await ensureDocumentExists().catch(() => null));
-  if (!doc) return toast("Nothing to check yet.", "info");
-  const range = box.selection();
-  const selection = range.to > range.from ? full.slice(range.from, range.to) : "";
-  const controller = new AbortController();
-  Object.assign(docAiCheck, {
-    state: "running", items: [], message: "", controller, docId: doc.id, mode: "ai",
-  });
-  //: The panel opens on the check, so the findings land where the writer
-  //: can see them arrive.
-  $("doc-prose-panel")?.classList.remove("hidden");
-  $("doc-prose")?.setAttribute("aria-expanded", "true");
-  renderDocProse();
-  const offset = selection ? range.from : 0;
-  try {
-    // `api.stream` (F5): 401 and refusals are thrown as they were here.
-    const response = await api.stream(`/documents/${doc.id}/ai-check`, {
-      method: "POST",
-      //: The text as it is on screen, not as last saved: the autosave is a
-      //: second behind the typing, and a finding about words that are no
-      //: longer there is one the panel cannot find.
-      body: JSON.stringify({ selection: selection || full }),
-      // A check is a read: it must not empty the app's read cache.
-      readOnly: true,
-      signal: controller.signal,
-    });
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffered = "";
-    const onEvent = (event) => {
-      if (event.type === "item") {
-        docAiCheck.items.push({
-          text: event.quote,
-          message: event.reason,
-          replacement: event.fix || "",
-          near: offset + Math.max(0, (selection || full).indexOf(event.quote)),
-        });
-        renderDocProse();
-      } else if (event.type === "done") {
-        docAiCheck.state = event.stopped ? "stopped" : event.ollama_running === false ? "offline" : event.message ? "failed" : "done";
-        docAiCheck.message = event.message || "";
-      }
-    };
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffered += decoder.decode(value, { stream: true });
-      const lines = buffered.split("\n");
-      buffered = lines.pop();
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          onEvent(JSON.parse(line));
-        } catch {
-          recordBrowserLog("WARN", [`[AI check] Unparseable line: ${line.slice(0, 80)}`]);
-        }
-      }
-    }
-    if (docAiCheck.state === "running") docAiCheck.state = "done";
-  } catch (error) {
-    if (error.name === "AbortError") {
-      docAiCheck.state = "stopped";
-    } else {
-      docAiCheck.state = "failed";
-      docAiCheck.message = error.message || "The check did not finish.";
-    }
-  } finally {
-    if (docAiCheck.controller === controller) docAiCheck.controller = null;
-    renderDocProse();
-  }
-}
 
 //: **The check's own line in the panel**: what it is doing or did, and the
 //: two ways on (again, or Discuss in chat). No model is a `.notice-warn` with
@@ -15921,146 +15485,12 @@ function docAiCheckStatus() {
   return wrap;
 }
 
-//: **Managing the dictionary.** Asked for by name. A list you can add to and
-//: never see again is a list nobody trusts, and a wrongly added word would
-//: otherwise silence a real typo forever with no way to find out why.
-//:
-//: **Redesigned as a settings sheet** (INBOX 410: "ugly and needs a proper
-//: professional modern redesign"). One field finds and adds: typing filters
-//: the list, Enter (or the field's Add) adds what is typed when it is not
-//: there already. The list is quiet rows whose remove shows on the row under
-//: the pointer or focus, with an empty state that says what the list is for
-//: and a no-match state that says Enter adds. The count is a fact by the
-//: title, in muted text rather than a boxed chip.
+
+//: **Managing the dictionary** (asked for by name): the sheet is documents-dictionary.js,
+//: fetched on the first press; the word list's reads stay here (`docDictionary`).
 async function openDocDictionary() {
-  const dialog = $("doc-dictionary-dialog");
-  if (!dialog) return;
-  const search = $("doc-dictionary-search");
-  if (search) search.value = "";
-  renderDocDictionary();
-  const variant = $("doc-spelling-variant");
-  if (variant) variant.value = docSpellingVariant();
-  extraNoticeMount($("xn-languagetool"), "languagetool", { fresh: true });
-  const grammar = $("doc-grammar-check");
-  if (grammar) {
-    grammar.checked = !(prefsCache && prefsCache.grammar_check === false);
-    //: A checker that failed to load says so where it is switched on, rather
-    //: than sitting ticked over nothing.
-    grammar.closest("label")?.setAttribute(
-      "title",
-      docGrammarError
-        ? `The grammar checker could not start: ${docGrammarError}`
-        : "Grammar and style rules, checked on this computer by Harper"
-    );
-  }
-  const kindsOff = (prefsCache && prefsCache.prose_kinds_off) || [];
-  $("doc-prose-groups")?.querySelectorAll("[data-prose-group]").forEach((box) => {
-    box.checked = !kindsOff.includes(box.dataset.proseGroup);
-  });
-  const smart = $("doc-smart-punctuation");
-  if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
-  const linkOffers = $("doc-link-offers");
-  if (linkOffers) linkOffers.checked = docLinkOfferEnabled();
-  const linkText = $("doc-check-link-text");
-  if (linkText) linkText.checked = docCheckLinkText();
-  if (!dialog.open) dialog.showModal();
-  search?.focus();
-}
-
-//: The words matching the field, and the list drawn from them. Called on
-//: open, on every keystroke in the field, and after every add or remove.
-function renderDocDictionary() {
-  const list = $("doc-dictionary-list");
-  if (!list) return;
-  const words = [...docDictionary()].sort((a, b) => a.localeCompare(b));
-  const query = ($("doc-dictionary-search")?.value || "").trim().toLowerCase();
-  const shown = query ? words.filter((word) => word.includes(query)) : words;
-  const count = $("doc-dictionary-count");
-  if (count) {
-    count.textContent = words.length ? nounCount(words.length, "word") : "";
-  }
-  //: Add is offered only when there is something new to add: a word typed
-  //: that is not already in the list.
-  const add = $("doc-dictionary-add");
-  if (add) {
-    const addable = !!query && !docDictionary().has(query) && docDictionaryWordOk(query);
-    add.hidden = !addable;
-    if (addable) setLabel(add, `ph:plus Add “${query}”`);
-  }
-  list.replaceChildren();
-  if (!shown.length) {
-    const empty = document.createElement("li");
-    empty.className = "empty-state doc-dictionary-empty";
-    empty.textContent = query
-      ? docDictionary().has(query)
-        ? ""
-        : `No word here matches “${query}”. Press Enter to add it.`
-      : "No words yet. Type one above and press Enter, or add one from a flagged word.";
-    if (empty.textContent) list.appendChild(empty);
-    return;
-  }
-  for (const word of shown) {
-    const row = document.createElement("li");
-    row.className = "doc-dictionary-row";
-    const label = document.createElement("span");
-    label.className = "doc-dictionary-word";
-    label.textContent = word;
-    const remove = smallButton("ph:x", `Remove “${word}”`, async () => {
-      await docDictionaryWrite([...docDictionary()].filter((other) => other !== word));
-      renderDocDictionary();
-      renderDocProse();
-      $("doc-dictionary-search")?.focus();
-    });
-    remove.classList.add("icon-only", "doc-dictionary-remove");
-    remove.setAttribute("aria-label", `Remove “${word}”`);
-    row.append(label, remove);
-    list.appendChild(row);
-  }
-}
-
-//: A dictionary entry is one word as the checker reads words: letters, with
-//: an apostrophe or a hyphen inside. Anything else would never match a
-//: finding, so it would sit in the list doing nothing.
-function docDictionaryWordOk(word) {
-  return /^[\p{L}][\p{L}\p{N}'’-]{0,59}$/u.test(word);
-}
-
-async function docDictionaryAddTyped() {
-  const search = $("doc-dictionary-search");
-  const word = (search?.value || "").trim();
-  if (!word) return;
-  if (!docDictionaryWordOk(word)) return toast("One word at a time: letters, with an apostrophe or hyphen inside.", "info");
-  if (!docDictionary().has(word.toLowerCase())) await docDictionaryAdd(word);
-  if (search) search.value = "";
-  renderDocDictionary();
-  renderDocProse();
-  search?.focus();
-}
-
-//: **In and out as a .txt file, one word per line.** Import adds and never
-//: removes: a file from another machine merged into this one is the common
-//: case, and replacing would silently drop every word only this one had.
-async function docDictionaryImport(file) {
-  if (!file) return;
-  const text = await file.text().catch(() => "");
-  const incoming = [...new Set(text.split(/[\r\n,;\t]+/).map((w) => w.trim().toLowerCase()).filter(docDictionaryWordOk))];
-  const have = docDictionary();
-  const fresh = incoming.filter((word) => !have.has(word));
-  if (!incoming.length) return toast("No words found in that file. One word per line.", "info");
-  if (fresh.length) await docDictionaryWrite([...have, ...fresh]);
-  renderDocDictionary();
-  renderDocProse();
-  toast(fresh.length
-    ? `Added ${nounCount(fresh.length, "word")}${incoming.length > fresh.length ? `; ${incoming.length - fresh.length} were already here` : ""}.`
-    : "Every word in that file is already here.");
-}
-
-function docDictionaryExport() {
-  const words = [...docDictionary()].sort((a, b) => a.localeCompare(b));
-  if (!words.length) return toast("The dictionary is empty, so there is nothing to export.", "info");
-  //: Through `saveFile`, so the desktop window (which swallows an anchor's
-  //: download) saves it too (audit FE-16).
-  return saveFile("writing-dictionary.txt", new Blob([`${words.join("\n")}\n`], { type: "text/plain" }));
+  if (!(await lazyScript("/js/documents-dictionary.js"))) return toast("The dictionary could not be loaded.", true, { action: ["Try again", openDocDictionary] });
+  return docDictionaryOpen();
 }
 
 //: Last line, deliberately: everything above has to exist before the first
