@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: the welcome line is measured at 20 or more distinct surfaces across the four voices and five moods and says only the facts it was given; the dashboard headline never says "A fresh page" or "Welcome back" when it is false (L-chat-231).
 - Chat: "walked compared to ran" and "my walks versus my runs" are the same difference as "how much more did I walk than run" (they listed the notes of each word), and "how much more did I read than write" says it measures no amount for those instead of quoting a note (L-chat-234).
 - Chat: "how much more did I walk than run" is two sums and a subtraction over the same notes, citing both, and "how close am I to my 10k goal" counts the runs the goal note names instead of every distance written (L-chat-234).
 - Chart maker: area, pie, scatter, histogram and table join bar and line, in the / menu, a chart block, and Chat's chart answer ("chart this as a pie" draws a pie instead of saying it is bars); the pie's slices are 5.9 to 1 or more against the card in both looks (L-chat-252).

@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 47 | 20 | 0 | 0 | 67 |
+| chat | 0 | 47 | 19 | 0 | 0 | 66 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 419 | 89 | 0 | 124 | 834 |
+| all | 326 | 419 | 88 | 0 | 124 | 833 |
 
 ## graph
 
@@ -57,7 +57,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-176** `chat` partly, S: 27 notes mix: short jottings and long writing weighted equally: equal weighting not verified. From CHAT_PLAN.md:756. Evidence: Recount 2026-11-14 (audit, verify in code first): tests/test_eval_numbers_l30.py counts Remaining step: a test that short jottings and long writing weigh equally in the notes mix (decision 27).
 - [ ] **L-chat-184** `chat` partly, S: Bug: skills activate and suggest with no model: popup gating and a test per state. From CHAT_PLAN.md:794. Evidence: Recount 2026-11-14 (audit, verify in code first): plan E20: 12 of 21 skills disabled; suggestion popup not measured
 - [ ] **L-chat-227** `chat` open, S: VC1 Harper on composer and Ask box: composer and Ask underline. From CHAT_PLAN.md:1684. Evidence: Recount 2026-11-14 (audit, verify in code first): Harper only in documents, whiteboard, spell files (frontend/js grep) Measured 2026-11-14: the composer and Ask box are plain textareas; Harper runs only in documents-prose.js, harper-worker.js, documents-spell.js, spell-second.js, documents-languagetool.js and whiteboard*.js. Next step (size L): a mirror overlay behind the textarea that paints the underlines, fed by a debounced harper-worker lint, inside decision 54's interaction budget (measure typing lag at 4x CPU before and after); the click-to-fix popover is the documents one reused.
-- [ ] **L-chat-231** `chat` partly, S: composer6-1026 (3) welcome messages rebuilt on the clause grammar: not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/greeting_compose.py
 - [ ] **L-chat-232** `chat` partly, S: composer6-1026 (4) needle under composer control: composer picks tool call not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): needle_control.py, needle_provider.py exist
 - [ ] **L-chat-233** `chat` partly, S: composer6-1026 (5) composer reach into fixed-text surfaces: fixed text still present elsewhere. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
 - [ ] **L-chat-236** `chat` open, S: 1564 D30 language packs, per-document language, UK and US variants: packs, variants. From CHAT_PLAN.md:1870. Evidence: Recount 2026-11-14 (audit, verify in code first): no language pack code (grep src, frontend) Sized 2026-11-14: size L, unbuilt. Next steps in order: (1) a per-document language field and the `lang` attribute on the editor; (2) pack download and storage under the data folder (optional per-language downloads, never vendored, owner decision 1 of 2026-11-11); (3) UK and US English as the first pack pair, wired into spelling.py's english(); (4) Japanese and Chinese through the downloadable path with no spaces-based word split.
