@@ -7,6 +7,27 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-14 (BACKLOG size cap)
+
+From BACKLOG.md section 1 (Live log console), two built bullets moved whole:
+
+- ~~**Export a support bundle.**~~ **done**, see below; it is an allowlist,
+  not a denylist. One button that zips the log buffer,
+  `preferences.json` with anything sensitive stripped, and Ollama/model
+  status (`/models/status`) into a file the user attaches to a bug report,
+  asked for indirectly ("an interface for managing the application… errors
+  etc") and echoed by the outside review's "support bundle" suggestion.
+  Everything in it is already local and already visible somewhere in the app;
+  this only collects it. No new telemetry: the file is written to disk and
+  the user chooses whether to send it, which is the difference between this
+  and the outside review's other suggestion (opt-in crash reporting),
+  rejected in §30.
+- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
+  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
+  discards rather than losing the fact silently), and the frontend renders it
+  - "N earlier records … the oldest record still kept is from …", whenever
+  `stats().dropped` is nonzero.
+
 ## Moved from the plans, 2026-11-14 (WORLD_CLASS recount)
 
 The recount of every open item in WORLD_CLASS_PLAN.md: each built block below moved whole, each open item became a LEDGER row (L-world-class-60 to 135) or points at an existing one. Evidence: the pointer left in the plan under each heading.
@@ -56547,6 +56568,14 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-world-class-112** `world-class` owner-call, S: Atlas's anatomy, rounds 3 and 4: the owner's read (427 1). From WORLD_CLASS_PLAN.md:2862. Evidence: WORLD_CLASS_PLAN.md:2862 'Recommendation: none to take on the owner's behalf; this is taste' Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L-world-class-109** `world-class` owner-call, S: Back opened Settings (421 j): needs the owner's exact path. From WORLD_CLASS_PLAN.md:2538. Evidence: WORLD_CLASS_PLAN.md:2538 '(j) still open: not reproduced, needs the owner's exact path' Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L982** `world-class` blocked-hardware, M: settings-panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms, gcRequestDraw calls. From INBOX.md:1726. Evidence: lag-1110: settings-panes.js:1104 keydown returns on plain key; graph 0 draws in 5 s at 4x; not reproduced off Windows Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L976** `world-class` blocked-hardware, L: Check text metrics and wrap sweep beyond Chromium. From OPEN.md:826; OPEN.md:3426. Evidence: Needs Firefox/WebKit real runs Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L971** `world-class` blocked-hardware, M: Boot forced layout, canvas pointerout, most-accessed render (1667i) blocked. From OPEN.md:4326. Evidence: W34 unverifiable here (needs owner's real browser trace), w34-fix2-1111.md. Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L950** `world-class` blocked-hardware, L: Packaged captions helper: per-platform download pin and supervisor. From OPEN.md:2763. Evidence: Needs release assets, real whisper-server, Windows desktop Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L-world-class-134** `world-class` blocked-hardware, M: Live captions: a run on the reference laptop and the Windows, macOS and aarch64 wheels for real. From WORLD_CLASS_PLAN.md:3986. Evidence: 28.5 row 9 (:3986): 'open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real' Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
+- [x] **L-world-class-100** `world-class` blocked-hardware, S: A real screen-reader pass (NVDA or VoiceOver). From WORLD_CLASS_PLAN.md:2279. Evidence: axe sweep 0 findings at 1440 (:2279); no real screen reader in the sandbox Built: device or owner step moved to BACKLOG.md, World-class plan: the checks that need a real device or a real model, with its check and recommendation
 - [x] **L-world-class-323** `world-class` open, S: mountDocToolbarControls: one module-level page listener, perf_1031 baseline ratcheted to []. From hub 2026-11-14, CI fix on 58268ac9. Evidence: tests/test_perf_1031.py:131 pins documents.js:mountDocToolbarControls as the one render that adds a page listener Built: frontend/js/documents.js:11049 one module-level keydown; tests/test_perf_1031.py asserts found == []
 - [x] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877). Built: SECURITY.md Threat model (mirrored in docs/SECURITY.md): assets, 8 trust boundaries, attackers, T1 to T27 each with a checked file:line or test name; gaps T19 L-world-class-321, T23 L-world-class-320, T27 L-general-2; T25, T26 accepted
 - [x] **L-world-class-250** `world-class` open, M: Busiest screen (Chat) down to 8 control recipes: one pill family for the composer chips and the mode switch, the atlas-suggest chip on one ground, the sidebar search on the field recipe. From WORLD_CLASS_PLAN.md:696 (recipe-count gate). Evidence: scratchpad/audit/recipes.js COARSE=1 at 1440: Chat 12 (target 8), Notes 7, Library 6; fine metric Chat 24 Built: Chat 12 to 8 recipes (recipes.js COARSE=1, 1440, light and dark; Dashboard 5, Library 6 unchanged), fine 19; tests/test_ui_recipes.py::test_the_chat_strip_is_one_pill_family. The sidebar search was already on .search-field (its input reads as every tab's search). One of the four is the audit reading the largest corner (the split caret).

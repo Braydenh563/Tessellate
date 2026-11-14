@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 3 | 10 | 148 |
+| world-class | 0 | 119 | 29 | 1 | 4 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 5 | 121 | 980 |
+| all | 372 | 508 | 100 | 3 | 115 | 980 |
 
 ## graph
 
@@ -648,8 +648,6 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
 - [ ] **L-world-class-83** `world-class` owner-call, S: Short tab captions below 480px: the owner's copy call. From WORLD_CLASS_PLAN.md:938. Evidence: WORLD_CLASS_PLAN.md:938 'short tab captions below 480 are a copy decision for the owner'
-- [ ] **L-world-class-109** `world-class` owner-call, S: Back opened Settings (421 j): needs the owner's exact path. From WORLD_CLASS_PLAN.md:2538. Evidence: WORLD_CLASS_PLAN.md:2538 '(j) still open: not reproduced, needs the owner's exact path'
-- [ ] **L-world-class-112** `world-class` owner-call, S: Atlas's anatomy, rounds 3 and 4: the owner's read (427 1). From WORLD_CLASS_PLAN.md:2862. Evidence: WORLD_CLASS_PLAN.md:2862 'Recommendation: none to take on the owner's behalf; this is taste'
 
 ## Needs hardware
 
@@ -747,17 +745,13 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L915** `world-class` open, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device Reopened 2026-11-14 (hardware audit): the printed manual (headless print to PDF) and the real-model answers (llama-dev.sh) run here; only the iOS zoom check needs a device and stays as one BACKLOG row.
 - [ ] **L916** `world-class` open, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model Reopened 2026-11-14 (hardware audit): the no-model chat state and the page reader run headless here; neither shot needs a model.
 - [ ] **L917** `world-class` open, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed) Reopened 2026-11-14 (hardware audit): tesseract installs from the apt mirror (package registries are allowed).
-- [ ] **L950** `world-class` blocked-hardware, L: Packaged captions helper: per-platform download pin and supervisor. From OPEN.md:2763. Evidence: Needs release assets, real whisper-server, Windows desktop
 - [ ] **L965** `world-class` open, S: Split _start_tray menu building from start-up and test on Windows. From OPEN.md:363. Evidence: _start_tray still in __main__.py unsplit; needs Windows desktop test Reopened 2026-11-14 (hardware audit): the split itself is code and is testable here; only the Windows look stays as one BACKLOG row.
 - [ ] **L967** `world-class` open, S: Check the real log stream under load (live pill and filters). From OPEN.md:3422. Evidence: Needs a real busy server and human look; no load test exists for the log stream. Reopened 2026-11-14 (hardware audit): a scripted load run plus headless Chromium on the log page measures this; same work as L607.
 - [ ] **L968** `world-class` blocked-hardware, M: Fix Restart now bypassing start.bat; check on Windows desktop. From OPEN.md:3837. Evidence: Needs a Windows desktop check
-- [ ] **L971** `world-class` blocked-hardware, M: Boot forced layout, canvas pointerout, most-accessed render (1667i) blocked. From OPEN.md:4326. Evidence: W34 unverifiable here (needs owner's real browser trace), w34-fix2-1111.md.
 - [ ] **L972** `world-class` open, S: Load-dependent X11 test race (1683s/U16). From OPEN.md:4342. Evidence: Needs X11 desktop/loaded box to reproduce; ledger open. Reopened 2026-11-14 (hardware audit): Xvfb and xvfb-run are installed here.
 - [ ] **L974** `world-class` open, L: Evals marker and fixture set (Brief 13): 80% skills zero invalid calls, 70-note loose ends. From OPEN.md:806; OPEN.md:2364; OPEN.md:3593. Evidence: pytest.ini:25 marker and tests/test_harness_evals.py exist; the 80% rate needs a real model Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302 from huggingface.co) and cmake and g++ build llama-server.
 - [ ] **L975** `world-class` open, L: Dev llama.cpp runner blocks evals, Skills D, embeddings, paging nudge. From OPEN.md:823; OPEN.md:2951. Evidence: scratchpad/llama-dev.sh exists; real-model runs need owner's model and machine Reopened 2026-11-14 (hardware audit): scratchpad/llama-dev.sh fetch reaches the GGUF (HTTP 302) and llama.cpp builds here with cmake and g++.
-- [ ] **L976** `world-class` blocked-hardware, L: Check text metrics and wrap sweep beyond Chromium. From OPEN.md:826; OPEN.md:3426. Evidence: Needs Firefox/WebKit real runs
 - [ ] **L979** `world-class` open, S: Verify private notes, several spaces, browser upload of 5,000 files. From OPEN.md:2685. Evidence: Needs real browser upload run Reopened 2026-11-14 (hardware audit): Playwright setInputFiles drives a 5,000-file upload headless.
-- [ ] **L982** `world-class` blocked-hardware, M: settings-panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms, gcRequestDraw calls. From INBOX.md:1726. Evidence: lag-1110: settings-panes.js:1104 keydown returns on plain key; graph 0 draws in 5 s at 4x; not reproduced off Windows
 - [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
 - [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
 - [ ] **L246** `chat` blocked-hardware, M: A real model's first token replaces a shown composed preview cleanly. The gate on the preview is built (651624f81, `chat_chips.shows_first`) and tested on the fake transport. From ledger-1112 P1. Evidence: `scratchpad/llama-dev.sh serve`, then `pytest -m evals`.
@@ -783,10 +777,8 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
 - [ ] **L-world-class-72** `world-class` blocked-hardware, S: Profile the Windows frozen build's startup. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the Windows frozen startup is open'; needs a Windows machine
-- [ ] **L-world-class-100** `world-class` blocked-hardware, S: A real screen-reader pass (NVDA or VoiceOver). From WORLD_CLASS_PLAN.md:2279. Evidence: axe sweep 0 findings at 1440 (:2279); no real screen reader in the sandbox
 - [ ] **L-world-class-116** `world-class` blocked-hardware, S: Capture: verify the desktop window, real clipboards and a server crash between commit and answer. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'the desktop window, real clipboards and a server crash between commit and answer are not verified'
 - [ ] **L-world-class-117** `world-class` blocked-hardware, S: Desktop restart: treat the Chrome_WidgetWin unregister error as non-fatal and relaunch (reproduce on Windows). From WORLD_CLASS_PLAN.md:2986. Evidence: WORLD_CLASS_PLAN.md:2986 owner's report 'Failed to unregister class Chrome_WidgetWin_0. Error = 1411'; needs Windows
-- [ ] **L-world-class-134** `world-class` blocked-hardware, M: Live captions: a run on the reference laptop and the Windows, macOS and aarch64 wheels for real. From WORLD_CLASS_PLAN.md:3986. Evidence: 28.5 row 9 (:3986): 'open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real'
 
 ## Plan session briefs
 

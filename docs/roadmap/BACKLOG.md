@@ -62,22 +62,7 @@ support bundle** (an allowlist zip of the log buffer, scrubbed
   pre-selected in a dialog. A test asserts no caller writes to
   `navigator.clipboard` directly any more, since a helper only some callers
   use leaves the rest quietly lying.
-- ~~**Export a support bundle.**~~ **done**, see below; it is an allowlist,
-  not a denylist. One button that zips the log buffer,
-  `preferences.json` with anything sensitive stripped, and Ollama/model
-  status (`/models/status`) into a file the user attaches to a bug report,
-  asked for indirectly ("an interface for managing the application… errors
-  etc") and echoed by the outside review's "support bundle" suggestion.
-  Everything in it is already local and already visible somewhere in the app;
-  this only collects it. No new telemetry: the file is written to disk and
-  the user chooses whether to send it, which is the difference between this
-  and the outside review's other suggestion (opt-in crash reporting),
-  rejected in §30.
-- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
-  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
-  discards rather than losing the fact silently), and the frontend renders it
-  - "N earlier records … the oldest record still kept is from …", whenever
-  `stats().dropped` is nonzero.
+- The support bundle and the dropped-records count are built: HISTORY.md, "Moved from the plans, 2026-11-14 (BACKLOG size cap)".
 
 ---
 
@@ -4420,6 +4405,14 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 
 Each row is the one step left of a built item; everything that runs here is built and tested.
 
+- **L-world-class-100 (moved from LEDGER 2026-11-14):** A real screen-reader pass. Check: NVDA on Windows and VoiceOver on macOS through lock, capture, the notes list, a note, Settings and chat; every control is announced by name and role, focus never lands on a hidden element. Recommendation: run it once before a release; the axe sweep (0 findings at 1440) covers what can run here.
+- **L-world-class-134 (moved from LEDGER 2026-11-14):** Live captions on real hardware. Check: a ten-minute captioned recording on the reference laptop (lag under 2 s, CPU under 60%), then the Windows, macOS and aarch64 wheels each caption one clip. Recommendation: wheels first, the laptop run after; the fake-engine tests cover the pipeline.
+- **L950 (moved from LEDGER 2026-11-14):** Packaged captions helper. Check: with release assets published, the per-platform pin downloads, its hash matches, and the supervisor restarts a killed whisper-server on the Windows desktop. Recommendation: build it with the first release that ships captions; it needs the assets to exist.
+- **L971 (moved from LEDGER 2026-11-14):** Boot forced layout, canvas pointerout, most-accessed render (1667i). Check: a Performance trace from the owner's browser at boot on the dashboard; the three long tasks named in w34-fix2-1111.md are gone or under 50 ms. Recommendation: the owner records one trace; no reproduction here at 4x CPU.
+- **L976 (moved from LEDGER 2026-11-14):** Text metrics and the wrap sweep beyond Chromium. Check: the wrap sweep in Firefox and WebKit at 360, 768 and 1440; no clipped label, no overflow. Recommendation: run it when Firefox and WebKit builds are installed (only Chromium is here).
+- **L982 (moved from LEDGER 2026-11-14):** Settings panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms (INBOX 1726). Check: the app's lag reporter on the owner's Windows machine, the same three actions; each under 100 ms. Recommendation: treat as stale unless it recurs; it does not reproduce off Windows at 4x CPU, and settings-panes.js:1104 returns early on a plain key.
+- **L-world-class-109 (moved from LEDGER 2026-11-14):** Back opened Settings (421 j). Check: the owner's exact clicks before Back opened Settings; replay them in the sweep and assert Back returns to the previous tab. Recommendation: keep the history stack as built; not reproduced on any path the sweeps drive.
+- **L-world-class-112 (moved from LEDGER 2026-11-14):** Atlas's anatomy, rounds 3 and 4 (427 1). Check: the owner looks at Atlas at rest and talking, light and dark, and says keep or redo. Recommendation: keep rounds 3 and 4 as built; this is taste, so no change is made on the owner's behalf.
 - **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
 - **L915 (moved from LEDGER 2026-11-12):** Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
 - **L918 (moved from LEDGER 2026-11-12):** Run CHAT evals gate on a 3B model. From OPEN.md:616. Evidence: Needs real-model run (pytest -m evals, scratchpad/llama-dev.sh)

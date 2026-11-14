@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).
 - CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); the not-installed search message points to Reinstall again; a space switch forgets the held way back for large settings changes.
 - Security: SECURITY.md has a threat model: the assets, eight trust boundaries, the attackers and 27 threats, each with the code or test that stops it; the three gaps are rows (parsers run in the server process L-world-class-321, unpinned pip extras and embedding weights L-world-class-320, CI actions not pinned L-general-2) (L-world-class-18).
