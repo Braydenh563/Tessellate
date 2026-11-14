@@ -1,6 +1,6 @@
 """The rest of a map's own look (MINDMAP_PLAN.md §13e, decisions 8 and 9).
 
-Three things the first half of the theme left open, each gated here:
+Three things built after the first half of the theme, each gated here:
 
 - **a branch palette a person picks**, drawn in two places (the canvas and
   the Library thumbnail). Decision 8 asked that the two be one: the server's

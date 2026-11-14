@@ -1,4 +1,4 @@
-"""Audit 1028 E14: a follow-up names the answer's notes by place ("pin the
+"""Audit 1028 E14: a next question names the answer's notes by place ("pin the
 second one", "the last one", "which of those is first", "compare those").
 
 The class: a reference to the previous answer's cited notes by position or as a
