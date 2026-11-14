@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22953, plan headings 690, app scripts 29, boot scripts 38, script files 378.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22953, plan headings 690, app scripts 29, boot scripts 38, script files 379.
 
 ## Frontend functions (8980)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1270 |
 | `confirmVerb` | frontend/js/app.js:1261 |
-| `ensureModule` | frontend/js/app.js:1760 |
+| `ensureModule` | frontend/js/app.js:1761 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1931 |
-| `lazyAssetStamp` | frontend/js/app.js:1717 |
-| `lazyScript` | frontend/js/app.js:1739 |
+| `installStandIns` | frontend/js/app.js:1932 |
+| `lazyAssetStamp` | frontend/js/app.js:1718 |
+| `lazyScript` | frontend/js/app.js:1740 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1784 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1785 |
 | `promptDialog` | frontend/js/app.js:1374 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1698 |
+| `whenScriptsLoaded` | frontend/js/app.js:1699 |
 | `wireBackdropClose` | frontend/js/app.js:1490 |
 
 ### frontend/js/prefs.js (6)
@@ -4388,6 +4388,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadDocFileTypes` | frontend/js/documents-file-kind.js:53 |
 | `syncDocFileType` | frontend/js/documents-file-kind.js:161 |
 
+### frontend/js/documents-focus.js (32)
+
+| Name | File:line |
+|---|---|
+| `applyDocDim` | frontend/js/documents-focus.js:213 |
+| `applyDocSerif` | frontend/js/documents-focus.js:252 |
+| `applyDocTypewriter` | frontend/js/documents-focus.js:231 |
+| `applyDocTypography` | frontend/js/documents-focus.js:301 |
+| `applyDocWidth` | frontend/js/documents-focus.js:91 |
+| `docCycleChoice` | frontend/js/documents-focus.js:297 |
+| `docDesktopFs` | frontend/js/documents-focus.js:615 |
+| `docDesktopFullscreenToggle` | frontend/js/documents-focus.js:620 |
+| `docFocusFill` | frontend/js/documents-focus.js:511 |
+| `docFocusKey` | frontend/js/documents-focus.js:585 |
+| `docFocusOn` | frontend/js/documents-focus.js:380 |
+| `docFocusPointer` | frontend/js/documents-focus.js:578 |
+| `docFocusRest` | frontend/js/documents-focus.js:566 |
+| `docFocusSyncFullscreen` | frontend/js/documents-focus.js:631 |
+| `docFocusToggleFullscreen` | frontend/js/documents-focus.js:642 |
+| `docFocusWake` | frontend/js/documents-focus.js:554 |
+| `docFocusWatch` | frontend/js/documents-focus.js:533 |
+| `docReadingPlugin` | frontend/js/documents-focus.js:151 |
+| `docRememberReading` | frontend/js/documents-focus.js:261 |
+| `docRestoreReading` | frontend/js/documents-focus.js:271 |
+| `docRestoreTypography` | frontend/js/documents-focus.js:334 |
+| `docStepTypography` | frontend/js/documents-focus.js:319 |
+| `docToggleIcon` | frontend/js/documents-focus.js:82 |
+| `docTypewriterExtension` | frontend/js/documents-focus.js:198 |
+| `docTypographyNow` | frontend/js/documents-focus.js:311 |
+| `initMarkdownToolbars` | frontend/js/documents-focus.js:60 |
+| `mountDocToolbarControls` | frontend/js/documents-focus.js:682 |
+| `setDocFocusSidebar` | frontend/js/documents-focus.js:422 |
+| `setDocFocusTools` | frontend/js/documents-focus.js:392 |
+| `setDocWidth` | frontend/js/documents-focus.js:115 |
+| `toggleDocFocus` | frontend/js/documents-focus.js:445 |
+| `toggleDocWidth` | frontend/js/documents-focus.js:124 |
+
 ### frontend/js/documents-graph.js (12)
 
 | Name | File:line |
@@ -5300,100 +5337,68 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docWordToc` | frontend/js/documents-word.js:451 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
-### frontend/js/documents.js (90)
+### frontend/js/documents.js (58)
 
 | Name | File:line |
 |---|---|
-| `applyDocDim` | frontend/js/documents.js:1193 |
-| `applyDocProseDock` | frontend/js/documents.js:3375 |
-| `applyDocSerif` | frontend/js/documents.js:1232 |
-| `applyDocTypewriter` | frontend/js/documents.js:1211 |
-| `applyDocTypography` | frontend/js/documents.js:1295 |
-| `applyDocWidth` | frontend/js/documents.js:1064 |
-| `calloutMenuItems` | frontend/js/documents.js:3606 |
-| `docActiveBox` | frontend/js/documents.js:1952 |
-| `docCaretPoint` | frontend/js/documents.js:2025 |
-| `docClipboardMenuItems` | frontend/js/documents.js:3008 |
-| `docCycleChoice` | frontend/js/documents.js:1291 |
+| `applyDocProseDock` | frontend/js/documents.js:2676 |
+| `calloutMenuItems` | frontend/js/documents.js:2907 |
+| `docActiveBox` | frontend/js/documents.js:1253 |
+| `docCaretPoint` | frontend/js/documents.js:1326 |
+| `docClipboardMenuItems` | frontend/js/documents.js:2309 |
 | `docDefaultView` | frontend/js/documents.js:129 |
-| `docDesktopFs` | frontend/js/documents.js:1642 |
-| `docDesktopFullscreenToggle` | frontend/js/documents.js:1647 |
-| `docEditorMenuAtPoint` | frontend/js/documents.js:2914 |
-| `docEditsOnce` | frontend/js/documents.js:2350 |
-| `docFindingAnchor` | frontend/js/documents.js:2693 |
-| `docFindingAtOffset` | frontend/js/documents.js:2593 |
-| `docFindingAtPoint` | frontend/js/documents.js:2758 |
-| `docFindingKeyBox` | frontend/js/documents.js:3119 |
-| `docFindingMarks` | frontend/js/documents.js:2631 |
-| `docFindingOfMark` | frontend/js/documents.js:2721 |
-| `docFindingStep` | frontend/js/documents.js:3132 |
-| `docFocusFill` | frontend/js/documents.js:1538 |
-| `docFocusKey` | frontend/js/documents.js:1612 |
-| `docFocusOn` | frontend/js/documents.js:1407 |
-| `docFocusPointer` | frontend/js/documents.js:1605 |
-| `docFocusRest` | frontend/js/documents.js:1593 |
-| `docFocusSyncFullscreen` | frontend/js/documents.js:1658 |
-| `docFocusToggleFullscreen` | frontend/js/documents.js:1669 |
-| `docFocusWake` | frontend/js/documents.js:1581 |
-| `docFocusWatch` | frontend/js/documents.js:1560 |
-| `docGoToFinding` | frontend/js/documents.js:3149 |
-| `docLoadWordlist` | frontend/js/documents.js:2202 |
-| `docMarkAnchor` | frontend/js/documents.js:2668 |
-| `docMarkRects` | frontend/js/documents.js:2656 |
-| `docMirrorPoint` | frontend/js/documents.js:1989 |
-| `docOffsetOf` | frontend/js/documents.js:2600 |
+| `docEditorMenuAtPoint` | frontend/js/documents.js:2215 |
+| `docEditsOnce` | frontend/js/documents.js:1651 |
+| `docFindingAnchor` | frontend/js/documents.js:1994 |
+| `docFindingAtOffset` | frontend/js/documents.js:1894 |
+| `docFindingAtPoint` | frontend/js/documents.js:2059 |
+| `docFindingKeyBox` | frontend/js/documents.js:2420 |
+| `docFindingMarks` | frontend/js/documents.js:1932 |
+| `docFindingOfMark` | frontend/js/documents.js:2022 |
+| `docFindingStep` | frontend/js/documents.js:2433 |
+| `docGoToFinding` | frontend/js/documents.js:2450 |
+| `docLoadWordlist` | frontend/js/documents.js:1503 |
+| `docMarkAnchor` | frontend/js/documents.js:1969 |
+| `docMarkRects` | frontend/js/documents.js:1957 |
+| `docMirrorPoint` | frontend/js/documents.js:1290 |
+| `docOffsetOf` | frontend/js/documents.js:1901 |
 | `docOpenReplace` | frontend/js/documents.js:464 |
-| `docOpenSuggestAtCaret` | frontend/js/documents.js:2825 |
-| `docOpenSuggestAtPoint` | frontend/js/documents.js:2895 |
-| `docOpenSuggestFor` | frontend/js/documents.js:2793 |
-| `docPointerMenuOpen` | frontend/js/documents.js:2749 |
+| `docOpenSuggestAtCaret` | frontend/js/documents.js:2126 |
+| `docOpenSuggestAtPoint` | frontend/js/documents.js:2196 |
+| `docOpenSuggestFor` | frontend/js/documents.js:2094 |
+| `docPointerMenuOpen` | frontend/js/documents.js:2050 |
 | `docPreviewShowing` | frontend/js/documents.js:144 |
-| `docProseApplyWidth` | frontend/js/documents.js:3300 |
-| `docProseDockChoice` | frontend/js/documents.js:3285 |
-| `docProseDockSide` | frontend/js/documents.js:3294 |
-| `docProseResizeHandle` | frontend/js/documents.js:3332 |
-| `docProseSavedWidth` | frontend/js/documents.js:3318 |
-| `docReadingPlugin` | frontend/js/documents.js:1131 |
-| `docRectHolds` | frontend/js/documents.js:2661 |
-| `docRectUsable` | frontend/js/documents.js:2688 |
-| `docRememberReading` | frontend/js/documents.js:1241 |
-| `docRestoreReading` | frontend/js/documents.js:1264 |
-| `docRestoreTypography` | frontend/js/documents.js:1359 |
-| `docRevealForSuggest` | frontend/js/documents.js:2782 |
+| `docProseApplyWidth` | frontend/js/documents.js:2601 |
+| `docProseDockChoice` | frontend/js/documents.js:2586 |
+| `docProseDockSide` | frontend/js/documents.js:2595 |
+| `docProseResizeHandle` | frontend/js/documents.js:2633 |
+| `docProseSavedWidth` | frontend/js/documents.js:2619 |
+| `docRectHolds` | frontend/js/documents.js:1962 |
+| `docRectUsable` | frontend/js/documents.js:1989 |
+| `docRevealForSuggest` | frontend/js/documents.js:2083 |
 | `docRunControl` | frontend/js/documents.js:543 |
-| `docSpellGuesses` | frontend/js/documents.js:2380 |
-| `docSpellNameKind` | frontend/js/documents.js:2305 |
-| `docSpellRoot` | frontend/js/documents.js:2370 |
-| `docSpellable` | frontend/js/documents.js:2253 |
-| `docStepTypography` | frontend/js/documents.js:1313 |
-| `docTableGripMenu` | frontend/js/documents.js:3055 |
-| `docTableMenuAtPoint` | frontend/js/documents.js:2965 |
-| `docTableTab` | frontend/js/documents.js:2539 |
+| `docSpellGuesses` | frontend/js/documents.js:1681 |
+| `docSpellNameKind` | frontend/js/documents.js:1606 |
+| `docSpellRoot` | frontend/js/documents.js:1671 |
+| `docSpellable` | frontend/js/documents.js:1554 |
+| `docTableGripMenu` | frontend/js/documents.js:2356 |
+| `docTableMenuAtPoint` | frontend/js/documents.js:2266 |
+| `docTableTab` | frontend/js/documents.js:1840 |
 | `docTemplateListKeys` | frontend/js/documents.js:202 |
-| `docToggleIcon` | frontend/js/documents.js:1055 |
-| `docTypewriterExtension` | frontend/js/documents.js:1178 |
-| `docTypographyNow` | frontend/js/documents.js:1305 |
 | `docViewMigrate` | frontend/js/documents.js:121 |
 | `docWordGoalKey` | frontend/js/documents.js:389 |
-| `docWordKnown` | frontend/js/documents.js:2323 |
-| `docWordlistReady` | frontend/js/documents.js:2198 |
+| `docWordKnown` | frontend/js/documents.js:1624 |
+| `docWordlistReady` | frontend/js/documents.js:1499 |
 | `ensureDocumentExists` | frontend/js/documents.js:300 |
 | `expandNoteIntoDocument` | frontend/js/documents.js:345 |
 | `getDocWordGoal` | frontend/js/documents.js:393 |
-| `initMarkdownToolbars` | frontend/js/documents.js:895 |
-| `mountDocToolbarControls` | frontend/js/documents.js:1898 |
 | `openDocTemplateDialog` | frontend/js/documents.js:222 |
 | `promptDocWordGoal` | frontend/js/documents.js:451 |
 | `renderDocStats` | frontend/js/documents.js:418 |
-| `setDocFocusSidebar` | frontend/js/documents.js:1449 |
-| `setDocFocusTools` | frontend/js/documents.js:1419 |
-| `setDocWidth` | frontend/js/documents.js:1088 |
 | `setDocWordGoal` | frontend/js/documents.js:398 |
 | `showDocTemplatePreview` | frontend/js/documents.js:275 |
 | `toggleDocFindBar` | frontend/js/documents.js:470 |
-| `toggleDocFocus` | frontend/js/documents.js:1472 |
-| `toggleDocProseDock` | frontend/js/documents.js:3404 |
-| `toggleDocWidth` | frontend/js/documents.js:1097 |
+| `toggleDocProseDock` | frontend/js/documents.js:2705 |
 
 ### frontend/js/drag-edge.js (3)
 
