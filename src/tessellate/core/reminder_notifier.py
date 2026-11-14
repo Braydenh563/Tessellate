@@ -74,6 +74,14 @@ class Due:
     about: str = ""
 
 
+def said(due: Due) -> str:
+    """The notification's words as one sentence, with why it matters: the note it hangs on (CHAT_PLAN B27)."""
+    text = due.text.strip().rstrip(".")
+    if not due.about or due.about == due.text:
+        return due.text
+    return f"{text}, from your note \u201c{due.about}\u201d."
+
+
 def _naive_utc(value: datetime) -> datetime:
     return value if value.tzinfo is None else value.astimezone(timezone.utc).replace(tzinfo=None)
 
@@ -404,8 +412,7 @@ class ReminderNotifier:
         if len(fresh) == 1:
             due = fresh[0]
             title = "Coming up" if due.early else "Reminder"
-            body = f"{due.text}\nAbout {due.about}" if due.about and due.about != due.text else due.text
-            self.post(title, body, None if due.early else due.reminder_id)
+            self.post(title, said(due), None if due.early else due.reminder_id)
         else:
             self.post(APP_NAME, f"{len(fresh)} reminders are due", None)
 
