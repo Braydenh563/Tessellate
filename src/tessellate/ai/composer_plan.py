@@ -53,8 +53,8 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
     #: "what is most important right now", "what's urgent", "what matters most" (L155): the day's plan.
-    rf"^{_LEAD}what(?:'s|’s| is| are)? (?:(?:the|my) )?(?P<imp>(?:most |more )?(?:important|urgent|pressing)(?: (?:thing|things|task|tasks|item|items|job|jobs))?(?: to do)?|(?:top |main |biggest )?priorit(?:y|ies)|matters? most)(?: (?:right now|now|today|at the moment|at present|this morning|this afternoon|tonight))?\W*$|"
-    rf"^{_LEAD}what(?:'s|’s| is)? my (?P<imp2>most (?:important|urgent|pressing) (?:thing|task|item|job))(?: to do)?(?: (?:right now|now|today))?\W*$|"
+    rf"^{_LEAD}what(?:'s|’s| is| are)? (?:(?:the|my) )?(?P<imp>(?:most |more )?(?:important|urgent|pressing)(?: (?:thing|things|task|tasks|item|items|job|jobs))?(?: to do)?|(?:top |main |biggest )?priorit(?:y|ies)|matters? most)(?: (?:{recognise.NOW_SCOPE}))?\W*$|"
+    rf"^{_LEAD}what(?:'s|’s| is)? my (?P<imp2>most (?:important|urgent|pressing) (?:thing|task|item|job))(?: to do)?(?: (?:{recognise.NOW_SCOPE_SHORT}))?\W*$|"
     #: "spread these over the week", "how should I spread my tasks this week" (audit 1030 Z57).
     rf"^{_LEAD}(?:how (?:should|do|can|could) i |help me |can you )?spread (?:out )?(?P<sp>.*)$|"
     rf"^{_LEAD}(?:what does|how does) (?P<w>my (?:week|day|schedule|weekend|month))(?: look| looks)?(?: like)?.*$|"
