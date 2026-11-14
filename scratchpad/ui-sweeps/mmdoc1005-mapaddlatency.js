@@ -30,7 +30,7 @@ function outline(n) {
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(800);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function", null, { timeout: 30000 });
   const report = [];
   for (const n of SIZES) {
     const board = await page.evaluate(async (content) => {

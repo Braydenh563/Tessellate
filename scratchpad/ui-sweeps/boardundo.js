@@ -17,7 +17,7 @@ function check(label, ok, detail) {
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(700);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => typeof window.initWhiteboard === "function", null, { timeout: 30000 });
   await page.evaluate(async () => {
     window.confirmDialog = async () => true;
     const v = document.getElementById("library-view-whiteboard");

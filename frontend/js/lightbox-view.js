@@ -43,6 +43,8 @@ function lightboxZoomFactor(e) {
 
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
+  //: Where the focus was, so closing hands it back instead of dropping it on the page (L593).
+  const opener = document.activeElement;
   const overlay = document.createElement("div");
   overlay.className = "lightbox";
   // Not decoration: this is what puts the lightbox inside `activeOverlay()`'s
@@ -2322,6 +2324,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     overlay.remove();
     setFullscreenSurface("lightbox", false);
     document.removeEventListener("keydown", onKey, true);
+    if (opener?.isConnected && opener !== document.body) opener.focus({ preventScroll: true });
   };
   //: Typing keeps its keys: the find box and the file editor are inside this
   //: dialog, and an arrow there moves the caret, not the file.

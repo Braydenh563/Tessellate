@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 70 | 35 | 0 | 19 | 235 |
-| general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 462 | 106 | 2 | 130 | 1121 |
+| world-class | 130 | 64 | 35 | 0 | 19 | 229 |
+| general | 0 | 38 | 2 | 0 | 4 | 40 |
+| all | 553 | 458 | 106 | 2 | 130 | 1117 |
 
 ## graph
 
@@ -465,17 +465,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## world-class
 
-- [ ] **L498** `world-class` open, S: Fix quick add fixture 56/60 and re-run quickadd.js for 60/60. From OPEN.md:3718. Evidence: tests/fixtures/composer/quickadd_1010.json; re-run needs a live server sweep, no recorded 60/60
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
-- [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
-- [ ] **L549** `world-class` open, S: Replace fixed 1.2 s whiteboard bundle wait in sweeps. From OPEN.md:3478. Evidence: Script hygiene; only op5-1005.js and mapviewmenu.js wait for the function.
-- [ ] **L550** `world-class` open, S: pickers.js throws pickNotesDialog not defined; segbars.js reads #graph-layout as seg. From OPEN.md:3530. Evidence: pickers.js, segbars.js still in scratchpad/ui-sweeps; script repair not recorded.
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L558** `world-class` open, M: Voice: move failure toasts in the 112 other JS files holding their own strings. From OPEN.md:1259. Evidence: Row left: surface by surface (decision 55); only library.js, whiteboard.js, whiteboard-map.js moved.
@@ -493,12 +489,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
-- [ ] **L593** `world-class` open, M: Drive lightbox Escape, reminders add form and graph node panel back. From OPEN.md:3876. Evidence: Not driven; chat undo not reproduced
 - [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
 - [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
-- [ ] **L608** `world-class` open, M: Sweep not reaching right-click menus, keyboard acts, pickers, library delete. From OPEN.md:1836; OPEN.md:3695. Evidence: Coverage gap; no sweep added found
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L616** `world-class` open, M: Trigger the other 100 toast(...,true) call sites. From OPEN.md:3567. Evidence: Lint test_error_toasts.py covers them; situations never driven in a browser
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
@@ -611,6 +605,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
+- [ ] **L-general-35** `general` open, S: Repair scratchpad/ui-sweeps/mappan.js (fails at line 206). From batch E L549. Evidence: mappan.js:206 end.shape null, same on the committed original
+- [ ] **L-general-36** `general` open, S: Repair scratchpad/ui-sweeps/boardundo.js (renamed function). From batch E L549. Evidence: calls wbDeleteObjectRef, which was renamed
 
 ## Owner calls
 
