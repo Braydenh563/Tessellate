@@ -381,13 +381,12 @@ function nameMarkBuddyToggle() {
   } catch (e) {
     // Shown for this session at least.
   }
-  //: Through the Appearance select's own change, so a custom companion is
-  //: mounted and the size control follows, as when it is picked there.
+  //: The select's change listener lives in the lazy Settings bundle (settingsControls), which is not
+  //: loaded until Settings opens, so the toggle does that listener's work itself: the hotkey on a fresh
+  //: page showed nothing (tests-e2e/specs/shell.spec.js:45).
   const select = document.getElementById("avatar-buddy");
-  if (select) {
-    select.value = back;
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  } else {
-    syncNameMarkBuddy();
-  }
+  if (select) select.value = back;
+  mountBuddyCustom();
+  syncNameMarkBuddy();
+  nameMarkBuddySizeSelect();
 }

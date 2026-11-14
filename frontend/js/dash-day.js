@@ -107,7 +107,8 @@
       };
       const open = () => {
         if (name.startsWith("tab:")) return switchTab(name.slice(4));
-        paletteCommands().find((c) => usageFeatureName(c.label) === name)?.run();
+        //: The palette's rows are in a lazy bundle (app-features.js), loaded first as Find anything does.
+        ensureModule("appPalette").then(() => paletteCommands().find((c) => usageFeatureName(c.label) === name)?.run());
       };
       line.append(act("Try it", open), " or ", act("not now", () => {}), ".");
       box.appendChild(line);

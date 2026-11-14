@@ -36,7 +36,9 @@ def test_registry_shapes_are_valid_for_ollama(app_state):
     offered = tools.ollama_tools()
     # Expressed as the rule rather than a count, so adding an online tool
     # doesn't fail this test for the wrong reason.
-    assert {t["function"]["name"] for t in offered} == set(tools.TOOLS) - ONLINE_TOOLS
+    # Intent moved (acts3, L-chat-46 to 53): a skill_only tool is offered only inside its skill, not in the default list.
+    skill_only = {n for n, s in tools.TOOLS.items() if s.skill_only}
+    assert {t["function"]["name"] for t in offered} == set(tools.TOOLS) - ONLINE_TOOLS - skill_only
     for item in offered:
         assert item["type"] == "function"
         fn = item["function"]
