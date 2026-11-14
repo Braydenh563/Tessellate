@@ -26,3 +26,14 @@ def test_thoughts_footer_is_one_wrapper_held_to_the_drafts_footer_height():
     rule = re.search(r"\n\.draft-foot \{([^}]*)\}", css)
     assert rule, "the .draft-foot rule is missing"
     assert "min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 2 * 0.4rem)" in rule.group(1)
+
+
+def test_the_earlier_drafts_row_is_one_fixed_line_and_the_thoughts_footer_makes_room_for_it():
+    """L888: the row appears with the second pass and took 42.4px from the draft box alone
+    (285.2 to 242.8 beside a 294.8 thoughts box, docsverify-write.js). One control tall, and the
+    thoughts footer grows by the same when it shows, side by side only."""
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    row = re.search(r"\n\.draft-versions \{([^}]*)\}", css)
+    assert row and "flex-wrap: nowrap;" in row.group(1) and "min-height: var(--control-h);" in row.group(1)
+    grown = re.search(r"@media \(min-width: 72\.01rem\) \{\n  \.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", css)
+    assert grown and "+ var(--control-h));" in grown.group(1)

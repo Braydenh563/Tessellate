@@ -5042,11 +5042,15 @@ button.ghost.doc-template-choice.wb-template-choice {
   }
 }
 
-/* The breakpoint lane under a finger (Brief 70): wider, so a tap beside a
-   line number lands on it rather than on the fold arrow or the text. */
+/* The breakpoint lane under a finger (Brief 70): the touch floor wide, so a tap
+   beside a line number lands on it rather than on the fold arrow or the text.
+   The editor theme sets the lane's 0.875rem at three classes, so this names
+   four: at one class less the 1.5rem it was never applied (docsverify-lane.js
+   measured 14px under a coarse pointer). A row is one line tall, the line
+   pitch, so the width is the target. */
 @media (pointer: coarse) {
-  .cm-debug-gutter .cm-gutterElement {
-    width: 1.5rem;
+  .cm-editor .cm-gutters .cm-debug-gutter .cm-gutterElement {
+    width: var(--target-min);
   }
 }
 
