@@ -42,19 +42,19 @@ def test_e9_no_ages_says_so_and_never_answers_a_gift_line():
     assert "do not say how old Anna or Tom is" in said and "scarf" not in said, said
 
 
-TODO = "# Todo\n\n- [ ] Book MOT\n- [x] Pay council tax\n- [ ] Email landlord"
+TODO_NOTE = "# Todo\n\n- [ ] Book MOT\n- [x] Pay council tax\n- [ ] Email landlord"
 PACK = "# Lisbon packing list\n\n- [x] Passport\n- [ ] Charger"
 
 
 @pytest.mark.parametrize("question", ["which tasks are done", "what tasks have I completed", "which items are ticked off", "what items did I tick"])
 def test_e21_done_tasks_list_the_ticked_items_not_the_reminders(question):
-    said = say(question, TODO, PACK)
+    said = say(question, TODO_NOTE, PACK)
     assert "Pay council tax" in said and "Passport" in said and "reminder" not in said.lower(), said
 
 
 @pytest.mark.parametrize("question", ["what isn't ticked on the todo", "what isn't ticked", "what isn't done"])
 def test_e21_a_negated_state_lists_what_is_open(question):
-    said = say(question, TODO, PACK)
+    said = say(question, TODO_NOTE, PACK)
     assert "Book MOT" in said and "Email landlord" in said and "Pay council tax" not in said, said
 
 
@@ -76,7 +76,7 @@ def test_r3_31_no_todo_note_and_no_checklist_says_so_instead_of_the_only_note(qu
 
 
 def test_r3_31_a_todo_note_or_any_checklist_is_still_read():
-    assert "Book MOT" in say("what is in my todo", TODO)
+    assert "Book MOT" in say("what is in my todo", TODO_NOTE)
     assert "Charger" in say("what is in my todo", PACK) or "Passport" in say("what is in my todo", PACK)
 
 
@@ -84,9 +84,9 @@ def test_e21_r3_8_the_route_reads_the_checklist_not_the_reminders_or_the_agenda(
     from tessellate.entry import manager
     from tests.test_composer_route_688 import _ask
 
-    manager.create_entry(session, TODO)
+    manager.create_entry(session, TODO_NOTE)
     manager.create_entry(session, PACK)
     done = _ask(client, "which tasks are done")["text"]
     assert "Pay council tax" in done and "reminders waiting" not in done, done
-    todo = _ask(client, "what is in my todo")["text"]
-    assert "Book MOT" in todo and "dated item" not in todo, todo
+    listing = _ask(client, "what is in my todo")["text"]
+    assert "Book MOT" in listing and "dated item" not in listing, listing

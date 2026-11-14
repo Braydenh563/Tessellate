@@ -1,4 +1,4 @@
-"""The weather with a model up or Web on (the owner, 2026-10-27, a follow-up
+"""The weather with a model up or Web on (the owner, 2026-10-27, a second ask
 "What's the weather like today?" answered by the composer's "not something
 this app knows" while a model ran and Web was on), and the web query a local
 question is searched with."""

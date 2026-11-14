@@ -188,9 +188,9 @@ def test_a_model_that_is_not_an_absolute_existing_file_is_refused(tmp_path):
     """A bare name would make the engine fetch from Hugging Face: the installer's
     pinned, checked download is the only way a model arrives."""
     for model in ("ggml-tiny.en.bin", str(tmp_path / "missing.bin")):
-        done = _run("--model", model)
-        assert done.returncode == 2 and "absolute path" in done.stderr
-        assert done.stdout == ""
+        ran = _run("--model", model)
+        assert ran.returncode == 2 and "absolute path" in ran.stderr
+        assert ran.stdout == ""
 
 
 def test_the_helper_exits_when_the_app_closes_its_stdin(tmp_path):
@@ -226,7 +226,7 @@ def test_the_helper_exits_when_the_app_closes_its_stdin(tmp_path):
 def test_without_the_engine_it_says_so_and_exits(tmp_path):
     model = tmp_path / "m.bin"
     model.write_bytes(b"x")
-    done = _run("--model", str(model))
-    assert done.returncode != 0 and not done.stdout.strip().isdigit()
-    if "pywhispercpp is not installed" in done.stderr:
-        assert done.returncode == 3
+    ran = _run("--model", str(model))
+    assert ran.returncode != 0 and not ran.stdout.strip().isdigit()
+    if "pywhispercpp is not installed" in ran.stderr:
+        assert ran.returncode == 3

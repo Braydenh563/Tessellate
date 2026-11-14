@@ -1,6 +1,6 @@
 """Fable-eye F15 (no model): an overview said "You still need to renew
 library membership" when a later note records it done. One item has one
-state: an open line that a later note records doing is not still to do in
+state: an open line that a later note records doing no longer counts as open in
 an overview either (`composer_slots.recorded_later`, as the offer and the
 slot readers already ask)."""
 

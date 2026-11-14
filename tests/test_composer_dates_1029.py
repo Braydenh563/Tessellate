@@ -179,8 +179,8 @@ def test_before_a_month_is_a_window_with_note_dates(notebook, phrasing, chat):
 def test_the_day_plan_counts_and_shows_every_item(notebook, phrasing, chat):
     tasks = ("Finish chapter 3", "Buy a capo", "Email the landlord", "Book the dentist follow-up", "Draft the API spec",
              "Book the review room", "Water the ferns", "Sort the receipts", "Call the plumber", "Clean the oven")
-    todo = "# Todo\n\n" + "\n".join(f"- [ ] {t}" for t in tasks)
-    said = notebook([(todo, D(2026, 10, 20, 9))])(phrasing, chat)
+    todo_note = "# Todo\n\n" + "\n".join(f"- [ ] {t}" for t in tasks)
+    said = notebook([(todo_note, D(2026, 10, 20, 9))])(phrasing, chat)
     counted = re.search(r"Open tasks with no day \((\d+)\)", said)
     assert counted, said
     assert int(counted.group(1)) == len(tasks), said
@@ -190,8 +190,8 @@ def test_the_day_plan_counts_and_shows_every_item(notebook, phrasing, chat):
 @MODES
 @pytest.mark.parametrize("phrasing", ["what should I do today", "plan my day"])
 def test_a_task_dated_outside_the_day_is_still_listed(notebook, phrasing, chat):
-    todo = "# Todo\n\n- [ ] Tom to draft the API spec by Friday 6 November\n- [ ] Book the review room"
-    said = notebook([(todo, D(2026, 10, 20, 9))])(phrasing, chat)
+    todo_note = "# Todo\n\n- [ ] Tom to draft the API spec by Friday 6 November\n- [ ] Book the review room"
+    said = notebook([(todo_note, D(2026, 10, 20, 9))])(phrasing, chat)
     assert "draft the API spec" in said and "Book the review room" in said, said
 
 

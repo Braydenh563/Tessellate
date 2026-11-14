@@ -82,7 +82,7 @@ def ask(client, session, monkeypatch):
     def go(question: str, history: list | None = None) -> str:
         out = _ask(client, question, notes_only=True, answer_from="notes", history=history or [])
         text = out["text"]
-        #: The next step is the follow-up chips now (INBOX 1466), not a last line.
+        #: The next step is the next-step chips now (INBOX 1466), not a last line.
         go.chips = "\n".join((out.get("grounding") or [{}])[0].get("next") or [])
         if _DUMP:
             with open(_DUMP, "a", encoding="utf-8") as fh:
@@ -290,15 +290,9 @@ L_NAMES = [
 ]
 
 
-#: Cases still failing, each a strict xfail: a fix that makes one pass fails
-#: the run until its id is taken out of this set (INBOX 1357 baseline: 35 of
-#: 77 passing before any fix).
-OPEN: set[str] = set()
-
-
+#: INBOX 1357 baseline: 35 of 77 passing before any fix; every case passes now.
 def _p(cls: str, turns: tuple, must, never, ident: str):  # noqa: ANN001, ANN202
-    marks = [pytest.mark.xfail(strict=True, reason="INBOX 1357 open")] if ident in OPEN else []
-    return pytest.param(cls, turns, must, never, id=ident, marks=marks)
+    return pytest.param(cls, turns, must, never, id=ident)
 
 
 def _cases():

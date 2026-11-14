@@ -144,7 +144,7 @@ def test_a_list_never_has_an_empty_bullet(client, notebook):
 
 
 def test_a_pair_is_not_woven_but_three_notes_are():
-    """Under five notes used to keep the lines; the owner's follow-up (1743) wove them too, from three."""
+    """Under five notes used to keep the lines; the owner's second note (1743) wove them too, from three."""
     days = [date(2026, 7, 1), date(2026, 7, 2), date(2026, 7, 3)]
     assert composer_story.plan(days[:2], ["a", "b"]) is None
     assert composer_story.plan(days, ["a", "b", "c"]).chunks == [[0, 1, 2]]

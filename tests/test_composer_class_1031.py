@@ -1,4 +1,4 @@
-"""Five classes of composer wording the audit left open (composer-1031, the
+"""Five classes of composer wording the audit named (composer-1031, the
 owner's INBOX 1357: fix the class, each tested several ways, on a fixed clock).
 
 1. A measure sum (how far, how many km) names a title-less note by a short

@@ -2,7 +2,7 @@
 connections" named untitled notes by a cut phrase ("here are some
 refined"), doubled an article ("the the The Complete Social Skills
 Guide"), kept a title's colon ("the Ice Breakers:"), let markdown through
-("the Follow-Up**"), said a heading as a sentence ("After making an initial
+(a heading name with its closing **), said a heading as a sentence ("After making an initial
 connection."), clipped a diary sentence into a wrong meaning ("I had work
 today and a friend") and put the citation before an emoticon ("bit9 :(")."""
 
@@ -197,7 +197,7 @@ def test_untitled_uni_notes_are_named_by_what_they_are_about(question):
     from tessellate.ai import composer_digest
 
     text = composer_digest.answer(question, social.uni_notes(), today=social.TODAY)["text"]
-    #: Four notes with some loosely related are woven now (1743 follow-up): the untitled note is its clause, a long one clipped.
+    #: Four notes with some loosely related are woven now (1743, second note): the untitled note is its clause, a long one clipped.
     assert "you had three lectures for cloud computing" in text, text
     #: Never an opening cut mid-phrase, never "you noted that you had noted".
     assert "uni days this week are Tuesday," not in text and "your uni days this week are Tuesday" not in text.split("\n\n")[1], text

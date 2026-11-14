@@ -130,16 +130,28 @@ def test_the_board_draws_one_frame_per_accepted_group_in_one_undo_step():
 
 
 def test_a_slow_model_times_out_and_the_words_rule_sorts(ai_client, fake_ollama, monkeypatch):
-    import time
+    import threading
 
     from tessellate.api import routes_board_affinity
 
     bid, ids = _board(ai_client)
     real = fake_ollama.chat
-    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    # The model is held until the answer is back, so the words rule can only
+    # have come from the timeout path: an ordering, not a wall-clock bound
+    # (a 0.9 s bound failed at 2.1 s on a slow CI runner, 2026-11-14).
+    release, answered = threading.Event(), threading.Event()
+
+    def held(*a, **k):
+        release.wait(5)
+        answered.set()
+        return real(*a, **k)
+
+    monkeypatch.setattr(fake_ollama, "chat", held)
     monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
-    started = time.perf_counter()
-    got = ai_client.post(f"/whiteboard/boards/{bid}/affinity", json={"ids": ids}).json()
-    assert time.perf_counter() - started < 0.9
+    try:
+        got = ai_client.post(f"/whiteboard/boards/{bid}/affinity", json={"ids": ids}).json()
+        assert not answered.is_set()
+    finally:
+        release.set()
     assert got["source"] == "words" and got["reason"] == "failed"
     assert "Compost" in _names(got)

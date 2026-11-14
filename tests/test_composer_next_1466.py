@@ -1,5 +1,5 @@
 """INBOX 1466, first part (the owner, Ask, no model): under a composed
-answer only "Why this answer" showed. The follow-up strip draws a composed
+answer only "Why this answer" showed. The next-step strip draws a composed
 answer's own `next` (`renderAskFollowups`, `composedNext`), and a digest
 answer handed none. Every composed answer now hands two or three asks
 about the subject asked, none of them the question itself and no two the

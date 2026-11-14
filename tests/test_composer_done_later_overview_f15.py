@@ -1,5 +1,5 @@
 """Fable eye F15, left half: a checklist line a later note records as done is not
-"still to do" in the note's overview either. One item has one state: the open list,
+listed as pending in the note's overview either. One item has one state: the open list,
 the yes or no, the reminder offer and now the gist all ask `recorded_later`."""
 
 from __future__ import annotations

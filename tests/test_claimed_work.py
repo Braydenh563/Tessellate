@@ -38,7 +38,7 @@ REPORTED_ANSWER = """Here's what we did:
 
 1.  **Linked Notes:** We connected your main **Social Skills Guide (ID 12)** to
 your specific pickup lines (**ID 13**), your ice breakers (**ID 15**), and the
-follow-up questions (**ID 16**).
+next-step questions (**ID 16**).
 2.  **Unlinked Note:** We unlinked the **Gym Routine Overview (ID 28)** from the
 main guide, as it seemed like an extra connection that didn't fit.
 """
