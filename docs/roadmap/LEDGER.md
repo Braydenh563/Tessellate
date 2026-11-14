@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 131 | 2 | 59 | 206 |
+| chat | 0 | 75 | 130 | 2 | 59 | 205 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 200 | 2 | 183 | 1008 |
+| all | 359 | 449 | 199 | 2 | 183 | 1007 |
 
 ## graph
 
@@ -87,7 +87,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-99** `chat` open, S: A23: entity card aggregate (guess from absence). From CHAT_PLAN.md:1256. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'tell me about Priya' gives the three sentences that name her and the note count (A10), but no first and last mention date and no related entities by co-occurrence. Remaining step: an entity-card block in composer_notes (first and last dated mention, count, top 2 sentences, co-occurring names).
 - [ ] **L-chat-105** `chat` partly, S: X13: variables and quick-adds unverified. From CHAT_PLAN.md:1280. Evidence: Recount 2026-11-14 (audit, verify in code first): template variables not verified Measured 2026-11-14: no {date} {weekday} {week} {title} {n} filler exists in the template path and no saved-phrasing chip. Remaining step: a fill(template, now) function by rule beside the four built-in templates, a test first, then the saved phrasing with slots as a chip.
 - [ ] **L-chat-106** `chat` open, S: X15: scheduled act phrasing (guess). From CHAT_PLAN.md:1282. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'every Monday list what is open' answers a notes search on 'Monday list open' (four unrelated notes), not an act; no recurring-act reader exists. Remaining step: a commands.py reader for 'every <weekday|day> <act phrase>' that makes a weekly reminder whose note carries the phrasing, one proactive line a day (decision 28).
-- [ ] **L-chat-107** `chat` partly, S: X16: generic undo in chat unverified. From CHAT_PLAN.md:1283. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/act_steps.py undo steps Measured 2026-11-14: 'undo that' in Chat answers the help line about the Undo bar, and after a pending reminder card says 'I found no reminder named call mum'. Remaining step: read undo/undo that as a conversation control (C13) and replay the inverse steps stored on the last confirmed card's result.
 - [ ] **L-chat-113** `chat` partly, S: C10: rule-based jokes unverified. From CHAT_PLAN.md:1300. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_jokes.py
 - [ ] **L-chat-114** `chat` partly, S: C12: greeting use unverified. From CHAT_PLAN.md:1302. Evidence: Recount 2026-11-14 (audit, verify in code first): act_registry.py and agent_turn.py "call me"
 - [ ] **L-chat-115** `chat` partly, S: C13: conversation controls table unverified. From CHAT_PLAN.md:1303. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_chat.py

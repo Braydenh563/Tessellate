@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "undo that" takes back the last confirmed card, or drops the card that waits (2026-11-14).
 - Chat: a goodbye after a confirmed act names the act that ran (done_act on the turn) (2026-11-14).
 - Chat: "I finished everything on my list" counts what is open or remarks that all items are ticked, and the tick that finishes a list says so (2026-11-14).
 - Chat stats: "how many notes did I write this week" reads the injected clock, not utcnow() (2026-11-14).

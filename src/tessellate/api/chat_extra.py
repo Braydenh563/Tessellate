@@ -126,6 +126,8 @@ def _early_events(session: Session, typed: str, history: list[dict], now: dateti
     #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
     if (dropped := composer_cancel.reply(typed, history)) is not None:
         return dropped
+    if (undone := composer_cancel.undo_reply(session, typed, history)) is not None:
+        return undone
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
     if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
         return talked

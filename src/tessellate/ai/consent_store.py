@@ -165,6 +165,14 @@ def note_latest(label: str, undo: list[dict] | None) -> None:
         _latest = (_now() + TTL_SECONDS, label, list(undo or []))
 
 
+def take_latest() -> tuple[str, list[dict]]:
+    """(label, Undo steps) of the last card run, once: a second ask finds nothing to take back."""
+    global _latest  # noqa: PLW0603
+    with _lock:
+        held, _latest = _latest, None
+    return (held[1], held[2]) if held is not None and held[0] > _now() and held[2] else ("", [])
+
+
 def latest_undo() -> list[dict]:
     """The Undo steps of the last card run, or [] when none or past its life."""
     with _lock:

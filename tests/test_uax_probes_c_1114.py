@@ -70,3 +70,27 @@ def test_c2_the_bye_line_names_an_act_that_ran_and_not_one_that_was_only_propose
     assert "Remind me to call mum" in ran, ran
     proposed = go("bye", history=[{"question": "remind me to call mum tomorrow", "answer": "Confirm?", "pending_act": "Remind me to call mum"}])[0]
     assert "call mum" not in proposed, proposed
+
+
+def test_c13_undo_that_takes_back_the_last_confirmed_card(client, session, monkeypatch):
+    from tessellate.core.database import Entry
+
+    seed.seed(session)
+    go = seed.asker(client, monkeypatch, chat=True)
+    _, events = go("tick off charger")
+    card = next(e for e in events if e.get("type") == "act")
+    assert client.post("/chat/command/run", json={"steps": card["steps"], "skipped": [], "consent_id": card["consent_id"]}).json()["ok"]
+    said, _ = go("undo that")
+    assert said.startswith("Undone:") and "charger" in said, said
+    packing = next(e for e in session.query(Entry) if "Lisbon packing" in (e.content or ""))
+    session.refresh(packing)
+    assert "- [ ] charger" in packing.content, packing.content
+    again, _ = go("undo that")
+    assert not again.startswith("Undone:"), again
+
+
+def test_c13_undo_that_while_a_card_waits_drops_the_card(client, session, monkeypatch):
+    seed.seed(session)
+    go = seed.asker(client, monkeypatch, chat=True)
+    said, _ = go("undo that", history=[{"question": "remind me to call mum", "answer": "Confirm?", "pending_act": "Remind me to call mum"}])
+    assert said.startswith("Cancelled:"), said
