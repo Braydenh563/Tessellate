@@ -3118,6 +3118,31 @@ body.printing-doc #doc-preview p,
   flex-direction: column;
   gap: var(--space-2);
 }
+/* The whole map's four groups, each a block (L-general-57): two columns
+   once the window is wide, so the dialog fits a 900px window unscrolled. */
+.wb-map-theme-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+/* Each head is its block's first, so the space above a later group is here. */
+.wb-map-theme-group + .wb-map-theme-group {
+  margin-top: var(--space-3);
+}
+@media (min-width: 1100px) {
+  .wb-map-theme-group + .wb-map-theme-group {
+    margin-top: 0;
+  }
+  .wb-info-card:has(> .wb-map-theme .wb-map-theme-group) {
+    width: min(52rem, calc(100vw - var(--space-8) * 2));
+  }
+  .wb-map-theme-rows:has(> .wb-map-theme-group) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-6);
+    align-items: start;
+  }
+}
 .wb-map-theme-row > select {
   width: min(11rem, 45vw);
 }

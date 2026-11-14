@@ -317,9 +317,10 @@ const show = (o) => console.log("    " + JSON.stringify(o));
   //: then the scope select ("whose look the rows set") and spacing: twelve
   //: selects (listed in `labels`); the switches are Colour every level, Show a
   //: legend, Bold, Italic and Dashed (the legend and Dashed arrived after the
-  //: count of three was written), so seventeen fields in all.
-  check("seventeen fields in four named groups, from the recipe index's own rows",
-    dialog.selects === 12 && dialog.checks === 5 && dialog.heads.length === 4,
+  //: count of three was written), so seventeen fields in all; and since
+  //: L-mindmap-1 the "Saved looks" select at the top, a thirteenth.
+  check("eighteen fields in four named groups, from the recipe index's own rows",
+    dialog.selects === 13 && dialog.checks === 5 && dialog.heads.length === 4,
     `${dialog.selects} selects, ${dialog.checks} switches, ${(dialog.heads || []).join(" | ")}`);
   check("and it fits without scrolling at this size",
     !dialog.overflows && dialog.viewMenuClosed,
