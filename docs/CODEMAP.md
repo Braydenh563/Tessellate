@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8960, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2850, tests 22933, plan headings 690, app scripts 29, boot scripts 38, script files 367.
+Counts: frontend functions 8966, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11017, test files 2851, tests 22943, plan headings 690, app scripts 29, boot scripts 38, script files 367.
 
-## Frontend functions (8960)
+## Frontend functions (8966)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3810,19 +3810,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPasteSyncedBlock` | frontend/js/documents-blockref.js:51 |
 | `docRevealBlock` | frontend/js/documents-blockref.js:70 |
 
-### frontend/js/documents-board.js (9)
+### frontend/js/documents-board.js (15)
 
 | Name | File:line |
 |---|---|
-| `boardWantsEscape` | frontend/js/documents-board.js:75 |
-| `close` | frontend/js/documents-board.js:18 |
-| `fill` | frontend/js/documents-board.js:215 |
-| `mount` | frontend/js/documents-board.js:233 |
-| `picture` | frontend/js/documents-board.js:143 |
-| `show` | frontend/js/documents-board.js:45 |
-| `svgEl` | frontend/js/documents-board.js:106 |
-| `unmount` | frontend/js/documents-board.js:254 |
-| `words` | frontend/js/documents-board.js:113 |
+| `boardWantsEscape` | frontend/js/documents-board.js:88 |
+| `build` | frontend/js/documents-board.js:283 |
+| `close` | frontend/js/documents-board.js:31 |
+| `destroy` | frontend/js/documents-board.js:263 |
+| `destroyAll` | frontend/js/documents-board.js:280 |
+| `fill` | frontend/js/documents-board.js:228 |
+| `follow` | frontend/js/documents-board.js:295 |
+| `mount` | frontend/js/documents-board.js:335 |
+| `mountEditable` | frontend/js/documents-board.js:308 |
+| `picture` | frontend/js/documents-board.js:156 |
+| `reap` | frontend/js/documents-board.js:250 |
+| `show` | frontend/js/documents-board.js:58 |
+| `svgEl` | frontend/js/documents-board.js:119 |
+| `unmount` | frontend/js/documents-board.js:358 |
+| `words` | frontend/js/documents-board.js:126 |
 
 ### frontend/js/documents-callouts.js (18)
 
@@ -4284,20 +4290,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `boardEditButton` | frontend/js/documents-embeds.js:80 |
-| `docEmbedChip` | frontend/js/documents-embeds.js:260 |
-| `docEmbedFill` | frontend/js/documents-embeds.js:271 |
-| `docEmbedNode` | frontend/js/documents-embeds.js:109 |
+| `docEmbedChip` | frontend/js/documents-embeds.js:261 |
+| `docEmbedFill` | frontend/js/documents-embeds.js:272 |
+| `docEmbedNode` | frontend/js/documents-embeds.js:110 |
 | `docEmbedTarget` | frontend/js/documents-embeds.js:40 |
-| `docFileDropBox` | frontend/js/documents-embeds.js:457 |
-| `docImageLive` | frontend/js/documents-embeds.js:217 |
-| `docOpenLink` | frontend/js/documents-embeds.js:441 |
-| `docOpenResolvedWikiTarget` | frontend/js/documents-embeds.js:411 |
-| `docOpenWikiTarget` | frontend/js/documents-embeds.js:433 |
+| `docFileDropBox` | frontend/js/documents-embeds.js:458 |
+| `docImageLive` | frontend/js/documents-embeds.js:218 |
+| `docOpenLink` | frontend/js/documents-embeds.js:442 |
+| `docOpenResolvedWikiTarget` | frontend/js/documents-embeds.js:412 |
+| `docOpenWikiTarget` | frontend/js/documents-embeds.js:434 |
 | `docRecordingsLoad` | frontend/js/documents-embeds.js:64 |
 | `docRecordingsStale` | frontend/js/documents-embeds.js:63 |
-| `docResolveWikiTarget` | frontend/js/documents-embeds.js:367 |
-| `docWikiTargetLabel` | frontend/js/documents-embeds.js:393 |
-| `syncedRedraw` | frontend/js/documents-embeds.js:502 |
+| `docResolveWikiTarget` | frontend/js/documents-embeds.js:368 |
+| `docWikiTargetLabel` | frontend/js/documents-embeds.js:394 |
+| `syncedRedraw` | frontend/js/documents-embeds.js:503 |
 
 ### frontend/js/documents-export.js (7)
 
@@ -29053,7 +29059,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22933)
+## Tests (22943)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30081,6 +30087,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
 | tests/test_documents_api.py | 50 |
+| tests/test_documents_board_instance.py | 10 |
 | tests/test_documents_closeout_1112.py | 7 |
 | tests/test_documents_cold_open.py | 6 |
 | tests/test_documents_help.py | 4 |

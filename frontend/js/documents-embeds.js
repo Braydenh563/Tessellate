@@ -85,7 +85,8 @@
     edit.classList.add("doc-embed-board-edit");
     edit.dataset.boardId = String(id);
     //: Show live draws the board in a window of its own after the button, read-only (decision 83): documents-board.js mounts it.
-    const live = smallButton("ph:eye Show live", "Show this board here, to zoom and pan; Edit here changes it", () => ensureModule("docBoard").then(() => {
+    const inPlace = Boolean(window.wbInstance?.create);
+    const live = smallButton(inPlace ? "ph:pencil-simple Edit in place" : "ph:eye Show live", inPlace ? "Edit this board here, in the text" : "Show this board here, to zoom and pan; Edit here changes it", () => ensureModule("docBoard").then(() => {
       live.dispatchEvent(new CustomEvent("board-live", { bubbles: true, detail: { id } }));
     }));
     live.classList.add("doc-embed-board-live");
