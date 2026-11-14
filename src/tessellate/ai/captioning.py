@@ -309,6 +309,7 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
             _running.pop(upload_id, None)
             _details.pop(upload_id, None)
     elapsed_ms = (time.monotonic() - started) * 1000
+    jobs.check_stop()  # Stop pressed during the model's call: no caption is stored
     with deps.get_db().session() as session:
         upload = session.get(MediaUpload, upload_id)
         if upload is None:

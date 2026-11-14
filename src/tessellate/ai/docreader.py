@@ -93,6 +93,7 @@ def read_document_and_store(attachment_id: int) -> str | None:
         readable = (row.ocr_text or "").strip()
         if not readable:
             return None
+        jobs.check_stop()  # Stop pressed after the text was kept, before the model call
         ollama = deps.get_ollama()
         if not ollama.is_running():
             # Not a failure worth logging on every upload: a notebook with no

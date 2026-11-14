@@ -526,7 +526,7 @@ on 2026-09-14 (INBOX 220) so they survive its archiving.
 
 **Built 2026-10-04 for the pool's kinds.** Moved to HISTORY.md, "Moved from the plans, 2026-10-04 (B2 durable jobs)": the `jobs` table, leases with a heartbeat, resume after a kill (a real SIGKILL in `tests/test_jobstore.py`), `GET /jobs`, `GET /jobs/stream`, cancel of a queued job.
 
-**Open, LEDGER L-world-class-66:** a running job cannot be cancelled, only a queued one (`core/jobstore.py:356`, "a running job is not interrupted"; cooperative stop per handler). M, Opus. The other kinds on the table and the activity panel on `/jobs/stream` are built (table row 3 of section 8, HISTORY; `ai-tools.js:19`).
+**Stop on a running job built (L-world-class-66):** `jobs.check_stop()` at each handler's safe boundary, `Pool.stop_running`, the row ends `cancelled` (`core/jobstore.py` `cancel`; `tests/test_jobstore.py`, `tests/test_job_stop_handlers.py`). A one-step kind (`file-entry`) says so instead. The other kinds on the table and the activity panel on `/jobs/stream` are built (table row 3 of section 8, HISTORY; `ai-tools.js:19`).
 
 ### B3 The retrieval engine: one index, three signals, explained
 
