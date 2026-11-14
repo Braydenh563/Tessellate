@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- JS link and picture scanners (status, documents, note picker) are bounded so a long unclosed run of brackets no longer freezes the page; a node timing test and a hand-written oracle pin them (L568).
 - MCP: tests pin that an outside agent never runs a destructive tool, with writes on or off, and that a note survives a delete_note sent by name (L-world-class-12).
 - Private spaces: links, recordings (title and transcript) and the text read from files and pictures are sealed with the space and kept out of search, and deleting a locked space asks for the password instead of stopping at an error (L697).
 - Library: Read again on an uploaded PDF reads its text layer, or its pages with OCR when it is a scan, instead of refusing with 415; without the PDF viewer extra it says so (L631).

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11018, test files 2829, tests 22503, plan headings 689, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11018, test files 2830, tests 22506, plan headings 689, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8501)
 
@@ -28265,7 +28265,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22503)
+## Tests (22506)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29702,6 +29702,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_jobs_pool.py | 11 |
 | tests/test_jobstore.py | 17 |
 | tests/test_joins_870.py | 5 |
+| tests/test_js_link_regex_redos.py | 3 |
 | tests/test_js_link_strip_redos.py | 2 |
 | tests/test_jump_echo_keeps_heading_p32.py | 5 |
 | tests/test_jump_gap_1590.py | 3 |

@@ -170,7 +170,7 @@ function docGrammarMessage(message) {
 //: doc]] chip" came back as a redundancy ("Use another on its own") whose
 //: only fix was "aNother", measured in the live view 2026-10-04. A lint that
 //: touches a link or an embed (`![[...]]`) is dropped; one beside it is kept.
-const DOC_GRAMMAR_WIKI = /!?\[\[[^\]\n]+\]\]/g;
+const DOC_GRAMMAR_WIKI = /!?\[\[[^\]\n]{1,99}\]\]/g;
 
 function docGrammarOutside(text) {
   const spans = [];
@@ -959,7 +959,7 @@ function docAccessFindings(text) {
   };
   let match;
   //: Links and images in one pass: `!` in front makes it an image.
-  const links = /(!?)\[([^\]\n]*)\]\(([^)\s]+)[^)\n]*\)/g;
+  const links = /(!?)\[([^\]\n]{0,99})\]\(([^)\s]{1,99})(?:\s[^)\n]{0,99})?\)/g;
   while ((match = links.exec(src)) !== null) {
     const words = match[2].trim();
     if (match[1] === "!") {

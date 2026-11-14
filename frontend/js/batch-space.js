@@ -170,7 +170,7 @@ async function spaceDeleteSubmit() {
     if (answered.status === 423 && (await privateSpaces("unlock"))) answered = await send();
     if (!answered.ok) {
       const said = await answered.json().catch(() => ({}));
-      throw new Error(said?.detail?.detail || said?.detail || "Couldn't delete that space.");
+      throw new Error(said.detail?.detail || said.detail || "Couldn't delete that space.");
     }
     const gone = await answered.json();
     //: The moved notes by id (`refreshEntries` reads the notebook whole
