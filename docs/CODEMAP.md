@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8511, frontend ids 2790, CSS sections 526, backend routes 721, backend modules 11035, test files 2866, tests 22673, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8511, frontend ids 2790, CSS sections 526, backend routes 721, backend modules 11035, test files 2866, tests 22675, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8511)
 
@@ -116,7 +116,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `plainHead` | frontend/js/lazy-entries.js:241 |
 | `runCharacterJob` | frontend/js/lazy-entries.js:249 |
 | `warmLibraryAfterInput` | frontend/js/lazy-entries.js:320 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:339 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:344 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -1639,7 +1639,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `accentTone` | frontend/js/settings.js:2399 |
 | `activeAccent` | frontend/js/settings.js:1458 |
 | `activeLogContainer` | frontend/js/settings.js:982 |
-| `activePalette` | frontend/js/settings.js:3153 |
+| `activePalette` | frontend/js/settings.js:3161 |
 | `activeThemePreset` | frontend/js/settings.js:1810 |
 | `appearancePref` | frontend/js/settings.js:1827 |
 | `applyAccent` | frontend/js/settings.js:1494 |
@@ -1654,16 +1654,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyThemeChoice` | frontend/js/settings.js:2750 |
 | `applyThemePreset` | frontend/js/settings.js:1847 |
 | `applyZoomVar` | frontend/js/settings.js:2623 |
-| `bgArtOn` | frontend/js/settings.js:3250 |
-| `bgArtRefreshSeed` | frontend/js/settings.js:3244 |
-| `bgArtStyle` | frontend/js/settings.js:3362 |
+| `bgArtOn` | frontend/js/settings.js:3258 |
+| `bgArtRefreshSeed` | frontend/js/settings.js:3252 |
+| `bgArtStyle` | frontend/js/settings.js:3370 |
 | `bgLuma` | frontend/js/settings.js:2381 |
 | `browserLogRecords` | frontend/js/settings.js:860 |
 | `bumpLogErrorBadge` | frontend/js/settings.js:1132 |
 | `clearLogs` | frontend/js/settings.js:1301 |
 | `closeLogs` | frontend/js/settings.js:1270 |
 | `closeSettingsModal` | frontend/js/settings.js:776 |
-| `collapseLongSettingHints` | frontend/js/settings.js:3680 |
+| `collapseLongSettingHints` | frontend/js/settings.js:3688 |
 | `currentAccentHex` | frontend/js/settings.js:1475 |
 | `currentLookValues` | frontend/js/settings.js:1998 |
 | `currentPageBackground` | frontend/js/settings.js:2451 |
@@ -1673,18 +1673,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `effectiveTheme` | frontend/js/settings.js:2690 |
 | `ensureSettingsPaneTitle` | frontend/js/settings.js:74 |
 | `filterSettings` | frontend/js/settings.js:708 |
-| `focusSettingsHeading` | frontend/js/settings.js:3488 |
-| `focusSettingsPane` | frontend/js/settings.js:3480 |
+| `focusSettingsHeading` | frontend/js/settings.js:3496 |
+| `focusSettingsPane` | frontend/js/settings.js:3488 |
 | `harmonyScheme` | frontend/js/settings.js:1949 |
 | `hexRatio` | frontend/js/settings.js:2386 |
 | `hexToHsl` | frontend/js/settings.js:1901 |
 | `hexToRgbParts` | frontend/js/settings.js:2363 |
 | `hslToHex` | frontend/js/settings.js:1922 |
-| `jobDurationWords` | frontend/js/settings.js:3947 |
-| `jobRunLine` | frontend/js/settings.js:3958 |
+| `jobDurationWords` | frontend/js/settings.js:3955 |
+| `jobRunLine` | frontend/js/settings.js:3966 |
 | `lessTransparencyWanted` | frontend/js/settings.js:2514 |
 | `loadChangelog` | frontend/js/settings.js:563 |
-| `loadSamplingSettings` | frontend/js/settings.js:3646 |
+| `loadSamplingSettings` | frontend/js/settings.js:3654 |
 | `logLevelRank` | frontend/js/settings.js:834 |
 | `logMatchesFilters` | frontend/js/settings.js:882 |
 | `logRecordText` | frontend/js/settings.js:975 |
@@ -1694,35 +1694,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `logTerminalTraceRow` | frontend/js/settings.js:1098 |
 | `manualOverrides` | frontend/js/settings.js:1884 |
 | `measureLabelOptics` | frontend/js/settings.js:2579 |
-| `noticePerfMode` | frontend/js/settings.js:3607 |
+| `noticePerfMode` | frontend/js/settings.js:3615 |
 | `openSettingsModal` | frontend/js/settings.js:328 |
 | `paintIntegrity` | frontend/js/settings.js:612 |
-| `paintJobLine` | frontend/js/settings.js:3990 |
+| `paintJobLine` | frontend/js/settings.js:3998 |
 | `perfModeOn` | frontend/js/settings.js:2520 |
 | `perfModeReason` | frontend/js/settings.js:2529 |
-| `placeFoldHelp` | frontend/js/settings.js:3889 |
-| `refreshJobRuns` | frontend/js/settings.js:4006 |
+| `placeFoldHelp` | frontend/js/settings.js:3897 |
+| `refreshJobRuns` | frontend/js/settings.js:4014 |
 | `renderActiveLogView` | frontend/js/settings.js:1120 |
 | `renderAppearance` | frontend/js/settings.js:2884 |
-| `renderBgMotionHint` | frontend/js/settings.js:3039 |
-| `renderBgStyleGrid` | frontend/js/settings.js:3283 |
-| `renderBgStyleHint` | frontend/js/settings.js:3020 |
+| `renderBgMotionHint` | frontend/js/settings.js:3047 |
+| `renderBgStyleGrid` | frontend/js/settings.js:3291 |
+| `renderBgStyleHint` | frontend/js/settings.js:3028 |
 | `renderCopyLogsLabel` | frontend/js/settings.js:1282 |
 | `renderCustomThemes` | frontend/js/settings.js:2273 |
 | `renderGlassRows` | frontend/js/settings.js:2871 |
-| `renderJobOverview` | frontend/js/settings.js:4037 |
+| `renderJobOverview` | frontend/js/settings.js:4045 |
 | `renderLogErrorBadge` | frontend/js/settings.js:1138 |
 | `renderLogGap` | frontend/js/settings.js:844 |
 | `renderLogList` | frontend/js/settings.js:1027 |
 | `renderLogSharedUI` | frontend/js/settings.js:993 |
 | `renderLogTerminal` | frontend/js/settings.js:1105 |
 | `renderLogs` | frontend/js/settings.js:1238 |
-| `renderPaletteGrid` | frontend/js/settings.js:3160 |
-| `renderProgressMotionHint` | frontend/js/settings.js:3003 |
+| `renderPaletteGrid` | frontend/js/settings.js:3168 |
+| `renderProgressMotionHint` | frontend/js/settings.js:3011 |
 | `renderThemePresets` | frontend/js/settings.js:2788 |
 | `renderThemeToggle` | frontend/js/settings.js:2718 |
 | `repaintThemeAtOnce` | frontend/js/settings.js:1369 |
-| `resetAppearance` | frontend/js/settings.js:3212 |
+| `resetAppearance` | frontend/js/settings.js:3220 |
 | `resolvedTheme` | frontend/js/settings.js:2701 |
 | `saveCurrentLook` | frontend/js/settings.js:2218 |
 | `savedThemeCard` | frontend/js/settings.js:2307 |
@@ -1732,25 +1732,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `serverLogRecord` | frontend/js/settings.js:869 |
 | `setLogLive` | frontend/js/settings.js:1124 |
 | `setSettingsPeek` | frontend/js/settings.js:304 |
-| `settingsFoldState` | frontend/js/settings.js:3837 |
+| `settingsFoldState` | frontend/js/settings.js:3845 |
 | `settingsScroller` | frontend/js/settings.js:103 |
 | `settingsSectionText` | frontend/js/settings.js:666 |
 | `showSettingsSection` | frontend/js/settings.js:150 |
 | `smallMachine` | frontend/js/settings.js:2507 |
 | `sortLogRecords` | frontend/js/settings.js:873 |
-| `startBgArt` | frontend/js/settings.js:3367 |
+| `startBgArt` | frontend/js/settings.js:3375 |
 | `startLogStream` | frontend/js/settings.js:1168 |
-| `stopBgArt` | frontend/js/settings.js:3254 |
+| `stopBgArt` | frontend/js/settings.js:3262 |
 | `stopLogStream` | frontend/js/settings.js:1227 |
-| `taskLogButton` | frontend/js/settings.js:3586 |
+| `taskLogButton` | frontend/js/settings.js:3594 |
 | `themeDefaultAccent` | frontend/js/settings.js:2847 |
 | `themeSwatch` | frontend/js/settings.js:1795 |
 | `themeValue` | frontend/js/settings.js:1820 |
-| `toggleBgArt` | frontend/js/settings.js:3436 |
+| `toggleBgArt` | frontend/js/settings.js:3444 |
 | `toggleTheme` | frontend/js/settings.js:1397 |
 | `updatePeekAvailability` | frontend/js/settings.js:316 |
-| `wireFoldHelps` | frontend/js/settings.js:3902 |
-| `wireSettingsFolds` | frontend/js/settings.js:3846 |
+| `wireFoldHelps` | frontend/js/settings.js:3910 |
+| `wireSettingsFolds` | frontend/js/settings.js:3854 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -28315,7 +28315,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22673)
+## Tests (22675)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29660,7 +29660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_paraphrases_1530.py | 2 |
 | tests/test_guide_path_lead_e33.py | 2 |
 | tests/test_guide_social_1414.py | 19 |
-| tests/test_handler_lag_static.py | 8 |
+| tests/test_handler_lag_static.py | 10 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |
 | tests/test_harness_plan_card.py | 9 |
@@ -31603,14 +31603,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:651 |
+| Needs hardware | docs/roadmap/LEDGER.md:658 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:644 |
+| Owner calls | docs/roadmap/LEDGER.md:651 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31790,7 +31790,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:778 |
+| Plan session briefs | docs/roadmap/LEDGER.md:785 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31844,25 +31844,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:794 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:878 |
+| chat | docs/roadmap/LEDGER.md:801 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:885 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:818 |
-| general | docs/roadmap/LEDGER.md:604 |
+| documents | docs/roadmap/LEDGER.md:825 |
+| general | docs/roadmap/LEDGER.md:611 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:782 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:890 |
+| graph | docs/roadmap/LEDGER.md:789 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:897 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:830 |
+| mindmap | docs/roadmap/LEDGER.md:837 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:854 |
+| timeline | docs/roadmap/LEDGER.md:861 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:842 |
+| ui-modernisation | docs/roadmap/LEDGER.md:849 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:806 |
+| whiteboard | docs/roadmap/LEDGER.md:813 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:866 |
+| world-class | docs/roadmap/LEDGER.md:873 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |

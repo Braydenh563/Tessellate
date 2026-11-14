@@ -77,3 +77,20 @@ def test_dashboard_render_yields_between_its_parts():
     assert body.index("renderDashboardGreeting();") < body.index("await dashYield();") < body.index("grid.replaceChildren();")
     tail = body.split("grid.replaceChildren();", 1)[1].split("for (const name of layout.order)", 1)[0]
     assert "await " not in tail, "the grid is rebuilt in one go, so two renders cannot interleave cards"
+
+
+def test_default_swatch_is_read_after_the_frame():
+    # The lift-and-read settled the style of the pane the press had just shown (90 of 250 ms at 4x).
+    src = read("settings.js")
+    body = src.split("function renderAppearance() {", 1)[1].split("renderCustomThemes();", 1)[0]
+    assert "afterFrames(() => setTimeout(() => (button.style.background = themeDefaultAccent()" in body
+    assert body.count("themeDefaultAccent()") == 1
+
+
+def test_library_warm_waits_for_calm_in_an_idle_slot():
+    # graph.js's eval, started just before a press, landed inside Settings -> Data's first show.
+    src = read("lazy-entries.js")
+    body = src.split("function warmLibraryAfterInput()", 1)[1].split("\nwarmLibraryAfterInput();", 1)[0]
+    assert "requestIdleCallback(fn" in body
+    assert body.count("Date.now() < calmAt") == 2
+    assert '["pointerdown", "keydown", "click"]' in body

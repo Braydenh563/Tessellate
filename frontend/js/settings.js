@@ -2891,7 +2891,15 @@ function renderAppearance() {
     //: Default is no accent at all, the palette's own: the swatch shows
     //: that, not a fixed hex (owner, 2026-10-12: "the selected one should
     //: match the default colour").
-    button.style.background = accent.name === "indigo" ? themeDefaultAccent() || accent.swatch : accent.swatch;
+    //: The default swatch's colour is a page-wide style read with the accent
+    //: lifted; inside the first show it settled the style of the pane the
+    //: press had just shown (90 of 250 ms at 4x CPU, L-world-class-355). So
+    //: the last colour read (or the stock one) now, the theme's own a frame on.
+    button.style.background = accent.swatch;
+    if (accent.name === "indigo") {
+      button.style.background = themeDefaultAccent.kept?.value || accent.swatch;
+      afterFrames(() => setTimeout(() => (button.style.background = themeDefaultAccent() || accent.swatch)), 1);
+    }
     button.title = accent.label;
     button.setAttribute("aria-label", `${accent.label} accent`);
     // A custom colour wins, so no preset shows as active while it's set.
