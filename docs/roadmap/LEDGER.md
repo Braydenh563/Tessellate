@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
-| timeline | 3 | 0 | 0 | 0 | 0 | 3 |
+| timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 377 | 470 | 241 | 2 | 183 | 1088 |
+| all | 374 | 470 | 241 | 2 | 183 | 1085 |
 
 ## graph
 

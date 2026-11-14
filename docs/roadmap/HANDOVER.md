@@ -71,6 +71,6 @@
 
 **Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
-**Graph-plan session (2026-11-12g, PR 228, stopped at the 85% usage line):** graph plan closed (open_scan --plan graph clean); merged 73226a7b; one LEDGER row left: the py3.13 leg 2 failure on 5bb36335, cause not yet read. Next session on PR 228: read that job's log, fix, push once, send the hub "green".
+**Graph-plan session (2026-11-12g, PR 228 merged as 7d501441; follow-up PR 232):** graph plan closed (open_scan --plan graph clean), no open graph LEDGER rows. PR 232 (head d328d67f) carries the five review 5883476033 fixes and two flake fixes; nothing local-only but this line. Next: when 232's CI is green, send the hub "green d328d67f"; if red, root-cause fix and push once.
 
 The session record that stood here (morning summaries, the 2026-09-08 orders, the dated Now lines to 2026-11-12b) is in HISTORY.md, "HANDOVER session record (moved 2026-11-12)".

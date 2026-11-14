@@ -87,6 +87,8 @@ Chat: the typed yes forms, the Ask answerer setting, one assistant name on reply
 - Fix: a rename with a "to" in both names ('rename Trip to Spain to Trip to Portugal') plans the split whose old name is a note's whole title, not the first " to " (L47; `tests/test_chat_acts_gap_1112.py`).
 
 - Chat readers: a comparison of two notes now shows a side-by-side table, a day gone by is said once ("One day ago, on 9 November"), "what is on my list" answers over a list with an intro line, and "and the dentist" keeps the when ask. Spell guards no longer touch real words or all-caps acronyms (ledger L34, L104, L221, L-chat-9, L-chat-14).
+- Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
+- Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
 - Csv and tsv Grid: cells and the row-number column are 44 px touch targets under a coarse pointer (cells were 27 px; L-documents-40); the Grid now hides the preview pane it meant to.
 - Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
