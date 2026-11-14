@@ -5632,6 +5632,15 @@
         }
       }
     }
+    //: The panel's speed on the frame clock, for the next frame's lead (`nameMarkBuddyFollowFrame.lead`): a read
+    //: in the loop's task sees the panel as the frame stamped `turnAt` drew it; any other read is stamped now.
+    if (box) {
+      const ft = nmbFollow.turnAt || at;
+      const L = g.lead;
+      const gap = L ? ft - L.t : 0;
+      const [vx, vy] = L && gap >= 4 && gap < 100 ? [(box.left - L.x) / gap, (box.top - L.y) / gap] : L && gap < 4 ? [L.vx, L.vy] : [0, 0];
+      if (!L || gap >= 4) g.lead = { t: ft, x: box.left, y: box.top, vx, vy };
+    }
     if (box && g.fx !== undefined && box.width) g.dx = g.fx * box.width - NMB_W / 2;
     if (box && g.ty !== undefined && box.width) g.dy = g.dy0 + (g.ty * box.width) / g.w0;
     if (!box || (!box.width && !box.height)) {
@@ -5769,12 +5778,30 @@
   //: both, so a loop in either stage counts as asked for; `cancel` ends whichever it is in.
   nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk() {
     nmbFollow.stage = "raf";
-    nmbFollow.frame = requestAnimationFrame(function nameMarkBuddyFollowTurn() {
+    nmbFollow.frame = requestAnimationFrame(function nameMarkBuddyFollowTurn(t) {
       nmbFollow.stage = "task";
+      nmbFollow.turnAt = t;
+      nameMarkBuddyFollowFrame.lead(t);
       nmbFollow.frame = setTimeout(function nameMarkBuddyFollowTask() {
         nameMarkBuddyFollowFrame(performance.now());
       }, 0);
     });
+  };
+  //: **On a moving panel it leads by the panel's speed, not a frame behind it** (L-ui-modernisation-94, INBOX
+  //: 1830). The read is a task after the draw, so what it puts is where the panel was a frame ago: 7.6px behind on
+  //: a 0.6s slide. This frame's turn writes, and reads nothing: the last read (`g.lead`, on the frame clock) plus
+  //: the speed between the last two reads times the time since. An ease-in slide stops at full speed, so the lead
+  //: goes no further than the panel's animation's end (`nmbFollow.pm.end`, taken with `getAnimations`); without
+  //: that, the last frame overshot by the same 7px and came back.
+  nameMarkBuddyFollowFrame.lead = function nameMarkBuddyFollowLead(t) {
+    const g = nmb.glue;
+    const L = g && g.lead;
+    if (!nmbFollow.moving || !L || (!L.vx && !L.vy) || g.held || g.lost || nmb.visit || nmb.flight) return;
+    const dt = Math.min(t, nmbFollow.pm.end ?? Infinity) - L.t;
+    if (!(dt > 0 && dt < 100)) return;
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy || buddy.classList.contains("nm-buddy-dragging")) return;
+    buddy.style.transform = `translate(${nmb.lx + L.vx * dt}px, ${nmb.ly + L.vy * dt}px)`;
   };
   nameMarkBuddyFollowFrame.cancel = function nameMarkBuddyFollowCancel() {
     if (nmbFollow.stage === "raf") cancelAnimationFrame(nmbFollow.frame);
@@ -5822,6 +5849,7 @@
       }
       const [x, y] = [nmb.x, nmb.y];
       nameMarkBuddyFollow();
+      nmbFollow.turnAt = 0;
       nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
       nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + nameMarkBuddyNapMs(nmbFollow.rest, nmb.ride) : 0;
     }
@@ -5895,6 +5923,7 @@
     pm.el = el;
     pm.at = at;
     pm.val = false;
+    pm.end = undefined;
     const buddy = document.getElementById("nm-buddy");
     for (const anim of document.getAnimations()) {
       if (anim.playState !== "running") continue;
@@ -5903,6 +5932,9 @@
       const props = nameMarkBuddyAnimProps(anim);
       if (target.contains(el) ? props.some((p) => NMB_PLACES.test(p)) : props.some((p) => NMB_LAYOUT.test(p)) && Number.isFinite(anim.effect.getComputedTiming?.().endTime)) {
         pm.val = true;
+        //: When it stops, on the frame clock, for the lead (`nameMarkBuddyFollowFrame.lead`); none for one that repeats.
+        const end = anim.effect.getComputedTiming?.().endTime;
+        pm.end = Number.isFinite(end) && anim.startTime !== null ? anim.startTime + end / (anim.playbackRate || 1) : undefined;
         break;
       }
     }
@@ -6287,6 +6319,10 @@
       //: A transition or animation elsewhere (a typing dot, a fading line)
       //: moves nothing it perches on: it keeps the loop up without waking it.
       const near = !/^(?:transition|animation)/.test(type) || !(event.target instanceof Node) || event.target.contains(el) || el.contains(event.target);
+      //: One set going on or around its panel is looked for on the next frame, not up to 120ms on (L-ui-modernisation-94):
+      //: an ease-in-out slide moves under half a pixel a frame at first, so three still looks put the loop to a nap
+      //: of 300ms and the companion was left 6px behind before it found the move.
+      if (near && (type === "transitionrun" || type === "animationstart")) nmbFollow.movingAt = 0;
       nameMarkBuddyKeepUp(1500, near);
     }, { passive: true, capture: true });
   }
