@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 34 | 1 | 0 | 2 | 35 |
+| documents | 0 | 33 | 1 | 0 | 2 | 34 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 589 | 129 | 2 | 165 | 1201 |
+| all | 483 | 588 | 129 | 2 | 165 | 1200 |
 
 ## graph
 
@@ -334,8 +334,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style Measured 2026-11-13 (docsK, 40 keys, 4x CPU, CDP trace with invalidation tracking, load 0.6 to 2.2; sweep in the agent scratch dir): live 7.4 recalcs a key, 3 elements each, 6.9 ms, 3.05 layouts 4.9 ms, mean keydown to frame 42 ms; bare CodeMirror from the app bundle 4.2 recalcs, 2 elements, 2.8 ms, 1.0 layout 1.1 ms, mean 23 ms. No class writes (doc-block-handle, drop) on the key path; invalidations are the engine's own style writes (cm-content, cursor layer, cursor), the cursor blink animation (3.5 a key), the doc-caret text write (2 schedules, 1 layout dirty) and the page's emblem animations (5 a key vs 2 bare, frames). Profiler (inclusive per key): CM update 12 ms against about 4 bare, lag-watch wrapper 5, docLinkOfferAsk fetch 2, renderDocProse 1.8. Extra layouts are 2 frame layouts plus 1 forced by the engine's scrollIntoView coordsAt. Built 'c749c784': selectionBarHide and selectionBarElement used `$`, which falls back to surfaceFind and walks every unbuilt surface when the bar is missing (2.0 ms a key in the profile); lookups now read the document, test in test_selection_context.py. Wall effect not visible: mean 42.4 (4 runs after) against 42.6 (3 runs before), within noise. Tried: caret readout moved to one rAF: no change in layouts (3.0) and recalcs rose to 8.7, dropped. Left: where the engine update spends 8 ms more than bare (live-view decorations and update listeners) needs a per-plugin profile; the cursor-blink animation and emblem animations could pause while typing.
 - [ ] **L-documents-34** `documents` open, M: Tracked-change author and date shown on the suggestion menu and list: needs a stored form (CriticMarkup comment {>>name, date<<}) read by docSuggestParse, written by docSuggestEdit, kept by the Word export. From L333. Evidence: documents-prose.js docSuggestParse: CriticMarkup {++x++} carries no author or date; the mark menu is documents-prose.js docSuggestMenu (~1135)
-- [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
-- [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 - [ ] **L-documents-43** `documents` open, M: Query block: a fenced block that renders a saved search live (SilverBullet-style). From owner research via hub 2026-11-14. Evidence: check the existing saved-search code first
 - [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
@@ -361,6 +359,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-81** `documents` open, S: Diagram per-edge label position (1679 gap 4, needs an owner call on a non-Mermaid field). From L-documents-58 build, 2026-11-14. Evidence: Mermaid flowcharts have no edge-label position syntax (documents-mermaid.js dgmLink reads only |text| and worded labels); a position would need a comment-carried field
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
+- [ ] **L-documents-84** `documents` open, M: Debug generators and async: run finally blocks on generator return and for-of break, support async generators and for await, top-level await, arguments inside async or generator bodies, and name resumed frames after their function. From agent code1229. Evidence: Gaps left by the generator and async build.
 
 ## mindmap
 
