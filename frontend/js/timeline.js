@@ -1292,12 +1292,6 @@ function timelineDayLabel(key, has) {
   return { long, label: `${long}, ${has ? "has a page" : "no page yet"}` };
 }
 
-//: The journal streak's words, or "" under two days: one day is not a run.
-function timelineStreakLine(days) {
-  if (!Number.isFinite(days) || days < 2) return "";
-  return `${days} days in a row`;
-}
-
 async function renderTimelineDayStrip() {
   const host = $("timeline-daystrip-days");
   if (!host) return;
@@ -1315,7 +1309,9 @@ async function renderTimelineDayStrip() {
   if (end !== timelineStripEnd) return;
   const streak = $("timeline-streak");
   if (streak) {
-    const said = timelineStreakLine(journal?.streak);
+    //: Hidden under two days: one day is not a run.
+    const days = journal?.streak;
+    const said = Number.isFinite(days) && days >= 2 ? `${nounCount(days, "day")} in a row` : "";
     streak.textContent = said;
     streak.classList.toggle("hidden", !said);
   }

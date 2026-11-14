@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8494, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10882, test files 2769, tests 22264, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8493, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10882, test files 2769, tests 22264, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
-## Frontend functions (8494)
+## Frontend functions (8493)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1511,90 +1511,89 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `withDisplayName` | frontend/js/dashboard.js:279 |
 | `withoutLeadingEmoji` | frontend/js/dashboard.js:1080 |
 
-### frontend/js/timeline.js (80)
+### frontend/js/timeline.js (79)
 
 | Name | File:line |
 |---|---|
 | `appendTimelineRows` | frontend/js/timeline.js:853 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1525 |
-| `closeTimelineRow` | frontend/js/timeline.js:1720 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1521 |
+| `closeTimelineRow` | frontend/js/timeline.js:1716 |
 | `dailyNotePair` | frontend/js/timeline.js:1210 |
 | `dailyNoteTitle` | frontend/js/timeline.js:198 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1995 |
-| `drawTimelineWindow` | frontend/js/timeline.js:2025 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1991 |
+| `drawTimelineWindow` | frontend/js/timeline.js:2021 |
 | `fillTimelineBandOptions` | frontend/js/timeline.js:911 |
-| `focusTimelineRow` | frontend/js/timeline.js:1670 |
+| `focusTimelineRow` | frontend/js/timeline.js:1666 |
 | `newTimelineWindow` | frontend/js/timeline.js:814 |
 | `openDayPage` | frontend/js/timeline.js:1178 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1733 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2387 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1729 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2383 |
 | `openTodaysPage` | frontend/js/timeline.js:1166 |
 | `paintTimeline` | frontend/js/timeline.js:974 |
 | `paintTimelineFeed` | frontend/js/timeline.js:1017 |
-| `paintTimelineTable` | frontend/js/timeline.js:2169 |
+| `paintTimelineTable` | frontend/js/timeline.js:2165 |
 | `renderTimeline` | frontend/js/timeline.js:576 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1301 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1295 |
 | `renderTimelineKinds` | frontend/js/timeline.js:356 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1436 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1432 |
 | `renderTimelineRecall` | frontend/js/timeline.js:660 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2375 |
-| `shortDate` | frontend/js/timeline.js:1784 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2371 |
+| `shortDate` | frontend/js/timeline.js:1780 |
 | `startDayNote` | frontend/js/timeline.js:1241 |
 | `startTodaysNote` | frontend/js/timeline.js:1237 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2222 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2218 |
 | `syncTimelineFilterChip` | frontend/js/timeline.js:941 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:412 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2404 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2422 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2400 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2418 |
 | `syncTimelineYears` | frontend/js/timeline.js:713 |
 | `timelineAheadBuckets` | frontend/js/timeline.js:1071 |
 | `timelineAutoScale` | frontend/js/timeline.js:466 |
 | `timelineBucketKey` | frontend/js/timeline.js:231 |
 | `timelineBucketLabel` | frontend/js/timeline.js:248 |
 | `timelineBucketSection` | frontend/js/timeline.js:1083 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2417 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2413 |
 | `timelineCountLine` | frontend/js/timeline.js:790 |
 | `timelineDailyNote` | frontend/js/timeline.js:215 |
-| `timelineDayKeys` | frontend/js/timeline.js:1380 |
+| `timelineDayKeys` | frontend/js/timeline.js:1376 |
 | `timelineDayLabel` | frontend/js/timeline.js:1290 |
 | `timelineDayPages` | frontend/js/timeline.js:1274 |
 | `timelineDayShift` | frontend/js/timeline.js:1231 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1834 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1976 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1830 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1972 |
 | `timelineFocusFirstIn` | frontend/js/timeline.js:844 |
-| `timelineForgetRows` | frontend/js/timeline.js:2020 |
+| `timelineForgetRows` | frontend/js/timeline.js:2016 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:322 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1423 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1419 |
 | `timelineKindChoice` | frontend/js/timeline.js:306 |
-| `timelineKindName` | frontend/js/timeline.js:2260 |
+| `timelineKindName` | frontend/js/timeline.js:2256 |
 | `timelineKindsText` | frontend/js/timeline.js:779 |
 | `timelineLoadMore` | frontend/js/timeline.js:738 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1490 |
-| `timelineMonthShift` | frontend/js/timeline.js:1417 |
-| `timelineMonthStart` | frontend/js/timeline.js:1413 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1486 |
+| `timelineMonthShift` | frontend/js/timeline.js:1413 |
+| `timelineMonthStart` | frontend/js/timeline.js:1409 |
 | `timelineQuery` | frontend/js/timeline.js:546 |
 | `timelineResolvedScale` | frontend/js/timeline.js:493 |
 | `timelineRow` | frontend/js/timeline.js:127 |
 | `timelineRowByKey` | frontend/js/timeline.js:838 |
-| `timelineRowElement` | frontend/js/timeline.js:1553 |
+| `timelineRowElement` | frontend/js/timeline.js:1549 |
 | `timelineRowEls` | frontend/js/timeline.js:833 |
 | `timelineRowGroups` | frontend/js/timeline.js:897 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:450 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2452 |
-| `timelineScrubTo` | frontend/js/timeline.js:2073 |
-| `timelineSortValue` | frontend/js/timeline.js:2140 |
-| `timelineSortedRows` | frontend/js/timeline.js:2151 |
-| `timelineStepScale` | frontend/js/timeline.js:1753 |
-| `timelineStreakLine` | frontend/js/timeline.js:1296 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2202 |
-| `timelineTableRow` | frontend/js/timeline.js:2264 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2448 |
+| `timelineScrubTo` | frontend/js/timeline.js:2069 |
+| `timelineSortValue` | frontend/js/timeline.js:2136 |
+| `timelineSortedRows` | frontend/js/timeline.js:2147 |
+| `timelineStepScale` | frontend/js/timeline.js:1749 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2198 |
+| `timelineTableRow` | frontend/js/timeline.js:2260 |
 | `timelineUnitText` | frontend/js/timeline.js:773 |
-| `timelineViewMode` | frontend/js/timeline.js:2113 |
+| `timelineViewMode` | frontend/js/timeline.js:2109 |
 | `timelineVisibleRows` | frontend/js/timeline.js:954 |
-| `timelineWatchRow` | frontend/js/timeline.js:2010 |
+| `timelineWatchRow` | frontend/js/timeline.js:2006 |
 | `toggleTimelineKind` | frontend/js/timeline.js:431 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1694 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1690 |
 
 ### frontend/js/palette.js (35)
 

@@ -254,7 +254,7 @@ disagree.
     week rather than in an invented one. The streak half was reopened
     2026-11-14 (it had only a session reason) and built as L495: a quiet
     "N days in a row" in the journal strip's head, outside the dock
-    (`timelineStreakLine`, `tests/test_daily_strip.py`).
+    (`renderTimelineDayStrip`, `tests/test_daily_strip.py`).
 23. **A note naming two dates sits on the first and is "also on" the rest**
     (decision 2 holds: one row per note, so the feed, the table and the
     calendar cannot disagree about what a row is). `/timeline` rows carry

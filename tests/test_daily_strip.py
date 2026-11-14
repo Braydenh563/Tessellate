@@ -130,6 +130,4 @@ def test_the_strip_says_the_journal_streak():
     assert re.search(r'<span id="timeline-streak" class="[^"]*\bhidden\b[^"]*"', head)
     body = _function(TIMELINE, "async function renderTimelineDayStrip(")
     assert "/entries/daily?through=${today}&days=366" in body
-    assert "timelineStreakLine(" in body
-    line = _function(TIMELINE, "function timelineStreakLine(")
-    assert "days in a row" in line and "< 2" in line
+    assert 'nounCount(days, "day")} in a row' in body and "days >= 2" in body
