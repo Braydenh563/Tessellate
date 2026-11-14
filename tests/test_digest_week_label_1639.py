@@ -16,7 +16,9 @@ def _widget() -> str:
 
 def test_the_source_caption_is_a_footnote_not_the_first_line():
     w = _widget()
-    assert 'const source = "From your notes.";' in w
+    #: The caption comes from the server's `source` event now ("Your notes, no AI", L-chat-55): the
+    #: old prefix test never matched, nothing wrote "From your notes." into the week.
+    assert "source: streamDigest.source" in w
     assert "renderMarkdown(out, words)" in w and 'note.className = "muted"' in w
     # The footnote follows the week, never leads it.
     assert "[head, out, source ? note : null, controls]" in w

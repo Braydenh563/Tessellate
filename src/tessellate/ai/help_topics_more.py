@@ -127,14 +127,18 @@ MORE_TOPICS: list[dict] = [
             "companion reminder", "stop the companion talking",
         ),
         "body": (
-            "Now and then, a few times a day at most, the corner companion says "
-            "something from your notes in its speech bubble: a reminder that is due, "
-            "a note from this day in an earlier year, something you left open, or "
-            "a quiet day. It is written from your notes with no model, never from a "
-            "private note, and never the same line twice. It stays quiet with "
-            "Motion off, while you carry it, or while it sleeps. To stop it, turn off "
-            "Say something from your notes in Settings, Appearance, Atlas and faces, "
-            "Corner companion, What it does on its own."
+            "Now and then, at most three times a day, the corner companion says "
+            "something from your notes in its speech bubble: a reminder due within "
+            "the hour or overdue, a note you may want back, a note from this day in "
+            "an earlier year, a checklist item left unticked for over a month, two "
+            "notes that disagree, a dated plan in the next week with no reminder "
+            "(the bubble then offers Set a reminder), or a note that answers a "
+            "question you asked. It is written from your notes with no model, never "
+            "from a private note, and never about the same thing twice in a week "
+            "(a disagreement only once). It stays quiet for 20 seconds after you "
+            "type, with Motion off, while you carry it, or while it sleeps. To stop "
+            "it, turn off Say something from your notes in Settings, Appearance, "
+            "Atlas and faces, Corner companion, What it does on its own."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
