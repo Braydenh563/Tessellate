@@ -6,9 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI leg 1 fixes: the reading bin routes move to routes_reading_bin.py (routes_files_readings.py 827 to 751 lines, cap 800); the not-installed search line stays one sentence (L-world-class-64) and its cache test reads the download it names.
 - World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).
-- CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); the not-installed search message points to Reinstall again; a space switch forgets the held way back for large settings changes.
+- CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); a space switch forgets the held way back for large settings changes.
 - Dock audit 479 leftovers checked: four of six were already built (Graph View in the gear, one New in Boards and maps, help on every Library dock, one Add per Reminders card); the zoom order and the documents dock are L-world-class-351 (L-world-class-113).
 - Boot CSS: the Skills tab rules (170 lines out of 07 and 08) load with the Library bundle in library-lazy.css, boot CSS gzip 178,984 to 178,610; the built tab computes the same (3,845 elements at 1440, 820 and 390, fact panels open, 0 differences); the run list, Connections and whiteboard blocks need a lazy sheet first (L-world-class-232, L-world-class-350).
 - Learning loop: dismissed link pairs and accepted neighbourhoods were already written (KG9) and are now proved end to end, on a fixed clock: a dismissal hides the pair for good (past 600 other corrections, undoable), accepts lift the signals they were offered for, a decision halves after one half-life (L-world-class-85).
