@@ -1818,7 +1818,10 @@ def test_atlas_changes_face_on_its_own_and_on_more_events() -> None:
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
     drift = _fn("atlasDrift", atlas)
     assert 'atlasMoodNow !== "calm"' in drift and "data-atlas-hidden" in drift
-    assert "atlasDriftState.recent" in drift and "35000 + Math.random() * 40000" in drift
+    #: L180 moved the gap to a per-phase pace (at least 3 moods a minute at rest), so the
+    #: drift reads its gap from `atlasDriftState.gap`, 20 to 40 s before the phase's pace.
+    assert "atlasDriftState.recent" in drift and "atlasDriftState.gap(phase)" in drift
+    assert "atlasDriftState.gap = (phase) => (20000 + Math.random() * 20000) * atlasDriftState.pace[phase];" in atlas
     on = _fn("atlasOn", atlas)
     assert 'event === "done"' in on and 'event === "found" || event === "nothing"' in on
     js = ROOT / "frontend" / "js"

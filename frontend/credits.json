@@ -161,7 +161,7 @@
     {
      "name": "needle",
      "licence": "Apache-2.0",
-     "source": "https://huggingface.co/Cactus-Compute/needle3"
+     "source": "https://huggingface.co/Cactus-Compute/cactus, https://huggingface.co/Cactus-Compute/needle3"
     },
     {
      "name": "marian-nmt (inside the Bergamot WASM)",

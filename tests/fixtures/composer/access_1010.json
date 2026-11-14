@@ -114,6 +114,8 @@
     "board_card": "put the boiler note on the whiteboard",
     "make_map": "make a mind map from the boiler note",
     "set_theme": "switch to dark mode",
-    "similar": "find notes similar to the boiler note"
+    "similar": "find notes similar to the boiler note",
+    "counter": "add 1 to coffee",
+    "remember": "remember that I prefer short answers"
   }
 }

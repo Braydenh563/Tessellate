@@ -36,6 +36,7 @@ import contextvars
 import difflib
 import json
 import re
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
@@ -343,7 +344,7 @@ def _answer(message: str, session: Session) -> StatAnswer | None:
 
     from tessellate.ai import notebook_compare
 
-    if compared := notebook_compare.answer(text, session, _now()):
+    if compared := notebook_compare.answer(text, session, _now(), sys.modules[__name__]):
         return compared
     for ask, reader in _FIRST_RULES:
         if ask(text):

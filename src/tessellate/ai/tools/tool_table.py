@@ -636,7 +636,7 @@ TOOLS: dict[str, ToolSpec] = {
         ToolSpec(
             "create_mindmap",
             "An empty mindmap with one root topic, for 'start a mind map about X'. Returns "
-            "board_id and root_id for add_map_node, which builds the tree one node per call.",
+            "board_id and root_id for add_map_node (one node per call).",
             {
                 "type": "object",
                 "properties": {
@@ -644,7 +644,7 @@ TOOLS: dict[str, ToolSpec] = {
                     "kind": {"type": "string", "enum": ["map", "board"], "description": "board: an empty whiteboard, no root"},
                     "root_text": {
                         "type": "string",
-                        "description": "The centre node's text (defaults to the title)",
+                        "description": "Centre text (default: the title)",
                     },
                 },
                 "required": ["title"],
@@ -1167,17 +1167,16 @@ TOOLS: dict[str, ToolSpec] = {
                 "type": "object",
                 "properties": {
                     "note_id": _NOTE_ID,
-                    "other_note_id": {"type": "integer", "description": "ID of a single target note"},
+                    "other_note_id": {"type": "integer", "description": "One target note's id"},
                     "other_note_ids": {
                         "type": "array",
                         "items": {"type": "integer"},
-                        "description": "IDs of multiple target notes to link to (optional)",
+                        "description": "Several target ids instead",
                     },
                     "reason": {
                         "type": "string",
                         "description": (
-                            "Optional: why, in a few words ('both about scheduling'). Skip it"
-                            " when obvious."
+                            "Optional: why, in a few words ('both about scheduling')"
                         ),
                     },
                     "link_type": {

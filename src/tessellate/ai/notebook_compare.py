@@ -29,10 +29,11 @@ def _between(session: Session, stat, window) -> int:  # noqa: ANN001
     return session.scalar(stat._visible(select(func.count(Entry.id)).where(Entry.created_at >= window[0], Entry.created_at <= window[1]))) or 0
 
 
-def answer(text: str, session: Session, now: datetime):  # noqa: ANN201
-    """A `StatAnswer` for a compare or a busiest-period question, else None."""
-    from tessellate.ai import notebook_stats as stat
+def answer(text: str, session: Session, now: datetime, stat):  # noqa: ANN001, ANN201
+    """A `StatAnswer` for a compare or a busiest-period question, else None.
 
+    `stat` is `notebook_stats`, handed in by its only caller so this module
+    never imports it back (no import cycle)."""
     most = _MOST.search(text)
     if most:
         return _busiest(session, stat, most.group(1) or most.group(2), now)
