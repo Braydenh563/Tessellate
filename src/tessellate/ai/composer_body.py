@@ -123,6 +123,19 @@ FACT_SHAPES = ("count", "when", "who", "yesno", "where")
 
 
 FACT_OTHERS = 2
+#: The share of the lead sentence's score another sentence of its note needs to be quoted with it.
+FACT_KEEP = 0.6
+
+
+def _fact_sentences(shape: str, lead: Sentence, same: list[Sentence]) -> list[Sentence]:
+    """The lead note's sentences an answer quotes. A fact asked for is the sentence that holds
+    it: a neighbour scoring under `FACT_KEEP` of the lead's is a padding quote (L219: "who
+    leads the review" also gave the budget line)."""
+    if shape == "when":
+        return [lead]
+    if shape in FACT_SHAPES:
+        return [s for s in same if s is lead or s.score >= FACT_KEEP * lead.score]
+    return same
 
 
 def _lead_block(out: _Answer, shape: str, lead: Sentence, chosen: list[Sentence], terms: list[str], question: str) -> None:
@@ -130,8 +143,7 @@ def _lead_block(out: _Answer, shape: str, lead: Sentence, chosen: list[Sentence]
     in the note's own order; then its list, when the answer is a list."""
     view = out.views[lead.note_id]
     same = [s for s in chosen if s.note_id == lead.note_id]
-    if shape == "when":
-        same = [lead]
+    same = _fact_sentences(shape, lead, same)
     if shape in FACT_SHAPES and lead.kind == "item":
         #: "Is the pricing page signed off?" is answered by the one entry of
         #: the risks list that says so, not by the whole list.

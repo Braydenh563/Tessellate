@@ -10,8 +10,10 @@ the layer list in `composer.py`'s docstring, never back to `composer`.
 from __future__ import annotations
 
 import functools
+import hashlib
 import re
-from dataclasses import dataclass, field
+from collections import OrderedDict
+from dataclasses import dataclass, field, replace
 from datetime import date
 
 from tessellate.ai import composer_frame, composer_tables, realise, recognise as rec
@@ -581,7 +583,49 @@ def _read_title(view: NoteView, content: str, front: int, body_start: int, title
             _title_unit(view, content, front, lines[0])
 
 
+#: Reads kept between answers (F8, L-chat-157): an answer parsed every one of the route's 400 notes, 40 ms of
+#: 100 to 150. A read is kept by what it was made from, so an edit parses that note again and no other.
+READ_CACHE_MAX = 600
+_READ_CACHE_CHARS = 20_000
+_reads: OrderedDict[tuple, NoteView] = OrderedDict()
+
+
+def forget_reads() -> None:
+    _reads.clear()
+
+
+def cached_reads() -> int:
+    return len(_reads)
+
+
+def _copy_view(view: NoteView, note: dict, rank: int) -> NoteView:
+    """A view of its own: a question scores and echoes sentences in place, so none may be shared."""
+    sentences = [replace(s, rank=rank, words=list(s.words), echoes=list(s.echoes)) for s in view.sentences]
+    return replace(view, note=note, rank=rank, sentences=sentences, words=set(view.words),
+                   title_words=set(view.title_words), filed_words=set(view.filed_words))
+
+
 def read_note(note: dict, rank: int) -> NoteView | None:
+    """`_read_note_fresh`, remembered by the note's id, words, tags, category and day."""
+    content = str(note.get("content") or "")
+    if len(content) > _READ_CACHE_CHARS or note.get("id") is None:
+        return _read_note_fresh(note, rank)
+    key = (note["id"], hashlib.blake2b(content.encode("utf-8", "replace"), digest_size=16).digest(),
+           tuple(str(t) for t in (note.get("tags") or [])), str(note.get("category") or ""),
+           str(note.get("created_at") or ""), str(note.get("written") or ""), str(note.get("kind") or ""))
+    kept = _reads.get(key)
+    if kept is not None:
+        _reads.move_to_end(key)
+        return _copy_view(kept, note, rank)
+    view = _read_note_fresh(note, rank)
+    if view is not None:
+        _reads[key] = _copy_view(view, {"id": note["id"]}, rank)
+        while len(_reads) > READ_CACHE_MAX:
+            _reads.popitem(last=False)
+    return view
+
+
+def _read_note_fresh(note: dict, rank: int) -> NoteView | None:
     """A note as its units: prose split into sentences, each list item one."""
     content = str(note.get("content") or "")
     if not content.strip() or note.get("id") is None:
