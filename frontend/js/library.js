@@ -3798,6 +3798,17 @@ async function renderLibraryDocuments() {
     leafLines.textContent = docPreview;
     leaf.append(leafHead, leafLines);
     page.append(leaf);
+    //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
+    if (doc.cover) {
+      const cover = document.createElement("img");
+      cover.className = "doc-list-page-cover";
+      cover.loading = "lazy";
+      cover.decoding = "async";
+      cover.alt = "";
+      cover.addEventListener("error", () => cover.remove());
+      cover.src = doc.cover;
+      page.append(cover);
+    }
     if (docPreview) {
       const preview = document.createElement("span");
       preview.className = "doc-list-preview";

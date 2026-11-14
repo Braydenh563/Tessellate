@@ -1645,6 +1645,7 @@ body.printing-doc #doc-preview p,
   background: var(--page);
   box-shadow: var(--shadow-sm);
   pointer-events: none;
+  position: relative;
 }
 .doc-list-page-leaf {
   display: flex;
@@ -1658,6 +1659,13 @@ body.printing-doc #doc-preview p,
   transform-origin: top left;
   line-height: 1.4;
   text-align: left;
+}
+.doc-list-page-cover {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 .doc-list-page-head {
   display: -webkit-box;
