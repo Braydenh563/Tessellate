@@ -227,10 +227,6 @@ const wbMultiSelection = new Set();
 // outside it, placing a text box switches back to Select once typed , 
 // can still call it, the same shape the delete-refs above already use.
 let wbSelectToolRef = null;
-//: The phone tools opener's label, refreshed from wherever a tool is chosen
-//: (`selectWbTool` is inside `initWhiteboard`'s closure, and so is the
-//: opener). Null until a board has been opened once.
-let wbToolsOpenerSyncRef = null;
 // Same shape again, for the marquee/lasso selection drag. Reported directly:
 // "there's a permanent selection box on my mindmap", a dashed accent
 // rectangle sitting on the canvas at rest, ~330x375, with nothing selected.
@@ -262,10 +258,6 @@ function wbClearSelectionOverlays() {
   if (!wbLinkDragActive) wbClearAnchorHints();
   return inFlight;
 }
-// Same shape, for refreshing the "Line ends" control's displayed value when
-// the active tool switches between Line and Arrow (each now has its own
-// remembered end-style: see the live-reported bug fix in `initWhiteboard`).
-let wbRefreshArrowStyleControlRef = null;
 // True only between an eraser mousedown and mouseup, the drawing tools
 // leave one mark per click-drag, the eraser is meant to remove everything
 // the pointer crosses while held, so it needs a "currently held" flag the
@@ -465,9 +457,9 @@ let wbZoomPending = null;
 //: rectangle the SVG used to report and cannot ever move.
 function wbApplyZoomTransform(t) {
   const css = `translate(${t.x}px, ${t.y}px) scale(${t.k})`;
-  d3.select("#wb-html-layer").style("transform", css);
-  d3.select("#wb-svg-layer").style("transform", css);
-  d3.select("#wb-overlay-layer").style("transform", css);
+  d3.select(wbInstances.layer("wb-html-layer")).style("transform", css);
+  d3.select(wbInstances.layer("wb-svg-layer")).style("transform", css);
+  d3.select(wbInstances.layer("wb-overlay-layer")).style("transform", css);
 }
 
 //: The board's origin in screen coordinates: where board 0,0 sits before the
@@ -498,7 +490,7 @@ function wbCanvasOriginRect() {
   if (wbCanvasRectCache) return wbCanvasRectCache;
   //: Null until the board's template is stamped (row 21): a window resize before
   //: the first board open must not throw (e2e editor-keys at 700 px).
-  const rect = document.getElementById("whiteboard-container")?.getBoundingClientRect() ?? null;
+  const rect = wbInstances.container()?.getBoundingClientRect() ?? null;
   wbCanvasRectCache = rect;
   return rect;
 }
@@ -528,7 +520,7 @@ let wbCanvasOriginCache = null;
 
 function wbCanvasOrigin() {
   if (wbCanvasOriginCache && wbCanvasRectCache) return wbCanvasOriginCache;
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   const rect = wbCanvasOriginRect();
   let scale = el.offsetWidth ? rect.width / el.offsetWidth : 1;
   //: `offsetWidth` is rounded to a whole pixel and the rect is not, so an
@@ -550,7 +542,7 @@ function wbBoardToScreen(x, y, origin, t) {
 }
 
 function wbClientToBoard(clientX, clientY) {
-  return wbScreenToBoard(clientX, clientY, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
+  return wbScreenToBoard(clientX, clientY, wbCanvasOrigin(), d3.zoomTransform(wbInstances.container()));
 }
 
 window.addEventListener("pointerdown", wbClearCanvasRectCache, true);
@@ -581,12 +573,12 @@ window.addEventListener(
 function wbStartPanShield(e) {
   const type = e.sourceEvent?.type;
   if (type !== "mousemove" && type !== "pointermove") return;
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (el && !el.classList.contains("wb-hand-pan")) el.classList.add("wb-hand-pan");
 }
 
 function wbEndPanShield() {
-  document.getElementById("whiteboard-container")?.classList.remove("wb-hand-pan");
+  wbInstances.container()?.classList.remove("wb-hand-pan");
   //: The bar was placed from held measurements all through the pan; place it
   //: once with real ones when the pan has been idle, so its clearance from the
   //: handle is exact again. **Not at every gesture end:** a wheel gesture ends
@@ -645,7 +637,7 @@ function wbZoomFrameWork() {
   //:
   //: An overview drag measured the canvas at its press, and the canvas
   //: cannot change size while a pointer is held on the overview.
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const drag = wbNavState.drag;
   const size = drag
     ? { width: drag.width, height: drag.height }
@@ -689,7 +681,7 @@ function wbShowZoomLevel(k) {
     format: (v) => `${Math.round(v)}%`,
     presets: [25, 50, 75, 100, 150, 200, 400, { label: "Fit", run: () => wbZoomToFit() }],
     onCommit: (v) => {
-      const container = document.getElementById("whiteboard-container");
+      const container = wbInstances.container();
       if (container) d3.select(container).transition().duration(160).call(wbZoom.scaleTo, v / 100, wbZoomAnchor({ usePointer: false }));
     },
   });
@@ -758,8 +750,8 @@ function wbScheduleCull() {
 
 function wbCullNow(transform, size) {
   if (wbCullHeld) return;
-  const container = document.getElementById("whiteboard-container");
-  const layer = document.getElementById("wb-html-layer");
+  const container = wbInstances.container();
+  const layer = wbInstances.layer("wb-html-layer");
   if (!container || !layer) return;
   //: `size` when the caller has read it before writing anything this frame
   //: (`wbZoomFrameWork`); a read here otherwise.
@@ -848,7 +840,7 @@ const WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };
 let wbInvZoomTimer = 0;
 
 function wbSyncGridToTransform(transform) {
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (!el) return;
   const t = transform || d3.zoomTransform(el);
   el.style.setProperty("--wb-grid-size", `${WB_GRID_SPACING * t.k}px`);
@@ -991,7 +983,7 @@ function wbSnap(value, bypass) {
 //: pull is the same distance under the pointer at 20% and at 400%.
 const WB_ALIGN_SNAP_PX = 6;
 function wbAlignTol() {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const k = container ? d3.zoomTransform(container).k : 1;
   return WB_ALIGN_SNAP_PX / (k || 1);
 }
@@ -1421,7 +1413,7 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
 //: guides' own group so it goes when they do; a constant screen size.
 function wbShowSizeReadout(box) {
   const group = document.getElementById("wb-align-guides");
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!group || !container) return;
   const k = d3.zoomTransform(container).k || 1;
   const words = `${Math.round(box.w)} x ${Math.round(box.h)}`;
@@ -1449,7 +1441,7 @@ function wbShowSizeReadout(box) {
 //: they sit on the same spots (22 px out, mid-side) and covered the numbers
 //: (the owner 2026-10-26: "sizes still get cut off"). Neither works mid-drag.
 function wbMeasuring(on) {
-  document.getElementById("whiteboard-container")?.classList.toggle("wb-measuring", on);
+  wbInstances.container()?.classList.toggle("wb-measuring", on);
 }
 
 //: One resize frame through the guides: the box the handle has made, snapped
@@ -1517,7 +1509,7 @@ const WB_BADGE_CLEAR_PX = 22;
 function wbShowAlignmentGuides(lines) {
   //: The overlay layer, above the cards in DOM order: in `#wb-zoom-group` (the base SVG) a guide ran
   //: under every note card it lined up with (owner, 2026-11-10, INBOX 1725). Same pan and zoom.
-  const zoomGroup = document.getElementById("wb-overlay-zoom-group") || document.getElementById("wb-zoom-group");
+  const zoomGroup = wbInstances.layer("wb-overlay-zoom-group") || wbInstances.layer("wb-zoom-group");
   if (!zoomGroup) return;
   let group = document.getElementById("wb-align-guides");
   if (!group) {
@@ -1530,7 +1522,7 @@ function wbShowAlignmentGuides(lines) {
   wbMeasuring(false);
   if (!lines.length) return;
   const ns = "http://www.w3.org/2000/svg";
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const k = (container && d3.zoomTransform(container).k) || 1;
   for (const line of lines) {
     const kind = line.kind || "edge";
@@ -1579,7 +1571,7 @@ function wbClearAlignmentGuides() {
 }
 
 function wbApplyGrid() {
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (!el) return;
   el.dataset.wbGrid = wbGridType();
   wbSyncGridToTransform();
@@ -1599,7 +1591,7 @@ function wbBoardBackground() {
 //: The theme's own board colour as a hex string, read with no colour of the
 //: board's on the container, so "reset" still means the current theme.
 function wbThemeBoardHex() {
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (!el) return null;
   const rgb = getComputedStyle(el).backgroundColor;
   const m = rgb.match(/(\d+),\s*(\d+),\s*(\d+)/);
@@ -1607,7 +1599,7 @@ function wbThemeBoardHex() {
 }
 
 function wbApplyBackground() {
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (!el) return;
   const bg = wbBoardBackground();
   el.style.removeProperty("--wb-board-bg");
@@ -2084,7 +2076,7 @@ function wbTimerStop(quiet) {
 function wbOpenTimerMenu() {
   const items = [1, 3, 5, 10, 15, 30].map((m) => makeMenuItem(`ph:timer ${nounCount(m, "minute")}`, `Count down ${nounCount(m, "minute")} on the board`, () => wbTimerStart(m)));
   if (wbTimer.bar && !wbTimer.bar.classList.contains("hidden")) items.push(makeMenuItem("ph:x Stop the timer", "Take the timer off the board", () => wbTimerStop()));
-  const at = document.getElementById("whiteboard-container")?.getBoundingClientRect();
+  const at = wbInstances.container()?.getBoundingClientRect();
   openMenuAtPoint(items, "Workshop timer", at ? at.left + at.width / 2 - 80 : 120, at ? at.top + 64 : 120);
 }
 
@@ -2816,7 +2808,7 @@ const wbItemElCache = new Map();
 const wbItemElIndex = { byKey: new Map(), count: -1, last: null };
 
 function wbItemElIndexed(key, retry = true) {
-  const layer = document.getElementById("wb-html-layer");
+  const layer = wbInstances.layer("wb-html-layer");
   if (!layer) return null;
   const index = wbItemElIndex;
   if (index.count !== layer.childElementCount || index.last !== layer.lastElementChild) {
@@ -3017,7 +3009,7 @@ function wbSameView(a, b) {
 //: A panel opening, closing or the window changing size refits a view that
 //: is still where the last fit put it, and leaves any other view alone.
 function wbRefitIfFitted() {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!wbFit.on || !container || !container.offsetParent || !container.clientWidth) return;
   wbZoomToFit({ padding: wbFit.padding });
 }
@@ -3029,7 +3021,7 @@ function wbRefitIfFitted() {
  * until they fill a 1440px window is not what anyone means by "fit".
  */
 function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(), maxScale = 1, refit = true } = {}) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container) return;
   const sel = d3.select(container);
   if (!bounds) {
@@ -3104,7 +3096,7 @@ function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(),
 //: over the board, else the view's centre. One read of the pointer per step,
 //: none per frame.
 function wbZoomAnchor({ usePointer = true } = {}) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const rect = container.getBoundingClientRect();
   const t = d3.zoomTransform(container);
   const bounds = wbSelectionBounds();
@@ -3117,7 +3109,7 @@ function wbZoomAnchor({ usePointer = true } = {}) {
 }
 
 function wbZoomStep(factor, { duration = 160, usePointer = true } = {}) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container) return;
   d3.select(container).transition().duration(duration).call(wbZoom.scaleBy, factor, wbZoomAnchor({ usePointer }));
 }
@@ -3168,7 +3160,7 @@ function wbZoomKey(e) {
 }
 
 function wbZoomTo100() {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container) return;
   d3.select(container).transition().duration(160).call(wbZoom.scaleTo, 1, wbZoomAnchor({ usePointer: false }));
 }
@@ -3226,7 +3218,7 @@ function wbMapFrameScales(container) {
 //: open would throw away the view its owner left it in.
 function wbFrameMapOnOpen() {
   if (!wbIsMap()) return;
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container) return;
   const scales = wbMapFrameScales(container);
   wbZoomToFit({ animate: false, padding: scales.pad });
@@ -3275,7 +3267,7 @@ const wbBoardViews = new Map();
 
 function wbRememberBoardView() {
   const id = window.currentBoardId;
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
   const t = d3.zoomTransform(container);
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
@@ -3321,7 +3313,7 @@ function wbViewHoldsBox(view, box, free) {
 
 /** Put a board's remembered view back, or frame it when it has none to give. */
 function wbRestoreOrFrameBoard(boardId, restore = false) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container) return;
   const saved = boardId == null ? null : wbBoardViews.get(boardId) || wbRememberBoardView.stored(boardId);
   //: `restore`: the caller is putting a board back (a document's board panel closing, documents-board.js), so the camera it had is
@@ -3370,7 +3362,7 @@ function wbFoldNativeScroll(event) {
 
 /** Centre the viewport on one board-space rectangle, keeping the current zoom. */
 function wbCenterOn(box, { animate = true, minScale = 0.55 } = {}) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container || !box) return;
   const sel = d3.select(container);
   const free = wbFreeArea(container);
@@ -3408,7 +3400,7 @@ function wbQueueReveal() {
 }
 
 function wbRevealSelection() {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   let b = null;
   try {
     b = container?.offsetParent && wbSelectionBounds();
@@ -5228,7 +5220,7 @@ function wbDefaultInk(color) {
 const wbBoardBgCache = { sig: "", value: "", pass: false, out: "" };
 function wbBoardBg() {
   if (wbBoardBgCache.pass) return wbBoardBgCache.out;
-  const el = document.getElementById("whiteboard-container");
+  const el = wbInstances.container();
   if (!el) return "";
   const root = document.documentElement;
   let sig = el.style.getPropertyValue("--wb-board-bg");
@@ -5276,6 +5268,7 @@ function wbPushUndo(entry) {
   // same rule the sketch pad's own `sketchSaveSnapshot` already follows.
   wbRedoStack = [];
   wbUpdateUndoRedoButtons();
+  wbInstances.changed();
 }
 
 //: **Restored topics have new ids, so every history entry that names an old
@@ -5603,7 +5596,7 @@ function wbEnsureHandles(el) {
 }
 
 onSurface("board", () => {
-  const board = document.getElementById("whiteboard-container");
+  const board = document.getElementById("whiteboard-container"); // page wiring, at load (L-whiteboard-53)
   const reach = (e) => {
     const el = e.target?.closest?.(".wb-object, .node-card");
     if (el) wbEnsureHandles(el);
@@ -5882,7 +5875,7 @@ function wbSelectionDragOrigin() {
 // What's actually framed on screen right now, in board-space coordinates, 
 // the inverse of the pan/zoom transform the container itself carries.
 function wbVisibleBounds() {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const transform = d3.zoomTransform(container);
   const rect = container.getBoundingClientRect();
   return {
@@ -5965,6 +5958,12 @@ async function initWhiteboard() {
   surfaceBuild("board");
   if (wbInitialized) return;
   wbInitialized = true;
+  //: Two hooks `selectWbTool` calls, set further down this closure: refreshing
+  //: the "Line ends" control when the tool switches between Line and Arrow, and
+  //: the phone tools opener's label. Locals since L-whiteboard-53 (nothing
+  //: outside this closure read them; freed two shared names).
+  let wbRefreshArrowStyleControlRef = null;
+  let wbToolsOpenerSyncRef = null;
   
   const container = d3.select("#whiteboard-container");
   //: **Middle button: the pan, and nothing else** (INBOX 167: "when I push
@@ -6022,7 +6021,7 @@ async function initWhiteboard() {
   }
   const midPanClass = (on) => {
     wbMidPanHeld = on;
-    document.getElementById("whiteboard-container")?.classList.toggle("wb-mid-pan", on);
+    wbInstances.container()?.classList.toggle("wb-mid-pan", on);
   };
   window.addEventListener("mousedown", (event) => {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) {
@@ -6089,7 +6088,7 @@ async function initWhiteboard() {
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
   //: The level is a typeable field (value-field.js); drawn now, since the markup holds only its host.
-  wbShowZoomLevel(d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1);
+  wbShowZoomLevel(d3.zoomTransform(wbInstances.container()).k || 1);
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -6305,7 +6304,7 @@ async function initWhiteboard() {
       } else if (event.key === "Escape") {
         if (ring.id === "wb-map-radial") wbCloseMapRadial();
         else wbCloseMapLinkRadial();
-        document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+        wbInstances.container()?.focus({ preventScroll: true });
       } else {
         return;
       }
@@ -7345,7 +7344,7 @@ async function initWhiteboard() {
     if (wbSelectedItem?.kind === "node") wbArrangeMindMap(wbSelectedItem.id, "radial");
   });
 
-  const containerEl = document.getElementById("whiteboard-container");
+  const containerEl = wbInstances.container();
   const undoBtn = document.getElementById("wb-undo");
 
   function updateWbCursor() {
@@ -8132,7 +8131,7 @@ async function initWhiteboard() {
   // The cursor changes with it, because a modifier that alters what a drag
   // does has to say so before the drag, a grab cursor is how every canvas
   // app signals this, and without it "space does something" is a secret.
-  const wbCanvasEl = () => document.getElementById("whiteboard-container");
+  const wbCanvasEl = () => wbInstances.container();
   function wbSetSpaceHeld(held) {
     if (wbSpaceHeld === held) return;
     wbSpaceHeld = held;
@@ -8161,7 +8160,7 @@ async function initWhiteboard() {
     // node's editor is the other half of "I cant highlight text in mindmap
     // text boxes", the caret went to the container mid-gesture.
     if (e.target.closest(".whiteboard-floating-panel, [contenteditable=true]")) return;
-    document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+    wbInstances.container()?.focus({ preventScroll: true });
     // A press on the map is the strongest way to say you are working in it.
     wbMapKeysArmed = true;
   });
@@ -8314,7 +8313,7 @@ async function initWhiteboard() {
         //: (INBOX 445, second audit). Focus on the canvas (or on nothing)
         //: after a click or a map key still adds; Escape then Tab leaves.
         const at = document.activeElement;
-        const onMap = !at || at === document.body || at.closest?.("#whiteboard-container");
+        const onMap = !at || at === document.body || Boolean(wbInstances.container()?.contains(at));
         if (!wbMapKeysArmed || !onMap) return;
         e.preventDefault();
         // Shift+Tab outdents. Through `/move`, which is the only endpoint
@@ -8707,7 +8706,7 @@ async function initWhiteboard() {
   selectWbTool("select"); // the initial state
 
   // Drawing event handlers on the SVG itself or container
-  const svgCanvas = document.getElementById("wb-svg-layer");
+  const svgCanvas = wbInstances.layer("wb-svg-layer");
 
   function getLogicalMouse(e) {
     return wbClientToBoard(e.clientX, e.clientY);
@@ -8994,7 +8993,7 @@ async function initWhiteboard() {
   //: and zooms with the board and covers the whole box the release makes.
   //: The selection marquee keeps its canvas (INBOX 410's cost).
   function wbBeginPlaceGhost(pointerId, place) {
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!layer) return wbBeginMarqueeRect(pointerId);
     wbMarqueeEl = document.createElement("div");
     wbMarqueeEl.className = "wb-place-ghost";
@@ -9510,7 +9509,7 @@ async function initWhiteboard() {
     path.setAttribute("stroke-width", "2");
     path.setAttribute("stroke-dasharray", "6 4");
     path.setAttribute("pointer-events", "none");
-    document.getElementById("wb-zoom-group")?.appendChild(path);
+    wbInstances.layer("wb-zoom-group")?.appendChild(path);
     port.drag = { kind: port.kind, item: port.item, anchor, start, path, moved: false, id: e.pointerId };
     wbLinkDragActive = true;
     wbBoardState.capture(containerEl, e.pointerId);
@@ -9749,7 +9748,7 @@ async function initWhiteboard() {
     // The overlay layer, which paints above the HTML card layer, in the
     // base SVG the loop was drawn *under* every card and sticky (reported:
     // "the lasso select tool is behind everything").
-    document.getElementById("wb-overlay-zoom-group").appendChild(wbLassoEl);
+    wbInstances.layer("wb-overlay-zoom-group").appendChild(wbLassoEl);
     wbBoardState.capture(containerEl, e.pointerId);
   });
   wbBoardState.onGestureLost(() => wbEndLassoDrag());
@@ -10030,7 +10029,7 @@ async function initWhiteboard() {
       wbFmtState.inkMore.liveStyle(currentDrawPath, window.currentStrokeNone ? "none" : window.currentStrokeColor, window.currentTool === "highlighter" ? WB_HIGHLIGHTER_ALPHA : null);
     }
     //: Over the cards while it is drawn: it lands on top (decision 43).
-    document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath);
+    wbInstances.layer("wb-overlay-zoom-group").appendChild(currentDrawPath);
   });
   
   //: The live stroke's outline when it is smoothed ink, "" when it is a plain stroke.
@@ -10233,12 +10232,12 @@ async function initWhiteboard() {
   });
 
   // Drop handler for Library
-  document.getElementById("whiteboard-container").addEventListener("dragover", (e) => {
+  wbInstances.container().addEventListener("dragover", (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   });
   
-  document.getElementById("whiteboard-container").addEventListener("drop", async (e) => {
+  wbInstances.container().addEventListener("drop", async (e) => {
     e.preventDefault();
     const dropped = e.dataTransfer.getData("text/plain");
     if (!dropped) return;
@@ -11292,7 +11291,7 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
   // Clear before drawing: this appends rather than data-joining, so without
   // it every call leaves its predecessor behind on the board.
   wbClearSketchHandles();
-  const group = d3.select("#wb-overlay-zoom-group").append("g").attr("class", "wb-sketch-handle-group");
+  const group = d3.select(wbInstances.layer("wb-overlay-zoom-group")).append("g").attr("class", "wb-sketch-handle-group");
   const shape = look ? null : wbLinkShape(parsed);
   const drawnEnds = shape?.route === "elbow" ? wbElbowEnds(endpoints.source, endpoints.target, shape.points) : endpoints;
 
@@ -11842,7 +11841,7 @@ function wbRenderMultiSelectionHandles() {
   //: group's eight: that was asked for directly ("when I drag select shapes,
   //: the individual anchor/rotate boxes dont appear"), so the fix is which
   //: layer wins the press, not which handles are drawn.
-  const group = d3.select("#wb-overlay-zoom-group")
+  const group = d3.select(wbInstances.layer("wb-overlay-zoom-group"))
     .append("g")
     .attr("class", "wb-sketch-handle-group wb-multi-handle-group");
   const boxRect = group.append("rect").attr("class", "wb-sketch-selection-box");
@@ -11943,7 +11942,7 @@ function wbRenderMultiSelectionHandles() {
           })
           .on("drag", (event) => {
             if (!start || groupGesture?.cancelled) return;
-            const zoom = d3.zoomTransform(document.getElementById("whiteboard-container"));
+            const zoom = d3.zoomTransform(wbInstances.container());
             rawDX += event.dx / zoom.k;
             rawDY += event.dy / zoom.k;
             const raw = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey, event.sourceEvent.altKey);
@@ -12627,7 +12626,7 @@ function renderWhiteboard() {
   document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
 
   // Render Sketches (SVG)
-  const svgGroup = d3.select("#wb-zoom-group");
+  const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));
   //: Every stroke's group wherever its band put it (decision 43); a new one
   //: is made in the base layer and `wbPlaceSketchBands` moves it.
   const sketchSelection = svgGroup.selectAll(() => document.querySelectorAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
@@ -12683,7 +12682,7 @@ function renderWhiteboard() {
     .on("drag", function (event, d) {
       if (d._linkKind === "sketch") return dragging.call(this, event, d);
       if (d._dragOriginalD == null || d._gesture?.cancelled) return;
-      const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(document.getElementById("whiteboard-container")).k);
+      const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(wbInstances.container()).k);
       if (!step) return;
       // First real movement of this gesture, decide once whether this is
       // a solo move or a bulk move of the whole multi-selection. Decided
@@ -13149,7 +13148,7 @@ function renderWhiteboard() {
   if (!wbIsMap()) wbApplyLineJumps(painted);
 
   // Render Nodes (Cards)
-  const canvas = d3.select("#wb-html-layer");
+  const canvas = d3.select(wbInstances.layer("wb-html-layer"));
   //: One sort of the board's items serves the bands above, the cards here and the objects below (W30).
   const stackRank = new Map(stackOrder.map((e, i) => [e.key, i + 1]));
   const nodeSelection = canvas.selectAll(".wb-card.node-card")
@@ -13181,7 +13180,7 @@ function renderWhiteboard() {
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
-        const transform = d3.zoomTransform(document.getElementById("whiteboard-container"));
+        const transform = d3.zoomTransform(wbInstances.container());
         rawDX += event.dx / transform.k;
         rawDY += event.dy / transform.k;
         const startW = d._resizeStartW ?? (d._resizeStartW = d.width || WB_CARD_DEFAULT_SIZE.w);
@@ -14010,7 +14009,7 @@ function wbScheduleStickyDates() {
 }
 
 async function wbPaintStickyDates() {
-  const papers = [...document.querySelectorAll("#whiteboard-container .wb-sticky")];
+  const papers = [...(wbInstances.container()?.querySelectorAll(".wb-sticky") || [])];
   const words = (el) => String(el.__data__?.data?.content || "");
   const ask = [...new Set(papers.map(words).filter((t) => t.trim() && !wbStickyDates.read.has(t)))].slice(0, 200);
   if (ask.length) {
@@ -14126,7 +14125,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     // resize handles below already divide by the zoom scale for exactly
     // this reason; a plain drag has to as well, or a card/object moves
     // faster than the cursor when zoomed out and slower when zoomed in.
-    const transform = d3.zoomTransform(document.getElementById("whiteboard-container"));
+    const transform = d3.zoomTransform(wbInstances.container());
     d._rawX = (d._rawX ?? d.x) + step.dx / transform.k;
     d._rawY = (d._rawY ?? d.y) + step.dy / transform.k;
     const bypassSnap = event.sourceEvent?.altKey;
@@ -14375,7 +14374,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       .on("drag", function (event, d) {
         const start = d._resizeStart;
         if (!start || d._gesture?.cancelled) return;
-        const transform = d3.zoomTransform(document.getElementById("whiteboard-container"));
+        const transform = d3.zoomTransform(wbInstances.container());
         start.dx += event.dx / transform.k;
         start.dy += event.dy / transform.k;
         const box = wbResizeBox(start, handle, start.dx, start.dy,
@@ -14680,7 +14679,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
           event.preventDefault();
           this.blur();
           selectWbItem("object", d.id);
-          document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+          wbInstances.container()?.focus({ preventScroll: true });
           return;
         }
         if (event.key === "Tab" && !event.ctrlKey && !event.altKey && !event.metaKey) {
@@ -15144,7 +15143,7 @@ function dragStart(event, d) {
     // specific corner stays pinned there through a later resize, `null`
     // (nothing near enough) is the free/floating case, resolved fresh every
     // render in `wbLinkEndpoints` instead of frozen at drag-start.
-    const [startX, startY] = d3.pointer(event, document.getElementById("wb-zoom-group"));
+    const [startX, startY] = d3.pointer(event, wbInstances.layer("wb-zoom-group"));
     d.linkSourceAnchor = wbNearestAnchor(d._linkKind || "node", d, startX, startY);
     wbLinkDragActive = true;
     wbShowAnchorHints(d._linkKind || "node", d, d.linkSourceAnchor);
@@ -15152,7 +15151,7 @@ function dragStart(event, d) {
     d.linkingPath.setAttribute("fill", "none");
     d.linkingPath.setAttribute("stroke", window.currentStrokeColor || "#ffffff");
     d.linkingPath.setAttribute("stroke-width", "3");
-    document.getElementById("wb-zoom-group").appendChild(d.linkingPath);
+    wbInstances.layer("wb-zoom-group").appendChild(d.linkingPath);
     //: Escape mid-draw drops the line being drawn and makes nothing.
     d._gesture = wbBeginGesture(() => {
       d.linkingPath?.remove();
@@ -15197,7 +15196,7 @@ function dragging(event, d) {
   if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
   if (d._gesture?.cancelled) return;
   if (window.currentTool && window.currentTool.startsWith("link-")) {
-    const [mx, my] = d3.pointer(event, document.getElementById("wb-zoom-group"));
+    const [mx, my] = d3.pointer(event, wbInstances.layer("wb-zoom-group"));
 
     // A fixed source anchor stays put; a floating one re-aims at the live
     // pointer every frame: the same rectangle-intersection the render path
@@ -15254,7 +15253,7 @@ function dragging(event, d) {
       d3.select(this).raise();
       d._raised = true;
     }
-    const transform = d3.zoomTransform(document.getElementById("whiteboard-container"));
+    const transform = d3.zoomTransform(wbInstances.container());
     d._rawX = (d._rawX ?? d.x) + step.dx / transform.k;
     d._rawY = (d._rawY ?? d.y) + step.dy / transform.k;
     // Asked for directly: Alt held during a drag temporarily releases the
@@ -15326,7 +15325,7 @@ async function dragEndNode(event, d) {
     wbLinkDragActive = false;
     wbClearAnchorHints();
 
-    const [mx, my] = d3.pointer(event, document.getElementById("wb-zoom-group"));
+    const [mx, my] = d3.pointer(event, wbInstances.layer("wb-zoom-group"));
 
     const sourceKind = d._linkKind || "node";
     const hit = wbLinkCandidateAt(mx, my, sourceKind, d.id);
@@ -15587,6 +15586,8 @@ function wbCancelBoardTimers() {
 
 // Jump to the real whiteboard canvas with a specific board loaded.
 async function openWhiteboardBoard(boardId, opts = null) {
+  //: Opening a board is the page board's; an embed that was live gives its globals back first (L-whiteboard-53).
+  wbInstances.activate(wbInstances.page);
   wbRememberBoardView();
   //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
   if (!opts?.stay) {

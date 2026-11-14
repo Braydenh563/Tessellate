@@ -1377,7 +1377,7 @@ function wbPasteLook() {
 //: no pointer event since the canvas last moved (wb5: 16px left, 60px high).
 function wbBoardToClient(x, y) {
   wbClearCanvasRectCache();
-  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
+  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(wbInstances.container()));
 }
 
 function wbPasteChipClose() {

@@ -24,7 +24,7 @@
   async function wbCreateFrame(x, y, box = null) {
     //: Never wider than most of what is on screen: on a phone the default is a
     //: frame whose edges are off both sides, which reads as no frame at all.
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const k = container ? d3.zoomTransform(container).k : 1;
     const fit = container
       ? Math.min(1, (0.8 * container.clientWidth) / k / WB_FRAME_SIZE.w, (0.6 * container.clientHeight) / k / WB_FRAME_SIZE.h)

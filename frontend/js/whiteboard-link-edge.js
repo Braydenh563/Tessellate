@@ -22,7 +22,7 @@
   const lastSeen = new Map();
 
   //: whiteboard.js keeps its own zoomK inside its closure, so the zoom is read here the way the other board files do.
-  const zoomK = () => d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+  const zoomK = () => d3.zoomTransform(wbInstances.container()).k || 1;
   const clamp01 = (n) => Math.max(0, Math.min(1, n));
   const round = (n) => Math.round(n * 10) / 10;
 
@@ -191,7 +191,7 @@
       layer?.remove();
       return null;
     }
-    const zoomGroup = document.getElementById("wb-overlay-zoom-group");
+    const zoomGroup = wbInstances.layer("wb-overlay-zoom-group");
     if (!zoomGroup) return hit;
     if (!layer) {
       layer = document.createElementNS(NS, "g");

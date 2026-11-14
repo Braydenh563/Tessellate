@@ -216,7 +216,7 @@
   const GRAB_PX = 8;
 
   function zoomK() {
-    return d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+    return d3.zoomTransform(wbInstances.container()).k || 1;
   }
 
   //: The nearest point of a drawn outline to a board point, as fractions of the shape's box, with its distance.
@@ -408,7 +408,7 @@
   onSurface("board", bindPortsRows);
 
   function bindPortEditor() {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return;
     container.addEventListener("pointerdown", (e) => {
       if (editing.id == null || e.button !== 0) return;
@@ -456,7 +456,7 @@
 
   //: The lit port's name, drawn beside its dot at a readable size whatever the zoom.
   function nameBeside(layer, name, x, y) {
-    const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+    const k = d3.zoomTransform(wbInstances.container()).k || 1;
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("class", "wb-port-name");
     text.setAttribute("x", String(x + 9 / k));

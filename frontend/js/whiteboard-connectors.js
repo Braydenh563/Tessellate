@@ -1175,7 +1175,7 @@
     // render in an HTML layer *above* that SVG (see `#wb-overlay-layer`'s own
     // comment in index.html), so a hint drawn there for a hovered card would
     // be painted directly underneath it, invisible exactly when it matters.
-    const zoomGroup = document.getElementById("wb-overlay-zoom-group");
+    const zoomGroup = wbInstances.layer("wb-overlay-zoom-group");
     if (!zoomGroup) return;
     let hints = document.getElementById("wb-anchor-hints");
     if (!hints) {

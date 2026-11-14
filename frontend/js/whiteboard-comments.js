@@ -128,7 +128,7 @@
   //: with them: a pin at the item's top-left corner, the button up and left of
   //: it, clear of the resize grip.
   function wbPaintLinkMarks() {
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!layer) return;
     let host = document.getElementById("wb-link-marks");
     const wanted = [];
@@ -197,7 +197,7 @@
   //: the button up and to the right of the corner, clear of the resize handle.
   function wbPaintCommentMarks() {
     wbPaintLinkMarks();
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!layer) return;
     //: A thread open on an item that is gone (deleted, another board) goes too.
     if (wbCommentState && !wbFindItem(wbCommentState.kind, wbCommentState.id)) wbCloseComments();
@@ -672,7 +672,7 @@
     if (state.anchor.classList.contains("wb-comment-mark")) state.anchor.setAttribute("aria-expanded", "false");
     if (restoreFocus) {
       const mark = document.querySelector(`.wb-comment-pin[data-comment-key="${state.key}"] .wb-comment-mark`);
-      (mark || document.getElementById("whiteboard-container"))?.focus({ preventScroll: true });
+      (mark || wbInstances.container())?.focus({ preventScroll: true });
     }
   }
 

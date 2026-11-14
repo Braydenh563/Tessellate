@@ -465,7 +465,7 @@
   //: undo step and only for a real change, Enter or Escape to finish (Shift+Enter
   //: breaks the line where `multiline`), the board's keys kept off it.
   function wbOpenSketchLabelEditor(sketch, parsed, { box, ink, multiline, max, name, said, extraClass = "" }) {
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     if (!sketch || !parsed || !layer || document.querySelector(".wb-shape-label-editor")) return;
     const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
     const editor = document.createElement("div");
@@ -542,7 +542,7 @@
     const shaft = String(d || "").split(/\s(?=M)/)[0];
     if (!shaft) return null;
     if (!wbLinkMeasurePath || !wbLinkMeasurePath.isConnected) {
-      const host = document.getElementById("wb-svg-layer");
+      const host = wbInstances.layer("wb-svg-layer");
       if (!host) return null;
       wbLinkMeasurePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
       wbLinkMeasurePath.setAttribute("class", "wb-link-measure");

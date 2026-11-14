@@ -719,7 +719,7 @@
   //: an ancestor `<g transform>` in this app's actual DOM, so the two
   //: spaces have to be reconciled explicitly rather than assumed to match.
   function wbSketchAngleFromCenterDeg(boardCx, boardCy, sourceEvent, shiftSnap) {
-    const transform = d3.zoomTransform(document.getElementById("whiteboard-container"));
+    const transform = d3.zoomTransform(wbInstances.container());
     const rect = wbCanvasOriginRect();
     const screenCx = boardCx * transform.k + transform.x + rect.left;
     const screenCy = boardCy * transform.k + transform.y + rect.top;

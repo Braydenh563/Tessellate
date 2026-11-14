@@ -232,7 +232,7 @@
     const { kind, item, box } = items[next];
     wbMultiSelection.clear();
     selectWbItem(kind, item.id);
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (container) {
       const t = d3.zoomTransform(container);
       const view = container.getBoundingClientRect();
@@ -265,7 +265,7 @@
     if (!wbSelectedItem && wbMultiSelection.size === 0) return;
     wbSelectedItem = null;
     wbMultiSelection.clear();
-    document.getElementById("whiteboard-container")?.removeAttribute("aria-activedescendant");
+    wbInstances.container()?.removeAttribute("aria-activedescendant");
     wbApplySelectionHighlight();
     wbSyncMapToolState();
     wbUpdateSelectionBar();
@@ -663,7 +663,7 @@
     // one shift-clicked item and this hid it again, so that selection had an
     // arrange row nobody could see. `wbSelectionBounds` is happy with one.
     const multi = wbMultiSelection.size > 0;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const host = document.getElementById("library-view-whiteboard");
     //: **A map node gets the map's own strip, in the board bar's place**
     //: (MINDMAP_PLAN.md §12.1 item 2). One bar above a node, never two: two

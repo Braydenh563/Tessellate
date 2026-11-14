@@ -81,7 +81,7 @@ def test_a_committed_name_returns_focus_to_the_canvas_and_is_announced():
     """FEAT-16: after a name was committed, focus sat on <body>."""
     start = MAP_JS.index('text.on("blur", function () {')
     blur = MAP_JS[start:start + 3000]
-    assert 'getElementById("whiteboard-container")?.focus(' in blur
+    assert 'wbInstances.container()?.focus(' in blur  # the active board's canvas (L-whiteboard-53)
     assert "wbAnnounce(" in blur
 
 
@@ -112,6 +112,7 @@ const wbMapCache = { defer: (fn) => { calls.push("defer"); } };
 const c = (n, r) => (...a) => { calls.push(n); return r; };
 let map = true, layer = {}, hold = { moves: [], edges: false };
 const document = { getElementById: () => layer };
+const wbInstances = { container: () => document.getElementById("whiteboard-container"), layer: (id) => document.getElementById(id) };  // the page board, the default instance (L-whiteboard-53)
 const d3 = { select: (x) => x };
 const wbBoardSearch = { matches: [], query: "" };
 """ + SEARCH_LIVE + """

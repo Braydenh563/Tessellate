@@ -55,8 +55,8 @@
 
   function polygonStart() {
     if (poly.on) return;
-    const container = document.getElementById("whiteboard-container");
-    const group = document.getElementById("wb-overlay-zoom-group");
+    const container = wbInstances.container();
+    const group = wbInstances.layer("wb-overlay-zoom-group");
     if (!container || !group) return;
     wbSelectToolRef?.("select");
     clearWbSelection();
@@ -79,7 +79,7 @@
   }
 
   function polygonEnd() {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     container?.classList.remove("wb-polygon-on");
     container?.removeEventListener("pointerdown", onDown, true);
     container?.removeEventListener("pointermove", onMove, true);

@@ -244,7 +244,7 @@
     const objectEls = idIndex("#wb-html-layer .wb-object");
     const sketchEls = idIndex(".sketch-group");
     const cardEls = idIndex(".node-card");
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     //: A card or topic that is not in the DOM (culled off screen) takes the
     //: paint of one that is, which is the theme's own card look. The last topic
     //: in the layer rather than the first, because the first is usually the

@@ -15,7 +15,7 @@
   }
 
   function go(reset) {
-    const el = document.getElementById("whiteboard-container");
+    const el = wbInstances.container();
     if (!el) return null;
     const at = viewAt(reset ? 1 : d3.zoomTransform(el).k, wbContentBounds(), wbFreeArea(el));
     d3.select(el).transition().duration(240).call(wbZoom.transform, d3.zoomIdentity.translate(at.x, at.y).scale(at.k));

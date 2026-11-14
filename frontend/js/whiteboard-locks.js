@@ -139,7 +139,7 @@
       const el = document.querySelector(WB_SELECTOR_BY_KIND[key.slice(0, sep)](Number(key.slice(sep + 1))));
       if (el) wanted.add(el);
     }
-    document.querySelectorAll("#whiteboard-container .wb-hidden").forEach((el) => {
+    (wbInstances.container()?.querySelectorAll(".wb-hidden") || []).forEach((el) => {
       if (!wanted.has(el)) el.classList.remove("wb-hidden");
     });
     for (const el of wanted) if (!el.classList.contains("wb-hidden")) el.classList.add("wb-hidden");
@@ -158,7 +158,7 @@
         if (el) wanted.add(el);
       }
     }
-    document.querySelectorAll("#whiteboard-container .wb-locked").forEach((el) => {
+    (wbInstances.container()?.querySelectorAll(".wb-locked") || []).forEach((el) => {
       if (!wanted.has(el)) {
         el.classList.remove("wb-locked");
         el.removeAttribute("aria-disabled");
@@ -176,7 +176,7 @@
   //: under the pointer: one pin per locked, visible item at its top right, in
   //: one layer rebuilt with the render that may have moved or unlocked it.
   function wbPaintLockBadges() {
-    const layer = document.getElementById("wb-html-layer");
+    const layer = wbInstances.layer("wb-html-layer");
     document.getElementById("wb-lock-marks")?.remove();
     if (!layer || wbIsMap()) return;
     const host = document.createElement("div");

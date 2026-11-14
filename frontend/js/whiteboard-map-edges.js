@@ -676,7 +676,7 @@
   //: The group is the first child of the zoom group so edges sit *under* every
   //: sketch and node, which is the only z-order a tree reads correctly in.
   function wbRenderMapEdges({ only = null } = {}) {
-    const zoomGroup = document.getElementById("wb-zoom-group");
+    const zoomGroup = wbInstances.layer("wb-zoom-group");
     if (!zoomGroup) return;
     let group = zoomGroup.querySelector(".wb-map-edges");
     if (!wbIsMap()) {

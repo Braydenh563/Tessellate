@@ -548,7 +548,7 @@ function wbFormatClose({ restoreFocus = true } = {}) {
   } catch {
     /* nothing to forget */
   }
-  if (restoreFocus && hadFocus) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  if (restoreFocus && hadFocus) wbInstances.container()?.focus({ preventScroll: true });
 }
 
 //: The top bar's Format button mirrors the panel, as Library's does.

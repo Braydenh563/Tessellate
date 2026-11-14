@@ -140,7 +140,7 @@
     const svg = document.getElementById("wb-navigator-map");
     const empty = document.getElementById("wb-navigator-empty");
     if (!svg || !wbNavigatorOpen()) return;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return;
     // Reads, all of them, before the first write.
     const snap = wbNavigatorSnapshot();
@@ -226,7 +226,7 @@
       return;
     }
     if (!wbNavState.content) return;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return;
     const transform = t || d3.zoomTransform(container);
     const proj = drag
@@ -271,7 +271,7 @@
   //: drag ends on up, cancel and a lost capture alike.
   function wbNavigatorDragStart(event) {
     const svg = event.currentTarget;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!svg || !container) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     // A second pointer pressing mid-drag (a second finger) takes the drag over.
@@ -325,7 +325,7 @@
     drag.frame = 0;
     const p = drag.pending;
     drag.pending = null;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!p || !container) return;
     const nx = ((p.x - drag.box.left) / drag.box.width) * WB_NAV_W - drag.grab.x;
     const ny = ((p.y - drag.box.top) / drag.box.height) * WB_NAV_H - drag.grab.y;

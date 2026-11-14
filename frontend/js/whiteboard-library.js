@@ -631,7 +631,7 @@ function wbLibInk() {
 //: moment later stacked on the first.
 function wbLibCentre() {
   const [x, y] = wbViewCentre();
-  const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+  const k = d3.zoomTransform(wbInstances.container()).k || 1;
   const board = window.currentBoardId ?? 0;
   const last = wbLibState.libLastClick;
   const same = last && last.board === board && Math.abs(last.x - x) < 0.5 && Math.abs(last.y - y) < 0.5;
@@ -1559,7 +1559,7 @@ onSurface("board", () => {
     wbLibState.libPress = null;
     wbMapClearDropTarget();
   });
-  const canvas = document.getElementById("whiteboard-container");
+  const canvas = document.getElementById("whiteboard-container"); // page wiring, at load (L-whiteboard-53)
   //: **On a map, the topic a branch or an icon will join is lit while it is
   //: over it**, the same cue a dragged topic gives (`wbMapShowDropTarget`):
   //: the drop goes under that topic rather than where the pointer is, and

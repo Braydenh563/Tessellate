@@ -503,7 +503,7 @@
 
   function wbBrainstormStart(minutes = 5) {
     wbBrainstormStop();
-    const host = document.getElementById("whiteboard-container");
+    const host = wbInstances.container();
     if (!host) return;
     const chip = document.createElement("div");
     chip.className = "wb-map-brainstorm dock";

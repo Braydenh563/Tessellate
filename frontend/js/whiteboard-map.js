@@ -1571,7 +1571,7 @@ function wbBuildMapNode(el, d) {
       wbMapCache.defer(() => {
         const at = document.activeElement;
         if (at && at !== document.body) return;
-        document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+        wbInstances.container()?.focus({ preventScroll: true });
         wbAnnounce(label || "Untitled topic");
       });
     });
@@ -2017,7 +2017,7 @@ function wbMapBranchDragOrigin(d, alone) {
 //: itself is the ring `/move` refuses, and an offer the server will reject is
 //: worse than no offer.
 function wbMapDropTargetAt(d, clientX, clientY) {
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!container || !wbIsMap() || !WB_MAP_KINDS.has(d.kind)) return null;
   //: The one conversion every pointer read shares (`wbClientToBoard`): its
   //: origin is the per-gesture box, not a fresh measurement, since this runs
@@ -2095,7 +2095,7 @@ function wbMapShowSlotCue(slot) {
     cue.id = "wb-map-slot-cue";
     cue.setAttribute("class", "wb-map-slot-cue");
     cue.setAttribute("pointer-events", "none");
-    document.getElementById("wb-overlay-zoom-group")?.appendChild(cue);
+    wbInstances.layer("wb-overlay-zoom-group")?.appendChild(cue);
   }
   for (const [k, v] of Object.entries(slot.line)) cue.setAttribute(k, String(v));
 }
@@ -2610,7 +2610,7 @@ function wbWireEdgeLabelDrag(text, wrap) {
     if (!node) return;
     event.stopPropagation();
     event.preventDefault();
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const k = d3.zoomTransform(container).k || 1;
     const startX = event.clientX;
     const startY = event.clientY;
@@ -2766,7 +2766,7 @@ function wbMapEdgePlusPoint(parent, child, layout) {
 //: Invisible until the pointer is on it (CSS), which is what keeps a map of
 //: two hundred lines from being a map of two hundred buttons.
 function wbRenderMapEdgePluses(edges, layout, only = null) {
-  const host = document.getElementById("wb-html-layer");
+  const host = wbInstances.layer("wb-html-layer");
   if (!host) return;
   let layer = host.querySelector(".wb-map-plus-layer");
   if (!wbIsMap()) {
@@ -2978,7 +2978,7 @@ let wbMapProvisionalSeq = 0;
 //: else (an expanded fold, a drawn line in the plan, a live search, the
 //: outline taking the topic) and any throw is the whole render, as before.
 wbMapCache.renderAdd = function (created, origin, expand) {
-  const layer = document.getElementById("wb-html-layer");
+  const layer = wbInstances.layer("wb-html-layer");
   const searching = wbMapCache.searchLive?.() ?? false;
   const plain = origin ? [...origin.values()].every((entry) => entry.kind !== "sketch") : true;
   if (wbIsMap() && layer && !expand && plain && !searching && !wbOutlineState.adding && wbAddGate.renderHold) {
@@ -3043,7 +3043,7 @@ async function wbMapPasteText(text) {
 
 document.addEventListener("paste", (event) => {
   if (event.defaultPrevented || typeof wbIsMap !== "function" || !wbIsMap()) return;
-  const canvas = document.getElementById("whiteboard-container");
+  const canvas = wbInstances.container();
   if (!canvas?.getClientRects().length) return;
   const target = event.target;
   if (target?.closest?.("input, textarea, select, [contenteditable='true'], [contenteditable='plaintext-only'], dialog, .modal-overlay")) return;
@@ -3216,7 +3216,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:file-md Save this branch as Markdown", () => wbMapLazy.saveBranch(node));
     row("This topic", "ph:flow-arrow Add a second central topic joined to this one…", () => wbMapLazy.secondRoot(node));
     if (node.data?.recording) {
-      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || document.getElementById("whiteboard-container")));
+      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || wbInstances.container()));
       row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
     }
     row("This topic", "ph:eyedropper Copy this topic's style", () => wbCopySelectedStyle(), "Ctrl+Alt+C");
@@ -3456,7 +3456,7 @@ function wbRectEscapes(node, view) {
 //: container, so a topic under the top bar or the dock counts as hidden.
 function wbMapRevealTopic(item) {
   const el = document.querySelector(`.wb-object[data-id="${item.id}"]`);
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   if (!el || !container) return false;
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
   //: **Inside the slide's own margin counts as at the edge** (audit 1028 U24:
@@ -4672,7 +4672,7 @@ let wbMapRadialFor = null;
 
 function wbOpenMapRadial(node) {
   const ring = document.getElementById("wb-map-radial");
-  const container = document.getElementById("whiteboard-container");
+  const container = wbInstances.container();
   const host = document.getElementById("library-view-whiteboard");
   if (!ring || !container || !host || !node) return false;
   const box = wbItemBBox("object", node);
@@ -4996,7 +4996,7 @@ let wbMapLinkRadialCross = null;
 function wbCloseMapLinkRadial() {
   const ring = document.getElementById("wb-map-link-radial");
   if (!ring || ring.classList.contains("hidden")) return;
-  if (ring.contains(document.activeElement)) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  if (ring.contains(document.activeElement)) wbInstances.container()?.focus({ preventScroll: true });
   ring.classList.add("hidden");
   wbMapLinkRadialFor = null;
   wbMapLinkRadialCross = null;
@@ -5351,7 +5351,7 @@ function wbMapStructureText(cls, x, y, anchor, words, colour) {
 }
 
 function wbRenderMapStructure() {
-  const zoomGroup = document.getElementById("wb-zoom-group");
+  const zoomGroup = wbInstances.layer("wb-zoom-group");
   if (!zoomGroup) return;
   const marked = wbIsMap() && (wbState.objects || []).some((o) => o.data?.boundary || o.data?.summary);
   if (!marked) {
@@ -5654,7 +5654,7 @@ const wbMapBuild = {
     renderWhiteboardNow();
     wbMapBuild.unring();
     if (wbMapBuild.run[at].kind === "whole") return;
-    const stage = document.getElementById("whiteboard-container");
+    const stage = wbInstances.container();
     for (const id of wbMapBuild.run[at].reveal) {
       stage?.querySelector(`.wb-object[data-id="${id}"]`)?.classList.add("flash-target", "flash");
     }
@@ -6250,7 +6250,7 @@ onSurface("board", () => {
         wbOutlineStopEdit(row, { cancel: true });
         return;
       }
-      document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+      wbInstances.container()?.focus({ preventScroll: true });
     }
   });
 
@@ -6459,7 +6459,7 @@ function wbMapBranchPicker(rows, { title, about, meta, node }) {
       window.removeEventListener("wheel", away, true);
       window.removeEventListener("resize", away);
       layer.remove();
-      document.getElementById("whiteboard-container")?.focus?.();
+      wbInstances.container()?.focus?.();
       resolve(chosen);
     };
     const away = () => finish(null);

@@ -269,7 +269,7 @@
     if (own) return own;
     const box = wbFmtBox(entries);
     if (box) return frameAtBox(box);
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return null;
     const r = container.getBoundingClientRect();
     const [x, y] = wbClientToBoard(r.left + r.width / 2, r.top + r.height / 2);

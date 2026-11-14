@@ -25,7 +25,7 @@
       const child = index.byId.get(childId);
       if (!parent || !child) return;
       const layout = wbMapLayout();
-      const container = document.getElementById("whiteboard-container");
+      const container = wbInstances.container();
       const k = container ? d3.zoomTransform(container).k : 1;
       const start = wbMapEdgeWaypoint(wbMapEdgeAnchors(parent, child, layout), child);
       const edges = wbMapEdgesFor(childId).filter((edge) => edge.parent.id === parentId);
@@ -146,7 +146,7 @@
       if (!parent || !child) return;
       const node = end === "from" ? parent : child;
       const size = wbMapNodeSize(node);
-      const container = document.getElementById("whiteboard-container");
+      const container = wbInstances.container();
       const k = container ? d3.zoomTransform(container).k : 1;
       const startX = Number(grip.getAttribute("cx"));
       const startY = Number(grip.getAttribute("cy"));

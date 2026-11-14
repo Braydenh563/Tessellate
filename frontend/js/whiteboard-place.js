@@ -79,7 +79,7 @@
   const WB_CANVAS_COVERS = ["wb-topbar", "wb-sidebar", "wb-tools-panel"];
 
   function wbVisibleCanvasRect() {
-    const box = document.getElementById("whiteboard-container").getBoundingClientRect();
+    const box = wbInstances.container().getBoundingClientRect();
     const covers = [];
     for (const id of WB_CANVAS_COVERS) {
       const el = document.getElementById(id);
@@ -334,7 +334,7 @@
   function wbRenderCloneGrips() {
     document.getElementById("wb-clone-grips")?.remove();
     const source = wbCloneSource();
-    const zoomGroup = document.getElementById("wb-overlay-zoom-group");
+    const zoomGroup = wbInstances.layer("wb-overlay-zoom-group");
     if (!source || !zoomGroup || window.currentTool !== "select") return;
     const ns = "http://www.w3.org/2000/svg";
     const group = document.createElementNS(ns, "g");
@@ -394,7 +394,7 @@
     const { item } = source;
     const live = source.kind === "sketch" && typeof item._liveD === "string" ? wbPathBBox(item._liveD) : null;
     const box = live || source.bbox;
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     const k = (container && d3.zoomTransform(container).k) || 1;
     const rot = wbItemRotation(source.kind, item);
     const c = wbBoxCenter(box);

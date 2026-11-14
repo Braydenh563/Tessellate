@@ -796,7 +796,10 @@
    layer-tree measurement behind it, is on `wbApplyZoomTransform`. */
 #wb-html-layer,
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-html-layer"],
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   will-change: transform;
 }
 /* **Off screen, not drawn** (MINDMAP_PLAN 13a-view; `wbCullNow` decides).
@@ -809,7 +812,9 @@
    A map's tree line has nothing measured on it, so it is simply not
    displayed. */
 #wb-html-layer > .wb-object,
-#wb-html-layer > .wb-card {
+#wb-html-layer > .wb-card,
+[data-wb-layer="wb-html-layer"] > .wb-object,
+[data-wb-layer="wb-html-layer"] > .wb-card {
   contain-intrinsic-size: auto 250px auto 44px;
 }
 /* **A long list's rows off screen are not styled either** (INBOX 400).
@@ -2014,7 +2019,8 @@ body.scroll-top-visible .skills-split > .tab-main {
    never blocks a card underneath; each interactive child re-enables its
    own (`.wb-link-endpoint-handle`). The app's CSP blocks inline `style=`
    attributes, hence a real rule here rather than one on the element. */
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-overlay-layer"] {
   pointer-events: none;
 }
 /* **The three layers that pan together, and the origin they pan about.**
@@ -2031,7 +2037,9 @@ body.scroll-top-visible .skills-split > .tab-main {
    would pivot on a point that drifts as you draw. */
 .wb-html-layer,
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   transform-origin: 0 0;
 }
 /* An `<svg>` root clips at its own viewport, and the pan transform is on the
@@ -2040,7 +2048,9 @@ body.scroll-top-visible .skills-split > .tab-main {
    container is `overflow: hidden` and is the right thing to clip to in any
    case: it is what gives the board its corner radius. */
 #wb-svg-layer,
-#wb-overlay-layer {
+#wb-overlay-layer,
+[data-wb-layer="wb-svg-layer"],
+[data-wb-layer="wb-overlay-layer"] {
   overflow: visible;
 }
 /* Two small spacing helpers, so a one-off gap doesn't need an attribute. */

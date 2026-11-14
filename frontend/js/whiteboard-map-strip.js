@@ -22,7 +22,7 @@
     if (isMap && WB_BOARD_ONLY_TOOLS.has(window.currentTool)) wbSelectToolRef?.("select");
     //: The canvas's own name says which keys it answers (INBOX 445): a map's
     //: Tab adds a topic where a board's walks the items.
-    document.getElementById("whiteboard-container")?.setAttribute(
+    wbInstances.container()?.setAttribute(
       "aria-label",
       isMap
         ? "Mind map. Tab adds a topic under the selected one, Enter adds one beside it, and the arrow keys walk the tree"
@@ -1379,7 +1379,7 @@
     //: A sector that held the focus is about to be hidden, and a hidden
     //: element hands the focus to `body`, where no board key reaches: the board
     //: takes it back, so the next Tab or Enter still acts on the topic.
-    if (ring.contains(document.activeElement)) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+    if (ring.contains(document.activeElement)) wbInstances.container()?.focus({ preventScroll: true });
     ring.classList.add("hidden");
     wbMapRadialFor = null;
     wbSyncMapRadialAlt(false);

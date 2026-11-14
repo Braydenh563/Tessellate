@@ -161,11 +161,11 @@
 
   const editing = { id: null, drag: null };
   const GRAB_PX = 8;
-  const zoomK = () => d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+  const zoomK = () => d3.zoomTransform(wbInstances.container()).k || 1;
 
   //: The handles, in the overlay layer above the cards (as the connection points' dots), at a size that holds at any zoom.
   function drawHandles(item) {
-    const group = document.getElementById("wb-overlay-zoom-group");
+    const group = wbInstances.layer("wb-overlay-zoom-group");
     if (!group) return;
     let layer = document.getElementById("wb-point-handles");
     if (!layer) {
@@ -233,7 +233,7 @@
   }
 
   function bindPointEditor() {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return;
     container.addEventListener("pointerdown", (e) => {
       if (editing.id == null || e.button !== 0) return;

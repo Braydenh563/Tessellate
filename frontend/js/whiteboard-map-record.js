@@ -810,7 +810,7 @@
   //: On desktop `wbFrameMapOnOpen` would jump a large map to its root at 1:1
   //: instead of showing all of it.
   function wbFrameSpilledMap() {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (container && wbMapFrameScales(container).open < 1) wbFrameMapOnOpen();
     else wbZoomToFit({ animate: false });
   }
@@ -819,7 +819,7 @@
   //: boxes rather than off the stored coordinates, because what matters is what
   //: is on screen at the zoom in force, which is the thing the report was about.
   function wbMapSpillsOffCanvas() {
-    const container = document.getElementById("whiteboard-container");
+    const container = wbInstances.container();
     if (!container) return false;
     const box = container.getBoundingClientRect();
     let spilled = false;

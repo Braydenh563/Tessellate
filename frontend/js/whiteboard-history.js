@@ -204,7 +204,7 @@
     }
     const focus = wbHist.focus;
     wbHist.focus = null;
-    (focus && document.contains(focus) ? focus : document.getElementById("whiteboard-container"))?.focus?.({ preventScroll: true });
+    (focus && document.contains(focus) ? focus : wbInstances.container())?.focus?.({ preventScroll: true });
   }
 
   //: Put the board, or only what was selected, back as it was at the moment

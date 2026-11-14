@@ -337,7 +337,7 @@
     wbBoardSearch.matches = [];
     wbBoardSearch.index = -1;
     wbApplySearchHighlight();
-    document.getElementById("whiteboard-container")?.focus?.();
+    wbInstances.container()?.focus?.();
   }
 
   //: The Replace row, built on first use so the boot page carries none of it:
