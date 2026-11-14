@@ -1339,7 +1339,7 @@ MID_TOPICS.extend(
                 "goes, code after a return, a duplicate case, a comparison with NaN and "
                 "a typeof compared with a word it never gives, each underlined as a "
                 "warning. A .py file that compiles is checked by Ruff once you install "
-                "Python lint (Ruff) in Settings, Extras (a 3.7 MB download, 10 MB on "
+                "Python lint (Ruff) in Settings, Packages (a 3.7 MB download, 10 MB on "
                 "disk): an unused import or variable or a name that is not defined is "
                 "underlined, with Ruff's own fix in the hover card where it has one. "
                 "It runs on this computer and works offline."

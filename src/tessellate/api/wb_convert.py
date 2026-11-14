@@ -429,9 +429,25 @@ def _name(raw: str) -> str:
     return raw.strip().strip('"')
 
 
+def _drop_block_comments(text: str) -> str:
+    """`/' ... '/` comments out, by a linear scan: a lazy regex over a pasted file backtracks on many `a/'` runs (CodeQL)."""
+    out: list[str] = []
+    i = 0
+    while True:
+        start = text.find("/'", i)
+        if start < 0:
+            out.append(text[i:])
+            return "".join(out)
+        end = text.find("'/", start + 2)
+        out.append(text[i:start])
+        if end < 0:
+            return "".join(out)
+        i = end + 2
+
+
 def _pu_lines(text: str) -> list[str]:
     """The lines between `@startuml` and `@enduml`, comments (`'` and `/' ... '/`) out, a trailing `\\` joined."""
-    body = re.sub(r"/'.*?'/", "", text, flags=re.S)
+    body = _drop_block_comments(text)
     out: list[str] = []
     started = "@start" not in body.lower()
     for raw in body.splitlines():

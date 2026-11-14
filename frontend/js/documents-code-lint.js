@@ -126,7 +126,7 @@
     if (!(await ruffReady())) return [];
     let rows;
     try {
-      rows = RUFF.workspace.check(state.doc.toString());
+      rows = RUFF.workspace.check(docStr(state.doc));
     } catch {
       return [];
     }

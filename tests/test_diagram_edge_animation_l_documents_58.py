@@ -59,4 +59,5 @@ def test_the_menu_entry_is_in_the_lazy_style_file_and_reduced_motion_stops_the_p
     joins = (ROOT / "frontend/js/diagram-joins.js").read_text(encoding="utf-8")
     draw = (ROOT / "frontend/js/mermaid-draw.js").read_text(encoding="utf-8")
     assert "function animate(" in style and "Moving, quickly" in style and "style.animate(S, h, edge)" in joins
-    assert 'dataset.motion === "reduced"' in draw and "prefers-reduced-motion" in draw and "animation:none" in draw
+    #: The app's switch and the system's request are one resolved value, read by reducedMotionWanted (test_motion_resolved.py).
+    assert "const still = reducedMotionWanted();" in draw and "animation:none" in draw

@@ -197,7 +197,7 @@ def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
     docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
     assert "!activeOverlay() && s?.focus()" in docs
     wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
-    start = wiring.index("function startNewNote()")
+    start = wiring.index("function startNewNote(")  #: it takes an optional `here` now
     assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]
 
 

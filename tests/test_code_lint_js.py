@@ -26,6 +26,8 @@ const window = globalThis;
 globalThis.navigator = globalThis.navigator || { userAgent: "node", platform: "" };
 %(cm)s
 const DOC_LINT_CONFIG = {};
+// documents.js's cached text read, which the lint file now uses for Ruff (L-documents perf rule, test_docs_perf_1030).
+const docStr = (doc) => doc.toString();
 let installed = INSTALLED;
 let asked = 0;
 const apiJson = async () => { asked += 1; return { extras: [{ id: "ruff", installed }] }; };

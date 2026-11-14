@@ -344,9 +344,9 @@
     ],
     primary: "task",
     hint: () => "Nothing to add there.",
-    empty_text: ["Start a Gantt chart", "Press Add, then Section and Task. A task's timing is its menu's Timing: an id, a start and a length, or after another task."],
+    empty_text: ["Start a Gantt chart", "Press Add, then Section and Task. A task's timing is its menu's Set timing: an id, a start and a length, or after another task."],
     menu: ({ S, n, say, prompt, nameOf, key }) => (n.type !== "t" ? [] : [
-      { label: "ph:timer Timing…", group: "edit", run: async () => {
+      { label: "ph:timer Set timing…", group: "edit", run: async () => {
         const text = await prompt(`Timing of ${nameOf(S, key)}: an id, a start and a length (a1, 2026-01-05, 5d), or after another task (after a1, 3d)`, n.spec, { confirmLabel: "Save" });
         if (text == null || !text.trim()) return;
         delete n.raw;

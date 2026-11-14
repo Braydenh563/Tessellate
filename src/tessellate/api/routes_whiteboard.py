@@ -1,9 +1,8 @@
 """Whiteboard: note cards and freehand sketches placed on a canvas.
 
 A "board" is itself a note (`board_id` points at an entry), so a board is
-something you can search, tag and file like anything else in the notebook, 
-and `board_id = NULL` is the one unnamed scratch board every notebook starts
-with.
+something you can search, tag and file like anything else in the notebook,
+and `board_id = NULL` is the one unnamed scratch board every notebook starts with.
 
 Two rules run through all of it, both learned by their absence in the first
 version:
@@ -57,6 +56,7 @@ from tessellate.api.wb_import import MAX_XMIND_JSON_BYTES, _clean_import_style, 
 from tessellate.api.wb_map import _is_descendant, _next_position, create_map_node, move_map_node, move_map_nodes  # noqa: F401  (moved; re-exported)
 from tessellate.api import wb_map
 from tessellate.api.wb_make import _record_map_creation, generate_map, import_board, propose_map  # noqa: F401  (moved; re-exported)
+__all__ = ["BOARD_LAYOUTS", "Layer", "MAP_APP_DEFAULT_PINS", "MAP_LEVEL_FIELDS", "MAP_REFERENCE_KINDS", "MAP_THEME_FIELDS", "MAP_TOPIC_KIND", "MAX_SKETCH_CHARS", "MEDIA_URL_RE", "WhiteboardObjectBase", "WhiteboardObjectData", "WhiteboardSketchIn", "_clamp", "_is_one_emoji", "_object_to_out", "_require_object_data", "BOARD_BG_COLOR_RE", "BoardBackground", "BoardOut", "_board_filter", "_board_settings", "_clean_levels", "_clean_theme", "_drop_orphan_links", "_forget_links_to", "_on_current_layer", "_require_board", "_store_board_background", "_store_board_settings", "_store_board_theme", "_themed_style", "MAP_BRANCH_PALETTE", "MAP_BRANCH_PALETTES", "PREVIEW_ASPECT_RANGE", "PREVIEW_CACHE_STATS", "PREVIEW_POINTS", "_map_branch_colors", "_preview_fields", "_preview_items", "_preview_points", "_sketch_preview", "_thumb_writable", "media_router", "put_thumbnail", "create_board", "duplicate_board", "list_boards", "rename_board", "create_node", "create_object", "create_sketch", "delete_node", "delete_object", "delete_sketch", "update_node", "update_object", "update_sketch", "MAP_COL", "MAP_ROW", "MAX_IMPORT_DEPTH", "MAX_MAP_DEPTH", "_build_tree", "_map_objects", "_reference_label", "_export_freemind", "_export_markdown", "_export_opml", "export_board", "MAX_XMIND_JSON_BYTES", "_clean_import_style", "_parse_markdown_outline", "_parse_xml_document", "_place_map_nodes", "_restore_import_links", "_is_descendant", "_next_position", "create_map_node", "move_map_node", "move_map_nodes", "_record_map_creation", "generate_map", "import_board", "propose_map"]  # re-exported for callers of the pre-split module; CodeQL reads __all__, not noqa
 from tessellate.api import wb_make
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8946, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11000, test files 2845, tests 22892, plan headings 690, app scripts 29, boot scripts 38, script files 354.
+Counts: frontend functions 8946, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11001, test files 2845, tests 22892, plan headings 690, app scripts 29, boot scripts 38, script files 354.
 
 ## Frontend functions (8946)
 
@@ -14893,7 +14893,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11000)
+## Backend modules (11001)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24624,17 +24624,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_refusal` | src/tessellate/api/wb_config.py:125 |
 | `check_config` | src/tessellate/api/wb_config.py:134 |
 
-### src/tessellate/api/wb_convert.py (35)
+### src/tessellate/api/wb_convert.py (36)
 
 | Name | File:line |
 |---|---|
-| `_Activity` | src/tessellate/api/wb_convert.py:729 |
-| `_ClassDiagram` | src/tessellate/api/wb_convert.py:480 |
+| `_Activity` | src/tessellate/api/wb_convert.py:745 |
+| `_ClassDiagram` | src/tessellate/api/wb_convert.py:496 |
 | `_GraphML` | src/tessellate/api/wb_convert.py:124 |
-| `_Sequence` | src/tessellate/api/wb_convert.py:643 |
+| `_Sequence` | src/tessellate/api/wb_convert.py:659 |
 | `_cap` | src/tessellate/api/wb_convert.py:44 |
 | `_check_counts` | src/tessellate/api/wb_convert.py:52 |
 | `_dict` | src/tessellate/api/wb_convert.py:248 |
+| `_drop_block_comments` | src/tessellate/api/wb_convert.py:432 |
 | `_gml_box` | src/tessellate/api/wb_convert.py:112 |
 | `_gml_data` | src/tessellate/api/wb_convert.py:96 |
 | `_gml_inner` | src/tessellate/api/wb_convert.py:85 |
@@ -24650,19 +24651,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_name` | src/tessellate/api/wb_convert.py:428 |
 | `_plain` | src/tessellate/api/wb_convert.py:238 |
 | `_positioned` | src/tessellate/api/wb_convert.py:219 |
-| `_pu_activity` | src/tessellate/api/wb_convert.py:882 |
-| `_pu_class` | src/tessellate/api/wb_convert.py:556 |
-| `_pu_elements` | src/tessellate/api/wb_convert.py:569 |
-| `_pu_lines` | src/tessellate/api/wb_convert.py:432 |
-| `_pu_sequence` | src/tessellate/api/wb_convert.py:713 |
+| `_pu_activity` | src/tessellate/api/wb_convert.py:898 |
+| `_pu_class` | src/tessellate/api/wb_convert.py:572 |
+| `_pu_elements` | src/tessellate/api/wb_convert.py:585 |
+| `_pu_lines` | src/tessellate/api/wb_convert.py:448 |
+| `_pu_sequence` | src/tessellate/api/wb_convert.py:729 |
 | `_refuse` | src/tessellate/api/wb_convert.py:40 |
-| `convert` | src/tessellate/api/wb_convert.py:964 |
-| `detect` | src/tessellate/api/wb_convert.py:952 |
-| `inspect_emf` | src/tessellate/api/wb_convert.py:922 |
+| `convert` | src/tessellate/api/wb_convert.py:980 |
+| `detect` | src/tessellate/api/wb_convert.py:968 |
+| `inspect_emf` | src/tessellate/api/wb_convert.py:938 |
 | `parse_graphml` | src/tessellate/api/wb_convert.py:183 |
 | `parse_miro` | src/tessellate/api/wb_convert.py:360 |
-| `parse_plantuml` | src/tessellate/api/wb_convert.py:895 |
-| `plantuml_kind` | src/tessellate/api/wb_convert.py:450 |
+| `parse_plantuml` | src/tessellate/api/wb_convert.py:911 |
+| `plantuml_kind` | src/tessellate/api/wb_convert.py:466 |
 
 ### src/tessellate/api/wb_export.py (17)
 

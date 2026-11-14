@@ -450,7 +450,7 @@
   function mermaidShow(figure, result, source) {
     const svg = result.svg;
     //: A moving arrow (`e1@{ animate: true }`) holds still under reduced motion, the app's switch or the system's (L-documents-58).
-    const still = document.documentElement.dataset.motion === "reduced" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const still = reducedMotionWanted();
     const shown = still && /edge-animation/.test(svg) ? svg.replace(/(<svg\b[^>]*>)/, "$1<style>[class*='edge-animation']{animation:none !important}</style>") : svg;
     const url = URL.createObjectURL(new Blob([shown], { type: "image/svg+xml" }));
     const img = document.createElement("img");

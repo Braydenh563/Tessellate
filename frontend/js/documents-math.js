@@ -603,7 +603,7 @@
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
   const fenceWrite = (lang, pick, next, view) => {
     const surface = view || window.docSurface?.();
-    const text = view ? view.state.doc.toString() : surface?.text;
+    const text = view ? docStr(view.state.doc) : surface?.text;
     const block = text == null ? null : pick(fenceBlocks(lang)(text));
     if (!block) return;
     const from = block.from + text.slice(block.from).indexOf("\n") + 1;

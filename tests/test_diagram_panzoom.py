@@ -108,7 +108,9 @@ def test_the_picture_takes_the_wheel_the_keyboard_and_a_glide():
 def test_a_pan_settles_a_gesture_first_and_a_slow_glide_is_not_an_edge():
     # 1679 review: the commit anchors on the rectangle taken at the gesture's start, so a drag, a key pan or a glide that moved the
     # scroll in between made the picture jump. Each settles first; the glide keeps a fractional position so a half-pixel step is no edge.
-    move = VIEW.index("} else if (points.size === 1 && (roomy()")
+    #: L-documents-89 reads roomy() once on the press into `room`, so the move handler does no layout read.
+    assert "room = roomy();" in VIEW
+    move = VIEW.index("} else if (points.size === 1 && (room ||")
     assert "settle();" in VIEW[move : move + 200]
     keys = VIEW.index("const move = {")
     assert "if (move) settle();" in VIEW[keys : keys + 600]

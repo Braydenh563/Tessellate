@@ -2489,12 +2489,12 @@ MORE_TOPICS.extend([
         "body": (
             "The Diagram builder makes a flowchart, mind map, timeline, sequence, Gantt, pie, state, class or ER diagram "
             "from blocks. Mermaid is only its file format. Every door is the same row, "
-            "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
-            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "Diagram builder, with the same icon; in Documents and the Library's document list, the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, document or Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. "
+            "opens the builder empty, and Done saves a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
@@ -3227,5 +3227,5 @@ MORE_TOPICS.append({
     "badge": {"label": "Whiteboard", "tab": "library"},
 })
 TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}
-TOPIC_META["code-lint"] = {"title": "Lint warnings in a code file", "path": "A .js, .ts or .py file in the Library; Settings, Extras for Ruff"}
+TOPIC_META["code-lint"] = {"title": "Lint warnings in a code file", "path": "A .js, .ts or .py file in the Library; Settings, Packages for Ruff"}
 TOPIC_META["diagram-chart-kinds"] = {"title": "Blocks for Gantt, pie, state, class and ER diagrams", "path": "A diagram document, Blocks"}

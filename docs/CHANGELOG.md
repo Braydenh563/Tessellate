@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CodeQL: the PlantUML comment strip is a linear scan (no backtracking regex on a pasted file); the whiteboard route module lists its re-exports in `__all__`; a board test reads its CSS through `Path`.
+- CI leg 2: tests follow L-documents-47 (fetch before the editor), -89 (pan reads once per press) and the resolved `data-motion` read; the moving-arrow check uses `reducedMotionWanted()`; lint and math read text through `docStr`; the Gantt menu says Set timing; the Ruff help names Settings, Packages; the diagram builder topic keeps "Cancel changes nothing." under the 1,900 budget; credits regenerated.
 - CI fixes: the Ruff extra has its install notice sentence; document save harnesses stub `document` for the query block's "doc-saved" event; the new-note test follows L-documents-48's `startNewNote(1)`; three one-off docsverify sweeps removed (scratchpad cap).
 - Boot JS: the chat rename and the new-reminder sheet moved into the lazy chat-edit.js and reminder-edit.js, fetched on first use; boot gzip 250,689 down to 250,374, back under the ratchet (L-documents-105).
 - Documents: opening the Documents tab cold now asks for the list, the file-type table, the first document and the editor engine while the Library bundle is still arriving (new first file `documents-warm.js`; `api` hands each answer to its caller once). Measured 1440 cold, same box back to back: median 1,175 to 1,145 ms (load 12, runs 929 to 1,366 vs 999 to 1,655), waterfall: list and file types start 300 ms sooner, the document 310 ms sooner; 390 median 742 to 635 ms. Under 800 ms at 1440 is not met (L-documents-83 remainder).
