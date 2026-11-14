@@ -1,6 +1,6 @@
 {
   "about": [
-    "CHAT_PLAN Phase 4's loose-ends fixture (Brief 13's done-when): seventy notes, eight planted loose ends.",
+    "CHAT_PLAN Phase 4's loose-ends fixture (Brief 13's done-when): seventy notes, eight planted loose ends. Half the notes are long writing and half are short jottings (decision 27: notes are a mix, weighted equally).",
     "A loose end is unfinished by its own words (need to, waiting on, must, chase up, follow up, todo, should).",
     "Ten finished items say the same kind of thing in the past tense, so a model matching on topic alone is caught.",
     "Each planted note carries an anchor word an answer naming it will use. Built by a script, not by hand."
@@ -13,7 +13,7 @@
     },
     {
       "id": 2,
-      "content": "Finished the quarterly report and sent it to the team.",
+      "content": "Finished the quarterly report and sent it to the team. It was a slow, grey afternoon and the light in the kitchen never really changed, so the hours ran together. I made tea twice, answered a few messages from friends, and let the radio play in the background without listening to it. Nothing about the day was remarkable, but it felt calm, and I noticed that I was in no hurry to be anywhere else.",
       "loose_end": false
     },
     {
@@ -23,7 +23,7 @@
     },
     {
       "id": 4,
-      "content": "Need to ring the landlord back about the boiler, he left a voicemail on Tuesday.",
+      "content": "Need to ring the landlord back about the boiler, he left a voicemail on Tuesday. Looking back over the last few weeks, the routine has settled into something I actually like. Mornings start early and quietly, the middle of the day is for the heavier work, and evenings are kept loose on purpose. I wrote a little about how it feels, mostly because the pattern is easy to lose track of when everything is going smoothly.",
       "loose_end": true,
       "anchor": "landlord"
     },
@@ -34,7 +34,7 @@
     },
     {
       "id": 6,
-      "content": "Called mum on Sunday, she is well and the garden is thriving.",
+      "content": "Called mum on Sunday, she is well and the garden is thriving. The weather turned on the way home, first a thin drizzle and then a proper downpour, and I ended up sheltering under a shop awning with three other people. We talked about nothing in particular, the bus times and the state of the pavements, and by the time it eased off the conversation had run its course in a pleasant way.",
       "loose_end": false
     },
     {
@@ -44,7 +44,7 @@
     },
     {
       "id": 8,
-      "content": "Sorted the recycling rota with the flat next door.",
+      "content": "Sorted the recycling rota with the flat next door. I spent a while sorting through the older papers in the drawer, and it was oddly satisfying to read how things looked at the time. Some of the worries on those pages seem tiny now, and a few of the small wins were already forgotten. I put the useful ones back in a neat pile and recycled the rest without much ceremony.",
       "loose_end": false
     },
     {
@@ -54,7 +54,7 @@
     },
     {
       "id": 10,
-      "content": "Submitted the expenses for the Leeds trip.",
+      "content": "Submitted the expenses for the Leeds trip. A friend described how she keeps her own notes, a single page a day with three lines on it, and the idea stuck with me. Mine are messier and longer, with tangents and half sentences, but there is something to be said for brevity. I thought about it on the walk back and decided to carry on as I am for now.",
       "loose_end": false
     },
     {
@@ -65,7 +65,7 @@
     },
     {
       "id": 12,
-      "content": "Cleaned out the gutters, they were full of leaves.",
+      "content": "Cleaned out the gutters, they were full of leaves. The market was busy this morning, full of the usual stalls and a new one selling preserves in small jars. I tasted a few, bought one plum and ginger, and chatted with the owner about how she makes them. She said the secret was patience, and that most of the work is simply standing over the pan.",
       "loose_end": false
     },
     {
@@ -75,7 +75,7 @@
     },
     {
       "id": 14,
-      "content": "The oven runs hot, bake at 230C with the lid on.",
+      "content": "The oven runs hot, bake at 230C with the lid on. Evenings this month have been about quiet reading, mostly essays and the odd long article saved from earlier in the week. I find the slow pace helps me think, and I often end up scribbling a line or two in the margin. It is not productive in any measurable way, but it leaves me feeling settled before sleep.",
       "loose_end": false
     },
     {
@@ -85,7 +85,7 @@
     },
     {
       "id": 16,
-      "content": "Book quote: the best time to plant a tree was twenty years ago.",
+      "content": "Book quote: the best time to plant a tree was twenty years ago. The garden is finally starting to look cared for after a long stretch of neglect. The beds are weeded, the path has been swept, and the pots by the door have fresh soil in them. I stood out there for a while with a mug, watching the birds come back to the feeder, and enjoyed the small, ordinary change.",
       "loose_end": false
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "id": 18,
-      "content": "Must renew the car insurance before the 14th, the quote is in my email.",
+      "content": "Must renew the car insurance before the 14th, the quote is in my email. It struck me today how much of a week is made up of small repeated gestures, the same mug, the same route, the same greeting at the door. None of them matter alone, but together they give the days their shape. I wrote this down mainly so I could read it later and see whether it still seems true.",
       "loose_end": true,
       "anchor": "insurance"
     },
@@ -106,7 +106,7 @@
     },
     {
       "id": 20,
-      "content": "The cat likes the salmon pouches, not the chicken ones.",
+      "content": "The cat likes the salmon pouches, not the chicken ones. We talked for an hour over dinner about nothing urgent, family news, a film we had both half watched, and the odd habits of the neighbours. It reminded me how much I enjoy long unhurried conversations, and how rarely I make room for them. The plates were cold by the end and nobody minded at all.",
       "loose_end": false
     },
     {
@@ -116,7 +116,7 @@
     },
     {
       "id": 22,
-      "content": "Coffee ratio 1:16, grind medium fine for the pour over.",
+      "content": "Coffee ratio 1:16, grind medium fine for the pour over. After a bit of reflection I realised the week had gone better than it felt while I was in it. The small tasks got done in their own time, the larger ones moved along, and there were a couple of unexpected kindnesses from people I barely know. I am glad I took a moment to notice that and write it down.",
       "loose_end": false
     },
     {
@@ -126,7 +126,7 @@
     },
     {
       "id": 24,
-      "content": "Recipe: lentil soup with cumin, carrots and a squeeze of lemon.",
+      "content": "Recipe: lentil soup with cumin, carrots and a squeeze of lemon. The train was almost empty on the way back, so I had a window seat and watched the fields go past under a pale sky. I thought about nothing in particular, which is rare, and it felt like a small gift. By the time we reached the station the whole journey had passed in a comfortable blur.",
       "loose_end": false
     },
     {
@@ -137,7 +137,7 @@
     },
     {
       "id": 26,
-      "content": "The lake was freezing but the swim was worth it.",
+      "content": "The lake was freezing but the swim was worth it. It was a slow, grey afternoon and the light in the kitchen never really changed, so the hours ran together. I made tea twice, answered a few messages from friends, and let the radio play in the background without listening to it. Nothing about the day was remarkable, but it felt calm, and I noticed that I was in no hurry to be anywhere else.",
       "loose_end": false
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "id": 28,
-      "content": "Garden: the tomatoes ripened late this year, the basil bolted.",
+      "content": "Garden: the tomatoes ripened late this year, the basil bolted. Looking back over the last few weeks, the routine has settled into something I actually like. Mornings start early and quietly, the middle of the day is for the heavier work, and evenings are kept loose on purpose. I wrote a little about how it feels, mostly because the pattern is easy to lose track of when everything is going smoothly.",
       "loose_end": false
     },
     {
@@ -157,7 +157,7 @@
     },
     {
       "id": 30,
-      "content": "Quote from the meeting: ship small, ship often.",
+      "content": "Quote from the meeting: ship small, ship often. The weather turned on the way home, first a thin drizzle and then a proper downpour, and I ended up sheltering under a shop awning with three other people. We talked about nothing in particular, the bus times and the state of the pavements, and by the time it eased off the conversation had run its course in a pleasant way.",
       "loose_end": false
     },
     {
@@ -167,7 +167,7 @@
     },
     {
       "id": 32,
-      "content": "Follow up with Priya about the conference talk slides, she wanted a draft.",
+      "content": "Follow up with Priya about the conference talk slides, she wanted a draft. I spent a while sorting through the older papers in the drawer, and it was oddly satisfying to read how things looked at the time. Some of the worries on those pages seem tiny now, and a few of the small wins were already forgotten. I put the useful ones back in a neat pile and recycled the rest without much ceremony.",
       "loose_end": true,
       "anchor": "Priya"
     },
@@ -178,7 +178,7 @@
     },
     {
       "id": 34,
-      "content": "The bakery on Elm Street does the best cardamom buns.",
+      "content": "The bakery on Elm Street does the best cardamom buns. A friend described how she keeps her own notes, a single page a day with three lines on it, and the idea stuck with me. Mine are messier and longer, with tangents and half sentences, but there is something to be said for brevity. I thought about it on the walk back and decided to carry on as I am for now.",
       "loose_end": false
     },
     {
@@ -188,7 +188,7 @@
     },
     {
       "id": 36,
-      "content": "Bread flour is cheaper at the market than the supermarket.",
+      "content": "Bread flour is cheaper at the market than the supermarket. The market was busy this morning, full of the usual stalls and a new one selling preserves in small jars. I tasted a few, bought one plum and ginger, and chatted with the owner about how she makes them. She said the secret was patience, and that most of the work is simply standing over the pan.",
       "loose_end": false
     },
     {
@@ -198,7 +198,7 @@
     },
     {
       "id": 38,
-      "content": "The old laptop battery lasts about two hours now.",
+      "content": "The old laptop battery lasts about two hours now. Evenings this month have been about quiet reading, mostly essays and the odd long article saved from earlier in the week. I find the slow pace helps me think, and I often end up scribbling a line or two in the margin. It is not productive in any measurable way, but it leaves me feeling settled before sleep.",
       "loose_end": false
     },
     {
@@ -209,7 +209,7 @@
     },
     {
       "id": 40,
-      "content": "Pancake recipe: one cup flour, one egg, one cup milk.",
+      "content": "Pancake recipe: one cup flour, one egg, one cup milk. The garden is finally starting to look cared for after a long stretch of neglect. The beds are weeded, the path has been swept, and the pots by the door have fresh soil in them. I stood out there for a while with a mug, watching the birds come back to the feeder, and enjoyed the small, ordinary change.",
       "loose_end": false
     },
     {
@@ -219,7 +219,7 @@
     },
     {
       "id": 42,
-      "content": "Holiday memory: the ferry to Mull in the rain, dolphins at the bow.",
+      "content": "Holiday memory: the ferry to Mull in the rain, dolphins at the bow. It struck me today how much of a week is made up of small repeated gestures, the same mug, the same route, the same greeting at the door. None of them matter alone, but together they give the days their shape. I wrote this down mainly so I could read it later and see whether it still seems true.",
       "loose_end": false
     },
     {
@@ -229,7 +229,7 @@
     },
     {
       "id": 44,
-      "content": "Paint colour for the hallway is Farrow and Ball Skimming Stone.",
+      "content": "Paint colour for the hallway is Farrow and Ball Skimming Stone. We talked for an hour over dinner about nothing urgent, family news, a film we had both half watched, and the odd habits of the neighbours. It reminded me how much I enjoy long unhurried conversations, and how rarely I make room for them. The plates were cold by the end and nobody minded at all.",
       "loose_end": false
     },
     {
@@ -239,7 +239,7 @@
     },
     {
       "id": 46,
-      "content": "Should book the dentist check-up, it has been over a year.",
+      "content": "Should book the dentist check-up, it has been over a year. After a bit of reflection I realised the week had gone better than it felt while I was in it. The small tasks got done in their own time, the larger ones moved along, and there were a couple of unexpected kindnesses from people I barely know. I am glad I took a moment to notice that and write it down.",
       "loose_end": true,
       "anchor": "dentist"
     },
@@ -250,7 +250,7 @@
     },
     {
       "id": 48,
-      "content": "Guitar: learned the F barre chord at last.",
+      "content": "Guitar: learned the F barre chord at last. The train was almost empty on the way back, so I had a window seat and watched the fields go past under a pale sky. I thought about nothing in particular, which is rare, and it felt like a small gift. By the time we reached the station the whole journey had passed in a comfortable blur.",
       "loose_end": false
     },
     {
@@ -260,7 +260,7 @@
     },
     {
       "id": 50,
-      "content": "Hiking boots size 44, the wide fit.",
+      "content": "Hiking boots size 44, the wide fit. It was a slow, grey afternoon and the light in the kitchen never really changed, so the hours ran together. I made tea twice, answered a few messages from friends, and let the radio play in the background without listening to it. Nothing about the day was remarkable, but it felt calm, and I noticed that I was in no hurry to be anywhere else.",
       "loose_end": false
     },
     {
@@ -270,7 +270,7 @@
     },
     {
       "id": 52,
-      "content": "Library card number 2299 1834.",
+      "content": "Library card number 2299 1834. Looking back over the last few weeks, the routine has settled into something I actually like. Mornings start early and quietly, the middle of the day is for the heavier work, and evenings are kept loose on purpose. I wrote a little about how it feels, mostly because the pattern is easy to lose track of when everything is going smoothly.",
       "loose_end": false
     },
     {
@@ -281,7 +281,7 @@
     },
     {
       "id": 54,
-      "content": "Swimming pool lane times: 7 to 9 weekday mornings.",
+      "content": "Swimming pool lane times: 7 to 9 weekday mornings. The weather turned on the way home, first a thin drizzle and then a proper downpour, and I ended up sheltering under a shop awning with three other people. We talked about nothing in particular, the bus times and the state of the pavements, and by the time it eased off the conversation had run its course in a pleasant way.",
       "loose_end": false
     },
     {
@@ -291,7 +291,7 @@
     },
     {
       "id": 56,
-      "content": "The neighbour's dog is called Biscuit.",
+      "content": "The neighbour's dog is called Biscuit. I spent a while sorting through the older papers in the drawer, and it was oddly satisfying to read how things looked at the time. Some of the worries on those pages seem tiny now, and a few of the small wins were already forgotten. I put the useful ones back in a neat pile and recycled the rest without much ceremony.",
       "loose_end": false
     },
     {
@@ -301,7 +301,7 @@
     },
     {
       "id": 58,
-      "content": "Cinema membership renews automatically in March.",
+      "content": "Cinema membership renews automatically in March. A friend described how she keeps her own notes, a single page a day with three lines on it, and the idea stuck with me. Mine are messier and longer, with tangents and half sentences, but there is something to be said for brevity. I thought about it on the walk back and decided to carry on as I am for now.",
       "loose_end": false
     },
     {
@@ -311,7 +311,7 @@
     },
     {
       "id": 60,
-      "content": "Chess: the Italian game, bishop to c4 on move three.",
+      "content": "Chess: the Italian game, bishop to c4 on move three. The market was busy this morning, full of the usual stalls and a new one selling preserves in small jars. I tasted a few, bought one plum and ginger, and chatted with the owner about how she makes them. She said the secret was patience, and that most of the work is simply standing over the pan.",
       "loose_end": false
     },
     {
@@ -321,7 +321,7 @@
     },
     {
       "id": 62,
-      "content": "Spare keys are with Ana at number 12.",
+      "content": "Spare keys are with Ana at number 12. Evenings this month have been about quiet reading, mostly essays and the odd long article saved from earlier in the week. I find the slow pace helps me think, and I often end up scribbling a line or two in the margin. It is not productive in any measurable way, but it leaves me feeling settled before sleep.",
       "loose_end": false
     },
     {
@@ -331,7 +331,7 @@
     },
     {
       "id": 64,
-      "content": "The museum is free on the first Sunday of the month.",
+      "content": "The museum is free on the first Sunday of the month. The garden is finally starting to look cared for after a long stretch of neglect. The beds are weeded, the path has been swept, and the pots by the door have fresh soil in them. I stood out there for a while with a mug, watching the birds come back to the feeder, and enjoyed the small, ordinary change.",
       "loose_end": false
     },
     {
@@ -341,7 +341,7 @@
     },
     {
       "id": 66,
-      "content": "Postcode for the new office is LS1 4AP.",
+      "content": "Postcode for the new office is LS1 4AP. It struck me today how much of a week is made up of small repeated gestures, the same mug, the same route, the same greeting at the door. None of them matter alone, but together they give the days their shape. I wrote this down mainly so I could read it later and see whether it still seems true.",
       "loose_end": false
     },
     {
@@ -351,7 +351,7 @@
     },
     {
       "id": 68,
-      "content": "Yoga: hold the pigeon pose for a minute each side.",
+      "content": "Yoga: hold the pigeon pose for a minute each side. We talked for an hour over dinner about nothing urgent, family news, a film we had both half watched, and the odd habits of the neighbours. It reminded me how much I enjoy long unhurried conversations, and how rarely I make room for them. The plates were cold by the end and nobody minded at all.",
       "loose_end": false
     },
     {
@@ -361,7 +361,7 @@
     },
     {
       "id": 70,
-      "content": "Moon landing documentary was excellent.",
+      "content": "Moon landing documentary was excellent. After a bit of reflection I realised the week had gone better than it felt while I was in it. The small tasks got done in their own time, the larger ones moved along, and there were a couple of unexpected kindnesses from people I barely know. I am glad I took a moment to notice that and write it down.",
       "loose_end": false
     }
   ]
