@@ -423,7 +423,7 @@ danger actions in a separate red-edged group at the bottom of their
 section. Gate: no paragraph over 120 characters outside a popover; one
 toggle-row recipe; the section list is a tablist with arrow keys.
 
-**State 2026-09-24:** (d) absorbed: the two-pane shell with a section list (`#settings-nav`, back and forward) and the '?' popovers are built by UI_MODERNISATION and Brief 4; the prose metric re-run is LEDGER L-world-class-64.
+**State 2026-09-24:** (d) absorbed: the two-pane shell with a section list (`#settings-nav`, back and forward) and the '?' popovers are built by UI_MODERNISATION and Brief 4; the prose metric re-run 2026-11-14: 0 paragraphs over 120 characters on the seven tabs, 3 in Settings (two persona prompts, one path), `tests/test_prose_120_64.py`.
 
 ### D14 Help, onboarding and the command palette (S, Sonnet)
 
@@ -696,7 +696,7 @@ updated per session):
 | Distinct control recipes on the busiest screen | `scratchpad/audit/recipes.js` | 22 (Chat) | ≤ 8 |
 | Control heights per bar | `docks.js` | 1 to 4 | 1 |
 | Chrome ratio at 390 | `audit/chrome.js` | 76% | < 35% |
-| Paragraphs > 120 chars outside popovers | `audit/prose.js` | ~60 | 0 |
+| Paragraphs > 120 chars outside popovers | `audit/prose.js` | 3 (2026-11-14) | 0 |
 | Em-dashes in `frontend/` + `src/` | `test_no_em_dashes.py` | ~9,000 | 0 |
 | Contrast failures, both themes | `contrast.js` | 0 after fix | 0 |
 | Console errors across all tabs at 3 widths | `errors.js` | 0 | 0 |

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 134 | 29 | 3 | 10 | 163 |
+| world-class | 0 | 133 | 29 | 3 | 10 | 162 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 525 | 100 | 5 | 121 | 1030 |
+| all | 405 | 524 | 100 | 5 | 121 | 1029 |
 
 ## graph
 
@@ -541,7 +541,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)
 - [ ] **L-world-class-62** `world-class` open, S: Re-run the busiest-screen recipe-count gate (scratchpad/audit/recipes.js) and fix what it finds. From WORLD_CLASS_PLAN.md:302. Evidence: WORLD_CLASS_PLAN.md:302 'the recipe-count gate was not re-run'; target 8 recipes, 22 on Chat at 696
 - [ ] **L-world-class-63** `world-class` open, S: Library: group notes by type (D5's last left item). From WORLD_CLASS_PLAN.md:357. Evidence: no grouping by type in frontend/js/library*.js (grep 'group.*type' 0 hits)
-- [ ] **L-world-class-64** `world-class` open, S: Re-run the prose metric (paragraphs over 120 characters outside popovers) and move what it finds behind data-help-for. From WORLD_CLASS_PLAN.md:427. Evidence: WORLD_CLASS_PLAN.md:427 and :949 (54 paragraphs, ~60 at :699); not re-run since 2026-09-24
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'
 - [ ] **L-world-class-67** `world-class` open, M: OCR reading, engine installs and transcription as Activity-panel jobs with progress per page and Stop (decision 70). From WORLD_CLASS_PLAN.md:3954. Evidence: 28.4 row 6 (:3954) and 28.5 row 8 (:3985) not marked built; decision 70 (:3909)

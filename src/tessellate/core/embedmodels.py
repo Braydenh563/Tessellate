@@ -246,9 +246,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         best_for="Multilingual notes, once you have accepted Google's terms.",
         one_press=False,
         terms_url="https://ai.google.dev/gemma/terms",
-        why_not="Under Google's Gemma terms rather than an open licence, and "
-        "gated on the Hub: read and accept them first, then it is "
-        "embeddinggemma in Ollama.",
+        why_not="Under Google's Gemma terms, not an open licence: accept them on the Hub first, then use embeddinggemma in Ollama.",
         onnx=OnnxBuild("onnx-community/embeddinggemma-300m-ONNX", extra_files=("onnx/model.onnx_data",)),
     ),
 )
@@ -307,8 +305,7 @@ OLLAMA_EMBED_MODELS: tuple[OllamaEmbedModel, ...] = (
         "Gemma terms", "Multilingual notes, once you have accepted Google's terms.",
         one_press=False,
         terms_url="https://ai.google.dev/gemma/terms",
-        why_not="Under Google's Gemma terms rather than an open licence: read "
-        "them, then pull it in Ollama yourself and pick it below.",
+        why_not="Under Google's Gemma terms, not an open licence: read them, then pull it in Ollama and pick it below.",
     ),
 )
 

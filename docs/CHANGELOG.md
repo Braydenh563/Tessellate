@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings prose: the not-installed search line, the two Gemma reasons, the exports empty line, the backup schedule line, the model-server note and a built-in skill description are one line of at most 120 characters; the longer words sit in a tooltip. Own-text paragraphs over 120 characters at 1440: 0 on the seven tabs, 9 to 3 in Settings (the rest are a persona's own prompt and a path); the boot scripts also fall 27 bytes under the gzip ratchet (L-world-class-64).
 - Top bar: every tab's tooltip names its jump chord ("Notes (t then n)"), held to the one jump table by a test; the captions already held at 1024, 1100 and 1280 (label widths 34 to 83px) and go only under 820 (L-world-class-96).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
