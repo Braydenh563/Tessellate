@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: "what are those tags", "those categories" and "those documents" with none to list are composed in the chat voice (ten wordings each) instead of fixed text (L-chat-233).
 - Chat: the needle test pins the no-model act line by "remind", which both its wordings say (L-chat-232); the composer decides the tool, needle fills slots, the composer writes the reply: 9 tests with a fake engine, a real needle model not run.
 - Chat: the welcome line is measured at 20 or more distinct surfaces across the four voices and five moods and says only the facts it was given; the dashboard headline never says "A fresh page" or "Welcome back" when it is false (L-chat-231).
 - Chat: "walked compared to ran" and "my walks versus my runs" are the same difference as "how much more did I walk than run" (they listed the notes of each word), and "how much more did I read than write" says it measures no amount for those instead of quoting a note (L-chat-234).

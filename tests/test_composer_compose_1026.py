@@ -60,6 +60,9 @@ FACTS: dict[str, dict] = {
     "act_ask": {"missing": "what the reminder is for"},
     "act_baddate": {"said": "whenever"},
     "act_none": {},
+    "none_tags": {},
+    "none_categories": {},
+    "none_documents": {},
 }
 #: The abilities the owner named, each needing 20 or more distinct surfaces.
 ABILITIES = ("recent", "recent_any", "due", "plan", "left", "define", "count_note", "study_summary", "study_nothing_named", "until")
