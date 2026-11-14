@@ -2894,13 +2894,15 @@ TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and
 MORE_TOPICS.append({
     "id": "diagram-styling",
     "keywords": (
-        "diagram markdown text", "sequence autonumber", "sequence box", "create participant", "destroy participant", "diagram line break", "group direction", "subgraph direction", "diagram class", "classdef", "diagram link", "click link in diagram", "diagram bold name", "br in a diagram",
+        "diagram markdown text", "sequence autonumber", "sequence box", "create participant", "destroy participant", "diagram line break", "group direction", "subgraph direction", "diagram class", "classdef", "diagram link", "click link in diagram", "diagram class shorthand", "diagram icon", "animate an arrow", "arrow animation", "diagram bold name", "br in a diagram",
     ),
     "body": (
         "A block's menu has Markdown text, which draws **bold** and *italic* in its name; write <br/> in a name for a line break. "
         "A group's menu has Direction: its blocks flow that way inside it (Mermaid ignores it when a block in the group is joined to one outside). "
         "A block's menu also has Class (a name; a new one gets a pale blue look, written as a classDef line you can edit in Source) and Link (an https address or [[a note]]); Open link follows it. "
-        "A link on the picture itself is not clickable, and a callback or javascript: click line stays a locked line. "
+        "In a document, a block with a link is a button on the picture: it opens the link the same way. A callback or javascript: click line stays a locked line. "
+        "Name:::class after a block is read as its class. A node written with @{ icon: ... } is drawn with its label and its line is kept as written: no icon pack is bundled, so the icon itself is not drawn. "
+        "An arrow's menu has Animation (still, moving, slowly or quickly), written as e1@--> and an e1@{ animate: true } line; the picture holds still when motion is reduced. Mermaid has no setting for where an arrow's label sits. "
         "On a sequence diagram, a participant's menu has Box (a named frame round it) and Number the messages; a message's menu has Lifetime (it creates or destroys a participant); a highlight block has Colour."
     ),
     "badge": {"label": "Documents", "tab": "documents"},

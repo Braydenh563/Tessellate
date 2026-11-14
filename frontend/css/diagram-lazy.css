@@ -2772,3 +2772,14 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
   gap: var(--space-2);
   min-block-size: 44px;
 }
+
+/* L-documents-58: the arrow animation sheet's four choices, one under another. */
+.dgm-animate-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dgm-animate-list button[aria-pressed="true"] {
+  border-color: var(--accent);
+}

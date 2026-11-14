@@ -449,7 +449,10 @@
   //: its own styles and is outside the page policy). The old URL is revoked.
   function mermaidShow(figure, result, source) {
     const svg = result.svg;
-    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    //: A moving arrow (`e1@{ animate: true }`) holds still under reduced motion, the app's switch or the system's (L-documents-58).
+    const still = document.documentElement.dataset.motion === "reduced" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const shown = still && /edge-animation/.test(svg) ? svg.replace(/(<svg\b[^>]*>)/, "$1<style>[class*='edge-animation']{animation:none !important}</style>") : svg;
+    const url = URL.createObjectURL(new Blob([shown], { type: "image/svg+xml" }));
     const img = document.createElement("img");
     img.className = "md-mermaid-img";
     img.alt = mermaidAltFor(source);
@@ -463,7 +466,76 @@
     figure.replaceChildren(img, ...figure.querySelectorAll(":scope > .dgm-overlay"));
     figure.classList.remove("md-mermaid-pending");
     figure.removeAttribute("aria-busy");
+    //: The builder's own picture selects blocks; only a document's picture follows a block's link.
+    if (!figure.closest(".dgm-picture, .dgm-template-figure")) mermaidShow.links(figure, svg, source);
   }
+
+  //: L-documents-78: the picture is an <img> under the strict level, so a `click` link cannot live in it. A layer of buttons over
+  //: it, one per linked block (`n.href`, https or `[[note]]` only), is placed from the node boxes of the drawn SVG (a node's
+  //: translate, on the node or on the link around it, and its rect, circle or polygon) as shares of the viewBox, so it follows the picture's size. A property of
+  //: `mermaidShow`, not a global.
+  mermaidShow.links = (figure, svg, source) => {
+    const model = window.diagramModel?.parse(source);
+    const linked = (model?.nodes || []).filter((n) => /^(?:https?:\/\/[^\s"]+|\[\[[^\]"\n]+\]\])$/i.test(n.href || ""));
+    if (!linked.length) return;
+    const svgDoc = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const view = (svgDoc.documentElement.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+    if (view.length !== 4 || !(view[2] > 0 && view[3] > 0)) return;
+    const layer = document.createElement("div");
+    layer.className = "md-mermaid-hit";
+    for (const n of linked) {
+      const g = [...svgDoc.querySelectorAll("g.node")].find((el) => new RegExp(`(?:^|-)flowchart-${n.id.replace(/[^\w-]/g, "\\$&")}-\\d+$`).test(el.id));
+      const at = /translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)\s*\)/.exec(g?.getAttribute("transform") || g?.parentNode.getAttribute?.("transform") || "");
+      if (!g || !at) continue;
+      const xs = [];
+      const ys = [];
+      for (const el of g.querySelectorAll("rect, circle, ellipse, polygon")) {
+        if (el.localName === "rect") {
+          const [x, y, w, h] = ["x", "y", "width", "height"].map((k) => Number(el.getAttribute(k)) || 0);
+          xs.push(x, x + w);
+          ys.push(y, y + h);
+        } else if (el.localName === "polygon") {
+          for (const pair of (el.getAttribute("points") || "").trim().split(/\s+/)) {
+            const [x, y] = pair.split(",").map(Number);
+            if (Number.isFinite(x) && Number.isFinite(y)) xs.push(x), ys.push(y);
+          }
+        } else {
+          const rx = Number(el.getAttribute("r") || el.getAttribute("rx")) || 0;
+          const ry = Number(el.getAttribute("r") || el.getAttribute("ry")) || 0;
+          xs.push(-rx, rx);
+          ys.push(-ry, ry);
+        }
+      }
+      if (!xs.length) continue;
+      const left = Number(at[1]) + Math.min(...xs);
+      const top = Number(at[2]) + Math.min(...ys);
+      const hit = document.createElement("button");
+      hit.type = "button";
+      hit.className = "md-mermaid-hit-node";
+      hit.title = n.tip || `Open ${n.href}`;
+      hit.setAttribute("aria-label", `Open the link of ${n.text}`);
+      hit.style.left = `${((left - view[0]) / view[2]) * 100}%`;
+      hit.style.top = `${((top - view[1]) / view[3]) * 100}%`;
+      hit.style.width = `${((Math.max(...xs) - Math.min(...xs)) / view[2]) * 100}%`;
+      hit.style.height = `${((Math.max(...ys) - Math.min(...ys)) / view[3]) * 100}%`;
+      //: A press on the figure puts the caret on its fence in Live, which swaps the figure for its text before the click lands.
+      for (const kind of ["mousedown", "pointerdown", "touchstart"]) hit.addEventListener(kind, (event) => event.stopPropagation(), { passive: true });
+      hit.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        //: The link path is the document bundle's; a figure in a chat answer asks for it first.
+        if (!(await ensureModule("library"))) return;
+        if (n.href.startsWith("[[")) docOpenWikiTarget(n.href.slice(2, -2));
+        else docOpenLink(n.href);
+      });
+      layer.append(hit);
+    }
+    if (!layer.childElementCount) return;
+    //: The layer is the picture's own box without a watcher: the image is as wide as its viewBox, or the figure when that is
+    //: narrower, centred, and the layer takes the same width and ratio (the CSS centres it).
+    layer.style.width = `min(100%, ${Math.ceil(view[2])}px)`;
+    layer.style.aspectRatio = `${Math.ceil(view[2])} / ${Math.ceil(view[3])}`;
+    figure.append(layer);
+  };
 
   //: Fill a figure for `source`; resolves to the result. `onDone(result)` runs
   //: once the picture (or the refusal) is known, whether that was at once or
@@ -616,6 +688,8 @@
       if (!img.mermaidSvg || !into[i]) return;
       into[i].setAttribute("src", `data:image/svg+xml;charset=utf-8,${encodeURIComponent(img.mermaidSvg)}`);
     });
+    //: The layer of link buttons is for this page only; a saved file keeps the picture.
+    clone.querySelectorAll(".md-mermaid-hit").forEach((layer) => layer.remove());
   }
 
   // --- the theme moved ----------------------------------------------------------

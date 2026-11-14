@@ -50,7 +50,12 @@
     ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"], ["[(", ")]", "cylinder"], ["[/", "/]", "parallelogram"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|\{\{\{)/;
+  //: L-documents-78: `A:::name` after an id or a shape is that node's class; `A@{ icon: "x", label: "L" }` is a node whose
+  //: properties are kept raw (`n.meta`), the label read from them. No icon pack is vendored (the app is offline), so the
+  //: node is drawn with its label and the properties print back as written.
+  const DGM_CLS = /^:::([\w-]+)/;
+  const DGM_META = /^@\{((?:[^{}"]|"[^"\n]*")*)\}/;
   const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
   const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
@@ -124,28 +129,40 @@
     const i = at + id[0].length;
     const tail = src.slice(i);
     if (DGM_UNREAD_SHAPE.test(tail)) return null;
+    const classed = (ref) => {
+      const c = DGM_CLS.exec(src.slice(ref.end));
+      return c ? { ...ref, cls: c[1], end: ref.end + c[0].length } : ref;
+    };
+    const meta = DGM_META.exec(tail);
+    if (meta) {
+      const label = /\blabel:\s*"([^"\n]*)"/.exec(meta[1]);
+      return classed({ id: id[0], shape: null, text: label ? dgmDecode(label[1]) : null, meta: meta[1].trim(), end: i + meta[0].length });
+    }
     for (const [open, close, shape] of DGM_SHAPES) {
       if (!tail.startsWith(open)) continue;
       const body = dgmShapeText(tail.slice(open.length), close);
-      return body && { id: id[0], shape, text: body.text, ...(body.md ? { md: true } : {}), end: i + open.length + body.used };
+      return body && classed({ id: id[0], shape, text: body.text, ...(body.md ? { md: true } : {}), end: i + open.length + body.used });
     }
-    return { id: id[0], shape: null, text: null, end: i };
+    return classed({ id: id[0], shape: null, text: null, end: i });
   }
 
   //: A link: `-->`, `-.->`, `==>` and their open forms, a label in bars after it
   //: or written inside it (`-- yes -->`).
-  function dgmLink(src, at) {
+  function dgmLink(src, at0) {
+    //: L-documents-58: `e1@-->` names the edge, so a later `e1@{ animate: true }` can reach it.
+    const named = /^([A-Za-z0-9_][\w-]*)@(?=[-=.<])/.exec(src.slice(at0));
+    const at = at0 + (named ? named[0].length : 0);
     const rest = src.slice(at);
     const worded = DGM_WORDED.exec(rest);
     if (worded) {
       const style = worded[1] === "-." ? "dotted" : worded[1] === "==" ? "thick" : "solid";
       const arrow = worded[3] === "-->" || worded[3] === ".->" || worded[3] === "==>";
-      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length };
+      return { style, arrow, label: dgmDecode(dgmUnquote(worded[2])), end: at + worded[0].length, ...(named ? { id: named[1] } : {}) };
     }
     const hit = DGM_LINKS.find(([token]) => rest.startsWith(token));
     if (!hit) return null;
     const piped = /^\s*\|("[^"]*"|[^|]*)\|/.exec(src.slice(at + hit[0].length));
-    return { style: hit[1], arrow: hit[2], ...(hit[3] ? { both: true } : {}), label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0) };
+    return { style: hit[1], arrow: hit[2], ...(hit[3] ? { both: true } : {}), label: piped ? dgmDecode(dgmUnquote(piped[1])) : "", end: at + hit[0].length + (piped ? piped[0].length : 0), ...(named ? { id: named[1] } : {}) };
   }
 
   //: A node-and-link statement (chains `a --> b --> c`, fans `a & b --> c`) as
@@ -171,7 +188,8 @@
         at++;
         continue;
       }
-      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow, ...(pending.both ? { both: true } : {}) });
+      //: One id names one edge: a fan (`a & b --> c`) gives it to the first only.
+      if (pending) for (const from of pending.from) for (const to of group) links.push({ from, to, label: pending.label, style: pending.style, arrow: pending.arrow, ...(pending.both ? { both: true } : {}), ...(pending.id && !links.some((l) => l.id === pending.id) ? { id: pending.id } : {}) });
       if (at >= src.length) return { refs, links };
       const link = dgmLink(src, at);
       if (!link) return null;
@@ -213,14 +231,26 @@
         const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
         //: A markdown string is written raw on one line; a text with a quote, a backtick or a `<br>` is plain.
         const md = n.md && !/["`\n]|<br/i.test(n.text);
+        if (n.meta !== undefined && !/\n/.test(n.meta)) {
+          const meta = /\blabel:\s*"/.test(n.meta) && !/["\n]/.test(n.text) ? n.meta.replace(/\blabel:\s*"[^"\n]*"/, () => `label: "${dgmEscape(n.text)}"`) : n.meta;
+          rows.push({ depth, line: `${n.id}@{ ${meta} }`, unit: { t: "n", i } });
+          return;
+        }
         rows.push({ depth, line: md ? `${n.id}${open}"\`${n.text}\`"${close}` : `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
       });
     };
     emit(null, 0);
+    const taken = new Set([...m.nodes.map((n) => n.id), ...m.subgraphs.map((g) => g.id), ...m.edges.map((e) => e.id).filter(Boolean)]);
     m.edges.forEach((e, i) => {
       const token = (DGM_LINKS.find(([, style, arrow, both]) => style === e.style && arrow === e.arrow && Boolean(both) === Boolean(e.both)) || DGM_LINKS[2])[0];
       const label = e.label ? `|"${dgmEscape(e.label, true)}"|` : "";
-      rows.push({ depth: 0, line: `${e.from} ${token}${label} ${e.to}`, unit: { t: "e", i } });
+      //: An animated edge needs an id; the first `e<n>` that no node or edge already has.
+      const mine = /^[A-Za-z0-9_][\w-]*$/.test(e.id || "") ? e.id : "";
+      const eid = mine || (/^(?:on|fast|slow)$/.test(e.animate || "") ? [...Array(m.edges.length + 1).keys()].map((k) => `e${k + 1}`).find((c) => !taken.has(c)) : "");
+      if (eid) taken.add(eid);
+      rows.push({ depth: 0, line: `${e.from} ${eid ? `${eid}@` : ""}${token}${label} ${e.to}`, unit: { t: "e", i } });
+      const props = [e.animate === "on" ? "animate: true" : /^(?:fast|slow)$/.test(e.animate || "") ? `animate: true, animation: ${e.animate}` : "", e.rest && !/\n/.test(e.rest) ? e.rest : ""].filter(Boolean).join(", ");
+      if (eid && props) rows.push({ depth: 0, line: `${eid}@{ ${props} }`, unit: null });
     });
     return rows;
   }
@@ -286,6 +316,8 @@
     const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front, classes: [] };
     const byId = new Map();
     const born = new Map();
+    //: The `:::name` of each node, put on the model after the lift, once the `classDef`s are known.
+    const classed = new Map();
     const open = [];
     const snaps = [];
     const touch = (ref) => {
@@ -297,6 +329,8 @@
         m.nodes.push(n);
       } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text, md: ref.md });
       if (n.md === undefined || n.md === false) delete n.md;
+      if (ref.meta && n.meta === undefined) n.meta = ref.meta;
+      if (ref.cls) classed.set(ref.id, ref.cls);
       //: A node belongs to the first subgraph it is named inside.
       if (n.group == null && open.length) n.group = open[open.length - 1];
     };
@@ -310,6 +344,7 @@
       const way = open.length && /^direction\s+(TD|TB|BT|LR|RL)$/i.exec(s);
       if (way) m.subgraphs.find((g) => g.id === open[open.length - 1]).dir = way[1].toUpperCase().replace("TB", "TD");
       else if (DGM_KEPT.test(s)) keep(s);
+      else if (dgmEdgeProps(m, s)) continue;
       else if (sub) {
         const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
         if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);
@@ -335,7 +370,33 @@
     //: Twice: a `class` line ahead of its `classDef` is read on the second pass.
     dgmLift(m);
     dgmLift(m);
+    //: A shorthand class that no `classDef` defines stays what it was: a kept `class` line, which prints the same meaning.
+    for (const [id, name] of classed) {
+      const n = m.nodes.find((o) => o.id === id);
+      if (!n || n.cls) continue;
+      if (m.classes.some((c) => c.name === name)) n.cls = name;
+      else m.kept.push({ at: dgmRows(m).filter((r) => r.unit).length, line: `class ${id} ${name}` });
+    }
     return m;
+  }
+
+  //: `e1@{ animate: true, animation: fast }` for an edge `e1@-->` already read: `e.animate` is on, fast or slow, any other key
+  //: of the line stays in `e.rest`. True when the line was one.
+  function dgmEdgeProps(m, line) {
+    const hit = /^([A-Za-z0-9_][\w-]*)@\{\s*([^{}\n]*?)\s*\}$/.exec(line);
+    const edge = hit && m.edges.find((e) => e.id === hit[1] && !e.animate && !e.rest);
+    if (!edge) return false;
+    const rest = [];
+    let animate = "";
+    for (const part of hit[2].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map((p) => p.trim()).filter(Boolean)) {
+      const speed = /^animation:\s*(fast|slow)$/.exec(part);
+      if (/^animate:\s*true$/.test(part)) animate = animate || "on";
+      else if (speed) animate = speed[1];
+      else rest.push(part);
+    }
+    if (animate) edge.animate = animate;
+    if (rest.length) edge.rest = rest.join(", ");
+    return Boolean(animate || rest.length);
   }
 
   //: The builder's own `style` and `linkStyle` lines become `fill` and `colour`; every other one stays a kept line.

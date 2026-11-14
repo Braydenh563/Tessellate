@@ -72,6 +72,35 @@
     });
   }
 
+  //: L-documents-58: an arrow's animation (`e.animate`: on, fast or slow; Mermaid's `e1@-->` and `e1@{ animate: true }`). The id is the
+  //: model's to make when it prints. The picture holds still under reduced motion (mermaid-draw.js).
+  function animate(S, h, link) {
+    const to = h.ops.node(S.m, link.to)?.text ?? h.ops.group(S.m, link.to)?.title ?? link.to;
+    const ways = [["", "Still"], ["on", "Moving"], ["slow", "Moving, slowly"], ["fast", "Moving, quickly"]];
+    openSheet({
+      label: `Animation for the arrow to ${to}`,
+      sub: "Draws the arrow moving on the picture. It holds still when motion is reduced.",
+      name: "diagram-animate",
+      build: (card, close) => {
+        const list = h.el("div", "dgm-animate-list");
+        for (const [way, name] of ways) {
+          const button = h.el("button", "ghost");
+          button.type = "button";
+          button.textContent = name;
+          button.setAttribute("aria-pressed", String((link.animate || "") === way));
+          button.addEventListener("click", () => {
+            close();
+            if (way) link.animate = way;
+            else delete link.animate;
+            h.commit(S, way ? `The arrow to ${to} is now ${name.toLowerCase()}.` : `The arrow to ${to} holds still.`);
+          });
+          list.append(button);
+        }
+        card.append(list);
+      },
+    });
+  }
+
   //: L-documents-55. A block's class (`n.cls`, a `classDef` in `m.classes`, props kept raw): a new name makes the class
   //: from a pale blue and a blank takes the block out of it.
   async function cls(S, h, key) {
@@ -166,5 +195,5 @@
     });
   }
 
-  diagramModel.style = { colour, edge, shortcuts, items };
+  diagramModel.style = { colour, edge, animate, shortcuts, items };
 })();

@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8528, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10886, test files 2786, tests 22351, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8530, frontend ids 2784, CSS sections 524, backend routes 713, backend modules 10886, test files 2788, tests 22365, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
-## Frontend functions (8528)
+## Frontend functions (8530)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3349,15 +3349,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:111 |
-| `go` | frontend/js/diagram-joins.js:90 |
+| `ask` | frontend/js/diagram-joins.js:116 |
+| `go` | frontend/js/diagram-joins.js:95 |
 | `isKind` | frontend/js/diagram-joins.js:24 |
 | `items` | frontend/js/diagram-joins.js:32 |
 | `lastTarget` | frontend/js/diagram-joins.js:11 |
 | `nameOf` | frontend/js/diagram-joins.js:30 |
-| `pick` | frontend/js/diagram-joins.js:119 |
+| `pick` | frontend/js/diagram-joins.js:124 |
 | `titleOf` | frontend/js/diagram-joins.js:29 |
-| `words` | frontend/js/diagram-joins.js:100 |
+| `words` | frontend/js/diagram-joins.js:105 |
 
 ### frontend/js/diagram-kindbar.js (12)
 
@@ -3608,18 +3608,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sync` | frontend/js/diagram-steps.js:92 |
 | `touch` | frontend/js/diagram-steps.js:44 |
 
-### frontend/js/diagram-style.js (9)
+### frontend/js/diagram-style.js (10)
 
 | Name | File:line |
 |---|---|
-| `cls` | frontend/js/diagram-style.js:77 |
+| `animate` | frontend/js/diagram-style.js:77 |
+| `cls` | frontend/js/diagram-style.js:106 |
 | `colour` | frontend/js/diagram-style.js:32 |
 | `edge` | frontend/js/diagram-style.js:56 |
-| `follow` | frontend/js/diagram-style.js:103 |
-| `items` | frontend/js/diagram-style.js:111 |
-| `link` | frontend/js/diagram-style.js:92 |
+| `follow` | frontend/js/diagram-style.js:132 |
+| `items` | frontend/js/diagram-style.js:140 |
+| `link` | frontend/js/diagram-style.js:121 |
 | `shapeRows` | frontend/js/diagram-style.js:19 |
-| `shortcuts` | frontend/js/diagram-style.js:128 |
+| `shortcuts` | frontend/js/diagram-style.js:157 |
 | `targets` | frontend/js/diagram-style.js:30 |
 
 ### frontend/js/diagram-suggest.js (19)
@@ -4284,36 +4285,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fenceField` | frontend/js/documents-math.js:620 |
 | `fenceIn` | frontend/js/documents-math.js:603 |
 
-### frontend/js/documents-mermaid.js (26)
+### frontend/js/documents-mermaid.js (27)
 
 | Name | File:line |
 |---|---|
-| `chooseDiagram` | frontend/js/documents-mermaid.js:540 |
-| `dgmChain` | frontend/js/documents-mermaid.js:153 |
-| `dgmDecode` | frontend/js/documents-mermaid.js:67 |
-| `dgmEscape` | frontend/js/documents-mermaid.js:72 |
-| `dgmFence` | frontend/js/documents-mermaid.js:365 |
-| `dgmFront` | frontend/js/documents-mermaid.js:271 |
-| `dgmLift` | frontend/js/documents-mermaid.js:342 |
-| `dgmLink` | frontend/js/documents-mermaid.js:137 |
-| `dgmParse` | frontend/js/documents-mermaid.js:278 |
-| `dgmPrint` | frontend/js/documents-mermaid.js:244 |
-| `dgmRef` | frontend/js/documents-mermaid.js:120 |
-| `dgmRows` | frontend/js/documents-mermaid.js:194 |
-| `dgmSafeTarget` | frontend/js/documents-mermaid.js:240 |
-| `dgmShapeText` | frontend/js/documents-mermaid.js:104 |
-| `dgmStatements` | frontend/js/documents-mermaid.js:83 |
-| `dgmSubgraph` | frontend/js/documents-mermaid.js:185 |
-| `dgmTint` | frontend/js/documents-mermaid.js:231 |
-| `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:558 |
-| `diagramMadeKnown` | frontend/js/documents-mermaid.js:551 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:403 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:412 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:393 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:385 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:533 |
-| `wireToolbarRoving` | frontend/js/documents-mermaid.js:621 |
+| `chooseDiagram` | frontend/js/documents-mermaid.js:601 |
+| `dgmChain` | frontend/js/documents-mermaid.js:170 |
+| `dgmDecode` | frontend/js/documents-mermaid.js:72 |
+| `dgmEdgeProps` | frontend/js/documents-mermaid.js:385 |
+| `dgmEscape` | frontend/js/documents-mermaid.js:77 |
+| `dgmFence` | frontend/js/documents-mermaid.js:426 |
+| `dgmFront` | frontend/js/documents-mermaid.js:301 |
+| `dgmLift` | frontend/js/documents-mermaid.js:403 |
+| `dgmLink` | frontend/js/documents-mermaid.js:151 |
+| `dgmParse` | frontend/js/documents-mermaid.js:308 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:274 |
+| `dgmRef` | frontend/js/documents-mermaid.js:125 |
+| `dgmRows` | frontend/js/documents-mermaid.js:212 |
+| `dgmSafeTarget` | frontend/js/documents-mermaid.js:270 |
+| `dgmShapeText` | frontend/js/documents-mermaid.js:109 |
+| `dgmStatements` | frontend/js/documents-mermaid.js:88 |
+| `dgmSubgraph` | frontend/js/documents-mermaid.js:203 |
+| `dgmTint` | frontend/js/documents-mermaid.js:261 |
+| `dgmUnquote` | frontend/js/documents-mermaid.js:81 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:619 |
+| `diagramMadeKnown` | frontend/js/documents-mermaid.js:612 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:464 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:473 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:454 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:446 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:594 |
+| `wireToolbarRoving` | frontend/js/documents-mermaid.js:682 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -6558,28 +6560,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:54 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:336 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:505 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:525 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:577 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:597 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:108 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:190 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:350 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:471 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:543 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:169 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:180 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:159 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:206 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:200 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:612 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:684 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:343 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:313 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:193 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:164 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:93 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:624 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:698 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:407 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:24 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:145 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:498 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:570 |
 | `mermaidShow` | frontend/js/mermaid-draw.js:450 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:223 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:324 |
@@ -6590,8 +6592,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `mermaidFrameAccepts` | frontend/js/mermaid-frame.js:21 |
-| `mermaidFrameConfigure` | frontend/js/mermaid-frame.js:91 |
-| `mermaidFrameDraw` | frontend/js/mermaid-frame.js:111 |
+| `mermaidFrameConfigure` | frontend/js/mermaid-frame.js:94 |
+| `mermaidFrameDraw` | frontend/js/mermaid-frame.js:114 |
 | `mermaidFrameSized` | frontend/js/mermaid-frame.js:58 |
 | `mermaidFrameVariables` | frontend/js/mermaid-frame.js:29 |
 | `mermaidReasonLine` | frontend/js/mermaid-frame.js:44 |
@@ -13419,7 +13421,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2774 |
+| frontend/css/diagram-lazy.css | 2785 |
 | frontend/css/doc-base-lazy.css | 141 |
 | frontend/css/doc-csv-grid-lazy.css | 102 |
 | frontend/css/doc-graph-lazy.css | 221 |
@@ -13440,7 +13442,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 580 |
-| frontend/css/mermaid-lazy.css | 134 |
+| frontend/css/mermaid-lazy.css | 159 |
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
 | frontend/css/nav-history-lazy.css | 169 |
@@ -28107,7 +28109,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22351)
+## Tests (22365)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28950,6 +28952,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_door_light_1722.py | 6 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
+| tests/test_diagram_edge_animation_l_documents_58.py | 6 |
 | tests/test_diagram_edge_pick.py | 12 |
 | tests/test_diagram_embed.py | 11 |
 | tests/test_diagram_head_export_1110.py | 4 |
@@ -28983,6 +28986,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_right_pan.py | 3 |
 | tests/test_diagram_sequence_extras_l_documents_56.py | 4 |
 | tests/test_diagram_shelf_menu_glyph.py | 2 |
+| tests/test_diagram_shorthand_icons_l_documents_78.py | 8 |
 | tests/test_diagram_source_wrap_button.py | 3 |
 | tests/test_diagram_source_wrap_l304.py | 3 |
 | tests/test_diagram_spacing.py | 4 |
@@ -31319,14 +31323,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1222 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:774 |
+| Needs hardware | docs/roadmap/LEDGER.md:775 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:767 |
+| Owner calls | docs/roadmap/LEDGER.md:768 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31506,7 +31510,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:944 |
+| Plan session briefs | docs/roadmap/LEDGER.md:945 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31560,25 +31564,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:960 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1044 |
+| chat | docs/roadmap/LEDGER.md:961 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1045 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:984 |
-| general | docs/roadmap/LEDGER.md:726 |
+| documents | docs/roadmap/LEDGER.md:985 |
+| general | docs/roadmap/LEDGER.md:727 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:948 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1056 |
+| graph | docs/roadmap/LEDGER.md:949 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1057 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:367 |
-| mindmap | docs/roadmap/LEDGER.md:996 |
-| timeline | docs/roadmap/LEDGER.md:488 |
-| timeline | docs/roadmap/LEDGER.md:1020 |
-| ui-modernisation | docs/roadmap/LEDGER.md:371 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1008 |
+| mindmap | docs/roadmap/LEDGER.md:368 |
+| mindmap | docs/roadmap/LEDGER.md:997 |
+| timeline | docs/roadmap/LEDGER.md:489 |
+| timeline | docs/roadmap/LEDGER.md:1021 |
+| ui-modernisation | docs/roadmap/LEDGER.md:372 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1009 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:972 |
-| world-class | docs/roadmap/LEDGER.md:490 |
-| world-class | docs/roadmap/LEDGER.md:1032 |
+| whiteboard | docs/roadmap/LEDGER.md:973 |
+| world-class | docs/roadmap/LEDGER.md:491 |
+| world-class | docs/roadmap/LEDGER.md:1033 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
