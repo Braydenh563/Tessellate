@@ -120,6 +120,7 @@ def seal_entry(session: Session, entry: Entry) -> bool:
             raise VaultLocked("unlock the private spaces first")
         entry.sealed_by_space = True
         sealed = True
+    _seal_files(_entry_files(session, entry), True)
     if entry.is_board:
         session.flush()
         for item in _board_items(session, entry.id):
@@ -167,6 +168,7 @@ def unseal_entry(session: Session, entry: Entry) -> bool:
     if not manager_private.set_private(session, entry, False):
         raise VaultLocked("unlock the private spaces first")
     entry.sealed_by_space = False
+    _seal_files(_entry_files(session, entry), False)
     if entry.is_board:
         session.flush()
         for item in _board_items(session, entry.id):
@@ -232,12 +234,50 @@ def _members(session: Session, space_id: str) -> tuple[list[Entry], list[Documen
 SPACE_OWNED = (Conversation, AskTurn, Reminder, Bookmark, Recording, MediaUpload, Attachment)
 
 
+def file_of(row: object):  # noqa: ANN201  # Path | None
+    """Where a recording's, library upload's or note file's bytes are on disk."""
+    from tessellate.core import deps, paths, recordings
+
+    config = deps.get_config()
+    try:
+        if isinstance(row, Recording):
+            return recordings.path_of(row) if row.filename else None
+        if isinstance(row, MediaUpload):
+            return paths.contained(config.data_dir / "media", row.filename or "")
+        if isinstance(row, Attachment):
+            return paths.contained(config.uploads_dir, row.stored_name or "")
+    except paths.OutsideFolder:
+        return None
+    return None
+
+
+def _seal_files(rows: list, sealed: bool) -> int:
+    """L-world-class-52: the bytes go with the row, sealed or written back plain."""
+    from tessellate.core import sealed_files
+
+    _key()
+    count = 0
+    for row in rows:
+        path = file_of(row)
+        if path is not None:
+            count += int(sealed_files.seal(path) if sealed else sealed_files.unseal(path))
+    return count
+
+
+def _entry_files(session: Session, entry: Entry) -> list:
+    from tessellate.core.database import impersonate_workspace
+
+    with impersonate_workspace(session, ""):
+        return list(session.scalars(select(Attachment).where(Attachment.entry_id == entry.id)))
+
+
 def _owned_rows(session: Session, space_id: str) -> list:
     """The chats, Ask box turns, reminders, links, recordings and files the space holds: sealed while
     it is private (`database._SPACE_SEALED`), whatever their own fields say."""
     from tessellate.core.database import impersonate_workspace
+    from tessellate.entry.bin import including_binned
 
-    with impersonate_workspace(session, ""):
+    with including_binned(session), impersonate_workspace(session, ""):
         return [row for model in SPACE_OWNED for row in session.scalars(select(model).where(model.workspace_id == space_id))]
 
 
@@ -294,8 +334,10 @@ def seal_space_members(session: Session, space_id: str) -> int:
             count += int(seal_entry(session, entry))
     for document in documents:
         count += int(seal_document(session, document))
-    for row in _owned_rows(session, space_id):
+    owned = _owned_rows(session, space_id)
+    for row in owned:
         seal_row(row, every_column=True)
+    _seal_files(owned, True)
     return count
 
 
@@ -303,8 +345,10 @@ def unseal_space_members(session: Session, space_id: str) -> int:
     """"Make them ordinary": everything the space sealed, nothing else."""
     entries, documents = _members(session, space_id)
     count = sum(int(unseal_entry(session, entry)) for entry in entries)
-    for row in _owned_rows(session, space_id):
+    owned = _owned_rows(session, space_id)
+    for row in owned:
         unseal_row(row)
+    _seal_files(owned, False)
     return count + sum(int(unseal_document(session, document)) for document in documents)
 
 
