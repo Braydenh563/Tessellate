@@ -476,7 +476,17 @@ def _docx_revision(node, links: dict[str, str]) -> str:  # noqa: ANN001
     words = _docx_inline(node, links, not inserted)
     if not words.strip():
         return ""
-    return f"{{++{words}++}}" if inserted else f"{{--{words}--}}"
+    mark = f"{{++{words}++}}" if inserted else f"{{--{words}--}}"
+    return mark + _docx_stamp(node)
+
+
+def _docx_stamp(node) -> str:  # noqa: ANN001
+    """`{>>name, date<<}`, the stamp the editor writes after a mark (L-documents-34); none without a date."""
+    date = (node.get(f"{_W}date") or "").strip()
+    if not date:
+        return ""
+    author = re.sub(r"[<>{}\r\n]", "", node.get(f"{_W}author") or "").strip()
+    return "{>>" + (f"{author}, " if author else "") + date + "<<}"
 
 
 def _docx_inline(node, links: dict[str, str], deleted: bool = False) -> str:  # noqa: ANN001

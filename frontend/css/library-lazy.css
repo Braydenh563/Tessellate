@@ -5194,6 +5194,12 @@ button.ghost.doc-template-choice.wb-template-choice {
   font-weight: 600;
 }
 
+/* The account keeps the server's line breaks: one line per version after the total. */
+.doc-history-story {
+  white-space: pre-line;
+  margin: var(--space-2) 0;
+}
+
 /* Room for the pair: the history is wider than the AI log it shares a class
    with, and a row lets its diff wrap onto a line of its own. */
 #doc-history-dialog {

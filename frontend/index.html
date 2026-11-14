@@ -1269,7 +1269,10 @@
         </div>
         <button type="button" id="doc-history-name" class="ghost small dialog-head-btn"
           title="Keep the text as it stands now under a name; the edits after it never fold into it"><i class="ph ph-bookmark-simple ph-lead" aria-hidden="true"></i> Name this version</button>
+        <button type="button" id="doc-history-story-btn" class="ghost small dialog-head-btn"
+          title="A short account of what the last few versions changed, written by the local model; without one, from the counts"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Summarise changes</button>
       </div>
+      <p id="doc-history-story" class="doc-history-story hidden" role="status" aria-live="polite"></p>
       <ul id="doc-history-list" class="doc-ai-history-list"></ul>
       <p id="doc-history-empty" class="muted empty-line hidden">Nothing yet: this document
         has not been changed since it was made.</p>
@@ -5476,7 +5479,7 @@ Link to another note with [[its first few words]]."></textarea>
                      marked for review instead of changing the text. The three
                      review rows show only when there is something to review. -->
                 <label id="doc-suggest-row" class="menu-item doc-dock-menu-item doc-dock-menu-check checkbox-label"
-                  title="Mark what you type and delete as suggestions to accept or reject, instead of changing the text">
+                  title="Mark what you type and delete as suggestions to accept or reject, instead of changing the text; each carries your name and the date">
                   <i class="ph ph-pencil-simple-line ph-lead" aria-hidden="true"></i> <span>Suggest changes</span>
                   <input type="checkbox" id="doc-suggest-mode">
                 </label>

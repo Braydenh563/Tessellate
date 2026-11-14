@@ -376,7 +376,7 @@
     let token = 0;
     function load() {
       const mine = ++token;
-      body.replaceChildren(el("p", "db-empty", "Reading the notes"));
+      if (!current) body.replaceChildren(el("p", "db-empty", "Reading the notes"));
       apiJson(query(model), { silent: true })
         .then((data) => {
           if (mine !== token || !figure.isConnected) return;
@@ -391,6 +391,9 @@
     }
     paint();
     load();
+    //: Read again after each save of the document, as the saved search's list is: a note changed in the meantime shows.
+    const again = () => (figure.isConnected ? load() : document.removeEventListener("doc-saved", again));
+    document.addEventListener("doc-saved", again);
     return true;
   }
 

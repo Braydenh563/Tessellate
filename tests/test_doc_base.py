@@ -136,3 +136,19 @@ def test_the_query_block_is_wired_in_read_live_the_menu_and_the_save() -> None:
     assert 'new CustomEvent("doc-saved")' in docs
     assert '"doc-saved"' in (JS / "documents-base.js").read_text(encoding="utf-8")
     assert '{ id: "query"' in (JS / "editor.js").read_text(encoding="utf-8")
+
+
+def test_a_calendar_day_prints_its_whole_title_and_no_card_splits_across_sheets() -> None:
+    """L-documents-84: on paper a day's note name was cut by the screen's ellipsis (measured at 520px: 90px of a name clipped)."""
+    css = (ROOT / "frontend" / "css" / "doc-base-lazy.css").read_text(encoding="utf-8")
+    printed = css[css.rindex("@media print") :]
+    assert ".db-day .db-open" in printed and "white-space: normal" in printed
+    assert "break-inside: avoid" in printed and ".db-card" in printed
+
+
+def test_the_table_is_read_again_after_each_save_and_keeps_its_rows_on_screen_meanwhile() -> None:
+    """L-documents-85: only the query block listened for `doc-saved`; a table, board or calendar showed the rows as they were."""
+    source = (JS / "documents-base.js").read_text(encoding="utf-8")
+    fill = source[source.index("function fill(figure, source, write)") : source.index("function queryFill")]
+    assert 'document.addEventListener("doc-saved", again)' in fill and 'removeEventListener("doc-saved", again)' in fill
+    assert "if (!current) body.replaceChildren" in fill, "a refresh must not blank the rows it is about to redraw"
