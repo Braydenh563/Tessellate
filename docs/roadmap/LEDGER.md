@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 64 | 35 | 0 | 19 | 229 |
-| general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 106 | 2 | 130 | 1117 |
+| general | 0 | 37 | 2 | 0 | 4 | 39 |
+| all | 553 | 457 | 106 | 2 | 130 | 1116 |
 
 ## graph
 
@@ -605,7 +605,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
-- [ ] **L-general-35** `general` open, S: Repair scratchpad/ui-sweeps/mappan.js (fails at line 206). From batch E L549. Evidence: mappan.js:206 end.shape null, same on the committed original
 - [ ] **L-general-36** `general` open, S: Repair scratchpad/ui-sweeps/boardundo.js (renamed function). From batch E L549. Evidence: calls wbDeleteObjectRef, which was renamed
 
 ## Owner calls
