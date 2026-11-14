@@ -10,6 +10,9 @@ Counted, not timed: a commit count is the same on every machine, so no clock.
 
 from __future__ import annotations
 
+import io
+import zipfile
+
 import pytest
 from sqlalchemy import event
 
@@ -94,3 +97,26 @@ def test_stop_between_batches_keeps_what_was_made_and_embeds_no_more(client, fak
     # comes after the writer), so every note was made and only the first batch was embedded.
     assert body["imported"] == 250
     assert len(fake.batches) == 1
+
+
+def test_a_5000_note_import_commits_about_once_a_hundred_notes(client, fake):
+    """L-world-class-119 at its stated size: 5,000 notes, counted not timed.
+
+    The row measured 45.9 s with a commit per note; the batches (L508) make it
+    one commit per hundred notes in the writer, one per embed batch and one for
+    the log line, about 5,000 / 100 + 5,000 / EMBED_BATCH_NOTES + 2 commits."""
+    counter = _commits(deps.get_db().engine)
+    # One zip: a multipart form of more than 1,000 parts is refused by Starlette's own cap.
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as archive:
+        for i in range(5000):
+            archive.writestr(f"Vault/n{i}.md", f"Note {i} of the vault.\n")
+    body = client.post(
+        "/import/app?source=obsidian", files=[("files", ("vault.zip", buf.getvalue(), "application/zip"))]
+    ).json()
+    assert body["imported"] == 5000
+    assert fake.single == 0 and sum(fake.batches) == 5000
+    writer = 5000 // 100 + 1
+    embed = -(-5000 // routes_import.EMBED_BATCH_NOTES)
+    print(f"\n5,000 notes: {counter['n']} commits (writer {writer}, embed {embed})")
+    assert counter["n"] <= writer + embed + 5

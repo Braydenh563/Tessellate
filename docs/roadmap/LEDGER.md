@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 107 | 29 | 0 | 0 | 136 |
+| world-class | 0 | 106 | 29 | 0 | 0 | 135 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 497 | 100 | 2 | 111 | 969 |
+| all | 372 | 496 | 100 | 2 | 111 | 968 |
 
 ## graph
 
@@ -548,7 +548,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-114** `world-class` open, M: Help accordion: name its thirteen details, move them to the recipe family, lint that every id has a Guide topic. From WORLD_CLASS_PLAN.md:2952. Evidence: no accordion-to-Guide lint in tests (grep 'accordion' hits only settings tests)
 - [ ] **L-world-class-115** `world-class` open, S: Capture: hold staged pictures and files while offline. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'staged pictures and files cannot be held offline'
 - [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
-- [ ] **L-world-class-119** `world-class` open, M: Import: write a 5,000-note import in batches, not one commit per note. From WORLD_CLASS_PLAN.md:3602. Evidence: 5,000-note write 45.9 s, one commit per note (:3602)
 - [ ] **L-world-class-121** `world-class` open, S: Dashboard 'continue and today': widgets without a measured use move behind Customise (decision 51). From WORLD_CLASS_PLAN.md:3594. Evidence: WORLD_CLASS_PLAN.md:3594 'no widget can name a measured use'; decision 51 at :3638
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
