@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 19 | 1 | 0 | 7 | 20 |
+| documents | 0 | 18 | 1 | 0 | 7 | 19 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 535 | 125 | 2 | 159 | 1062 |
+| all | 402 | 534 | 125 | 2 | 159 | 1061 |
 
 ## graph
 
@@ -285,7 +285,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## documents
 
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines. Analysis 2026-11-12 (docsG): "doc" selector lines per file: 00:35, 01:50, 02:86, 03:41, 04:353, 05:451, 06:33, 07:475, 08:319, 09:173, 10:277. Moving them into 09-editor.css reorders the cascade against 08-consistency and 10-responsive (later files override earlier ones at equal specificity), so a move needs a computed-style diff sweep per surface first; too wide to land safely in one step.
-- [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open Analysis 2026-11-12 (docsG): the 4x CPU typing gate (p95 under 50 ms, no long task over 50 ms) needs a quiet machine; this shared four-core box runs agents and servers at once, so a figure here would be noise. Check: run the typing sweep with CDP Emulation.setCPUThrottlingRate 4 on an idle machine. Measured 2026-11-13 (docsK, doctype.js THROTTLE=4 AT_TOP=1, 20k-word document, three runs, load 1.7, 2.1, 2.2 on four cores shared with other agents so noisy): Live keydown and input event durations p95 64, 64, 64 ms (p50 40; 88 of 88 events over 16 ms; max 88, 80, 64); Source p95 80, 88, 80. Gate (p95 under 50, no long task over 50) not met in any run; a long-task count was not recorded by this sweep (the 40-key trace on a 120-paragraph document saw 1 to 2 long tasks, max 84 to 130 ms, mean 41 to 46, p95 53 to 72).
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style Measured 2026-11-13 (docsK, 40 keys, 4x CPU, CDP trace with invalidation tracking, load 0.6 to 2.2; sweep in the agent scratch dir): live 7.4 recalcs a key, 3 elements each, 6.9 ms, 3.05 layouts 4.9 ms, mean keydown to frame 42 ms; bare CodeMirror from the app bundle 4.2 recalcs, 2 elements, 2.8 ms, 1.0 layout 1.1 ms, mean 23 ms. No class writes (doc-block-handle, drop) on the key path; invalidations are the engine's own style writes (cm-content, cursor layer, cursor), the cursor blink animation (3.5 a key), the doc-caret text write (2 schedules, 1 layout dirty) and the page's emblem animations (5 a key vs 2 bare, frames). Profiler (inclusive per key): CM update 12 ms against about 4 bare, lag-watch wrapper 5, docLinkOfferAsk fetch 2, renderDocProse 1.8. Extra layouts are 2 frame layouts plus 1 forced by the engine's scrollIntoView coordsAt. Built 'c749c784': selectionBarHide and selectionBarElement used `$`, which falls back to surfaceFind and walks every unbuilt surface when the bar is missing (2.0 ms a key in the profile); lookups now read the document, test in test_selection_context.py. Wall effect not visible: mean 42.4 (4 runs after) against 42.6 (3 runs before), within noise. Tried: caret readout moved to one rAF: no change in layouts (3.0) and recalcs rose to 8.7, dropped. Left: where the engine update spends 8 ms more than bare (live-view decorations and update listeners) needs a per-plugin profile; the cursor-blink animation and emblem animations could pause while typing.
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
