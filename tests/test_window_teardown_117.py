@@ -22,7 +22,8 @@ def test_any_other_line_makes_it_a_real_error():
 
 def test_a_clean_close_does_not_relaunch():
     calls = []
-    assert wt.run_window(lambda: None, restarting=True, relaunch=lambda: calls.append(1)) == "closed"
+    outcome = wt.run_window(lambda: None, restarting=True, relaunch=lambda: calls.append(1))
+    assert outcome == "closed"
     assert calls == []
 
 
@@ -32,7 +33,8 @@ def test_the_noise_in_a_restarted_copy_relaunches_once():
     def start():
         raise RuntimeError(NOISE)
 
-    assert wt.run_window(start, restarting=True, relaunch=lambda: calls.append(1)) == "relaunched"
+    outcome = wt.run_window(start, restarting=True, relaunch=lambda: calls.append(1))
+    assert outcome == "relaunched"
     assert calls == [1]
 
 
@@ -42,7 +44,8 @@ def test_the_noise_in_a_normal_run_is_swallowed_without_relaunch():
     def start():
         raise RuntimeError(NOISE)
 
-    assert wt.run_window(start, restarting=False, relaunch=lambda: calls.append(1)) == "benign"
+    outcome = wt.run_window(start, restarting=False, relaunch=lambda: calls.append(1))
+    assert outcome == "benign"
     assert calls == []
 
 

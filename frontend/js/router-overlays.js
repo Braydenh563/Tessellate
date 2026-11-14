@@ -135,10 +135,20 @@ function routerBackHook(event) {
 function routerSettle() {
   if (!/^#\/settings/.test(location.hash)) return;
   const tab = prefs.get("activeTab", null) || "dashboard";
-  const before = tabHistory.stack[tabHistory.index - 1];
+  //: Past every Settings entry, not one: each pane visited inside Settings is
+  //: an entry, so stepping off one left Back reopening Settings (wc-109, 421 j).
+  let under = tabHistory.index;
+  while (under > 0 && tabHistory.stack[under]?.tab === "settings") under -= 1;
+  const before = under < tabHistory.index ? tabHistory.stack[under] : null;
+  const steps = tabHistory.index - under;
   //: Only onto an entry this page wrote: a Settings opened straight from its
   //: address has the browser's blank page under it (CI e2e, d04186d).
-  if (tabHistory.index > 0 && before && before.tab === tab && history.state?.depth > 0 && routerGo(-1)) return;
+  if (before && before.tab === tab && history.state?.depth >= steps && routerGo(-steps)) return;
+  //: A stack walking on its own (`edited`): the same step, without the browser.
+  if (before && before.tab === tab && tabHistory.edited) {
+    goToTabHistory(under);
+    return;
+  }
   const entry = { tab, section: null };
   try {
     history.replaceState(history.state, "", `${location.pathname}${location.search}${routeHash(entry)}`);

@@ -61,7 +61,9 @@ def test_settings_escape_never_steps_off_the_app():
     assert "history.pushState({ navId: entry.navId, depth: depth + 1 }" in router
     assert "history.replaceState({ navId: entry.navId, depth }" in router
     settle = LAZY[LAZY.index("function routerSettle"):]
-    assert "history.state?.depth > 0 && routerGo(-1)" in settle.split("\n}\n")[0]
+    #: Settings now steps off all its pane entries at once (L-world-class-356); the
+    #: guard is the same, as many of the app's own entries under it as steps taken.
+    assert "history.state?.depth >= steps && routerGo(-steps)" in settle.split("\n}\n")[0]
 
 
 def test_every_modal_overlay_closes_on_back_through_its_own_close_button():

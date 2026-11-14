@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 117 | 29 | 0 | 0 | 146 |
+| world-class | 0 | 119 | 29 | 0 | 0 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 506 | 100 | 2 | 111 | 978 |
+| all | 372 | 508 | 100 | 2 | 111 | 980 |
 
 ## graph
 
@@ -598,6 +598,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-351** `world-class` open, M: Zoom order across graph, board and map, and the documents dock onto the .dock recipe (left from the dock audit 479). From L-world-class-113. Evidence: 113 built 4 of 6 (Graph View in the gear, one New split button, '?' on every Library dock, one Add per Reminders card; index.html 3985-4100, 6695+, 5990-6060); left: one zoom order across graph, board and map (graph.js:5124 vertical, board pill index.html ~7758) and the documents dock (index.html:5087 row space-between doc-dock) onto .dock, re-measuring dark-mode kebab (04-chat-dock-appearance.css:4272-4380)
 - [ ] **L-world-class-352** `world-class` open, S: As-of slider: span from the oldest note, a typed date moves the slider, rtl drag measured in a sweep. From L-world-class-91 follow-on (batch S3). Evidence: S3 dropped two behaviours for the gzip cap: the span is a fixed 365 days and a hand-picked date leaves the slider where it was; the rtl drag direction is unseen in a browser
 - [ ] **L-world-class-353** `world-class` open, S: OCR workspace: Read pages shows the pages read so far the moment Stop lands. From L-world-class-67 follow-on (batch S3). Evidence: the workspace Read pages button awaits the whole request, so after Stop in the Activity panel it shows the partial pages only when the call returns
+- [ ] **L-world-class-354** `world-class` open, M: Boot long tasks measured here under 50 ms (L971 follow-on). From BACKLOG.md L971 (hub 2026-11-14). Evidence: Hub: record a Chromium Performance trace at dashboard boot here; fix or measure the three long tasks of w34-fix2-1111.md (boot forced layout, canvas pointerout, most-accessed render) against 50 ms. Only the owner-browser run stays in BACKLOG.
+- [ ] **L-world-class-355** `world-class` open, M: Settings keydown, chat pointerover, tab click handlers under 100 ms here (L982 follow-on). From BACKLOG.md L982 (hub 2026-11-14). Evidence: Hub: measure Settings pane keydown (was 285 ms), chat pointerover (411 ms), tab clicks (304-352 ms) here with the lag reporter or a PerformanceObserver; fix anything over 100 ms. Only the Windows re-measure stays in BACKLOG.
 
 ## general
 
