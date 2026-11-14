@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - LEDGER: every row this branch made under `general` (35 to 66) and L-graph-19 is now L-ui-modernisation-63 to 93, because general ids clashed across parallel branches.
 - LEDGER: the open rows L-general-56, 57 and 67 are now L-ui-modernisation-60, 61 and 62, because general ids clashed across parallel branches.
 - Home: the first-steps card shares the widget column's edge (3px off before); the density census gains alignment and near-miss columns (L-ui-modernisation-53).
@@ -16,7 +17,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-general-67.
 - Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).
-- Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-ui-modernisation-75, 49 and 53 closed.
+- Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-ui-modernisation-75, 77 and 81 closed.
 - Settings: the "let that app add and change notes" switch and Skip silence show what the notebook holds after a reload (L-ui-modernisation-82).
 - Right-click menus open 4px from the pointer, not 14px: the 1px anchor is a block at the host corner (L-ui-modernisation-60).
 - The map's View menu is 427px, not 587px: numbering, dimming, folding, the filter, the Gantt chart and the map's make-up sit behind one Branches and reports row.
@@ -127,7 +128,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Sweeps: uitrio, asktab, noteobject, canvasconventions follow the current screens, errors.js runs as two CI entries (1440,1024 and 820,390) under 180s, and errors, asktab, noteobject, canvasconventions join the CI list, now 58 steady sweeps; a board opened from a link or chip on the first Library visit of a session is no longer covered by the boards list (L-ui-modernisation-81: tour, toursteps, anchorsmotion, fontmatrix moved to L-ui-modernisation-60).
 - Touch: the top bar's icon buttons, the privacy chip, the capture bar's icons, the document dock's back button and New split, and the map's resize grip and buttons reach the 44px floor under a finger (iconfloor.js: 70 under it to 0); profilelook and iconfloor join the CI list, now 53 steady sweeps (L-ui-modernisation-80: perchall moved to L-ui-modernisation-83).
 - Sweeps: doctoolbarstate follows the strip without heading and quote buttons (Turn into owns them) and joins the CI list, now 51 steady sweeps (L-ui-modernisation-79).
-- MCP: VS Code uses the tool server directly through .vscode/mcp.json (docs/MCP.md, Settings help); grouping by hand, many categories, on-disk compression and an in-app browser are decided against or parked (L-ui-modernisation-64 to 38, 41, 42).
+- MCP: VS Code uses the tool server directly through .vscode/mcp.json (docs/MCP.md, Settings help); grouping by hand, many categories, on-disk compression and an in-app browser are decided against or parked (L-ui-modernisation-64 to 66, 69, 70).
 - Reminders: one that names a person or topic lists the last notes about it when it fires, to open from the notice (L-general-11).
 - Background librarian review: Keep all accepts the last run, Undo all puts every change back, last first; each row keeps its diff and Undo (L-ui-modernisation-73).
 - Dashboard: a Notes by category widget (opt-in), a donut of the five biggest categories and Other in each category's dot colour, with share rows that open the category (L-ui-modernisation-68).

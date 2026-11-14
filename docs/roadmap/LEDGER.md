@@ -327,7 +327,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
 - [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
-- [ ] **L-whiteboard-19** `whiteboard` open, S: Raise the sketch highlighter's opacity from 5%. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: 5% opacity needs about twenty passes; a taste call left alone. Verify in code first.
+- [ ] **L-whiteboard-51** `whiteboard` open, S: Raise the sketch highlighter's opacity from 5%. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: 5% opacity needs about twenty passes; a taste call left alone. Verify in code first.
 
 ## documents
 
