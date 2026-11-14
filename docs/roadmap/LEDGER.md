@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 175 | 58 | 0 | 72 | 363 |
+| world-class | 130 | 176 | 58 | 0 | 72 | 364 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 502 | 565 | 129 | 2 | 183 | 1196 |
+| all | 502 | 566 | 129 | 2 | 183 | 1197 |
 
 ## graph
 
@@ -696,6 +696,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-21** `world-class` open, S: Add a partial index on live entries. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3934. Evidence: Open line in the plan's prose a session could miss. Index work open alongside audit_log.entity_id.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
+- [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
 
 ## general
 
