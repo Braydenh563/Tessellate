@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 108 | 29 | 0 | 0 | 137 |
+| world-class | 0 | 105 | 29 | 0 | 0 | 134 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 498 | 100 | 2 | 111 | 970 |
+| all | 372 | 495 | 100 | 2 | 111 | 967 |
 
 ## graph
 
@@ -534,12 +534,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
-- [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
-- [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
 - [ ] **L-world-class-79** `world-class` open, M: Move the model downloads, the scheduler, SearXNG and update threads onto the pool (F7). From WORLD_CLASS_PLAN.md:862. Evidence: tests/test_flaw_class_lints.py ratchet; 26 thread sites at :3775
-- [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
-- [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-105** `world-class` open, S: Re-measure 22.3: card padding and body size at laptop widths, section-head weight, one Phosphor weight lint, the toast corner at 1093x614. From WORLD_CLASS_PLAN.md:2294. Evidence: WORLD_CLASS_PLAN.md:2294 '22.3 not re-measured'
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
@@ -587,6 +583,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-364** `world-class` open, S: Boot: pure style-recalc and ParseHTML long tasks. From L-world-class-354/355 measurement, 2026-11-14. Evidence: Boot long tasks with no script (UpdateLayoutTree or ParseHTML, 40-98 ms at 4x) remain; find the selectors or markup size behind them (Chromium trace).
 - [ ] **L-world-class-365** `world-class` open, S: Boot: first Intl call floor 57 ms at 4x. From L-world-class-354/355 measurement, 2026-11-14. Evidence: firstClockPaint is a 57 ms task: any first Intl call costs 47-69 ms at 4x (ICU load); a platform floor unless the first clock paint avoids Intl.
 - [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one carries the sealed bytes as they are; a generated recording (recording_make.save_generated), an import and the live-caption PCM spool (captions.begin) are written plain until the next unlock seals them (tests/test_sealed_readers.py PLAIN_WRITES)
+- [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
 
 ## general
 
