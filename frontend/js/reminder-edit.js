@@ -158,23 +158,34 @@
   //: (shell-reminders.js). A property, not a global (the scope ratchet).
   loadReminders.overdueRun = function (choice, items) {
     const rows = items.map((r) => ({ id: r.id, due_at: r.due_at, done: r.done }));
-    const putAll = (bodyOf) => async () => {
-      await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) })));
+    //: allSettled, not all: one refused reminder stopped the batch's reload and its Undo while the
+    //: others had already changed (review 5899359161). Returns the rows the server took.
+    const each = async (list, call) => {
+      const results = await Promise.allSettled(list.map(call));
       loadReminders();
+      const ok = list.filter((_, i) => results[i].status === "fulfilled");
+      if (ok.length < list.length) toast(`Could not change ${list.length - ok.length} of ${list.length} overdue reminders.`, true);
+      return ok;
     };
-    const back = putAll((r) => ({ due_at: r.due_at, done: r.done }));
-    const n = `${rows.length} overdue reminders`;
-    const run = async (label, forward, done) => {
-      await forward();
-      const action = pushUndo(label, back, forward);
-      toastAction(done, "Undo", async () => {
+    const put = (bodyOf) => (r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) });
+    const back = put((r) => ({ due_at: r.due_at, done: r.done }));
+    const drop = (r) => apiJson(`/reminders/${r.id}`, { method: "DELETE" });
+    const restore = (r) => apiJson(`/reminders/${r.id}/restore`, { method: "POST" });
+    const many = (count) => `${count} overdue reminder${count === 1 ? "" : "s"}`;
+    const n = many(rows.length);
+    //: One Undo for the batch, never one per reminder, and only over the rows that changed.
+    const run = async (label, forward, undo, done) => {
+      const ok = await each(rows, forward);
+      if (!ok.length) return;
+      const action = pushUndo(label(many(ok.length)), () => each(ok, undo), () => each(ok, forward));
+      toastAction(done(many(ok.length)), "Undo", async () => {
         settleUndoFromToast(action);
-        await back().catch((e) => toast(e.message, true));
+        await each(ok, undo);
       });
     };
     const moveTo = (dateOf, words) => () => {
       const due = dateOf().toISOString();
-      return run(`Moved ${n}`, putAll(() => ({ due_at: due, done: false })), `Moved ${n} to ${words}.`);
+      return run((m) => `Moved ${m}`, put(() => ({ due_at: due, done: false })), back, (m) => `Moved ${m} to ${words}.`);
     };
     const nextMonday = () => {
       const d = presetDate("tomorrow");
@@ -183,25 +194,12 @@
     };
     const binAll = async () => {
       if (!(await confirmDialog(`Move ${n} to the bin?`, { confirmLabel: "Delete", danger: true }))) return;
-      const drop = async () => {
-        await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "DELETE" })));
-        loadReminders();
-      };
-      const restore = async () => {
-        await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}/restore`, { method: "POST" })));
-        loadReminders();
-      };
-      await drop();
-      const action = pushUndo(`Moved ${n} to the bin`, restore, drop);
-      toastAction(`Moved ${n} to the bin.`, "Undo", async () => {
-        settleUndoFromToast(action);
-        await restore().catch((e) => toast(e.message, true));
-      });
+      await run((m) => `Moved ${m} to the bin`, drop, restore, (m) => `Moved ${m} to the bin.`);
     };
     const choices = {
       tomorrow: moveTo(() => presetDate("tomorrow"), "tomorrow 9am"),
       monday: moveTo(nextMonday, "next Monday 9am"),
-      done: () => run(`Completed ${n}`, putAll(() => ({ done: true })), `Marked ${n} done.`),
+      done: () => run((m) => `Completed ${m}`, put(() => ({ done: true })), back, (m) => `Marked ${m} done.`),
       bin: binAll,
     };
     return choices[choice]();

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Overdue batch moves, ticks and bins try every reminder; one refusal no longer stops the reload or the Undo, which covers only the rows that changed, and the menu toasts if its tools cannot load (review 5899359161).
 - On Windows the tray menu is rebuilt on the tray's own thread, so a snooze ending while the menu is open cannot pull it away (review 5899359161).
 - Boot CSS is back under its cap: duplicate declarations the merge brought are gone and 48 Library-only rules load with the Library (L-ui-modernisation-47).
 - A board opened from a link keeps one guard against the boards landing, not two (merge of the base).

@@ -1034,7 +1034,10 @@ async function loadReminders() {
 //: reminder and one Undo for the whole batch; Delete asks first.
 loadReminders.overdueTriage = function (items) {
   //: The handlers are in the lazy reminder-edit.js (`loadReminders.overdueRun`): only a press needs them.
-  const go = (choice) => () => lazyScript("/js/reminder-edit.js").then(() => loadReminders.overdueRun(choice, items));
+  const go = (choice) => () =>
+    lazyScript("/js/reminder-edit.js")
+      .then(() => loadReminders.overdueRun(choice, items))
+      .catch((e) => toast(e.message || "Could not load the reminder tools.", true));
   return kebabMenu(
     [
       { label: "ph:sun-horizon Move all to tomorrow 9am", run: go("tomorrow"), group: "move" },
