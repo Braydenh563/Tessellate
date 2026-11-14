@@ -1064,6 +1064,10 @@ def test_lan_mode_end_to_end(tmp_path, network_address):
             lan.call("POST", "/auth/unlock", {"password": "a guess"})
         assert lan.call("POST", "/auth/unlock", {"password": PASSWORD})[0] == 429
         assert here.call("POST", "/auth/unlock", {"password": PASSWORD})[0] == 200
+    except OSError as exc:
+        #: L-world-class-240: a connection cut mid-test (CI, under load) says
+        #: why only in the server's log; the gate's lines are in its tail.
+        raise AssertionError(f"{exc!r}; server log tail: {log.read_text()[-3000:]}") from exc
     finally:
         _stop(proc)
     text = log.read_text()
