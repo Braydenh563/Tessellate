@@ -15,6 +15,8 @@ from datetime import date, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import recognise
+
 INTENTS = frozenset({"archive", "unarchive", "tag_many", "make_board"})
 
 _LEAD = r"^(?:(?:please|pls|can you|could you|would you)\s+)*"
@@ -30,7 +32,6 @@ _NO_NAME = frozenset({"a", "an", "the", "my", "any", "one", "this", "that", "it"
 _OLD = re.compile(r"^(?:the |my |all |all of |all my |every )*(?:old|older|oldest|stale|finished|done|past|former)\s+", re.I)
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _MONTH = re.compile(rf"^(?:the )?(?:month of )?(?:(?P<m>{'|'.join(_MONTHS)}|{'|'.join(m[:3] for m in _MONTHS if m != 'may')})\.?)(?:\s+(?P<y>\d{{4}}))?$", re.I)
-_RELATIVE = re.compile(r"^(?P<which>last|this|past|previous)\s+(?P<unit>week|month|year)$|^(?:the )?(?:last|past)\s+(?P<n>\d{1,3})\s+(?P<unit2>days?|weeks?|months?)$|^(?P<day>today|yesterday)$", re.I)
 _MAX_NOTES = 100
 
 
@@ -153,39 +154,20 @@ def _month_span(found: re.Match, today: date) -> tuple[date, date, str]:
     return start, end, f"{_MONTHS[month - 1].title()}" + (f" {start.year}" if start.year != today.year or found.group("y") else "")
 
 
-def _unit_span(which: str, unit: str, today: date) -> tuple[date, date, str]:
-    said = "this" if which == "this" else "last"
-    if unit == "week":
-        monday = today - timedelta(days=today.weekday())
-        start = monday if which == "this" else monday - timedelta(days=7)
-        return start, start + timedelta(days=7), f"{said} week"
-    if unit == "month":
-        first = today.replace(day=1)
-        start = first if which == "this" else (first - timedelta(days=1)).replace(day=1)
-        return start, (start + timedelta(days=32)).replace(day=1), f"{said} month"
-    start = date(today.year if which == "this" else today.year - 1, 1, 1)
-    return start, date(start.year + 1, 1, 1), f"{said} year"
-
-
-def _relative_span(found: re.Match, today: date) -> tuple[date, date, str]:
-    if found.group("day"):
-        day = today - timedelta(days=found.group("day").lower() == "yesterday")
-        return day, day + timedelta(days=1), found.group("day").lower()
-    if found.group("n"):
-        unit = found.group("unit2").lower().rstrip("s")
-        days = int(found.group("n")) * {"day": 1, "week": 7, "month": 30}[unit]
-        return today - timedelta(days=days - 1), today + timedelta(days=1), f"the last {found.group('n')} {unit}s"
-    return _unit_span(found.group("which").lower(), found.group("unit").lower(), today)
-
-
 def span(scope: str, today: date) -> tuple[date, date, str] | None:
     """(first day, day after the last, how it is said) for "March", "March 2025", "last week", "this month",
     "the last 14 days", "yesterday"; None when the words name no span."""
     said = _name(scope)
     if found := _MONTH.match(said):
         return _month_span(found, today)
-    found = _RELATIVE.match(said)
-    return _relative_span(found, today) if found else None
+    # Relative spans ("last week", "past 10 days", "yesterday") are read by the one reader, `recognise.span`; its
+    # last day is inclusive, a span here ends the day after.
+    got = recognise.span(said, today, "past")
+    if not got:
+        return None
+    # "the last 10 days" is ten days counting today; the recogniser's run starts one earlier.
+    first = got[0] + timedelta(days=1) if got[2] == "day" and got[0] != got[1] else got[0]
+    return first, got[1] + timedelta(days=1), said.lower()
 
 
 def _plan_tag_many(session: Session, parsed: dict, c: dict) -> dict:

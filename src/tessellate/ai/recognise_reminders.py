@@ -309,3 +309,18 @@ def _repeat_and_alert(parsed: dict, repeat: Span | None, spans: list) -> None:
     alert = next((s for s in spans if s.kind == "alert"), None)
     if alert is not None:
         parsed["alert_minutes"] = alert.value
+
+
+# --- a bare event: "lunch with my friend at noon today" ---------------------
+#: What, its clock time and its day, with no verb ahead: the shape a reminder is offered for
+#: (`composer_calendar.restate`). The date words are read here, in the one reader.
+_BARE_EVENT = lazy_compile(
+    r"^(?P<what>[a-z][a-z' ]{3,50}?)\s+(?:at|around)\s+(?P<at>noon|midnight|\d{1,2}(?::\d\d)?\s?(?:am|pm)?)\s+(?P<day>today|tomorrow|tonight)$",
+    re.IGNORECASE,
+)
+
+
+def bare_event(sentence: str) -> tuple[str, str, str] | None:
+    """(what, clock time, day) of a verbless event with a time and a day, else None."""
+    found = _BARE_EVENT.match(sentence)
+    return (found.group("what"), found.group("at"), found.group("day")) if found else None

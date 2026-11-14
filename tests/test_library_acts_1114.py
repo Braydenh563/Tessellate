@@ -128,3 +128,11 @@ def test_make_board_reads_the_board_back_as_its_answer(client, session):
     done = confirm(client, card)
     assert "I read it back" in done["summary"] and "Kitchen" in done["summary"]
     assert done["undo"][0]["name"] == "delete_note"
+
+
+def test_span_reads_relative_words_through_the_recogniser():
+    today = date(2026, 11, 14)
+    assert library_acts.span("last week", today)[:2] == (date(2026, 11, 2), date(2026, 11, 9))
+    assert library_acts.span("this month", today)[:2] == (date(2026, 11, 1), date(2026, 12, 1))
+    assert library_acts.span("yesterday", today)[:2] == (date(2026, 11, 13), date(2026, 11, 14))
+    assert library_acts.span("last year", today)[:2] == (date(2025, 1, 1), date(2026, 1, 1))

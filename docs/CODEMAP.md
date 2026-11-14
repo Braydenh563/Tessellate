@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11319, test files 2958, tests 23105, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11318, test files 2958, tests 23107, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -14211,7 +14211,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11319)
+## Backend modules (11318)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18798,30 +18798,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `suggest_thinking_words` | src/tessellate/ai/librarian.py:1265 |
 | `system_content` | src/tessellate/ai/librarian.py:657 |
 
-### src/tessellate/ai/library_acts.py (20)
+### src/tessellate/ai/library_acts.py (18)
 
 | Name | File:line |
 |---|---|
-| `_archive_label` | src/tessellate/ai/library_acts.py:120 |
-| `_by_words` | src/tessellate/ai/library_acts.py:83 |
-| `_found` | src/tessellate/ai/library_acts.py:97 |
-| `_month_back` | src/tessellate/ai/library_acts.py:143 |
-| `_month_span` | src/tessellate/ai/library_acts.py:149 |
-| `_name` | src/tessellate/ai/library_acts.py:37 |
-| `_nothing_to_archive` | src/tessellate/ai/library_acts.py:112 |
-| `_plan_archive` | src/tessellate/ai/library_acts.py:129 |
-| `_plan_tag_many` | src/tessellate/ai/library_acts.py:191 |
-| `_read_archive` | src/tessellate/ai/library_acts.py:54 |
-| `_read_tag_many` | src/tessellate/ai/library_acts.py:48 |
-| `_relative_span` | src/tessellate/ai/library_acts.py:170 |
-| `_target` | src/tessellate/ai/library_acts.py:41 |
-| `_title` | src/tessellate/ai/library_acts.py:77 |
-| `_unit_span` | src/tessellate/ai/library_acts.py:156 |
-| `board_readback` | src/tessellate/ai/library_acts.py:231 |
-| `plan` | src/tessellate/ai/library_acts.py:220 |
-| `read` | src/tessellate/ai/library_acts.py:64 |
-| `span` | src/tessellate/ai/library_acts.py:181 |
-| `with_readbacks` | src/tessellate/ai/library_acts.py:246 |
+| `_archive_label` | src/tessellate/ai/library_acts.py:121 |
+| `_by_words` | src/tessellate/ai/library_acts.py:84 |
+| `_found` | src/tessellate/ai/library_acts.py:98 |
+| `_month_back` | src/tessellate/ai/library_acts.py:144 |
+| `_month_span` | src/tessellate/ai/library_acts.py:150 |
+| `_name` | src/tessellate/ai/library_acts.py:38 |
+| `_nothing_to_archive` | src/tessellate/ai/library_acts.py:113 |
+| `_plan_archive` | src/tessellate/ai/library_acts.py:130 |
+| `_plan_tag_many` | src/tessellate/ai/library_acts.py:173 |
+| `_read_archive` | src/tessellate/ai/library_acts.py:55 |
+| `_read_tag_many` | src/tessellate/ai/library_acts.py:49 |
+| `_target` | src/tessellate/ai/library_acts.py:42 |
+| `_title` | src/tessellate/ai/library_acts.py:78 |
+| `board_readback` | src/tessellate/ai/library_acts.py:213 |
+| `plan` | src/tessellate/ai/library_acts.py:202 |
+| `read` | src/tessellate/ai/library_acts.py:65 |
+| `span` | src/tessellate/ai/library_acts.py:157 |
+| `with_readbacks` | src/tessellate/ai/library_acts.py:228 |
 
 ### src/tessellate/ai/links.py (3)
 
@@ -19887,7 +19885,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `told_as_past` | src/tessellate/ai/recognise_questions.py:394 |
 | `without_event_window_tail` | src/tessellate/ai/recognise_questions.py:526 |
 
-### src/tessellate/ai/recognise_reminders.py (18)
+### src/tessellate/ai/recognise_reminders.py (19)
 
 | Name | File:line |
 |---|---|
@@ -19904,6 +19902,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rule_parts` | src/tessellate/ai/recognise_reminders.py:61 |
 | `_spoken_instant` | src/tessellate/ai/recognise_reminders.py:131 |
 | `_trim_dangling` | src/tessellate/ai/recognise_reminders.py:257 |
+| `bare_event` | src/tessellate/ai/recognise_reminders.py:323 |
 | `first_of` | src/tessellate/ai/recognise_reminders.py:111 |
 | `next_occurrence` | src/tessellate/ai/recognise_reminders.py:92 |
 | `parse_reminder_text` | src/tessellate/ai/recognise_reminders.py:226 |
@@ -28764,7 +28763,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23105)
+## Tests (23107)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29301,7 +29300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_bt_dates_1109.py | 11 |
 | tests/test_composer_bt_lists_1109.py | 7 |
 | tests/test_composer_calc_1025.py | 5 |
-| tests/test_composer_calendar_1111.py | 5 |
+| tests/test_composer_calendar_1111.py | 6 |
 | tests/test_composer_cfix_1031.py | 138 |
 | tests/test_composer_chance_1108.py | 9 |
 | tests/test_composer_chat_1110.py | 3 |
@@ -30369,7 +30368,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_827_reading.py | 4 |
 | tests/test_library_activity_rows.py | 3 |
 | tests/test_library_activity_scope.py | 1 |
-| tests/test_library_acts_1114.py | 9 |
+| tests/test_library_acts_1114.py | 10 |
 | tests/test_library_board_card.py | 4 |
 | tests/test_library_board_counts.py | 2 |
 | tests/test_library_boards.py | 5 |
