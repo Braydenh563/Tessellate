@@ -3570,7 +3570,14 @@ function libraryDocsNewMount() {
         await ensureModule("library");
         const template = DOC_TEMPLATES.find((t) => t.id === "daily");
         const day = window.docTemplateFill(template).title;
-        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch(() => []);
+        //: A failed look-up must not start a second copy of today's document.
+        let found;
+        try {
+          found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`);
+        } catch (e) {
+          toast(`Could not look for today's document: ${e.message}`, true);
+          return;
+        }
         const doc = found.find((d) => (d.title || "").trim() === day);
         switchTab("documents");
         if (doc) openDocument(doc.id);

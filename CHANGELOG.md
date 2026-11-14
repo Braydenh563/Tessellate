@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a failed look-up for today's document says so instead of starting a second copy, and a JSON schema that cannot be read says the keys were not checked (CI cap on silent empty loads).
 - Writing room: after a Draft, the status line names any time, number or [placeholder] that the thoughts, the notes and the old draft do not hold, so an invented detail is checked before it is sent (L-documents-77).
 - Writing room: a bare box has no margin, so it is the same height as its mounted editor surface (294.8 and 294.4 px, then 295 and 295 px after focus, was 294.8 beside 285.2; found in the real-model run, L-documents-73).
 - Documents: the diagram shelf sweep drives a touch hold-and-drag of a tile onto the picture with CDP touch events (L-documents-72): 3 to 4 blocks in a flowchart and a mind map at 390.

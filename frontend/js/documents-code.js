@@ -363,7 +363,12 @@ function docCodeLintSource(CM) {
       found = docJsonDiagnostics(state.doc);
       //: A valid file with a "$schema" key (a cheap gate; the piece reads the tree to be sure) is checked against that library schema (documents-json-schema.js, lazy).
       if (!found.length && /"\$schema"\s*:/.test(text) && (await lazyScript("/js/documents-json-schema.js"))) {
-        found = await DOC_LINT_CONFIG.jsonSchema.diagnostics(CM, state).catch(() => []);
+        //: A schema that cannot be read says so, rather than passing the file as checked.
+        try {
+          found = await DOC_LINT_CONFIG.jsonSchema.diagnostics(CM, state);
+        } catch {
+          found = [{ from: 0, to: 0, severity: "info", source: "Schema", message: "Could not read the schema, so the keys were not checked." }];
+        }
       }
       if (found.length && found[0].source !== "Schema") {
         const fixes = docJsonFixes(text, docJsonErrorAt(text), unit);
