@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The first document open asks for the document while the library files and the editor load, not after them (L-world-class-40): cold first open at 2,000 notes median 445 to 350 ms (second open 51 to 97); still over 200 ms, left open with the attribution (editor eval and mount, render after the fetch); the first Library tab open measured 87 to 114 ms, nothing to fix; `tests/test_doc_open_waterfall_l40.py`.
 - A gym note's "#conversation" topic is traced and pinned (L510): topics are link clusters named by the terms their notes share (`entry/topics.py` `build`), so a lone gym note is in none, and one linked into notes about conversation takes theirs; reproduced in the scratch app (note linked to two conversation notes: topic "conversation", size 3), not a stopword gap; `tests/test_topics_kg6.py`.
 - Back after closing Settings no longer reopens it: each pane visited inside Settings is a history entry, and the close now steps off all of them, not one (sweep `backtabs.js` 4 failing to 0 of 26 checks; L-world-class-356, wc-109). CodeQL: three asserts with side effects in the window teardown test are split.
 - CI leg 1 fixes: the reading bin routes move to routes_reading_bin.py (routes_files_readings.py 827 to 751 lines, cap 800); the not-installed search line stays one sentence (L-world-class-64) and its cache test reads the download it names.
