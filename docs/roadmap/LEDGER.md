@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 69 | 30 | 10 | 59 | 275 |
+| chat | 176 | 77 | 30 | 10 | 59 | 283 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 443 | 99 | 10 | 183 | 1095 |
+| all | 553 | 451 | 99 | 10 | 183 | 1103 |
 
 ## graph
 
@@ -122,6 +122,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder Remaining 2026-11-14: needs an owner design call, not written on the row, in HANDOVER or CHAT_PLAN: where the monitor may be dragged and which interface actions the agent may take unasked.
 - [ ] **L-chat-44** `chat` open, M: Evaluate cactus_needle 3.0.1 wheel to the 4.0.0 engine (core/extras.py:715) with the platform table and a serial test run; together with the whistle row. From owner research via hub 2026-11-14.
+- [ ] **L-chat-54** `chat` open, M: Proactive remarks P1, P2, P5, P9, P10: due within the hour or overdue today, one back remark a day from resurface, a plan fact over 30 days still open, a new tension once, a dated plan in 7 days with no reminder plus an act chip. From CHAT_PLAN.md:1334-1343 recount 2026-11-14. Evidence: scout: _due window 3 days composer_voice.py:374; _back never fed (routes_insights.py:480); no drift, tension or upcoming-plan remark
+- [ ] **L-chat-55** `chat` open, S: Proactive P3, P4, P7: on this day in the dashboard line, pattern threshold 3 mentions across 3 weeks, the no-model digest labelled Your notes, no AI. From CHAT_PLAN.md:1336-1340 recount 2026-11-14. Evidence: scout: PATTERN_NOTES over WEEK_DAYS 7; label string absent
+- [ ] **L-chat-56** `chat` open, S: Proactive P11 rate rules: at most 3 a day, none within 20 s of a key press, never the same fact twice in 7 days, one off switch. From CHAT_PLAN.md:1344 recount 2026-11-14. Evidence: scout: seen-key store companion-remark.js:14 only, cool 3 h avatars.js:9405
+- [ ] **L-chat-57** `chat` open, M: Proactive P8: on save, a new sentence that answers an open question is said once with both quoted. From CHAT_PLAN.md:1341 recount 2026-11-14. Evidence: scout: no save-time hook; questions.py:273 Ask only
+- [ ] **L-chat-58** `chat` open, L: Ask smart browser slices 1 to 3: support.threads chips filter Matching records, Around this note on a card, breadcrumb trail with Back. From CHAT_PLAN.md:566-576 INBOX 1743 recount 2026-11-14. Evidence: scout: no support.threads, no chips, no breadcrumb
+- [ ] **L-chat-59** `chat` open, M: Model path: draw composed_preview as a draft before the first token; give the model the composer's chosen sentences as ids. From CHAT_PLAN.md:1355-1360 recount 2026-11-14. Evidence: scout: routes_chat.py:736 yields composed_preview, no frontend consumer
+- [ ] **L-chat-60** `chat` open, M: F5 remainder: Ask draws the chart event (pass onChart in ask-compose.js); write tools beyond the acts run from a sentence. From CHAT_PLAN.md:1597 recount 2026-11-14. Evidence: scout: answer-kit.js:1267 handles, ask-compose.js passes none
+- [ ] **L-chat-61** `chat` open, S: X14 bulk act card: first five listed and Show all, with the cap 50 and partial-failure line. From CHAT_PLAN.md:1282 recount 2026-11-14. Evidence: scout: cap commands.py:81, wording commands.py:1582; no five plus Show all card
 
 ## whiteboard
 
