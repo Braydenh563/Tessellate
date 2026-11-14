@@ -669,11 +669,7 @@ choice, not the app's.*
   the export set, for a day that grew past a capture. That is a real difference
   in kind, not a second copy of the feature, and it costs one template row.
 
-**Not built, deliberately**: a "Today" button in the documents dock. The
-template gallery is two clicks from the same place, the Timeline's day view is
-the surface that knows about days, and a third door onto one page is what this
-decision exists to refuse.
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-64 (Today button).
+Built 2026-11-14: a Today button in the Library Documents dock opens the day's document or starts it from the Daily template (HISTORY.md, "Moved from the plans, 2026-11-14 (documents Today)").
 
 ## 15. The code block's own bar, and where it belongs: measured 2026-09-20
 

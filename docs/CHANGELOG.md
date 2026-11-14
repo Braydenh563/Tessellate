@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a Today button in the Library Documents dock opens today's document, or starts it from the Daily template (no new endpoint; one press twice leaves one document).
 - Documents: the block-reference, suggestion and code-format pieces each export one object, so no name is declared in two scripts (test_s66; global names 7,406 to 7,379).
 - Documents: an opt-in Vim keymap for the code and document editors (Vim keys in the ... menu, off by default and remembered): `@replit/codemirror-vim` 6.4.0 (MIT) is its own lazy file, `vim.min.js` (124,464 bytes, 39,576 gzipped), fetched only when the setting is on and built against the editor bundle's own `CM6`, so `codemirror.min.js` is unchanged; the bar shows NORMAL, INSERT or VISUAL. Measured in the app: Escape then `dd` deletes a line with it on and types `dd` with it off (L-documents-41).
 - Documents: a .json file whose top-level object has "$schema" naming another JSON document in the Library (by title or file name; nothing is fetched) is checked by a small in-house draft-07 validator (type, properties, required, additionalProperties, enum, items, minimum, maximum, $ref within the schema), findings underlined at the value's own range from CodeMirror's JSON tree, and a quote where a key goes lists the schema's keys with their descriptions; a lazy piece, `documents-json-schema.js`, no new dependency and no new global (L-documents-42).

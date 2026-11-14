@@ -61,6 +61,7 @@ RUNTIME_IDS = {
     "doc-new-diagram",
     "doc-export-svg",
     "library-docs-new-diagram",
+    "library-docs-today",
     "library-docs-empty-diagram",
 }
 

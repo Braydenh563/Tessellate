@@ -1716,7 +1716,8 @@ HELP_TOPICS.extend(
                 "letter, report, essay, CV and one-page proposal), planning ones, "
                 "and code ones that open in the code view (a Python script, a command "
                 "line tool, a FastAPI endpoint, JavaScript with tests, an HTML page, a "
-                "SQL schema, a README, a notebook of cells and a p5.js sketch). In a "
+                "SQL schema, a README, a notebook of cells and a p5.js sketch). The Today "
+                "button in Library, Documents opens today's document, or starts it from the Daily template. In a "
                 'document, the "/" menu\'s Templates group inserts the writing and planning ones.'
             ),
             "badge": {"label": "Templates", "section": "templates"},
