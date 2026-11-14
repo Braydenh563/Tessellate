@@ -17,8 +17,10 @@ def test_slang_alone_does_not_rewrite_the_target():
 
 
 def test_a_quantifier_is_not_part_of_the_target():
-    found = commands.read_typed("move all my uni notes to Archive", NOW)
-    assert found["about"] == "uni" and found["category"] == "Archive"
+    # Intent moved (L-chat-46): "to Archive" is the archive act now; the quantifier rule is shown with an ordinary category.
+    found = commands.read_typed("move all my uni notes to Projects", NOW)
+    assert found["about"] == "uni" and found["category"] == "Projects"
+    assert commands.read_typed("move all my uni notes to Archive", NOW)["intent"] == "archive"
 
 
 def test_a_misspelt_verb_is_still_put_right():
