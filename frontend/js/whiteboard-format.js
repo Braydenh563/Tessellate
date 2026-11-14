@@ -1579,28 +1579,46 @@ function wbPasteSize() {
 }
 
 //: Copy data and Paste data (draw.io's Alt+Shift+B and E): the custom properties
-//: (`data.props`) of one item put on every selected one, as one Undo step. A
-//: paste replaces what the target had, as the Data tab does when you retype it.
+//: (`data.props`), tooltip (`tip`) and link of one item put on every selected one, as one
+//: Undo step. A paste replaces what the target had, as the Data tab does when you retype it.
 wbFmtState.dataClip = null;
 wbFmtState.dataKeys = (() => {
+  //: What Copy data takes from one item: its properties, its tooltip (draw.io's note) and its link.
+  function read(entry) {
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    const clip = {};
+    if (data?.props && typeof data.props === "object" && Object.keys(data.props).length) clip.props = { ...data.props };
+    if (typeof data?.tip === "string" && data.tip) clip.tip = data.tip;
+    const link = wbItemLink(entry.kind, entry.item);
+    if (link) clip.link = link;
+    return clip;
+  }
   function copy() {
     const [entry] = wbFmtEntries();
-    const props = entry && (entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {}).props;
-    if (!props || typeof props !== "object" || !Object.keys(props).length) {
+    const clip = entry ? read(entry) : {};
+    if (!Object.keys(clip).length) {
       toast("That item has no data to copy.");
       return;
     }
-    wbFmtState.dataClip = { ...props };
-    const n = Object.keys(props).length;
-    wbAnnounce(`Data copied: ${n === 1 ? "1 property" : `${n} properties`}.`);
+    wbFmtState.dataClip = clip;
+    const n = Object.keys(clip.props || {}).length;
+    const parts = [n ? (n === 1 ? "1 property" : `${n} properties`) : "", clip.tip ? "the tooltip" : "", clip.link ? "the link" : ""].filter(Boolean);
+    wbAnnounce(`Data copied: ${parts.join(", ")}.`);
   }
+  //: A paste replaces what the target had for each part the copy held; the tooltip goes only where the item has the field.
   function paste() {
     if (!wbFmtState.dataClip) {
       toast("Copy an item's data first.");
       return Promise.resolve();
     }
     const clip = wbFmtState.dataClip;
-    return wbFmtApply("props", () => ({ props: { ...clip } }), "Data pasted.");
+    return wbFmtApply("props", (entry, kind) => {
+      const patch = {};
+      if (clip.props) patch.props = { ...clip.props };
+      if (clip.tip && (WB_FMT_FIELDS[kind] || []).includes("tip")) patch.tip = clip.tip;
+      if (clip.link && wbTakesLink(entry.kind, entry.item)) patch.link = clip.link;
+      return patch;
+    }, "Data pasted.");
   }
   //: draw.io's Alt+Shift+T (edit tooltip): the Data tab, on its Tooltip field when the selection has one (WB_FMT_FIELDS "tip").
   function tooltip() {

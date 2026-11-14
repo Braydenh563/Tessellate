@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8731, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10910, test files 2799, tests 22549, plan headings 691, app scripts 29, boot scripts 38, script files 317.
+Counts: frontend functions 8731, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10910, test files 2800, tests 22554, plan headings 691, app scripts 29, boot scripts 38, script files 317.
 
 ## Frontend functions (8731)
 
@@ -8533,21 +8533,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbAutoSizeFactors` | frontend/js/whiteboard-format.js:1639 |
-| `wbAutoSizeSelection` | frontend/js/whiteboard-format.js:1675 |
-| `wbBuildTable` | frontend/js/whiteboard-format.js:2157 |
+| `wbAutoSizeFactors` | frontend/js/whiteboard-format.js:1657 |
+| `wbAutoSizeSelection` | frontend/js/whiteboard-format.js:1693 |
+| `wbBuildTable` | frontend/js/whiteboard-format.js:2175 |
 | `wbClearTextFormat` | frontend/js/whiteboard-format.js:1464 |
-| `wbClearWaypoints` | frontend/js/whiteboard-format.js:1706 |
-| `wbColour` | frontend/js/whiteboard-format.js:2740 |
-| `wbColourButton` | frontend/js/whiteboard-format.js:2713 |
-| `wbColourHeading` | frontend/js/whiteboard-format.js:2728 |
-| `wbColourMenu` | frontend/js/whiteboard-format.js:2684 |
-| `wbColourName` | frontend/js/whiteboard-format.js:2606 |
-| `wbColourPairOf` | frontend/js/whiteboard-format.js:2617 |
+| `wbClearWaypoints` | frontend/js/whiteboard-format.js:1724 |
+| `wbColour` | frontend/js/whiteboard-format.js:2758 |
+| `wbColourButton` | frontend/js/whiteboard-format.js:2731 |
+| `wbColourHeading` | frontend/js/whiteboard-format.js:2746 |
+| `wbColourMenu` | frontend/js/whiteboard-format.js:2702 |
+| `wbColourName` | frontend/js/whiteboard-format.js:2624 |
+| `wbColourPairOf` | frontend/js/whiteboard-format.js:2635 |
 | `wbCopySize` | frontend/js/whiteboard-format.js:1552 |
-| `wbDrawsRough` | frontend/js/whiteboard-format.js:1767 |
+| `wbDrawsRough` | frontend/js/whiteboard-format.js:1785 |
 | `wbDropLoneGroups` | frontend/js/whiteboard-format.js:1536 |
-| `wbEditTableCell` | frontend/js/whiteboard-format.js:2340 |
+| `wbEditTableCell` | frontend/js/whiteboard-format.js:2358 |
 | `wbFmtAlphaKeys` | frontend/js/whiteboard-format.js:96 |
 | `wbFmtAngle` | frontend/js/whiteboard-format.js:423 |
 | `wbFmtApply` | frontend/js/whiteboard-format.js:220 |
@@ -8587,48 +8587,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFormatSync` | frontend/js/whiteboard-format.js:626 |
 | `wbFormatSyncSoon` | frontend/js/whiteboard-format.js:561 |
 | `wbFormatToggle` | frontend/js/whiteboard-format.js:554 |
-| `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1651 |
-| `wbHexOf` | frontend/js/whiteboard-format.js:2588 |
-| `wbInsertTable` | frontend/js/whiteboard-format.js:2309 |
-| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:3043 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:3216 |
-| `wbPaintTable` | frontend/js/whiteboard-format.js:2260 |
+| `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1669 |
+| `wbHexOf` | frontend/js/whiteboard-format.js:2606 |
+| `wbInsertTable` | frontend/js/whiteboard-format.js:2327 |
+| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:3061 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:3234 |
+| `wbPaintTable` | frontend/js/whiteboard-format.js:2278 |
 | `wbPasteSize` | frontend/js/whiteboard-format.js:1562 |
-| `wbRecentColours` | frontend/js/whiteboard-format.js:2566 |
-| `wbRememberColour` | frontend/js/whiteboard-format.js:2575 |
+| `wbRecentColours` | frontend/js/whiteboard-format.js:2584 |
+| `wbRememberColour` | frontend/js/whiteboard-format.js:2593 |
 | `wbRemoveFromGroup` | frontend/js/whiteboard-format.js:1516 |
-| `wbReverseSelection` | frontend/js/whiteboard-format.js:1733 |
-| `wbReversedLinkFields` | frontend/js/whiteboard-format.js:1717 |
-| `wbRoughD` | frontend/js/whiteboard-format.js:1812 |
-| `wbRoughProbe` | frontend/js/whiteboard-format.js:1784 |
-| `wbRoughRandom` | frontend/js/whiteboard-format.js:1773 |
-| `wbRoughSpline` | frontend/js/whiteboard-format.js:1799 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:3282 |
-| `wbSetColourField` | frontend/js/whiteboard-format.js:2634 |
+| `wbReverseSelection` | frontend/js/whiteboard-format.js:1751 |
+| `wbReversedLinkFields` | frontend/js/whiteboard-format.js:1735 |
+| `wbRoughD` | frontend/js/whiteboard-format.js:1830 |
+| `wbRoughProbe` | frontend/js/whiteboard-format.js:1802 |
+| `wbRoughRandom` | frontend/js/whiteboard-format.js:1791 |
+| `wbRoughSpline` | frontend/js/whiteboard-format.js:1817 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:3300 |
+| `wbSetColourField` | frontend/js/whiteboard-format.js:2652 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:455 |
-| `wbSetTable` | frontend/js/whiteboard-format.js:2325 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:3258 |
+| `wbSetTable` | frontend/js/whiteboard-format.js:2343 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:3276 |
 | `wbStepFontSize` | frontend/js/whiteboard-format.js:1471 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:3271 |
-| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:2102 |
-| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:2095 |
-| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:2118 |
-| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:2090 |
-| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:2123 |
-| `wbSvgTable` | frontend/js/whiteboard-format.js:2142 |
-| `wbSvgTableCell` | frontend/js/whiteboard-format.js:2134 |
-| `wbSwapSize` | frontend/js/whiteboard-format.js:1616 |
-| `wbTableCells` | frontend/js/whiteboard-format.js:1865 |
-| `wbTableColumnEdges` | frontend/js/whiteboard-format.js:1895 |
-| `wbTableMenuRows` | frontend/js/whiteboard-format.js:2502 |
-| `wbTableReshape` | frontend/js/whiteboard-format.js:2397 |
-| `wbTableResizeColumn` | frontend/js/whiteboard-format.js:1887 |
-| `wbTableRules` | frontend/js/whiteboard-format.js:1901 |
-| `wbTableWeights` | frontend/js/whiteboard-format.js:1877 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:3289 |
+| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:2120 |
+| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:2113 |
+| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:2136 |
+| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:2108 |
+| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:2141 |
+| `wbSvgTable` | frontend/js/whiteboard-format.js:2160 |
+| `wbSvgTableCell` | frontend/js/whiteboard-format.js:2152 |
+| `wbSwapSize` | frontend/js/whiteboard-format.js:1634 |
+| `wbTableCells` | frontend/js/whiteboard-format.js:1883 |
+| `wbTableColumnEdges` | frontend/js/whiteboard-format.js:1913 |
+| `wbTableMenuRows` | frontend/js/whiteboard-format.js:2520 |
+| `wbTableReshape` | frontend/js/whiteboard-format.js:2415 |
+| `wbTableResizeColumn` | frontend/js/whiteboard-format.js:1905 |
+| `wbTableRules` | frontend/js/whiteboard-format.js:1919 |
+| `wbTableWeights` | frontend/js/whiteboard-format.js:1895 |
 | `wbToggleLabelFit` | frontend/js/whiteboard-format.js:1458 |
 | `wbTurnSelection` | frontend/js/whiteboard-format.js:1486 |
-| `wbWellExpanded` | frontend/js/whiteboard-format.js:2629 |
-| `wbWriteColourPair` | frontend/js/whiteboard-format.js:2647 |
+| `wbWellExpanded` | frontend/js/whiteboard-format.js:2647 |
+| `wbWriteColourPair` | frontend/js/whiteboard-format.js:2665 |
 
 ### frontend/js/whiteboard-gif.js (6)
 
@@ -28406,7 +28406,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22549)
+## Tests (22554)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31009,6 +31009,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_context_menu_place.py | 4 |
 | tests/test_wb_context_pin.py | 1 |
 | tests/test_wb_crop.py | 10 |
+| tests/test_wb_data_clip_keys.py | 5 |
 | tests/test_wb_default_link.py | 1 |
 | tests/test_wb_diagram.py | 3 |
 | tests/test_wb_dimension.py | 5 |
