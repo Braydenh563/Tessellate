@@ -5493,7 +5493,7 @@ function wbSyncConnectWords(isMap) {
 let wbMapStripSyncing = false;
 
 //: The node the open ring belongs to. Read at click time by every slot, so a
-//: ring left open across a render acts on the node it was opened for rather
+//: ring still showing across a render acts on the node it was opened for rather
 //: than on whatever is selected now.
 let wbMapRadialFor = null;
 

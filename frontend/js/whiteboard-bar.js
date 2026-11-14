@@ -835,7 +835,7 @@
     const gripsBottom = grips ? grips.getBoundingClientRect().bottom - hostRect.top : bottom;
     if (y < floor) y = Math.max(bottom, gripsBottom) + gapBelow;
     //: **At phone width the board bar is pinned to the top of the canvas**
-    //: (WHITEBOARD_PLAN section 7's open question, answered 2026-09-20 by
+    //: (WHITEBOARD_PLAN section 7's question, answered 2026-09-20 by
     //: building both and measuring them: `scratchpad/ui-sweeps/wbcontextphone.js`,
     //: five kinds high and low on the board, ten selections each way).
     //:

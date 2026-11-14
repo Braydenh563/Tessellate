@@ -413,7 +413,7 @@
   //: selected so a second Ctrl+D steps on again. Leaves the clipboard alone,
   //: so a duplicate never overwrites something copied to paste later.
   async function wbDuplicateSelection() {
-    //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit follow-up):
+    //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit):
     //: the board's copy posts an object with no `parent_id`, so a duplicated
     //: topic landed as a loose root and undoing it left nothing selected.
     //: One selected topic is copied in place right after itself instead.

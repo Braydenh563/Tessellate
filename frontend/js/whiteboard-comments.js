@@ -205,7 +205,7 @@
     const wanted = [];
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        //: The mark counts what is still open; a thread that is all resolved
+        //: The mark counts unresolved threads; a thread that is all resolved
         //: keeps a quiet tick, so it can still be opened and read.
         //: A reply is as open as the comment it answers.
         const thread = wbItemComments(kind, item);

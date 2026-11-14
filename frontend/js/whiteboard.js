@@ -1502,7 +1502,7 @@ function wbDrawOutSnap(sx, sy, x, y, event) {
 //: the two are never confused at a glance), and "spacing" (equal gaps).
 //: Overridable per the direct ask ("colours should be alterable"); the
 //: picker lives in the whiteboard's own shape-menu dropdown rather than a
-//: new top menu bar, see HISTORY.md for why that redesign is deferred.
+//: new top menu bar, see HISTORY.md for why that redesign was decided against.
 //: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
 //: each passes 3:1 on the canvas in light and dark); only a colour the owner
 //: picked is written here, and it wins over the class.
@@ -3279,7 +3279,7 @@ function wbRememberBoardView() {
   if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
   const t = d3.zoomTransform(container);
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
-  //: Past a reload too (per device, like the board's background image): the view of a board left open is its last.
+  //: Past a reload too (per device, like the board's background image): the view a board was last shown at is the one it reopens at.
   prefs.set(`wb-view-${id}`, JSON.stringify({ x: t.x, y: t.y, k: t.k }));
 }
 window.addEventListener("pagehide", wbRememberBoardView);
@@ -4504,7 +4504,7 @@ function wbTrashTarget() {
   label.className = "wb-trash-label";
   wbTrash.el.append(icon, label);
   //: The sidebar's drags (Library tiles, Layers rows) are the browser's own drag and drop, which sends no pointer
-  //: moves, so the target answers dragover, dragleave and drop itself (INBOX 660 follow-up, LEDGER L262).
+  //: moves, so the target answers dragover, dragleave and drop itself (after INBOX 660, LEDGER L262).
   wbTrash.el.addEventListener("dragover", (e) => {
     if (!wbTrash.drop) return;
     e.preventDefault();
@@ -11631,11 +11631,8 @@ function wbLinkNearestT(d, p) {
 //: function a single shape's handles already use, so a group resize and a
 //: shape resize cannot drift apart (shift-to-square included).
 //:
-//: No rotate handle. Rotating a group means rotating each item about the
-//: group's centre, which for a card means a rotation *and* a move, and for a
-//: sketch means baking a rotation into a path that is already rotated. It is
-//: a real feature, not a line of code, and an unbuilt one is better absent
-//: than drawn and inert.
+//: The rotate point sits above the box; how each kind turns about the
+//: group's centre is written at "And a rotate point above the box" below.
 function wbMultiSelectionEntries() {
   const entries = [];
   for (const key of wbMultiSelection) {
@@ -12683,8 +12680,8 @@ function renderWhiteboard() {
       const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(document.getElementById("whiteboard-container")).k);
       if (!step) return;
       // First real movement of this gesture, decide once whether this is
-      // a solo move or a bulk move of the whole multi-selection. Deferred
-      // to here rather than "start" (see its own comment) specifically so
+      // a solo move or a bulk move of the whole multi-selection. Decided
+      // here rather than "start" (see its own comment) specifically so
       // a zero-movement click never reaches this at all.
       if (d._bulkOrigin === undefined) {
         d._bulkOrigin = wbDragIsBulkMove("sketch", d.id)
@@ -14088,7 +14085,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection deliberately waits for the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }
@@ -15172,7 +15169,7 @@ function dragStart(event, d) {
     d._moveUndoBefore = WB_KIND_INFO.node.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("node", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection deliberately waits for the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }
