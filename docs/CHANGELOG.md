@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram frame: the separate `mermaid.parse` before each draw is gone (render parses and throws the same reason line, checked on four broken sources); adding a block to a 40-block flowchart at 390, 5 interleaved runs each at load 9 to 11: longest task per add median 126.5 to 112 ms, long-task total 251 to 205.5 ms (L-documents-112, still over 50).
 - Diagram overview frame: its move is throttled to one per 48 ms with a trailing settle and the frame is its own layer, so a 90-move pan at 1440 and 4x CPU costs p50 about 8.4 ms (was about 12) and 15 ms less raster; p95 about 28 ms (was about 35, load 8 to 10), the remainder is the picture's own raster (L-documents-102).
 - Section graph nodes name their paragraph class literally, so the unused-class lint sees it; three HISTORY lines quote a fence name as code so the archive link check pairs fences correctly.
 - Boot CSS back under its cap (a duplicate `height: auto` in the fullscreen graph card removed); three documents tests follow the lazy sections module, the `none` chord and the shared ink selector list.

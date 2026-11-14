@@ -122,8 +122,8 @@ async function mermaidFrameDraw(request) {
     //: **Each step is its own task** (INBOX 1662: `DOMWindow.onmessage 245ms`): the draw ran inside the
     //: message's promise chain, so the parse, the layout and the SVG build were all billed to one handler
     //: and the page waited on the whole. A turn of the loop between them lets input and paint run.
-    await mermaidFrameYield();
-    await mermaid.parse(source);
+    //: No separate `mermaid.parse` (L-documents-112): render parses first and throws the same reason line,
+    //: so the second parse was 26 to 51 ms of the task for nothing.
     await mermaidFrameYield();
     const { svg } = await mermaid.render(domId, source);
     await mermaidFrameYield();
