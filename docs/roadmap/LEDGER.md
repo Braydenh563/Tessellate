@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 136 | 29 | 3 | 10 | 165 |
+| world-class | 0 | 133 | 29 | 3 | 10 | 162 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 525 | 100 | 5 | 121 | 997 |
+| all | 372 | 522 | 100 | 5 | 121 | 994 |
 
 ## graph
 
@@ -538,14 +538,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-60** `world-class` open, S: Settle 1.3's remaining 'no' cells in the object menu table: each built or marked n/a with its reason. From WORLD_CLASS_PLAN.md:158. Evidence: WORLD_CLASS_PLAN.md:158 says the 'no' cells are 'not planned'; no owner decision found in HANDOVER or ARCHITECTURE
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)
 - [ ] **L-world-class-62** `world-class` open, S: Re-run the busiest-screen recipe-count gate (scratchpad/audit/recipes.js) and fix what it finds. From WORLD_CLASS_PLAN.md:302. Evidence: WORLD_CLASS_PLAN.md:302 'the recipe-count gate was not re-run'; target 8 recipes, 22 on Chat at 696
-- [ ] **L-world-class-63** `world-class` open, S: Library: group notes by type (D5's last left item). From WORLD_CLASS_PLAN.md:357. Evidence: no grouping by type in frontend/js/library*.js (grep 'group.*type' 0 hits)
 - [ ] **L-world-class-64** `world-class` open, S: Re-run the prose metric (paragraphs over 120 characters outside popovers) and move what it finds behind data-help-for. From WORLD_CLASS_PLAN.md:427. Evidence: WORLD_CLASS_PLAN.md:427 and :949 (54 paragraphs, ~60 at :699); not re-run since 2026-09-24
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'
 - [ ] **L-world-class-67** `world-class` open, M: OCR reading, engine installs and transcription as Activity-panel jobs with progress per page and Stop (decision 70). From WORLD_CLASS_PLAN.md:3954. Evidence: 28.4 row 6 (:3954) and 28.5 row 8 (:3985) not marked built; decision 70 (:3909)
 - [ ] **L-world-class-68** `world-class` open, S: Library and Reminders lists page by cursor on scroll; hide every control whose backend is not installed (B7, F2). From WORLD_CLASS_PLAN.md:649. Evidence: notes-list.js:3115 and timeline.js:715 page by cursor; Library and Reminders do not; settings-controls.js:2281 reads /capabilities for one control
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
-- [ ] **L-world-class-70** `world-class` open, S: Subset Phosphor.woff2 to the icons the app uses. From WORLD_CLASS_PLAN.md:1951. Evidence: Phosphor.woff2 147,380 bytes whole (:1951, :781)
+- [ ] **L-world-class-70** `world-class` open, S: Subset Phosphor.woff2 to the icons the app uses. From WORLD_CLASS_PLAN.md:1951. Evidence: Phosphor.woff2 147,380 bytes whole (:1951, :781) BLOCKED 2026-11-14 (needs an owner decision): fonttools installs, and a subset to the 621 icon names the code names measures 56,820 bytes (save 90,560), but the icon picker (icon-picker.js reads every .ph-* rule of vendor/phosphor/style.css) offers all 1,530 and a note, space or file icon is stored by name (`ph:name`), so a subset would draw blank for any icon not in the 621; test_icon_names.py also asserts more than 1,000 icons. Decision wanted: drop the picker to the 621, or keep the full font.
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
 - [ ] **L-world-class-76** `world-class` open, S: Decide app-wide undo across a reload (recommendation: keep it session-only and say so in Help). From WORLD_CLASS_PLAN.md:802. Evidence: undo-store.js persists boards and documents only; 'by design' at :802 has no owner decision
@@ -556,11 +555,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-85** `world-class` open, S: Trace dismissed link pairs and accepted neighbourhoods into the learning loop. From WORLD_CLASS_PLAN.md:1020. Evidence: WORLD_CLASS_PLAN.md:1020 'dismissed link pairs and accepted neighbourhoods were not traced'
 - [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
-- [ ] **L-world-class-88** `world-class` open, S: A 'Learned: manage' link on each invention's own surface (I9). From WORLD_CLASS_PLAN.md:1236. Evidence: no 'Learned: manage' link in frontend/js (grep 0 hits)
 - [ ] **L-world-class-89** `world-class` open, S: Print and PDF of a document with its citations. From WORLD_CLASS_PLAN.md:1814. Evidence: WORLD_CLASS_PLAN.md:1814 'citations in it were not checked'
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider
-- [ ] **L-world-class-92** `world-class` open, S: Run boottime.js in the CI workflow (H9). From WORLD_CLASS_PLAN.md:1851. Evidence: WORLD_CLASS_PLAN.md:1851; no boottime in .github/workflows (grep 0 hits)
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
 - [ ] **L-world-class-96** `world-class` open, S: Tab labels kept down to 1024px with shortcut tooltips below (22.1.3). From WORLD_CLASS_PLAN.md:2254. Evidence: tab strip icons-only under about 1100px (:2254)
 - [ ] **L-world-class-103** `world-class` open, M: Right-click, and a hold on touch, on every card and row. From WORLD_CLASS_PLAN.md:2292. Evidence: 38 contextmenu sites, not every card (:2292)

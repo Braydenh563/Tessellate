@@ -3213,6 +3213,8 @@ function paintFadedNotes(body, items) {
     list.appendChild(card);
   }
   body.appendChild(list);
+  //: I9: what Rediscover was told to hide, and why, is in What it learned.
+  body.appendChild(openSettingsModal.learnedLink(""));
 }
 
 async function renderRandomShuffle(body) {

@@ -518,6 +518,21 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
 }
 
+//: **"Learned: manage"** (WORLD_CLASS_PLAN I9): the small link every invention's
+//: own surface carries (the morning card, a margin card, the question list,
+//: Rediscover) into Settings, What it learned, kept to `kind` when the surface
+//: has one, so a wrong fact is fixed where it is met. The list is already
+//: filtered by `#learned-kind`; setting it and firing `change` is all it takes.
+openSettingsModal.learnedLink = function learnedLink(kind = "") {
+  return smallButton("ph:sliders-horizontal Learned: manage", "Open what Atlas learned, to fix or remove a fact", async () => {
+    await openSettingsModal("learned");
+    const filter = $("learned-kind");
+    if (!filter) return;
+    filter.value = kind;
+    filter.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+};
+
 // CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
 // and nobody is waiting for it at startup.

@@ -7,6 +7,9 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
+- Library, Contents: grouping notes by type was already built (Group by, By type, `tests/test_contents_by_type_wc8.py`); the row's grep looked for the wrong word, so it is closed with a measured check (L-world-class-63).
+- Atlas's own cards (While you were away, the open-questions line, margin cards, the Questions list, Rediscover) carry a small Learned: manage link into Settings, What it learned, kept to questions where they are the subject (L-world-class-88).
+- CI: the e2e job runs scratchpad/ui-sweeps/boottime.js on a fresh notebook and fails on a page error; the numbers go to the job summary (L-world-class-92).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Start-up: the OCR workspace's own styles load with the Library bundle instead of at boot (boot CSS gzip 181,064 to 180,504 bytes); the first document open does not reproduce slow without a large library (L-world-class-71, L-world-class-40).
 - Start-up: the Guide's word index is built at the first question, not at import; the rest of the 2.1 s app import is 632 FastAPI route builds and third-party code (L-world-class-150).
