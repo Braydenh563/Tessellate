@@ -4563,9 +4563,27 @@ function ocrSelectRegion(index) {
 //: panel never disagree about what was read. Which field the sections came
 //: from is kept for Delete reading, which clears that one.
 let ocrWorkspaceReadings = [];
-function ocrRenderOtherReadings(body) {
+//: The fold reads `GET /files/readings` (the route the lightbox reads, so
+//: the two never disagree and the search index agrees): the answer's
+//: `readings` draw first, then the stored rows replace their text or add a
+//: reading the answer lacked. A failed read keeps what was drawn.
+function ocrRenderOtherReadings(body, stored) {
   const box = $("ocr-other-readings");
-  ocrWorkspaceReadings = Array.isArray(body?.readings) ? body.readings : [];
+  ocrWorkspaceReadings = (Array.isArray(body?.readings) ? body.readings : []).map((r) => ({ ...r }));
+  for (const [kind, source] of [["vision", "vision"], ["ocr", "tesseract"]]) {
+    const row = (stored || []).find((r) => r.kind === kind && !r.page && (r.text || "").trim());
+    if (!row) continue;
+    const have = ocrWorkspaceReadings.find((r) => r.source === source);
+    if (have) have.text = row.text;
+    else ocrWorkspaceReadings.push({ source, label: source === "vision" ? `Read by ${row.model || "a vision model"}` : "Read with Tesseract OCR", text: row.text, in_regions: false });
+  }
+  const image = ocrWorkspaceCurrent;
+  if (stored === undefined && image?.id) {
+    const kind = image._isAttachment ? "attachment" : "upload";
+    apiJson(`/files/readings?source=${kind}&id=${image.id}`).then((rows) => {
+      if (ocrWorkspaceCurrent === image && Array.isArray(rows)) ocrRenderOtherReadings(body, rows);
+    }).catch(() => {});
+  }
   if (!box) return;
   box.replaceChildren();
   const others = ocrWorkspaceReadings.filter((r) => !r.in_regions && (r.text || "").trim());

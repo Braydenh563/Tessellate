@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 3 | 10 | 148 |
+| world-class | 0 | 118 | 29 | 3 | 10 | 147 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 5 | 121 | 980 |
+| all | 372 | 507 | 100 | 5 | 121 | 979 |
 
 ## graph
 
@@ -599,7 +599,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-232** `world-class` open, M: Move the next closed-surface rule blocks out of the boot stylesheets into their bundles' lazy sheets (Skills tab, run list, space dialogs, Connections dialog). From L-world-class-71, 2026-11-14. Evidence: L-world-class-71 moved only the OCR workspace's own rules (40 rules, 18 KB, boot CSS gzip 181,064 to 180,504). Still eager in the boot sheets: the Skills tab block (07, about 270 lines), the run list, the whiteboard and timeline blocks that only their bundles draw, the space dialogs and the Connections dialog. Each move needs the computed-style diff of the built surface (scratchpad probe: every property of every element, three widths, 0 different) and exclusion of any rule that shares a selector or a tie with a boot rule.
 - [ ] **L-world-class-320** `world-class` open, M: Pin the optional pip extras and the embedding weights: a version bound and --require-hashes for each pip extra, a sha256 for each weights file, refused on mismatch like the download extras. From SECURITY.md, Threat model T23 (L-world-class-18). Evidence: src/tessellate/core/extras.py:478-575 hands pip bare names (pypdfium2, faster-whisper, markitdown[pdf,docx,pptx], pytesseract, rapidocr_onnxruntime, pywebview, pystray, Pillow) with no version bound and no hash; only fastembed is bounded (requirements.txt:58, via the -c constraints copy, extras.py:1670). Embedding weights are checked against a size floor only (core/embedmodels.py:620-623, 30% of the stated size), no digest.
 - [ ] **L-world-class-321** `world-class` open, L: Parse untrusted files in a child process with a time and memory limit, so a parser bug in a crafted PDF, Word file or picture cannot run with the notebook's rights. From SECURITY.md, Threat model T19 (L-world-class-18). Evidence: A crafted PDF, Word file or picture is parsed inside the server process: pypdfium2 (core/pdfpages.py), markitdown (entry/importer.py), Pillow and the OCR readers. The guards are size caps only (core/docview.py:334, entry/app_import.py:55, api/wb_import.py:404, BodyCapMiddleware core/security.py:211); no child process, no time limit, no memory limit, so a parser bug runs with the notebook's rights.
-- [ ] **L-world-class-322** `world-class` open, S: Library card reading fold reads GET /files/readings, as the lightbox does. From L-world-class-80 follow-on (batch S2). Evidence: frontend/js/library.js:4561 lists readings from the row columns; GET /files/readings (src/tessellate/api) now serves them
 
 ## general
 
