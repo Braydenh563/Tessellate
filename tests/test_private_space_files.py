@@ -240,3 +240,72 @@ def test_an_open_private_space_chosen_for_export_carries_its_files_readable(sign
     assert made.status_code in (200, 201), made.text
     blobs = b"".join(p.read_bytes() for p in (deps.get_config().data_dir / "backups").rglob("*") if p.is_file())
     assert blobs and SECRET not in blobs
+
+
+def test_range_reads_cross_a_frame_boundary_and_odd_ranges_follow_rfc_9110(signed_in):
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    big = (b"0123456789abcdef" * (sealed_files.FRAME // 16 + 40000))[: sealed_files.FRAME + 300_000]
+    _nid, aid = _attach(client, space, body=big, name="big.txt")
+    assert sealed_files.is_sealed(_attachment_path(aid))
+    url, total = f"/files/{aid}", len(big)
+    start, end = sealed_files.FRAME - 10, sealed_files.FRAME + 10
+    got = client.get(url, headers={**_h(space), "Range": f"bytes={start}-{end}"})
+    assert got.status_code == 206 and got.content == big[start : end + 1]
+    got = client.get(url, headers={**_h(space), "Range": "bytes=-400000"})
+    assert got.status_code == 206 and got.content == big[-400000:]
+    assert got.headers["content-range"] == f"bytes {total - 400000}-{total - 1}/{total}"
+    got = client.get(url, headers={**_h(space), "Range": f"bytes={total}-"})
+    assert got.status_code == 416 and got.headers["content-range"] == f"bytes */{total}"
+    got = client.get(url, headers={**_h(space), "Range": "bytes=5-2"})
+    assert got.status_code == 200 and got.content == big
+    got = client.get(url, headers=_h(space))
+    assert got.status_code == 200 and got.content == big
+    assert got.headers["content-length"] == str(total)
+
+
+def test_a_damaged_or_wrong_key_file_is_a_clear_409(signed_in, monkeypatch):
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    _nid, aid = _attach(client, space)
+    path = _attachment_path(aid)
+    good = path.read_bytes()
+    monkeypatch.setattr(sealed_files, "_key", lambda: bytes(32))
+    got = client.get(f"/files/{aid}", headers=_h(space))
+    assert got.status_code == 409 and "damaged" in got.json()["detail"]
+    monkeypatch.undo()
+    tampered = bytearray(good)
+    tampered[-3] ^= 1
+    path.write_bytes(bytes(tampered))
+    got = client.get(f"/files/{aid}", headers=_h(space))
+    assert got.status_code == 409 and SECRET not in got.content
+
+
+def test_a_plain_upload_that_starts_with_the_magic_is_refused(signed_in):
+    client = signed_in
+    note = client.post("/entries", json={"content": "host"})
+    assert note.status_code == 201, note.text
+    body = sealed_files.MAGIC + b"\x00\x00\x00\x20" + b"x" * 64
+    got = client.post(f"/entries/{note.json()['id']}/files", files={"file": ("m.txt", body, "text/plain")})
+    assert got.status_code == 415, got.text
+
+
+def test_another_session_without_the_space_open_gets_423_for_a_recording(signed_in):
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    made = client.post("/recordings", json={"title": "standup", "mime": "audio/webm"}, headers=_h(space))
+    rid = made.json()["id"]
+    got = client.post(
+        f"/recordings/{rid}/chunk", files={"file": ("c", WEBM + SECRET, "audio/webm")}, data={"at": "0"}, headers=_h(space)
+    )
+    assert got.status_code == 200, got.text
+    other = client.post("/auth/unlock", json={"password": PASSWORD})
+    assert other.status_code == 200, other.text
+    second = {"X-Auth-Token": other.json()["token"]}
+    got = client.get(f"/media/recordings/{rid}", headers={**second, **_h(space)})
+    assert got.status_code == 423 and SECRET not in got.content
+    got = client.get("/media/recordings/987654", headers=second)
+    assert got.status_code == 404
