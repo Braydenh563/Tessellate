@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11017, test files 2828, tests 22492, plan headings 689, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11018, test files 2828, tests 22495, plan headings 689, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8501)
 
@@ -13779,7 +13779,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1900 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1664 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1290 |
-| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2174 |
+| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2177 |
 | `/media/{upload_id}` | DELETE | `delete_media` | src/tessellate/api/routes_files.py:1858 |
 | `/media/{upload_id}` | PUT | `rename_media` | src/tessellate/api/routes_files.py:1929 |
 | `/media/{upload_id}/caption` | POST | `caption_media` | src/tessellate/api/routes_files.py:2009 |
@@ -13824,8 +13824,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:400 |
 | `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:285 |
 | `/ocr-model` | POST | `set_ocr_model` | src/tessellate/api/routes_models.py:1128 |
-| `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1319 |
-| `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1368 |
+| `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1346 |
+| `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1395 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:683 |
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1725 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:472 |
@@ -14163,7 +14163,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11017)
+## Backend modules (11018)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22507,7 +22507,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `delete_media` | src/tessellate/api/routes_files.py:1859 |
 | `download_export` | src/tessellate/api/routes_files.py:1212 |
 | `download_file` | src/tessellate/api/routes_files.py:200 |
-| `get_media` | src/tessellate/api/routes_files.py:2175 |
+| `get_media` | src/tessellate/api/routes_files.py:2178 |
 | `list_attachment_gallery` | src/tessellate/api/routes_files.py:303 |
 | `list_exports` | src/tessellate/api/routes_files.py:1174 |
 | `list_media` | src/tessellate/api/routes_files.py:1464 |
@@ -22530,13 +22530,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `upload_file` | src/tessellate/api/routes_files.py:107 |
 | `upload_media` | src/tessellate/api/routes_files.py:1291 |
 
-### src/tessellate/api/routes_files_ocr.py (43)
+### src/tessellate/api/routes_files_ocr.py (44)
 
 | Name | File:line |
 |---|---|
-| `OcrLanguageBody` | src/tessellate/api/routes_files_ocr.py:1362 |
+| `OcrLanguageBody` | src/tessellate/api/routes_files_ocr.py:1389 |
 | `OcrPageReadOut` | src/tessellate/api/routes_files_ocr.py:670 |
-| `OcrReadersOut` | src/tessellate/api/routes_files_ocr.py:1284 |
+| `OcrReadersOut` | src/tessellate/api/routes_files_ocr.py:1311 |
 | `OcrRegionBox` | src/tessellate/api/routes_files_ocr.py:48 |
 | `OcrRegionOut` | src/tessellate/api/routes_files_ocr.py:65 |
 | `OcrRegionsOut` | src/tessellate/api/routes_files_ocr.py:129 |
@@ -22544,39 +22544,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `OcrWordOut` | src/tessellate/api/routes_files_ocr.py:57 |
 | `_checked_engine` | src/tessellate/api/routes_files_ocr.py:847 |
 | `_checked_reader` | src/tessellate/api/routes_files_ocr.py:821 |
-| `_describe_page` | src/tessellate/api/routes_files_ocr.py:1176 |
+| `_describe_page` | src/tessellate/api/routes_files_ocr.py:1203 |
 | `_engine_choice` | src/tessellate/api/routes_files_ocr.py:841 |
 | `_forget_region_misses` | src/tessellate/api/routes_files_ocr.py:483 |
 | `_forget_regions` | src/tessellate/api/routes_files_ocr.py:355 |
-| `_local_region_text` | src/tessellate/api/routes_files_ocr.py:870 |
-| `_local_regions` | src/tessellate/api/routes_files_ocr.py:876 |
+| `_local_pdf_text` | src/tessellate/api/routes_files_ocr.py:870 |
+| `_local_region_text` | src/tessellate/api/routes_files_ocr.py:897 |
+| `_local_regions` | src/tessellate/api/routes_files_ocr.py:903 |
 | `_local_text` | src/tessellate/api/routes_files_ocr.py:863 |
-| `_page_read_count_map` | src/tessellate/api/routes_files_ocr.py:1040 |
-| `_page_read_key` | src/tessellate/api/routes_files_ocr.py:881 |
-| `_page_read_text_map` | src/tessellate/api/routes_files_ocr.py:999 |
+| `_page_read_count_map` | src/tessellate/api/routes_files_ocr.py:1067 |
+| `_page_read_key` | src/tessellate/api/routes_files_ocr.py:908 |
+| `_page_read_text_map` | src/tessellate/api/routes_files_ocr.py:1026 |
 | `_pdf_regions_for` | src/tessellate/api/routes_files_ocr.py:176 |
 | `_prune_region_misses` | src/tessellate/api/routes_files_ocr.py:476 |
-| `_read_page` | src/tessellate/api/routes_files_ocr.py:1133 |
+| `_read_page` | src/tessellate/api/routes_files_ocr.py:1160 |
 | `_reader_model` | src/tessellate/api/routes_files_ocr.py:715 |
 | `_region_lock` | src/tessellate/api/routes_files_ocr.py:496 |
 | `_regions_for` | src/tessellate/api/routes_files_ocr.py:420 |
 | `_regions_read` | src/tessellate/api/routes_files_ocr.py:513 |
-| `_regions_text` | src/tessellate/api/routes_files_ocr.py:1077 |
-| `_reindex_file` | src/tessellate/api/routes_files_ocr.py:939 |
-| `_remember_page_caption` | src/tessellate/api/routes_files_ocr.py:957 |
-| `_remember_page_read` | src/tessellate/api/routes_files_ocr.py:890 |
+| `_regions_text` | src/tessellate/api/routes_files_ocr.py:1104 |
+| `_reindex_file` | src/tessellate/api/routes_files_ocr.py:966 |
+| `_remember_page_caption` | src/tessellate/api/routes_files_ocr.py:984 |
+| `_remember_page_read` | src/tessellate/api/routes_files_ocr.py:917 |
 | `_remember_regions` | src/tessellate/api/routes_files_ocr.py:319 |
 | `_set_edited_reading` | src/tessellate/api/routes_files_ocr.py:388 |
-| `_stored_page_reads` | src/tessellate/api/routes_files_ocr.py:1095 |
+| `_stored_page_reads` | src/tessellate/api/routes_files_ocr.py:1122 |
 | `_stored_readings` | src/tessellate/api/routes_files_ocr.py:98 |
 | `_stored_regions` | src/tessellate/api/routes_files_ocr.py:280 |
-| `_tesseract_read_page` | src/tessellate/api/routes_files_ocr.py:1241 |
+| `_tesseract_read_page` | src/tessellate/api/routes_files_ocr.py:1268 |
 | `_vision_read_page` | src/tessellate/api/routes_files_ocr.py:732 |
 | `attachment_ocr_regions` | src/tessellate/api/routes_files_ocr.py:638 |
 | `bind` | src/tessellate/api/routes_files_ocr.py:42 |
 | `media_ocr_regions` | src/tessellate/api/routes_files_ocr.py:604 |
-| `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1320 |
-| `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1369 |
+| `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1347 |
+| `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1396 |
 
 ### src/tessellate/api/routes_files_readings.py (38)
 
@@ -28264,7 +28265,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22492)
+## Tests (22495)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29934,7 +29935,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_md_lists_1108.py | 6 |
 | tests/test_meaning.py | 11 |
 | tests/test_measure_keys_1102.py | 1 |
-| tests/test_media_api.py | 54 |
+| tests/test_media_api.py | 57 |
 | tests/test_media_cookie.py | 20 |
 | tests/test_media_empty_reading_bin_l581.py | 2 |
 | tests/test_media_gc.py | 18 |
@@ -31517,14 +31518,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:618 |
+| Needs hardware | docs/roadmap/LEDGER.md:617 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:611 |
+| Owner calls | docs/roadmap/LEDGER.md:610 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31705,7 +31706,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:753 |
+| Plan session briefs | docs/roadmap/LEDGER.md:752 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31759,25 +31760,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:769 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:853 |
+| chat | docs/roadmap/LEDGER.md:768 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:852 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:793 |
-| general | docs/roadmap/LEDGER.md:568 |
+| documents | docs/roadmap/LEDGER.md:792 |
+| general | docs/roadmap/LEDGER.md:567 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:757 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:865 |
+| graph | docs/roadmap/LEDGER.md:756 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:864 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:805 |
+| mindmap | docs/roadmap/LEDGER.md:804 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:829 |
+| timeline | docs/roadmap/LEDGER.md:828 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:817 |
+| ui-modernisation | docs/roadmap/LEDGER.md:816 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:781 |
+| whiteboard | docs/roadmap/LEDGER.md:780 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:841 |
+| world-class | docs/roadmap/LEDGER.md:840 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

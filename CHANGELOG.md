@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library: Read again on an uploaded PDF reads its text layer, or its pages with OCR when it is a scan, instead of refusing with 415; without the PDF viewer extra it says so (L631).
 - Start-up: the agent module loads on first use instead of at import, so a cold import no longer pulls the chat agent stack; wall import time is unchanged at about 2.2 s, the rest is the composer regex tables (L678).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).

@@ -2130,8 +2130,10 @@ def ocr_media(
     regenerate behind a spinner the same way.
     """
     upload = _existing_upload(session, upload_id)
-    if Path(upload.filename).suffix.lower() not in ocr.OCR_SUFFIXES:
-        raise HTTPException(status_code=415, detail="Only images can be read this way.")
+    suffix = Path(upload.filename).suffix.lower()
+    is_pdf = suffix == ".pdf"
+    if not is_pdf and suffix not in ocr.OCR_SUFFIXES:
+        raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
     if body.text is not None:
         upload.ocr_text = body.text.strip() or None
         session.commit()
@@ -2143,7 +2145,7 @@ def ocr_media(
         #: A missing engine used to come back as a 200 with no text, which the
         #: workspace painted as "Read <file>." over an empty panel. Say so.
         choice = _checked_engine(body.engine)
-        reason = ocr.unavailable_reason(choice)
+        reason = "" if is_pdf else ocr.unavailable_reason(choice)
         if reason:
             raise HTTPException(status_code=409, detail=reason)
         media_dir = deps.get_config().data_dir / "media"
@@ -2152,7 +2154,8 @@ def ocr_media(
         #: "stand down when a vision model exists") are right for the
         #: background pass after an upload and wrong here: with a reading on
         #: the row, or a model running, "Read again" did nothing at all.
-        text = _local_text(media_dir / upload.filename, choice)
+        read = _local_pdf_text if is_pdf else _local_text
+        text = read(media_dir / upload.filename, choice)
         if text:
             upload.ocr_text = text
             session.commit()
@@ -2216,6 +2219,7 @@ from tessellate.api.routes_files_ocr import (  # noqa: E402,F401
     _forget_region_misses,
     _forget_regions,
     _local_region_text,
+    _local_pdf_text,
     _local_text,
     _page_read_count_map,
     _page_read_key,
@@ -2247,6 +2251,7 @@ __all__ = [
     "_forget_region_misses",
     "_forget_regions",
     "_local_region_text",
+    "_local_pdf_text",
     "_local_text",
     "_page_read_count_map",
     "_page_read_key",
