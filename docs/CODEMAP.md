@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8799, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2811, tests 22646, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8799, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2812, tests 22672, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
 ## Frontend functions (8799)
 
@@ -24433,31 +24433,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FrameBinds` | src/tessellate/api/wb_model.py:479 |
-| `TableMerge` | src/tessellate/api/wb_model.py:467 |
-| `WhiteboardComment` | src/tessellate/api/wb_model.py:260 |
-| `WhiteboardNodeBase` | src/tessellate/api/wb_model.py:313 |
-| `WhiteboardNodeOut` | src/tessellate/api/wb_model.py:336 |
-| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:1002 |
-| `WhiteboardObjectData` | src/tessellate/api/wb_model.py:498 |
-| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:1025 |
-| `WhiteboardSketchBase` | src/tessellate/api/wb_model.py:345 |
-| `WhiteboardSketchIn` | src/tessellate/api/wb_model.py:448 |
-| `WhiteboardSketchOut` | src/tessellate/api/wb_model.py:458 |
-| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:1141 |
-| `_bad_effect` | src/tessellate/api/wb_model.py:401 |
-| `_bad_port` | src/tessellate/api/wb_model.py:384 |
-| `_bad_ports` | src/tessellate/api/wb_model.py:397 |
-| `_bad_sketch_field` | src/tessellate/api/wb_model.py:410 |
-| `_bad_tags` | src/tessellate/api/wb_model.py:366 |
-| `_clamp` | src/tessellate/api/wb_model.py:296 |
-| `_is_one_emoji` | src/tessellate/api/wb_model.py:213 |
-| `_number` | src/tessellate/api/wb_model.py:380 |
-| `_object_to_out` | src/tessellate/api/wb_model.py:1072 |
-| `_require_object_data` | src/tessellate/api/wb_model.py:1112 |
-| `_require_table_cells` | src/tessellate/api/wb_model.py:1089 |
-| `_require_table_merges` | src/tessellate/api/wb_model.py:1099 |
-| `check_sketch_data` | src/tessellate/api/wb_model.py:428 |
+| `FrameBinds` | src/tessellate/api/wb_model.py:484 |
+| `TableMerge` | src/tessellate/api/wb_model.py:472 |
+| `WhiteboardComment` | src/tessellate/api/wb_model.py:265 |
+| `WhiteboardNodeBase` | src/tessellate/api/wb_model.py:318 |
+| `WhiteboardNodeOut` | src/tessellate/api/wb_model.py:341 |
+| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:1007 |
+| `WhiteboardObjectData` | src/tessellate/api/wb_model.py:503 |
+| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:1030 |
+| `WhiteboardSketchBase` | src/tessellate/api/wb_model.py:350 |
+| `WhiteboardSketchIn` | src/tessellate/api/wb_model.py:453 |
+| `WhiteboardSketchOut` | src/tessellate/api/wb_model.py:463 |
+| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:1146 |
+| `_bad_effect` | src/tessellate/api/wb_model.py:406 |
+| `_bad_port` | src/tessellate/api/wb_model.py:389 |
+| `_bad_ports` | src/tessellate/api/wb_model.py:402 |
+| `_bad_sketch_field` | src/tessellate/api/wb_model.py:415 |
+| `_bad_tags` | src/tessellate/api/wb_model.py:371 |
+| `_clamp` | src/tessellate/api/wb_model.py:301 |
+| `_is_one_emoji` | src/tessellate/api/wb_model.py:218 |
+| `_number` | src/tessellate/api/wb_model.py:385 |
+| `_object_to_out` | src/tessellate/api/wb_model.py:1077 |
+| `_require_object_data` | src/tessellate/api/wb_model.py:1117 |
+| `_require_table_cells` | src/tessellate/api/wb_model.py:1094 |
+| `_require_table_merges` | src/tessellate/api/wb_model.py:1104 |
+| `check_sketch_data` | src/tessellate/api/wb_model.py:433 |
 
 ### src/tessellate/api/wb_narrate.py (8)
 
@@ -28597,7 +28597,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22646)
+## Tests (22672)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31286,6 +31286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_navigator_cost.py | 6 |
 | tests/test_wb_navigator_drag.py | 5 |
 | tests/test_wb_nested_groups.py | 3 |
+| tests/test_wb_no_svg_images.py | 26 |
 | tests/test_wb_node_menu_place.py | 7 |
 | tests/test_wb_note_link_1027.py | 2 |
 | tests/test_wb_note_rows.py | 2 |

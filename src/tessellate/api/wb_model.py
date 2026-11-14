@@ -26,7 +26,12 @@ from tessellate.core.database import WhiteboardObject
 #: resolving well outside the media folder. Matching the exact shape
 #: `upload_media` produces (a uuid4 hex plus a short suffix) closes it at the
 #: door; the purge (`manager`) checks containment again.
-MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
+#:
+#: **And it ends in a picture or PDF suffix** (L-whiteboard-39): `/media/` serves only `MEDIA_SUFFIXES`
+#: (`routes_files.py`, no `.svg`), so a `/media/x.svg` object could never draw; it is refused here too, so
+#: no SVG image object exists to be recoloured. `tests/test_wb_no_svg_images.py` keeps the two lists equal.
+MEDIA_PICTURE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".ico", ".pdf")
+MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}(?:" + "|".join(re.escape(s) for s in MEDIA_PICTURE_SUFFIXES) + ")$")
 #: One rendered page of an uploaded PDF (`GET /media/pdf-page/{name}/{n}`), the picture a PDF placed as pages shows.
 PDF_PAGE_URL_RE = re.compile(r"^/media/pdf-page/[A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf/\d{1,3}$")
 _APP_ROUTE_LINK =re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")

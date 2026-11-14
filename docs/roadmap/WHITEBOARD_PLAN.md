@@ -819,7 +819,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Set as default style, default for new connectors | yes, 2026-11-10 (s9c-1110; HISTORY) | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
 | Named styles | yes (`save-style`, `wb-fmt-save-style`, library kind `style`) | style presets in the sidebar and `DiagramStylePanel.addGraphStyles` (Format.js 8383) | done for items; the whole-board presets are the next row | none |
 | Board-wide style presets (twelve colour schemes applied to every shape) | yes, 2026-11-10 (s9c-1110; HISTORY) | `DiagramStylePanel` (Format.js 8252 to 8858) | a "Board style" row in the Format panel's no-selection state, writing fill, stroke and text colour across the board in one undo step | M |
-| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | moot by fact: no SVG image reaches a board (`/media` refuses .svg, stored XSS, `MEDIA_SUFFIXES` in routes_files.py; draw.io import turns SVG into PNG); the Mermaid SVG has fill and line controls | none |
+| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | moot by fact, proved per route in `tests/test_wb_no_svg_images.py` (paste, drop, data: address, draw.io, Miro/GraphML/PlantUML/EMF, library, link fetch, SVG re-import; `/media` refuses .svg and `MEDIA_URL_RE` needs a picture suffix); the Mermaid SVG has fill and line controls | none |
 
 ### 2. Format panel, Text tab, and the Arrange tab
 
