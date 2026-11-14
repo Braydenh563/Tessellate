@@ -781,6 +781,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
 
     def _on_hang(self, now: float) -> None:
         self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
+        # a hang far from home is time away as a far spell is: a 174 s hold left a seeded hour away 0.29 (at most 0.25)
+        self._note_far((self.x, self.y), now, self.state_until - now)
         self.phase_started = self.hang_started = now
         self.hang_drag0 = self.cur.drag  # the hem the hang starts from: the swing is blended in from it (`_target_pose`)
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)

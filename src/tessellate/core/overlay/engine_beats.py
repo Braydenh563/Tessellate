@@ -39,9 +39,10 @@ class BeatsMixin:
         far = pr.used_by_kind([("far", t, n) for t, n in self.far_log], now).get("far", 0.0)
         return far < pr.SPELL_FAR_SHARE * pr.SPELL_KIND_WINDOW
 
-    def _note_far(self, spot: tuple[float, float] | None, now: float) -> None:
+    def _note_far(self, spot: tuple[float, float] | None, now: float, length: float | None = None) -> None:
+        """Log a stay away from home: a spell's (its planned length) or a hang's (its hold), so both share one budget."""
         if spot is not None and self.home_x is not None and abs(spot[0] - self.home_x) > 2 * AWAY * self._scale():
-            self.far_log = (*self.far_log[-15:], (now, self.spell["len"]))
+            self.far_log = (*self.far_log[-15:], (now, self.spell["len"] if length is None else length))
 
     def _gap_or_home(self, now: float) -> bool:
         """Before a new pick: the short act after a spell, else the walk home when it is away and not perched."""
