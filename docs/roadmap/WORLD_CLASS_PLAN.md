@@ -857,8 +857,8 @@ in `docks.js`).
   (`tests/test_flaw_class_lints.py`). 2026-10-05: the re-index (a `batch`
   lane of its own) and the model capability probe moved onto the pool, the
   ratchet lowered by two (HISTORY.md, "Moved from the plans, 2026-10-05
-  (F7, F10)"). Left: the model downloads, the embedding warm-up (kept apart on
-  purpose, see its comment), the scheduler, the searxng and update threads: LEDGER L-world-class-79.
+  (F7, F10)"). Built 2026-11-14 (L-world-class-79): the model downloads, the scheduler,
+  the searxng and update threads all start through `jobs.thread`; the ratchet holds two modules.
 - F10 built 2026-10-05 as a view: `readings`, `GET /files/readings`, every kind indexed (HISTORY.md, "Moved from the plans, 2026-10-05 (F7, F10)"). One renderer in the Files card reading the route: LEDGER L-world-class-80.
 - F11 (d) GRAPH_PLAN section 3 owns it.
 - F12 (b) 2026-10-05: `store.js` and its first slice, `notes` (HISTORY.md, "Moved from the plans, 2026-10-05 (F1, F5, F12)"). 2026-11-14 the second slice, `reminders` (HISTORY.md, L-world-class-81). Left: the current note, each surface subscribing in place of its own copy: LEDGER L-world-class-357.
