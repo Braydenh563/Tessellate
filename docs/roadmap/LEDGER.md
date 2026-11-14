@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 23 | 1 | 0 | 7 | 24 |
+| documents | 0 | 22 | 1 | 0 | 7 | 23 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 465 | 578 | 129 | 2 | 170 | 1172 |
+| all | 465 | 577 | 129 | 2 | 170 | 1171 |
 
 ## graph
 
@@ -342,14 +342,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
-- [ ] **L-documents-86** `documents` open, M: Diagram Ask box and Suggestions for Gantt, pie, state, class and ER blocks. From dgm1229 agent report 2026-11-14.
-- [ ] **L-documents-87** `documents` open, M: Diagram Gantt and pie title and dateFormat editable as blocks. From dgm1229 agent report 2026-11-14.
-- [ ] **L-documents-88** `documents` open, M: Diagram templates for Gantt, pie, state, class and ER. From dgm1229 agent report 2026-11-14.
-- [ ] **L-documents-89** `documents` open, M: Diagram pan input-to-paint at 390 touch is 41 ms p95 at 4x CPU, over the 16 ms goal. From dgm1229 agent report 2026-11-14.
 - [ ] **L-documents-96** `documents` open, M: Sweep other sync-generator streaming routes for the disconnect leak, and explain the 500000-char formatted-file save refusal. From L889. Evidence: sync-generator StreamingResponse bodies are not closed on disconnect under Starlette 1.10; a file over 500000 chars is refused on save with a 422
 - [ ] **L-documents-97** `documents` open, S: History summary: tell the reader when the model timed out, and let a slow local model have longer than 45 seconds for it. From L-documents-5 real-model check. Evidence: Cold first call to the 1.5B model passed bounded_chat's 45 s limit (MODEL_SECONDS) and fell back to the counts; warm it answered in about 30 s.
 - [ ] **L-documents-98** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
 - [ ] **L-documents-99** `documents` open, M: Debug generators and async: run finally blocks on generator return and for-of break, support async generators and for await, top-level await, arguments inside async or generator bodies, and name resumed frames after their function. From agent code1229. Evidence: Gaps left by the generator and async build.
+- [ ] **L-documents-100** `documents` open, S: Real-model check of the Ask box on Gantt, pie, state, class and ER blocks: llama-server is not installed here, so only the fake transport and the by-rule path ran. From dgm1305 agent 2026-11-14.
+- [ ] **L-documents-101** `documents` open, M: Diagram Describe it (composer) for Gantt, pie, state, class and ER: its rule path makes only flowchart, timeline and mindmap and want is empty for the five. From dgm1305 agent 2026-11-14.
+- [ ] **L-documents-102** `documents` open, M: Diagram mouse-pan at 1440 and 4x CPU is p50 10 to 17 ms and p95 24 to 43 ms against 16: layout is 0 and script about 1 ms a frame, the rest is raster of a 9679 px wide SVG picture (try a lower-resolution raster while panning or tile the picture); measure with scratchpad/ui-sweeps/diagram-pan-latency.js. From dgm1305 agent 2026-11-14.
 
 ## mindmap
 

@@ -387,14 +387,32 @@
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
     //: The right button pans too (L-documents-1, as draw.io does): a press that stays put still opens its menu, a drag holds it back.
     let rightDrag = false;
+    //: A drag's moves are summed and the scroll is written once a frame (no layout read in the handler): `owed` is the sum
+    //: (null when nothing waits), `room` whether the picture can move, `held` and `shut` that the capture and the menu close were done.
+    let room = false;
+    let owed = null;
+    let held = false;
+    let shut = false;
+    const pay = () => {
+      const o = owed;
+      if (!o) return;
+      owed = null;
+      cancelAnimationFrame(o.frame);
+      fig.scrollLeft -= o.x;
+      fig.scrollTop -= o.y;
+    };
     fig.addEventListener("pointerdown", (event) => {
       //: A handle, an arrow's end or the name field sits in the figure (diagram-overlay.js): its press is not a pan.
       if ((event.button && event.button !== 1 && event.button !== 2) || event.target.closest?.(".dgm-overlay > *")) return;
       //: The middle button pans (no autoscroll), as Space and drag does; a plain mouse drag on empty space is the marquee (diagram-canvas.js).
       if (event.button === 1) event.preventDefault();
       rightDrag = event.button === 2;
+      pay();
       if (!points.size) (travel = 0), (wasted = 0);
       cancelGlide();
+      //: Whether the picture can move is read here, once, not on every move: `scrollWidth` forces a layout, and a drag does not change the size.
+      room = roomy();
+      held = shut = false;
       trail = [{ t: event.timeStamp, x: event.clientX, y: event.clientY }];
       points.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (points.size === 2) start = { d: span().d, scale: now() };
@@ -408,18 +426,18 @@
         const mid = span();
         aim(start.scale * (mid.d / start.d), mid.x, mid.y);
         travel = 99;
-      } else if (points.size === 1 && (roomy() || travel > 12)) {
+      } else if (points.size === 1 && (room || travel > 12)) {
         settle();
         const dx = event.clientX - last.x;
         const dy = event.clientY - last.y;
         travel += Math.abs(dx) + Math.abs(dy);
-        fig.scrollLeft -= dx;
-        fig.scrollTop -= dy;
+        if (owed) (owed.x += dx), (owed.y += dy);
+        else owed = { x: dx, y: dy, frame: nextFrame(pay) };
         trail.push({ t: event.timeStamp, x: event.clientX, y: event.clientY });
         if (trail.length > 8) trail.shift();
-        if (travel > 12 && event.pointerType !== "touch") fig.setPointerCapture?.(event.pointerId);
+        if (travel > 12 && event.pointerType !== "touch" && !held) (held = true), fig.setPointerCapture?.(event.pointerId);
         //: A menu that opened on the press (macOS and Linux send `contextmenu` then) goes when the press turns into a pan.
-        if (rightDrag && travel > 12) closeActionMenus();
+        if (rightDrag && travel > 12 && !shut) (shut = true), closeActionMenus();
       } else if (points.size === 1 && image()) {
         wasted += Math.abs(event.clientX - last.x) + Math.abs(event.clientY - last.y);
         if (wasted > 24 && note.classList.contains("hidden")) {
@@ -431,6 +449,7 @@
     });
     const lift = (event) => {
       if (!points.delete(event.pointerId)) return;
+      pay();
       start = null;
       //: A drag that is let go while moving glides on and slows (a pause before the lift, or less motion asked for, does not).
       if (event.type === "pointerup" && !points.size && travel > 12 && trail.length > 1 && event.timeStamp - trail[trail.length - 1].t < 80 && !reduced()) glide(math.velocity(trail));

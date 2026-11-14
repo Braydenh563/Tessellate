@@ -2463,6 +2463,23 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "diagram-chart-kinds",
+        "keywords": (
+            "gantt blocks", "pie chart blocks", "state diagram blocks", "class diagram blocks", "er diagram blocks",
+            "gantt title", "date format", "pie title", "chart title", "ask for a pie slice", "ask for a transition",
+        ),
+        "body": (
+            "A Gantt chart, pie chart, state, class or ER diagram is blocks too, and the bar offers that kind's own. "
+            "On a Gantt chart and a pie chart, Title is a block of its own, and a Gantt chart's Date format is another: "
+            "press Title or Date format in the bar, then rename it like any block. The source keeps what you wrote until you change that block. "
+            "The Ask box works on all five: add task Test under Build, add slice Cats 30, set Review to 5d, add transition from Idle to Done, "
+            "add relation from Order to Customer. Suggestions list a slice named twice, an empty section, a second title, "
+            "or a state, class or entity with nothing joined to it, each with a button that removes it. "
+            "Suggest, Templates has one starter for each kind: Launch plan, Where the time goes, Order states, Shop classes and Shop data."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-elsewhere",
         "keywords": (
             "edit as blocks", "diagram in a document", "mermaid figure", "open as a diagram",

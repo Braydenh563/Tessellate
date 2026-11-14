@@ -149,6 +149,41 @@
    "name": "Request and reply",
    "hint": "A client asks, a server looks it up, the answer comes back.",
    "source": "sequenceDiagram\n  participant C as Client\n  participant S as Server\n  participant D as Database\n  C->>S: Ask for the page\n  S->>D: Look up the data\n  D-->>S: Return the rows\n  S-->>C: Send the page\n  Note over C,S: The client waits for the reply\n"
+  },
+  {
+   "id": "launch-plan",
+   "kind": "gantt",
+   "name": "Launch plan",
+   "hint": "Tasks in three sections, each starting when the last one ends.",
+   "source": "gantt\n  title Launch plan\n  dateFormat YYYY-MM-DD\n  section Plan\n  Write the brief :a1, 2026-01-05, 5d\n  Agree the scope :a2, after a1, 3d\n  section Build\n  Build it :b1, after a2, 10d\n  Test it :b2, after b1, 4d\n  section Ship\n  Announce it :after b2, 2d\n"
+  },
+  {
+   "id": "time-split",
+   "kind": "pie",
+   "name": "Where the time goes",
+   "hint": "Five slices of a working week, with a title.",
+   "source": "pie title Where the time goes\n  \"Meetings\" : 20\n  \"Writing\" : 30\n  \"Reviews\" : 15\n  \"Planning\" : 10\n  \"Email\" : 25\n"
+  },
+  {
+   "id": "order-states",
+   "kind": "state",
+   "name": "Order states",
+   "hint": "An order from new to delivered, with a way out.",
+   "source": "stateDiagram-v2\n  state New\n  state Paid\n  state Shipped\n  state Delivered\n  state Cancelled\n  [*] --> New\n  New --> Paid : pay\n  Paid --> Shipped : ship\n  Shipped --> Delivered : arrive\n  New --> Cancelled : cancel\n  Paid --> Cancelled : refund\n  Delivered --> [*]\n  Cancelled --> [*]\n"
+  },
+  {
+   "id": "shop-classes",
+   "kind": "class",
+   "name": "Shop classes",
+   "hint": "Customers, orders and products, with what each holds.",
+   "source": "classDiagram\n  class Customer {\n    +name: string\n    +email: string\n  }\n  class Order {\n    +placed: date\n    +total(): number\n  }\n  class Product {\n    +title: string\n    +price: number\n  }\n  Customer \"1\" --> \"*\" Order : places\n  Order \"*\" --> \"*\" Product : contains\n"
+  },
+  {
+   "id": "shop-data",
+   "kind": "er",
+   "name": "Shop data",
+   "hint": "Customers, orders and products, and how they join.",
+   "source": "erDiagram\n  CUSTOMER {\n    int id PK\n    string name\n    string email\n  }\n  ORDER {\n    int id PK\n    date placed\n  }\n  PRODUCT {\n    int id PK\n    string title\n    float price\n  }\n  CUSTOMER ||--o{ ORDER : places\n  ORDER }|--|{ PRODUCT : contains\n"
   }
  ]
 }

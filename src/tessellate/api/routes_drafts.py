@@ -200,7 +200,7 @@ class DiagramModelIn(BaseModel):
 
 
 class KindBlockIn(BaseModel):
-    """One block of a mind map, timeline or sequence as the builder flattens it (`diagram_ask_kinds`)."""
+    """One block of a mind map, timeline, sequence, Gantt, pie, state, class or ER diagram as the builder flattens it (`diagram_ask_kinds`)."""
 
     model_config = {"populate_by_name": True}
     uid: str = Field(min_length=1, max_length=60)
@@ -208,6 +208,8 @@ class KindBlockIn(BaseModel):
     text: str = Field(default="", max_length=200)
     parent: str | None = Field(default=None, max_length=60)
     id: str | None = Field(default=None, max_length=60)
+    #: A slice's number or a task's timing (the Gantt and pie kinds).
+    value: str | None = Field(default=None, max_length=60)
     source: str | None = Field(default=None, alias="from", max_length=60)
     to: str | None = Field(default=None, max_length=60)
 
@@ -220,7 +222,7 @@ class DiagramAskBody(BaseModel):
     ask: str = Field(max_length=diagram_ask.ASK_CHARS)
     model: DiagramModelIn = Field(default_factory=DiagramModelIn)
     #: The other kinds (L-documents-27): the kind and its flat blocks; absent is the flowchart.
-    kind: Literal["flowchart", "mindmap", "timeline", "sequence"] = "flowchart"
+    kind: Literal["flowchart", "mindmap", "timeline", "sequence", "gantt", "pie", "state", "class", "er"] = "flowchart"
     kind_model: KindModelIn = Field(default_factory=KindModelIn)
 
 

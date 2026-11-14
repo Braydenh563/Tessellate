@@ -41,17 +41,29 @@
   function kmPieParse(source) {
     const r = kmRead(source, /^pie(?:\s+showData)?(?:\s+title\b.*)?$/i);
     if (!r) return null;
-    const m = { ...kmBase("pie", r), items: [] };
+    const m = { ...kmBase("pie", r), items: [], showData: /^pie\s+showData\b/i.test(r.head) };
+    //: The title in the header is a block (`head`) that prints back there; `raw` keeps the header as written until it is edited.
+    const title = /\btitle\s+(\S.*)$/i.exec(r.head);
+    if (title) m.items.push(kmMake(m, "p", { key: "title", value: title[1], head: true, raw: r.head }));
+    m.headTitle = Boolean(title);
     for (const raw of r.body) {
       const s = raw.trim();
       const hit = /^"([^"]*)"\s*:\s*(\d+(?:\.\d+)?)$/.exec(s);
-      if (s) m.items.push(hit ? kmMake(m, "s", { label: hit[1], value: hit[2], raw: s }) : kmKeep(m, s));
+      const prop = /^title\s+(\S.*)$/i.exec(s);
+      if (!s) continue;
+      m.items.push(hit ? kmMake(m, "s", { label: hit[1], value: hit[2], raw: s }) : prop ? kmMake(m, "p", { key: "title", value: prop[1], raw: s }) : kmKeep(m, s));
     }
     return m;
   }
   function kmPiePrint(m) {
-    return [...m.front, m.header, ...m.items.map((n) => m.unit + kmLine(n, (x) => `"${x.label}" : ${x.value}`))].join("\n") + "\n";
+    const head = m.items.find((n) => n.type === "p" && n.head);
+    const header = (head ? head.raw === undefined : m.headTitle) ? `pie${m.showData ? " showData" : ""}${head ? ` title ${head.value}` : ""}` : m.header;
+    return [...m.front, header, ...m.items.filter((n) => !n.head).map((n) => m.unit + kmLine(n, (x) => (x.type === "p" ? kmProp(x) : `"${x.label}" : ${x.value}`)))].join("\n") + "\n";
   }
+  //: A property row (`title X`, `dateFormat X`) as the docs write it.
+  const kmProp = (n) => `${n.key} ${n.value}`;
+  const KM_PROPS = { title: "title", dateformat: "date format" };
+  const kmPropGlyph = (n) => (n.key.toLowerCase() === "title" ? "text-t" : "calendar-blank");
   const kmPieSum = (m) => m.items.reduce((sum, n) => sum + (n.type === "s" ? Number(n.value) : 0), 0);
 
   // --- gantt -------------------------------------------------------------------------
@@ -67,7 +79,8 @@
       const s = r.body[i].trim();
       let hit;
       if (!s) continue;
-      if (s.startsWith("%%") || KM_GANTT_KEEP.test(s)) {
+      if (!section && (hit = /^(title|dateFormat)\s+(\S.*)$/i.exec(s))) m.free.push(kmMake(m, "p", { key: hit[1], value: hit[2], raw: s }));
+      else if (s.startsWith("%%") || KM_GANTT_KEEP.test(s)) {
         into().push(kmKeep(m, s));
         //: A multi-line description keeps every line of its braces.
         if (/^accDescr\s*\{/.test(s) && !s.includes("}")) while (++i < r.body.length) {
@@ -81,7 +94,7 @@
     return m;
   }
   function kmGanttPrint(m) {
-    const task = (n) => m.unit + kmLine(n, (x) => `${x.text} :${x.spec}`);
+    const task = (n) => m.unit + kmLine(n, (x) => (x.type === "p" ? kmProp(x) : `${x.text} :${x.spec}`));
     const out = [...m.front, m.header, ...m.free.map(task)];
     for (const s of m.sections) out.push(`${m.unit}section ${s.title}`, ...s.tasks.map(task));
     return out.join("\n") + "\n";
@@ -102,8 +115,8 @@
   //: starts today, in the default date format; a chart with its own `dateFormat` is left to the person.
   function kmGanttSpec(m, spec) {
     const some = [...m.free, ...m.sections.flatMap((s) => s.tasks)].some((n) => n.type === "t");
-    const format = m.free.concat(...m.sections.map((s) => s.tasks)).find((n) => n.type === "k" && /^dateFormat\b/i.test(n.line));
-    if (some || (format && !/^dateFormat\s+YYYY-MM-DD$/i.test(format.line))) return spec;
+    const format = m.free.concat(...m.sections.map((s) => s.tasks)).find((n) => n.type === "k" && /^dateFormat\b/i.test(n.line) || n.type === "p" && /^dateFormat$/i.test(n.key));
+    if (some || (format && !/^dateFormat\s+YYYY-MM-DD$/i.test(format.type === "p" ? kmProp(format) : format.line))) return spec;
     const [first, ...rest] = kmFlags(spec).reverse();
     return [...rest.reverse(), new Date().toISOString().slice(0, 10), first].join(", ");
   }
@@ -267,20 +280,23 @@
   const pie = {
     name: "pie", noun: "pie chart", header: "pie", want: "", parse: kmPieParse, print: kmPiePrint,
     blank: (m) => !m.items.length,
-    children: (m, n) => (n ? [] : [{ list: m.items, types: ["s", "k"] }]),
+    children: (m, n) => (n ? [] : [{ list: m.items, types: ["s", "p", "k"] }]),
     home: () => null,
-    make: (m, type, f) => kmMake(m, "s", { label: "Slice", value: "10", ...f }),
-    clone: (m, n) => kmMake(m, "s", { label: n.label, value: n.value }),
-    text: (n) => n.label,
-    setText: (n, text) => (delete n.raw, (n.label = kmClean(text).replace(/"/g, "'"))),
-    glyph: () => "chart-pie-slice",
+    make: (m, type, f) => (type === "p" ? kmMake(m, "p", { key: "title", value: "Title", ...f }) : kmMake(m, "s", { label: "Slice", value: "10", ...f })),
+    clone: (m, n) => (n.type === "p" ? kmMake(m, "p", { key: n.key, value: n.value }) : kmMake(m, "s", { label: n.label, value: n.value })),
+    text: (n) => (n.type === "p" ? n.value : n.label),
+    setText: (n, text) => (delete n.raw, n.type === "p" ? (n.value = kmClean(text)) : (n.label = kmClean(text).replace(/"/g, "'"))),
+    glyph: (n) => (n.type === "p" ? kmPropGlyph(n) : "chart-pie-slice"),
     words(m, n) {
+      if (n.type === "p") return { meta: "", kind: KM_PROPS[n.key.toLowerCase()] };
       const sum = kmPieSum(m);
       return { meta: `${n.value}${sum > 0 ? ` (${Math.round((Number(n.value) / sum) * 100)}%)` : ""}`, kind: "slice" };
     },
-    keptWords: (line) => (/^title\s+/i.test(line) ? `Title: ${line.replace(/^title\s+/i, "")}` : null),
     sig: (n) => n.value,
-    tiles: [{ id: "slice", group: "Slices", name: "Slice", icon: "chart-pie-slice", key: "s", type: "s", fields: { label: "Slice" }, about: "a slice of the pie, with a number" }],
+    tiles: [
+      { id: "slice", group: "Slices", name: "Slice", icon: "chart-pie-slice", key: "s", type: "s", fields: { label: "Slice" }, about: "a slice of the pie, with a number" },
+      { id: "title", group: "Chart", name: "Title", icon: "text-t", key: "t", type: "p", fields: { key: "title", value: "Title" }, about: "the title over the chart" },
+    ],
     primary: "slice",
     hint: () => "Nothing to add there.",
     empty_text: ["Start a pie chart", "Press Add, then Slice. Name it, then set its number from its menu. A slice's share is its number over the total."],
@@ -299,28 +315,31 @@
   const gantt = {
     name: "gantt", noun: "Gantt chart", header: "gantt", want: "", parse: kmGanttParse, print: kmGanttPrint,
     blank: (m) => !m.free.length && !m.sections.length,
-    children: (m, n) => (!n ? [{ list: m.free, types: ["t", "k"] }, { list: m.sections, types: ["s"] }] : n.type === "s" ? [{ list: n.tasks, types: ["t", "k"] }] : []),
+    children: (m, n) => (!n ? [{ list: m.free, types: ["t", "p", "k"] }, { list: m.sections, types: ["s"] }] : n.type === "s" ? [{ list: n.tasks, types: ["t", "k"] }] : []),
     //: A task with nothing chosen goes to the last section; a section, to the end.
     home: (m, type) => (type === "t" ? kmLast(m.sections) : null),
     deep: () => null,
     //: A section with nothing in it makes Mermaid log NaN attributes while it draws (measured), so a new one holds a task.
-    make: (m, type, f) => (type === "s" ? kmMake(m, "s", { title: "Section", tasks: [gantt.make(m, "t", {})], ...f }) : kmMake(m, "t", { text: "Task", spec: kmGanttSpec(m, f.spec || "3d"), ...f })),
-    clone: (m, n) => (n.type === "s" ? kmMake(m, "s", { title: n.title, tasks: [] }) : kmMake(m, "t", { text: n.text, spec: n.spec })),
-    text: (n) => (n.type === "s" ? n.title : n.text),
-    setText: (n, text) => (delete n.raw, n.type === "s" ? (n.title = kmClean(text)) : (n.text = kmClean(text).replace(/[:#;]/g, " ").trim())),
-    glyph: (n) => (n.type === "s" ? "rows" : kmFlags(n.spec).includes("milestone") ? "diamond" : "calendar-check"),
+    make: (m, type, f) => (type === "p" ? kmMake(m, "p", { key: "title", value: "Title", ...f }) : type === "s" ? kmMake(m, "s", { title: "Section", tasks: [gantt.make(m, "t", {})], ...f }) : kmMake(m, "t", { text: "Task", spec: kmGanttSpec(m, f.spec || "3d"), ...f })),
+    clone: (m, n) => (n.type === "p" ? kmMake(m, "p", { key: n.key, value: n.value }) : n.type === "s" ? kmMake(m, "s", { title: n.title, tasks: [] }) : kmMake(m, "t", { text: n.text, spec: n.spec })),
+    text: (n) => (n.type === "p" ? n.value : n.type === "s" ? n.title : n.text),
+    setText: (n, text) => (delete n.raw, n.type === "p" ? (n.value = kmClean(text)) : n.type === "s" ? (n.title = kmClean(text)) : (n.text = kmClean(text).replace(/[:#;]/g, " ").trim())),
+    glyph: (n) => (n.type === "p" ? kmPropGlyph(n) : n.type === "s" ? "rows" : kmFlags(n.spec).includes("milestone") ? "diamond" : "calendar-check"),
     words(m, n) {
+      if (n.type === "p") return { meta: "", kind: KM_PROPS[n.key.toLowerCase()] };
       if (n.type === "s") return { meta: "", kind: "section" };
       const on = kmFlags(n.spec).filter((p) => KM_GANTT_FLAGS.includes(p));
       return { meta: n.spec, kind: on.length ? `task, ${on.join(", ")}` : "task" };
     },
     keptWords: (line) => {
-      const hit = /^(title|dateFormat|axisFormat|excludes|todayMarker|tickInterval)\s+(\S.*)$/i.exec(line);
-      return hit ? `${{ title: "Title", dateformat: "Date format", axisformat: "Axis format", excludes: "Skips", todaymarker: "Today marker", tickinterval: "Ticks" }[hit[1].toLowerCase()]}: ${hit[2]}` : null;
+      const hit = /^(axisFormat|excludes|todayMarker|tickInterval)\s+(\S.*)$/i.exec(line);
+      return hit ? `${{ axisformat: "Axis format", excludes: "Skips", todaymarker: "Today marker", tickinterval: "Ticks" }[hit[1].toLowerCase()]}: ${hit[2]}` : null;
     },
     tiles: [
       { id: "section", group: "Headings", name: "Section", icon: "rows", key: "s", type: "s", fields: { title: "Section" }, about: "a section, a heading over tasks" },
       { id: "task", group: "Tasks", name: "Task", icon: "calendar-check", key: "t", type: "t", fields: { text: "Task" }, about: "a task, after the last one unless it is given a start" },
+      { id: "title", group: "Chart", name: "Title", icon: "text-t", key: "i", type: "p", fields: { key: "title", value: "Title" }, about: "the title over the chart" },
+      { id: "dateformat", group: "Chart", name: "Date format", icon: "calendar-blank", key: "d", type: "p", fields: { key: "dateFormat", value: "YYYY-MM-DD" }, about: "how the dates in the timings are written" },
       { id: "milestone", group: "Tasks", name: "Milestone", icon: "diamond", key: "m", type: "t", fields: { text: "Milestone", spec: "milestone, 0d" }, about: "a milestone, a moment with no length" },
     ],
     primary: "task",
@@ -461,6 +480,16 @@
         n.name = next;
       }
     },
+    //: A class that goes takes the relations that end in it, so none is left naming what is no longer there.
+    onRemove(m, node) {
+      if (node.type !== "c") return 0;
+      let gone = 0;
+      for (let i = m.items.length - 1; i >= 0; i--) {
+        const x = m.items[i];
+        if (x.type === "r" && (x.from === node.name || x.to === node.name)) (m.items.splice(i, 1), gone++);
+      }
+      return gone;
+    },
     joinWords: ["relation", "relations"],
     made: ["class", "classes"],
     refs: kmClassNames,
@@ -527,6 +556,16 @@
         for (const x of m ? m.items : []) if (x.type === "r") for (const f of ["from", "to"]) x[f] === n.name && (x[f] = next, delete x.raw);
         n.name = next;
       }
+    },
+    //: A entity that goes takes the relations that end in it, so none is left naming what is no longer there.
+    onRemove(m, node) {
+      if (node.type !== "e") return 0;
+      let gone = 0;
+      for (let i = m.items.length - 1; i >= 0; i--) {
+        const x = m.items[i];
+        if (x.type === "r" && (x.from === node.name || x.to === node.name)) (m.items.splice(i, 1), gone++);
+      }
+      return gone;
     },
     joinWords: ["relationship", "relationships"],
     made: ["entity", "entities"],

@@ -167,7 +167,7 @@ def test_the_boards_sequence_corpus_round_trips_as_blocks():
 
 
 def test_the_new_templates_are_one_of_each_kind_and_print_unchanged():
-    rows = [t for t in json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"] if "kind" in t]
+    rows = [t for t in json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"] if t.get("kind") in ("mindmap", "timeline", "sequence")]
     assert [(t["id"], t["kind"]) for t in rows] == [("brainstorm", "mindmap"), ("project-plan", "timeline"), ("sign-in", "sequence"), ("request-reply", "sequence")]
     got = _run(
         f"const rows = {json.dumps(rows)};\n"

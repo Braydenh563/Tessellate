@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8609, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10902, test files 2795, tests 22430, plan headings 688, app scripts 29, boot scripts 38, script files 311.
+Counts: frontend functions 8615, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10913, test files 2796, tests 22443, plan headings 688, app scripts 29, boot scripts 38, script files 311.
 
-## Frontend functions (8609)
+## Frontend functions (8615)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3165,34 +3165,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-ai-kinds.js (4)
+### frontend/js/diagram-ai-kinds.js (7)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-ai-kinds.js:75 |
-| `dakApply` | frontend/js/diagram-ai-kinds.js:31 |
-| `dakFlatten` | frontend/js/diagram-ai-kinds.js:16 |
-| `dakSlug` | frontend/js/diagram-ai-kinds.js:13 |
+| `ask` | frontend/js/diagram-ai-kinds.js:120 |
+| `dakApply` | frontend/js/diagram-ai-kinds.js:69 |
+| `dakEnds` | frontend/js/diagram-ai-kinds.js:62 |
+| `dakFields` | frontend/js/diagram-ai-kinds.js:44 |
+| `dakFlatten` | frontend/js/diagram-ai-kinds.js:28 |
+| `dakFresh` | frontend/js/diagram-ai-kinds.js:22 |
+| `dakSlug` | frontend/js/diagram-ai-kinds.js:25 |
 
-### frontend/js/diagram-ai.js (34)
+### frontend/js/diagram-ai.js (35)
 
 | Name | File:line |
 |---|---|
-| `applyPreview` | frontend/js/diagram-ai.js:416 |
-| `ask` | frontend/js/diagram-ai.js:356 |
-| `askKind` | frontend/js/diagram-ai.js:376 |
-| `build` | frontend/js/diagram-ai.js:306 |
-| `compareThem` | frontend/js/diagram-ai.js:525 |
-| `copyOf` | frontend/js/diagram-ai.js:277 |
-| `counts` | frontend/js/diagram-ai.js:297 |
+| `applyPreview` | frontend/js/diagram-ai.js:443 |
+| `ask` | frontend/js/diagram-ai.js:383 |
+| `askKind` | frontend/js/diagram-ai.js:403 |
+| `build` | frontend/js/diagram-ai.js:333 |
+| `compareThem` | frontend/js/diagram-ai.js:552 |
+| `copyOf` | frontend/js/diagram-ai.js:304 |
+| `counts` | frontend/js/diagram-ai.js:324 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
 | `dgaApply` | frontend/js/diagram-ai.js:93 |
 | `dgaArrow` | frontend/js/diagram-ai.js:31 |
+| `dgaChartLint` | frontend/js/diagram-ai.js:265 |
 | `dgaDiff` | frontend/js/diagram-ai.js:102 |
 | `dgaFind` | frontend/js/diagram-ai.js:21 |
 | `dgaFold` | frontend/js/diagram-ai.js:17 |
 | `dgaKids` | frontend/js/diagram-ai.js:232 |
-| `dgaKindDrop` | frontend/js/diagram-ai.js:264 |
+| `dgaKindDrop` | frontend/js/diagram-ai.js:291 |
 | `dgaKindLint` | frontend/js/diagram-ai.js:233 |
 | `dgaLint` | frontend/js/diagram-ai.js:179 |
 | `dgaMarked` | frontend/js/diagram-ai.js:123 |
@@ -3202,16 +3206,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgaText` | frontend/js/diagram-ai.js:18 |
 | `dgaUnused` | frontend/js/diagram-ai.js:35 |
 | `dgaWords` | frontend/js/diagram-ai.js:152 |
-| `discard` | frontend/js/diagram-ai.js:409 |
-| `docOf` | frontend/js/diagram-ai.js:289 |
-| `draw` | frontend/js/diagram-ai.js:291 |
-| `el` | frontend/js/diagram-ai.js:281 |
-| `hues` | frontend/js/diagram-ai.js:278 |
-| `lint` | frontend/js/diagram-ai.js:449 |
-| `show` | frontend/js/diagram-ai.js:390 |
-| `showKind` | frontend/js/diagram-ai.js:436 |
-| `versions` | frontend/js/diagram-ai.js:464 |
-| `wire` | frontend/js/diagram-ai.js:547 |
+| `discard` | frontend/js/diagram-ai.js:436 |
+| `docOf` | frontend/js/diagram-ai.js:316 |
+| `draw` | frontend/js/diagram-ai.js:318 |
+| `el` | frontend/js/diagram-ai.js:308 |
+| `hues` | frontend/js/diagram-ai.js:305 |
+| `lint` | frontend/js/diagram-ai.js:476 |
+| `show` | frontend/js/diagram-ai.js:417 |
+| `showKind` | frontend/js/diagram-ai.js:463 |
+| `versions` | frontend/js/diagram-ai.js:491 |
+| `wire` | frontend/js/diagram-ai.js:574 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -3375,43 +3379,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sample` | frontend/js/diagram-kindbar.js:54 |
 | `untouched` | frontend/js/diagram-kindbar.js:137 |
 
-### frontend/js/diagram-kinds-more.js (33)
+### frontend/js/diagram-kinds-more.js (35)
 
 | Name | File:line |
 |---|---|
 | `kmAll` | frontend/js/diagram-kinds-more.js:35 |
 | `kmBase` | frontend/js/diagram-kinds-more.js:31 |
-| `kmClassNames` | frontend/js/diagram-kinds-more.js:205 |
-| `kmClassParse` | frontend/js/diagram-kinds-more.js:174 |
-| `kmClassPrint` | frontend/js/diagram-kinds-more.js:195 |
+| `kmClassNames` | frontend/js/diagram-kinds-more.js:218 |
+| `kmClassParse` | frontend/js/diagram-kinds-more.js:187 |
+| `kmClassPrint` | frontend/js/diagram-kinds-more.js:208 |
 | `kmClean` | frontend/js/diagram-kinds-more.js:13 |
-| `kmEnds` | frontend/js/diagram-kinds-more.js:259 |
-| `kmErNames` | frontend/js/diagram-kinds-more.js:251 |
-| `kmErParse` | frontend/js/diagram-kinds-more.js:218 |
-| `kmErPrint` | frontend/js/diagram-kinds-more.js:242 |
-| `kmErShow` | frontend/js/diagram-kinds-more.js:216 |
-| `kmErToken` | frontend/js/diagram-kinds-more.js:217 |
-| `kmFlag` | frontend/js/diagram-kinds-more.js:91 |
-| `kmFlags` | frontend/js/diagram-kinds-more.js:89 |
+| `kmEnds` | frontend/js/diagram-kinds-more.js:272 |
+| `kmErNames` | frontend/js/diagram-kinds-more.js:264 |
+| `kmErParse` | frontend/js/diagram-kinds-more.js:231 |
+| `kmErPrint` | frontend/js/diagram-kinds-more.js:255 |
+| `kmErShow` | frontend/js/diagram-kinds-more.js:229 |
+| `kmErToken` | frontend/js/diagram-kinds-more.js:230 |
+| `kmFlag` | frontend/js/diagram-kinds-more.js:104 |
+| `kmFlags` | frontend/js/diagram-kinds-more.js:102 |
 | `kmFresh` | frontend/js/diagram-kinds-more.js:36 |
-| `kmGanttParse` | frontend/js/diagram-kinds-more.js:60 |
-| `kmGanttPrint` | frontend/js/diagram-kinds-more.js:83 |
-| `kmGanttSpec` | frontend/js/diagram-kinds-more.js:103 |
+| `kmGanttParse` | frontend/js/diagram-kinds-more.js:72 |
+| `kmGanttPrint` | frontend/js/diagram-kinds-more.js:96 |
+| `kmGanttSpec` | frontend/js/diagram-kinds-more.js:116 |
 | `kmKeep` | frontend/js/diagram-kinds-more.js:12 |
 | `kmLast` | frontend/js/diagram-kinds-more.js:14 |
 | `kmLine` | frontend/js/diagram-kinds-more.js:33 |
 | `kmMake` | frontend/js/diagram-kinds-more.js:11 |
-| `kmPair` | frontend/js/diagram-kinds-more.js:261 |
+| `kmPair` | frontend/js/diagram-kinds-more.js:274 |
 | `kmPieParse` | frontend/js/diagram-kinds-more.js:41 |
-| `kmPiePrint` | frontend/js/diagram-kinds-more.js:52 |
-| `kmPieSum` | frontend/js/diagram-kinds-more.js:55 |
+| `kmPiePrint` | frontend/js/diagram-kinds-more.js:58 |
+| `kmPieSum` | frontend/js/diagram-kinds-more.js:67 |
+| `kmProp` | frontend/js/diagram-kinds-more.js:64 |
+| `kmPropGlyph` | frontend/js/diagram-kinds-more.js:66 |
 | `kmRead` | frontend/js/diagram-kinds-more.js:17 |
-| `kmStItems` | frontend/js/diagram-kinds-more.js:151 |
-| `kmStMake` | frontend/js/diagram-kinds-more.js:341 |
-| `kmStateParse` | frontend/js/diagram-kinds-more.js:114 |
-| `kmStatePrint` | frontend/js/diagram-kinds-more.js:136 |
-| `kmStateRefs` | frontend/js/diagram-kinds-more.js:153 |
-| `kmStateRename` | frontend/js/diagram-kinds-more.js:164 |
+| `kmStItems` | frontend/js/diagram-kinds-more.js:164 |
+| `kmStMake` | frontend/js/diagram-kinds-more.js:360 |
+| `kmStateParse` | frontend/js/diagram-kinds-more.js:127 |
+| `kmStatePrint` | frontend/js/diagram-kinds-more.js:149 |
+| `kmStateRefs` | frontend/js/diagram-kinds-more.js:166 |
+| `kmStateRename` | frontend/js/diagram-kinds-more.js:177 |
 
 ### frontend/js/diagram-kinds.js (66)
 
@@ -13718,7 +13724,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:845 |
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
-| `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:227 |
+| `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:229 |
 | `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:927 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
@@ -14122,7 +14128,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:197 |
 | `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:251 |
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:263 |
-| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:247 |
+| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:249 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:486 |
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2375 |
 | `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2408 |
@@ -14288,7 +14294,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (10902)
+## Backend modules (10913)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17620,23 +17626,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_reply` | src/tessellate/ai/diagram_ask.py:376 |
 | `with_model` | src/tessellate/ai/diagram_ask.py:391 |
 
-### src/tessellate/ai/diagram_ask_kinds.py (13)
+### src/tessellate/ai/diagram_ask_kinds.py (24)
 
 | Name | File:line |
 |---|---|
-| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:42 |
-| `_add` | src/tessellate/ai/diagram_ask_kinds.py:101 |
-| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:87 |
-| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:143 |
-| `_move` | src/tessellate/ai/diagram_ask_kinds.py:131 |
-| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:69 |
-| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:123 |
-| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:78 |
-| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:199 |
-| `checked` | src/tessellate/ai/diagram_ask_kinds.py:157 |
-| `described` | src/tessellate/ai/diagram_ask_kinds.py:222 |
-| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:38 |
-| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:240 |
+| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:64 |
+| `_add` | src/tessellate/ai/diagram_ask_kinds.py:201 |
+| `_add_chart` | src/tessellate/ai/diagram_ask_kinds.py:177 |
+| `_add_relation` | src/tessellate/ai/diagram_ask_kinds.py:141 |
+| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:111 |
+| `_add_value` | src/tessellate/ai/diagram_ask_kinds.py:150 |
+| `_chart_name` | src/tessellate/ai/diagram_ask_kinds.py:169 |
+| `_chart_parent` | src/tessellate/ai/diagram_ask_kinds.py:158 |
+| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:254 |
+| `_end` | src/tessellate/ai/diagram_ask_kinds.py:133 |
+| `_joined` | src/tessellate/ai/diagram_ask_kinds.py:246 |
+| `_move` | src/tessellate/ai/diagram_ask_kinds.py:225 |
+| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:91 |
+| `_place` | src/tessellate/ai/diagram_ask_kinds.py:187 |
+| `_relation` | src/tessellate/ai/diagram_ask_kinds.py:291 |
+| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:217 |
+| `_set` | src/tessellate/ai/diagram_ask_kinds.py:237 |
+| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:100 |
+| `_value` | src/tessellate/ai/diagram_ask_kinds.py:125 |
+| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:348 |
+| `checked` | src/tessellate/ai/diagram_ask_kinds.py:269 |
+| `described` | src/tessellate/ai/diagram_ask_kinds.py:371 |
+| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:60 |
+| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:389 |
 
 ### src/tessellate/ai/diarize.py (11)
 
@@ -18202,8 +18219,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2594 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2747 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2611 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2764 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -22255,20 +22272,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ComposeBody` | src/tessellate/api/routes_drafts.py:35 |
-| `DiagramAskBody` | src/tessellate/api/routes_drafts.py:219 |
+| `DiagramAskBody` | src/tessellate/api/routes_drafts.py:221 |
 | `DiagramEdgeIn` | src/tessellate/api/routes_drafts.py:181 |
 | `DiagramGroupIn` | src/tessellate/api/routes_drafts.py:188 |
 | `DiagramModelIn` | src/tessellate/api/routes_drafts.py:194 |
 | `DiagramNodeIn` | src/tessellate/api/routes_drafts.py:174 |
 | `KindBlockIn` | src/tessellate/api/routes_drafts.py:202 |
-| `KindModelIn` | src/tessellate/api/routes_drafts.py:215 |
+| `KindModelIn` | src/tessellate/api/routes_drafts.py:217 |
 | `TitleBody` | src/tessellate/api/routes_drafts.py:76 |
 | `_sources` | src/tessellate/api/routes_drafts.py:54 |
 | `_with_diagram` | src/tessellate/api/routes_drafts.py:80 |
 | `compose_draft` | src/tessellate/api/routes_drafts.py:95 |
 | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:137 |
-| `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:228 |
-| `draft_title` | src/tessellate/api/routes_drafts.py:248 |
+| `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:230 |
+| `draft_title` | src/tessellate/api/routes_drafts.py:250 |
 
 ### src/tessellate/api/routes_duplicates.py (7)
 
@@ -28224,7 +28241,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22430)
+## Tests (22443)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29038,6 +29055,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_ai.py | 5 |
 | tests/test_diagram_ai_kinds_1112.py | 4 |
 | tests/test_diagram_ask.py | 15 |
+| tests/test_diagram_ask_charts_l_documents_86.py | 9 |
 | tests/test_diagram_ask_kinds.py | 12 |
 | tests/test_diagram_ask_kinds_ui.py | 9 |
 | tests/test_diagram_behaviour_1108.py | 7 |
@@ -29074,12 +29092,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_head_export_1110.py | 4 |
 | tests/test_diagram_head_menu.py | 2 |
 | tests/test_diagram_kinds.py | 33 |
-| tests/test_diagram_kinds_more.py | 9 |
+| tests/test_diagram_kinds_more.py | 11 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
 | tests/test_diagram_markdown_l_documents_59.py | 6 |
-| tests/test_diagram_minimap_1110.py | 7 |
+| tests/test_diagram_minimap_1110.py | 8 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
@@ -29113,7 +29131,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_template_replace.py | 3 |
 | tests/test_diagram_touch.py | 7 |
 | tests/test_diagram_versions_named_only.py | 3 |
-| tests/test_diagram_view_1614.py | 10 |
+| tests/test_diagram_view_1614.py | 11 |
 | tests/test_diagram_w17_1110.py | 6 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_diarize_1111.py | 22 |
@@ -31445,14 +31463,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:761 |
+| Needs hardware | docs/roadmap/LEDGER.md:760 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:754 |
+| Owner calls | docs/roadmap/LEDGER.md:753 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31631,7 +31649,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:936 |
+| Plan session briefs | docs/roadmap/LEDGER.md:935 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31685,25 +31703,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:952 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1036 |
+| chat | docs/roadmap/LEDGER.md:951 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1035 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:976 |
-| general | docs/roadmap/LEDGER.md:713 |
+| documents | docs/roadmap/LEDGER.md:975 |
+| general | docs/roadmap/LEDGER.md:712 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:940 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1048 |
+| graph | docs/roadmap/LEDGER.md:939 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1047 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:354 |
-| mindmap | docs/roadmap/LEDGER.md:988 |
-| timeline | docs/roadmap/LEDGER.md:475 |
-| timeline | docs/roadmap/LEDGER.md:1012 |
-| ui-modernisation | docs/roadmap/LEDGER.md:358 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1000 |
+| mindmap | docs/roadmap/LEDGER.md:353 |
+| mindmap | docs/roadmap/LEDGER.md:987 |
+| timeline | docs/roadmap/LEDGER.md:474 |
+| timeline | docs/roadmap/LEDGER.md:1011 |
+| ui-modernisation | docs/roadmap/LEDGER.md:357 |
+| ui-modernisation | docs/roadmap/LEDGER.md:999 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:964 |
-| world-class | docs/roadmap/LEDGER.md:477 |
-| world-class | docs/roadmap/LEDGER.md:1024 |
+| whiteboard | docs/roadmap/LEDGER.md:963 |
+| world-class | docs/roadmap/LEDGER.md:476 |
+| world-class | docs/roadmap/LEDGER.md:1023 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
