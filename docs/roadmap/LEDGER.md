@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 59 | 40 | 0 | 0 | 99 |
+| chat | 0 | 58 | 37 | 0 | 0 | 95 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 431 | 109 | 0 | 124 | 866 |
+| all | 326 | 430 | 106 | 0 | 124 | 862 |
 
 ## graph
 
@@ -80,9 +80,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-198** `chat` partly, S: Research table: Raycast prefix grammar, palette: -. From CHAT_PLAN.md:1532. Evidence: Recount 2026-11-14 (audit, verify in code first): palette parses rows (tests/test_palette_contract.py); "remind me" first row not checked
 - [ ] **L-chat-199** `chat` partly, S: Surface: notes list and search box (windows, people, places as filters): people and places as filters not verified. From CHAT_PLAN.md:1540. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/search/query.py; search_1010.json 30 of 30 (plan)
 - [ ] **L-chat-227** `chat` open, S: VC1 Harper on composer and Ask box: composer and Ask underline. From CHAT_PLAN.md:1684. Evidence: Recount 2026-11-14 (audit, verify in code first): Harper only in documents, whiteboard, spell files (frontend/js grep)
-- [ ] **L-chat-228** `chat` partly, S: Placed 2026-10-10: 744 (b) and (c) unquoted sources, alarm notice: source list and notice threshold. From CHAT_PLAN.md:1693. Evidence: Recount 2026-11-14 (audit, verify in code first): not read
-- [ ] **L-chat-229** `chat` partly, S: composer6-1026 (1) clause grammar, 20 surfaces per ability: 20 distinct surfaces not measured. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_clause.py exists
-- [ ] **L-chat-230** `chat` partly, S: composer6-1026 (2) persona voices change wording and rhythm: rhythm change not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_voice.py; composer_lines.py voices
 - [ ] **L-chat-231** `chat` partly, S: composer6-1026 (3) welcome messages rebuilt on the clause grammar: not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/greeting_compose.py
 - [ ] **L-chat-232** `chat` partly, S: composer6-1026 (4) needle under composer control: composer picks tool call not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): needle_control.py, needle_provider.py exist
 - [ ] **L-chat-233** `chat` partly, S: composer6-1026 (5) composer reach into fixed-text surfaces: fixed text still present elsewhere. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
@@ -91,7 +88,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-237** `chat` partly, S: 1691 background tasks run in Quick mode (BACKGROUND_MODE): meeting_summary.py:162 has no mode; real-model before and after not run. From CHAT_PLAN.md:1874. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/presets.py:145-192; reminder_parser.py:153, speakers.py:78, skill_runner.py:679, entities.py:90, drafter.py:537, captioning.py:150, passive_capture.py:203, tensions.py:238
 - [ ] **L-chat-238** `chat` open, S: Negative-claim check before no-notes reply: refuse unfounded find claims. From CHAT_PLAN.md:1879. Evidence: Recount 2026-11-14 (audit, verify in code first): no reader found (grep)
 - [ ] **L-chat-240** `chat` partly, S: Date and time wording in fact_check: design open; needs real-model evals. From CHAT_PLAN.md:1881. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/fact_check.py:555 _moments (nearest unit, year rule)
-- [ ] **L-chat-252** `chat` open, M: Chart maker kinds past bar and line: area, pie, scatter, histogram and table (Brief 97 decision a); the composer answers a pie ask with bars and says so (composer_graph._PIE). From INBOX 1847, Brief 97 (a). Evidence: frontend/js/ask-chart.js:427, chartMaker.parse reads kind bar or line only
 
 ## whiteboard
 
