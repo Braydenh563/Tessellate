@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 88 | 36 | 0 | 18 | 254 |
+| world-class | 130 | 86 | 36 | 0 | 18 | 252 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 480 | 107 | 2 | 129 | 1140 |
+| all | 553 | 478 | 107 | 2 | 129 | 1138 |
 
 ## graph
 
@@ -465,11 +465,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## world-class
 
-- [ ] **L498** `world-class` open, S: Fix quick add fixture 56/60 and re-run quickadd.js for 60/60. From OPEN.md:3718. Evidence: tests/fixtures/composer/quickadd_1010.json; re-run needs a live server sweep, no recorded 60/60
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
-- [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
