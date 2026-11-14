@@ -1718,21 +1718,11 @@ const lazyModuleLoads = new Map();
 //: same file, which is the exact bug those stamps exist to prevent.
 let assetStampMap = null;
 function lazyAssetStamp(file) {
-  if (assetStampMap === null) {
-    assetStampMap = {};
-    const listed = document.querySelector('meta[name="asset-stamps"]')?.getAttribute("content") || "";
-    for (const pair of listed.split(",")) {
-      const at = pair.indexOf("=");
-      if (at > 0) assetStampMap[pair.slice(0, at)] = pair.slice(at + 1);
-    }
-  }
-  const own = file && assetStampMap[file];
-  if (own) return `?v=${own}`;
+  assetStampMap ??= Object.fromEntries((document.querySelector('meta[name="asset-stamps"]')?.content || "").split(",").map((pair) => pair.split("=")));
+  if (assetStampMap[file]) return `?v=${assetStampMap[file]}`;
   //: Not in the map (a file the server did not list, or a page served
   //: without the map): app.js's stamp, the closest thing the page has.
-  const src = document.querySelector('script[src*="/js/app.js?"]')?.getAttribute("src") || "";
-  const query = src.indexOf("?");
-  return query === -1 ? "" : src.slice(query);
+  return (document.querySelector('script[src*="/js/app.js?"]')?.getAttribute("src") || "").replace(/^[^?]*/, "");
 }
 
 //: One fetch per file, whichever bundle asks first: d3 is in two. An
@@ -1764,7 +1754,12 @@ function ensureModule(name) {
   const files = LAZY_MODULES[name];
   if (!files) return Promise.resolve(false);
   if (!lazyModuleLoads.has(name)) {
-    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || !lazyModuleLoads.delete(name)));
+    //: The Library bundle's scripts as one served file (api/app.py `library_bundle`), unless one was already fetched alone (the list tab, a lightbox): that file must not run twice.
+    const js = name === "library" && files.filter((f, i) => i && f.endsWith(".js"));
+    const one = js && !js.some((f) => lazyFileLoads.has(f)) && "/js/library-bundle.js";
+    const wanted = one ? files.filter((f) => !js.includes(f)).concat(one) : files;
+    lazyModuleLoads.set(name, Promise.all(wanted.map(lazyScript)).then((r) => r.every(Boolean) || (one && js.map((f) => lazyFileLoads.delete(f)), !lazyModuleLoads.delete(name))));
+    if (one) js.map((f) => lazyFileLoads.set(f, lazyFileLoads.get(one)));
   }
   return lazyModuleLoads.get(name);
 }
@@ -1785,7 +1780,7 @@ const NOTE_SURFACE_IDS = new Set([
 //: a caller that sizes itself to the box can re-place afterwards. Used by
 //: the graph popup, which opens rendered rather than waiting for a click.
 function mountNoteSurfaceNow(host) {
-  if (!host || !NOTE_SURFACE_IDS.has(host.id)) return Promise.resolve(null);
+  if (!NOTE_SURFACE_IDS.has(host?.id)) return Promise.resolve(null);
   return ensureModule("library").then((ok) => {
     if (!ok || typeof mountNoteSurface !== "function" || typeof NOTE_SURFACES !== "object") return null;
     return mountNoteSurface(host, NOTE_SURFACES[host.id]);
@@ -1810,27 +1805,18 @@ document.addEventListener("keydown", (event) => {
   const box = event.target;
   if (event.key !== "Tab" || event.ctrlKey || event.altKey || event.metaKey) return;
   if (!(box instanceof HTMLTextAreaElement) || !NOTE_SURFACE_IDS.has(box.id)) return;
-  const value = box.value;
-  const selStart = box.selectionStart;
-  const selEnd = box.selectionEnd;
+  const { value, selectionStart: selStart, selectionEnd: selEnd } = box;
   const lineStart = value.lastIndexOf("\n", selStart - 1) + 1;
-  const endBreak = value.indexOf("\n", selEnd > selStart ? selEnd - 1 : selEnd);
-  const lineEnd = endBreak === -1 ? value.length : endBreak;
+  const lineEnd = `${value}\n`.indexOf("\n", selEnd > selStart ? selEnd - 1 : selEnd);
   const lines = value.slice(lineStart, lineEnd).split("\n");
-  let next;
-  if (event.shiftKey) {
-    const indent = /^( {1,2}|\t)/;
-    if (!lines.some((line) => indent.test(line))) return;
-    next = lines.map((line) => line.replace(indent, ""));
-  } else {
-    next = lines.map((line) => `  ${line}`);
-  }
+  const indent = /^( {1,2}|\t)/;
+  if (event.shiftKey && !lines.some((line) => indent.test(line))) return;
+  const next = lines.map((line) => (event.shiftKey ? line.replace(indent, "") : `  ${line}`));
   event.preventDefault();
   const text = next.join("\n");
   box.setRangeText(text, lineStart, lineEnd, "preserve");
-  const shift = next[0].length - lines[0].length;
-  box.selectionStart = Math.max(lineStart, selStart + shift);
-  box.selectionEnd = selEnd + (text.length - (lineEnd - lineStart));
+  box.selectionStart = Math.max(lineStart, selStart + next[0].length - lines[0].length);
+  box.selectionEnd = selEnd + text.length - lineEnd + lineStart;
   box.dispatchEvent(new Event("input", { bubbles: true }));
 });
 

@@ -129,7 +129,11 @@ def test_every_file_the_page_loads_is_committed_and_bundled():
     #: only when committed files sit under it.
     folders = {t.rsplit("/", 1)[0] for t in tracked if "/" in t}
     folders |= {f.rsplit("/", 1)[0] for f in folders if "/" in f}
-    missing = sorted(ref for ref in _page_references() if ref not in tracked and ref not in folders)
+    #: `js/library-bundle.js` is a route that serves the Library bundle's files as one (api/app.py), not a file.
+    served = {"js/library-bundle.js"}
+    missing = sorted(
+        ref for ref in _page_references() if ref not in tracked and ref not in folders and ref not in served
+    )
     assert not missing, f"referenced by the page but not committed under frontend/: {missing}"
 
 

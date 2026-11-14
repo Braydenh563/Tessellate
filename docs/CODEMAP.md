@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11018, test files 2851, tests 22954, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11020, test files 2852, tests 22958, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8980)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1270 |
 | `confirmVerb` | frontend/js/app.js:1261 |
-| `ensureModule` | frontend/js/app.js:1763 |
+| `ensureModule` | frontend/js/app.js:1753 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1934 |
+| `installStandIns` | frontend/js/app.js:1920 |
 | `lazyAssetStamp` | frontend/js/app.js:1720 |
-| `lazyScript` | frontend/js/app.js:1742 |
+| `lazyScript` | frontend/js/app.js:1732 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1787 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1782 |
 | `promptDialog` | frontend/js/app.js:1374 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -14284,7 +14284,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2785 |
+| frontend/css/diagram-lazy.css | 2786 |
 | frontend/css/doc-base-lazy.css | 306 |
 | frontend/css/doc-csv-grid-lazy.css | 182 |
 | frontend/css/doc-graph-lazy.css | 318 |
@@ -14449,7 +14449,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1796 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1849 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:1970 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
@@ -14598,7 +14598,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:997 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1005 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1759 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1812 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:402 |
@@ -14622,9 +14622,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:156 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1635 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1030 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1657 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1671 |
-| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1691 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1710 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1724 |
+| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1744 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:364 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1267 |
@@ -14708,7 +14708,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1738 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1791 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2354 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:1945 |
@@ -14729,7 +14729,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1319 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1368 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:684 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1721 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1774 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:517 |
 | `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:638 |
@@ -14873,7 +14873,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sync/reset` | POST | `sync_reset` | src/tessellate/api/routes_sync.py:166 |
 | `/sync/segment` | GET | `sync_segment` | src/tessellate/api/routes_sync.py:46 |
 | `/sync/status` | GET | `sync_status` | src/tessellate/api/routes_sync.py:90 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1731 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1784 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1437 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -15064,7 +15064,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11018)
+## Backend modules (11020)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21922,52 +21922,54 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_secs` | src/tessellate/ai/why.py:55 |
 | `lines` | src/tessellate/ai/why.py:89 |
 
-### src/tessellate/api/app.py (42)
+### src/tessellate/api/app.py (44)
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1407 |
-| `RequestPulse` | src/tessellate/api/app.py:1268 |
-| `RevalidatedStatic` | src/tessellate/api/app.py:355 |
-| `SpaceGuard` | src/tessellate/api/app.py:1195 |
-| `_UnversionedStatic` | src/tessellate/api/app.py:346 |
-| `_add_instance_routes` | src/tessellate/api/app.py:1654 |
-| `_add_middleware` | src/tessellate/api/app.py:1507 |
-| `_add_system_routes` | src/tessellate/api/app.py:1717 |
-| `_backup_if_due` | src/tessellate/api/app.py:793 |
-| `_check_data_folder` | src/tessellate/api/app.py:779 |
-| `_check_notebook_file` | src/tessellate/api/app.py:771 |
-| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:708 |
-| `_code_for_status` | src/tessellate/api/app.py:940 |
-| `_compact_event_log` | src/tessellate/api/app.py:626 |
-| `_compact_step` | src/tessellate/api/app.py:672 |
-| `_content_length` | src/tessellate/api/app.py:1247 |
-| `_has_password` | src/tessellate/api/app.py:1382 |
-| `_include_routers` | src/tessellate/api/app.py:1644 |
-| `_install_pending_extras` | src/tessellate/api/app.py:680 |
-| `_purge_expired_bin_entries` | src/tessellate/api/app.py:602 |
-| `_purge_step` | src/tessellate/api/app.py:668 |
-| `_read_note_dates` | src/tessellate/api/app.py:750 |
-| `_register_client_error_handlers` | src/tessellate/api/app.py:951 |
-| `_register_error_handlers` | src/tessellate/api/app.py:1124 |
-| `_register_server_error_handlers` | src/tessellate/api/app.py:1012 |
-| `_seed_companion_milestone` | src/tessellate/api/app.py:758 |
-| `_stamp_for` | src/tessellate/api/app.py:261 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:895 |
-| `_start_searxng_if_asked` | src/tessellate/api/app.py:818 |
-| `_start_services` | src/tessellate/api/app.py:1305 |
-| `_startup_maintenance` | src/tessellate/api/app.py:719 |
-| `_static_gzip` | src/tessellate/api/app.py:541 |
-| `_warm_routes` | src/tessellate/api/app.py:850 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1396 |
+| `Layer` | src/tessellate/api/app.py:1460 |
+| `RequestPulse` | src/tessellate/api/app.py:1321 |
+| `RevalidatedStatic` | src/tessellate/api/app.py:395 |
+| `SpaceGuard` | src/tessellate/api/app.py:1248 |
+| `_UnversionedStatic` | src/tessellate/api/app.py:386 |
+| `_add_instance_routes` | src/tessellate/api/app.py:1707 |
+| `_add_middleware` | src/tessellate/api/app.py:1560 |
+| `_add_system_routes` | src/tessellate/api/app.py:1770 |
+| `_backup_if_due` | src/tessellate/api/app.py:846 |
+| `_check_data_folder` | src/tessellate/api/app.py:832 |
+| `_check_notebook_file` | src/tessellate/api/app.py:824 |
+| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:761 |
+| `_code_for_status` | src/tessellate/api/app.py:993 |
+| `_compact_event_log` | src/tessellate/api/app.py:679 |
+| `_compact_step` | src/tessellate/api/app.py:725 |
+| `_content_length` | src/tessellate/api/app.py:1300 |
+| `_has_password` | src/tessellate/api/app.py:1435 |
+| `_include_routers` | src/tessellate/api/app.py:1697 |
+| `_install_pending_extras` | src/tessellate/api/app.py:733 |
+| `_purge_expired_bin_entries` | src/tessellate/api/app.py:655 |
+| `_purge_step` | src/tessellate/api/app.py:721 |
+| `_read_note_dates` | src/tessellate/api/app.py:803 |
+| `_register_client_error_handlers` | src/tessellate/api/app.py:1004 |
+| `_register_error_handlers` | src/tessellate/api/app.py:1177 |
+| `_register_server_error_handlers` | src/tessellate/api/app.py:1065 |
+| `_seed_companion_milestone` | src/tessellate/api/app.py:811 |
+| `_stamp_for` | src/tessellate/api/app.py:300 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:948 |
+| `_start_searxng_if_asked` | src/tessellate/api/app.py:871 |
+| `_start_services` | src/tessellate/api/app.py:1358 |
+| `_startup_maintenance` | src/tessellate/api/app.py:772 |
+| `_static_gzip` | src/tessellate/api/app.py:594 |
+| `_warm_routes` | src/tessellate/api/app.py:903 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1449 |
 | `asset_hash` | src/tessellate/api/app.py:237 |
-| `asset_stamps` | src/tessellate/api/app.py:266 |
-| `clear_static_cache` | src/tessellate/api/app.py:582 |
-| `create_app` | src/tessellate/api/app.py:1832 |
-| `out_of_space_body` | src/tessellate/api/app.py:1165 |
+| `asset_stamps` | src/tessellate/api/app.py:305 |
+| `clear_static_cache` | src/tessellate/api/app.py:635 |
+| `create_app` | src/tessellate/api/app.py:1885 |
+| `library_bundle` | src/tessellate/api/app.py:277 |
+| `library_bundle_files` | src/tessellate/api/app.py:269 |
+| `out_of_space_body` | src/tessellate/api/app.py:1218 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:204 |
-| `served_index_html` | src/tessellate/api/app.py:311 |
-| `served_offline_html` | src/tessellate/api/app.py:295 |
+| `served_index_html` | src/tessellate/api/app.py:351 |
+| `served_offline_html` | src/tessellate/api/app.py:335 |
 
 ### src/tessellate/api/asset_strip.py (24)
 
@@ -29146,7 +29148,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22954)
+## Tests (22958)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30005,7 +30007,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
 | tests/test_diagram_markdown_l_documents_59.py | 6 |
-| tests/test_diagram_minimap_1110.py | 8 |
+| tests/test_diagram_minimap_1110.py | 9 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
@@ -30669,6 +30671,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_board_counts.py | 2 |
 | tests/test_library_boards.py | 5 |
 | tests/test_library_boards_ticks.py | 3 |
+| tests/test_library_bundle_served.py | 3 |
 | tests/test_library_caption_echo.py | 3 |
 | tests/test_library_doc_page.py | 5 |
 | tests/test_library_docs_import.py | 5 |
@@ -32423,14 +32426,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4404 |
-| Needs hardware | docs/roadmap/LEDGER.md:703 |
+| Needs hardware | docs/roadmap/LEDGER.md:702 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:696 |
+| Owner calls | docs/roadmap/LEDGER.md:695 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4277 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32609,7 +32612,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:860 |
+| Plan session briefs | docs/roadmap/LEDGER.md:859 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2653 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32665,25 +32668,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:876 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:960 |
+| chat | docs/roadmap/LEDGER.md:875 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:959 |
 | documents | docs/roadmap/LEDGER.md:286 |
-| documents | docs/roadmap/LEDGER.md:900 |
-| general | docs/roadmap/LEDGER.md:655 |
+| documents | docs/roadmap/LEDGER.md:899 |
+| general | docs/roadmap/LEDGER.md:654 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:864 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:972 |
+| graph | docs/roadmap/LEDGER.md:863 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:971 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4413 |
-| mindmap | docs/roadmap/LEDGER.md:298 |
-| mindmap | docs/roadmap/LEDGER.md:912 |
-| timeline | docs/roadmap/LEDGER.md:418 |
-| timeline | docs/roadmap/LEDGER.md:936 |
-| ui-modernisation | docs/roadmap/LEDGER.md:301 |
-| ui-modernisation | docs/roadmap/LEDGER.md:924 |
+| mindmap | docs/roadmap/LEDGER.md:297 |
+| mindmap | docs/roadmap/LEDGER.md:911 |
+| timeline | docs/roadmap/LEDGER.md:417 |
+| timeline | docs/roadmap/LEDGER.md:935 |
+| ui-modernisation | docs/roadmap/LEDGER.md:300 |
+| ui-modernisation | docs/roadmap/LEDGER.md:923 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:888 |
-| world-class | docs/roadmap/LEDGER.md:420 |
-| world-class | docs/roadmap/LEDGER.md:948 |
+| whiteboard | docs/roadmap/LEDGER.md:887 |
+| world-class | docs/roadmap/LEDGER.md:419 |
+| world-class | docs/roadmap/LEDGER.md:947 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2823 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2874 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2981 |
