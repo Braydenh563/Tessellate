@@ -37,8 +37,6 @@ _BOARD = re.compile(
 _MAP_OF = re.compile(
     rf"{_LEAD}(?:make|create|build|draw|start)\s+(?:me\s+)?(?:a |the )?mind ?map\s+(?:of|from|for|about|on)\s+(?:the |my )?(?P<t>.+)$", re.I)
 _MAP_INTO = re.compile(rf"{_LEAD}(?:turn|make|convert)\s+(?:the |my )?(?P<t>.+?)\s+(?:in)?to\s+(?:a |the )?mind ?map$", re.I)
-_NEW_BOARD = re.compile(
-    rf"{_LEAD}(?:make|create|start|build|add)\s+(?:me\s+)?(?:a |the )?(?:new |blank |empty )?(?:white)?board\s+(?:called|named|titled|for|about)\s+(?P<t>.+)$", re.I)
 #: The sentence the tool cue `save_user_preference` names (act_registry `TOOL_CUES`): a preference of the person's, never a note.
 _REMEMBER = re.compile(rf"{_LEAD}remember that\s+(?P<t>i(?:['’]m)?\s+(?:prefer|like|want)\b.+)$", re.I)
 _THEME = (
@@ -81,9 +79,6 @@ def read(text: str, one_target) -> dict | None:  # noqa: ANN001
     if found := _REMEMBER.match(text):
         said = _name(found.group("t"))
         return {"intent": "remember", "preference": said[:1].upper() + said[1:]} if said and len(said) <= 200 else None
-    if found := _NEW_BOARD.match(text):
-        name = _name(found.group("t"))
-        return {"intent": "make_map", "title": name, "kind": "board"} if name and name.lower() not in _NO_NAME else None
     if found := _BOARD.match(text):
         target = one_target(_name(found.group("t")), bare=False)
         return {"intent": "board_card", **target, "single": True} if target and target.get("single", True) else None
@@ -191,9 +186,6 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None, c: dict) ->
     if intent == "remember":
         label = f"Suggest remembering that {parsed['preference'][:1].lower()}{parsed['preference'][1:]}"
         return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "save_user_preference", "arguments": {"preference": parsed["preference"]}}])}
-    if intent == "make_map" and parsed.get("kind") == "board":
-        label = f"Make a board called “{parsed['title']}”"
-        return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "create_mindmap", "arguments": {"title": parsed["title"], "kind": "board"}}])}
     if intent == "make_map" and parsed.get("title"):
         label = f"Start a mind map called “{parsed['title']}”"
         return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "create_mindmap", "arguments": {"title": parsed["title"]}}])}

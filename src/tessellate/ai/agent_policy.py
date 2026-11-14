@@ -1035,6 +1035,7 @@ _NOTE_ID_FIELD = {
     "edit_note": "id",
     "tag_note": "tagged",
     "pin_note": "id",
+    "archive_note": "archived",
     "restore_note": "id",
     "link_notes": "linked",  # [source_id, target_id]: the note the call was made on
     "unlink_notes": "unlinked",

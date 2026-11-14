@@ -40,6 +40,7 @@ MANUAL = {
     "edit_note": ("note-edit-panels.js", "base_hash: base", "a note's Edit form"),
     "tag_note": ("note-edit-panels.js", 'tagField.className = "tag-field note-edit-tags";', "a note's Edit form, Tags"),
     "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star"),
+    "archive_note": ("entry-menu.js", 'await apiJson(`/entries/${entry.id}/archive`, { method: "POST" });', "a note's ⋮ menu, Archive (and Unarchive)"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),

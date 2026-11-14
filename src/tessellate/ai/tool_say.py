@@ -674,6 +674,38 @@ def _pinned(result: dict, args: dict) -> Said:
     return lead, "", _chips(("Open it", at))
 
 
+def _archived(result: dict, args: dict) -> Said:
+    ids = [i for i in result.get("archived") or [] if _number(i)]
+    on = result.get("now_archived", args.get("archived", True))
+    lead = f"{'Archived' if on else 'Brought back'} {count_noun(len(ids), 'note')}" + ("." if on else " from the Archive.")
+    body = "\n".join(f"- {link(f'Note {i}', note_at(i))}" for i in ids[:10])
+    return lead, body, _chips(("Open the first one", note_at(ids[0])) if ids else ("Open your notes", NOTES))
+
+
+def _listed_notes(rows: list, limit: int = 8) -> str:
+    return "\n".join(f"- {link(str(r.get('title') or 'Untitled note'), note_at(r.get('id')))}" + (f" ({r['last_touched']})" if r.get("last_touched") else "") for r in rows[:limit] if isinstance(r, dict))
+
+
+def _stale(result: dict, args: dict) -> Said:
+    rows, total = result.get("notes") or [], int(result.get("total_stale") or 0)
+    if not total:
+        return f"No note has sat untouched for {result.get('days')} days.", "", _chips(("Open your notes", NOTES))
+    return _sentence(f"{count_noun(total, 'note')} untouched for {result.get('days')} days, oldest first."), _listed_notes(rows), _chips(("Open your notes", NOTES))
+
+
+def _month(result: dict, args: dict) -> Said:
+    spent = (result.get("spent") or {}).get("text") or "nothing recorded as spent"
+    lead = f"{result.get('period')}: {count_noun(int(result.get('notes_written') or 0), 'note')} written and {count_noun(int(result.get('reminders_finished') or 0), 'reminder')} finished."
+    body = f"- Spent: {spent}\n" + _listed_notes([{"id": i, "title": f"Note {i}"} for i in result.get("written_ids") or []])
+    return lead, body.strip(), _chips(("Open your notes", NOTES))
+
+
+def _person(result: dict, args: dict) -> Said:
+    rows = result.get("mentioned_in") or []
+    lead = f"{result.get('name')} is named in {count_noun(int(result.get('mentioned_total') or 0), 'note')}, with {count_noun(len(result.get('open_reminders') or []), 'open reminder')}."
+    return lead, _listed_notes(rows), _chips(("Open the first one", note_at(rows[0].get("id"))) if rows else ("Open your notes", NOTES))
+
+
 def _linked(result: dict, args: dict) -> Said:
     ids = [i for i in result.get("linked") or result.get("unlinked") or [] if _number(i)]
     joined = " and ".join(link(f"note {i}", note_at(i)) for i in ids[:2])
@@ -869,7 +901,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "search_chat_history": _chat_history, "search_files": _files, "read_file": _read_file, "read_text": _read_text,
     "read_whiteboard": _whiteboard, "search_whiteboard": _search_board, "read_mindmap": _mindmap,
     "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url,
-    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned,
+    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned, "archive_note": _archived, "stale_notes": _stale, "month_figures": _month, "person_page": _person,
     "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
     "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "delete_document": _deleted_document,
