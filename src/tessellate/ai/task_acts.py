@@ -805,8 +805,8 @@ def items_in(answer: str) -> list[str]:
     """Every list item the answer showed, in order, parsed once."""
     items = []
     for line in _LIST_LINE.finditer(answer or ""):
-        text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line.group("item"))
-        text = re.sub(r"[*_`]+|\s*\[[^\]]*\]\s*$", "", text)
+        text = re.sub(r"\[([^\]]{1,300})\]\([^)]{0,1000}\)", r"\1", line.group("item"))
+        text = re.sub(r"[*_`]+|\s*\[[^\]]{0,300}\]\s*$", "", text)
         text = re.split(r"\s+\(|:\s", text, maxsplit=1)[0].strip(" .;")
         if text:
             items.append(text)

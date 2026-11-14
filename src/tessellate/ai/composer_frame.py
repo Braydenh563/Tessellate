@@ -498,7 +498,7 @@ _DIARY_VERB = lazy_compile(
 
 #: A first line that is only pictures ("![](/media/cat.png)"): no words to
 #: name the note by, never its markdown (INBOX 1512).
-_ONLY_PICTURES = lazy_compile(r"(?:!\[[^\]\n]*\]\([^)\s]*\)\s*)+")
+_ONLY_PICTURES = lazy_compile(r"(?:!\[[^\]\n]{0,300}\]\([^)\s]{0,1000}\)\s*)+")
 
 
 def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
@@ -621,7 +621,7 @@ def group_line(group: Group, notes: list[dict], topic: str, lower=_lower, i: int
     return f"{line} {linked}" if linked else line
 
 
-_MEDIA = lazy_compile(r"!\[[^\]\n]*\]\([^)\n]*\)|\[Pictures in this note, as this app read them:")
+_MEDIA = lazy_compile(r"!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)|\[Pictures in this note, as this app read them:")
 
 
 def thread_name(group: Group, by_id: dict[int, dict]) -> str:

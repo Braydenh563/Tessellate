@@ -374,7 +374,7 @@ def lead_said(threads: list[str], seed: int = 0) -> str:
 
 _QUOTED = lazy_compile(r"“([^”\n]{3,600})”")
 _PIECE_END = lazy_compile(r"(?<=[.!?])\s+")
-_MARK_CHARS = lazy_compile(r"[*_`#>~]|!\[[^\]\n]*\]\([^)\n]*\)")
+_MARK_CHARS = lazy_compile(r"[*_`#>~]|!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)")
 _TOKEN = lazy_compile(r"[a-z0-9']+")
 #: How much of a piece's words a note's sentence must hold to be what the
 #: piece was made from.

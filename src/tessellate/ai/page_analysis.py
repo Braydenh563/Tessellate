@@ -38,7 +38,7 @@ def _stem(word: str) -> str:
 
 def _plain(text: str) -> str:
     """A page's sentence as text: no markup, links or code that could be read as such."""
-    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]{0,300})\]\([^)]{0,1000}\)", r"\1", text)
     return " ".join(re.sub(r"[`<>]|\*{1,2}", "", text).split())
 
 

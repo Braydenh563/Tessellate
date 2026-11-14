@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 67 | 29 | 0 | 5 | 226 |
+| world-class | 130 | 66 | 29 | 0 | 5 | 225 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 459 | 100 | 2 | 116 | 1112 |
+| all | 553 | 458 | 100 | 2 | 116 | 1111 |
 
 ## graph
 
@@ -547,7 +547,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-50** `world-class` open, M: Rich paste (HTML to markdown) in the note composers, as documents have. From L-world-class-7 measurement 2026-11-14. Evidence: frontend/js/capture-stage.js:35 paste takes files only; documents.js:5634 docRichPasteEvent converts HTML to markdown in documents only; pasting a list, heading and link as text/html into #entry-content and #quick-note-text inserts nothing converted (default plain text)
 - [ ] **L-world-class-51** `world-class` open, M: Cut import cost 2.2 s to 1.5 s: compile composer regex tables lazily. From L678. Evidence: importtime self-time: composer_money 173 ms (67 regex compiles), core.database 111 ms, routes_learned 96 ms, fastapi 240 ms; total 2.2 s
 - [ ] **L-world-class-52** `world-class` open, L: Seal the bytes of recordings, library uploads and attachments in a private space. From L697. Evidence: L697 sealed the database columns only; the audio, upload and attachment bytes on disk (data/recordings, media, uploads) of a private space are still plain files
-- [ ] **L-world-class-53** `world-class` open, M: Bound the Python bracket-link regexes the L568 scan found quadratic, with a timing test per scanner. From L568 audit. Evidence: scratchpad redos_scan.py timed every constant regex in src/ at n=10000: 215 slow hits, mostly quadratic bracket-link shapes (composer_extra.py:22, study.py:38/42, composer_chat.py:45/299, page_analysis.py:41, task_acts.py:808, composer_frame.py:501/624, composer_threads.py:377, link_offers.py)
 
 ## general
 

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).
 - Notes: hovering or focusing a [[link]] previews the note it opens, in the citation peek (L573).
 - Meeting cards open with when and who, then agenda, decisions and open actions (L662).
