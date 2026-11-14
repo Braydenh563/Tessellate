@@ -27,10 +27,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
-DOCUMENTS_JS = FRONTEND / "js" / "documents.js"
 EDITOR_JS = FRONTEND / "js" / "editor.js"
 INDEX = FRONTEND / "index.html"
 CSS_DIR = FRONTEND / "css"
@@ -80,7 +80,7 @@ def _offences(body: str, pattern: re.Pattern[str], span: tuple[int, int] | None)
 
 
 def test_documents_js_reads_the_surface_only_through_the_adapter():
-    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    body = documents_text()
     span = _adapter_span(body)
     bad = _offences(body, DIRECT_ACCESS, span)
     assert not bad, (
@@ -91,7 +91,7 @@ def test_documents_js_reads_the_surface_only_through_the_adapter():
 
 
 def test_documents_js_does_not_stash_the_element_outside_the_adapter():
-    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    body = documents_text()
     span = _adapter_span(body)
     bad = _offences(body, ELEMENT_BINDING, span)
     assert not bad, (
@@ -127,7 +127,7 @@ def test_index_html_has_the_codemirror_host_and_the_editor_stylesheet():
 
 def test_the_bundle_is_loaded_on_demand_and_not_at_boot():
     html = INDEX.read_text(encoding="utf-8")
-    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    body = documents_text()
     assert "<script src=\"/vendor/codemirror" not in html, (
         "the CodeMirror bundle is 772 KB and most sessions never open a "
         "document; documents.js injects it the first time one is opened"
@@ -145,7 +145,7 @@ def test_the_block_live_renderer_is_gone():
     comments first: the rules are gone, and the note that says where they
     went names them, which is the whole point of leaving a note.
     """
-    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    body = documents_text()
     assert "function renderDocLive" not in body
     assert "lp-src" not in body
     css = "".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))
@@ -158,7 +158,7 @@ def test_surfaces_carry_no_dead_aliases():
     # L329 (D47 "keep it"): the textarea fallback stays, only the aliases no
     # caller reads are gone. `rect()` and `scrollLeft` had no reader on a
     # surface (autocorrect and the caret mirror read the element itself).
-    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    body = documents_text()
     span = _adapter_span(body)
     inside = body[span[0] : span[1]]
     assert not re.search(r"^\s*rect\(\)\s*\{", inside, re.M), "dead rect() alias is back"

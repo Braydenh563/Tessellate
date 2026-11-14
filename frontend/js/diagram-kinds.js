@@ -204,10 +204,14 @@
     const r = kxLines(source, /^sequenceDiagram$/i);
     if (!r) return null;
     const m = { kind: "sequence", front: r.front, title: null, participants: [], steps: [] };
+    //: L-documents-56: `box` groups declarations (`p.box`, the words after it), `create` and `destroy` belong to the message that
+    //: follows (`step.create`, `step.destroy`: a participant id), and a leading `autonumber` is `m.autonumber`.
+    let boxed = null;
+    const pend = {};
     const dec = (t) => diagramModel.decode(t.trim());
     const who = (id, label = null, actor = null) => {
       let p = m.participants.find((x) => x.id === id);
-      if (!p) m.participants.push((p = { type: "a", uid: kxUid(m), id, label: id, actor: false }));
+      if (!p) m.participants.push((p = { type: "a", uid: kxUid(m), id, label: id, actor: false, ...(boxed !== null ? { box: boxed } : {}) }));
       if (label != null) p.label = label;
       if (actor != null) p.actor = actor;
       return p;
@@ -215,13 +219,24 @@
     const open = [];
     const into = () => (open.length ? open.at(-1).steps : m.steps);
     for (const s of diagramModel.statements(r.body.join("\n"))) {
-      if (/^(?:box|create|destroy)\b/i.test(s)) return null;
       let hit;
-      if (s.startsWith("%%")) into().push({ type: "k", uid: kxUid(m), line: s });
+      const lead = (pend.create || pend.destroy) && !KX_MSG.test(s) && !/^(?:create|destroy)\b/i.test(s);
+      if (lead || (boxed !== null && !KX_DECL.test(s) && !/^end$/i.test(s) && !s.startsWith("%%")) || (/^box\b/i.test(s) && (boxed !== null || open.length || m.steps.length))) return null;
+      if (boxed !== null && /^end$/i.test(s)) boxed = null;
+      else if ((hit = /^box\b\s*(.*)$/i.exec(s))) boxed = dec(hit[1]);
+      else if (/^autonumber$/i.test(s) && !m.steps.length && !open.length) m.autonumber = true;
+      else if ((hit = new RegExp(`^create\\s+(participant|actor)\\s+(${KX_ID})(?:\\s+as\\s+(.+))?$`, "iu").exec(s))) pend.create = who(hit[2], hit[3] ? dec(hit[3]) : null, /^actor$/i.test(hit[1])).id;
+      else if ((hit = new RegExp(`^destroy\\s+(${KX_ID})$`, "iu").exec(s))) pend.destroy = hit[1];
+      else if (/^(?:create|destroy)\b/i.test(s)) return null;
+      else if (s.startsWith("%%")) into().push({ type: "k", uid: kxUid(m), line: s });
       else if ((hit = KX_MSG.exec(s))) {
         who(hit[1]);
         who(hit[4]);
-        into().push({ type: "m", uid: kxUid(m), from: hit[1], to: hit[4], arrow: hit[2], act: hit[3], text: dec(hit[5]) });
+        const step = { type: "m", uid: kxUid(m), from: hit[1], to: hit[4], arrow: hit[2], act: hit[3], text: dec(hit[5]) };
+        for (const k of ["create", "destroy"]) if (pend[k] && [step.from, step.to].includes(pend[k])) step[k] = pend[k];
+        if ((pend.create && !step.create) || (pend.destroy && !step.destroy)) return null;
+        pend.create = pend.destroy = null;
+        into().push(step);
       } else if ((hit = KX_DECL.exec(s))) who(hit[2], hit[3] ? dec(hit[3]) : null, /^actor$/i.test(hit[1]));
       else if ((hit = KX_NOTE.exec(s))) {
         const ids = [hit[2], hit[3]].filter(Boolean);
@@ -236,18 +251,39 @@
       else if (/^end$/i.test(s) && open.length) open.pop();
       else into().push({ type: "k", uid: kxUid(m), line: s });
     }
-    return m;
+    return pend.create || pend.destroy || boxed !== null ? null : m;
   }
 
   function kxSeqPrint(m) {
     const out = [...m.front, "sequenceDiagram"];
     if (m.title != null) out.push(`${kxPad(1)}title ${kxEsc(m.title, ";")}`);
-    for (const p of m.participants) out.push(`${kxPad(1)}${p.actor ? "actor" : "participant"} ${p.id}${p.label !== p.id ? ` as ${kxEsc(p.label, ";")}` : ""}`);
+    //: A participant made by a `create` line is declared there; one whose creating message is gone is declared up here.
+    const ends = (s, k) => s[k] && (s.from === s[k] || s.to === s[k]);
+    const made = new Set(kxSteps(m.steps).filter((s) => s.type === "m" && ends(s, "create")).map((s) => s.create));
+    const decl = (p, word) => `${word} ${p.id}${p.label !== p.id ? ` as ${kxEsc(p.label, ";")}` : ""}`;
+    if (m.autonumber) out.push(`${kxPad(1)}autonumber`);
+    let boxed = null;
+    for (const p of m.participants) {
+      if (made.has(p.id)) continue;
+      const b = typeof p.box === "string" ? p.box : null;
+      if (b !== boxed) {
+        if (boxed !== null) out.push(`${kxPad(1)}end`);
+        if (b !== null) out.push(`${kxPad(1)}box${b ? ` ${kxEsc(b, ";")}` : ""}`);
+        boxed = b;
+      }
+      out.push(kxPad(boxed === null ? 1 : 2) + decl(p, p.actor ? "actor" : "participant"));
+    }
+    if (boxed !== null) out.push(`${kxPad(1)}end`);
     const tail = (text) => (kxEsc(text, ";") ? ` ${kxEsc(text, ";")}` : "");
     const put = (steps, depth) => {
       for (const s of steps) {
         if (s.type === "k") out.push(kxPad(depth) + s.line);
-        else if (s.type === "m") out.push(`${kxPad(depth)}${s.from}${s.arrow}${s.act || ""}${s.to}:${tail(s.text)}`);
+        else if (s.type === "m") {
+          const born = ends(s, "create") && m.participants.find((p) => p.id === s.create);
+          if (born) out.push(kxPad(depth) + "create " + decl(born, born.actor ? "actor" : "participant"));
+          if (ends(s, "destroy")) out.push(`${kxPad(depth)}destroy ${s.destroy}`);
+          out.push(`${kxPad(depth)}${s.from}${s.arrow}${s.act || ""}${s.to}:${tail(s.text)}`);
+        }
         else if (s.type === "t") out.push(`${kxPad(depth)}Note ${s.pos} ${s.who.join(",")}:${tail(s.text)}`);
         else if (s.type === "d") out.push(`${kxPad(depth - 1)}${s.kw}${tail(s.text)}`);
         else {
@@ -409,7 +445,7 @@
     const f = kxFind(A, m, key);
     const clean = String(text ?? "").replace(/\s*\n\s*/g, " ").trim();
     if (!f || !clean) return false;
-    A.setText(f.node, clean);
+    A.setText(f.node, clean, m);
     return true;
   }
 
@@ -601,7 +637,7 @@
   for (const A of Object.values(diagramKinds)) A.empty = () => A.parse(`${A.header}\n`);
   const diagramKindOps = {
     walk: kxWalk, count: kxCount, find: kxFind, level: kxLevel, rows: kxRows, move: kxMove, add: kxAdd, spot: kxSpot, remove: kxRemove,
-    step: kxStep, nest: kxNest, lift: kxLift, relabel: kxRelabel, merge: kxMerge, key: kxKey, MAX: KX_MAX, ARROWS: KX_ARROW_NAMES, SHAPES: KX_MM_SHAPES, steps: kxSteps,
+    step: kxStep, nest: kxNest, lift: kxLift, relabel: kxRelabel, merge: kxMerge, key: kxKey, MAX: KX_MAX, lines: kxLines, make: kxMake, pad: kxPad, esc: kxEsc, ARROWS: KX_ARROW_NAMES, SHAPES: KX_MM_SHAPES, steps: kxSteps,
   };
   // DIAGRAM-KINDS-END
 
@@ -635,6 +671,7 @@
 
   //: The mark at the head of a card: a shape in miniature for a mind map's node, else a glyph.
   function glyph(S, node) {
+    if (S.k.glyph) return icon(S.k.glyph(node));
     if (S.k.name === "mindmap") {
       if (node.type === "r") return icon("tree-structure");
       if (!MM_GLYPH[node.shape]) return icon(node.shape === "bang" ? "lightning" : "cloud");
@@ -651,6 +688,7 @@
 
   //: The small words beside a card's label, and the kind of block in the card's spoken name.
   function words(S, node) {
+    if (S.k.words) return S.k.words(S.m, node);
     const label = (id) => S.m.participants?.find((p) => p.id === id)?.label || id;
     if (S.k.name === "sequence") {
       if (node.type === "m") return { meta: `${label(node.from)} to ${label(node.to)}`, show: `${label(node.from)} \u2192 ${label(node.to)}`, kind: KX_ARROW_NAMES[node.arrow]?.toLowerCase() || "message" };
@@ -665,6 +703,7 @@
   //: `activate K` and `deactivate K` are kept lines (the blocks do not edit them), said in plain words: "Worker is active".
   function keptWords(S, line) {
     const hit = /^(de)?activate\s+(\S+)$/i.exec(line);
+    if (S.k.keptWords) return S.k.keptWords(line, S.m);
     if (!hit || S.k.name !== "sequence") return null;
     const who = S.m.participants.find((p) => p.id === hit[2])?.label || hit[2];
     return `${who} ${hit[1] ? "is done" : "is active"}`;
@@ -706,7 +745,7 @@
     if (row.type === "k") return `k${level}\n${row.line}`;
     const n = row.node;
     const { meta, kind } = words(S, n);
-    return [level, row.fixed, n.type, S.k.text(n), meta, kind, n.shape, n.arrow, n.act, n.pos, n.kw, n.actor, n.from, n.to, Boolean(row.kids), kids.map((k) => k.sig).join("|")].join("\u0001");
+    return [level, row.fixed, n.type, S.k.text(n), meta, kind, n.shape, n.arrow, n.act, n.pos, n.kw, n.actor, n.from, n.to, S.k.sig?.(n), Boolean(row.kids), kids.map((k) => k.sig).join("|")].join("\u0001");
   }
 
   function buildBlock(S, row, level, fresh) {
@@ -751,7 +790,7 @@
     }
     const card = kit.el("div", "dgm-card");
     //: A sequence row is two lines: the sentence, and who it is between (or what the block is) muted under it.
-    if (meta && S.k.name === "sequence") card.classList.add("dgm-card-two");
+    if (meta && (S.k.name === "sequence" || S.k.two)) card.classList.add("dgm-card-two");
     const grip = kit.el("span", "dgm-grip");
     grip.dataset.objGrip = "";
     grip.title = "Drag to move";
@@ -773,13 +812,15 @@
   // --- menus ----------------------------------------------------------------------
   //: A pick of one participant (or "no one", for a note's second), from the picker the flowchart's Join uses.
   function pickWho(S, title, allow, done, none = null) {
-    const shell = pickerDialog({ title, placeholder: "Search the participants…", searchLabel: "Search the participants" });
-    const box = pickerListbox(shell, "Participants");
+    const refs = S.k.refs ? S.k.refs(S.m) : S.m.participants;
+    const things = S.k.refsWord || "participants";
+    const shell = pickerDialog({ title, placeholder: `Search the ${things}…`, searchLabel: `Search the ${things}` });
+    const box = pickerListbox(shell, things.charAt(0).toUpperCase() + things.slice(1));
     const paint = () => {
       const needle = shell.search.value.trim().toLowerCase();
-      const items = [...(none ? [{ icon: "ph:minus", label: none, about: "", value: "" }] : []), ...S.m.participants.filter((p) => allow(p)).map((p) => ({ icon: "ph:user-circle", label: p.label, about: p.id, value: p.id }))]
+      const items = [...(none ? [{ icon: "ph:minus", label: none, about: "", value: "" }] : []), ...refs.filter((p) => allow(p)).map((p) => ({ icon: "ph:user-circle", label: p.label, about: p.id, value: p.id }))]
         .filter((i) => !needle || i.label.toLowerCase().includes(needle));
-      box.fill(items, needle, { icon: "ph:users", title: "No participant matches", text: "Try other words." });
+      box.fill(items, needle, { icon: "ph:users", title: `No ${things.replace(/s$/, "")} matches`, text: "Try other words." });
     };
     shell.search.addEventListener("input", paint);
     paint();
@@ -792,14 +833,25 @@
     const A = S.k;
     const say = (text) => kit.commit(S, text);
     const sub = (title, list, current, set) => ({ label: `ph:caret-right ${title}`, group: "edit", items: list.map(([value, name]) => ({ label: `${value === current ? "ph:check" : "ph:square"} ${name}`, run: () => set(value) })) });
+    const numbering = { label: `${S.m.autonumber ? "ph:check-square" : "ph:square"} Number the messages`, group: "edit", run: () => (S.m.autonumber ? delete S.m.autonumber : (S.m.autonumber = true), say(S.m.autonumber ? "Messages are numbered." : "Messages are not numbered.")) };
     const items = [{ label: "ph:pencil-simple Rename", run: () => relabel(S, key), group: "edit" }];
     if (A.name === "mindmap") items.push(sub("Shape", ops.SHAPES.map((s) => [s, MM_NAME[s]]), n.shape || "default", (shape) => (delete n.raw, (n.shape = shape), say(`${nameOf(S, key)} is now ${MM_NAME[shape].toLowerCase()}.`))));
-    if (n.type === "m") {
+    if (A.menu) items.push(...A.menu({ S, n, key, say, sub, pickWho, nameOf, prompt: promptDialog }));
+    else if (n.type === "m") {
       items.push(
         { label: "ph:arrow-line-left From…", group: "edit", run: () => pickWho(S, "Message from", () => true, (id) => ((n.from = id), say(`Message now comes from ${whoLabel(S, id)}.`))) },
         { label: "ph:arrow-line-right To…", group: "edit", run: () => pickWho(S, "Message to", () => true, (id) => ((n.to = id), say(`Message now goes to ${whoLabel(S, id)}.`))) },
         sub("Arrow", Object.entries(ops.ARROWS), n.arrow, (arrow) => ((n.arrow = arrow), say(`Arrow is now ${ops.ARROWS[arrow].toLowerCase()}.`))),
         sub("Activation", [["", "None"], ["+", "Activate the receiver"], ["-", "Deactivate the sender"]], n.act, (act) => ((n.act = act), say("Activation changed."))),
+        //: L-documents-56: a message can make its receiver appear (`create`) or end a participant (`destroy`); autonumber is the diagram's.
+        sub("Lifetime", [["", "Neither"], ["create", "Creates the receiver"], ["destroy-to", "Destroys the receiver"], ["destroy-from", "Destroys the sender"]], n.create ? "create" : n.destroy ? `destroy-${n.destroy === n.to ? "to" : "from"}` : "", (v) => {
+          delete n.create;
+          delete n.destroy;
+          if (v === "create") n.create = n.to;
+          else if (v) n.destroy = v === "destroy-to" ? n.to : n.from;
+          say(v ? `Message ${v === "create" ? "creates" : "destroys"} a participant.` : "Message ends no participant.");
+        }),
+        numbering,
       );
     } else if (n.type === "t") {
       items.push(
@@ -807,9 +859,23 @@
         { label: "ph:user-circle About…", group: "edit", run: () => pickWho(S, "Note about", () => true, (id) => ((n.who = [id, ...n.who.slice(1)]), say(`Note is now about ${whoLabel(S, id)}.`))) },
         ...(n.pos === "over" ? [{ label: "ph:users Also about…", group: "edit", run: () => pickWho(S, "Note also about", (p) => p.id !== n.who[0], (id) => ((n.who = id ? [n.who[0], id] : [n.who[0]]), say(id ? `Note now spans to ${whoLabel(S, id)}.` : "Note is about one participant.")), "Just one") }] : []),
       );
-    } else if (n.type === "b") items.push(sub("Kind", SEQ_BLOCKS.map((b) => [b, b]), n.kw, (kw) => ((n.kw = kw), say(`Block is now a ${kw}.`))));
+    } else if (n.type === "b") items.push(...(n.kw === "rect" ? [{ label: "ph:palette Colour…", group: "edit", run: () => openSheet({ label: "Colour of the highlight", sub: "Tints the steps inside. Pale blue is the default.", name: "diagram-colour", build: (card, close) => {
+      card.classList.add("swatch-card");
+      card.append(swatchPicker({ label: "Colour", value: null, onChange: () => {}, onChoose: (key) => {
+        close();
+        const [r, g, b] = key ? CATEGORY_PALETTE[key].slice(1).match(/\w\w/g).map((x) => parseInt(x, 16)) : [191, 223, 255];
+        n.text = `rgba(${r}, ${g}, ${b}, ${key ? 0.3 : 1})`;
+        say(`Highlight is now ${key || "pale blue"}.`);
+      }, none: "Pale blue" }));
+    } }) }] : []), sub("Kind", SEQ_BLOCKS.map((b) => [b, b]), n.kw, (kw) => ((n.kw = kw), say(`Block is now a ${kw}.`))));
     else if (n.type === "d") items.push(sub("Word", [["else", "else"], ["and", "and"], ["option", "option"]], n.kw, (kw) => ((n.kw = kw), say(`Divider is now ${kw}.`))));
-    else if (n.type === "a") items.push({ label: n.actor ? "ph:user-circle Make it a participant" : "ph:user Make it an actor", group: "edit", run: () => ((n.actor = !n.actor), say(`${n.label} is now ${n.actor ? "an actor" : "a participant"}.`)) });
+    else if (n.type === "a") items.push({ label: "ph:selection Box…", group: "edit", run: async () => {
+      const text = await promptDialog(`Box around ${n.label} (the words on its edge; blank takes it out)`, n.box || "", { confirmLabel: "Save" });
+      if (text == null) return;
+      if (text.trim()) n.box = text.trim();
+      else delete n.box;
+      say(n.box ? `${n.label} sits in the box ${n.box}.` : `${n.label} is out of its box.`);
+    } }, numbering, { label: n.actor ? "ph:user-circle Make it a participant" : "ph:user Make it an actor", group: "edit", run: () => ((n.actor = !n.actor), say(`${n.label} is now ${n.actor ? "an actor" : "a participant"}.`)) });
     if (!f.level.fixed) {
       items.push(
         { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
@@ -869,7 +935,7 @@
     S.sel = ops.key(node);
     S.fresh = tile.into && !spot ? S.sel : null;
     const where = A.name === "mindmap" && place.parent ? ` ${tile.into ? "under" : "next to"} ${A.text(place.parent)}` : "";
-    kit.commit(S, `Added ${tile.name.toLowerCase()}${where}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
+    kit.commit(S, `Added ${tile.name.toLowerCase()}${where}${made ? ` and ${made} ${(A.made || ["participant", "participants"])[made === 1 ? 0 : 1]}` : ""}.`);
     name();
     return S.sel;
   }
@@ -894,7 +960,7 @@
     const gone = ops.remove(S.k, S.m, key);
     if (!gone) return kit.say(S, "The central idea stays. Delete its branches instead.");
     S.sel = near && near.type !== "k" ? ops.key(near) : null;
-    const extra = [gone.count > 1 ? `${gone.count - 1} inside` : "", gone.joins ? `${gone.joins} ${gone.joins === 1 ? "message" : "messages"}` : ""].filter(Boolean);
+    const extra = [gone.count > 1 ? `${gone.count - 1} inside` : "", gone.joins ? `${gone.joins} ${(S.k.joinWords || ["message", "messages"])[gone.joins === 1 ? 0 : 1]}` : ""].filter(Boolean);
     kit.commit(S, `Deleted ${name}${extra.length ? ` with ${extra.join(", ")}` : ""}.`);
   }
 
@@ -1079,7 +1145,7 @@
     S.empty = kit.el("div", "empty-state dgm-empty");
     const start = smallButton("ph:layout Start from a template", `Pick a starting ${A.noun}`, () => kit.suggest(S, "templates"), false);
     start.classList.add("accent");
-    S.empty.append(kit.el("p", "empty-title", EMPTY[A.name][0]), kit.el("p", "", EMPTY[A.name][1]), start);
+    S.empty.append(kit.el("p", "empty-title", (EMPTY[A.name] || A.empty_text)[0]), kit.el("p", "", (EMPTY[A.name] || A.empty_text)[1]), start);
     S.ghosts = kit.el("div", "dgm-ghosts hidden");
     S.drop = kit.el("div", "dgm-drop hidden");
     S.pane = kit.el("div", "dgm-pane");
@@ -1177,6 +1243,7 @@
   function show(host, io, text, name, helpers) {
     kit = helpers;
     const A = diagramKinds[name];
+    if (!A) return null;
     A.render = render;
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagramKind) OBJ_MODES.diagramKind = KIND_MODE;
     const S = panes.get(host.querySelector(":scope > .dgm"));
@@ -1206,5 +1273,8 @@
     },
   };
 
-  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec, act };
+  //: The five kinds of diagram-kinds-more.js (L-documents-57) join `diagramKinds` when that file loads; `load` fetches it for them.
+  const MORE = /^(gantt|pie|state|class|er)$/;
+  const load = (name) => (MORE.test(name) && !diagramKinds[name] ? lazyScript("/js/diagram-kinds-more.js") : true);
+  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, load, MORE, registry: diagramKinds, ghostSpec, act };
 })();

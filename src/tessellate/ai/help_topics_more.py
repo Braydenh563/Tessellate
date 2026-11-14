@@ -493,11 +493,13 @@ MORE_TOPICS: list[dict] = [
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
-            "The welcome's last card offers the same three choices once, and Skip passes them by. "
+            "The welcome's preferences card offers the same choices once, and Skip passes them by. "
             "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
-            "Notifications: mute everything except reminders. Writing: smart "
+            "Notifications: mute everything except reminders. Writing: New starts with (short notes, the default, or long "
+            "documents: New then opens a blank document, which reads in a serif until you choose otherwise; the Notes "
+            "tab's own New note button still makes a note; the welcome asks it too), smart "
             "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
             "of a link unless it is on), Kinds of suggestion in a document's writing sheet (switch off style, "
             "punctuation, capital letters or word choice), and offers to turn a named note or document into a link "
@@ -1835,13 +1837,16 @@ TOPIC_META: dict[str, dict] = {
     "translate": {"title": "Translating", "path": "Notes tab, Writing room"},
     "tags-categories": {"title": "Tags and categories", "path": "A note's own row, or Capture's Filing menu"},
     "code-files": {"title": "Code documents", "path": "Library tab, Documents"},
+    "csv-grid": {"title": "A CSV file as a grid", "path": "A .csv or .tsv document, Grid"},
+    "json-schema": {"title": "JSON schema checks", "path": "Library tab, Documents"},
     "code-completions": {"title": "Completions and snippets in code", "path": "A code document, as you type"},
     "code-tabs": {"title": "Tabs for open code files", "path": "A code document, the strip above the editor"},
+    "vim-keys": {"title": "Vim keys in the editor", "path": "A document, the ... menu, Vim keys"},
     "code-run": {"title": "Running, previewing and testing code", "path": "A code document, Run", "steps": (
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
-        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
+        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays. A script with top-level await runs as one async body, so the console sees only what it put on self.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
     "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
@@ -1858,9 +1863,15 @@ TOPIC_META: dict[str, dict] = {
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New's arrow, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
+    "board-drawio": {"title": "draw.io files, CSV and libraries, and draw.io templates", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG; the Library panel menu"},
+    "board-interchange": {"title": "Rack layout, GraphML, Miro, PlantUML and EMF import, and the board configuration", "path": "A board, Arrange, Layout; Import"},
+    "board-draw-io-keys": {"title": "Board keys from draw.io: edit data, select none, turn, resize, copy size and data", "path": "A board, Help, Keyboard shortcuts"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, Home, tidy as a tree, change a shape, link a shape, shrink text to fit, clear labels", "path": "A board, Arrange, View, or a selection's More"},
     "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
+    "board-pdf": {"title": "Put a PDF on a board", "path": "A board, drop a PDF, or the Image button"},
+    "board-frame-binds": {"title": "Bind a frame to a note property", "path": "A board, right-click a frame, Bind to a property"},
+    "board-suggest-name": {"title": "Suggest a name for a board", "path": "Library, a board's ... menu, Suggest a name"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
@@ -1962,13 +1973,13 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
-        "debugger", "code-panel", "margin-reader",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
+        "debugger", "code-panel", "code-lint", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-interchange", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-effects", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2257,6 +2268,74 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-group-edit",
+        "keywords": (
+            "edit inside a group", "enter a group", "leave a group", "dim the rest of the board", "board workspace",
+            "save panel layout", "workspaces", "which panels are open",
+        ),
+        "body": (
+            "Edit inside a group: double-click a grouped item (or Ctrl+K, Edit inside the group) and the rest "
+            "of the board dims and cannot be clicked, swept or reached with Select all or Tab; the group's own "
+            "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
+            "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "
+            "name, and switch between up to eight; they are kept on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-structure",
+        "keywords": (
+            "tags on a shape", "tag a board item", "filter the board by tag", "show only one tag", "collapse a frame",
+            "expand a frame", "fold a frame", "find in this frame", "drop highlight on a frame",
+        ),
+        "body": (
+            "Tags: select a shape, drawing, connector or object and type words in the Format panel's Data tab "
+            "(Enter adds, a comma adds several, press a tag to remove it), or use Ctrl+K, Edit tags. In the "
+            "find bar (Ctrl+F) the tag list shows only one tag and dims everything without it; closing the bar "
+            "clears it. Collapse a frame with its Collapsed box in the Format panel or Ctrl+K, Collapse this "
+            "frame: it folds to its title bar, hides what it holds and shows a count; Expand puts it back, each "
+            "as one Undo step, and export and presenting skip what is hidden. A frame outlines while you carry "
+            "an item over it. The find bar's frame button limits matches and Replace all to the frame holding "
+            "the selection or the middle of the view."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-text-more",
+        "keywords": (
+            "subscript", "superscript", "h2o on a board", "x squared on a board", "small raised text",
+            "maths on a board", "latex on a board", "equation in a shape", "dollar sign maths", "rich text in a shape", "list in a shape", "link in a shape", "bold in a shape label",
+        ),
+        "body": (
+            "Subscript and superscript on a board, in a text box that shows its markdown and in a shape's text: "
+            "write H~2~O for a lowered 2 and x^2^ for a raised one (no spaces between the marks; a doubled ~~ is still "
+            "strikethrough). To add them without typing the marks, select the words and choose Text style, then Subscript or Superscript. While you type you see the marks; when you finish they turn into small raised or lowered "
+            "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
+            "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
+            "an export carries the source words instead. Rich text in a shape: select a drawn shape, open Format, Label, and tick Rich text. "
+            "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, two stars on each side make "
+            "bold, one star makes italic, a backtick on each side makes code, and [words](address) makes a link; links open in a new tab and only web, mail and phone addresses work. Labels you "
+            "have not ticked stay plain. An SVG, PNG or PDF export draws rich words as they look: rows, bullets, bold and italic."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-drawn-shapes",
+        "keywords": (
+            "cylinder", "cube", "database shape", "uml actor", "lifeline", "folder shape", "step shape", "chevron",
+            "tape", "document shape", "process shape", "drawn shapes", "resize keeps corners", "shape picker",
+            "isometric cube", "curly bracket", "uml component", "double arrow", "data storage",
+        ),
+        "body": (
+            "Drawn shapes are a set of 40 outlines in the shape picker (Insert, Shape picker, or Ctrl+K and type the name) and in the "
+            "Library tab under Drawn shapes: cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, "
+            "process, the flowchart and UML sets, arrows, brackets and isometric tiles. Unlike a stretched picture, one is drawn again when you resize it, so a step keeps the size "
+            "of its notch and a folder its tab. Edit a point or turn it and it is stretched like any other shape from then on. A draw.io "
+            "file with shape=cylinder3, cube, step, umlActor and the rest brings them in as these shapes, and Export, draw.io writes them back."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-keyboard-create",
         "keywords": (
             "keyboard only board", "make a sticky with the keyboard", "enter on a board",
@@ -2267,7 +2346,32 @@ MORE_TOPICS.extend([
             "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
             "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
-            "selected shape writes in it. Escape leaves the words."
+            "selected shape writes in it. Escape leaves the words. Ctrl+Alt+Y (Edit, Repeat last move, "
+            "turn or resize) does the last move, turn or resize again to what is selected now. "
+            "The first time you hold each tool a one-line hint says what it does; it shows once per tool on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-ink",
+        "keywords": (
+            "pen", "marker", "smooth", "smoothed", "pressure", "stylus", "apple pencil", "freehand",
+            "ink", "draw a line", "wobbly pen", "thick and thin", "clean up", "replay", "gif",
+        ),
+        "body": (
+            "The pen and the marker draw smoothed ink: the line you make is evened out, "
+            "and with a pen or stylus it is thicker where you press harder. With a mouse or "
+            "a finger the width follows how fast you draw. A dashed pen keeps the plain "
+            "stroke. A free line or arrow with a hollow end (diamond, circle, square) stops "
+            "at the end's edge instead of running through it. To tidy a rough shape, select the "
+            "pen stroke and choose Edit, Clean up the drawn shape (or find it in the command "
+            "palette): a stroke drawn as a line, arrow, rectangle, ellipse, triangle or diamond "
+            "becomes that shape in the same colour and width, as one Undo step. A scribble that "
+            "is none of them stays as it is. To watch a board being drawn, choose Edit, Replay "
+            "the pen drawing: the pen strokes disappear and come back one by one in the order "
+            "you drew them (with reduced motion on, it skips to the finished board). Export, "
+            "GIF saves the same thing as an animated picture. The Format panel's width control "
+            "and turning a pen stroke work on smoothed ink too, each as one Undo step."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2287,11 +2391,29 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-effects",
+        "keywords": (
+            "text shadow", "glass", "gloss", "picture fill", "image fill", "flip", "mirror",
+            "frame opacity", "status bar", "board zoom", "selection count",
+        ),
+        "body": (
+            "Finishing touches on a board, in the Format panel. Text shadow puts a soft shadow "
+            "behind the words of a shape or a text box. Glass adds a glossy sheen to a drawn "
+            "shape, next to Shadow. Picture fill pours an image you choose into a drawn shape, "
+            "cut to its outline; Clear takes it out. Flip mirrors a sticky, a picture or a "
+            "frame left to right or top to bottom, and a sticky's words stay readable. A frame "
+            "has an Opacity slider. The View menu's Status bar shows the zoom, the tool and "
+            "how many items are selected; it is off until you switch it on."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-tables",
         "keywords": (
             "table", "tables", "add a table", "table on a board", "rows and columns",
             "add a row", "add a column", "delete a row", "delete a column", "grid of cells",
             "connect to a table row", "table row connection point",
+            "merge cells", "split a cell", "striped rows", "resize a row", "paste a markdown table",
         ),
         "body": (
             "A table on a board, as in draw.io: Insert, Table places three rows of "
@@ -2299,9 +2421,17 @@ MORE_TOPICS.extend([
             "Tab and Shift+Tab go to the next and previous cell, Enter keeps the "
             "words, Escape drops them. Right-click the table for Add a row below or "
             "above, Add a column to the right or left, Widen or Narrow this column, "
-            "Equal column widths, Delete this row or column (at the cell you "
-            "pressed last) and First row as a header. Resize it by its handles; "
-            "columns share the width equally until you widen or narrow one. "
+            "Equal column widths, Taller or Shorter row, Equal row heights, "
+            "Delete this row or column (at the cell you pressed last), First row "
+            "as a header and Striped rows. Drag a line between two columns or two "
+            "rows to size them, one Undo step per drag; the menu rows do the same "
+            "from the keyboard. Shift-click a second cell to pick a block, then "
+            "Merge cells in the menu joins them into one cell with their words; "
+            "Split cell on a merged cell undoes it. Striped rows (also in the Format "
+            "panel) tints every other body row, on the board and in an export. "
+            "Paste a Markdown table (pipes and a dashed rule) or cells copied from a "
+            "sheet onto the board and it becomes a table. Resize it by its handles; "
+            "columns and rows share the size equally until you drag a line. "
             "Pointing at a table while you drag a connector's end shows a connection point at each side of every row, so "
             "a connector can join one row; add or delete a row and the connectors on the rows below it stay on the same row."
         ),
@@ -2312,13 +2442,18 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit shape points", "edit polygon points", "move a corner of a shape", "add a corner to a shape",
             "take a corner out", "reshape a polygon", "change the corners of a shape", "edit points",
+            "draw a polygon", "insert polygon", "polygon tool", "click the corners of a shape",
         ),
         "body": (
+            "Insert, Polygon draws a new one: click each corner, double-click or press Enter to close it (Backspace takes the last corner back, Escape cancels). It is one Undo step and its corners are connection points. "
             "Edit shape points, in a straight-sided shape's More, the right-click Arrange and Ctrl+K, shows a square "
             "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
             "press the outline to add a corner there and drag it, press a corner without moving to take it out "
             "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
-            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit."
+            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit. "
+            "Connection points are separate: Format, Position and size lists a shape's connection points. Pick one to hold it on the outline (On outline) "
+            "so it stays on the edge when the shape is resized, nudge it by pixels, add one or remove the chosen one (Enter on Add puts one after the chosen point), each change one Undo step; "
+            "a draw.io file's points, with their pixel offsets, come in and go back out."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2352,19 +2487,19 @@ MORE_TOPICS.extend([
             "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
         ),
         "body": (
-            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
-            "blocks. Mermaid is only its file format. Every door is the same row, "
-            "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
-            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "The Diagram builder makes a flowchart, mind map, timeline, sequence, Gantt, pie, state, class or ER diagram "
+            "from blocks. Mermaid is only its file format. Every door is the same row, "
+            "Diagram builder, with the same icon; in Documents and the Library's document list, the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, document or Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
+            "opens the builder empty, and Done saves a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
-            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
+            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects). "
             "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -2455,6 +2590,23 @@ MORE_TOPICS.extend([
             "from the keyboard, Insert in the blocks list adds a step under the selected one, + on the picture. "
             "A suggestion of its own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-chart-kinds",
+        "keywords": (
+            "gantt blocks", "pie chart blocks", "state diagram blocks", "class diagram blocks", "er diagram blocks",
+            "gantt title", "date format", "pie title", "chart title", "ask for a pie slice", "ask for a transition",
+        ),
+        "body": (
+            "A Gantt chart, pie chart, state, class or ER diagram is blocks too, and the bar offers that kind's own. "
+            "On a Gantt chart and a pie chart, Title is a block of its own, and a Gantt chart's Date format is another: "
+            "press Title or Date format in the bar, then rename it like any block. The source keeps what you wrote until you change that block. "
+            "The Ask box works on all five: add task Test under Build, add slice Cats 30, set Review to 5d, add transition from Idle to Done, "
+            "add relation from Order to Customer. Suggestions list a slice named twice, an empty section, a second title, "
+            "or a state, class or entity with nothing joined to it, each with a button that removes it. "
+            "Suggest, Templates has one starter for each kind: Launch plan, Where the time goes, Order states, Shop classes and Shop data."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2578,8 +2730,14 @@ TOPIC_META.update({
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
+    "board-effects": {"title": "Text shadow, glass, picture fill, flip, frame opacity and the status bar", "path": "A board's Format panel, Style tab; the View menu, Status bar"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
+    "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
+    "board-drawn-shapes": {"title": "Drawn shapes: cylinder, cube, step, actor", "path": "A board's Insert menu, Shape picker, or the Library tab, Drawn shapes"},
+    "board-text-more": {"title": "Subscript, superscript and maths on a board", "path": "A text box or a shape's text, type H~2~O or x^2^"},
+    "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
+    "board-ink": {"title": "Smoothed pen, Clean up, replay and GIF", "path": "A board's pen or marker; the Edit menu, Clean up the drawn shape or Replay the pen drawing"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},
@@ -2843,7 +3001,7 @@ MORE_TOPICS.append({
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
-#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a table, board or calendar of notes by property.
 MORE_TOPICS.append({
     "id": "document-base",
     "keywords": (
@@ -2855,13 +3013,32 @@ MORE_TOPICS.append({
         "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
         "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
         "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
-        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
-        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
-        "It is a table only; boards and calendars are not built."
+        "The first column is the note's name: press it to open the note. Table, Board and Calendar on the block "
+        "switch the view and are kept in a view: line. A board groups by group: status (a select or a list such as tags); drag "
+        "a card to another column, or use its menu, to change that property in the note. A calendar places notes by date: due. "
+        "Private notes never appear."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
+TOPIC_META["document-base"] = {"title": "A table, board or calendar of notes", "path": "A document, the / menu, Notes table"}
+
+
+#: L-documents-43: the query block (documents-base.js), a saved search kept live in a document.
+MORE_TOPICS.append({
+    "id": "document-query",
+    "keywords": (
+        "query block", "saved search in a document", "live search", "search results in a document", "```query",
+        "saved search block", "live list of notes",
+    ),
+    "body": (
+        "Type /saved search in a document, or write a code block marked query, to keep a search's results as a list "
+        "in the page. Write the name of one of your saved searches (saved: Reading list), or search: and the words or "
+        "operators to look for, and limit: 20 to show more or fewer (50 at most). The list shows notes and documents; "
+        "press a title to open it. It reads again each time the document saves, and the refresh button reads it on demand."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-query"] = {"title": "A saved search in a document", "path": "A document, the / menu, Saved search"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
@@ -2887,6 +3064,25 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and the overview of a diagram", "path": "A diagram document, the ... menu"}
+
+
+MORE_TOPICS.append({
+    "id": "diagram-styling",
+    "keywords": (
+        "diagram markdown text", "sequence autonumber", "sequence box", "create participant", "destroy participant", "diagram line break", "group direction", "subgraph direction", "diagram class", "classdef", "diagram link", "click link in diagram", "diagram class shorthand", "diagram icon", "animate an arrow", "arrow animation", "diagram bold name", "br in a diagram",
+    ),
+    "body": (
+        "A block's menu has Markdown text, which draws bold (two asterisks each side) and italic (one) in its name; write <br/> in a name for a line break. "
+        "A group's menu has Direction: its blocks flow that way inside it (Mermaid ignores it when a block in the group is joined to one outside). "
+        "A block's menu also has Class (a name; a new one gets a pale blue look, written as a classDef line you can edit in Source) and Link (an https address or [[a note]]); Open link follows it. "
+        "In a document, a block with a link is a button on the picture: it opens the link the same way. A callback or javascript: click line stays a locked line. "
+        "Name:::class after a block is read as its class. A node written with @{ icon: ... } is drawn with its label and its line is kept as written: no icon pack is bundled, so the icon itself is not drawn. "
+        "An arrow's menu has Animation (still, moving, slowly or quickly), written as e1@--> and an e1@{ animate: true } line; the picture holds still when motion is reduced. Mermaid has no setting for where an arrow's label sits. "
+        "On a sequence diagram, a participant's menu has Box (a named frame round it) and Number the messages; a message's menu has Lifetime (it creates or destroys a participant); a highlight block has Colour."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["diagram-styling"] = {"title": "Names, groups and styles of a diagram's blocks", "path": "A diagram document, Blocks, a block's menu"}
 
 
 #: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
@@ -2943,25 +3139,51 @@ MORE_TOPICS.append({
     ),
     "body": (
         "A paragraph can live in one document and be shown in others. In its own document, put the caret in it and "
-        "choose Link to this block in the / menu: it gets a short id at the end of its last line. In another document "
-        "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
-        "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
-        "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
-        "shows it follows, and that document's History has the change. Other edits to that document in the meantime "
-        "stay; if the paragraph itself was changed somewhere else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is "
-        "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
-        "shown: there the text is simply the text."
+        "choose Copy as synced block in the / menu (or Link to this block for a plain link): it gets a short id at the "
+        "end of its last line and ![[Document title#^the-id]] is copied. In another document paste it, or choose Paste "
+        "synced block, and the paragraph appears there as text you can press to edit; the line under it names where it "
+        "comes from (press that to open the document). Save writes it into the document it lives in, so there is only "
+        "ever one copy, every other place that shows it follows at once (in other open windows too), and that "
+        "document's History has the change. In the paragraph's own document, a small pencil with a number appears where "
+        "the id is hidden when other documents or notes show it: it opens the same box, and Save changes the text you "
+        "are writing. Other edits to a document in the meantime stay; if the paragraph itself was changed somewhere "
+        "else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is not "
+        "allowed, and an empty one cannot be saved."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}
+TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Copy as synced block"}
+
+#: DOCUMENTS_PLAN D14 (L-documents-44): sub-pages, the Library's tree and the head's breadcrumb (documents-subpages.js).
+MORE_TOPICS.append({
+    "id": "document-subpages",
+    "keywords": (
+        "sub-page", "sub-pages", "subpage", "child page", "nested pages", "page tree", "move under",
+        "new sub-page", "parent document", "breadcrumb", "/subpage",
+    ),
+    "body": (
+        "A document can sit under another one. In the Library's Documents list, a document's ... menu has New sub-page "
+        "(a document under it, opened at once) and Move under (pick the document to put it under; "
+        "Move to the top level takes it out again). In a document, type /subpage: it makes a sub-page and puts a link to it where you "
+        "typed. A document with sub-pages has a small arrow before it in the list: press it to show or hide the pages "
+        "under it (the list starts with them hidden, and remembers which you opened). A search shows its matches as a "
+        "flat list. At the top of a sub-page, its parents are shown after Documents: press one to open it (on a phone the "
+        "nearest parent shows on a line under the title, and its ... menu lists them all). A page cannot "
+        "go under itself or one of its own sub-pages, and Move under does not list them. Sub-pages stay under their "
+        "parents when two computers sync. Deleting a document moves its sub-pages to the bin with it, and "
+        "restoring it brings them back; deleting it for good leaves its sub-pages at the top level. Each move and each "
+        "new sub-page can be undone."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-subpages"] = {"title": "Sub-pages", "path": "Library tab, Documents, a document's ... menu, New sub-page or Move under; type /subpage in a document"}
 
 #: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
 MORE_TOPICS.append({
     "id": "document-board",
     "keywords": (
         "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
-        "![[board", "![[map", "edit here", "canvas block",
+        "![[board", "![[map", "edit here", "canvas block", "show live", "board window",
     ),
     "body": (
         "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
@@ -2971,9 +3193,41 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards. The other way: a board's Board menu, Write as a document, "
+        "was, on the board it had open or on its list of boards. Show live, beside Edit here, draws the board in the "
+        "document itself, to read: zoom and pan it with the corner buttons, Ctrl and the wheel or plus and minus, and press "
+        "Refresh to read it again. Each card has its own window, so two boards side by side keep their own zoom, and a "
+        "window changes nothing; closing Edit here redraws the windows on that board. The other way: a board's Board menu, Write as a document, "
         "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here or Show live"}
+
+#: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
+MORE_TOPICS.append({
+    "id": "board-format-options",
+    "keywords": (
+        "picture border", "image border", "border on a picture", "outline a picture",
+        "grid size", "grid colour", "grid color", "change the grid", "board options",
+        "rulers", "show rulers", "units", "millimetres", "inches", "centimetres", "points", "png resolution", "png dpi", "include a copy of the diagram", "reopen a png", "html export", "export as a web page", "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
+    ),
+    "body": (
+        "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
+        "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
+        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
+        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200 pixels whatever the units, empty is 24) "
+        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
+        "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
+        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "
+        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts. "
+        "Export: PNG adds Border (space round the picture), Resolution (72, 96, 150 or 300 dots per inch, written into the file) and "
+        "Include a copy of the diagram, which puts the board inside the PNG so Insert, Diagram can open it again; HTML saves one web page "
+        "of the board that opens offline in any browser, with scroll to zoom and drag to pan. "
+        "Rulers and units: View, Rulers shows a ruler along the top and down the left that follows pan and zoom; Units in the Board section "
+        "(pixels, millimetres, centimetres, inches or points, 96 pixels to the inch) sets what the rulers and the Format panel's position and size fields show."
+    ),
+    "badge": {"label": "Whiteboard", "tab": "library"},
+})
+TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}
+TOPIC_META["code-lint"] = {"title": "Lint warnings in a code file", "path": "A .js, .ts or .py file in the Library; Settings, Packages for Ruff"}
+TOPIC_META["diagram-chart-kinds"] = {"title": "Blocks for Gantt, pie, state, class and ER diagrams", "path": "A diagram document, Blocks"}

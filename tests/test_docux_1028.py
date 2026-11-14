@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 EDITOR_CSS = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -42,7 +43,8 @@ def test_u8_a_blank_document_opens_in_edit_without_changing_the_stored_view():
 def test_u10_image_opens_a_picker_and_uploads_to_the_media_store():
     assert 'if (action.custom === "image") {\n    docImagePick(box, boxId);' in DOCS_JS
     pick = _fn("docImagePick")
-    assert 'type = "file"' in pick and 'accept = "image/*"' in pick
+    # The picker takes a video too since L-documents-68 (a player from this origin).
+    assert 'type = "file"' in pick and 'accept = "image/*,video/mp4,video/webm,.mp4,.webm"' in pick
     upload = _fn("docImageUpload")
     assert '"/media/upload"' in upload and "authHeaders()" in upload
     # The old stub is the fallback when the upload fails.

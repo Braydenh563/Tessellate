@@ -13,6 +13,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
@@ -53,5 +54,5 @@ def test_open_link_uses_the_allowlist():
 
 
 def test_pasted_addresses_are_encoded_into_markdown():
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     assert "value.replace(/[\\s()<>]/g, (c) => encodeURIComponent(c))" in source

@@ -246,7 +246,8 @@ HELP_TOPICS: list[dict] = [
             "filterable place: notes, documents, chats, files and tags, plus "
             "Bookmarks (a shelf for websites you visit often), Contents (a "
             "hyperlinked outline of the whole notebook) and Skills. "
-            "The other sub-tabs are Documents, Boards & maps (whiteboards "
+            "The other sub-tabs are Documents (each card shows its first "
+            "lines on a small page, or its first picture), Boards & maps (whiteboards "
             "and mind maps), Images and Files. Each sub-tab's top bar ends "
             "with a ? that says what it holds. The Highlights chip lists every "
             "passage you marked in a note, each with its note. The Activity chip "
@@ -281,12 +282,12 @@ HELP_TOPICS: list[dict] = [
             "in the title moves to the body. The Library list's ... menu has Suggest a name. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
             "commenting, in a monospace face. Insert opens the / menu (Image opens a "
-            'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
+            'file picker; it takes MP4 or WebM video as a player). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
             "a spellchecker can't catch. The menu's Map the headings turns its "
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
-            "Flowchart, or any Mermaid diagram: sequence, class, state, entity relationship, Gantt, pie, "
-            "mind map, timeline and the rest) draws as a picture in Read and Live, in chat and Ask replies, "
-            "in a print and in the HTML export; press "
+            "Flowchart, or any Mermaid diagram: sequence, class, state, ER, Gantt, pie, "
+            "mind map, timeline and the rest) draws as a picture in Read and Live, chat and Ask replies, "
+            "prints and the HTML export; press "
             "it in Live to edit its text, and a block Mermaid cannot read stays as code with the reason under it. Print or "
             "save as PDF first asks for the page size, orientation, margins and "
             "page numbers, and a plain Ctrl+P uses the last choice; a code file prints "
@@ -294,14 +295,13 @@ HELP_TOPICS: list[dict] = [
             "and in the graph popup, drag the corner of a picture to resize it (or "
             "Tab to the corner and use the arrow keys), and its align button puts it "
             "left, centre or right. A note card and the timeline's note view have "
-            "the same align button (and the corner, apart from a card's small "
-            "thumbnails); a picture set in one place looks the same in all. "
+            "the same align button and corner; a picture set in one place looks the same in all. "
             "The status bar counts characters, words, lines and reading time as "
             "the note composer does (an emoji is one character); a code file "
-            "shows lines, characters and the language instead. The type button (and New's arrow) lists file types; Markdown is rich text, "
+            "shows lines, characters and the language instead; past 200 lines the "
+            "caret's place adds a percent through. The type button (and New's arrow) lists file types; Markdown is rich text, "
             "a .mmd diagram opens beside its picture (Library, Diagrams). Search "
-            'documents reads a window: "harbor last week" finds the harbor '
-            "ones edited last week."
+            'documents reads a time window: "harbor last week".'
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -328,7 +328,7 @@ HELP_TOPICS: list[dict] = [
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Share and save, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
-            "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
+            "after the board (PDF: A4 or Letter, per frame or tiled), or Copy image (also in Ctrl+K) puts the picture on the clipboard, and Copy as SVG in Ctrl+K puts the SVG there as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             'selection (or the whole board): "arrange as a grid of 3", '
@@ -984,7 +984,9 @@ HELP_TOPICS: list[dict] = [
             "The Writing room is for turning rough, unstructured thoughts into "
             "a proper note before it's saved: Suggest a title there takes the "
             "title from your own words with no model, while Draft and Refine "
-            "need one and say so when pressed. A document's menu, a selection of "
+            "need one and say so when pressed. After a Draft the status line "
+            "names any time, number or [placeholder] your thoughts and notes do not hold, to check before sending. "
+            "A document's menu, a selection of "
             "text, a note under review and a selection of cards on a board have "
             "Extract notes, which does the same for a document, the text or those cards."
         ),
@@ -1716,7 +1718,8 @@ HELP_TOPICS.extend(
                 "letter, report, essay, CV and one-page proposal), planning ones, "
                 "and code ones that open in the code view (a Python script, a command "
                 "line tool, a FastAPI endpoint, JavaScript with tests, an HTML page, a "
-                "SQL schema, a README, a notebook of cells and a p5.js sketch). In a "
+                "SQL schema, a README, a notebook of cells and a p5.js sketch). The Today "
+                "button in Library, Documents opens today's document, or starts it from the Daily template. In a "
                 'document, the "/" menu\'s Templates group inserts the writing and planning ones.'
             ),
             "badge": {"label": "Templates", "section": "templates"},
@@ -1858,15 +1861,15 @@ HELP_TOPICS.extend(
             #: (documents-code.js); the chords are checked against the first.
             "body": (
                 "A document can be code: give it the extension (fix.py, index.html). "
-                "You get syntax colours, error underlines listed in the Problems "
+                "You get syntax colours (PHP loads on first open), error underlines listed in the Problems "
                 "panel, hover notes, colour swatches, indent guides and brackets "
                 "that close themselves. Spelling covers comments and strings only. Completions and snippets open as you type "
-                "(the Code completions topic). HTML and CSS have Emmet: type ! or ul>li*3 "
+                "(the Code completions topic). HTML, CSS, SCSS, Sass, Stylus and Less have Emmet: type ! or ul>li*3 "
                 "and press Enter or Tab; the command palette (Ctrl+K) has Emmet "
                 "wrap and balance inward or outward. Keys: Shift+Alt+F formats, "
                 "Ctrl+/ toggles a line comment, Shift+Alt+A a block comment, Alt+Z "
-                "wraps long lines, Ctrl+G goes to a line (on a phone the bar at the foot "
-                "has Tab, Undo and the brackets), F8 and Shift+F8 step through problems, "
+                "wraps long lines, Ctrl+G goes to a line (on a phone a bar has Tab, "
+                "Undo and the brackets), F8 and Shift+F8 step through problems, "
                 "Alt+Enter offers quick fixes, F12 goes to a definition, Shift+F12 "
                 "lists every use, Ctrl+Shift+F finds in every document, and Go to "
                 "a symbol is in the palette. Ctrl+Shift+Enter runs the file (the "
@@ -1874,8 +1877,8 @@ HELP_TOPICS.extend(
                 "output in a panel under the editor; F5 debugs it (the Debugging "
                 "code topic: F9 a breakpoint, F10 steps over, F11 while debugging "
                 "steps in (Focus mode otherwise), Shift+F11 steps out, Shift+F5 "
-                "stops); Stop ends it, and the panel's top edge drags its height "
-                "(kept for each tab). Blocks fold from the "
+                "stops); Stop ends it, and the panel's top edge drags its height. "
+                "Blocks fold from the "
                 "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+. toggles one, Ctrl+Alt+[ "
                 "and Ctrl+Alt+] all of them). "
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "
@@ -1883,8 +1886,8 @@ HELP_TOPICS.extend(
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
                 "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
                 "editor, Ctrl+K Ctrl+S lists the keys here, and Outline follows the "
-                "caret. Minimap (Editor and layout, "
-                "off at first) maps the whole file; Compare with a saved version or another document "
+                "caret. Minimap (Editor and layout) "
+                "maps the whole file; Compare with a saved version or another document "
                 "(palette) shows changes inline; Reject undoes a hunk."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1909,6 +1912,28 @@ HELP_TOPICS.extend(
                 "first and reopens where you were. Close file ends the open tab and "
                 "shows its neighbour, and a middle-click closes any tab. A prose "
                 "document never shows the strip."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "vim-keys",
+            "keywords": (
+                "vim",
+                "vim keys",
+                "vim mode",
+                "vi keys",
+                "modal editing",
+                "normal mode",
+                "insert mode",
+                "visual mode",
+                "dd",
+            ),
+            #: Written from `documents-ide.js` (L-documents-41).
+            "body": (
+                "Vim keys, in the document's ... menu, gives the editor Vim's modes and keys in "
+                "code and in documents. It is off until you turn it on, and the choice is kept in "
+                "this browser. Esc goes to Normal, i inserts, v selects, dd deletes a line, u undoes, "
+                ":w saves. The bar shows the mode while it is on: NORMAL, INSERT or VISUAL."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

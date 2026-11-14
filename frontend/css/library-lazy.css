@@ -227,6 +227,12 @@ textarea.has-gutter {
   display: none;
 }
 
+/* Edit inside a group (L-whiteboard-7): the rest of the board stands back and cannot be pressed. */
+#whiteboard-container .wb-dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 .skill-card .skill-card-facts > :is(.chip, button).skill-fact > .ph-lead {
   margin-inline-end: 0;
 }
@@ -621,6 +627,86 @@ textarea.has-gutter {
 /* The Library's board is loaded again behind the closing panel: laid out, not seen. */
 .doc-board-closing {
   visibility: hidden;
+}
+
+/* Show live (decision 83): a board card's own read-only window, drawn by documents-board.js and zoomed by the diagram view.
+   Two classes, because diagram-lazy.css arrives later and makes `.dgm` its parent's height. */
+.doc-embed-board-live {
+  margin-block-start: var(--space-2);
+  margin-inline-start: var(--space-2);
+}
+.doc-board-live.dgm {
+  display: flex;
+  height: min(28rem, 70dvh);
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+/* In Live the card is a 320 px inline box (documents-cm-theme.js); with its window open it takes the line's width. */
+.cm-editor .cm-md-embed:has(.doc-board-live) {
+  display: block;
+}
+.cm-editor .cm-md-embed .doc-embed-map:has(> .doc-board-live) {
+  width: 100%;
+}
+.doc-board-live > .dgm-stage {
+  flex: 1 1 auto;
+}
+.doc-board-live-head {
+  display: flex;
+  justify-content: flex-end;
+}
+.doc-board-svg {
+  overflow: visible;
+}
+.doc-board-shape {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.doc-board-frame .doc-board-shape {
+  fill: none;
+  stroke-dasharray: 6 4;
+}
+/* A sticky's paper in the theme's warm tint, so its words keep the theme's ink. */
+.doc-board-sticky .doc-board-shape {
+  fill: var(--warn-soft);
+  stroke: none;
+}
+.doc-board-words {
+  fill: var(--text);
+  font-family: inherit;
+}
+.doc-board-frame .doc-board-words {
+  fill: var(--muted);
+}
+.doc-board-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media print {
+  .doc-embed-board-live,
+  .doc-board-live {
+    display: none;
+  }
+}
+
+/* A video in a document (`![name](/media/x.mp4)`, image-layout.js `imageLayout.video`): the browser's own controls, no wider
+   than the column. The name line is for paper and exports (09-editor.css), not the screen. */
+.doc-video {
+  display: block;
+  margin: var(--space-2) 0;
+  max-width: 100%;
+}
+.doc-video video {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.doc-video-name {
+  display: none;
 }
 
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
@@ -1613,6 +1699,62 @@ body.printing-doc #doc-preview p,
   color: var(--muted);
   font-size: var(--text-base);
   line-height: 1.5;
+}
+
+/* A document's page (INBOX 1325, L-documents-54; DESIGN.md "A document in a list"): the heading and the opening lines on a
+   3:4 leaf, laid out 12rem wide and scaled down to 3.5rem (0.2917 is the one over the other; plain lengths, not tokens), so it
+   reads as a page of text rather than a line of grey. Decoration: the row's own words say the same in full. */
+.doc-list-page {
+  flex: 0 0 auto;
+  inline-size: 3.5rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--page);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  position: relative;
+}
+.doc-list-page-leaf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  inline-size: 12rem;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-5);
+  transform: scale(0.2917);
+  transform-origin: top left;
+  line-height: 1.4;
+  text-align: left;
+}
+.doc-list-page-cover {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.doc-list-page-head {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.doc-list-page-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
 }
 
 .wb-map-legend-title {
@@ -2971,6 +3113,34 @@ body.printing-doc #doc-preview p,
   user-select: none;
 }
 
+.wb-label-math {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+/* Rich words in a shape's label (whiteboard-label-rich.js): the text box's markdown, small and tight to fit a shape. */
+.wb-label-rich {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+.wb-label-rich[data-valign="top"] { justify-content: flex-start; }
+.wb-label-rich[data-valign="bottom"] { justify-content: flex-end; }
+.wb-label-rich > * { margin: 0; }
+.wb-label-rich ul, .wb-label-rich ol { padding-left: 1.2em; text-align: left; }
+.wb-label-rich a { color: inherit; text-decoration: underline; pointer-events: auto; }
+
 /* The one-line editor over a connector sits on the line, so it takes the
    card's ground to stay readable over it. */
 .wb-shape-label-editor.wb-link-label-editor {
@@ -3771,6 +3941,11 @@ body.printing-doc #doc-preview p,
   white-space: nowrap;
   pointer-events: none;
   transition: background-color var(--ui-fast) var(--ease-out), color var(--ui-fast) var(--ease-out), border-color var(--ui-fast) var(--ease-out), scale var(--ui-fast) var(--ease-out);
+}
+
+/* A Library tile or Layers row is the browser's own drag, so the target takes the pointer for that one. */
+.whiteboard-floating-panel.wb-trash.wb-trash-dnd {
+  pointer-events: auto;
 }
 
 .whiteboard-floating-panel.wb-trash .ph {
@@ -5042,11 +5217,15 @@ button.ghost.doc-template-choice.wb-template-choice {
   }
 }
 
-/* The breakpoint lane under a finger (Brief 70): wider, so a tap beside a
-   line number lands on it rather than on the fold arrow or the text. */
+/* The breakpoint lane under a finger (Brief 70): the touch floor wide, so a tap
+   beside a line number lands on it rather than on the fold arrow or the text.
+   The editor theme sets the lane's 0.875rem at three classes, so this names
+   four: at one class less the 1.5rem it was never applied (docsverify-lane.js
+   measured 14px under a coarse pointer). A row is one line tall, the line
+   pitch, so the width is the target. */
 @media (pointer: coarse) {
-  .cm-debug-gutter .cm-gutterElement {
-    width: 1.5rem;
+  .cm-editor .cm-gutters .cm-debug-gutter .cm-gutterElement {
+    width: var(--target-min);
   }
 }
 
@@ -5115,6 +5294,12 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .doc-history-name {
   font-weight: 600;
+}
+
+/* The account keeps the server's line breaks: one line per version after the total. */
+.doc-history-story {
+  white-space: pre-line;
+  margin: var(--space-2) 0;
 }
 
 /* Room for the pair: the history is wider than the AI log it shares a class
@@ -6601,6 +6786,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-table-grid {
   /* One cell until `wbPaintTable` sets the tracks from the table's cells. */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
@@ -6632,6 +6818,50 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-table-grid.has-header .wb-table-cell[data-r="0"] {
   background: color-mix(in srgb, var(--accent) 12%, var(--card));
   font-weight: 600;
+}
+
+/* Every other body row (data.stripes); the header keeps its own tint. */
+.wb-table-cell[data-stripe] {
+  background: color-mix(in srgb, var(--text) 5%, var(--card));
+}
+
+/* A range picked with Shift and a click, for Merge cells. */
+.wb-table-cell.is-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--card));
+}
+
+/* The grid lines, draggable while the table is selected (a row's or column's size). */
+.wb-table-grip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+}
+
+.wb-table-grip-col {
+  width: var(--space-2);
+  margin-left: calc(var(--space-2) / -2);
+  cursor: col-resize;
+}
+
+.wb-table-grip-row {
+  height: var(--space-2);
+  margin-top: calc(var(--space-2) / -2);
+  cursor: row-resize;
+}
+
+.wb-selected .wb-table-grip {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.wb-selected .wb-table-grip:hover,
+.wb-selected .wb-table-grip:focus-visible,
+.wb-table-grip.is-dragging {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 /* Edit data (canvasdepth2): a name and a value per row, the value taking
@@ -8410,6 +8640,12 @@ input[type="color"].wb-mixed {
     margin: calc(var(--space-3) * -1);
     background-clip: padding-box;
   }
+  /* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
+     grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
+  .wb-shape-caret {
+    box-sizing: content-box;
+    padding: calc((var(--target-min) - 10px) / 2);
+  }
 }
 
 /* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
@@ -9372,6 +9608,59 @@ input[type="color"].wb-mixed {
   overflow-wrap: anywhere;
 }
 
+/* Structure rows (WHITEBOARD_PLAN section 12). A tag filter stands the untagged rest back but leaves it pressable. */
+#whiteboard-container .wb-tag-dim {
+  opacity: 0.25;
+}
+
+.wb-fmt-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+
+.wb-fmt-tag-row:empty {
+  display: none;
+}
+
+.wb-search-tag {
+  flex: 0 1 7rem;
+  min-width: 0;
+  width: 7rem;
+}
+
+/* A folded frame is its bar: a ground and the count of what it hides, in the frame's own words. */
+.wb-object-frame.wb-frame-collapsed {
+  background: var(--chip-bg);
+  border-radius: var(--radius-sm);
+}
+
+.wb-object-frame.wb-frame-collapsed::after {
+  content: attr(data-folded) " inside";
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The frame under a carried item. An outline and a tint of the accent, no blur. */
+.wb-object-frame.wb-drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-soft);
+}
+
+/* Insert, Polygon: the cursor while corners are being placed (whiteboard-shapes-js.js). */
+.whiteboard-container.wb-polygon-on,
+.whiteboard-container.wb-polygon-on * {
+  cursor: crosshair;
+}
+
 /* Links: a look per link and folder, folders, the card view (library-links.js, INBOX 827 L3 to L6).
    The colour is a palette key the script sets as `--swatch` (library-links.js `LOOKS`), never a free colour. */
 /* A chosen colour shows in every look, the flat ones too (their rule above clears the mark). */
@@ -9557,4 +9846,201 @@ input[type="color"].wb-mixed {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+/* A synced block reads as a copy: the text is the way in (documents-embeds.js), and the marker in the block's own document (documents-cm.js). */
+.doc-embed-synced .doc-embed-block-body {
+  cursor: text;
+}
+
+.cm-md-blockuse {
+  margin-inline-start: var(--space-2);
+}
+
+.doc-block-use {
+  vertical-align: baseline;
+}
+
+.doc-synced-own {
+  position: fixed;
+  z-index: 2;
+  inline-size: min(22rem, calc(100vw - var(--space-4)));
+  padding: var(--space-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") ---------------
+   A child row steps in by one `--space-7` per level from its parent; the parent's disclosure is a quiet icon button
+   before the tick whose caret turns a quarter with `aria-expanded`, as `.disclosure-row`'s does. */
+#library-docs-list > li.doc-tree-child {
+  /* One level; `decorate` writes deeper levels on the row as a multiple of the same token. */
+  margin-inline-start: var(--space-7);
+}
+.doc-list-top > .doc-tree-toggle {
+  flex: 0 0 auto;
+}
+.doc-tree-toggle .ph {
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+.doc-tree-toggle[aria-expanded="true"] .ph {
+  transform: rotate(90deg);
+}
+/* The breadcrumb in the document head: the parents after the way back, each a quiet link that clips its own long
+   title, so the row stays one row and the title field keeps the room. */
+.doc-dock-identity > .doc-crumbs {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--space-1);
+  margin-inline-end: var(--space-2);
+}
+.doc-crumbs > .doc-crumb {
+  min-width: 0;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.doc-crumbs > .doc-crumb:hover,
+.doc-crumbs > .doc-crumb:is(:focus-visible, :has(:focus-visible)) {
+  color: var(--ink);
+}
+/* A phone has 143px beside the back button for a title and a trail (measured at 390: the nav 49px, the title 21px), so a
+   sub-page's trail takes the row under them: a menu of every parent, then the nearest parent, cut to what is left. */
+.doc-crumb-more {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  .doc-dock-identity:has(> .doc-crumbs) {
+    flex-wrap: wrap;
+  }
+  .doc-dock-identity > .doc-crumbs {
+    order: 3;
+    flex: 1 0 100%;
+    overflow: visible;
+  }
+  .doc-crumbs > .doc-crumb.doc-crumb-far,
+  .doc-crumbs > .doc-crumb-sep {
+    display: none;
+  }
+  .doc-crumbs > .doc-crumb-more {
+    display: inline-flex;
+  }
+  .doc-crumbs > .doc-crumb {
+    flex: 0 1 auto;
+    max-width: none;
+  }
+}
+/* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
+/* Page view (Format > Board): the printed page frames, under the cards. */
+.wb-page-frame {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 35%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 6;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Rulers (View > Rulers): a strip along the top and down the left, over the canvas, taking no pointer. */
+.wb-ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: color-mix(in srgb, var(--modal-bg-opaque) 88%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 45%, transparent);
+  stroke-width: 1;
+  fill: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--text-xs);
+}
+.wb-ruler text {
+  stroke: none;
+}
+
+/* A flipped sticky note (whiteboard-effects.js, L-whiteboard-47): only the empty fold corner is mirrored, in place with
+   `scale`, and moved to the mirrored edge; the words are never mirrored, so the note still reads. */
+.wb-object-text.wb-sticky[data-flip~="x"]::after {
+  right: auto;
+  left: 0;
+  scale: -1 1;
+}
+.wb-object-text.wb-sticky[data-flip~="y"]::after {
+  bottom: auto;
+  top: 0;
+  scale: 1 -1;
+}
+.wb-object-text.wb-sticky[data-flip="xy"]::after {
+  scale: -1 -1;
+}
+
+/* The board's status bar (whiteboard-effects.js, View, Status bar): a plain corner `.dock` like the diagram builder's
+   zoom bar, off by default, no blur. It sits bottom left, clear of the zoom cluster at the right. */
+.wb-status-bar {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 819.98px) {
+  .wb-status-bar {
+    display: none;
+  }
+}
+
+/* --- the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") -----------
+   Lazy: the boards bundle loads this sheet. One switch row per set on the modal recipe: the name, then its count at the
+   end. The list scrolls inside the card rather than growing past the window. */
+.wb-sets-card .wb-sets-hint {
+  margin: 0;
+}
+.wb-sets-card .wb-sets-list {
+  display: flex;
+  flex-direction: column;
+  max-height: min(60vh, 28rem);
+  overflow-y: auto;
+}
+.wb-sets-card .wb-sets-count {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. */
+/* Out of sight only because a folded frame holds it: quiet, not struck through. */
+.wb-layer-row.is-folded .wb-layer-name {
+  color: var(--muted);
+  font-style: italic;
+}
+.wb-layer-row.is-folded .wb-layer-eye {
+  opacity: 1;
+}
+/* K18: a saved picture's caption, one muted line under it (Show captions). Lazy: out of the boot sheet. */
+.wb-object-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  pointer-events: none;
 }

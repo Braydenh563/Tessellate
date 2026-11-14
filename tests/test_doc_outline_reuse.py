@@ -8,12 +8,13 @@ everything a row is drawn from, or a renamed heading would keep its old row.
 """
 
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def _render_outline() -> str:
-    src = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    src = documents_text()
     start = src.index("function renderDocOutline() {")
     return src[start : src.index("\n}\n", start)]
 

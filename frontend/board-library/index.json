@@ -13,9 +13,19 @@
    "count": 27
   },
   {
+   "key": "drawio-templates",
+   "name": "Templates from draw.io",
+   "count": 40
+  },
+  {
    "key": "general",
    "name": "General",
    "count": 19
+  },
+  {
+   "key": "shapes-js",
+   "name": "Drawn shapes",
+   "count": 40
   },
   {
    "key": "callouts",

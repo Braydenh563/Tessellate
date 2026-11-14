@@ -8,6 +8,7 @@ page was not marked `aria-current`. The caption now keeps a reference to the
 menu, as the laser menu does. A small fake DOM runs the function itself.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 FAKE = r"""
 class El {

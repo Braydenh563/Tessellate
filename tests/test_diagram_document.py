@@ -14,6 +14,7 @@ from pathlib import Path
 
 from tessellate.core import filetypes
 from tessellate.core.database import Document
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -82,7 +83,7 @@ def test_the_library_chip_and_the_open_path_know_the_kind():
 def test_an_mmd_document_opens_in_blocks_and_its_view_is_never_stored():
     # 1546 P2 moved the intent: the diagram's own view is Blocks (the Read button, relabelled), with
     # Split and Source beside it, so the opening view and the fallback changed from Split.
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
     assert 'type.ext === "mmd" && ["split", "rendered", "canvas", "blocks"].includes(mode)' in state and "type.previewable" in state

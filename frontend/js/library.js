@@ -3557,6 +3557,29 @@ function libraryDocsNewMount() {
       b.addEventListener("click", open);
       head.after(b);
     }
+    //: Today (L-documents-64): the day's document, opened or made from the "Daily" template, beside New
+    //: diagram. The day's title is the template's own (`docTemplateFill`), so the button and the gallery row agree by one spelling.
+    if (head && !$("library-docs-today")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-today";
+      b.type = "button";
+      b.className = "ghost small";
+      b.title = "Open today's document, or start it from the Daily template";
+      setLabel(b, "ph:calendar-check Today");
+      b.addEventListener("click", async () => {
+        await ensureModule("library");
+        const template = DOC_TEMPLATES.find((t) => t.id === "daily");
+        const day = window.docTemplateFill(template).title;
+        //: A failed look-up must not start a second copy.
+        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch((e) => toast(voiceLine("failed", { what: "look for today's document", why: e.message }), true));
+        if (!found) return;
+        const doc = found.find((d) => (d.title || "").trim() === day);
+        switchTab("documents");
+        if (doc) openDocument(doc.id);
+        else await window.createDocument(template);
+      });
+      head.after(b);
+    }
     const empty = $("library-docs-empty");
     if (empty && !$("library-docs-empty-diagram")) {
       const b = document.createElement("button");
@@ -3579,6 +3602,9 @@ function libraryDocsNewMount() {
   slot.replaceChildren(wrap);
 }
 
+//: Sub-pages (D14): the tree, its kebab rows, `/subpage` and the breadcrumb, lazy (documents-subpages.js). Fetched as
+//: this file loads, so an editor opened without the list still draws its parents.
+lazyScript("/js/documents-subpages.js");
 async function renderLibraryDocuments() {
   const list = document.getElementById("library-docs-list");
   const empty = document.getElementById("library-docs-empty");
@@ -3593,6 +3619,7 @@ async function renderLibraryDocuments() {
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
   await loadDocTypeTable();
+  await lazyScript("/js/documents-subpages.js");
   libraryDocsNewMount();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
@@ -3665,6 +3692,9 @@ async function renderLibraryDocuments() {
   //: Before paging: see `LIBRARY_DOC_SORTS`. On a copy, because `docs` may be
   //: an array another reader holds.
   docs = [...docs].sort(LIBRARY_DOC_SORTS[libraryDocSort()]);
+  //: The tree, collapsed by default (D14), only on the whole list: a search or a property shows its matches flat.
+  const tree = !needle && !propertyFiltered ? window.docSubpagesPiece : null;
+  if (tree) docs = tree.order(docs);
   if (libraryDocsPageSize === "all" || !docs.length) {
     pageBar?.classList.add("hidden");
   } else {
@@ -3755,6 +3785,32 @@ async function renderLibraryDocuments() {
     //: with its own "# Title" line, so the snippet began with the title the
     //: row prints in bold one line up (`libraryTitleAndPreview`).
     const docPreview = libraryTitleAndPreview(doc.title || "", doc.preview || "", false).preview;
+    //: **A page, not a line of grey text** (INBOX 1325, L-documents-54): the heading and the opening lines on a small page,
+    //: drawn from the summary the list already has (nothing stored, nothing fetched); `.doc-list-page` in library-lazy.css.
+    const page = document.createElement("span");
+    page.className = "doc-list-page";
+    page.setAttribute("aria-hidden", "true");
+    const leaf = document.createElement("span");
+    leaf.className = "doc-list-page-leaf";
+    const leafHead = document.createElement("span");
+    leafHead.className = "doc-list-page-head";
+    leafHead.textContent = doc.title || "Untitled";
+    const leafLines = document.createElement("span");
+    leafLines.className = "doc-list-page-lines";
+    leafLines.textContent = docPreview;
+    leaf.append(leafHead, leafLines);
+    page.append(leaf);
+    //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
+    if (doc.cover) {
+      const cover = document.createElement("img");
+      cover.className = "doc-list-page-cover";
+      cover.loading = "lazy";
+      cover.decoding = "async";
+      cover.alt = "";
+      cover.addEventListener("error", () => cover.remove());
+      cover.src = doc.cover;
+      page.append(cover);
+    }
     if (docPreview) {
       const preview = document.createElement("span");
       preview.className = "doc-list-preview";
@@ -3813,22 +3869,16 @@ async function renderLibraryDocuments() {
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
           renderLibraryDocuments();
         }),
+        ...(window.docSubpagesPiece?.menuItems(doc) || []),
         makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
           downloadFromApi(`/documents/${doc.id}/export.md`, "document.md");
         }),
         makeMenuItem("ph:trash Delete", "Delete this document", async () => {
-          if (
-            !(await confirmDialog(
-              `Delete "${doc.title || "Untitled"}"? You can undo this straight after.`
-            ))
-          ) {
-            return;
-          }
           //: The fourth and last door onto the same delete. All four now go
           //: through `deleteDocumentWithUndo`, a delete that is recoverable
           //: from one menu and permanent from another is worse than one that
           //: is permanent everywhere, because it teaches a rule that is false.
-          await deleteDocumentWithUndo(doc).catch((e) => toast(e.message, true));
+          if ((await deleteDocumentWithUndo(doc, true).catch((e) => toast(e.message, true))) === false) return;
           libraryDocsSelection.delete(doc.id);
           renderLibraryDocuments();
         }),
@@ -3847,7 +3897,8 @@ async function renderLibraryDocuments() {
     // so there is no call here: wiring it twice installs two
     // MutationObservers on one menu, which do the same reparent twice.
 
-    open.append(top, body, menu);
+    open.append(top, page, body, menu);
+    tree?.decorate(item, open, doc, renderLibraryDocuments);
     item.appendChild(open);
     list.appendChild(item);
   }

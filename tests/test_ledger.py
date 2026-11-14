@@ -83,7 +83,15 @@ def test_ready_to_merge_only_with_no_open_rows():
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
 
 
-def test_a_new_row_never_reuses_an_id_already_moved_to_history(tmp_path, monkeypatch):
+def test_a_new_row_never_reuses_an_id_already_moved_to_history():
+    """`add` once reissued L-whiteboard-17 after the closed row had moved to HISTORY
+    (2026-11-12): two items shared one id. Ids closed into HISTORY stay taken."""
+    taken = ledger.taken_ids("whiteboard", "", "- [x] **L-whiteboard-17** `whiteboard` open, S: done.\n")
+    assert 17 in taken
+    assert ledger.next_id("whiteboard", "- [ ] **L-whiteboard-3** x\n", "- [x] **L-whiteboard-17** x\n") == "L-whiteboard-18"
+
+
+def test_add_numbers_past_the_ids_in_history(tmp_path, monkeypatch):
     """`ledger.py add` numbered from the LEDGER alone, so once every timeline row was done and
     moved to HISTORY it handed out L-timeline-1 again (2026-11-13), an id code comments cite."""
     import argparse

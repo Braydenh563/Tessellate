@@ -24,6 +24,7 @@ ins for what they call.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_more_text
 import json
 import re
@@ -35,7 +36,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 STATUS = (JS / "status.js").read_text(encoding="utf-8")
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

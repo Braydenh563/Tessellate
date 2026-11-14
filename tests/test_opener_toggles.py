@@ -12,6 +12,7 @@ close branch, and on the radial losing its press-time read.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -47,7 +48,7 @@ def test_help_popover_trigger_toggles():
 
 
 def test_radial_more_closes_on_a_second_press():
-    src = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    src = frontend_text("whiteboard.js")
     # The press is read in the window's capture phase: the outside-press close
     # has hidden the menu before the click arrives.
     assert "slot._menuWasOpen" in src

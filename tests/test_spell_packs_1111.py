@@ -24,6 +24,7 @@ import pytest
 
 from tessellate.core import extra_downloads, extras, spellpacks
 from tests.test_extras_download import _Server, _wait
+from tests._app_js import documents_text
 
 @pytest.fixture(autouse=True)
 def _clean_extras():
@@ -379,7 +380,7 @@ def test_with_the_grammar_checker_off_the_pack_is_not_started(tmp_path) -> None:
 
 # --- the wiring ---------------------------------------------------------------------------------
 
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 SPELL = (JS / "documents-spell.js").read_text(encoding="utf-8")
 NOTICE = (JS / "extra-notice.js").read_text(encoding="utf-8")
 

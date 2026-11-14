@@ -236,3 +236,24 @@ def test_the_sandbox_files_ship_in_every_build():
     for name in ("sandbox_page.html", "sandbox_py_page.html", "py_runner.py.txt", "py_worker.js",
                  "js_debug_worker.js", "sql_worker.js", "css_sample.html"):
         assert (root / "src/tessellate/api/run_sandbox_assets" / name).stat().st_size > 0, name
+
+
+def test_ruffs_files_are_served_to_the_page_only_once_installed_and_only_by_name(client):
+    import json
+
+    from tessellate.core import extra_downloads, extras
+
+    assert client.get("/documents/ruff/ruff_wasm.js").status_code == 404
+    extra = extras.EXTRAS_BY_ID["ruff"]
+    target = extra_downloads.folder(extra)
+    target.mkdir(parents=True, exist_ok=True)
+    names = [name for d in extra.downloads for _m, name in d.members]
+    for name in names:
+        (target / name).write_bytes(b"\0asm" if name.endswith(".wasm") else b"export default 1;")
+    (target / extra_downloads.MARKER).write_text(json.dumps({"version": extra.version, "files": names}), encoding="utf-8")
+    (target / "secret.txt").write_text("no", encoding="utf-8")
+    js = client.get("/documents/ruff/ruff_wasm.js")
+    assert js.status_code == 200 and js.headers["content-type"].startswith("text/javascript")
+    assert client.get("/documents/ruff/ruff_wasm_bg.wasm").headers["content-type"] == "application/wasm"
+    for name in ("secret.txt", "installed.json", "..%2Fpreferences.json", "%2E%2E"):
+        assert client.get(f"/documents/ruff/{name}").status_code == 404, name

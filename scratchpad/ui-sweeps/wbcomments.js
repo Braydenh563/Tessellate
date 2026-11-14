@@ -260,7 +260,7 @@ const OY = VW < 600 ? 150 : 0;
   await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await page.waitForTimeout(200);
-  await page.evaluate(async (id) => { const o = wbState.objects.find((x) => x.id === id); await wbSetComments("object", o, []); }, ids.sticky);
+  await page.evaluate(async (id) => { const o = wbState.objects.find((x) => x.id === id); const d = { ...o.data }; delete d.comments; o.data = d; await wbSaveObject(o); }, ids.sticky);
   await page.evaluate(() => wbCloseComments());
   await page.waitForTimeout(300);
 
@@ -321,7 +321,7 @@ const OY = VW < 600 ? 150 : 0;
   ok("a locked card's mark still takes the press", hit, await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return `${x},${y} ${e?.tagName}.${e?.className} #${e?.id}`; }, [c.mark.x, c.mark.y]));
   await page.evaluate(async (id) => {
     const rect = wbState.sketches.find((s) => s.id === id);
-    await wbSetComments("sketch", rect, [{ id: "x1", text: "Shape remark", at: new Date().toISOString() }]);
+    await wbSaveSketchProps(rect, { comments: [{ id: "x1", text: "Shape remark", at: new Date().toISOString() }] }); wbPaintCommentMarks();
   }, ids.rect);
   await page.waitForTimeout(400);
   const r = await look("sketch", ids.rect);

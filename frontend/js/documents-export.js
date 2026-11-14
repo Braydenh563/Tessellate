@@ -108,6 +108,18 @@ th, td { padding: 0.45em 0.7em; border: 1px solid var(--rule); text-align: left;
 .dg-curve { stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
 .dg-key { display: flex; flex-wrap: wrap; gap: 0.8em; margin-top: 0.4em; color: var(--muted); font-size: 0.9rem; }
 .db-scroll { overflow-x: auto; }
+/* A board and a calendar (documents-base.js): the same picture in the export's own tokens, wrapping rather than scrolling. */
+.db-board { display: flex; flex-wrap: wrap; gap: 0.8em; margin-bottom: 1.1em; }
+.db-col { flex: 1 1 11rem; min-width: 0; padding: 0.5em; border: 1px solid var(--rule); border-radius: 6px; }
+.db-col-head { margin: 0 0 0.5em; color: var(--muted); font-size: 0.9rem; }
+.db-cards { display: flex; flex-direction: column; gap: 0.4em; }
+.db-card { padding: 0.35em 0.5em; border: 1px solid var(--rule); border-radius: 4px; background: var(--inner); font-size: 0.9rem; overflow-wrap: anywhere; }
+.db-month { display: flex; align-items: center; gap: 0.6em; margin: 0.4em 0; }
+.db-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-bottom: 1.1em; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.db-dow { padding: 0.25em; color: var(--muted); font-size: 0.8rem; font-weight: 600; text-align: center; }
+.db-day { min-width: 0; min-height: 3.2em; padding: 0.25em; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); font-size: 0.8rem; overflow-wrap: anywhere; }
+.db-day-out { opacity: 0.5; }
+.db-daynum { display: block; color: var(--muted); }
 th { background: var(--inner); }
 hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--rule); }
 ul.task-list, .task-list { list-style: none; padding-left: 1.2em; }
@@ -141,6 +153,7 @@ details.callout[open] > .callout-head::before { content: "\\25BE\\2002"; }
 .doc-cols.md-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .doc-col > :first-child { margin-top: 0; }
 @media (max-width: 600px) { .doc-cols { grid-template-columns: 1fr; } }
+@media print { .db-col, .db-card, .db-day { break-inside: avoid; } }
 .md-rule-thick { height: 3px; }
 .md-rule-dots { height: auto; background: none; text-align: center; color: var(--muted); }
 .md-rule-dots::before { content: "\\2022\\2003\\2022\\2003\\2022"; }

@@ -12,6 +12,7 @@ window. Run in node against the source with stand-in elements; the browser
 half is `scratchpad/ui-sweeps/mapmorezoom.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -20,7 +21,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

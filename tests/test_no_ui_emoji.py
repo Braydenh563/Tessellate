@@ -87,7 +87,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "has no Phosphor font, never drawn in the app",
         ),
     ],
-    "frontend/js/documents.js": [
+    "frontend/js/documents-richpaste.js": [
         (
             "const DOC_RICH_TAGS",
             "the bullet marks a pasted Word paragraph starts with, matched to read it as "
@@ -142,7 +142,7 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "glyph is the redundant channel and the four marks must read as one family",
         ),
     ],
-    "frontend/js/whiteboard.js": [
+    "frontend/js/whiteboard-export.js": [
         (
             "obj.data?.task",
             "the exported SVG's task box: the icon font does not travel into the file "

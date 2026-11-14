@@ -1255,11 +1255,9 @@ function setBusy(button, busy, label = null) {
 // the button silently did nothing ("the recycle bin empty now button doesn't
 // work either"). This dialog is styled like the app and can mark danger.
 //: `checkbox` (`{label, title, checked}`) adds one optional second decision ("also take this picture out of the notes that show it") and resolves to `{ok, checked}`; without it callers still get a plain boolean. **The button says what it does**, never "OK" where a verb fits: with no label, the question's first word is used when it is one of these actions.
-const CONFIRM_VERBS = new Set([
-  "delete", "remove", "clear", "discard", "reset", "replace", "archive", "leave",
-  "disconnect", "overwrite", "restore", "empty", "forget", "unlink", "stop",
-  "merge", "move", "rename", "revert", "undo", "lock",
-]);
+const CONFIRM_VERBS = new Set(
+  "delete remove clear discard reset replace archive leave disconnect overwrite restore empty forget unlink stop merge move rename revert undo lock".split(" ")
+);
 function confirmVerb(message) {
   const first = String(message || "").trim().split(/\s+/)[0]?.replace(/[^A-Za-z]/g, "") || "";
   return CONFIRM_VERBS.has(first.toLowerCase())
@@ -1638,6 +1636,7 @@ const LAZY_MODULES = {
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
   //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise. The whiteboard files and d3 are the `boards` bundle (lazy-entries.js), which lists these files first.
   library: [
+    "/js/documents-warm.js", //: First: the Documents open starts its list, file types, first document and engine fetches while the rest of the bundle is still arriving.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
@@ -1664,6 +1663,19 @@ const LAZY_MODULES = {
     "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
+    //: Wrapped pieces of documents.js (L335), before it: each only declares, and documents.js calls them (at load too).
+    "/js/documents-prose-check.js",
+    "/js/documents-suggest-panel.js",
+    "/js/documents-commands.js",
+    "/js/documents-templates.js",
+    "/js/documents-cm-load.js",
+    "/js/documents-tablemenu.js",
+    "/js/documents-preview.js",
+    "/js/documents-edit-keys.js",
+    "/js/documents-richpaste.js",
+    "/js/documents-block-ids.js",
+    "/js/documents-links-panels.js",
+    "/js/documents-save.js",
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.

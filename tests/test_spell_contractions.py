@@ -7,11 +7,11 @@ import json
 import re
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
-SOURCE = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+SOURCE = documents_text()
 
 
 def _block(start: str, end: str) -> str:

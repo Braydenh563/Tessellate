@@ -29,9 +29,13 @@ function unwrapped(src) {
   return [...lines.slice(0, first), ...body, ...lines.slice(last + 1)].join("\n");
 }
 
-const SOURCES = ["documents.js", "documents-prose.js", "prefs.js", "autocorrect.js"].map((name) =>
-  unwrapped(fs.readFileSync(path.join(root, "frontend", "js", name), "utf8"))
-);
+const SOURCES = [
+  // documents.js and the pieces split out of it (L335), joined: the first source is "the documents editor".
+  ["documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js"],
+  ["documents-prose.js"],
+  ["prefs.js"],
+  ["autocorrect.js"],
+].map((names) => names.map((name) => unwrapped(fs.readFileSync(path.join(root, "frontend", "js", name), "utf8"))).join("\n"));
 
 // A top-level declaration: from its first line to the closing line at column 0.
 function declaration(name) {

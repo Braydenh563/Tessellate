@@ -974,6 +974,7 @@ function editorBlockRows(context) {
     add({ id: "flowchart", group: "Media", icon: "ph:flow-arrow", label: "Flowchart", about: "Boxes and arrows, drawn from the text", keys: "```mermaid", keywords: ["flowchart", "diagram", "mermaid", "chart", "boxes", "arrows", "process"], sample: "flowchart TD\n  A[Start] --> B[Next]", run: (t) => editorBlock(t, "```mermaid\nflowchart TD\n  A[Start] --> B[Next]\n```", "", "") });
     //: DOCUMENTS_PLAN 16: a plot with sliders, drawn by documents-graph.js (lazy) in Read and in Live.
     add({ id: "base", group: "Media", icon: "ph:table", label: "Notes table", about: "A table of the notes that have a property", keys: "```base", keywords: ["base", "database", "table", "notes", "properties", "query"], sample: "type: Book\ncolumns: author, rating", run: (t) => editorBlock(t, "```base\ntype: Book\ncolumns: author, rating\n```", "", "") });
+    add({ id: "query", group: "Media", icon: "ph:list-magnifying-glass", label: "Saved search", about: "A saved search, live", keys: "```query", keywords: ["saved search"], sample: "saved: Reading list", run: (t) => editorBlock(t, "```query\nsaved: Reading list\n```", "", "") });
     add({ id: "graph", group: "Media", icon: "ph:chart-line", label: "Graph", about: "Plot y = f(x) with sliders you can move", keys: "```graph", keywords: ["graph", "plot", "function", "curve", "desmos", "slider", "equation", "chart", "axes"], sample: "y = sin(a x)\na = 1 [0, 5]", run: (t) => editorBlock(t, "```graph\ny = sin(a x)\na = 1 [0, 5]\n```", "", "") });
   }
   add({ id: "math", group: "Media", icon: "ph:function", label: "Maths block", about: "A formula on its own line, typeset", keys: "$$ ... $$", keywords: ["math", "maths", "formula", "equation", "latex", "tex", "block"], sample: "$$ e^{i\\pi} + 1 = 0 $$", run: (t) => editorBlock(t, "$$ ", "x^2 + y^2 = z^2", " $$") });
@@ -999,6 +1000,10 @@ function editorBlockRows(context) {
   add({ id: "weblink", group: "Embeds", icon: "ph:globe", label: "Web link", about: "A link inside the sentence", keys: "[text](url)", keywords: ["url", "web", "href", "external", "link"], run: (t) => editorWebLink(t) });
   if (inDocument) {
     add({ id: "blockref", group: "Embeds", icon: "ph:link-simple", label: "Link to this block", about: "Copies [[Title#^id]] for this paragraph", keys: "#^", keywords: ["block", "reference", "anchor", "paragraph", "permalink", "copy link", "^"], run: (t) => editorApplyNamed(t, "blockref") });
+    add({ id: "syncedcopy", group: "Embeds", icon: "ph:copy", label: "Copy as synced block", about: "Copies ![[Title#^id]] for this paragraph; paste it in another document", keys: "![[#^]]", keywords: ["synced", "block", "transclude", "embed", "copy", "paragraph", "mirror", "^"], run: (t) => editorApplyNamed(t, "syncedcopy") });
+    //: D14: a document under this one, linked here (documents-subpages.js, loaded with the Library).
+    add({ id: "subpage", group: "Embeds", icon: "ph:file-plus", label: "Sub-page", about: "A new document under this one, linked here", keys: "", keywords: ["subpage", "child", "nested", "page"], run: (t) => window.docSubpagesPiece?.slash(t) });
+    add({ id: "syncedpaste", group: "Embeds", icon: "ph:clipboard-text", label: "Paste synced block", about: "Shows the paragraph you last copied as a synced block, editable here", keys: "![[#^]]", keywords: ["synced", "block", "paste", "insert", "embed", "transclude", "paragraph"], run: (t) => editorApplyNamed(t, "syncedpaste") });
   }
 
   // --- Advanced --------------------------------------------------------------

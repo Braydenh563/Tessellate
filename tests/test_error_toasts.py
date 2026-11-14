@@ -65,18 +65,20 @@ EXPECTED = {
     'chat.js': [
         '"Turn on Web search first, reading a page needs it."',
     ],
-    'documents-code.js': [
-        '`Emmet cannot read "${abbr}" as an abbreviation.`',
+    'documents-code-format.js': [
         '"Formatting is for code documents."',
         '"Select the lines to format first."',
         'refusal',
         '"The text changed while it was being checked. Format again."',
         'result.error',
+    ],
+    'documents-code.js': [
+        '`Emmet cannot read "${abbr}" as an abbreviation.`',
         '"That fix no longer applies: the text has changed since it was offered."',
     ],
     'documents-prose.js': [
-        '"That text has changed since it was checked."',
         '"Save the document first."',
+        '"That text has changed since it was checked."',
         '"This window has no speech voices to read with."',
     ],
     'documents-embeds.js': [
@@ -87,17 +89,27 @@ EXPECTED = {
     ],
     'documents.js': [
         '`${what} is not available here.`',
+        '"Full screen is not available in this window."',
+    ],
+    'documents-commands.js': [
         '"That section cannot go inside itself."',
+    ],
+    'documents-prose-check.js': [
+        '"That text has changed, the list is refreshed."',
+        '"Nothing left to fix."',
+    ],
+    'documents-blockref.js': [
         '"Give the document a title first, a block link is named by it."',
         '"Put the caret in a paragraph first."',
         '"That block is not in this document any more."',
-        '"Full screen is not available in this window."',
-        '"That text has changed, the list is refreshed."',
-        '"Nothing left to fix."',
+    ],
+    'documents-suggest.js': [
         '"Save the document first."',
         '(body && body.message) || "No other wordings came back for that one."',
         '"Nothing to discuss yet."',
         '"Nothing to check yet."',
+    ],
+    'documents-dictionary.js': [
         '"One word at a time: letters, with an apostrophe or hyphen inside."',
         '"No words found in that file. One word per line."',
         '"The dictionary is empty, so there is nothing to export."',
@@ -185,22 +197,31 @@ EXPECTED = {
         '"That file is too large to be a library (8 MB at most)."',
         '"That file is not a Tessellate library."',
     ],
-    'whiteboard-map.js': [
+    'whiteboard-map-marks.js': [
+        '"That time has gone: pick a later due date for a reminder."',
+    ],
+    'whiteboard-map-notes.js': [
         '"That topic\'s link is not a web address."',
+    ],
+    'whiteboard-map-strip.js': [
         '"A topic\'s link has to be an http, https or mailto address."',
         '"That file is not a picture."',
+    ],
+    'whiteboard-map.js': [
         '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
-        '"That time has gone: pick a later due date for a reminder."',
     ],
-    'whiteboard.js': [
-        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
+    'whiteboard-comments.js': [
         '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
+    ],
+    'whiteboard-export.js': [
         '"There is nothing in the outline to build."',
         '"That file is empty."',
         '`That outline is ${content.length.toLocaleString()} characters: the limit is ${WB_MAX_IMPORT_CHARS.toLocaleString()}.`',
-        '"Allow pop-ups to export as PDF, it opens Print, then Save as PDF."',
+    ],
+    'whiteboard.js': [
+        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
         '"The default board cannot change kind. Make a new board to start a mind map."',
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
@@ -209,7 +230,7 @@ EXPECTED = {
 
 #: Rule 4 (2026-10-10): situations the app expects, moved here from FAULTS.
 EXPECTED_RULE4 = {'settings-wiring.js': ['body.warning'], 'attachment-actions.js': ['"That upload is no longer in the Library; it may have been deleted."',
-        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
+        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code-format.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents-suggest.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
 for _name, _messages in EXPECTED_RULE4.items():
     EXPECTED.setdefault(_name, []).extend(_messages)
 
@@ -242,6 +263,7 @@ FAULTS = {
         '"Couldn\'t delete this chat."': 'delete request failed',
     },
     'documents-code.js': {
+        '"The formatter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Emmet could not be loaded, so nothing was wrapped."': 'the Emmet module failed to load: a broken asset',
     },
     'documents-history.js': {
@@ -254,8 +276,21 @@ FAULTS = {
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-cm-load.js': {
+        '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-links-panels.js': {
+        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-block-ids.js': {
+        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-suggest-panel.js': {
+        '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',
@@ -303,12 +338,16 @@ FAULTS = {
     'update-dialogs.js': {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
-    'whiteboard.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+    'whiteboard-textedit.js': {
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
-        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
+    },
+    'whiteboard-export.js': {
         'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
+    },
+    'whiteboard.js': {
+        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
     },
 }

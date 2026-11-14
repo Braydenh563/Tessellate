@@ -9,6 +9,7 @@ A text box keeps `underline`, `strike` and `font_family` on its object data
 `label_font` in its sketch data, which the server leaves opaque. Measured in
 the app by the sweep named in `archive/agent-remaining/whiteboard-1018.md`."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 import pytest
@@ -19,7 +20,7 @@ from tessellate.api.routes_whiteboard import WhiteboardObjectData
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

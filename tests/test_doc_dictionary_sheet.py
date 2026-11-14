@@ -16,7 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+#: The sheet's code is documents-dictionary.js (DOCUMENTS_PLAN L327), fetched on the first press.
+DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-dictionary.js").read_text(encoding="utf-8")
 CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
 
 
@@ -28,7 +29,7 @@ def _dialog() -> str:
 
 def _body(name: str) -> str:
     start = DOCS.index(f"function {name}(")
-    return DOCS[start : DOCS.index("\n}\n", start)]
+    return DOCS[start : DOCS.index("\n  }\n", start)]
 
 
 def test_the_count_is_muted_text_not_a_chip() -> None:

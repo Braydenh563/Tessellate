@@ -29,15 +29,19 @@ HARPER = FRONTEND / "vendor" / "harper"
 #: "Add to dictionary" row both menus draw, so the one-literal check still sees it.
 DOCUMENTS = "\n".join(
     (FRONTEND / "js" / name).read_text(encoding="utf-8")
-    for name in ("documents.js", "documents-view.js", "documents-prose.js", "documents-spell.js")
+    for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-view.js", "documents-prose.js", "documents-spell.js", "documents-suggest.js")
 )
 WORKER = (FRONTEND / "js" / "harper-worker.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:
-    start = DOCUMENTS.index(f"function {name}(")
-    end = DOCUMENTS.find("\n}\n", start)
-    return DOCUMENTS[start:end]
+    """The function's text; a lazy piece indents it and a stand-in of the same name sits in another file, so the longest wins."""
+    text = DOCUMENTS
+    found = []
+    for m in re.finditer(rf"^( *)(?:async )?function {name}\(", text, re.M):
+        end = text.index("\n" + m.group(1) + "}\n", m.start())
+        found.append(text[m.start() : end])
+    return max(found, key=len)
 
 
 # --- grammar -------------------------------------------------------------------
@@ -183,7 +187,7 @@ def test_a_sentence_case_heading_is_not_a_finding(tmp_path) -> None:
 SUGGEST_DRIVER = r"""
 const results = [];
 const eq = (name, got, want) => results.push({ name, ok: JSON.stringify(got) === JSON.stringify(want), detail: JSON.stringify(got) });
-const run = (text, from, to, insert, back) => docSuggestEdit(text, from, to, insert, back);
+const run = (text, from, to, insert, back, who) => docSuggestEdit(text, from, to, insert, back, who);
 
 eq('type/opens an insertion', run('hello world', 5, 5, 'X', false), { text: 'hello{++X++} world', caret: 9 });
 eq('type/extends it', run('hello{++X++} world', 9, 9, 'Y', false), { text: 'hello{++XY++} world', caret: 10 });
@@ -204,6 +208,28 @@ eq('resolve/one edit', docSuggestResolve(docSuggestParse('a{--bc--}d')[0], false
 eq('parse/code is not a suggestion', docSuggestParse('```\n{++x++}\n```\nand `{--y--}`').length, 0);
 eq('parse/kinds and spans', docSuggestParse('a{++X++}b{--c--}').map((m) => [m.kind, m.start, m.end, m.body]), [['ins', 1, 8, 'X'], ['del', 9, 16, 'c']]);
 eq('read/struck and highlighted', docSuggestForRead('a{++X++}b{--c--}'), 'a==X==b~~c~~');
+//: L-documents-34: who made a change and when, stored as a CriticMarkup comment after the mark. A fixed `who`, never the clock.
+const W = { author: 'Ann', date: '2026-11-14T09:30:00Z' };
+const S = '{>>Ann, 2026-11-14T09:30:00Z<<}';
+eq('who/typing opens a stamped insertion', run('hello world', 5, 5, 'X', false, W), { text: `hello{++X++}${S} world`, caret: 9 });
+eq('who/typing in it extends it and keeps the first stamp', run(`hello{++X++}${S} world`, 9, 9, 'Y', false, { author: 'Bo', date: '2026-11-15T00:00:00Z' }), { text: `hello{++XY++}${S} world`, caret: 10 });
+eq('who/a deletion is stamped', run('abc', 2, 3, '', true, W), { text: `ab{--c--}${S}`, caret: 2 });
+eq('who/a run of backspaces is one stamped deletion', run(`ab{--c--}${S}`, 1, 2, '', true, W), { text: `a{--bc--}${S}`, caret: 1 });
+eq('who/withdrawing your own insertion leaves no stamp', run(`a{++X++}${S}b`, 4, 5, '', true, W), { text: 'ab', caret: 1 });
+eq('who/a replacement is two stamped marks', run('the cat', 4, 7, 'dog', false, W), { text: `the {--cat--}${S}{++dog++}${S}`, caret: 4 + 9 + S.length + 6 });
+eq('who/typing inside a deletion goes after its stamp', run(`a{--bc--}${S}d`, 5, 5, 'Q', false, W), { text: `a{--bc--}${S}{++Q++}${S}d`, caret: 9 + S.length + 4 });
+eq('who/no who writes no stamp', run('abc', 2, 3, '', true), { text: 'ab{--c--}', caret: 2 });
+const stamped = docSuggestParse(`a{++X++}${S}b{--c--}`);
+eq('who/parse reads author and date and the span takes the stamp', stamped.map((m) => [m.kind, m.start, m.end, m.bodyStart, m.bodyEnd, m.body, m.author, m.date]), [['ins', 1, 8 + S.length, 4, 5, 'X', 'Ann', '2026-11-14T09:30:00Z'], ['del', 9 + S.length, 16 + S.length, 12 + S.length, 13 + S.length, 'c', '', '']]);
+eq('who/a plain comment after a mark is not its stamp', docSuggestParse('a{++X++}{>>why this?<<}b').map((m) => [m.end, m.author, m.date]), [[8, '', '']]);
+eq('who/a date alone is a stamp with no name', docSuggestParse('a{--X--}{>>2026-11-14<<}').map((m) => [m.author, m.date]), [['', '2026-11-14']]);
+eq('who/a name with a comma keeps all of it', docSuggestParse('a{--X--}{>>Lee, Ann, 2026-11-14T09:30:00Z<<}').map((m) => [m.author, m.date]), [['Lee, Ann', '2026-11-14T09:30:00Z']]);
+eq('who/accept all drops the stamps', docSuggestResolveAll(`a{++X++}${S}b{--c--}${S}d`, true), 'aXbd');
+eq('who/reject all drops the stamps', docSuggestResolveAll(`a{++X++}${S}b{--c--}${S}d`, false), 'abcd');
+eq('who/read view has no stamp', docSuggestForRead(`a{++X++}${S}b`), 'a==X==b');
+eq('who/text for the menu', [docSuggestParse.whoText(stamped[0]), docSuggestParse.whoText(stamped[1]), docSuggestParse.whoText(docSuggestParse('{--x--}{>>2026-11-14<<}')[0])], ['Ann, 2026-11-14', '', '2026-11-14']);
+eq('who/a stamp is written clean', docSuggestParse.stamp({ author: 'A<b>{c}\nd', date: '2026-11-14T09:30:00Z' }), '{>>Abcd, 2026-11-14T09:30:00Z<<}');
+eq('who/no name writes the date alone', docSuggestParse.stamp({ author: '', date: '2026-11-14T09:30:00Z' }), '{>>2026-11-14T09:30:00Z<<}');
 process.stdout.write(JSON.stringify(results));
 """
 
@@ -277,6 +303,10 @@ eq('menu/the finding is its own group', [...new Set(one.slice(5).map((i) => i.gr
 eq('menu/groups in order', [...new Set(one.map((i) => i.group))], ['one', 'all', 'finding']);
 one.forEach((item) => item.run());
 eq('menu/every row runs its own action', calls.map((c) => c.join(':')), ['one:true', 'one:false', 'all:true', 'all:false', 'next', 'fix', 'dict', 'ignore']);
+//: L-documents-34: a stamped change names who and when on a first row that cannot be pressed.
+const [by] = docSuggestParse('a{++X++}{>>Ann, 2026-11-14T09:30:00Z<<}');
+const named = docSuggestMenuItems(by, 1, [], run);
+eq('menu/a stamped change names who and when first', named.map((i) => [i.group, i.label, i.disabled === true]), [['who', 'ph:user Ann, 2026-11-14', true], ['one', 'ph:check Accept this insertion', false], ['one', 'ph:x Reject this insertion', false]]);
 process.stdout.write(JSON.stringify(results));
 """
 

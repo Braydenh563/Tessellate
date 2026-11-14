@@ -10,6 +10,7 @@ Python, so it is exercised here under CPython rather than only read.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import re
 from pathlib import Path
@@ -21,7 +22,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name == "documents.js" else (JS / name).read_text(encoding="utf-8")
 
 
 def _kinds_offered() -> set[str]:

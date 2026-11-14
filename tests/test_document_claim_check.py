@@ -9,8 +9,7 @@ misses, so a note counts only when it shares a word with the claim.
 """
 
 from __future__ import annotations
-
-from pathlib import Path
+from tests._app_js import frontend_text
 
 import pytest
 
@@ -93,8 +92,7 @@ def test_a_document_with_no_sentences_is_refused(client):
 def test_the_panel_lists_claims_with_the_note_behind_each():
     """`docAiCheck.claims` (kebab menu, palette) fills the same panel as Check
     with AI under "Checked against your notes"; claim-check1112.js measures it."""
-    js = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
-    text = js.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     assert "/claim-check`" in text
     assert '["claim", "Checked against your notes"]' in text
     assert 'return "backed";' in text and 'return "claim";' in text
@@ -160,15 +158,35 @@ def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollam
 
 @pytest.mark.parametrize(
     "hostile",
-    ["\t" * 100_000, " \t" * 50_000 + "x", "- " + "\t" * 100_000, "a." * 50_000, "x" + ". " * 50_000],
+    [
+        lambda n: "\t" * (2 * n),
+        lambda n: " \t" * n + "x",
+        lambda n: "- " + "\t" * (2 * n),
+        lambda n: "a." * n,
+        lambda n: "x" + ". " * n,
+    ],
+    ids=[f"hostile{i}" for i in range(5)],
 )
 def test_a_line_of_many_tabs_or_stops_is_read_in_linear_time(hostile):
     """CodeQL 2290: the list-marker pattern ran slow on many tabs; the
-    abbreviation check re-read the line before every full stop."""
+    abbreviation check re-read the line before every full stop.
+
+    Linear is proved by growth, not by a wall bound (a loaded CI runner took
+    2.55 s on hostile4, LEDGER L-documents-45): four times the input may take
+    at most eight times as long, where a quadratic read would take sixteen.
+    Best of three per size, plus 20 ms for fixed costs on near-instant cases."""
     import time
 
     from tessellate.api.routes_document_claims import _claims
 
-    started = time.perf_counter()
-    _claims(hostile + "\n")
-    assert time.perf_counter() - started < 0.5
+    def best(n):
+        text = hostile(n) + "\n"
+        runs = []
+        for _ in range(3):
+            started = time.perf_counter()
+            _claims(text)
+            runs.append(time.perf_counter() - started)
+        return min(runs)
+
+    small, large = best(12_500), best(50_000)
+    assert large < 8 * small + 0.02, (small, large)

@@ -20,6 +20,7 @@ import subprocess
 import pytest
 
 from tests.test_doc_tables import table_model_source
+from tests._app_js import documents_text
 
 DRIVER = r"""
 const out = [];
@@ -101,7 +102,7 @@ def test_the_grips_are_wired_in_and_styled() -> None:
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert "docTableGripsPlugin(CM)," in js.split("function docLiveExtensions", 1)[1].split("}", 1)[0]
     assert '.doc-table-grip, .cm-content' in js or ".doc-table-grip, textarea" in js
@@ -126,7 +127,7 @@ def test_the_add_buttons_draw_their_plus_instead_of_typing_it() -> None:
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert 'addCol.textContent = "+"' not in js and 'addRow.textContent = "+"' not in js
     assert ".doc-table-add::before" in css and ".doc-table-add::after" in css
@@ -142,7 +143,7 @@ def test_grips_clear_the_cell_ring_and_the_add_row_plus_sits_under_the_table() -
 
     root = Path(__file__).resolve().parents[1]
     css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     row = css.split(".doc-table-grip-row::before {", 1)[1].split("}", 1)[0]
     col = css.split(".doc-table-grip-col::before {", 1)[1].split("}", 1)[0]
     assert "right: var(--space-3)" in row

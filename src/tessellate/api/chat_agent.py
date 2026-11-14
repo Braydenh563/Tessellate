@@ -9,9 +9,11 @@ layer list in `routes_chat.py`'s docstring, never back to `routes_chat`.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Iterator
 from fastapi import HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from tessellate.ai import acts, agent, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
@@ -120,6 +122,49 @@ def _first_agent_event(req: _StreamRequest, agent_events: Iterator[dict]) -> dic
             ),
         }
     return first
+
+
+async def stop_when_gone(stop, lines):  # noqa: ANN001
+    """The stream's lines, with the browser's Stop (or a closed tab) made the
+    model's Stop (audit 1028 E3). Starlette cancels this generator when the
+    client goes; the abort used to end only the HTTP response, so the model
+    kept generating to the end and the next question queued behind it. The
+    cancel sets the stream's stop flag, which cuts the upstream request
+    (`activity.stop_aware`); the sync generator is closed once its current
+    step returns, so its `finally` blocks run.
+
+    **Why an async generator at all** (L889, measured on Starlette 1.10 with uvicorn 0.54): a sync
+    generator handed to StreamingResponse is never closed when the client goes, so its `finally`
+    (the model's connection, the Activity row) waited for the whole stream to be read (a Stop 1 s
+    into a 15.7 s pass left the model writing to the end); an async generator's `finally` runs
+    within a second. `stop` is the StopEvent the stream's job was started with
+    (`activity.tracked_stream(stop_event=...)`)."""
+    source = iter(lines)
+    done = object()
+
+    def step():  # noqa: ANN202
+        return next(source, done)
+
+    task = None
+    try:
+        while True:
+            task = asyncio.ensure_future(run_in_threadpool(step))
+            line = await asyncio.shield(task)
+            task = None
+            if line is done:
+                return
+            yield line
+    finally:
+        #: Two ways out besides the end. A cancel while a step runs in the worker thread: the
+        #: source closes once that step returns. A cancel that lands in the server's own `send`
+        #: leaves this generator suspended at `yield`; Starlette 1.10 never acloses it, so it is
+        #: finalized when dropped, and nothing else would close the source (the model's stream
+        #: stayed open until the loop shut down, leg 1 on 38c73e48d). Close it here then.
+        stop.set()
+        if task is None or task.done():
+            _close_quietly(source)
+        else:
+            task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
 
 
 def _close_quietly(source) -> None:  # noqa: ANN001

@@ -18,10 +18,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = frontend_text("documents.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
 
@@ -164,7 +164,7 @@ def test_the_board_card_keeps_its_contract_on_the_engine() -> None:
     keys the engine runs first, and listeners on the card's content element.
     `scratchpad/ui-sweeps/wbcardeditor.js` drives all four."""
     assert "wb-card-editor" in _table_ids()
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     body = wb.split("function wbEditNodeText(", 1)[1].split("\nfunction ", 1)[0]
     assert 'box.id = "wb-card-editor"' in body
     assert "box.noteSurfaceKeys" in body and 'key: "Enter"' in body and 'key: "Escape"' in body
@@ -181,7 +181,7 @@ def test_a_note_box_gone_before_the_editor_loads_is_not_mounted():
     CodeMirror loaded threw "Cannot read properties of null (reading
     'insertBefore')" in `mountNoteSurface`. After the load, a box with no
     parent gets the plain surface and nothing is inserted."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     start = docs.index("async function mountNoteSurface(")
     body = docs[start : docs.index("\n}\n", start)]
     loaded = body.index("await loadCodeMirror()")
@@ -194,10 +194,10 @@ def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
     sheet focused its Close button and the editor's mount took the focus about
     150 ms later. Both places that hand the focus to the editor after a late mount
     do so only while no modal dialog is open (`activeOverlay`)."""
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     assert "!activeOverlay() && s?.focus()" in docs
     wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
-    start = wiring.index("function startNewNote()")
+    start = wiring.index("function startNewNote(")  #: it takes an optional `here` now
     assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]
 
 

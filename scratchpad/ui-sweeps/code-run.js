@@ -101,6 +101,14 @@ const times = {};
     ok("js: a log row and an error on its line", out && out.rows[0]?.text === "hello 2" && out.rows[1]?.line === "Line 2", J(out && out.rows));
   }
 
+  if (want("tla")) {
+    // L-documents-108: top-level await runs, lines stay the document's, a late throw lands on its line.
+    await open("waits.js", "js", "const wait = (v) => new Promise((r) => setTimeout(() => r(v), 50));\nconsole.log('start');\nconst v = await wait(10);\nconsole.log('got', v);\nthrow new Error('late');");
+    const out = await run("js");
+    const rows = (out && out.rows) || [];
+    ok("tla: top-level await runs, rows on lines 2, 4 and 5", rows[0]?.text === "start" && rows[0]?.line === "Line 2" && rows[1]?.text === "got 10" && rows[1]?.line === "Line 4" && /late/.test(rows[2]?.text || "") && rows[2]?.line === "Line 5", J(rows));
+  }
+
   if (want("ts")) {
     await open("shapes.ts", "ts", [
       "interface Shape { area(): number }",

@@ -106,6 +106,7 @@ function docLivePlugin(CM) {
       return other.src === this.src && other.alt === this.alt && other.underSource === this.underSource;
     }
     toDOM(view) {
+      if (imageLayout.isVideo(this.src)) return imageLayout.video(this.src, this.alt);
       const img = document.createElement("img");
       img.className = this.underSource ? "cm-md-image cm-md-image-under" : "cm-md-image";
       //: **Through `mediaSrc`, like every other image in this app.** An
@@ -333,6 +334,45 @@ function docLivePlugin(CM) {
         view.focus();
         view.dispatch({ changes: { from, to, insert: "" }, selection: { anchor: from } });
         CM.autocomplete.startCompletion(view);
+      });
+      return button;
+    }
+  }
+
+  //: The Copy control of a fenced block, in Live (L-documents-65). A widget at the end of the block's first code line, drawn absolute in the corner so the 8px fence row stays 8px and no header row exists. `ignoreEvent` true and `contenteditable=false`: the arrow keys step over it, a selection never contains it and Ctrl+A copies the document, not the button (it holds an icon, no text). The code is read at click time from the tree, so a patched set that keeps the widget never copies stale text.
+  class DocFenceCopyWidget extends WidgetType {
+    eq() {
+      return true;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    //: The checkmark flash rewrites the button's icon; that is not the document changing.
+    ignoreMutation() {
+      return true;
+    }
+    toDOM(view) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cm-md-fence-copy";
+      button.contentEditable = "false";
+      setLabel(button, "ph:copy");
+      button.title = "Copy this code block";
+      button.setAttribute("aria-label", "Copy code");
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) button.classList.add("is-touch");
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => {
+        const at = view.posAtDOM(button);
+        for (let node = CM.language.syntaxTree(view.state).resolveInner(at, 1); node; node = node.parent) {
+          if (node.name !== "FencedCode") continue;
+          const open = view.state.doc.lineAt(node.from);
+          const last = view.state.doc.lineAt(node.to);
+          const closed = last.number > open.number && /^\s*([`~])\1{2,}\s*$/.test(last.text);
+          const from = Math.min(open.to + 1, node.to);
+          const to = closed ? Math.max(from, last.from - 1) : node.to;
+          copyToClipboard(view.state.doc.sliceString(from, to), button);
+          return;
+        }
       });
       return button;
     }
@@ -658,6 +698,49 @@ function docLivePlugin(CM) {
       host.addEventListener("click", (event) => {
         if (event.target instanceof Element && event.target.closest("button, a, input, textarea")) return;
         docOpenWikiTarget(this.name);
+      });
+      return host;
+    }
+  }
+
+  //: **Where a block is shown elsewhere, its own document says so** (DOCUMENTS_PLAN 26, decision 82 b). A block carrying `^id`
+  //: that other documents or notes embed or link keeps a small pencil with the count, in the place its hidden id sits; the
+  //: pencil opens the same edit box a synced block has (documents-synced.js). The widget is always drawn for a hidden id and
+  //: fills itself in when the count is known (`GET /documents/{id}/block-uses`, asked once per document and then at most every
+  //: 5 seconds), so nothing here waits on the request.
+  const blockUses = { doc: null, at: 0, ask: null };
+  class DocBlockUseWidget extends WidgetType {
+    constructor(id) {
+      super();
+      this.id = id;
+    }
+    eq(other) {
+      return other.id === this.id;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    toDOM() {
+      const host = document.createElement("span");
+      host.className = "cm-md-blockuse";
+      host.hidden = true;
+      const doc = currentDoc?.id;
+      if (!doc) return host;
+      if (blockUses.doc !== doc || Date.now() - blockUses.at > 5000) {
+        blockUses.doc = doc;
+        blockUses.at = Date.now();
+        blockUses.ask = apiJson(`/documents/${doc}/block-uses`, { silent: true }).then((body) => body?.uses || {}).catch(() => ({}));
+      }
+      blockUses.ask.then((uses) => {
+        const count = uses[this.id] || 0;
+        if (!count || !host.isConnected) return;
+        const edit = smallButton(`ph:pencil-simple ${count}`, `Shown in ${count === 1 ? "1 other place" : `${count} other places`}. Edit this block here.`, () =>
+          ensureModule("docSynced").then(() => host.dispatchEvent(new CustomEvent("synced-own", { bubbles: true, detail: { id: this.id, anchor: edit } })))
+        );
+        edit.classList.add("doc-block-use");
+        edit.addEventListener("mousedown", (event) => event.preventDefault());
+        host.replaceChildren(edit);
+        host.hidden = false;
       });
       return host;
     }
@@ -1166,6 +1249,9 @@ function docLivePlugin(CM) {
                   Decoration.widget({ widget: new DocFenceLabelWidget(language, title), side: 1 }).range(line.to)
                 );
               }
+              if (line.number === first.number + 1 && line.from !== last.from) {
+                ranges.push(Decoration.widget({ widget: new DocFenceCopyWidget(), side: 1 }).range(line.to));
+              }
               if (line.to >= node.to) break;
               at = line.to + 1;
             }
@@ -1379,7 +1465,9 @@ function docLivePlugin(CM) {
           ranges.push(Decoration.mark({ class: "cm-md-blockid" }).range(from, to));
           return;
         }
-        hide(from, to);
+        //: Hidden, with the "shown elsewhere" pencil where it was (a document with a title only: that is what others name it by).
+        if (currentDoc?.title) ranges.push(Decoration.replace({ widget: new DocBlockUseWidget(match[1]) }).range(from, to));
+        else hide(from, to);
       });
       scan(/\[\[([^[\]\n]{1,120})\]\]/g, (match, from, to) => {
         const spec = match[1].trim();
@@ -1795,6 +1883,25 @@ function docLivePlugin(CM) {
       constructor(view) {
         this.rebuild(view);
         this.gutterOn = docFenceGutterOn();
+        //: **The link cue while the open key is held** (L-documents-66, DOCUMENTS_PLAN section 15 item 3). A link opens on
+        //: Ctrl+click (Meta on a Mac), so while that key is down the editor root wears `doc-mod-held` and a chip draws its underline
+        //: heavier (VS Code's cue). Window-level, because the key goes down with the pointer anywhere. A held key whose release this
+        //: window never sees (focus left, the tab hid) would leave the class on, so blur and a hidden tab clear it; `destroy` takes all four off.
+        //: Guarded: the patch-equals-rebuild harness (test_doc_typing_dx1) builds this plugin in a context whose window has no listeners.
+        if (typeof window?.addEventListener !== "function") return;
+        this.modHeld = (event) => view.dom.classList.toggle("doc-mod-held", event.type !== "blur" && event.type !== "visibilitychange" && (event.ctrlKey || event.metaKey));
+        window.addEventListener("keydown", this.modHeld);
+        window.addEventListener("keyup", this.modHeld);
+        window.addEventListener("blur", this.modHeld);
+        document.addEventListener("visibilitychange", this.modHeld);
+      }
+      destroy() {
+        if (!this.modHeld) return;
+        window.removeEventListener("keydown", this.modHeld);
+        window.removeEventListener("keyup", this.modHeld);
+        window.removeEventListener("blur", this.modHeld);
+        document.removeEventListener("visibilitychange", this.modHeld);
+        this.modHeld({ type: "blur" });
       }
       rebuild(view) {
         this.record = { probes: [], selFree: true };

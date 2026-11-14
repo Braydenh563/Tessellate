@@ -229,7 +229,7 @@
 
   //: Suggestions for the other kinds (L-documents-21): the same `{key, text, act}` rows, each with the `drop` (a block's uid) its Apply
   //: removes. A mind map holds `children`, a sequence `steps` and a timeline `periods` then `events`; the kind's own printer writes the result.
-  const dgaKids = (n) => n.children || n.steps || n.periods || n.events || [];
+  const dgaKids = (n) => n.children || n.steps || n.periods || n.events || n.tasks || n.items || n.members || [];
   function dgaKindLint(kind, m) {
     const out = [];
     const row = (drop, text, act) => out.push({ key: drop, text, act, drop });
@@ -257,7 +257,34 @@
       });
       for (const p of m.participants) used.has(p.id) || row(p.uid, `${dgaText(p.label, 60)} never sends or receives a message.`, "Remove the participant");
     }
+    dgaChartLint(kind, m, row, walk);
     return out.slice(0, 20);
+  }
+
+  //: The Gantt, pie, state, class and ER kinds (L-documents-86): what a block holds that nothing else shows is a block to take out.
+  function dgaChartLint(kind, m, row, walk) {
+    const twice = (n, key, text) => (seen.has(key) ? row(n.uid, text, "Remove the second") : seen.add(key));
+    const seen = new Set();
+    const items = m.items || [];
+    if (kind === "pie") items.forEach((n) => n.type === "s" && twice(n, dgaFold(n.label), `${dgaText(n.label, 60)} is on the pie twice.`));
+    else if (kind === "gantt") {
+      m.sections.forEach((s) => s.tasks.some((t) => t.type === "t") || row(s.uid, `The section ${dgaText(s.title, 60)} has no tasks.`, "Remove the section"));
+      m.free.filter((n) => n.type === "p" && n.key.toLowerCase() === "title").slice(1).forEach((n) => row(n.uid, "The chart has a second title.", "Remove the second title"));
+    } else if (kind === "state") {
+      const used = new Set();
+      walk(items, (n) => n.type === "x" && (used.add(n.from), used.add(n.to)));
+      walk(items, (n) => {
+        if (n.type === "x") twice(n, `${n.from}|${n.to}|${n.label}`, `${n.from} goes to ${n.to} twice.`);
+        else if (n.type === "c" && !n.items.some((x) => x.type !== "k")) row(n.uid, `The group ${n.id} holds nothing.`, "Remove the group");
+        else if (n.type === "s" && !used.has(n.id)) row(n.uid, `${dgaText(n.desc ?? n.id, 60)} has no transitions.`, "Remove the state");
+      });
+    } else if (kind === "class" || kind === "er") {
+      const used = new Set(items.flatMap((n) => (n.type === "r" ? [n.from, n.to] : [])));
+      items.forEach((n) => {
+        if (n.type === "r") twice(n, `${n.from}|${n.to}|${n.arrow || n.lc + n.rc}`, `${n.from} and ${n.to} are joined twice.`);
+        else if (n.type !== "k" && !n.members.some((x) => x.type !== "k") && !used.has(n.name)) row(n.uid, `${dgaText(String(n.name).replace(/"/g, ""), 60)} stands alone.`, `Remove the ${kind === "er" ? "entity" : "class"}`);
+      });
+    }
   }
 
   //: The model without the block `uid`, on a copy.
@@ -267,7 +294,7 @@
       const at = list.findIndex((n) => n.uid === uid);
       return at >= 0 ? !!list.splice(at, 1) : list.some((n) => cut(dgaKids(n)));
     };
-    [next.participants, next.free, next.sections, next.steps, next.root ? [next.root] : null].some((list) => list && cut(list));
+    [next.participants, next.free, next.sections, next.steps, next.items, next.root ? [next.root] : null].some((list) => list && cut(list));
     return next;
   }
 
@@ -312,7 +339,7 @@
     icon.setAttribute("aria-hidden", "true");
     A.input = el("input", "search-field-input");
     //: The pane is narrow beside the picture (224 px at 1440): the example is the title, the placeholder two words.
-    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: `For example: ${{ mindmap: "add Rent under Budget, or rename Hiring to Recruiting", timeline: "add event Launch under 2024, or add section Plans", sequence: "add participant Bank, or add message Pay from Shop to Bank" }[S.k?.name] || "add Refund after In stock? No, or rename Warehouse to Fulfilment"}` });
+    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: `For example: ${{ mindmap: "add Rent under Budget, or rename Hiring to Recruiting", timeline: "add event Launch under 2024, or add section Plans", sequence: "add participant Bank, or add message Pay from Shop to Bank", gantt: "add task Review under Build, or set Review to 5d", pie: "add slice Cats 30, or set Dogs to 45", state: "add state Done, or add transition from Idle to Done", class: "add class Order, or add relation from Order to Customer", er: "add entity Order, or add attribute total to Order" }[S.k?.name] || "add Refund after In stock? No, or rename Warehouse to Fulfilment"}` });
     A.input.setAttribute("aria-label", "Ask for a change to the diagram");
     const send = A.send = smallButton("ph:paper-plane-right", "Ask (Enter)", () => {}, false);
     send.type = "submit";

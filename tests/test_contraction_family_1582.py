@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
@@ -148,7 +149,7 @@ def test_no_member_of_the_family_is_a_word_in_the_list():
 
 
 def test_the_document_editor_asks_the_same_reader_in_both_passes():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert docs.count("autocorrectState.inText(") == 2
     assert "const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;" in docs
 

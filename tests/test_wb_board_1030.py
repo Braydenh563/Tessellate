@@ -4,10 +4,11 @@ Source-shape checks, each naming the row; the browser numbers are in
 `scratchpad/ui-sweeps/wb1030-board.js`.
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(source: str, name: str) -> str:
@@ -62,10 +63,10 @@ def test_b17_link_lookups_parse_each_sketch_once_per_version_of_its_data() -> No
 
 
 def test_b14_branch_export_opens_the_one_export_dialog() -> None:
-    mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     branch = _function(mapjs, "wbMapExportBranch")
-    assert "wbExportBoard();" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
-    assert BOARD.count("function wbExportBoard()") == 1
+    assert "wbExportBoard({ branch: true });" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
+    assert BOARD.count("function wbExportBoard(") == 1  # one dialog; it takes { branch } since L267
     assert 'overlay.className = "modal-overlay confirm-overlay wb-export-overlay"' in BOARD
     assert mapjs.count("wb-export-overlay") == 0, "no second export dialog in the map file"
 
@@ -78,14 +79,17 @@ def test_b19_an_arrow_end_on_a_shape_is_bound_to_it() -> None:
 
 def test_l267_a_branch_export_says_export_this_branch() -> None:
     """L267: the branch's menu row said "Export this branch" and opened a
-    dialog headed "Export this board". The branch hands its title to the one
-    dialog for that one opening; every other way in keeps the board's."""
+    dialog headed "Export this board". The branch asks for the branch heading;
+    every other way in keeps the board's. (The whiteboard side built this as
+    `wbExportBoard({ branch: true })` in the L286 split; the mind map side's
+    duplicate title hand-over was dropped at the merge.)"""
     mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     branch = _function(mapjs, "wbMapExportBranch")
-    assert branch.index('wbExportBoard.title = "Export this branch";') < branch.index("wbExportBoard();")
-    dialog = _function(BOARD, "wbExportBoard")
-    assert 'const title = wbExportBoard.title || "Export this board";' in dialog
-    assert "wbExportBoard.title = null;" in dialog
-    assert 'overlay.setAttribute("aria-label", title);' in dialog
-    assert "dialogHead(title, close)" in dialog
-    assert '"Export this board"' not in dialog.replace('wbExportBoard.title || "Export this board"', "")
+    assert "wbExportBoard({ branch: true });" in branch
+    export = (ROOT / "frontend" / "js" / "whiteboard-export.js").read_text(encoding="utf-8")
+    dialog = export[export.index("function wbExportBoard(") :]
+    dialog = dialog[: dialog.index("\n  }\n") + 4]
+    assert 'const heading = branch ? "Export this branch" : "Export this board";' in dialog
+    assert 'overlay.setAttribute("aria-label", heading);' in dialog
+    assert "dialogHead(heading, close)" in dialog
+    assert dialog.count('"Export this board"') == 1

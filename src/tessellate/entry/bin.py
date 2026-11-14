@@ -72,6 +72,8 @@ def purge_document(session: Session, document: Document) -> None:
     ):
         session.query(model).filter(column == document.id).delete(synchronize_session=False)
     session.execute(update(Reminder).where(Reminder.document_id == document.id).values(document_id=None))
+    #: Its sub-pages are lifted to the top level, not taken with it (D14).
+    session.execute(update(Document).where(Document.parent_id == document.id).values(parent_id=None))
     session.delete(document)
 
 

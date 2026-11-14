@@ -23,7 +23,8 @@ def test_a_right_drag_holds_back_the_menu_and_closes_one_already_open():
     assert 'fig.addEventListener("contextmenu", (event) => {' in VIEW
     held = VIEW[VIEW.index('fig.addEventListener("contextmenu"') :][:420]
     assert "rightDrag && travel > 12" in held and "event.preventDefault()" in held and "event.stopImmediatePropagation()" in held
-    assert "if (rightDrag && travel > 12) closeActionMenus();" in VIEW
+    #: L-documents-89: closed once per press (`shut`), not on every move after the threshold.
+    assert "if (rightDrag && travel > 12 && !shut) (shut = true), closeActionMenus();" in VIEW and "held = shut = false;" in VIEW
 
 
 def test_the_guide_says_which_buttons_pan():

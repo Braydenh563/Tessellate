@@ -2230,13 +2230,13 @@ body.resizing-sidebar {
    rest of its height back to the thing you are writing. Not `display: none` on
    the toolbar itself: a control that hides the control that brings it back is
    a trap. */
-.doc-toolbar.is-collapsed > *:not(.doc-toolbar-tools):not(#entry-preview-toggle):not([data-note-preview]) {
+.doc-toolbar.is-collapsed > *:not(.doc-toolbar-tools):not(#entry-preview-toggle):not([data-note-preview]):not(#entry-view-seg) {
   display: none;
 }
 /* A note strip's Live/Source switch stays out while the strip is folded
    (INBOX 430): it is how the box reads, not a formatting tool, and folding
    the tools (the default) would otherwise hide the one way to the source. */
-.doc-toolbar.is-collapsed > :is(#entry-preview-toggle, [data-note-preview]) {
+.doc-toolbar.is-collapsed > :is(#entry-preview-toggle, [data-note-preview], #entry-view-seg) {
   order: 2;
   margin-left: var(--space-2);
 }
@@ -5242,6 +5242,13 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-color: var(--accent);
   background: var(--chip-bg);
 }
+/* A candidate under a finger is the touch floor tall: the rows measured 28px at 390
+   with touch emulation (docsverify-suggest.js, a long press on a flagged word). */
+@media (pointer: coarse) {
+  .doc-suggest-menu .doc-suggest-item {
+    min-height: var(--target-min);
+  }
+}
 /* The first candidate is the one Enter and a double-click take, so it reads
    as the answer and the rest as the alternatives. Weight only: a second
    colour here would compete with the accent the hovered row already uses. */
@@ -6215,3 +6222,14 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    she melted into it, forehead 1.15:1 off the page; with the outline in
    atlas-lazy.css, 1.32. Still lilac, her rim unchanged. */
 :root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }
+/* L-documents-53 */
+#entry-view-seg {
+  margin: 0;
+}
+.note-composer.is-reading :is(.note-surface, #entry-content) {
+  display: none;
+}
+.entry-read {
+  min-height: 11rem;
+  padding: var(--space-3);
+}

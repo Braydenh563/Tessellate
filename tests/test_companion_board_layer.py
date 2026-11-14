@@ -15,6 +15,7 @@ object the companion does, on the top bar it is z 44 at its own size).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -27,7 +28,7 @@ from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
 

@@ -75,7 +75,7 @@ const SAMPLE = "Their is a problem with this sentence. He go to the store yester
   await page.waitForTimeout(400);
   const groups = await page.evaluate(() => [...document.querySelectorAll("#doc-prose-panel .doc-prose-group")].map((g) => g.textContent));
   ok("the panel files them under Grammar", groups.some((g) => /^Grammar\d+$/.test(g)), groups.join(" | "));
-  await page.evaluate(() => closeDocProsePanel());
+  await page.click("#doc-prose-panel .doc-prose-close");
 
   // A fix through the word's own menu.
   const target = await page.evaluate(() => {

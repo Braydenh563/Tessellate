@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js"
+JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-suggest.js"
 
 
 def _fn() -> str:
     text = JS.read_text(encoding="utf-8")
-    return text.split("async function docTranslatePassage(")[1].split("let docLastTranslateLanguage")[0]
+    return text.split("async function docTranslatePassage(")[1].split("\n  }\n")[0]
 
 
 def test_translate_passage_tries_the_offline_engine_before_the_chat():

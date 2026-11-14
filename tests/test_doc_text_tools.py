@@ -4,6 +4,7 @@ half runs in node; the wiring half is checked as text, because the suite
 cannot see the DOM (the Playwright run is `scratchpad/ui-sweeps/doctexttools.js`)."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -93,7 +94,7 @@ def test_statistics_of_nothing_is_zero_not_nan():
 
 
 def test_the_commands_the_dialog_and_the_count_are_wired():
-    commands = DOCUMENTS.read_text(encoding="utf-8")
+    commands = frontend_text("documents.js")
     for tool in ("stats", "upper", "lower", "title", "sentence", "sort-asc", "sort-desc", "unique",
                  "number-headings", "unnumber-headings", "date-iso", "date-long", "time"):
         assert f'docRunTextTool("{tool}")' in commands, tool
@@ -106,7 +107,7 @@ def test_the_commands_the_dialog_and_the_count_are_wired():
 
 def test_text_size_and_line_spacing_are_menu_rows_with_prose_only_css():
     markup = INDEX.read_text(encoding="utf-8")
-    documents = DOCUMENTS.read_text(encoding="utf-8")
+    documents = frontend_text("documents.js")
     css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
     for ident in ("doc-text-size", "doc-text-size-label", "doc-line-spacing", "doc-line-spacing-label"):
         assert f'id="{ident}"' in markup
@@ -121,5 +122,5 @@ def test_copy_as_formatted_text_writes_html_and_markdown_and_is_a_prose_command(
     prose = PROSE.read_text(encoding="utf-8")
     body = prose[prose.index("async function docCopyFormatted") :]
     assert '"text/html"' in body and '"text/plain"' in body and "docExportClean(holder)" in body
-    row = re.search(r'\{ id: "copy-formatted",[^}]*\}', DOCUMENTS.read_text(encoding="utf-8"))
+    row = re.search(r'\{ id: "copy-formatted",[^}]*\}', frontend_text("documents.js"))
     assert row and "prose: true" in row.group(0) and "docCopyFormatted()" in row.group(0)

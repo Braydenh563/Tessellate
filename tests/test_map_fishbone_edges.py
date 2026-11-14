@@ -3,6 +3,7 @@ stays left of the causes above it (node `vm`, the layout and anchor functions)."
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -34,7 +35,7 @@ for(let i=0;i<200;i++){
 
 def run(tmp_path, body):
     lib, probe = tmp_path / "lib.js", tmp_path / "probe.js"
-    lib.write_text(_js_scope.unwrapped(SRC.read_text(encoding="utf-8")), encoding="utf-8")
+    lib.write_text(_js_scope.unwrapped(frontend_text("whiteboard-map.js")), encoding="utf-8")
     probe.write_text(body, encoding="utf-8")
     proc = subprocess.run(["node", "-e", LOAD, str(lib), str(probe)], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr[-2000:]

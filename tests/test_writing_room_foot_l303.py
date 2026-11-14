@@ -26,3 +26,28 @@ def test_thoughts_footer_is_one_wrapper_held_to_the_drafts_footer_height():
     rule = re.search(r"\n\.draft-foot \{([^}]*)\}", css)
     assert rule, "the .draft-foot rule is missing"
     assert "min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 2 * 0.4rem)" in rule.group(1)
+
+
+def test_the_earlier_drafts_row_is_one_fixed_line_and_the_thoughts_footer_makes_room_for_it():
+    """L888: the row appears with the second pass and took 42.4px from the draft box alone
+    (285.2 to 242.8 beside a 294.8 thoughts box, docsverify-write.js). One control tall, and the
+    thoughts footer grows by the same when it shows, side by side only."""
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    row = re.search(r"\n\.draft-versions \{([^}]*)\}", css)
+    assert row and "flex-wrap: nowrap;" in row.group(1) and "min-height: var(--control-h);" in row.group(1)
+    # Grown everywhere, reset inside the existing 72rem one-column query (a new 72.01rem
+    # breakpoint failed test_the_breakpoints_only_shrink).
+    grown = re.search(r"\n\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", css)
+    assert grown and "+ var(--control-h));" in grown.group(1)
+    one = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    block = one[one.index("@media (max-width: 72rem) {") :]
+    reset = re.search(r"\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", block)
+    assert reset and "+ 2 * 0.4rem);" in reset.group(1) and "--control-h));" not in reset.group(1)
+
+
+def test_a_bare_box_has_no_margin_so_it_matches_its_mounted_surface():
+    """L-documents-73: the global textarea margin (9.6px) made the bare draft box 285.2 beside a
+    mounted thoughts surface of 294.8 (real-model run at 1440x900)."""
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    rule = re.search(r"\n\.draft-column textarea \{([^}]*)\}", css)
+    assert rule and "margin: 0;" in rule.group(1)

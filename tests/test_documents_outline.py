@@ -2,6 +2,7 @@
 under each document (INBOX 445 (1))."""
 
 from __future__ import annotations
+from tests._app_js import documents_text
 
 
 def test_outline_lists_headings_with_zero_based_lines(client):
@@ -52,7 +53,7 @@ def test_a_long_heading_ends_in_an_ellipsis_and_keeps_its_task_count():
 
     root = Path(__file__).resolve().parents[1]
     css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = documents_text()
     rule = css[css.index(".outline-text {") :].split("}")[0]
     for want in ("min-width: 0", "text-overflow: ellipsis", "white-space: nowrap", "overflow: hidden"):
         assert want in rule

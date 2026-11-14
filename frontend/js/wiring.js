@@ -135,21 +135,16 @@ function askAtlasAbout(question) {
 //: here rather than written into forty-nine blocks of markup, and guarded by a
 //: flag because `initHelpToggles` is re-runnable (Settings builds some of its
 //: sections lazily).
-function addAtlasLine(panel) {
-  const question = ATLAS_PROMPTS[panel.id];
-  if (!question || panel.dataset.atlasLine) return;
-  panel.dataset.atlasLine = "1";
-  // The one builder, so the offer looks the same in a popover as in an
-  // empty state (`atlasSuggestion`).
-  panel.appendChild(atlasSuggestion(question));
-}
-
 function initHelpToggles(root = document) {
   for (const trigger of root.querySelectorAll("[data-help-for]")) {
     const panel = $(trigger.dataset.helpFor);
     if (!panel) continue;
     wireHelpPopover(trigger, panel);
-    addAtlasLine(panel);
+    const question = ATLAS_PROMPTS[panel.id];
+    if (question && !panel.dataset.atlasLine) {
+      panel.dataset.atlasLine = "1";
+      panel.appendChild(atlasSuggestion(question));
+    }
   }
 }
 window.initHelpToggles = initHelpToggles;
@@ -373,15 +368,9 @@ function globalFindWalkableRoot() {
 //: and switches to the first that does, so Ctrl+F answers "where is the
 //: setting for X" rather than "not on this page".
 function settingsSectionContaining(needle) {
-  const modal = $("settings-modal");
-  if (!modal || modal.classList.contains("hidden")) return null;
   const lower = needle.toLowerCase();
-  for (const section of modal.querySelectorAll(".settings-section.hidden")) {
-    if ((section.textContent || "").toLowerCase().includes(lower)) {
-      return section.id.replace(/^settings-/, "");
-    }
-  }
-  return null;
+  const hit = [...document.querySelectorAll("#settings-modal:not(.hidden) .settings-section.hidden")].find((s) => s.textContent.toLowerCase().includes(lower));
+  return hit ? hit.id.replace(/^settings-/, "") : null;
 }
 
 function globalFindClearHighlights() {
@@ -434,7 +423,7 @@ function globalFindRun(needle) {
   // sections take it in turns being the hidden one.
   if (!targets.length && !globalFindJumping) {
     const jump = settingsSectionContaining(needle);
-    if (jump && typeof showSettingsSection === "function") {
+    if (jump && window.showSettingsSection) {
       globalFindJumping = true;
       try {
         showSettingsSection(jump);
@@ -530,12 +519,9 @@ function openGlobalFind(opts = {}) {
     $("settings-search").select();
     return;
   }
-  const wbCanvas = $("wb-canvas-view");
-  const wbView = $("library-view-whiteboard");
   if (
-    wbCanvas && !wbCanvas.classList.contains("hidden") &&
-    wbView && !wbView.classList.contains("hidden") &&
-    typeof wbOpenBoardSearch === "function"
+    ["wb-canvas-view", "library-view-whiteboard"].every((id) => $(id) && !$(id).classList.contains("hidden")) &&
+    window.wbOpenBoardSearch
   ) {
     wbOpenBoardSearch();
     return;
@@ -654,29 +640,8 @@ onSurface("chat", () => {
 //: not be renamed out from under them three seconds later.
 let chatPendingTitle = null;
 
-async function renameCurrentConversation() {
-  if (!chatConv) return;
-  const current = $("chat-title").textContent;
-  const next = await promptTitle("Rename this conversation", current);
-  if (!next || next === current) return;
-  if (chatConv.id === null) {
-    chatPendingTitle = next;
-    $("chat-title").textContent = next;
-    toast("Named. It is saved with your first message.");
-    return;
-  }
-  try {
-    await apiJson(`/conversations/${chatConv.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ title: next }),
-    });
-    $("chat-title").textContent = next;
-    chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
-    loadConversationList();
-  } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
-  }
-}
+//: The body is in chat-edit.js (lazy), fetched on the first rename (the gzip ratchet).
+const renameCurrentConversation = () => lazyScript("/js/chat-edit.js").then(() => renameConversationNow());
 
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
@@ -793,13 +758,10 @@ onSurface("chat", () => {
     }
   });
 });
-//: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note
-//: forms use the live view with a source toggle, no Preview"). The note box
-//: already renders as you type (documents.js, the note surface's Live
-//: rendering), so a Preview pane was a second copy of what the box shows, in
-//: a box you could not type in. The strip's toggle is Source now: the
-//: markdown as typed, without the live formatting, and back. One choice for
+//: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note forms use the live view with a source
+//: toggle, no Preview"): the box already renders as you type; Source shows the markdown as typed. One choice for
 //: every note box, remembered (`noteSourceWanted`).
+//: **Read, in the new-note box only** (L-documents-53): the finished note, the editor hidden, not remembered.
 function noteSourceOn() {
   try {
     return prefs.get("note-source-view", null) === "1";
@@ -808,29 +770,41 @@ function noteSourceOn() {
   }
 }
 
-function syncNoteSourceButtons() {
-  for (const button of document.querySelectorAll("#entry-preview-toggle, [data-note-preview]")) {
-    button.setAttribute("aria-pressed", noteSourceOn());
-    button.classList.toggle("is-active", noteSourceOn());
+function syncNoteSourceButtons(reading = false) {
+  const now = reading ? "read" : noteSourceOn() ? "source" : "live";
+  for (const button of document.querySelectorAll("#entry-preview-toggle, [data-note-preview], #entry-view-seg [data-note-view]")) {
+    const on = (button.dataset.noteView || "source") === now;
+    button.setAttribute("aria-pressed", on);
+    button.classList.toggle("is-active", on);
   }
 }
 
+//: `on`: true is Source, false Live, "read" the finished view.
 function setNoteSource(on) {
-  try {
+  const reading = on === "read";
+  if (!reading) try {
     prefs.set("note-source-view", on ? "1" : "0");
   } catch {
     /* storage blocked: this box only */
   }
+  const pane = $("entry-read");
+  if (pane) {
+    pane.classList.toggle("hidden", !reading);
+    pane.parentNode.classList.toggle("is-reading", reading);
+    if (reading) renderNoteText(pane, $("entry-content").value, []);
+  }
   //: A box not mounted yet reads the choice when it mounts.
   for (const id of ["entry-content", "entry-edit-content"]) {
     const host = $(id);
-    if (host && typeof setNoteSurfaceSource === "function") setNoteSurfaceSource(host, on);
+    if (host && typeof setNoteSurfaceSource === "function") setNoteSurfaceSource(host, reading ? noteSourceOn() : on);
   }
-  syncNoteSourceButtons();
+  syncNoteSourceButtons(reading);
 }
 
 onSurface("notes", () => {
-  $("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+  for (const button of document.querySelectorAll("#entry-view-seg [data-note-view]")) {
+    button.addEventListener("click", () => setNoteSource({ live: false, source: true, read: "read" }[button.dataset.noteView]));
+  }
 });
 syncNoteSourceButtons();
 
@@ -1072,7 +1046,7 @@ onSurface("notes", () => {
   //: box ready to type in. `showNotesSection`'s own `focus` lands on the
   //: sub-tab button, which is right for a keyboard moving between sections
   //: and wrong here, where the press meant "I want to write".
-  $("notes-new-note").addEventListener("click", () => startNewNote());
+  $("notes-new-note").addEventListener("click", () => startNewNote(1));
 });
 
 //: **Every "new note" lands in the box, ready to type** (INBOX 434): the
@@ -1080,7 +1054,8 @@ onSurface("notes", () => {
 //: come here. Ctrl+Shift+N went to Notes and focused a box that was hidden
 //: whenever Notes was last on Browse: the focus fell to <body> and what was
 //: typed next went nowhere, or fired a single-key shortcut.
-function startNewNote() {
+function startNewNote(here) {
+  if (!here && prefsCache?.writing_style === "documents") return switchTab("documents").then(() => createDocument());
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
   const box = $("entry-content");
@@ -1363,32 +1338,9 @@ async function copyWebLink(url, button) {
 const REMINDER_SHEET = "(max-width: 1099.98px)";
 let reminderComposeSheetClose = null;
 
+//: The sheet itself is in reminder-edit.js (lazy), fetched on the first press (the gzip ratchet).
 function openReminderCompose() {
-  const form = $("reminder-compose");
-  if (!form) return;
-  // The sentence box: its times need no model (UX-01).
-  const field = () => $("reminder-magic") || $("reminder-text");
-  if (!window.matchMedia(REMINDER_SHEET).matches) {
-    field()?.focus();
-    return;
-  }
-  if (reminderComposeSheetClose) return;
-  const home = form.parentElement;
-  const next = form.nextElementSibling;
-  reminderComposeSheetClose = openSheet({
-    label: "New reminder",
-    name: "reminder-compose",
-    returnFocus: $("reminders-new"),
-    build: (card) => {
-      card.classList.add("reminder-compose-card");
-      card.appendChild(form);
-    },
-    onClose: () => {
-      reminderComposeSheetClose = null;
-      home.insertBefore(form, next && next.parentElement === home ? next : null);
-    },
-  });
-  field()?.focus();
+  return lazyScript("/js/reminder-edit.js").then(() => reminderComposeOpen());
 }
 
 // Nudges: adjusting an existing time is far quicker than retyping one.

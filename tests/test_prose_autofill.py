@@ -11,6 +11,7 @@ run here in node so every expansion is held to the exact text it must produce.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -39,7 +40,7 @@ def _region() -> str:
 
 def _function(path: Path, name: str) -> str:
     #: app.js means the app's code, every piece of it (tests/_app_js.py).
-    text = app_js_text() if path == APP_JS else path.read_text(encoding="utf-8")
+    text = app_js_text() if path == APP_JS else frontend_text(path.name) if path == DOCUMENTS_JS else path.read_text(encoding="utf-8")
     start = text.index(f"function {name}(")
     return text[start : text.index("\n}\n", start) + 2]
 
@@ -431,7 +432,7 @@ def test_two_hyphens_make_a_dash_except_where_markdown_needs_them() -> None:
 
 def test_the_list_offers_the_expansions_and_enter_takes_one() -> None:
     """The rows reach the prose popup, and Enter is theirs (never a word row's)."""
-    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     render = _function(DOCUMENTS_JS, "renderDocComplete")
     assert "docFillAt(box)" in render
     fill = _function(DOCUMENTS_JS, "docFillAt")

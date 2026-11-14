@@ -90,3 +90,15 @@ def test_the_overview_lifts_above_the_sideways_offer():
     assert 'querySelector(":scope > .dgm-minimap")' in outline and "lift(true)" in outline and outline.count("lift(false)") == 2
     assert 'getComputedStyle?.(S.sideways).position !== "absolute"' in outline
     assert "map.style.insetBlockEnd = below ?" in outline
+
+
+def test_a_scroll_moves_the_frame_with_a_transform_and_reads_no_layout():
+    """L-documents-89: the scroll listener re-measured the picture and wrote left, top, width and height on every scroll
+    event of a pan (a forced layout each frame, 1440 only: a phone hides the overview). It now measures on a zoom and a
+    resize and moves the frame by a transform on a scroll."""
+    text = (ROOT / "frontend" / "js" / "diagram-minimap.js").read_text(encoding="utf-8")
+    assert 'fig.addEventListener("scroll", pan, { passive: true })' in text
+    pan = text[text.index("const pan = ") : text.index("//: Press, and drag")]
+    for forbidden in ("offsetWidth", "offsetLeft", "scrollWidth", "getBoundingClientRect", ".style.left", ".style.top", "place("):
+        assert forbidden not in pan, forbidden
+    assert "translate(" in pan

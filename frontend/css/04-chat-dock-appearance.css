@@ -3466,6 +3466,9 @@ span > .chip {
   resize: vertical;
   flex: 1 1 auto;
   min-height: 11rem;
+  /* The app's textarea margin made a bare box 9.6px shorter than its mounted editor surface (no
+     margin), so a focused thoughts box stood 294.8 beside a 285.2 draft (L-documents-73, real model). */
+  margin: 0;
 }
 
 /* **The thoughts footer is as tall as the draft's, so the two boxes end on one line** (L303, L326:
@@ -3715,11 +3718,22 @@ span > .chip {
   flex: 0 0 auto;
 }
 
+/* One line, a control tall, scrolling sideways past it: the row appears with the second pass and
+   took 42px from the draft box alone (285.2 to 242.8 against the thoughts box's 294.8, L888,
+   docsverify-write.js). One fixed height lets the thoughts footer below take the same height. */
 .draft-versions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--control-h);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* Side by side only: 08-consistency.css resets it in its 72rem one-column query (no new breakpoint). */
+.draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+  min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 3 * 0.4rem + var(--control-h));
 }
 
 .draft-versions-label {

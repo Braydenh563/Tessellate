@@ -115,7 +115,7 @@ def test_controls_entries_follow_the_copy_rules():
 # never a looser match here.
 
 from pathlib import Path  # noqa: E402
-from tests._app_js import app_js_text  # noqa: E402
+from tests._app_js import app_js_text, frontend_text  # noqa: E402
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 _ENTRY = re.compile(r'^\s*(\w+):\s*\{\s*keys:\s*"([^"]+)"', re.MULTILINE)
@@ -196,8 +196,8 @@ def test_the_m_chord_key_map_is_unchanged_by_the_redesign():
 
 
 def test_every_document_command_key_is_in_the_editor_entries():
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
-    table = _table(docs, "const DOC_COMMANDS = [", "\n];")
+    docs = (FRONTEND / "js" / "documents-commands.js").read_text(encoding="utf-8")
+    table = _table(docs, "const DOC_COMMANDS = [", "\n  ];")
     #: "none" is a decision recorded in the table, not a key to name.
     #: Read as the string it is: "Ctrl+\\" in the source is the chord Ctrl+\.
     keys = {k.replace("\\\\", "\\") for k in re.findall(r'keys: "([^"]*)"', table) if k and k != "none"}
@@ -208,7 +208,7 @@ def test_every_document_command_key_is_in_the_editor_entries():
 
 
 def test_every_whiteboard_tool_key_is_in_the_whiteboard_entry():
-    board = (FRONTEND / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     tools = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_TOOL_KEYS", "\n  };"), re.MULTILINE)
     shifted = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_TOOL_SHIFT_KEYS", "\n  };"), re.MULTILINE)
     actions = re.findall(r'^\s*(\w): "[\w-]+",', _table(board, "const WB_ACTION_KEYS", "\n  };"), re.MULTILINE)

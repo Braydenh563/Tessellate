@@ -56,6 +56,9 @@ function mermaidReasonLine(error) {
 //: (Mermaid writes width="100%" and a max-width style). The viewBox is the
 //: size, so it becomes the attributes, and the style goes.
 function mermaidFrameSized(svgText, background) {
+  //: A diagram with a `click` link has `<a xlink:href>` and Mermaid does not declare the prefix, so the picture was a parse error and a
+  //: broken image (L-documents-78, measured: naturalWidth 0). Declared here, in the text, before it is read.
+  if (/\bxlink:/.test(svgText) && !/xmlns:xlink=/.test(svgText)) svgText = svgText.replace("<svg", '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   const root = doc.documentElement;
   if (!root || root.localName !== "svg" || doc.querySelector("parsererror")) return svgText;

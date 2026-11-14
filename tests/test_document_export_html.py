@@ -161,3 +161,27 @@ def test_a_graph_and_a_table_of_notes_export_as_figures_not_as_screen_controls()
         assert rule in css, rule
     run = export[export.index("async function docExportHtmlRun") :][:1500]
     assert run.index("docExportHtmlRun.settled(") < run.index("cloneNode(true)"), "the rows are waited for before the preview is copied"
+
+
+def test_a_board_and_a_calendar_export_with_their_own_layout_on_screen_and_on_paper() -> None:
+    """L-documents-84: the file styled only the table's box, so a board was three stacked blocks and the calendar 42 full-width
+    lines (measured at 794px: calendar 1293px tall, columns 672px each). The layout rules are in the file, and a print rule keeps
+    a card, a column and a day from splitting across two sheets."""
+    export = EXPORT_JS.read_text(encoding="utf-8")
+    css = export[export.index("const DOC_EXPORT_CSS") : export.index("docExportHtmlDocument.deckCss") if "docExportHtmlDocument.deckCss" in export else None]
+    for rule in (".db-board {", ".db-col {", ".db-card {", ".db-cal {", ".db-day {", ".db-dow {", ".db-day-out"):
+        assert rule in css, rule
+    assert "grid-template-columns: repeat(7" in css and "flex-wrap: wrap" in css
+    printed = css[css.index("@media print") :]
+    assert ".db-card" in printed and "break-inside: avoid" in printed
+
+
+def test_a_saved_board_and_calendar_carry_no_dead_controls() -> None:
+    """L-documents-98, found in a real exported file opened in Chromium (no script in it): the six board cards kept
+    draggable="true" and picked up a ghost that dropped nowhere, the view switch and the Group by and Date in pickers were
+    empty shells (a bare "Group by" label, empty .menu-wrap spans), and the month arrows were already gone with the other
+    buttons, so the calendar's title stays as plain text for the month it was exported in."""
+    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    rest = docs[docs.index("docExportClean.rest = ") :][:3500]
+    for gone in (".db-choose", ".db-views", ".db-body .menu-wrap", 'removeAttribute("draggable")'):
+        assert gone in rest, gone

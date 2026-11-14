@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
+from tessellate.api.chat_agent import stop_when_gone
 from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
@@ -77,6 +78,8 @@ class DocumentBody(BaseModel):
     #: type is refused, 422 naming the valid ones: it used to become markdown
     #: unseen, so `exe` and `../../etc` were stored as `md` (audit 1031 DC8).
     file_type: str = Field(default=filetypes.DEFAULT_FILE_TYPE, max_length=40)
+    #: Made as a sub-page of this document (D14, `/subpage` and the kebab's New sub-page).
+    parent_id: int | None = None
 
     @field_validator("file_type")
     @classmethod
@@ -110,6 +113,9 @@ class DocumentPatch(BaseModel):
     #: `threads_hash` of the list this edit started from, so a save over
     #: threads another window has since changed is refused with 409 as text is.
     base_threads_hash: str | None = Field(default=None, max_length=64)
+    #: Move under this document (D14); null is the top level. Only when the
+    #: body names it (`model_fields_set`): an autosave never moves a page.
+    parent_id: int | None = None
 
     @field_validator("file_type")
     @classmethod
@@ -203,6 +209,30 @@ def _preview(content: str) -> str:
     return cut.rstrip(" ,;:-") + "\u2026"
 
 
+#: The first picture a document embeds from the app's own uploads, as `![alt](/media/name.ext)`; the options ride in the alt text.
+#: Only the path is a pattern, matched at a fixed place: an alt pattern searched from every "![" rescans the rest of the
+#: line from each one, quadratic on a run of "![" (CodeQL 2305), so `_cover` finds the "](" end first and looks back.
+_COVER_PATH = re.compile(r"/media/[A-Za-z0-9._-]{1,200}(?=[ )])")
+
+
+def _cover(content: str) -> str:
+    """The page card's cover (L-documents-80): taken from the content the summary already holds, so the list pays no request per row.
+
+    Each look-back stops at the previous "]" or line end, and the "](" before it is one, so every scan covers a span
+    no other scan covers: linear in the content however it repeats.
+    """
+    content = content or ""
+    end, before = content.find("](/media/"), 0
+    while end != -1:
+        stop = max(content.rfind("]", before, end), content.rfind("\n", before, end))
+        start = content.find("![", stop + 1, end)
+        path = _COVER_PATH.match(content, end + 2) if start != -1 else None
+        if path:
+            return path.group(0)
+        end, before = content.find("](/media/", end + 1), end
+    return ""
+
+
 def _summary(document: Document) -> dict:
     return {
         "id": document.id,
@@ -214,11 +244,14 @@ def _summary(document: Document) -> dict:
         #: A last newline ends a line, it does not start one: the status bar counts this way, so the two agree.
         "lines": (document.content or "").count("\n") + (0 if (document.content or "").endswith("\n") else 1) if document.content else 0,
         "preview": _preview(document.content),
+        "cover": _cover(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
         # anything at all, and the editor picks its whole mode from this.
         "file_type": filetypes.normalise(document.file_type),
         "archived_at": document.archived_at.isoformat() if document.archived_at else None,
+        #: The Library draws the tree from this (D14); null is the top level.
+        "parent_id": document.parent_id,
         # The frontmatter's keys and values, so the Library can filter on a
         # property without a request per document (DOCUMENTS_PLAN Phase 3 item
         # 4's second clause). It rides on the summary rather than on `_full`
@@ -239,7 +272,21 @@ def _full(document: Document, session: Session | None = None) -> dict:
     }
     if session is not None:
         body["notes"] = _linked_notes(session, document.id)
+        #: The breadcrumb in the document head, root first (D14).
+        body["parents"] = [{"id": p.id, "title": p.title} for p in document_repo.parents(session, document)]
     return body
+
+
+def _parent_or_refuse(session: Session, document_id: int | None, parent_id: int | None) -> int | None:
+    """The parent a create or a move names, checked: it exists, is not in the
+    bin, and is not the document or one of its own sub-pages."""
+    if parent_id is None:
+        return None
+    DOCUMENTS.writable(session, parent_id)
+    if document_id is not None and document_repo.would_cycle(session, document_id, parent_id):
+        #: Said when a move would make a loop (D14): the person's words, not the graph's.
+        raise HTTPException(status_code=409, detail="A page cannot go under itself or one of its own sub-pages.")
+    return parent_id
 
 
 def _linked_notes(session: Session, document_id: int) -> list[dict]:
@@ -500,12 +547,14 @@ def documents_outline(session: Session = Depends(get_session)) -> list[dict]:
 def create_document(
     body: DocumentBody, session: Session = Depends(get_session)
 ) -> dict:
+    parent_id = _parent_or_refuse(session, None, body.parent_id)
     document = document_repo.create(
         session,
         title=body.title.strip() or "Untitled",
         content=body.content,
         file_type=filetypes.normalise(body.file_type),
     )
+    document.parent_id = parent_id
     log_action(session, "created", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     _process_committed_media(session, document.content)
@@ -740,6 +789,8 @@ def update_document(
         current_threads=document.threads,
         new_threads=None if body.threads is None else docthreads.dump(body.threads),
     )
+    if "parent_id" in body.model_fields_set:
+        document.parent_id = _parent_or_refuse(session, document.id, body.parent_id)
     if body.title is not None:
         document.title = body.title.strip() or document.title
     content_changed = body.content is not None and body.content != document.content
@@ -794,6 +845,11 @@ def delete_document(document_id: int, session: Session = Depends(get_session)) -
     the app deleted outright, and its Undo made a new document with a new id."""
     document = _existing(session, document_id)
     document.deleted_at = utcnow()
+    #: Its sub-pages go with it, stamped with the same moment, which is how a
+    #: restore knows them from a page binned on its own earlier (D14).
+    for child in document_repo.subtree(session, document.id):
+        if child.deleted_at is None:
+            child.deleted_at = document.deleted_at
     log_action(session, "deleted", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {"deleted": True, "binned": True}
@@ -942,6 +998,47 @@ def _backlinks(session: Session, document: Document) -> dict:
 def document_backlinks(document_id: int, session: Session = Depends(get_session)) -> dict:
     """What links here, what mentions it, and the sentence each one says it in."""
     return _backlinks(session, _existing(session, document_id))
+
+
+def _block_uses(session: Session, document: Document) -> dict[str, int]:
+    """How many times each block of this document is linked or embedded elsewhere:
+    `[[Title#^id]]` and `![[Title#^id]]` in other documents and notes (synced blocks,
+    DOCUMENTS_PLAN 26). Read from the same text the backlinks read, so there is no
+    second index to fall out of step."""
+    from tessellate.entry.manager_text import WIKI_LINK, wiki_target
+
+    title = (document.title or "").strip().lower()
+    if not title:
+        return {}
+    like = f"%{like_escape(title)}#^%"
+    texts = [row.content or "" for row in document_repo.mentioning(session, document.id, like, BACKLINK_SOURCES_MAX)]
+    texts.extend(
+        row or ""
+        for row in session.scalars(
+            select(Entry.content)
+            .where(
+                Entry.is_deleted == False,  # noqa: E712
+                Entry.is_private == False,  # noqa: E712
+                Entry.content.ilike(like, escape=LIKE_ESCAPE),
+            )
+            .limit(BACKLINK_SOURCES_MAX)
+        )
+    )
+    uses: dict[str, int] = {}
+    prefix = f"{title}#^"
+    for text in texts:
+        for match in WIKI_LINK.finditer(text):
+            target = wiki_target(match.group(1))
+            if target.lower().startswith(prefix) and len(target) > len(prefix):
+                block = target[len(prefix):]
+                uses[block] = uses.get(block, 0) + 1
+    return uses
+
+
+@router.get("/{document_id}/block-uses")
+def document_block_uses(document_id: int, session: Session = Depends(get_session)) -> dict:
+    """`{uses: {blockId: places}}`: the blocks of this document shown or linked elsewhere."""
+    return {"uses": _block_uses(session, _existing(session, document_id))}
 
 
 @router.get("/{document_id}/connections")
@@ -1171,8 +1268,9 @@ def ai_check(
         ):
             yield json.dumps(event) + "\n"
 
+    stop = activity.StopEvent()
     return StreamingResponse(
-        activity.tracked_stream("generation", "Reviewing a document", lines(), stopped_line=activity.STOPPED_DONE),
+        stop_when_gone(stop, activity.tracked_stream("generation", "Reviewing a document", lines(), stop_event=stop, stopped_line=activity.STOPPED_DONE)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )

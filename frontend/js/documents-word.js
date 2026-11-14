@@ -214,7 +214,7 @@
       const picture = await docWordBlob.diagram(code.textContent);
       if (picture) diagrams.set(code.closest("pre"), picture);
     }
-    const ctx = { mode: "", revision: 1, date: new Date().toISOString(), pictures, diagrams, holder, footnotes: {}, lists: 0, lines: marked.split("\n"), langs: new Set() };
+    const ctx = { mode: "", revision: 1, date: new Date().toISOString(), marks: typeof docSuggestParse === "function" ? docSuggestParse(text) : [], seen: 0, pictures, diagrams, holder, footnotes: {}, lists: 0, lines: marked.split("\n"), langs: new Set() };
     const children = docWordBlocks(D, holder, 0, ctx);
     const levels = Array.from({ length: 9 }, (_, level) => ({
       level,
@@ -364,13 +364,17 @@
   function docWordText(D, text, style, ctx) {
     const runs = [];
     for (const piece of text.split(/([-])/)) {
-      if (piece === DOC_WORD_INS_OPEN) ctx.mode = "ins";
-      else if (piece === DOC_WORD_DEL_OPEN) ctx.mode = "del";
-      else if (piece === DOC_WORD_INS_CLOSE || piece === DOC_WORD_DEL_CLOSE) ctx.mode = "";
+      //: Each opening marker is the next mark of the text in order, which is where its author and date are (the stamp after it).
+      if (piece === DOC_WORD_INS_OPEN || piece === DOC_WORD_DEL_OPEN) {
+        ctx.mode = piece === DOC_WORD_INS_OPEN ? "ins" : "del";
+        ctx.who = ctx.marks?.[ctx.seen] || null;
+        ctx.seen = (ctx.seen || 0) + 1;
+      } else if (piece === DOC_WORD_INS_CLOSE || piece === DOC_WORD_DEL_CLOSE) ctx.mode = "";
       else if (piece && !ctx.mode) runs.push(new D.TextRun({ text: piece, ...style }));
       else if (piece) {
         const Run = ctx.mode === "ins" ? D.InsertedTextRun : D.DeletedTextRun;
-        runs.push(new Run({ text: piece, id: ctx.revision, author: "Tessellate", date: ctx.date, ...style }));
+        const day = ctx.who?.date || "";
+        runs.push(new Run({ text: piece, id: ctx.revision, author: ctx.who?.author || "Tessellate", date: day.length === 10 ? `${day}T00:00:00Z` : day || ctx.date, ...style }));
         ctx.revision += 1;
       }
     }
@@ -439,7 +443,7 @@
   //: A callout's tint and edge in Word, by the colour family the page gives its
   //: kind (fill, then the left edge). Hex without "#", as Word writes it.
   const DOC_WORD_TONES = { blue: ["E3EDFB", "3B6FD4"], green: ["E1F3E6", "2E8B57"], amber: ["FFF2D9", "C98A0B"], red: ["FBE3E3", "C0392B"], grey: ["EEEEEE", "777777"] };
-  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", todo: "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
+  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", "todo": "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
 
   //: `[TOC]` as Word's own contents field over the headings written below it
   //: (three levels, as the page's list shows). Word refreshes the page numbers

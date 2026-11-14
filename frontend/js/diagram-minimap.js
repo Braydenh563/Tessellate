@@ -51,21 +51,35 @@
     stage.append(bar);
 
     const image = () => fig.querySelector(".md-mermaid-img");
-    const place = (box, left, top, w, h) => Object.assign(box.style, { left: `${left}px`, top: `${top}px`, width: `${w}px`, height: `${h}px` });
     const pic = (img) => ({ x: img.offsetLeft, y: img.offsetTop, w: img.offsetWidth, h: img.offsetHeight });
     const view = () => ({ left: fig.scrollLeft, top: fig.scrollTop, w: fig.clientWidth, h: fig.clientHeight });
+    //: What a scroll needs, measured when the picture or the pane changes (a zoom, a redraw, a resize), not on every scroll
+    //: event of a pan: the picture's box, the pane's size and the thumbnail's.
+    let geo = null;
     const refresh = () => {
       const img = image();
       const p = img && img.offsetWidth ? pic(img) : null;
       const show = Boolean(p) && math.over({ w: fig.scrollWidth, h: fig.scrollHeight }, { w: fig.clientWidth, h: fig.clientHeight });
       bar.classList.toggle("hidden", !show);
+      geo = null;
       if (!show) return;
       if (thumb.src !== img.src) thumb.src = img.src;
       const t = math.thumb({ w: p.w, h: p.h });
       holder.style.width = `${t.w}px`;
       holder.style.height = `${t.h}px`;
       const w = math.window(p, view());
-      place(frame, w.x * t.w, w.y * t.h, w.w * t.w, w.h * t.h);
+      Object.assign(frame.style, { left: "0px", top: "0px", width: `${w.w * t.w}px`, height: `${w.h * t.h}px` });
+      geo = { p, t, w: fig.clientWidth, h: fig.clientHeight };
+      pan();
+    };
+    //: A scroll moves the frame by a transform from the stored boxes: it reads the scroll position only and writes no
+    //: layout property, so a pan costs the picture's move and nothing more (L-documents-89).
+    const pan = () => {
+      if (!geo) return;
+      //: A pane that changed size is measured again (these two reads are free: nothing in a pan dirties the layout).
+      if (fig.clientWidth !== geo.w || fig.clientHeight !== geo.h) return refresh();
+      const w = math.window(geo.p, { left: fig.scrollLeft, top: fig.scrollTop, w: geo.w, h: geo.h });
+      frame.style.transform = `translate(${w.x * geo.t.w}px, ${w.y * geo.t.h}px)`;
     };
 
     //: Press, and drag with the pointer held: the pane is centred on the spot under the pointer.
@@ -83,7 +97,7 @@
     });
     holder.addEventListener("pointermove", (event) => holder.hasPointerCapture(event.pointerId) && go(event));
 
-    fig.addEventListener("scroll", refresh, { passive: true });
+    fig.addEventListener("scroll", pan, { passive: true });
     (fig.onzoom ||= []).push(refresh);
     refresh();
   }

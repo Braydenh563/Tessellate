@@ -5,11 +5,12 @@ on request. The browser half is `scratchpad/ui-sweeps/wbdiagram.js`."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 INTER = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 SOURCE = "flowchart TD\n  A[Start] --> B[Done]"

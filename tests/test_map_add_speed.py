@@ -11,12 +11,13 @@ rather than being noticed as "the map is slow again".
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
+WB_JS = frontend_text("whiteboard.js")
 
 
 def _body(source: str, signature: str) -> str:

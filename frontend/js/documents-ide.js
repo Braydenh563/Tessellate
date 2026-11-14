@@ -21,9 +21,11 @@
 //: `split` is the second editor while the split is on, `sync` the annotation
 //: its edits carry, `chordAt` when Ctrl+K was pressed in the editor and `chordTimer` its wait.
 (() => {
-  const docIde = { slot: null, compare: null, split: null, splitDoc: null, sync: null, chordAt: 0, chordTimer: 0, keysReturn: null };
+  const docIde = { slot: null, vimOnly: false, vimLoad: null, vimSeen: new WeakSet(), compare: null, split: null, splitDoc: null, sync: null, chordAt: 0, chordTimer: 0, keysReturn: null };
 
-  function docIdeExtensions(CM, type) {
+  //: `vimOnly` is the prose and plain callers (docCodeTools): they take the Vim keymap and nothing else here.
+  function docIdeExtensions(CM, type, vimOnly) {
+    docIde.vimOnly = Boolean(vimOnly);
     if (!docIde.slot) docIde.slot = new CM.state.Compartment();
     //: A comparison belongs to the document it was opened on; opening
     //: another one ends it rather than diffing the new text against it.
@@ -31,7 +33,54 @@
     return docIde.slot.of(docIdeSlot(CM, type));
   }
 
+  //: The opt-in Vim keymap (L-documents-41). Off, it costs nothing: not a byte of vim.min.js is fetched. On, the file
+  //: is fetched once (it extends the editor bundle's own `CM6`), the slot is rebuilt when it lands, and the dock's
+  //: mode chip follows `vim-mode-change`. The keymap is only ever in the list while the preference is on.
+  const DOC_VIM_FILE = "/vendor/codemirror/vim.min.js";
+  const DOC_VIM_MODES = { normal: "NORMAL", insert: "INSERT", visual: "VISUAL", replace: "REPLACE" };
+
+  function docIdeVimChip(mode, sub) {
+    const chip = $("doc-vim-mode");
+    if (!chip) return;
+    chip.classList.toggle("hidden", !mode);
+    chip.textContent = !mode ? "" : sub === "linewise" ? "VISUAL LINE" : sub === "blockwise" ? "VISUAL BLOCK" : DOC_VIM_MODES[mode] || String(mode).toUpperCase();
+  }
+
+  function docIdeVim(CM) {
+    if (!docToolPref("vimKeys", false)) {
+      docIdeVimChip("");
+      return [];
+    }
+    if (!CM.vim) {
+      docIde.vimLoad ??= new Promise((resolve) => {
+        const script = Object.assign(document.createElement("script"), { src: DOC_VIM_FILE, async: true });
+        script.addEventListener("load", resolve);
+        script.addEventListener("error", () => {
+          docIde.vimLoad = null;
+          docIdeVimChip("");
+          resolve();
+        });
+        document.head.appendChild(script);
+      }).then(() => CM.vim && docIdeReconfigure());
+      return [];
+    }
+    return [
+      CM.vim(),
+      CM.view.EditorView.updateListener.of((update) => {
+        const cm = CM.getCM(update.view);
+        if (!cm) return;
+        if (!docIde.vimSeen.has(cm)) {
+          docIde.vimSeen.add(cm);
+          cm.on("vim-mode-change", (event) => docIdeVimChip(event.mode, event.subMode));
+          const vimState = cm.state.vim;
+          docIdeVimChip(vimState && vimState.insertMode ? "insert" : "normal");
+        }
+      }),
+    ];
+  }
+
   function docIdeSlot(CM, type) {
+    if (docIde.vimOnly) return docIdeVim(CM);
     const out = [
       //: CodeMirror owns the editor's `class` attribute and rewrites it on
       //: every focus change, so `syncDocFileType`'s `classList.toggle` was
@@ -72,6 +121,7 @@
         })
       );
     }
+    out.push(...docIdeVim(CM));
     return out;
   }
 
@@ -222,6 +272,10 @@
   }
 
   $("doc-minimap")?.addEventListener("change", (event) => docIdeToggleMinimap(event.target.checked));
+  $("doc-vim")?.addEventListener("change", (event) => {
+    docSaveToolPref("vimKeys", event.target.checked);
+    docIdeReconfigure();
+  });
 
   // --- INBOX 736: the output panel's height ------------------------------------------
   //
@@ -285,18 +339,9 @@
       event.preventDefault();
       const startY = event.clientY;
       const start = dom.getBoundingClientRect().height;
-      document.body.classList.add("resizing-sidebar");
       //: Dragging up (a negative delta) makes it taller: the panel grows away
       //: from its bottom edge, which stays put.
-      const move = (e) => docIdeRunApply(dom, start - (e.clientY - startY));
-      const stop = () => {
-        document.body.classList.remove("resizing-sidebar");
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", stop);
-        view.requestMeasure();
-      };
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", stop);
+      trackSeparatorValue.drag((e) => docIdeRunApply(dom, start - (e.clientY - startY)), () => view.requestMeasure());
     });
     handle.addEventListener("keydown", (event) => {
       const step = event.shiftKey ? 64 : 16;

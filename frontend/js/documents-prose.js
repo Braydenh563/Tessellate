@@ -97,10 +97,15 @@ async function docGrammarWhy() {
 
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
-function docGrammarAsk(text) {
+//: `early` is given Harper's lints the moment they are in, before LanguageTool
+//: (which may be starting Java, 12.3 s cold) has answered.
+function docGrammarAsk(text, early) {
   const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
-  return asked.then((lints) => docSpell.languageTool(lints, text));
+  return asked.then((lints) => {
+    if (early && lints !== null) early(lints);
+    return docSpell.languageTool(lints, text);
+  });
 }
 
 //: One message to the worker and its answer, or null when there is no checker
@@ -337,7 +342,12 @@ function docGrammarRequest(text) {
   if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarWire.asking = text;
   const asked = performance.now();
-  docGrammarAsk(text).then((lints) => {
+  //: Harper's findings are drawn at once; the merged ones replace them.
+  const early = (first) => {
+    docGrammarCache = { text, findings: docGrammarFindings(first, text), linkText: docCheckLinkText() };
+    if ((docProse.typedAt || 0) <= asked) renderDocProse(true);
+  };
+  docGrammarAsk(text, early).then((lints) => {
     docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a
@@ -687,6 +697,10 @@ function docSuggestCodeMask(text) {
 
 //: Every suggestion in the text, in order: its kind, its whole span, and the
 //: span of what it suggests (between the three-character markers).
+//: **Who and when** (L-documents-34) is CriticMarkup's own comment right after the
+//: mark, `{>>name, 2026-11-14T09:30:00Z<<}`: part of the span (so accepting or
+//: rejecting takes it away), never of the body, and only read as a stamp when it
+//: ends in an ISO date, so a reviewer's `{>>why this?<<}` stays their comment.
 function docSuggestParse(text) {
   const src = String(text == null ? "" : text);
   //: Most documents hold no mark: two scans for the opener, not the code mask
@@ -695,24 +709,48 @@ function docSuggestParse(text) {
   if (!src.includes("{++") && !src.includes("{--")) return [];
   const code = docSuggestCodeMask(src);
   const pattern = /\{\+\+([\s\S]*?)\+\+\}|\{--([\s\S]*?)--\}/g;
+  const stamp = /\{>>(?:(.*?),\s*)?(\d{4}-\d\d-\d\d(?:T[\d:.]+(?:Z|[+-]\d\d:?\d\d)?)?)<<\}/y;
   const out = [];
   let match;
   while ((match = pattern.exec(src)) !== null) {
     if (code[match.index] === 1) continue;
     const ins = match[1] !== undefined;
     const start = match.index;
-    const end = start + match[0].length;
-    out.push({ kind: ins ? "ins" : "del", start, end, bodyStart: start + 3, bodyEnd: end - 3, body: ins ? match[1] : match[2] });
+    const core = start + match[0].length;
+    stamp.lastIndex = core;
+    const who = stamp.exec(src);
+    const end = who ? core + who[0].length : core;
+    pattern.lastIndex = end;
+    out.push({
+      kind: ins ? "ins" : "del", start, end, bodyStart: start + 3, bodyEnd: core - 3, body: ins ? match[1] : match[2],
+      author: who ? (who[1] || "").trim() : "", date: who ? who[2] : "",
+    });
   }
   return out;
 }
+
+//: **What a stamp is written as**: `who` is `{ author, date }`; null writes none (the
+//: callers that make no claim about who, and the tests that pin the old text). The
+//: name loses the characters that would end the comment early.
+docSuggestParse.stamp = (who) => {
+  if (!who || !who.date) return "";
+  const name = String(who.author || "").replace(/[<>{}\r\n]/g, "").trim();
+  return `{>>${name ? `${name}, ` : ""}${who.date}<<}`;
+};
+
+//: "name, date" for a menu or a tooltip; the date is the day, not the second.
+docSuggestParse.whoText = (mark) => {
+  const day = String(mark.date || "").slice(0, 10);
+  return [mark.author, day].filter(Boolean).join(", ");
+};
 
 //: Two marks of one kind that touch become one, and an empty mark goes, but
 //: only in `[lo, hi]`, around the edit that made them: a `--}{--` elsewhere
 //: is somebody's text. Returns the text and a function that moves an offset
 //: across what was taken out.
 function docSuggestNormalize(text, lo, hi) {
-  const pattern = /\{\+\+\+\+\}|\{----\}|--\}\{--|\+\+\}\{\+\+/g;
+  const stamp = String.raw`(?:\{>>[^<\n]*<<\})?`;
+  const pattern = new RegExp(String.raw`\{\+\+\+\+\}${stamp}|\{----\}${stamp}|--\}${stamp}\{--|\+\+\}${stamp}\{\+\+`, "g");
   const cuts = [];
   let match;
   while ((match = pattern.exec(text)) !== null) {
@@ -747,7 +785,7 @@ function docSuggestNormalize(text, lo, hi) {
 //: - A marker is never split; an edit that lands only on markers or on text
 //:   already suggested for deletion steps over it to the next real letter.
 //: - Typing inside an insertion extends it; anywhere else it opens one.
-function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
+function docSuggestEdit(text, from, to, insert, backward, who = null, depth = 0) {
   const src = String(text);
   const marks = docSuggestParse(src);
   const markAt = (i) => marks.find((mark) => mark.start <= i && i < mark.end);
@@ -755,7 +793,7 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
   let run = "";
   let changed = false;
   const flush = () => {
-    if (run) region += `{--${run}--}`;
+    if (run) region += `{--${run}--}${docSuggestParse.stamp(who)}`;
     run = "";
   };
   for (let i = from; i < to; i += 1) {
@@ -782,10 +820,10 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
     };
     if (backward) {
       while (q > 0 && kept(q - 1)) q -= 1;
-      if (q > 0) return docSuggestEdit(src, q - 1, q, "", true, 1);
+      if (q > 0) return docSuggestEdit(src, q - 1, q, "", true, who, 1);
     } else {
       while (q < src.length && kept(q)) q += 1;
-      if (q < src.length) return docSuggestEdit(src, q, q + 1, "", false, 1);
+      if (q < src.length) return docSuggestEdit(src, q, q + 1, "", false, who, 1);
     }
     return { text: src, caret: backward ? from : to };
   }
@@ -805,7 +843,7 @@ function docSuggestEdit(text, from, to, insert, backward, depth = 0) {
       out = out.slice(0, p) + insert + out.slice(p);
       caret = p + insert.length;
     } else {
-      out = `${out.slice(0, p)}{++${insert}++}${out.slice(p)}`;
+      out = `${out.slice(0, p)}{++${insert}++}${docSuggestParse.stamp(who)}${out.slice(p)}`;
       caret = p + 3 + insert.length;
     }
     hi = Math.max(hi, caret + 3);
@@ -880,7 +918,9 @@ function docSuggestFindingFor(mark, findings, offset) {
 //: `run` supplies the actions: `one(accept)`, `all(accept)`, `next()`.
 function docSuggestMenuItems(mark, count, answers, run) {
   const what = mark.kind === "ins" ? "insertion" : "deletion";
+  const by = docSuggestParse.whoText(mark);
   const items = [
+    ...(by ? [{ group: "who", label: `ph:user ${by}`, disabled: true, run: () => {} }] : []),
     { group: "one", label: `ph:check Accept this ${what}`, run: run.one(true) },
     { group: "one", label: `ph:x Reject this ${what}`, run: run.one(false) },
   ];
@@ -993,6 +1033,14 @@ function docSuggestModes() {
   }
 }
 
+//: Who is suggesting and when, for the stamp a new change carries: the name the person
+//: gave Settings (none when they gave none: the date alone says less than a made-up
+//: "You" would claim), and the moment, whole seconds in UTC.
+docSuggestActive.who = (now = new Date()) => {
+  const author = (typeof prefsCache === "object" && prefsCache && prefsCache.display_name) || "";
+  return { author: String(author).trim(), date: now.toISOString().replace(/\.\d+Z$/, "Z") };
+};
+
 function docSuggestActive() {
   if (!currentDoc || !currentDoc.id || !docFileType().previewable) return false;
   return docSuggestModes()[currentDoc.id] === true;
@@ -1041,7 +1089,7 @@ function docSuggestExtensions(CM) {
     let caret = 0;
     for (let i = changes.length - 1; i >= 0; i -= 1) {
       const [from, to, insert] = changes[i];
-      const result = docSuggestEdit(text, from, to, insert, backward);
+      const result = docSuggestEdit(text, from, to, insert, backward, docSuggestActive.who());
       text = result.text;
       if (i === 0) caret = result.caret;
     }
@@ -1069,7 +1117,8 @@ function docSuggestExtensions(CM) {
     const hide = docView === "live";
     for (const mark of docSuggestParse(docStr(view.state.doc))) {
       const cls = mark.kind === "ins" ? "cm-suggest-ins" : "cm-suggest-del";
-      const title = mark.kind === "ins" ? "Suggested insertion: click to accept or reject" : "Suggested deletion: click to accept or reject";
+      const by = docSuggestParse.whoText(mark);
+      const title = `Suggested ${mark.kind === "ins" ? "insertion" : "deletion"}${by ? ` by ${by}` : ""}: click to accept or reject`;
       const edges = [[mark.start, mark.bodyStart], [mark.bodyEnd, mark.end]];
       for (const [from, to] of edges) {
         hidden.push(Decoration.replace({}).range(from, to));
@@ -1131,7 +1180,7 @@ function docSuggestApply(view, edit, message) {
 //: The answers to one suggestion, at the pointer (or at the change, from the
 //: keyboard). Recomputed from the text at the press: the mark is found again
 //: by where it starts, and a mark no longer there says so.
-function docSuggestMenu(view, start, x, y) {
+async function docSuggestMenu(view, start, x, y) {
   const mark = docSuggestParse(docStr(view.state.doc)).find((m) => m.start === start);
   if (!mark || typeof openMenuAtPoint !== "function") return;
   const what = mark.kind === "ins" ? "insertion" : "deletion";
@@ -1151,7 +1200,7 @@ function docSuggestMenu(view, start, x, y) {
   const answers = finding
     ? [
         ...(said ? [{ label: `ph:info ${said.length > 60 ? `${said.slice(0, 57)}\u2026` : said}`, title: said, disabled: true, run: () => {} }] : []),
-        ...docFindingAnswerRows(finding),
+        ...(await docFindingAnswerRows(finding)),
       ]
     : [];
   const items = docSuggestMenuItems(mark, count, answers, {
@@ -1159,7 +1208,8 @@ function docSuggestMenu(view, start, x, y) {
     all: (accept) => () => docSuggestAll(accept),
     next: () => () => docSuggestNext(),
   });
-  openMenuAtPoint(items, `Suggested ${what}`, x, y);
+  const by = docSuggestParse.whoText(mark);
+  openMenuAtPoint(items, `Suggested ${what}${by ? `, ${by}` : ""}`, x, y);
 }
 
 function docSuggestAll(accept) {
@@ -1249,6 +1299,7 @@ function docSpeakable(text) {
   return String(text || "")
     .replace(/\{--[\s\S]*?--\}/g, "")
     .replace(/\{\+\+|\+\+\}/g, "")
+    .replace(/\{>>[^<\n]*<<\}/g, "")
     .replace(/%%[^%\n]*%%/g, "")
     .replace(/!\[([^[\]\n]*)\]\([^()\n]*\)/g, "$1")
     .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")
@@ -1480,7 +1531,7 @@ function docProseToolExtensions(CM) {
 //
 // - **Expansions**: `lorem` (a paragraph), `lorem20` (twenty words),
 //   `table 3x4` (three columns, four rows; `/table 3x4` too), and, on a line of
-//   their own, `today`, `date`, `now`, `time`, `iso`, `todo`, `callout`, `hr`,
+//   their own, `today`, `date`, `now`, `time`, `iso`, the task word, `callout`, `hr`,
 //   `toc` (the headings as links) and `sig` (the name from Settings). Tab or
 //   Enter takes the chosen row; its first line is drawn after the caret in
 //   muted ink first, as the code side's ghost text is.
@@ -1493,7 +1544,7 @@ function docProseToolExtensions(CM) {
 //   Preferences (the app's own no-em-dash rule is about the app's copy, not the
 //   writer's).
 //
-// **Why a bare word only counts on a line of its own.** `now`, `date`, `todo`
+// **Why a bare word only counts on a line of its own.** `now`, `date`, the task word
 // and `hr` are words people write. Offered after any occurrence, Enter at the
 // end of "I will do it now" would stamp a time into the sentence. A line that
 // is nothing but `now` is somebody asking. `lorem` and the shortcodes are not
@@ -2337,45 +2388,13 @@ function docProseGhostSet(pos, text) {
 
 function docProseGhostPlugin(CM) {
   if (docProseGhostCache) return docProseGhostCache;
-  const { Decoration, ViewPlugin, WidgetType } = CM.view;
   docProseGhostEffect = CM.state.StateEffect.define();
-  class Ghost extends WidgetType {
-    constructor(text) {
-      super();
-      this.text = text;
-    }
-    eq(other) {
-      return other.text === this.text;
-    }
-    toDOM() {
-      const span = document.createElement("span");
-      //: The code side's own class, so the two ghosts are one look.
-      span.className = "cm-ghostText";
-      span.setAttribute("aria-hidden", "true");
-      span.textContent = this.text;
-      return span;
-    }
-    ignoreEvent() {
-      return true;
-    }
-  }
-  const build = (state) => {
+  docProseGhostCache = docGhostPlugin.make(CM, (state, ghost) => {
     const g = docProseGhost;
     const range = state.selection.main;
-    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return Decoration.none;
-    return Decoration.set([Decoration.widget({ widget: new Ghost(g.text), side: 1 }).range(g.pos)]);
-  };
-  docProseGhostCache = ViewPlugin.fromClass(
-    class {
-      constructor(view) {
-        this.decorations = build(view.state);
-      }
-      update(update) {
-        this.decorations = build(update.state);
-      }
-    },
-    { decorations: (plugin) => plugin.decorations }
-  );
+    if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return null;
+    return ghost(g.text, g.pos);
+  });
   return docProseGhostCache;
 }
 
@@ -2886,11 +2905,29 @@ function pasteParseDelimited(text, delim) {
   return rows.map((row) => row.map((c) => c.replace(/\s*\n\s*/g, " ").trim()));
 }
 
+//: A Markdown (pipe) table: a header line, a `| --- | :-: |` rule, then rows.
+//: The rule is dropped, a `\|` stays a pipe inside a cell, short rows are
+//: padded to the header. Null for anything that is not one.
+//: Hung on pasteGrid (hoisted) so the shared scope gains no name (global-scope ratchet).
+pasteGrid.pipe = function (text) {
+  const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim()).filter(Boolean);
+  const cells = (line) => line.replace(/^\|/, "").replace(/(?<!\\)\|$/, "").split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|").trim());
+  if (lines.length < 2 || !lines.every((l) => l.includes("|")) || !/^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(lines[1])) return null;
+  const head = cells(lines[0]);
+  if (head.length < 2 || cells(lines[1]).length !== head.length) return null;
+  return [head, ...lines.slice(2).map((l) => {
+    const row = cells(l);
+    return Array.from({ length: head.length }, (_, i) => row[i] || "");
+  })];
+};
+
 //: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
 //: only when every row has the same number of cells). Null for anything else.
 function pasteGrid(text) {
   const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
   if (!clean.trim()) return null;
+  const piped = pasteGrid.pipe(clean);
+  if (piped) return piped;
   const tabbed = clean.includes("\t");
   const rows = pasteParseDelimited(clean, tabbed ? "\t" : ",");
   if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;

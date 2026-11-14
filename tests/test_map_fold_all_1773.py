@@ -2,6 +2,7 @@
 
 It is the level-1 fold (`wbMapFoldToLevel(1)`: one Undo step, saves only the
 changed topics), reached from the same four places as its twin."""
+from tests._app_js import frontend_text
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
@@ -22,9 +23,9 @@ def test_both_menus_carry_the_twin_with_the_twin_icon():
 
 
 def test_the_twin_is_the_level_one_fold_not_new_folding_code():
-    wb = _read("frontend", "js", "whiteboard.js")
+    wb = frontend_text("whiteboard.js")
     lib = _read("frontend", "js", "whiteboard-library.js")
-    mp = _read("frontend", "js", "whiteboard-map.js")
+    mp = frontend_text("whiteboard-map.js")
     assert '$("wb-map-fold-all")?.addEventListener("click", () => wbMapFoldToLevel(1))' in wb
     assert 'getElementById("wb-side-map-fold")?.addEventListener("click", () => wbMapFoldToLevel(1))' in lib
     assert "Fold every branch" in wb and "Fold every branch" in mp
@@ -34,12 +35,12 @@ def test_the_twin_is_the_level_one_fold_not_new_folding_code():
 
 
 def test_enabled_only_when_it_would_change_something():
-    mp = _read("frontend", "js", "whiteboard-map.js")
+    mp = frontend_text("whiteboard-map.js")
     sync = mp[mp.index("wbMapFoldToLevel.sync = ") :].split("\n};")[0]
     assert "wb-map-fold-all" in sync and "wb-side-map-fold" in sync
     assert "wb-map-expand-all" in sync and "wb-side-map-expand" in sync
     assert sync.count(".disabled = ") >= 2
-    wb = _read("frontend", "js", "whiteboard.js")
+    wb = frontend_text("whiteboard.js")
     assert "wbMapFoldToLevel.sync()" in wb
     assert "wbMapFoldToLevel.sync()" in _read("frontend", "js", "whiteboard-library.js")
 

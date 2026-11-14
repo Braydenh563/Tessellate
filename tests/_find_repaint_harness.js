@@ -11,8 +11,17 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(process.argv[2]);
-const SOURCE = ["documents.js", "documents-view.js"]
-  .map((f) => fs.readFileSync(path.join(root, "frontend", "js", f), "utf8"))
+function unwrapped(src) {
+  const lines = src.split("\n");
+  const first = lines.indexOf("(() => {");
+  const last = lines.lastIndexOf("})();");
+  if (first < 0 || last < 0) return src;
+  const body = lines.slice(first + 1, last).map((l) => (l.startsWith("  ") ? l.slice(2) : l)).filter((l) => !/^Object\.assign\(window, \{ [\w$, ]+ \}\);$/.test(l));
+  return [...lines.slice(0, first), ...body, ...lines.slice(last + 1)].join("\n");
+}
+
+const SOURCE = ["documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-view.js"]
+  .map((f) => unwrapped(fs.readFileSync(path.join(root, "frontend", "js", f), "utf8")))
   .join("\n");
 
 function declaration(name) {

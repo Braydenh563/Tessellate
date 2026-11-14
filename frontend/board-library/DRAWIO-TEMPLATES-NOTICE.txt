@@ -1,0 +1,11 @@
+The set "Templates from draw.io" (drawio-templates.json) is converted from the
+templates of draw.io (jgraph/drawio, src/main/webapp/templates). Copyright
+JGraph Ltd. Licensed under Creative Commons Attribution 4.0 (CC BY 4.0,
+https://creativecommons.org/licenses/by/4.0/). Each entry carries the note
+"Template by JGraph, CC BY 4.0".
+
+Changes: each template's diagram was read with the app's own .drawio reader and
+written as a board library entry (scripts/build_drawio_templates.py): shapes
+became board shapes and cards, connectors became links, and styles with no
+counterpart on the board were left out. The upstream layout, names and words are
+otherwise kept.

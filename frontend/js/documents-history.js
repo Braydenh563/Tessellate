@@ -699,6 +699,28 @@
     }
   }
 
+  //: **The history in a few sentences** (L-documents-5): the server reads the newest
+  //: versions pair by pair and the local model writes the account; with no model the
+  //: same counts come back as plain words, so the button always answers.
+  async function docHistoryStory(event) {
+    const button = event.currentTarget;
+    const box = $("doc-history-story");
+    if (!currentDoc || !box || button.disabled) return;
+    button.disabled = true;
+    box.classList.remove("hidden");
+    box.textContent = "Reading the versions…";
+    try {
+      const got = await apiJson(`/documents/${currentDoc.id}/revisions/summary`, { method: "POST", readOnly: true });
+      box.textContent = got.reason === "timeout" ? `The model took too long, so these are the counts. ${got.summary}` : got.summary;
+      box.title = got.source === "model" ? "Written by the local model from the changed lines" : "Counted from the changed lines; no model wrote this";
+    } catch (error) {
+      box.textContent = error.message || "Couldn't read the history.";
+    } finally {
+      button.disabled = false;
+    }
+  }
+  $("doc-history-story-btn")?.addEventListener("click", docHistoryStory);
+
   //: **Closing the dialog lets go of what it held**: the list, every version's cached text
   //: and the open diff. A space switch (space-swap.js) used to empty them by name; a modal
   //: dialog cannot be open across one, so the close is the moment, and it also frees the
@@ -707,6 +729,7 @@
     docHistoryEntries = [];
     docHistoryContent.clear();
     docHistoryOpenDiff = null;
+    $("doc-history-story")?.classList.add("hidden");
   });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).

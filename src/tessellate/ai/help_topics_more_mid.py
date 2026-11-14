@@ -1196,7 +1196,7 @@ MID_TOPICS.extend(
                 "greyed and the line beside it goes there), and input() reads its "
                 "lines from the panel's Input box. HTML, CSS (over a sample page), "
                 "SVG and a p5.js sketch (New from a template, p5.js sketch) show as "
-                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (Tab and the arrows move; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
+                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Grid edits a CSV or TSV as cells (see the CSV grid topic; Add and Delete row and column; Ctrl+Z undoes); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
                 "tests (describe, it and expect in JavaScript or TypeScript; "
                 "unittest or test_ functions in Python) runs its tests, each "
                 "listed with its time and a failure underlined on its line; Run "
@@ -1209,6 +1209,27 @@ MID_TOPICS.extend(
                 "a .py file and JavaScript for the rest, Up recalling the last. "
                 "Debug (F5) steps "
                 "JavaScript, TypeScript and Python; see the debugger."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L328 and L-documents-39: the csv and tsv grid (documents-csvgrid.js), in the words of its buttons and menu rows.
+        {
+            "id": "csv-grid",
+            "keywords": (
+                "csv grid", "grid", "csv", "tsv", "table editor", "sort a column", "sort the file",
+                "filter rows", "header row", "resize a column", "paste cells", "paste into a table",
+            ),
+            "body": (
+                "Grid edits a CSV or TSV as cells: Tab and the arrows move, Enter goes down, "
+                "Add and Delete row and column act on the cell you are in, and Ctrl+Z undoes. "
+                "A column's name sorts the view (A to Z, Z to A, then the file's own order) "
+                "and never changes the file; the column's ⋯ menu has Sort the file, which "
+                "rewrites the rows and can be undone. Filters adds a box under each name that "
+                "hides the rows without that text; they stay in the file. Header row says "
+                "whether row 1 is the header, kept for this document. Drag a column's edge to "
+                "resize it, or focus the edge and press Left or Right (Home resets it); widths "
+                "are not saved. Pasting tabbed text fills cells from the one you are in, adding "
+                "rows and columns as needed, as one undo step."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1237,14 +1258,14 @@ MID_TOPICS.extend(
                 "continues and Shift+F5 stops; the same five are buttons at the "
                 "top of the tab. An error nothing catches stops on the line that "
                 "raised it, with its traceback and the frame's variables. A Python "
-                "file of tests debugs through its tests: a breakpoint inside one "
+                "file of tests, and a JavaScript or TypeScript one, debugs through its tests: a breakpoint inside one "
                 "stops there, and the Tests tab lists each result. Python's "
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
-                "functions, template strings, classes with fields, destructuring "
-                "and spread are rewritten for it, and async code, generators and "
-                "getters are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
+                "functions, template strings, classes with fields, destructuring, "
+                "spread, getters and setters and private members are rewritten for it, "
+                "and generators, async and await, async generators, for await, top-level await, tagged templates and spread in new are stepped too. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1291,6 +1312,37 @@ MID_TOPICS.extend(
                 "row goes in at the caret or where you drop it, on its own lines "
                 "with a blank line round it, and one Ctrl+Z takes it out; Save "
                 "keeps the selected text as a section of your own."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-42: documents-json-schema.js.
+        {
+            "id": "json-schema",
+            "keywords": ("json schema", "$schema", "schema lint", "key completion", "validate json", "json keys"),
+            "body": (
+                "A .json file whose top-level object has a \"$schema\" naming another "
+                "JSON document in the Library (its title or file name) is checked "
+                "against it: a wrong type, a missing or unknown key, or a value "
+                "outside the list or range is underlined, and a quote where a key "
+                "goes (or Ctrl+Space) lists the schema's keys with their descriptions. "
+                "Nothing is fetched from the web; a schema not in the Library is one note."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-50: documents-code-lint.js, the Ruff extra.
+        {
+            "id": "code-lint",
+            "keywords": ("lint", "linter", "ruff", "unused import", "undefined name", "duplicate key", "unreachable code", "python lint"),
+            "body": (
+                "A .js or .ts file that parses is also checked for the mistakes that "
+                "parse: a duplicate key in an object, an assignment where a condition "
+                "goes, code after a return, a duplicate case, a comparison with NaN and "
+                "a typeof compared with a word it never gives, each underlined as a "
+                "warning. A .py file that compiles is checked by Ruff once you install "
+                "Python lint (Ruff) in Settings, Packages (a 3.7 MB download, 10 MB on "
+                "disk): an unused import or variable or a name that is not defined is "
+                "underlined, with Ruff's own fix in the hover card where it has one. "
+                "It runs on this computer and works offline."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

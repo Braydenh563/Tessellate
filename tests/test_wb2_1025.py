@@ -4,10 +4,11 @@ Source-level checks the suite can see; the browser numbers are in the
 commit messages and `docs/roadmap/archive/agent-remaining/wb2-1025.md`.
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
@@ -50,7 +51,7 @@ def test_group_resize_carries_member_outlines_links_and_readout():
     assert "delete item._dragLiveD" in _function(WB, "wbRestoreMultiSnapshot")
 
 
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_map_opens_with_its_root_clear_of_the_chrome():
@@ -184,7 +185,7 @@ def test_one_branch_copies_as_an_outline_and_exports_alone():
     # The server's tree, so the order and notes match the whole-map exports.
     assert "/tree`" in copy and "wbMapTreeMarkdown([node])" in copy and "copyToClipboard(" in copy
     export = _function(MAP, "wbMapExportBranch")
-    assert "wbMapSubtree(index, id)" in export and "!hidden.has(o.id)" in export and "wbExportBoard();" in export
+    assert "wbMapSubtree(index, id)" in export and "!hidden.has(o.id)" in export and "wbExportBoard({ branch: true });" in export  # L267: the dialog says branch
     assert 'sub("Copy this branch as an outline"' in WB and 'sub("Export this branch…"' in WB
     cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'id: "copy-branch-outline"' in cmds and 'id: "export-branch"' in cmds

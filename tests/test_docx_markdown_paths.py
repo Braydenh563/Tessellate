@@ -99,3 +99,13 @@ def test_a_list_item_is_followed_by_a_blank_line_before_a_table_code_or_a_blank_
     assert _read(tmp_path, item, cell) == "- item\n\n| k |\n| --- |\n"
     assert _read(tmp_path, item, _p(_r("c = 1", MONO))) == "- item\n\n```\nc = 1\n```\n"
     assert _read(tmp_path, item, _p(), _p(_r("next"))) == "- item\n\nnext\n"
+
+
+def test_a_tracked_change_arrives_with_its_author_and_date_as_the_stamp(tmp_path):
+    """L-documents-34: a reviewer's w:author and w:date become the mark's `{>>name, date<<}`, so the round trip through Word keeps who
+    and when; a change with no date makes no claim, and a name with markup characters is written clean."""
+    ins = f'<w:ins w:id="1" w:author="Ann Lee" w:date="2026-11-14T09:30:00Z">{_r("new ")}</w:ins>'
+    gone = '<w:del w:id="2" w:author="Bo&lt;x&gt;" w:date="2026-11-15T00:00:00Z"><w:r><w:delText xml:space="preserve">gone </w:delText></w:r></w:del>'
+    bare = f'<w:ins w:id="3" w:author="Cy">{_r("bare ")}</w:ins>'
+    text = _read(tmp_path, _p(_r("Keep ") + ins + gone + bare + _r("end")))
+    assert text.strip() == "Keep {++new ++}{>>Ann Lee, 2026-11-14T09:30:00Z<<}{--gone --}{>>Box, 2026-11-15T00:00:00Z<<}{++bare ++}end"

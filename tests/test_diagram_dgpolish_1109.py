@@ -2,6 +2,7 @@
 the picture with the list folded. Source reads; the browser numbers are in the CHANGELOG lines and the remaining file."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 from pathlib import Path
 
@@ -10,7 +11,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name == "documents.js" else (JS / name).read_text(encoding="utf-8")
 
 
 def test_a_shelf_tile_dropped_off_every_part_rings_the_box_it_lands_beside_not_the_whole_picture():

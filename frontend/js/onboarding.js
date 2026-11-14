@@ -248,6 +248,7 @@ function renderOnboardingActions(models, notebook) {
 //: The preferences card: one select per calibratable choice, saved as it changes (`PUT /preferences`, the way Settings does).
 //: `before:` is a bool on the server, so its two options carry "yes" and "no".
 onboardingRun.choices = [
+  { key: "writing_style", label: "New starts with", options: [["notes", "Short notes"], ["documents", "Long documents"]] },
   { key: "week_start", label: "First day of the week", options: [["auto", "From my region"], ["monday", "Monday"], ["saturday", "Saturday"], ["sunday", "Sunday"]] },
   { key: "date_order", label: "Dates like 3/4 mean", options: [["auto", "From my region"], ["day", "Day first (3 April)"], ["month", "Month first (4 March)"]] },
   { key: "before_includes_day", label: "Search before:2026-03-10", options: [["no", "Stops at the 9th"], ["yes", "Includes the 10th"]] },
