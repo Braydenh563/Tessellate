@@ -1047,7 +1047,7 @@ HELP_TOPICS: list[dict] = [
             "reads what is on screen; its menu reads every page or a range like "
             "1-5. Ask sends the page to the chat as a chip on your next "
             "message. A read keeps running if you "
-            "close the window: it shows in Settings, Background tasks and can "
+            "close the window: it shows in Settings, Background tasks (a range read counts pages as it goes) and can "
             "be stopped from there or from the workspace, and every page that "
             "has been read is remembered, so reopening the document shows the "
             "text again rather than starting over."

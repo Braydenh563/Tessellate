@@ -369,3 +369,29 @@ def test_media_page_reads_can_be_deleted_too(client, monkeypatch):
     deleted = client.delete(f"/media/{upload_id}/page-reads/0")
     assert deleted.status_code == 200, deleted.text
     assert client.get(f"/media/{upload_id}/page-reads").json()["pages"] == []
+
+
+def test_a_range_read_is_an_activity_job_with_progress_and_stop(monkeypatch, tmp_path):
+    """L-world-class-67 (decision 70): a range read lists in the Activity panel, reports pages done, and Stop ends
+    it between two pages, keeping the pages read so far."""
+    from tessellate.api import routes_files_readings as readings
+    from tessellate.core import activity
+
+    monkeypatch.setattr(readings.pdfpages, "available", lambda: True)
+    monkeypatch.setattr(readings.pdfpages, "page_count", lambda path: 6)
+    seen: list[dict] = []
+
+    def fake_read(path, index, reader, key):
+        row = next(row for row in activity.snapshot() if row["kind"] == "ocr-range")
+        seen.append(row)
+        if index == 2:
+            activity.stop(row["id"])
+        return routes_files.OcrPageReadOut(page=index, text=f"page {index + 1}")
+
+    monkeypatch.setattr(readings.rf, "_read_page", fake_read)
+    out = readings._read_range(tmp_path / "x.pdf", "all", "vision", None)
+    assert [p.text for p in out.pages] == ["page 1", "page 2", "page 3"]
+    assert "Stopped" in out.message
+    assert seen[0]["stoppable"] is True and not seen[0]["progress"]
+    assert seen[2]["progress"] == pytest.approx(2 / 6)
+    assert not [row for row in activity.snapshot() if row["kind"] == "ocr-range"]
