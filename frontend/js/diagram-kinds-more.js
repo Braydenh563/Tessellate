@@ -278,7 +278,7 @@
   }
 
   const pie = {
-    name: "pie", noun: "pie chart", header: "pie", want: "", parse: kmPieParse, print: kmPiePrint,
+    name: "pie", noun: "pie chart", header: "pie", want: "pie chart", parse: kmPieParse, print: kmPiePrint,
     blank: (m) => !m.items.length,
     children: (m, n) => (n ? [] : [{ list: m.items, types: ["s", "p", "k"] }]),
     home: () => null,
@@ -313,7 +313,7 @@
   };
 
   const gantt = {
-    name: "gantt", noun: "Gantt chart", header: "gantt", want: "", parse: kmGanttParse, print: kmGanttPrint,
+    name: "gantt", noun: "Gantt chart", header: "gantt", want: "gantt chart", parse: kmGanttParse, print: kmGanttPrint,
     blank: (m) => !m.free.length && !m.sections.length,
     children: (m, n) => (!n ? [{ list: m.free, types: ["t", "p", "k"] }, { list: m.sections, types: ["s"] }] : n.type === "s" ? [{ list: n.tasks, types: ["t", "k"] }] : []),
     //: A task with nothing chosen goes to the last section; a section, to the end.
@@ -362,7 +362,7 @@
     return kmMake(m, "s", { id: kmFresh(used, "S"), desc: "State", ...f });
   };
   const state = {
-    name: "state", noun: "state diagram", header: "stateDiagram-v2", want: "", parse: kmStateParse, print: kmStatePrint,
+    name: "state", noun: "state diagram", header: "stateDiagram-v2", want: "state diagram", parse: kmStateParse, print: kmStatePrint,
     blank: (m) => !m.items.length,
     children: (m, n) => (!n ? [{ list: m.items, types: ["s", "c", "x", "k"] }] : n.type === "c" ? [{ list: n.items, types: ["s", "c", "x", "k"] }] : []),
     home: () => null,
@@ -443,7 +443,7 @@
   };
 
   const classKind = {
-    name: "class", noun: "class diagram", header: "classDiagram", want: "", parse: kmClassParse, print: kmClassPrint,
+    name: "class", noun: "class diagram", header: "classDiagram", want: "class diagram", parse: kmClassParse, print: kmClassPrint,
     blank: (m) => !m.items.length,
     children: (m, n) => (!n ? [{ list: m.items, types: ["c", "r", "k"] }] : n.type === "c" ? [{ list: n.members, types: ["m", "k"] }] : []),
     //: A member with nothing chosen goes into the last class; with none, the tile says to add a class first.
@@ -521,7 +521,7 @@
   };
 
   const er = {
-    name: "er", noun: "ER diagram", header: "erDiagram", want: "", parse: kmErParse, print: kmErPrint,
+    name: "er", noun: "ER diagram", header: "erDiagram", want: "er diagram", parse: kmErParse, print: kmErPrint,
     blank: (m) => !m.items.length,
     children: (m, n) => (!n ? [{ list: m.items, types: ["e", "r", "k"] }] : n.type === "e" ? [{ list: n.members, types: ["a", "k"] }] : []),
     home: (m, type) => (type === "a" ? m.items.filter((x) => x.type === "e").pop() : null),

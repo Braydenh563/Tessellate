@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8615, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10913, test files 2797, tests 22448, plan headings 688, app scripts 29, boot scripts 38, script files 311.
+Counts: frontend functions 8615, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10928, test files 2798, tests 22453, plan headings 688, app scripts 29, boot scripts 38, script files 311.
 
 ## Frontend functions (8615)
 
@@ -14294,7 +14294,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (10913)
+## Backend modules (10928)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16312,50 +16312,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `window_of` | src/tessellate/ai/composer_lists.py:160 |
 | `without_ask` | src/tessellate/ai/composer_lists.py:276 |
 
-### src/tessellate/ai/composer_mermaid.py (40)
+### src/tessellate/ai/composer_mermaid.py (41)
 
 | Name | File:line |
 |---|---|
 | `Diagram` | src/tessellate/ai/composer_mermaid.py:53 |
-| `_about` | src/tessellate/ai/composer_mermaid.py:550 |
-| `_capped` | src/tessellate/ai/composer_mermaid.py:303 |
-| `_checklist` | src/tessellate/ai/composer_mermaid.py:183 |
-| `_day_words` | src/tessellate/ai/composer_mermaid.py:421 |
-| `_drawn` | src/tessellate/ai/composer_mermaid.py:472 |
-| `_event` | src/tessellate/ai/composer_mermaid.py:134 |
-| `_fence_body` | src/tessellate/ai/composer_mermaid.py:361 |
-| `_given_text` | src/tessellate/ai/composer_mermaid.py:526 |
-| `_lines` | src/tessellate/ai/composer_mermaid.py:142 |
-| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:171 |
-| `_named` | src/tessellate/ai/composer_mermaid.py:446 |
-| `_note_day` | src/tessellate/ai/composer_mermaid.py:408 |
-| `_notes_branches` | src/tessellate/ai/composer_mermaid.py:434 |
-| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:425 |
-| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:559 |
-| `_outline` | src/tessellate/ai/composer_mermaid.py:283 |
-| `_outline_branches` | src/tessellate/ai/composer_mermaid.py:237 |
-| `_rooted` | src/tessellate/ai/composer_mermaid.py:269 |
-| `_sentences` | src/tessellate/ai/composer_mermaid.py:165 |
-| `_skip_blank` | src/tessellate/ai/composer_mermaid.py:355 |
-| `_sort_key` | src/tessellate/ai/composer_mermaid.py:208 |
-| `_subject` | src/tessellate/ai/composer_mermaid.py:538 |
-| `_words` | src/tessellate/ai/composer_mermaid.py:109 |
-| `answer` | src/tessellate/ai/composer_mermaid.py:565 |
-| `asks` | src/tessellate/ai/composer_mermaid.py:98 |
-| `dated` | src/tessellate/ai/composer_mermaid.py:221 |
-| `diagram` | src/tessellate/ai/composer_mermaid.py:492 |
-| `drafted` | src/tessellate/ai/composer_mermaid.py:505 |
-| `fenced` | src/tessellate/ai/composer_mermaid.py:343 |
-| `flowchart` | src/tessellate/ai/composer_mermaid.py:307 |
-| `from_notes` | src/tessellate/ai/composer_mermaid.py:453 |
-| `label` | src/tessellate/ai/composer_mermaid.py:120 |
-| `mind_label` | src/tessellate/ai/composer_mermaid.py:126 |
-| `mindmap` | src/tessellate/ai/composer_mermaid.py:331 |
-| `source_of` | src/tessellate/ai/composer_mermaid.py:382 |
-| `steps` | src/tessellate/ai/composer_mermaid.py:194 |
-| `timeline` | src/tessellate/ai/composer_mermaid.py:315 |
-| `tree` | src/tessellate/ai/composer_mermaid.py:253 |
-| `wanted` | src/tessellate/ai/composer_mermaid.py:89 |
+| `_about` | src/tessellate/ai/composer_mermaid.py:576 |
+| `_capped` | src/tessellate/ai/composer_mermaid.py:308 |
+| `_checklist` | src/tessellate/ai/composer_mermaid.py:188 |
+| `_day_words` | src/tessellate/ai/composer_mermaid.py:426 |
+| `_drawn` | src/tessellate/ai/composer_mermaid.py:489 |
+| `_event` | src/tessellate/ai/composer_mermaid.py:139 |
+| `_fence_body` | src/tessellate/ai/composer_mermaid.py:366 |
+| `_given_text` | src/tessellate/ai/composer_mermaid.py:552 |
+| `_kind` | src/tessellate/ai/composer_mermaid.py:482 |
+| `_lines` | src/tessellate/ai/composer_mermaid.py:147 |
+| `_listed_steps` | src/tessellate/ai/composer_mermaid.py:176 |
+| `_named` | src/tessellate/ai/composer_mermaid.py:451 |
+| `_note_day` | src/tessellate/ai/composer_mermaid.py:413 |
+| `_notes_branches` | src/tessellate/ai/composer_mermaid.py:439 |
+| `_notes_flowchart` | src/tessellate/ai/composer_mermaid.py:430 |
+| `_notes_lead` | src/tessellate/ai/composer_mermaid.py:585 |
+| `_outline` | src/tessellate/ai/composer_mermaid.py:288 |
+| `_outline_branches` | src/tessellate/ai/composer_mermaid.py:242 |
+| `_rooted` | src/tessellate/ai/composer_mermaid.py:274 |
+| `_sentences` | src/tessellate/ai/composer_mermaid.py:170 |
+| `_skip_blank` | src/tessellate/ai/composer_mermaid.py:360 |
+| `_sort_key` | src/tessellate/ai/composer_mermaid.py:213 |
+| `_subject` | src/tessellate/ai/composer_mermaid.py:564 |
+| `_words` | src/tessellate/ai/composer_mermaid.py:114 |
+| `answer` | src/tessellate/ai/composer_mermaid.py:591 |
+| `asks` | src/tessellate/ai/composer_mermaid.py:103 |
+| `dated` | src/tessellate/ai/composer_mermaid.py:226 |
+| `diagram` | src/tessellate/ai/composer_mermaid.py:518 |
+| `drafted` | src/tessellate/ai/composer_mermaid.py:531 |
+| `fenced` | src/tessellate/ai/composer_mermaid.py:348 |
+| `flowchart` | src/tessellate/ai/composer_mermaid.py:312 |
+| `from_notes` | src/tessellate/ai/composer_mermaid.py:458 |
+| `label` | src/tessellate/ai/composer_mermaid.py:125 |
+| `mind_label` | src/tessellate/ai/composer_mermaid.py:131 |
+| `mindmap` | src/tessellate/ai/composer_mermaid.py:336 |
+| `source_of` | src/tessellate/ai/composer_mermaid.py:387 |
+| `steps` | src/tessellate/ai/composer_mermaid.py:199 |
+| `timeline` | src/tessellate/ai/composer_mermaid.py:320 |
+| `tree` | src/tessellate/ai/composer_mermaid.py:258 |
+| `wanted` | src/tessellate/ai/composer_mermaid.py:94 |
+
+### src/tessellate/ai/composer_mermaid_kinds.py (14)
+
+| Name | File:line |
+|---|---|
+| `_ident` | src/tessellate/ai/composer_mermaid_kinds.py:38 |
+| `_items` | src/tessellate/ai/composer_mermaid_kinds.py:53 |
+| `_linked` | src/tessellate/ai/composer_mermaid_kinds.py:142 |
+| `_member` | src/tessellate/ai/composer_mermaid_kinds.py:150 |
+| `_norm` | src/tessellate/ai/composer_mermaid_kinds.py:185 |
+| `_plain` | src/tessellate/ai/composer_mermaid_kinds.py:32 |
+| `_sections` | src/tessellate/ai/composer_mermaid_kinds.py:121 |
+| `_title` | src/tessellate/ai/composer_mermaid_kinds.py:44 |
+| `_type_of` | src/tessellate/ai/composer_mermaid_kinds.py:172 |
+| `er` | src/tessellate/ai/composer_mermaid_kinds.py:189 |
+| `gantt` | src/tessellate/ai/composer_mermaid_kinds.py:59 |
+| `klass` | src/tessellate/ai/composer_mermaid_kinds.py:156 |
+| `pie` | src/tessellate/ai/composer_mermaid_kinds.py:83 |
+| `state` | src/tessellate/ai/composer_mermaid_kinds.py:108 |
 
 ### src/tessellate/ai/composer_money.py (92)
 
@@ -28241,7 +28261,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22448)
+## Tests (22453)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29069,6 +29089,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_curve.py | 5 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
+| tests/test_diagram_describe_kinds_l_documents_101.py | 5 |
 | tests/test_diagram_dgfold_1110.py | 7 |
 | tests/test_diagram_dgmfix2_1108.py | 12 |
 | tests/test_diagram_dgml_1109.py | 6 |

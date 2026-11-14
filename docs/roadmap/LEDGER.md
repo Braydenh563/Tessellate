@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 22 | 1 | 0 | 7 | 23 |
+| documents | 0 | 21 | 1 | 0 | 7 | 22 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 465 | 577 | 129 | 2 | 170 | 1171 |
+| all | 465 | 576 | 129 | 2 | 170 | 1170 |
 
 ## graph
 
@@ -347,7 +347,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-98** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
 - [ ] **L-documents-99** `documents` open, M: Debug generators and async: run finally blocks on generator return and for-of break, support async generators and for await, top-level await, arguments inside async or generator bodies, and name resumed frames after their function. From agent code1229. Evidence: Gaps left by the generator and async build.
 - [ ] **L-documents-100** `documents` open, S: Real-model check of the Ask box on Gantt, pie, state, class and ER blocks: llama-server is not installed here, so only the fake transport and the by-rule path ran. From dgm1305 agent 2026-11-14.
-- [ ] **L-documents-101** `documents` open, M: Diagram Describe it (composer) for Gantt, pie, state, class and ER: its rule path makes only flowchart, timeline and mindmap and want is empty for the five. From dgm1305 agent 2026-11-14.
 - [ ] **L-documents-102** `documents` open, M: Diagram mouse-pan at 1440 and 4x CPU is p50 10 to 17 ms and p95 24 to 43 ms against 16: layout is 0 and script about 1 ms a frame, the rest is raster of a 9679 px wide SVG picture (try a lower-resolution raster while panning or tile the picture); measure with scratchpad/ui-sweeps/diagram-pan-latency.js. From dgm1305 agent 2026-11-14.
 
 ## mindmap
