@@ -1670,3 +1670,15 @@ EXTRA_WRAPPERS = EXTRA_WRAPPERS + (
 EXTRA_TRAILERS = EXTRA_TRAILERS + (
     "it was a joke", "it was funny", "it was a funny one", "something like that", "or something", "to something",
 )
+
+
+def concepts(terms: list[str], vocabulary: set[str], stem) -> list[str]:
+    """Each concept word no note holds ("sport") put to the first member, in the
+    table's order, that a note does hold ("swimming"); any other word kept."""
+
+    def member(term: str) -> str:
+        if term in vocabulary:
+            return ""
+        return next((w for m in CONCEPTS.get(term, ()) for w in (m, stem(m)) if w in vocabulary), "")
+
+    return [member(t) or t for t in terms]
