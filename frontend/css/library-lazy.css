@@ -16,6 +16,214 @@
 /* --- moved from the boot sheets (L308): document rules no later boot or lazy rule competes with at equal
    specificity, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
+/* From 04-chat-dock-appearance.css */
+/* --- documents tab ----------------------------------------------------------- */
+/* Reported with a screenshot: "I clicked some buttons in the documents
+   toolbar and it broke my screen", the whole editor, toolbars and all,
+   squeezed into a ~18rem column at the left of an empty page. That column
+   is the *sidebar's*: this grid is two tracks, and once the sidebar is
+   hidden the editor is the first grid child and auto-places into track one,
+   which is capped at 18rem. The sidebar track has to go with the sidebar. */
+.doc-layout:has(> #doc-sidebar.hidden),
+.doc-layout:has(> #doc-sidebar[hidden]),
+.doc-layout:not(:has(> #doc-sidebar)) {
+  /* `!important` on purpose, and measured: the sidebar's resize handle
+     writes the column widths *inline* (`260px 965px` was the computed value
+     with the sidebar hidden), and an inline style beats every selector
+     there is except this. Without it the editor was pinned to a column that
+     still existed at the sidebar's saved width. */
+  grid-template-columns: 1fr !important;
+}
+.doc-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--space-6);
+  /* `start` here is what shrink-wrapped the sidebar. `stretch` makes both
+     columns the height of the row, which the flex chain below makes the height
+     of the page: the same arrangement #tab-chat already uses. */
+  align-items: stretch;
+  min-height: 0;
+  padding: 0;
+}
+.doc-sidebar .doc-head-more {
+  display: none;
+}
+.doc-item {
+  position: relative;
+}
+.doc-item.active .doc-item-button {
+  background: var(--accent-soft);
+}
+.doc-item-title {
+  font-weight: 600;
+  font-size: var(--text-md);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-item-meta {
+  font-size: var(--text-sm);
+}
+.doc-item-type {
+  font-weight: 600;
+}
+/* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
+   beside every title in a tight sidebar list would compete with the titles
+   themselves. */
+.menu-wrap.doc-item-menu {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  opacity: 0;
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+.doc-item:hover .doc-item-menu,
+.doc-item-button:focus-visible ~ .doc-item-menu,
+.doc-item:focus-within .doc-item-menu {
+  opacity: 1;
+}
+
+@media (hover: none) {
+.doc-item-menu {
+    opacity: 1;
+  }
+}
+
+/* Set by app.js the moment a person drags #doc-content's native resize
+   handle. Without it #doc-panes keeps flex-growing to fill .doc-main at its
+   pre-resize height regardless of the textarea now being shorter, and the
+   freed space is trapped between the textarea and .doc-hint instead of
+   showing up at the bottom of the card. See that listener for why this can't
+   just be a CSS rule. */
+#doc-panes.doc-panes-manual {
+  flex: 0 1 auto;
+}
+/* Same default-<p>-margin fix as .doc-hint below, this is the other half of
+   the gap that stacked on top of it. */
+.doc-status {
+  margin: 0;
+}
+.doc-dock-identity {
+  --identity-h: 2.75rem;
+}
+/* Status facts as one group, so a narrow window breaks the bar between the
+   status and the actions instead of between two buttons that belong
+   together. `margin-right: auto` is what puts the group on the left of that
+   row and everything else on the right, the dock's own `space-between` only
+   ever separated the title from all of this. */
+.doc-dock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+}
+.doc-saved {
+  /* Reserved so "Saving…" → "Saved" does not shift the controls to its right
+     by a few pixels twice a minute while someone types. Left-aligned and
+     sitting directly against the stats: right-aligning it inside its own
+     reserved box is what produced the empty channel that got reported. */
+  min-width: 4rem;
+  text-align: left;
+}
+.doc-title-input {
+  flex: 1 1 12rem;
+  /* Was min-width: 0, which let the title absorb all of a narrow window's
+     shortfall before .doc-toolbar's own flex-wrap ever kicked in, .doc-
+     actions' row of buttons wraps internally instead of shrinking, so the
+     title had nowhere to stop and was crushed to a few illegible pixels
+     (reported live, screenshotted). This floor forces the toolbar to wrap
+     the actions onto their own row once the title would otherwise go below
+     a readable width, instead of shrinking the title toward zero. */
+  min-width: 8rem;
+  font-size: var(--text-h3);
+  font-weight: 600;
+  border: 1px solid transparent;
+  background: none;
+}
+/* --- the code editor: gutter + monospace ------------------------------------ */
+
+/* The textarea and its line-number gutter, as one unit. #doc-panes lays out
+   *this* beside the preview now, not the bare textarea. */
+.doc-source-wrap {
+  display: flex;
+  flex: 1 1 auto;
+  /* A positioning context of its own, so anything absolutely placed inside
+     this pane is placed against the pane. The Phase 0 backdrop needed it and
+     is gone; CodeMirror's own panels and tooltips need the same thing, and
+     without it their offsetParent is whatever ancestor happens to be
+     positioned (measured, at the time: an element 219px to the left and 72px
+     up from where it should have been). */
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  gap: 0;
+}
+.doc-source-wrap.hidden {
+  display: none;
+}
+#doc-content.doc-content-code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-lg);
+}
+/* **The code pane must not soft-wrap, or the numbers cannot be right.**
+   Reported: "the document line numbers in the documents dont actually work or
+   go all the way". A `<textarea>` wraps by default, so one logical line can
+   occupy three visual rows; the gutter prints one number per *logical* line
+   (`white-space: pre`), so from the first wrapped line onwards every number is
+   against the wrong row, and the column ends short of the bottom of the text
+   by however many rows the wrapping added. Matching the font and line-height
+   -- which the rule above is careful about -- cannot fix that on its own.
+
+   Horizontal scrolling is the accepted trade in every editor that shows line
+   numbers, and it is what makes the two columns agree line for line. */
+#doc-content.doc-content-code {
+  white-space: pre;
+  overflow-x: auto;
+}
+.doc-hint {
+  /* <p> carries the UA default `margin: 1em 0`, nothing here ever zeroed it,
+     so it stacked with .doc-main's own `gap` and #doc-status's identical
+     unreset margin above it. Live-reproduced: the gap between the editor and
+     this hint measured ~65px and was present on a fresh, never-resized load, 
+     unrelated to the #doc-panes-manual resize mechanism right above this rule
+     despite looking like the same symptom. */
+  margin: 0;
+  font-size: var(--text-base);
+}
+.doc-ai-result-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+.doc-ai-result-block.hidden {
+  display: none;
+}
+.doc-ai-result-actions {
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.doc-ai-card > #doc-ai-verb label > .ph {
+  color: var(--muted);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:checked) {
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.doc-ai-card > #doc-ai-verb label > input:checked + .ph {
+  color: var(--accent-text);
+}
+.doc-ai-card > #doc-ai-verb label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+input.doc-title-input::placeholder {
+  font-weight: 500;
+  color: var(--muted);
+}
+
 /* From 01-forms-settings.css */
 .bookmark-attach-picker {
   width: auto;
