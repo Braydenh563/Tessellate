@@ -40,6 +40,9 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-shape-table.js", //: The table of JS-drawn shapes (cylinder, cube, step...): the picker rows, resize and draw.io words; joins `wbFmtState`.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",
+    "/js/whiteboard-convert.js", //: GraphML, Miro, PlantUML and EMF in, through the server; joins `wbFmtState`, names whiteboard-interchange.js at run time only.
+    "/js/whiteboard-plantuml.js", //: The board as PlantUML text; joins `wbFmtState`, names whiteboard-interchange.js at run time only.
+    "/js/whiteboard-config.js", //: A board's defaults, palettes and library switches as a checked JSON file; joins `wbFmtState`.
     "/js/whiteboard-history.js",
   ],
   //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).

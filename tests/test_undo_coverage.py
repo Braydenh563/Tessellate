@@ -456,6 +456,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "whiteboard-config.js:cfgImportText": "read: the POST only checks the file and stores nothing; what it applies goes through wbSetBackground (one Undo) and wbLibCreate (a bin call)",
+    "whiteboard-convert.js:cvRun": "read: the POST only reads the file into a graph and stores nothing; the placing goes through wbImportMermaid, which is one Undo",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",

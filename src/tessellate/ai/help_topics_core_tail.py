@@ -659,7 +659,13 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "Layout, Rack stacks the two or more selected things in one column, each in a slot of whole 24-unit steps "
-                "with a gap between, like a server rack; it needs no connectors, and one Undo takes it back."
+                "with a gap between, like a server rack; it needs no connectors, and one Undo takes it back. "
+                "Import reads GraphML (yEd too), Miro API items JSON and PlantUML (class, sequence, activity or named boxes) "
+                "into shapes and connectors; the Mermaid export has a PlantUML twin in the Diagram menu. An EMF cannot be drawn "
+                "here, so it lands as a note with its size; open it in Inkscape or LibreOffice and save a PNG or SVG. "
+                "Files over the size cap or with XML entities are refused. Export board configuration saves the default styles, "
+                "grid, paper, palettes and which shape libraries are off as JSON, and Import board configuration applies one "
+                "after a check. It is data only; no plugin code runs."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
