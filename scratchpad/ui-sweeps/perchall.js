@@ -18,7 +18,7 @@
 // 1 on any surface whose gap is over 4px, with no painted edge, or over a
 // control (on a phone, a dock's, a bar's or a floating one, marked `!`), or,
 // on a desktop, on a window bar in the Library or on a board while a panel
-// was free.
+// was free on a visit (at rest the window's bars lead, INBOX 1674).
 const { boot } = require("./lib.js");
 
 const W = Number(process.env.W || 1440);
@@ -135,7 +135,7 @@ async function measure(page) {
       }
     }
     return {
-      perch: nmb.perch, pose, legs, free, claim: name(claim), gap: gap === Infinity ? "air" : Math.round(gap), paint,
+      perch: nmb.perch, pose, legs, free, visit: Boolean(nmb.visit), claim: name(claim), gap: gap === Infinity ? "air" : Math.round(gap), paint,
       over: over.slice(0, 3), at: [Math.round(b.left), Math.round(b.top)],
     };
   });
@@ -149,7 +149,9 @@ const PANELLED = /^(library\/|whiteboard|mind map|switch )/;
 function verdict(r, label = "") {
   if (r.err) return r.err;
   const bad = [];
-  if (PANELLED.test(label) && !phone && !process.env.PANEL_OPTIONAL && r.free) bad.push(`window bar while a panel was free (${r.free})`);
+  //: Only on a visit: a resting cat takes the window's hang and bar first (INBOX 1674, the owner's
+  //: blind run, after this rule was written; `nmb.restOrder`), so a bar at rest is the design (L-general-55).
+  if (PANELLED.test(label) && !phone && !process.env.PANEL_OPTIONAL && r.free && r.visit) bad.push(`window bar while a panel was free (${r.free})`);
   if (r.gap === "air" || Math.abs(r.gap) > 4) bad.push(`gap ${r.gap}`);
   if (!r.paint && r.legs !== "peek") bad.push("no painted edge");
   // On a phone a full list leaves nowhere clear: there it peeks over a row's
