@@ -160,7 +160,8 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-think") || mood === "thinking" || mood === "determined") return "think";
   if (["happy", "delighted", "laughing", "love", "proud"].includes(mood)) return "happy";
   if (["sad", "sleepy", "worried"].includes(mood) || has("nmb-drowsy")) return "sad";
-  return "idle";
+  //: A float (L173) is its own lower body: a longer, narrower trail than the standing idle, after every mood and act.
+  return pose === "float" ? "float" : "idle";
 }
 //: The acts that pose the lower body of their own (INBOX 1681, avatars.js, after `NMB_ATLAS_ACTS`); a hang does too, climbing or not (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasLowerState.acts = ["crouch", "lounge", "glide", "drift", "dangle", "kick", "swing", "sloth"];

@@ -241,3 +241,54 @@ def test_the_bust_carries_the_mood_cue_so_close_moods_read_apart_l135():
     median pair 29.8), at 28 px curious and thinking by 0.59: the bust drew no cue (only the head and tiny levels did)."""
     atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
     assert re.search(r'if \(tiny \|\| level === "head" \|\| level === "bust"\) atlasCue\(sway, tiny\);', atlas)
+
+
+def test_masculine_trail_has_a_back_wisp_pair_behind_the_body_l742():
+    """L742: his trail gets two wisps drawn wholly behind the body (`back: [[0, 1]]`, low so they take the cloak's pose),
+    the gradients read the look's own list, and the layer list builds the wisp layers for any look with wisps."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    male = atlas.split("  masculine: {", 1)[1].split("  feminine: {", 1)[0]
+    block = male.split("    wisps: [", 1)[1].split("\n    ],", 1)[0]
+    assert block.count("back: [[0, 1]]") == 2 and block.count("low: true") == 2
+    assert "ATLAS_LOOKS.feminine.wisps" not in atlas and "lookSpec.wisps.forEach" in atlas
+
+
+@needs_node
+def test_float_has_a_lower_state_and_float_and_lean_differ_from_idle_by_6px_l173():
+    """L173: measured in the app (1x, getBoundingClientRect of the lower layer's paths) a float and a stand were the same
+    37 by 38 (feminine), a lean 38 by 36. The dress box is modelled as the rig poses it (`atlasRigLower`: a shear of (skew - turn) x the state's
+    shear gain and a stretch of (length - 1) x its stretch gain, from the measured standing box of each look); every float and lean row differs from every
+    idle row by more than 6 px in width or in length."""
+    from tests._js_scope import unwrapped_copy
+
+    fn = re.search(r"^function atlasLowerState\(.*?^\}", MOTION, re.S | re.M).group(0)
+    acts = re.search(r"^atlasLowerState\.acts = .*;$", MOTION, re.M).group(0)
+    life = str(unwrapped_copy(ROOT / "frontend/js/atlas-life.js"))
+    script = fn + acts + r"""
+const fs = require("fs"), vm = require("vm");
+const ctx = { atlasFix: (v) => v, console, Math, Map, Set, Object, Array, Number, performance, document: {}, window: {}, setTimeout, clearTimeout };
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;this.__x = { L: ATLAS_LOWER_STATES, H: ATLAS_HAIR_STATES, N: ATLAS_NEB_STATES, flow: atlasRigLower.flowByState, rests: atlasRigLower.rests };", ctx);
+const x = ctx.__x;
+const make = (classes, pose) => ({ classList: { contains: (c) => classes.includes(c) }, dataset: { pose, travel: "" } });
+const box = (state, row, [w0, h0]) => {
+  const [shear, stretch] = x.L[state].dress || [0.4, 0.5], h = h0 * (1 + (row[2] - 1) * stretch);
+  return [w0 + h * Math.tan(Math.abs(row[3] - row[0]) * shear * Math.PI / 180), h];
+};
+const gap = (state, base) => Math.min(...x.L[state].v.flatMap((a) => x.L.idle.v.map((b) => {
+  const [aw, ah] = box(state, a, base), [bw, bh] = box("idle", b, base);
+  return Math.max(Math.abs(aw - bw), Math.abs(ah - bh));
+})));
+console.log(JSON.stringify({
+  floating: atlasLowerState(make([], "float"), { dataset: {} }), calm: atlasLowerState(make([], "stand"), { dataset: {} }),
+  moody: atlasLowerState(make([], "float"), { dataset: { atlasMood: "happy" } }),
+  feminine: ["float", "lean"].map((s) => gap(s, [37, 38])), masculine: ["float", "lean"].map((s) => gap(s, [25, 39])),
+  tables: ["H", "N"].map((t) => !!x[t].float), flow: x.flow.float, rests: x.rests.has("float"),
+}));
+"""
+    run = subprocess.run(["node", "-e", script, life], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    assert (got["floating"], got["calm"], got["moody"]) == ("float", "idle", "happy"), "a float after every mood and act"
+    assert all(g > 6 for g in got["feminine"] + got["masculine"]), got
+    assert got["tables"] == [True, True] and got["flow"] and got["rests"]
