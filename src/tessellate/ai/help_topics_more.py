@@ -2918,7 +2918,7 @@ MORE_TOPICS.append({
         "diagram markdown text", "sequence autonumber", "sequence box", "create participant", "destroy participant", "diagram line break", "group direction", "subgraph direction", "diagram class", "classdef", "diagram link", "click link in diagram", "diagram class shorthand", "diagram icon", "animate an arrow", "arrow animation", "diagram bold name", "br in a diagram",
     ),
     "body": (
-        "A block's menu has Markdown text, which draws **bold** and *italic* in its name; write <br/> in a name for a line break. "
+        "A block's menu has Markdown text, which draws bold (two asterisks each side) and italic (one) in its name; write <br/> in a name for a line break. "
         "A group's menu has Direction: its blocks flow that way inside it (Mermaid ignores it when a block in the group is joined to one outside). "
         "A block's menu also has Class (a name; a new one gets a pale blue look, written as a classDef line you can edit in Source) and Link (an https address or [[a note]]); Open link follows it. "
         "In a document, a block with a link is a button on the picture: it opens the link the same way. A callback or javascript: click line stays a locked line. "

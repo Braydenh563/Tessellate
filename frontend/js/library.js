@@ -3557,7 +3557,7 @@ function libraryDocsNewMount() {
       b.addEventListener("click", open);
       head.after(b);
     }
-    //: Today (L-documents-64): the day's document, opened or made from the "Daily" template (DOCUMENTS_PLAN section 14), beside New
+    //: Today (L-documents-64): the day's document, opened or made from the "Daily" template, beside New
     //: diagram. The day's title is the template's own (`docTemplateFill`), so the button and the gallery row agree by one spelling.
     if (head && !$("library-docs-today")) {
       const b = document.createElement("button");
@@ -3571,7 +3571,7 @@ function libraryDocsNewMount() {
         const template = DOC_TEMPLATES.find((t) => t.id === "daily");
         const day = window.docTemplateFill(template).title;
         //: A failed look-up must not start a second copy.
-        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch((e) => toast(`Couldn't look for today's document: ${e.message}`, true));
+        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch((e) => toast(voiceLine("failed", { what: "look for today's document", why: e.message }), true));
         if (!found) return;
         const doc = found.find((d) => (d.title || "").trim() === day);
         switchTab("documents");
