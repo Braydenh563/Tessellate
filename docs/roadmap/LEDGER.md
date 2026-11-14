@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 97 | 38 | 0 | 18 | 265 |
+| world-class | 130 | 96 | 38 | 0 | 18 | 264 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 489 | 109 | 2 | 129 | 1151 |
+| all | 553 | 488 | 109 | 2 | 129 | 1150 |
 
 ## graph
 
@@ -599,7 +599,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-35** `world-class` open, M: Finder chip row: a scroll-row arrow covers a chip's centre at 390 (touch.js). From touch.js 390 Find anything. Evidence: scratchpad/ui-sweeps/touch.js: button.library-chip.finder-chip at 208,178 is covered by button.scroll-row-arrow (1 covered finding at 390)
 - [ ] **L-world-class-36** `world-class` open, M: Overlap sweep left real overflows: doc-statusbar, Settings xn-localllm button, note-meta-more chip, reminder date at 320. From overlap.js 2026-11-13 after L606. Evidence: scratchpad/ui-sweeps/overlap-a: 390 o23 c1, 1440 o18; #doc-statusbar 80px at 320-820, #xn-localllm button 21px at 320/390, .chip.note-meta-more 10px at 390, #reminder-groups entry-date 2px at 320
 - [ ] **L-world-class-37** `world-class` open, M: First Settings open forces 25-33 ms layout in nameMarkRasterise (over the 16 ms line once per session). From perf-1113 probe. Evidence: frontend/js/avatars.js:1327 nameMarkRasterise getBoundingClientRect 23-28 ms forced inside the first Settings open (31-33 ms total; repeat open 0.1-2 ms)
-- [ ] **L-world-class-38** `world-class` open, S: test_restore_drain_1031 open-stream test waits on the wall clock: wait on an event or a fixed clock, never widen the bound. From hub 2026-11-13, #222 job 131606367309. Evidence: took 2.24 s against a 1.5 s bound on py3.11 leg 1 at 2cdd464b
 
 ## general
 

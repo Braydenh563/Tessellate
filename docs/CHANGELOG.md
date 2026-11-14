@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Restore drain tests no longer time the wall clock: a zero wait proves a stream or long poll does not hold a restore (L-world-class-38).
 - Redo of an AI change: one at a time, never on a binned or private note, one query for later edits; a card id alone is refused once its card is gone (review 5899353774).
 - Settings > Models measured lean: 6,317 elements with the model menu open, no long tasks (L597).
 - Meeting recorder card is built when first opened, not at every boot (L621).
