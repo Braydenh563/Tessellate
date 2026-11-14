@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 4 | 0 | 0 | 0 | 4 |
+| whiteboard | 0 | 6 | 0 | 0 | 0 | 6 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 531 | 125 | 2 | 172 | 1128 |
+| all | 472 | 533 | 125 | 2 | 172 | 1130 |
 
 ## graph
 
@@ -284,6 +284,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-60** `whiteboard` open, M: Give an embedded board its own rulers and map radial menu, or hide them there. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: rulers and .wb-map-radial are drawn for the page board only
 - [ ] **L-whiteboard-61** `whiteboard` open, M: Keep the active tool and cursor per board instance. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: tool and cursor are globals shared by every instance
 - [ ] **L-whiteboard-62** `whiteboard` open, M: Route window-level board listeners to the instance the event belongs to. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: window-level listeners act on the active board, not the one under the pointer
+- [ ] **L-whiteboard-67** `whiteboard` open, S: Drive an embed made with the board tab never opened and check initWhiteboard leaves the page chrome alone. From L-whiteboard-59 to 66 agent report, 2026-11-14. Evidence: whiteboard-instances.js createEmbed awaits window.initWhiteboard(), which runs surfaceBuild('board') and binds the page container; never driven from a document with the board tab closed
+- [ ] **L-whiteboard-68** `whiteboard` open, S: Persist an embed's undo history under its own key so it survives a reload. From L-whiteboard-66 agent report, 2026-11-14. Evidence: whiteboard.js wbUpdateUndoRedoButtons persists only for the page instance; an embed's undo history lasts the session
 
 ## documents
 
