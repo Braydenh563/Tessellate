@@ -11,6 +11,10 @@ below). Versioning is `0.x` while the app stabilises.
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
 - LEDGER: every row this branch made under `general` (35 to 66) and L-graph-19 is now L-ui-modernisation-63 to 93, because general ids clashed across parallel branches.
+- Phone fit: the Install button on notices keeps its width (`.notice > button { flex: none }`) and the document status strip tightens its gaps at 390px so the file type button is no longer cut off in the mono font; tour, tour steps and font matrix sweeps now run in 286 s, 150 s and about 100 s per width pass.
+- Tour: the Library "Make something new" step follows Create into the empty state, the board sidebar step is left out below 600 wide by `media` and says Sidebar, and from 820 to 1199 a centred tab strip no longer sticks 2.5px out of the top bar (L-ui-modernisation-60).
+- open_scan: TODO, FIXME, XXX and HACK count only in capitals, so a `todo` callout kind or queue variable is a name, not work (INBOX 1811).
+- open_scan: a quoted string in CSS (a selector value such as `[class*="-todo"]`) is copy, the same rule as JS and Python; a CSS comment is still scanned.
 - LEDGER: the open rows L-general-56, 57 and 67 are now L-ui-modernisation-60, 61 and 62, because general ids clashed across parallel branches.
 - Home: the first-steps card shares the widget column's edge (3px off before); the density census gains alignment and near-miss columns (L-ui-modernisation-53).
 - Settings: the long Tools and Appearance panes measured against their index and filter (settingslong.js); they stay one pane each (L-ui-modernisation-52).

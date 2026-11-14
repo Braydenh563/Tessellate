@@ -159,7 +159,15 @@ async function boot(opts={}) {
     await page.fill('#lock-password', PW);
     await page.click('#lock-submit');
   }
-  await page.waitForTimeout(3000);
+  //: Was a fixed 3 s on every boot; the app is ready when the lock is down, the splash is gone and the
+  //: preferences have arrived (what the waits below and every sweep's first step read).
+  await page.waitForFunction(() => {
+    const overlay = document.getElementById('lock-overlay');
+    const splash = document.getElementById('boot-splash');
+    return (!overlay || overlay.classList.contains('hidden')) && (!splash || splash.classList.contains('hidden'))
+      && typeof prefsCache !== 'undefined' && !!prefsCache;
+  }, null, { timeout: Number(process.env.BOOT_MS || (process.env.SLOW ? 90000 : 20000)), polling: 100 }).catch(() => {});
+  await page.waitForTimeout(300);
   //: **The opening curtain** (INBOX 577): after a good password the lock
   //: screen stays up, its button saying "Opening…", while the first tab
   //: draws (`curtainShell`), and fades once it has. Waited out here, or a
@@ -210,6 +218,17 @@ async function boot(opts={}) {
       if (no) no.click();
       return true;
     }, null, {timeout: 4000, polling: 200}).catch(() => {});
+  }
+  //: **The semantic question is asked once** (semantic-notice.js): on a fresh data dir the first
+  //: save makes a toast, "No thanks", kept up until answered, and it landed over the tour's Next
+  //: button (tour.js timed out clicking through it). Answered "no" through the API, which is what
+  //: pressing No thanks writes; SEMANTIC_ASK=1 leaves it for a sweep that measures the notice.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(async () => {
+      if (typeof prefsCache === 'undefined' || !prefsCache || prefsCache.semantic_choice_made === true) return;
+      Object.assign(prefsCache, await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }));
+      document.querySelectorAll('#toast-box .toast-action').forEach((b) => { if (/No thanks/.test(b.textContent)) b.click(); });
+    }).catch(() => {});
   }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
