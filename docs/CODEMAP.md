@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2827, tests 22491, plan headings 689, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8502, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11016, test files 2828, tests 22494, plan headings 689, app scripts 29, boot scripts 38, script files 307.
 
-## Frontend functions (8501)
+## Frontend functions (8502)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1891,18 +1891,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `verificationRow` | frontend/js/answer-kit.js:2919 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1664 |
 
-### frontend/js/app-features.js (9)
+### frontend/js/app-features.js (10)
 
 | Name | File:line |
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:225 |
-| `paletteCommands` | frontend/js/app-features.js:298 |
+| `notificationsUnreadSaid` | frontend/js/app-features.js:299 |
+| `paletteCommands` | frontend/js/app-features.js:306 |
 | `popupToolMaths` | frontend/js/app-features.js:256 |
-| `quickAccessCurrent` | frontend/js/app-features.js:611 |
-| `quickAccessItems` | frontend/js/app-features.js:602 |
-| `quickCatalogue` | frontend/js/app-features.js:580 |
-| `renderQuickLinks` | frontend/js/app-features.js:616 |
+| `quickAccessCurrent` | frontend/js/app-features.js:623 |
+| `quickAccessItems` | frontend/js/app-features.js:614 |
+| `quickCatalogue` | frontend/js/app-features.js:592 |
+| `renderQuickLinks` | frontend/js/app-features.js:628 |
 | `renderToolShortcutList` | frontend/js/app-features.js:272 |
 
 ### frontend/js/app-import.js (6)
@@ -1934,7 +1935,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteFeatureRows` | frontend/js/app-palette.js:447 |
 | `paletteFind` | frontend/js/app-palette.js:716 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:192 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:960 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:981 |
 | `paletteKeydown` | frontend/js/app-palette.js:837 |
 | `paletteLight` | frontend/js/app-palette.js:802 |
 | `paletteMatches` | frontend/js/app-palette.js:226 |
@@ -1944,7 +1945,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteNearestRows` | frontend/js/app-palette.js:685 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:39 |
 | `paletteNoteRows` | frontend/js/app-palette.js:46 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:950 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:971 |
 | `palettePick` | frontend/js/app-palette.js:622 |
 | `palettePicks` | frontend/js/app-palette.js:603 |
 | `palettePool` | frontend/js/app-palette.js:422 |
@@ -7202,25 +7203,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildShortcutList` | frontend/js/reveal-targets.js:722 |
-| `flashRevealed` | frontend/js/reveal-targets.js:826 |
-| `foldedText` | frontend/js/reveal-targets.js:638 |
-| `markNotePassage` | frontend/js/reveal-targets.js:667 |
-| `notePassageFor` | frontend/js/reveal-targets.js:624 |
-| `openShortcuts` | frontend/js/reveal-targets.js:780 |
-| `packagesNoticeOpen` | frontend/js/reveal-targets.js:702 |
-| `packagesNoticeTarget` | frontend/js/reveal-targets.js:688 |
-| `passageRange` | frontend/js/reveal-targets.js:653 |
-| `renderShortcutList` | frontend/js/reveal-targets.js:710 |
+| `buildShortcutList` | frontend/js/reveal-targets.js:724 |
+| `flashRevealed` | frontend/js/reveal-targets.js:828 |
+| `foldedText` | frontend/js/reveal-targets.js:640 |
+| `markNotePassage` | frontend/js/reveal-targets.js:669 |
+| `notePassageFor` | frontend/js/reveal-targets.js:626 |
+| `openShortcuts` | frontend/js/reveal-targets.js:782 |
+| `packagesNoticeOpen` | frontend/js/reveal-targets.js:704 |
+| `packagesNoticeTarget` | frontend/js/reveal-targets.js:690 |
+| `passageRange` | frontend/js/reveal-targets.js:655 |
+| `renderShortcutList` | frontend/js/reveal-targets.js:712 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
-| `revealBoardsGallery` | frontend/js/reveal-targets.js:541 |
+| `revealBoardsGallery` | frontend/js/reveal-targets.js:543 |
 | `revealDashWidget` | frontend/js/reveal-targets.js:174 |
 | `revealDetails` | frontend/js/reveal-targets.js:65 |
 | `revealDocument` | frontend/js/reveal-targets.js:145 |
 | `revealEntryMenu` | frontend/js/reveal-targets.js:82 |
-| `revealFeature` | frontend/js/reveal-targets.js:554 |
+| `revealFeature` | frontend/js/reveal-targets.js:556 |
 | `revealGraphOptions` | frontend/js/reveal-targets.js:135 |
-| `revealLibrarySub` | frontend/js/reveal-targets.js:550 |
+| `revealLibrarySub` | frontend/js/reveal-targets.js:552 |
 | `revealQuery` | frontend/js/reveal-targets.js:72 |
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
@@ -28258,7 +28259,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22491)
+## Tests (22494)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30244,6 +30245,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_coverage.py | 7 |
 | tests/test_palette_guide_after_action_1449.py | 4 |
 | tests/test_palette_head_gap.py | 2 |
+| tests/test_palette_l693.py | 3 |
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_corner_1552.py | 2 |
 | tests/test_panel_min_close_quiet.py | 2 |
@@ -31510,14 +31512,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:618 |
+| Needs hardware | docs/roadmap/LEDGER.md:617 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:611 |
+| Owner calls | docs/roadmap/LEDGER.md:610 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31698,7 +31700,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:753 |
+| Plan session briefs | docs/roadmap/LEDGER.md:752 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31752,25 +31754,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:769 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:853 |
+| chat | docs/roadmap/LEDGER.md:768 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:852 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:793 |
-| general | docs/roadmap/LEDGER.md:568 |
+| documents | docs/roadmap/LEDGER.md:792 |
+| general | docs/roadmap/LEDGER.md:567 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:757 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:865 |
+| graph | docs/roadmap/LEDGER.md:756 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:864 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:805 |
+| mindmap | docs/roadmap/LEDGER.md:804 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:829 |
+| timeline | docs/roadmap/LEDGER.md:828 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:817 |
+| ui-modernisation | docs/roadmap/LEDGER.md:816 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:781 |
+| whiteboard | docs/roadmap/LEDGER.md:780 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:841 |
+| world-class | docs/roadmap/LEDGER.md:840 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

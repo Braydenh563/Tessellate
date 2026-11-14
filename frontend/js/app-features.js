@@ -295,6 +295,14 @@ function renderToolShortcutList(list) {
 //: `LAZY_ENTRY_POINTS` stand-in (bundle `featureRows`, nobody reads its return),
 //: so the dashboard draws the tiles once this file is in, as it did before when
 //: it waited for `featureCatalog`.
+//: The bell's count in words, for the palette's Open notifications row (L693).
+function notificationsUnreadSaid() {
+  const readAt = notificationsReadAt();
+  const forced = forcedUnreadIds();
+  const n = storedNotifications().filter((item) => isNotificationUnread(item, readAt, forced)).length;
+  return n ? `${n} unread.` : "All caught up.";
+}
+
 function paletteCommands() {
   //: **The documents editor's own commands, at the top, while one is open**
   //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
@@ -375,7 +383,7 @@ function paletteCommands() {
     //, but was reachable only by already knowing that chord. This palette
     // is the app's own "what can I do here" list; it belongs in it.
     { label: "ph:strategy Ask the agent anything", reveal: "agent-palette", chord: "askAgent" },
-    { label: "ph:palette New sketch", reveal: "sketch", chord: "quickSketch" },
+    { label: "ph:palette New sketch", reveal: "sketch", chord: "quickSketch", keywords: "draw drawing keep note save picture", about: "Draw something and keep it as a note." },
     //: A command, not a search (INBOX 666: the palette is commands and
     //: places; finding a meeting is Find anything's). INBOX 644: there was
     //: no way to start a meeting note by name anywhere in the app.
@@ -440,6 +448,10 @@ function paletteCommands() {
       label: "ph:link Browse links",
       reveal: "library-links",
     },
+    { label: "ph:folders Browse boards and maps", reveal: "library-boards", keywords: "boards whiteboards maps mind maps library gallery", about: "Every board and mind map, in the Library." },
+    { label: "ph:waveform Browse recordings", reveal: "library-recordings", keywords: "recordings audio meetings library", about: "Every recording, in the Library." },
+    { label: "ph:lightning Browse skills", reveal: "library-skills", keywords: "skills library run", about: "The skills you can run, in the Library." },
+    { label: "ph:list-bullets Library contents", reveal: "library-contents", keywords: "contents table category tag library", about: "A table of contents for the whole notebook." },
     {
       //: The whole list of what the app can do, from the list of what the app
       //: can do: the features browser was reachable from a dashboard button
@@ -562,7 +574,7 @@ function paletteCommands() {
     { label: "ph:clock-counter-clockwise Where you left off", keywords: "unsaved typed draft recent resume pick up", about: "Every box that holds words you typed and have not saved, one press to jump back to it.", act: () => typedWords("open") },
     //: The top bar's other controls, so each is in the palette too (ledger 1410).
     { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },
-    { label: "ph:bell Open notifications", keywords: "bell", act: () => openNotifications() },
+    { label: "ph:bell Open notifications", keywords: "bell unread", about: notificationsUnreadSaid(), act: () => openNotifications() },
     { label: "ph:squares-four Switch space", act: () => $("space-switcher-btn")?.click() },
     { label: "ph:power Quit Tessellate", act: () => quitApp() },
   ].map(catalogueRun);
