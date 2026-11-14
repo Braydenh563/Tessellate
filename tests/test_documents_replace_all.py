@@ -227,7 +227,7 @@ process.stdout.write(JSON.stringify(seen));
 
 
 def test_a_regular_expression_reads_as_it_does_in_the_find_panel():
-    """Audit 1028 D33 follow-up: the find panel's regexp is multiline and unicode
+    """Audit 1028 D33, its second part: the find panel's regexp is multiline and unicode
     (`^## ` finds every heading, `\\p{L}` reads), and the every-document dialog it
     carries the pattern to built `g`/`gi` only, so `^## ` matched the first line
     of a document and `\\p{L}` was an error. A plain find stays plain."""

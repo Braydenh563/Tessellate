@@ -242,7 +242,7 @@ def test_the_confirm_card_names_a_write_in_words():
     assert "_" not in tools.confirm_label("rename_category", {})
 
 
-# --- SEC-02's last step: which pages a tainted turn may still open ------------------
+# --- SEC-02's last step: which pages a tainted turn may still load ------------------
 
 
 def _run_asking(monkeypatch, session, question, rounds, notes=None):

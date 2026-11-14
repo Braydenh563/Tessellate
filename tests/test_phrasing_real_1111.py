@@ -87,6 +87,7 @@ DATE = "A number spelt in words, and the misspelt 'calender' lead-in, are not re
 BARE_EVENT = "A bare statement of an event has no verb to say what to do with it: it is neither a reminder nor a question."
 
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
+#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (the 26 xfails).
 XFAIL = {
     "tell me something funny about politics": JOKE_ABOUT,
     "tell me a joke about cows": JOKE_ABOUT,

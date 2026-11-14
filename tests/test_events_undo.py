@@ -183,7 +183,7 @@ def test_capture_filing_is_an_event_the_filer_owns_and_undo_reverses(client, ses
     from tessellate.api import routes_entries
 
     entry = manager.create_entry(session, "Repot the fig before it gets root bound")
-    entry.filing_state = "pending"  # as a deferred save leaves it
+    entry.filing_state = "pending"  # as a save still to land leaves it
     session.commit()
     mark = _last_event_id(session)
     monkeypatch.setattr(janitor, "categorise", _pick("Garden"))

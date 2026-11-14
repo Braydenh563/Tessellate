@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 112 | 29 | 0 | 0 | 141 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 501 | 100 | 2 | 111 | 973 |
+| all | 372 | 502 | 100 | 2 | 111 | 974 |
+
+## graph
 
 ## chat
 
@@ -149,7 +151,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L147** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:3493. Evidence: setAtlasMood still in atlas.js; atlas669 clickcost sweep not found; no optimisation commit.
 - [ ] **L148** `chat` open, M: Atlas props contrast, throw restitution/friction variety (Brief 88). From SESSION_BRIEFS.md:251. Evidence: avatars.js:6618 throw squash on landing; no per-throw restitution/spin; props contrast unmeasured
 - [ ] **L149** `chat` open, M: atlasSmooth/atlasStem string building per drawn frame 3-5 ms at 4x. From a30v-1103.md Found, not fixed. Evidence: Source recommends coarser stem samples; no commit found
-- [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found
+- [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found Strict xfail: tests/test_overlay_seams_1683e.py:47.
 - [ ] **L151** `chat` open, M: Non-Atlas companions in the desk overlay (picker rows disabled). From overlay-1104.md Remaining. Evidence: INBOX 1656 item 3 'not done' in source; no later commit found
 - [ ] **L152** `chat` open, M: D5 edge spots/perch spells, A2 far-move sweep, A4 in-app presence spells, warps counts. From presence-desk-1108.md Left. Evidence: Source lists as not built; no later commit found
 - [ ] **L153** `chat` open, M: Vertical follow-through on landing/hop; settle exhale after startle (STARTLE_FOR). From life-1109.md Remaining. Evidence: No STARTLE_FOR in core/overlay/engine.py; follow-through not found
@@ -275,6 +277,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 

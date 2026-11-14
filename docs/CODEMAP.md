@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8512, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11035, test files 2869, tests 22689, plan headings 684, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8512, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11035, test files 2869, tests 22690, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8512)
 
@@ -13844,8 +13844,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/wb_items.py:81 |
 | `/note-types` | GET | `list_note_types` | src/tessellate/api/routes_properties.py:133 |
 | `/note-types` | POST | `create_note_type` | src/tessellate/api/routes_properties.py:145 |
-| `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:191 |
-| `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:169 |
+| `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:195 |
+| `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:173 |
 | `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:240 |
 | `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:400 |
 | `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:285 |
@@ -23191,14 +23191,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `NoteTypeIn` | src/tessellate/api/routes_properties.py:101 |
 | `NoteTypePatch` | src/tessellate/api/routes_properties.py:112 |
 | `PropertiesIn` | src/tessellate/api/routes_properties.py:55 |
-| `_existing_type` | src/tessellate/api/routes_properties.py:162 |
+| `_existing_type` | src/tessellate/api/routes_properties.py:166 |
 | `_fields` | src/tessellate/api/routes_properties.py:119 |
 | `_type_row` | src/tessellate/api/routes_properties.py:35 |
 | `create_note_type` | src/tessellate/api/routes_properties.py:146 |
-| `delete_note_type` | src/tessellate/api/routes_properties.py:192 |
+| `delete_note_type` | src/tessellate/api/routes_properties.py:196 |
 | `entry_properties` | src/tessellate/api/routes_properties.py:46 |
 | `list_note_types` | src/tessellate/api/routes_properties.py:134 |
-| `patch_note_type` | src/tessellate/api/routes_properties.py:170 |
+| `patch_note_type` | src/tessellate/api/routes_properties.py:174 |
 | `put_properties` | src/tessellate/api/routes_properties.py:62 |
 
 ### src/tessellate/api/routes_property_table.py (1)
@@ -28319,7 +28319,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22689)
+## Tests (22690)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30115,7 +30115,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_note_flow_0432.py | 27 |
 | tests/test_note_form_property_block.py | 3 |
 | tests/test_note_headings_s74.py | 3 |
-| tests/test_note_kinds_d5.py | 8 |
+| tests/test_note_kinds_d5.py | 9 |
 | tests/test_note_language_1490.py | 12 |
 | tests/test_note_link_chips.py | 2 |
 | tests/test_note_lock_toggle_1110.py | 3 |
@@ -31195,7 +31195,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (684)
+## Plan headings (685)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -31610,14 +31610,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:642 |
+| Needs hardware | docs/roadmap/LEDGER.md:645 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:635 |
+| Owner calls | docs/roadmap/LEDGER.md:638 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31797,7 +31797,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:769 |
+| Plan session briefs | docs/roadmap/LEDGER.md:772 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31850,25 +31850,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | World-class plan: the checks that need a real device or a real model (2026-11-12) | docs/roadmap/BACKLOG.md:4404 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
-| chat | docs/roadmap/LEDGER.md:22 |
-| chat | docs/roadmap/LEDGER.md:785 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:869 |
-| documents | docs/roadmap/LEDGER.md:324 |
-| documents | docs/roadmap/LEDGER.md:809 |
-| general | docs/roadmap/LEDGER.md:595 |
-| graph | docs/roadmap/LEDGER.md:773 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:881 |
+| chat | docs/roadmap/LEDGER.md:24 |
+| chat | docs/roadmap/LEDGER.md:788 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:872 |
+| documents | docs/roadmap/LEDGER.md:327 |
+| documents | docs/roadmap/LEDGER.md:812 |
+| general | docs/roadmap/LEDGER.md:598 |
+| graph | docs/roadmap/LEDGER.md:22 |
+| graph | docs/roadmap/LEDGER.md:776 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:884 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
-| mindmap | docs/roadmap/LEDGER.md:340 |
-| mindmap | docs/roadmap/LEDGER.md:821 |
-| timeline | docs/roadmap/LEDGER.md:460 |
-| timeline | docs/roadmap/LEDGER.md:845 |
-| ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:833 |
-| whiteboard | docs/roadmap/LEDGER.md:279 |
-| whiteboard | docs/roadmap/LEDGER.md:797 |
-| world-class | docs/roadmap/LEDGER.md:462 |
-| world-class | docs/roadmap/LEDGER.md:857 |
+| mindmap | docs/roadmap/LEDGER.md:343 |
+| mindmap | docs/roadmap/LEDGER.md:824 |
+| timeline | docs/roadmap/LEDGER.md:463 |
+| timeline | docs/roadmap/LEDGER.md:848 |
+| ui-modernisation | docs/roadmap/LEDGER.md:346 |
+| ui-modernisation | docs/roadmap/LEDGER.md:836 |
+| whiteboard | docs/roadmap/LEDGER.md:282 |
+| whiteboard | docs/roadmap/LEDGER.md:800 |
+| world-class | docs/roadmap/LEDGER.md:465 |
+| world-class | docs/roadmap/LEDGER.md:860 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |

@@ -76,7 +76,7 @@ def test_the_chords_the_editor_listens_for_are_all_in_the_table(table):
 
 
 def test_the_sheet_and_the_palette_read_the_same_table():
-    """Both doors by name, so a later pass cannot quietly give one of them a
+    """Both doors by name, so a future edit cannot quietly give one of them a
     list of its own: that is exactly what the plan's "generated from the same
     table so the two cannot disagree" is asking to be prevented."""
     source = DOCUMENTS_JS.read_text(encoding="utf-8") + DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
