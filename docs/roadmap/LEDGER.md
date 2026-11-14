@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 86 | 34 | 2 | 59 | 296 |
+| chat | 176 | 85 | 34 | 2 | 59 | 295 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 460 | 103 | 2 | 183 | 1116 |
+| all | 553 | 459 | 103 | 2 | 183 | 1115 |
 
 ## graph
 
@@ -132,7 +132,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L749** `chat` open, S: Determined brow is weakest mood; bolder eye shape; atlasrest1402 sweep fails in setup. From atlasf1696-1108c.md. Evidence: Source: non-scowling determined brow is an owner call; sweep CASE=moods line 93 null element not fixed Owner decided 2026-11-12: Keep the flame cue (No face change; the flame beside the head says determined. The broken mood sweep is fixed). Build: fix scratchpad/ui-sweeps/atlasrest1402.js CASE=moods null element at line 93; no art change.
 - [ ] **L735** `chat` open, M: Owner to list more workflows and actions (AGENT_SKILLS_REFORM). From INBOX.md:904 B34. Evidence: Placed in AGENT_SKILLS_REFORM; needs the owner's list of workflows Owner decided 2026-11-12: Let the agent propose. Build: an agent drafts a list of new workflows and actions for Agent mode and Chat from the research, for the owner to approve; approved ones become rows in this plan.
 - [ ] **L715** `chat` open, S: Decide the offers accept/decline gate (F12). From OPEN.md:4311. Evidence: Built (tests/test_composer_offers_1110.py, 17d5d14); remainder marked owner call. Owner decided 2026-11-12: close as built, but make sure many forms of yes are accepted (yeah, yep, sure, ok and the like). Build: the typed-yes reader accepts many forms of yes (yes, yeah, yep, yup, sure, ok, okay, go ahead, do it, please do) and of no, with a table test; then close.
-- [ ] **L741** `chat` open, S: Atlas CSS loops under reduce-motion cost 1,579 recalcs a minute. From OPEN.md:1089. Evidence: Earlier decision (INBOX 772, 08-consistency.css) keeps loops under reduce; changing it is the owner's call Owner decided 2026-11-12: Let calm loops run again. Build: under the system reduce-motion hint, Atlas's gentle sway and glow loops run again (reverses the full stop of INBOX 772); measure restyles a minute and keep under budget; update the reduce-motion test to the new intent.
 - [ ] **L728** `chat` open, S: Decide the other 13 verbs, confirm card, undo, no-model Agent mode and web search tool (decision 38). From OPEN.md:1060. Evidence: Row note: W34 owner-call tracked in the plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep as decided. Build: tests only: extend tests/test_engine_phase6_spec.py for decision 38's verbs, confirm card, undo and the web search tool.
 - [ ] **L730** `chat` open, S: Decide map/document/web-page sources and a scrollable web source list (decision 37). From OPEN.md:1613. Evidence: Row tagged W34 owner-call (tracked in the plans) Owner decided 2026-11-12: Keep and build. Build: spec tests for decision 37 source kinds; scrollable web source list in the answer bubble (frontend/js/chat-turn.js, answer-kit.js).
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
