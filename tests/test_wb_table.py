@@ -6,11 +6,12 @@ and "canvasdepth, ranked" row 8, draw.io's). An object of kind `table`:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

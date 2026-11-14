@@ -17,11 +17,12 @@ These read the source because the behaviour lives in two listeners on
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 WIRING = (JS / "settings-wiring.js").read_text(encoding="utf-8")
 
 
@@ -71,7 +72,7 @@ def test_escape_leaves_a_text_box_selected_rather_than_typing_on():
     assert 'selectWbItem("object", d.id)' in esc
 
 
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_siblings_sort_by_their_order_key_and_colours_by_creation():

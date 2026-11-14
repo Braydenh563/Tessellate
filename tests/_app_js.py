@@ -87,6 +87,10 @@ MOVED_OUT = {
     "wiring.js": ("answer-kit.js",),
     "skills.js": ("answer-kit.js", "settings-controls.js"),
     "shell-reminders.js": ("scroll-row.js",),
+    #: The board's two big files hand sections to `whiteboard-<topic>.js` pieces (L286); a test that means "the board's
+    #: code" reads these names through `frontend_text`, so a section can move without an edit in 240 tests.
+    "whiteboard.js": (),
+    "whiteboard-map.js": (),
 }
 
 

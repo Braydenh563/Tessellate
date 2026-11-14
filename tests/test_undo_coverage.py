@@ -34,7 +34,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 from tests import _js_scope
-from tests._app_js import with_pieces
+from tests._app_js import with_pieces, frontend_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -892,7 +892,7 @@ def test_ctrl_z_belongs_to_a_board_only_while_the_board_is_showing():
 
 
 def test_a_history_remap_translates_each_id_once():
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     remap = board[board.index("function wbRemapUndoIds("):][:3500]
     assert "wbRemapSeen" in remap and "once(" in remap, (
         "items brought back reuse the ids just deleted (8 comes back as 9 and 9 as 8); "

@@ -4,6 +4,7 @@ tray drop is the panel's ticked row (one staged list, not a second set)."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 
 from tests._objmove_node import JS, needs_node, run
@@ -54,7 +55,7 @@ def test_the_library_picker_and_the_chat_panel_share_that_list() -> None:
     assert "pickLibraryItemDialog.fileRows(" in pick and "pickLibraryItemDialog.fileRows(" in attach
     assert "Files you upload or attach to notes show up here." in (JS / "selection.js").read_text(encoding="utf-8")
     # A map's reference names a note's attachment only: it asks for no uploads.
-    assert "noUploads: true" in (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+    assert "noUploads: true" in frontend_text("whiteboard-map.js")
 
 
 @needs_node

@@ -8,6 +8,7 @@ count, the page boxes, and that every xref offset lands on its object.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -18,7 +19,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 INTERCHANGE = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 WRITER = INTERCHANGE[INTERCHANGE.index("const wbPdf = ") :]
 
 #: Two frames side by side on a board 1000 x 400.
@@ -118,8 +119,7 @@ def test_the_dialog_names_a_branch_when_opened_for_one():
 
 def test_the_maps_branch_export_opens_the_dialog_for_a_branch():
     """L267: the map's "Export this branch" opened the board's dialog titled "Export this board"."""
-    from tests._app_js import JS_DIR
 
-    js = (JS_DIR / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     body = js[js.index("function wbMapExportBranch("):][:700]
     assert "wbExportBoard({ branch: true })" in body

@@ -9,6 +9,7 @@ rules. Run in node against the source; the browser half is the pair sweep
 recorded in `docs/roadmap/agent-remaining/wbdog-1026.md`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -172,6 +173,6 @@ def test_inserts_make_their_drawings_on_top_not_at_a_fixed_z() -> None:
 def test_the_live_stroke_paints_over_the_cards_while_it_is_drawn() -> None:
     """A new stroke lands on top, so the path drawn under the pointer is in
     the overlay layer above the cards, not the base layer under them."""
-    text = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     assert 'document.getElementById("wb-zoom-group").appendChild(currentDrawPath)' not in text
     assert 'document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath)' in text

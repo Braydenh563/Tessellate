@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tests._app_js import app_js_text, documents_text
+from tests._app_js import app_js_text, documents_text, frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -92,7 +92,7 @@ def test_lazily_loaded_lists_show_placeholders_while_they_load():
     # skeletons.js with every request held 1.5s: 1 of 11 views showed
     # placeholders before (the Timeline); 9 after, the other two answered.
     code = app_js_text() + "\n".join(
-        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("documents.js", "library.js", "whiteboard.js", "boards-gallery.js")
+        frontend_text(name) for name in ("documents.js", "library.js", "whiteboard.js", "boards-gallery.js")
     )
     for container, fetch in (
         ('showSkeletons(list, 4, "li");\n  if (!list.children.length', '"/conversations"'),

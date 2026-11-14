@@ -12,6 +12,7 @@ matters: equal keys never hide different geometry.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -292,7 +293,7 @@ def test_an_unchanged_line_is_neither_recomputed_nor_rewritten() -> None:
 
 
 def test_the_render_compares_the_key_before_it_works_out_the_geometry() -> None:
-    src = MAP_JS.read_text(encoding="utf-8")
+    src = frontend_text("whiteboard-map.js")
     match = re.search(r"^function wbRenderMapEdges\(.*?^}\n", src, re.MULTILINE | re.DOTALL)
     assert match
     body = "\n".join(line for line in match.group(0).splitlines() if not line.lstrip().startswith("//"))
@@ -306,7 +307,7 @@ def test_a_click_on_the_bend_dot_stays_off_the_canvas() -> None:
     so the second click hit the `+` and the line never straightened."""
     if not shutil.which("node"):
         pytest.skip("node is not installed")
-    src = MAP_JS.read_text(encoding="utf-8")
+    src = frontend_text("whiteboard-map.js")
     start = src.index("function wbWireMapEdgeHandle(")
     end = src.index("\nfunction ", start + 1)
     script = src[start:end] + r"""

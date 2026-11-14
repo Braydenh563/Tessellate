@@ -6,11 +6,12 @@ long row (`scratchpad/ui-sweeps/wbnoterows.js`: every row "clamp over
 padding 8px" at 1440 and 1024 on base, 6/6 after). Now a name over one quiet
 line, each ellipsised by the stylesheet."""
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 

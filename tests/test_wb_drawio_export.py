@@ -5,6 +5,7 @@ The pure writer runs in node against the source; the browser half (the
 driven in a browser (7 of 7 at 1440 and 390 wide).
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -15,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _export(state: dict, options: str = "") -> dict:

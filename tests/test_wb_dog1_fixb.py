@@ -4,6 +4,7 @@ Source-level checks the suite can see; the browser numbers are in the
 commit messages and `docs/roadmap/archive/agent-remaining/fixb-1025.md`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -12,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_new_map_toast_says_what_enter_does_while_typing():
@@ -163,7 +164,7 @@ def test_a_connection_point_lights_and_grabs_at_the_same_distance():
     assert "Math.min(9, side * 0.2)" not in WB
 
 
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def test_a_new_topic_is_brought_into_view_when_it_is_out_of_it():

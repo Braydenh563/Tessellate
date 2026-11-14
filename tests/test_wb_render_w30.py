@@ -1,13 +1,13 @@
 """W30: a board render does not repeat reads whose answer cannot have changed."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def test_the_board_colour_is_read_once_per_render_pass():
@@ -160,7 +160,7 @@ console.log(JSON.stringify({ first, second, jumpedDiffers: jumped !== "M50 0L50 
 
 
 def test_a_boards_connector_batch_measures_only_the_objects_its_ends_are_on():
-    index = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    index = frontend_text("whiteboard-map.js")
     body = index[index.index("function wbIndexMapNodeElements(linkEndsOnly = false)") :].split("\n}\n", 1)[0]
     head = body[: body.index("for (const el of document.querySelectorAll")]
     assert 'wbItemElement("object", id)' in head and "if (linkEndsOnly) {" in head

@@ -11,6 +11,7 @@ Chromium by `scratchpad/ui-sweeps/ctrlwheelzoom.js`: one notch x1.39, a pinch
 step x1.06.
 """
 
+from tests._app_js import frontend_text
 import json
 import math
 import shutil
@@ -62,5 +63,5 @@ def test_a_pinch_and_a_plain_wheel_zoom_as_they_did(event: dict) -> None:
 
 
 def test_the_board_and_the_graph_use_it() -> None:
-    assert ".wheelDelta(zoomWheelDelta)" in (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert ".wheelDelta(zoomWheelDelta)" in frontend_text("whiteboard.js")
     assert ".wheelDelta(zoomWheelDelta)" in (JS / "graph-canvas.js").read_text(encoding="utf-8")

@@ -7,6 +7,7 @@ only when something is installed, so a poll serves the last one and a pool threa
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import time
 
 from tessellate.api import routes_models
@@ -62,10 +63,8 @@ def test_the_finder_arrow_reads_the_row_before_it_writes_the_class():
 
 
 def test_the_board_chord_guard_reads_the_markup_not_the_layout():
-    from pathlib import Path
 
-    root = Path(__file__).resolve().parents[1]
-    owns = _body((root / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8"), "function wbOwnsChord(")
+    owns = _body(frontend_text("whiteboard.js"), "function wbOwnsChord(")
     for forbidden in ("offsetParent", "isContentEditable", "getClientRects", "getBoundingClientRect"):
         assert forbidden not in owns, forbidden
 

@@ -7,14 +7,14 @@ and runs here in node; the round trip through the app is driven by
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
-SRC = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+SRC = frontend_text("whiteboard-map.js")
 
 
 def _run(roots, title="The map"):

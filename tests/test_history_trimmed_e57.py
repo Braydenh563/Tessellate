@@ -16,6 +16,7 @@ import pytest
 
 from tessellate.ai import context, librarian
 from tests import _js_scope
+from tests._app_js import frontend_text
 
 
 def _history(pairs: int, size: int = 900) -> list[dict]:
@@ -88,8 +89,7 @@ def test_the_guide_explains_the_line_and_the_pill(question):
 
 
 def test_the_chat_draws_one_line_under_a_trimmed_reply():
-    from tests._app_js import frontend_text
-
+    
     kit = _js_scope.unwrapped(frontend_text("reply-kit.js"))
     assert "function renderHistoryTrimmedNotice" in kit
     assert "renderHistoryTrimmedNotice(opts.bubble, opts.trimmed)" in kit

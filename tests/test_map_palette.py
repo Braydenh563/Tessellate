@@ -7,14 +7,15 @@ pin the wiring and that every row's action is a function the map has.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MAP_JS = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 PANES = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
-WB_JS = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB_JS = frontend_text("whiteboard.js")
 
 
 def _body(source: str, signature: str) -> str:

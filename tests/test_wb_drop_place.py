@@ -12,6 +12,7 @@ The pure halves run in node against the functions' own source; the browser
 half is the sweep.
 """
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -21,7 +22,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 LIB = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
 
 

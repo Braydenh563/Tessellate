@@ -6,6 +6,7 @@ One field per frame."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -92,7 +93,7 @@ def test_the_sync_moves_a_card_whose_note_changed_into_its_frame(client):
 
 
 def test_the_board_syncs_on_open_and_the_frame_menu_binds():
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     assert "/binds/sync" in js
     assert "Bind to a property" in js
 

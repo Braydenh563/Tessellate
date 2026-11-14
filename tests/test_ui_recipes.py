@@ -712,7 +712,7 @@ def test_the_radial_band_is_cut_to_its_tiles() -> None:
     """
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     #: The map layer is whiteboard-map.js since the split; read both.
-    js = "".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("whiteboard.js", "whiteboard-map.js"))
+    js = "".join(frontend_text(name) for name in ("whiteboard.js", "whiteboard-map.js"))
     band = [body for selector, body in _rules(css) if selector.strip() == ".wb-map-radial::before"]
     assert band, "the radial's band rule is gone"
     assert "--wb-radial-outer" in band[0] and "--wb-radial-inner" in band[0], (
@@ -737,7 +737,7 @@ def test_the_radial_is_one_ring_cut_into_sectors() -> None:
     as a tile, or a fit that stops writing the clip, is the old ring again.
     """
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
-    js = "".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("whiteboard.js", "whiteboard-map.js"))
+    js = "".join(frontend_text(name) for name in ("whiteboard.js", "whiteboard-map.js"))
     slot = [body for selector, body in _rules(css) if selector.strip() == ".wb-map-radial .wb-map-radial-slot"]
     assert slot, "the sector rule is gone"
     assert "calc(var(--wb-radial-outer) * 2)" in slot[0], "a sector is the whole ring's square, clipped"
@@ -782,7 +782,7 @@ def test_every_board_tool_names_its_own_cursor() -> None:
     that means "drag the canvas".
     """
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     tools = set(re.findall(r'data-tool="([a-z-]+)"', html))
     assert len(tools) >= 18, tools
     body = js[js.index("function wbCursorForTool(") : js.index("// The visible half of Select")]
@@ -832,7 +832,7 @@ def test_the_boards_selector_says_which_kind_each_board_is() -> None:
     chat). A native `<option>` cannot hold that chip's icon, so the group
     heading carries it, the way three other selects in this app already do.
     """
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = js[js.index("async function refreshBoardList") : js.index("async function renameCurrentBoard")]
     assert 'createElement("optgroup")' in body
@@ -2483,7 +2483,7 @@ GRIP_CLASSES = ("wb-rotate-handle-stem", "wb-sketch-rotate-handle")
 
 
 def test_every_inverse_scaled_grip_sets_its_own_anchor():
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     drawn = sum(js.count(f'"{name}"') for name in GRIP_CLASSES)
     anchored = js.count('.style("transform-origin"')
     assert drawn == 4, (
@@ -2613,7 +2613,7 @@ def test_the_boards_menu_bar_gets_its_roles_and_its_keyboard_from_one_place() ->
     one.
     """
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     app = app_js_text()
 
     menus = re.findall(r'<div id="(wb-[a-z-]+-menu)" class="wb-board-menu', html)
@@ -4183,7 +4183,7 @@ def test_board_text_is_made_editable_in_one_place() -> None:
     sets `contenteditable` itself skips both halves, which is how "start",
     Enter, "- item" once saved as "start- item"."""
     for name in ("whiteboard.js", "whiteboard-map.js"):
-        text = (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+        text = frontend_text(name)
         code = re.sub(r"(?m)^\s*//.*$", "", text)
         makers = [
             m.start()
@@ -4193,7 +4193,7 @@ def test_board_text_is_made_editable_in_one_place() -> None:
         end = code.find("\n}", begin)
         strays = [at for at in makers if not (begin != -1 and begin < at < end)]
         assert not strays, f"{name} makes board text editable outside wbBeginTextEdit ({len(strays)} places)"
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     #: A shape's text and a connector's label (decision 13) share one editor.
     edit = wb[wb.index("function wbOpenSketchLabelEditor(") :][:4000]
     assert "wbBeginTextEdit(editor)" in edit and "wbEditedText(editor)" in edit
@@ -4207,8 +4207,8 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     only; its title typed through the board's one editor; its drag carrying
     what it holds through the bulk mover; its inside letting the pointer
     through; the Guide naming it."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    wbmap = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
+    wbmap = frontend_text("whiteboard-map.js")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     assert 'f: "frame",' in wb
@@ -4236,7 +4236,7 @@ def test_a_locked_item_is_out_of_reach_in_one_way() -> None:
     rule), and the selections that do not go through the pointer pass it by
     by asking `wbIsLocked`: Select all, the marquee, the lasso, a group's
     click and a frame's drag. The way back is on the board's own menu."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     assert "#whiteboard-container .wb-locked,\n#whiteboard-container .wb-locked * {\n  pointer-events: none;" in css
     #: Edit inside a group (L-whiteboard-7) shares each of these lines: what is outside the open group is out of reach the same way.
@@ -4259,7 +4259,7 @@ def test_drag_to_delete_is_one_target_on_the_three_drags() -> None:
     delete is the selection's own, one Undo step (`wbRecordGesture`) with a
     toast; the target is a floating panel (on the glass-off list), hidden
     from the tree, and its styles ride the Library bundle, not the boot CSS."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     for kind in ("sketch", "object", "node"):
         assert f'wbBeginGesture(() => wbRestoreMove("{kind}", d), true)' in wb, kind
@@ -4292,7 +4292,7 @@ def test_sidebar_drags_reach_the_delete_target() -> None:
     (`wb-trash-dnd`); a native drag's pointercancel must not hide it. A row deletes through `wbTrashDelete` (one Undo
     step); a tile through `wbLibDelete` (its toast and Undo); built-in tiles offer nothing; the canvas's library drop
     ignores a drop on the target. Measured: scratchpad/ui-sweeps/wbtrash660.js, 55/55 with the board and map."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     lib = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     target = wb[wb.index("function wbTrashTarget(") :]
@@ -4312,7 +4312,7 @@ def test_presenting_is_one_mode_with_one_bar() -> None:
     menu's row starts it, board only; one host class hides the chrome and
     makes the board a view; the keys are taken on the window in the capture
     phase so no board key acts; the bar's text is a polite live region."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     assert 'data-wb-fn="present" data-wb-surface="board"' in index
@@ -4327,7 +4327,7 @@ def test_presenting_is_one_mode_with_one_bar() -> None:
     assert "#library-view-whiteboard.wb-presenting #wb-html-layer," in css
     keys = wb[wb.index("let wbPresent = null;") :]
     assert "event.stopImmediatePropagation();" in keys and "}, true);" in keys
-    assert ".wb-board-menu [data-wb-surface]" in (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    assert ".wb-board-menu [data-wb-surface]" in frontend_text("whiteboard-map.js")
     guide = help_chat_text()
     assert "Present frames: one frame" in guide
 
@@ -4347,8 +4347,8 @@ def test_a_maps_boundaries_and_summaries_are_drawn_in_one_pass() -> None:
     selection bar's frame so a drag carries them; every change goes through
     the topic's one undo step; both reach the image export; neither takes the
     pointer; and a theme reset keeps them."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    wm = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
+    wm = frontend_text("whiteboard-map.js")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     render = wb[wb.index("function renderWhiteboard()") :]
     assert render.index("wbRenderMapStructure();") > render.index("wbRenderMapEdges();")
@@ -4366,7 +4366,7 @@ def test_a_topics_markers_are_one_row_from_one_icon_set() -> None:
     by one function into one row from the paint pass, the icons come from a
     fixed Phosphor set with no emoji in it, every change is the topic's one
     undo step, and the markers are content (a branch copy keeps them)."""
-    wm = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    wm = frontend_text("whiteboard-map.js")
     paint = wm[wm.index("function wbPaintMapNodeStyle(") :][:6000]
     assert "wbMapPaintMarkers(markers, d.data || {});" in paint
     painter = wm[wm.index("function wbMapPaintMarkers(") :]
@@ -4385,7 +4385,7 @@ def test_a_comment_thread_is_one_popover_reached_three_ways() -> None:
     item menu and a topic's menu open the one thread, in the help popover's
     shell; every change goes through `wbSetComments`; the marks are painted
     after every render and follow a drag on the selection bar's frame."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     assert wb.count("wbOpenComments(") == 4, "the definition, the mark, the item menu, the topic menu"
     assert 'panel.className = "help-popover wb-comments";' in wb
@@ -4492,7 +4492,7 @@ def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
     rows and the skills list, whose fixes are in boot scripts that sit at the
     gzip ratchet (OPEN.md)."""
     js = "\n".join(
-        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+        frontend_text(name)
         for name in ("library.js", "whiteboard.js", "boards-gallery.js", "meetings.js")
     )
 
@@ -5713,7 +5713,7 @@ def test_a_note_is_named_through_note_name_plain_not_its_first_line() -> None:
 def test_note_name_plain_is_defined_once_and_used_by_the_name_sites() -> None:
     text = with_pieces("chat-attach.js")
     assert len(re.findall(r"^function noteNamePlain\(", text, flags=re.M)) == 1
-    used = {p.name for p in JS if "noteNamePlain(" in p.read_text(encoding="utf-8")}
+    used = {p.name for p in JS if "noteNamePlain(" in frontend_text(p.name)}
     for name in ("whiteboard.js", "dashboard.js", "graph.js", "entry-menu.js", "palette.js", "notes-list.js", "phone-shell.js", "note-cards.js"):
         assert name in used, name
 
@@ -6148,7 +6148,7 @@ def test_a_dot_on_the_graph_answers_with_its_hover_card():
 def test_ghost_topics_are_one_lazy_layer_with_four_keys():
     """DESIGN.md, "Suggestions offered under a map topic": the picker dialog is
     gone; ghosts live in the lazy Library sheet, never the boot CSS."""
-    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     body = js[js.index("function wbMapBranchPicker(") :]
     body = body[: body.index("\n}\n")]
     assert "pickerDialog(" not in body
@@ -6377,7 +6377,7 @@ def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> No
     selection bar's Text style through the colour popover's own element."""
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     docs = documents_text()
-    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert "**A run**" in design and "wbOpenRunMenu" in design, "DESIGN.md lost the text-run recipe"
     style = docs[docs.index("function mdRunNode(") : docs.index("\n}\n", docs.index("function mdRunNode(")) + 3]
     assert "setAttribute" not in style, "a run's size and face are CSSOM: the CSP rejects a style attribute"
@@ -6390,7 +6390,7 @@ def test_the_present_bar_caption_is_a_page_picker():
     """INBOX 1425: the caption is a kebabMenu opener (centred, ellipsised, caret) whose
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
@@ -7596,7 +7596,7 @@ def test_a_zoom_readout_is_a_value_field():
     as a bare `%` text is the drift; the files that still have one are frozen and may only fall."""
     js = ROOT / "frontend" / "js"
     for name in ("lightbox-view.js", "diagram-view.js", "whiteboard.js"):
-        assert "valueField(" in (js / name).read_text(encoding="utf-8"), name
+        assert "valueField(" in frontend_text(name), name
     field = (js / "value-field.js").read_text(encoding="utf-8")
     # Typeable, announced, restorable, and its list is the app's menu rather than a new one.
     # Intent moved (PR 216 review): the field still sets a phone keyboard; which one now follows what it accepts
@@ -7922,7 +7922,7 @@ def test_a_board_tag_is_a_chip_a_fold_is_a_view_rule_and_a_drop_target_has_no_bl
     is an outline in a token colour, so it needs no glass-off entry; none of it adds a top-level name."""
     struct = (ROOT / "frontend" / "js" / "whiteboard-structure-more.js").read_text(encoding="utf-8")
     assert 'chip(tag, "tag wb-tag-chip"' in struct
-    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     assert "structure?.folded(kind, item)" in wb[wb.index("function wbItemHidden") :][:900]
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     drop = re.search(r"\.wb-object-frame\.wb-drop-target \{([^}]*)\}", lazy)

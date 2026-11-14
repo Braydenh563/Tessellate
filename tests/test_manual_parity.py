@@ -15,6 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -85,7 +86,7 @@ def test_every_write_tool_names_its_manual_path():
 def test_every_named_manual_path_still_exists():
     gone = []
     for tool, (name, proof, where) in MANUAL.items():
-        text = (FRONTEND / "js" / name).read_text(encoding="utf-8")
+        text = frontend_text(name)
         if proof not in text:
             gone.append(f"{tool}: {where} ({name} no longer has {proof!r})")
     assert not gone, "Manual paths that went missing:\n  " + "\n  ".join(gone)

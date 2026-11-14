@@ -16,6 +16,7 @@ that offers an icon or an emoji. What this holds:
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -71,7 +72,7 @@ def test_every_emoji_offered_is_one_a_topic_icon_accepts():
 
 
 def test_the_surfaces_that_offer_a_glyph_open_the_one_picker():
-    map_js = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+    map_js = frontend_text("whiteboard-map.js")
     assert "pickIconOrEmoji(" in map_js[map_js.index("function wbMapOpenIconPicker") :][:800]
 
 

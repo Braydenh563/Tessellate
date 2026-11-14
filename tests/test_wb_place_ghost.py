@@ -5,10 +5,11 @@ marquee's canvas; they now draw a ghost of the kind in the card layer, in
 board units (`scratchpad/ui-sweeps/wbplaceghost.js`: 3/9 at 1440 before, a
 marquee and no ghost for all three; 30/30 at 1440 and 1024 after)."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
