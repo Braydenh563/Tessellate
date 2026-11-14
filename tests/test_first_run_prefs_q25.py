@@ -9,7 +9,7 @@ JS = (ROOT / "frontend/js/onboarding.js").read_text(encoding="utf-8")
 
 
 def test_every_choice_is_a_preference_the_server_takes():
-    for key in ("week_start", "date_order", "before_includes_day"):
+    for key in ("writing_style", "week_start", "date_order", "before_includes_day"):
         assert f'key: "{key}"' in JS
         assert key in PreferencesBody.model_fields
 
@@ -21,5 +21,5 @@ def test_the_card_is_a_slide_before_the_tour_and_skip_stays():
 
 def test_each_choice_has_a_settings_row_too():
     html = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
-    for pid in ("pref-week-start", "pref-date-order", "pref-before-includes-day"):
+    for pid in ("pref-writing-style", "pref-week-start", "pref-date-order", "pref-before-includes-day"):
         assert f'id="{pid}"' in html

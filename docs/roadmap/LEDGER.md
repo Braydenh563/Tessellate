@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 32 | 1 | 0 | 2 | 33 |
+| documents | 0 | 31 | 1 | 0 | 2 | 32 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 587 | 129 | 2 | 165 | 1199 |
+| all | 483 | 586 | 129 | 2 | 165 | 1198 |
 
 ## graph
 
@@ -336,12 +336,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-34** `documents` open, M: Tracked-change author and date shown on the suggestion menu and list: needs a stored form (CriticMarkup comment {>>name, date<<}) read by docSuggestParse, written by docSuggestEdit, kept by the Word export. From L333. Evidence: documents-prose.js docSuggestParse: CriticMarkup {++x++} carries no author or date; the mark menu is documents-prose.js docSuggestMenu (~1135)
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
-- [ ] **L-documents-43** `documents` open, M: Query block: a fenced block that renders a saved search live (SilverBullet-style). From owner research via hub 2026-11-14. Evidence: check the existing saved-search code first
 - [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
-- [ ] **L-documents-48** `documents` open, M: Long-form choice at first run (24 row 8). From DOCUMENTS_PLAN.md:1118, audit 2026-11-14. Evidence: no first-run note-style choice in onboarding.js or settings.js
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
 - [ ] **L-documents-50** `documents` open, M: Code linters: ruff-wasm and a JS linter (25 row 4). From DOCUMENTS_PLAN.md:1157, audit 2026-11-14. Evidence: no ruff or eslint in frontend/vendor; only in-house docCodeScan documents-code.js:4951
-- [ ] **L-documents-52** `documents` open, M: Board and calendar views of the base block (1308 item 6). From DOCUMENTS_PLAN.md:1274, audit 2026-11-14. Evidence: documents-base.js:4 says board and calendar views are not built
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function
@@ -359,6 +356,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
+- [ ] **L-documents-84** `documents` open, S: Export and print styling for the base block's board and calendar views. From L-documents-52 follow-up. Evidence: documents-export.js ~101-110 styles only .db-scroll and .db-label
+- [ ] **L-documents-85** `documents` open, S: Base table refreshes on doc-saved, and drive the Read-view board drag. From L-documents-52 follow-up. Evidence: board drag write driven in Live only; Read view drag not driven
 
 ## mindmap
 

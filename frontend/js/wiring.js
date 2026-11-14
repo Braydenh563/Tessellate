@@ -135,21 +135,16 @@ function askAtlasAbout(question) {
 //: here rather than written into forty-nine blocks of markup, and guarded by a
 //: flag because `initHelpToggles` is re-runnable (Settings builds some of its
 //: sections lazily).
-function addAtlasLine(panel) {
-  const question = ATLAS_PROMPTS[panel.id];
-  if (!question || panel.dataset.atlasLine) return;
-  panel.dataset.atlasLine = "1";
-  // The one builder, so the offer looks the same in a popover as in an
-  // empty state (`atlasSuggestion`).
-  panel.appendChild(atlasSuggestion(question));
-}
-
 function initHelpToggles(root = document) {
   for (const trigger of root.querySelectorAll("[data-help-for]")) {
     const panel = $(trigger.dataset.helpFor);
     if (!panel) continue;
     wireHelpPopover(trigger, panel);
-    addAtlasLine(panel);
+    const question = ATLAS_PROMPTS[panel.id];
+    if (question && !panel.dataset.atlasLine) {
+      panel.dataset.atlasLine = "1";
+      panel.appendChild(atlasSuggestion(question));
+    }
   }
 }
 window.initHelpToggles = initHelpToggles;
@@ -373,15 +368,9 @@ function globalFindWalkableRoot() {
 //: and switches to the first that does, so Ctrl+F answers "where is the
 //: setting for X" rather than "not on this page".
 function settingsSectionContaining(needle) {
-  const modal = $("settings-modal");
-  if (!modal || modal.classList.contains("hidden")) return null;
   const lower = needle.toLowerCase();
-  for (const section of modal.querySelectorAll(".settings-section.hidden")) {
-    if ((section.textContent || "").toLowerCase().includes(lower)) {
-      return section.id.replace(/^settings-/, "");
-    }
-  }
-  return null;
+  const hit = [...document.querySelectorAll("#settings-modal:not(.hidden) .settings-section.hidden")].find((s) => s.textContent.toLowerCase().includes(lower));
+  return hit ? hit.id.replace(/^settings-/, "") : null;
 }
 
 function globalFindClearHighlights() {
@@ -434,7 +423,7 @@ function globalFindRun(needle) {
   // sections take it in turns being the hidden one.
   if (!targets.length && !globalFindJumping) {
     const jump = settingsSectionContaining(needle);
-    if (jump && typeof showSettingsSection === "function") {
+    if (jump && window.showSettingsSection) {
       globalFindJumping = true;
       try {
         showSettingsSection(jump);
@@ -530,12 +519,9 @@ function openGlobalFind(opts = {}) {
     $("settings-search").select();
     return;
   }
-  const wbCanvas = $("wb-canvas-view");
-  const wbView = $("library-view-whiteboard");
   if (
-    wbCanvas && !wbCanvas.classList.contains("hidden") &&
-    wbView && !wbView.classList.contains("hidden") &&
-    typeof wbOpenBoardSearch === "function"
+    ["wb-canvas-view", "library-view-whiteboard"].every((id) => $(id) && !$(id).classList.contains("hidden")) &&
+    window.wbOpenBoardSearch
   ) {
     wbOpenBoardSearch();
     return;
@@ -1081,7 +1067,7 @@ onSurface("notes", () => {
   //: box ready to type in. `showNotesSection`'s own `focus` lands on the
   //: sub-tab button, which is right for a keyboard moving between sections
   //: and wrong here, where the press meant "I want to write".
-  $("notes-new-note").addEventListener("click", () => startNewNote());
+  $("notes-new-note").addEventListener("click", () => startNewNote(1));
 });
 
 //: **Every "new note" lands in the box, ready to type** (INBOX 434): the
@@ -1089,7 +1075,8 @@ onSurface("notes", () => {
 //: come here. Ctrl+Shift+N went to Notes and focused a box that was hidden
 //: whenever Notes was last on Browse: the focus fell to <body> and what was
 //: typed next went nowhere, or fired a single-key shortcut.
-function startNewNote() {
+function startNewNote(here) {
+  if (!here && prefsCache?.writing_style === "documents") return switchTab("documents").then(() => createDocument());
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
   const box = $("entry-content");

@@ -76,7 +76,8 @@
 }
 
 /* The Live figure's pencil: on the corner, put the caret in the text. */
-.cm-md-base-wrap {
+.cm-md-base-wrap,
+.cm-md-query-wrap {
   position: relative;
 }
 
@@ -87,7 +88,7 @@
   opacity: 0;
 }
 
-.cm-md-base-wrap:is(:hover, :focus-within) .db-edit {
+:is(.cm-md-base-wrap, .cm-md-query-wrap):is(:hover, :focus-within) .db-edit {
   opacity: 1;
 }
 
@@ -137,5 +138,155 @@
   .db-table th,
   .db-table td {
     overflow-wrap: anywhere;
+  }
+}
+
+/* Board and calendar views (L-documents-52). The view switch is the one `.seg`; the board scrolls sideways inside its own
+   box and the calendar is a seven-column grid, so neither ever scrolls the page. */
+.db-views {
+  margin-inline-start: auto;
+}
+
+.db-choose {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.db-board {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-block-end: var(--space-1);
+}
+
+.db-col {
+  flex: 0 0 14rem;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.db-col.db-over {
+  border-color: var(--accent);
+}
+
+.db-col-head {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.db-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.db-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: var(--text-sm);
+  cursor: grab;
+}
+
+.db-month {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+.db-cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.db-dow {
+  padding: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.db-day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-block-size: 4.5rem;
+  min-inline-size: 0;
+  padding: var(--space-1);
+  border-block-start: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.db-day-out {
+  opacity: 0.5;
+}
+
+.db-daynum {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.db-day .db-open {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The ```query block's list (L-documents-43). */
+.db-hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.db-hit {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-block-end: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.db-hit:last-child {
+  border-block-end: 0;
+}
+
+.db-kind {
+  color: var(--muted);
+}
+
+@media print {
+  .db-views,
+  .db-choose {
+    display: none;
+  }
+
+  .db-board {
+    flex-wrap: wrap;
+    overflow: visible;
   }
 }

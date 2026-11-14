@@ -493,11 +493,13 @@ MORE_TOPICS: list[dict] = [
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
-            "The welcome's last card offers the same three choices once, and Skip passes them by. "
+            "The welcome's preferences card offers the same choices once, and Skip passes them by. "
             "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
-            "Notifications: mute everything except reminders. Writing: smart "
+            "Notifications: mute everything except reminders. Writing: New starts with (short notes, the default, or long "
+            "documents: New then opens a blank document, which reads in a serif until you choose otherwise; the Notes "
+            "tab's own New note button still makes a note; the welcome asks it too), smart "
             "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
             "of a link unless it is on), Kinds of suggestion in a document's writing sheet (switch off style, "
             "punctuation, capital letters or word choice), and offers to turn a named note or document into a link "
@@ -1964,7 +1966,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2845,7 +2847,7 @@ MORE_TOPICS.append({
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
-#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a table, board or calendar of notes by property.
 MORE_TOPICS.append({
     "id": "document-base",
     "keywords": (
@@ -2857,13 +2859,32 @@ MORE_TOPICS.append({
         "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
         "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
         "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
-        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
-        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
-        "It is a table only; boards and calendars are not built."
+        "The first column is the note's name: press it to open the note. Table, Board and Calendar on the block "
+        "switch the view and are kept in a view: line. A board groups by group: status (a select or a list such as tags); drag "
+        "a card to another column, or use its menu, to change that property in the note. A calendar places notes by date: due. "
+        "Private notes never appear."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
+TOPIC_META["document-base"] = {"title": "A table, board or calendar of notes", "path": "A document, the / menu, Notes table"}
+
+
+#: L-documents-43: the query block (documents-base.js), a saved search kept live in a document.
+MORE_TOPICS.append({
+    "id": "document-query",
+    "keywords": (
+        "query block", "saved search in a document", "live search", "search results in a document", "```query",
+        "saved search block", "live list of notes",
+    ),
+    "body": (
+        "Type /saved search in a document, or write a code block marked query, to keep a search's results as a list "
+        "in the page. Write the name of one of your saved searches (saved: Reading list), or search: and the words or "
+        "operators to look for, and limit: 20 to show more or fewer (50 at most). The list shows notes and documents; "
+        "press a title to open it. It reads again each time the document saves, and the refresh button reads it on demand."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-query"] = {"title": "A saved search in a document", "path": "A document, the / menu, Saved search"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
