@@ -279,8 +279,19 @@
     wbScheduleRender();
   }
 
-  function wbBeginTextEdit(contentEl, ownText) {
-    if (!contentEl || contentEl.isContentEditable) return;
+  //: `early`: only the part that restyles (the attribute and the class), for a
+  //: render to write before its measure read; the call that follows opens the editor.
+  function wbBeginTextEdit(contentEl, ownText, early = false) {
+    if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
+    if (early) {
+      //: The class before the attribute: setting `contenteditable` restyles the
+      //: tree there and then, so a class written after it was a second restyle
+      //: at the measure (L-mindmap-13: 11 elements, 4 to 7 ms at 6x).
+      contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+      contentEl._wbPreEdit = true;
+      contentEl.setAttribute("contenteditable", "plaintext-only");
+      return;
+    }
     //: Back to the source while editing, whatever the rendered view showed.
     //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
     const objectEl = contentEl.closest(".wb-object");
@@ -289,8 +300,9 @@
       contentEl.textContent = ownText;
     } else if (item) {
       contentEl.classList.remove("wb-text-md");
-      contentEl.textContent = item.data.content || "";
+      if (contentEl.textContent !== (item.data.content || "")) contentEl.textContent = item.data.content || "";
     }
+    contentEl._wbPreEdit = false;
     //: **Plain text, so a line break stays a line break.** With
     //: `contenteditable="true"` Enter inserts a `<div>`, and the blur handlers
     //: read `textContent`, which has no line breaks for those: measured,
@@ -298,12 +310,23 @@
     //: the box a run of text with real "\n"s (Chromium, WebView2 and WebKit
     //: all support it); where it is refused the attribute falls back to
     //: "true" and `wbEditedText` still reads the lines back correctly.
-    contentEl.setAttribute("contenteditable", "plaintext-only");
-    if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+    if (contentEl.getAttribute("contenteditable") !== "plaintext-only") {
+      contentEl.setAttribute("contenteditable", "plaintext-only");
+      if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+    }
     contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
     wbAttachEditorMenu(contentEl);
     contentEl.focus({ preventScroll: true });
   }
+
+  //: An early edit (`early` above) the editor never took over: the attribute and
+  //: class come off, so the topic is not left typeable with no editor behind it.
+  wbBeginTextEdit.drop = (el) => {
+    if (!el?._wbPreEdit) return;
+    el._wbPreEdit = false;
+    el.removeAttribute("contenteditable");
+    el.closest(".wb-object")?.classList.remove("wb-text-editing");
+  };
 
   //: **The editor's "/" and "[[" menus, in a box on the board** (the owner,
   //: 2026-10-10: "/ command menus don't appear in text boxes in the
