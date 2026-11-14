@@ -11,6 +11,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,7 +140,7 @@ def test_a_document_that_embeds_a_diagram_previews_a_readable_label_not_the_embe
 
 
 def test_a_diagram_opened_from_a_document_offers_the_way_back_to_that_document():
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert (
         "const from = openDocument.back && currentDoc && currentDoc.id !== id ?" in docs
         and "openDocument.back = false;" in docs

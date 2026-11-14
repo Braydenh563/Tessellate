@@ -1625,7 +1625,7 @@ FAILING_SURFACES = {
     #: SVG renderer's copy until that renderer was removed (audit 1029 row 60).
     "frontend/js/graph-canvas.js": ("map",),
     "frontend/js/library.js": ("library",),
-    "frontend/js/documents.js": ("documents",),
+    "frontend/js/documents-surface.js": ("documents",),
 }
 
 
