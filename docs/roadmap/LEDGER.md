@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
+| whiteboard | 0 | 2 | 0 | 0 | 0 | 2 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 528 | 125 | 2 | 172 | 1125 |
+| all | 472 | 529 | 125 | 2 | 172 | 1126 |
 
 ## graph
 
@@ -280,6 +280,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
+- [ ] **L-whiteboard-53** `whiteboard` open, L: Board state per instance: wbState, currentBoardId, wbSelectedItem, wbMultiSelection and wbUndoStack in an instance object, d3 zoom bound per container, single-board behaviour identical (tests first); unblocks L-documents-104. From hub 2026-11-14 for L-documents-104. Evidence: wbState, currentBoardId, wbSelectedItem, wbMultiSelection, wbUndoStack are module globals; d3 zoom binds #whiteboard-container
 
 ## documents
 
