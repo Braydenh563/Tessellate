@@ -105,7 +105,7 @@ def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict
     """`run` for a confirmed card, in the composer's own words (the ones the card was
     drawn with): "Done: I saved that to Shopping.", "I will remind you on Friday at 9:
     call the dentist.", "ticked off “Sunscreen”". `say` is `{mood, intent}`, None for plain."""
-    from tessellate.ai import composer_compose
+    from tessellate.ai import composer_checklist, composer_compose
 
     say = say or plain_say(label)
     mood = say["mood"]
@@ -114,6 +114,9 @@ def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict
         done["summary"] = composer_compose.frame("act_card", mood, what=f"{label[:1].lower()}{label[1:]}")
     elif done["ok"] and say["intent"] in ("complete", "uncomplete"):
         done["summary"] = ticked_line({"label": label, "skipped": skipped or []}, lambda what: composer_compose.frame("act_done", mood, what=what))
+        #: The tick that finishes a list is remarked on (CHAT_PLAN C9).
+        finished = [composer_checklist.remark(str(s.get("arguments", {}).get("content") or "")) for s in steps if s.get("name") == "edit_note"] if say["intent"] == "complete" else []
+        done["summary"] = " ".join([done["summary"], *(r for r in finished if r)])
     return done
 
 

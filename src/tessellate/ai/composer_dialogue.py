@@ -761,7 +761,16 @@ def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 
 #: "until then", "before then": the day the last answer showed.
-_THEN = lazy_compile(r"\b(?:until|till|til|before|after|since|by) then\b", re.I)
+_THEN = lazy_compile(r"\b(?:until|till|til|before|after|since|by) then\b|^(?:what|who|where|how|which|did|do|was|were)\b.{3,60}?\s(?P<bare>then)\W*$", re.I)
+#: "what did I do there": the place the last answer named, said as "in Lisbon" (not "is there" or "there is").
+_THERE = lazy_compile(r"^(?:what|who|where|how|which|did|do|was|were|when)\b(?!.*\b(?:is|are|was|were)\s+there\b)(?!.*\bthere\s+(?:is|are|was|were)\b).{3,60}?\s(?=there\W*$)", re.I)
+
+
+def _follow_there(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    found, place = _THERE.match(text), str(_frame_of(last).get("place") or "")
+    if not found or not place:
+        return _NOT_THIS
+    return FollowOn(f"{found.group(0)}in {place}", previous, "", "bound")
 
 
 def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -773,7 +782,7 @@ def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any
         day = date_type.fromisoformat(days[0])
     except ValueError:
         return _NOT_THIS
-    said = found.group(0)[: -len("then")] + f"{day.day} {day:%B} {day.year}"
+    said = (found.group(0)[: found.start("bare") - found.start()] + "on " if found.group("bare") else found.group(0)[: -len("then")]) + f"{day.day} {day:%B} {day.year}"
     return FollowOn(text[: found.start()] + said + text[found.end():], previous, "", "bound")
 
 
@@ -876,7 +885,7 @@ def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
 
 _FOLLOW_READERS = (
     _follow_shift, _follow_more, _follow_item, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_then, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
+    _follow_then, _follow_there, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
 )
 
 
@@ -999,6 +1008,20 @@ def _person(asked: str, lead: dict) -> str:
     return next((n for n in sorted(names) if re.search(rf"\b{n}\b", asked, re.I) and n not in _CALENDAR_NAMES), "")
 
 
+#: "flew to Lisbon", "stayed in Porto": a motion or stay verb, or in/at/near, then the name; the fact graph
+#: types "to X" as a person, so the verb is what tells a place from "talked to Anna".
+_PLACE_CUE = lazy_compile(r"\b(?:flew|went|drove|travell?ed|moved|visited|trip|walked|sailed|stayed|lived|in|at|near)\s+(?:(?:out |back )?to\s+|in\s+|at\s+)?(?:the\s+)?$", re.I)
+
+
+def _place(text: str, today) -> str:  # noqa: ANN001  # a date
+    """The first place the answer's lead names ("We flew to Lisbon"), read by the fact graph."""
+    from tessellate.ai import factgraph
+
+    lead = text.strip().split("\n\n", 1)[0]
+    found = factgraph.of_kind({"id": 0, "content": lead, "created_at": today.isoformat()}, "entity")
+    return next((str(f.attrs.get("name") or "") for f in found if f.attrs.get("type") == "place" or (f.attrs.get("type") in ("person", "unknown") and _PLACE_CUE.search(lead[: f.start]))), "")[:60]
+
+
 def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
     lead = text.strip().split("\n\n", 1)[0]
     days: list[str] = []
@@ -1033,10 +1056,12 @@ def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # n
     lead = by_id.get(ids[0]) or {}
     span = _noun_span(_asked_span(asked, subject_terms(asked)).strip(" “”\"'")) if asked else ""
     text = str(result.get("text") or "")
+    place = _place(text, today)
     return {
         "note_ids": ids,
         "subject": _plain(span or composer_frame.note_title(lead)),
         "person": _person(asked, lead) if lead else "",
+        **({"place": place} if place else {}),
         "ask": " ".join(asked.split())[:200],
         "dates": _frame_days(text, today),
         "items": [_plain(m.group("line")) for m in _LIST_LINE.finditer(text)][:FRAME_ITEMS],

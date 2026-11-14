@@ -239,6 +239,19 @@ def _meant(term: str, stem: str, vocabulary: set[str]) -> bool:
     return _holds(stem, vocabulary) or term.lower() in spelling.english()
 
 
+def _concept_member(term: str, vocabulary: set[str]) -> str:
+    """A concept word no note holds ("sport") put to the member a note does hold ("swimming"), else "";
+    the first member in the table's order, so the reading is the same every time."""
+    if term in vocabulary:
+        return ""
+    members = composer_tables.CONCEPTS.get(term, ())
+    return next((w for m in members for w in (m, _stem(m)) if w in vocabulary), "")
+
+
+def _concepts(terms: list[str], vocabulary: set[str]) -> list[str]:
+    return [_concept_member(t, vocabulary) or t for t in terms]
+
+
 def _fit_terms(terms: list[str], views: list[NoteView], report: list | None = None) -> list[str]:
     """The question's words, each one no note holds put right against the
     notes' own words ("lisbn" is "lisbon" when a note says Lisbon): one
@@ -249,7 +262,7 @@ def _fit_terms(terms: list[str], views: list[NoteView], report: list | None = No
     for view in views:
         vocabulary |= view.words | view.title_words | view.filed_words
     fitted: list[str] = []
-    for term in terms:
+    for term in _concepts(terms, vocabulary):
         stem = _stem(term)
         #: Four letters at least, the same first letter, and never to a
         #: shorter word: "peru" is not a typo of "per", "hotle" is of "hotel".

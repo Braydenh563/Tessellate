@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, composer_web, realise
+from tessellate.ai import activity, composer_cancel, composer_thennow, composer_extra, composer_suggest, composer_talk, composer_web, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
@@ -130,6 +130,10 @@ def _early_events(session: Session, typed: str, history: list[dict], now: dateti
     #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
     if (dropped := composer_cancel.reply(typed, history)) is not None:
         return dropped
+    if (undone := composer_cancel.undo_reply(session, typed, history)) is not None:
+        return undone
+    if (changed := composer_thennow.answer(session, typed)) is not None:
+        return [{"type": "answer", "delta": changed}]
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
     if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
         return talked
@@ -286,10 +290,10 @@ def name_events(session: Session, question: str) -> list[dict] | None:
 def figures_events(session: Session, typed: str, history: list[dict], today, open_ids: tuple = ()) -> list[dict] | None:  # noqa: ANN001  # a date
     """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6),
     or the links of the note "it" is (`ai/composer_openlinks`, F13 j)."""
-    from tessellate.ai import composer_figures, composer_openlinks
+    from tessellate.ai import composer_checklist, composer_figures, composer_openlinks
 
     try:
-        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids))
+        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids)) or composer_checklist.finished(session, typed)
     except Exception:  # noqa: BLE001  # the ordinary readers answer
         log.exception("chat: the figures reader failed")
         return None

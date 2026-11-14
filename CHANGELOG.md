@@ -19,6 +19,20 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat acts: "Remember that I prefer ..." is a suggest-a-preference card, "Make a board called X" an empty board card, and "Delete the tag X" with no tags no longer says rename (L114, 2026-11-14).
 - Atlas moods: passing moods come at least 3 a minute at rest (was 2 in 60 s), on a seeded 10-minute simulation test; rub, flip and the Show-companion notice were already built (L180).
 - Atlas lower body: a float has its own state (the dress 48 to 50 px tall against 36 to 38 standing) and a lean sweeps 9 to 15 px wider than idle in both looks (L173); the masculine trail gets a back-wisp pair (L742, 2026-11-14).
+- Chat: a concept word ("sport", "food", "travel") finds a note that names only a member of it (2026-11-14).
+- Chat stats: a count answer exposes its numbers as `Measure(kind, value, derived_from)` (2026-11-14).
+- Chat: "every Monday list what is open" sets a weekly reminder carrying that phrasing (2026-11-14).
+- Templates: `ai/template_fill.fill` writes {date}, {weekday}, {week}, {title} and {n} by rule (2026-11-14).
+- Chat: "what did I do there" and "what did I do then" carry the place and the day the answer before named (2026-11-14).
+- Chat stats: "compare this month with last month", "more than last month" and "which month did I write the most" give both counts or the busiest period (2026-11-14).
+- Chat: "what did my plan say last month" reads the notebook as of the end of that window, with no date picked (2026-11-14).
+- Chat stats: "how many gym notes this month" counts the notes of that topic written in the window (2026-11-14).
+- Chat: "what did I say about the trip then and now" quotes the oldest saved claim and the current one (2026-11-14).
+- Chat: "undo that" takes back the last confirmed card, or drops the card that waits (2026-11-14).
+- Chat: a goodbye after a confirmed act names the act that ran (done_act on the turn) (2026-11-14).
+- Chat: "I finished everything on my list" counts what is open or remarks that all items are ticked, and the tick that finishes a list says so (2026-11-14).
+- Chat stats: "how many notes did I write this week" reads the injected clock, not utcnow() (2026-11-14).
+- Chat composer: a negated sentence opens a yes or no as "Not that I can see, but a note says:" and a plan as "Only as a plan:" (2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).
 - Chat plan: tag my gym notes #fitness and save the summary as a note are read as acts; X and C probes close eight rows (2026-11-14).
 - Chat plan: Answering probes A1 to A23 added; eleven rows closed on them, the rest carry their measured failure (2026-11-14).

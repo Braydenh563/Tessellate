@@ -274,7 +274,7 @@ def test_yes_no_never_answers_yes_or_no():
     #: INBOX 741: a sentence holding every word asked is said as the notes'
     #: answer ("Going by your notes, ..."), never as a yes or a no.
     assert first.startswith(
-        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have") for text in composer_phrases.phrase_options(key))
+        tuple(text for key in ("closest_a", "closest_b", "going_by", "notes_have", "not_that", "only_plan") for text in composer_phrases.phrase_options(key))
     )
     assert "Beta testers did not know Harbor works offline." in first
     assert not re.search(r"\b(yes|no)\b[,.]", result["text"].split("\n\n", 1)[0], re.I)

@@ -24,3 +24,31 @@ def test_x11_the_summary_just_given_is_saved_as_a_note_on_confirm(act):
     said, _ = act("summarise the Tokyo trip")
     text, _ = act("save the summary as a note", history=[{"question": "summarise the Tokyo trip", "answer": said}])
     assert "Confirm" in text and "Tokyo trip" in text, text
+
+
+# --- X13: template variables filled by rule ------------------------------------------------------------
+
+def test_x13_template_variables_are_filled_by_rule():
+    from datetime import datetime
+
+    from tessellate.ai import template_fill
+
+    now = datetime(2026, 10, 31, 11, 30)
+    got = template_fill.fill("# {title}: {weekday} {date}, week {week}, entry {n} {what}", now, title="Gym", n=3)
+    assert got == "# Gym: Saturday 31 October 2026, week 44, entry 3 {what}"
+    assert template_fill.fill("no slots", now) == "no slots"
+    assert template_fill.slots("Log a workout: {what} on {date}") == ["what"]
+
+
+# --- X15: "every <weekday> <act phrase>" is a weekly reminder carrying the phrasing -----------------------
+
+def test_x15_every_weekday_act_is_a_weekly_reminder():
+    from datetime import datetime
+
+    from tessellate.ai import commands
+
+    now = datetime(2026, 10, 31, 11, 30)
+    got = commands.read("every Monday list what is open", now)
+    assert got and got["intent"] == "reminder" and got["recurring"] == "weekly"
+    assert got["said"] == "list what is open" and got["due_at"].weekday() == 0
+    assert commands.read("every Monday is busy", now) is None

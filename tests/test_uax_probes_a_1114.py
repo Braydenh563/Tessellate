@@ -87,3 +87,49 @@ def test_a19_a_definition_is_the_sentence_that_says_is_a():
     notes = [_note(1, "Sprint\n\nA sprint is a two week block of work.", 3), _note(2, "Lunch with Sam on Friday.", 5)]
     said = composer.compose("what is a sprint", notes, today=TODAY688)["text"]
     assert "A sprint is a two week block of work." in said
+
+
+def test_a6_from_when_to_when_gives_the_span_and_the_count_of_the_dated_notes(ask):
+    said = ask("from when to when did I write about running")
+    assert said.startswith("You have three notes about running, 1 to 25 October."), said
+
+
+def test_a17_then_and_now_quotes_the_old_claim_and_the_current_one(client, session, monkeypatch):
+    from tessellate.core.database import Entry
+    from tessellate.entry import manager
+
+    seed.seed(session)
+    made = manager.create_entry(session, "# Austria trip\n\nWe travel to Vienna in June by train.", category_name="Travel", tags=[])
+    session.commit()
+    manager.record_revision(session, made)
+    manager.update_entry(session, made, content="# Austria trip\n\nWe travel to Vienna in August by plane.")
+    session.commit()
+    said = seed.asker(client, monkeypatch)("what did I say about the Austria trip then and now")[0]
+    assert "by train" in said and "by plane" in said and "Then" in said and "Now" in said, said
+    assert "three notes mention" not in said
+
+
+def test_a18_a_topic_count_inside_a_window_counts_the_window(client, session):
+    from datetime import datetime, timezone
+
+    from tessellate.ai import notebook_stats
+
+    seed.seed(session)
+    now = datetime(2026, 10, 31, 11, 30, tzinfo=timezone.utc)
+    this_month = notebook_stats.answer("how many gym notes this month", session, now=now)
+    assert this_month.text == "1 note is tagged gym this month.", this_month.text
+    assert notebook_stats.answer("how many gym notes", session, now=now).text == "2 notes are tagged gym."
+    assert "Health" in notebook_stats.answer("how many health notes in September", session, now=now).text
+
+
+def test_a11_the_window_a_what_did_it_say_question_names_is_the_as_of_day(client, session, monkeypatch):
+    from tessellate.ai import timetravel
+    from tests._seed_1031c import NOW
+
+    assert timetravel.as_of_in("what did my gym plan say last month", NOW).isoformat() == "2026-09-30"
+    assert timetravel.as_of_in("what did my plan read in March", NOW).isoformat() == "2026-03-31"
+    assert timetravel.as_of_in("what did I write last month", NOW) is None  # a note's date, not its text then
+    assert timetravel.as_of_in("what did my plan say next month", NOW) is None
+    seed.seed(session)
+    _, events = seed.asker(client, monkeypatch)("what did my gym plan say last month")
+    assert next(e for e in events if e.get("type") == "meta")["as_of"] == "2026-09-30"

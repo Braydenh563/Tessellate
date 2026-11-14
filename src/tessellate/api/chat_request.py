@@ -78,6 +78,8 @@ class ChatTurn(BaseModel):
     #: the page only while the card is still open, so "cancel" can drop it
     #: (`composer_cancel`, CHAT_PLAN X17).
     pending_act: str | None = Field(default=None, max_length=300)
+    #: The label of the act the page confirmed on this turn's card, so a goodbye can name what ran (CHAT_PLAN C2).
+    done_act: str | None = Field(default=None, max_length=300)
     #: The frame the answer was sent with, echoed back; absent from an older page.
     frame: TurnFrame | None = None
     #: The id the server parked that card under (`ai/consent_store.py`), sent with it so a typed

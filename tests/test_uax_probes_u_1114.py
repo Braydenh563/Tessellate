@@ -188,3 +188,103 @@ def test_u15_why_takes_the_because_sentence_and_how_keeps_the_order():
     assert "because your knee hurt" in why, why
     how = composer.compose("how do I make the bread", notes, today=TODAY688)["text"]
     assert how.index("Mix the flour") < how.index("Rest for an hour") < how.index("Bake at 230C"), how
+
+
+# --- U14 and A4: a negated or hypothetical sentence never answers a yes/no as asserted ---------------
+
+def _yesno(note: str, question: str = "did I go to the gym") -> str:
+    from tessellate.ai import composer
+
+    return composer.compose(question, [_note(1, f"# Week\n\n{note}", 3)], today=TODAY688)["text"]
+
+
+def test_u14_a_negated_sentence_opens_as_not_that_i_can_see():
+    said = _yesno("I did not go to the gym on Monday.")
+    assert said.startswith("Not that I can see; the nearest thing is:"), said
+
+
+def test_u14_a_hypothetical_sentence_opens_as_only_a_plan():
+    said = _yesno("If it rains I would go to the gym instead.")
+    assert said.startswith("Only as a plan:"), said
+    assert _yesno("I might go to the gym later.").startswith("Only as a plan:")
+
+
+def test_u14_an_asserted_sentence_keeps_its_going_by_opener():
+    said = _yesno("I went to the gym on Monday.")
+    assert not said.startswith(("Not that I can see", "Only as a plan")), said
+
+
+def test_u14_factgraph_modes_are_read_by_the_composer():
+    from tessellate.ai import factgraph
+
+    assert factgraph.sentence_mode("I did not go to the gym.") == "negated"
+    assert factgraph.sentence_mode("If it rains I would go.") == "conditional"
+    assert factgraph.sentence_mode("I might go.") == "hypothetical"
+    assert factgraph.sentence_mode("I went to the gym.") == "asserted"
+
+
+# --- U11 and A7: comparisons over time and the busiest period -----------------------------------------
+
+def _stat(session, question: str) -> str:
+    from datetime import datetime, timezone
+
+    from tessellate.ai import notebook_stats
+
+    seed.seed(session)
+    now = datetime(2026, 10, 31, 11, 30, tzinfo=timezone.utc)
+    said = notebook_stats.answer(question, session, now=now)
+    return said.text if said else ""
+
+
+@pytest.mark.parametrize("question", ["compare this month with last month", "did I write more this month than last month", "this month versus last month"])
+def test_u11_two_windows_are_counted_with_both_numbers(session, question):
+    assert _stat(session, question) == "You wrote 36 notes this month and 6 last month.", question
+
+
+def test_u11_one_window_after_than_is_set_against_the_current_one(session):
+    assert _stat(session, "am I writing more than last month") == "You wrote 36 notes this month and 6 last month."
+
+
+def test_u11_the_busiest_month_is_the_one_with_most_notes(session):
+    assert _stat(session, "which month did I write the most") == "You wrote the most in October 2026: 36 notes."
+
+
+# --- U8: there and then carry the place and the day of the answer before -----------------------------
+
+def _frame_turn(**frame) -> list[dict]:
+    return [{"question": "where did I go on holiday", "answer": "You flew to Lisbon on 14 March 2026.", "frame": {"note_ids": [1], "subject": "holiday", **frame}}]
+
+
+def test_u8_there_is_the_place_the_answer_before_named():
+    from tessellate.ai import composer
+
+    history = _frame_turn(place="Lisbon")
+    assert composer.follow_on("what did I do there", history).question == "what did I do in Lisbon"
+    assert composer.follow_on("is there a gym", history) is None or "Lisbon" not in composer.follow_on("is there a gym", history).question
+
+
+def test_u8_then_is_the_day_the_answer_before_named():
+    from tessellate.ai import composer
+
+    history = _frame_turn(dates=["2026-03-14"])
+    assert composer.follow_on("what did I do then", history).question == "what did I do on 14 March 2026"
+    assert composer.follow_on("who was with me then", history).question == "who was with me on 14 March 2026"
+
+
+def test_u8_the_frame_of_an_answer_carries_its_place():
+    from tessellate.ai import composer_dialogue
+
+    note = {"id": 1, "content": "# Holiday\n\nWe flew to Lisbon on 14 March.", "created_at": "2026-03-20"}
+    frame = composer_dialogue.turn_frame("where did I go on holiday", {"text": "We flew to Lisbon on 14 March.", "grounding": [{"note_id": 1}]}, [note], TODAY)
+    assert frame["place"] == "Lisbon", frame
+
+
+# --- U3: a concept word finds a note that says only a member of it ------------------------------------
+
+def test_u3_a_concept_word_finds_a_note_that_names_a_member():
+    from tessellate.ai import composer
+
+    notes = [_note(1, "# Fitness log\n\nSwam forty lengths at the pool on Tuesday.", 5), _note(2, "# Garden\n\nThe roses need pruning.", 6)]
+    result = composer.compose("what sport do I do", notes, today=TODAY)
+    assert result["grounding"] and result["grounding"][0]["note_id"] == 1, result["text"]
+    assert "sport" in result["text"].lower() or "swam" in result["text"].lower()

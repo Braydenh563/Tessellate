@@ -402,6 +402,7 @@ class TurnFrame(BaseModel):
     note_ids: list[int] = Field(default_factory=list, max_length=5)
     subject: str = Field(default="", max_length=80)
     person: str = Field(default="", max_length=40)
+    place: str = Field(default="", max_length=60)
     ask: str = Field(default="", max_length=200)
     dates: list[Annotated[str, Field(max_length=10)]] = Field(default_factory=list, max_length=5)
     items: list[Annotated[str, Field(max_length=80)]] = Field(default_factory=list, max_length=12)

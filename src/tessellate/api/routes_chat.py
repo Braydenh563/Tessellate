@@ -37,7 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import address, composer_retry, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
-from tessellate.ai import consent, consent_store, recognise
+from tessellate.ai import consent, consent_store, recognise, timetravel
 from tessellate.ai import (
     acts,
     context,
@@ -262,7 +262,7 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     stats = _activity(session, question) if as_of is None and not attached else None
     if stats is not None:
         return intent.NOTES, stats
-    stats = notebook_stats.answer_chat(question, session, as_of) if detected == intent.NOTES else None
+    stats = notebook_stats.answer_chat(question, session, as_of, user_now(deps.get_config())) if detected == intent.NOTES else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
     if stats is None and as_of is None and not attached:
@@ -947,6 +947,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
     if kind == "test" and (subject := composer_social.ping_subject(req.question)):
         said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
+    said = composer_social.with_act_ran(said, kind, last)
     sees = _sees(req, kind, seed)
     return f"{said}\n\n{sees}" if sees else said
 
@@ -1915,7 +1916,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         # preference is accounted for and an unset flag cannot land a
         # Request turn in the chip row.
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
-        as_of=None if req.skill else req.body.as_of,
+        as_of=None if req.skill else req.body.as_of or timetravel.as_of_in(req.question or "", user_now(deps.get_config())),
         locale=req.body.locale,
         skip_search=early is not None,
         composed=_app_answers(req, req.ollama.is_running()), widen=req.body.attempt,

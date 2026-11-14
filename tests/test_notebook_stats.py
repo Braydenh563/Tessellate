@@ -356,3 +356,32 @@ def test_the_closing_line_quotes_a_note_with_its_first_letter_capital():
     for seed in ("a", "b", "c", "d", "e", "f"):
         line = composer_tone.closing(recent=["robespierre led the committee"], seed=seed)
         assert "robespierre" not in line and "Robespierre led the committee" in line, line
+
+
+def test_a_recent_count_reads_the_injected_clock_not_the_real_one(client):
+    """"how many notes did I write this week" counted from `utcnow()`: a fixed clock gave a window on the real
+    calendar (the UAX probe's fixed-clock finding)."""
+    from datetime import datetime, timedelta, timezone
+
+    fixed = datetime(2026, 10, 31, 11, 30, tzinfo=timezone.utc)  # a Saturday
+    with _session() as session:
+        made = _note(session, "written on the fixed Thursday")
+        made.created_at = fixed - timedelta(days=2)
+        session.commit()
+        said = notebook_stats.answer("how many notes did I write this week", session, now=fixed)
+        assert said is not None and said.text == "You have written 1 note this week.", said and said.text
+        assert notebook_stats.answer_chat("how many notes did I write last week", session, now=fixed).text.startswith("You wrote no notes")
+
+
+def test_a16_a_count_answer_carries_a_measure_that_names_where_it_came_from(client):
+    from datetime import datetime
+
+    session = _session()
+    _note(session, "one", tags=["gym"])
+    _note(session, "two", tags=["gym"])
+    session.commit()
+    said = notebook_stats.answer("how many notes are tagged gym", session, now=datetime(2026, 11, 14, 12, 0))
+    assert said is not None
+    measure = said.measures()[0]
+    assert isinstance(measure, notebook_stats.Measure)
+    assert (measure.kind, measure.value, measure.derived_from) == (said.kind, 2, "notes"), said.facts

@@ -14,7 +14,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_frame, factgraph, composer_versus, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai import recognise_questions
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
@@ -33,7 +33,7 @@ _LEARNED: contextvars.ContextVar = contextvars.ContextVar("composer_learned", de
 
 _OPENERS = (
     "open_notes", "open_wrote", "open_put", "open_figure", "open_date", "open_where",
-    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a",
+    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a", "not_that", "only_plan",
 )
 
 
@@ -81,6 +81,10 @@ def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tu
         #: A sentence that holds every word the question is about answers it
         #: in the note's own words: "Going by your notes, the deposit is
         #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
+        mode = factgraph.sentence_mode(s.text)
+        if mode != "asserted":
+            #: A negated sentence is not a yes and a plan is not a done thing (U14).
+            return ("not_that",) if mode == "negated" else ("only_plan",)
         stems = out.subject
         #: An entry of a risks list says what might go wrong, not how things
         #: stand ("The pricing page is not signed off in time."): the nearest
