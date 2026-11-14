@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, backend_hint, greeting_compose, librarian, presets
+from tessellate.ai import address, backend_hint, composer_compose, greeting_compose, librarian, presets
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_turn, paging
@@ -901,7 +901,7 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
             return json.dumps(payload) + "\n"
 
         if not notes:
-            yield event({"type": "answer", "delta": "Nothing was saved in the last 7 days."})
+            yield event({"type": "answer", "delta": composer_compose.said_plain("none_week")})
             yield event({"type": "done", "cacheable": True})
             return
         if not ollama.is_running():

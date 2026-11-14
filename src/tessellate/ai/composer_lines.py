@@ -453,6 +453,36 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("No documents have been added to the notebook.", "f"), c("The notebook holds no documents at present.", "f"),
         c("The document shelf is bare.", "p"), c("No documents yet, only notes.", "p"),
     ),
+    "none_charts": (
+        c("That is every chart I can draw from your notes. Statistics holds the rest of the numbers.", "w"), c("Those are all the charts your notes can fill so far. Statistics has the other numbers.", "w"), c("I have shown you every chart your notes can draw. The rest of the numbers are in Statistics.", "w"),
+        c("No more charts. Statistics has the rest.", "t"), c("That is all of them. See Statistics.", "t"), c("Charts: all shown.", "t"),
+        c("Every chart that can be drawn from your notes has been shown. Statistics holds the remaining figures.", "f"), c("No further charts are available from your notes at present. Statistics holds the rest.", "f"),
+        c("The chart drawer is empty now. Statistics has what is left.", "p"), c("That is the full set of charts. The leftover numbers live in Statistics.", "p"),
+    ),
+    "torn_ask": (
+        c("Did you mean your notes or the web?", "w"), c("Should I look in your notes or on the web?", "w"), c("Do you want your notes searched, or the web?", "w"),
+        c("Notes or web?", "t"), c("Your notes, or the web?", "t"), c("Notes, or the web?", "t"),
+        c("Would you like me to search your notes or the web?", "f"), c("Shall I use your notes or the web for this?", "f"),
+        c("Two places to look: your notes or the web. Which one?", "p"), c("Notes or the wide web, which shall it be?", "p"),
+    ),
+    "none_language": (
+        c("None of your notes look {label} to me.", "w"), c("I cannot find a note in {label}.", "w"), c("No note of yours seems to be in {label}.", "w"),
+        c("No {label} notes.", "t"), c("Nothing in {label}.", "t"), c("{label}: none.", "t"),
+        c("None of your notes appear to be written in {label}.", "f"), c("No note in the notebook is in {label} at present.", "f"),
+        c("Not one note reads as {label} to me.", "p"), c("Nothing here reads as {label}.", "p"),
+    ),
+    "card_gone": (
+        c("That card is no longer open, so nothing was done. Ask again and I will set it up.", "w"), c("That card has closed, so I did nothing. Ask me again and I will set it up.", "w"), c("That card is not open any more, so nothing was done. Ask again and I will set it up.", "w"),
+        c("Card closed. Nothing done. Ask again.", "t"), c("That card is gone, nothing was done.", "t"), c("No open card, so nothing ran. Ask again.", "t"),
+        c("That card is no longer open and no action was taken. Please ask again and it will be set up.", "f"), c("The card has expired, so nothing was done. Ask again to set it up.", "f"),
+        c("That card has slipped away and nothing was done. Ask again and I will set it up.", "p"), c("The card is closed and nothing happened. Ask me again and I will set it up.", "p"),
+    ),
+    "none_week": (
+        c("Nothing was saved in the last 7 days.", "w"), c("No notes were saved in the past week.", "w"), c("You saved nothing in the last 7 days.", "w"),
+        c("Nothing saved this week.", "t"), c("No notes in 7 days.", "t"), c("Last 7 days: nothing.", "t"),
+        c("No notes were saved during the last 7 days.", "f"), c("The notebook holds nothing saved in the last 7 days.", "f"),
+        c("A quiet week: nothing was saved in the last 7 days.", "p"), c("Seven days and not a single save.", "p"),
+    ),
     "act_none": (
         c("That is not something I can do from here with no model. I can search, count, list and set reminders.", "w"),
         c("I cannot do that without a model, but I can search, count, list and set reminders.", "w"),

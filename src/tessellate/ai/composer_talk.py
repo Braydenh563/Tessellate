@@ -167,7 +167,7 @@ def _other_chart(session: Session, question: str, prev: Prev, today: date) -> li
         return None
     left = [k for k in CHARTS if k not in prev.shown and drawing(session, k, today)]
     if not left:
-        return [{"type": "answer", "delta": "That is every chart I can draw from your notes. Statistics holds the rest of the numbers."}]
+        return _none_yet("none_charts")
     first, rest = left[0], left[1:]
     return _chart_reply(session, first, today, f"Here are your notes {_CHART_WORDS[first]}.", rest)
 

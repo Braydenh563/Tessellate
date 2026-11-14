@@ -13,7 +13,7 @@ import logging
 from collections.abc import Iterator
 from fastapi import HTTPException
 
-from tessellate.ai import acts, agent, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
+from tessellate.ai import acts, agent, budget as run_budget, commands, composer_compose, consent_store, skill_runner, starter_acts, tools
 from tessellate.ai.tools import tool_off
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
 from tessellate.core import deps
@@ -225,4 +225,4 @@ def consent_events(session, found: dict) -> list[dict]:  # noqa: ANN001
         return run_card_events(session, label, proposal["steps"], proposal["skipped"], proposal.get("say"), found["id"])
     if (ran := _typed_tool_events(session, (proposal or {}).get("tool"), found["id"], label)) is not None:
         return ran
-    return [{"type": "answer", "delta": "That card is no longer open, so nothing was done. Ask again and I will set it up."}]
+    return [{"type": "answer", "delta": composer_compose.said_plain("card_gone", what)}]

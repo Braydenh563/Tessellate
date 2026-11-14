@@ -380,12 +380,12 @@ def language_events(session: Session, language: str, *, web_on: bool) -> list[di
     found by script or everyday words (`ai/note_language.py`), listed with
     their links, never a web search. None found says so and, with web search
     on, offers the web as a chip."""
-    from tessellate.ai import note_language, tool_say
+    from tessellate.ai import composer_compose, note_language, tool_say
 
     found = [n for n in _notes(session) if not n["archived"] and not n["draft"] and note_language.is_in(n["content"], language)]
     label = note_language.label(language)
     if not found:
-        events: list[dict] = [{"type": "answer", "delta": f"None of your notes look {label} to me."}]
+        events: list[dict] = [{"type": "answer", "delta": composer_compose.said_plain("none_language", language, label=label)}]
         if web_on:
             events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {language}"]}})
         return events

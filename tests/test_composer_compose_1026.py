@@ -63,6 +63,11 @@ FACTS: dict[str, dict] = {
     "none_tags": {},
     "none_categories": {},
     "none_documents": {},
+    "none_charts": {},
+    "torn_ask": {},
+    "none_language": {"label": "Japanese"},
+    "card_gone": {},
+    "none_week": {},
 }
 #: The abilities the owner named, each needing 20 or more distinct surfaces.
 ABILITIES = ("recent", "recent_any", "due", "plan", "left", "define", "count_note", "study_summary", "study_nothing_named", "until")

@@ -9,7 +9,7 @@ layer list in `routes_chat.py`'s docstring, never back to `routes_chat`.
 
 from __future__ import annotations
 
-from tessellate.ai import composer, composer_money, composer_unplaced, composer_web, note_rank, personal, toolwords
+from tessellate.ai import composer, composer_compose, composer_money, composer_unplaced, composer_web, note_rank, personal, toolwords
 from tessellate.api.chat_request import _StreamRequest, _composed
 from tessellate.core import deps
 
@@ -168,4 +168,4 @@ def _torn_events(req: _StreamRequest, prepared: dict) -> list | None:
     if not composer_unplaced.torn(req.question or "", prepared["notes"], web_on=True):
         return None
     asks = composer_unplaced.torn_chips(req.question or "")
-    return [{"type": "answer", "delta": "Did you mean your notes or the web?"}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
+    return [{"type": "answer", "delta": composer_compose.said_plain("torn_ask", req.question or "")}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
