@@ -5768,7 +5768,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `offerSpace` | frontend/js/hello-unlock.js:124 |
 | `press` | frontend/js/hello-unlock.js:96 |
 | `prfOf` | frontend/js/hello-unlock.js:40 |
-| `renderSettings` | frontend/js/hello-unlock.js:195 |
+| `renderHelloSettings` | frontend/js/hello-unlock.js:195 |
 | `said` | frontend/js/hello-unlock.js:71 |
 | `supported` | frontend/js/hello-unlock.js:25 |
 

@@ -171,6 +171,12 @@ below). Versioning is `0.x` while the app stabilises.
 - CSS boot weight (L459): 110 boot rules that only the Library bundle's surfaces can match move to the lazy `library-lazy.css` (a class outside every `:is`/`:where`/`:has` list that no other script, page or server file names; none is reordered against a rule it ties with). Boot CSS 165,450 to 163,749 bytes gzipped, and the cap comes down to 164,300.
 - CSS (UI plan 13b): `08-consistency.css` (11,081 lines) is dissolved into the component files 00 to 07, each rule beside its component and the cascade order kept (11,410 rules, none lost or reordered against a rule it overrides); its 758 face, companion and Atlas rules are the lazy `characters-lazy.css` in the `characters` bundle. Boot CSS 178,870 to 165,450 bytes gzipped, and the cap comes down to 165,900.
 
+- Tests: the settings skeleton test read whichever `renderSettings` its machine listed first (hello-unlock.js had a second one); the inner one is now `renderHelloSettings` and the helper fails on a name defined twice (2026-11-14).
+- Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
+- Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
+- Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
+- Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
+- Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
 - Csv and tsv Grid: cells and the row-number column are 44 px touch targets under a coarse pointer (cells were 27 px; L-documents-40); the Grid now hides the preview pane it meant to.
 - Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
