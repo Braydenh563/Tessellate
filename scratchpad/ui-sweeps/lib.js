@@ -159,7 +159,15 @@ async function boot(opts={}) {
     await page.fill('#lock-password', PW);
     await page.click('#lock-submit');
   }
-  await page.waitForTimeout(3000);
+  //: Was a fixed 3 s on every boot; the app is ready when the lock is down, the splash is gone and the
+  //: preferences have arrived (what the waits below and every sweep's first step read).
+  await page.waitForFunction(() => {
+    const overlay = document.getElementById('lock-overlay');
+    const splash = document.getElementById('boot-splash');
+    return (!overlay || overlay.classList.contains('hidden')) && (!splash || splash.classList.contains('hidden'))
+      && typeof prefsCache !== 'undefined' && !!prefsCache;
+  }, null, { timeout: Number(process.env.BOOT_MS || (process.env.SLOW ? 90000 : 20000)), polling: 100 }).catch(() => {});
+  await page.waitForTimeout(300);
   //: **The opening curtain** (INBOX 577): after a good password the lock
   //: screen stays up, its button saying "Opening…", while the first tab
   //: draws (`curtainShell`), and fades once it has. Waited out here, or a

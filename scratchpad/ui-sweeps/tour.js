@@ -39,6 +39,9 @@ const ROOT = path.resolve(__dirname, "../..");
 const SHOTS = (process.env.SCRATCH || "/tmp") + "/tour-shots";
 require("fs").mkdirSync(SHOTS, { recursive: true });
 
+//: Seconds since the sweep began, printed at each phase so a slow one is named, not guessed.
+const T0 = Date.now();
+const lap = (what) => console.log(`lap ${((Date.now() - T0) / 1000).toFixed(1)}s ${what}`);
 const failures = [];
 let stepsPassed = 0;
 let stepsSeen = 0;
@@ -46,6 +49,38 @@ function check(ok, line) {
   if (!ok) failures.push(line);
   console.log(`${ok ? "ok  " : "FAIL"}  ${line}`);
   return ok;
+}
+
+//: Waits on the state a step needs, not on a guess at how long it takes (the sweep ran past 400 s
+//: on fixed sleeps). `frames` is two animation frames: what a placement needs once the state is true.
+const frames = (page) => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+async function goTab(page, tab) {
+  await page.evaluate((t) => switchTab(t), tab);
+  await page.waitForFunction((t) => openTour.inspect.activeTab() === t, tab, { timeout: 8000 });
+  await frames(page);
+}
+// The tour is closed and its three layers are hidden (a miss shows up in the check that follows).
+async function closed(page) {
+  await page
+    .waitForFunction(
+      () => !openTour.inspect.run && ["tour-card", "tour-spot", "tour-block"].every((id) => document.getElementById(id).classList.contains("hidden")),
+      null,
+      { timeout: 3000 }
+    )
+    .catch(() => {});
+  await frames(page);
+}
+// Settings at its Help panel, built on first open (the replay rows, Start the tour, About's button).
+async function openHelp(page) {
+  await page.evaluate(() => openSettingsModal());
+  await page.waitForFunction(() => typeof showSettingsSection === "function" && document.getElementById("settings-nav"), null, { timeout: 8000 });
+  await page.evaluate(() => showSettingsSection("help"));
+  await page.waitForFunction(
+    () => document.getElementById("tour-start-btn") && document.querySelector('#settings-nav button.active[data-section="help"]'),
+    null,
+    { timeout: 8000 }
+  );
+  await frames(page);
 }
 
 // One step, from outside. Everything the step's pass or fail depends on.
@@ -166,7 +201,8 @@ async function settled(page) {
     null,
     { timeout: 8000 }
   );
-  await page.waitForTimeout(120);
+  //: Two frames for the placement, not a fixed 120 ms: the card has no transition on its box.
+  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
 }
 
 // Every check a step must pass. Returns whether all did.
@@ -226,15 +262,16 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
     judge(label, m, phone);
     if (oneSection && m.nextSection) {
       await page.click("#tour-skip");
-      await page.waitForTimeout(200);
+      await closed(page);
       check(
         await page.evaluate(() => !openTour.inspect.run && localStorage.getItem("tourDone") === "1"),
         `${label} Finish at the end of ${m.section} ends the tour`
       );
       break;
     }
+    //: No wait after the press: the click runs `tourNext`, which sets the card busy before it
+    //: returns, and `settled` at the top of the loop waits for that flag to clear.
     await page.click("#tour-next");
-    await page.waitForTimeout(150);
   }
   // Per section: the total never changes, and it is the number of cards shown.
   const bySection = new Map();
@@ -310,10 +347,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     // --- every door is live --------------------------------------------------
     // Settings is built when it is first opened, so its Help panel (the replay rows, the
     // "Start the tour" button, About's button) is opened first, as a person would reach it.
-    await page.evaluate(() => openSettingsModal());
-    await page.waitForTimeout(500);
-    await page.evaluate(() => showSettingsSection("help"));
-    await page.waitForTimeout(300);
+    await openHelp(page);
     const doors = await page.evaluate(() => {
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
@@ -337,7 +371,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     );
     check(doors.about && !doors.aboutDisabled, `${label} About's take-the-tour button is live`);
     await page.evaluate(() => closeSettingsModal());
-    await page.waitForTimeout(300);
+    await page.waitForFunction(() => !settingsModalOpen(), null, { timeout: 8000 });
 
     // What the notebook holds before any tour runs: the tour may open a
     // board or a map, and must never make one (or anything else).
@@ -353,35 +387,34 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.evaluate(() => {
       localStorage.removeItem("onboardingDone");
       localStorage.removeItem("tourDone");
-      switchTab("dashboard");
     });
-    await page.waitForTimeout(700);
+    await goTab(page, "dashboard");
     // showOnboarding, not openOnboarding: the latter now queues the welcome behind the first-run turns (firstRunTurn)
     // and waits for a clear screen, so the sweep's next click waited on a card that had not been drawn.
     await page.evaluate(() => showOnboarding());
-    await page.waitForTimeout(400);
+    await page.waitForSelector("#onboarding-next", { state: "visible" });
     const slides = await page.evaluate(() => ONBOARDING_SLIDES.length);
     for (let slide = 0; slide < slides - 1; slide += 1) {
       await page.click("#onboarding-next");
-      await page.waitForTimeout(250);
+      await frames(page);
     }
     check(
       (await page.textContent("#onboarding-next")).trim() === "Start the tour",
       `${label} the welcome's last button says Start the tour`
     );
     await page.click("#onboarding-next");
-    await page.waitForTimeout(300);
+    await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 }).catch(() => {});
     check(await page.evaluate(() => !!openTour.inspect.run), `${label} the welcome's last button starts the tour`);
     // The welcome hands over to the basics, and the basics chain on through
     // every section to the end.
     const fromWelcome = await walk(page, `${label} welcome`, phone);
     await sectionReport(page, `${label} welcome`, fromWelcome);
 
+    lap("welcome walk done");
     // --- every section on its own, ending with Finish -------------------------
     const sections = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
     for (const section of sections) {
-      await page.evaluate(() => switchTab("dashboard"));
-      await page.waitForTimeout(300);
+      await goTab(page, "dashboard");
       await page.evaluate((id) => openTour(id), section);
       const one = await walk(page, `${label} ${section}`, phone, { oneSection: section !== sections[sections.length - 1] });
       if (one.length) {
@@ -389,6 +422,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       }
     }
 
+    lap("sections on their own done");
     // --- Next: <section> goes straight on; Back comes straight back ----------
     await page.evaluate(() => openTour("notes"));
     await settled(page);
@@ -419,16 +453,12 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
 
     // --- the whole tour from Settings' Start the tour -------------------------
     if (process.env.FULL !== "0") {
-      await page.evaluate(() => switchTab("reminders"));
-      await page.waitForTimeout(400);
-      await page.evaluate(() => openSettingsModal());
-      await page.waitForTimeout(500);
-      await page.evaluate(() => showSettingsSection("help"));
-      await page.waitForTimeout(300);
+      await goTab(page, "reminders");
+      await openHelp(page);
       await page.evaluate(() =>
         document.getElementById("tour-start-btn").click()
       );
-      await page.waitForTimeout(300);
+      await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 });
       const whole = await walk(page, `${label} start the tour`, phone);
       await sectionReport(page, `${label} start the tour`, whole);
       check(
@@ -441,6 +471,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       `${label} finishing is remembered (tourDone)`
     );
 
+    lap("start-the-tour walk done");
     // --- with an overlay open, the tour closes it first ----------------------
     for (const opener of ["openHelpChat()", "openPalette()", "openFeatures()", "openShortcuts()"]) {
       await page.evaluate((src) => new Function(src)(), opener);
@@ -448,17 +479,21 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       await page.evaluate(() => openTour("basics"));
       await settled(page);
       const m = await page.evaluate(STEP_PROBE);
-      const open = await page.evaluate(() =>
+      //: A sheet is closed when it has left, and its exit animation is still running two frames after the
+      //: tour closed it (390, the Atlas guide: `sheet-leaving`). Waited for; one that never leaves still fails below.
+      const openDialogs = () =>
         [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')]
           .filter((el) => el.id !== "tour-card" && !el.classList.contains("hidden") && el.getClientRects().length)
-          .map((el) => el.id || el.className)
-      );
+          .map((el) => el.id || el.className);
+      await page.waitForFunction(`(${openDialogs})().length === 0`, null, { timeout: 2000 }).catch(() => {});
+      const open = await page.evaluate(openDialogs);
       judge(`${label} over ${opener}`, m, phone);
       check(open.length === 0, `${label} ${opener} was closed by the tour (${JSON.stringify(open)})`);
       await page.evaluate(() => openTour.inspect.close(false));
       await page.waitForTimeout(200);
     }
 
+    lap("overlays done");
     // --- a resize across the phone breakpoint, mid-step ----------------------
     if (!phone) {
       await page.evaluate(() => openTour("basics"));
@@ -501,12 +536,11 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await settled(page);
     check(await page.evaluate(() => openTour.inspect.run && openTour.inspect.run.index === 1), `${label} ArrowRight on the card moves the tour on`);
     await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
+    await closed(page);
     check(await page.evaluate(() => !openTour.inspect.run), `${label} Escape ends the tour`);
 
     // --- Next twice while a tab loads ----------------------------------------
-    await page.evaluate(() => switchTab("dashboard"));
-    await page.waitForTimeout(300);
+    await goTab(page, "dashboard");
     await page.evaluate(() => openTour("notes"));
     await settled(page);
     await page.evaluate(() => {
@@ -539,7 +573,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await settled(page);
     check(await page.evaluate(() => openTour.inspect.run.index === 1), `${label} Back goes one step back`);
     await page.click("#tour-skip");
-    await page.waitForTimeout(200);
+    await closed(page);
     check(
       await page.evaluate(
         () =>
@@ -554,7 +588,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     });
     await settled(page);
     await page.click("#tour-close");
-    await page.waitForTimeout(200);
+    await closed(page);
     const afterClose = await page.evaluate(() => ({ open: !!openTour.inspect.run, focus: document.activeElement?.id }));
     check(!afterClose.open && afterClose.focus === "space-switcher-btn", `${label} the X closes it and focus returns to the opener (${afterClose.focus})`);
 
@@ -575,9 +609,8 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.evaluate(() => {
       window.__tourNeedsMap = openTour.inspect.needs.map;
       openTour.inspect.needs.map = () => false;
-      switchTab("dashboard");
     });
-    await page.waitForTimeout(300);
+    await goTab(page, "dashboard");
     await page.evaluate(() => openTour("maps"));
     await settled(page);
     const noMap = await page.evaluate(STEP_PROBE);
@@ -593,9 +626,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     const after = await holdings();
     check(after === before, `${label} the tours made nothing (before ${before}, after ${after})`);
 
+    lap("no-map done");
     // --- the dim is on the page and not on the lit control -------------------
-    await page.evaluate(() => switchTab("dashboard"));
-    await page.waitForTimeout(500);
+    await goTab(page, "dashboard");
     const points = await page.evaluate(() => {
       const bar = document.getElementById("space-switcher-btn").getBoundingClientRect();
       return {
@@ -633,14 +666,11 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     check(d1 <= d0 * 0.8, `${label} the page around it is dimmed (${d0} -> ${d1})`);
 
     // --- the replay strip plays one section, with Settings out of the way ----
-    await page.evaluate(() => openSettingsModal());
-    await page.waitForTimeout(500);
-    await page.evaluate(() => showSettingsSection("help"));
-    await page.waitForTimeout(300);
+    await openHelp(page);
     await page.evaluate(() =>
       [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.querySelector(".tour-row-name")?.textContent === "Graph").click()
     );
-    await page.waitForTimeout(300);
+    await page.waitForFunction(() => !!openTour.inspect.run, null, { timeout: 8000 });
     await settled(page);
     const fromSettings = await page.evaluate(() => ({
       open: !!openTour.inspect.run,
@@ -652,6 +682,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     judge(`${label} from Settings`, await page.evaluate(STEP_PROBE), phone);
     await page.evaluate(() => openTour.inspect.close(false));
 
+    lap("replay strip done");
     // --- the card's text as rendered ------------------------------------------
     await page.evaluate(() => openTour("basics"));
     await settled(page);
