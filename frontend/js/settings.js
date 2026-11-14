@@ -307,6 +307,8 @@ function updatePeekAvailability(section) {
 // Preferences: otherwise it's a link to "somewhere in here, scroll and
 // find it yourself", which is what it was before this existed.
 async function openSettingsModal(section = "models", scrollToId = null) {
+  //: Built first: the control lookups below read the lazy body (settings-body.js).
+  surfaceBuild("settings");
   //: **The control names its own section** (INBOX 444). A caller that passes
   //: both used to be right only until the control moved: Search relevance went
   //: from General to Search and index and every link to it opened a section
@@ -329,7 +331,6 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
-  surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a

@@ -3211,7 +3211,7 @@ const DOC_COMMANDS = [
   //: their wording as being for code.
   { id: "format", icon: "ph:brackets-curly", label: "Format the code, or the selected lines", keys: "Shift+Alt+F",
     code: true, run: () => docRunControl("doc-code-format", "Formatting") },
-  { id: "quick-fix", icon: "ph:wrench", label: "Quick fixes for the problem at the caret", keys: "Alt+Enter",
+  { id: "quick-fix", icon: "ph:wrench", label: "Quick fixes, or writing suggestions, at the caret", keys: "Alt+Enter",
     code: true, run: () => docOpenCodeFixes() },
   //: CodeMirror's default keymap has always bound this chord; the row is what
   //: puts it in the palette and the shortcut sheet (INBOX 402).
@@ -3251,7 +3251,8 @@ const DOC_COMMANDS = [
     prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), false)) },
   { id: "finding-previous", icon: "ph:arrow-circle-up", label: "Go to the previous writing suggestion", keys: "Shift+F8",
     prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), true)) },
-  { id: "finding-here", icon: "ph:lightbulb", label: "Suggestions for the word at the caret", keys: "Alt+Enter",
+  //: The chord is on the quick-fix row: one chord, one row (the shortcut sheet lists it once).
+  { id: "finding-here", icon: "ph:lightbulb", label: "Suggestions for the word at the caret", keys: "none",
     prose: true, run: () => {
       const finding = docFindingAtOffset(docOffsetOf(docActiveBox() || docSurface()) ?? -1);
       if (finding) docOpenSuggestFor(finding, true);

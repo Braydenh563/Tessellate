@@ -26,6 +26,9 @@ def test_f8_and_shift_f8_are_rows_of_the_command_table() -> None:
 def test_each_row_runs_the_step_the_keys_take() -> None:
     assert "docFindingStep(" in _row("finding-next") and ", false)" in _row("finding-next")
     assert "docFindingStep(" in _row("finding-previous") and ", true)" in _row("finding-previous")
-    assert 'keys: "Alt+Enter"' in _row("finding-here") and "docOpenSuggestFor(" in _row("finding-here")
+    # Alt+Enter is listed on the quick-fix row, whose label names both jobs: one chord, one row
+    # (test_doc_commands); the prose row stays in the palette for the same step.
+    assert "docOpenSuggestFor(" in _row("finding-here")
+    assert 'writing suggestions, at the caret", keys: "Alt+Enter"' in _row("quick-fix")
     # The listener is still the one place the keys are read.
     assert 'if (event.key !== "F8") return;' in DOCS

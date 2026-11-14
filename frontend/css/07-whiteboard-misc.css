@@ -15333,16 +15333,6 @@ h3.wb-sidebar-title {
   color: var(--accent-text);
 }
 
-/* **A board's menus say what they are at every width.** Below 56rem the
-   five menu toggles in the board's top bar drop their words (07's band, so
-   the bar stays one row), and each was left a bare caret: measured at 390,
-   four and then five identical "v" buttons in a row, which no one can tell
-   apart without opening each (INBOX 392's screenshot). Each carries an icon
-   now, drawn only where its word is not, so the wide bar is what it was. */
-
-@media (max-width: 56rem) {
-}
-
 .doc-dock-menu-list .doc-dock-menu-item[aria-pressed="true"],
 .doc-dock-menu-list .doc-dock-menu-item.active,
 .doc-dock-menu-list .doc-dock-menu-item.is-on {

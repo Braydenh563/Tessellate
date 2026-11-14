@@ -4288,7 +4288,7 @@ span > .chip {
    `.doc-toolbar` in 05-sidebars-themes.css for why these are no longer the
    same class. */
 .doc-dock {
-  /* **Declared on .doc-dock (the later rule further down), not inherited.** `--control-h` is scoped to
+  /* **Declared here, not inherited.** `--control-h` is scoped to
      `.library-toolbar` and `.library-controls`, it is not a global token , 
      so the height rules below resolved to an invalid value and did nothing
      at all, silently, which is why the first attempt at this measured four
@@ -4300,6 +4300,7 @@ span > .chip {
   /* The control-height family's large step, same as the top bar, the
      Library head and the whiteboard top bar, measured 38px here beside
      36px everywhere else. */
+  --control-h: var(--control-h-lg);
   gap: var(--space-2);
   flex-wrap: wrap;
   align-items: center;
@@ -5755,17 +5756,6 @@ input.doc-title-input::placeholder {
   }
 }
 
-/* DOCUMENTS_PLAN Phase 1, the chrome: three questions, three places.
-   Measured before: the header held ten controls at four heights (44, 39,
-   36, 28), the file-type select and two icon buttons sat beside the title,
-   and the more menu drew its on-state rows with a tinted fill (reported
-   with a screenshot as "the dropdown is visually broken"). Now: title,
-   save state, Edit / Read, AI edit and the more menu, all at one height;
-   a menu row that is on shows a check at its right edge and no fill; the
-   two typing helpers are switch rows at the same height as the buttons. */
-.doc-dock {
-  --control-h: var(--control-h-lg);
-}
 
 
 /* The picker's source strip. It sits above the search box because it decides

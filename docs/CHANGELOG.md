@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- CI red after the base merge fixed at the cause: one Alt+Enter row, the dock declares its own control height, Settings builds its body before reading a control, an empty board query removed.
 - Boot scripts back under their cap: a file paste or drop, a reminder's bin, repeat and outcome load on the press.
 - A companion tucking behind the status bar or the phone dock is cut only at the bar's edge: the clip above its head that sliced it as it sank is gone, and its handle still starts at the head (L-ui-modernisation-48).
 - Two reminder outcomes added at once both land in the note: they append under one lock from a fresh read (review).

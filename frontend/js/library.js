@@ -607,7 +607,7 @@ function renderLibraryFilters() {
       "is-empty",
       //: Nor is a record of what was done beside nothing made: "Activity 2"
       //: by "Everything 0" on a new notebook (L-ui-modernisation-6).
-      (count === 0 || kind.subtab || (kind.key === "activity" && !everything)) && kind.key !== "all" && libraryKind !== kind.key,
+      ((count === 0 || kind.subtab) || (kind.key === "activity" && !everything)) && kind.key !== "all" && libraryKind !== kind.key,
     );
     button.addEventListener("click", () => {
       libraryKind = kind.key;
