@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dock audit 479 leftovers checked: four of six were already built (Graph View in the gear, one New in Boards and maps, help on every Library dock, one Add per Reminders card); the zoom order and the documents dock are L-world-class-351 (L-world-class-113).
 - Boot CSS: the Skills tab rules (170 lines out of 07 and 08) load with the Library bundle in library-lazy.css, boot CSS gzip 178,984 to 178,610; the built tab computes the same (3,845 elements at 1440, 820 and 390, fact panels open, 0 differences); the run list, Connections and whiteboard blocks need a lazy sheet first (L-world-class-232, L-world-class-350).
 - Learning loop: dismissed link pairs and accepted neighbourhoods were already written (KG9) and are now proved end to end, on a fixed clock: a dismissal hides the pair for good (past 600 other corrections, undoable), accepts lift the signals they were offered for, a decision halves after one half-life (L-world-class-85).
 - Security: SECURITY.md has a threat model: the assets, eight trust boundaries, the attackers and 27 threats, each with the code or test that stops it; the three gaps are rows (parsers run in the server process L-world-class-321, unpinned pip extras and embedding weights L-world-class-320, CI actions not pinned L-general-2) (L-world-class-18).
