@@ -14529,6 +14529,15 @@ body .chip.item-label,
 .notice-warn > .ph {
   color: var(--warn);
 }
+
+/* A button in a notice never shrinks below its own label: its 44px floor
+   (`min-width`) switches off the flex item's automatic minimum, so beside long
+   words the Install button was 59.2px for a 34px word with 25.6px of padding
+   and the label ran 1 to 2px past it (fontmatrix.js at 390, Notes, Capture).
+   The words are the part that wraps. */
+.notice > button {
+  flex: none;
+}
 /* Narrow: one column, in reading order, the glance two by two under the
    action. */
 @media (max-width: 819.98px) {

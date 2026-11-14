@@ -4575,6 +4575,9 @@ html[data-chrome="native"] #top-bar #brand-logo {
 @media (max-width: 599.98px) {
   #tab-documents .doc-statusbar {
     overflow: hidden;
+    /* The buttons keep their words, so the gaps give way: the mono font
+       put the file type button 7px past the strip at 390px. */
+    gap: var(--space-1);
   }
 }
 #doc-counts {
