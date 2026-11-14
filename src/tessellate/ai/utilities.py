@@ -31,7 +31,7 @@ from datetime import date, datetime, timedelta
 from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise, recognise_units
-from tessellate.ai import recognise_questions
+from tessellate.ai import composer_numbers, recognise_questions
 from tessellate.core import cjk
 from tessellate.ai import when as when_words
 
@@ -146,7 +146,11 @@ def _clean(question: str) -> str:
     text = re.sub(r"^(?:hey|hi|ok|okay|so|please|can you|could you|tell me|do you know|let me know)[, ]+", "", text, flags=re.I)
     text = re.sub(r"^i(?:'d| would| wanna| want| need)?(?: like)?(?: to)? know[, ]+", "", text, flags=re.I)
     text = re.sub(r"^(?:can you |could you |please )?(?:tell me |work out |calculate )", "", text, flags=re.I)
-    return re.sub(r"(?:,| |, )(?:please|thanks)$", "", text, flags=re.I).strip()
+    text = re.sub(r"(?:,| |, )(?:please|thanks)$", "", text, flags=re.I).strip()
+    #: "calender says tomorrow is": the lead-in of a date asked from the calendar ("calender" misspelt, the answer left unsaid).
+    text = re.sub(r"^(?:my |the )?(?:calend[ae]r|calander|planner|phone) (?:says|shows|has) (today|tomorrow|yesterday)(?: is| will be| was)?$", r"what day is it \1", text, flags=re.I)
+    #: "in twenty-one days": a spelt count of days or weeks is read as its digits.
+    return composer_numbers.normalise(text)
 
 
 def _number(raw: str) -> float:

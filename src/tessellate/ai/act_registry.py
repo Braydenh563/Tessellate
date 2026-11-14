@@ -319,7 +319,8 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     #: "what tasks do I have", "whats due this week", "what is overdue": the
     #: reminders are the app's task list (decision 75: with a model up too).
     #: A checklist on one note ("what is still open on X") is the composer's.
-    ("list_reminders", r"\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
+    #: The app's alarm is an ordinary reminder (the Clock's "Set alarm" makes one): "what alarms do I have set" lists them.
+    ("list_reminders", r"\b(?:what|which|list|show)\b.*\b(?:reminders|alarms)\b|^any reminders\b"
      r"|^(?:what|which|list|show)(?: me)?(?: are)?(?: all)? (?:my |the )?(?:open |outstanding )?(?:tasks|to-?dos)\b(?! (?:on|for|in|from|about) )"
      rf"|^(?:what(?:'s|s| is| are)?|which \w+|is (?:there )?anything|anything) (?:(?:is |are )?(?:still )?)?(?:over)?due{_WHEN}"
      rf"|^what (?:do|have) i (?:got |have )?(?:over)?due{_WHEN}"
