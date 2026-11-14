@@ -2,6 +2,7 @@
 the Why trail says the same name."""
 
 from tests._app_js import frontend_text
+from pathlib import Path
 
 
 def test_chat_and_ask_labels_name_atlas():
@@ -14,4 +15,5 @@ def test_chat_and_ask_labels_name_atlas():
 def test_why_trail_uses_the_same_name():
     from tessellate.ai import why
 
-    assert "Atlas's assistant wrote it from your notes" in open(why.__file__, encoding="utf-8").read()
+    source = Path(why.__file__).read_text(encoding="utf-8")
+    assert "Atlas's assistant wrote it from your notes" in source

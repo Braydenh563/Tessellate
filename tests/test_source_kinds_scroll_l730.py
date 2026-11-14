@@ -4,9 +4,10 @@ L-chat-20: accessed web links lead the sources, and a reply bubble fades in (red
 import re
 
 from tests._app_js import frontend_text
+from pathlib import Path
 
 KIT = frontend_text("answer-kit.js")
-CSS = open("frontend/css/02-chat-graph.css", encoding="utf-8").read()
+CSS = Path("frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
 
 
 def test_every_source_kind_has_a_group():
@@ -26,5 +27,5 @@ def test_the_source_list_scrolls_and_is_reachable_by_keyboard():
 
 
 def test_a_bubble_fades_in():
-    css = open("frontend/css/03-dashboard-widgets.css", encoding="utf-8").read()
+    css = Path("frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert re.search(r"\.msg \{[^}]*animation: msg-in var\(--ui-slow\)", css, re.S)

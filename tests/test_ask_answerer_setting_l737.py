@@ -2,10 +2,11 @@
 
 from tests._app_js import frontend_text
 from tests._help_text import help_more_text
+from pathlib import Path
 
 
 def test_the_select_exists_with_the_model_first():
-    html = open("frontend/index.html", encoding="utf-8").read()
+    html = Path("frontend/index.html").read_text(encoding="utf-8")
     row = html[html.index('id="ask-answerer-select"') :][:400]
     assert row.index('value="ai"') < row.index('value="notes"')
     assert 'data-help-for="ask-answerer-help"' in html
