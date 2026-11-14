@@ -41,12 +41,15 @@ _DATE = re.compile(
     rf"|{_MONTH}\.?\s+\d{{1,2}}(?:st|nd|rd|th)?(?:,?\s+\d{{4}})?|{_MONTH}\.?\s+\d{{4}}|(?:19|20)\d{{2}})\b",
     re.I,
 )
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*\S)\s*$")
-_ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(.*\S)\s*$")
+#: These read a right-stripped line, so the words are `(\S.*)` after a space run with nothing
+#: after them: no two parts can take the same spaces (CodeQL's polynomial regex on many tabs).
+_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(\S.*)$")
+_ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(\S.*)$")
 #: A checklist line: a bullet, then a `[ ]` or `[x]` box (1546 P3: a note of tasks is a flow).
-_TASK = re.compile(r"^(\s*)[-*+]\s+\[[ xX]\]\s+(.*\S)\s*$")
+_TASK = re.compile(r"^(\s*)[-*+]\s+\[[ xX]\]\s+(\S.*)$")
 _STEP_WORD = re.compile(r"^(?:first(?:ly)?|then|next|after that|afterwards|finally|lastly|step \d+)\b[,:]?\s*", re.I)
-_THEN = re.compile(r"(?:[,;.]\s*|\s+)(?:and\s+)?(?:then|after that|afterwards|next|finally)\b[,:]?\s+", re.I)
+#: Read over a sentence whose spaces are single (`_sentences`), so each space is one ` `.
+_THEN = re.compile(r"(?:[,;.] ?| )(?:and )?(?:then|after that|afterwards|next|finally)\b[,:]? ", re.I)
 
 
 @dataclass
@@ -149,6 +152,7 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
     out = []
     indents: list[int] = []  # the open list levels' indents, outermost first
     for raw in (text or "").replace("\r\n", "\n").split("\n"):
+        raw = raw.rstrip()
         if not raw.strip() or raw.strip().startswith("```"):
             continue
         heading = _HEADING.match(raw)
@@ -170,7 +174,7 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
 def _sentences(text: str) -> list[str]:
     from tessellate.ai import composer_write
 
-    return [s for kind, _d, _n, words in _lines(text) if kind == "line" for s in composer_write.sentences(words)]
+    return [" ".join(s.split()) for kind, _d, _n, words in _lines(text) if kind == "line" for s in composer_write.sentences(words)]
 
 
 def _listed_steps(lines: list) -> list[str]:
@@ -188,7 +192,7 @@ def _listed_steps(lines: list) -> list[str]:
 def _checklist(text: str) -> list[str]:
     """The top-level items of a checklist, in order, when there are at least
     two: tasks are done one after another, so they read as steps."""
-    rows = [m for m in (_TASK.match(raw) for raw in (text or "").replace("\r\n", "\n").split("\n")) if m]
+    rows = [m for m in (_TASK.match(raw.rstrip()) for raw in (text or "").replace("\r\n", "\n").split("\n")) if m]
     if not rows:
         return []
     top = min(len(m.group(1).expandtabs(4)) for m in rows)

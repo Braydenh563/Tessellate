@@ -299,3 +299,23 @@ def test_with_a_model_the_model_draws_it(ai_client, fake_ollama):
     ai_client.post("/entries", json={"content": "# Garden\nTomatoes went in on 2 April."})
     fake_ollama.librarian_reply = "From the model."
     assert "drawn by plain rule" not in _answer(ai_client, "make a diagram of my notes on the garden")
+
+
+def test_the_line_readers_are_linear_on_long_tab_runs():
+    """CodeQL (PR 234): `(.*\\S)\\s*$` and `\\s+...\\s+` went quadratic on many tabs. The readers take
+    right-stripped lines and single-spaced sentences now; doubling the run at most about doubles the time."""
+    import time
+
+    from tessellate.ai import composer_mermaid
+
+    def took(n: int) -> float:
+        texts = ["\t" * n + "x" + "\t" * n, "*\t" + "\t\t" * n + "x", "*\t[ ]\t" + "\t\t" * n + "y", "a" + "\t" * n + "b then c" + "\t" * n]
+        start = time.perf_counter()
+        for t in texts:
+            composer_mermaid.steps(t)
+        return time.perf_counter() - start
+
+    took(1000)
+    small, big = min(took(20000) for _ in range(3)), min(took(40000) for _ in range(3))
+    assert big < small * 3 + 0.01, (small, big)
+    assert big < 0.5, big
