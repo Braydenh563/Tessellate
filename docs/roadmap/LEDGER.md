@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 96 | 4 | 1 | 0 | 20 | 101 |
+| ui-modernisation | 12 | 7 | 1 | 0 | 19 | 20 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 11 | 3 | 0 | 0 | 14 |
-| all | 553 | 438 | 130 | 2 | 182 | 1121 |
+| all | 469 | 441 | 130 | 2 | 181 | 1040 |
 
 ## graph
 
@@ -356,6 +356,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-30** `ui-modernisation` open, M: Remove the 236 unused CSS selectors after a runtime coverage sweep (UI plan 13b). From UI_MODERNISATION_PLAN.md:1089. Evidence: 13b static check: 256 class and id names in the CSS have no word match in JS, HTML or Python; concatenation pieces explain 235; the 21 left are built by template (nm-${mood}, wb-nav-item-${kind}), nested side variants (nm-foot-l/r) or sit inside :not() where removal changes specificity. None removable without a runtime coverage sweep (scratchpad/ui-sweeps/bootcsscov.js) over every surface and state
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
+- [ ] **L-ui-modernisation-49** `ui-modernisation` open, M: Forced colours and 200% zoom pass over the main surfaces (emulated: forcedColors active, 2x zoom), fix what hides or overlaps. From L907. Evidence: Split from L907 by the 2026-11-14 hardware audit: Playwright emulates both
+- [ ] **L-ui-modernisation-50** `ui-modernisation` open, S: Light theme and 390 sidebar sheet sweep. From L898. Evidence: Split from L898 by the 2026-11-14 hardware audit: both sweepable in headless Chromium
 
 ## timeline
 
@@ -700,16 +702,16 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L893** `documents` blocked-hardware, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human
 - [ ] **L894** `documents` blocked-hardware, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
-- [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable
+- [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable. Hardware audit 2026-11-14: the light theme and 390 sidebar sheet parts split to their own open row; the screen reader alone stays here
 - [ ] **L899** `ui-modernisation` blocked-hardware, S: Verify phone foot bar touch and scroll-driven animation in webview. From OPEN.md:3860. Evidence: Needs touch device and desktop webview
-- [ ] **L900** `ui-modernisation` blocked-hardware, S: Retake README OCR screenshot with Tesseract in current dark theme. From OPEN.md:2325. Evidence: Needs a Tesseract binary; seed-ocr.js removed 2026-10-12
+- [ ] **L900** `ui-modernisation` open, S: Retake README OCR screenshot with Tesseract in current dark theme. From OPEN.md:2325. Evidence: Needs a Tesseract binary; seed-ocr.js removed 2026-10-12. Hardware audit 2026-11-14: apt installs tesseract-ocr in the container (/usr/bin/tesseract), so not device-bound
 - [ ] **L901** `ui-modernisation` blocked-hardware, S: Verify the phone action sheet (openKebabSheet) below 600 with touch and a screen reader, plus Settings jump list. From OPEN.md:623; OPEN.md:3553. Evidence: Needs real phone/touch and screen reader
 - [ ] **L902** `ui-modernisation` blocked-hardware, S: Judge phone first toggle frame timing and animation jump on a real touch device. From OPEN.md:743. Evidence: Headless emulation timing; real touch device needed to judge
 - [ ] **L903** `ui-modernisation` blocked-hardware, S: Check the dark palette on an OLED panel and other gamma, and re-run glassdepth.js. From OPEN.md:1820; OPEN.md:3392. Evidence: Needs a real OLED panel / gamma, a human look
 - [ ] **L904** `ui-modernisation` blocked-hardware, S: Reproduce the two-finger scroll jump (460) with a real touchpad trace. From OPEN.md:1943; OPEN.md:3475. Evidence: Needs a real touchpad trace; not reproduced
 - [ ] **L905** `ui-modernisation` blocked-hardware, M: Check logo with real OS install icons, Android maskable and busy lift. From OPEN.md:3885. Evidence: Needs Windows/Android devices and a real model turn
 - [ ] **L906** `ui-modernisation` blocked-hardware, S: Check real phone safe-area insets and the owner's read on Graph behind More. From OPEN.md:3886. Evidence: Needs a real phone (headless insets are 0) and the owner's judgement of Graph under More; nothing to code.
-- [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven
+- [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven. Hardware audit 2026-11-14: the theme case re-driven at 8781, dark/light/system/dark/light and light under an OS dark scheme: data-mode followed the theme every time (not reproduced); forced colours and 200% zoom are emulable, split to their own open row; the screen reader alone stays here
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
 - [ ] **L915** `world-class` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
