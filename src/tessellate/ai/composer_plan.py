@@ -778,6 +778,8 @@ def _subject_stems(text: str, win) -> set[str]:  # noqa: ANN001
 
 
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
+    if schedule := _SCHEDULE.match(text):
+        return _meetings_ahead(ctx, today) if schedule.group("meet") else _due(ctx, ahead_default(today))
     win = window(text, today)
     leftover = _subject_stems(text, win)
     kind = {k for k in leftover if k in _KIND_STEMS}
@@ -948,6 +950,8 @@ def asks_schedule(text: str) -> bool:
 
 def _asks_due(text: str, today: date) -> bool:
     """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
+    if _SCHEDULE.match(text):
+        return True
     if _KNOW_AHEAD.match(text):
         win = window(text, today)
         return win is not None and win[1] >= today
@@ -984,8 +988,6 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     today = ctx.now.date()
     if _BARE_ON.match(text):
         return _due(ctx, ahead_default(today))
-    if schedule := _SCHEDULE.match(text):
-        return _meetings_ahead(ctx, today) if schedule.group("meet") else _due(ctx, ahead_default(today))
     if _LEFT.match(text):
         return _left(ctx)
     if _OVERDUE.match(text):
