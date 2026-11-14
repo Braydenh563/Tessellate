@@ -46,13 +46,29 @@ function meetingGlance(entry) {
   }
   const plain = (line) => line.replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+(?:\[[ xX]\][ \t]*)?/, "").trim();
   const rows = [];
+  //: When and who from the note's own properties (L662), above what was settled.
+  const when = String(entry.properties?.date?.[0] || "").trim();
+  const day = when ? new Date(when.replace(" ", "T")) : null;
+  if (when) {
+    const said = day && !Number.isNaN(day.getTime())
+      ? day.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) + (/\d:\d/.test(when) ? `, ${day.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}` : "")
+      : when;
+    rows.push({ label: "When", text: said });
+  }
+  const whenRow = rows.length;
+  const who = (entry.properties?.attendees || []).map((name) => String(name).trim()).filter(Boolean);
+  const withWho = who.length > 3 ? `${who.slice(0, 3).join(", ")} and ${who.length - 3} more` : who.join(", ");
+  //: One line for both, so a card grows by one row, not two.
+  if (who.length && whenRow) rows[0].text += ` · with ${withWho}`;
+  else if (who.length) rows.push({ label: "With", text: withWho });
+  const framed = rows.length;
   if (sections.agenda.length) rows.push({ label: "Agenda", text: plain(sections.agenda[0]) + (sections.agenda.length > 1 ? ` (+${sections.agenda.length - 1})` : "") });
   if (sections.decisions.length) rows.push({ label: "Decisions", text: `${sections.decisions.length}: ${plain(sections.decisions[0])}` });
   const open = sections.actions.filter((line) => /^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+\[ \]/.test(line));
   const done = sections.actions.filter((line) => /\[[xX]\]/.test(line)).length;
   if (open.length) rows.push({ label: "Open actions", text: `${open.length}: ${plain(open[0])}` });
   else if (done) rows.push({ label: "Actions", text: `all ${done} done` });
-  return rows.length ? rows : [{ label: "", text: "Nothing written yet." }];
+  return rows.length > framed ? rows : [...rows, { label: "", text: "Nothing written yet." }];
 }
 
 //: **Copy a note's text** (INBOX 1525 review). A clipped list row holds 300 characters, so the whole text is read first,

@@ -96,6 +96,11 @@
 .link-suggestion-actions > .link-suggestion-add-reason:not(:hover, :focus-visible) {
   color: var(--muted);
 }
+/* The sentence a link type was read from, on the reason line of the grid. */
+.link-suggestion-context {
+  grid-area: reason;
+  margin: 0;
+}
 /* The reason field, the small buttons' height (INBOX 110/111). */
 .link-suggestion-reason {
   grid-area: reason;

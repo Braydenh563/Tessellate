@@ -45,18 +45,19 @@ def _block(source: str, start: str, end: str) -> str:
     return source[begin : source.index(end, begin) + len(end)]
 
 
-def _glance(content: str, types=("Meeting",)):
+def _glance(content: str, types=("Meeting",), **props):
     node = shutil.which("node")
     if not node:  # pragma: no cover
         pytest.skip("node is not available")
     script = (
-        _block(REMINDERS, "function stripFrontmatter(text) {", "\n}\n")
+        "const clockOptions = () => ({ hour12: false });\n"
+        + _block(REMINDERS, "function stripFrontmatter(text) {", "\n}\n")
         + _block(CARDS, "const MEETING_GLANCE_SECTIONS = {", "};\n")
         + _block(CARDS, "function meetingGlance(entry) {", "\n}\n")
-        + "\nconst [content, types] = JSON.parse(process.argv[1]);\n"
-        "process.stdout.write(JSON.stringify(meetingGlance({ content, properties: { type: types } })));\n"
+        + "\nconst [content, types, props] = JSON.parse(process.argv[1]);\n"
+        "process.stdout.write(JSON.stringify(meetingGlance({ content, properties: { type: types, ...props } })));\n"
     )
-    out = subprocess.run([node, "-e", script, json.dumps([content, list(types)])], capture_output=True, text=True, timeout=60, check=False)
+    out = subprocess.run([node, "-e", script, json.dumps([content, list(types), props])], capture_output=True, text=True, timeout=60, check=False)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)
 
@@ -89,3 +90,13 @@ def test_the_card_holds_glance_and_body_and_a_class_says_which_shows():
     assert ".meeting-card.row-expanded > .meeting-glance" in CSS
     glance_code = _block(CARDS, "if (glance) {", "li.appendChild(content);\n  }")
     assert "innerHTML" not in glance_code
+
+
+def test_when_and_who_come_first_from_the_properties():
+    """L662: a meeting card says when and with whom before what was settled."""
+    rows = _glance(MEETING, date=["2026-11-20 14:00"], attendees=["Sam", "Ana", "Priya", "Lee"])
+    assert [r["label"] for r in rows] == ["When", "Agenda", "Decisions", "Open actions"]
+    assert "14:00" in rows[0]["text"] and "20" in rows[0]["text"]
+    assert rows[0]["text"].endswith("· with Sam, Ana, Priya and 1 more")
+    empty = _glance("# Standup\n\n## Agenda\n\n## Notes\n", attendees=["Sam"])
+    assert empty == [{"label": "With", "text": "Sam"}, {"label": "", "text": "Nothing written yet."}]

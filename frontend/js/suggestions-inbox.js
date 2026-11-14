@@ -234,103 +234,153 @@
     return score;
   }
 
-  function inboxScore(confidence) {
-    const score = chip(`${Math.round((confidence || 0) * 100)}%`, "confidence");
-    score.title = "How sure, over every reason";
-    return score;
+  //: **Names and Link types wear the Links row's grid** (L596): the pair as the
+  //: subject, one line of how sure and why under it, the actions one cell
+  //: (`rowActions`, L668). `inboxGridRow` builds the shell the kinds share.
+  function inboxPairName(words, icon) {
+    const made = document.createElement("span");
+    made.className = "link-suggestion-note";
+    const glyph = document.createElement("i");
+    glyph.className = `ph ph-${icon}`;
+    glyph.setAttribute("aria-hidden", "true");
+    const text = document.createElement("span");
+    text.className = "link-suggestion-name";
+    text.textContent = words;
+    made.title = words;
+    made.append(glyph, text);
+    return made;
+  }
+
+  function inboxGridRow(pair, signals, confidence, actions, label) {
+    const row = document.createElement("div");
+    row.className = "link-suggestion inbox-row";
+    row.setAttribute("role", "group");
+    row.setAttribute("aria-label", label);
+    const text = document.createElement("span");
+    text.className = "link-suggestion-text link-suggestion-pair";
+    text.setAttribute("role", "group");
+    const join = document.createElement("i");
+    join.className = "ph ph-arrow-right link-suggestion-join";
+    join.setAttribute("aria-hidden", "true");
+    text.append(pair[0], join, pair[1]);
+    const facts = document.createElement("p");
+    facts.className = "muted link-suggestion-facts";
+    facts.appendChild(inboxScoreBar(confidence));
+    if (signals?.length) {
+      const why = inboxWhy(signals);
+      why.title = why.textContent;
+      why.textContent = signals.map((g) => g.reason).join(" · ");
+      facts.appendChild(why);
+    }
+    const wrap = rowActions(actions, `Actions for ${label}`);
+    wrap.classList.add("link-suggestion-actions");
+    //: The row's one accept keeps its edge; the rest are quiet (as in Links).
+    wrap.querySelector("button")?.classList.remove("quiet");
+    row.append(text, facts, wrap);
+    return row;
   }
 
   // --- Names: two names for one thing (KG5's merge, decided here) -------------
 
   function inboxMergeRow(m) {
-    const row = document.createElement("div");
-    row.className = "inbox-row";
-    row.setAttribute("role", "group");
     const notes = (n) => nounCount(n, "note");
-    const title = document.createElement("p");
-    title.className = "inbox-row-title";
-    title.textContent = `“${m.merge_name}” (${notes(m.merge_notes)}) into “${m.keep_name}” (${notes(m.keep_notes)})`;
-    row.setAttribute("aria-label", `Merge ${m.merge_name} into ${m.keep_name}`);
     const signals = (m.signals || []).map((g) => g.signal);
-    const merge = smallButton("ph:arrows-merge Merge", `Fold “${m.merge_name}” into “${m.keep_name}”: every mention moves, and the old name is kept as an alias`, async () => {
-      merge.disabled = true;
-      const done = await apiJson("/suggestions/merges/accept", {
-        method: "POST",
-        body: JSON.stringify({ keep_id: m.keep_id, merge_id: m.merge_id, signals }),
-      }).catch((e) => {
-        toast(e.message, true);
-        return null;
-      });
-      merge.disabled = false;
-      if (!done) return;
-      //: Undo puts the pair back as two names; the row stays gone, since the
-      //: suggestion was answered.
-      toastEntityMerge(done, m.merge_id, m.keep_id, null, { kind: "accept_merge", subject: { a: m.keep_id, b: m.merge_id, signals } });
-      inboxDone("names", row);
-    });
-    const dismiss = smallButton("ph:x", "Not the same: never suggest this pair again", () => {
-      inboxCorrection("dismiss_merge", { a: m.keep_id, b: m.merge_id, signals }, "Dismissed a name merge");
-      inboxDone("names", row);
-    });
-    const actions = document.createElement("div");
-    actions.className = "row inbox-row-actions";
-    actions.append(inboxScore(m.confidence), merge, dismiss);
-    row.append(title, inboxWhy(m.signals), actions);
+    let row = null;
+    const merge = {
+      label: "ph:arrows-merge Merge",
+      title: `Fold “${m.merge_name}” into “${m.keep_name}”: every mention moves, and the old name is kept as an alias`,
+      run: async () => {
+        const done = await apiJson("/suggestions/merges/accept", {
+          method: "POST",
+          body: JSON.stringify({ keep_id: m.keep_id, merge_id: m.merge_id, signals }),
+        }).catch((e) => {
+          toast(e.message, true);
+          return null;
+        });
+        if (!done) return;
+        //: Undo puts the pair back as two names; the row stays gone, since the
+        //: suggestion was answered.
+        toastEntityMerge(done, m.merge_id, m.keep_id, null, { kind: "accept_merge", subject: { a: m.keep_id, b: m.merge_id, signals } });
+        inboxDone("names", row);
+      },
+    };
+    const dismiss = {
+      label: "ph:x",
+      title: "Not the same: never suggest this pair again",
+      run: () => {
+        inboxCorrection("dismiss_merge", { a: m.keep_id, b: m.merge_id, signals }, "Dismissed a name merge");
+        inboxDone("names", row);
+      },
+    };
+    row = inboxGridRow(
+      [inboxPairName(`${m.merge_name} (${notes(m.merge_notes)})`, "user"), inboxPairName(`${m.keep_name} (${notes(m.keep_notes)})`, "user")],
+      m.signals,
+      m.confidence,
+      [merge, dismiss],
+      `Merge ${m.merge_name} into ${m.keep_name}`
+    );
     return row;
   }
 
   // --- Link types: a link whose own words name its kind -----------------------
 
   function inboxTypeRow(t) {
-    const row = document.createElement("div");
-    row.className = "inbox-row";
-    row.setAttribute("role", "group");
-    row.setAttribute("aria-label", `${t.source_label} to ${t.target_label}: ${t.type_label}`);
-    const title = document.createElement("p");
-    title.className = "inbox-row-title";
-    title.textContent = `${t.source_label} → ${t.target_label}`;
-    row.appendChild(title);
-    if (t.context) row.appendChild(docBacklinkContext(t));
-    const set = smallButton(`ph:check ${t.type_label}`, `Give this link the type ${t.type_label}`, async () => {
-      set.disabled = true;
-      const done = await apiJson("/suggestions/types/accept", {
-        method: "POST",
-        body: JSON.stringify({ link_id: t.link_id, link_type: t.link_type }),
-      }).catch((e) => {
-        toast(e.message, true);
-        return null;
-      });
-      set.disabled = false;
-      if (!done) return;
-      toast(`Link type set: ${t.type_label}.`);
-      //: Undo takes the type off and the correction it taught; Redo does both again.
-      let learnedId = done.correction_id;
-      const redraw = () => Promise.all([refreshEntries([t.source_id, t.target_id]).catch(() => {}), inboxState && inboxLoad(inboxState)]);
-      const linkPath = `/entries/${t.source_id}/links/${t.link_id}`;
-      const learned = { kind: "accept_link_type", subject: { link_id: t.link_id, link_type: t.link_type, signals: [t.link_type] } };
-      pushUndo(
-        `Gave a link the type ${t.type_label}`,
-        async () => {
-          await apiJson(linkPath, { method: "PATCH", body: JSON.stringify({ link_type: null }) });
-          if (learnedId != null) await api(`/learned/corrections/${learnedId}`, { method: "DELETE" });
-          await redraw();
-        },
-        async () => {
-          await apiJson(linkPath, { method: "PATCH", body: JSON.stringify({ link_type: t.link_type }) });
-          learnedId = (await apiJson("/learned/corrections", { method: "POST", body: JSON.stringify(learned) }))?.id ?? learnedId;
-          await redraw();
-        }
-      );
-      inboxDone("types", row);
-    });
-    const dismiss = smallButton("ph:x", "Not this type: never suggest it for this link again", () => {
-      inboxCorrection("dismiss_link_type", { link_id: t.link_id, link_type: t.link_type, signals: [t.link_type] }, "Dismissed a link type suggestion");
-      inboxDone("types", row);
-    });
-    const actions = document.createElement("div");
-    actions.className = "row inbox-row-actions";
-    actions.append(inboxScore(t.confidence), set, dismiss);
-    row.append(inboxWhy(t.signals), actions);
+    let row = null;
+    const set = {
+      label: `ph:check ${t.type_label}`,
+      title: `Give this link the type ${t.type_label}`,
+      run: async () => {
+        const done = await apiJson("/suggestions/types/accept", {
+          method: "POST",
+          body: JSON.stringify({ link_id: t.link_id, link_type: t.link_type }),
+        }).catch((e) => {
+          toast(e.message, true);
+          return null;
+        });
+        if (!done) return;
+        toast(`Link type set: ${t.type_label}.`);
+        //: Undo takes the type off and the correction it taught; Redo does both again.
+        let learnedId = done.correction_id;
+        const redraw = () => Promise.all([refreshEntries([t.source_id, t.target_id]).catch(() => {}), inboxState && inboxLoad(inboxState)]);
+        const linkPath = `/entries/${t.source_id}/links/${t.link_id}`;
+        const learned = { kind: "accept_link_type", subject: { link_id: t.link_id, link_type: t.link_type, signals: [t.link_type] } };
+        pushUndo(
+          `Gave a link the type ${t.type_label}`,
+          async () => {
+            await apiJson(linkPath, { method: "PATCH", body: JSON.stringify({ link_type: null }) });
+            if (learnedId != null) await api(`/learned/corrections/${learnedId}`, { method: "DELETE" });
+            await redraw();
+          },
+          async () => {
+            await apiJson(linkPath, { method: "PATCH", body: JSON.stringify({ link_type: t.link_type }) });
+            learnedId = (await apiJson("/learned/corrections", { method: "POST", body: JSON.stringify(learned) }))?.id ?? learnedId;
+            await redraw();
+          }
+        );
+        inboxDone("types", row);
+      },
+    };
+    const dismiss = {
+      label: "ph:x",
+      title: "Not this type: never suggest it for this link again",
+      run: () => {
+        inboxCorrection("dismiss_link_type", { link_id: t.link_id, link_type: t.link_type, signals: [t.link_type] }, "Dismissed a link type suggestion");
+        inboxDone("types", row);
+      },
+    };
+    row = inboxGridRow(
+      [inboxPairName(t.source_label, "note"), inboxPairName(t.target_label, "note")],
+      t.signals,
+      t.confidence,
+      [set, dismiss],
+      `${t.source_label} to ${t.target_label}: ${t.type_label}`
+    );
+    //: The sentence the type was read from, under the facts, the row's full width.
+    if (t.context) {
+      const context = docBacklinkContext(t);
+      context.classList.add("link-suggestion-context");
+      row.insertBefore(context, row.querySelector(".link-suggestion-actions"));
+    }
     return row;
   }
 

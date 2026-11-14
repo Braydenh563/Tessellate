@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 33 | 0 | 19 | 227 |
+| world-class | 130 | 63 | 31 | 0 | 19 | 224 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 104 | 2 | 130 | 1115 |
+| all | 553 | 457 | 102 | 2 | 130 | 1112 |
 
 ## graph
 
@@ -489,7 +489,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
-- [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
 - [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
@@ -514,10 +513,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
-- [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
-- [ ] **L668** `world-class` partly, M: Left: rowActions in the suggestions inbox and the tag manager (categories-panel.js); built in meetings.js:1870, settings-data.js:352,:838. Kinds all is built (timeline.js:336). From OPEN.md:957; OPEN.md:2522.
 - [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
 - [ ] **L670** `world-class` partly, M: Confirm all 14 browser-only appearance settings mirror to a second browser. From OPEN.md:2590. Evidence: Decision made (WORLD_CLASS 25f: mirror all except perf); ui-synced mechanism in ai-tools.js:918; completeness unconfirmed
 - [ ] **L671** `world-class` partly, M: Left: first launch says once which chat, background and image models were chosen and why, with Change. The choice is made (model_manager.py:1208, app.py:702); no words shown. From OPEN.md:3498.

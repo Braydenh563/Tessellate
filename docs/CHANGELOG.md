@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Meeting cards open with when and who, then agenda, decisions and open actions (L662).
+- Suggestions inbox and tag manager rows use the shared row actions; the Names and Link types rows use the Links grid shape (L668, L596).
 - Palette: a typed sentence that is a note, a meeting or a search gets its own row (Save as a note, New meeting, Search notes for) beside the reminder row (L656).
 - Palette: Browse boards and maps, recordings, skills and contents rows; Open notifications says how many are unread; a note in hand gets Ask Atlas about this note and Tag and file with Atlas; New sketch answers to draw and keep (L693).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
