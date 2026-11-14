@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8615, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10928, test files 2798, tests 22453, plan headings 688, app scripts 29, boot scripts 38, script files 311.
+Counts: frontend functions 8615, frontend ids 2787, CSS sections 524, backend routes 715, backend modules 10928, test files 2798, tests 22455, plan headings 688, app scripts 29, boot scripts 38, script files 311.
 
 ## Frontend functions (8615)
 
@@ -17644,36 +17644,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `described` | src/tessellate/ai/diagram_ask.py:360 |
 | `fold` | src/tessellate/ai/diagram_ask.py:41 |
 | `read_reply` | src/tessellate/ai/diagram_ask.py:376 |
-| `with_model` | src/tessellate/ai/diagram_ask.py:391 |
+| `with_model` | src/tessellate/ai/diagram_ask.py:392 |
 
 ### src/tessellate/ai/diagram_ask_kinds.py (24)
 
 | Name | File:line |
 |---|---|
-| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:64 |
-| `_add` | src/tessellate/ai/diagram_ask_kinds.py:201 |
-| `_add_chart` | src/tessellate/ai/diagram_ask_kinds.py:177 |
-| `_add_relation` | src/tessellate/ai/diagram_ask_kinds.py:141 |
-| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:111 |
-| `_add_value` | src/tessellate/ai/diagram_ask_kinds.py:150 |
-| `_chart_name` | src/tessellate/ai/diagram_ask_kinds.py:169 |
-| `_chart_parent` | src/tessellate/ai/diagram_ask_kinds.py:158 |
-| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:254 |
-| `_end` | src/tessellate/ai/diagram_ask_kinds.py:133 |
-| `_joined` | src/tessellate/ai/diagram_ask_kinds.py:246 |
-| `_move` | src/tessellate/ai/diagram_ask_kinds.py:225 |
-| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:91 |
-| `_place` | src/tessellate/ai/diagram_ask_kinds.py:187 |
-| `_relation` | src/tessellate/ai/diagram_ask_kinds.py:291 |
-| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:217 |
-| `_set` | src/tessellate/ai/diagram_ask_kinds.py:237 |
-| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:100 |
-| `_value` | src/tessellate/ai/diagram_ask_kinds.py:125 |
-| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:348 |
-| `checked` | src/tessellate/ai/diagram_ask_kinds.py:269 |
-| `described` | src/tessellate/ai/diagram_ask_kinds.py:371 |
-| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:60 |
-| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:389 |
+| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:70 |
+| `_add` | src/tessellate/ai/diagram_ask_kinds.py:207 |
+| `_add_chart` | src/tessellate/ai/diagram_ask_kinds.py:183 |
+| `_add_relation` | src/tessellate/ai/diagram_ask_kinds.py:147 |
+| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:117 |
+| `_add_value` | src/tessellate/ai/diagram_ask_kinds.py:156 |
+| `_chart_name` | src/tessellate/ai/diagram_ask_kinds.py:175 |
+| `_chart_parent` | src/tessellate/ai/diagram_ask_kinds.py:164 |
+| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:260 |
+| `_end` | src/tessellate/ai/diagram_ask_kinds.py:139 |
+| `_joined` | src/tessellate/ai/diagram_ask_kinds.py:252 |
+| `_move` | src/tessellate/ai/diagram_ask_kinds.py:231 |
+| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:97 |
+| `_place` | src/tessellate/ai/diagram_ask_kinds.py:193 |
+| `_relation` | src/tessellate/ai/diagram_ask_kinds.py:297 |
+| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:223 |
+| `_set` | src/tessellate/ai/diagram_ask_kinds.py:243 |
+| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:106 |
+| `_value` | src/tessellate/ai/diagram_ask_kinds.py:131 |
+| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:354 |
+| `checked` | src/tessellate/ai/diagram_ask_kinds.py:275 |
+| `described` | src/tessellate/ai/diagram_ask_kinds.py:377 |
+| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:65 |
+| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:395 |
 
 ### src/tessellate/ai/diarize.py (11)
 
@@ -28261,7 +28261,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22453)
+## Tests (22455)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29075,7 +29075,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_ai.py | 5 |
 | tests/test_diagram_ai_kinds_1112.py | 4 |
 | tests/test_diagram_ask.py | 15 |
-| tests/test_diagram_ask_charts_l_documents_86.py | 9 |
+| tests/test_diagram_ask_charts_l_documents_86.py | 11 |
 | tests/test_diagram_ask_kinds.py | 12 |
 | tests/test_diagram_ask_kinds_ui.py | 9 |
 | tests/test_diagram_behaviour_1108.py | 7 |
@@ -31485,14 +31485,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:760 |
+| Needs hardware | docs/roadmap/LEDGER.md:756 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:753 |
+| Owner calls | docs/roadmap/LEDGER.md:749 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31671,7 +31671,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:935 |
+| Plan session briefs | docs/roadmap/LEDGER.md:931 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31725,25 +31725,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:951 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1035 |
+| chat | docs/roadmap/LEDGER.md:947 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1031 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:975 |
-| general | docs/roadmap/LEDGER.md:712 |
+| documents | docs/roadmap/LEDGER.md:971 |
+| general | docs/roadmap/LEDGER.md:708 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:939 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1047 |
+| graph | docs/roadmap/LEDGER.md:935 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1043 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:353 |
-| mindmap | docs/roadmap/LEDGER.md:987 |
-| timeline | docs/roadmap/LEDGER.md:474 |
-| timeline | docs/roadmap/LEDGER.md:1011 |
-| ui-modernisation | docs/roadmap/LEDGER.md:357 |
-| ui-modernisation | docs/roadmap/LEDGER.md:999 |
+| mindmap | docs/roadmap/LEDGER.md:349 |
+| mindmap | docs/roadmap/LEDGER.md:983 |
+| timeline | docs/roadmap/LEDGER.md:470 |
+| timeline | docs/roadmap/LEDGER.md:1007 |
+| ui-modernisation | docs/roadmap/LEDGER.md:353 |
+| ui-modernisation | docs/roadmap/LEDGER.md:995 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:963 |
-| world-class | docs/roadmap/LEDGER.md:476 |
-| world-class | docs/roadmap/LEDGER.md:1023 |
+| whiteboard | docs/roadmap/LEDGER.md:959 |
+| world-class | docs/roadmap/LEDGER.md:472 |
+| world-class | docs/roadmap/LEDGER.md:1019 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

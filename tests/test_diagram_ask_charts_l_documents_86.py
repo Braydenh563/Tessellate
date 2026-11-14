@@ -112,6 +112,18 @@ def test_the_prompts_are_budgeted_and_the_blocks_are_lines():
     assert "Idle (s) id Idle" not in lines and "(x)" in lines
 
 
+def test_a_model_that_copies_the_prompt_shorthand_or_sends_one_bare_op_is_still_read():
+    """L-documents-100, from the 1.5B model: `"text","from"` copied as written is not JSON, and an op sent
+    without its list was dropped. The prompt writes every key out, and the reader takes one bare op."""
+    import re
+
+    for kind in ("gantt", "pie", "state", "class", "er", "mindmap", "timeline", "sequence"):
+        assert not re.search(r'(?<=[{,])"\w+"(?=[,}])', dak.prompt(kind)), kind
+        json.loads(re.search(r'\{"op":"add".*?\}(?= \(|;)', dak.prompt(kind)).group(0))
+    assert dak.read_reply('{"op":"add","type":"e","text":"INVOICE"}') == [{"op": "add", "type": "e", "text": "INVOICE"}]
+    assert dak.read_reply('```json\n{"ops":[{"op":"delete","target":"x"}]}\n```') == [{"op": "delete", "target": "x"}]
+
+
 def test_the_route_asks_the_model_for_a_chart_kind_and_checks_its_ops(ai_client, fake_ollama):
     blocks = _node("pie", PIE, "return dakFlatten(A, ko, m);")
     fake_ollama.librarian_reply = json.dumps({"ops": [{"op": "add", "type": "s", "text": "Birds", "value": "7"}, {"op": "delete", "target": "Ghost"}]})
@@ -152,3 +164,40 @@ def test_the_placeholder_example_for_a_slice_is_read():
     model = {"nodes": _node("pie", PIE, "return dakFlatten(A, ko, m);")}
     assert dak.by_rule("pie", "add slice Cats 30", model)["ops"][0]["value"] == "30"
     assert dak.by_rule("pie", "add slice Birds", model)["ops"][0].get("value") in (None, "10")
+
+
+# --- the real model, by hand (CLAUDE.md section 4; L-documents-100) ----------------------------
+
+import os  # noqa: E402
+
+_EVALS_URL = os.environ.get("TESSELLATE_EVALS_URL", "").strip()
+_EVALS_MODEL = os.environ.get("TESSELLATE_EVALS_MODEL", "").strip()
+
+#: Worded the way a person talks, not the way the rule reads, so the model's own answer is what is measured.
+_REAL_ASKS = {
+    "gantt": (GANTT, "put a testing task after the Code task, three days long"),
+    "pie": (PIE, "birds should be a slice too, about a tenth"),
+    "state": (STATE, "after Busy it should be able to finish"),
+    "class": (CLASS, "invoices exist as well and each one belongs to an order"),
+    "er": (ER, "we also track invoices, one per order"),
+}
+
+
+@pytest.mark.evals
+@pytest.mark.skipif(not (_EVALS_URL and _EVALS_MODEL), reason="no real model: export TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL")
+def test_a_real_model_answers_the_ask_box_on_each_chart_kind(capsys):
+    from tessellate.ai.openai_client import OpenAICompatClient
+
+    provider = OpenAICompatClient(base_url=_EVALS_URL)
+    rows = []
+    for kind, (source, ask) in _REAL_ASKS.items():
+        blocks = _node(kind, source, "return dakFlatten(A, ko, m);")
+        reply = dak.with_model(kind, ask, {"nodes": blocks}, _EVALS_MODEL, provider)
+        out = _node(kind, source, f"const r = dakApply(A, ko, m, {json.dumps(reply['ops'])}); return {{ r, printed: A.print(m), again: Boolean(A.parse(A.print(m))) }};")
+        rows.append((kind, reply["by"], len(reply["ops"]), reply["dropped"] if "dropped" in reply else 0, out["r"]["done"], out["again"], reply["ops"]))
+    with capsys.disabled():
+        for row in rows:
+            print("\nREAL MODEL ASK:", *row)
+    for kind, by, ops, _dropped, done, again, _ in rows:
+        assert again, f"{kind}: the applied diagram does not parse"
+        assert done == ops, f"{kind}: ops that were kept did not all apply"

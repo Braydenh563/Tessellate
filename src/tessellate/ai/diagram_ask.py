@@ -383,7 +383,8 @@ def read_reply(reply: str) -> list:
             value, _ = json.JSONDecoder().raw_decode(text, at)
         except ValueError:
             continue
-        ops = value.get("ops") if isinstance(value, dict) else value
+        #: A small model sometimes answers with the one op itself, not wrapped in a list (L-documents-100, ER).
+        ops = [value] if isinstance(value, dict) and "op" in value and "ops" not in value else value.get("ops") if isinstance(value, dict) else value
         return ops if isinstance(ops, list) else []
     return []
 

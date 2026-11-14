@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram Ask box, real model check on Gantt, pie, state, class and ER (Qwen2.5-1.5B, L-documents-100): class and ER replies were dropped whole because the prompts' shorthand (`"text","from"`) was copied as written, and a bare op was not read; prompts now write each key out and a lone op is accepted.
 - Diagram Describe it: with no model it now draws a Gantt chart, pie chart, state, class or ER diagram from the words (`composer_mermaid_kinds.py`); the five kinds ask for themselves, and a chat "make a pie chart" reaches them too (L-documents-101).
 - Streams: the document check (Check with AI) and the weekly digest now stop the model when the tab closes or Stop is pressed, like the drafts and Guide (L-documents-96, async `stop_when_gone`); Format declines a result over the 500,000-character save limit and says so, leaving the text as written.
 - History summary: the slow local model gets 150 s for this one call (other callers keep 45 s), and a timeout says "The model took too long, so these are the counts." (L-documents-97).
