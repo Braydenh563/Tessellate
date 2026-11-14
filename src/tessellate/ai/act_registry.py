@@ -357,7 +357,8 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     #: "what tasks do I have", "whats due this week", "what is overdue": the
     #: reminders are the app's task list (decision 75: with a model up too).
     #: A checklist on one note (the open-items ask, `composer_body._STILL_OPEN`) is the composer's.
-    ("list_reminders", r"\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
+    #: "what can the reminders tab do": about the part, Help's (L-chat-256), not a list of them.
+    ("list_reminders", r"(?!.*\breminders? (?:tab|page|screen|section|feature)\b)\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
      r"|^(?:what|which|list|show)(?: me)?(?: are)?(?: all)? (?:my |the )?(?:open |outstanding )?(?:tasks|to-?dos)\b(?! (?:on|for|in|from|about) )"
      rf"|^(?:what(?:'s|s| is| are)?|which \w+|is (?:there )?anything|anything) (?:(?:is |are )?(?:still )?)?(?:over)?due{_WHEN}"
      rf"|^what (?:do|have) i (?:got |have )?(?:over)?due{_WHEN}"
