@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11018, test files 2828, tests 22495, plan headings 689, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8501, frontend ids 2792, CSS sections 524, backend routes 718, backend modules 11018, test files 2828, tests 22498, plan headings 689, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8501)
 
@@ -27168,32 +27168,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `VaultLocked` | src/tessellate/entry/private_space.py:45 |
-| `_board_items` | src/tessellate/entry/private_space.py:75 |
-| `_document_history` | src/tessellate/entry/private_space.py:173 |
-| `_forget_thumb` | src/tessellate/entry/private_space.py:81 |
-| `_key` | src/tessellate/entry/private_space.py:66 |
-| `_members` | src/tessellate/entry/private_space.py:215 |
-| `_owned_rows` | src/tessellate/entry/private_space.py:227 |
-| `_seal_board_log` | src/tessellate/entry/private_space.py:128 |
-| `after_leaving` | src/tessellate/entry/private_space.py:327 |
-| `audit_title` | src/tessellate/entry/private_space.py:57 |
-| `chat_notes` | src/tessellate/entry/private_space.py:243 |
-| `is_private_space` | src/tessellate/entry/private_space.py:53 |
-| `keep_members_private` | src/tessellate/entry/private_space.py:303 |
-| `leave_private_space` | src/tessellate/entry/private_space.py:336 |
-| `leaving_ids` | src/tessellate/entry/private_space.py:319 |
-| `member_count` | src/tessellate/entry/private_space.py:274 |
-| `private_space_ids` | src/tessellate/entry/private_space.py:49 |
-| `seal_document` | src/tessellate/entry/private_space.py:179 |
-| `seal_entry` | src/tessellate/entry/private_space.py:109 |
-| `seal_if_private_space` | src/tessellate/entry/private_space.py:311 |
-| `seal_new` | src/tessellate/entry/private_space.py:101 |
-| `seal_space_members` | src/tessellate/entry/private_space.py:279 |
-| `starts_private` | src/tessellate/entry/private_space.py:88 |
-| `unseal_document` | src/tessellate/entry/private_space.py:201 |
-| `unseal_entry` | src/tessellate/entry/private_space.py:157 |
-| `unseal_space_members` | src/tessellate/entry/private_space.py:294 |
+| `VaultLocked` | src/tessellate/entry/private_space.py:49 |
+| `_board_items` | src/tessellate/entry/private_space.py:79 |
+| `_document_history` | src/tessellate/entry/private_space.py:177 |
+| `_forget_thumb` | src/tessellate/entry/private_space.py:85 |
+| `_key` | src/tessellate/entry/private_space.py:70 |
+| `_members` | src/tessellate/entry/private_space.py:219 |
+| `_owned_rows` | src/tessellate/entry/private_space.py:235 |
+| `_seal_board_log` | src/tessellate/entry/private_space.py:132 |
+| `after_leaving` | src/tessellate/entry/private_space.py:335 |
+| `audit_title` | src/tessellate/entry/private_space.py:61 |
+| `chat_notes` | src/tessellate/entry/private_space.py:251 |
+| `is_private_space` | src/tessellate/entry/private_space.py:57 |
+| `keep_members_private` | src/tessellate/entry/private_space.py:311 |
+| `leave_private_space` | src/tessellate/entry/private_space.py:344 |
+| `leaving_ids` | src/tessellate/entry/private_space.py:327 |
+| `member_count` | src/tessellate/entry/private_space.py:282 |
+| `private_space_ids` | src/tessellate/entry/private_space.py:53 |
+| `seal_document` | src/tessellate/entry/private_space.py:183 |
+| `seal_entry` | src/tessellate/entry/private_space.py:113 |
+| `seal_if_private_space` | src/tessellate/entry/private_space.py:319 |
+| `seal_new` | src/tessellate/entry/private_space.py:105 |
+| `seal_space_members` | src/tessellate/entry/private_space.py:287 |
+| `starts_private` | src/tessellate/entry/private_space.py:92 |
+| `unseal_document` | src/tessellate/entry/private_space.py:205 |
+| `unseal_entry` | src/tessellate/entry/private_space.py:161 |
+| `unseal_space_members` | src/tessellate/entry/private_space.py:302 |
 
 ### src/tessellate/entry/properties.py (12)
 
@@ -27961,27 +27961,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Row` | src/tessellate/search/index.py:123 |
 | `Source` | src/tessellate/search/index.py:140 |
 | `UnknownSource` | src/tessellate/search/index.py:161 |
-| `_ask_turn_row` | src/tessellate/search/index.py:1028 |
+| `_ask_turn_row` | src/tessellate/search/index.py:1030 |
 | `_attachment_row` | src/tessellate/search/index.py:910 |
 | `_board_words` | src/tessellate/search/index.py:643 |
 | `_boards_touched_by_objects` | src/tessellate/search/index.py:377 |
-| `_bookmark_row` | src/tessellate/search/index.py:953 |
+| `_bookmark_row` | src/tessellate/search/index.py:955 |
 | `_changed` | src/tessellate/search/index.py:298 |
-| `_conversation_row` | src/tessellate/search/index.py:997 |
+| `_conversation_row` | src/tessellate/search/index.py:999 |
 | `_document_row` | src/tessellate/search/index.py:894 |
 | `_entry_kind` | src/tessellate/search/index.py:623 |
 | `_entry_row` | src/tessellate/search/index.py:698 |
 | `_file_words` | src/tessellate/search/index.py:673 |
 | `_first_line` | src/tessellate/search/index.py:597 |
 | `_flush_work` | src/tessellate/search/index.py:303 |
-| `_in_private_space` | src/tessellate/search/index.py:967 |
+| `_in_private_space` | src/tessellate/search/index.py:969 |
 | `_index_on_flush` | src/tessellate/search/index.py:326 |
-| `_media_row` | src/tessellate/search/index.py:937 |
+| `_media_row` | src/tessellate/search/index.py:939 |
 | `_notes_touched_by_files` | src/tessellate/search/index.py:418 |
 | `_only_bookkeeping` | src/tessellate/search/index.py:291 |
-| `_recording_row` | src/tessellate/search/index.py:1041 |
+| `_recording_row` | src/tessellate/search/index.py:1043 |
 | `_register_all` | src/tessellate/search/index.py:749 |
-| `_reminder_row` | src/tessellate/search/index.py:982 |
+| `_reminder_row` | src/tessellate/search/index.py:984 |
 | `_rowid` | src/tessellate/search/index.py:231 |
 | `_scan_entries` | src/tessellate/search/index.py:735 |
 | `_table_missing` | src/tessellate/search/index.py:267 |
@@ -27995,9 +27995,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `last_rebuild` | src/tessellate/search/index.py:541 |
 | `rebuild` | src/tessellate/search/index.py:545 |
 | `reconcile_boards` | src/tessellate/search/index.py:444 |
-| `reconcile_note_files` | src/tessellate/search/index.py:1096 |
-| `reconcile_private_files` | src/tessellate/search/index.py:1121 |
-| `reconcile_sources` | src/tessellate/search/index.py:1071 |
+| `reconcile_note_files` | src/tessellate/search/index.py:1098 |
+| `reconcile_private_files` | src/tessellate/search/index.py:1123 |
+| `reconcile_sources` | src/tessellate/search/index.py:1073 |
 | `register` | src/tessellate/search/index.py:165 |
 | `source_for` | src/tessellate/search/index.py:182 |
 | `sources` | src/tessellate/search/index.py:199 |
@@ -28265,7 +28265,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22495)
+## Tests (22498)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30331,9 +30331,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_private_note_no_ai_offer.py | 2 |
 | tests/test_private_notes.py | 24 |
 | tests/test_private_scrub.py | 3 |
-| tests/test_private_spaces.py | 19 |
+| tests/test_private_spaces.py | 21 |
 | tests/test_private_spaces_round2.py | 13 |
-| tests/test_private_spaces_ui.py | 12 |
+| tests/test_private_spaces_ui.py | 13 |
 | tests/test_private_suggested_tags.py | 6 |
 | tests/test_private_toggle_1736.py | 1 |
 | tests/test_private_view_1110.py | 5 |

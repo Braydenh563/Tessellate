@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 34 | 0 | 19 | 228 |
+| world-class | 130 | 65 | 33 | 0 | 19 | 228 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 105 | 2 | 130 | 1116 |
+| all | 553 | 459 | 104 | 2 | 130 | 1116 |
 
 ## graph
 
@@ -537,7 +537,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
-- [ ] **L697** `world-class` partly, L: Recordings, bookmarks, files in a private space not sealed; deleting a locked space shows 423 message, no unlock prompt. From ledger-1112 P20.
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L699** `world-class` partly, L: Brief 62: no src/tessellate/data, no tests/test_import_time.py; question_noise.py and composer_tables.py hold data inline. From ledger-1112 P9.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
@@ -563,6 +562,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-39** `world-class` open, M: Overlap sweep: doc-dock-identity 7px at 320 and doc-sidebar-tabs 5px at 820 still overflow. From overlap.js 2026-11-14 after L-world-class-36. Evidence: scratchpad/ui-sweeps/overlap.js ONLY=documents: span.doc-dock-identity 7px at 320, div#doc-sidebar-tabs 5px at 820
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50
 - [ ] **L-world-class-42** `world-class` open, M: Cut import cost 2.2 s to 1.5 s: compile composer regex tables lazily. From L678. Evidence: importtime self-time: composer_money 173 ms (67 regex compiles), core.database 111 ms, routes_learned 96 ms, fastapi 240 ms; total 2.2 s
+- [ ] **L-world-class-43** `world-class` open, L: Seal the bytes of recordings, library uploads and attachments in a private space. From L697. Evidence: L697 sealed the database columns only; the audio, upload and attachment bytes on disk (data/recordings, media, uploads) of a private space are still plain files
 
 ## general
 

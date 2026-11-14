@@ -1293,16 +1293,16 @@ class Attachment(Base, WorkspaceMixin):
     #: the same "a person may overwrite any of it" rule; added by the
     #: additive auto-migrator on existing databases like every other
     #: backfilled column here.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     caption_model: Mapped[str | None] = mapped_column(String(200), default=None)
     caption_edited: Mapped[bool] = mapped_column(Boolean, default=False)
     #: Local Tesseract text for an image, or the extracted/converted text of
     #: a document (`core/docview.py`), one column either way, because what
     #: a reader wants is "the text in this file", not which extractor found it.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model reading the pages, for the case Tesseract cannot serve:
     #: handwriting, low contrast, a diagram whose meaning is in its layout.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
 
 
@@ -1407,9 +1407,9 @@ class Bookmark(Base, WorkspaceMixin):
     __tablename__ = "bookmarks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    url: Mapped[str] = mapped_column(String(2000))
-    title: Mapped[str] = mapped_column(String(200), default="")
-    note: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str] = mapped_column(SealedTitle(2000, locked="A private link"))
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private link"), default="")
+    note: Mapped[str] = mapped_column(SealedText(), default="")
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
     # Free text, not a foreign key to a real folder table: asked for directly
     # ("should they be groupable... make sections and groups"), but a full
@@ -2023,7 +2023,7 @@ class Recording(Base, WorkspaceMixin):
     __tablename__ = "recordings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="A private recording"), default="")
     mime: Mapped[str] = mapped_column(String(80), default="audio/webm")
     #: The stored, random name under `data_dir/recordings`; never a path the
     #: client chose.
@@ -2037,7 +2037,7 @@ class Recording(Base, WorkspaceMixin):
     #: The add-on's transcript, a JSON list of `{start, end, text, speaker}`
     #: in milliseconds (WORLD_CLASS 28.5 row 7, `core/transcript.py`); added
     #: by the auto-migrator to a database made before it.
-    segments: Mapped[str] = mapped_column(Text, default="[]")
+    segments: Mapped[str] = mapped_column(SealedText(locked="[]"), default="[]")
     #: The meeting note it was recorded into, if any (no foreign key: the
     #: note may be binned and purged while the recording is kept).
     entry_id: Mapped[int | None] = mapped_column(Integer, default=None, index=True)
@@ -2300,7 +2300,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: caller only ever wants "is there searchable text here at all".
     #: Populated for raster images only (`ocr.OCR_SUFFIXES`); a PDF upload
     #: stays NULL forever, honestly, no page-rasterisation step exists.
-    ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: A vision model's own description of the image (`ai/captioning.py`),
     #: filled in on a background thread after upload, same NULL convention
     #: as `ocr_text` above: "not captioned yet or no vision model available",
@@ -2308,7 +2308,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: left alone after that (a caption an AI or a person already read and
     #: trusted must not silently change under them) unless the user presses
     #: Regenerate: see `routes_files.caption_media`.
-    caption: Mapped[str | None] = mapped_column(Text, default=None)
+    caption: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model wrote the caption currently stored, or NULL when there is
     #: no caption or it was only ever typed by hand. Asked for directly: a
     #: caption with no visible author reads as this app's own opinion rather
@@ -2331,7 +2331,7 @@ class MediaUpload(Base, WorkspaceMixin):
     #: NULL until run: manual-trigger only (`POST /media/{id}/vision-ocr`),
     #: never automatic on upload, since it is a full model round trip a
     #: person opts into rather than something every upload should pay for.
-    vision_ocr_text: Mapped[str | None] = mapped_column(Text, default=None)
+    vision_ocr_text: Mapped[str | None] = mapped_column(SealedText(), default=None)
     #: Which model produced `vision_ocr_text`, or NULL when there is none, 
     #: same "credit the model, not the app" reasoning as `caption_model`.
     vision_ocr_model: Mapped[str | None] = mapped_column(String(200), default=None)
@@ -2502,7 +2502,11 @@ _SEALED_COLUMNS.update(
         Conversation: ("title", "messages"),
         AskTurn: ("question", "answer"),
         Reminder: ("text",),
+        Bookmark: ("url", "title", "note"),
+        Recording: ("title", "segments"),
+        MediaUpload: ("ocr_text", "caption", "vision_ocr_text"),
+        Attachment: ("ocr_text", "caption", "vision_ocr_text"),
     }
 )
-_SPACE_SEALED.extend((Conversation, AskTurn, Reminder))
+_SPACE_SEALED.extend((Conversation, AskTurn, Reminder, Bookmark, Recording, MediaUpload, Attachment))
 
