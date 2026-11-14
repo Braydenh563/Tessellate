@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 11 | 1 | 0 | 0 | 12 |
+| whiteboard | 0 | 9 | 1 | 0 | 0 | 10 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 523 | 539 | 126 | 2 | 172 | 1188 |
+| all | 523 | 537 | 126 | 2 | 172 | 1186 |
 
 ## graph
 
@@ -710,10 +710,8 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 - [ ] **L-whiteboard-40** `whiteboard` open, M: Image as a fill on any shape (draw.io shape=image). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 13 image as a shape fill row
 - [ ] **L-whiteboard-41** `whiteboard` open, L: PlantUML in and out (needs a local renderer). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 14 Mermaid row; PlantUML needs a renderer
 - [ ] **L-whiteboard-42** `whiteboard` open, M: Rack layout (draw.io rackLayout). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 12 child layouts row; no rack in whiteboard-layouts-more.js
-- [ ] **L-whiteboard-43** `whiteboard` open, M: A connector that joins another connector (edge to edge). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 4 source and target row: edge to edge
 - [ ] **L-whiteboard-44** `whiteboard` open, L: Plugins and configuration JSON (draw.io). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 plugins row
 - [ ] **L-whiteboard-45** `whiteboard` open, L: Miro, graphml and emf import. Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 18 Miro, graphml and emf import have no owner line
-- [ ] **L-whiteboard-46** `whiteboard` open, L: Rich (HTML) text in shapes: lists, indent, links in a shape label. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 2 formatted text row; shapes keep plain labels
 - [ ] **L-whiteboard-47** `whiteboard` open, S: Mirror a note, image or frame; frame opacity; a status bar. Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md Phase 3 resize paragraph: mirrored note, image or frame, an opaque frame and a status bar were reasoned out 2026-09-20
 
 ## Needs hardware

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a drawn shape's label can be rich text (Format, Label, Rich text: lists, indent, links, bold and italic as markdown, scripts and unsafe links inert), and a connector's end can sit on another connector's line, following it and floating free if it is deleted (L-whiteboard-46, L-whiteboard-43).
 - Whiteboard: History has a "what changed" button that says in a sentence what differs between that version and now (cards, text and shapes added, moved, retitled or removed), worded by the local model when one runs; private notes are never named, and a card placed on a board now replays as added (L-whiteboard-11).
 - Whiteboard: Swap the sizes of two items, Copy data carries the tooltip and link, Arrow body and Arrow head widths and a Bend points list on connectors, Ctrl+Home and Ctrl+End fold a frame, Alt+Shift+A, O and Q toggle and edit the connection arrows and points; WHITEBOARD_PLAN holds no open work (the rest is LEDGER L-whiteboard-37 to 47 and BACKLOG).
 - Whiteboard: a frame bound to a property never writes a locked private note, keeps an edit made meanwhile, and takes only a one-line property name; Suggest a name leaves private notes out and falls back when the model is slow (PR 223 review).
