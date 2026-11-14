@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2771, tests 22283, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2772, tests 22287, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8520)
 
@@ -28092,7 +28092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22283)
+## Tests (22287)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29623,6 +29623,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_list_routes_by_shape.py | 2 |
 | tests/test_listener_arguments.py | 1 |
 | tests/test_live_code_blocks.py | 8 |
+| tests/test_live_fence_copy.py | 4 |
 | tests/test_live_markdown_blocks.py | 7 |
 | tests/test_live_math_blocks.py | 3 |
 | tests/test_live_queries_kg7.py | 8 |

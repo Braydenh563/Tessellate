@@ -702,7 +702,7 @@ keeps the corner label with no button.** Three reasons, in order of weight:
    undone.
 3. The live view is editable text. The code is already under a caret that can
    select it, and Read is one tap away on every band including the phone.
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-65 (code bar in Live).
+Built after all in Live as an overlay Copy button (L-documents-65): HISTORY.md, "Moved from the plans, 2026-11-14 (docs65)".
 
 **What the measurement did find, and what was fixed here**: the bar's Copy
 button read `⧉ Copy`, a typed U+29C9 standing where an icon belongs, in an app

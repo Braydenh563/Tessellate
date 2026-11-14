@@ -338,6 +338,45 @@ function docLivePlugin(CM) {
     }
   }
 
+  //: The Copy control of a fenced block, in Live (L-documents-65). A widget at the end of the block's first code line, drawn absolute in the corner so the 8px fence row stays 8px and no header row exists. `ignoreEvent` true and `contenteditable=false`: the arrow keys step over it, a selection never contains it and Ctrl+A copies the document, not the button (it holds an icon, no text). The code is read at click time from the tree, so a patched set that keeps the widget never copies stale text.
+  class DocFenceCopyWidget extends WidgetType {
+    eq() {
+      return true;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    //: The checkmark flash rewrites the button's icon; that is not the document changing.
+    ignoreMutation() {
+      return true;
+    }
+    toDOM(view) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cm-md-fence-copy";
+      button.contentEditable = "false";
+      setLabel(button, "ph:copy");
+      button.title = "Copy this code block";
+      button.setAttribute("aria-label", "Copy code");
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) button.classList.add("is-touch");
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => {
+        const at = view.posAtDOM(button);
+        for (let node = CM.language.syntaxTree(view.state).resolveInner(at, 1); node; node = node.parent) {
+          if (node.name !== "FencedCode") continue;
+          const open = view.state.doc.lineAt(node.from);
+          const last = view.state.doc.lineAt(node.to);
+          const closed = last.number > open.number && /^\s*([`~])\1{2,}\s*$/.test(last.text);
+          const from = Math.min(open.to + 1, node.to);
+          const to = closed ? Math.max(from, last.from - 1) : node.to;
+          copyToClipboard(view.state.doc.sliceString(from, to), button);
+          return;
+        }
+      });
+      return button;
+    }
+  }
+
   //: **A table cell that is empty still has to hold its column open.** The
   //: rendered table is a CSS grid over the line, and its columns are its
   //: children: a cell with no characters in it contributes no child, so the
@@ -1165,6 +1204,9 @@ function docLivePlugin(CM) {
                 ranges.push(
                   Decoration.widget({ widget: new DocFenceLabelWidget(language, title), side: 1 }).range(line.to)
                 );
+              }
+              if (line.number === first.number + 1 && line.from !== last.from) {
+                ranges.push(Decoration.widget({ widget: new DocFenceCopyWidget(), side: 1 }).range(line.to));
               }
               if (line.to >= node.to) break;
               at = line.to + 1;

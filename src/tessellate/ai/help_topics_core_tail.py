@@ -1055,7 +1055,8 @@ TAIL_TOPICS.extend(
                 "as it does, and suggests its words as you type; typing the name "
                 "after the opening fence lists the languages. The block's corner "
                 "shows its title (title=\"fit.py\" on the fence) or language; press it "
-                "to pick another language."
+                "to pick another language. Hover a code block, or tap it on a phone, "
+                "for a Copy button in its top corner: it copies the code without the fences."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
