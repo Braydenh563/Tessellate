@@ -12,6 +12,7 @@ source; `tests/test_day_digest.py` checks every one.
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable
 from datetime import datetime, time, timedelta, timezone
@@ -21,6 +22,8 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import due_summary, questions, realise
 from tessellate.core.database import Category, Entry, Reminder
+
+logger = logging.getLogger(__name__)
 
 #: A topic is quiet when its newest note is older than this.
 QUIET_DAYS = 30
@@ -207,7 +210,8 @@ def refine(lines: list[dict], say: Callable[[str], str]) -> list[dict]:
             continue
         try:
             reply = " ".join((say(REFINE_PROMPT + line["text"]) or "").split())
-        except Exception:  # noqa: BLE001  # no model, a failed one: the engine's own line stands
+        except Exception as exc:  # noqa: BLE001  # no model, a failed one: the engine's own line stands
+            logger.info("day digest: the model could not reword a line, the engine's line stands (%s)", type(exc).__name__)
             out.append(line)
             continue
         kept = bool(reply) and len(reply) <= REFINE_CHARS and _digits(reply) == _digits(line["text"]) and all(link.lower() in reply.lower() for link in line.get("links") or [])
