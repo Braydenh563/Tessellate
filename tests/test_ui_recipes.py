@@ -7913,3 +7913,10 @@ def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
     assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
     assert re.search(r"\.doc-statusbar-button > span \{[^}]*text-overflow: ellipsis", css)
     assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.doc-statusbar > \.doc-statusbar-button \{\s*flex-shrink: 1;", css)
+
+
+def test_the_optional_package_notice_keeps_its_action_whole() -> None:
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
+    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
