@@ -2813,6 +2813,26 @@ function docShowReferences() {
   return true;
 }
 
+//: The fallback find bar's two reach-outs (wiring.js `openGlobalFind`), made on first use, not in the page (the boot
+//: element cap). Moved here from wiring.js (L624): only the Documents tab shows them.
+openGlobalFind.docsReach = (bar) => {
+  let reach = bar.querySelector(".global-find-docs");
+  if (!reach) {
+    reach = Object.assign(document.createElement("span"), { className: "global-find-docs" });
+    const mk = (name, label, title, run) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "ghost small", name, textContent: label, title });
+      b.addEventListener("click", run);
+      return b;
+    };
+    reach.append(
+      mk("all-documents", "All documents", "Find this in every document", () => docFindInDocuments($("global-find-input").value)),
+      mk("replace-in-all", "Replace in all", "Replace this in every document", () => openDocReplace({ find: $("global-find-input").value })),
+    );
+    $("global-find-count").after(reach);
+  }
+  return reach;
+};
+
 //: Ctrl+Shift+F: the app's Find anything, on documents, with the selection
 //: (one line of it) or the word at the caret.
 function docFindInDocuments(typed = "") {

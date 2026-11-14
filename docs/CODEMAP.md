@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8501, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22449, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8503, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22449, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
-## Frontend functions (8501)
+## Frontend functions (8503)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1272 |
 | `confirmVerb` | frontend/js/app.js:1263 |
-| `ensureModule` | frontend/js/app.js:1737 |
+| `ensureModule` | frontend/js/app.js:1738 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1908 |
-| `lazyAssetStamp` | frontend/js/app.js:1694 |
-| `lazyScript` | frontend/js/app.js:1716 |
+| `installStandIns` | frontend/js/app.js:1909 |
+| `lazyAssetStamp` | frontend/js/app.js:1695 |
+| `lazyScript` | frontend/js/app.js:1717 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1761 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1762 |
 | `promptDialog` | frontend/js/app.js:1376 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1675 |
+| `whenScriptsLoaded` | frontend/js/app.js:1676 |
 | `wireBackdropClose` | frontend/js/app.js:1492 |
 
 ### frontend/js/prefs.js (7)
@@ -737,26 +737,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `boardEmbedElement` | frontend/js/markdown.js:733 |
-| `boardEmbedFill` | frontend/js/markdown.js:787 |
-| `boardEmbedMarkdown` | frontend/js/markdown.js:865 |
+| `boardEmbedElement` | frontend/js/markdown.js:731 |
+| `boardEmbedFill` | frontend/js/markdown.js:785 |
+| `boardEmbedMarkdown` | frontend/js/markdown.js:863 |
 | `columnAlign` | frontend/js/markdown.js:63 |
 | `isTableSeparator` | frontend/js/markdown.js:15 |
-| `linkAtEvent` | frontend/js/markdown.js:1093 |
-| `linkCard` | frontend/js/markdown.js:961 |
-| `linkCardPath` | frontend/js/markdown.js:929 |
-| `linkMenuItems` | frontend/js/markdown.js:1050 |
+| `linkAtEvent` | frontend/js/markdown.js:1091 |
+| `linkCard` | frontend/js/markdown.js:959 |
+| `linkCardPath` | frontend/js/markdown.js:927 |
+| `linkMenuItems` | frontend/js/markdown.js:1048 |
 | `mdBlockEnd` | frontend/js/markdown.js:50 |
 | `mdCalloutElement` | frontend/js/markdown.js:227 |
 | `mdCalloutHead` | frontend/js/markdown.js:208 |
 | `mdColumnsElement` | frontend/js/markdown.js:301 |
 | `mdColumnsFrom` | frontend/js/markdown.js:132 |
 | `mdDividerKind` | frontend/js/markdown.js:155 |
-| `mdDocumentCard` | frontend/js/markdown.js:608 |
-| `mdEmbedElement` | frontend/js/markdown.js:659 |
+| `mdDocumentCard` | frontend/js/markdown.js:606 |
+| `mdEmbedElement` | frontend/js/markdown.js:657 |
 | `mdFillTocs` | frontend/js/markdown.js:420 |
-| `mdFootnotePrepare` | frontend/js/markdown.js:494 |
-| `mdFootnotesFinish` | frontend/js/markdown.js:533 |
+| `mdFootnotePrepare` | frontend/js/markdown.js:492 |
+| `mdFootnotesFinish` | frontend/js/markdown.js:531 |
 | `mdHeadingId` | frontend/js/markdown.js:79 |
 | `mdInlineMathElement` | frontend/js/markdown.js:395 |
 | `mdMathBlockFrom` | frontend/js/markdown.js:190 |
@@ -768,9 +768,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mdRuleElement` | frontend/js/markdown.js:331 |
 | `mdTocElement` | frontend/js/markdown.js:400 |
 | `mdTocEntries` | frontend/js/markdown.js:172 |
-| `openMenuAtPoint` | frontend/js/markdown.js:998 |
+| `openMenuAtPoint` | frontend/js/markdown.js:996 |
 | `splitTableRow` | frontend/js/markdown.js:24 |
-| `wrapToggle` | frontend/js/markdown.js:895 |
+| `wrapToggle` | frontend/js/markdown.js:893 |
 
 ### frontend/js/navigation.js (56)
 
@@ -905,7 +905,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:745 |
 | `agentActivityQuiet` | frontend/js/status.js:737 |
-| `agentModeAvailable` | frontend/js/status.js:2868 |
+| `agentModeAvailable` | frontend/js/status.js:2867 |
 | `aiIsOff` | frontend/js/status.js:2134 |
 | `aiOffGlyph` | frontend/js/status.js:2506 |
 | `aiOfflineDismissed` | frontend/js/status.js:2307 |
@@ -915,7 +915,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appStackIsNewer` | frontend/js/status.js:1659 |
 | `armReminderTimer` | frontend/js/status.js:534 |
 | `askNotificationPermission` | frontend/js/status.js:396 |
-| `backendLabel` | frontend/js/status.js:2958 |
+| `backendLabel` | frontend/js/status.js:2957 |
 | `boardHistoryActive` | frontend/js/status.js:1624 |
 | `checkDueReminders` | frontend/js/status.js:600 |
 | `closeModelGate` | frontend/js/status.js:2153 |
@@ -935,7 +935,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1976 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3136 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3135 |
 | `lastAnswerLine` | frontend/js/status.js:2528 |
 | `loadMostUsed` | frontend/js/status.js:1839 |
 | `loadRecentQuestions` | frontend/js/status.js:1811 |
@@ -943,7 +943,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1347 |
 | `noteServerDown` | frontend/js/status.js:1403 |
 | `noteServerUp` | frontend/js/status.js:1412 |
-| `noticeTaskTransitions` | frontend/js/status.js:3241 |
+| `noticeTaskTransitions` | frontend/js/status.js:3240 |
 | `notificationsMuted` | frontend/js/status.js:722 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:477 |
@@ -952,7 +952,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLanPanel` | frontend/js/status.js:673 |
 | `openModelGate` | frontend/js/status.js:2163 |
 | `openReminderList` | frontend/js/status.js:583 |
-| `paintPrivacyChip` | frontend/js/status.js:3342 |
+| `paintPrivacyChip` | frontend/js/status.js:3341 |
 | `paintReminderList` | frontend/js/status.js:569 |
 | `paintStatusItem` | frontend/js/status.js:2649 |
 | `paintTitle` | frontend/js/status.js:510 |
@@ -969,28 +969,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1599 |
 | `pushUndo` | frontend/js/status.js:1477 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3155 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3154 |
 | `refreshModelStatus` | frontend/js/status.js:2004 |
-| `refreshPrivacyChip` | frontend/js/status.js:3356 |
+| `refreshPrivacyChip` | frontend/js/status.js:3355 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:802 |
 | `renderAiOfflineNotice` | frontend/js/status.js:2330 |
 | `renderAiPill` | frontend/js/status.js:2536 |
-| `renderChatModeSeg` | frontend/js/status.js:2896 |
+| `renderChatModeSeg` | frontend/js/status.js:2895 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2969 |
-| `renderStatusBar` | frontend/js/status.js:2699 |
+| `renderSettings` | frontend/js/status.js:2968 |
+| `renderStatusBar` | frontend/js/status.js:2698 |
 | `renderUndoBar` | frontend/js/status.js:1743 |
-| `renderWebSearchToggle` | frontend/js/status.js:2876 |
+| `renderWebSearchToggle` | frontend/js/status.js:2875 |
 | `reopenAnswerPanel` | frontend/js/status.js:780 |
 | `resetStatusCadence` | frontend/js/status.js:1927 |
 | `retryServerNow` | frontend/js/status.js:1453 |
 | `sayChatModelChosen` | frontend/js/status.js:1890 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1427 |
 | `scheduleUndoBar` | frontend/js/status.js:1735 |
-| `setChatMode` | frontend/js/status.js:2942 |
+| `setChatMode` | frontend/js/status.js:2941 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:515 |
@@ -998,9 +998,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1943 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1587 |
-| `showAgentNoModelHint` | frontend/js/status.js:2937 |
+| `showAgentNoModelHint` | frontend/js/status.js:2936 |
 | `showServerDownBanner` | frontend/js/status.js:1386 |
-| `startPrivacyChip` | frontend/js/status.js:3366 |
+| `startPrivacyChip` | frontend/js/status.js:3365 |
 | `startReminderWatch` | frontend/js/status.js:684 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1641 |
@@ -1008,7 +1008,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2189 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3216 |
+| `taskKey` | frontend/js/status.js:3215 |
 | `toast` | frontend/js/status.js:1175 |
 | `toastAction` | frontend/js/status.js:1319 |
 | `toastActionButton` | frontend/js/status.js:1299 |
@@ -1026,7 +1026,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:921 |
 | `toastStack` | frontend/js/status.js:925 |
 | `toastYield` | frontend/js/status.js:1040 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2842 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2841 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1169 |
@@ -1038,35 +1038,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `applyFeatureModel` | frontend/js/ai-tools.js:359 |
-| `applyPalette` | frontend/js/ai-tools.js:1012 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:946 |
+| `applyPalette` | frontend/js/ai-tools.js:995 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:929 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:353 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:396 |
 | `featureModelRow` | frontend/js/ai-tools.js:335 |
 | `featureModelState` | frontend/js/ai-tools.js:343 |
 | `fillModelSelect` | frontend/js/ai-tools.js:60 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:981 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:759 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:964 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:742 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:215 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:967 |
-| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:549 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:950 |
+| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:532 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:140 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:93 |
 | `renderFeatureModels` | frontend/js/ai-tools.js:382 |
-| `renderOcrModelPicker` | frontend/js/ai-tools.js:530 |
-| `renderReindex` | frontend/js/ai-tools.js:592 |
+| `renderOcrModelPicker` | frontend/js/ai-tools.js:513 |
+| `renderReindex` | frontend/js/ai-tools.js:575 |
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:260 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:283 |
-| `saveUiState` | frontend/js/ai-tools.js:817 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:894 |
+| `saveUiState` | frontend/js/ai-tools.js:800 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:877 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:430 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:806 |
-| `uiStatePayload` | frontend/js/ai-tools.js:793 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:935 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:862 |
-| `wireFeatureModelSelects` | frontend/js/ai-tools.js:512 |
-| `wireReindexButton` | frontend/js/ai-tools.js:571 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:789 |
+| `uiStatePayload` | frontend/js/ai-tools.js:776 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:918 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:845 |
+| `wireFeatureModelSelects` | frontend/js/ai-tools.js:495 |
+| `wireReindexButton` | frontend/js/ai-tools.js:554 |
 
 ### frontend/js/phone-shell.js (62)
 
@@ -1141,38 +1141,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addAtlasLine` | frontend/js/wiring.js:138 |
 | `askAtlasAbout` | frontend/js/wiring.js:127 |
-| `chatRecallStep` | frontend/js/wiring.js:730 |
-| `clearDueNudges` | frontend/js/wiring.js:1407 |
-| `closeGlobalFind` | frontend/js/wiring.js:568 |
-| `copyWebLink` | frontend/js/wiring.js:1350 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:839 |
+| `chatRecallStep` | frontend/js/wiring.js:717 |
+| `clearDueNudges` | frontend/js/wiring.js:1394 |
+| `closeGlobalFind` | frontend/js/wiring.js:555 |
+| `copyWebLink` | frontend/js/wiring.js:1337 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:826 |
 | `escapeForFind` | frontend/js/wiring.js:329 |
 | `globalFindClearHighlights` | frontend/js/wiring.js:387 |
 | `globalFindRun` | frontend/js/wiring.js:398 |
 | `globalFindShowActive` | frontend/js/wiring.js:470 |
 | `globalFindStep` | frontend/js/wiring.js:483 |
 | `globalFindWalkableRoot` | frontend/js/wiring.js:362 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:923 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:910 |
 | `initHelpToggles` | frontend/js/wiring.js:147 |
-| `noteSourceOn` | frontend/js/wiring.js:803 |
-| `nudgeDueShown` | frontend/js/wiring.js:1411 |
+| `noteSourceOn` | frontend/js/wiring.js:790 |
+| `nudgeDueShown` | frontend/js/wiring.js:1398 |
 | `openGlobalFind` | frontend/js/wiring.js:489 |
-| `openReminderCompose` | frontend/js/wiring.js:1366 |
-| `openWebPageExternally` | frontend/js/wiring.js:1345 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:845 |
+| `openReminderCompose` | frontend/js/wiring.js:1353 |
+| `openWebPageExternally` | frontend/js/wiring.js:1332 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:832 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:657 |
-| `renderPlanToggle` | frontend/js/wiring.js:1190 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1023 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:944 |
-| `setNoteSource` | frontend/js/wiring.js:818 |
+| `renameCurrentConversation` | frontend/js/wiring.js:644 |
+| `renderPlanToggle` | frontend/js/wiring.js:1177 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1010 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:931 |
+| `setNoteSource` | frontend/js/wiring.js:805 |
 | `settingsSectionContaining` | frontend/js/wiring.js:375 |
-| `startNewNote` | frontend/js/wiring.js:1083 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:811 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1133 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1117 |
-| `toggleWebSearch` | frontend/js/wiring.js:1225 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1029 |
+| `startNewNote` | frontend/js/wiring.js:1070 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:798 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1120 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1104 |
+| `toggleWebSearch` | frontend/js/wiring.js:1212 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1016 |
 
 ### frontend/js/settings-wiring.js (46)
 
@@ -3758,42 +3758,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `DOC_CSS_COLORS` | frontend/js/documents-code.js:945 |
-| `docApplyCodeFix` | frontend/js/documents-code.js:6422 |
+| `docApplyCodeFix` | frontend/js/documents-code.js:6442 |
 | `docBalanceRange` | frontend/js/documents-code.js:1229 |
 | `docBeautifyText` | frontend/js/documents-code.js:1646 |
 | `docBracketColours` | frontend/js/documents-code.js:2408 |
 | `docBracketDepths` | frontend/js/documents-code.js:2391 |
 | `docCmSyncCodeTools` | frontend/js/documents-code.js:894 |
-| `docCodeActions` | frontend/js/documents-code.js:6437 |
+| `docCodeActions` | frontend/js/documents-code.js:6457 |
 | `docCodeCompletionData` | frontend/js/documents-code.js:841 |
 | `docCodeCompletionSource` | frontend/js/documents-code.js:813 |
-| `docCodeEditing` | frontend/js/documents-code.js:6164 |
-| `docCodeFixNow` | frontend/js/documents-code.js:6404 |
-| `docCodeFixes` | frontend/js/documents-code.js:5889 |
-| `docCodeIndentAt` | frontend/js/documents-code.js:6149 |
-| `docCodeIndentLevel` | frontend/js/documents-code.js:5437 |
-| `docCodeInsertPoint` | frontend/js/documents-code.js:5880 |
-| `docCodeInsertPointForString` | frontend/js/documents-code.js:5967 |
-| `docCodeKeyPress` | frontend/js/documents-code.js:6522 |
-| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5950 |
-| `docCodeLineOf` | frontend/js/documents-code.js:5426 |
+| `docCodeEditing` | frontend/js/documents-code.js:6184 |
+| `docCodeFixNow` | frontend/js/documents-code.js:6424 |
+| `docCodeFixes` | frontend/js/documents-code.js:5909 |
+| `docCodeIndentAt` | frontend/js/documents-code.js:6169 |
+| `docCodeIndentLevel` | frontend/js/documents-code.js:5457 |
+| `docCodeInsertPoint` | frontend/js/documents-code.js:5900 |
+| `docCodeInsertPointForString` | frontend/js/documents-code.js:5987 |
+| `docCodeKeyPress` | frontend/js/documents-code.js:6542 |
+| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5970 |
+| `docCodeLineOf` | frontend/js/documents-code.js:5446 |
 | `docCodeLintSource` | frontend/js/documents-code.js:340 |
-| `docCodePairs` | frontend/js/documents-code.js:6138 |
-| `docCodeProblemMessage` | frontend/js/documents-code.js:5452 |
-| `docCodeProfile` | frontend/js/documents-code.js:4911 |
-| `docCodeScan` | frontend/js/documents-code.js:4999 |
+| `docCodePairs` | frontend/js/documents-code.js:6158 |
+| `docCodeProblemMessage` | frontend/js/documents-code.js:5472 |
+| `docCodeProfile` | frontend/js/documents-code.js:4931 |
+| `docCodeScan` | frontend/js/documents-code.js:5019 |
 | `docCodeSnippetOptions` | frontend/js/documents-code.js:592 |
 | `docCodeSymbols` | frontend/js/documents-code.js:2475 |
 | `docCodeTools` | frontend/js/documents-code.js:861 |
 | `docColorAt` | frontend/js/documents-code.js:2046 |
 | `docColorSwatches` | frontend/js/documents-code.js:2086 |
 | `docCompleteTab` | frontend/js/documents-code.js:1907 |
-| `docCompletionExtras` | frontend/js/documents-code.js:4845 |
-| `docConsoleEval` | frontend/js/documents-code.js:3934 |
-| `docConsoleKey` | frontend/js/documents-code.js:4024 |
-| `docConsoleLang` | frontend/js/documents-code.js:3926 |
-| `docConsoleMessage` | frontend/js/documents-code.js:3994 |
-| `docConsoleOvertime` | frontend/js/documents-code.js:3979 |
+| `docCompletionExtras` | frontend/js/documents-code.js:4865 |
+| `docConsoleEval` | frontend/js/documents-code.js:3954 |
+| `docConsoleKey` | frontend/js/documents-code.js:4044 |
+| `docConsoleLang` | frontend/js/documents-code.js:3946 |
+| `docConsoleMessage` | frontend/js/documents-code.js:4014 |
+| `docConsoleOvertime` | frontend/js/documents-code.js:3999 |
 | `docCssColorFormat` | frontend/js/documents-code.js:1320 |
 | `docCssCompletionSource` | frontend/js/documents-code.js:1863 |
 | `docCssInBlock` | frontend/js/documents-code.js:1703 |
@@ -3802,27 +3802,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docCssValueContext` | frontend/js/documents-code.js:1152 |
 | `docCssValueOptions` | frontend/js/documents-code.js:1193 |
 | `docCssValueTable` | frontend/js/documents-code.js:1164 |
-| `docCsvTableHtml` | frontend/js/documents-code.js:4492 |
-| `docDebugAct` | frontend/js/documents-code.js:3055 |
-| `docDebugBegin` | frontend/js/documents-code.js:3025 |
-| `docDebugBreakMenu` | frontend/js/documents-code.js:3261 |
-| `docDebugBreaks` | frontend/js/documents-code.js:3093 |
-| `docDebugEmpty` | frontend/js/documents-code.js:3408 |
-| `docDebugEnded` | frontend/js/documents-code.js:3043 |
-| `docDebugExtension` | frontend/js/documents-code.js:3145 |
-| `docDebugHere` | frontend/js/documents-code.js:3287 |
-| `docDebugKeepBreaks` | frontend/js/documents-code.js:3127 |
-| `docDebugKey` | frontend/js/documents-code.js:3083 |
-| `docDebugLineButton` | frontend/js/documents-code.js:3416 |
-| `docDebugOn` | frontend/js/documents-code.js:2994 |
-| `docDebugRemoveButton` | frontend/js/documents-code.js:3429 |
-| `docDebugRender` | frontend/js/documents-code.js:3445 |
-| `docDebugSavedBreaks` | frontend/js/documents-code.js:3116 |
-| `docDebugStopped` | frontend/js/documents-code.js:3012 |
-| `docDebugToggleAt` | frontend/js/documents-code.js:3240 |
-| `docDebugToggleHere` | frontend/js/documents-code.js:3254 |
-| `docDebugValueRow` | frontend/js/documents-code.js:3381 |
-| `docDebugView` | frontend/js/documents-code.js:3300 |
+| `docCsvTableHtml` | frontend/js/documents-code.js:4512 |
+| `docDebugAct` | frontend/js/documents-code.js:3075 |
+| `docDebugBegin` | frontend/js/documents-code.js:3045 |
+| `docDebugBreakMenu` | frontend/js/documents-code.js:3281 |
+| `docDebugBreaks` | frontend/js/documents-code.js:3113 |
+| `docDebugEmpty` | frontend/js/documents-code.js:3428 |
+| `docDebugEnded` | frontend/js/documents-code.js:3063 |
+| `docDebugExtension` | frontend/js/documents-code.js:3165 |
+| `docDebugHere` | frontend/js/documents-code.js:3307 |
+| `docDebugKeepBreaks` | frontend/js/documents-code.js:3147 |
+| `docDebugKey` | frontend/js/documents-code.js:3103 |
+| `docDebugLineButton` | frontend/js/documents-code.js:3436 |
+| `docDebugOn` | frontend/js/documents-code.js:3014 |
+| `docDebugRemoveButton` | frontend/js/documents-code.js:3449 |
+| `docDebugRender` | frontend/js/documents-code.js:3465 |
+| `docDebugSavedBreaks` | frontend/js/documents-code.js:3136 |
+| `docDebugStopped` | frontend/js/documents-code.js:3032 |
+| `docDebugToggleAt` | frontend/js/documents-code.js:3260 |
+| `docDebugToggleHere` | frontend/js/documents-code.js:3274 |
+| `docDebugValueRow` | frontend/js/documents-code.js:3401 |
+| `docDebugView` | frontend/js/documents-code.js:3320 |
 | `docDefinitionsOf` | frontend/js/documents-code.js:2727 |
 | `docDiagnosticRange` | frontend/js/documents-code.js:82 |
 | `docEmmetAt` | frontend/js/documents-code.js:1089 |
@@ -3838,14 +3838,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docEmmetSource` | frontend/js/documents-code.js:1738 |
 | `docEmmetWrap` | frontend/js/documents-code.js:1788 |
 | `docEmmetWrapText` | frontend/js/documents-code.js:1250 |
-| `docFindInDocuments` | frontend/js/documents-code.js:2818 |
-| `docFormatChanges` | frontend/js/documents-code.js:6270 |
-| `docFormatCode` | frontend/js/documents-code.js:6294 |
-| `docFormatCodeText` | frontend/js/documents-code.js:5489 |
-| `docFormatJsonText` | frontend/js/documents-code.js:5806 |
-| `docFormatMarkupText` | frontend/js/documents-code.js:5569 |
-| `docFormatRemoteRefusal` | frontend/js/documents-code.js:6249 |
-| `docFormatTreeRefusal` | frontend/js/documents-code.js:6235 |
+| `docFindInDocuments` | frontend/js/documents-code.js:2838 |
+| `docFormatChanges` | frontend/js/documents-code.js:6290 |
+| `docFormatCode` | frontend/js/documents-code.js:6314 |
+| `docFormatCodeText` | frontend/js/documents-code.js:5509 |
+| `docFormatJsonText` | frontend/js/documents-code.js:5826 |
+| `docFormatMarkupText` | frontend/js/documents-code.js:5589 |
+| `docFormatRemoteRefusal` | frontend/js/documents-code.js:6269 |
+| `docFormatTreeRefusal` | frontend/js/documents-code.js:6255 |
 | `docGhostPlugin` | frontend/js/documents-code.js:1919 |
 | `docGhostSuffix` | frontend/js/documents-code.js:1211 |
 | `docGoToDefinition` | frontend/js/documents-code.js:2771 |
@@ -3854,89 +3854,89 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docHtmlDiagnostics` | frontend/js/documents-code.js:270 |
 | `docHtmlTextAt` | frontend/js/documents-code.js:1669 |
 | `docIndentGuides` | frontend/js/documents-code.js:2262 |
-| `docIndentMixFixes` | frontend/js/documents-code.js:6053 |
+| `docIndentMixFixes` | frontend/js/documents-code.js:6073 |
 | `docIndentSteps` | frontend/js/documents-code.js:2243 |
 | `docJsMemberSource` | frontend/js/documents-code.js:776 |
 | `docJsObjectKeys` | frontend/js/documents-code.js:771 |
 | `docJsonDiagnostics` | frontend/js/documents-code.js:221 |
 | `docJsonErrorAt` | frontend/js/documents-code.js:103 |
-| `docJsonFixes` | frontend/js/documents-code.js:5977 |
+| `docJsonFixes` | frontend/js/documents-code.js:5997 |
 | `docJsxChildAt` | frontend/js/documents-code.js:1680 |
 | `docLoadBeautify` | frontend/js/documents-code.js:1627 |
 | `docLoadEmmet` | frontend/js/documents-code.js:1600 |
 | `docMeasureNextFrame` | frontend/js/documents-code.js:2565 |
 | `docNamesIn` | frontend/js/documents-code.js:798 |
 | `docNativeSnippets` | frontend/js/documents-code.js:652 |
-| `docOpenCodeFixes` | frontend/js/documents-code.js:6452 |
-| `docOpenSymbols` | frontend/js/documents-code.js:4824 |
+| `docOpenCodeFixes` | frontend/js/documents-code.js:6472 |
+| `docOpenSymbols` | frontend/js/documents-code.js:4844 |
 | `docP5Source` | frontend/js/documents-code.js:636 |
-| `docPanelChord` | frontend/js/documents-code.js:3881 |
-| `docPanelToggle` | frontend/js/documents-code.js:3865 |
+| `docPanelChord` | frontend/js/documents-code.js:3901 |
+| `docPanelToggle` | frontend/js/documents-code.js:3885 |
 | `docPickDefinition` | frontend/js/documents-code.js:2760 |
-| `docProblemsRender` | frontend/js/documents-code.js:3902 |
-| `docPyHost` | frontend/js/documents-code.js:2904 |
+| `docProblemsRender` | frontend/js/documents-code.js:3922 |
+| `docPyHost` | frontend/js/documents-code.js:2924 |
 | `docPyHover` | frontend/js/documents-code.js:2200 |
 | `docPyImports` | frontend/js/documents-code.js:699 |
 | `docPyStdlibRows` | frontend/js/documents-code.js:717 |
 | `docPyStdlibSource` | frontend/js/documents-code.js:725 |
 | `docPyStdlibTable` | frontend/js/documents-code.js:685 |
-| `docPyWarm` | frontend/js/documents-code.js:2924 |
-| `docPythonColonFix` | frontend/js/documents-code.js:6030 |
+| `docPyWarm` | frontend/js/documents-code.js:2944 |
+| `docPythonColonFix` | frontend/js/documents-code.js:6050 |
 | `docPythonDefines` | frontend/js/documents-code.js:2716 |
 | `docReferencesOf` | frontend/js/documents-code.js:2692 |
 | `docRemoteDiagnostics` | frontend/js/documents-code.js:300 |
 | `docRgbToHex` | frontend/js/documents-code.js:1310 |
-| `docRunAfterSave` | frontend/js/documents-code.js:4080 |
-| `docRunArmTimeout` | frontend/js/documents-code.js:4437 |
-| `docRunAsk` | frontend/js/documents-code.js:4350 |
-| `docRunCell` | frontend/js/documents-code.js:4683 |
-| `docRunClear` | frontend/js/documents-code.js:4167 |
-| `docRunClearTab` | frontend/js/documents-code.js:3891 |
-| `docRunClose` | frontend/js/documents-code.js:4411 |
-| `docRunCode` | frontend/js/documents-code.js:4548 |
-| `docRunExtension` | frontend/js/documents-code.js:4087 |
-| `docRunJobArm` | frontend/js/documents-code.js:4129 |
-| `docRunJobCall` | frontend/js/documents-code.js:4122 |
-| `docRunJobEnd` | frontend/js/documents-code.js:4157 |
-| `docRunLiveOn` | frontend/js/documents-code.js:4058 |
-| `docRunLiveSchedule` | frontend/js/documents-code.js:4071 |
-| `docRunOpenPythonExtra` | frontend/js/documents-code.js:2973 |
-| `docRunPanel` | frontend/js/documents-code.js:3567 |
-| `docRunPythonMissing` | frontend/js/documents-code.js:4419 |
-| `docRunPythonReady` | frontend/js/documents-code.js:2888 |
-| `docRunRow` | frontend/js/documents-code.js:4176 |
-| `docRunSelectFrame` | frontend/js/documents-code.js:2933 |
-| `docRunSelection` | frontend/js/documents-code.js:4672 |
-| `docRunSend` | frontend/js/documents-code.js:4391 |
-| `docRunSetLive` | frontend/js/documents-code.js:4062 |
-| `docRunSetStatus` | frontend/js/documents-code.js:4107 |
-| `docRunShowStdin` | frontend/js/documents-code.js:4048 |
-| `docRunShowTab` | frontend/js/documents-code.js:3845 |
-| `docRunShowTestMarks` | frontend/js/documents-code.js:4336 |
-| `docRunStop` | frontend/js/documents-code.js:4400 |
-| `docRunSyncAvailability` | frontend/js/documents-code.js:2951 |
-| `docRunTable` | frontend/js/documents-code.js:4233 |
-| `docRunTestDiagnostics` | frontend/js/documents-code.js:4302 |
-| `docRunTestRow` | frontend/js/documents-code.js:4271 |
-| `docRunTestsDone` | frontend/js/documents-code.js:4315 |
-| `docRunnable` | frontend/js/documents-code.js:2881 |
+| `docRunAfterSave` | frontend/js/documents-code.js:4100 |
+| `docRunArmTimeout` | frontend/js/documents-code.js:4457 |
+| `docRunAsk` | frontend/js/documents-code.js:4370 |
+| `docRunCell` | frontend/js/documents-code.js:4703 |
+| `docRunClear` | frontend/js/documents-code.js:4187 |
+| `docRunClearTab` | frontend/js/documents-code.js:3911 |
+| `docRunClose` | frontend/js/documents-code.js:4431 |
+| `docRunCode` | frontend/js/documents-code.js:4568 |
+| `docRunExtension` | frontend/js/documents-code.js:4107 |
+| `docRunJobArm` | frontend/js/documents-code.js:4149 |
+| `docRunJobCall` | frontend/js/documents-code.js:4142 |
+| `docRunJobEnd` | frontend/js/documents-code.js:4177 |
+| `docRunLiveOn` | frontend/js/documents-code.js:4078 |
+| `docRunLiveSchedule` | frontend/js/documents-code.js:4091 |
+| `docRunOpenPythonExtra` | frontend/js/documents-code.js:2993 |
+| `docRunPanel` | frontend/js/documents-code.js:3587 |
+| `docRunPythonMissing` | frontend/js/documents-code.js:4439 |
+| `docRunPythonReady` | frontend/js/documents-code.js:2908 |
+| `docRunRow` | frontend/js/documents-code.js:4196 |
+| `docRunSelectFrame` | frontend/js/documents-code.js:2953 |
+| `docRunSelection` | frontend/js/documents-code.js:4692 |
+| `docRunSend` | frontend/js/documents-code.js:4411 |
+| `docRunSetLive` | frontend/js/documents-code.js:4082 |
+| `docRunSetStatus` | frontend/js/documents-code.js:4127 |
+| `docRunShowStdin` | frontend/js/documents-code.js:4068 |
+| `docRunShowTab` | frontend/js/documents-code.js:3865 |
+| `docRunShowTestMarks` | frontend/js/documents-code.js:4356 |
+| `docRunStop` | frontend/js/documents-code.js:4420 |
+| `docRunSyncAvailability` | frontend/js/documents-code.js:2971 |
+| `docRunTable` | frontend/js/documents-code.js:4253 |
+| `docRunTestDiagnostics` | frontend/js/documents-code.js:4322 |
+| `docRunTestRow` | frontend/js/documents-code.js:4291 |
+| `docRunTestsDone` | frontend/js/documents-code.js:4335 |
+| `docRunnable` | frontend/js/documents-code.js:2901 |
 | `docShowReferences` | frontend/js/documents-code.js:2792 |
-| `docSqlCsvRows` | frontend/js/documents-code.js:4464 |
-| `docSqlCsvTable` | frontend/js/documents-code.js:4505 |
-| `docSqlCsvTables` | frontend/js/documents-code.js:4526 |
-| `docSqlTableName` | frontend/js/documents-code.js:4456 |
+| `docSqlCsvRows` | frontend/js/documents-code.js:4484 |
+| `docSqlCsvTable` | frontend/js/documents-code.js:4525 |
+| `docSqlCsvTables` | frontend/js/documents-code.js:4546 |
+| `docSqlTableName` | frontend/js/documents-code.js:4476 |
 | `docStickyHeaders` | frontend/js/documents-code.js:2549 |
 | `docStickyScroll` | frontend/js/documents-code.js:2583 |
 | `docTagLink` | frontend/js/documents-code.js:1977 |
 | `docTagRename` | frontend/js/documents-code.js:1261 |
 | `docTreeDiagnostics` | frontend/js/documents-code.js:244 |
-| `docTreeHasJsx` | frontend/js/documents-code.js:6220 |
+| `docTreeHasJsx` | frontend/js/documents-code.js:6240 |
 | `docWordAt` | frontend/js/documents-code.js:2681 |
 | `docXmlAutoClose` | frontend/js/documents-code.js:2012 |
 | `docXmlOpenedBy` | frontend/js/documents-code.js:1284 |
 | `docXmlTextAt` | frontend/js/documents-code.js:1690 |
 | `docXmlUnclosed` | frontend/js/documents-code.js:1291 |
-| `docYamlBlockLines` | frontend/js/documents-code.js:5779 |
+| `docYamlBlockLines` | frontend/js/documents-code.js:5799 |
 
 ### frontend/js/documents-codekit.js (47)
 
@@ -3999,45 +3999,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-comments.js (35)
+### frontend/js/documents-comments.js (26)
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:918 |
-| `docCommentContext` | frontend/js/documents-comments.js:530 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:718 |
+| `docCommentContext` | frontend/js/documents-comments.js:330 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:591 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:391 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:632 |
+| `docCommentRow` | frontend/js/documents-comments.js:432 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
-| `docComments` | frontend/js/documents-comments.js:523 |
+| `docComments` | frontend/js/documents-comments.js:323 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docCommentsShell` | frontend/js/documents-comments.js:742 |
-| `docDeleteReply` | frontend/js/documents-comments.js:891 |
-| `docEditReply` | frontend/js/documents-comments.js:881 |
-| `docGoToComment` | frontend/js/documents-comments.js:811 |
-| `docReopenComment` | frontend/js/documents-comments.js:868 |
-| `docReplyAttachMarkdown` | frontend/js/documents-comments.js:580 |
-| `docReplyToComment` | frontend/js/documents-comments.js:904 |
-| `docResolveComment` | frontend/js/documents-comments.js:845 |
-| `docResolvedRow` | frontend/js/documents-comments.js:709 |
-| `docShowComment` | frontend/js/documents-comments.js:829 |
-| `docThreadAuthor` | frontend/js/documents-comments.js:480 |
-| `docThreadDeleteReply` | frontend/js/documents-comments.js:375 |
-| `docThreadEditReply` | frontend/js/documents-comments.js:367 |
-| `docThreadHash` | frontend/js/documents-comments.js:247 |
-| `docThreadKeys` | frontend/js/documents-comments.js:256 |
-| `docThreadReopen` | frontend/js/documents-comments.js:398 |
-| `docThreadReopenEdit` | frontend/js/documents-comments.js:408 |
-| `docThreadReplies` | frontend/js/documents-comments.js:542 |
-| `docThreadReply` | frontend/js/documents-comments.js:359 |
-| `docThreadResolve` | frontend/js/documents-comments.js:386 |
-| `docThreadWho` | frontend/js/documents-comments.js:484 |
-| `docThreadsForSave` | frontend/js/documents-comments.js:519 |
-| `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
-| `docThreadsSync` | frontend/js/documents-comments.js:492 |
-| `renderDocComments` | frontend/js/documents-comments.js:767 |
+| `docCommentsShell` | frontend/js/documents-comments.js:542 |
+| `docDeleteReply` | frontend/js/documents-comments.js:691 |
+| `docEditReply` | frontend/js/documents-comments.js:681 |
+| `docGoToComment` | frontend/js/documents-comments.js:611 |
+| `docReopenComment` | frontend/js/documents-comments.js:668 |
+| `docReplyAttachMarkdown` | frontend/js/documents-comments.js:380 |
+| `docReplyToComment` | frontend/js/documents-comments.js:704 |
+| `docResolveComment` | frontend/js/documents-comments.js:645 |
+| `docResolvedRow` | frontend/js/documents-comments.js:509 |
+| `docShowComment` | frontend/js/documents-comments.js:629 |
+| `docThreadAuthor` | frontend/js/documents-comments.js:280 |
+| `docThreadReplies` | frontend/js/documents-comments.js:342 |
+| `docThreadWho` | frontend/js/documents-comments.js:284 |
+| `docThreadsForSave` | frontend/js/documents-comments.js:319 |
+| `docThreadsSync` | frontend/js/documents-comments.js:292 |
+| `renderDocComments` | frontend/js/documents-comments.js:567 |
 
 ### frontend/js/documents-csvgrid.js (24)
 
@@ -4549,6 +4540,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `onStripKey` | frontend/js/documents-tabs.js:97 |
 | `read` | frontend/js/documents-tabs.js:18 |
 | `write` | frontend/js/documents-tabs.js:19 |
+
+### frontend/js/documents-threads.js (10)
+
+| Name | File:line |
+|---|---|
+| `docCommentResolveEdit` | frontend/js/documents-threads.js:4 |
+| `docThreadDeleteReply` | frontend/js/documents-threads.js:151 |
+| `docThreadEditReply` | frontend/js/documents-threads.js:143 |
+| `docThreadHash` | frontend/js/documents-threads.js:23 |
+| `docThreadKeys` | frontend/js/documents-threads.js:32 |
+| `docThreadReopen` | frontend/js/documents-threads.js:174 |
+| `docThreadReopenEdit` | frontend/js/documents-threads.js:184 |
+| `docThreadReply` | frontend/js/documents-threads.js:135 |
+| `docThreadResolve` | frontend/js/documents-threads.js:162 |
+| `docThreadsReconcile` | frontend/js/documents-threads.js:54 |
 
 ### frontend/js/documents-view.js (30)
 
@@ -5164,11 +5170,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `extractRefLabel` | frontend/js/extract-preview.js:8 |
 | `renderExtractPreview` | frontend/js/extract-preview.js:14 |
 
-### frontend/js/feature-model-sheet.js (1)
+### frontend/js/feature-model-sheet.js (2)
 
 | Name | File:line |
 |---|---|
 | `openFeatureModelSheet` | frontend/js/feature-model-sheet.js:10 |
+| `syncFeatureModelPills` | frontend/js/feature-model-sheet.js:92 |
 
 ### frontend/js/field-clear.js (6)
 
@@ -5810,20 +5817,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `submitHelpChatQuestion` | frontend/js/help-chat.js:362 |
 | `toggleHelpChat` | frontend/js/help-chat.js:825 |
 
-### frontend/js/icon-picker.js (10)
+### frontend/js/icon-picker-icons.js (2)
 
 | Name | File:line |
 |---|---|
-| `closeIconPicker` | frontend/js/icon-picker.js:603 |
+| `iconGroups` | frontend/js/icon-picker-icons.js:37 |
+| `iconPickerPhosphorNames` | frontend/js/icon-picker-icons.js:19 |
+
+### frontend/js/icon-picker.js (8)
+
+| Name | File:line |
+|---|---|
+| `closeIconPicker` | frontend/js/icon-picker.js:557 |
 | `iconPickerEmojiGroups` | frontend/js/icon-picker.js:473 |
-| `iconPickerGlyph` | frontend/js/icon-picker.js:587 |
+| `iconPickerGlyph` | frontend/js/icon-picker.js:541 |
 | `iconPickerHay` | frontend/js/icon-picker.js:468 |
-| `iconPickerIconGroups` | frontend/js/icon-picker.js:526 |
-| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:508 |
-| `iconPickerRecent` | frontend/js/icon-picker.js:543 |
-| `iconPickerRemember` | frontend/js/icon-picker.js:548 |
-| `iconPickerText` | frontend/js/icon-picker.js:582 |
-| `openIconPicker` | frontend/js/icon-picker.js:612 |
+| `iconPickerRecent` | frontend/js/icon-picker.js:497 |
+| `iconPickerRemember` | frontend/js/icon-picker.js:502 |
+| `iconPickerText` | frontend/js/icon-picker.js:536 |
+| `openIconPicker` | frontend/js/icon-picker.js:566 |
 
 ### frontend/js/image-layout.js (14)
 
@@ -13455,7 +13467,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
 |  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:122 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
-|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:380 |
+|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:363 |
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
 |  | POST | `chat` | src/tessellate/api/routes_chat.py:416 |
 |  | POST | `count` | src/tessellate/api/routes_usage.py:30 |
@@ -13580,7 +13592,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
-| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:927 |
+| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:827 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:549 |
@@ -23622,44 +23634,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:107 |
 | `tidy_undo` | src/tessellate/api/routes_tidy.py:71 |
 
-### src/tessellate/api/routes_timeline.py (34)
+### src/tessellate/api/routes_timeline.py (31)
 
 | Name | File:line |
 |---|---|
-| `_MeetingAt` | src/tessellate/api/routes_timeline.py:287 |
-| `_add_source_density` | src/tessellate/api/routes_timeline.py:596 |
-| `_also_on` | src/tessellate/api/routes_timeline.py:277 |
-| `_bands` | src/tessellate/api/routes_timeline.py:781 |
-| `_bucket_start` | src/tessellate/api/routes_timeline.py:173 |
-| `_check_params` | src/tessellate/api/routes_timeline.py:510 |
-| `_clip` | src/tessellate/api/routes_timeline.py:78 |
-| `_cut_page` | src/tessellate/api/routes_timeline.py:651 |
-| `_dates_of` | src/tessellate/api/routes_timeline.py:611 |
-| `_decode_cursor` | src/tessellate/api/routes_timeline.py:87 |
-| `_decode_marks` | src/tessellate/api/routes_timeline.py:143 |
-| `_density` | src/tessellate/api/routes_timeline.py:759 |
-| `_encode_marks` | src/tessellate/api/routes_timeline.py:126 |
-| `_entries_in_window` | src/tessellate/api/routes_timeline.py:729 |
-| `_first_line` | src/tessellate/api/routes_timeline.py:674 |
-| `_in_range` | src/tessellate/api/routes_timeline.py:542 |
-| `_meeting_dates` | src/tessellate/api/routes_timeline.py:298 |
-| `_naive` | src/tessellate/api/routes_timeline.py:685 |
-| `_older_than` | src/tessellate/api/routes_timeline.py:165 |
-| `_page_of` | src/tessellate/api/routes_timeline.py:557 |
-| `_place_documents` | src/tessellate/api/routes_timeline.py:308 |
-| `_place_notes` | src/tessellate/api/routes_timeline.py:184 |
-| `_place_reminders` | src/tessellate/api/routes_timeline.py:344 |
-| `_placed_rows` | src/tessellate/api/routes_timeline.py:628 |
-| `_ranged_entries` | src/tessellate/api/routes_timeline.py:716 |
-| `_requested_kinds` | src/tessellate/api/routes_timeline.py:105 |
-| `_source_pages` | src/tessellate/api/routes_timeline.py:574 |
-| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:885 |
-| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:910 |
-| `_thread_bands` | src/tessellate/api/routes_timeline.py:810 |
-| `_window` | src/tessellate/api/routes_timeline.py:524 |
-| `_with_placement` | src/tessellate/api/routes_timeline.py:693 |
-| `span_digest` | src/tessellate/api/routes_timeline.py:928 |
-| `timeline` | src/tessellate/api/routes_timeline.py:381 |
+| `_MeetingAt` | src/tessellate/api/routes_timeline.py:270 |
+| `_add_source_density` | src/tessellate/api/routes_timeline.py:579 |
+| `_also_on` | src/tessellate/api/routes_timeline.py:260 |
+| `_bucket_start` | src/tessellate/api/routes_timeline.py:156 |
+| `_check_params` | src/tessellate/api/routes_timeline.py:493 |
+| `_cut_page` | src/tessellate/api/routes_timeline.py:634 |
+| `_dates_of` | src/tessellate/api/routes_timeline.py:594 |
+| `_decode_cursor` | src/tessellate/api/routes_timeline.py:70 |
+| `_decode_marks` | src/tessellate/api/routes_timeline.py:126 |
+| `_density` | src/tessellate/api/routes_timeline.py:742 |
+| `_encode_marks` | src/tessellate/api/routes_timeline.py:109 |
+| `_entries_in_window` | src/tessellate/api/routes_timeline.py:712 |
+| `_first_line` | src/tessellate/api/routes_timeline.py:657 |
+| `_in_range` | src/tessellate/api/routes_timeline.py:525 |
+| `_meeting_dates` | src/tessellate/api/routes_timeline.py:281 |
+| `_naive` | src/tessellate/api/routes_timeline.py:668 |
+| `_older_than` | src/tessellate/api/routes_timeline.py:148 |
+| `_page_of` | src/tessellate/api/routes_timeline.py:540 |
+| `_place_documents` | src/tessellate/api/routes_timeline.py:291 |
+| `_place_notes` | src/tessellate/api/routes_timeline.py:167 |
+| `_place_reminders` | src/tessellate/api/routes_timeline.py:327 |
+| `_placed_rows` | src/tessellate/api/routes_timeline.py:611 |
+| `_ranged_entries` | src/tessellate/api/routes_timeline.py:699 |
+| `_requested_kinds` | src/tessellate/api/routes_timeline.py:88 |
+| `_source_pages` | src/tessellate/api/routes_timeline.py:557 |
+| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:785 |
+| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:810 |
+| `_window` | src/tessellate/api/routes_timeline.py:507 |
+| `_with_placement` | src/tessellate/api/routes_timeline.py:676 |
+| `span_digest` | src/tessellate/api/routes_timeline.py:828 |
+| `timeline` | src/tessellate/api/routes_timeline.py:364 |
 
 ### src/tessellate/api/routes_translate.py (2)
 
@@ -23843,6 +23852,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `is_another_device` | src/tessellate/api/this_computer.py:32 |
 | `this_computer_only` | src/tessellate/api/this_computer.py:46 |
+
+### src/tessellate/api/timeline_bands.py (3)
+
+| Name | File:line |
+|---|---|
+| `_bands` | src/tessellate/api/timeline_bands.py:32 |
+| `_clip` | src/tessellate/api/timeline_bands.py:23 |
+| `_thread_bands` | src/tessellate/api/timeline_bands.py:61 |
 
 ### src/tessellate/api/versioning.py (2)
 

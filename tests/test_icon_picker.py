@@ -45,7 +45,7 @@ def test_the_picker_is_fetched_on_first_use_with_its_own_styles():
     caller goes through the one door in editor.js (a boot script every
     caller reaches) rather than calling `openIconPicker` itself."""
     app = (JS / "app.js").read_text(encoding="utf-8")
-    assert 'iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"]' in app
+    assert 'iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js", "/js/icon-picker-icons.js"]' in app
     editor = (JS / "editor.js").read_text(encoding="utf-8")
     loader = editor[editor.index("function pickIconOrEmoji(") :][:400]
     assert 'iconPicker: ["openIconPicker"]' in app and "openIconPicker(options)" in loader

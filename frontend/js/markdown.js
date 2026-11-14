@@ -472,10 +472,8 @@ globalThis.mdList = {
     const n = cur ? cur.count : 0;
     //: Any count, not only to 59 (laglist-1108): the next numeral is built the way `docLists` builds it.
     let roman = "";
-    for (let rest = n + 1, i = 0; rest > 0; i += 1) {
-      const [r, v] = [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]][i];
-      while (rest >= v) { roman += r; rest -= v; }
-    }
+    let rest = n + 1;
+    for (const [r, v] of [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]]) for (; rest >= v; rest -= v) roman += r;
     const run = (cur?.key === "ol-a-dot" && token === String.fromCharCode(97 + n) && "a") || (cur?.key === "ol-i-dot" && token === roman && "i");
     const start = token === "a" || token === "i" ? token : "";
     if (!run && (!start || (cur && indent.length > cur.indent.length))) return null;

@@ -541,22 +541,9 @@ function openGlobalFind(opts = {}) {
     return;
   }
   const bar = $("global-find-bar");
-  //: The Documents tab's fallback (the editor engine failed to load) keeps the engine panel's two reach-outs, made on first use
-  //: (not in the page: the boot element cap) and shown on that tab only.
-  let reach = bar.querySelector(".global-find-docs");
-  if (!reach && $("tab-documents")) {
-    reach = Object.assign(document.createElement("span"), { className: "global-find-docs" });
-    const mk = (name, label, title, run) => {
-      const b = Object.assign(document.createElement("button"), { type: "button", className: "ghost small", name, textContent: label, title });
-      b.addEventListener("click", run);
-      return b;
-    };
-    reach.append(
-      mk("all-documents", "All documents", "Find this in every document", () => docFindInDocuments($("global-find-input").value)),
-      mk("replace-in-all", "Replace in all", "Replace this in every document", () => openDocReplace({ find: $("global-find-input").value })),
-    );
-    $("global-find-count").after(reach);
-  }
+  //: The Documents tab's fallback (the editor engine failed to load) keeps the engine panel's two reach-outs: made on
+  //: first use by documents-code.js (a property of this function, so Documents-only code stays out of the boot).
+  const reach = $("tab-documents") && openGlobalFind.docsReach?.(bar);
   if (reach) reach.hidden = !($("tab-documents") && !$("tab-documents").classList.contains("hidden"));
   bar.classList.remove("hidden");
   const input = $("global-find-input");

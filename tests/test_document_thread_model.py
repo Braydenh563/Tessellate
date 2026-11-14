@@ -1,7 +1,7 @@
 """Document comment threads, the browser model (audit 1102 DX24, audit 1028 D26).
 
 The pure functions between `DOC-THREADS-BEGIN` and `DOC-THREADS-END` in
-documents-comments.js run here in node, with the comment parser they build on.
+documents-threads.js run here in node, with the comment parser they build on.
 """
 
 from __future__ import annotations
@@ -197,8 +197,9 @@ def thread_checks(tmp_path_factory) -> list[dict]:
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
     source = JS.read_text(encoding="utf-8")
+    threads = JS.with_name("documents-threads.js").read_text(encoding="utf-8")  # moved out of the panel file (L624)
     model = _region(source, "// DOC-COMMENT-BEGIN", "// DOC-COMMENT-END") + _region(
-        source, "// DOC-THREADS-BEGIN", "// DOC-THREADS-END"
+        threads, "// DOC-THREADS-BEGIN", "// DOC-THREADS-END"
     )
     script = tmp_path_factory.mktemp("docthreads") / "run.js"
     script.write_text(model + DRIVER, encoding="utf-8")
