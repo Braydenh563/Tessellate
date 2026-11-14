@@ -1427,29 +1427,12 @@ onSurface("reminders", () => {
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
   $("reminder-clear-done").addEventListener("click", clearDoneReminders);
-  $("reminders-page-size").value = remindersPageSize;
-  $("reminders-page-size").addEventListener("change", (e) => {
-    remindersPageSize = e.target.value;
-    prefs.set("reminders-page-size", remindersPageSize);
-    remindersDonePage = 1;
-    loadReminders();
-  });
-  $("reminders-done-page-prev").addEventListener("click", () => {
-    if (remindersDonePage <= 1) return;
-    remindersDonePage -= 1;
-    loadReminders();
-  });
-  $("reminders-done-page-next").addEventListener("click", () => {
-    remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
-    loadReminders();
-  });
   for (const button of document.querySelectorAll("#reminder-filter button")) {
     button.addEventListener("click", () => {
       reminderFilter = button.dataset.filter;
       for (const b of document.querySelectorAll("#reminder-filter button")) {
         setActiveChoice(b, b === button);
       }
-      remindersDonePage = 1; // a filter switch can change what's even in Done
       loadReminders();
     });
   }

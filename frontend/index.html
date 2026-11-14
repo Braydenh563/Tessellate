@@ -6157,15 +6157,6 @@ Link to another note with [[its first few words]]."></textarea>
                 title="Reminders from a calendar file (.ics), with a report of anything skipped">
                 <i class="ph ph-calendar-check ph-lead" aria-hidden="true"></i> Import a calendar (.ics)</button>
               <input id="reminders-import-ics-file" type="file" accept=".ics,text/calendar" class="hidden" aria-label="Calendar file to import">
-              <div class="dock-menu-section">
-                <label class="muted dock-menu-label" for="reminders-page-size">Completed per page</label>
-                <select id="reminders-page-size" aria-label="Completed reminders per page" title="Completed reminders per page">
-                  <option value="all">All completed</option>
-                  <option value="25">25 per page</option>
-                  <option value="50">50 per page</option>
-                  <option value="100">100 per page</option>
-                </select>
-              </div>
             </div>
           </details>
           <!-- The dock's one filled action (INBOX 392): above 600 it takes the
@@ -6201,13 +6192,6 @@ Link to another note with [[its first few words]]."></textarea>
         <button type="button" class="library-chip" aria-pressed="false" data-filter="done"><i class="ph ph-check-circle ph-lead" aria-hidden="true"></i> Done</button>
       </div>
       <div id="reminder-groups"></div>
-      <!-- Only ever appears under the Done group, see the note on
-           #reminders-page-size above. -->
-      <div id="reminders-done-pagination" class="row notes-pagination hidden" role="navigation" aria-label="Completed reminder pages">
-        <button id="reminders-done-page-prev" class="ghost small" type="button" aria-label="Previous page"><i class="ph ph-caret-left ph-lead" aria-hidden="true"></i> Prev</button>
-        <span id="reminders-done-page-status" class="muted text-sm" role="status">Page 1 of 1</span>
-        <button id="reminders-done-page-next" class="ghost small" type="button" aria-label="Next page">Next <i class="ph ph-caret-right" aria-hidden="true"></i></button>
-      </div>
       <div id="reminders-empty" class="empty-state hidden">
         <span class="empty-icon" aria-hidden="true"><i class="ph ph-alarm ph-lead" aria-hidden="true"></i></span>
         <p class="empty-title">No reminders yet</p>

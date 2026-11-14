@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 123 | 29 | 3 | 10 | 152 |
+| world-class | 0 | 122 | 29 | 3 | 10 | 151 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 512 | 100 | 5 | 121 | 984 |
+| all | 372 | 511 | 100 | 5 | 121 | 983 |
 
 ## graph
 
@@ -535,7 +535,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'
 - [ ] **L-world-class-67** `world-class` open, M: OCR reading, engine installs and transcription as Activity-panel jobs with progress per page and Stop (decision 70). From WORLD_CLASS_PLAN.md:3954. Evidence: 28.4 row 6 (:3954) and 28.5 row 8 (:3985) not marked built; decision 70 (:3909)
-- [ ] **L-world-class-68** `world-class` open, S: Library and Reminders lists page by cursor on scroll; hide every control whose backend is not installed (B7, F2). From WORLD_CLASS_PLAN.md:649. Evidence: notes-list.js:3115 and timeline.js:715 page by cursor; Library and Reminders do not; settings-controls.js:2281 reads /capabilities for one control VERIFIED 2026-11-14 (not built, needs a design call): hidden controls: the Office importer (settings-controls.js:1226) and the MCP snippet (:2317) read /capabilities and hide; the mic buttons #mic-note and #mic-chat do not (gesture-kit.js:373 answers a plain info toast when the voice add-on is missing, the owner's end-to-end pass in status.js:1121 chose that over a red error), so hiding them reverses a taken choice and the palette row "Dictate a note" (app-features.js:403) points at the same button. Paging: GET /reminders, /documents and /media accept cursor (routes_reminders.py:523, routes_documents.py:397) but the Reminders tab reads every row with apiPagedList (shell-reminders.js:944) because the tab badge, the status bar counts and the due timer need the whole open set, and the Library filters read every document in memory (library.js:3335); a scroll pager needs a server count of open and due reminders plus a done-only filter first.
 - [ ] **L-world-class-69** `world-class` open, M: Evals for concurrent tool calls at index 1 and beyond and for Ollama's native tool-call dialect. From WORLD_CLASS_PLAN.md:820. Evidence: tests/test_skills_evals.py is the only eval module (:813); 1.5B run 0 of 10 tool choice (:779)
 - [ ] **L-world-class-73** `world-class` open, S: Measure the event bus (cost per event, subscribers, back-pressure) as 19.5 asks. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the event bus ... open'; 19.5 lists it unmeasured
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
