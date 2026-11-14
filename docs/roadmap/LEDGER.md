@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 88 | 98 | 0 | 0 | 186 |
+| chat | 0 | 87 | 85 | 0 | 0 | 172 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 460 | 167 | 0 | 124 | 953 |
+| all | 326 | 459 | 154 | 0 | 124 | 939 |
 
 ## graph
 
@@ -60,10 +60,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-62** `chat` open, M: Phase 4 skills gate: Find loose ends 8 of 8 and 80% of built-in skills with no invalid call on a local 1.5 to 3B model. From CHAT_PLAN.md:363. Evidence: Phase 4 gate unmet: 3B found 2 of 8 (2026-10-05), 1.5B 2 of 8, skills 1/9 pass (2026-11-11); runnable headless on llama-server
 - [ ] **L-chat-63** `chat` open, M: Phase 5 (b): run the 25-question composer eval with the real embedder and set the cosine thresholds from it. From CHAT_PLAN.md:367. Evidence: Decision 19 cosine thresholds are reasoned, not measured; bge-small is runnable here (L-chat-43 measured it)
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14)
-- [ ] **L-chat-119** `chat` partly, S: T3: Settings editor unverified. From CHAT_PLAN.md:1317. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/utilities.py:74 configure_rates, :87 current_rates
-- [ ] **L-chat-121** `chat` partly, S: T7: tick by chat unverified. From CHAT_PLAN.md:1321. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/task_acts.py make a checklist
 - [ ] **L-chat-122** `chat` open, S: T8: counter absent (guess from absence). From CHAT_PLAN.md:1322. Evidence: Recount 2026-11-14 (audit, verify in code first): none found
-- [ ] **L-chat-123** `chat` open, S: T9: timer absent (guess). From CHAT_PLAN.md:1323. Evidence: Recount 2026-11-14 (audit, verify in code first): none found
 - [ ] **L-chat-125** `chat` partly, S: Build 1: unverified. From CHAT_PLAN.md:1469. Evidence: Recount 2026-11-14 (audit, verify in code first): composer.py (finding 1 to 3)
 - [ ] **L-chat-126** `chat` partly, S: Build 2: OllamaError fallback unverified. From CHAT_PLAN.md:1470. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/api/routes_chat.py
 - [ ] **L-chat-129** `chat` partly, S: Build 5: agreement cases unverified. From CHAT_PLAN.md:1473. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/realise.py exists
@@ -73,7 +70,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-133** `chat` open, S: Build 10: captions as content (guess from absence). From CHAT_PLAN.md:1478. Evidence: Recount 2026-11-14 (audit, verify in code first): none found
 - [ ] **L-chat-134** `chat` partly, S: Build 13: rule coverage unverified. From CHAT_PLAN.md:1481. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/insights.py exists
 - [ ] **L-chat-135** `chat` partly, S: Atlas A1: 60-phrasing gate unmeasured. From CHAT_PLAN.md:1769. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/utilities.py; composer_calc.py
-- [ ] **L-chat-136** `chat` partly, S: Atlas A3: history-record answers unverified. From CHAT_PLAN.md:1771. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/records.py (no route verified)
 - [ ] **L-chat-137** `chat` partly, S: Atlas A4: source-panel recipe unverified. From CHAT_PLAN.md:1772. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/api/routes_chat.py:821 _web_events; frontend/js/ask-compose.js
 - [ ] **L-chat-138** `chat` partly, S: Atlas A5: card per tool result unverified. From CHAT_PLAN.md:1773. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/tool_say.py
 - [ ] **L-chat-139** `chat` partly, S: Atlas A6: 5-turn eval unverified. From CHAT_PLAN.md:1774. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869
