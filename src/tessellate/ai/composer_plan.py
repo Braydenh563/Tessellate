@@ -850,6 +850,15 @@ def _not_reminded(reminders: list[dict], tasks: list[tuple[str, dict]]) -> list[
     return [(task, note) for task, note in tasks if study.clean(task).lower() not in said]
 
 
+#: "my to-do list" names the note called Todo when there is one (its own items, L103); else every open item.
+_TODO_LIST = re.compile(r"\bto[- ]?do list\b", re.I)
+
+
+def _has_todo_note(ctx: Ctx) -> bool:
+    first = lambda n: re.sub(r"^#+\s*", "", str(n.get("title") or str(n.get("content") or "").split("\n", 1)[0]).strip())  # noqa: E731
+    return any(re.fullmatch(r"to[- ]?do", first(n), re.I) for n in ctx.notes[:300])
+
+
 def _left(ctx: Ctx) -> Reply | None:
     if ctx.open_ids:
         return None  # with a note open, that note's own list (composer_open)
@@ -967,7 +976,7 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if _BARE_ON.match(text):
         return _due(ctx, ahead_default(today))
     if _LEFT.match(text):
-        return _left(ctx)
+        return None if _TODO_LIST.search(text) and _has_todo_note(ctx) else _left(ctx)
     if _OVERDUE.match(text):
         return _overdue(ctx)
     until = _UNTIL.match(text)

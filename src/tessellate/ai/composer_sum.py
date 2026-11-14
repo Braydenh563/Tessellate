@@ -25,6 +25,8 @@ _LEADS = (
     re.compile(r"^what do (?:my |the |our )?(?P<terms>\S.*) (?:come to|add up to|total)$", re.I),
     re.compile(r"^how much (?:is|are|do|does|would) (?P<terms>\S.*)$", re.I),
     re.compile(r"^(?P<terms>\S+(?: \S+)? (?:plus|\+) \S.*)$", re.I),
+    #: "how much did the dentist and the car service cost in total": a lookup unless it names two things (L716).
+    re.compile(r"^how much (?:did|do|does|would|will) (?P<terms>\S.*?) cost(?: (?:in total|together|altogether|combined|all up))?$", re.I),
 )
 _JOINERS = frozenset({"and", "plus", "+", "&", ","})
 _TRAILERS = ("come to", "add up to", "cost together", "together", "altogether", "combined", "in total", "all up", "total")
@@ -56,7 +58,7 @@ def _read(question: str) -> tuple[list[list[str]], bool] | None:
             names, together = _terms(m.group("terms"))
             #: "How much is the jacket" is a lookup; a sum needs two names, or
             #: a sum word, or the "together" it said.
-            summed = lead is not _LEADS[3] or len(names) > 1 or together
+            summed = lead not in (_LEADS[3], _LEADS[5]) or len(names) > 1 or together
             return (names, together) if names and summed and all(len(n) < 4 for n in names) else None
     return None
 

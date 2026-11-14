@@ -49,11 +49,15 @@ _SINCE = re.compile(r"^how\s+long\s+(?:has\s+it\s+been\s+)?since\s+(?:i|we)\s+(?
 _MARKERS = (" for ", " before ", " to ", " on ", " at ")
 
 
+#: "to-do list" and "to do list" are the list called Todo (L103).
+_TODO_LIST = re.compile(r"\bto[- ]dos?(?= list\b)")
+
+
 def _list_subject(rest: str) -> list[str]:
     """The stems of what a "left" question names: "on the Lisbon packing
     list" -> lisbon, pack; "to do for Atlas" -> atlas (the verb before the
     marker is the asking, not the subject)."""
-    rest = " " + " ".join(rest.lower().split()) + " "
+    rest = " " + _TODO_LIST.sub("todo", " ".join(rest.lower().split())) + " "
     cut = [rest.find(m) for m in _MARKERS if rest.find(m) >= 0]
     if cut and not rest.strip().startswith(("on ", "for ", "at ")):
         rest = rest[min(cut):]
@@ -144,7 +148,7 @@ def _counted_ask(q: str) -> tuple[list[str], bool] | None:
     """"How many grocery items are checked off" -> (grocery stems, True);
     "how many things on the packing list are still open" -> (packing, False).
     Read word by word (CodeQL)."""
-    tokens = re.sub(r"\bto[- ]dos?(?= list\b)", "todo", re.sub(r"[^\w' -]", " ", q.lower())).replace("-", " ").split()
+    tokens = _TODO_LIST.sub("todo", re.sub(r"[^\w' -]", " ", q.lower())).replace("-", " ").split()
     if tokens[:2] != ["how", "many"]:
         return None
     at = next((i for i, t in enumerate(tokens) if i > 1 and t in _COUNT_VERBS), None)

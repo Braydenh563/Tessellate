@@ -111,3 +111,11 @@ def test_a_person_on_two_lists_is_said_on_both():
     ]
     said = composer_digest.answer("what is Sam taking", notes, today=date(2026, 11, 10))["text"]
     assert "Sam has salad on Potluck and bins on Chores." in said, said
+
+
+@pytest.mark.parametrize("question", ["what is left on my todo list", "what's left on my to-do list", "what is left on my to do list"])
+def test_what_is_left_on_the_todo_list_is_the_todo_note_not_every_checklist(client, session, question):
+    seed.seed(session)
+    said = _post(client, question)
+    assert said.startswith("3 still to do on Todo"), said
+    assert "milk" not in said.lower(), said
