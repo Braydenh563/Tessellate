@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Restart now goes through the launcher: on a Windows source install it starts `start.bat --desktop --restart-after PID` (venv check, repair and update included) instead of `python -m tessellate`; start.bat forwards the pid to the app (L968).
 - Desktop restart: WebView2's "Failed to unregister class Chrome_WidgetWin_0. Error = 1411" at window teardown is non-fatal (`core/window_teardown.py`), and a restarted copy that hits it starts its window again instead of leaving nothing running (L-world-class-117).
 - World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).

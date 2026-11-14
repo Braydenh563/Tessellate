@@ -920,6 +920,28 @@ def _pythonw_path() -> Path | None:
     return candidate if candidate.is_file() else None
 
 
+#: The flags start.bat understands; any other app flag is not carried through it.
+_BAT_FLAGS = ("--desktop", "--no-browser")
+
+
+def _launcher_bat() -> Path | None:
+    """`start.bat` beside this source checkout, when Windows should restart
+    through it (L968: Restart now ran `python -m tessellate` directly, so the
+    venv check, repair and update that start.bat does on every start were
+    skipped). None for the packaged exe (it has no .bat) and off Windows."""
+    if sys.platform != "win32" or getattr(sys, "frozen", False):
+        return None
+    candidate = Path(__file__).resolve().parents[2] / "start.bat"
+    return candidate if candidate.is_file() else None
+
+
+def _launcher_argv(bat: Path, args: list[str], restart_after: int | None) -> list[str]:
+    """`cmd /c start.bat <flags it knows> --restart-after PID`."""
+    keep = [a for a in args if a in _BAT_FLAGS]
+    after = ["--restart-after", str(restart_after)] if restart_after else []
+    return ["cmd", "/c", str(bat), *keep, *after]
+
+
 def _spawn_desktop(hidden: bool, restart_after: int | None = None):
     """Start a fresh `memorymap --desktop` process in the given console
     mode, independent of whatever process/window is calling this, the one
@@ -950,6 +972,18 @@ def _spawn_desktop(hidden: bool, restart_after: int | None = None):
                 creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
                 close_fds=True,
                 cwd=os.getcwd(),
+            )
+        bat = _launcher_bat()
+        if bat is not None:
+            # Through start.bat like any start; its own preference handling
+            # hides the console (exit code 42 hand-off), so no flag per mode.
+            CREATE_NO_WINDOW = 0x08000000
+            CREATE_NEW_CONSOLE = 0x00000010
+            return subprocess.Popen(
+                _launcher_argv(bat, ["--desktop"], restart_after),
+                creationflags=CREATE_NO_WINDOW if hidden else CREATE_NEW_CONSOLE,
+                close_fds=True,
+                cwd=str(bat.parent),
             )
         if hidden:
             pythonw = _pythonw_path()
@@ -1029,6 +1063,9 @@ def _relaunch_argv() -> list[str]:
         if arg in _NOT_CARRIED or arg.startswith("--restart-after="):
             continue
         rest.append(arg)
+    bat = _launcher_bat()
+    if bat is not None:
+        return _launcher_argv(bat, rest, os.getpid())
     head = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "tessellate"]
     return [*head, *rest, "--restart-after", str(os.getpid())]
 
