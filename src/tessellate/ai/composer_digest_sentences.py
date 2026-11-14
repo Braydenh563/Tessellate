@@ -24,7 +24,7 @@ from tessellate.ai import (
     when as when_words,
 )
 from tessellate.ai import recognise_questions
-from tessellate.ai.composer_lists import clean
+from tessellate.ai.composer_lists import PREFIX as _LIST_PREFIX, clean
 
 
 #: The connecting words, one table (decision 72: a voice swaps this, never
@@ -562,7 +562,7 @@ FACETS: tuple[tuple[str, re.Pattern, tuple[tuple[str, re.Pattern], ...]], ...] =
 
 _DAYS_PLURAL = re.compile(r"\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?(?:\s+(?:and|or|,)\s+|,\s*)?)+\b", re.I)
 _RELATIVE = re.compile(r"(?<!\s)\s*\b(?:before |by |until )?(?:next|this|last) (?:week|month|weekend)\b", re.I)
-_PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
+_PREFIX = _LIST_PREFIX
 _TIME_LABEL = re.compile(r"^((?:this|next|last) (?:semester|term|year|month|week|weekend)),?\s+(.+)$", re.I)
 _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|order|read|check|remember to|pay|send|bring)\b[^.;,]*)$", re.I)
 _STILL_TO = re.compile(r"\b([a-z]+(?: [a-z]+)?) (?:are |is )?still to (book|buy|pay|do|send|order|sort)\b", re.I)

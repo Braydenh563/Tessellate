@@ -77,7 +77,7 @@ def _search_say(say, intent: str, mode, matched: int, scoped: bool, loading: boo
 def _answer_say(say, composed: bool, model, matched: int, context: bool) -> None:
     """Who wrote the answer, and whether it was handed the app's own."""
     if composed:
-        say("answered", "Atlas wrote it from your notes, with no model: every line comes from a note it cites.")
+        say("answered", "Atlas's assistant wrote it from your notes, with no model: every line comes from a note it cites.")
     elif model:
         say("answered", f"The model, {model}, wrote it{' from the notes found' if matched else ''}.")
         if context:

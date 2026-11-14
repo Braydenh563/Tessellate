@@ -491,6 +491,66 @@ def test_archive_is_not_a_verb():
     assert commands.parse("archive the gym note", NOW) is None
 
 
+_VERB_SENTENCES = {
+    "remind": "remind me to call Sam on Friday",
+    "complete": "complete the gym task",
+    "cancel": "cancel the dentist reminder",
+    "snooze": "snooze the call reminder until tomorrow",
+    "tag": "tag the gym note with fitness",
+    "untag": "untag fitness from the gym note",
+    "file": "file the gym note under Fitness",
+    "rename": "rename the gym note to Gym plan",
+    "restore": "restore the gym note",
+    "pin": "pin the gym note",
+    "unpin": "unpin the gym note",
+    "link": "link the gym note to the diet note",
+    "unlink": "unlink the gym note from the diet note",
+    "delete": "delete the gym note",
+    "create": "create a note called Ideas",
+    "summarise": "summarise the gym note",
+    "find": "find notes about gym",
+    "open": "open the gym note",
+}
+_READ_ONLY = {"summarise", "find", "open"}
+
+
+def test_decision_38_every_verb_is_read_and_every_write_waits_for_confirm():
+    """L728: the verbs, kept as decided; a write waits on a confirm card, a read does not."""
+    from tessellate.ai import commands
+
+    assert set(_VERB_SENTENCES) == set(commands.VERBS) - {"add"}
+
+    for verb, sentence in _VERB_SENTENCES.items():
+        cmd = commands.parse(sentence, NOW)
+        assert cmd is not None and cmd.verb == verb, sentence
+        assert cmd.confirm is (verb not in _READ_ONLY), sentence
+
+
+def test_decision_38_every_write_act_has_an_undo():
+    from tessellate.ai import acts
+
+    writes = [a for a in acts.ACTS.values() if a.writes]
+    assert len(writes) >= 15
+    assert all(a.inverse for a in writes), [a.intent for a in writes if not a.inverse]
+
+
+def test_decision_38_the_web_search_tool_is_offered_only_with_web_on(monkeypatch):
+    from tessellate.ai.tools import tool_sets
+    from tessellate.core import deps
+
+    class _Cfg:
+        def __init__(self, on):
+            self.on = on
+
+        def get_preference(self, key, default=None):
+            return self.on if key == "web_search_enabled" else default
+
+    monkeypatch.setattr(deps, "peek_config", lambda: _Cfg(False))
+    assert not tool_sets.tool_enabled("web_search") and not tool_sets.tool_enabled("read_url")
+    monkeypatch.setattr(deps, "peek_config", lambda: _Cfg(True))
+    assert tool_sets.tool_enabled("web_search") and tool_sets.tool_enabled("read_url")
+
+
 # --- Decisions 41 and 43: utilities -----------------------------------------------------------
 
 

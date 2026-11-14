@@ -725,7 +725,7 @@
   //: `controller` the ask in flight.
   const docAssist = { proposal: null, controller: null };
 
-  const docAssistModelOff = () => Boolean(modelStatus && modelStatus.ollama_running === false);
+  const docAssistModelOff = () => aiIsOff(true);
 
   //: What an ask is about: the selected lines, widened to whole lines so a
   //: change replaces what it was shown, or the whole file.

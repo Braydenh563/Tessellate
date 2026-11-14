@@ -4391,6 +4391,10 @@ details[open] > :is(.agent-step-group-summary, .fold-summary) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: var(--space-2);
+  /* A long list of web pages scrolls inside the bubble instead of stretching it (L730, decision 37). */
+  max-height: min(24rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* **A link the AI wrote on a line of its own** (CHAT_PLAN.md decision 12).
    The source card's recipe, deliberately: this is the same object (something

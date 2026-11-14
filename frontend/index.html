@@ -10468,6 +10468,27 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="chat-model-stop" class="ghost small" type="button" title="Stop any answer and unload the model from memory"><i class="ph ph-stop-circle ph-lead" aria-hidden="true"></i> Stop the model</button>
               </div>
               <p id="chat-model-note" class="status"></p>
+              <div class="row align-center" id="ask-answerer-row">
+                <label for="ask-answerer-select">Who answers plain Ask</label>
+                <select id="ask-answerer-select" aria-label="Who answers plain Ask">
+                  <option value="ai">Your model</option>
+                  <option value="notes">Quoted from your notes</option>
+                </select>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="ask-answerer-help" aria-controls="ask-answerer-help" aria-expanded="false"
+                  title="About who answers Ask" aria-label="About who answers Ask">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="ask-answerer-help" role="dialog" aria-label="About who answers Ask">
+                <p>
+                  Your model writes the answer in Ask, citing your notes. Choose
+                  quoted from your notes and a plain question is answered by the
+                  app's own answerer, with no model. The switch beside the answer
+                  length in Ask is the same choice. With no model running the
+                  answer is always from your notes.
+                </p>
+              </div>
               <!-- What the backend actually says about the model in use: its
                    size, quantisation, the window it will run at, and whether
                    it can call tools. That last one is the first thing worth

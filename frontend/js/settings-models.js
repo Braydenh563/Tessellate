@@ -817,6 +817,16 @@
       if (modelLastStatus) renderSuggested(modelLastStatus);
     }
   });
+  //: **Who answers plain Ask** (L737, the owner, 2026-11-12): the Ask box's AI switch as a Settings choice, one stored value
+  //: (`ask-answer-from`, "ai" by default). Ask's own file listens for the change event, so nothing here calls into it.
+  const answerer = $("ask-answerer-select");
+  if (answerer) {
+    answerer.value = prefs.get("ask-answer-from") === "notes" ? "notes" : "ai";
+    answerer.addEventListener("change", () => {
+      prefs.set("ask-answer-from", answerer.value === "notes" ? "notes" : "ai");
+      document.dispatchEvent(new Event("ask-answerer-changed"));
+    });
+  }
   $("suggested-hide-big")?.addEventListener("change", (event) => {
     try {
       prefs.set("hideBigModels", event.target.checked ? "1" : "0");

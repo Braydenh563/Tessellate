@@ -11,6 +11,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import (
     composer,
     composer_aliases,
+    composer_jokes,
     composer_ask,
     composer_brief,
     composer_frame,
@@ -29,6 +30,7 @@ from tessellate.ai import (
 )
 from tessellate.ai.composer_lists import clean
 from typing import NamedTuple
+from tessellate.ai.composer_jokes import context_facts as _context_facts, context_note as _context_note
 from tessellate.ai.composer_digest_sentences import (
     _FUNCTION_WORDS, _a_name, _as_you, _starts_a_title,
     CONTEXT_TAGS, FACETS, Fact, LINES, PHRASES, VOICES, _ACTION, _ASKING, _ASKS_WORDS, _BASE,
@@ -76,24 +78,6 @@ def _tidy(text: str, written: date | None = None) -> str:
     text = re.sub(r"(?<![\w&/])#([A-Za-z][\w-]*)", r"\1", text)
     text = re.sub(r"\s+([,.;])", r"\1", text)
     return text.strip().rstrip(".!").strip()
-
-
-def _context_note(view: composer.NoteView) -> bool:
-    tags = {str(t).lower().strip("#") for t in (view.note.get("tags") or [])}
-    return bool(tags & CONTEXT_TAGS)
-
-
-def _context_facts(view: composer.NoteView) -> list[Fact]:
-    """A joke or a quote is one piece (decision 67): its question and its
-    punchline are never two facts. A list of them ("Jokes I like" with a joke a bullet) is one piece a
-    bullet: run together, one joke's punchline ran into the next one's question (L-chat-19)."""
-    if len(view.sentences) > 1 and all(s.kind == "item" for s in view.sentences):
-        return [Fact(view, s, "Joke", s.text.strip().rstrip("."), "") for s in view.sentences]
-    whole = " ".join(s.text.strip() for s in view.sentences)
-    head = _PREFIX.match(whole)
-    label = head.group(1).strip() if head else "Joke"
-    body = head.group(2) if head else whole
-    return [Fact(view, view.sentences[0], label, body.strip().rstrip("."), "")] if view.sentences else []
 
 
 def _picture_shows(subject: str, caption: str, what: str) -> str:
@@ -2050,24 +2034,11 @@ def _list_gist(view: composer.NoteView, items: list[Fact]) -> list[Fact]:
         #: "a list: how did that go?, what happened next? And ..." (1420).
         asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in items]
         return [Fact(view, items[0].sentence, "", PHRASES["a_list_asked"].format(name=name, count=realise.count_word(len(items)), items=_listed(asked)))]
-    if _context_note(view) or all(_SENTENCES_INSIDE.search(f.body) for f in items):
-        #: Each item is whole sentences, a joke's question and its answer: quoted as written, never
-        #: run into "and what do you call a fake noodle" (L-chat-19).
-        quoted = [Fact(f.view, f.sentence, f.label, f"“{f.body.rstrip().rstrip('.')}”") for f in items]
-        return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=_quoted_listed(quoted)))]
+    if _context_note(view) or composer_jokes.whole_sentences([f.body for f in items]):
+        #: Quoted as written, never run into "and what do you call a fake noodle" (L-chat-19).
+        quoted = composer_jokes.quoted_listed([f.body for f in items], GIST_ITEMS)
+        return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=quoted))]
     return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=_listed(items)))]
-
-
-#: "Why don't skeletons fight? They don't have the guts": a sentence ends inside the item.
-_SENTENCES_INSIDE = re.compile(r"[?.!] +[A-Z]")
-
-
-def _quoted_listed(facts: list[Fact]) -> str:
-    shown = facts[:GIST_ITEMS + 1] if len(facts) == GIST_ITEMS + 1 else facts[:GIST_ITEMS]
-    items = [f.body for f in shown]
-    if len(facts) > len(shown):
-        items.append(f"{realise.count_word(len(facts) - len(shown))} more")
-    return realise.join_items(items)
 
 
 def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shape: str, sort: _Sorted, chosen: list[Fact], material: bool) -> list[Fact]:
