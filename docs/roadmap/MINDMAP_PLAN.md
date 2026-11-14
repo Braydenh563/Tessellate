@@ -63,11 +63,11 @@ rebuilt existing work here.
 - **Boards have a preview renderer** (`_board_preview`, `_preview_items` in
   `routes_whiteboard.py`) and a Library "Boards & maps" sub-tab that lists and
   manages them, plus duplicate.
-- **A Concept Map feature exists** (task #7, "Build the authored mindmap"),
-  reachable from the Graph tab's toolbar. Its learnability is a known open item
-  (task #103). **Read what it does before designing a second one**, the
-  likeliest right answer is that "mindmap" and "concept map" become one feature,
-  not two.
+- **A Concept Map feature existed** (task #7, "Build the authored mindmap"),
+  reachable from the Graph tab's toolbar, and its learnability was an open
+  item then (task #103). Settled: "mind map" and "concept map" became one
+  feature, named "mind map" everywhere a person reads (Brief 78, built
+  2026-10-10, `tests/test_terms.py`).
 - **The graph already renders note-to-note structure** (`frontend/js/graph.js`),
   and the Library already has a Boards & maps sub-tab (the user's own preferred
   home for this).
@@ -453,9 +453,12 @@ the study mode measured on a 40-node map.
 
 ### 12.4 Out of the map's scope (decided)
 
-Real-time collaboration, cloud sync, voice-to-map and AI image generation
-in nodes are outside an offline, local map; a request for one is a BACKLOG
-row, not plan work.
+Real-time collaboration and cloud sync are out by ARCHITECTURE decision 1
+("Offline-first, always"). AI image generation in nodes is moot by fact: no
+local image runtime ships, and torch is barred (CLAUDE.md section 7). Voice
+to map, reopened 2026-11-14 (only a session line kept it out), is built:
+Topics from a recording (`wbMapTopicsFromRecording`) turns a transcript into
+a branch, one topic per line.
 
 ### 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night)
 
@@ -525,7 +528,7 @@ tabs when the panel reaches maps, so one place per action is kept.
 - **The empty map says how to start.** One line under the templates card, gone
   on the first topic added and never shown again.
 
-## 13. The map, read against its six complaints: measured 2026-09-21, phases open
+## 13. The map, read against its six complaints: measured 2026-09-21, phases built
 
 The owner, INBOX 305: "the mindmap needs A LOT of improving. Tools and
 utilities are really awkward to use and dont show themselves how id expect,
@@ -1674,7 +1677,7 @@ Once "not taken now" under INBOX 641 (linked symbols, layer effects, reactions):
 Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 (MINDMAP_PLAN §14, mc1)"). Open, from INBOX 641 and §14.2's "not taken now":
 
-- **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Left open: swapping an icon for another icon everywhere (L-mindmap-14).
+- **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Swapping an icon for another icon in every copy: built too (L-mindmap-14, `wbStickerSwap`).
 - Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 - ~~**The whiteboard half of 641's research**~~ named nothing beyond stickers; recorded in HISTORY.md ("Moved from the plans, 2026-11-12 (mindmap-plan)").
 
