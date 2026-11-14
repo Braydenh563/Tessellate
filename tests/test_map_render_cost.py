@@ -284,6 +284,8 @@ def test_a_line_builds_its_grips_only_when_they_can_show() -> None:
     # Hover and focus, delegated once on the group rather than per line.
     render = _code("wbRenderMapEdges")
     assert '"pointerover"' in render and '"focusin"' in render
+    # Not mid-pan or mid-drag, where a sweep over the lines built dozens.
+    assert "if (event.buttons) return;" in render and '"pointermove"' in render
     # A grip built under the pointer still fades in, as one that was there did.
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     start = lazy.split("@starting-style")

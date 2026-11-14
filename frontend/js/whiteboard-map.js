@@ -4273,11 +4273,18 @@ function wbRenderMapEdges({ only = null } = {}) {
     //: (`wbMapEdgeElement.grips`): one listener each on the group, not three
     //: per line. `pointerover` is dispatched before the hover style is
     //: worked out, so the grips are there when `:hover` first matches them.
+    //: Not while a button is held: a pan or a drag sweeps the pointer over
+    //: dozens of lines whose grips cannot be pressed mid-gesture, and
+    //: building each one cost the pan its frames (mapperf: worst pan frame
+    //: 17 to 150ms at 500 topics). The first plain move over the line after
+    //: the gesture builds them, so the hover still answers.
     const grips = (event) => {
+      if (event.buttons) return;
       const wrap = event.target.closest?.(".wb-map-edge-group");
-      if (wrap && !wrap.querySelector(".wb-map-edge-handle")) wbMapEdgeElement.grips(wrap);
+      if (wrap && !wrap._wbGrips) wrap._wbGrips = Boolean(wbMapEdgeElement.grips(wrap));
     };
     group.addEventListener("pointerover", grips);
+    group.addEventListener("pointermove", grips);
     group.addEventListener("focusin", grips);
   }
   const index = wbMapIndex();
