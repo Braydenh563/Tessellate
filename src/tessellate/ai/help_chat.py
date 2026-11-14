@@ -280,7 +280,7 @@ for _topic in HELP_TOPICS:
 #: markdown" is Import & export.
 _KEYWORDS_ADD_GUIDE: dict[str, tuple[str, ...]] = {
     "performance": ("so slow", "is slow", "running slow", "takes ages", "sluggish"),
-    "undo-bin": ("deleted", "deleted notes", "deleted note", "undo deleting", "undelete"),
+    "undo-bin": ("deleted", "deleted notes", "deleted note", "undo deleting", "undelete", "undo after reload"),
     "import-export": ("export", "markdown", "to markdown", "as markdown", "backup", "back up my notes"),
     "meetings": ("record a meeting", "record meetings", "record the meeting"),
     "notes-controls": ("lots of notes", "many notes", "notes at once", "all at once"),

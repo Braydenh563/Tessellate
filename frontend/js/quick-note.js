@@ -472,11 +472,35 @@
       keepQuickNoteDraft();
       if ($("quick-note-status").classList.contains("error")) quickNoteStatus("");
     });
+    //: **Rich paste, as the document and the capture box have it** (L-world-class-50). The
+    //: converter is documents.js's own (`docHtmlToMarkdown`, in the Library bundle), so the
+    //: paste is taken, the bundle fetched, and the words typed in with `insertText` (the
+    //: box's undo keeps them). Ctrl+Shift+V pastes plain, as everywhere.
+    let plainPaste = false;
     box.addEventListener("keydown", (event) => {
+      plainPaste = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v";
       if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
         event.preventDefault();
         saveQuickNote();
       }
+    });
+    box.addEventListener("paste", (event) => {
+      const html = event.clipboardData?.getData("text/html") || "";
+      const plain = event.clipboardData?.getData("text/plain") || "";
+      const asPlain = plainPaste;
+      plainPaste = false;
+      if (!html || asPlain || event.clipboardData.files.length) return;
+      event.preventDefault();
+      ensureModule("library").then((ok) => {
+        let text = ok && docHtmlIsRich(html) ? docHtmlToMarkdown(html) : "";
+        const { value, selectionStart: from, selectionEnd: to } = box;
+        //: A block starts its own line, as in the document (`docRichPasteEvent.fit`).
+        if (text) text = docRichPasteEvent.fit(text, value.slice(value.lastIndexOf("\n", from - 1) + 1, from), value.slice(to, (value.indexOf("\n", to) + 1 || value.length + 1) - 1));
+        text ||= plain;
+        box.focus();
+        if (!document.execCommand("insertText", false, text)) box.setRangeText(text, from, to, "end");
+        box.dispatchEvent(new Event("input", { bubbles: true }));
+      });
     });
     $("quick-note-save").addEventListener("click", saveQuickNote);
     $("quick-note-more").addEventListener("click", quickNoteToCapture);
