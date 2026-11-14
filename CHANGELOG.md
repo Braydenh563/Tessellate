@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the data folder self-check test counts its work (at most 5 queries, 2 directory listings, no file check per attachment) instead of timing it (a 50 ms bound failed at 140.6 ms on CI, 2026-11-14).
 - Tests: the background warm-up test checks order, not time: the load is held open by an event until the request has returned (a 50 ms bound failed at 74 ms on CI, 2026-11-14).
 - Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
