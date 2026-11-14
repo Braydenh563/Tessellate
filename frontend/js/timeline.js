@@ -1292,6 +1292,12 @@ function timelineDayLabel(key, has) {
   return { long, label: `${long}, ${has ? "has a page" : "no page yet"}` };
 }
 
+//: The journal streak's words, or "" under two days: one day is not a run.
+function timelineStreakLine(days) {
+  if (!Number.isFinite(days) || days < 2) return "";
+  return `${days} days in a row`;
+}
+
 async function renderTimelineDayStrip() {
   const host = $("timeline-daystrip-days");
   if (!host) return;
@@ -1299,9 +1305,20 @@ async function renderTimelineDayStrip() {
   if (!timelineStripEnd || timelineStripEnd > today) timelineStripEnd = today;
   const end = timelineStripEnd;
   const first = timelineDayShift(end, 1 - TIMELINE_STRIP_DAYS);
-  const hasPage = await timelineDayPages(first, end);
+  //: The streak is asked through today over the endpoint's whole window, so a
+  //: run longer than the strip's seven days is not cut to seven.
+  const [hasPage, journal] = await Promise.all([
+    timelineDayPages(first, end),
+    apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null),
+  ]);
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;
+  const streak = $("timeline-streak");
+  if (streak) {
+    const said = timelineStreakLine(journal?.streak);
+    streak.textContent = said;
+    streak.classList.toggle("hidden", !said);
+  }
 
   const lastDay = new Date(`${end}T00:00:00`);
   const firstDay = new Date(`${first}T00:00:00`);

@@ -118,3 +118,18 @@ def test_the_strip_is_one_header_with_the_arrows_by_the_month():
     for name in ("ArrowLeft", "ArrowRight", "Home", "End"):
         assert name in keys, name
     assert 'addEventListener("keydown", timelineDayKeys)' in TIMELINE
+
+
+def test_the_strip_says_the_journal_streak():
+    """L495 (D6's "a streak that counts days with a daily note"), reopened
+    2026-11-14: decision 22 had only a session reason. The streak is a quiet
+    line in the strip's head, not a dock control, asked over the endpoint's
+    full window so a long run is not capped at the strip's seven days, and
+    hidden under two days (one day is not a run)."""
+    head = HTML[HTML.index('class="timeline-daystrip-head"') : HTML.index('id="timeline-daystrip-days"')]
+    assert re.search(r'<span id="timeline-streak" class="[^"]*\bhidden\b[^"]*"', head)
+    body = _function(TIMELINE, "async function renderTimelineDayStrip(")
+    assert "/entries/daily?through=${today}&days=366" in body
+    assert "timelineStreakLine(" in body
+    line = _function(TIMELINE, "function timelineStreakLine(")
+    assert "days in a row" in line and "< 2" in line
