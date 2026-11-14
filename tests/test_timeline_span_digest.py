@@ -223,3 +223,52 @@ def test_the_span_reads_only_its_own_days_from_the_database(book, monkeypatch):
     notes = review_digest._notes(book, dt.date(2026, 10, 1), dt.timezone.utc, dt.date(2026, 10, 31))
     assert [n["content"][:9] for n in notes] == ["# Harbor ", "# Lisbon "]
     assert fetched == [2]  # not the 9 November note, nor 28 September's
+
+
+def test_reopening_the_sheet_never_starts_a_second_model_call(book, ai_client, fake_ollama, monkeypatch):
+    """Review 5899369381: a call left running past SPAN_MODEL_TIMEOUT is
+    reused by the next open of the same span, never joined by a second one;
+    once it lands, its review is served and kept."""
+    import threading
+
+    from tessellate.api import routes_timeline
+
+    release = threading.Event()
+    calls = []
+
+    def slow(*_a, **_k):
+        calls.append(1)
+        release.wait(5)
+        return {"content": "October was the Harbor launch.", "thinking": ""}
+
+    monkeypatch.setattr(routes_timeline, "SPAN_MODEL_TIMEOUT", 0.05)
+    monkeypatch.setattr(fake_ollama, "chat", slow)
+    span = {"start": "2026-10-01", "end": "2026-10-31"}
+    try:
+        first = ai_client.get("/timeline/digest", params=span).json()
+        again = ai_client.get("/timeline/digest", params=span).json()
+    finally:
+        release.set()
+    assert first["composed"] is True and again["composed"] is True
+    assert len(calls) == 1
+    monkeypatch.setattr(routes_timeline, "SPAN_MODEL_TIMEOUT", 2.0)
+    landed = ai_client.get("/timeline/digest", params=span).json()
+    kept = ai_client.get("/timeline/digest", params=span).json()
+    assert landed["text"] == kept["text"] == "October was the Harbor launch."
+    assert len(calls) == 1
+
+
+def test_a_new_note_in_the_span_asks_again(book, ai_client, fake_ollama):
+    """The key holds the span's newest note, so a note written into it is read."""
+    span = {"start": "2026-10-01", "end": "2026-10-31"}
+    fake_ollama.librarian_reply = "First review."
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "First review."
+    asked = len(fake_ollama.chat_calls)
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "First review."
+    assert len(fake_ollama.chat_calls) == asked  # the same notes: the kept review
+    entry = manager.create_entry(book, "# Harbor retro\n\nWhat went well at launch.", "Work")
+    entry.created_at = entry.updated_at = dt.datetime(2026, 10, 25, 9)
+    book.commit()
+    fake_ollama.librarian_reply = "Second review."
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Second review."
+    assert len(fake_ollama.chat_calls) == asked + 1
