@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2849, tests 22465, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2850, tests 22468, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -2568,28 +2568,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `bgArtApplyPause` | frontend/js/bg-art.js:2363 |
-| `bgArtCalm` | frontend/js/bg-art.js:2320 |
-| `bgArtCovered` | frontend/js/bg-art.js:2438 |
-| `bgArtFrameRate` | frontend/js/bg-art.js:2324 |
-| `bgArtFreeze` | frontend/js/bg-art.js:2388 |
+| `bgArtApplyPause` | frontend/js/bg-art.js:2383 |
+| `bgArtCalm` | frontend/js/bg-art.js:2340 |
+| `bgArtCovered` | frontend/js/bg-art.js:2458 |
+| `bgArtFrameRate` | frontend/js/bg-art.js:2344 |
+| `bgArtFreeze` | frontend/js/bg-art.js:2408 |
 | `bgArtGenome` | frontend/js/bg-art.js:340 |
-| `bgArtHalt` | frontend/js/bg-art.js:2486 |
-| `bgArtMountStill` | frontend/js/bg-art.js:2532 |
-| `bgArtPreview` | frontend/js/bg-art.js:2742 |
-| `bgArtRetire` | frontend/js/bg-art.js:2476 |
-| `bgArtRun` | frontend/js/bg-art.js:2548 |
+| `bgArtHalt` | frontend/js/bg-art.js:2506 |
+| `bgArtMountStill` | frontend/js/bg-art.js:2552 |
+| `bgArtPreview` | frontend/js/bg-art.js:2762 |
+| `bgArtRetire` | frontend/js/bg-art.js:2496 |
+| `bgArtRun` | frontend/js/bg-art.js:2568 |
 | `bgArtSeedOf` | frontend/js/bg-art.js:364 |
-| `bgArtSeedStale` | frontend/js/bg-art.js:2268 |
+| `bgArtSeedStale` | frontend/js/bg-art.js:2288 |
 | `bgArtSeedText` | frontend/js/bg-art.js:401 |
-| `bgArtShouldFreeze` | frontend/js/bg-art.js:2298 |
+| `bgArtShouldFreeze` | frontend/js/bg-art.js:2318 |
 | `bgArtSpeciesName` | frontend/js/bg-art.js:389 |
 | `bgArtStrainCount` | frontend/js/bg-art.js:395 |
 | `bgArtStrains` | frontend/js/bg-art.js:373 |
-| `bgArtSurface` | frontend/js/bg-art.js:2341 |
-| `bgArtThaw` | frontend/js/bg-art.js:2423 |
-| `bgArtTier` | frontend/js/bg-art.js:2731 |
-| `bgArtWatch` | frontend/js/bg-art.js:2458 |
+| `bgArtSurface` | frontend/js/bg-art.js:2361 |
+| `bgArtThaw` | frontend/js/bg-art.js:2443 |
+| `bgArtTier` | frontend/js/bg-art.js:2751 |
+| `bgArtWatch` | frontend/js/bg-art.js:2478 |
 | `bgCapRgb` | frontend/js/bg-art.js:75 |
 | `bgClamp` | frontend/js/bg-art.js:282 |
 | `bgColourHue` | frontend/js/bg-art.js:230 |
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22465)
+## Tests (22468)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28274,6 +28274,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bell_panel_warmed_l409.py | 1 |
 | tests/test_bench_spec.py | 7 |
 | tests/test_bg_art_1436.py | 8 |
+| tests/test_bg_art_cheaper_three_l_ui_20.py | 3 |
 | tests/test_bg_art_styles.py | 25 |
 | tests/test_bgtasks.py | 22 |
 | tests/test_bidi_controls_n20.py | 2 |
@@ -31362,13 +31363,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:616 |
+| Needs hardware | docs/roadmap/LEDGER.md:615 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:609 |
+| Owner calls | docs/roadmap/LEDGER.md:608 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31544,7 +31545,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:803 |
+| Plan session briefs | docs/roadmap/LEDGER.md:802 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31598,25 +31599,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:819 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:903 |
+| chat | docs/roadmap/LEDGER.md:818 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:902 |
 | documents | docs/roadmap/LEDGER.md:333 |
-| documents | docs/roadmap/LEDGER.md:843 |
-| general | docs/roadmap/LEDGER.md:598 |
+| documents | docs/roadmap/LEDGER.md:842 |
+| general | docs/roadmap/LEDGER.md:597 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:807 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:915 |
+| graph | docs/roadmap/LEDGER.md:806 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:914 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:349 |
-| mindmap | docs/roadmap/LEDGER.md:855 |
-| timeline | docs/roadmap/LEDGER.md:360 |
-| timeline | docs/roadmap/LEDGER.md:879 |
+| mindmap | docs/roadmap/LEDGER.md:854 |
+| timeline | docs/roadmap/LEDGER.md:359 |
+| timeline | docs/roadmap/LEDGER.md:878 |
 | ui-modernisation | docs/roadmap/LEDGER.md:353 |
-| ui-modernisation | docs/roadmap/LEDGER.md:867 |
+| ui-modernisation | docs/roadmap/LEDGER.md:866 |
 | whiteboard | docs/roadmap/LEDGER.md:286 |
-| whiteboard | docs/roadmap/LEDGER.md:831 |
-| world-class | docs/roadmap/LEDGER.md:362 |
-| world-class | docs/roadmap/LEDGER.md:891 |
+| whiteboard | docs/roadmap/LEDGER.md:830 |
+| world-class | docs/roadmap/LEDGER.md:361 |
+| world-class | docs/roadmap/LEDGER.md:890 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |
