@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 1 | 2 | 148 |
+| world-class | 0 | 119 | 29 | 1 | 1 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 3 | 113 | 980 |
+| all | 372 | 508 | 100 | 3 | 112 | 980 |
 
 ## graph
 
@@ -776,7 +776,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
 - [ ] **L-world-class-72** `world-class` blocked-hardware, S: Profile the Windows frozen build's startup. From WORLD_CLASS_PLAN.md:2015. Evidence: WORLD_CLASS_PLAN.md:2015 'the Windows frozen startup is open'; needs a Windows machine
-- [ ] **L-world-class-116** `world-class` blocked-hardware, S: Capture: verify the desktop window, real clipboards and a server crash between commit and answer. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'the desktop window, real clipboards and a server crash between commit and answer are not verified'
 
 ## Plan session briefs
 
