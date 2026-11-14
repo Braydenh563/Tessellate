@@ -6,6 +6,16 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
+- Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
+- Mind map plan closed: L-mindmap-13 (Tab to an editable new topic) closed at the measured median with its restyle profile recorded; the plan's last stale "left open" line (L-mindmap-14, built) corrected.
+- Map: a branch's Export opens the export dialog headed "Export this branch", not "Export this board" (L267).
+- Map: the tidy measures every topic in one walk when its size cache is cold, not one query and layout read per topic (3 to 6 ms of a 41-topic Tab at 6x, now about 2.5).
+- Map: a topic builds only the parts it shows; the task box, markers, icon, picture, number, progress, note and link marks, callout, labels, count, chevron and resize grip are made the first time a topic has something for them (a plain topic is 8 elements, was 25; the new topic's first style recalculation 9 elements, was 42; Tab to editable at 390 and 6x about 68 to 54 ms).
+- Map: Tab writes the new topic's selection and editing classes before its editable attribute, so the render restyles once, not twice (Tab-to-editable median at 390 and 6x about 67 to 60 ms).
+- Board stack order: an item still waiting for its id ties as the newest, so a new map topic no longer moves every sibling's z-index up by one and back on the server's answer (41 writes per Tab, now 0).
+- Map: a topic still waiting for its id colours as the newest branch, not the oldest, so Tab on a root no longer shifts every later branch one colour along until the server answers (41 of 41 topics repainted, now 1; Tab-to-editable median at 390 and 6x about 85 to 67 ms).
+- Map: Tab on a topic draws the objects layer only (`wbMapCache.renderAdd`; the whole render stays as the fallback for an expanded fold, a drawn line, a live search or the outline), the new topic is made editable before the measure read, and the editor opens before the selection chrome; Tab to editable at 390, 6x, 41 topics, three alternating pairs, median of 9: 104/99/102 ms to 73/101/85 (the target of 50 is not met; warm repeats run 50-70 ms).
 - Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
 - Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
