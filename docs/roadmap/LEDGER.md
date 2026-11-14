@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 43 | 1 | 0 | 2 | 64 |
+| documents | 20 | 41 | 1 | 0 | 2 | 62 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 598 | 129 | 2 | 165 | 1230 |
+| all | 503 | 596 | 129 | 2 | 165 | 1228 |
 
 ## graph
 
@@ -348,7 +348,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-53** `documents` open, M: Note capture Live, Source, Read switch, Live by default (1308 item 17). From DOCUMENTS_PLAN.md:1285, audit 2026-11-14. Evidence: no view switch near #entry-content (index.html:1735); no record of notecap
 - [ ] **L-documents-54** `documents` open, M: Page-shaped card in the Library Documents list (INBOX 1325). From DOCUMENTS_PLAN.md:1290, audit 2026-11-14. Evidence: no cover or page-card code in library.js; only routes_documents._preview
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
-- [ ] **L-documents-58** `documents` open, M: Diagram per-edge label position and link animation (1679 gap 4). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: curve style built (W18 R13); no id@ animation or label position in diagram-*.js
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function
 - [ ] **L880** `documents` open, M: Brief 69 checks on desktop webview, dark panel rows, large SQL result and touch (hardware). From OPEN.md:608; OPEN.md:2912. Evidence: Desktop webview and touch hardware. Device-only remainder: the real desktop webview and real touch; dark panel rows, the large SQL result and emulated touch run here.
@@ -367,7 +366,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-76** `documents` open, S: Sass (indented) and Stylus as their own code types, with Emmet's sass and stylus output. From agent docsvid 2026-11-14, L-documents-51. Evidence: core/filetypes.py aliases sass to css, so a .sass file gets CSS punctuation; the vendored Emmet has sass and stylus output forms; no stylus file type
 - [ ] **L-documents-74** `documents` open, S: A block embed drawn before the document list has loaded stays a chip: redraw it when the list lands. From agent docssync 2026-11-14. Evidence: docEmbedTarget (documents-embeds.js) cannot resolve a title before the document list loads; seen in a second window
 - [ ] **L-documents-75** `documents` open, S: A video in a note card before the library bundle loads shows a player, not a broken img. From agent docsvid 2026-11-14, L-documents-68. Evidence: a note card drawn before the library bundle (image-layout.js) loads falls back to an img for a video
-- [ ] **L-documents-78** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
 - [ ] **L-documents-79** `documents` open, S: Diagram per-edge label position (1679 gap 4, needs an owner call on a non-Mermaid field). From L-documents-58 build, 2026-11-14. Evidence: Mermaid flowcharts have no edge-label position syntax (documents-mermaid.js dgmLink reads only |text| and worded labels); a position would need a comment-carried field
 - [ ] **L-documents-80** `documents` open, S: Stale kept-line test after L-documents-60 (test_the_layout_places_each_kept_line_where_it_stood) and the drafter complexity ratchet. From L-documents-78 gate run, 2026-11-14. Evidence: tests/test_diagram_builder.py:159 fails on the base: its KEPT text has direction LR inside a subgraph, which L-documents-60 made the group's own, so no kept line stands first; tests/test_complexity.py fails on src/tessellate/ai/drafter.py compose_stream and PERF401 (not this branch)
 
