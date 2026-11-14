@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The map's View menu is 427px, not 587px: numbering, dimming, folding, the filter, the Gantt chart and the map's make-up sit behind one Branches and reports row.
 - The map theme dialog fits a 900px window: its four groups sit in two columns from 1100px (1002px to 669px tall).
 - Windows High Contrast: a focused search field, the chat box and a Library card title show a ring again (it was a shadow, which that mode drops).
 - The "Tight fit" and "Too big here" chips read clearly in light: the words take the ink and the warning icon keeps its colour (4.29 to over 4.5).
