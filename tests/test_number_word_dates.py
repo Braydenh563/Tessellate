@@ -4,19 +4,19 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.ai import number_words, utilities
+from tessellate.ai import recognise_windows as number_words, utilities
 
 NOW = datetime(2026, 11, 10, 9, 0)
 
 
 @pytest.mark.parametrize(("said", "number"), [("one", 1), ("nineteen", 19), ("twenty", 20), ("twenty-one", 21), ("forty two", 42), ("ninety-nine", 99)])
 def test_number_words_are_read(said, number):
-    assert number_words.value(said) == number
+    assert number_words.number_word_value(said) == number
 
 
 @pytest.mark.parametrize("said", ["", "hundred", "twenty-twenty", "five one", "banana"])
 def test_not_a_number(said):
-    assert number_words.value(said) is None
+    assert number_words.number_word_value(said) is None
 
 
 @pytest.mark.parametrize("ask", ["what day is it gonna be in twenty-one days", "what day is it in 21 days"])

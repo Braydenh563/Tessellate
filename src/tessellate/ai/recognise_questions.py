@@ -11,9 +11,10 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, time, timedelta
 
-from tessellate.ai import number_words
 from tessellate.ai.recognise import recognise, resolve
 from tessellate.ai.recognise_windows import (
+    NUMBER_WORD_PATTERN,
+    number_word_value,
     _DAY_MONTH,
     _ISO_DATE,
     _LATELY,
@@ -301,7 +302,7 @@ _HOW_MANY = r"^(?:how (?:many|long) (?P<unit>days|weeks|months)?|(?:the )?(?:num
 _DAYS_UNTIL = lazy_compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
 _DAYS_SINCE = lazy_compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
 _DATE_FROM_NOW = lazy_compile(
-    r"^what (?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?(?:(?:gonna|going to) be\s+)?(?:in\s+)?(\d{1,3}|a|an|" + number_words.PATTERN + r")\s+(days?|weeks?|months?|years?)(?:\s+(from now|from today|ago))?$",
+    r"^what (?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?(?:(?:gonna|going to) be\s+)?(?:in\s+)?(\d{1,3}|a|an|" + NUMBER_WORD_PATTERN + r")\s+(days?|weeks?|months?|years?)(?:\s+(from now|from today|ago))?$",
     re.I,
 )
 
@@ -337,7 +338,7 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     if not found:
         return None
     amount = found.group(1)
-    spelt = number_words.value(amount)
+    spelt = number_word_value(amount)
     return (str(spelt) if spelt else amount), found.group(2), not (found.group(3) or "from").startswith("from")
 
 #: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
