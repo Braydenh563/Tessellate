@@ -802,7 +802,7 @@ const THIS_COMPUTER_ONLY = "Not available on this device. Do it on the computer 
 //: DESIGN.md, "A control that acts on the computer Tessellate runs on": on
 //: another device, each `[data-this-computer]` block gets one note line and
 //: dimmed controls, `="hide"` is hidden, and a press toasts the note instead
-//: of asking the server for a 403. Help toggles inside still open.
+//: of asking the server for a 403. Help toggles inside keep working.
 async function markOtherDevice() {
   const health = await healthFacts();
   if (!health || health.this_computer !== false) return;

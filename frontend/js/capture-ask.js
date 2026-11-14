@@ -26,7 +26,7 @@ function offerJumpToNewNote(saved, status) {
   if (allEntries.length === 1) status.append(" ", smallButton("ph:chat-circle Ask about it", "Ask your notebook; the answer comes from your notes", openAskFromDashboard));
 }
 
-// A deferred note's filing runs after its POST returns, so the composer has
+// A note whose filing waits runs after its POST returns, so the composer has
 // to find out where it landed some other way. It polls this one endpoint, 
 // three fields, no joins, on a widening interval, because the answer
 // arrives either in well under a second (a semantic match, no model call)
@@ -799,11 +799,11 @@ async function saveEntryAsDraft() {
 
 // --- ask ----------------------------------------------------------------------
 
-// Follow-up memory (Round 1): the running conversation, sent back so the
+// Follow-on memory (Round 1): the running conversation, sent back so the
 // model can handle "and what about…". Capped so requests stay small.
 let conversation = [];
 //: Indexes into `conversation` the question on screen followed on from, and
-//: the chain a pressed follow-up chip hands the next question (INBOX 490).
+//: the chain a pressed follow-on chip hands the next question (INBOX 490).
 let askTrail = [];
 let askTrailPending = null;
 const MAX_CLIENT_HISTORY = 4;
@@ -1115,7 +1115,7 @@ function holdPictureTokens(text) {
 //: **What the Ask tab draws under an answer** (CHAT_PLAN Phase 3, decision 8:
 //: "Ask = Chat in single-turn mode"). Three components, none of them written
 //: for this surface: `renderRelatedElsewhere`, `chatSourcesPanel` and the
-//: follow-up strip are the Chat tab's, called here with the same object.
+//: follow-on strip are the Chat tab's, called here with the same object.
 //:
 //: Each gets its own container, which is the fix for a bug this restructuring
 //: found: related items and grounding chips were both written into
@@ -1142,7 +1142,7 @@ function clearAskAnswerFoot() {
   }
 }
 
-//: **A follow-up is a question that keeps the answer above it** (decision 8:
+//: **A follow-on is a question that keeps the answer above it** (decision 8:
 //: "'Ask again' chips become follow-ups that carry the previous answer as
 //: context"). The chips themselves are `/chat/followups`, the same second
 //: model call the Chat tab makes after a turn is on screen, and clicking one

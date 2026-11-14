@@ -501,11 +501,11 @@ function digestMore(answerEl, more) {
 //: (`/reminders/parse`, rules first, the person's clock); a checklist or a
 //: note is a new note. Each one says what it did, with Undo.
 //: A call's asks ("yo brotato", `vocative.py`), waiting for the Ask box's
-//: follow-up strip, which is drawn just after the offer.
+//: follow-on strip, which is drawn just after the offer.
 let askOfferAsks = null;
 
 function digestOffer(answerEl, offer) {
-  //: An "ask" offer is what to say next: the follow-up chips draw it, in
+  //: An "ask" offer is what to say next: the follow-on chips draw it, in
   //: Chat on the answer's own bubble (kept with the turn), in Ask next.
   if (offer?.kind === "ask") {
     const bubble = answerEl?.closest(".msg.assistant");
@@ -800,7 +800,7 @@ function drawWhyTrail(parent, lines, before = null) {
   renderAskWhy(lines, holder);
 }
 
-//: **A follow-up is a question that keeps the answer above it** (decision 8:
+//: **A follow-on is a question that keeps the answer above it** (decision 8:
 //: "'Ask again' chips become follow-ups that carry the previous answer as
 //: context"). The chips themselves are `/chat/followups`, the same second
 //: model call the Chat tab makes after a turn is on screen, and clicking one
@@ -945,7 +945,7 @@ async function askQuestion(preset) {
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = question;
-  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: A chip, a follow-on or Retry asks without typing: the box shows it
   //: anyway (K29, "I forgot instantly"), the one place the question is said;
   //: a "You asked:" line above the answer said it twice (INBOX 1301).
   if (preset != null) questionBox.value = question;
@@ -997,7 +997,7 @@ async function askQuestion(preset) {
   $("ai-answer-grounding").replaceChildren();
   $("ai-answer-grounding").classList.add("hidden");
   //: The whole foot goes with it, not only the grounding chips: a sources
-  //: disclosure left open from the previous question is a list of notes that
+  //: disclosure still expanded from the previous question is a list of notes that
   //: have nothing to do with the one being asked.
   clearAskAnswerFoot();
   thinkingText.textContent = "";
@@ -1463,7 +1463,7 @@ function announceAskFoot() {
   const parts = [
     ["related note", shown("#ask-answer-related .answer-related-chip")],
     ["source", shown("#ask-answer-sources .chat-source-card")],
-    ["follow-up question", shown("#ask-followups .chip-interactive")],
+    ["suggested question", shown("#ask-followups .chip-interactive")],
   ].filter(([, count]) => count);
   announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
 }
