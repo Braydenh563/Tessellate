@@ -172,6 +172,11 @@ def _composed_greeting(session, config, block: str) -> tuple[str, str, str]:  # 
         return random.choice(GREETING_FALLBACKS.get(block) or GREETING_FALLBACKS["morning"]), ".", "fallback"
 
 
+def _personal(config) -> bool:  # noqa: ANN001
+    """The person's "Lines written from your notes" switch (L-chat-17)."""
+    return config.get_preference("personal_wording", True) is not False
+
+
 @router.get("/greeting")
 def greeting(block: str = "morning", session: Session = Depends(get_session)) -> dict:
     """A short greeting phrase for the dashboard banner.
@@ -181,6 +186,10 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     contains a name; the frontend adds one from preferences.
     """
     config = deps.get_config()
+    if not _personal(config):
+        #: Off: a plain hello, from no note and no model.
+        phrase = random.choice(GREETING_FALLBACKS.get(block) or GREETING_FALLBACKS["morning"])
+        return {"greeting": phrase, "punctuation": ".", "append_name": address.dashboard_append(address.name_of(config), ".", user_now(config).date(), block), "source": "plain"}
     phrase, mark, source = _composed_greeting(session, config, block)
     fallback = {
         "greeting": phrase,
@@ -477,6 +486,8 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     names; no model, and private and binned notes are never read."""
     from tessellate.api import remarks_proactive
 
+    if not _personal(deps.get_config()):
+        return {"remarks": []}
     now = user_now(deps.get_config())
     found = remarks_proactive.build(session, now.date(), now)[:6]
     if found:
@@ -494,6 +505,9 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     from tessellate.ai import composer_voice
     from tessellate.repo import voice
 
+    if not _personal(deps.get_config()):
+        #: Off: the page shows its counts, as for a line with nothing to say.
+        return {"text": "", "kind": "none", "sources": []}
     shown = voice.SHOWN
     rows = voice.recent(session)
     #: The 120 rows are the sample the line names notes from; how many were

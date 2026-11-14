@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Settings, Personas: "Lines written from your notes" (on by default); off, the dashboard greeting is a plain hello, the line under it shows the counts and the companion says nothing about the notes (L-chat-17, CHAT_PLAN item 11).
 - Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
 - CI fixes after the agent merges: ask-chart slice classes read as a built family (unused CSS 201 to 195), one silent empty-list catch removed, the boards acts Guide lead stands alone, "what is the table number" asks the notes, the formal welcome says days running, every no-tool line names the model.
 - Tests: the reminder confirmation and the chart label test read the fact, not one opener or call shape.

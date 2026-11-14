@@ -11253,6 +11253,28 @@ Link to another note with [[its first few words]]."></textarea>
                   Your personas are kept; turn it off and the active one is back.
                 </p>
               </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-personal-wording">
+                <span>Lines written from your notes</span>
+              </label>
+              <p class="muted">
+                The greeting, the line under it and the companion speak about your notes.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="personal-wording-help" aria-controls="personal-wording-help" aria-expanded="false"
+                  title="About this setting" aria-label="About lines written from your notes">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="personal-wording-help" role="dialog" aria-label="About lines written from your notes">
+                <p>
+                  On by default. The dashboard greeting names your streak or
+                  what is due, the line under it names a recent note, and the
+                  companion mentions a reminder or a note from this day. Turn
+                  it off and the greeting is a plain hello, the line shows your
+                  counts, and the companion says nothing about your notes.
+                  Answers in Chat and Ask are not changed.
+                </p>
+              </div>
               <div class="row">
                 <label for="pref-voice" class="muted">How Atlas sounds with no model</label>
                 <select id="pref-voice" title="The voice Atlas answers from your notes in when no model is running">

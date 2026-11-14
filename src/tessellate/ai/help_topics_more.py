@@ -586,6 +586,7 @@ MORE_TOPICS: list[dict] = [
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
             "long text in an answer", "wall of text", "folded text",
+            "lines written from your notes", "personal wording", "plain greeting",
         ),
         "body": (
             "Settings, Personas, Answer style: how Atlas words its answers, "
@@ -604,7 +605,11 @@ MORE_TOPICS: list[dict] = [
             "block in an answer from no model (the text read from a picture, "
             "say) is folded to one line, its first sentence and its length; "
             "press it to read the whole. A model's own answer is never folded; "
-            "only its thinking is, under Thinking."
+            "only its thinking is, under Thinking. Lines written from your "
+            "notes (on by default) lets the dashboard greeting, the line under "
+            "it and the companion speak about your notes; off, the greeting is "
+            "a plain hello, the line shows your counts and the companion says "
+            "nothing about your notes. Answers are not changed."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },

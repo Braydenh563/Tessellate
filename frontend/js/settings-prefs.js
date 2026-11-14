@@ -41,6 +41,9 @@ async function renderPrefs() {
   $("pref-answer-length").onchange = (event) => setPreference("response_mode", event.target.value).then(loadResponseModes);
   $("pref-personas-off").checked = prefsCache.personas_off;
   $("pref-personas-off").onchange = (event) => setPreference("personas_off", event.target.checked);
+  //: L-chat-17: the surfaces that speak about the notes (greeting, today line, remarks).
+  $("pref-personal-wording").checked = prefsCache.personal_wording !== false;
+  $("pref-personal-wording").onchange = (event) => setPreference("personal_wording", event.target.checked);
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";
