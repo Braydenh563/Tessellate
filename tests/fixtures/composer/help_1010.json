@@ -267,6 +267,7 @@
    "topic": "reminders",
    "sentence_id": "reminders#1",
    "cue": "To add, make or set a reminder",
+   "steps": "1. Open the Reminders tab",
    "controls": [
     "tab-btn-reminders"
    ]

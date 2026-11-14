@@ -159,6 +159,8 @@ def test_a_switch_topic_says_how_the_switch_is_set_now(monkeypatch):
         lead = after_path(help_chat.offline_answer("how do i turn on web search")["content"]).split("\n\n")[0]
         #: One instruction per state (audit 1031 AI12): "is on now. Turn it
         #: on in ..." contradicted itself, so on says how to turn it off.
+        #: The topic's own opening line comes first (L-chat-41), then the state.
+        lead = lead.removeprefix("Web search is opt-in. ")
         assert lead.startswith(f"Web search is {'on' if on else 'off'} now. Turn it {'off' if on else 'on'} in Settings, Web search"), lead
         assert "by default" not in lead
 

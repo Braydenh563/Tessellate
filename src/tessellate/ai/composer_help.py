@@ -252,17 +252,29 @@ def _help_shared(line: str, ask: dict) -> float:
     return hits + 0.5 * kin + 0.5 * sum(1 for p in ask["pairs"] if f" {p} " in said)
 
 
-def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
+#: What a topic's first sentence earns over a later one that shares a word more: a topic opens on its point (L-chat-41).
+FIRST_LINE = 1.0
+_HOW_TOP = lazy_compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|where (?:do|can|is|are)|can i|is there)\b", re.I)
+
+
+def _help_best(lines: list[str], ask: dict, doing: float = 0.0, first: bool = False) -> str:
     """The line that says the most; a later one must say more to lead (the
     topic opens on its point: "Link one note to another by typing [[" over
     the Suggestions sheet, which says "link" and "notes" too: the Guide's
     gold, 2026-10-11). `doing` is the extra a line earns for saying the verb
-    asked, which picks among the clauses of one sentence."""
+    asked, which picks among the clauses of one sentence. `first` is a how-to that names no act (the act's own sentence
+    leads those): the topic's opening line then earns `FIRST_LINE`."""
+    def says(line: str) -> bool:
+        return bool(ask["doing"]) and any(_stem(d) in _help_have(line, set()) for d in ask["doing"])
+
+    #: The opening line keeps its lead unless a later one says the verb asked and it does not ("add a reminder": the second line says "add").
+    opens = not says(lines[0]) and any(says(line) for line in lines[1:])
+
     def score(line: str) -> float:
-        verb = bool(ask["doing"]) and any(_stem(d) in _help_have(line, set()) for d in ask["doing"])
+        verb = says(line)
         #: A listing of what cannot be done leads for the ask that wants it.
         listed = 3.0 if ask.get("listed") and _NO_UNDO.search(line) else 0.0
-        return _help_shared(line, ask) + (doing if verb else 0.0) + listed - 0.05 * lines.index(line)
+        return _help_shared(line, ask) + (doing if verb else 0.0) + listed - 0.05 * lines.index(line) + (FIRST_LINE if first and lines.index(line) == 0 and not opens else 0.0)
 
     return max(lines, key=lambda line: (score(line), -lines.index(line)))
 
@@ -409,6 +421,13 @@ def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str
     return None if best is None else (_act_lead(best[1], stems, question, best[2]), best[2])
 
 
+def _named_act(question: str) -> bool:
+    """Whether a phrasing names an act the aliases know ("get rid of a note" is a delete): its own sentence leads."""
+    from tessellate.ai import guide_aliases
+
+    return any(name in guide_aliases.HARD for name, _ids in guide_aliases.intents(question))
+
+
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     """The one sentence of the best topic that answers a how-to (its step
     sentence sharing the most of the question's words) and the topic's id:
@@ -427,7 +446,7 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     if not sentences:
         return None
     ask = _help_ask(question, topic)
-    lead = _help_best(sentences, ask)
+    lead = _help_best(sentences, ask, first=bool(_HOW_TOP.match(question or "")) and not act and not _RETITLING.search(question or "") and not _named_act(question))
     #: A lead is a line, not an inventory (INBOX 1406: "how do I see what
     #: changed" got a 134-word sentence): over the budget, its best clause.
     if len(lead.split()) > _HELP_LEAD_WORDS:

@@ -1059,6 +1059,8 @@ HELP_TOPICS: list[dict] = [
         "id": "document-history",
         "keywords": (
             "history",
+            "history of a document",
+            "document history",
             "version",
             "revision",
             "restore",

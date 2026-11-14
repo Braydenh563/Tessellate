@@ -992,10 +992,11 @@ def _guide_opening(question: str, path: str, steps: tuple, lead: str) -> tuple[l
     walk = bool(steps) and bool(_HOW_ASKED.match(question)) and len(steps) < len(_COUNTS)
     #: A path that is itself a sentence ("the bin: the Library's Include ...") is not "It's in" it.
     head, colon, tail = path.partition(": ")
-    lines = [f"It's in {head}, reached with {tail}." if colon else f"It's in {_place(path)}."] if where else []
-    #: The numbered list that follows says the steps; no "It takes N steps" first (G5 g).
-    if lead and not walk:
-        lines.append(lead)
+    place = (f"It's in {head}, reached with {tail}." if colon else f"It's in {_place(path)}.") if where else ""
+    #: A place is said first ("where is the bin"); a question about what happens (`guide_lead.place_last`) opens on the topic's sentence.
+    lines = [lead, place] if guide_lead.place_last(question) else [place, lead]
+    #: A how-to with steps says the steps, not the sentence before them (G5 g).
+    lines = [x for x in lines if x and not (x == lead and walk)]
     return lines, where, walk
 
 
@@ -1021,7 +1022,7 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     #: gets its own sentence (audit 1031 AI12).
     if state.endswith(" is on now."):
         lead = re.sub(r"^Turn it on\b", "Turn it off", lead)
-    return " ".join(x for x in (state, lead) if x)
+    return " ".join(x for x in (guide_lead.short_opening(question, topics[0]), state, lead) if x)
 
 
 def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:

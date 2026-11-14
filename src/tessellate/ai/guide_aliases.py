@@ -77,6 +77,9 @@ _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("new-note", r"\b(?:make|create|write|add|start|take|jot|new|capture|save)\b.{0,15}\b(?:a |an |my |the )?(?:new )?(?:note|notes|entry|thought|idea|memo)\b", ("capture", "quick-note")),
     ("pin-note", r"\b(?:pin|star|favou?rite|bookmark|keep at the top|put at the top)\b.{0,20}\b(?:a |the |my |this )?(?:note|notes|document|chat|page)\b|\bpin\b", ("favourites", "bookmarks")),
     ("archive-note", r"\b(?:archive|hide|shelve|put away|get (?:it |this )?out of the way)\b.{0,20}\b(?:a |the |my |this )?(?:note|notes|document|chat)\b", ("archive",)),
+    #: How-to phrasings the keywords weigh against a sibling topic (L-chat-41): "does it check my spelling" is Writing checks, "how do I check my spelling" is the Spelling topic.
+    ("spell-how", r"\bhow (?:do|can|should) (?:i|you|we)\b.{0,12}\bspell(?:ing)?\b", ("spelling-check", "writing-checks")),
+    ("find-a-note", r"\bhow (?:do|can) (?:i|we) (?:find|look up) (?:a|my|the) notes?\s*\??$", ("find-anything", "search")),
     ("reminder-set", r"\b(?:remind|reminder|reminders|alert me|notify me|nudge me|don'?t let me forget|due date|deadline)\b", ("reminders", "quick-add")),
     ("recurring", r"\b(?:repeat|repeating|recurring|every (?:day|week|month|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|daily|weekly|monthly)\b.{0,20}\b(?:reminder|task|todo|to-do)\b|\b(?:reminder|task|todo|to-do)\b.{0,20}\b(?:repeat|repeating|recurring|every)\b", ("reminders", "reminders-controls")),
     ("todo-list", r"\b(?:to-?do|to do|task|tasks|checklist|check list|checkbox|checkboxes)\b", ("reminders", "editor-offers", "documents")),
@@ -122,7 +125,7 @@ HARD = frozenset(
         "checklist", "ai-edits-tags", "nothing-happens", "pdf-out", "edit-question", "regenerate", "attach-chat", "stop-ai", "delete-all", "model-for-laptop",
         "ram-need", "ai-slow", "app-slow", "use-chatgpt", "no-answer", "export-chat", "clear-chat", "fork-chat",
         "delete-account", "delete-note", "connect-model", "switch-model", "desktop-companion",
-        "empty-bin", "cant-undo", "bin-restore", "own-order", "move-note", "retitle-note", "rename-board",
+        "spell-how", "find-a-note", "empty-bin", "cant-undo", "bin-restore", "own-order", "move-note", "retitle-note", "rename-board",
     }
 )
 

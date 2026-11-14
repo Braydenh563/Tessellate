@@ -61,9 +61,8 @@ def test_how_to_questions_open_on_the_first_step_and_name_real_controls():
     got = _composer_eval.help_summary(_composer_eval.run_help())
     assert got["rows"] == 40
     assert got["controls_exist"] == 1.0
-    #: A ratchet, not the plan's 0.90 floor: LEDGER row L-chat-41 holds the 18 questions that open on a
-    #: later sentence or route to the wrong topic. Raise it as that row lands.
-    assert got["first_sentence"] >= 0.55, got["missed"]
+    #: Above the plan's 0.90 floor (L-chat-41): every answer opens on the topic's first step (or step 1), the place after it.
+    assert got["first_sentence"] == 1.0, got["missed"]
 
 
 def test_an_in_domain_answer_is_not_framed_as_out_of_domain():
