@@ -1665,15 +1665,6 @@ math .math-xcancel {
   font-size: var(--text-md);
   color: var(--muted);
 }
-/* A formula the parser had to guess at (documents-math.js `problem`): an
-   error tint, and the title names what it could not read (audit 1102 DX18).
-   Live and Read draw it through the same wrapper. */
-.md-math-error {
-  color: var(--error);
-  background: var(--error-soft);
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-1);
-}
 /* --- transcluded notes (![[note]]) -------------------------------------------
    An embedded note is somebody else's text living inside this one, and the
    single most important thing the styling has to do is say so, otherwise a
@@ -2297,11 +2288,6 @@ body.resizing-sidebar {
    in 00-tokens-shell.css for the measurement. */
 .doc-toolbar.is-collapsed {
   padding-block: var(--space-1) calc(var(--space-1) + var(--dock-bottom-inset));
-}
-.doc-toolbar-collapsed-name {
-  display: none;
-  color: var(--muted);
-  font-size: var(--text-sm);
 }
 /* Before documents.js has mounted the cluster (the markup says collapsed, so
    the first paint is the folded bar and not a two-row strip that folds when
@@ -3048,11 +3034,6 @@ body.resizing-sidebar {
 button.outline-twist:hover,
 button.outline-twist:focus-visible {
   color: var(--ink);
-}
-/* The row itself is what grows; the gutter never does. */
-.outline-row > .outline-link {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -4497,11 +4478,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-display);
   cursor: pointer;
 }
-.library-file-thumb-kind {
-  color: var(--muted);
-  font-size: var(--text-sm);
-  letter-spacing: 0.06em;
-}
 /* Direction on a link chip. Colour is deliberately *not* the only signal, 
    the arrow glyph carries it, and DESIGN.md's contrast rule (and WCAG's
    "don't convey information by colour alone") both say so. The tint is a
@@ -4725,30 +4701,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   align-self: stretch;
 }
 
-/* The group headings: the eyebrow, its count beside it as quiet text (INBOX
-   549: pushed to the far edge it read as a second column of numbers), so the
-   panel reads "Spelling 3, Style 11" at a glance. */
-.doc-prose-group {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: var(--space-2);
-  margin: var(--space-4) 0 var(--space-1);
-  padding-inline: var(--space-2);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* **A row is its head over its answers** (INBOX 549). It was a flex row, so
-   an opened row's answers sat beside it and squeezed the finding to "s…" in
-   the right dock. */
-.doc-prose-row {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
 /* The row is the jump. A finding you have to hunt for after reading about it
    is a finding that cost you more than it saved. */
 .doc-prose-jump {
@@ -4777,16 +4729,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
   text-align: left;
   cursor: pointer;
-}
-/* The row's own line: the jump, then one cell of actions centred on it. The
-   ground arrives with the pointer, with no edge (the list-row recipe). */
-.doc-prose-rowhead {
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--space-1);
-  min-width: 0;
-  padding-right: var(--space-1);
-  border-radius: var(--radius-md);
 }
 
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
@@ -4872,23 +4814,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: var(--accent);
 }
 
-/* The words carry the identity, so they hold the weight and they are the half
-   that ellipsises: the reason is a sentence and can be read from the title. */
-.doc-finding-words {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 600;
-}
-.doc-finding-why {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: var(--text-xs);
-}
 /* The completion popup. `position: fixed` because it is placed in viewport
    coordinates against the caret, an absolutely-positioned list would be
    offset by every scrolling ancestor between it and the textarea, which in
@@ -4930,19 +4855,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-complete-list li.active span {
   color: inherit;
 }
-.doc-complete-list li .doc-complete-detail {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--text-xs);
-}
-.doc-complete-list li.active .doc-complete-detail {
-  color: var(--muted);
-}
-.doc-complete-list li .doc-complete-glyph {
-  color: inherit;
-  font-size: var(--text-md);
-}
 
 /* 10. One title and one facts voice for every Library row (finding 13, and
        the owner's "plain and hard to read"). Measured at 1440: a Files row's
@@ -4961,22 +4873,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .library-file-rows .library-image-tile > figcaption {
   font-size: var(--text-lg);
   font-weight: 600;
-}
-/* The autocorrect underline (autocorrect.js, Brief 94): a button over the
-   corrected word for five seconds, a click puts the word back. It sits in the
-   window's coordinates, a layer above its box set in script. */
-.autocorrect-mark {
-  position: fixed;
-  min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 2px solid var(--accent);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  cursor: pointer;
 }
 /* --- the suggestion menu, the dictionary, and the goal ------------------------
    Asked for: "I cant click on the flagged word or phrase and see a popup for
@@ -5005,39 +4901,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   box-shadow: var(--shadow-lg);
   font-size: var(--text-sm);
 }
-/* The word, and why it is flagged. Both, because "recieve" with no reason is a
-   scold and a reason with no word makes you go and look. The two are drawn by
-   `docFindingLine`, the same function the panel row uses, so this rule only has
-   to place the line and divide it from the answers below. */
-.doc-suggest-head {
-  padding: var(--space-1) var(--space-2) var(--space-2);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: var(--space-1);
-}
 
-.doc-suggest-list,
-.doc-suggest-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-/* The replacements read as the primary answer and the rest as what else you
-   can do, so they are separated by a rule rather than by weight, the actions
-   are still real controls. */
-.doc-suggest-actions {
-  margin-top: var(--space-1);
-  padding-top: var(--space-1);
-  border-top: 1px solid var(--border);
-}
-.doc-suggest-list-inline,
-.doc-suggest-actions-inline {
-  flex-flow: row wrap;
-  gap: var(--space-1);
-}
-.doc-suggest-actions-inline {
-  margin-top: var(--space-1);
-  padding-top: var(--space-1);
-}
 .doc-suggest-item {
   display: flex;
   align-items: center;
@@ -5121,15 +4985,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-top: 1px solid var(--divider);
   border-bottom: 1px solid var(--divider);
 }
-.doc-dictionary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  min-height: var(--row-h);
-  padding: 0 var(--space-1) 0 var(--space-3);
-  border-radius: var(--radius-sm);
-}
 
 /* Remove shows on the row under the pointer or with focus in it; on a touch
    screen, where nothing hovers, it is always there. */
@@ -5209,16 +5064,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-.doc-prose-tools {
-  align-items: center;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  /* Quiet squares side by side need no gap; one more step of it wrapped the
-     group under the name in the 320px dock. */
-  gap: 0;
-  flex: 0 0 auto;
-  margin-inline-start: auto;
 }
 .doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small {
   flex: none;
@@ -5324,11 +5169,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-xs);
 }
 
-.doc-prose-ai-line {
-  flex: 1 1 12rem;
-  min-width: 0;
-  color: var(--muted);
-}
 .doc-prose-ai-line.error {
   color: var(--error);
 }
@@ -5687,18 +5527,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   header#top-bar {
     --header-pad-x: var(--space-4);
   }
-}
-/* Backlinks with context, and unlinked mentions (DOCUMENTS_PLAN Phase 4.1).
-   A backlink row is three things stacked, not one line: who said it, what
-   they said, and the one action that changes the connection. `.outline-link`
-   on its own is `white-space: nowrap` with an ellipsis, which is right for a
-   heading in an outline and wrong for a sentence, so the sentence is its own
-   element and the link keeps the behaviour every other outline row has. */
-.doc-backlink {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-2) 0;
 }
 /* Two lines of the sentence, then an ellipsis: a panel this narrow turns a
    long paragraph into a wall, and the point of the line is to say enough to

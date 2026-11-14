@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Styles: 48 more Library-only rules moved from the boot sheets to library-lazy.css, boot CSS 443 lines lighter, computed styles unchanged in both themes (L-ui-modernisation-51); 183 stay as L-ui-modernisation-60.
 - Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-general-67.
 - Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).

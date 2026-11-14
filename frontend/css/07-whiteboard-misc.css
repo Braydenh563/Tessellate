@@ -16,22 +16,6 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
-/* K18: a saved picture's caption, one muted line under it (Show captions). */
-.wb-object-caption {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: var(--space-1);
-  font-size: var(--text-xs);
-  line-height: 1.3;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.75;
-  pointer-events: none;
-}
 /* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
    box's own shadow, so nothing needs a blur. */
 .wb-crop-frame {
@@ -39,18 +23,6 @@
   left: 50%;
   top: 50%;
   pointer-events: none;
-}
-.wb-crop-grip {
-  position: absolute;
-  inline-size: 12px;
-  block-size: 12px;
-  padding: 0;
-  background: var(--accent);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-sm);
-  pointer-events: auto;
-  touch-action: none;
-  transform: translate(-50%, -50%);
 }
 .wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
 .wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
@@ -126,13 +98,6 @@
   transform: translateX(-50%);
   max-width: calc(100% - 2 * var(--space-4));
 }
-/* The typeable page number before the picker (value-field.js, INBOX 1694 b). */
-.wb-present-page {
-  flex: none;
-  display: inline-flex;
-  font-size: var(--text-sm);
-  color: var(--text);
-}
 .wb-present-count {
   /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
   flex: none;
@@ -156,41 +121,11 @@
   display: block;
   width: 100%;
 }
-.wb-present-pick {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  padding-inline: var(--space-7);
-  text-align: center;
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-}
-.wb-present-pick-title {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.action-menu .menu-item.wb-present-pick-row {
-  font-weight: 600;
-}
 /* A study question the cell would cut takes a line above the buttons. */
 .wb-present-count.wb-present-pick-slot.is-wide {
   flex: 1 0 100%;
   order: -1;
   width: auto;
-}
-/* An item's comment count (WHITEBOARD_PLAN decision 17): a zero-size pin on
-   the item's top-right corner, scaled back to screen size like a grip
-   (`WB_INV_ZOOM_GRIPS`), holding an accent pill up and right of the corner so
-   the resize handle stays free. Lifted over every item by `zIndex` in JS. */
-.wb-comment-marks {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 0;
 }
 
 /* The thread, in the help popover's shell: the comments, then a quiet "New
@@ -369,23 +304,6 @@
 }
 .wb-rotate-handle:active {
   cursor: grabbing;
-}
-/* A sketch's own rotate handle, asked for directly. Round like the
-   card/object handles' own `.wb-rotate-handle` (an HTML element; sketches
-   are SVG, hence a separate class here rather than sharing it), connected
-   to the shape with a thin stem the same way every other drawing app's
-   rotate handle reads. */
-.wb-rotate-handle-stem {
-  stroke: var(--accent);
-  stroke-width: 1px;
-  stroke-opacity: 0.7;
-  /* The stem is the line drawn between the box and the dot, and it is
-     decoration: the dot is the control. Without this it also swallows the
-     press meant for the "n" edge handle, which sits at the middle of the top
-     edge, exactly where the stem meets the box. Measured on a group
-     selection: `elementFromPoint` at the n handle's own centre returned the
-     stem, so that edge could not be dragged at all (INBOX 262). */
-  pointer-events: none;
 }
 /* A link's own two endpoints, round, not the square resize handles above,
    so the two read as a different kind of control (reattach/detach an end,
@@ -4314,33 +4232,6 @@ input[type="url"]:hover:not(:focus) {
    fill: a disclosure that is invisible until you find it is the problem that
    round was solving, and taking the affordance away to make it quieter would
    just trade one report for the other. */
-/* **One row of facts, one height, one baseline** (INBOX 450). Every fact in
-   the row, the plain chips ("Reads only", "1 input") and the two toggles
-   ("3 steps", "4 tools"), is a `--skill-fact-h` box with its words centred,
-   so the row has one top, one bottom and one baseline. Before, a 20px chip
-   stood beside 22px `<details>` whose summaries sat 2px lower, and an open
-   one put its list inside the row and pushed the next fact under it. The
-   toggles are buttons now (library.js) and open a panel below the row.
-   One step of padding a side and the row's own gap, so the four facts a
-   card can carry fit a 311px card on one line. */
-.skill-card .skill-card-facts > :is(.chip, button).skill-fact {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  height: var(--skill-fact-h);
-  min-height: var(--skill-fact-h);
-  margin: 0;
-  padding: 0 var(--space-2);
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  box-shadow: none;
-}
 
 /* Library image cards: the model name and the "Read by ..." row are facts
    about the picture. Same recipe, same reason. The usage chip stays
@@ -6214,16 +6105,6 @@ body.library-media-selecting
    simply wanting the window you paid for. `#doc-width-toggle` puts
    `.doc-wide` on the tab and this releases it, for every pane at once so
    the two halves of Split never disagree. The default is unchanged. */
-/* The `:not(.doc-split-pane)` is carried through deliberately, and it is a
-   specificity fix rather than a copy of the selector above: `#doc-preview`
-   alone is (1,0,0) and `#doc-preview:not(.doc-split-pane)` is (1,1,0), so a
-   tidy `.doc-wide #doc-preview` at (0,2,0) loses to *both*, measured, the
-   toggle flipped its own aria-pressed and moved the preview not one pixel. */
-.doc-wide .doc-source-wrap:not(.doc-split-pane) #doc-content,
-.doc-wide #doc-preview:not(.doc-split-pane),
-.doc-wide #doc-preview {
-  max-width: none;
-}
 /* The tools filter sits above a fifty-one item list, so it stays put while
    the list under it scrolls, a filter you have to scroll back up to reach is
    a filter people use once. */
@@ -9764,31 +9645,6 @@ input[type="file"] {
    few pixels that a screenshot does not show, twice already in this file, see
    `.wb-map-count`. The row is anchored by its right edge so a third button
    would grow leftwards into empty canvas rather than over the node. */
-/* **The row moved to the other corner, because the chevron owns this one.**
-   Measured at 390x844 with a branch selected: the chevron's box and the row's
-   overlapped by 140px2, and `elementFromPoint` at the chevron's own centre
-   returned the row, so a branch could not be folded by pressing the control
-   that folds it. Dropping the row further under the node was tried first and
-   is not a fix: the chevron is centred on the node's right *edge*, so it hangs
-   half its height below the node's own bottom on a short node and the two
-   still met (91px2). They are separated by the only axis that settles it. The
-   left-bottom corner is clear on both layouts: a sideways map's branch leaves
-   from the right edge, and a downward map's chevron is centred under the node,
-   which a row anchored to the left edge cannot reach on any node wide enough
-   to hold two words. Anchored by its left edge now, so a third button grows
-   rightwards under the node's own bottom rather than back over the chevron. */
-.wb-map-actions {
-  position: absolute;
-  left: calc(var(--space-8) * -1);
-  right: auto;
-  bottom: calc(var(--space-5) * -1);
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  z-index: 4;
-  opacity: 0;
-  pointer-events: none;
-}
 .wb-map-node:hover .wb-map-actions,
 .wb-map-node.wb-selected .wb-map-actions,
 .wb-map-actions:focus-within,
@@ -15398,19 +15254,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   flex-direction: column;
   gap: var(--row-gap);
 }
-.wb-layer-row {
-  list-style: none;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: var(--row-h);
-  padding: 0 var(--space-1);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
 
 .wb-layer-row:hover {
   background: var(--hover-veil);
@@ -16246,13 +16089,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 
 .ph-caret-down {
   --ph-ink-dy: 0.035em;
-}
-
-/* What a toggle opens: the card's full width, under the row. The panel adds
-   no box of its own; the list inside is the steps' bordered panel or the
-   tools' row of code chips. */
-.skill-fact-panel > .skill-fact-list {
-  margin: 0;
 }
 
 /* "Never run." / "Last run ..." is a sentence about the card, not a control

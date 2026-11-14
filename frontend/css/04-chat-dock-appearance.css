@@ -4040,20 +4040,6 @@ span > .chip {
   cursor: pointer;
 }
 
-/* **One line, so every row is one height.** The rows came out 56.5px and
-   78.5px depending on whether the title wrapped, in a list where nothing else
-   varies, and at 0.92rem full weight the title was also the largest thing in
-   the sidebar, competing with the card's own headings. `--text-md` is the
-   scale's own size for a list row; the full title is on the row's tooltip. */
-.doc-item-title {
-  font-weight: 600;
-  font-size: var(--text-md);
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
    beside every title in a tight sidebar list would compete with the titles
    themselves. */
