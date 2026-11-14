@@ -101,6 +101,7 @@ function renderAutonomousSettings() {
   $("pref-auto-tag").checked = prefsCache.auto_tag_enabled ?? true;
   $("pref-auto-link").checked = prefsCache.auto_link_enabled ?? true;
   $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
+  $("pref-learned-audit").checked = prefsCache.learned_audit_enabled ?? true;
   $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
   $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
   $("pref-mcp-writes").checked = Boolean(prefsCache.mcp_writes_enabled);

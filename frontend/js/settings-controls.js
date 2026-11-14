@@ -778,6 +778,10 @@
     setPreference("auto_dedupe_enabled", e.target.checked)
   );
 
+  $("pref-learned-audit").addEventListener("change", (e) =>
+    setPreference("learned_audit_enabled", e.target.checked)
+  );
+
   $("pref-auto-stale-review").addEventListener("change", (e) =>
     setPreference("auto_stale_review_enabled", e.target.checked)
   );
@@ -5137,6 +5141,38 @@
       const note = document.createElement("p");
       note.className = "muted learned-meta learned-flag";
       note.textContent = `Check this: ${reason}`;
+      //: Keep it (L584): the flag goes and no later check raises it again.
+      const keep = document.createElement("button");
+      keep.type = "button";
+      keep.className = "ghost small";
+      keep.textContent = "Keep it";
+      keep.title = "This one stands: clear the flag and do not flag it again";
+      keep.addEventListener("click", async () => {
+        keep.disabled = true;
+        const body = JSON.stringify({ fact_id: Number(li.dataset.factId) });
+        const post = (path) => apiJson(path, { method: "POST", body });
+        const refresh = () => learnedCheckRefresh().then(renderLearnedList);
+        try {
+          await post("/learned/audit/keep");
+          offerUndo(
+            "Keep a flagged item",
+            "Kept. It will not be flagged again.",
+            async () => {
+              await post("/learned/audit/unkeep");
+              await refresh();
+            },
+            async () => {
+              await post("/learned/audit/keep");
+              await refresh();
+            }
+          );
+          await learnedCheckRefresh();
+          li.querySelector(".learned-flag")?.remove();
+        } catch {
+          keep.disabled = false;
+        }
+      });
+      note.append(" ", keep);
       li.appendChild(note);
     }
   }

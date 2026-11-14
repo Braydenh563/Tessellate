@@ -13,6 +13,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from tessellate.api.routes_settings import PreferencesBody
 from tests._app_js import frontend_text
 from tests._js_scope import unwrapped
@@ -216,6 +218,22 @@ def test_import_merges_personas_and_templates_by_name(client):
     exported["replace_lists"] = True
     client.post("/preferences/import", json=exported)
     assert [p["name"] for p in client.get("/preferences").json()["personas"]] == ["Coach", "Editor"]
+
+
+@pytest.mark.parametrize(
+    "key,field",
+    [("custom_templates", "content"), ("skills", "prompt")],
+)
+def test_import_merges_templates_and_skills_by_name_not_replaces(client, key, field):
+    """L588: each of the three merged lists (skills, personas, templates) keeps
+    what the notebook has and adds or overwrites by name; personas have their own test above."""
+    client.put("/preferences", json={key: [{"name": "Keep", field: "old keep"}, {"name": "Same", field: "old same"}]})
+    exported = client.get("/preferences/export").json()
+    exported["preferences"] = {key: [{"name": "same", field: "new same"}, {"name": "Added", field: "added"}]}
+    result = client.post("/preferences/import", json=exported).json()
+    assert result["applied"] == [key]
+    got = {item["name"].lower(): item[field] for item in client.get("/preferences").json()[key]}
+    assert got == {"keep": "old keep", "same": "new same", "added": "added"}
 
 
 # A found setting lands on its control (OPEN ledger 1407).

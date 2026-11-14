@@ -14,6 +14,9 @@ below). Versioning is `0.x` while the app stabilises.
 - Palette: Browse boards and maps, recordings, skills and contents rows; Open notifications says how many are unread; a note in hand gets Ask Atlas about this note and Tag and file with Atlas; New sketch answers to draw and keep (L693).
 - Errors: a failed toast takes `{ retry: fn }` (Try again) and about a dozen read and reload sites use it; eight literal faults gained their own action; failure copy on Statistics, Reminders, Meetings, Spaces and Chat edit speaks in the shared voice table (L633, L583, L558, L616).
 - Note editor offers: "12 + 30 =" followed by a blank line now takes its answer on the same line, not below the blank line (L574).
+- What it learned: a flagged row has Keep it (the flag goes and no later check raises it), and a Settings switch turns the scheduled check off (L584).
+- Settings import: tests pin that skills, personas and templates merge by name and never replace (L588).
+- Dashboard: a Backups card (off by default, add it from Edit layout) shows the last backup, the next due and a failed last try, with a button to Settings (L591).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Measured: Settings prose longer than 120 characters outside popovers is 8 paragraphs across 21 panes (20 raw candidates, 12 of them cards, containers or data), against about 60 at the plan's baseline (L-world-class-9).
 - Measured: footnotes and Mermaid render in note cards (shared renderMarkdown: footnote section and ref present, Mermaid image 168x144 loaded); rich paste in Capture and Quick note is plain text only (L-world-class-7).

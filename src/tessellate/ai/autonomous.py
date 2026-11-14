@@ -474,12 +474,12 @@ def _stage_night_shift(config, run: "jobruns.Run") -> None:  # noqa: ANN001
 
 def _stage_learned_audit(config) -> None:  # noqa: ANN001
     """Decision 68: after the night shift read the notes, re-read what it
-    learned against them. Under the night shift's own switch, so the learned
-    store is touched only while it may be."""
+    learned against them. Under the night shift's own switch (and its own, Settings,
+    What it learned), so the learned store is touched only while it may be."""
     try:
         from tessellate.ai import facts, learned_audit_run
 
-        if facts.enabled(config, "night_shift"):
+        if facts.enabled(config, "night_shift") and config.get_preference("learned_audit_enabled", True):
             learned_audit_run.run_job()
     except Exception as exc:  # noqa: BLE001  # top of a worker thread
         logger.error("learned audit failed: %s", exc, exc_info=True)

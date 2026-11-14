@@ -11584,6 +11584,10 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <p class="muted">Everything Atlas worked out on its own, yours to correct, delete or switch off.</p>
+            <label class="check-row" title="Each night, after Atlas has read your notes, it re-reads what it learned against them. Off: only the button runs it.">
+              <input type="checkbox" id="pref-learned-audit">
+              <span>Check what it learned on its own schedule</span>
+            </label>
             <p class="muted hidden" id="learned-from-you" role="status"></p>
             <!-- Decision 68: what the last check retired (with its Undo) and the
                  count it flagged; the lines of a running check come up in the
@@ -11618,7 +11622,8 @@ Link to another note with [[its first few words]]."></textarea>
                 edited or deleted, a joke, quote, fiction, test or draft, a
                 sentence you marked wrong, a repeat. It flags, and keeps, what
                 needs your eye: two notes that disagree, a date that has passed.
-                It also runs by itself with each background pass.
+                A flag has Keep it, which clears it for good. It also runs by itself with
+                each background pass, unless the switch above is off.
               </p>
               <p>
                 "Learned from you" counts your corrections (a note moved to

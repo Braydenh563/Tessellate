@@ -62,6 +62,8 @@ const DASH_WIDGETS = {
   activity: { title: "ph:pulse Recent activity", description: "What changed in your notebook lately, and whether you, Atlas or a skill changed it.", render: renderActivityWidget },
   //: WORLD_CLASS_PLAN I1's morning card over `GET /night/latest`.
   night: { title: "ph:moon-stars While you were away", description: "What Atlas worked out reading your notes on its own, with each finding to open or dismiss.", render: renderNightWidget },
+  //: L591: the backup schedule and its last success, off by default like the other status cards (dash-day.js).
+  backups: { title: "ph:shield-check Backups", description: "When the last backup was taken, whether the daily one worked, and when the next is due.", render: renderBackupsWidget },
   "most-used": { title: "ph:flame Most used", description: "The notes you open and ask about most often.", render: renderMostUsedWidget },
   //: WORLD_CLASS_PLAN section 17 rows 5 and 1: the owner's "most-accessed
   //: information" for this month (`GET /most-opened`, a day-by-day open log),
@@ -159,7 +161,7 @@ const DASH_DEFAULT_SHOWN = [
 //: offered in the picker rather than appended to every existing dashboard.
 //: Applied only while a saved layout has never seen the widget: once anybody
 //: adds it, or saves a layout with it hidden, the saved layout decides.
-const DASH_OPT_IN = ["activity", "night", "week"];
+const DASH_OPT_IN = ["activity", "night", "week", "backups"];
 
 //: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
 //: calculator, converter, stopwatch etc"). A widget draws the tool itself, not

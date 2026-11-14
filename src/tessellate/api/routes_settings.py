@@ -552,6 +552,8 @@ class PreferencesBody(BaseModel):
     # autonomous pass could never actually pick up any candidates no matter
     # what the checkbox showed.
     auto_stale_review_enabled: bool | None = None
+    #: L584: the scheduled Check what it learned (Settings, What it learned).
+    learned_audit_enabled: bool | None = None
     #: ANALYSIS.md §60 item 2. Declared here as well as in the response and
     #: `_AUTONOMOUS_PREFS` below: the comment above this block records what
     #: happens when it is not: Pydantic drops the key, every PUT that turns it
@@ -973,6 +975,7 @@ def _prefs_interface_and_desktop(config) -> dict:
         "auto_link_enabled": config.get_preference("auto_link_enabled", True),
         "auto_dedupe_enabled": config.get_preference("auto_dedupe_enabled", True),
         "auto_stale_review_enabled": config.get_preference("auto_stale_review_enabled", False),
+        "learned_audit_enabled": config.get_preference("learned_audit_enabled", True),
         "auto_capture_enabled": config.get_preference("auto_capture_enabled", False),
         "mcp_writes_enabled": config.get_preference("mcp_writes_enabled", False),
         "autonomous_tasks_interval_hours": config.get_preference(
