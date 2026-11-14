@@ -4,9 +4,10 @@ The 22-10 bug doc: replies read cold and the same, with nothing said about
 what to do next. Two small things, both the app's own wording around measured
 facts:
 
-- `length`: the dock's Length picker (quick, normal, detailed) already exists
-  for the model; the composer follows it. Quick keeps the lead sentence,
-  normal and detailed keep the whole answer.
+- `length`: the dock's Length picker (Short, Normal, Detailed) already exists
+  for the model, and Settings has it too; the composer follows it. Short keeps
+  the lead, at most two sentences, normal keeps the whole answer and detailed
+  adds a supporting sentence per source.
 - `closing`: one line after a composed answer that points at the next step
   from what the notebook shows, the newest note's title: "I can see you've
   been working on “X”. Ask me what is left on it." Which wording is the
@@ -21,6 +22,9 @@ rhythm, never a fact (CHAT_PLAN 1353).
 
 from __future__ import annotations
 
+import re
+from collections.abc import Sequence
+
 from tessellate.ai import composer_compose as compose
 
 
@@ -29,12 +33,33 @@ def length(mode: str | None) -> str:
     return {"quick": "short", "detailed": "long"}.get(str(mode or "").strip().lower(), "normal")
 
 
-def fit(text: str, size: str) -> str:
-    """Quick keeps the lead paragraph; the rest is for the longer modes."""
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\u201c\"(])")
+
+
+def fit(text: str, size: str, support: Sequence[str] = ()) -> str:
+    """Short keeps the lead paragraph, cut to two sentences (L161 a); Detailed
+    adds a supporting sentence per source after the answer (`support`)."""
+    if size == "long" and support:
+        return text.rstrip() + "\n\n" + "\n".join(f"- {line}" for line in support)
     if size != "short":
         return text
-    lead = text.split("\n\n", 1)[0].strip()
-    return lead or text
+    lead = text.split("\n\n", 1)[0].strip() or text
+    return " ".join(_SENTENCE_END.split(lead)[:2])
+
+
+def supporting(text: str, sources: Sequence[tuple[str, str]]) -> list[str]:
+    """One sentence from each source (title, body): the first of its body the
+    answer does not already say, led by the source's name."""
+    said = " ".join(text.lower().split())
+    lines: list[str] = []
+    for title, body in sources:
+        rows = [row.strip() for row in body.splitlines() if row.strip() and not row.lstrip().startswith("#")]
+        for sentence in (s.strip() for row in rows for s in _SENTENCE_END.split(row)):
+            plain = sentence.strip("-*> ").rstrip(".!? ")
+            if len(plain) > 12 and plain.lower() not in said:
+                lines.append(f"From {title}: {plain[:160]}.")
+                break
+    return lines
 
 
 def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = (), voice: str = "natural", question: str = "", newest: bool = True) -> str:

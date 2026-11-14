@@ -1189,7 +1189,7 @@ HELP_TOPICS: list[dict] = [
             "gets a question back with choices you can press; an instruction "
             "the app does not understand is matched to the closest things it can do. "
             "With no model running, an answer ends with a line pointing at what to do next, "
-            "from your newest note; the Length picker applies (Quick keeps the first line only, "
+            "from your newest note; the Length picker applies (Short keeps the first line only, "
             "Detailed keeps everything). A persona is an instruction for a model, so with no "
             "model it changes nothing: the app answers in its own voice."
         ),
@@ -1525,7 +1525,7 @@ HELP_TOPICS.extend(
                 "then picking it from the list. The link shows on both notes as a "
                 "connection, with a menu to add a reason, open or remove it. Atlas "
                 "also suggests links as you write, and every note's menu has Link "
-                "to. The Graph draws all of them. A note's menu also has Copy wiki "
+                "to. The Graph draws them. A note's menu also has Copy wiki "
                 "link (a [[link]] for another note) and Copy app link (an address "
                 "that opens the note in the app). Delete the [[name]] and its link "
                 "goes with it; rename a note and a toast offers to rename the "
@@ -1539,17 +1539,17 @@ HELP_TOPICS.extend(
                 "worth connecting with every reason (similar wording, people or "
                 "things both name, a note both link with, a rare tag both carry) "
                 "and how sure it is (Link all above 70% over the list links every pair at "
-                "least that sure, after asking, and the More menu beside it has Suggest reasons "
+                "least that sure, after asking, and the More menu has Suggest reasons "
                 "and Explain your existing links); Tensions, notes that may disagree; Names, one "
                 "person or thing named two ways, with Merge; and Link types, a link whose own "
                 'sentence says "for example" or "continues". Accepting or '
-                "dismissing any of them teaches it which reasons to trust in your "
-                "notebook, and a dismissed one does not come back. A link's ⋮ has "
+                "dismissing any of them teaches it which reasons to trust, "
+                "and a dismissed one does not come back. A link's ⋮ has "
                 "Kind and properties: a kind says what the link is (Supports, Part "
                 "of, your own) and reads from the other note by its other name "
-                "(Supported by, Has part); Kinds of link in the command palette "
+                "(Supported by, Has part); Supersedes marks the newer note, and the older one shows Superseded by. Kinds of link in the command palette "
                 "adds, renames and deletes your own. The assistant can link two "
-                "notes with any of these kinds too, yours included."
+                "notes with these kinds."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },

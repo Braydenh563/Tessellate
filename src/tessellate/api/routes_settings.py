@@ -384,6 +384,8 @@ class PreferencesBody(BaseModel):
     #: Harper's lint kinds the person turned off, by group (L333): the Checks sheet.
     prose_kinds_off: list[Literal["style", "punctuation", "capitalization", "wording"]] | None = Field(default=None, max_length=4)
     check_link_text: bool | None = None
+    #: Answers drop persona voice (L161 c): the app's own persona answers, whichever is active.
+    personas_off: bool | None = None
     link_offer_ignored: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=500)
     #: Autocorrect in the note boxes, the chat and Ask composers and the
     #: titles (Brief 94, autocorrect.js). On by default, unlike the line above:
@@ -858,6 +860,7 @@ def _prefs_notebook(config) -> dict:
         "link_offers": config.get_preference("link_offers", True),
         "prose_kinds_off": config.get_preference("prose_kinds_off", []),
         "check_link_text": config.get_preference("check_link_text", False),
+        "personas_off": config.get_preference("personas_off", False),
         "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),
         "display_name": config.get_preference("display_name", ""),

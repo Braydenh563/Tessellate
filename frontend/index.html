@@ -11195,6 +11195,49 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row">
+                <label for="pref-answer-length" class="muted">How long answers are</label>
+                <select id="pref-answer-length" title="Short is one or two sentences, Normal a short paragraph or two, Detailed adds a supporting sentence for each source">
+                  <option value="quick">Short</option>
+                  <option value="normal">Normal (default)</option>
+                  <option value="detailed">Detailed</option>
+                </select>
+              </div>
+              <p class="muted">
+                Short is one or two sentences; Detailed adds a supporting sentence per source.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="answer-length-help" aria-controls="answer-length-help" aria-expanded="false"
+                  title="About this setting" aria-label="About how long answers are">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="answer-length-help" role="dialog" aria-label="About how long answers are">
+                <p>
+                  The same choice as Length in the chat dock and beside the Ask
+                  box, with or without a model. Short is one or two sentences,
+                  Normal a short paragraph or two, and Detailed adds a
+                  supporting sentence for each source.
+                </p>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-personas-off">
+                <span>Personas off</span>
+              </label>
+              <p class="muted">
+                Answers use Atlas's own voice, whichever persona is active.
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="personas-off-help" aria-controls="personas-off-help" aria-expanded="false"
+                  title="About this setting" aria-label="About personas off">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </p>
+              <div class="help-body hidden" id="personas-off-help" role="dialog" aria-label="About personas off">
+                <p>
+                  With this on, no persona's instructions reach a model and no
+                  persona's words pick the voice of an answer from your notes.
+                  Your personas are kept; turn it off and the active one is back.
+                </p>
+              </div>
+              <div class="row">
                 <label for="pref-voice" class="muted">How Atlas sounds with no model</label>
                 <select id="pref-voice" title="The voice Atlas answers from your notes in when no model is running">
                   <option value="natural">Warm and concise (default)</option>

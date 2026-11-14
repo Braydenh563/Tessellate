@@ -70,15 +70,15 @@ class ResponseMode:
 MODES: dict[str, ResponseMode] = {
     "quick": ResponseMode(
         id="quick",
-        label="Quick",
-        description="Short, literal answers. Fastest: best for looking something up.",
+        label="Short",
+        description="One or two sentences. Fastest: best for looking something up.",
         # Roughly 200 words. Enough for a fact, a date, or a list of note
         # titles, which is what this mode is for.
         max_output_tokens=256,
         temperature=0.2,
         think=False,
         length_hint=(
-            " Answer in at most two or three sentences. Do not explain your "
+            " Answer in one or two sentences. Do not explain your "
             "reasoning, and do not add caveats or suggestions unless asked."
         ),
     ),
@@ -118,7 +118,8 @@ MODES: dict[str, ResponseMode] = {
         think=None,  # let a reasoning model reason; that is the point here
         length_hint=(
             " Be thorough. Work through the relevant notes, draw connections "
-            "between them, and explain your reasoning."
+            "between them, and explain your reasoning. Add a supporting "
+            "sentence for each source note you draw on."
         ),
     ),
 }

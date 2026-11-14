@@ -577,7 +577,7 @@ MORE_TOPICS: list[dict] = [
         "id": "answer-style",
         "keywords": (
             "answer style", "concise", "detailed", "shorter answers",
-            "longer answers", "friendly", "professional wording", "formal wording",
+            "longer answers", "answer length", "how long answers are", "personas off", "short answers", "friendly", "professional wording", "formal wording",
             "natural wording", "wording when no model", "composer voice",
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
@@ -589,7 +589,11 @@ MORE_TOPICS: list[dict] = [
             "active. Below it, How Atlas sounds with no model picks the voice "
             "it answers from your notes in without a model: Warm and concise "
             "(the default), Neutral, Playful or Plain, with a sample under it. "
-            "The facts and the sources are the same in every voice. What "
+            "The facts and the sources are the same in every voice. How long "
+            "answers are is Short (one or two sentences), Normal (the default) "
+            "or Detailed (a supporting sentence for each source), the same "
+            "choice as Length in the chat dock; Personas off makes every "
+            "answer drop persona voice, and keeps your personas for later. What "
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
             "or Everything it finds; each Not right raises the bar. A long "
