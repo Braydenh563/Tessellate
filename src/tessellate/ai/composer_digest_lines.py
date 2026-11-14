@@ -853,10 +853,22 @@ def _named_pronoun(body: str, view) -> str:  # noqa: ANN001
 
 def _bodies_of(held: list[Fact], label: str) -> tuple[list[str], str]:
     """A line's distinct sentences, and the pinned note ending it, if any."""
-    bodies = list(dict.fromkeys(_said_body(f, label) for f in held))
+    bodies = list(dict.fromkeys(_gapped(held, i) + _said_body(f, label) for i, f in enumerate(held)))
     #: A line made of pinned sentences says so once, at its end (B32).
     pins = [m.group(0) for b in bodies for m in [_PINNED.search(b)] if m]
     return [_PINNED.sub("", b) for b in bodies], (pins[-1] if pins else "")
+
+
+def _gapped(held: list[Fact], i: int) -> str:
+    """"… " before a sentence when the note's sentence before it is not
+    quoted: one pair of marks never runs over a skipped sentence (L-chat-10)."""
+    if not i or held[i].view is not held[i - 1].view:
+        return ""
+    keys = [s.key for s in held[i].view.sentences]
+    here, before = held[i].sentence.key, held[i - 1].sentence.key
+    if here not in keys or before not in keys:
+        return ""
+    return "… " if keys.index(here) > keys.index(before) + 1 else ""
 
 
 def _all_headings(held: list[Fact], label: str) -> bool:
@@ -1438,7 +1450,9 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
     two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
     out = bodies[0] if bodies else ""
     for body in bodies[1:]:
-        if sentences and _is_fragment(body):
+        if body.startswith("… "):
+            out = out.rstrip(" .;") + " " + body
+        elif sentences and _is_fragment(body):
             #: "slicing everything but it was fun", "straighter this time":
             #: no subject of its own, so it rides on the sentence before.
             out += ", " + body

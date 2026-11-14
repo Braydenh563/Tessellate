@@ -523,9 +523,14 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return _swap_reading(text, previous)
 
 
+#: "and the dentist" with no "?" is still the ask before, of a new thing (L-chat-9): a short thing, never a
+#: sentence ("and the meeting went well") or an act ("and delete it").
+_BARE_THING = lazy_compile(r"(?:the|my|our|a|an) [a-z][\w'-]*(?: [a-z][\w'-]*)?|[A-Z][\w'-]*(?: [A-Z][\w'-]*)?")
+
+
 def _swap_reading(text: str, previous: str) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
-    if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
+    if swap and swap.group("y") is not None and not text.rstrip().endswith("?") and not _BARE_THING.fullmatch(swap.group("y").strip()):
         swap = None
     if not swap:
         return _NOT_THIS
