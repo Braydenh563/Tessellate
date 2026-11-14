@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 86 | 34 | 2 | 59 | 296 |
+| chat | 176 | 86 | 33 | 2 | 59 | 295 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 460 | 103 | 2 | 183 | 1116 |
+| all | 553 | 460 | 102 | 2 | 183 | 1115 |
 
 ## graph
 
@@ -117,7 +117,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L248** `chat` partly, M: chat_pool.py _raw_results uncapped; re-measure composer digest lines on 500 notes. From ledger-1112 P6.
 - [ ] **L249** `chat` partly, L: Finish composer as a smart chatbot after atlas (INBOX 895 part 2). From OPEN.md:583. Evidence: Composer work shipped (CHANGELOG:293, typo_context.py) but no entry names a smart-chatbot step; unclear if complete
 - [ ] **L250** `chat` partly, L: Make composer run skills well. From INBOX.md:904 B69. Evidence: OPEN O7 holds the quality bar; composer acts exist (ai/parity_acts.py, compleft-1110)
-- [ ] **L251** `chat` partly, L: Masculine Atlas redesign: head, eyes, shoulder join and body shape (owner call on direction). From OPEN.md:4323; OPEN.md:4349; OPEN.md:4390; OPEN.md:4391 (+2). Evidence: W34 owner-call (design), w34-unv1-1111.md. Progress 2026-11-14: not started, an owner design call on direction. Exact step: the owner picks head, eyes, shoulder join and body shape changes from w34-unv1-1111.md; each is then a spec change in ATLAS_LOOKS.masculine (atlas.js) with test_atlas_shape.py geometry checks.
 - [ ] **L252** `chat` partly, L: Guide/Ask leads and poke-line table: G3, G5, G6, G8 to G14 wording unverified. From ledger-1112 P26; ledger-1112 G8; ledger-1112 G3; ledger-1112 G5.
 - [ ] **L253** `chat` partly, L: Close remaining unverified audit rows (C35, W21, Z*, K*, B*, S*, w34 spoke lists). From ledger-1112 X13; ledger-1112 X12; ledger-1112 FX2; ledger-1112 X24 (+2).
 - [ ] **L254** `chat` partly, L: Chart maker and answer shapes (only ask-chart.js exists); goals and lists have no surface at all. From ledger-1112 P15.

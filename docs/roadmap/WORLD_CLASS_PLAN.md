@@ -4196,5 +4196,5 @@ Measured from `NAME_MARK_BUDDY_ACTS` (avatars.js) and `ACTIVITIES` (behaviour.py
 | --- | --- | --- |
 | Atlas-only | juggle, map, meditate, pushups, weights, tea, snack, fish, journal, stars, blanket, plant, puzzle, agree, dance, proud, lookdown, tiptoe, sneeze, hiccup, hug, tap, firefly, starpile, cardnap, wavepointer, dinner, bubbles, knit, daydream, pace, game, tinker, dust | 34 |
 | Both | blink, look, turn, glance, stretch, yawn, nap, hop, wave, scratch, dangle, kick, shrug, facepalm, the 56 `any` rows | 56 |
-| Generated-only (proposed, none built) | groom, sniff, shake, ear twitch, tail flick, crouch_watch, lie_down | 7 |
-The owner says which of the seven leave Atlas (a `generated: true` flag read beside `spec.atlas`); then it is built with a test.
+| Generated-only | groom, sniff, shake (built: `generated: true`); ear twitch, tail flick, crouch_watch, lie_down (the ground gait or a part Atlas lacks; behaviour.py) | 7 |
+The owner reviews the list; a row moves by flipping `generated` on its act.

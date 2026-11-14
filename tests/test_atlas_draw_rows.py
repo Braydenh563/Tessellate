@@ -169,3 +169,38 @@ def test_every_endless_atlas_loop_holds_at_rest_l742():
     looped |= {".atl-lw-wisps"}
     for sel in looped:
         assert sel in hold.replace(" ", ""), f"{sel} loops endlessly and is not held at rest"
+
+
+def test_animal_only_acts_stay_off_atlas_l746():
+    """L746: the table (WORLD_CLASS_PLAN.md) names groom, sniff and shake as the generated faces' own (a coat and
+    a nose); the picker, the mind's next act and the viewer's chips all read `generated` as they read `atlas`."""
+    avatars = (ROOT / "frontend/js/avatars.js").read_text(encoding="utf-8")
+    menu = (ROOT / "frontend/js/companion-menu.js").read_text(encoding="utf-8")
+    for act in ("shake", "groom", "sniff"):
+        assert re.search(rf"^\s+{act}: \{{[^}}\n]*generated: true", avatars, re.M), act
+    assert "if (spec.generated && nmb.atlasLook) w = 0;" in avatars
+    assert "if (spec.generated && nmb.atlasLook) return \"\";" in menu
+    assert "(spec.generated && atlas)" in menu
+
+
+@needs_node
+def test_hide_act_draws_its_hands_on_the_front_layer_l175():
+    """L175: measured in the browser, 130 pixels of the 64 by 92 figure differ with the front copies hidden, and
+    the copies are gone (0) once the act ends. The rig drives a copy with its original."""
+    assert 'atlasRigFrame.hideHands(rig, !!buddy && buddy.classList.contains("nmb-act-hide"));' in MOTION
+    fn = re.search(r"^atlasRigFrame\.hideHands = function .*?^\};", MOTION, re.S | re.M).group(0)
+    out = _node("function atlasRigFrame() {}\n" + fn + r"""
+const mk = () => { const o = { isConnected: true, children: [], remove() { this.isConnected = false; }, cloneNode() { return mk(); },
+  querySelectorAll() { return []; }, querySelector() { return null; } }; return o; };
+const host = mk(); host.appendChild = (c) => host.children.push(c);
+const arm = { groups: [mk(), mk()], paths: [], cloneHands: [], shown: "x", drawn: [0, 0] };
+const rig = { box: { querySelector: () => host }, arms: [arm], hideCopies: null };
+atlasRigFrame.hideHands(rig, true);
+const on = { groups: arm.groups.length, copies: rig.hideCopies.length, shown: arm.shown };
+atlasRigFrame.hideHands(rig, true);
+const again = host.children.length;
+atlasRigFrame.hideHands(rig, false);
+console.log(JSON.stringify({ on, again, off: { groups: arm.groups.length, copies: rig.hideCopies } }));""")
+    assert out["on"] == {"groups": 4, "copies": 2, "shown": ""}
+    assert out["again"] == 2, "a second call adds nothing"
+    assert out["off"] == {"groups": 2, "copies": None}

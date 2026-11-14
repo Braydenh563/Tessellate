@@ -3183,9 +3183,9 @@
     //: biological actions", "a companion, not something that distracts"): quiet,
     //: on the body alone, in the lazy sheet that comes with companion-travel.js
     //: (`lazy`: not picked until it is here).
-    shake: { ms: 1200, w: 1, cool: 90000, poses: ["stand", "sit", "float"], lazy: true },
-    groom: { ms: 3200, w: 1.5, cool: 70000, poses: ["stand", "sit"], lazy: true },
-    sniff: { ms: 2400, w: 1, cool: 60000, poses: ["stand", "float"], lazy: true },
+    shake: { ms: 1200, w: 1, cool: 90000, poses: ["stand", "sit", "float"], lazy: true, generated: true },
+    groom: { ms: 3200, w: 1.5, cool: 70000, poses: ["stand", "sit"], lazy: true, generated: true },
+    sniff: { ms: 2400, w: 1, cool: 60000, poses: ["stand", "float"], lazy: true, generated: true },
     sigh: { ms: 2800, w: 1.5, cool: 60000, poses: ["stand", "sit", "float", "lean"], lazy: true },
   };
 
@@ -9138,6 +9138,7 @@
       const stance = NMB_STANCES[act];
       if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;
       if (spec.atlas && !nmb.atlasLook) w = 0;
+      if (spec.generated && nmb.atlasLook) w = 0;
       if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
       w *= drive[act] ?? 1;
       w *= nmb.cat.weigh(act, now, hour);

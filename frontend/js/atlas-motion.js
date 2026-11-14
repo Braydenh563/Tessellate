@@ -205,6 +205,7 @@ function atlasRigAttach(box) {
       drawn: [0, 0],
       shown: "",
       antic: null,
+      cloneHands: [],
       //: What animates on the probe, kept by its events (`atlasProbeWatch`).
       running: new Set(),
     });
@@ -545,6 +546,38 @@ atlasRigFrame.walkSwing = function (side, look, now) {
   return [amp * Math.sin(ph), amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5];
 };
 
+//: **Covering its eyes puts its hands over its face** (L175: the arms live in the body layer, under the head's, so a
+//: raised hand went behind the head). For the length of the hide act a copy of each arm is drawn on the front
+//: layer, and the rig drives it with the original (its groups, paths and hand); the copy goes when the act does.
+atlasRigFrame.hideHands = function (rig, on) {
+  if (!on === !rig.hideCopies) return;
+  const host = rig.box.querySelector(".atl-layer-front .atl-rig");
+  if (!on || !host) {
+    for (const c of rig.hideCopies || []) c.remove();
+    rig.hideCopies = null;
+    for (const arm of rig.arms) {
+      arm.groups = arm.groups.filter((g) => g.isConnected);
+      arm.paths = arm.paths.filter((p) => p.isConnected);
+      arm.cloneHands = [];
+    }
+    return;
+  }
+  rig.hideCopies = [];
+  for (const arm of rig.arms) {
+    for (const g of [...arm.groups]) {
+      const c = g.cloneNode(true);
+      host.appendChild(c);
+      arm.groups.push(c);
+      arm.paths.push(...c.querySelectorAll(":scope > path"));
+      const hand = c.querySelector(":scope > .atl-hand");
+      if (hand) arm.cloneHands.push(hand);
+      rig.hideCopies.push(c);
+    }
+    arm.shown = "";
+    arm.drawn = [1e9, 1e9];
+  }
+};
+
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
@@ -576,6 +609,7 @@ function atlasRigFrame(rig, now) {
   }
   const dt = rig.at ? Math.min(0.05, (now - rig.at) / 1000) : 1 / 60;
   rig.at = now;
+  atlasRigFrame.hideHands(rig, !!buddy && buddy.classList.contains("nmb-act-hide"));
   const walking = live && !!buddy && buddy.classList.contains("nmb-walking");
   let busy = walking;
   //: **The frame reads nothing** (INBOX 1766, the owner's lag log on a documents page with a diagram open:
@@ -661,7 +695,9 @@ function atlasRigFrame(rig, now) {
     if (Math.abs(bend - arm.drawn[0]) > 0.1 || Math.abs(wrist - arm.drawn[1]) > 0.1 || (!moving && (bend !== arm.drawn[0] || wrist !== arm.drawn[1]))) {
       const d = atlasArmPath(arm.geo, bend, wrist);
       for (const p of arm.paths) p.setAttribute("d", d);
-      arm.hand?.setAttribute("transform", atlasArmHand(arm.geo, bend, wrist));
+      const handT = atlasArmHand(arm.geo, bend, wrist);
+      arm.hand?.setAttribute("transform", handT);
+      for (const h of arm.cloneHands) h.setAttribute("transform", handT);
       arm.drawn = [bend, wrist];
     }
     if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, arm.side, +j.sh.x.toFixed(2), +j.el.x.toFixed(2), +j.wr.x.toFixed(2)]);

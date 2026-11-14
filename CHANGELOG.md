@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: covering its eyes now puts its hands over its face (a copy of each arm on the front layer for the act; 130 pixels of the figure change, L175), and groom, sniff and shake stay with the generated faces (L746).
 - Atlas: her wisps and glints now hold still at rest with the other endless loops (L742, part); the wrap behind the body (back runs 0 to 0.25 and 0.75 to 1 on the waist and dress ribbons) was already built.
 - Atlas: the hide act shuts its lids over the arms' own 3.6 seconds (33% to 67%), not 2.4 (L175, part)
 - Atlas: the walk's arm swing is one function (`atlasWalkSwing`), measured 4.6 to 21.4 degrees from hanging and never across the body (L82); the moods sweep sets its look through prefs again (L749).

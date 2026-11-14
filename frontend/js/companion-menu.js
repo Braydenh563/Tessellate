@@ -188,7 +188,7 @@
     const atlas = nameMarkBuddyHasAtlas(buddy);
     for (const [act, label] of NM_VIEWER_ACTS) {
       const spec = NAME_MARK_BUDDY_ACTS[act];
-      if (!spec || !spec.poses.includes(nmb.pose) || (spec.atlas && !atlas)) continue;
+      if (!spec || !spec.poses.includes(nmb.pose) || (spec.atlas && !atlas) || (spec.generated && atlas)) continue;
       row.appendChild(chip(label, "nm-viewer-act", () => {
         //: Asked for an act, Atlas opens its eyes for it, in 0.6s. Its face dozes on its own mood (atlas.js), which the
         //: body's sleep does not cover, so a drowsy Atlas waved and cheered with its eyes shut (the owner, 2026-11-04).
@@ -924,6 +924,7 @@
         if (!spec || !spec.poses.includes(nmb.pose) || (nmb.cool[next] || 0) > now || nameMarkBuddyActOff(next)) return "";
         if (NMB_LOUD_ACTS.includes(next) && !nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return "";
         if (spec.atlas && !nmb.atlasLook) return "";
+        if (spec.generated && nmb.atlasLook) return "";
         return next;
       }
       return "";
