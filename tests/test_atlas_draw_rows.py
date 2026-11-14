@@ -204,3 +204,16 @@ console.log(JSON.stringify({ on, again, off: { groups: arm.groups.length, copies
     assert out["on"] == {"groups": 4, "copies": 2, "shown": ""}
     assert out["again"] == 2, "a second call adds nothing"
     assert out["off"] == {"groups": 2, "copies": None}
+
+
+@needs_node
+def test_lower_body_weave_adds_texture_to_both_looks_l742():
+    """L742: the dress and the trail each carry the same 18 fine specks on top of their dust (a speck's radius
+    0.07 to 0.11, inside the stem's width), and both looks read it."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    assert atlas.count("...atlasSpecks.weave()") == 2
+    line = re.search(r"^atlasSpecks\.weave = .*;$", atlas, re.M).group(0)
+    out = _node("const atlasSpecks = () => 0;\n" + line + "\nconsole.log(JSON.stringify(atlasSpecks.weave()))")
+    assert len(out) == 18
+    assert all(0.27 <= t <= 0.92 and abs(a) <= 0.35 and 0.069 <= r <= 0.111 for t, a, r in out)
+    assert len({round(a, 2) for _, a, _ in out}) >= 14, "the rows never line up"
