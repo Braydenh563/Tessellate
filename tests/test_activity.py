@@ -188,3 +188,16 @@ def test_request_bound_long_tasks_register_with_activity():
         if f"activity.track(\"{kind}\"" not in body and "jobruns.job_run(" not in body and "activity.tracked_stream(" not in body:
             missing.append(f"{rel}::{name}")
     assert not missing, f"{missing} do long work in a request and nothing lists it: wrap it in activity.track"
+
+
+def test_a_tracked_job_that_fails_on_a_file_keeps_the_sentence_not_the_path():
+    """L505: `activity.track` put `str(exc)` on the run's line, which for an
+    OSError is "[Errno 28] ...: '/home/x/...'"; jobruns keeps the sentence."""
+    import pytest
+
+    seen = {}
+    with pytest.raises(OSError):
+        with activity.track("generation", "Answering in Chat") as job:
+            seen["run"] = job.run
+            raise OSError(28, "No space left on device", "/home/someone/private/notes.db")
+    assert seen["run"]._error == "No space left on device"

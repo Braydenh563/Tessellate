@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8503, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22456, plan headings 689, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8503, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22457, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8503)
 
@@ -14789,7 +14789,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_deletes_all` | src/tessellate/ai/commands.py:1952 |
 | `_drop_article` | src/tessellate/ai/commands.py:145 |
 | `_existing_category` | src/tessellate/ai/commands.py:1404 |
-| `_failure_reason` | src/tessellate/ai/commands.py:2167 |
 | `_filed_notes` | src/tessellate/ai/commands.py:2067 |
 | `_find` | src/tessellate/ai/commands.py:745 |
 | `_find_by_head` | src/tessellate/ai/commands.py:763 |
@@ -14881,6 +14880,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_words_as_typed` | src/tessellate/ai/commands.py:1187 |
 | `ask_when` | src/tessellate/ai/commands.py:1868 |
 | `ask_when_for` | src/tessellate/ai/commands.py:1853 |
+| `failure_reason` | src/tessellate/ai/commands.py:2167 |
 | `not_done` | src/tessellate/ai/commands.py:1467 |
 | `parse` | src/tessellate/ai/commands.py:1320 |
 | `plan` | src/tessellate/ai/commands.py:1749 |
@@ -24118,25 +24118,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Job` | src/tessellate/core/activity.py:87 |
 | `StopEvent` | src/tessellate/core/activity.py:49 |
-| `StreamNarrator` | src/tessellate/core/activity.py:419 |
-| `_no_icon` | src/tessellate/core/activity.py:413 |
+| `StreamNarrator` | src/tessellate/core/activity.py:423 |
+| `_no_icon` | src/tessellate/core/activity.py:417 |
 | `_prune` | src/tessellate/core/activity.py:195 |
-| `bind` | src/tessellate/core/activity.py:274 |
-| `clear` | src/tessellate/core/activity.py:548 |
+| `bind` | src/tessellate/core/activity.py:278 |
+| `clear` | src/tessellate/core/activity.py:552 |
 | `count` | src/tessellate/core/activity.py:201 |
-| `current_stop_event` | src/tessellate/core/activity.py:329 |
-| `current_stopped` | src/tessellate/core/activity.py:336 |
+| `current_stop_event` | src/tessellate/core/activity.py:333 |
+| `current_stopped` | src/tessellate/core/activity.py:340 |
 | `finish` | src/tessellate/core/activity.py:207 |
-| `get` | src/tessellate/core/activity.py:521 |
+| `get` | src/tessellate/core/activity.py:525 |
 | `recent` | src/tessellate/core/activity.py:224 |
-| `snapshot` | src/tessellate/core/activity.py:542 |
+| `snapshot` | src/tessellate/core/activity.py:546 |
 | `start` | src/tessellate/core/activity.py:169 |
-| `stop` | src/tessellate/core/activity.py:527 |
-| `stop_aware` | src/tessellate/core/activity.py:288 |
-| `stop_kind` | src/tessellate/core/activity.py:534 |
-| `tool_arguments_in_words` | src/tessellate/core/activity.py:392 |
+| `stop` | src/tessellate/core/activity.py:531 |
+| `stop_aware` | src/tessellate/core/activity.py:292 |
+| `stop_kind` | src/tessellate/core/activity.py:538 |
+| `tool_arguments_in_words` | src/tessellate/core/activity.py:396 |
 | `track` | src/tessellate/core/activity.py:232 |
-| `tracked_stream` | src/tessellate/core/activity.py:348 |
+| `tracked_stream` | src/tessellate/core/activity.py:352 |
 
 ### src/tessellate/core/afterunlock.py (5)
 
@@ -25062,7 +25062,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_calling` | src/tessellate/core/jobruns.py:777 |
 | `_clip` | src/tessellate/core/jobruns.py:117 |
 | `_database` | src/tessellate/core/jobruns.py:150 |
-| `_failure_reason` | src/tessellate/core/jobruns.py:122 |
 | `_named` | src/tessellate/core/jobruns.py:786 |
 | `_open_call` | src/tessellate/core/jobruns.py:793 |
 | `_purpose` | src/tessellate/core/jobruns.py:757 |
@@ -25074,6 +25073,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `clear_live` | src/tessellate/core/jobruns.py:243 |
 | `current` | src/tessellate/core/jobruns.py:259 |
 | `describe_night_pass` | src/tessellate/core/jobruns.py:700 |
+| `failure_reason` | src/tessellate/core/jobruns.py:122 |
 | `finished` | src/tessellate/core/jobruns.py:218 |
 | `for_request` | src/tessellate/core/jobruns.py:749 |
 | `job_run` | src/tessellate/core/jobruns.py:579 |
@@ -28255,7 +28255,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22456)
+## Tests (22457)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28270,7 +28270,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_account.py | 19 |
 | tests/test_act_card_reopen.py | 24 |
 | tests/test_act_phrasings_1030.py | 2 |
-| tests/test_activity.py | 11 |
+| tests/test_activity.py | 12 |
 | tests/test_activity_narrator_guide.py | 2 |
 | tests/test_activity_undo_row.py | 6 |
 | tests/test_acts.py | 11 |
@@ -31496,14 +31496,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:646 |
+| Needs hardware | docs/roadmap/LEDGER.md:645 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:639 |
+| Owner calls | docs/roadmap/LEDGER.md:638 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31684,7 +31684,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:780 |
+| Plan session briefs | docs/roadmap/LEDGER.md:779 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31738,25 +31738,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:796 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:880 |
+| chat | docs/roadmap/LEDGER.md:795 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:879 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:820 |
-| general | docs/roadmap/LEDGER.md:598 |
+| documents | docs/roadmap/LEDGER.md:819 |
+| general | docs/roadmap/LEDGER.md:597 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:784 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:892 |
+| graph | docs/roadmap/LEDGER.md:783 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:891 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:832 |
+| mindmap | docs/roadmap/LEDGER.md:831 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:856 |
+| timeline | docs/roadmap/LEDGER.md:855 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:844 |
+| ui-modernisation | docs/roadmap/LEDGER.md:843 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:808 |
+| whiteboard | docs/roadmap/LEDGER.md:807 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:868 |
+| world-class | docs/roadmap/LEDGER.md:867 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

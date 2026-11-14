@@ -2164,7 +2164,7 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     return step_undo
 
 
-def _failure_reason(error: str) -> str:
+def failure_reason(error: str) -> str:
     """The skip reason a tool's refusal stands for."""
     if "is private" in error:
         return "private"
@@ -2210,7 +2210,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         name, args = act_steps.settle_step(session, name, args)
         result = _run_one(session, name, args, tools)
         if "error" in result:
-            reason = _failure_reason(str(result["error"]))
+            reason = failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))

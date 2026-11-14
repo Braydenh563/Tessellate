@@ -119,7 +119,7 @@ def _clip(text: object) -> str:
     return one_line if len(one_line) <= _MAX_TEXT else one_line[: _MAX_TEXT - 1] + "…"
 
 
-def _failure_reason(exc: BaseException) -> str:
+def failure_reason(exc: BaseException) -> str:
     """The short worded reason an exception leaves on the last-run line.
 
     An `OSError`'s `str()` is "[Errno 28] No space left on device: '/home/x/
@@ -592,7 +592,7 @@ def job_run(kind: str, db=None, *, title: str = "", origin: str = "", persist: b
     except BaseException as exc:
         # GeneratorExit and KeyboardInterrupt are not "failed", but nothing
         # may leave the row saying "running" forever either.
-        run.fail(_failure_reason(exc))
+        run.fail(failure_reason(exc))
         run.finish()
         raise
     run.finish()
@@ -821,7 +821,7 @@ def model_call(method):  # noqa: ANN001, ANN201
         except BaseException as exc:
             run.say(f"{name} did not answer ({_seconds(t0)}).")
             if own is not None:
-                own.fail(_failure_reason(exc))
+                own.fail(failure_reason(exc))
             raise
         else:
             run.say(f"{name} answered in {_seconds(t0)}.")
@@ -871,7 +871,7 @@ def model_stream(method):  # noqa: ANN001, ANN201
         except BaseException as exc:
             run.say(f"{name} did not answer ({_seconds(t0)}).")
             if own is not None:
-                own.fail(_failure_reason(exc))
+                own.fail(failure_reason(exc))
             raise
         else:
             run.say(f"{name} answered in {_seconds(t0)}.")
