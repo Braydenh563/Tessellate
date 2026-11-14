@@ -200,7 +200,7 @@ const vm = require("vm"), fs = require("fs");
 const el = () => ({ kids: [], text: "", setAttribute() {}, appendChild(k) { this.kids.push(k); }, append(...k) { this.kids.push(...k); }, set textContent(v) { this.text = v; } });
 const doc = { createElementNS: el, createElement: el };
 const win = {};
-vm.runInNewContext(fs.readFileSync(process.argv[1], "utf8"), { window: win, document: doc });
+vm.runInNewContext(fs.readFileSync(process.argv[1], "utf8"), { window: win, document: doc, LAZY_MODULES: {} });  // the file registers its sections bundle at load (L-documents-49)
 const flat = (n) => (n.text || "") + n.kids.map(flat).join("");
 const labels = win.docMathRender.labels;
 labels.use(labels.index("$$a = 1 \\label{a}$$"));

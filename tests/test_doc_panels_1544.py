@@ -166,8 +166,10 @@ def test_every_panel_is_a_document_command_with_a_chord_in_the_sheet():
         assert chords[ident] not in ("", "none"), ident
     table = DOCS[DOCS.index("// DOC-COMMANDS-BEGIN") : DOCS.index("// DOC-COMMANDS-END")]
     all_keys = re.findall(r'keys: "([^"]*)"', table)
+    # "none" is no chord, so it claims nothing (L-documents-49's insert-sections has none).
     for chord in chords.values():
-        assert all_keys.count(chord) == 1, f"{chord} is claimed twice"
+        if chord != "none":
+            assert all_keys.count(chord) == 1, f"{chord} is claimed twice"
 
 
 def test_the_chords_are_bound_in_the_document_and_in_every_note_box():
