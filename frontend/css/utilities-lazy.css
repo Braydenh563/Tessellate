@@ -457,3 +457,22 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   font-size: var(--text-sm);
   margin-block: var(--space-2);
 }
+
+/* The chart maker's kinds past bar and line (the maker loads this sheet). An area is the line with its floor filled; a pie's slices step from the accent toward the text colour,
+   each a blend of the two so none fades into the card, parted from the next by the card's own colour (L-chat-252). */
+.ask-chart-area {
+  fill: color-mix(in oklab, var(--accent) 22%, transparent);
+  stroke: none;
+}
+
+.ask-chart-slice {
+  stroke: var(--card);
+  stroke-width: 1.5;
+}
+
+.ask-chart-slice-0 { fill: var(--accent); }
+.ask-chart-slice-1 { fill: color-mix(in oklab, var(--accent) 75%, var(--text)); }
+.ask-chart-slice-2 { fill: color-mix(in oklab, var(--accent) 50%, var(--text)); }
+.ask-chart-slice-3 { fill: color-mix(in oklab, var(--accent) 25%, var(--text)); }
+.ask-chart-slice-4 { fill: color-mix(in oklab, var(--text) 70%, var(--accent)); }
+.ask-chart-slice-5 { fill: color-mix(in oklab, var(--text) 90%, var(--accent)); }

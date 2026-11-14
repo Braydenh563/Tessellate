@@ -990,7 +990,11 @@ def _goal_in(views: list, dimension: str, noun: str = "", aim: float | None = No
             titled = _says_kind(str(view.title), noun) if noun else bool(_TARGET_WORD.search(str(view.title)))
             if named or (titled and len(figures) == 1):
                 goals += [(named, view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
-    #: A question that names the figure ("my 10k goal") means the goal that sets it.
+    return _newest_goal(goals, aim)
+
+
+def _newest_goal(goals: list, aim: float | None) -> Item | None:
+    """The newest goal; a question that names the figure ("my 10k goal") means the goal that sets it."""
     goals = [g for g in goals if aim is None or g[2].value == aim] or goals
     return max(goals, key=lambda g: g[:2])[2] if goals else None
 
