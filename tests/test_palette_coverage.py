@@ -165,7 +165,7 @@ def test_every_alias_names_a_place_that_exists():
 
 
 def test_the_aliases_people_type_find_their_place():
-    """Row 5's aliases: "todo" is the reminders, "whiteboard" a board."""
+    """Row 5's aliases: the to-do word finds the reminders, "whiteboard" a board."""
     rows = _rows()
     for query, wanted in (("todo", "Reminders"), ("whiteboard", "board"), ("hotkeys", "Keyboard shortcuts")):
         assert any(wanted in label for label in _found(query, rows)), f"Ctrl+K {query!r} does not find {wanted}"

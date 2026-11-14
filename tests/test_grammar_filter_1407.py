@@ -2,7 +2,7 @@
 
 "A lot of the suggestions are inaccurate." Measured: Harper 2.13.0 and 3.0.0
 give the same false positives as the vendored 2.10.0, so upgrading was not the
-answer; the page filters. `tests/grammar_fixture_1407.json` holds 33 clean
+answer; the page filters. `tests/fixtures/grammar/grammar_fixture_1407.json` holds 33 clean
 lines (a file name, a tech word, "back to normal") and 8 planted errors, run
 through `tests/_grammar_harness.js` (the shipped functions plus the real
 worker). Before: 20 findings on 15 of the 33 clean lines, 8 of 8 planted
@@ -21,7 +21,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "tests" / "_grammar_harness.js"
-FIXTURE = ROOT / "tests" / "grammar_fixture_1407.json"
+FIXTURE = ROOT / "tests" / "fixtures" / "grammar" / "grammar_fixture_1407.json"
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 
