@@ -710,6 +710,10 @@ additive.
 
 ## 11. Performance, accuracy and AI efficiency
 
+### Cactus whistle and mirage: measured, not adopted (2026-11-14)
+
+On fixtures (L-chat-42, L-chat-45) both lost to the shipped path: whistle WER 9.15% against tiny.en 7.37% and 3.5 times slower, though a sixth of the size; mirage OCR CER 0.425 against RapidOCR 0.172. Needs a real model on a device: whistle on the owner's own voice notes, and mirage photo captions (6/8 subjects on fixtures) on real photos, before either is offered as a small-device extra.
+
 ### Headroom: evaluated, not adopted
 
 Asked: *"is it worth trying to analyse and implement something like headroom

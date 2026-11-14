@@ -73,6 +73,9 @@ _DATES = re.compile(
     re.I,
 )
 
+#: "Label: the rest" (a heading and its words), read by the digest as `_PREFIX`.
+PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
+
 
 _NOT_A_FILING = frozenset({"your", "our", "their", "his", "her", "its", "recent", "latest", "newest", "last", "new", "old", "oldest", "some", "any", "other"})
 
@@ -1005,3 +1008,22 @@ _ASKED_IN_ORDER = (
     ("which", composer_versus.asks),
     ("holding", holding_ask),
 )
+
+
+def open_lists(question: str, views) -> list:  # noqa: ANN001
+    """The notes' lists of three or more things as (view, sentence, heading
+    match); for "what do I need to buy", only the shopping ones."""
+    buying = re.search(r"\b(buy|shop|get)\b", question, re.I)
+    #: "what do I want to read": the list headed "to read", not any list of three (W7b B7b); "do" and "get" name nothing.
+    verb = re.search(r"\b(?:need|have|want|plan|hope|like) to ([a-z]{3,})", question, re.I)
+    verb = verb.group(1).lower()[:4] if verb and verb.group(1).lower() not in {"buy", "get", "shop", "do", "bring", "pack", "take"} else ""
+    lists = []
+    for v in views:
+        for s in v.sentences:
+            head = PREFIX.match(s.text.strip())
+            if not (head and len(head.group(2).split(",")) >= 3):
+                continue
+            shop = re.search(r"\b(grocer|shopping|buy|list)", head.group(1) + " " + " ".join(v.note.get("tags") or []) + " " + str(v.note.get("category") or ""), re.I)
+            if (shop or not buying) and (not verb or verb in head.group(1).lower()):
+                lists.append((v, s, head))
+    return lists

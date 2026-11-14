@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 - Chat: a joke is said from the top matching record and the note it names; listed jokes are quoted, not run together (L-chat-19).
 - Chat: the utilities eval is built (120 rows exact, 20 hostile sums refused); sums now read "1,000", "mod", "7!" and numbers in words, and "how many weeks until" answers in weeks (L-chat-22).
 - Chat: the Guide with no model opens on the topic's first step (help_1010 0.55 to 1.0, L-chat-41); person_shift_1010 eval, 100 pairs exact, fixes "Sam and I was", "between you and me" and "Your sister ... we" (L-chat-22).
