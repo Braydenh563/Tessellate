@@ -2712,10 +2712,12 @@ function generateDigest(onDelta) {
   return digestPromise;
 }
 
+//: `streamDigest.source` is the caption the last streamed digest came with ("" when a model wrote it).
 async function streamDigest(onDelta) {
   const response = await api("/insights/digest/stream", { method: "POST" });
   let text = "";
   let cacheable = true;
+  streamDigest.source = "";
   // NDJSON: one JSON object per line, same shape as the chat stream.
   await ensureModule("ndjson");
   await api.ndjson(response, (event) => {
@@ -2730,6 +2732,9 @@ async function streamDigest(onDelta) {
         if (onDelta) onDelta(text);
       } else if (event.type === "done") {
         cacheable = event.cacheable !== false;
+      } else if (event.type === "source") {
+        //: With no model the server says so ("Your notes, no AI", CHAT_PLAN P7).
+        streamDigest.source = event.label || "";
       }
   }, { label: "Digest stream" });
   return { text, cacheable };
@@ -2749,11 +2754,7 @@ async function renderDigestWidget(outer) {
   //: there, under the card's fold, and its first line was the source caption at body size, so the
   //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
   //: footnote, and a click scrolls the card to the week.
-  const weekParts = (text) => {
-    const source = "From your notes.";
-    const trimmed = String(text || "").trimStart();
-    return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
-  };
+  const weekParts = (text) => ({ words: String(text || "").trimStart(), source: streamDigest.source || "" });
   const weekHead = () => {
     const head = document.createElement("p");
     head.className = "eyebrow";

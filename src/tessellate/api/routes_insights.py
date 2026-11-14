@@ -469,18 +469,13 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     day in an earlier year, an open item, a quiet day. Each carries a `key`
     (a hash of its words) so the page never says one twice, and the notes it
     names; no model, and private and binned notes are never read."""
-    from tessellate.ai import composer_voice
-    from tessellate.repo import reminders as reminder_repo, voice
+    from tessellate.api import remarks_proactive
 
-    today = user_now(deps.get_config()).date()
-    recent = voice.recent(session)
-    ids = {e.id for e in recent}
-    notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
-    reminders = reminder_repo.due_by(session, today)
-    found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
+    now = user_now(deps.get_config())
+    found = remarks_proactive.build(session, now.date(), now)[:6]
     if found:
         companion_events.record("remark")  # something to say: a kind and a time, never the line (W31)
-    return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
+    return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"], "fact": r["fact"], "ttl_days": r["ttl_days"], "act": r.get("act")} for r in found]}
 
 
 @router.get("/today-line")
@@ -507,6 +502,12 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     }
     notes = voice.as_notes(session, rows)
     line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
+    #: Every other draw says what was written on this day in an earlier year,
+    #: when something was (CHAT_PLAN P3), so the line is not always the count.
+    from tessellate.api import remarks_proactive
+
+    if line and seed % 2 == 1:
+        line = remarks_proactive.on_this_day(session, today) or line
     if not line:
         #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
         from tessellate.api import chat_extra
@@ -873,6 +874,10 @@ def composed_week(session: Session) -> str:
     return review_digest.week(session, user_now(deps.get_config()))
 
 
+#: What a digest composed with no model is captioned (CHAT_PLAN P7).
+NO_AI_LABEL = "Your notes, no AI"
+
+
 @router.post("/digest/stream")
 def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingResponse:
     """The weekly digest, streamed token by token (NDJSON).
@@ -896,6 +901,7 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
         if not ollama.is_running():
             #: With no model the composer says the week (owner-1026b K3); not
             #: cached, so a model, once on, writes the next one.
+            yield event({"type": "source", "label": NO_AI_LABEL})
             yield event({"type": "answer", "delta": composed_week(session)})
             yield event({"type": "done", "cacheable": False})
             return
@@ -971,7 +977,7 @@ def weekly_digest(session: Session = Depends(get_session)) -> dict:
     # the composed week (owner-1026b K3), which a model, once on, replaces.
     ollama_running = deps.get_ollama().is_running()
     if not ollama_running:
-        return {"digest": composed_week(session), "thinking": None, "cacheable": False}
+        return {"digest": composed_week(session), "thinking": None, "cacheable": False, "source": NO_AI_LABEL}
     digest, thinking = librarian.answer(
         digest_question(session),
         notes,

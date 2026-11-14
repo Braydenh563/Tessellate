@@ -414,6 +414,8 @@ chatSendTurn.stage = {
       },
       onAnswer: (delta) => {
         clearPending();
+        t.draft?.remove(); // the model's first words replace the composed draft (L-chat-59)
+        t.draft = null;
         timeline.answer(delta);
         status.textContent = "The model is writing…";
         chatScrollToEnd();
@@ -472,6 +474,17 @@ chatSendTurn.stage = {
   onStreamExtras(t) {
     const { status, bubble, recordsHolder, timeline, toolEvents, clearPending } = t;
     return {
+      //: The composer's answer, drawn as a muted draft while the model starts (L-chat-59, CHAT_PLAN handoff);
+      //: `onAnswer` removes it at the first token, so a slow model shows something quoted at once.
+      onPreview: (event) => {
+        if (t.draft || !event.text) return;
+        clearPending();
+        t.draft = document.createElement("p");
+        t.draft.className = "muted answer-draft";
+        t.draft.textContent = event.text;
+        timeline.holder.appendChild(t.draft);
+        chatScrollToEnd();
+      },
       //: The web pages an answer from no model read (CHAT_PLAN decision 37).
       onWebSources: (event) => ensureModule("askCompose").then(() => renderWebSources(timeline.holder, event.sources)),
       //: A bar of counts from a no-model answer (CHAT_PLAN decision 59, step
@@ -1699,7 +1712,7 @@ function agentTimeline(holder, options = {}) {
       //: turn's own `pending` node is removed by the stream, but a skill run
       //: replayed into a rebuilt bubble can leave one behind, and a "Writing
       //: the answer…" under a finished answer is the exact thing reported.
-      for (const stale of holder.querySelectorAll(".step-pending")) stale.remove();
+      for (const stale of holder.querySelectorAll(".step-pending, .answer-draft")) stale.remove();
     },
     // Replay a saved run (reopening a conversation).
     replay(steps) {

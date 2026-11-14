@@ -104,8 +104,8 @@ VOICE: dict[str, str] = {
     "v_open_count_mid": " of ",
     "v_open_count_end": " items still open, the first: ",
     # A pattern this week.
-    "v_pattern_mid": " of your notes this week mention ",
-    "v_pattern_tag_mid": " of your notes this week are filed under ",
+    "v_pattern_mid": " of your notes in the last four weeks mention ",
+    "v_pattern_tag_mid": " of your notes in the last four weeks are filed under ",
     # The week as a count.
     "v_week_a": "You have written ",
     "v_week_a_end": " notes this week",
@@ -193,6 +193,11 @@ PER_KIND = 3
 
 #: A pattern needs at least this many of the week's notes to share a word.
 PATTERN_NOTES = 3
+
+#: ...and be written in at least this many of the last `PATTERN_DAYS`'s weeks
+#: (CHAT_PLAN decision 32: at least 3 mentions across at least 3 weeks).
+PATTERN_WEEKS = 3
+PATTERN_DAYS = 28
 
 #: A quote in a remark is cut here: a bubble is read at a glance.
 REMARK_QUOTE_CHARS = 140
@@ -465,8 +470,17 @@ def _open_items(views: list[NoteView], today: date) -> list[dict]:
     return out[:PER_KIND]
 
 
-def _this_week(views: list[NoteView], today: date) -> list[NoteView]:
-    return [v for v in views if v.written and 0 <= (today - v.written).days < WEEK_DAYS]
+def _this_week(views: list[NoteView], today: date, days: int = WEEK_DAYS) -> list[NoteView]:
+    return [v for v in views if v.written and 0 <= (today - v.written).days < days]
+
+
+def _across_weeks(group: list[NoteView], today: date) -> list[NoteView]:
+    """The newest note of each week the group was written in, newest first;
+    empty when they span fewer than `PATTERN_WEEKS` weeks."""
+    by_week: dict[int, NoteView] = {}
+    for view in sorted(group, key=lambda w: w.written, reverse=True):
+        by_week.setdefault((today - view.written).days // 7, view)
+    return list(by_week.values()) if len(by_week) >= PATTERN_WEEKS else []
 
 
 def _surface(word_stem: str, views: list[NoteView]) -> str | None:
@@ -480,7 +494,7 @@ def _surface(word_stem: str, views: list[NoteView]) -> str | None:
 
 
 def _patterns(views: list[NoteView], today: date) -> list[dict]:
-    week = _this_week(views, today)
+    week = _this_week(views, today, PATTERN_DAYS)
     if len(week) < PATTERN_NOTES:
         return []
     out: list[dict] = []
@@ -492,8 +506,9 @@ def _patterns(views: list[NoteView], today: date) -> list[dict]:
         for label in labels:
             filed.setdefault(label, []).append(view)
     for label, group in sorted(filed.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        group = _across_weeks(group, today)
         if len(group) < PATTERN_NOTES:
-            break
+            continue
         v = _Voice({g.id: g for g in group}, today)
         v.m(_count_word(len(group)).capitalize()).t("v_pattern_tag_mid").filed(label, group[0].id).t("colon")
         v.names(group[:3]).t("stop")
@@ -513,6 +528,7 @@ def _patterns(views: list[NoteView], today: date) -> list[dict]:
             continue
         # Every named note must contain the word as written.
         group = [g for g in group if re.search(rf"\b{re.escape(word)}\b", str(g.note.get("content") or ""), re.I)]
+        group = _across_weeks(group, today)
         if len(group) < PATTERN_NOTES:
             continue
         v = _Voice({g.id: g for g in group}, today)

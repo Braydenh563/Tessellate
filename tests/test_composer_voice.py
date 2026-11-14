@@ -109,8 +109,8 @@ _NOTES = [
     {"id": 3, "content": "Gym routine\nMonday: squats and rows.", "created_at": "2026-09-10T09:00:00", "category": "", "tags": []},
     {"id": 4, "content": "Shopping\n- [ ] milk\n- [ ] eggs\n- [ ] bread\n- [x] tea", "created_at": "2026-11-08T09:00:00", "category": "", "tags": []},
     {"id": 5, "content": "Priya called about the plan for the weekend and Priya will come", "created_at": "2026-11-07T09:00:00", "category": "", "tags": []},
-    {"id": 6, "content": "Priya sent photos from the trip to the coast last week", "created_at": "2026-11-06T09:00:00", "category": "", "tags": []},
-    {"id": 7, "content": "Priya wants to visit Anna on the weekend after the move", "created_at": "2026-11-05T09:00:00", "category": "", "tags": []},
+    {"id": 6, "content": "Priya sent photos from the trip to the coast last week", "created_at": "2026-10-28T09:00:00", "category": "", "tags": []},
+    {"id": 7, "content": "Priya wants to visit Anna on the weekend after the move", "created_at": "2026-10-20T09:00:00", "category": "", "tags": []},
 ]
 _REMINDERS = [
     {"id": 1, "text": "Email landlord about the leak", "due_at": "2026-11-08", "done": False},

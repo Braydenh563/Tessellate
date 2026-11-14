@@ -327,3 +327,9 @@
     max-width: 68ch;
   }
 }
+
+.act-items {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-7);
+  font-size: var(--text-sm);
+}

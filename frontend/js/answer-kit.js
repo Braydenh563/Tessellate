@@ -1117,6 +1117,7 @@ async function streamChatEvents({
   onHint,
   onStats,
   onChart,
+  onPreview,
   onPanel,
   onGrounding,
   onGroundingLive,
@@ -1270,6 +1271,7 @@ async function streamChatEvents({
       //: A bar of counts the realiser drew from a no-model answer (CHAT_PLAN
       //: decision 59, step 2), drawn with the Ask box's chart recipe.
       else if (event.type === "chart" && onChart) onChart(event);
+      else if (event.type === "composed_preview" && onPreview) onPreview(event);
       //: A panel the app draws under the answer (INBOX 1300 C06, reply-kit.js).
       else if (event.type === "panel" && onPanel) onPanel(event);
       // ROADMAP.md item 36: which retrieved note backs which sentence of a
