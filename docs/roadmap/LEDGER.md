@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 22 | 1 | 0 | 7 | 23 |
+| documents | 0 | 23 | 1 | 0 | 7 | 24 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 538 | 125 | 2 | 159 | 1065 |
+| all | 402 | 539 | 125 | 2 | 159 | 1066 |
 
 ## graph
 
@@ -307,6 +307,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-102** `documents` open, M: Diagram mouse-pan at 1440 and 4x CPU is p50 10 to 17 ms and p95 24 to 43 ms against 16: layout is 0 and script about 1 ms a frame, the rest is raster of a 9679 px wide SVG picture (try a lower-resolution raster while panning or tile the picture); measure with scratchpad/ui-sweeps/diagram-pan-latency.js. From dgm1305 agent 2026-11-14.
 - [ ] **L-documents-103** `documents` open, S: Sub-pages follow-ups: phone breadcrumb shows only the nearest parent, sync carries parent_id by uuid, Move under picker leaves out the page and its sub-pages. From L-documents-44 remainder. Evidence: sweep 390: breadcrumb nav 49px wide for two crumbs (ellipsis); sync_extras does not carry parent_id; Move under picker lists the page's own sub-pages (server refuses with 409)
 - [ ] **L-documents-104** `documents` open, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile
+- [ ] **L-documents-106** `documents` open, M: L-documents-83 remainder: 1440 cold open still about 1,145 ms median; the warm file overlaps the fetches, what is left is the bundle's script run (documents.js, library.js 50 to 70 ms each) and CodeMirror's 140 ms evaluate; next: one served concatenation of the bundle, and a quiet box to measure. From agent cold83-1410. Evidence: frontend/js/documents-warm.js; waterfall after: bundle arrives about 330 ms, its 35 scripts run until about 600 ms (main thread, load 4 to 12), editor then mounts about 1,100 ms
 
 ## mindmap
 

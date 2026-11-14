@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8944, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11000, test files 2845, tests 22889, plan headings 690, app scripts 29, boot scripts 38, script files 353.
+Counts: frontend functions 8946, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11000, test files 2845, tests 22892, plan headings 690, app scripts 29, boot scripts 38, script files 354.
 
-## Frontend functions (8944)
+## Frontend functions (8946)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -45,21 +45,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chip` | frontend/js/app.js:1189 |
 | `chipWords` | frontend/js/app.js:1184 |
 | `clearApiCache` | frontend/js/app.js:556 |
-| `confirmDialog` | frontend/js/app.js:1272 |
-| `confirmVerb` | frontend/js/app.js:1263 |
-| `ensureModule` | frontend/js/app.js:1737 |
+| `confirmDialog` | frontend/js/app.js:1270 |
+| `confirmVerb` | frontend/js/app.js:1261 |
+| `ensureModule` | frontend/js/app.js:1736 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1908 |
-| `lazyAssetStamp` | frontend/js/app.js:1694 |
-| `lazyScript` | frontend/js/app.js:1716 |
+| `installStandIns` | frontend/js/app.js:1907 |
+| `lazyAssetStamp` | frontend/js/app.js:1693 |
+| `lazyScript` | frontend/js/app.js:1715 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1761 |
-| `promptDialog` | frontend/js/app.js:1376 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1760 |
+| `promptDialog` | frontend/js/app.js:1374 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
 | `refreshActiveTab` | frontend/js/app.js:1067 |
@@ -72,14 +72,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settleLockPrompt` | frontend/js/app.js:656 |
 | `show` | frontend/js/app.js:162 |
 | `showLockScreen` | frontend/js/app.js:699 |
-| `smallButton` | frontend/js/app.js:1504 |
+| `smallButton` | frontend/js/app.js:1502 |
 | `spinnerEl` | frontend/js/app.js:1218 |
 | `stagePrimary` | frontend/js/app.js:1212 |
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1675 |
-| `wireBackdropClose` | frontend/js/app.js:1492 |
+| `whenScriptsLoaded` | frontend/js/app.js:1674 |
+| `wireBackdropClose` | frontend/js/app.js:1490 |
 
 ### frontend/js/prefs.js (6)
 
@@ -4776,6 +4776,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mountDocEditor` | frontend/js/documents-view.js:578 |
 | `noteSurfaceGutter` | frontend/js/documents-view.js:900 |
 
+### frontend/js/documents-warm.js (2)
+
+| Name | File:line |
+|---|---|
+| `ask` | frontend/js/documents-warm.js:21 |
+| `preload` | frontend/js/documents-warm.js:28 |
+
 ### frontend/js/documents-word.js (17)
 
 | Name | File:line |
@@ -5317,19 +5324,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismiss` | frontend/js/extra-notice.js:56 |
-| `dismissed` | frontend/js/extra-notice.js:55 |
-| `dismissedList` | frontend/js/extra-notice.js:50 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:142 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:101 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:219 |
-| `extraNoticeState` | frontend/js/extra-notice.js:70 |
-| `extraNoticeUndo` | frontend/js/extra-notice.js:122 |
-| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:91 |
-| `extraRows` | frontend/js/extra-notice.js:62 |
-| `forget` | frontend/js/extra-notice.js:57 |
-| `saveDismissed` | frontend/js/extra-notice.js:54 |
-| `sleep` | frontend/js/extra-notice.js:88 |
+| `dismiss` | frontend/js/extra-notice.js:57 |
+| `dismissed` | frontend/js/extra-notice.js:56 |
+| `dismissedList` | frontend/js/extra-notice.js:51 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:143 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:102 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:220 |
+| `extraNoticeState` | frontend/js/extra-notice.js:71 |
+| `extraNoticeUndo` | frontend/js/extra-notice.js:123 |
+| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:92 |
+| `extraRows` | frontend/js/extra-notice.js:63 |
+| `forget` | frontend/js/extra-notice.js:58 |
+| `saveDismissed` | frontend/js/extra-notice.js:55 |
+| `sleep` | frontend/js/extra-notice.js:89 |
 
 ### frontend/js/extract-preview.js (2)
 
@@ -28945,7 +28952,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22889)
+## Tests (22892)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29972,7 +29979,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_untitled_names.py | 9 |
 | tests/test_documents_api.py | 50 |
 | tests/test_documents_closeout_1112.py | 7 |
-| tests/test_documents_cold_open.py | 3 |
+| tests/test_documents_cold_open.py | 6 |
 | tests/test_documents_help.py | 4 |
 | tests/test_documents_outline.py | 7 |
 | tests/test_documents_plan_recount.py | 3 |
@@ -32216,14 +32223,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:717 |
+| Needs hardware | docs/roadmap/LEDGER.md:718 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:710 |
+| Owner calls | docs/roadmap/LEDGER.md:711 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32402,7 +32409,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:881 |
+| Plan session briefs | docs/roadmap/LEDGER.md:882 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32458,25 +32465,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:897 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:981 |
+| chat | docs/roadmap/LEDGER.md:898 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:982 |
 | documents | docs/roadmap/LEDGER.md:285 |
-| documents | docs/roadmap/LEDGER.md:921 |
-| general | docs/roadmap/LEDGER.md:669 |
+| documents | docs/roadmap/LEDGER.md:922 |
+| general | docs/roadmap/LEDGER.md:670 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:885 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:993 |
+| graph | docs/roadmap/LEDGER.md:886 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:994 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:311 |
-| mindmap | docs/roadmap/LEDGER.md:933 |
-| timeline | docs/roadmap/LEDGER.md:431 |
-| timeline | docs/roadmap/LEDGER.md:957 |
-| ui-modernisation | docs/roadmap/LEDGER.md:314 |
-| ui-modernisation | docs/roadmap/LEDGER.md:945 |
+| mindmap | docs/roadmap/LEDGER.md:312 |
+| mindmap | docs/roadmap/LEDGER.md:934 |
+| timeline | docs/roadmap/LEDGER.md:432 |
+| timeline | docs/roadmap/LEDGER.md:958 |
+| ui-modernisation | docs/roadmap/LEDGER.md:315 |
+| ui-modernisation | docs/roadmap/LEDGER.md:946 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:909 |
-| world-class | docs/roadmap/LEDGER.md:433 |
-| world-class | docs/roadmap/LEDGER.md:969 |
+| whiteboard | docs/roadmap/LEDGER.md:910 |
+| world-class | docs/roadmap/LEDGER.md:434 |
+| world-class | docs/roadmap/LEDGER.md:970 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
