@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Atlas at rest costs a third less: her wisps and glints drift on a box around the drawing (the compositor refused `translate` and `rotate` on an svg root) and the ring and planet pivots are 1px, not empty boxes; style recalcs a minute 3,075 to 2,019, layouts 3,027 to 1,989, main thread 18.6 to 13.1 s (median of 3, one look, headless, loaded container; L138, L176, L231).
 - Chat recount batch 1: digest counts link to their notes, no repeated sentences in a row, remark bubbles wait while you type and open their source, and the command palette previews a typed act.
 - Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
 - Chat: Settings has How long answers are (Short, Normal, Detailed; one preference with the dock's Length, the composer cut to two sentences or given a supporting sentence per source) and a Personas off switch; "what was I working on" and "what did I change today" read the newest edits; `/tools` lists the assistant's recent tool calls; a note can Supersede another and the older one reads Superseded by (L161, L163, INBOX 1841, 1842).
