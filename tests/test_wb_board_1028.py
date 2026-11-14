@@ -39,7 +39,8 @@ def test_every_failed_delete_goes_through_one_toasting_restore():
         catch = tail[tail.index("} catch (e) {") : tail.index("} finally {")]
         assert "wbDeleteFailed(entry, redoBefore, e, () => wbDelete" in catch  # renamed by B7 (top-level)
         assert "console.error" not in catch
-        assert "const redoBefore = wbRedoStack;" in WB[at - 400 : at]
+        #: L-whiteboard-52: the redo stack is read through `wbStacks` now.
+        assert "const redoBefore = wbStacks.redo;" in WB[at - 400 : at]
 
 
 def test_a_failed_delete_drops_the_entry_keeps_redo_and_tells_the_person():

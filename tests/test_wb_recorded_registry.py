@@ -17,13 +17,14 @@ import pytest
 from tests._app_js import frontend_text
 
 PRELUDE = r"""
-let wbRecordDepth = 0;
+//: L-whiteboard-52: `wbRecordedDepth` reads the depth through the `wbStacks` surface (whiteboard-undo.js).
+const wbStacks = { depth: 0 };
 const recorded = [];
 async function wbRecordGesture(run, args = []) {
-  if (wbRecordDepth > 0) return run(...args);
+  if (wbStacks.depth > 0) return run(...args);
   recorded.push(run.name || "anon");
-  wbRecordDepth += 1;
-  try { return await run(...args); } finally { wbRecordDepth -= 1; }
+  wbStacks.depth += 1;
+  try { return await run(...args); } finally { wbStacks.depth -= 1; }
 }
 """
 
@@ -91,7 +92,7 @@ def test_the_depth_twin_makes_what_it_calls_plain():
         const inner = wbRecorded("inner", async function inner() { return 1; });
         const drag = wbRecordedDepth(async function drag() { return inner(); });
         const r = await drag();
-        return { r, recorded, depth: wbRecordDepth, flag: drag.depthOnly };
+        return { r, recorded, depth: wbStacks.depth, flag: drag.depthOnly };
         """
     )
     assert out == {"r": 1, "recorded": [], "depth": 0, "flag": True}

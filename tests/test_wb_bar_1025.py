@@ -96,6 +96,6 @@ def test_ctrl_enter_inserts_a_parent_topic_in_one_undo_step() -> None:
     body = mind[mind.index("async function wbMapInsertParent("):]
     body = body[: body.index("\n}\n")]
     assert body.index('action: "reparent"') < body.index('history.push({ action: "create"')
-    assert "order: wbMapOrderKey(node)" in body and "wbUndoStack.pop()" in body
+    assert "order: wbMapOrderKey(node)" in body and "wbStacks.undo.pop()" in body  # L-whiteboard-52: read through the wbStacks surface
     assert "wbMapInsertParent(mapNode.id);" in BOARD and 'sub("A parent topic", "Ctrl+Enter"' in BOARD
     assert 'id: "insert-parent"' in commands and '{ cmd: "insert-parent" }' in commands

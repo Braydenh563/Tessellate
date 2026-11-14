@@ -8,6 +8,7 @@ Object.assign(LAZY_MODULES, {
   boards: [
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/js/whiteboard-undo.js", //: Before whiteboard-map.js: the undo and redo stacks behind `wbStacks`, the per-board history swap and the one-gesture recorder; wrapped, names the other board files at run time only.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.

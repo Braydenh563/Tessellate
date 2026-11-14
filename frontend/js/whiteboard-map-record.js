@@ -306,8 +306,8 @@
     const created = await wbMapCreateNode({ parentId });
     if (!created) return;
     //: `wbMapCreateNode` pushed its own create entry; this gesture is one step.
-    const top = wbUndoStack[wbUndoStack.length - 1];
-    if (top?.action === "create" && top.id === created.id) wbUndoStack.pop();
+    const top = wbStacks.undo[wbStacks.undo.length - 1];
+    if (top?.action === "create" && top.id === created.id) wbStacks.undo.pop();
     const history = [];
     const child = (wbState.objects || []).find((o) => o.id === childId);
     //: **It takes its child's place** (the owner, 2026-10-10: "when I added a
@@ -498,7 +498,7 @@
     } catch (err) {
       delete row._creating;
       wbState.objects = (wbState.objects || []).filter((o) => o !== row);
-      const step = wbUndoStack.find((e) => e.action === "create" && e.id === tempId);
+      const step = wbStacks.undo.find((e) => e.action === "create" && e.id === tempId);
       if (step) wbDropUndoEntry(step);
       toast(err.message || voiceLine("failed", { what: "add that node" }), true);
       wbScheduleRender();

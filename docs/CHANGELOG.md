@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: the board's undo and redo stacks, the per-board history swap and the one-gesture recorder (`wbRecordGesture`, `wbPushUndo`, `wbRemapUndoIds`) moved out of whiteboard.js into the wrapped whiteboard-undo.js (whiteboard.js 15,914 to 15,627 lines); the stacks and the record depth are read by every other file through one `wbStacks` get/set object instead of a shared top-level `let`; global names cap 7,163 to 7,153 (L-whiteboard-52)
 - Code: the map's Undo-recorded commands (add, fold, tidy, layout, theme, cross-link edits) moved out of whiteboard-map.js into the wrapped whiteboard-map-record.js (1,200 lines), each bound once through `wbRecorded`, so a call from inside the file and a call through `window` both record one Undo step; the shared global scope has 17 fewer names (L-whiteboard-49)
 - Whiteboard: an image object must name a picture or PDF upload (a `/media/x.svg` address is refused), and `tests/test_wb_no_svg_images.py` proves no SVG reaches a board by any route (L-whiteboard-39 stays moot)
 - Whiteboard: a rich shape label exports as drawn words in SVG, PNG and PDF; a connector hung on another connector survives board and draw.io export, and lights the connector it will join while you drag its end.
