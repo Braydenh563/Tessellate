@@ -12439,7 +12439,7 @@ function bookmarkRow(bookmark) {
 //: The Group by select's value, kept for the next visit (a per-viewer
 //: convenience, so `localStorage`, and a blocked one only forgets it).
 const CONTENTS_GROUP_KEY = "contents-group";
-const CONTENTS_GROUPS = ["category", "tag", "topic", "date", "folder"];
+const CONTENTS_GROUPS = ["category", "tag", "topic", "date", "folder", "type"];
 //: INBOX 547: By topic reads the graph's topics (`/graph/structure?topics=1`),
 //: fetched only in that mode; null when the fetch failed.
 let contentsTopics = null;
@@ -12461,6 +12461,7 @@ const contentsCollapsed = {
   topic: new Set(),
   date: new Set(),
   folder: new Set(),
+  type: new Set(),
 };
 // A big notebook can have a group with hundreds of notes; nobody scans
 // past this many in one section, and rendering them all would be the one
@@ -12530,6 +12531,9 @@ function contentsGroups(entries) {
     const topicOf = contentsTopics?.topic_of || {};
     const names = contentsTopicNames();
     for (const entry of entries) addTo(names.get(topicOf[String(entry.id)]) || CONTENTS_NO_TOPIC, entry);
+  } else if (contentsMode === "type") {
+    //: `note_type` is the `type:` property of the note's `---` block (Meeting, Book, a type you made).
+    for (const entry of entries) addTo(entry.note_type || "No type", entry);
   } else if (contentsMode === "date") {
     for (const entry of entries) {
       addTo(contentsMonthKey(entry.created_at || entry.updated_at || Date.now()), entry);
@@ -12573,6 +12577,8 @@ function contentsOrderedKeys(groups) {
     const order = [...contentsTopicNames().values(), CONTENTS_NO_TOPIC];
     return keys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
   }
+  //: The types by name, the notes with none last: where nothing is filed comes after where something is.
+  if (contentsMode === "type") return keys.sort((a, b) => (a === "No type") - (b === "No type") || a.localeCompare(b));
   //: Newest month first: an index by time is read from now backwards.
   if (contentsMode === "date") return keys.sort((a, b) => b.localeCompare(a));
   //: Folders in path order, with the two synthetic groups last: they are
@@ -12799,7 +12805,7 @@ function contentsGroupMark(key) {
     return dot;
   }
   return contentsGlyph(
-    contentsMode === "tag" ? "ph-hash" : contentsMode === "date" ? "ph-calendar-blank" : "ph-folder"
+    contentsMode === "tag" ? "ph-hash" : contentsMode === "date" ? "ph-calendar-blank" : contentsMode === "type" ? "ph-shapes" : "ph-folder"
   );
 }
 

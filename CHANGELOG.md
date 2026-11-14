@@ -10,6 +10,11 @@ below). Versioning is `0.x` while the app stabilises.
 - Activity: a chat or job that fails on a file shows the reason, not the file's path and errno (L505).
 - Filing: a note saved without defer_filing gives its database connection back while the model thinks (L690).
 - Search: a test pins that tag: narrows the keyword candidates before the depth cut (L626).
+- Find and replace inside a note: Ctrl+F finds, Ctrl+H adds the replace field, F3 steps and Esc closes, in the same panel a document has (L-world-class-17).
+- Library, Contents: By type groups notes under their note type (Meeting, Book, your own), the untyped last (L-world-class-8)
+- Library: checked that every box suggests the person's own titles as they type (already built, tested; L576)
+- Find anything: a chat hit opens the chat at the turn that holds your words and rings it (L562)
+- Notes: the sidebar has a Search everything field; Enter opens Find anything with your words (L592)
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).
 - Reminders at 320: a row's time may wrap to a second line instead of running 6px past its column
 - Notes, narrow widths: the "+N" tags chip takes the 44px finger floor inside its box, so its touch overhang no longer runs 10px past it at 390

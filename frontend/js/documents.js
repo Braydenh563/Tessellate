@@ -8879,6 +8879,8 @@ function noteSurfaceExtensions(CM, host, options) {
     docCmTheme(CM),
     docCmHighlight(CM),
     CM.view.placeholder(host.placeholder || ""),
+    CM.search.search({ top: true }),
+    CM.search.highlightSelectionMatches(),
     //: This app's chords first, so Ctrl+B is bold in a note for the same
     //: reason it is bold in a document.
     docRedoChord(CM),
@@ -8915,9 +8917,9 @@ function noteSurfaceName(host) {
 //: `doc-content`, so Ctrl+B in a note would have emboldened a word in
 //: whatever document was last open, and Ctrl+S would have saved it. The
 //: helpers underneath all take a box id or a surface already, so this is the
-//: same four actions with this box named. Ctrl+S and Ctrl+F are deliberately
-//: absent: a note has no find panel and saving one is the form's business,
-//: which the app's own global chord already handles.
+//: same four actions with this box named. Ctrl+S is deliberately absent:
+//: saving a note is the form's business, which the app's own global chord
+//: already handles. Ctrl+F and Ctrl+H are here since L-world-class-17.
 function noteSurfaceKeymap(host) {
   const surface = () => noteSurfaceFor(host) || textareaSurface(host);
   return [
@@ -8977,6 +8979,21 @@ function noteSurfaceKeymap(host) {
     { key: "Mod-2", run: () => { applyMarkdown("h2", host.id); return true; } },
     { key: "Mod-3", run: () => { applyMarkdown("h3", host.id); return true; } },
     ...docCmKeymap.insert((kind) => { applyMarkdown(kind, host.id); return true; }),
+    //: **Find and replace in a note** (L-world-class-17): the engine's own panel, as in a document (Ctrl+F finds,
+    //: Ctrl+H opens it on the replace field, F3 steps, Escape closes it). `stopPropagation`: the page's own find bar
+    //: (`openGlobalFind`) must not open behind the note's. No Ctrl+G or Ctrl+D: those are other chords here.
+    ...[["Mod-f", false], ["Mod-h", true]].map(([key, replace]) => ({
+      key,
+      stopPropagation: true,
+      run: (view) => {
+        window.CM6.search.openSearchPanel(view);
+        if (replace) view.dom.querySelector(".cm-search input[name=replace]")?.focus();
+        return true;
+      },
+    })),
+    { key: "F3", run: (view) => window.CM6.search.findNext(view) },
+    { key: "Shift-F3", run: (view) => window.CM6.search.findPrevious(view) },
+    { key: "Escape", run: (view) => window.CM6.search.closeSearchPanel(view) },
     //: No Ctrl+/ here: in a note it is the blocks menu (the registry's
     //: `editorMenu`), and a comment toggle bound here as well wrapped the
     //: line in the *document's* comment marker before the menu wrote "/"

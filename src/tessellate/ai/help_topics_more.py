@@ -925,11 +925,12 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Find anything (Ctrl+P, or the magnifying glass in the status bar) searches notes, "
-            "files, documents, chats and actions in one box as you type: Enter opens "
-            "the top result, the arrows move, Esc closes, and the star keeps the "
+            "files, documents, chats and actions in one box as you type (the Notes sidebar has its own \"Search everything\" field: Enter opens it with your words): Enter opens "
+            "the top result (a chat opens at the turn that holds your words), the arrows move, Esc closes, and the star keeps the "
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
-            "their kind), Newest first and Oldest first. Its '?' lists "
+            "their kind), Newest first and Oldest first. Inside a note you are writing, Ctrl+F finds in that note, "
+            "Ctrl+H adds a replace field, F3 steps to the next match and Esc closes the panel. Its '?' lists "
             "the operators. The kind chips under the box scroll sideways when they do "
             "not fit: a thin bar on a mouse or trackpad, an arrow at the end that has "
             "more, a swipe on touch. It lists the command "

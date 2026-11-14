@@ -561,7 +561,7 @@ MID_TOPICS.extend(
             ),
             "body": (
                 "Library, Contents is the whole notebook as a tree: pick By "
-                "category, By tag, By topic, By month or By folder in its Group by list, "
+                "category, By tag, By topic, By month, By folder or By type in its Group by list, "
                 "and each group folds at its heading. A document lists its "
                 "headings, so a press jumps straight to one. Expand all and "
                 "Collapse all, in the ⋯ menu, open or fold every group; folded, "
@@ -570,7 +570,9 @@ MID_TOPICS.extend(
                 "to the ends, and Enter opens. By month puts each document under "
                 "the month it was made, with that month's notes. By topic groups "
                 "notes by the subjects the graph finds in how they link; F2 or "
-                "right-click on a topic's heading renames it or shows it on the graph."
+                "right-click on a topic's heading renames it or shows it on the graph. "
+                "By type groups notes under their note type (Meeting, Book, your own), "
+                "and the notes with no type come last."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
