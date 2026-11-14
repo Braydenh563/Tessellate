@@ -10466,6 +10466,14 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
+/* The width is held, not fitted: a level that went from "85%" to "100%" grew
+   the dock 8px, and its ResizeObserver then wrote `--wb-w-zoom`, inherited by
+   the whole board, so a zoom past 100% restyled 4,306 elements in 192ms on a
+   200-topic map (L-ui-modernisation-61). "400%" is the widest it reads, and
+   its percent sign is wider than a digit, so 4ch was 5px short of it. */
+.whiteboard-floating-panel .wb-zoom-level .value-field-input {
+  min-inline-size: 5ch;
+}
 
 /* Reading progress: in the Read view a hairline along the top edge of the
    reading pane, under the breadcrumb row, fills as the page scrolls. Drawn by

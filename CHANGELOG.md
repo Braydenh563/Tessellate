@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Maps: the zoom level holds its width, so a zoom past 100% no longer restyles the whole board (192ms and 120ms frames at 200 topics; L-ui-modernisation-61). mapperf.js waits for the board bundle instead of sleeping.
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
 - LEDGER: every row this branch made under `general` (35 to 66) and L-graph-19 is now L-ui-modernisation-63 to 93, because general ids clashed across parallel branches.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2852, tests 22478, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2852, tests 22479, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -13006,7 +13006,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/07-whiteboard-misc.css:16722 |
 | a label that lost its capitals keeps its rank | frontend/css/07-whiteboard-misc.css:13062 |
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:5140 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:10550 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:10558 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:6377 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/07-whiteboard-misc.css:11437 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5892 |
@@ -13032,7 +13032,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1979 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4354 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2919 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:11477 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:11485 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:3984 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2711 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:78 |
@@ -13065,7 +13065,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:2067 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3813 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2911 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:11582 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:11590 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:6434 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1813 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:371 |
@@ -13111,10 +13111,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:382 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/07-whiteboard-misc.css:18656 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:11098 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:11106 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/07-whiteboard-misc.css:18714 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/07-whiteboard-misc.css:11939 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:11094 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:11102 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/07-whiteboard-misc.css:18377 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/01-forms-settings.css:2585 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/07-whiteboard-misc.css:18774 |
@@ -13178,7 +13178,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1292 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3268 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:6262 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:11414 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:11422 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/07-whiteboard-misc.css:14124 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/07-whiteboard-misc.css:14154 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/07-whiteboard-misc.css:16663 |
@@ -13206,7 +13206,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1135 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:6012 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:10994 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:11002 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/07-whiteboard-misc.css:12969 |
 | the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:10193 |
 | the boot splash: one progress indicator, not two | frontend/css/07-whiteboard-misc.css:10487 |
@@ -13242,7 +13242,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4731 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1088 |
 | the file picker, in the app's own clothes | frontend/css/07-whiteboard-misc.css:18167 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:11035 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:11043 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3810 |
 | the flat looks carry no glow on a button | frontend/css/07-whiteboard-misc.css:16862 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/07-whiteboard-misc.css:14996 |
@@ -13379,7 +13379,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 12266 |
+| frontend/css/library-lazy.css | 12274 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22478)
+## Tests (22479)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30828,7 +30828,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_more_shapes.py | 4 |
 | tests/test_wb_nan_guards_b33.py | 2 |
 | tests/test_wb_native_scroll_1026.py | 3 |
-| tests/test_wb_navigator_cost.py | 6 |
+| tests/test_wb_navigator_cost.py | 7 |
 | tests/test_wb_navigator_drag.py | 5 |
 | tests/test_wb_nested_groups.py | 3 |
 | tests/test_wb_node_menu_place.py | 7 |
