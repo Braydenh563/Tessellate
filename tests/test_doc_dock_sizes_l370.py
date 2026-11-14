@@ -37,3 +37,10 @@ def test_doc_dock_keeps_the_dock_recipe_padding_on_a_phone_371():
     css = _css("10-responsive.css")
     assert not re.search(r"#tab-documents \.dock\.doc-dock \{[^}]*padding", css)
     assert "padding: var(--space-3) var(--space-4);" in _rule(_css("08-consistency.css"), ".dock")
+
+
+def test_collapsed_doc_dock_icons_are_as_wide_as_the_row_is_tall_372():
+    """Format, AI edit and Snippets collapsed to 28x32 beside 32x32 buttons."""
+    css = _css("library-lazy.css")
+    assert "flex: 0 0 var(--target-min);" not in css[css.index("container: docdock") :]
+    assert css.count("flex: 0 0 max(var(--control-h), var(--target-min));") >= 3
