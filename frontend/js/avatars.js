@@ -11365,6 +11365,17 @@
         drag = null;
         face.dataset.dragged = "1";
         nameMarkBuddyMenu(buddy, at);
+        //: The menu opens at the finger, so a row can be under it and the lift may end in a click on it
+        //: (companionmenu.js, 1280x800 at 1.5: the menu closed itself): that one click is not a choice.
+        const eat = (event) => {
+          if (nmb.menu?.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+        };
+        document.addEventListener("click", eat, true);
+        document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 350), { once: true, capture: true });
+        setTimeout(() => document.removeEventListener("click", eat, true), 4000);
       }, 550);
     });
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
