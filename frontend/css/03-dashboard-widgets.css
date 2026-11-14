@@ -4726,6 +4726,14 @@ button.answer-figure-open {
   padding-block: 0;
 }
 
+/* Time travel's slider (H8): days back from today, drawn right to left so the
+   past is leftward and today is the right end. */
+.ask-scope .ask-as-of-slider {
+  direction: rtl;
+  width: 10rem;
+  max-width: 100%;
+}
+
 /* Recent activity's "Undo what Atlas did" under its list (activityUndoControl,
    dashboard.js): a quiet row, separated from the rows it acts on. */
 .activity-undo {

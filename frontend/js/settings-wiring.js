@@ -474,6 +474,10 @@ onSurface("notes", () => {
   $("ask-time-travel").addEventListener("click", () => {
     showAskAsOf($("ask-as-of-row").classList.contains("hidden"));
   });
+  //: Days back from today, drawn right to left.
+  $("ask-as-of-slider").addEventListener("input", (e) => {
+    $("ask-as-of").value = new Date(Date.now() - e.target.value * 864e5).toLocaleDateString("sv");
+  });
   $("ask-as-of-clear").addEventListener("click", () => {
     showAskAsOf(false);
     $("question").focus();

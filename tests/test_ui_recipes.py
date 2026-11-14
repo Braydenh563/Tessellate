@@ -7969,3 +7969,17 @@ def test_a_reminders_phone_time_may_wrap_instead_of_overflowing() -> None:
     """L-world-class-36: the nowrap time ran 6px past its column at 320."""
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"#reminder-groups \.entry-meta > \.entry-date \{\s*grid-area: when;\s*white-space: normal;", css)
+
+
+def test_ask_as_of_slider_is_one_value_with_the_day():
+    """H8, L-world-class-91: Ask's time travel has a slider beside the day picker, the recipe "A day picked on a
+    slider": days back from today, drawn right to left, typeable (`data-unit`), and kept in step with the day input."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.search(r'<input type="range" id="ask-as-of-slider"[^>]*data-unit=" days back"', html)
+    assert html.index('id="ask-as-of"') < html.index('id="ask-as-of-slider"') < html.index('id="ask-as-of-clear"')
+    css = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "css").glob("*.css"))
+    assert re.search(r"\.ask-as-of-slider \{[^}]*direction: rtl", css)
+    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    assert '$("ask-as-of-slider").addEventListener("input"' in wiring
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A day picked on a slider" in design

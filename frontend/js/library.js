@@ -4563,24 +4563,19 @@ function ocrSelectRegion(index) {
 //: panel never disagree about what was read. Which field the sections came
 //: from is kept for Delete reading, which clears that one.
 let ocrWorkspaceReadings = [];
-//: The fold reads `GET /files/readings` (the route the lightbox reads, so
-//: the two never disagree and the search index agrees): the answer's
-//: `readings` draw first, then the stored rows replace their text or add a
-//: reading the answer lacked. A failed read keeps what was drawn.
+//: The fold also reads `GET /files/readings`, as the lightbox does: stored rows replace a reading's text or add one the answer lacked.
 function ocrRenderOtherReadings(body, stored) {
   const box = $("ocr-other-readings");
-  ocrWorkspaceReadings = (Array.isArray(body?.readings) ? body.readings : []).map((r) => ({ ...r }));
+  ocrWorkspaceReadings = (body?.readings || []).map((r) => ({ ...r }));
   for (const [kind, source] of [["vision", "vision"], ["ocr", "tesseract"]]) {
     const row = (stored || []).find((r) => r.kind === kind && !r.page && (r.text || "").trim());
-    if (!row) continue;
     const have = ocrWorkspaceReadings.find((r) => r.source === source);
-    if (have) have.text = row.text;
-    else ocrWorkspaceReadings.push({ source, label: source === "vision" ? `Read by ${row.model || "a vision model"}` : "Read with Tesseract OCR", text: row.text, in_regions: false });
+    if (row && have) have.text = row.text;
+    else if (row) ocrWorkspaceReadings.push({ source, text: row.text, label: kind === "ocr" ? "Read with Tesseract OCR" : `Read by ${row.model || "a vision model"}` });
   }
   const image = ocrWorkspaceCurrent;
-  if (stored === undefined && image?.id) {
-    const kind = image._isAttachment ? "attachment" : "upload";
-    apiJson(`/files/readings?source=${kind}&id=${image.id}`).then((rows) => {
+  if (!stored && image?.id) {
+    apiJson(`/files/readings?source=${image._isAttachment ? "attachment" : "upload"}&id=${image.id}`).then((rows) => {
       if (ocrWorkspaceCurrent === image && Array.isArray(rows)) ocrRenderOtherReadings(body, rows);
     }).catch(() => {});
   }

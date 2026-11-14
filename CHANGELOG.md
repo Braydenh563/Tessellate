@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: time travel has a slider beside the day picker (days back from today, past leftward, typeable), one value with the day, a DESIGN recipe and lint; the Guide says so (L-world-class-91).
 - Library: the OCR workspace reading fold reads `GET /files/readings`, the route the lightbox reads, so the two agree and a reading the answer lacked still shows (L-world-class-322).
 - Security: SECURITY.md has a threat model: the assets, eight trust boundaries, the attackers and 27 threats, each with the code or test that stops it; the three gaps are rows (parsers run in the server process L-world-class-321, unpinned pip extras and embedding weights L-world-class-320, CI actions not pinned L-general-2) (L-world-class-18).
 - Chat: the strip's Ask | Agent segments are chips of the strip's own pill family (one ground, one 1px edge; the chosen one keeps its sliding fill) and the Ask Atlas offer rests on the chip ground and lifts to the chip accent; `scratchpad/audit/recipes.js` reads the largest corner, so a split button's caret is no recipe of its own. Chat 12 to 8 control recipes at 1440 in light and dark, every other tab unchanged (L-world-class-250).

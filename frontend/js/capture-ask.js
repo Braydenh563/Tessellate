@@ -1382,10 +1382,9 @@ function showAskAsOf(on) {
   row.classList.toggle("hidden", !on);
   $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
   if (on) {
-    //: Nothing after today: the future has no notes to read.
-    const today = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    box.max = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    //: Nothing after today.
+    box.max = new Date().toLocaleDateString("sv");
+    $("ask-as-of-slider").value = "0";
     box.focus();
   } else {
     box.value = "";
