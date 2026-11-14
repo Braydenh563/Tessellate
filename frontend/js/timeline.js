@@ -1922,7 +1922,7 @@ const timelineSpans = {
     //: The rows are connections.js's (lazy, the Connections sheet's own bundle).
     const [body] = await Promise.all([
       apiJson(`/timeline/digest?start=${start}&end=${end}`).catch(() => null),
-      lazyScript("/js/connections.js"),
+      ensureModule("connections"),
     ]);
     if (!body) return;
     const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });

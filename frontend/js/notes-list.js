@@ -3347,7 +3347,7 @@ function referenceCountChip(entry, options = {}) {
   if (!counts || !counts.total) return null;
   const refChip = chip(`ph:graph ${referenceCountText(counts)}`, "refs", (event) => {
     event.stopPropagation();
-    lazyScript("/js/connections.js").then(() => openConnections(
+    ensureModule("connections").then(() => openConnections(
       "entries",
       entry.id,
       entry.title || noteNamePlain(entry.content, 80)
@@ -3666,7 +3666,7 @@ async function renderNotesRail() {
   if (body.dataset.key === key) return;
   body.setAttribute("aria-busy", "true");
   //: The rows are drawn by connections.js (the sheet's own bundle), which also draws the answer (`drawNotesRail`).
-  await lazyScript("/js/connections.js");
+  await ensureModule("connections");
   return drawNotesRail(entry, key);
 }
 

@@ -6399,7 +6399,8 @@ def test_the_present_bar_caption_is_a_page_picker():
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The present bar blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
     assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body

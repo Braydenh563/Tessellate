@@ -786,11 +786,13 @@ def test_the_nested_surfaces_are_concentric():
 #: 1.75rem went to --control-h-dense or away: 22 to 19, 0 to 1.
 #: 2026-11-03: the m guide's rules moved from 08 to chord-guide-lazy.css (the
 #: boot CSS cap, unslop 1103): its three keycap heights moved, 46 to 43 and 0 to 3.
+#: 2026-11-14 (L-world-class-350): three of the whiteboard blocks went from 07 to library-lazy.css (22 to 25) and one
+#: of the run list to agent-runs-lazy.css; 07 is 44 to 40. The total did not move.
 LITERAL_HEIGHTS = {
     "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 19,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 44, "08-consistency.css": 43, "09-editor.css": 6, "10-responsive.css": 6,
-    "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
+    "07-whiteboard-misc.css": 40, "08-consistency.css": 43, "09-editor.css": 6, "10-responsive.css": 6,
+    "library-lazy.css": 25, "agent-runs-lazy.css": 1, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
     "inbox-lazy.css": 1, "chord-guide-lazy.css": 3,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
