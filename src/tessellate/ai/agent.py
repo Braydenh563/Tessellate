@@ -63,6 +63,7 @@ from tessellate.ai.agent_policy import (
     unsupported_claims,
 )
 from tessellate.ai.agent_turn import (
+    claimed_act_events,
     AWAITING_CONFIRMATION,
     all_it_names,
     from_outside as _from_outside,
@@ -973,9 +974,7 @@ def _claim_notice(state: _TurnState, answer: str, unsupported: list[str]) -> lis
     return []
 
 
-def _settle_answer(
-    state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, required: bool, show_plan: bool
-):
+def _settle_answer(session: Session, state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, required: bool, show_plan: bool):
     """A round with no tool call: this text IS the final answer. True when the
     turn is over, False when a nudge asked for another round."""
     answer = reply.get("content", "").strip()
@@ -984,6 +983,10 @@ def _settle_answer(
     # It has usually streamed already; send it only if the tool-call gate held it back.
     if not reply.get("streamed") and answer:
         yield {"type": "answer", "delta": answer}
+    if acted := claimed_act_events(session, state, loop.called_any, answer, plan_now()):
+        yield from acted
+        yield from card.end_round(TURN_ROW_ANSWER)
+        return True
     if (yield from _nudge_prose(state, loop, card, answer, required)) or (
         yield from _nudge_intent(state, loop, card, answer)
     ):
@@ -991,9 +994,7 @@ def _settle_answer(
     # Safety net: a claim to have saved/created something when no write tool
     # ran is a hallucination; say so rather than let the user believe a note
     # exists that doesn't.
-    unsupported = unsupported_claims(
-        f"{loop.said_before}{answer}", state.ran_writes | state.implied
-    )
+    unsupported = unsupported_claims(f"{loop.said_before}{answer}", state.ran_writes | state.implied)
     if (yield from _nudge_claim(state, loop, card, answer, unsupported)):
         return False
     yield from _claim_notice(state, answer, unsupported)
@@ -1205,7 +1206,7 @@ def run_agent(
         yield from _round_stats(spend, reply, plan, loop)
         calls = reply.get("tool_calls") or []
         if not calls:
-            if (yield from _settle_answer(state, loop, card, reply, required, show_plan)):
+            if (yield from _settle_answer(session, state, loop, card, reply, required, show_plan)):
                 return
             continue
         loop.called_any = True
