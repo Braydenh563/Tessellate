@@ -76,4 +76,6 @@ def test_a_row_the_list_does_not_hold_falls_back_to_the_read():
 
 
 def test_the_mention_link_patches_the_row_too():
-    assert "} else await loadDocuments(currentDoc?.id);" in SOURCE
+    #: The links panel's rows moved to their lazy piece (L327).
+    piece = (JS.parent / "documents-backlinks.js").read_text(encoding="utf-8")
+    assert "} else await loadDocuments(currentDoc?.id);" in piece
