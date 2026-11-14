@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 93 | 118 | 0 | 0 | 211 |
+| chat | 0 | 93 | 108 | 0 | 0 | 201 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 465 | 187 | 0 | 124 | 978 |
+| all | 326 | 465 | 177 | 0 | 124 | 968 |
 
 ## graph
 
@@ -69,22 +69,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-99** `chat` open, S: A23: entity card aggregate (guess from absence). From CHAT_PLAN.md:1256. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'tell me about Priya' gives the three sentences that name her and the note count (A10), but no first and last mention date and no related entities by co-occurrence. Remaining step: an entity-card block in composer_notes (first and last dated mention, count, top 2 sentences, co-occurring names).
 - [ ] **L-chat-105** `chat` partly, S: X13: variables and quick-adds unverified. From CHAT_PLAN.md:1280. Evidence: Recount 2026-11-14 (audit, verify in code first): template variables not verified Measured 2026-11-14: no {date} {weekday} {week} {title} {n} filler exists in the template path and no saved-phrasing chip. Built 2026-11-14: src/tessellate/ai/template_fill.py (fill, slots), test_x13 in tests/test_uax_probes_x_1114.py. Remaining step: call fill from the four built-in templates in frontend/js/note-templates.js (a route or a JS twin; not wired yet) and the saved phrasing with slots as a chip.
 - [ ] **L-chat-106** `chat` open, S: X15: scheduled act phrasing (guess). From CHAT_PLAN.md:1282. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'every Monday list what is open' answers a notes search on 'Monday list open' (four unrelated notes), not an act; no recurring-act reader exists. Built 2026-11-14: commands._every_act reads 'every <weekday> <list|show|summarise|find|check|review ...>' as a weekly reminder (test_x15). Remaining step: 'every day' phrasing, and the one proactive line a day when the reminder fires (decision 28).
-- [ ] **L-chat-113** `chat` partly, S: C10: rule-based jokes unverified. From CHAT_PLAN.md:1300. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_jokes.py
-- [ ] **L-chat-114** `chat` partly, S: C12: greeting use unverified. From CHAT_PLAN.md:1302. Evidence: Recount 2026-11-14 (audit, verify in code first): act_registry.py and agent_turn.py "call me"
-- [ ] **L-chat-115** `chat` partly, S: C13: conversation controls table unverified. From CHAT_PLAN.md:1303. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_chat.py
-- [ ] **L-chat-116** `chat` partly, S: C14: per-limit lines unverified. From CHAT_PLAN.md:1304. Evidence: Recount 2026-11-14 (audit, verify in code first): web gating text
-- [ ] **L-chat-117** `chat` partly, S: C15: label on every composed bubble unverified. From CHAT_PLAN.md:1305. Evidence: Recount 2026-11-14 (audit, verify in code first): result engine field; frontend/js/chat-attach.js
-- [ ] **L-chat-118** `chat` partly, S: T2: about 150-unit table unverified. From CHAT_PLAN.md:1316. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/utilities.py:219 _convert
 - [ ] **L-chat-119** `chat` partly, S: T3: Settings editor unverified. From CHAT_PLAN.md:1317. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/utilities.py:74 configure_rates, :87 current_rates
-- [ ] **L-chat-120** `chat` partly, S: T4: week number of a date and similar unverified. From CHAT_PLAN.md:1318. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/utilities.py:278, :330
 - [ ] **L-chat-121** `chat` partly, S: T7: tick by chat unverified. From CHAT_PLAN.md:1321. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/task_acts.py make a checklist
 - [ ] **L-chat-122** `chat` open, S: T8: counter absent (guess from absence). From CHAT_PLAN.md:1322. Evidence: Recount 2026-11-14 (audit, verify in code first): none found
 - [ ] **L-chat-123** `chat` open, S: T9: timer absent (guess). From CHAT_PLAN.md:1323. Evidence: Recount 2026-11-14 (audit, verify in code first): none found
-- [ ] **L-chat-124** `chat` partly, S: T12: see X13. From CHAT_PLAN.md:1326. Evidence: Recount 2026-11-14 (audit, verify in code first): see X13
 - [ ] **L-chat-125** `chat` partly, S: Build 1: unverified. From CHAT_PLAN.md:1469. Evidence: Recount 2026-11-14 (audit, verify in code first): composer.py (finding 1 to 3)
 - [ ] **L-chat-126** `chat` partly, S: Build 2: OllamaError fallback unverified. From CHAT_PLAN.md:1470. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/api/routes_chat.py
-- [ ] **L-chat-127** `chat` partly, S: Build 3: engine label on bubbles unverified. From CHAT_PLAN.md:1471. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_social.py SOCIAL who; frontend/js/chat-attach.js
-- [ ] **L-chat-128** `chat` partly, S: Build 4: windows.py absent; 60-phrasing gate unmeasured. From CHAT_PLAN.md:1472. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_plan.py:233 window()
 - [ ] **L-chat-129** `chat` partly, S: Build 5: agreement cases unverified. From CHAT_PLAN.md:1473. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/realise.py exists
 - [ ] **L-chat-130** `chat` partly, S: Build 7: unverified. From CHAT_PLAN.md:1475. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py
 - [ ] **L-chat-131** `chat` partly, S: Build 8: unverified. From CHAT_PLAN.md:1476. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869
