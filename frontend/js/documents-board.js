@@ -9,6 +9,19 @@
 // **Show live (decision 83, L-documents-11)** is the other half: a window per card, read-only, drawn here from the board's own data
 // and zoomed by the diagram view's recipe, which never touches the whiteboard, so any number of them and the Library's board
 // cannot cross. The windows are at the foot of this file.
+// **Edit in place (L-documents-104, waits on the whiteboard's per-instance state).** The one lookup is `window.wbInstance?.create`;
+// while it is absent Show live stays the read-only window above and nothing here runs. The interface the whiteboard provides:
+//   boardInstance(host, boardId, { editable }) -> Promise<{ destroy(), focus(), onChange(fn), reload?() }>
+//   - `host`: an empty element this file owns; the instance draws and wires only inside it, and keeps no state outside it
+//     (no global selection, undo, zoom or save); two instances of one board may be live at once.
+//   - `destroy()`: removes everything it added, listeners included, and is safe to call twice.
+//   - `focus()`: puts the focus inside the board. `onChange(fn)`: `fn()` after each saved edit; returns an unsubscribe function.
+//   - `reload?()`: optional, reads the board again; without it a sibling card of the same board is destroyed and created again.
+// Here: one instance per card, behind the card's button ("Edit in place"); destroyed when the button is pressed again, when the
+// card leaves the page (redraw, deleted, document closed: found on `doc-shown`, `doc-saved` and `board-edited`, listened to only while
+// an instance is live; no observer, the wake-source ratchet), and at pagehide.
+// Escape the board leaves unhandled returns the focus to the card's button. Key and input events stop at the host, so typing in
+// the board is never part of the document's undo. Siblings of one board follow through `onChange`.
 // Lazy: `LAZY_MODULES.docBoard`; documents-embeds.js draws the buttons and asks for this file on the first press. It adds no global name.
 (() => {
   let open = null;
@@ -213,6 +226,7 @@
   }
 
   async function fill(win) {
+    if (win.instance !== undefined) return;
     win.host.setAttribute("aria-busy", "true");
     try {
       const board = await apiJson(`/whiteboard/?board_id=${win.id}`);
@@ -230,7 +244,97 @@
     }
   }
 
+  //: Edit in place: one instance per card. `win.instance` is undefined for a read-only window, `null` while the instance is being created.
+  const STOPPED = ["keydown", "keyup", "keypress", "beforeinput", "input", "paste", "cut"];
+  let watching = false;
+  const reap = () => {
+    for (const win of [...windows]) {
+      if (win.instance === undefined || win.host.isConnected) continue;
+      const same = document.querySelectorAll(`.doc-embed-board-live[data-board-id="${win.id}"]`)[win.nth];
+      if (same && !same.nextElementSibling?.classList?.contains("doc-board-live")) {
+        win.button = same;
+        same.after(win.host);
+        same.setAttribute("aria-pressed", "true");
+      } else {
+        destroy(win);
+      }
+    }
+  };
+  function destroy(win) {
+    if (win.gone) return;
+    win.gone = true;
+    windows.delete(win);
+    win.off?.();
+    for (const type of STOPPED) win.host.removeEventListener(type, win.guard);
+    win.host.removeEventListener("keydown", win.escape);
+    try { win.instance?.destroy(); } catch { /* the board's own teardown must not stop the others */ }
+    win.host.remove();
+    win.button.setAttribute("aria-pressed", "false");
+    if (![...windows].some((w) => w.instance !== undefined)) {
+      watching = false;
+      document.removeEventListener("doc-shown", reap);
+      document.removeEventListener("doc-saved", reap);
+      window.removeEventListener("pagehide", destroyAll);
+    }
+  }
+  function destroyAll() {
+    for (const win of [...windows]) if (win.instance !== undefined) destroy(win);
+  }
+  async function build(win, create) {
+    try {
+      const instance = await create(win.host, win.id, { editable: true });
+      if (win.gone) return instance?.destroy?.();
+      win.instance = instance;
+      win.off = instance.onChange?.(() => follow(win));
+    } catch (error) {
+      toast(voiceLine("failed", { what: "The board", why: error?.message || "it could not be opened" }));
+      destroy(win);
+    }
+  }
+  //: A saved edit in one card: its siblings of the same board read it again, or are made again when the instance cannot reload.
+  function follow(from) {
+    for (const win of windows) {
+      if (win === from || win.id !== from.id || win.instance == null) continue;
+      if (win.instance.reload) win.instance.reload();
+      else if (window.wbInstance?.create) {
+        const old = win.instance;
+        win.instance = null;
+        try { old.destroy(); } catch { /* as above */ }
+        win.off?.();
+        build(win, window.wbInstance.create);
+      }
+    }
+  }
+  async function mountEditable(button, id, create) {
+    const host = document.createElement("div");
+    host.className = "dgm doc-board-live";
+    host.dataset.boardId = String(id);
+    const nth = [...document.querySelectorAll(`.doc-embed-board-live[data-board-id="${id}"]`)].indexOf(button);
+    const win = { id, button, host, nth, instance: null, gone: false };
+    win.guard = (event) => event.stopPropagation();
+    for (const type of STOPPED) host.addEventListener(type, win.guard);
+    //: Registered after the guard, so it still sees the key; an Escape the board used is `defaultPrevented`.
+    win.escape = (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault();
+      (win.button.isConnected ? win.button : document.querySelectorAll(`.doc-embed-board-live[data-board-id="${id}"]`)[win.nth])?.focus();
+    };
+    host.addEventListener("keydown", win.escape);
+    windows.add(win);
+    button.after(host);
+    button.setAttribute("aria-pressed", "true");
+    if (!watching) {
+      watching = true;
+      document.addEventListener("doc-shown", reap);
+      document.addEventListener("doc-saved", reap);
+      window.addEventListener("pagehide", destroyAll);
+    }
+    await build(win, create);
+  }
+
   async function mount(button, id) {
+    const create = window.wbInstance?.create;
+    if (create) return mountEditable(button, id, create);
     const host = document.createElement("div");
     host.className = "dgm doc-board-live";
     host.dataset.boardId = String(id);
@@ -260,13 +364,16 @@
   document.addEventListener("board-live", (event) => {
     const button = event.target;
     const win = [...windows].find((w) => w.button === button);
-    if (win) unmount(win);
+    if (win?.instance !== undefined) destroy(win);
+    else if (win) unmount(win);
     else mount(button, event.detail.id);
   });
   //: Edit here closed: the document may have redrawn its cards, so each window goes back after its card's new button (the same
   //: board, the same place), keeping its zoom; then the windows on the edited board read it again. A card that is gone takes its window.
   document.addEventListener("board-edited", (event) => setTimeout(() => {
+    reap();
     for (const win of windows) {
+      if (win.instance !== undefined) continue;
       if (!win.button.isConnected) {
         const same = document.querySelectorAll(`.doc-embed-board-live[data-board-id="${win.id}"]`)[win.nth];
         if (!same) {
