@@ -3934,7 +3934,10 @@ function wbMapEdgePathD(parent, child, layout) {
   //: moves its turn to it. An unbent line is the same string it always was.
   const w = wbMapEdgeWaypoint(a, child);
   if (a.rib && !w.bent) {
-    const slant = Math.abs(a.y2 - a.y1) * 0.5;
+    //: The slant is capped at half an indent: the rib leaves the spine almost
+    //: under its own corner, so it stays in its own column and clears the
+    //: nearer columns' boxes however tall the branch is (L-ui-modernisation-105).
+    const slant = Math.min(Math.abs(a.y2 - a.y1) * 0.5, WB_MAP_INDENT / 2);
     const foot = a.right ? Math.max(a.x1, a.x2 - slant) : Math.min(a.x1, a.x2 + slant);
     return `M${a.x1} ${a.y1} L${foot} ${a.y1} L${a.x2} ${a.y2}`;
   }
@@ -6367,16 +6370,18 @@ function wbMapColumnPositions(index, layout) {
   };
   //: Rows from `y` down, or up from `y` (each row's bottom at the cursor),
   //: nearest first either way, so a branch reads away from its topic.
-  const stack = (rows, x, y, up) => {
+  //: `edge` set, rows hang from a right edge instead: each indents in from it.
+  const stack = (rows, x, y, up, edge) => {
     let cursor = y;
+    const at = (r, s) => (edge == null ? x + r.depth * WB_MAP_INDENT : edge - r.depth * WB_MAP_INDENT - s.w);
     for (const r of rows) {
       const s = size(r.o);
       if (up) {
         cursor -= s.h;
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at(r, s), y: cursor });
         cursor -= gapB;
       } else {
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at(r, s), y: cursor });
         cursor += s.h + gapB;
       }
     }
@@ -6428,15 +6433,21 @@ function wbMapColumnPositions(index, layout) {
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
       const x = right - w;
+      //: The column hangs from its right edge, so the rib's foot at the main
+      //: topic's spine-side corner stands clear of the causes, which indent
+      //: in from it; hung from the left, a tall stack's right edge reached
+      //: past that corner and a shallow rib clipped it (L-ui-modernisation-105).
       pair.forEach((b, side) => {
         const tall = b.ks.h + (b.rows.length ? gapB + b.ext.h : 0);
+        const edge = x + w;
+        const topX = edge - b.ks.w;
         if (side === 0) {
           const y = spine - gapD - tall;
-          positions.set(b.kid.id, { x, y });
-          stack(b.rows, x, y + b.ks.h + gapB, false);
+          positions.set(b.kid.id, { x: topX, y });
+          stack(b.rows, x, y + b.ks.h + gapB, false, edge);
         } else {
-          stack(b.rows, x, spine + gapD, false);
-          positions.set(b.kid.id, { x, y: spine + gapD + tall - b.ks.h });
+          stack(b.rows, x, spine + gapD, false, edge);
+          positions.set(b.kid.id, { x: topX, y: spine + gapD + tall - b.ks.h });
           bottom = Math.max(bottom, spine + gapD + tall);
         }
       });

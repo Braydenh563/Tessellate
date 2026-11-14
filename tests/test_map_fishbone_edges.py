@@ -100,3 +100,38 @@ def test_radial_leaves_are_narrower_so_a_31_topic_map_is_smaller(tmp_path):
     assert out["narrow"]["n"] == 31
     #: Measured in this harness: 1911 wide before the leaf cap, 1240 after.
     assert out["narrow"]["w"] < out["wide"]["w"] * 0.8, out
+
+
+RIB_BEHIND = r"""
+wbMapGapBreadth = () => 24; wbMapGapDepth = () => 76;
+const mk = (id, parent_id) => ({ id, parent_id, x: 0, y: 0, width: 200, height: 44, data: {} });
+const nodes = [mk(1, null)];
+let id = 2;
+//: Four main topics, each with a tall stack of causes: the rib to a topic whose
+//: stack is tall is a very shallow slant, which is what clipped its own causes.
+for (let b = 0; b < 4; b++) { const bid = id++; nodes.push(mk(bid, 1)); for (let l = 0; l < 40; l++) nodes.push(mk(id++, bid)); }
+const idx = { nodes, byId: new Map(nodes.map((n) => [n.id, n])), roots: [nodes[0]], childrenOf: new Map() };
+for (const n of nodes) idx.childrenOf.set(n.id, nodes.filter((k) => k.parent_id === n.id));
+const pos = wbMapColumnPositions(idx, "fishbone");
+for (const n of nodes) Object.assign(n, pos.get(n.id));
+const hits = [];
+for (const n of nodes.filter((k) => k.parent_id === 1)) {
+  const d = wbMapEdgePathD(nodes[0], n, "fishbone");
+  const pts = [...d.matchAll(/[ML]\s*(-?[\d.]+)\s+(-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+  let crossed = 0;
+  for (let s = 0; s + 1 < pts.length; s++) {
+    for (let i = 0; i <= 400; i++) {
+      const x = pts[s][0] + (pts[s + 1][0] - pts[s][0]) * i / 400, y = pts[s][1] + (pts[s + 1][1] - pts[s][1]) * i / 400;
+      if (nodes.some((k) => k.id !== n.id && k.id !== 1 && x > k.x + 2 && x < k.x + k.width - 2 && y > k.y + 2 && y < k.y + k.height - 2)) { crossed += 1; break; }
+    }
+  }
+  hits.push(crossed);
+}
+__out(hits);
+"""
+
+
+@needs_node
+def test_a_rib_runs_behind_none_of_the_causes_of_a_tall_branch(tmp_path):
+    """The rib meets the main topic's spine-side corner; the stack of causes must not reach under it."""
+    assert run(tmp_path, RIB_BEHIND) == [0, 0, 0, 0]
