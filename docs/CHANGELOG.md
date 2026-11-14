@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat with no model: the 26 real-phrasing strict xfails pass (L-timeline-9): a joke about a thing no note holds is small talk, a question whose only match is an everyday word (day, meeting, ship, book) says the notebook holds nothing on it, alarms list as reminders, spelt day counts and a bare event with a time get a date or a reminder how-to.
 - Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the two strict xfails on chat rows L150 and L-timeline-9); the PR 216 work order closed (L-general-33); open_scan skips the PR template form and SQLAlchemy's `deferred=True`.
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.

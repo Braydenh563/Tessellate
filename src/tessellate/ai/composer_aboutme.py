@@ -48,6 +48,16 @@ _HELLO = lazy_compile(r"^(?:(?:why|well|oh) )?(?:hello|hi|hey)(?: there)?$|^(?:a
 _JOKE = lazy_compile(r"\b(?:tell|say|hear|give|crack|share|recite|know|got|make)\b.*\b(?:jokes?|something funny|one liners?|giggle|laugh|smile)\b(?! about\b)|^what(?:'s| is) a (?:good |funny )?joke$|^what (?:funny |good )?jokes do you know$")
 
 
+_JOKE_ABOUT = lazy_compile(r"\b(?:jokes?|something funny|one liners?)\b.* about (?:the |a |an |some |my )?([a-z][a-z' -]*?)\W*$")
+
+
+def joke_subject(message: str) -> str:
+    """"cats" for "tell me a joke about cats", else "": a joke about a named thing is a notes question only when a note holds the thing."""
+    text = _words(message)
+    found = None if _NOTE_ANCHOR.search(text) else _JOKE_ABOUT.search(text)
+    return found.group(1).strip() if found else ""
+
+
 def _words(message: str) -> str:
     return " ".join(re.split(r"[^\w']+", (message or "").lower())).strip()
 

@@ -17,7 +17,7 @@ from collections.abc import Iterator
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_aboutme, composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
@@ -753,4 +753,7 @@ def _notes_first(session: Session, question: str, detected: str) -> str:
     """The intent, but NOTES for a lookup of a word a note holds and for a
     checklist's state ("what's unpacked", "what have I ticked off"), which is
     never general knowledge."""
+    if (subject := composer_aboutme.joke_subject(question)) and detected == intent.NOTES and not any(_in_notes(session)(w) for w in subject.split() if len(w) > 2):
+        #: A joke about a thing no note holds is small talk, never a search for the thing.
+        return intent.SMALLTALK
     return intent.NOTES if _names_a_note_word(session, question, detected) or composer_slots.asks_state(question) else detected

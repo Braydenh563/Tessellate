@@ -35,7 +35,7 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
+from tessellate.ai import address, capability, composer_aboutme, fact_check, composer, composer_social, composer_stray, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
 from tessellate.ai import consent, consent_store, recognise
 from tessellate.ai import (
@@ -928,6 +928,10 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         return hello
     if composer_social.missed(req.question, kind, last):
         return _repair_reply(req, last, seed)
+    if subject := composer_aboutme.joke_subject(req.question):
+        #: A joke about a thing no note holds (`_notes_first`): owned, then one that is saved, else the plain no-joke line.
+        plain = _saved_joke_reply(req, seed) or composer_smalltalk.social("tell me a joke", prepared["intent"], voice=_chat_voice(req), recent=recent, seed=seed)
+        return f"I have no joke about {subject}. {plain}"
     if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
         return joke
     said = composer_smalltalk.social(
@@ -1242,6 +1246,11 @@ def _no_notes_answer(req: _StreamRequest, ollama_running: bool, prepared: dict) 
     return events
 
 
+def _stray_for(req: _StreamRequest, follow, current: list, today) -> dict | None:  # noqa: ANN001
+    """Nothing on the question when the notes found share only an everyday word with it (`composer_stray`)."""
+    return None if follow or req.body.note_ids else composer_stray.absent(req.question or "", current, today, _composer_voice())
+
+
 def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, restated: bool, today):  # noqa: ANN001, ANN202
     """The answer a person would give (decision 70, INBOX 812: "I may as well
     just read the notes I made on the right"): a count and a span, the facts
@@ -1340,7 +1349,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])
-    answer = lambda f, r: _open_note_answer(req, f, current, today) or _digest_for(req, prepared, f, current, r, today) or _compose_for(req, prepared, f, current, today)  # noqa: E731
+    answer = lambda f, r: _open_note_answer(req, f, current, today) or _stray_for(req, f, current, today) or _digest_for(req, prepared, f, current, r, today) or _compose_for(req, prepared, f, current, today)  # noqa: E731
     result, follow = _not_again(answer, follow, restated, req)
     _with_frame(result, follow, req, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
