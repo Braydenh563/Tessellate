@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram overview frame: its move is throttled to one per 48 ms with a trailing settle and the frame is its own layer, so a 90-move pan at 1440 and 4x CPU costs p50 about 8.4 ms (was about 12) and 15 ms less raster; p95 about 28 ms (was about 35, load 8 to 10), the remainder is the picture's own raster (L-documents-102).
 - Section graph nodes name their paragraph class literally, so the unused-class lint sees it; three HISTORY lines quote a fence name as code so the archive link check pairs fences correctly.
 - Boot CSS back under its cap (a duplicate `height: auto` in the fullscreen graph card removed); three documents tests follow the lazy sections module, the `none` chord and the shared ink selector list.
 - Tests: the claim check's hostile-line test counts the characters handed to each regex at n and 2n instead of timing them (#222 ae427a9b took 2.76 s on hostile4 on a loaded runner; locally it is linear, 0.019, 0.023 and 0.047 s at n, 2n and 4n), and pins the list marker's pattern so it cannot backtrack over a run of tabs.
