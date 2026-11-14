@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 90 | 36 | 0 | 18 | 256 |
+| world-class | 130 | 88 | 36 | 0 | 18 | 254 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 482 | 107 | 2 | 129 | 1142 |
+| all | 553 | 480 | 107 | 2 | 129 | 1140 |
 
 ## graph
 
@@ -482,7 +482,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L558** `world-class` open, M: Voice: move failure toasts in the 112 other JS files holding their own strings. From OPEN.md:1259. Evidence: Row left: surface by surface (decision 55); only library.js, whiteboard.js, whiteboard-map.js moved.
 - [ ] **L559** `world-class` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
 - [ ] **L560** `world-class` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
-- [ ] **L561** `world-class` open, M: Condense HANDOVER (over 300 lines) and create NEXT_FABLE_WINDOW.md (Brief 14). From OPEN.md:3594. Evidence: HANDOVER.md is 599 lines (lint cap 600); docs/roadmap/NEXT_FABLE* does not exist
 - [ ] **L562** `world-class` open, M: Make chat search hits open the matching turn, not only the chat. From OPEN.md:3737. Evidence: search/index.py:935 _conversation_row builds one row per conversation
 - [ ] **L563** `world-class` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
@@ -520,7 +519,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L618** `world-class` open, M: showNotesSection autoGrowVisible, syncScrollEdges, sizeDashWidgets first-reader costs. From a31c-1103.md Left, with numbers. Evidence: lag agent: moving the read a frame later only relocates it; not kept
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
 - [ ] **L620** `world-class` open, M: notesSpyPick/shell-reminders first-reader layout; PF4 lazy library bundle inflates typing. From audit-1108-perf.md. Evidence: Source 'still open, re-verified'; no later commit found
-- [ ] **L622** `world-class` open, L: Build one LEDGER.md with per-plan tags and paste-in briefs; delete retired agent-remaining/roadmap files and unused code files. From INBOX.md:1784. Evidence: docs/roadmap/LEDGER.md does not exist; ~580 agent-remaining files still present; owner-ordered work for this PR
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
