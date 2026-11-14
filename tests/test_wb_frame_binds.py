@@ -171,3 +171,19 @@ def test_the_sync_loads_every_note_in_one_call():
     src = (ROOT / "src" / "tessellate" / "api" / "wb_binds.py").read_text(encoding="utf-8")
     body = src[src.index("def sync_board_binds"):]
     assert "whiteboard_repo.entries(" in body and "whiteboard_repo.entry(" not in body
+
+
+def test_the_binding_logs_carry_no_request_values():
+    """CodeQL alerts 2293 and 2294: a log line in wb_binds passes only its constant message."""
+    import ast
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api" / "wb_binds.py"
+    calls = [
+        node
+        for node in ast.walk(ast.parse(src.read_text(encoding="utf-8")))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and getattr(node.func.value, "id", "") == "log"
+    ]
+    assert calls
+    for call in calls:
+        assert len(call.args) == 1 and isinstance(call.args[0], ast.Constant), ast.dump(call)

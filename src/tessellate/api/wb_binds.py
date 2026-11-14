@@ -94,9 +94,10 @@ def write_binding(db: Session, entry_id: int, binds: dict) -> bool:
     update = EntryUpdate(content=note_properties.write(text, found), base_hash=content_hash(text))
     try:
         routes_entries.update_entry(entry_id, update, response=Response(), session=db, if_match=None)
-    except HTTPException as err:
+    except HTTPException:
         db.rollback()
-        log.info("frame binding skipped note %s: %s", entry_id, err.status_code)
+        # No request values in the line (CodeQL log injection, alerts 2293 and 2294).
+        log.info("A frame binding skipped a note that changed or was refused meanwhile.")
         return False
     return True
 
@@ -112,7 +113,7 @@ def apply_card_binding(db: Session, node: WhiteboardNode) -> None:
         write_binding(db, node.entry_id, binds)
     except Exception:  # noqa: BLE001
         db.rollback()
-        log.warning("frame binding failed for note %s", node.entry_id, exc_info=True)
+        log.warning("A frame binding failed after the card was saved.", exc_info=True)
 
 
 def _target(frames: list[tuple[WhiteboardObject, dict]], node: WhiteboardNode, entry) -> WhiteboardObject | None:  # noqa: ANN001

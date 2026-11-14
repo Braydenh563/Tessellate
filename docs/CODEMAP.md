@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8730, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10910, test files 2799, tests 22548, plan headings 691, app scripts 29, boot scripts 38, script files 317.
+Counts: frontend functions 8730, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10910, test files 2799, tests 22549, plan headings 691, app scripts 29, boot scripts 38, script files 317.
 
 ## Frontend functions (8730)
 
@@ -13829,7 +13829,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:124 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
 | `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:195 |
-| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:130 |
+| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:131 |
 | `/boards/{board_id}/draft` | POST | `draft_board_document` | src/tessellate/api/wb_make.py:345 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
@@ -24073,12 +24073,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_held` | src/tessellate/api/wb_binds.py:59 |
 | `_inside` | src/tessellate/api/wb_binds.py:48 |
 | `_readable` | src/tessellate/api/wb_binds.py:64 |
-| `_target` | src/tessellate/api/wb_binds.py:118 |
+| `_target` | src/tessellate/api/wb_binds.py:119 |
 | `_value` | src/tessellate/api/wb_binds.py:72 |
-| `apply_card_binding` | src/tessellate/api/wb_binds.py:104 |
+| `apply_card_binding` | src/tessellate/api/wb_binds.py:105 |
 | `bound_frames` | src/tessellate/api/wb_binds.py:34 |
 | `frame_at` | src/tessellate/api/wb_binds.py:53 |
-| `sync_board_binds` | src/tessellate/api/wb_binds.py:131 |
+| `sync_board_binds` | src/tessellate/api/wb_binds.py:132 |
 | `write_binding` | src/tessellate/api/wb_binds.py:78 |
 
 ### src/tessellate/api/wb_board.py (33)
@@ -28405,7 +28405,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22548)
+## Tests (22549)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31037,7 +31037,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_format.py | 13 |
 | tests/test_wb_format2.py | 24 |
 | tests/test_wb_format_button.py | 3 |
-| tests/test_wb_frame_binds.py | 9 |
+| tests/test_wb_frame_binds.py | 10 |
 | tests/test_wb_frame_link.py | 6 |
 | tests/test_wb_frame_margins.py | 9 |
 | tests/test_wb_frame_pad.py | 3 |
@@ -31818,7 +31818,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:895 |
+| Plan session briefs | docs/roadmap/LEDGER.md:886 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31873,25 +31873,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1276 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:911 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:995 |
+| chat | docs/roadmap/LEDGER.md:902 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:986 |
 | documents | docs/roadmap/LEDGER.md:285 |
-| documents | docs/roadmap/LEDGER.md:935 |
+| documents | docs/roadmap/LEDGER.md:926 |
 | general | docs/roadmap/LEDGER.md:660 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:899 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1007 |
+| graph | docs/roadmap/LEDGER.md:890 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:998 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
 | mindmap | docs/roadmap/LEDGER.md:301 |
-| mindmap | docs/roadmap/LEDGER.md:947 |
+| mindmap | docs/roadmap/LEDGER.md:938 |
 | timeline | docs/roadmap/LEDGER.md:422 |
-| timeline | docs/roadmap/LEDGER.md:971 |
+| timeline | docs/roadmap/LEDGER.md:962 |
 | ui-modernisation | docs/roadmap/LEDGER.md:305 |
-| ui-modernisation | docs/roadmap/LEDGER.md:959 |
+| ui-modernisation | docs/roadmap/LEDGER.md:950 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:923 |
+| whiteboard | docs/roadmap/LEDGER.md:914 |
 | world-class | docs/roadmap/LEDGER.md:424 |
-| world-class | docs/roadmap/LEDGER.md:983 |
+| world-class | docs/roadmap/LEDGER.md:974 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
