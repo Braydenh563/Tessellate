@@ -758,7 +758,7 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
 
 
 def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_keeps_its_own():
-    """L-world-class-76 (INBOX 1812): only a board, a map and a document keep their undo across a
+    """L-world-class-76 (INBOX 1851): only a board, a map and a document keep their undo across a
     reload (`undo-store.js`); the app's own stack starts empty, and Help says so."""
     from tessellate.ai import help_chat
 
