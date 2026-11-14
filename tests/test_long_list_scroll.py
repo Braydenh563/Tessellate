@@ -64,7 +64,7 @@ def test_the_timeline_pages_into_the_shared_window_and_counts_from_the_data():
     body = function_body(source, "appendTimelineRows")
     assert "TIMELINE_APPEND" not in source
     assert "win.add(list, run.rows)" in body
-    assert "timelineRowElement(" not in body, "a page is not built whole"
+    assert "timelineRowElement(" not in body, "a page is never rendered whole"
     # Built rows are fewer than loaded rows, so the count is the data's.
     assert 'querySelectorAll(".timeline-row")' not in body
     assert "visible.size" in body

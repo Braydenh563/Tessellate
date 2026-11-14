@@ -1,4 +1,4 @@
-"""INBOX 1661 (l), what was left open: the shelf on the picture for a mind map and a timeline, a tile dropped on their
+"""INBOX 1661 (l), its last three parts, built: the shelf on the picture for a mind map and a timeline, a tile dropped on their
 picture, and the folded shelf button clear of the drawing. Numbers measured: docs/roadmap/agent-remaining/dgml-1109.md."""
 
 from __future__ import annotations

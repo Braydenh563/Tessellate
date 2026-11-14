@@ -293,7 +293,7 @@ class TestEveryLaunchPathFinishesItsSteps:
 
     def test_a_failure_stops_the_bar_where_it_failed(self):
         """The one case that must *not* reach the end: a real error is the bar
-        telling the truth, and `percent` counts a failed step as not done."""
+        telling the truth, and `percent` never counts a failed step."""
         from tessellate.core import launch_status as ls
 
         failed = ls.parse(
