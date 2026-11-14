@@ -88,14 +88,16 @@ EXPECTED = {
     'documents.js': [
         '`${what} is not available here.`',
         '"That section cannot go inside itself."',
-        '"Give the document a title first, a block link is named by it."',
-        '"Put the caret in a paragraph first."',
-        '"That block is not in this document any more."',
         '"Full screen is not available in this window."',
         '"That text has changed, the list is refreshed."',
         '"Nothing left to fix."',
         '"Save the document first."',
         '(body && body.message) || "No other wordings came back for that one."',
+    ],
+    'documents-blockref.js': [
+        '"Give the document a title first, a block link is named by it."',
+        '"Put the caret in a paragraph first."',
+        '"That block is not in this document any more."',
     ],
     'documents-suggest.js': [
         '"Nothing to discuss yet."',
@@ -260,6 +262,7 @@ FAULTS = {
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',

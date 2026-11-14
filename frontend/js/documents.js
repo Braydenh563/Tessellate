@@ -6360,62 +6360,16 @@ function docBlockDocumentText(doc) {
   return docBlockTextCache.has(doc.id) ? docBlockTextCache.get(doc.id) : null;
 }
 
-//: Give the block the caret is in an id, and hand back the reference a person
-//: can paste. The id is written into the document, which is the point: a block
-//: reference is a promise the text itself keeps, not an index this app holds.
-function docBlockRefAtCaret() {
-  const surface = docSurface();
-  if (!surface) return null;
-  const text = docText();
-  const made = docBlockEnsureIdEdits(text, surface.selectionStart);
-  if (!made.id) return { id: null, reason: made.reason };
-  if (made.edits.length) {
-    docTableDispatch({ surface, text }, made.edits);
-    markDocDirty();
-  }
-  return { id: made.id, reason: made.reason };
-}
-
-//: The `/` menu's "Link to this block". Copies `[[Title#^id]]`, because that
-//: is the form you paste into a note, a map node or a chat, and those three
-//: are what the plan asks a block reference to reach.
+//: Copy a link to the block at the caret, and put the caret on a block a link led to: documents-blockref.js,
+//: fetched on first use. Each name is a stand-in that the piece's function of the same name replaces on load.
 async function docCopyBlockRef() {
-  const title = (currentDoc?.title || "").trim();
-  if (!title) {
-    toast("Give the document a title first, a block link is named by it.", "info");
-    return;
-  }
-  const made = docBlockRefAtCaret();
-  if (!made || !made.id) {
-    toast("Put the caret in a paragraph first.", "info");
-    return;
-  }
-  const reference = `[[${title}#^${made.id}]]`;
-  //: Through the shared helper, not `navigator.clipboard`: it falls back to
-  //: the copy dialog in the contexts where the API is not there at all, which
-  //: is the desktop window's own case.
-  await copyToClipboard(reference);
-  toast(`Copied ${reference}`);
+  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", docCopyBlockRef] });
+  return docCopyBlockRef();
 }
 
-//: Put the caret on a block and say so. Used when a `[[Doc#^id]]` is followed:
-//: opening the document at the top and leaving the reader to find the
-//: paragraph is most of the way to not having followed the link at all.
-function docRevealBlock(blockId) {
-  const found = docBlockFind(docText(), blockId);
-  if (!found) {
-    toast("That block is not in this document any more.", "info");
-    return false;
-  }
-  const surface = docSurface();
-  if (!surface) return false;
-  surface.focus();
-  //: The selection is the reveal: `setSelectionRange` on this surface already
-  //: scrolls to what it selects, and selecting the block is both "here it is"
-  //: and a sensible place to be left, because the next thing a reader does is
-  //: copy it or edit it.
-  surface.setSelectionRange(found.from, found.to);
-  return true;
+async function docRevealBlock(blockId) {
+  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", () => docRevealBlock(blockId)] });
+  return docRevealBlock(blockId);
 }
 
 //: **True only while a print is being prepared** (`exportDocumentPdf`), which
