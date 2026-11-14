@@ -1681,6 +1681,21 @@
       });
       links.before(toggle);
     };
+    //: Ask's cards only (L-chat-58): the notes linked to and like this one, in place under the card.
+    const around = (li) => {
+      if (list.id !== "raw-results" || li.querySelector(":scope > .record-around")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ghost small disclosure-row record-links-toggle record-around";
+      button.textContent = "Around this note";
+      button.setAttribute("aria-expanded", "false");
+      button.title = "Show the notes linked to this one and the notes like it, here";
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        ensureModule("askCompose").then(() => digestMore.around(li, button)).catch(() => {});
+      });
+      li.append(button);
+    };
     for (const li of list.querySelectorAll(":scope > li[data-id]")) {
       const old = li.querySelector(":scope > .entry-meta");
       if (!li.classList.contains("record-card") && old && byId.has(li.dataset.id)) {
@@ -1718,6 +1733,7 @@
         li.querySelector(":scope > .entry-why")?.remove();
         excerpt(li);
         folded(li);
+        around(li);
       }
       const why = info?.[li.dataset.id]?.why;
       if (why && !li.querySelector(":scope > .record-why")) {

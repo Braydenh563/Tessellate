@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8526, frontend ids 2800, CSS sections 524, backend routes 722, backend modules 11309, test files 2952, tests 23077, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8527, frontend ids 2800, CSS sections 524, backend routes 722, backend modules 11309, test files 2952, tests 23080, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
-## Frontend functions (8526)
+## Frontend functions (8527)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2001,10 +2001,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `closeAppearancePanel` | frontend/js/appearance-panel.js:283 |
 | `openAppearancePanel` | frontend/js/appearance-panel.js:256 |
 
-### frontend/js/ask-browser.js (4)
+### frontend/js/ask-browser.js (5)
 
 | Name | File:line |
 |---|---|
+| `around` | frontend/js/ask-browser.js:78 |
 | `askThreadChip` | frontend/js/ask-browser.js:16 |
 | `cards` | frontend/js/ask-browser.js:13 |
 | `drawThreads` | frontend/js/ask-browser.js:56 |
@@ -7181,11 +7182,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openCalculator` | frontend/js/reply-kit.js:430 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:69 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:24 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1741 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1792 |
-| `replyByHover` | frontend/js/reply-kit.js:1813 |
-| `replyByline` | frontend/js/reply-kit.js:1845 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1770 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1757 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1808 |
+| `replyByHover` | frontend/js/reply-kit.js:1829 |
+| `replyByline` | frontend/js/reply-kit.js:1861 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1786 |
 | `replyCalcActions` | frontend/js/reply-kit.js:583 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:458 |
 | `replyCalcConvertPane` | frontend/js/reply-kit.js:1469 |
@@ -7201,19 +7202,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyDrawAll` | frontend/js/reply-kit.js:35 |
 | `replyFillMeters` | frontend/js/reply-kit.js:194 |
 | `replyFinish` | frontend/js/reply-kit.js:1590 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1928 |
-| `replyGist` | frontend/js/reply-kit.js:1923 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1944 |
+| `replyGist` | frontend/js/reply-kit.js:1939 |
 | `replyMeter` | frontend/js/reply-kit.js:161 |
 | `replyMonthName` | frontend/js/reply-kit.js:202 |
-| `replyNoteCard` | frontend/js/reply-kit.js:2021 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1970 |
-| `replyNoteId` | frontend/js/reply-kit.js:1965 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1974 |
+| `replyNoteCard` | frontend/js/reply-kit.js:2037 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1986 |
+| `replyNoteId` | frontend/js/reply-kit.js:1981 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1990 |
 | `replyPanelShell` | frontend/js/reply-kit.js:45 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1993 |
+| `replyPeekLink` | frontend/js/reply-kit.js:2009 |
 | `replyRecordCards` | frontend/js/reply-kit.js:1639 |
-| `replyReveal` | frontend/js/reply-kit.js:1891 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1886 |
+| `replyReveal` | frontend/js/reply-kit.js:1907 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1902 |
 | `replySpark` | frontend/js/reply-kit.js:137 |
 | `replyStatCard` | frontend/js/reply-kit.js:105 |
 | `replyStatCards` | frontend/js/reply-kit.js:207 |
@@ -13405,7 +13406,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/answer-foot-lazy.css | 161 |
 | frontend/css/appearance-panel-lazy.css | 333 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
-| frontend/css/ask-compose-lazy.css | 354 |
+| frontend/css/ask-compose-lazy.css | 367 |
 | frontend/css/atlas-lazy.css | 1229 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
@@ -28743,7 +28744,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23077)
+## Tests (23080)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28824,7 +28825,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_ai_switch_1601.py | 2 |
 | tests/test_ask_answer_object.py | 23 |
 | tests/test_ask_answerer_setting_l737.py | 3 |
-| tests/test_ask_browser_l_chat_58.py | 5 |
+| tests/test_ask_browser_l_chat_58.py | 8 |
 | tests/test_ask_category_scope.py | 4 |
 | tests/test_ask_chart_event_chatplan60.py | 2 |
 | tests/test_ask_chips.py | 8 |

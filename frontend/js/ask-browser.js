@@ -71,5 +71,52 @@
     paint();
   }
 
+  //: Slice 2: "Around this note" opens a note's linked and similar notes under its card, indented one
+  //: step, as the Connections recipe's rows. The answer text and the column's cards are untouched; a
+  //: row opens the note (`flashEntry`). A second press closes it. Both routes are the ones the note's
+  //: own panels use (`/connections`, `/related`), so nothing new is asked of the server.
+  async function around(li, button) {
+    const open = button.getAttribute("aria-expanded") !== "true";
+    button.setAttribute("aria-expanded", String(open));
+    li.querySelector(":scope > .ask-around")?.remove();
+    if (!open) return;
+    const id = li.dataset.id;
+    const box = document.createElement("div");
+    box.className = "ask-around";
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", "Notes around this one");
+    const say = (text) => {
+      const p = document.createElement("p");
+      p.className = "muted ask-around-note";
+      p.textContent = text;
+      box.append(p);
+    };
+    say("Looking for neighbours…");
+    button.after(box);
+    const [joined, like] = await Promise.all([
+      lazyScript("/js/connections.js").catch(() => null),
+      apiJson(`/entries/${id}/connections`, { silent: true }).catch(() => null),
+      apiJson(`/entries/${id}/related`, { silent: true }).catch(() => []),
+    ]).then(([, a, b]) => [a, b]);
+    if (button.getAttribute("aria-expanded") !== "true") return;
+    box.replaceChildren();
+    if (!joined) return say("Could not load this note's neighbours.");
+    const seen = new Set([Number(id)]);
+    const rows = [];
+    const add = (note, how) => {
+      if (!note || seen.has(note.id)) return;
+      seen.add(note.id);
+      const name = note.is_private ? "Private note" : note.preview || note.title || `Note ${note.id}`;
+      const sub = [how, note.category].filter(Boolean).join(" · ");
+      rows.push(connectionRowEl(note.is_private ? "ph:lock" : "ph:note", name, `Open this note\n${note.reason || ""}`.trim(), sub, () => flashEntry(note.id)));
+    };
+    for (const note of joined.outgoing || []) add(note, "Linked");
+    for (const note of joined.incoming || []) add(note, "Links here");
+    for (const note of like || []) add({ ...note, preview: noteNamePlain(note.content, 80), reason: note.link_reason }, "Similar");
+    if (!rows.length) return say("No linked or similar notes.");
+    box.append(...rows);
+  }
+  digestMore.around = around;
+
   digestMore.threads = drawThreads;
 })();

@@ -43,3 +43,27 @@ def test_a_press_filters_with_a_class_and_the_heading_says_n_of_m():
 
 def test_the_chip_row_has_its_own_rules_and_no_hairline_box():
     assert ".ask-threads" in CSS
+
+
+# --- slice 2: Around this note ----------------------------------------------------------
+
+KIT = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
+
+
+def test_an_ask_card_gains_around_this_note_and_chat_cards_do_not():
+    body = KIT.split("function replyRecordCards(", 1)[1][:9000]
+    assert "Around this note" in body and 'list.id !== "raw-results"' in body
+    assert "digestMore.around(li, button)" in body
+
+
+def test_the_neighbourhood_is_linked_and_similar_rows_under_the_card_never_cards():
+    body = BROWSER.split("function around(", 1)[1].split("\n  }\n", 1)[0]
+    assert "/entries/${id}/connections" in body and "/entries/${id}/related" in body
+    assert "connectionRowEl(" in body and 'lazyScript("/js/connections.js")' in body and "ask-around" in body
+    assert "data-id" not in body and "dataset.id =" not in body  # a row is not a Matching records card
+    assert "aria-expanded" in body
+
+
+def test_the_neighbourhood_is_indented_one_step_by_a_token():
+    rule = re.search(r"\.ask-around \{([^}]*)\}", CSS)
+    assert rule and "margin-inline-start: var(--space-4)" in rule.group(1)

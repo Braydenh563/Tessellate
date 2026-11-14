@@ -352,3 +352,16 @@
 .ask-threads .graph-filter-chip.is-lit {
   box-shadow: inset 0 0 0 1px var(--accent-text);
 }
+
+/* "Around this note" (L-chat-58): the card's neighbours under it, one step in. */
+.ask-around {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-block: var(--space-2);
+  margin-inline-start: var(--space-4);
+}
+.ask-around .ask-around-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
