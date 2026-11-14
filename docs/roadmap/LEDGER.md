@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 9 | 0 | 0 | 0 | 9 |
+| whiteboard | 0 | 8 | 0 | 0 | 0 | 8 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 536 | 125 | 2 | 172 | 1133 |
+| all | 472 | 535 | 125 | 2 | 172 | 1132 |
 
 ## graph
 
@@ -284,7 +284,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-59** `whiteboard` open, S: Resolve settings-wiring.js html layer lookup through wbInstances.layer. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: settings-wiring.js:967 queries #wb-html-layer document-wide
 - [ ] **L-whiteboard-60** `whiteboard` open, M: Give an embedded board its own rulers and map radial menu, or hide them there. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: rulers and .wb-map-radial are drawn for the page board only
 - [ ] **L-whiteboard-61** `whiteboard` open, M: Keep the active tool and cursor per board instance. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: tool and cursor are globals shared by every instance
-- [ ] **L-whiteboard-62** `whiteboard` open, M: Route window-level board listeners to the instance the event belongs to. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: window-level listeners act on the active board, not the one under the pointer
 - [ ] **L-whiteboard-63** `whiteboard` open, S: Let an embed made before initWhiteboard edit at once. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: an embed created before initWhiteboard gets its handlers only once init runs
 - [ ] **L-whiteboard-64** `whiteboard` open, S: Fire an instance onChange on undo and redo. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: undo and redo do not call the onChange callbacks
 - [ ] **L-whiteboard-65** `whiteboard` open, S: Reload a board that is not live after a failed save-many. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: a failed save-many on a board that is no longer live skips the reload
