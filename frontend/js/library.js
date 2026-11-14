@@ -1106,6 +1106,20 @@ function libraryActions(item) {
       makeMenuItem("ph:alarm Remind me", "Set a reminder about this document", () =>
         remindAbout({ title: item.title, documentId: item.id })
       ),
+      //: A document is joined to a note by attaching it (`POST /documents/{id}/notes`).
+      //: Inline, not a named function: the shared scope is on a ratchet (7406 names).
+      makeMenuItem("ph:link Link to…", "Attach a note to this document", async () => {
+        const other = await pickEntryDialog("Link to which note?");
+        if (!other) return;
+        try {
+          await apiJson(`/documents/${item.id}/notes`, { method: "POST", body: JSON.stringify({ entry_id: other.id }) });
+        } catch (error) {
+          toast(error.message, true);
+          return;
+        }
+        pushRoutePairUndo("Linked a note to a document", [`/documents/${item.id}/notes/${other.id}`, "DELETE"], [`/documents/${item.id}/notes`, "POST", { entry_id: other.id }]);
+        toast("Linked.");
+      }),
       makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
         await archiveDocumentWithUndo(item).catch((e) => toast(e.message, true));
         reload();
@@ -1281,6 +1295,8 @@ function libraryActions(item) {
       makeMenuItem("ph:chat-circle Ask Atlas about this", "Start a chat about this file", () =>
         askAtlasAboutThing("file", item.title)
       ),
+      //: A file is not a note, so its reminder is the words alone (no jump back).
+      makeMenuItem("ph:alarm Remind me", "Set a reminder about this file", () => remindAbout({ title: item.title })),
       // Live-reported: an uploaded file "can't be deleted", true for its
       // own ⋯ menu specifically; bulk-select delete already worked
       // (`library-bulk-delete` already has a `file` branch), but nothing

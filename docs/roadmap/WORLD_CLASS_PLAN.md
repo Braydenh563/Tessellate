@@ -146,10 +146,10 @@ column and the one wording.
 | --- | --- | --- | --- | --- | --- |
 | Note, Notes card ⋯ | the card | yes | yes | yes | yes |
 | Note, Library card ⋯ | Open in Notes | yes | yes | yes | yes |
-| Document, Library card ⋯ | the card | yes | yes | yes | no |
-| Board or map, Boards card ⋯ | the card | yes | no | yes | no |
-| Reminder, row ⋯ | Open its note, document, board or map | yes | no | n/a | no |
-| File, Library card ⋯ | the card | yes (2026-09-23) | no | no | no |
+| Document, Library card ⋯ | the card | yes | yes | yes | yes (2026-11-14) |
+| Board or map, Boards card ⋯ | the card | yes | yes (2026-11-14) | yes | n/a: notes join a board by being placed on it |
+| Reminder, row ⋯ | Open its note, document, board or map | yes | n/a: a reminder is not a graph node, Open reaches its target | n/a | n/a: it already points at one thing |
+| File, Library card ⋯ | the card | yes (2026-09-23) | n/a: a file is not a graph node | yes (2026-11-14) | n/a: a file holds no text to link from |
 
 The open rows named here on 2026-09-23 (Remind me on a document and a
 board, Show in graph for a document, the Library note card's Remind me and

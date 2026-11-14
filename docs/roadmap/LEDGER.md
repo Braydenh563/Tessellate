@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 133 | 29 | 3 | 10 | 162 |
+| world-class | 0 | 132 | 29 | 3 | 10 | 161 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 524 | 100 | 5 | 121 | 1029 |
+| all | 405 | 523 | 100 | 5 | 121 | 1028 |
 
 ## graph
 
@@ -537,7 +537,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-49** `world-class` open, M: Settings undo sweep is order or timing dependent: a different control fails each run. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-14. Evidence: four runs on one head: NOT UNDONE set differs each time (learned-pause-all, pref-web-search, pref-web-store, check_learned, pref-date-order, font-seg); each undoes alone
 - [ ] **L-world-class-50** `world-class` open, M: Rich paste (HTML to markdown) in the note composers, as documents have. From L-world-class-7 measurement 2026-11-14. Evidence: frontend/js/capture-stage.js:35 paste takes files only; documents.js:5634 docRichPasteEvent converts HTML to markdown in documents only; pasting a list, heading and link as text/html into #entry-content and #quick-note-text inserts nothing converted (default plain text)
 - [ ] **L-world-class-52** `world-class` open, L: Seal the bytes of recordings, library uploads and attachments in a private space. From L697. Evidence: L697 sealed the database columns only; the audio, upload and attachment bytes on disk (data/recordings, media, uploads) of a private space are still plain files
-- [ ] **L-world-class-60** `world-class` open, S: Settle 1.3's remaining 'no' cells in the object menu table: each built or marked n/a with its reason. From WORLD_CLASS_PLAN.md:158. Evidence: WORLD_CLASS_PLAN.md:158 says the 'no' cells are 'not planned'; no owner decision found in HANDOVER or ARCHITECTURE
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)
 - [ ] **L-world-class-63** `world-class` open, S: Library: group notes by type (D5's last left item). From WORLD_CLASS_PLAN.md:357. Evidence: no grouping by type in frontend/js/library*.js (grep 'group.*type' 0 hits)
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)

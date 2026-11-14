@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Object menus: a document's ⋯ gains Link to, a file's gains Remind me, a board or map's gains Show in graph (it turns the Maps switch on); the rest of the table's 'no' cells are n/a with their reasons (WORLD_CLASS 1.3).
 - Audit: scratchpad/audit/recipes.js (control recipes per tab) and prose.js (paragraphs over 120 characters) are back in the tree; at 1440 the busiest screen is Chat with 12 recipes by kind, radius, ground and edge (24 by height and type size; 22 on 2026-09-24), Notes 7, Library 6; the way down to 8 is L-world-class-250 (L-world-class-62).
 - Settings prose: the not-installed search line, the two Gemma reasons, the exports empty line, the backup schedule line, the model-server note and a built-in skill description are one line of at most 120 characters; the longer words sit in a tooltip. Own-text paragraphs over 120 characters at 1440: 0 on the seven tabs, 9 to 3 in Settings (the rest are a persona's own prompt and a path); the boot scripts also fall 27 bytes under the gzip ratchet (L-world-class-64).
 - Top bar: every tab's tooltip names its jump chord ("Notes (t then n)"), held to the one jump table by a test; the captions already held at 1024, 1100 and 1280 (label widths 34 to 83px) and go only under 820 (L-world-class-96).
