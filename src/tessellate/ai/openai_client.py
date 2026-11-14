@@ -66,6 +66,12 @@ from tessellate.ai.provider import (
 from tessellate.core import activity
 
 
+def _label(value: object) -> str | None:
+    """A catalogue field shown as a word. llama-server's `architecture` is an
+    object of modalities and its `size` a byte count; neither is a label."""
+    return value.strip() or None if isinstance(value, str) else None
+
+
 def _fill_null_content(payload: dict) -> bool:
     """Give every assistant turn that carries `tool_calls` and a null `content`
     an empty string instead. True when anything changed."""
@@ -391,9 +397,9 @@ class OpenAICompatClient(Provider):
         loaded = entry.get("loaded_context_length")
         return {
             "name": model,
-            "family": entry.get("arch") or entry.get("architecture"),
-            "parameters": entry.get("parameter_size") or entry.get("size"),
-            "quantisation": entry.get("quantization") or entry.get("quantization_level"),
+            "family": _label(entry.get("arch") or entry.get("architecture")),
+            "parameters": _label(entry.get("parameter_size") or entry.get("size")),
+            "quantisation": _label(entry.get("quantization") or entry.get("quantization_level")),
             "context_length": self.context_length(model),
             "usable_context": self.usable_context(model),
             "context_reason": self.context_explanation(model),

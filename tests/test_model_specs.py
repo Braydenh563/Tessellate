@@ -175,6 +175,18 @@ def test_a_sparse_server_reports_what_little_it_has():
     assert spec["context_length"] == known_context("qwen3")
 
 
+def test_llama_server_modalities_object_is_not_a_family():
+    """Found on a real qwen2.5-1.5b via llama-server (L724, 2026-11-14): its
+    catalogue row carries `architecture` as an object of input and output
+    modalities, which the panel printed as "Family [object Object]"."""
+    c = OpenAICompatClient(base_url="http://localhost:8080/v1")
+    c._catalog = [{"id": "q", "architecture": {"input_modalities": ["text"]}, "size": 11}]
+    c._props = {}
+    spec = c.model_spec("q")
+    assert spec["family"] is None
+    assert spec["parameters"] is None
+
+
 def test_the_openai_dialect_admits_it_cannot_report_capabilities():
     """No OpenAI-compatible server reports them in a standard way. Saying
     "unknown" keeps the existing behaviour, offer tools, and find out from
