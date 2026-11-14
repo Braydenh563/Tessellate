@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 44 | 1 | 0 | 3 | 65 |
+| documents | 20 | 43 | 1 | 0 | 3 | 64 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 599 | 129 | 2 | 166 | 1231 |
+| all | 503 | 598 | 129 | 2 | 166 | 1230 |
 
 ## graph
 
@@ -370,7 +370,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-76** `documents` open, S: Sass (indented) and Stylus as their own code types, with Emmet's sass and stylus output. From agent docsvid 2026-11-14, L-documents-51. Evidence: core/filetypes.py aliases sass to css, so a .sass file gets CSS punctuation; the vendored Emmet has sass and stylus output forms; no stylus file type
 - [ ] **L-documents-74** `documents` open, S: A block embed drawn before the document list has loaded stays a chip: redraw it when the list lands. From agent docssync 2026-11-14. Evidence: docEmbedTarget (documents-embeds.js) cannot resolve a title before the document list loads; seen in a second window
-- [ ] **L-documents-75** `documents` open, S: A video in a note card before the library bundle loads shows a player, not a broken img. From agent docsvid 2026-11-14, L-documents-68. Evidence: a note card drawn before the library bundle (image-layout.js) loads falls back to an img for a video
 
 ## mindmap
 
