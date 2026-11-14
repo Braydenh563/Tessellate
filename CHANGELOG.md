@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
 - Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
+- Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
 - Csv and tsv Grid: cells and the row-number column are 44 px touch targets under a coarse pointer (cells were 27 px; L-documents-40); the Grid now hides the preview pane it meant to.
 - Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
