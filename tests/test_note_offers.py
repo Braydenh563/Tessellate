@@ -124,3 +124,16 @@ def test_a_total_line_with_no_amount_is_offered_the_column_sum(session):
     assert text[: sums[0]["start"]] + sums[0]["value"]["replace"] == text + " 6.70"
     one = "Rent 1200\nTotal:"
     assert not [o for o in offers.offers(session, one, now=NOW) if o["kind"] == "sum"]
+
+
+def test_an_equals_with_no_answer_gets_it_on_the_same_line_not_after_the_blank_lines(session):
+    """L574 (measured on the Edit form): "12 + 30 =" then a blank line took the
+    answer on the line below, because the span ran on through the whitespace."""
+    for text, after in (
+        ("12 + 30 =\n\nNext.", "12 + 30 = 42\n\nNext."),
+        ("12 + 30 =", "12 + 30 = 42"),
+        ("12 + 30 = \nNext.", "12 + 30 = 42 \nNext."),
+    ):
+        sums = [o for o in offers.offers(session, text, now=NOW) if o["kind"] == "sum"]
+        assert len(sums) == 1, (text, sums)
+        assert text[: sums[0]["start"]] + sums[0]["value"]["replace"] + text[sums[0]["end"] :] == after, text

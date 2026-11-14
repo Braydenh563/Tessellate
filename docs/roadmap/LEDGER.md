@@ -18,6 +18,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | world-class | 130 | 72 | 31 | 0 | 5 | 233 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
 | all | 553 | 466 | 102 | 2 | 116 | 1121 |
+| world-class | 130 | 62 | 35 | 0 | 19 | 227 |
+| general | 0 | 36 | 2 | 0 | 4 | 38 |
+| all | 553 | 454 | 106 | 2 | 130 | 1113 |
 
 ## graph
 
@@ -480,6 +483,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded
+- [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
+- [ ] **L583** `world-class` open, M: Sweep the remaining literal toast("...", true) error calls so each carries a what-to-do action instead of the default Open the logs. From OPEN.md:4247; OPEN.md:1389; OPEN.md:1396; OPEN.md:3465. Evidence: toast action support exists (status.js:347); per-error call-site sweep not done.
 - [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
 - [ ] **L587** `world-class` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
@@ -495,7 +500,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
-- [ ] **L630** `world-class` open, L: Re-run ocrflow.js against new .ocr-engine host and #ocr-more dock-menu section. From OPEN.md:838; OPEN.md:3534. Evidence: ocrflow.js:29,41 vs index.html:9732 hidden dock-menu section; not re-run
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L634** `world-class` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
@@ -596,8 +600,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
-- [ ] **L-general-35** `general` open, S: Repair scratchpad/ui-sweeps/mappan.js (fails at line 206). From batch E L549. Evidence: mappan.js:206 end.shape null, same on the committed original
-- [ ] **L-general-36** `general` open, S: Repair scratchpad/ui-sweeps/boardundo.js (renamed function). From batch E L549. Evidence: calls wbDeleteObjectRef, which was renamed
 
 ## Owner calls
 
