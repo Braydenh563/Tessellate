@@ -8,7 +8,7 @@ import re
 from datetime import datetime
 
 _SLOT = re.compile(r"\{(\w+)\}")
-_KNOWN = ("date", "weekday", "week", "title", "n")
+_KNOWN = ("date", "weekday", "week", "title", "n", "time", "cursor", "clipboard")
 
 
 def fill(template: str, now: datetime, title: str = "", n: int = 1) -> str:

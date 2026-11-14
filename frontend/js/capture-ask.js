@@ -1394,7 +1394,7 @@ function showAskAsOf(on) {
 // --- capture templates (Wave B) ---------------------------------------------------
 
 const BUILTIN_TEMPLATES = [
-  { name: "Journal", content: "Journal: {date}\n\nToday I " },
+  { name: "Journal", content: "Journal: {weekday} {date}\n\nToday I " },
   { name: "Recipe", content: "Recipe: \n\nIngredients:\n- \n\nSteps:\n1. " },
   { name: "Contact", content: "Contact: \nPhone/email: \nWhere we met: \nNotes: " },
   { name: "Meeting", content: "---\ntype: Meeting\n---\n## Agenda\n\n1. {{cursor}}\n\n## Notes\n\n## Decisions\n\n- \n\n## Action items\n\n- [ ] \n" },

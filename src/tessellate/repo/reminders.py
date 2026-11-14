@@ -150,7 +150,7 @@ def due_by(session: Session, today: date, limit: int = 10) -> list[dict]:
         .order_by(Reminder.due_at)
         .limit(limit)
     ).all()
-    return [{"id": r.id, "text": r.text, "due_at": r.due_at.date().isoformat(), "done": False, "entry_id": r.entry_id} for r in due]
+    return [{"id": r.id, "text": r.text, "due_at": r.due_at.date().isoformat(), "done": False, "entry_id": r.entry_id, "recurring": r.recurring} for r in due]
 
 
 def twin(session: Session, text: str, due_at: datetime) -> int | None:

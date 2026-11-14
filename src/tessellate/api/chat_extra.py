@@ -82,7 +82,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
     mind ("any contradictions"), what is overdue or open ("what am I
     forgetting"). With no model it is the answer; with one it is handed over
     as facts, so both paths say the same (second audit G11, parity)."""
-    from tessellate.ai import composer_plan, insights
+    from tessellate.ai import composer_plan, insight_asks, insights
 
     text = " ".join((question or "").split())
     try:
@@ -92,6 +92,8 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
             said = reply.text if reply else ""
         elif _CONTRADICTIONS.search(text):
             said = _changes_of_mind(session, now, text)
+        elif (asked := insight_asks.answer(text, _notes(session), now.date())) is not None:
+            said = asked
         elif _PATTERNS.search(text):
             found = insights.from_session(session, now.date(), limit=4)
             said = ("\n".join(f"- {line}" for line in insights.listed(found)) if found else

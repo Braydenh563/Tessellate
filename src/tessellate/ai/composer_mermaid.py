@@ -553,7 +553,9 @@ def _about(notes: list[dict], words: list[str]) -> list[dict]:
     if not words:
         return notes[:8]
     stems = [w[:5] for w in words]
-    return [n for n in notes if any(re.search(rf"\b{re.escape(s)}", str(n.get("content") or ""), re.I) for s in stems)][:8]
+    #: Its title and tags too: the notes found for "running" by their tag ("Ran 5 km") are on it (L158).
+    said = [" ".join([str(n.get("title") or ""), str(n.get("content") or ""), " ".join(map(str, n.get("tags") or []))]) for n in notes]
+    return [n for n, words in zip(notes, said, strict=True) if any(re.search(rf"\b{re.escape(s)}", words, re.I) for s in stems)][:8]
 
 
 def _notes_lead(count: int, said: str) -> str:

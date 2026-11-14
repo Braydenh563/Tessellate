@@ -63,6 +63,28 @@ class Measure:
     derived_from: str
 
 
+#: The query each count is (`notebook_recount.recount` runs it again): the fact's label alone is
+#: not one ("notes" in a "total" row, a tag named like a kind).
+_SOURCES = {
+    "note-count": {"notes": "notes"}, "document-count": {"documents": "documents"}, "tag-count": {"tags": "tags"},
+    "category-count": {"categories": "categories"}, "word-count": {"words": "words", "notes": "notes"},
+    "untagged": {"untagged": "untagged", "total": "notes"}, "orphans": {"unlinked": "unlinked", "total": "notes"},
+    "board-count": {"boards": "boards", "mind maps": "maps"},
+}
+
+
+def source_of(kind: str, fact: dict) -> str:
+    """The recountable query behind one count fact: the handler's own `source`, else the kind's label table,
+    else a tag, category or word named by the fact ("tags", "categories" and "mention-count" kinds)."""
+    label = str(fact.get("label", ""))
+    if fact.get("source"):
+        return str(fact["source"])
+    if label in _SOURCES.get(kind, {}):
+        return _SOURCES[kind][label]
+    prefix = {"tag-count": "tag", "tags": "tag", "category-count": "category", "categories": "category", "mention-count": "mention"}.get(kind)
+    return f"{prefix}:{label}" if prefix else f"label:{label}"
+
+
 @dataclass
 class StatAnswer:
     """One computed answer, ready to be spoken or rendered.
@@ -81,7 +103,7 @@ class StatAnswer:
 
     def measures(self) -> list[Measure]:
         """The counts in `facts`, as `Measure`s of this answer's kind."""
-        return [Measure(self.kind, int(f["count"]), str(f.get("label", ""))) for f in self.facts if isinstance(f.get("count"), int)]
+        return [Measure(self.kind, int(f["count"]), source_of(self.kind, f)) for f in self.facts if isinstance(f.get("count"), int)]
 
 
 def _visible(query, archived: bool = False):
@@ -537,6 +559,11 @@ def _notes_per_category(session: Session) -> StatAnswer:
     )
 
 
+def _at(window: tuple | None) -> str:
+    """The window of a count, as its recount reads it: "@2026-11-01T00:00:00..2026-11-30T23:59:59"."""
+    return f"@{window[0].isoformat()}..{window[1].isoformat()}" if window else ""
+
+
 def _named_count(text: str, session: Session) -> StatAnswer | None:
     """"How many travel notes" / "how many notes are in Work": the count for
     one category or tag the question names, or None when it names neither.
@@ -550,11 +577,11 @@ def _named_count(text: str, session: Session) -> StatAnswer | None:
     ).all()
     for name, n in sorted(names, key=lambda r: -len(r[0])):
         if re.search(rf"(?<!\w){re.escape(name.lower())}(?!\w)", text):
-            return StatAnswer("category-count", f"You have {_plural(n, 'note')} in {name}{said}.", [{"label": name, "count": n}])
+            return StatAnswer("category-count", f"You have {_plural(n, 'note')} in {name}{said}.", [{"label": name, "count": n, "source": f"category:{name}{_at(window)}"}])
     counts = Counter(tag.lower() for raw in session.scalars(_visible(in_window(select(Entry.tags)))).all() for tag in _tags_of(raw))
     for tag, n in sorted(counts.items(), key=lambda r: -len(r[0])):
         if re.search(rf"(?<!\w){re.escape(tag)}(?!\w)", text):
-            return StatAnswer("tag-count", f"{_plural(n, 'note')} {'is' if n == 1 else 'are'} tagged {tag}{said}.", [{"label": tag, "count": n}])
+            return StatAnswer("tag-count", f"{_plural(n, 'note')} {'is' if n == 1 else 'are'} tagged {tag}{said}.", [{"label": tag, "count": n, "source": f"tag:{tag}{_at(window)}"}])
     return None
 
 
@@ -783,7 +810,7 @@ def _recent_count(session: Session, window: tuple[datetime, datetime, str]) -> S
     return StatAnswer(
         "recent-count",
         f"You {'wrote' if over else 'have written'} {_plural(total, 'note')} {words}.",
-        [{"label": words, "count": total}],
+        [{"label": words, "count": total, "source": f"created{_at(window)}"}],
     )
 
 
