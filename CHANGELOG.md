@@ -7,6 +7,13 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
+Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
+Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)
+Learning: the five filing reads are timed on 3,000 notes and 3,000 corrections, the slowest 78 ms (L133)
+Chat: the help-popover sweep opens a closed fold and waits out the smooth scroll (146 popovers, 0 findings); the money meta payload is pinned (400 rows, 425 KB for 450 notes) (L134, L248)
+Chat: the typed yes forms, the Ask answerer setting, one assistant name on reply chips, hidden match percents, a scrolling sources grid, SearXNG auto retry, the tools engine shown with no model, and proofs for starters, the silent probe, checkpoint refetch and Guide ranking (L715 to L737, L166, L167, L118, L128, L130, L196, L198)
+- Chat: Agent stays available with the server up but no model when Needle is installed; a failed web search goes again once by itself when SearXNG answers; the sources list scrolls in the bubble; controls only a model can serve follow model_ready (L166, L167, L-chat-20, L730, L128; L118 and L119 proved built).
+- Chat: any form of yes (yeah, yep, sure, ok, go ahead) takes up an offer; the answer label reads Atlas's assistant, from your notes, or Atlas, <model>; found notes show no match percent while the answer is written; Settings, Models picks who answers plain Ask; decision 38 verbs, confirm, undo and web tool pinned (L715, L728, L729, L736, L737).
 - Chat: a joke is said from the top matching record and the note it names; listed jokes are quoted, not run together (L-chat-19).
 - Chat: the utilities eval is built (120 rows exact, 20 hostile sums refused); sums now read "1,000", "mod", "7!" and numbers in words, and "how many weeks until" answers in weeks (L-chat-22).
 - Chat: the Guide with no model opens on the topic's first step (help_1010 0.55 to 1.0, L-chat-41); person_shift_1010 eval, 100 pairs exact, fixes "Sam and I was", "between you and me" and "Your sister ... we" (L-chat-22).

@@ -665,6 +665,7 @@ chatSendTurn.stage = {
     // leaving Stop wired to nothing while a stream was genuinely running.
     if (chatController === controller) {
       chatController = null;
+      matchReasonBadge.reveal();
       $("chat-messages").removeAttribute("aria-busy"); // end, error and Stop all land here
       stopChatTimer();
       syncEmblemBusy();
@@ -2786,7 +2787,8 @@ function renderRecordsDetails(holder, meta) {
   }
   details.appendChild(list);
   holder.appendChild(details);
-  ensureModule("replyKit").then(() => replyRecordCards(list, meta.raw_results, matchInfo, scored)).catch(() => {});
+  matchReasonBadge.hold(list);
+  ensureModule("replyKit").then(() => replyRecordCards(list, meta.raw_results, matchInfo, scored)).then(() => matchReasonBadge.hold(list)).catch(() => {});
 }
 
 // Delete one Q&A exchange: its assistant bubble AND the user bubble just

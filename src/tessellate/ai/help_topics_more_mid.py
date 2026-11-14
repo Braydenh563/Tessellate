@@ -660,7 +660,7 @@ MID_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence cites a note; the app adds only joining words and what it measured, and says "
                     "which of your words no note held. The badge by the name says who "
-                    "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
+                    "wrote it (Atlas's assistant, Atlas, or Composer); hover or click it for what "
                     "that means. The No model connected line above the Chat box "
                     "and the Ask box has a close button: it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
@@ -668,6 +668,22 @@ MID_TOPICS.extend(
                 )
             ),
             "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            #: L737 (owner, 2026-11-12): who answers plain Ask, as a Settings choice.
+            "id": "ask-answerer",
+            "keywords": (
+                "who answers ask", "who answers plain ask", "ask answered by", "ask use my model", "ask from my notes by default",
+                "default answerer", "notes answerer", "ask without the model", "small model ask",
+            ),
+            "body": (
+                "Settings, Models, Who answers plain Ask: Your model (the default) or Quoted from your notes. With your model, "
+                "Ask writes the answer and cites your notes. With Quoted from your notes, a plain question is answered by "
+                "Atlas's assistant, quoting your notes with no AI; a small model (3B and under) answers best this way. It is "
+                "the Ask box's own switch beside the answer length, set from Settings, and it is this computer's choice. "
+                "With no model running the answer is always from your notes."
+            ),
+            "badge": {"label": "Models", "section": "models", "target": "ask-answerer-row"},
         },
         {
             "id": "follow-up-trail",

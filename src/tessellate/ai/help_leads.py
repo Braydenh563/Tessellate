@@ -74,6 +74,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Asking Atlas
     "ask-chat": "Ask questions about your notes and get answers that show where they came from.",
     "answers-from-notes": "Get answers quoted from your own notes when the AI is off or not running.",
+    "ask-answerer": "Choose whether plain Ask uses your model or quotes your notes.",
     "chat-controls": "Send, stop and queue messages, attach notes and switch agent mode without the mouse.",
     "chat-context": "What happens when a long chat no longer fits in what the model can read.",
     "context-window": "Set how much text the chat model holds at once, or leave it on auto.",

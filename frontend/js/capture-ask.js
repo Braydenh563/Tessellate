@@ -232,7 +232,7 @@ function filedByText(saved) {
     //: UX-17 (audit 2026-10-05): with no model known to be running, the
     //: background filing is by the notes already filed, so it says so rather
     //: than promising the AI the status bar says is off.
-    return modelStatus?.ollama_running
+    return modelStatus?.model_ready
       ? "Saved. Filing it in the background, keep writing."
       : "Saved. Filing it by your other notes, keep writing.";
   }
