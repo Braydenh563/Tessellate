@@ -284,9 +284,9 @@ HELP_TOPICS: list[dict] = [
             'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
             "a spellchecker can't catch. The menu's Map the headings turns its "
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
-            "Flowchart, or any Mermaid diagram: sequence, class, state, entity relationship, Gantt, pie, "
-            "mind map, timeline and the rest) draws as a picture in Read and Live, in chat and Ask replies, "
-            "in a print and in the HTML export; press "
+            "Flowchart, or any Mermaid diagram: sequence, class, state, ER, Gantt, pie, "
+            "mind map, timeline and the rest) draws as a picture in Read and Live, chat and Ask replies, "
+            "prints and the HTML export; press "
             "it in Live to edit its text, and a block Mermaid cannot read stays as code with the reason under it. Print or "
             "save as PDF first asks for the page size, orientation, margins and "
             "page numbers, and a plain Ctrl+P uses the last choice; a code file prints "
@@ -298,10 +298,10 @@ HELP_TOPICS: list[dict] = [
             "thumbnails); a picture set in one place looks the same in all. "
             "The status bar counts characters, words, lines and reading time as "
             "the note composer does (an emoji is one character); a code file "
-            "shows lines, characters and the language instead. The type button (and New's arrow) lists file types; Markdown is rich text, "
+            "shows lines, characters and the language instead; past 200 lines the "
+            "caret's place adds a percent through. The type button (and New's arrow) lists file types; Markdown is rich text, "
             "a .mmd diagram opens beside its picture (Library, Diagrams). Search "
-            'documents reads a window: "harbor last week" finds the harbor '
-            "ones edited last week."
+            'documents reads a time window: "harbor last week".'
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -1716,7 +1716,8 @@ HELP_TOPICS.extend(
                 "letter, report, essay, CV and one-page proposal), planning ones, "
                 "and code ones that open in the code view (a Python script, a command "
                 "line tool, a FastAPI endpoint, JavaScript with tests, an HTML page, a "
-                "SQL schema, a README, a notebook of cells and a p5.js sketch). In a "
+                "SQL schema, a README, a notebook of cells and a p5.js sketch). The Today "
+                "button in Library, Documents opens today's document, or starts it from the Daily template. In a "
                 'document, the "/" menu\'s Templates group inserts the writing and planning ones.'
             ),
             "badge": {"label": "Templates", "section": "templates"},

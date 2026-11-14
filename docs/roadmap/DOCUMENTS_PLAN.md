@@ -664,11 +664,7 @@ choice, not the app's.*
   the export set, for a day that grew past a capture. That is a real difference
   in kind, not a second copy of the feature, and it costs one template row.
 
-**Not built, deliberately**: a "Today" button in the documents dock. The
-template gallery is two clicks from the same place, the Timeline's day view is
-the surface that knows about days, and a third door onto one page is what this
-decision exists to refuse.
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-64 (Today button).
+Built 2026-11-14: a Today button in the Library Documents dock opens the day's document or starts it from the Daily template (HISTORY.md, "Moved from the plans, 2026-11-14 (documents Today)").
 
 ## 15. The code block's own bar, and where it belongs: measured 2026-09-20
 
@@ -738,17 +734,7 @@ reproduces. **If the line's shift is ever reported, the fix is a narrower
 reveal (the range under the caret rather than the whole line), not atomic
 ranges**, and that is the work item, not this one.
 
-**3. The `Mod+click` affordance: the note is out of date, and nothing is
-built.** It says "there is no affordance saying so beyond the tooltip".
-Measured, a link chip in Live carries `cursor: pointer` and
-`title="Ctrl+click to open https://example.com"`, which is a pointer inviting
-the press, the chord named, and the destination shown before it is followed.
-That is what Obsidian offers for the same gesture. The one thing that would
-improve it is the underline-while-the-modifier-is-held that VS Code draws, and
-it costs a window-level key listener with a reset on blur for a hover hint
-that is already available by resting on the chip. Left unbuilt on purpose; a
-row here rather than a fourth session rediscovering the tooltip.
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-66 (held-modifier underline).
+**3. The `Mod+click` affordance.** Built 2026-11-14: a held Ctrl or Meta thickens the link chip's underline (HISTORY.md, "Moved from the plans, 2026-11-14 (link modifier cue)").
 
 Section 16 item 4 (the table cell menu, `kebabMenu` item `group`) is built. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
@@ -807,10 +793,8 @@ compared with.
   2026-09-23"); `scratchpad/ui-sweeps/docblocks17c.js` is the gate.
 - **17d and 17e: built 2026-10-04.** Moved to HISTORY.md ("Moved from the
   plans, 2026-10-04 (the documents tails)"); `doccrumbview.js` and
-  `contrast.js` with `ONLY=document` are the gates. One half of 17d was
-  decided against there (a "how far through" figure, the scrollbar and the
-  outline mark already say it).
-Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-67 (how far through).
+  `contrast.js` with `ONLY=document` are the gates. The "how far through" half of 17d was
+  built 2026-11-14 (HISTORY.md, "Moved from the plans, 2026-11-14 (how far through)").
 
 **Not verified, and to be taken first by whoever opens this.** 17a to 17c
 are measured at 1280, 1440, 1920 and 2560, light and dark, in the default

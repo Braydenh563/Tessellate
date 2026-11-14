@@ -10935,11 +10935,16 @@ function docCaretStats(box) {
   //: none. Counted only when there is a selection to count, so the common
   //: case (a caret, no range) still does no work at all.
   const words = selected ? docPlainText.counts(docCommentStrip(box.text.slice(range.from, range.to))).words : 0;
+  //: **How far through** (L-documents-67, DOCUMENTS_PLAN 17d): the caret's line of the last line, said only from 200 lines up, where a
+  //: document scrolls for a while and a page or two of prose is not worth a figure. The last line is asked of the surface
+  //: (`lineAt` clamps), so it costs the line index and no more.
+  const last = box.lineAt(Infinity).number;
   return {
     line: line.number,
     column: range.from - line.from + 1,
     selected,
     selectedWords: words,
+    through: last >= 200 ? Math.round((line.number / last) * 100) : -1,
   };
 }
 
@@ -10988,7 +10993,8 @@ function renderDocCaret() {
           stats.selectedWords === 1 ? "" : "s"
         } selected (${stats.selected.toLocaleString()} char${stats.selected === 1 ? "" : "s"})`
       : ` · ${stats.selected.toLocaleString()} char${stats.selected === 1 ? "" : "s"} selected`;
-  docSetStatusText(caret, `Ln ${stats.line}, Col ${stats.column}${selection}`);
+  const through = stats.through >= 0 ? ` · ${stats.through}%` : "";
+  docSetStatusText(caret, `Ln ${stats.line}, Col ${stats.column}${through}${selection}`);
   //: The breadcrumb follows the caret, so it is drawn from the same stats
   //: rather than from a listener of its own: two things that answer "where am
   //: I" and update on different events are two things that disagree.

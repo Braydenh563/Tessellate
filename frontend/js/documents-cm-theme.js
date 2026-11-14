@@ -628,6 +628,8 @@
         },
         ".doc-comment-pin:hover": { background: "var(--accent)", color: "var(--on-accent)" },
         ".cm-md-link": { color: "var(--accent-text)", textDecoration: "underline", cursor: "pointer" },
+        //: The open key is down (`doc-mod-held`, documents-cm.js): the chip's underline thickens, the cue that a click now follows it.
+        "&.doc-mod-held .cm-md-link": { textDecorationThickness: "2px", textUnderlineOffset: "2px" },
         ".cm-md-wiki": {
           color: "var(--accent-text)",
           backgroundColor: "var(--accent-soft)",

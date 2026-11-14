@@ -1052,11 +1052,12 @@ TAIL_TOPICS.extend(
                 "the caret is in it. Source view shows all of it. A fenced block that "
                 "names a language (python, js, html, css, sql and more) is coloured "
                 "as that language while you edit it, indents and closes brackets "
-                "as it does, and suggests its words as you type; typing the name "
+                "as it does, and suggests its words; typing a name "
                 "after the opening fence lists the languages. The block's corner "
                 "shows its title (title=\"fit.py\" on the fence) or language; press it "
-                "to pick another language. Hover a code block, or tap it on a phone, "
-                "for a Copy button in its top corner: it copies the code without the fences."
+                "to pick another language. Ctrl+click (Command on a Mac) opens a link, "
+                "and holding the key thickens its underline. Hover or tap a code block "
+                "for Copy, which copies the code without the fences."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

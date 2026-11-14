@@ -1837,6 +1837,25 @@ function docLivePlugin(CM) {
       constructor(view) {
         this.rebuild(view);
         this.gutterOn = docFenceGutterOn();
+        //: **The link cue while the open key is held** (L-documents-66, DOCUMENTS_PLAN section 15 item 3). A link opens on
+        //: Ctrl+click (Meta on a Mac), so while that key is down the editor root wears `doc-mod-held` and a chip draws its underline
+        //: heavier (VS Code's cue). Window-level, because the key goes down with the pointer anywhere. A held key whose release this
+        //: window never sees (focus left, the tab hid) would leave the class on, so blur and a hidden tab clear it; `destroy` takes all four off.
+        //: Guarded: the patch-equals-rebuild harness (test_doc_typing_dx1) builds this plugin in a context whose window has no listeners.
+        if (typeof window?.addEventListener !== "function") return;
+        this.modHeld = (event) => view.dom.classList.toggle("doc-mod-held", event.type !== "blur" && event.type !== "visibilitychange" && (event.ctrlKey || event.metaKey));
+        window.addEventListener("keydown", this.modHeld);
+        window.addEventListener("keyup", this.modHeld);
+        window.addEventListener("blur", this.modHeld);
+        document.addEventListener("visibilitychange", this.modHeld);
+      }
+      destroy() {
+        if (!this.modHeld) return;
+        window.removeEventListener("keydown", this.modHeld);
+        window.removeEventListener("keyup", this.modHeld);
+        window.removeEventListener("blur", this.modHeld);
+        document.removeEventListener("visibilitychange", this.modHeld);
+        this.modHeld({ type: "blur" });
       }
       rebuild(view) {
         this.record = { probes: [], selFree: true };

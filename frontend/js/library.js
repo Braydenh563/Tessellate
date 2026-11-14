@@ -3557,6 +3557,27 @@ function libraryDocsNewMount() {
       b.addEventListener("click", open);
       head.after(b);
     }
+    //: Today (L-documents-64): the day's document, opened or made from the "Daily" template (DOCUMENTS_PLAN section 14), beside New
+    //: diagram. The day's title is the template's own (`docTemplateFill`), so the button and the gallery row agree by one spelling.
+    if (head && !$("library-docs-today")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-today";
+      b.type = "button";
+      b.className = "ghost small";
+      b.title = "Open today's document, or start it from the Daily template";
+      setLabel(b, "ph:calendar-check Today");
+      b.addEventListener("click", async () => {
+        await ensureModule("library");
+        const template = DOC_TEMPLATES.find((t) => t.id === "daily");
+        const day = window.docTemplateFill(template).title;
+        const found = await apiJson(`/documents?q=${encodeURIComponent(day)}&limit=50`).catch(() => []);
+        const doc = found.find((d) => (d.title || "").trim() === day);
+        switchTab("documents");
+        if (doc) openDocument(doc.id);
+        else await window.createDocument(template);
+      });
+      head.after(b);
+    }
     const empty = $("library-docs-empty");
     if (empty && !$("library-docs-empty-diagram")) {
       const b = document.createElement("button");
