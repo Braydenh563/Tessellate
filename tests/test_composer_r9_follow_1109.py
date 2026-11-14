@@ -61,3 +61,25 @@ def test_a_long_question_is_read_in_bounded_time():
         start = time.perf_counter()
         composer_credit.answer(out, q, [])
         assert time.perf_counter() - start < 0.5
+
+
+#: L-chat-249: ten more two-turn follow-ups, each keeping the subject the first turn asked about
+#: (the first turn, the follow-up, a phrase the answer must hold, one it must not).
+TWO_TURNS = [
+    ("what do I know about the kitchen renovation", "how much is it", "£8,000", "Wolf Hall"),
+    ("what do I know about the plumber", "when is he coming", "11 November", "Mum"),
+    ("what do I know about Mum", "when is her birthday", "2 December", "Plumber is"),
+    ("what do I know about the doctor", "when is it", "13 November", "Raj"),
+    ("what do I know about the car insurance", "how much is it", "£412", "Aviva"),
+    ("what do I know about the concert", "when is it", "5 December", "Hannah"),
+    ("what do I know about Pickle", "when is the booster jab", "January", "Marek"),
+    ("what do I know about book club", "who hosts it", "Hannah", "Marek"),
+    ("what did I write about mum", "what about last month", "Gift ideas", "Running log"),
+    ("what did I write about mum", "and the other one", "mum", "Running log"),
+]
+
+
+@pytest.mark.parametrize(("first", "then", "holds", "never"), TWO_TURNS, ids=[t[1] + " / " + t[0][-14:] for t in TWO_TURNS])
+def test_a_two_turn_followup_keeps_the_subject(chain, first, then, holds, never):
+    _, again = chain(first, then)
+    assert holds.lower() in again.lower() and never.lower() not in again.lower(), again

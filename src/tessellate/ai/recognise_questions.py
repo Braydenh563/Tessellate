@@ -303,7 +303,7 @@ _N_UNIT = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+(d
 #: "what date is it in 3 weeks" and "what is the date in 10 days" (the prefix, the suffix optional), or the bare
 #: "10 days from today" (no prefix, so the suffix is required); a real model run found both read as other questions.
 _DATE_FROM_NOW = lazy_compile(
-    r"^(?:what (?:(?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?|(?:is|was) the (?:day|date)\s+)(?:in\s+)?" + _N_UNIT
+    r"^(?:what (?:(?:day|date)(?: of the week)? (?:is|will it be|was|is it (?:gonna|going to) be)\s+(?:it\s+)?|(?:is|was) the (?:day|date)\s+)(?:in\s+)?" + _N_UNIT
     + r"(?:\s+(from now|from today|ago))?|" + _N_UNIT + r"\s+(from now|from today|ago))$",
     re.I,
 )
