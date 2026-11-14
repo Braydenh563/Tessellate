@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 10996, test files 2817, tests 22504, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 10996, test files 2818, tests 22507, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -18080,11 +18080,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `about_the_world` | src/tessellate/ai/guide_outside.py:86 |
+| `about_the_world` | src/tessellate/ai/guide_outside.py:91 |
 | `help_stems` | src/tessellate/ai/guide_outside.py:36 |
-| `outside_reply` | src/tessellate/ai/guide_outside.py:94 |
-| `summed` | src/tessellate/ai/guide_outside.py:105 |
-| `worked_sum` | src/tessellate/ai/guide_outside.py:74 |
+| `outside_reply` | src/tessellate/ai/guide_outside.py:99 |
+| `summed` | src/tessellate/ai/guide_outside.py:110 |
+| `worked_sum` | src/tessellate/ai/guide_outside.py:76 |
 | `world_how_to` | src/tessellate/ai/guide_outside.py:43 |
 
 ### src/tessellate/ai/help_chat.py (44)
@@ -28227,7 +28227,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22504)
+## Tests (22507)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29575,6 +29575,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_path_lead_e33.py | 2 |
 | tests/test_guide_read_as_system.py | 4 |
 | tests/test_guide_social_1414.py | 19 |
+| tests/test_guide_sum_redos_2291.py | 3 |
 | tests/test_guide_what_is_keyword_l_chat_1.py | 2 |
 | tests/test_guide_wordlist_vc15.py | 4 |
 | tests/test_hardware_profile.py | 15 |

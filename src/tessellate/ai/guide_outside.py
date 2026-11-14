@@ -62,8 +62,10 @@ WHAT_ARE_YOU_REPLY = (
 
 
 #: A sum asked as one ("what is 2+2", "12 x 3"): worked out, not a miss (L-chat-38).
+#: No overlapping runs (CodeQL 2291): the ends are trimmed with str ops first,
+#: and the tail is one character class, so a long run of tabs cannot backtrack.
 _SUM = re.compile(
-    r"^\W*(?:what(?:'s| is)|calculate|work out|compute)?\s*(-?\d{1,12}(?:\.\d{1,6})?)\s*([-+*/x×÷])\s*(-?\d{1,12}(?:\.\d{1,6})?)\s*[=?.!]*\s*$",
+    r"(?:(?:what(?:'s| is)|calculate|work out|compute) ?)?(-?\d{1,12}(?:\.\d{1,6})?) ?([-+*/x×÷]) ?(-?\d{1,12}(?:\.\d{1,6})?)[=?.!]*",
     re.I,
 )
 _SIGN = {"+": "+", "-": "-", "*": "×", "x": "×", "X": "×", "×": "×", "/": "÷", "÷": "÷"}
@@ -72,7 +74,10 @@ OUTSIDE_REPLY = "That is outside the app: I only know Tessellate's own help{why}
 
 
 def worked_sum(question: str) -> str | None:
-    found = _SUM.match(question)
+    text = " ".join((question or "").split()) if len(question or "") <= 200 else ""
+    start = next((i for i, c in enumerate(text) if c.isalnum() or c == "-"), len(text))
+    text = text[start:].rstrip(" ?.!=")
+    found = _SUM.fullmatch(text) if text else None
     if not found:
         return None
     a, sign, b = float(found.group(1)), _SIGN[found.group(2)], float(found.group(3))
