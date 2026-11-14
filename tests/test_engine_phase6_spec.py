@@ -1,15 +1,8 @@
 """CHAT_PLAN Phase 6, the deterministic engine (Brief 39): the executable spec.
 
-Strict-xfail until an Opus session builds each step (the contract of
-tests/test_events.py and tests/test_learned_spec.py). Every test here fails
-today, for the reason in its marker; when a step lands, its tests XPASS, which
-strict mode turns into a failure, and the session removes that marker, and
-only that marker, once the test passes on its own.
-
-Modules that do not exist yet (`ai.factgraph`, `ai.realise`, `ai.commands`)
-are imported inside the test body, so the test xfails with ImportError today
-and the file always collects. Names below are the contract; a session that
-needs a different shape changes the test in the same commit, with the reason.
+Written as strict-xfail spec tests before the engine existed (the contract
+of tests/test_events.py and tests/test_learned_spec.py); every step is built,
+so every marker is gone and each test passes on its own.
 Shared notes live in tests/fixtures/composer/phase6_seed.json (today is
 2026-10-06, a Tuesday).
 """
@@ -29,10 +22,6 @@ SEED = json.loads((Path(__file__).parent / "fixtures" / "composer" / "phase6_see
 TODAY = date.fromisoformat(SEED["today"])
 NOW = datetime(TODAY.year, TODAY.month, TODAY.day, 12, 0)
 NOTES = SEED["notes"]
-
-
-def _spec(reason: str):
-    return pytest.mark.xfail(strict=True, reason=reason)
 
 
 def _notes(*ids: int) -> list[dict]:
