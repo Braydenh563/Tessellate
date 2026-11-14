@@ -1097,7 +1097,7 @@ function newChatConversation() {
   // A pending question belongs to the conversation that asked it, starting
   // a new one must not silently answering_agent-tag whatever gets typed first.
   chatAwaitingAgentAnswer = false;
-  // batch-a.md's "left open" item, its actual cause: `#chat-suggest` is on
+  // batch-a.md's last item, its actual cause: `#chat-suggest` is on
   // loan to `.chat-empty` (see `openConversation`'s own long comment below)
   // whenever the pane it is leaving was itself empty with suggestions
   // already shown. A bare `replaceChildren()` throws the loaned element away

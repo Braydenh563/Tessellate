@@ -16,7 +16,7 @@ taken from inside a quotation, and the realiser never shifts its pronouns.
 Rules only: tables and patterns, no model, no network. Built lazily per note
 and cached per revision (the note's id, its edit time and a hash of its
 text), so a notebook read twice is read once. Polarity by lexicon, in the
-specification, is not built: no feature asked for uses it (decision 30's own
+specification, is left out: no feature asked for uses it (decision 30's own
 condition), and the contrast insight reads preferences, which are typed here.
 """
 

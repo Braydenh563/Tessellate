@@ -705,7 +705,7 @@ the owner says otherwise).
       (who, what, when, the measured counts, quoted sentences with ids), not
       raw note dumps; fewer tokens, less to misread.
     - **Tool results**: each agent tool's result is summarised in one fixed
-      shape ("Done: tagged 3 notes #trip. Not done: 1, it is private.") (LEDGER L821) so the
+      shape (a "Done:" count, then each note it skipped with the reason, such as a private note) (LEDGER L821) so the
       model's next step reads a clean state, and the person sees the same line.
     - **Guard notices**: the agent's own rails (what it may not do, what needs
       confirming, what came from a note rather than the person) as fixed,
@@ -1278,7 +1278,7 @@ and always show the exact change before running.
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
 | X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
-| X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 (LEDGER L-chat-61) |
+| X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13." then the one it skipped and why; one undo for the batch | M | 7 (LEDGER L-chat-61) |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
 | X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
@@ -1330,14 +1330,14 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | A due item | `composer_voice._due`, reminders | Route `GET /insights/voice` and companion bubble unbuilt (`composer-everywhere-1006.md` 1 and 2) | Fires for a reminder due within the hour or overdue today, once, with the note's sentence | M | new (6) (LEDGER L-chat-54) |
+| P1 | A due item | `composer_voice._due`, reminders | Route `GET /insights/voice` and companion bubble are the build (`composer-everywhere-1006.md` 1 and 2) | Fires for a reminder due within the hour or overdue today, once, with the note's sentence | M | new (6) (LEDGER L-chat-54) |
 | P2 | Resurfacing | `resurface.for_day` (three a day), `composer_voice._back` | Not spoken | One "back" remark a day for the top faded note, quoting its best sentence | S | new (6) |
 | P3 | On this day | `composer_voice._on_this_day`, `/insights/on-this-day` | Not in Chat or dashboard line | Same date in earlier years, one quoted sentence | S | new (6) |
 | P4 | A pattern | `composer_voice._patterns` | Rule thresholds | Decision 32's threshold (at least 3 mentions across at least 3 weeks), hedge fixed, marked measured | M | 6 |
-| P5 | Drift | Open items (`_open_items`) | Age threshold | A plan fact older than 30 days with no later event or tick: "still open" | S | 6 (LEDGER L-chat-54) |
+| P5 | Drift | Open items (`_open_items`) | Age threshold | A plan fact older than 30 days with no later event or tick: said as unticked | S | 6 (LEDGER L-chat-54) |
 | P6 | A daily line | `composer_voice.today_line` | Not drawn | One sentence under the greeting from the day's strongest signal, else nothing (nothing is a valid output) | S | new (6) |
 | P7 | A weekly review | `composer_voice.week_review`, `/insights/digest` (model) | No-model digest shows nothing | `week_review` with the "Your notes, no AI" label | S | new (6) |
-| P8 | An open question answered | `margin.py` (answers card), `questions.py` | Not surfaced when a note is saved | On save, if a new sentence answers an open question, say so once with both quoted | M | 6 (LEDGER L-chat-57) |
+| P8 | An unanswered question answered | `margin.py` (answers card), `questions.py` | Not surfaced when a note is saved | On save, if a new sentence answers an unanswered question, say so once with both quoted | M | 6 (LEDGER L-chat-57) |
 | P9 | A contradiction found | `tensions.py` | Not spoken | Once per new tension, both sentences, the newer named | S | 6 |
 | P10 | An upcoming dated plan | Date facts in notes | Nothing reads them forward | A plan or event fact dated in the next 7 days with no reminder: "Your trip note says you fly on the 14th. No reminder is set." with an act chip | M | 6 and 7 |
 | P11 | Rate and quiet rules | Spec in `composer-everywhere-1006.md` 2 (about one remark per 5 minutes, quiet while typing) | Build | At most 3 a day, none within 20 s of a key press, a seen-key store, never the same fact twice in 7 days, one switch to turn all off | S | new (6) |

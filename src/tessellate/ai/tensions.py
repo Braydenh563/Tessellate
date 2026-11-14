@@ -7,7 +7,7 @@ own comment in `core/database.py` says so:
     show you where you disagreed with yourself is not something an embedding
     similarity score can ever produce, however well tuned.
 
-That was true and it stayed unbuilt. `link_type` is writable only through
+That was true for a long time. `link_type` is writable only through
 `POST /entries/{id}/links`, a person, by hand, choosing "Contradicts" from a
 dropdown. So the notebook could *record* a disagreement it was told about, and
 could never *find* one.

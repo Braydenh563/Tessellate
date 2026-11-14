@@ -330,7 +330,7 @@ def _search_whiteboard(session: Session, args: dict) -> dict:
     "whiteboard content becomes searchable the same way notes are." Words,
     not meaning: an embedding index over text-box content needs a table, a
     backfill and a place in the embedding-refresh cycle, and nothing measured
-    asks for it (data-1011 decision: not built; the notes the cards stand for
+    asks for it (data-1011 decided against it; the notes the cards stand for
     are already searched by meaning). A keyword scan across every board's card
     previews and text boxes answers "which board did I put that on?".
     """

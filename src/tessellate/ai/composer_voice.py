@@ -96,7 +96,7 @@ VOICE: dict[str, str] = {
     "v_otd_year_mid": ", you wrote ",
     "v_otd_months_end": " months ago today, you wrote ",
     "v_otd_month": "A month ago today, you wrote ",
-    # Something left open.
+    # An unticked item.
     "v_open_a": "Still open in ",
     "v_open_b": "Not ticked yet, in ",
     "v_open_count": " has ",

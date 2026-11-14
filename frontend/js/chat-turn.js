@@ -1766,7 +1766,7 @@ function agentTimeline(holder, options = {}) {
       //: model finished without writing anything." That message is written by
       //: the app, after `finalise()` has already run, and `startAnswer` builds
       //: its node in the live, mid-stream state: a caret on a sentence that
-      //: was never streaming and no later pass to take it down.
+      //: was never streaming and nothing after it to take it down.
       step.el.classList.remove("is-streaming", "is-generating");
       return step.body;
     },
@@ -2923,7 +2923,7 @@ async function forkFromBubble(bubble) {
 // Manual (step-through) mode's pause card: a text box to add what the agent
 // missed or answer a question it raised, and a Continue button, the answer
 // to "a manual mode" asked for directly, and the single most-requested
-// unbuilt thing on the roadmap. `onContinue(note)` gets whatever was typed,
+// requested thing on the roadmap when it was built. `onContinue(note)` gets whatever was typed,
 // or an empty string if nothing was.
 function manualPauseControls({ onContinue }) {
   const row = document.createElement("div");

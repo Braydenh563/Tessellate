@@ -20,7 +20,7 @@ than hidden:
 **No model, no new table** (the spec's "Data: no new table"): the claims of
 then-and-now are the note's sentences (`grounding.split_sentences`), paired
 by shared distinctive words; a model's judgement over the pairs is the
-spec's optional second half and is not built. Retrieval as of a date takes
+spec's optional second half, which this module leaves out. Retrieval as of a date takes
 its candidates from the engine (today's notes) and from revisions whose
 text matches the question, then ranks the then-texts by the same words.
 """
