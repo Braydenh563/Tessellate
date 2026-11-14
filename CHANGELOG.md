@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Maps: a tidy no longer throws in the bulk move (a tidy entry has no link list), which stopped Tidy and every map sweep that calls it; mapstripcover.js now asks for the lazy boards bundle (maplabels.js PASS, mapstripcover.js 0 of 166 handles covered, each run twice; L-ui-modernisation-102).
 - Maps: a tree line builds its waypoint and end grips on its first hover, focus or selection, so a line is 3 SVG elements, not 8 (500 topics: 4491 edge elements to 1497, the first layout read after opening restyles 8501 to 4010 elements, 104 to 56ms CPU; L-ui-modernisation-61, still open).
 - Maps: a linked branch drag moves each link by one group transform and writes its path once at the drop, and the pick-up no longer tokenises 300 links (pick-up frame 117 to 50ms at 50 topics; L-ui-modernisation-61).
 - uipolish-0924 item D closed (L469): the per-surface pass measured with no finding at 1440 and 390, light and dark: 22 surfaces, 0 horizontal scroll, 0 off-screen or clipped text, 0 console errors, touch floor 0 under (28 and 44px), 0 dead or covered buttons, contrast ok (L469).
