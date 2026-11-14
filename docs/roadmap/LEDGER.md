@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 69 | 68 | 0 | 0 | 137 |
+| chat | 0 | 70 | 43 | 0 | 0 | 113 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 441 | 137 | 0 | 124 | 904 |
+| all | 326 | 442 | 112 | 0 | 124 | 880 |
 
 ## graph
 
@@ -81,33 +81,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-197** `chat` partly, S: Research table: Grice maxims as lints: maxims lint 0 not confirmed. From CHAT_PLAN.md:1529. Evidence: Recount 2026-11-14 (audit, verify in code first): F5 structure column 0 (plan 1594)
 - [ ] **L-chat-198** `chat` partly, S: Research table: Raycast prefix grammar, palette: -. From CHAT_PLAN.md:1532. Evidence: Recount 2026-11-14 (audit, verify in code first): palette parses rows (tests/test_palette_contract.py); "remind me" first row not checked
 - [ ] **L-chat-199** `chat` partly, S: Surface: notes list and search box (windows, people, places as filters): people and places as filters not verified. From CHAT_PLAN.md:1540. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/search/query.py; search_1010.json 30 of 30 (plan)
-- [ ] **L-chat-200** `chat` partly, S: Surface: dashboard digest in one voice: model refinement not checked. From CHAT_PLAN.md:1543. Evidence: Recount 2026-11-14 (audit, verify in code first): day_digest.py
-- [ ] **L-chat-201** `chat` partly, S: Surface: documents outline, reading time, find with windows: -. From CHAT_PLAN.md:1545. Evidence: Recount 2026-11-14 (audit, verify in code first): not checked
-- [ ] **L-chat-202** `chat` partly, S: Surface: graph, library, settings phrases as filters: 40-phrase filter set not read. From CHAT_PLAN.md:1547. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/find_it.py (settings synonyms)
-- [ ] **L-chat-203** `chat` partly, S: Surface: import and export date recognition: -. From CHAT_PLAN.md:1548. Evidence: Recount 2026-11-14 (audit, verify in code first): not checked
-- [ ] **L-chat-204** `chat` partly, S: Surface: agent and skills get recogniser, utilities, validators as tools: tools offered not verified. From CHAT_PLAN.md:1550. Evidence: Recount 2026-11-14 (audit, verify in code first): source_check built (validate.py)
-- [ ] **L-chat-205** `chat` partly, S: Surface: toasts and empty states through realiser: toasts not via realiser. From CHAT_PLAN.md:1551. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
-- [ ] **L-chat-206** `chat` partly, S: Rule: one reader ratchet (test_one_reader): count to zero. From CHAT_PLAN.md:1563. Evidence: Recount 2026-11-14 (audit, verify in code first): tests/test_one_reader.py exists; current count not read
-- [ ] **L-chat-207** `chat` partly, S: Decision 47 one typed reading per input: -. From CHAT_PLAN.md:1566. Evidence: Recount 2026-11-14 (audit, verify in code first): reading.py exists; all surfaces routed not verified
-- [ ] **L-chat-208** `chat` partly, S: Decision 48 confidence bands, one threshold table: threshold table with eval not verified. From CHAT_PLAN.md:1567. Evidence: Recount 2026-11-14 (audit, verify in code first): reading.py SCORES
-- [ ] **L-chat-209** `chat` partly, S: Decision 49 repair ladder one contract: shared across five surfaces not verified. From CHAT_PLAN.md:1568. Evidence: Recount 2026-11-14 (audit, verify in code first): HISTORY F4 repair 14 of 14
-- [ ] **L-chat-210** `chat` partly, S: Decision 52 maxims lints over eval answers: lint 0 on evals not confirmed. From CHAT_PLAN.md:1571. Evidence: Recount 2026-11-14 (audit, verify in code first): F5 structure 0 (plan 1594)
-- [ ] **L-chat-211** `chat` partly, S: Decision 55 one voice, system copy surface by surface: -. From CHAT_PLAN.md:1574. Evidence: Recount 2026-11-14 (audit, verify in code first): F4 ten rows built; toasts not
-- [ ] **L-chat-212** `chat` partly, S: Decision 56 no network in deterministic layer: -. From CHAT_PLAN.md:1575. Evidence: Recount 2026-11-14 (audit, verify in code first): not checked
-- [ ] **L-chat-213** `chat` partly, S: Decision 57 voice assistant bar, 200 spoken lines: corpus location. From CHAT_PLAN.md:1576. Evidence: Recount 2026-11-14 (audit, verify in code first): scorecard follow-on 200 of 200 (plan 1594); corpus file not located
-- [ ] **L-chat-214** `chat` partly, S: Decision 58 frontier parity scorecard, six columns: structure column. From CHAT_PLAN.md:1577. Evidence: Recount 2026-11-14 (audit, verify in code first): scratchpad/parity.py exists; structure column 0 (plan 1594)
-- [ ] **L-chat-215** `chat` partly, S: Decision 60 confirmed insight fact, dismissed learned: near-variant suppression not verified. From CHAT_PLAN.md:1579. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/insights.py:419-525 source "confirmed by you"; frontend/js/ask-compose.js:740-752 Not right row
-- [ ] **L-chat-216** `chat` partly, S: Decision 61 no model first, power aware, Save power state: Save power state and Activity start within 1 s not found. From CHAT_PLAN.md:1580. Evidence: Recount 2026-11-14 (audit, verify in code first): autonomous.py battery skip; ollama_client.py:573 keep_alive 0 stop
-- [ ] **L-chat-217** `chat` partly, S: Decision 62 provider matrix, probe, README compatibility table: README table absent (grep); per-model probe not read. From CHAT_PLAN.md:1581. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/provider.py, provider_http.py, capability.py; tests/test_harness_evals.py TESSELLATE_EVALS_URL
-- [ ] **L-chat-218** `chat` partly, S: F0 measure: reader count, probe tables, variety metric: variety metric script absent. From CHAT_PLAN.md:1589. Evidence: Recount 2026-11-14 (audit, verify in code first): scratchpad/reader_count.py, vendor_use.py exist; scratchpad/variety_metric.py missing
-- [ ] **L-chat-219** `chat` partly, S: Row 3 (7): summarise my week extractive, quoted spans: measure not run. From CHAT_PLAN.md:1624. Evidence: Recount 2026-11-14 (audit, verify in code first): not located (guess)
-- [ ] **L-chat-220** `chat` partly, S: Row 4 (7): zero bare Nothing in the notes: bare count not re-measured. From CHAT_PLAN.md:1625. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_phrases.py:62 closest phrase
-- [ ] **L-chat-221** `chat` partly, S: Row 5 (7): under 1 s per answer: probe re-run. From CHAT_PLAN.md:1626. Evidence: Recount 2026-11-14 (audit, verify in code first): not measured here
-- [ ] **L-chat-222** `chat` partly, S: Row 6 (7): one reader, test_one_reader 6 files to 0: count to zero. From CHAT_PLAN.md:1627. Evidence: Recount 2026-11-14 (audit, verify in code first): tests/test_one_reader.py; count not read
-- [ ] **L-chat-223** `chat` partly, S: Section 8 row 3: every object kind answers, 30-question set: 30-question set not measured. From CHAT_PLAN.md:1650. Evidence: Recount 2026-11-14 (audit, verify in code first): F5 built by Brief 84 (plan 1594)
-- [ ] **L-chat-224** `chat` open, S: Section 8 row 4: answer shape follows question: structure. From CHAT_PLAN.md:1651. Evidence: Recount 2026-11-14 (audit, verify in code first): F5 structure column 0 (plan 1594)
-- [ ] **L-chat-225** `chat` partly, S: Section 9 row 1: answer first, preface goes: 60-question measure. From CHAT_PLAN.md:1673. Evidence: Recount 2026-11-14 (audit, verify in code first): preface string absent from src (grep); first-sentence measure not run
-- [ ] **L-chat-226** `chat` open, S: Section 9 row 5: one unused feature a week: guess. From CHAT_PLAN.md:1675. Evidence: Recount 2026-11-14 (audit, verify in code first): no grep for the weekly offer
 - [ ] **L-chat-227** `chat` open, S: VC1 Harper on composer and Ask box: composer and Ask underline. From CHAT_PLAN.md:1684. Evidence: Recount 2026-11-14 (audit, verify in code first): Harper only in documents, whiteboard, spell files (frontend/js grep)
 - [ ] **L-chat-228** `chat` partly, S: Placed 2026-10-10: 744 (b) and (c) unquoted sources, alarm notice: source list and notice threshold. From CHAT_PLAN.md:1693. Evidence: Recount 2026-11-14 (audit, verify in code first): not read
 - [ ] **L-chat-229** `chat` partly, S: composer6-1026 (1) clause grammar, 20 surfaces per ability: 20 distinct surfaces not measured. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_clause.py exists
@@ -124,6 +97,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-240** `chat` partly, S: Date and time wording in fact_check: design open; needs real-model evals. From CHAT_PLAN.md:1881. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/fact_check.py:555 _moments (nearest unit, year rule)
 - [ ] **L-chat-246** `chat` open, S: Atlas props contrast: measure the rendered props' contrast ratio in both themes and fix any under 3:1. From L148 split. Evidence: restitution built 2026-11-14; contrast not measured
 - [ ] **L-chat-252** `chat` open, M: Chart maker kinds past bar and line: area, pie, scatter, histogram and table (Brief 97 decision a); the composer answers a pie ask with bars and says so (composer_graph._PIE). From INBOX 1847, Brief 97 (a). Evidence: frontend/js/ask-chart.js:427, chartMaker.parse reads kind bar or line only
+- [ ] **L-chat-253** `chat` open, M: Chat: 'show my notes as a table' is not handled (answers 'I am not sure I can do that exactly'). From verify-d-1114. Evidence: tests/test_cross_kind_set_l223.py: probe
+- [ ] **L-chat-254** `chat` open, M: Chat: find asks match on a lone year or number alone (false positive for 'tax return 2019'). From verify-d-1114. Evidence: src/tessellate/ai/tools.py search_files: 'find my tax return 2019' matches a note on the year only
+- [ ] **L-chat-255** `chat` open, M: Failure and info toasts in the 29 boot scripts and about 66 verb-first success toasts still bypass voiceLine (needs boot gzip headroom). From verify-d-1114. Evidence: tests/test_voice_tables.py: 29 boot scripts keep toast literals, boot gzip headroom under 100 bytes
 
 ## whiteboard
 
