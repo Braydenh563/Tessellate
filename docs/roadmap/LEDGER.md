@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 112 | 29 | 0 | 0 | 141 |
+| world-class | 0 | 111 | 29 | 0 | 0 | 140 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 502 | 100 | 2 | 111 | 974 |
+| all | 372 | 501 | 100 | 2 | 111 | 973 |
 
 ## graph
 
@@ -546,7 +546,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
 - [ ] **L-world-class-108** `world-class` open, S: Verify 391's agent items: mind maps in Find anything, digest filler, activity panel alignment, image filter, a closed panel's finished answer. From WORLD_CLASS_PLAN.md:2415. Evidence: WORLD_CLASS_PLAN.md:2415 lists them as 'agents running', with no result recorded
-- [ ] **L-world-class-111** `world-class` open, M: Background art: Constellation and Microbes under 2 ms loaded, no canvas garbage, pause on blur sooner, the dark mesh texture, 4x numbers re-run (425 o). From WORLD_CLASS_PLAN.md:2832. Evidence: WORLD_CLASS_PLAN.md:2832: just over the 2 ms budget, 0.3 to 1 MB/s canvas garbage; no @keyframes bg- left in frontend/css (that part done)
 - [ ] **L-world-class-114** `world-class` open, M: Help accordion: name its thirteen details, move them to the recipe family, lint that every id has a Guide topic. From WORLD_CLASS_PLAN.md:2952. Evidence: no accordion-to-Guide lint in tests (grep 'accordion' hits only settings tests)
 - [ ] **L-world-class-115** `world-class` open, S: Capture: hold staged pictures and files while offline. From WORLD_CLASS_PLAN.md:2977. Evidence: WORLD_CLASS_PLAN.md:2977 'staged pictures and files cannot be held offline'
 - [ ] **L-world-class-118** `world-class` open, S: First run: fewer questions before the dashboard, and a sample notebook. From WORLD_CLASS_PLAN.md:3598. Evidence: WORLD_CLASS_PLAN.md:3598 'still asks three questions before the dashboard'; :3601 'no sample notebook'
@@ -556,8 +555,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
 - [ ] **L-world-class-125** `world-class` open, S: Query plans at 5,000 notes and resident memory on a populated notebook. From WORLD_CLASS_PLAN.md:3769. Evidence: WORLD_CLASS_PLAN.md:3769 'Not measured: query plans at 5,000 notes'; :3766 populated notebook
-- [ ] **L-world-class-126** `world-class` open, M: Graph and companion at rest: long tasks to zero. From WORLD_CLASS_PLAN.md:3788. Evidence: REST_BUDGET graph 10, companion 6 long tasks in 3 s (:3788)
-- [ ] **L-world-class-127** `world-class` open, S: Find and replace inside a note. From WORLD_CLASS_PLAN.md:3810. Evidence: WORLD_CLASS_PLAN.md:3810 and :3582 'find and replace inside a note'
 - [ ] **L-world-class-128** `world-class` open, M: Bulk edit from the selection bar on every list: tag, category, property, move, delete with the undo bar (decision 65). From WORLD_CLASS_PLAN.md:3862. Evidence: decision 65 (:3862); 27.1 Notes and Library rows
 - [ ] **L-world-class-130** `world-class` open, M: Complete exports: a board or map as SVG and PNG with its linked notes as a folder; a document as PDF (decision 66). From WORLD_CLASS_PLAN.md:3865. Evidence: decision 66 (:3865); 27.1 Export row (:3827)
 - [ ] **L-world-class-131** `world-class` open, M: Move the popups to the kind 27.2's table rules (decision 63). From WORLD_CLASS_PLAN.md:3839. Evidence: frontend/index.html: 10 of the table's sheets and panels are still <dialog> (space-create, doc-storage, quick-note, doc-history, ...)
@@ -768,6 +765,8 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
+- [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
+- [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
 
 ## Plan session briefs
 
