@@ -5618,6 +5618,11 @@ body .chip.item-label,
   transform: none !important;
   translate: none !important;
 }
+/* L137: drawn at 2.2x, nmb-hop's 14px lift travels 2.2x as far in the same
+   time, so the head moved 2.2x faster than at rest. Each duration is the rest
+   one times the scale, which gives the resting speed. */
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-hop, .nmb-act-startle, .nmb-act-carry) .nm-buddy-char { animation-duration: 1.65s; }
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-cheer) .nm-buddy-char { animation-duration: 1.43s; }
 .nm-viewer-figure > #nm-buddy[data-pose="hang"] { top: 22px; }
 .nm-viewer-figure > #nm-buddy[data-pose="float"] { top: 82px; }
 .nm-viewer-figure > #nm-buddy .nm-buddy-face { cursor: pointer; }
@@ -8202,7 +8207,8 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 @media all {
   :is(
     :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
-    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live,
+    :root[data-atlas-calm="on"]:not([data-avatar-motion="off"]) .nm-live
   ) {
     & .atl-lw-body[data-atlas-look="masculine"] { animation: atl-idle-sway 7.2s ease-in-out infinite alternate; }
     & .atl-lw-body[data-atlas-look="feminine"] { animation: atl-idle-sway-soft 9.4s ease-in-out infinite alternate; }
@@ -8253,10 +8259,15 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        living tail wags now, atlas.js, and the flow runs on: INBOX 600.) */
   }
 }
-/* The system's reduced-motion hint: every loop stops and Atlas keeps its
-   pose (Brief 34 decision 7, INBOX 772: slowed to 9s, the loops were 1,579
-   style recalcs a minute at rest). The app's own Reduce setting is out of
-   every loop's gate above (`:not([data-motion="reduced"])`).
+/* The reduced-motion hint: the loops stop and Atlas keeps its pose (Brief 34
+   decision 7, INBOX 772: slowed to 9s, the loops were 1,579 style recalcs a
+   minute at rest). **Except the calm ones under the system's own hint**
+   (ledger L741, the owner's call): the idle sway, the breath, the hair, tail
+   and nebula flow and the glints stay on when `data-atlas-calm="on"`
+   (avatars.js, `nameMarkBuddyMotionApply`), 102 restyles a minute at rest
+   against 120 with all stopped and 1,485 with all going. The hop, the
+   giggle, the doze and the rig stay stopped. The app's own Reduce setting
+   stops them all (it is out of every loop's gate above).
    `!important` because the loops are declared under the motion gates
    above, whose selectors out-rank this one. */
 @media all {
@@ -8277,21 +8288,21 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   animation: none !important;
 }
 /* The layered figure's loops (atlas.js, `atlasDrawFigure`) stop the same way. */
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-body[data-atlas-look="masculine"] { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-body[data-atlas-look="feminine"] { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-breathe { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-hair[data-atlas-look="masculine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-hair[data-atlas-look="feminine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-tip { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-tail { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-neb,
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-neb-front,
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-wisps { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back),
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="feminine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="masculine"] { animation: none !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live {
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-body[data-atlas-look="masculine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-body[data-atlas-look="feminine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-breathe { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-hair[data-atlas-look="masculine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-hair[data-atlas-look="feminine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-tip { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-tail { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-neb,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-neb-front,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-wisps { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-lower[data-atlas-look="feminine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .atl-lw-lower[data-atlas-look="masculine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"], [data-atlas-calm="on"])) .nm-live {
   &.atl-figure-box[data-atlas-look="feminine"]:not([data-atlas-mood="delighted"], [data-atlas-mood="laughing"], [data-atlas-mood="sleepy"], [data-atlas-mood="love"], [data-atlas-mood="confused"]) { animation: none !important; }
 }
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas {

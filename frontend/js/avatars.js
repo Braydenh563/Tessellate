@@ -3832,6 +3832,13 @@
     const { mode, reason } = nameMarkBuddyMotion();
     if (mode === "full" && root.dataset.motion === "reduced") root.dataset.buddyMotion = "full";
     else delete root.dataset.buddyMotion;
+    //: **The system's hint keeps the calm loops** (ledger L741, the owner's call): the sway, breath and glow loops are
+    //: `rotate` and `translate` on the compositor, 102 restyles a minute at rest against 120 with every loop stopped
+    //: (1,485 with all of them going), so they run under the system's own request and stop under the app's Reduce.
+    //: The hop, the giggle and the rig stay stopped; `data-atlas-calm` is read by the CSS gates in 08-consistency.css.
+    const calm = root.dataset.motion === "reduced" && root.dataset.avatarMotion !== "off" && typeof MOTION === "object" && MOTION.cause === "os";
+    if (calm) root.dataset.atlasCalm = "on";
+    else delete root.dataset.atlasCalm;
     const why = document.getElementById("avatar-buddy-motion-why");
     if (why) why.textContent = NMB_MOTION_WHY[reason] || "";
     return mode;

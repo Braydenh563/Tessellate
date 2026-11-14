@@ -202,3 +202,11 @@ function shortcutTitle(base, action) {
 function nounCount(n, one, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
 }
+
+//: `fn` once `count` animation frames have passed: the first has painted what was just changed. The one frame loop for
+//: "after it has drawn" (tests/test_frontend_wake_sources.py counts them). **Here, with the first file both pages load**
+//: (ledger L744): the desk companion's page loads avatars.js and atlas.js, which call it after every mood change, but
+//: not dashboard.js, where it was declared ("afterFrames is not defined" on the desk, found measuring its CPU).
+function afterFrames(fn, count = 2) {
+  requestAnimationFrame(() => (count > 1 ? afterFrames(fn, count - 1) : fn()));
+}
