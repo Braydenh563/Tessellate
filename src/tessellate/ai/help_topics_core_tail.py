@@ -1144,8 +1144,8 @@ TAIL_TOPICS.extend(
                 "Turn into changes the block at the caret, or every line you have "
                 "selected, to a paragraph, heading 1 to 3, bulleted, numbered or "
                 "to-do list, quote, callout or code block, taking the old marker "
-                "off first. Select text and press the swap button on the selection "
-                "bar, press Turn into on a phone's formatting bar, or choose Turn "
+                "off first. Select text and press the swap button on a document's selection "
+                "bar or a note's formatting bar, press Turn into on a phone's formatting bar, or choose Turn "
                 "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
                 "caret inside a code block is left alone."
             ),

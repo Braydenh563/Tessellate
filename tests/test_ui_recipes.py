@@ -2923,7 +2923,8 @@ def test_an_icon_picker_keeps_its_name_and_hides_its_word_by_clipping() -> None:
             f"{selector} must clip the word, not remove it: it is the control's name"
         )
     page = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    bar = page.split('id="note-toolbar"', 1)[1].split('id="entry-content"', 1)[0]
+    #: To the strip's own end: it sits under the text since L-ui-modernisation-39.
+    bar = page.split('id="note-toolbar"', 1)[1].split("</div>", 1)[0]
     assert bar.count('data-select-icon="') == 2, "the note strip's colour pickers are words again"
     for select in re.findall(r"<select[^>]*data-select-icon[^>]*>", bar):
         assert "aria-label=" in select and "title=" in select, (
@@ -4821,7 +4822,8 @@ def test_the_note_edit_form_is_one_composition() -> None:
     assert "ph-hash" not in form and "search-field" not in form
     assert 'chip("", "category note-edit-category"' in form
     assert "meta.append(categoryChip, tagField)" in form
-    assert "surface.append(titleInput, meta, toolbarEl, textarea)" in form
+    #: The strip is under the text since L-ui-modernisation-39 (13.2: the text first).
+    assert "surface.append(titleInput, meta, textarea, toolbarEl)" in form
     assert "li.append(surface, marginHost, chipsHost, foot)" in form
     assert "foot.append(count, marginBtn, row)" in form
     assert form.index('smallButton("Cancel"') < form.index("    saveButton\n  );")

@@ -589,11 +589,11 @@ ${textarea.value}`));
   chipsHost.setAttribute("role", "group");
   chipsHost.setAttribute("aria-label", "Files in this note");
   //: **One writing surface** (INBOX 606): the title, the properties line, the
-  //: strip and the text in the capture box's own `.note-composer`, which
+  //: text and the strip under it (L-ui-modernisation-39) in the capture box's own `.note-composer`, which
   //: carries the edge, the ground and the focus ring for all of them.
   const surface = document.createElement("div");
   surface.className = "note-composer note-edit-surface";
-  surface.append(titleInput, meta, toolbarEl, textarea);
+  surface.append(titleInput, meta, textarea, toolbarEl);
   li.append(surface, marginHost, chipsHost, foot);
   //: The editor's offers (quickadd.js `noteOffersAttach`): a form
   //: opened before the bundle loads has none rather than an error.

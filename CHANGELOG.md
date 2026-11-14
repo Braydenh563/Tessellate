@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Notes: the note editor is two surfaces, the formatting bar and the slash menu; the bar sits under the text and holds Turn into and Ask Atlas, a note box with its own bar draws no selection bar, and Template joins the adders (text 44px higher at 1440, 56px at 390; L-ui-modernisation-39).
 - Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-general-67.
 - Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).

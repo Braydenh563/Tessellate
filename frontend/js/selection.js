@@ -871,8 +871,7 @@ function selectionRestoreOnContextMenu(event) {
   if (inHost && hit) {
     const surface = typeof editorSurfaceFor === "function" ? editorSurfaceFor(host) : null;
     if (surface && isEditorSurface(surface) && surface.selectionStart !== surface.selectionEnd && inlineAiState.phase === "idle") {
-      selectionBarShow(surface);
-      shown = true;
+      shown = selectionBarShow(surface) !== false;
     }
   }
   const field = fieldSelection();
