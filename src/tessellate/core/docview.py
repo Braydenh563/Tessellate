@@ -72,7 +72,7 @@ CODE_SUFFIXES = frozenset(
     {
         ".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".json", ".yaml",
         ".yml", ".toml", ".ini", ".cfg", ".sh", ".bash", ".zsh", ".sql",
-        ".html", ".htm", ".css", ".scss", ".xml", ".rs", ".go", ".java",
+        ".html", ".htm", ".css", ".scss", ".sass", ".less", ".xml", ".rs", ".go", ".java",
         ".c", ".h", ".cpp", ".hpp", ".rb", ".php", ".swift", ".kt", ".r",
         # C#: reachable through the note-attachment picker (ATTACHMENT_SUFFIXES,
         # routes_files.py) but not readable here, so a .cs file could be

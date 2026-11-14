@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Emmet in `.scss`, `.sass` and `.less` (L-documents-51): Less now opens as the CSS type (SCSS and Sass already did), so `df` and `m10` expand there, nested rules included; help names SCSS and Less. Measured in Chromium: `df` then Tab in a `.less` and a `.scss` document's `&:hover` rule wrote `display: flex;`. Sass and Stylus keep CSS punctuation or stay out (see HISTORY).
 - Documents: video in a document (L-documents-68): the image picker takes MP4 and WebM, `![name](/media/x.mp4)` draws a `<video controls preload="metadata">` in Live and Read from this origin only (`media-src 'self' blob:`, nothing external), the header sniff refuses text named like a video, and a Range request answers 206 so a seek is not a refetch; print and the HTML export keep a `Video: name` line, no poster. Measured in Chromium on a 4 s WebM: readyState 4, duration 4, a probe of bytes 1000-1999 returned 206 with `bytes 1000-1999/21277`, 0 CSP console errors; print hid the player and showed the name line.
 - Help: the JSON schema checks topic is listed under Documents with its title and lead (L-documents-42 follow-up).
 - Writing room: the Earlier drafts foot height is reset inside the existing 72rem one-column query instead of a new 72.01rem breakpoint, which failed test_the_breakpoints_only_shrink.

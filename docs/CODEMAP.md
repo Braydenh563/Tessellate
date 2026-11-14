@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2777, tests 22306, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2778, tests 22309, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8520)
 
@@ -24830,11 +24830,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `FileType` | src/tessellate/core/filetypes.py:35 |
-| `_resolve` | src/tessellate/core/filetypes.py:153 |
-| `as_dicts` | src/tessellate/core/filetypes.py:180 |
-| `get` | src/tessellate/core/filetypes.py:175 |
-| `normalise` | src/tessellate/core/filetypes.py:141 |
-| `require` | src/tessellate/core/filetypes.py:164 |
+| `_resolve` | src/tessellate/core/filetypes.py:158 |
+| `as_dicts` | src/tessellate/core/filetypes.py:185 |
+| `get` | src/tessellate/core/filetypes.py:180 |
+| `normalise` | src/tessellate/core/filetypes.py:146 |
+| `require` | src/tessellate/core/filetypes.py:169 |
 
 ### src/tessellate/core/first_password.py (2)
 
@@ -28092,7 +28092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22306)
+## Tests (22309)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29150,6 +29150,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_emblem_boot.py | 1 |
 | tests/test_emblem_slots.py | 1 |
 | tests/test_emblem_turns.py | 3 |
+| tests/test_emmet_stylesheets.py | 3 |
 | tests/test_empty_board_card.py | 2 |
 | tests/test_engine_acts.py | 11 |
 | tests/test_engine_budgets.py | 3 |
