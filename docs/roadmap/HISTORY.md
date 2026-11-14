@@ -7,6 +7,921 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-14 (WORLD_CLASS recount)
+
+The recount of every open item in WORLD_CLASS_PLAN.md: each built block below moved whole, each open item became a LEDGER row (L-world-class-60 to 135) or points at an existing one. Evidence: the pointer left in the plan under each heading.
+
+### 13. Open bugs and gaps from the merged agent reports (with owners)
+
+Text as it stood in WORLD_CLASS_PLAN.md:929-965:
+
+Each of these was found by measuring and deferred with evidence; the
+`LEDGER.md rows` file named carries the file, id and next step.
+
+- Whiteboard board-preview minimap NaN rects: not reproduced 2026-10-05 (six
+  boards, 0 errors at 1440 and 390, `errors.js`); see worldclass-1005c.md.
+- 1024px still wraps the Writing Room controls and the capture attachment
+  row. Owner: consistency.md.
+- Tab bar scrolls between 600 and 819px; short tab captions below 480 are
+  a copy decision for the owner. Owner: responsive.md.
+- Notes (8) and Graph (9) docks are over the seven-control ceiling. Owner:
+  docks.md; the fix is a second "more" group, not hiding.
+- ~~`#wb-topbar` is 104px at 390.~~ One row, 54px, since 2026-10-11 (WHITEBOARD_PLAN decision 39).
+- ~~The whiteboard's five menus were restyled but never driven.~~ Driven:
+  `kebab-viewport.js` opens all five at three window sizes (15 cases OK) and
+  `wbtopbar.js` gates their keyboard and ARIA (WHITEBOARD_PLAN 43; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
+- The SVG graph path stays behind a flag until the drag gate is met on a
+  quieter machine. Owner: GRAPH_PLAN Phase 2.
+- Timeline: everything (audited, not built). Owner: Brief 5.
+- 54 paragraphs still outside popovers. Owner: Brief 4.
+- `#library-media-refresh` is misnamed; Settings has two heading indents.
+  Owner: docks.md.
+- Tidy layout never measured past five nodes; a newly opened map leaves
+  its root under the top bar. Owner: mindmap.md item H.
+
+**State 2026-10-05:** measured (`scratchpad/ui-sweeps/nbf1005-recheck.js`): a board's preview draws its blocks with no NaN rect and no console error (the renderer was replaced, `mapPreview` in note-cards.js); the tab bar fits at 600, 640, 700, 760 and 819px (scrollWidth equals clientWidth); the tidy layout is measured past five nodes (maplayouts.js at 12 and 200 topics, 0 overlapping pairs, HISTORY.md). Still open with their owners: the whiteboard's menus driven by a sweep (the whiteboard agent), the SVG graph flag (GRAPH_PLAN Phase 2), a new map's root under the top bar (WHITEBOARD_PLAN 7).
+
+**State 2026-09-24:** re-read against LEDGER.md and the code: the
+Notes and Graph docks are at 6 controls (LEDGER.md B, 2026-09-20);
+`#library-media-refresh` no longer exists; the Timeline was built
+(TIMELINE_PLAN); the Writing Room was rebuilt as the writing desk (D16, in
+HISTORY); the 54 paragraphs were Brief 4's. Not re-checked here, so still open
+with their owners: the board-preview minimap's NaN rects, the tab bar between
+600 and 819px, the whiteboard's five menus driven by a sweep, the SVG graph
+flag (GRAPH_PLAN Phase 2), the tidy layout past five nodes (MINDMAP_PLAN).
+
+### Placed from INBOX, 2026-09-09
+
+Text as it stood in WORLD_CLASS_PLAN.md:1508-1599:
+
+The owner's reports this plan owns, moved whole from INBOX.md with their numbers (never reused). Each becomes a phase row when its phase is written; until then this list is the phase.
+
+1. **Deleting a space leaves its notes in "All spaces".** Read and not
+   reproduced in code: `routes_spaces.delete_space` hard-deletes every
+   workspace-scoped row in one transaction and
+   `tests/test_space_delete_cascades.py` proves it. The likeliest cause is
+   notes captured while "All spaces" was selected: those carry the default
+   workspace, not the space, so deleting the space cannot touch them. Fix
+   the cause of the confusion, not the cascade: (a) show the space chip on
+   every note card and in the edit form; (b) the capture form files into
+   the *selected* space and says which; (c) a "Move to space" bulk action.
+   Owner: D2 and D5. If the owner can reproduce with a note that shows the
+   space chip, reopen as a backend bug.
+15. Decided, nothing to fix (the strip is the native title bar); moved to
+    HISTORY.md, "Moved from the plans, 2026-09-24".
+
+22. **Settings > Packages rows misaligned** (icon, text and the install
+    button on different baselines). Owner: consistency.md item 4; the
+    alignment sweep must include Settings > Packages and Settings > Help.
+23. **Settings > Help gaps** (accordion rows touch, sections have no
+    rhythm). Owner: help-popovers.md, with item 22.
+26. **"Things that feel off that I cannot place."** After the consistency
+    and docks lists close, one review pass per tab with the vendored
+    design skills (`.claude/skills/README.md`) against DESIGN.md, writing
+    findings as consistency.md rows, not fixing ad hoc. Owner:
+    consistency.md, last item.
+
+62. Decided (the strip stays opt-in); moved to HISTORY.md, "Moved from the plans, 2026-09-24".
+
+99. **Quick wins (Fable, 05:20): five features the plans did not list,
+    each a day or less, each with the site.** (a) Undo on every delete
+    toast: notes, boards, documents and reminders already soft-delete;
+    `toastAction(msg, "Undo", () => restore)` at each delete call site
+    (grep `toast(` beside `DELETE`), so a wrong click never reaches the
+    bin. (b) "Reopen where I left off": documents and chats restore
+    scroll position per id (localStorage `scroll:<kind>:<id>`), the
+    Dashboard "Continue" tile (INBOX 60) reads the same keys. (c) The AI
+    dot's tooltip shows the last answer's latency and the model's context
+    use ("granite4.1:3b, 2.1 s, 39% of window"), from data the chat
+    header already has. (d) A "Paste as note" global shortcut
+    (Ctrl+Shift+V anywhere) that captures the clipboard as a new note
+    with the AI filing it, the fastest capture path on a desktop. (e)
+    Search operators in the Notes search box (`tag:`, `space:`,
+    `before:`, `after:`, `has:file`), parsed client-side into the existing
+    filters, with the operators listed in the box's '?' popover.
+79. **Files sub-tab rows "could still use a massive redesign upgrade", and
+    clicking the file name does nothing**. Owner: Library dossier
+    (WORLD_CLASS 4), Opus: one row recipe (thumbnail, name as the one
+    link that opens the reader, meta line, reading state as a small
+    disclosure, actions in a kebab), the name clickable.
+92. **Suggested links panel UI refine** (screenshot: rows of quoted
+    pairs, a wide "Why?" input, a percent chip, Link and X). Owner: Opus,
+    next slot: two note chips joined by an arrow, the score as a small
+    bar, the reason field collapsed behind "Add a reason", Link primary
+    per row, a "Link all above 70%" action in the head.
+97. **OCR alternative to pytesseract**, asked directly. Answer: RapidOCR
+    (PaddleOCR models on onnxruntime, pip-installable, no system binary,
+    better on photos and mixed layouts, about 60 MB of models, Apache-2)
+    is the one to offer; EasyOCR needs torch (never). Placed as a
+    Settings > Packages option beside Tesseract, same reading pipeline,
+    the reader named on the row. Owner: next session, Sonnet (backend
+    adapter with a fake in tests) plus the Packages row.
+98. The same decision as 62; moved with it.
+
+**State 2026-10-05:** every item below is built or decided; the list stays
+as the record of what was placed. Built 2026-10-05 (HISTORY.md, "Moved from
+the plans, 2026-10-05 (nbf1005)"): 1's Move to space (row 30), 99 (b), (c)
+and (d), 92's row, 22's last 5px and 261's re-key button; found built: 1's
+capture into the selected space (`updateCaptureSpaceLabel`), 23 and 79
+(79 re-checked 2026-10-05 by op4-1005: every Library card kind is a select,
+one open control and one kebab, the Files row "Read this" plus a nine-row
+kebab). 97 was decided not to build as a dependency (the owner, 2026-10-05:
+"make sure it is fully local and doesnt use any external libraries that
+arent vendored"); it is built as an optional extra instead, on the person's
+own press like faster-whisper, never imported unless installed, and
+Tesseract stays the reader whenever it is ready: HISTORY.md, "Moved from the
+plans, 2026-10-05 (row 31 item 97, RapidOCR as an optional extra)". Whether
+an optional pip extra meets the fully-local rule is the owner's to confirm
+(INBOX-worthy if they say no: remove the `rapidocr` row and its bundle place).
+
+**State 2026-09-24:** 1 (b): a space chip is drawn on
+note cards; capture into the selected space and a "Move to space" bulk action
+were not found. 22 and 23 were not re-checked (their agent files are
+archived). 26 is a standing review, (d). 99: (a) undo toasts are built (H9
+records it) and (e) the operators are built (section 5 item 1); (b) scroll
+restore per id, (c) the AI dot's latency and context tooltip and (d) Paste as
+note were not found, S each. 79 was not re-checked. 92 (b): "Add a reason"
+sits behind a menu row now; the chips-and-arrow row and "Link all above 70%"
+were not found. 97 (c): no RapidOCR adapter. M.
+
+### 17. The original vision, audited (2026-09-09)
+
+Text as it stood in WORLD_CLASS_PLAN.md:1600-1688:
+
+The owner's first notes, written months before a line of code (the
+"AI Assistant Personal Database Management" list and the May 2026 master
+reference), read against what exists. Almost all of it is built; the seven
+rows marked open are the vision's own features nobody has planned since,
+and they go first in the next session's World-class section.
+
+| The original idea | Today |
+| --- | --- |
+| Type anything, a local AI files it; guided mode when you want to choose | Built (capture, Let the AI decide, guided) |
+| Two AIs: a Janitor that files and never talks, a Librarian that answers and never writes | Built as the filing step and the chat; the librarian tags, links and flags duplicates in the background |
+| A conversational answer and the raw database results side by side | Built (Ask: the answer beside the matching records) |
+| Confidence on every filing, low ones flagged for review | Built half: the score shows; **open: a review queue** (below) |
+| The AI tidies the database over time: merges near-duplicate categories, removes empty ones, respects manual changes | Built half: duplicates flagged, links suggested; **open: category tidy proposals** |
+| Preferences for how the database is structured | **Open: a filing style preference** |
+| Recycle bin, 30 days, configurable, clearable | Built |
+| 100% offline, models local; optional web search for context | Built (models through Ollama, not bundled, by decision; web search opt-in) |
+| File attachments copied into the app's folder | Built (Files, three readings per image, PDFs read page by page) |
+| Google Drive plus Notion plus NotebookLM | Built as Library, Documents and Ask with sources |
+| AI-generated data visualisation | **Open: charts from questions** |
+| Last five queries; most-accessed information | Built (Ask history); **open: most-opened widget** |
+| A log of everything entered, accessed, altered, archived | Built (activity log) |
+| Manual links, or tell the AI about a link | Built |
+| The graph like Obsidian's | Built (the canvas graph, Phases 1 to 5) |
+| Submit a whole Markdown file as an entry | Built (documents import) |
+| A whiteboard or canvas, submitted as an entry, editable later | Built (whiteboard, mind maps) |
+| Export in bulk or in part | Built (JSON, CSV, Markdown, zip) |
+| Login with a hashed password | Built (bcrypt, throttled) |
+| A profile the AI uses, built over time, opt-out and delete | Built (About you; What it remembers) |
+| Speech to text; the AI reads answers aloud; explains what you entered | Built (Whisper, read aloud); **open: "explain this note"** |
+| Reminders, maybe a calendar | Built (reminders); **open: calendar export and month view** |
+| Fine-tuning | Dropped, correctly, in the May document |
+
+**The seven open rows, as quick rows for the next session (WORLD_CLASS,
+after Brief 18 section A):**
+
+1. **Review queue.** A Notes filter "Needs review" for filings under 60%
+   confidence and anything filed Uncategorised, with Accept, Refile and
+   Split per row; the count on the dashboard. Backend: `confidence` and
+   `category_id` exist; one query. Size S.
+2. **Tidy categories.** The librarian proposes merges (two categories
+   whose embeddings and names are near) and removals (empty for 30 days)
+   as a proposal list in Settings > What it remembers; nothing moves
+   until accepted; manual renames are remembered as "do not merge". Size M.
+3. **Filing style.** A preference (by topic, by project, by time) added
+   to the filing prompt and to the category namer, with three examples
+   each; the default is by topic. Size S.
+4. **Charts from questions.** Ask answers a counting or trend question
+   ("how many notes per category this month", "my race times") with a
+   bar or line drawn from the records, the data table under it, the
+   chart exportable as PNG. Size M.
+5. **Most opened.** A dashboard widget of the ten notes opened most this
+   month (the view counter exists on the node panel). Size S.
+6. **Explain this note.** A note action that reads the note aloud and
+   then says what it links to and why, from the link reasons. Size S.
+7. **Calendar.** `.ics` export per reminder and for all, and a month view
+   beside the reminders list. Size M.
+
+The principle the first notes state and the app keeps: the AI is a
+servant, not a gatekeeper; everything it does can be seen, edited and
+undone.
+
+**State 2026-10-05:** all seven built; the six that were open moved to
+HISTORY.md, "Moved from the plans, 2026-10-05 (nbf1005)". Not built from row
+1's sketch: Split per row (no note has a split action anywhere in the app;
+Accept and moving the category are the row's two answers).
+
+**State 2026-09-24:** the seven rows: 1 review queue (c),
+S. 2 tidy categories (b): the agent has `merge_categories`
+
+**Decisions made, 2026-10-05 (recommended, not confirmed):** (1) the
+review queue's line is the card's `REVIEW_THRESHOLD`, 50, not row 1's
+"under 60%": a note in the queue then always wears the "check this" chip
+that says why, and one number cannot drift from the other
+(`manager.REVIEW_CONFIDENCE`). Its count sits in the Categories widget,
+not a widget of its own. Split is Extract notes over the whole note.
+
+**State 2026-09-24:** the seven rows: 1 review queue: built 2026-10-05
+(HISTORY.md, "Moved from the plans, 2026-10-05 (section 17)"). 2 tidy categories (b): the agent has `merge_categories`
+(`ai/tools/categories.py`); the proposal list is not built, M. 3 filing style
+(c), S. 4 charts from questions (c), M. 5 most opened (b): the Most used
+widget lists the notes opened or matched most, all time
+(`/entries/most-accessed`); "this month" needs an open log, S (its picker
+line was wrong and was fixed 2026-09-24). 6 explain this note (c), S. 7
+calendar: built. The month view (`#reminder-calendar`) and, 2026-09-26,
+`.ics` export with its two buttons (HISTORY.md, "Moved from the plans,
+2026-09-26").
+
+### Placed from INBOX, 2026-09-21
+
+Text as it stood in WORLD_CLASS_PLAN.md:2017-2073:
+
+261. **Found by scan, 2026-09-19 (the session, not the owner).** Ten routes
+    the app serves that `frontend/js/*.js` never names, from
+    `scratchpad/probe_dead_routes.py` (new; run it with `PYTHONPATH=src`).
+    Four more were in this list and are now wired: `GET /learned` and its
+    whole lifecycle, `POST /night/run`, `GET /search/stats` and
+    `POST /drafts/title`. What is left, triaged:
+    - `GET|POST /entries/daily/{day}`, `POST /resurface/compute` and
+      `GET /openapi.json`: not the frontend's to call. The daily-note pair
+      is the agent's "add to today's note" tool and says so in app.js; the
+      compute half of resurfacing is the scheduler's, and its module
+      docstring is explicit that the read is the fast one; `/openapi.json`
+      is FastAPI's own. **Nothing to do.**
+    - `POST /insights/digest` and `GET /whiteboard/images`: superseded and
+      recorded as such (`/insights/digest/stream` is what the dashboard
+      calls; BACKLOG says `/media` replaced the board image listing).
+      **Recommendation:** leave them, or delete them in a sweep of their
+      own; either is defensible and neither is urgent.
+    - `GET /insights/on-this-day`: superseded by choice. The widget filters
+      `allEntries` in the browser, which is one fewer request and is
+      correct once the notebook has finished paging in.
+      **Recommendation:** leave it, and say so in the route's docstring, so
+      the next scan does not re-open this.
+    - `GET /tags`: done (moved to HISTORY.md, "Moved from the plans, 2026-09-24").
+
+    - `GET /settings/events`: built 2026-09-23 as the Dashboard's Recent
+      activity widget (moved to HISTORY.md, "Moved from the plans, 2026-09-24"); the Timeline half is
+      declined by decision (a second clock on one page).
+
+    - `GET /resurface/near/{entry_id}`: "the faded notes closest to the one
+      being read", built and tested, and there is nowhere in the app that
+      reads a note. Checked before recommending anything: a note is a card
+      in a list, and the only thing resembling a detail view is the inline
+      edit form (`editingId`), which is a form. `lastOpenedEntryId` exists
+      but only feeds the agent's "what am I looking at" subject. So this is
+      a surface, not a wire-up, and probably why it was never wired.
+      **Recommendation:** decide the surface first. The cheapest honest one
+      is a row inside the edit form, under the tags, reusing
+      `paintFadedNotes` from dashboard.js (the route returns the same
+      `_card` shape the dashboard widget already renders); the better one
+      is the note detail view this app does not have, which is a plan item
+      rather than an INBOX item. **Built** (row 4's `#notes-rail`:
+      `note-panels.js` calls `GET /resurface/near/{id}`; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
+    `POST /auth/rotate-vault-key` was on this list until the probe learned
+    to read `` `/auth/${mode === "setup" ? "setup" : "unlock"}` ``; it is
+    still uncalled, and re-keying the vault has no UI. Filed here rather
+    than fixed: it is the one route in the app that rewrites every private
+    note, and a button for it wants its own session. **Built 2026-10-05**
+    (`settings-controls.js` calls `POST /auth/rotate-vault-key`, nbf1005; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)"); the other 261 lines are decided (nothing to do).
+
+285 (indexless tool-call fragments) was fixed 2026-09-24 and moved to
+HISTORY.md, "Moved from the plans, 2026-09-24".
+
+283 (an absent OpenAI-dialect backend reported as running) was fixed
+2026-09-24 and moved to HISTORY.md, "Moved from the plans, 2026-09-24".
+
+### Placed from INBOX, 2026-09-27 (399)
+
+Text as it stood in WORLD_CLASS_PLAN.md:2343-2379:
+
+399. **The owner, 2026-09-23 night, verbatim.** "what is left in the world
+    class plan?? can you poke more holes in the application for bugs,
+    security, poor learnaility/utility/usability/accessibility and more??
+    make sure everything works on the windows packaged installer and the
+    version it installs. make sure all the update features in the about
+    settings page as well as the auto updates in the bat and sh files work.
+    keep design consistent, expand professional and modern design. maximise
+    usability and learnability. poke holes in the application as in find
+    bugs, security flaws places where there is unintuitive design, poor
+    information architecture, poor design, poor ui and ux, poor
+    learnability/usability/heirarchy/spacing and more. hit the open items and
+    plans in open.md. finish all unfinished work. majorly optimise at the
+    level of professional applications. make everything feel like it is a
+    professional application and not just a demo. maximise use of affordances
+    and semiotics. look at websites like motion.dev for ui and component
+    refinement, bklit.ui, kokonut ui etc so make sure none of the ui elements
+    are unprofessionally designed or act in a wierd way. ... dont let my
+    additions distract you, add them to the list and continue, never leave
+    anything half finished, not properly done, or untouched."
+    Placed as four agent briefs, run as slots free: (1) WORLD_CLASS_PLAN
+    rows not built, grepped first, with the list reported back; (2) a hole
+    poke (bugs, security, a11y, IA, spacing) with a finding table and fixes;
+    (3) the Windows installer, the installed version and the update paths
+    (About's updater, `start-*.bat`/`.sh` auto-update), tested in a scratch
+    copy per CLAUDE.md's trap; (4) component refinement against motion.dev,
+    kokonut and bklit patterns (motion, hover, focus, press states).
+    Part (4) built c3bbefc: every transition on `--motion-*` and `--ease-*`
+    (`tests/test_motion_tokens.py`), a hover is a colour never a filter
+    (with INBOX 405), toasts and '?' popovers fade in with 4px of travel,
+    toasts fade out, skeletons in the Library and Timeline. Menus' exit left
+    to the menu agent (`perfpolish.md` (git history)).
+    **E20, s58left4-1110, per part:** (4) built (above). (1) to (3) were
+    briefs, not parts: their outcomes are the rows built since (the finding
+    table is 424). Nothing here is left open as a part.
+
+### Placed from INBOX, 2026-10-03 (the tray at its cap)
+
+Text as it stood in WORLD_CLASS_PLAN.md:2479-2934:
+
+Open, moved whole from INBOX so the tray stays under twenty; each is worked from here by impact.
+
+INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, templates confirm, the Guide's controls reference) is built, 2026-09-24; nothing of it is open. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)".
+421. **The owner, 2026-09-24, verbatim, with screenshots (placed in agent
+    briefs, two at a time).** (a) "in the radials on the mind map, the items
+    like "add beside" and "cross-link" are very close to the edges (inner and
+    outer) of the radial and arent centered nicely. also when I press the
+    more button the dropdown menu appears in the top left of my screen"
+    (desktop app; the pie-ring agent could not reproduce the corner with a
+    real click). **(a) built** (INBOX 421 agent): labels centred with 10px to
+    both arcs and dividers (1.4 -> 11.4px, mapradialfit.js); More anchors to
+    the sector read at pointerdown, (0,0) refused and logged, the canvas host
+    no longer scrolls on focus (mapradialmore.js 33/33). The desktop corner
+    itself was still not reproduced headless: the console now names any
+    corner placement, so the owner's log will say which route it was. (b) "the / command blocks and frames need a massive
+    redesign, expansion and improvement, the icons dont render in the live
+    view in the documents editor ... they need ot be impressive and an actual
+    proper thing the user's can use to properly structure out their
+    documents and notes." (live-view callout icon fixed 6e072b2; built
+    2026-09-24: the grouped block inserter, 14 callout kinds, columns in
+    notes, contents, rules, cited quotes, maths, the block bar and document
+    cards, `slashmenu.js`, `blocksrender.js`, `blockbar.js`.) (c)
+    "sometimes document editor dropdowns appear at the top of the screen and
+    other times it is fine, sometimes it doesnt open at all" (the spelling
+    menu, top of the window; fixed 2026-09-24: placed from the
+    finding, never a detached element's empty box; the double-click's first
+    press; the "/" menu follows a scroll; `menuanchor.js` 15/15). (d) "there's no 'x' close button on the trace
+    popup row in the graph" (**built**: an X at the strip's end that leaves
+    trace mode; Done only cleared the ends; graphtraceclose.js). (e) OCR: "I cant delete the ocr entry in the
+    workspace or the lightbox and the text in the lightbox doesnt even appear
+    in the ocr workspace" (workspace delete fixed 6e072b2; the lightbox
+    showed a vision reading of "Test, Test, ..." hundreds of times, a
+    degenerate model loop the app should cut; **built**: loops cut where a
+    reading is produced, each lightbox reading deletable, the workspace shows
+    both stored readings and no longer blanks a stored one when the reader
+    is the model; ocrreadings.js 6/6). (f) The file row in the
+    Library ("PDF · 121 KB · added ... Read · 808 words, Open reader, Used
+    in"): "needs a bit more modern and ui refinement and the second row
+    elements arent aligned and dont really match" (fixed: one size, one
+    line box, middot groups, "Read this" a link). (g) "the lightbox buttons
+    below the image are greyed out?? i opened the image from within a note".
+    (**built**: not disabled, the row was the theme's ghost ink on the dark
+    scrim, 1.37:1 in light from every door; now the scrim's own recipe,
+    8.28:1; lightboxentry.js) (h) View toggles with no clear active state (fixed c920174). (i) "have
+    you included all the new optional packages in the packages settings
+    page??" and "move the preferences settings page up a bit and maybe also
+    turn it a bit into the user's own personal local profile where they can
+    put info about themselves and their name for the ai to use as context
+    and there can also be the generated profile image". (j) "I clicked a note
+    linked in the sources of an ai chat reply and it took me to that note,
+    but when I pressed the back navigation button it opened the settings
+    panel??" (not reproduced: chat then flashEntry then Back lands on chat,
+    also with chat opened from inside Settings; needs the exact path).
+    **E20, s58left4-1110, per part (driven, fresh data dir):** (a) built:
+    `mapradialmore.js` 33/33 at 1440x900, 1184x760 and 947x608, the More menu
+    4px from its sector, none in the corner. (b) to (h) built, marked above.
+    (i) built: Settings, Packages lists the optional packages (14 extras) and
+    Profile holds the name and About me. (j) still open: not reproduced,
+    needs the owner's exact path.
+
+423. **Found, not fixed, by the agents of 2026-09-24 (placed for the next
+    pass; one line each, recommendation first).** (a) The mind map's pie
+    ring does not take focus when it opens, so Enter and the arrows still
+    act on the board while it shows: recommend it takes focus when opened
+    from the keyboard only. (b) ~~DOCX export writes `:::columns`, `[TOC]` and
+    `[!kind]` as plain text~~ (fixed 2026-11-10: TOC field, shaded callouts, columns). (c) Inline `$x$` maths is plain symbols in Read view: render
+    it through the same TeX-to-MathML path as `$$`. (fixed: `INLINE_MATH_RE`
+    (app.js) now claims a `$…$` span with no space inside either delimiter
+    and no digit right after the close; `unlatex` carries it through
+    untouched instead of symbol-swapping it, and `renderInlineMarkdown` cuts
+    it out and draws it with `mdInlineMathElement`, the same `docMathRender`
+    the `$$` blocks use. `tests/test_inline_math.py`.) (d) The OCR workspace's
+    message for a vision reading still suggests installing Tesseract: word
+    it by reader. (fixed: `_regions_for` (routes_files.py) checks
+    `ocr.tesseract_available()` before wording the "no page positions"
+    message; installed but not chosen now says "Switch to Tesseract", missing
+    still says "Install Tesseract". `tests/test_ocr_regions.py`.) (e) At
+    150% zoom the lightbox picture overlaps its caption
+    line. (f) Stored readings that already contain a repeated-line loop are
+    not cleaned: offer "Clean up" in the reading menu. (fixed: a broom
+    button beside Delete reading, in the OCR workspace and the lightbox's
+    other-readings list, POSTs `/files/{id}/ocr-clean-loops` or
+    `/media/{id}/ocr-clean-loops`, which runs `cut_reading_loops` over
+    whichever of `vision_ocr_text`/`ocr_text` are set and saves what
+    changed; the panel repaints from the response. `tests/test_ocr_clean_loops.py`,
+    live-checked with `scratchpad/ui-sweeps/ocrcleanloops.js`.) (g) `_desktop_port()` took any Tessellate on the port for this one: built
+    (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)", 423(g)). (h) Chat replies saved before
+    2026-09-24 always show Atlas's mark (their persona was never stored).
+    (i) The server-mode process takes 5 to 9s to exit after uvicorn
+    finishes: find the thread that holds it. (fixed: every sync route
+    (almost all of them) runs on one of anyio's own "AnyIO worker thread"
+    objects, which is not a daemon thread and only stops itself on a
+    done-callback that can miss `uvicorn.run()` tearing the loop down;
+    measured leaving one alive, `daemon=False`, right after "Finished
+    server process". `_stop_lingering_worker_threads` (`__main__.py`,
+    called right after `uvicorn.run()` returns) asks it to stop and bounds
+    the wait to 1s. `tests/test_server_shutdown.py` reproduces the leftover
+    thread with a real `uvicorn.Server` running `create_app()` and checks
+    the fix clears it.)
+    (j) `gate.sh --sweeps` on 25d7d56 (fixture data dir /tmp/mm-me):
+    asktab.js 3 findings, libreadingfoot.js "reading visible: false" and
+    "no card with a reading", tagoffer.js 2 failures (manual route and the
+    empty tag row flag). Triage each as app bug or stale sweep before
+    fixing; the reader's 36px page box is fixed (25d7d56).
+    **E20, s58left4-1110, per part:** (a) re-driven, the ring takes the
+    arrow keys: right-click a topic, ArrowRight, focus on `wb-radial-sibling`
+    inside the ring. (b) built in part: Word export of `[TOC]`, `[!note]`
+    and `:::columns` (driven, 9,960 bytes) has no literal marker, the TOC is
+    a Contents list, callout and columns text stay in order; still open: a
+    Word TOC field, shaded box and real columns (no `w:cols`, `w:shd`).
+    (c) (d) (f) (g) (i) built. **wc-1110:** (e) built (filmstrip over the
+    caption at 1280x720 and 960x600; picture cap now clears it by 43 and
+    36px, `lightbox-lazy.css`); (h) answered (no stored persona, D9 draws
+    Atlas as one shared copy); (j) all three sweeps stale, none an app bug.
+
+424. **Audit of 2026-09-24 (performance measured in Playwright on a
+    400-note, 1,200-link, 250-object board, 120-topic map, 30-image
+    fixture, at 1440x900, 1x and 4x CPU with CDP profiles; UX walked at
+    1440 and 390). Fixed in this pass: the media poll outliving the
+    Library, the outline rebuilt per typing pause (515ms to 12ms), the
+    avatar follow frame's document-wide query (279ms to 20ms per 60 moves),
+    the unnamed "Toggle Sidebar" button. Open, one line each: measurement,
+    cause, recommendation.**
+    (a) Board, dragging a multi-selection: 44 long tasks, 8.6s of them for
+    40 moves at 4x (max 560ms); `objDragMove` calls `wbUpdateSelectionBar`
+    every move, and `wbItemBBox` runs a document-wide
+    `querySelector('.node-card[data-id=...]')` per item (2.6s); recommend an
+    id-to-element map from the render pass and the bar updated once a frame.
+    (fixed: `objDragMove` 5,167ms → 167ms, profile busy 6.1s → 1.0s, longest
+    task 901ms → 213ms, same harness and fixture at 4x; element cache in
+    `wbItemBBox`, the bar queued once a frame, the chrome groups found once
+    per gesture, the editing check scoped to the board. Bar position mid-drag
+    identical to base over 10 moves, `perf5/barcheck.js`.) Still open on the
+    board, a pan: a devtools.timeline trace of 40 moves at 4x is 43 long
+    tasks, 3.5s, of which `Layerize` is 2.4s and script 0.2s; it stays with
+    the grid sync, the cull, the bar, the navigator and both SVG transforms
+    switched off (`perf5/pantrace.js` VARIANT), so it is the compositor's
+    layer assignment of ~250 painted objects per frame, not a handler.
+    (fixed 2026-09-26: the objects were not the cause, their grips were.
+    Nine per card, invisible but in the tree, each scaled by
+    `--wb-inv-zoom`, split the board into 256 layers; `display: none` at
+    rest gives 138. Two runs each at 4x, 40 moves, `gwperf.js`: long tasks
+    33/38 (2.5/2.7s) to 2/2 (136ms), `Layerize` 1.8/1.7s to 0.34/0.35s,
+    median frame 67/50 to 17/17ms; the zoom's long tasks 2.0s to 0.5s.
+    Grips on hover and selection unchanged, fade kept, `wbpanlayers.js` 6/6,
+    3/6 on base.)
+    (b) Graph node drag at 4x: 137 long tasks, every frame over 33ms (max
+    550ms); `graphMinimapPaint` rebuilds the minimap's SVG on every worker
+    tick (1.56s of `createElementNS`/`setAttribute`/`replaceChildren`);
+    recommend painting the minimap to a canvas, at most once a frame.
+    (fixed: `graphMinimapPaint` 1,502ms → 514ms, profile busy 3.6s → 2.0s
+    for the same 40-move drag at 4x; the ticks queue one paint a frame, the
+    paint moves the existing dots and lines and skips unchanged attributes,
+    and a minimap that is off, on a hidden tab or in a hidden window is not
+    painted. Kept as SVG: the sweeps count its circles. Dots, lines and
+    positions identical to base, `perf5/minicheck.js`, `minimap6b.js`.)
+    (c) Graph wheel zoom at 4x: 31 long tasks, 13.7s, p95 frame 583ms;
+    `gcDraw` re-measures every label (`measureText` 152ms) per frame;
+    recommend caching label widths per node and font size.
+    (fixed: `measureText` 165ms → 0 over 16 wheel steps at 4x; a label is
+    measured once per text at a reference size and scaled with the zoom,
+    dropped when the font changes.)
+    (d) Graph tab switch at 1x: 25 long tasks, 1.6s, 50 of 59 frames over
+    33ms; each visit refetches `/graph` and restarts the layout, and
+    idle on Graph at 4x is still 3.7s of main-thread work per 10s
+    (worker ticks plus minimap); recommend reusing the last settled layout
+    when the notes' version has not changed.
+    (fixed for the layout, not the fetch: main-thread task time in the 12s
+    after a revisit at 4x 6,746ms → 1,382ms; a layout whose inputs, pins,
+    lines, forces and world match the last one to settle, with every note
+    where it left off, starts at rest and is framed as before; any change of
+    input heats it as before. Idle once settled was already ~5ms per 2s: the
+    cost was the re-settle. Still refetched each visit.)
+    (e) Mind map expand of the root (120 topics) at 4x: one 1,336ms task;
+    `renderWbObjects` rebuilds every node through `wbBuildMapNode`
+    (`setAttribute` 354ms); recommend keyed updates so an expand only
+    builds the nodes it reveals.
+    (fixed: the join was already keyed, so an expand of the root does reveal
+    all 119; what it no longer does is build them. A folded topic's element
+    is kept and taken back, for the same datum only. Two runs each at 4x:
+    longest task 899/1,115ms → 597/442ms, profile busy 781/1,016ms →
+    456/319ms, `wbBuildMapNode` 321/419ms → 0. Markup after a fold round
+    trip identical to base apart from attribute order, and a taken-back
+    topic's chevron still folds it, `perf5/mapreuse.js`.)
+    (f) Lightbox next/previous at 4x: 13 long tasks for 5 presses (p95
+    350ms); `show` calls `applyZoom`, which calls `scrollTo` (375ms of
+    forced layout) even when already at fit; recommend scrolling only when
+    the zoom actually changed.
+    (fixed: `show` 457/360ms → 37/28ms and `scrollTo` 406/305ms → 0 over
+    five presses at 4x, two runs each; profile busy 580/465ms → 128/118ms.
+    Fit scrolls only a scroller its own scroll events, or a pan, say is off
+    its origin, so a PDF read halfway down still goes back to the top.
+    `lightboxfit.js` 42/42 on both.)
+    (g) Library tab switch at 1x: 10 long tasks, 580ms (4x: 3.4s, max
+    683ms); `loadLibrary` refetches `/library` and rebuilds every card each
+    visit; recommend the same version check as (d).
+    (open, needs a decision: skipping the rebuild when `/library` answers
+    the same would also keep the selection, which a reload clears on
+    purpose, and leave relative dates as they were drawn. Recommend: keep
+    the cards on screen during the refetch, skip the rebuild when the answer
+    is identical, and clear the selection either way.) (Fixed with that
+    recommendation: an identical answer drawn under five minutes ago is not
+    redrawn unless something is selected; 189 grid mutations over three
+    revisits before, 0 after.)
+    (h) Every tab switch at 4x: `revealTab` 70 to 110ms self time, mostly
+    `querySelectorAll("textarea.autogrow")` then `autoGrow` on each visible
+    one (forced layout per box); recommend autogrowing only the new tab's
+    boxes.
+    (fixed, the autogrow part: every check is read in one pass and only a box
+    measured while hidden, or whose text, width, font or cap changed, is
+    grown; 0 to 12ms per switch. Not the 70 to 110ms: split step by step
+    (`perf5/revealsplit2.js`, 14 switches at 4x) it is `button.tabIndex =`
+    796ms, which forces the style recalc of the page just shown, then 203ms
+    of its layout; autogrow was 30ms of revealTab's 1,318ms. That is the new
+    tab's own style and layout, forced early, and moving it was measured to
+    gain nothing (the note on `revealActiveTab`).)
+    (i) Typing in a note at 4x: 56 of 204 frames over 33ms; each keystroke
+    mirrors the editor into the hidden textarea and dispatches `input`,
+    which runs `autoGrow` (448ms self) on a box nobody sees; recommend
+    skipping autogrow for a box whose editor is mounted.
+    (fixed: `autoGrow` 492/532ms → 16/17ms over the 50-character run at 4x,
+    profile busy 2,448/2,790ms → 1,874/1,713ms. The mirror is left to the
+    stylesheet's `height: 100%`, which an old inline height had overridden:
+    measured after 14 lines, base mirror 315px under a 398px editor, now
+    398px; the editor and its box are unchanged, `perf5/capcheck.js`.)
+    (j) The brand emblem's p5 loop draws at 24fps on every tab while idle
+    (`_draw` about 70ms per 8s at 1x on Dashboard and Chat, and it shows up
+    inside every drag profile); recommend pausing it after a few seconds
+    without input, as the mood timer already tracks.
+    (already fixed by b944d2c, which the audit's worktree predates: the
+    emblem is drawn once and turned by CSS. Measured on this head, 8s idle
+    at 1x: 0ms of script on Dashboard and Chat, `perf5/idleprof.js`.)
+    (k) Library shows at most 200 of each kind (`PER_KIND_LIMIT`,
+    routes_library.py) and its chip counts are the count returned: with 400
+    notes the chip reads "Notes 198", and a plain Library search for the
+    oldest note ("Note 17 summary") says "Nothing matching" while
+    `/entries?q=` finds it; recommend true counts and a server search (or
+    paging) once a kind passes the cap. (Fixed: counts and the overview
+    are real totals, `truncated` names the cut kinds, `/library?q=` matches
+    before the cut and the client swaps those kinds in while searching; a
+    line under the grid says "Showing the newest 186 of 339 notes. Search
+    to reach the rest." Measured on 339 notes: the chip reads 339, a search
+    for the oldest note finds it. Test in tests/test_library.py.)
+    (l) Settings: 18 sections in 4 groups; "Profile & preferences" sits
+    under Atlas but holds the recycle bin, chat history, notifications and
+    writing, is the only section with its own Save button, and repeats a
+    "Web search" heading that only links to the Web search section;
+    recommend "Profile" under Atlas, a "General" section under Your
+    notebook, save on change, and the pointer heading removed. (Fixed:
+    Profile keeps the name, look and About me; General, first under Your
+    notebook, holds the bin, chat history, answer style, search relevance,
+    notifications and writing; both save on change; the Web search pointer
+    heading is gone; the Ask tab's relevance link and the catalogue go to
+    General.)
+    (m) Settings sections are long: Tools 7,592px tall at 1440 (12,058px at
+    390), Appearance 4,537px with 105 controls, Logs 515 controls;
+    recommend collapsed groups (`details`) with the first open, per
+    DESIGN.md.
+    (n) One thing, several names: Chat (tab), "Ask" (Notes sub-tab and
+    status bar), "Write with Atlas" (Notes sub-tab), Atlas (Settings group);
+    Skills (Settings) vs "AI skills" (Library sub-tab); recommend one noun
+    per thing in DESIGN.md's copy rules and a lint.
+    (o) Library: 8 sub-tabs plus 13 chips in All, several the same filter
+    twice (Documents chip and sub-tab; Boards and Mind maps chips and the
+    "Boards & maps" sub-tab; Files chip and sub-tab); 101 visible controls
+    at 1440; recommend the chips be the only kind filter in All.
+    (p) Documents have a tab page with no tab-bar button: the way in is the
+    Library's Documents sub-tab, and the tab bar then highlights Library;
+    recommend a breadcrumb back to the Library in the editor's dock. (Fixed:
+    a "Documents" breadcrumb opens the dock, back to the Library's
+    Documents list, measured at the title's height.)
+    (q) Notes tab: 109 visible controls at 1440, 19 of them under 24px
+    (the link chips on each card); recommend the link chips behind a count
+    ("6 links") on the card, expanded on hover or focus. (Fixed: the
+    first three links show, the rest wait behind "+N more links", which
+    opens them in place.)
+    (r) Memory is clean: 30 tab switches moved the heap 21.7 to 22.3MB,
+    DOM nodes 48,888 to 49,297, listeners flat. Idle Chat once measured
+    599 layouts per 10s at 4x and did not reproduce (0 in a later 5s
+    check): watch for it.
+    **E20, s58left4-1110:** (a) to (l) and (p) to (r) built or answered,
+    marked above. (m) built: the long panes fold (`details.settings-fold`,
+    38 in index.html). **wc-1110:** (n) built (Skills everywhere, DESIGN.md
+    Voice, `test_one_noun_per_thing.py`); (o) built (6 chips to 4 in All).
+
+425. **The owner, 2026-09-24 (after the usage reset), with screenshots.**
+    Avatars: (a) "the avatar shows even when the app is on the lock screen.
+    it should only show when the app is unlocked"; (b) "is there a way to
+    make the corner companion more lifelike and less a circle just chilling
+    somewhere on the screen?? give it life", and "an adaptive companion
+    avatar placement feature where set areas are assigned as possible areas
+    for a companion to sit or chill around while not being in the way on
+    every interface and page. and the companion can even interact with the
+    close ui like hand from a top bar, sit on a bottom bar, walk a top a
+    feature ... just so I dont move it to one area, and then it is annoying
+    for it to be there on another page" (fixed: the companion is one
+    drawn character with a body, and per tab it takes a perch measured from
+    the real UI (hanging from the top bar or a panel's underside, sitting on
+    or standing at a top edge with its legs dangling or tucked, tucked behind
+    the bottom bar as a last resort), never over a control; a spot you drop
+    it on is kept per tab against its panel; a weighted behaviour picker
+    with cooldowns runs one decision every 4 to 12s; commits 4b4f1d4 to
+    5c19f45); (c) "may shuffled avatar reset and
+    didnt persist"; (d) "how does the shuffle work?? does it still base it
+    on what is entered for the name??" (fixed: Your look says it keeps what
+    the name says and any part you chose and redraws the rest, db38ea1);
+    (e) "I want the persona avatar to
+    appear next to where you set the persona for the dashboard greeting";
+    (f) "I set the dashboard greeting to another persona, but when I hit
+    regenerate, it said asking Atlas"; (g) "I changed personas for the
+    dashboard greeting and the avatar/icon changed as I had set it, but when
+    I changed the persona again, it didnt change again"; (h) "the whole
+    thing with the avatars needs a proper polish and bug fix ... a full ui
+    and ux upgrade to properly fit the application" (fixed: every generated
+    face is one designed character, d1e74fd; swept at 1440 and 390, light
+    and dark: row alignment within 0.5px at every list site, no clipping
+    but the large view's ears (fixed), speech bubbles kept inside the
+    window, the companion no longer over the chat composer's settings or
+    the phone's Library tab). Documents: (i) "can
+    there be a document full screen mode so there is more space ... maybe
+    the top bar needs a bit of redesigning or the interface on the document
+    editor needs a bit of visual adjusting to allow for more room. also
+    tables are still really annoying to use and edit in the documents live
+    view" (fixed: focus mode on the dock and F11 hides every band of chrome,
+    a fading floating bar keeps title, words, save state and Exit, 228px to
+    71px above the first line and 520px to 830px of writing at 1440x900;
+    the dock is one 36px row, 49px back in the normal view; Live tables keep
+    the column on the arrows, Enter goes down and adds a row, the arrows
+    leave a table at either end of the document, a spreadsheet paste fills
+    cells or makes a table, the cell menu rides the edited row; the AI
+    assistant's head and verbs redesigned; commits da89a75 to 260bb2a).
+    Settings: (j) "remove the need for saving preferences in the
+    settings and just have it auto save like the rest of the settings"
+    (fixed: preferences autosave and the Save button is hidden, `#prefs-save`
+    and `#prefs-status` in `index.html`, INBOX 426 u);
+    (k) "should these text boxes be aligned to the right??" (the
+    Preferences number fields; answered, no change: measured, all four
+    sit on the pane's one field column at x=812, the same left edge as
+    Display name and the answer-style select, and flushing them right
+    would give each a different left edge because their units differ); (l) "Improve how custom theme cards are
+    displayed" (name truncated "Sea of P...", delete button crowding it; fixed: saved looks get a 10rem track,
+    the name wraps to two lines before it truncates, delete is a badge on
+    the card corner; measured 183px cards, no name clipped at 1440).
+    Dashboard: (m) "the search bar on the dashboard has a glass aesthetic
+    even when it is off"
+    (fixed: its ground was a 4% tint over the page art; the tint now sits
+    on `--card`, which glass off makes solid). Backgrounds: (n) Mycelium start points more
+    organic, smoother faded transitions; (o) optimise Microbes (fixed, both,
+    e5a8c4b and b8ad914: scattered spores, staggered threads, a 2s
+    cross-fade between generations; Microbes 3.0 to 2.2ms a frame; also
+    Constellation 3.5 to 2.4ms, Mesh and Orbs moved to 15/30fps canvases,
+    whole-browser CPU about halved. Still open: Constellation and Microbes
+    just over the 2ms budget on a loaded machine, 0.3 to 1MB/s of canvas
+    garbage from fractional coordinates, pause on blur only after 30s, the
+    dead CSS path and `bg-*` keyframes in 03-dashboard-widgets.css, a faint
+    upscale texture in the dark mesh, 4x-throttle numbers not re-run). (p) "see if there are any more areas to reduce
+    lag ... like the avatars and other animations" (the audit agent, 424).
+    (q) "on the dashboard when on the focused view, the hero section row is
+    ugly and needs improvement and I dont agree with the search bar being on
+    the same line and changing width depending on how long the welcome
+    message is" (fixed: the owner's decision reverses INBOX 296's one-row
+    head; Focused is Full's head at a smaller scale, a 71px banner with the
+    greeting and name nudge, the summary under them and the time on the
+    right, and the search full width beneath it at 1408px whatever the
+    greeting says; measured at 1440 and 390).
+    **E20, s58left4-1110, per part (CHANGELOG reads, not re-driven):** built:
+    (a) (b) (c) (d) (h) to (m) and (q), marked above. **wc-1110, driven:** (e)
+    (f) (g) hold (mark beside the select redrew on three changes; "Asking
+    Analyst"); (n) holds (4s cross-fade, irregular starts).
+
+427. **Open from INBOX 426, 2026-09-26: two calls only the owner can make.**
+    Everything else in 426 (a to cc) is built and in HISTORY, "INBOX
+    resolved, 2026-09-26"; the agents' smaller leftovers are in
+    LEDGER.md, "Left by the 0.3.3 agents".
+    (1) **Atlas's anatomy, the owner's read of rounds 3 and 4.** The trace
+    proofs put the masculine look at 88% of the reference sprite's height
+    and the feminine look's hair a third shorter than the definitive stand's;
+    the owner's review names the next round (hands and feet, the head to body
+    join, the tail's ribbon, the chest star). Judge it in the avatar lab
+    (`tools/avatar-lab.html`, Both looks, All poses) or the README's
+    `docs/screenshots/atlas-hero.png` and `atlas-poses.png`.
+    Recommendation: none to take on the owner's behalf; this is taste.
+    (2) **The companion's pin near an edge.** A companion pinned within 160px
+    of the window's right or bottom edge keeps its distance from that edge
+    when the window is resized (so it moves with the edge); one pinned further
+    in keeps its place. Whether the owner reads the first as "it still
+    moves" (426 l) is not known. Recommendation, taken unless the owner says
+    otherwise: keep it, since a pin by the edge that stayed put would end up
+    off screen or under the scroll bar on a narrower window, which is 426 k.
+    **E20, s58left4-1110:** (1) taste, left to the owner. (2) taken as
+    recommended (keep the edge-pinned distance); no owner reply against it.
+
+430. **The owner, 2026-09-27 afternoon, with 37 screenshots (verbatim in the
+    session; condensed here, each placed with an agent).** Bugs: agent turn
+    "Invalid format string" on Windows (**fixed** 180e522); chat citation
+    renumbered to 1 on reload while its peek shows source 8; scroll jumps in
+    chat with a sources fold open; layout flickers between two states every
+    second in devtools responsive mode; top bar not centred at small widths;
+    lightbox meatball menu does nothing; OCR workspace not reachable from
+    Images; '?' popover in Capture does not scroll with a touchpad; tools
+    list draws a second divider over column two's first row; Privacy's
+    Since launch / All time pill has no active state; capture preview
+    crushes line numbers; Atlas spills out of its ring in the tour.
+    Phone and tablet: graph controls overlap, Documents editor cut off,
+    whiteboard will not pan by touch, lightbox, skill logs sidebar (gap,
+    shadow, no hover-expand), gap under the bottom bar, the agent-runs bar
+    on phones, Contents dates overflow, a portrait-shaped graph. Asks:
+    links widget and a rename of Library's Links; notice banners carry
+    their action with a confirm; settings section heads; the agent popup's
+    avatar circles; guide: AI/system answer toggle, much more help, cleaner
+    formatting; model per feature offers "same as chat/utility model";
+    note forms use the live view with a source toggle, no Preview; AI
+    templates (generate, edit, regenerate) and every template in Settings;
+    Windows tray menu extended; constellation in the background art and a
+    better constellation; graph node size by a toggle, Arc fit, Tree
+    centred; companion: perches on every tab, dodges popups, less
+    distracting, lifelike motion and transitions, a show/hide hotkey and
+    palette action (done: Ctrl+Shift+Y, rebindable, palette and Find
+    anything rows that say Hide or Show, PR 162); Atlas less chunky, masculine limbs, tilted rings with
+    orbiting bodies, a taller nebula; generated faces vary expression per
+    character. Questions: prompt injection, chat header divider. Rules:
+    two or three agents, Sonnet where quality holds, concise.
+    **Added 2026-09-27 midday (the owner, verbatim):** "also can you extend
+    this menu a bit maybe with sub-sections if necessary, for things such as
+    a quick link to the profile/personas/appearences tab, toggling various
+    features such as masculine/feminine, which companion is displayed etc."
+    (the companion's right-click menu). Its screenshot also shows that menu
+    opening at the window's top left with the companion at the bottom right:
+    recheck on the current head after a0d957a. Decided the same day: desktop
+    first with small laptops (1366x768 at 125%, 1280x720) and tablets next;
+    Links is renamed Bookmarks; the two map kinds are named separately;
+    releases stay on 0.3.3 for now.
+    **Added (the owner):** tab changes: the companion lingers on the old tab
+    a moment then pops in elsewhere. Wanted: it stays behind on quick tab
+    flicks and only follows after the person settles on a tab; it enters
+    smoothly (walks on from the side, climbs up from the bottom bar, climbs
+    down from the top bar, or materialises), never a sudden pop; a "reduce
+    actions" setting so waves and gestures come less often; more stances,
+    Atlas's masculine and feminine each with their own.
+    **wc-1110, driven:** the phone, tablet and Settings list holds (graph
+    controls, Documents bar, touch pan, skill logs, Contents dates, portrait
+    graph, Settings heads; numbers in CHANGELOG). **E20, s58left4-1110:** built:
+    the Windows format-string error, the citation number on reload, the
+    Privacy pill's active state, the lightbox menu, the tools grid's one
+    divider (4183), Bookmarks, the companion's menu and hotkey, reduce
+    actions, Arc fit, the injection answer. **Driven 2026-11-10 at 390 and
+    1440 and holding (numbers in wc2-1110.md):** the sources-fold scroll jump,
+    responsive-mode flicker, OCR from Images, the Capture '?' scroll, the
+    links widget (Bookmarks), banner actions, per-feature "same as chat", AI
+    templates; Word export of a TOC, callouts and columns (423 b). **Driven 2026-11-10 (wc3-1110):** the phone top
+    bar packed left (72px empty at 390; now 10px each side, fixed); capture
+    line numbers, Atlas in the tour ring (0px spill), nine tray actions and
+    the Constellation background hold (numbers in wc3-1110.md). Done.
+
+### Placed from INBOX, 2026-10-04 (design work for the next Opus slots)
+
+Text as it stood in WORLD_CLASS_PLAN.md:2935-2946:
+
+Briefs 485, 496, 493, 484, 486 and 490 are all built (each carries its "Built:" line in HISTORY.md, "INBOX resolved": 485 the Attach panel `6236875`, 496 Contents and the Boards and maps load `f58c264` `e489bda`, 493 the graph's look `4af88c6` `5a3d6eb` `a506e0f`, 484 the leader menu `64fa7a5`, 486 callouts `cb7c30d`, 490 the follow-up trail `fabdcbf`; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
+
+507. **From the dock audit (479, `scratchpad/dock-audit-479.md`), found and
+     not fixed.** Graph: fold the View menu into the gear (two ways in).
+     Boards and maps: one "New" with board and mind map inside (8 controls
+     today). Zoom controls: one orientation and order on Graph, board and
+     map. Help '?' on the Library's All, Documents and Bookmarks sub-tabs.
+     Reminders: one "Add" per card. The documents dock onto the shared dock
+     recipe (DOCUMENTS_PLAN). Sonnet-sized except the zoom unification.
+
+### Placed from INBOX, 2026-10-05 (ledger triage)
+
+Text as it stood in WORLD_CLASS_PLAN.md:2947-2979:
+
+- ~~**Move a batch of notes to another space**~~ Built (row 30: `batch-space.js`, `POST /spaces/{id}/move-notes`, an Undo that moves them back, `tests/test_selection_actions_row30.py`; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
+- **The Guide's corpus and the Help accordion are kept in step by hand**
+  (guide; the synonym column it asked for exists, `help_chat.py`'s keyword
+  table). Brief: give the accordion's thirteen `<details>` ids, convert them
+  to the named family under `test_ui_recipes.py`'s ratchet, then a lint that
+  every accordion id has a Guide topic. Sonnet, M.
+
+434. **The owner, 2026-10-03, verbatim.** "Can you make sure everything in
+     the frontend, backend, function, utility and process for how the user
+     can write notes and make a note is insanely easy and fast?? It needs to
+     be world class. It it the whole reason for this notebook after all. It
+     needs to be very accurate, fast, easy, not complicated but with advanced
+     features, very robust and to actually work. It needs to be better than
+     all other notebooks out there, have multiple ways it can be done, have
+     extensive capabilities, and be the absolute gem of the app. It needs to
+     be this amazing even when the ai isn't available or accessible and then
+     even better with it."
+     Placed (one brief, after the frontend/js move lands): (1) a measured
+     audit of every way a note is made (Capture, New note, palette, keys,
+     paste, drop, share, templates, daily note, from a selection, desktop
+     quick capture) against Apple Notes, Obsidian, Bear, Keep and Drafts:
+     time from intent to typing, keystrokes to saved, what is lost on a
+     crash or a dead server; (2) filing without a model (local rules from
+     the notebook's own categories and tags, so "no AI" still files well),
+     better with one; (3) robustness (draft kept through reloads and
+     crashes, offline save queued, never a lost keystroke); (4) the gaps
+     the audit finds, fixed by impact, each measured.
+     Built across 2026-10-03 and 2026-10-04 (capture audit, filing speed); both progress records moved to HISTORY.md,
+     "Moved from the plans, 2026-10-10 (measure60)". Open: staged pictures and files cannot be held offline; the desktop window,
+     real clipboards and a server crash between commit and answer are not verified.
+
+### Placed from the owner's list, 2026-10-10
+
+Text as it stood in WORLD_CLASS_PLAN.md:2980-3035:
+
+Entries are the owner's words, then the recommendation. Bugs come first, then design requests, then ideas.
+
+### Bugs
+
+- "I pressed a restart button and it failed: {"[1007/230819.346:ERROR:ui\gfx\win\window_impl.cc:172] Failed to unregister class Chrome_WidgetWin_0. Error = 1411"}"
+  Recommendation: the desktop restart path (`src/tessellate/__main__.py`, the webview start) treats this unregister error as non-fatal and relaunches; reproduce it on Windows, which this sandbox cannot run. No brief carries it; Brief 17 (launchers) is the nearest.
+- "this didnt work "https://192.168.0.107:8443", on my phone it said the page was unsecure, and then I clicked continue, and it said "safari can't open the page because the connection was lost.". I do have a vpn/custom dns sever through adguard active but that shouldnt be a hindrance. also the security needs to be improved if possible for this to work on phone."
+  Recommendation: phone access over HTTPS, with the "connection was lost" cause found on iOS Safari, a one-page trust guide with a QR code, and a local CA option. Also carried by Brief 40 (the phone over HTTPS) and Brief 15 (network hardening).
+- "it says the connection isnt secure and the page cant be reached" / "on brave browser on my phone"
+  Recommendation: the same trust flow as the entry above, checked in Brave on a phone. Also carried by Brief 40 (the phone over HTTPS).
+- "Also I still cant access the application on my phone, the connection just doesn’t go through and there are security issues with a not trustworthy connection and more."
+  Recommendation: the phone path is a gate in Brief 40's research and Brief 15's hardening; the result is a measured reachability check from a second device. Also carried by Brief 40 and Brief 15.
+- "Still lots of issues with filing without the ai model running but it should still work right because the embedding model is running??" / "I filed a note with no ai model running, did it use the embedding model??"
+  Recommendation: with the model off and the embedder on, the filing path names the signal that filed the note; measure top-1 accuracy with the embedder on and off on the 120-note fixture. Also carried by Brief 39b (lexical filing and the embedder).
+- "Also can things still work with all the similarity stuff for the composer and filing and other stuff if sentence-transformers isnt installed??"
+  Recommendation: the similarity path runs with no sentence-transformers installed, and a test covers that case. Also carried by Brief 39b and Brief 35 (no new dependencies).
+- "Study and university tags are suggested on the top note if it has no tags no matter what the note is about"
+  Recommendation: reproduce the "Study" tag suggestion on the fixture, fix it, and keep the fixture as a test. Also carried by Brief 39b (the "Study" bug reproduced then gone).
+
+### Design requests
+
+- Customise the domain name on the network url: built 2026-11-11, see HISTORY "Moved from the plans, 2026-11-11 (WORLD_CLASS design requests, customise the domain name)".
+- "Should we integrate it as a docker build and image and make it available as a docker app as well??"
+  Recommendation: a Dockerfile and compose file with offline model volumes, and the measured image size in the report. Also carried by Brief 40 (a Docker image).
+- "Is it possible to make use of python libraries that the user already may have installed globally on their computer so the user doesn’t have to install the same dependancies twice?? Like sentence transformers, or torch, or triton etc?? Idk"
+  Recommendation: a setup choice to use system site packages, with its risks written down. Also carried by Brief 40 (reusing the system Python packages).
+- "Does the mcp server work or need to be improved?? I don’t think it has been properly integrated as a feature yet."
+  Recommendation: run the MCP server, list its tools, and report what is broken before any integration work. Also carried by Brief 40 (whether the MCP server works).
+- "Does the user have to be connected to the interned for the initial install for installing all the dependencies?? Should the user be informed of that if that is the case??"
+  Recommendation: state the answer and show it on the install screen if the answer is yes. Also carried by Brief 40 (whether a first install needs the internet).
+- "what is this app file installer?? can this app use it and is it free??"
+  Recommendation: answer it in the Brief 40 research with the licence and whether the app can call it. Also carried by Brief 40 and Brief 17 (the installer).
+- "Also I feel like we should reference all the vendored repos and libraries somewhere to give them credit."
+  Recommendation: a credits list in Help, generated from `docs/THIRD_PARTY.md`, with each licence file. Also carried by Brief 35 (the credits file).
+- "I also want to integrate and use the new vendored repositories and libraries better and also see if there are more complimentary libraries and repos we can vendor…"
+  Recommendation: each vendored library gets one named use in the engine, with a test, and a keep or drop row in the retired analysis doc. Also carried by Brief 40 (candidate vendorable libraries) and ROADMAP Direction policy 1.
+- "Filing and suggested tags and categories and stuff need a lot of improving. Should we include a library of common possible categories and even ways to join words to make custom categories and then there can be a similaity search for new or existing category filing and concatenation for new categorie"
+  Recommendation: a seed category library (the taxonomy pack) with joins for custom categories, and a similarity search over new and existing categories. Also carried by Brief 39b (candidates, decision and merge suggestions) and ROADMAP Direction policy 3.
+- "just continue and research categories and tags etc. make it extensive and also dynamic. some categories for example might not just be "gym" or 'Fitness" but "gym & fitness" yk??"
+  Recommendation: category names are phrases ("gym & fitness"), matched by the taxonomy's keyword candidates. Also carried by Brief 39b (the taxonomy).
+- "I think meeting notes should be different or at least partially separate from dictation and audio transcribing. Can there be an auto captioning and transcribing tool live as well?? Maybe a way to record store and edit mp3 audio notes like with Apple voice memos?? What about ai free translations?"
+  Recommendation: meeting notes, dictation, voice memos and live captions as separate entries in the audio section; translation is an offline engine question. Also carried by ROADMAP Direction track 11 (audio in the notebook).
+
+### Ideas
+
+- "I want to deep analyse this repo and see if we can cake a use/replicate/take a lot from it https://github.com/haifengl/smile.git"
+  Recommendation: the smile read goes into the retired analysis doc with the algorithms worth a small Python port (clustering, keyword extraction). Also carried by Brief 40 (haifengl/smile).
+- "are there any other libraries that could be used that I and u havent found or mentioned??"
+  Recommendation: the candidate-library table in Brief 40 answers this, with keep or drop for each. Also carried by Brief 40.
+- "did you vendor the other libraries and binaries?? do we need to?? what else is there to do??"
+  Recommendation: answer in the retired analysis doc: which libraries are vendored, which are pip dependencies, and which are dropped under policy 1. Also carried by Brief 40 and ROADMAP Direction policy 1.
+- "doesnt harper use a binary though?? are there any other repos or libraries that we can vendor??"
+  Recommendation: Harper is a WebAssembly build in the frontend; the Brief 40 table records any other WASM or pure Python candidate. Also carried by Brief 40.
+
+### Placed from INBOX, 2026-10-10 (filing suggestions)
+
+Text as it stood in WORLD_CLASS_PLAN.md:4006-4009:
+
+- INBOX 781: built 2026-10-11, HISTORY.md, "Moved from the plans, 2026-10-11 (WORLD_CLASS 23, INBOX 781, filing suggestions)". Open: `filing-1010.md` (git history).
+
+### Decided by the rows agent, 2026-10-11 (standing order 3; house2 ledger rows)
+
+Text as it stood in WORLD_CLASS_PLAN.md:4014-4022:
+
+- 1586, panel heads: `h3.panel-head` and the board's `h3.wb-sidebar-title` name a whole card or column, so they are titles (`--text-body`, 600, ink, the dialog title's voice); a label over one group inside a panel (`.doc-outline-title`) stays the eyebrow. Built, DESIGN.md's panel-head row.
+- 1641, the Local chip: the receipt's verdict for this launch (`GET /privacy/verdict`, the same `egress.verdict` the receipt prints) sits in the header's first cluster as an icon and one word (Local, Local network, Online in `--warn`); one press opens Settings, Privacy. Below 1100 it is the icon alone; below 600 it leaves the bar for the phone's More menu (a live row carrying its word). Refreshed every five minutes, never a stream. DESIGN.md's Local chip row.
+- 1643, type to filter: one recipe, `listFilter` (sheets-selects.js), shown past twelve rows, hiding misses with an empty-state row and Escape to clear; applied to the two longest lists that had none (the keyboard shortcuts, 31 rows; the space menu). The eight hand-built filters stay as they are, named in `HAND_BUILT_FILTERS` so a ninth must use the recipe.
+- 1595, readable font: Font's fifth choice, Readable, is Atkinson Hyperlegible (SIL OFL 1.1, latin, 400 and 700 with italics, about 80 KB vendored under `frontend/vendor/atkinson/` with its licence), served from the app's own origin so it works offline and under `font-src 'self'`. It sets `--ui-font` only; documents keep their own face.
+- 1588, dependency audit: `.github/workflows/dependency-audit.yml` runs `pip-audit` over `requirements.txt` on a weekly cron, on a change to the requirements and by hand; `continue-on-error` until a first clean run is seen, then it blocks. CI only: the app makes no request.
+- 1661, memory growth: measured, no leak found, nothing changed. The server under a seeded session (`scratchpad/ui-sweeps/memserver.py`: three notes and every path the app's boot and tab switches ask for, per lap) went 446 to 600 MB resident over 10 minutes (78 notes, 1,300 requests) and was back at 509 MB idle; with no seeding, 6,150 requests over 10 minutes held 503 to 521 MB (509 to 507). The 8.5 GB of the first report did not recur. The browser half (`scratchpad/ui-sweeps/memgrowth.js`, heap after a forced GC and DOM nodes per lap) read 12.6 to 14.4 MB and 16,566 to 17,900 nodes over two laps before the sandbox's memory limit killed the renderer, three times; a 10-minute browser run on a machine with memory to spare is the open half.
+
+### Placed from INBOX, 2026-10-26b
+
+Text as it stood in WORLD_CLASS_PLAN.md:4023-4027:
+
+1357. **The owner, 2026-10-26, verbatim.** "Can the composer be improved insanely more? Like I want world class improvements to the composer. Poke holes in every aspect of the app, add all the small and large abilities and functions that the app doesn't yet feature but should have. There are still A LOT of issues on the whiteboard, document editor and chat etc. MAJORLY MAJORLY improve the composer and integrate it into every aspect of the app you can and make it really good at what it does for each, improve understanding, improve capability, improve needle. Improve the agentic harness, use all latest research. MASSIVE MASSIVE FOCUS ON UX. Maximise learnability, maximise reliability, maximise speed. No bugs or security issues. Keep hacking away at the main features. Improve the editors. The grammar and spellchecker need a major upgrade. And any more libraries and repos be vendored or anything else be added to get the most high impact changes, enhancements, additions and fixes?? What are the most high impact items open?? What's on the backlog? Can you list ABSOLUTELY everything open?? ... Also each time I show an issue for the composer, I think you are only fixing for that specific case scenario, I need you to take all my highlighted issues and then see if there are any ither similar or related issues stemming from that for all future prompts. I need you to go deeper and truly refine and optimise the app. Make it fast, make it clean. Make it reliable I'll give you to 40% usage, if you hit it you can finish off, let me know what is still open and what you suggest doing"
+     Placed: (1) full open inventory (every plan, BACKLOG, INBOX, OPEN ledger, HANDOVER) ranked by impact, sent to the owner; (2) composer: every past owner report clustered into failure classes, a class-level eval set, the worst classes fixed as classes (CHAT_PLAN); (3) grammar and spelling: K4, K4b, K11 with the vendoring call (Harper); (4) stop at 40% weekly, report open items and a recommendation. The "fix the class, not the case" rule is standing (HANDOVER owner block).
+
 ## Moved from the plans, 2026-11-12 (I7 wrong on a card, B4 person and project pages, I5 claims as of)
 
 - **Built, WORLD_CLASS I7 (and I6's last line):** each card of Show the evidence carries Is this line right? with Confirm and Not right (`evidenceCardVerdict`, answer-kit.js, the peek's `citationVerdictRow`); Not right is a `wrong` verdict and a `wrong_fact` correction, listed in What it learned, undone by its Delete; the next answer leaves the sentence out and so does filing (`librarian.filing_prompt` reads a re-filed note, and `evidence_note` quotes a neighbour, through `verdicts.without_wrong`). `tests/test_corrections_wrong_card_i7.py` (e67497ec). Sweep at :8794: one card, zero nested buttons, Not right made 1 wrong row, the toast's Undo took it to 0.
