@@ -85,7 +85,7 @@ def test_timeline_count_chip_may_be_cut_and_says_all_of_it():
 
 
 def test_day_strip_well_asks_for_less_under_1100():
-    assert "flex-basis: 19rem" in body(".timeline-days")
+    assert has(".timeline-days", "flex-basis: 19rem")
 
 
 def test_document_tools_lose_their_words_under_1100():

@@ -3288,7 +3288,15 @@ li.link-source {
    list for the few seconds a toast lasts, and it takes the width, since a
    340px card in a 390px window is the width anyway less a crooked gap. */
 @media (max-width: 1099.98px) {
+  #toast-box {
+    left: var(--space-4);
+    right: var(--space-4);
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--space-2));
+    bottom: auto;
+    align-items: center;
+  }
 }
+
 .toast-more > .toast-more-open {
   flex: 1;
   justify-content: flex-start;
