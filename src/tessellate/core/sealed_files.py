@@ -252,7 +252,7 @@ def append(path: Path, data: bytes, *, sealed: bool) -> None:
     goes on, so a retry starts where the saved bytes end."""
     path = path if isinstance(path, Path) else Path(path)
     with _lock_for(path):
-        before = path.stat().st_size if path.exists() else 0
+        before = _size(path)
         if before and is_sealed(path):
             _append_sealed(path, data)
         elif not before and sealed:
@@ -267,6 +267,16 @@ def append(path: Path, data: bytes, *, sealed: bool) -> None:
                 with path.open("ab") as out:
                     out.truncate(before)
                 raise
+
+
+def _size(path: Path) -> int:
+    """Bytes on disk now, 0 for no file, read from a handle (an upload's
+    size is counted as it streams, `test_media_size_backfill`)."""
+    try:
+        with open(path, "rb") as fh:
+            return fh.seek(0, os.SEEK_END)
+    except FileNotFoundError:
+        return 0
 
 
 def _write_new_sealed(path: Path, data: bytes) -> None:

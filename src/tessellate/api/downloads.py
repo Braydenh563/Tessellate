@@ -9,6 +9,9 @@ real name; `safe_filename` turns a title into a name that cannot steer a path.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
 from urllib.parse import quote
 
 
@@ -69,6 +72,21 @@ def sealed_http(exc: Exception):  # noqa: ANN201
     if isinstance(exc, sealed_files.SealedLocked):
         return HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
     return HTTPException(status_code=409, detail=sealed_files.DAMAGED_DETAIL)
+
+
+@contextmanager
+def unsealed(path: Path, *, write: bool = False) -> Iterator[Path]:
+    """A path a file reader can open, sealed or not (L-world-class-52); with
+    `write`, what the block wrote goes back sealed. 423 while locked, 409 when
+    damaged. Every route that hands a stored file to a reader goes through
+    this or `sealed_files` (`tests/test_sealed_readers.py`)."""
+    from tessellate.core import sealed_files
+
+    try:
+        with sealed_files.readable(path, write=write) as plain:
+            yield plain
+    except sealed_files.SealedError as exc:
+        raise sealed_http(exc) from exc
 
 
 def sealed_aware(path, media_type=None, headers=None, filename=None, request_range=None):  # noqa: ANN001, ANN201

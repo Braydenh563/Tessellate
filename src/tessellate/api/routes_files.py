@@ -16,8 +16,6 @@ import shutil
 import subprocess
 import sys
 import uuid
-from collections.abc import Iterator
-from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -30,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
-from tessellate.api.downloads import sealed_aware, sealed_http
+from tessellate.api.downloads import sealed_aware, unsealed
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
@@ -107,17 +105,6 @@ ATTACHMENT_SUFFIXES = frozenset(
     #: are downloaded, not rendered inline, the reason this list is the wider one.
     | frozenset(docview.VIEWABLE_SUFFIXES)
 )
-
-
-@contextmanager
-def _plain(path: Path, *, write: bool = False) -> Iterator[Path]:
-    """A path the file readers can open, sealed or not (L-world-class-52);
-    `write`: what the block wrote goes back sealed. 423 while locked, 409 damaged."""
-    try:
-        with sealed_files.readable(path, write=write) as plain:
-            yield plain
-    except sealed_files.SealedError as exc:
-        raise sealed_http(exc) from exc
 
 
 def _write_upload(file: UploadFile, destination: Path, sealed: bool) -> int:
@@ -680,6 +667,14 @@ def analyse_attachment(
         return _store_typed_reading(session, attachment, body)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
+    with unsealed(path) as plain:
+        return _analyse(session, attachment, plain, body, is_image, suffix)
+
+
+def _analyse(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, is_image: bool, suffix: str
+) -> AttachmentGalleryOut:
+    """`analyse_attachment` once the file is a path its readers can open."""
     if body.kind == "ocr":
         return _read_locally(session, attachment, path, body, is_image)
     if body.kind == "caption" and not is_image:
@@ -761,7 +756,7 @@ def attached_file_text(
     # any work for a PDF with no text layer, and only when the pdfpages extra
     # and a vision model are both present; every other file returns before it
     # is consulted.
-    with _plain(path) as path:
+    with unsealed(path) as path:
         viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
         editable, edit_message = docview.editability(path, viewed)
     return AttachedFileTextOut(
@@ -805,7 +800,7 @@ def save_attached_file_text(
     """
     attachment = _refuse_while_sealed(session, FILES.writable(session, attachment_id))
     stored = _within(deps.get_config().uploads_dir, attachment.stored_name)
-    with _plain(stored, write=True) as path:
+    with unsealed(stored, write=True) as path:
         viewed = docview.extract(path)
         editable, edit_message = docview.editability(path, viewed)
         if not editable:
@@ -875,7 +870,7 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
                 "“Read scanned PDFs” in Settings, Packages."
             ),
         )
-    with _plain(path) as plain:
+    with unsealed(path) as plain:
         count = pdfpages.page_count(plain)
     if count == 0:
         return PdfInfoOut(
@@ -904,8 +899,8 @@ def attached_file_pdf_page(
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    with _plain(path) as plain:
-        png = pdfpages.render_page(plain, index, thumb=thumb)
+    with unsealed(path) as path:
+        png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"})
@@ -977,7 +972,7 @@ def attached_file_html_preview(
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    with _plain(path) as plain:
+    with unsealed(path) as plain:
         viewed = docview.extract(plain)
     return Response(
         content=viewed.text,
@@ -1742,7 +1737,7 @@ def media_text(filename: str, session: Session = Depends(get_session)) -> Attach
     # work for a PDF with no text layer, and only when the pdfpages extra and
     # a vision model are both present; every other file returns before it is
     # consulted.
-    with _plain(path) as path:
+    with unsealed(path) as path:
         viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
         editable, edit_message = docview.editability(path, viewed)
     return AttachedFileTextOut(
@@ -1794,7 +1789,7 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
                 "“Read scanned PDFs” in Settings, Packages."
             ),
         )
-    with _plain(path) as plain:
+    with unsealed(path) as plain:
         count = pdfpages.page_count(plain)
     if count == 0:
         return PdfInfoOut(
@@ -1831,8 +1826,8 @@ def media_pdf_page(
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=404, detail="Not a PDF.")
     _upload, path = _media_upload_path(session, filename)
-    with _plain(path) as plain:
-        png = pdfpages.render_page(plain, index, thumb=thumb)
+    with unsealed(path) as path:
+        png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
     # Kept in memory by `pdfpages` (a bounded LRU keyed by the file's mtime and
@@ -2096,7 +2091,7 @@ def caption_media(
                 raise HTTPException(status_code=409, detail="The AI model isn't running.")
             media_dir = deps.get_config().data_dir / "media"
             path = _within(media_dir, upload.filename)
-            readable = (upload.ocr_text or "").strip() or (docview.extract(path).text or "").strip()
+            readable = (upload.ocr_text or "").strip() or _extracted_text(path)
             if not readable:
                 raise HTTPException(
                     status_code=415,
@@ -2119,7 +2114,8 @@ def caption_media(
                 "pick one in Settings, Models.",
             )
         media_dir = deps.get_config().data_dir / "media"
-        captioning.caption_and_store(upload.id, media_dir / upload.filename, force=body.force)
+        with unsealed(media_dir / upload.filename) as plain:
+            captioning.caption_and_store(upload.id, plain, force=body.force)
         session.refresh(upload)
     return MediaUploadOut(
         id=upload.id,
@@ -2132,6 +2128,12 @@ def caption_media(
         vision_ocr_text=upload.vision_ocr_text or "",
         vision_ocr_model=upload.vision_ocr_model or "",
     )
+
+
+def _extracted_text(path: Path) -> str:
+    """A stored file's own text, sealed or not."""
+    with unsealed(path) as plain:
+        return (docview.extract(plain).text or "").strip()
 
 
 class OcrBody(BaseModel):
@@ -2196,7 +2198,8 @@ def ocr_media(
         #: background pass after an upload and wrong here: with a reading on
         #: the row, or a model running, "Read again" did nothing at all.
         read = _local_pdf_text if is_pdf else _local_text
-        text = read(media_dir / upload.filename, choice)
+        with unsealed(media_dir / upload.filename) as plain:
+            text = read(plain, choice)
         if text:
             upload.ocr_text = text
             session.commit()

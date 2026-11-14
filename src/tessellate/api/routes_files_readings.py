@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, vision_ocr
 from tessellate.api import routes_files as rf
+from tessellate.api.downloads import unsealed
 from tessellate.api.routes_files import AttachmentGalleryOut, MediaUploadOut, OcrPageReadOut
 from tessellate.core import (
     activity,
@@ -189,7 +190,8 @@ def attachment_ocr_range_read(
     path = rf._within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return _read_range(path, pages, reader, rf._page_read_key(attachment_id, None))
+    with unsealed(path) as plain:
+        return _read_range(plain, pages, reader, rf._page_read_key(attachment_id, None))
 
 
 @router.post("/media/{upload_id}/ocr-range-read", response_model=OcrRangeReadOut)
@@ -207,7 +209,8 @@ def media_ocr_range_read(
     path = rf._within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return _read_range(path, pages, reader, rf._page_read_key(None, upload_id))
+    with unsealed(path) as plain:
+        return _read_range(plain, pages, reader, rf._page_read_key(None, upload_id))
 
 
 @router.post("/files/{attachment_id}/ocr-page-read", response_model=OcrPageReadOut)
@@ -224,7 +227,8 @@ def attachment_ocr_page_read(
     path = rf._within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return rf._read_page(path, page, reader, rf._page_read_key(attachment_id, None))
+    with unsealed(path) as plain:
+        return rf._read_page(plain, page, reader, rf._page_read_key(attachment_id, None))
 
 
 @router.post("/media/{upload_id}/ocr-page-read", response_model=OcrPageReadOut)
@@ -241,7 +245,8 @@ def media_ocr_page_read(
     path = rf._within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return rf._read_page(path, page, reader, rf._page_read_key(None, upload_id))
+    with unsealed(path) as plain:
+        return rf._read_page(plain, page, reader, rf._page_read_key(None, upload_id))
 
 
 class OcrRegionReadOut(BaseModel):
@@ -448,7 +453,8 @@ def attachment_page_caption(
     path = rf._within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return rf._describe_page(path, page, rf._page_read_key(attachment_id, None))
+    with unsealed(path) as plain:
+        return rf._describe_page(plain, page, rf._page_read_key(attachment_id, None))
 
 
 @router.post("/media/{upload_id}/page-caption", response_model=OcrPageReadOut)
@@ -465,7 +471,8 @@ def media_page_caption(
     path = rf._within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    return rf._describe_page(path, page, rf._page_read_key(None, upload_id))
+    with unsealed(path) as plain:
+        return rf._describe_page(plain, page, rf._page_read_key(None, upload_id))
 
 
 class FileReadingOut(BaseModel):
@@ -744,7 +751,8 @@ def vision_ocr_media(
         return _media_out(upload)
     _require_vision_model()
     media_dir = deps.get_config().data_dir / "media"
-    vision_ocr.vision_ocr_and_store(upload.id, media_dir / upload.filename, force=body.force)
+    with unsealed(media_dir / upload.filename) as plain:
+        vision_ocr.vision_ocr_and_store(upload.id, plain, force=body.force)
     session.refresh(upload)
     #: A fresh reading replaces a hand edit of the sections, same as Tesseract's.
     rf._forget_regions(rf._page_read_key(None, upload.id), only_source="edited-")

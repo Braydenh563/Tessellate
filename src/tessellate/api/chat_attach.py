@@ -230,7 +230,8 @@ def _attached_media_files(session: Session, media_ids: list[int]) -> list[dict]:
         if upload is None or _upload_is_sealed(session, upload, None):
             continue
         try:
-            body = (docview.extract(media_dir / upload.filename, vision_reader=vision_ocr.pdf_reader_or_none()).text or "").strip()
+            with sealed_files.readable(media_dir / upload.filename) as plain:
+                body = (docview.extract(plain, vision_reader=vision_ocr.pdf_reader_or_none()).text or "").strip()
         except Exception:  # noqa: BLE001 - an unreadable file is still worth naming
             body = ""
         body = (body or (upload.ocr_text or "").strip())[:ATTACHED_FILE_CHARS]

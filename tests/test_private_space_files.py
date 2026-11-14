@@ -309,3 +309,26 @@ def test_another_session_without_the_space_open_gets_423_for_a_recording(signed_
     assert got.status_code == 423 and SECRET not in got.content
     got = client.get("/media/recordings/987654", headers=second)
     assert got.status_code == 404
+
+
+def test_read_again_and_a_document_bundle_see_a_sealed_picture_plain(signed_in, monkeypatch):
+    from pathlib import Path
+
+    from tessellate.api import routes_files
+    from tessellate.core import ocr
+
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    png = _png()
+    up = client.post("/media/upload", files={"file": ("p.png", png, "image/png")}, data={"direct": "false"}, headers=_h(space))
+    assert up.status_code == 200, up.text
+    seen = []
+    monkeypatch.setattr(ocr, "unavailable_reason", lambda choice=None: "")
+    monkeypatch.setattr(routes_files, "_local_text", lambda path, choice: seen.append(Path(path).read_bytes()) or "read")
+    got = client.post(f"/media/{up.json()['id']}/ocr", json={}, headers=_h(space))
+    assert got.status_code == 200, got.text
+    assert seen == [png]
+    client.post("/private-spaces/lock")
+    got = client.post(f"/media/{up.json()['id']}/ocr", json={}, headers=_h(space))
+    assert got.status_code in (404, 423) and seen == [png]

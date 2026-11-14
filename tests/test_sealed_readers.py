@@ -30,8 +30,8 @@ THROUGH = {
     "api/chat_attach.py::_attached_files",
     "api/chat_attach.py::_attached_media_files",
     "api/chat_attach.py::_attachment_readings",
+    "api/chat_request.py::_caption_of",
     "api/chat_request.py::_resolve_chat_images",
-    "api/routes_captions.py::_keep_audio",
     "api/routes_files.py::analyse_attachment",
     "api/routes_files.py::attached_file_html_preview",
     "api/routes_files.py::attached_file_pdf_info",
@@ -68,6 +68,7 @@ THROUGH = {
 HANDS_ON = {
     "api/chat_attach.py::_picture_sizes": "core/imagesize reads the header through sealed_files",
     "api/chat_request.py::_image_caption_context": "_caption_of unseals or skips",
+    "api/routes_captions.py::_keep_audio": "_seal_if_private seals the kept WAV",
     "api/routes_board_library.py::_process_pasted_images": "media_process skips a sealed file",
     "api/routes_conversations.py::_process_committed_media": "media_process skips a sealed file",
     "api/routes_documents.py::_process_committed_media": "media_process skips a sealed file",

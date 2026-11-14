@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 121 | 29 | 0 | 0 | 150 |
+| world-class | 0 | 120 | 29 | 0 | 0 | 149 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 510 | 100 | 2 | 111 | 982 |
+| all | 372 | 509 | 100 | 2 | 111 | 981 |
 
 ## chat
 
@@ -598,8 +598,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-363** `world-class` open, S: Boot: dashboard post-yield piece under 50 ms at 4x. From L-world-class-354/355 measurement, 2026-11-14. Evidence: dashboard.js Scheduler.yield.then is a 56 ms task: the widget grid after the second yield; yield between widgets without duplicating cards on overlapping renders.
 - [ ] **L-world-class-364** `world-class` open, S: Boot: pure style-recalc and ParseHTML long tasks. From L-world-class-354/355 measurement, 2026-11-14. Evidence: Boot long tasks with no script (UpdateLayoutTree or ParseHTML, 40-98 ms at 4x) remain; find the selectors or markup size behind them (Chromium trace).
 - [ ] **L-world-class-365** `world-class` open, S: Boot: first Intl call floor 57 ms at 4x. From L-world-class-354/355 measurement, 2026-11-14. Evidence: firstClockPaint is a 57 ms task: any first Intl call costs 47-69 ms at 4x (ICU load); a platform floor unless the first clock paint avoids Intl.
-- [ ] **L-world-class-380** `world-class` open, M: Unseal a private space's sealed file in the OCR, caption, vision and page-read routes. From L-world-class-52. Evidence: routes_files_ocr.py:619,651, routes_files_readings.py:189-465, routes_files.py caption/vision routes ~2080-2180 and the media size stat ~1519 still pass the raw path; on a sealed file they read ciphertext (the viewer, PDF pages, HTML preview, downloads and chat already unseal)
-- [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one, and sync's file_bytes (sync_extras.py:319) for a note private before it joined, carry the sealed bytes as they are
+- [ ] **L-world-class-381** `world-class` open, M: Transcribe and read a private space's sealed files in the background (a key for background jobs). From L-world-class-52. Evidence: routes_recordings.py _refuse_sealed_in_background answers 409; background threads get no vault key (vault.key), so a sealed recording cannot be read and its sealed transcript cannot be written; docreader and media_process skip sealed files for the same reason. Also: deleting a private space into an ordinary one carries the sealed bytes as they are; a generated recording (recording_make.save_generated), an import and the live-caption PCM spool (captions.begin) are written plain until the next unlock seals them (tests/test_sealed_readers.py PLAIN_WRITES)
 
 ## general
 
