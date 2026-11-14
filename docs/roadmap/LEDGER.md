@@ -8,16 +8,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 0 | 0 | 0 | 0 | 15 |
+| graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
-| timeline | 3 | 0 | 0 | 0 | 0 | 3 |
+| timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 150 | 29 | 3 | 10 | 179 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 423 | 541 | 100 | 5 | 121 | 1064 |
+| all | 405 | 541 | 100 | 5 | 121 | 1046 |
 
 ## graph
 
