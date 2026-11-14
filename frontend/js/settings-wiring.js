@@ -2284,7 +2284,7 @@ async function handleFileUpload(textarea, files) {
       console.error("Upload failed", err);
       textarea.value = textarea.value.replace(`![Uploading ${file.name}…]()\n`, "");
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      toast(err.message || `Couldn't upload "${file.name}".`, true);
+      toast(err.message || voiceLine("failed", { what: `upload "${file.name}"` }), true);
     }
   }
   if (added) pushTextUndo("Added a file", textarea, originalText, textarea.value);

@@ -214,7 +214,7 @@
       try {
         await saveFile(attachmentLabel(spec), await attachmentBlob(spec));
       } catch (error) {
-        toast(error.message || `Couldn't save “${attachmentLabel(spec)}”.`, true);
+        toast(error.message || voiceLine("failed", { what: `save “${attachmentLabel(spec)}”` }), true);
       }
     },
 
@@ -332,7 +332,7 @@
           pushTokenUndo(`Deleted “${label}”`, [{ del: [`/files/${id}`, "DELETE"], restore: "/files/restore", token: gone.undo_token }], () => spec.onChange?.(), `Deleted “${label}”.`);
           spec.onChange?.();
         } catch (error) {
-          toast(error.message || `Couldn't delete “${label}”.`, true);
+          toast(error.message || voiceLine("failed", { what: `delete “${label}”` }), true);
         }
         return;
       }

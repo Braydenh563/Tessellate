@@ -297,8 +297,8 @@ FAULTS = {
     },
     'shell-reminders.js': {
         'voiceLine("failed", { what: "load your reminders" })': 'the reminders request failed before clearing the done ones',
-        "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
-        "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
+        "voiceLine(\"failed\", { what: `delete ${left.length} of the reminders` })": 'a bulk delete partly failed',
+        "voiceLine(\"failed\", { what: `bring back ${left.length} of the reminders` })": 'a bulk restore partly failed',
     },
     'update-dialogs.js': {
         'text.textContent || voiceLine("failed", { what: "apply the update" })': "the update step failed; the text is the step's own error",

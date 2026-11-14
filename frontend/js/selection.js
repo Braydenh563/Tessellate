@@ -96,7 +96,7 @@ async function appendSelectionToNote(text, { jump = true, message = null, what =
       toastAction("Added to the note.", "Open it", () => flashEntry(entry.id), { go: { open: "entry", id: entry.id } });
     }
   } catch (error) {
-    toast(error.message || `Couldn't add ${what} to the note.`, true);
+    toast(error.message || voiceLine("failed", { what: `add ${what} to the note` }), true);
   }
 }
 

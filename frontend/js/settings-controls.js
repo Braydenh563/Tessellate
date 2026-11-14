@@ -445,7 +445,7 @@
     try {
       done = await apiJson("/websearch/stored", { method: "DELETE" });
     } catch (error) {
-      return toast(`Couldn't clear the kept pages: ${error.message}`, "info");
+      return toast(voiceLine("failed", { what: "clear the kept pages", why: error.message }), "info");
     }
     toast(`Cleared ${done.cleared} kept page${done.cleared === 1 ? "" : "s"}.`, "info");
   });
@@ -1571,7 +1571,7 @@
       toast(`Switched to ${EMBEDDING_FALLBACK_MODEL}: re-indexing your notes now.`);
       setStatus("");
     } catch (error) {
-      toast(error.message || `Couldn't switch to ${EMBEDDING_FALLBACK_MODEL}.`, true);
+      toast(error.message || voiceLine("failed", { what: `switch to ${EMBEDDING_FALLBACK_MODEL}` }), true);
       setStatus("");
     } finally {
       embeddingFallbackRunning = false;

@@ -1365,7 +1365,7 @@
     try {
       await meetingTakeFinish();
     } catch (error) {
-      toast(`Couldn't finish the discarded recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, true);
+      toast(voiceLine("failed", { what: "finish the discarded recording", why: `${error.message || "the request failed"}. It is still in Library, Recordings.` }), true);
       return;
     }
     await meetingTakeBin(id);
@@ -1379,7 +1379,7 @@
     try {
       await apiJson(`/recordings/${id}`, { method: "DELETE" });
     } catch (error) {
-      toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+      toastAction(voiceLine("failed", { what: "discard the recording", why: `${error.message || "the request failed"}. It is still in Library, Recordings.` }), "Try again", () => meetingTakeBin(id), { sticky: true });
       return;
     }
     pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
@@ -1583,7 +1583,7 @@
         made++;
         ids.push(row.id);
       } catch (error) {
-        toast(error.message || `Couldn't keep ${file.name}.`, true);
+        toast(error.message || voiceLine("failed", { what: `keep ${file.name}` }), true);
       }
     }
     if (made) {

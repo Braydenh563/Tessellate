@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 146 | 29 | 3 | 11 | 305 |
+| world-class | 130 | 145 | 29 | 3 | 11 | 304 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 537 | 100 | 5 | 122 | 1190 |
+| all | 553 | 536 | 100 | 5 | 122 | 1189 |
 
 ## graph
 
@@ -540,7 +540,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-51** `world-class` open, M: Cut import cost 2.2 s to 1.5 s: compile composer regex tables lazily. From L678. Evidence: importtime self-time: composer_money 173 ms (67 regex compiles), core.database 111 ms, routes_learned 96 ms, fastapi 240 ms; total 2.2 s
 - [ ] **L-world-class-52** `world-class` open, L: Seal the bytes of recordings, library uploads and attachments in a private space. From L697. Evidence: L697 sealed the database columns only; the audio, upload and attachment bytes on disk (data/recordings, media, uploads) of a private space are still plain files
 - [ ] **L-world-class-53** `world-class` open, M: Bound the Python bracket-link regexes the L568 scan found quadratic, with a timing test per scanner. From L568 audit. Evidence: scratchpad redos_scan.py timed every constant regex in src/ at n=10000: 215 slow hits, mostly quadratic bracket-link shapes (composer_extra.py:22, study.py:38/42, composer_chat.py:45/299, page_analysis.py:41, task_acts.py:808, composer_frame.py:501/624, composer_threads.py:377, link_offers.py)
-- [ ] **L-world-class-140** `world-class` open, S: Voice: move the last 16 literal failure toasts (template literals, semantic-notice.js) onto voiceLine. From L-world-class-42. Evidence: grep: 15 toast(`Couldn't ${...}`) template literals and semantic-notice.js:101 (a sentence with guidance) still carry literal copy
 - [ ] **L-world-class-54** `world-class` open, L: Triage the 143 unowned open_scan hits in src, docs, scripts, .github and .claude. From hub 2026-11-14 12:40Z (owner scope). Evidence: open_scan.hits() over files no plan owns, outside tests/, tests-e2e, frontend/, scratchpad/: 143 hits in 47 files (.claude/work-order.md 33, routes_chat.py 9, database.py 6, ...). Each one gets one of three outcomes: a ledger row that is built, a strict xfail, or a comment reworded.
 - [ ] **L-world-class-60** `world-class` open, S: Settle 1.3's remaining 'no' cells in the object menu table: each built or marked n/a with its reason. From WORLD_CLASS_PLAN.md:158. Evidence: WORLD_CLASS_PLAN.md:158 says the 'no' cells are 'not planned'; no owner decision found in HANDOVER or ARCHITECTURE
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)

@@ -1703,7 +1703,7 @@ async function performUndoNow() {
     // Nothing changed: put it back rather than silently dropping it off
     // the stack, so a transient network error doesn't cost the undo itself.
     undoStack.push(action);
-    toast(error.message || `Couldn't undo “${action.label}”.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo “${action.label}”` }), true);
   }
   renderUndoBar();
 }

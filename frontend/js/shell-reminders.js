@@ -1090,7 +1090,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { retry: () => drop(left) });
+    if (left.length) toast(voiceLine("failed", { what: `delete ${left.length} of the reminders` }), true, { retry: () => drop(left) });
     loadReminders();
   };
   const remake = async (rows = done) => {
@@ -1098,7 +1098,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { retry: () => remake(left) });
+    if (left.length) toast(voiceLine("failed", { what: `bring back ${left.length} of the reminders` }), true, { retry: () => remake(left) });
     loadReminders();
   };
   await drop();

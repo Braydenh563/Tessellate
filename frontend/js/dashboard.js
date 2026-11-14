@@ -3971,7 +3971,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     toast(`Put back ${nounCount(done.undone, "note")}.`);
     await settle();
   } catch (error) {
-    toast(error.message || `Couldn't undo what ${name} changed.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo what ${name} changed` }), true);
   }
 }
 
