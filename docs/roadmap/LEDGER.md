@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 85 | 34 | 2 | 59 | 295 |
+| chat | 176 | 84 | 34 | 2 | 59 | 294 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 459 | 103 | 2 | 183 | 1115 |
+| all | 553 | 458 | 103 | 2 | 183 | 1114 |
 
 ## graph
 
@@ -46,7 +46,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L134** `chat` open, M: help-popovers.js 6 unclickable triggers; two ratchets fail. From OPEN.md:3838. Evidence: Found not fixed; lanserve.py and routes_recordings.py threads
 - [ ] **L135** `chat` open, M: Atlas faces at 104/28/20 px do not read as different moods; add cue on figure. From OPEN.md:1070; OPEN.md:1088; OPEN.md:2872; OPEN.md:3764. Evidence: Needs a design/human-rater read of the face sheet; no fix commit found
 - [ ] **L136** `chat` open, M: Chest breath writes torso scale 2.5x/s; settle cost in rest and large view. From OPEN.md:1069; OPEN.md:2869; OPEN.md:1247. Evidence: atlas-life.js atlasBreathFrame still runs on the resting beat (:547); composited rewrite not found
-- [ ] **L137** `chat` open, M: Large view whole-body moves (nmb-hop) move head 2.2x faster than rest; slow them. From OPEN.md:1242; OPEN.md:3492. Evidence: Row says decision needed on slowing; nmb-hop animations unchanged (08-consistency.css:6192).
 - [ ] **L138** `chat` open, M: Atlas idle cost: avatars.js timers, 670 recalcs/min, one 200 ms grid, nm-buddy layer stop under hint. From OPEN.md:2865; a30p-1103.md Found, not fixed; OPEN.md:2884. Evidence: Behaviour picker and perch checks not yet profiled; no later fix found
 - [ ] **L139** `chat` open, M: Companion trips to places with no window; trip frequency measured in visible modes. From OPEN.md:4430; OPEN.md:4431. Evidence: w34-unv2-1111.md marks true; trips to taskbar edge/free corner not confirmed built
 - [ ] **L140** `chat` open, M: Right-click to change companion in the enlarged popup view. From OPEN.md:1080; OPEN.md:3441. Evidence: contextmenu handlers exist for avatars.js:11286 and desk-companion.js:554 only; none in atlas*.js enlarged view

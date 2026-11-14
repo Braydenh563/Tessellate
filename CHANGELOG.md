@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Large view: the visiting companion's hop, startle, carry and cheer run at the resting speed (durations scaled by the 2.2x draw size), so the head no longer moves 2.2x faster (L137).
 - Desk companion page no longer throws `afterFrames is not defined` at boot (the helper moved from dashboard.js to prefs.js, which the desk page loads); desk page CPU and the Atlas pat sweep numbers are on L744 and L745.
 - Atlas: under the system's reduce-motion hint the calm loops (idle sway, breath, hair, tail and nebula flow, glints) run again; the hop, giggle, doze and rig stay stopped, and the app's own Reduce stops all. An idle companion: 253 restyles a minute stopped, 270 with the calm loops, 1,485 with everything (L741).
 - Companion: two live tests hold what the rows measured (4x CPU, a real browser, a fresh server): a throw by mouse, touch or keys scrolls nothing (L84), the throw's frame step reads no layout and costs a median 0.5 to 1.2 ms (L143), the follow loop naps when still and looks once a frame, one forced layout at most, when woken (L144), and a click in the large view costs setAtlasMood a median 8 to 12 ms (L131, L147); the two copies of the mind (catalogue phase and factor, JS and Python) agree over every act, mood and hour (L747).

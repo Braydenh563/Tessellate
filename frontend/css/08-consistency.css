@@ -5618,6 +5618,11 @@ body .chip.item-label,
   transform: none !important;
   translate: none !important;
 }
+/* L137: drawn at 2.2x, nmb-hop's 14px lift travels 2.2x as far in the same
+   time, so the head moved 2.2x faster than at rest. Each duration is the rest
+   one times the scale, which gives the resting speed. */
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-hop, .nmb-act-startle, .nmb-act-carry) .nm-buddy-char { animation-duration: 1.65s; }
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-cheer) .nm-buddy-char { animation-duration: 1.43s; }
 .nm-viewer-figure > #nm-buddy[data-pose="hang"] { top: 22px; }
 .nm-viewer-figure > #nm-buddy[data-pose="float"] { top: 82px; }
 .nm-viewer-figure > #nm-buddy .nm-buddy-face { cursor: pointer; }
