@@ -248,9 +248,9 @@ const clickText = (page, text) => page.getByText(text).first().evaluate((e) => {
     r.newForm = await page.evaluate(() => __m(document.getElementById('meeting-new-create').closest('.modal-card, .sheet-card, .card')));
     await page.evaluate(() => { const t = document.querySelector('#meeting-new-title, [id^=meeting-new] input[type=text]'); if (t) t.value = 'Deep sync'; });
     await page.click('#meeting-new-create'); await page.waitForTimeout(2500);
-    const entryId = await page.evaluate(() => editingId);
+    const entryId = await page.evaluate(() => appState.get("note"));
     r.entryId = entryId;
-    await page.evaluate(() => { try { editingId = null; noteFormDirty = false; renderEntries(); } catch (e) {} });
+    await page.evaluate(() => { try { setEditingNote(null); noteFormDirty = false; renderEntries(); } catch (e) {} });
     await page.waitForTimeout(800);
     r.sheetMs = await timed(page, `openMeetingSheet(${entryId})`, `(() => { const c = document.querySelector('.meeting-view'); return c && c.offsetParent; })()`);
     await page.waitForTimeout(800);
