@@ -106,11 +106,11 @@ def test_the_open_paints_the_text_before_the_panels():
     241-line file: 1,679 to 1,981ms at 390 before, 367 to 782 after)."""
     opener = _body("openDocument")
     assert "docAfterFirstPaint(seq, () => {" in opener
-    deferred = opener[opener.index("docAfterFirstPaint(seq"):]
-    assert "renderDocOutline();" in deferred and "renderDocTools();" in deferred
+    after_paint = opener[opener.index("docAfterFirstPaint(seq"):]
+    assert "renderDocOutline();" in after_paint and "renderDocTools();" in after_paint
     assert "if (seq === docOpenSeq) paint();" in _body("docAfterFirstPaint")
     assert "docCmPartIs(docCmParts.live, on)" in _body("docSetLiveDecorations")
     assert "docCmPartIs(docCmParts.gutter, docFenceGutterOn())" in _body("docCmSyncGutter")
-    #: The findings are repainted once, by the deferred prose check.
+    #: The findings are repainted once, by the prose check after first paint.
     assert "docResetDocument(doc.content, doc.id, { repaint: false });" in opener
     assert "syncDocFileType({ prose: false });" in opener

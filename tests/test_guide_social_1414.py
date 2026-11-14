@@ -3,7 +3,7 @@ guide responses still need a lot of improvement and better intuition, intent
 detection, social skills"). Behaviour, not strings: first person, one short
 line for a greeting or thanks, no repeat after "that didn't help", a place
 only when one was asked for, provenance not in the text (the chip says it),
-a resume offer only for unfinished work, a follow-up that comes from the
+a resume offer only for work under way, a suggested question that comes from the
 question. No clock is read."""
 
 from __future__ import annotations

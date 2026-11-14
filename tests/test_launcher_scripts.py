@@ -997,7 +997,7 @@ class TestTheWindowsSplash:
 
 class TestTheBrowserBootSplash:
     def test_it_carries_a_tip_line_in_the_markup(self):
-        """In the markup, not built by boot-guard.js: it has to be there
+        """In the markup, not made by boot-guard.js: it has to be there
         before first paint and survive a script that never runs, which is
         the case boot-guard.js itself exists for."""
         html = _read(ROOT / "frontend" / "index.html")

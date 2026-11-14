@@ -41,7 +41,7 @@ NOTES = json.loads((Path(__file__).parent / "fixtures" / "filing" / "notes.json"
 FLOOR_TOP1 = 0.60
 FLOOR_PRECISION = 0.75
 #: Decision 8, as the owner moved it on 2026-11-11 (HANDOVER decision 6, OPEN
-#: row 260): below this top-1 with no model, the step is not done. 0.6, filed
+#: row 260): below this top-1 with no model, the step fails. 0.6, filed
 #: outright (a sensitive note held for the person counts as not filed); the
 #: model path keeps 0.8.
 BAR_TOP1 = 0.6

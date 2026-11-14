@@ -1,5 +1,5 @@
-"""The document properties panel reads a note type (GRAPH_PLAN, "Still open
-after KG1 to KG9").
+"""The document properties panel reads a note type (GRAPH_PLAN, the item listed
+after KG1 to KG9, built).
 
 A document whose frontmatter says `type: Meeting` shows the Meeting type's
 fields it has not written yet as empty rows, each with the control its kind

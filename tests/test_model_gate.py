@@ -4,7 +4,7 @@ A local runner serves one request at a time, and background work (captions,
 vision reading, filing jobs, the night and entity passes) started its next
 call whenever it was ready, so a chat turn asked during an import waited
 behind as many calls as reached the runner first. Background work now
-yields between its calls while a chat turn is streaming; the follow-up
+yields between its calls while a chat turn is streaming; the next-question
 suggestions are not asked for while the person is already asking again.
 """
 

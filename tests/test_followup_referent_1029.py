@@ -1,4 +1,4 @@
-"""A follow-up's "it", "that", "the X" and "more" mean the leading note the
+"""A next question's "it", "that", "the X" and "more" mean the leading note the
 previous answer cited (audit 1029 C44, INBOX 1357: the class, not the case).
 
 The turns carry `objects` as the real client builds them

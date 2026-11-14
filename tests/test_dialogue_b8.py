@@ -4,7 +4,7 @@ read against the turns before, through the route, with no model.
 
 The row's bar is a 5-turn eval. Each conversation below is five turns; each
 turn names words its answer must hold and words it must not (the turn
-before's subject leaking into the next, or a follow-up searched as if it
+before's subject leaking into the next, or a second question searched as if it
 stood alone). Run as one test a conversation so a failure names its turn.
 """
 

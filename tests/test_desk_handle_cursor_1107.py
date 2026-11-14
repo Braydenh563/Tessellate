@@ -28,8 +28,8 @@ def _loaded_soon(fake, idc: int, within: float = 2.0, until=None) -> list[int]:
     import time
 
     end = time.monotonic() + within
-    done = until or (lambda: idc in _loaded(fake))
-    while not done() and time.monotonic() < end:
+    ready = until or (lambda: idc in _loaded(fake))
+    while not ready() and time.monotonic() < end:
         time.sleep(0.01)
     return _loaded(fake)
 
