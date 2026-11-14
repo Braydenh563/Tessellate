@@ -62,7 +62,7 @@
 
 # HANDOVER
 
-**Now (2026-11-14a, documents plan 2, branch claude/documents-plan-2 off #222; #226 merged):** L327 (documents.js: backlinks, block references and the dictionary popup to lazy pieces, listener imbalance) with one Sonnet agent; then L335, L-documents-11 (judge rung, this session), then L308, L330, L-documents-34, -36 to -39, L314, L342, L-documents-26. Hardware rows are BACKLOG-eligible. Before 'plan done': scripts/open_scan.py.
+**Now (2026-11-14a, documents plan 2, branch claude/documents-plan-2 off #222; #226 merged):** L327 (documents.js: backlinks, block references and the dictionary popup to lazy pieces, listener imbalance) with one Sonnet agent; then L335, L-documents-11 (judge rung; unblocked 2026-11-14 13:35Z: whiteboard L286 landed at 5a2b73ae, queued after the four running agents), then L308, L330, L-documents-34, -36 to -39, L314, L342, L-documents-26. Hardware rows are BACKLOG-eligible. Before 'plan done': scripts/open_scan.py.
 
 **Now (2026-11-13b, timeline-retro, PR 231, PAUSED at 97% weekly until 2026-11-14T07:00Z):** timeline plan closed (`open_scan --plan timeline` lists 0; L-timeline-5 and 6 done). CI on 77bc9e92: ruff, E2E, PDF, CodeQL, Windows, gitleaks and complexity green; the six test legs were still running at the pause, and this head (base merged again) starts a fresh run. Known flake: `test_model_deadline_1029` (`/embedding-models/choices` 2.65 s against 0.75 on a loaded runner, passes locally). Next on resume: read CI on this head; a flake gets one rerun, a real failure a root-cause fix; fully green, send the hub "green <sha>". If #230 lands first, take its `ledger.py` and `test_ledger`.
 
