@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Docs: WORLD_CLASS_PLAN recounted; built blocks moved to HISTORY, every open item is a LEDGER row (L-world-class-60 to 135), plan file open 0.
+- Search: matrix products run on one BLAS thread (GET /search at 5,000 notes p50 76-102 to 22 ms); tag reasons clean a note once (L635, L-world-class-20).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).
 - Notes: hovering or focusing a [[link]] previews the note it opens, in the citation peek (L573).
 - Meeting cards open with when and who, then agenda, decisions and open actions (L662).

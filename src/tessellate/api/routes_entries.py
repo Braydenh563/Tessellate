@@ -280,8 +280,10 @@ def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
 def _reasons_for(content: str, tags: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
     from tessellate.ai import tagging, taxonomy
 
-    hits = taxonomy.topic_hits(tagging.clean(content))
-    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits)))
+    own = tagging.clean(content)
+    hits = taxonomy.topic_hits(own)
+    note_stems = tagging.stems(tagging.tokens(own))
+    return tuple((tag, why) for tag in tags if (why := tagging.reason(tag, content, hits, note_stems, own)))
 
 
 _cached_reasons = functools.lru_cache(maxsize=1024)(_reasons_for)
