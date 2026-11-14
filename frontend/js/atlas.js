@@ -417,9 +417,7 @@ function atlasSpecks(parent, list, cls = "atl-speck") {
   return atlasMake("path", { class: cls, d }, parent);
 }
 
-//: **The lower body's weave** (L742, the owner: the lower body gets texture): a fine scatter of small specks
-//: along the dress and the trail, [t, across, r] like their `dust`, 18 of them at 0.07 to 0.11 across, in rows
-//: that never line up (a step of 0.37 across the width), so the stem reads as cloth of stars, not a plain fill.
+//: The lower body's weave (L742): 18 small specks along the dress and the trail, [t, across, r] like `dust`, in rows that never line up.
 atlasSpecks.weave = () => Array.from({ length: 18 }, (_, i) => [0.28 + i * 0.037, ((i * 0.37) % 1 - 0.5) * 0.7, 0.07 + (i % 3) * 0.02]);
 
 //: A width that eases from `a` at the root to `b` at the tip.

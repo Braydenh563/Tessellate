@@ -835,9 +835,7 @@ function flashRevealed(target) {
   //: page under a resting pointer, and the hover that follows closed a menu
   //: group the reveal had just opened (measured on the phone's note sheet).
   const box = shown.getBoundingClientRect();
-  //: **In view means inside the box that scrolls it, not only the window** (L85: Settings at 390 has its head and
-  //: section strip above the scrolling card, 174px down; a control at 148 passed `top >= 0`, so the link "landed
-  //: under the head" and never scrolled). The window's edge stays the bound where the page itself scrolls.
+  //: In view means inside the box that scrolls it, not only the window (L85: a control under Settings' head passed `top >= 0`).
   const clip = nearestScrollParent(shown);
   const edge = clip && clip !== document.documentElement && clip !== document.body ? clip.getBoundingClientRect() : null;
   const inView =

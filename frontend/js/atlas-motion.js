@@ -536,45 +536,34 @@ atlasRigWake.look.soon = (rig, ms) => {
   rig.looking = true;
   setTimeout(atlasRigWake.look, ms, rig);
 };
-//: The walk's arm swing as offsets to the shoulder and elbow (degrees): 1.3 strides a second, 9 degrees
-//: on the masculine look and 6 on the feminine, the two arms half a stride apart (L82: measured over a
-//: held walk the raise stays within 4.6 to 21.4 of hanging, never across the body). The elbow only ever
-//: bends further (0 to 0.6 of the swing), so the hand's arc stays below the shoulder.
+//: The walk's arm swing, [shoulder, elbow] offsets in degrees (L82): 1.3 strides a second, 9 masculine, 6 feminine, arms half a stride apart.
 atlasRigFrame.walkSwing = function (side, look, now) {
   const ph = (now / 1000) * 2 * Math.PI * 1.3 + (side === "r" ? 0 : Math.PI);
   const amp = look === "masculine" ? 9 : 6;
   return [amp * Math.sin(ph), amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5];
 };
 
-//: **Covering its eyes puts its hands over its face** (L175: the arms live in the body layer, under the head's, so a
-//: raised hand went behind the head). For the length of the hide act a copy of each arm is drawn on the front
-//: layer, and the rig drives it with the original (its groups, paths and hand); the copy goes when the act does.
+//: Covering its eyes (L175): the arms sit under the head's layer, so for the hide act a copy of each arm is drawn on the front layer.
 atlasRigFrame.hideHands = function (rig, on) {
   if (!on === !rig.hideCopies) return;
   const host = rig.box.querySelector(".atl-layer-front .atl-rig");
-  if (!on || !host) {
-    for (const c of rig.hideCopies || []) c.remove();
-    rig.hideCopies = null;
-    for (const arm of rig.arms) {
-      arm.groups = arm.groups.filter((g) => g.isConnected);
-      arm.paths = arm.paths.filter((p) => p.isConnected);
-      arm.cloneHands = [];
-    }
-    return;
-  }
-  rig.hideCopies = [];
+  for (const c of rig.hideCopies || []) c.remove();
+  rig.hideCopies = on && host ? [] : null;
   for (const arm of rig.arms) {
+    arm.groups = arm.groups.filter((g) => g.isConnected);
+    arm.paths = arm.paths.filter((q) => q.isConnected);
+    arm.cloneHands = [];
+    arm.shown = "";
+    arm.drawn = [1e9, 1e9];
+    if (!rig.hideCopies) continue;
     for (const g of [...arm.groups]) {
       const c = g.cloneNode(true);
       host.appendChild(c);
       arm.groups.push(c);
       arm.paths.push(...c.querySelectorAll(":scope > path"));
-      const hand = c.querySelector(":scope > .atl-hand");
-      if (hand) arm.cloneHands.push(hand);
+      arm.cloneHands.push(...c.querySelectorAll(":scope > .atl-hand"));
       rig.hideCopies.push(c);
     }
-    arm.shown = "";
-    arm.drawn = [1e9, 1e9];
   }
 };
 

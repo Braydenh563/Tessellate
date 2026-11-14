@@ -217,3 +217,20 @@ def test_lower_body_weave_adds_texture_to_both_looks_l742():
     assert len(out) == 18
     assert all(0.27 <= t <= 0.92 and abs(a) <= 0.35 and 0.069 <= r <= 0.111 for t, a, r in out)
     assert len({round(a, 2) for _, a, _ in out}) >= 14, "the rows never line up"
+
+
+def test_companionperf_sets_the_buddy_through_prefs_not_the_removed_select():
+    """The sweep read #avatar-buddy, a select that no longer exists, and died on null (the same break as L749)."""
+    src = (ROOT / "scratchpad/ui-sweeps/companionperf.js").read_text()
+    assert "getElementById('avatar-buddy')" not in src
+    assert src.count("prefs.set('avatar-buddy', k); syncNameMarkBuddy();") == 2
+
+
+def test_desk_renderer_captures_every_frame_at_full_size_l150():
+    """The renderer could not finish (no `tumble` capture, though its handler stayed) and shot about half its takes
+    with the app's fit scale at 0.75 (a 48 by 69 figure box for 64 by 92), which seamed the idle cycle."""
+    js = (ROOT / "scripts/render_desk_frames.js").read_text(encoding="utf-8")
+    assert 'name: "tumble"' in js and "spin: 115" in js
+    assert '#nm-buddy .nm-buddy-face { scale: 1 !important; transition: none !important; }' in js
+    life = (ROOT / "frontend/js/atlas-life.js").read_text(encoding="utf-8")
+    assert "atlasTailFrame.kit = {" in life and "if (atlasTailFrame.kit.hold === tail) return;" in life

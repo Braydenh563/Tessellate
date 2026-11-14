@@ -756,6 +756,7 @@
     if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
   }
   function atlasTailDraw(tail, bend, stretch) {
+    if (atlasTailFrame.kit.hold === tail) return;
     const { pts, turn, segs } = atlasTailShape(tail.rest, bend, stretch);
     const d = atlasTailKit.paths(tail.spec, segs);
     const { paths } = tail;
@@ -1534,6 +1535,9 @@
   atlasRigLower.acts = ["crouch", "lounge", "glide", "drift"];
   //: Asleep: the sleeping class, a nap, or a lying or curled pose (a property, not a global: `tests/test_global_scope_ratchet.py`).
   atlasRigLower.asleep = (buddy) => !!buddy && (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nmb-act-nap") || /^(lie|curl)/.test(buddy.dataset.pose || ""));
+
+  //: What scripts/render_desk_frames.js samples; `hold` is a tail the page's loop may not draw. A property, not a global (the scope ratchet).
+  atlasTailFrame.kit = { draw: atlasTailDraw, bend: atlasTailBend, acts: ATLAS_TAIL_ACTS, swell: ATLAS_BREATH_SWELL, hold: null };
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { atlasPropLoops, atlasRigLower, atlasRigLowerAttach, atlasRingLoops, atlasTailAttach, atlasTailCalm, atlasTailFrame });

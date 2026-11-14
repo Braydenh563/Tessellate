@@ -6633,27 +6633,24 @@
     float: { arm: [[0.25, -12], [0.6, 30], [0.86, 8]], lower: [[0.3, 10], [0.72, 6], [0.9, -3]] },
     cue: { arm: [[0.4, 20]] },
   };
-  //: **No generic arm turns faster than the Atlas rig's cap** (L83; `ATLAS_RIG_MAX_SPEED` is 200 a second at the
-  //: fastest, an ease-in-out segment's fastest moment is 1.55 times its mean, so 129 a second mean). The CSS
-  //: keyframes of a wave, a scratch and a hide are paced to it (a wave's lift was 408 a second, a hide's 352);
-  //: a gesture's `[offset, degrees]` frames, whose length is the caller's, give up angle instead of time: each
-  //: step, and the return to rest, is cut to what the cap allows in its share of `ms`.
+  //: No generic arm turns faster than the Atlas rig's cap (L83): 200 a second at the fastest is 129 mean (ease-in-out peaks at 1.55x).
+  //: A gesture's `[offset, degrees]` frames give up angle, not time: each step and the return are cut to what the cap allows.
   const NMB_ARM_MEAN_SPEED = 129;
   function nmbArmKeys(frames, ms) {
     const room = (from, to) => (NMB_ARM_MEAN_SPEED * (to - from) * ms) / 1000;
+    const out = [];
     let at = 0;
     let off = 0;
-    const out = frames.map(([o, deg]) => {
-      const d = Math.max(at - room(off, o), Math.min(at + room(off, o), deg));
-      [off, at] = [o, d];
-      return [o, Math.round(d * 10) / 10];
-    });
-    for (let i = out.length - 1; i >= 0; i -= 1) {
-      const [o] = out[i];
-      const cap = room(o, i === out.length - 1 ? 1 : out[i + 1][0]) + (i === out.length - 1 ? 0 : Math.abs(out[i + 1][1]));
-      if (Math.abs(out[i][1]) > cap) out[i][1] = Math.sign(out[i][1]) * Math.round(cap * 10) / 10;
+    for (const [o, deg] of frames) {
+      at = Math.max(at - room(off, o), Math.min(at + room(off, o), deg));
+      out.push([o, at]);
+      off = o;
     }
-    return out;
+    for (let i = out.length; i--; ) {
+      const next = out[i + 1];
+      out[i][1] = Math.sign(out[i][1]) * Math.min(Math.abs(out[i][1]), room(out[i][0], next ? next[0] : 1) + (next ? Math.abs(next[1]) : 0));
+    }
+    return out.map(([o, d]) => [o, Math.round(d * 10) / 10]);
   }
   function nameMarkBuddyLimbs(buddy, kind, ms = 0, delay = 0, way = 1) {
     for (const anim of nmb.limbAnims || []) anim.cancel();
