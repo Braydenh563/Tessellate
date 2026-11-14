@@ -403,6 +403,28 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
     return _NOT_THIS
 
 
+#: "the third item", "how many are left" after a checklist answer (CHAT_PLAN U13): said again about that list.
+_ITEM_NTH = lazy_compile(r"^\s*(?:and |what(?:'s| is) )?(?:the )?(first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last)(?: item| one| thing)?[\s?.]*$", re.I)
+_ITEMS_LEFT = lazy_compile(r"^\s*(?:and )?how many (?:items |are |is )*(left|open|done|remaining|ticked|unticked|to go)[\s?.]*$", re.I)
+_LIST_NAME = lazy_compile(r"\bYour (?:note )?\**([^*\n]+?)\**(?: note)? has\b")
+
+
+def _follow_item(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    nth, left = _ITEM_NTH.match(text), _ITEMS_LEFT.match(text)
+    if not (nth or left):
+        return _NOT_THIS
+    #: The list may be a turn or two back ("the second one", then "how many are left").
+    named = next((m for t in reversed(turns[-4:]) if "- [" in str(t.get("answer") or "") and (m := _LIST_NAME.search(str(t.get("answer"))))), None)
+    if not named:
+        return _NOT_THIS
+    if nth:
+        return FollowOn(f"what is the {nth.group(1).lower()} item on the {named.group(1)}", previous, "", "ordinal")
+    if left:
+        state = "done" if left.group(1).lower() in ("done", "ticked") else "open"
+        return FollowOn(f"how many items are {state} on the {named.group(1)}", previous, "", "ordinal")
+    return _NOT_THIS
+
+
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     correction = _CORRECTION.match(text)
     #: "no, that's wrong" complains; it names no note to prefer (INBOX 1668 b).
@@ -849,7 +871,7 @@ def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
 
 
 _FOLLOW_READERS = (
-    _follow_shift, _follow_more, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
+    _follow_shift, _follow_more, _follow_item, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
     _follow_then, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
 )
 
