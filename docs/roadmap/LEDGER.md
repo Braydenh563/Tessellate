@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 91 | 38 | 0 | 18 | 259 |
+| world-class | 130 | 91 | 37 | 0 | 18 | 258 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 483 | 109 | 2 | 129 | 1145 |
+| all | 553 | 483 | 108 | 2 | 129 | 1144 |
 
 ## graph
 
@@ -543,7 +543,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
-- [ ] **L666** `world-class` partly, M: Verify captions stop attaches audio via the recording object. From OPEN.md:2766. Evidence: routes_captions._save attaches audio only after Brief 80 object; recordings exist but wiring unverified
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L668** `world-class` partly, M: Left: rowActions in the suggestions inbox and the tag manager (categories-panel.js); built in meetings.js:1870, settings-data.js:352,:838. Kinds all is built (timeline.js:336). From OPEN.md:957; OPEN.md:2522.
 - [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
