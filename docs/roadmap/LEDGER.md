@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 165 | 2 | 59 | 240 |
+| chat | 0 | 74 | 165 | 2 | 59 | 239 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 234 | 2 | 183 | 1042 |
+| all | 359 | 448 | 234 | 2 | 183 | 1041 |
 
 ## graph
 
@@ -37,7 +37,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L164** `chat` open, L: Check web sources with a real search engine and contrast over .said and act card. From OPEN.md:851; OPEN.md:3644. Evidence: Needs a live search engine and owner's browser
 - [ ] **L172** `chat` open, L: Bring graph at rest and companion long tasks to the zero target. From OPEN.md:671; OPEN.md:3786. Evidence: frames.js REST_BUDGET still over zero; no fix commit located 2026-11-14 (companion2): desk window idle 43.3% to 1.7% of a core headless (L744), still over the 1% budget; the floor is browser compositing, script is about 12 ms in 25 s. Left: measure the real 112x152 window on hardware; graph REST_BUDGET in frames.js not touched.
 - [ ] **L173** `chat` open, L: Lower body and nebula follow pose and position, distinct silhouettes, in-app and desk parity. From OPEN.md:4366; OPEN.md:4402; OPEN.md:4406; OPEN.md:1079 (+1). Evidence: E6 (OPEN.md:296) built pose-following; W34 left it owner-call (design) to judge. Progress 2026-11-14: measured in the app (drawn path boxes of the lower layer, 1x, feminine; masculine within 3 px): idle 32x52, sit 28x40, lean 29x50, hang 29x58, lie 47x28. Float is the idle spell (`atlasLowerState` has no float state), so float and stand are the same 32x52 silhouette, and lean differs from idle by 3x2 px: those two pairs are the indistinct ones. No dated owner decision exists in HANDOVER, CHAT_PLAN or BACKLOG. Owner question, exact: should a float (hover) and a lean get a lower-body silhouette of their own (a longer, narrower trail for float; a visible side sweep for lean), or is idle-like acceptable? If yes: a `float` and a stronger `lean` entry in the lower-body tables (`flowByState`, the morph targets and `ATLAS_HAIR_STATES` in atlas-life.js, `atlasLowerState` in atlas-motion.js), the desk frame for it (render_desk_frames.js, then the L150 re-render), and a test that the boxes differ by more than 6 px in one dimension. Decided (standing order 3, 2026-11-14, for the owner): build; float gets its own lower state and silhouette, lean differs from idle by at least 6 px in one axis, desk frames match.
-- [ ] **L174** `chat` open, L: Atlas round 5: hands and feet drawn as part of each limb outline, legs and hair. From OPEN.md:1064; OPEN.md:2268. Evidence: Visual redesign; commits show ongoing Atlas work (1607) but needs a human visual read to close Progress 2026-11-14: not built, a visual redesign with no dated owner decision in HANDOVER, CHAT_PLAN or BACKLOG. Owner question, exact: the hands and feet are separate shapes over the limb outlines (`atl-hand` on the rig's anchor); should round 5 merge each into its limb's outline (one path per limb, hand and foot included), at the cost of the rig's hand anchor and the hide act's hand copies (L175)? If yes: outline hands and feet in atlasArmPath and the leg paths (atlas.js), keep `atl-hand` as the rig's anchor, compare outline pixels with scratchpad/pngpixel.py before and after; a person reads the result. Decided (standing order 3, 2026-11-14, for the owner): yes, one path per limb with hand and foot; the rig keeps an invisible hand anchor point so the hide act's copies (L175) still work.
 - [ ] **L176** `chat` open, L: Atlas/emblem animations keep style dirty each frame: remove per-frame getComputedStyle and custom-property writes. From a30m-1103.md Found, not fixed; w34-unv2-1111.md Found; OPEN.md:3892. Evidence: 36ecedeb1 band under html cut Blend sum 822-1315 to 136-226 ms; idle restyle remains (audit-1108-perf P1) 2026-11-14 (companion2): idle restyles remain on mains by decision 55; the desk page is at 341 a minute. Left: find the per-frame getComputedStyle and custom-property writes with the CDP Profiler on the in-app buddy at rest on battery.
 - [ ] **L177** `chat` open, L: Companion climbs window sides and inspects window corner, clock, cursor. From OPEN.md:4336; OPEN.md:4340. Evidence: W34 true, w34-unv2-1111.md.
 - [ ] **L178** `chat` open, L: Own activities with props and ambient activities by hour and mood on both companions. From OPEN.md:4334; OPEN.md:4403. Evidence: W34 true, w34-unv2-1111.md; not built.
