@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 76 | 165 | 2 | 59 | 241 |
+| chat | 0 | 76 | 154 | 2 | 59 | 230 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 450 | 234 | 2 | 183 | 1043 |
+| all | 359 | 450 | 223 | 2 | 183 | 1032 |
 
 ## graph
 
@@ -75,27 +75,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-62** `chat` open, M: Phase 4 skills gate: Find loose ends 8 of 8 and 80% of built-in skills with no invalid call on a local 1.5 to 3B model. From CHAT_PLAN.md:363. Evidence: Phase 4 gate unmet: 3B found 2 of 8 (2026-10-05), 1.5B 2 of 8, skills 1/9 pass (2026-11-11); runnable headless on llama-server
 - [ ] **L-chat-63** `chat` open, M: Phase 5 (b): run the 25-question composer eval with the real embedder and set the cosine thresholds from it. From CHAT_PLAN.md:367. Evidence: Decision 19 cosine thresholds are reasoned, not measured; bge-small is runnable here (L-chat-43 measured it)
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14)
-- [ ] **L-chat-65** `chat` partly, S: U1: entity names from fact layer joining vocabulary unverified. From CHAT_PLAN.md:1211. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/question_noise.py:2382 repair; src/tessellate/ai/composer.py:242 _fit_terms
-- [ ] **L-chat-66** `chat` partly, S: U3: taxonomy concept sets not verified. From CHAT_PLAN.md:1213. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_tables.py:801, :1294 VERB_NOUN_PAIRS
-- [ ] **L-chat-67** `chat` partly, S: U4: measured-None fragments unverified. From CHAT_PLAN.md:1214. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:315 follow_on
-- [ ] **L-chat-68** `chat` partly, S: U5: "Monday and Tuesday" as two parts unverified. From CHAT_PLAN.md:1215. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer.py:118 split_parts
-- [ ] **L-chat-69** `chat` partly, S: U6: 15 percent tie rule unverified. From CHAT_PLAN.md:1216. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/find_it.py:427; src/tessellate/ai/composer_empty.py:50 _did_you_mean
-- [ ] **L-chat-70** `chat` partly, S: U8: pronoun-by-type references unverified. From CHAT_PLAN.md:1218. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869 class Dialogue
-- [ ] **L-chat-71** `chat` partly, S: U9: 60-phrasing gate unmeasured. From CHAT_PLAN.md:1219. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_plan.py:233 window(); windows.py absent
-- [ ] **L-chat-72** `chat` partly, S: U10: negated constraint in composer unverified. From CHAT_PLAN.md:1220. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/entry/query.py:56 negate; src/tessellate/ai/factgraph.py:313 negated
-- [ ] **L-chat-73** `chat` partly, S: U11: over-time and superlative compares not found (guess). From CHAT_PLAN.md:1221. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_body.py:481 _compare_lead
-- [ ] **L-chat-74** `chat` partly, S: U12: sums over one unit unverified. From CHAT_PLAN.md:1222. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/factgraph.py:475 quantity
-- [ ] **L-chat-75** `chat` partly, S: U13: cross-note merge and "third item" unverified. From CHAT_PLAN.md:1223. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_quote.py:276 _list_block
-- [ ] **L-chat-76** `chat` partly, S: U14: yes/no reading of mode unverified. From CHAT_PLAN.md:1224. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/factgraph.py:45 MODES, :317 hypothetical
-- [ ] **L-chat-77** `chat` partly, S: U15: ordered steps unverified. From CHAT_PLAN.md:1225. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_read.py:705 because cue
+- [ ] **L-chat-66** `chat` partly, S: U3: taxonomy concept sets not verified. From CHAT_PLAN.md:1213. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_tables.py:801, :1294 VERB_NOUN_PAIRS Measured 2026-11-14: verb-noun pairs and repair are covered by the U1/U3 probes (tests/test_uax_probes_u_1114.py); the concept sets (sport, food, travel as one term) are not: 'gym' does not find a note that says only 'swimming'. Remaining step: a small concept table in composer_tables.py read by _fit_terms.
+- [ ] **L-chat-70** `chat` partly, S: U8: pronoun-by-type references unverified. From CHAT_PLAN.md:1218. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_dialogue.py:869 class Dialogue Measured 2026-11-14: 'she' and 'he' bind through page-echoed frames (person) only; 'there' and 'then' carry no place or day from the previous answer. Remaining step: add place and day to the Dialogue frame in composer_dialogue.py and read them in follow_on.
+- [ ] **L-chat-73** `chat` partly, S: U11: over-time and superlative compares not found (guess). From CHAT_PLAN.md:1221. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_body.py:481 _compare_lead Measured 2026-11-14: 'compare this month with last month' has no per-window reader; _compare_lead (composer_body.py) compares two named things only. Remaining step: a window pair in composer_notes._window and a count per window.
+- [ ] **L-chat-76** `chat` partly, S: U14: yes/no reading of mode unverified. From CHAT_PLAN.md:1224. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/factgraph.py:45 MODES, :317 hypothetical Measured 2026-11-14: compose('did I go to the gym') with the note 'If it rains I would go to the gym instead.' answers 'Your notes say this: If it rains you would go to the gym instead.'; with 'I did not go to the gym on Monday.' it quotes the negation as the lead. factgraph.MODES is read by no composer*.py. Remaining step: in composer_body._opener_options (yesno branch) take the sentence's factgraph mode and open 'Not that I can see, but a note says:' for negated and 'Only as a plan:' for hypothetical/conditional; test first in tests/test_uax_probes_u_1114.py.
 - [ ] **L-chat-78** `chat` partly, S: A1: persons and places need a model (plan). From CHAT_PLAN.md:1234. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer.py (compose); src/tessellate/ai/utilities.py
 - [ ] **L-chat-79** `chat` partly, S: A2: relative date realiser unverified. From CHAT_PLAN.md:1235. Evidence: Recount 2026-11-14 (audit, verify in code first): composer when shape
 - [ ] **L-chat-80** `chat` partly, S: A3: date arithmetic from named holidays unverified. From CHAT_PLAN.md:1236. Evidence: Recount 2026-11-14 (audit, verify in code first): composer count shape
 - [ ] **L-chat-81** `chat` partly, S: A4: see U14. From CHAT_PLAN.md:1237. Evidence: Recount 2026-11-14 (audit, verify in code first): see U14
-- [ ] **L-chat-82** `chat` partly, S: A5: see U13. From CHAT_PLAN.md:1238. Evidence: Recount 2026-11-14 (audit, verify in code first): see U13
 - [ ] **L-chat-83** `chat` partly, S: A6: span line unverified. From CHAT_PLAN.md:1239. Evidence: Recount 2026-11-14 (audit, verify in code first): composer timeline (_timeline)
 - [ ] **L-chat-84** `chat` partly, S: A7: see U11. From CHAT_PLAN.md:1240. Evidence: Recount 2026-11-14 (audit, verify in code first): see U11
-- [ ] **L-chat-85** `chat` partly, S: A8: see U15. From CHAT_PLAN.md:1241. Evidence: Recount 2026-11-14 (audit, verify in code first): see U15
 - [ ] **L-chat-86** `chat` partly, S: A9: window filter and day grouping unverified. From CHAT_PLAN.md:1242. Evidence: Recount 2026-11-14 (audit, verify in code first): search_manager entries_between
 - [ ] **L-chat-87** `chat` partly, S: A10: answer by entity fact unverified. From CHAT_PLAN.md:1243. Evidence: Recount 2026-11-14 (audit, verify in code first): entry/query.py entity:
 - [ ] **L-chat-88** `chat` partly, S: A11: as-of from a parameter only (plan). From CHAT_PLAN.md:1244. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/timetravel.py

@@ -276,7 +276,9 @@ _METADATA_WORDS = frozenset(
 
 #: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
 #: "what is not done" and "why did I not go" are not.
-_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
+_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without|anything|everything)\b", re.I)
+#: "not tagged work": the word left out is a tag, read on the note's filing as well as its words (CHAT_PLAN U10).
+_TAGGED = re.compile(r"^(?:tagged|filed)(?:\s+(?:with|under|as))?\s+(?:the\s+)?(?:tag\s+)?#?", re.I)
 
 
 def without_ask(question: str) -> tuple[str, str] | None:
@@ -919,21 +921,42 @@ def _holds_all(view, words: list[str]) -> bool:  # noqa: ANN001
     return bool(words) and all(composer._holds(w, have) for w in words)  # noqa: SLF001
 
 
+def _without_members(views: list, kept_words: list, left_words: list, tagged: bool) -> list:
+    """The notes that hold `kept_words` and leave `left_words` out (as words, or as a tag)."""
+    def has_left(v) -> bool:  # noqa: ANN001
+        if tagged:
+            tags = " ".join(str(t).lower() for t in (v.note.get("tags") or []))
+            return all(w in tags for w in left_words)
+        return _holds_all(v, left_words)
+
+    members = [v for v in views if v.sentences and not has_left(v) and (not kept_words or _holds_all(v, kept_words))]
+    members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
+    return members
+
+
+def _without_head(count: str, n: int, kept: str, left: str, tagged: bool) -> str:
+    if kept:
+        return f"{count} {'mentions' if n == 1 else 'mention'} {kept} and not {left}:"
+    if tagged:
+        return f"{count} {'is' if n == 1 else 'are'} not tagged {left}:"
+    return f"{count} {'does' if n == 1 else 'do'} not mention {left}:"
+
+
 def _without(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """The notes that hold the subject asked about and leave the other out; with
     no subject asked about, every note that leaves it out (round 2 E2)."""
     kept, left = without_ask(asked)  # type: ignore[misc]
+    tagged = bool(_TAGGED.match(left))
+    left = _TAGGED.sub("", left)
     kept_words, left_words = composer._words(kept), composer._words(left)  # noqa: SLF001
     if not left_words:
         return False
-    members = [v for v in views if v.sentences and not _holds_all(v, left_words) and (not kept_words or _holds_all(v, kept_words))]
-    members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
+    members = _without_members(views, kept_words, left_words, tagged)
     if not members:
         out.lines.append(f"Every note I looked through that mentions {kept} also mentions {left}." if kept_words else f"Every note I looked through mentions {left}.")
         return True
-    verb = "does" if len(members) == 1 else "do"
-    head = f"{_plural_words(len(members), 'note').capitalize()} {'mentions' if len(members) == 1 else 'mention'} {kept} and not {left}:" if kept_words else (
-        f"{_plural_words(len(members), 'note').capitalize()} {verb} not mention {left}:")
+    count = _plural_words(len(members), "note").capitalize()
+    head = _without_head(count, len(members), kept if kept_words else "", left, tagged)
     lines = [(f"{_title(v)}, {_day(v.written, today)}" if v.written else _title(v), v, v.sentences[0]) for v in members[:SHOWN]]
     _block(out, head, lines)
     if len(members) > SHOWN:
