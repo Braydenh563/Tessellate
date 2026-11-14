@@ -215,3 +215,15 @@ def find_answer(
     if not said:
         return {"answer": None}
     return {"answer": {"text": said["text"].strip(), "sources": said["sources"]}}
+
+
+@router.get("/read/flashcards")
+def answer_flashcards(title: str = Query("Answer", max_length=200), text: str = Query("", max_length=8000)) -> dict:
+    """The question and answer cards an answer's own words hold (CHAT_PLAN B12),
+    as the deck's markdown, for the Ask answer's "Make flashcards"; written
+    nowhere, the page saves it as a document with an undo. `count` 0 says the
+    answer holds nothing to ask about."""
+    from tessellate.ai import composer_study, study
+
+    deck = study.cards(text)
+    return {"count": len(deck), "text": composer_study.deck_text_titled(title.strip() or "Answer", deck) if deck else ""}

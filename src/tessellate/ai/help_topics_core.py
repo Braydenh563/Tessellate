@@ -81,6 +81,7 @@ HELP_TOPICS: list[dict] = [
             '"Ask your notebook" (Notes tab) and the Chat tab both answer from '
             "saved notes, with the raw notes beside the answer, each saying why "
             "it is there; in Ask, "
+            "the answer's ... menu keeps it as a note, a document, a mind map or flashcards, or sets a reminder to come back to it, each with Undo; "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
             "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "

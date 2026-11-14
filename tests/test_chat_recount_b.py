@@ -122,3 +122,15 @@ def test_the_list_sends_the_gist_and_the_card_draws_it_l158(client, session):
     rows = client.get("/entries", params={"preview": 120}).json()
     assert any(r["gist"].startswith("Plan the trip to the coast") for r in rows)
     assert "entry.gist && isLong" in app_js_text()
+
+
+def test_an_answer_becomes_flashcards_and_a_reminder_with_undo_l155(client):
+    from tests._app_js import app_js_text
+
+    text = "Photosynthesis is the process plants use to turn light into sugar.\n\nQ: What do plants need?\nA: Light, water and carbon dioxide."
+    got = client.get("/read/flashcards", params={"title": "Plants", "text": text}).json()
+    assert got["count"] >= 1 and got["text"].startswith("# Flashcards: Plants") and "**Q:**" in got["text"]
+    assert client.get("/read/flashcards", params={"text": "Hello."}).json() == {"count": 0, "text": ""}
+    js = app_js_text()
+    flash = js[js.index("async function askKeepAsFlashcards") : js.index("async function askKeepAsMap")]
+    assert "pushUndo(" in flash and "reminderMadeUndo(made)" in flash and "/read/flashcards?" in flash

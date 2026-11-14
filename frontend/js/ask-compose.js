@@ -678,6 +678,16 @@ function askAnswerMenu() {
           title: "A mind map of the notes this answer cites",
           run: () => askKeepAsMap(),
         },
+        {
+          label: "ph:cards Make flashcards",
+          title: "Questions and answers from this answer's own words, saved as a document",
+          run: () => askKeepAsFlashcards(),
+        },
+        {
+          label: "ph:alarm Remind me about this",
+          title: "A reminder tomorrow at 9 to come back to this question",
+          run: () => askRemindAboutAnswer(),
+        },
       ],
       "More ways to keep this answer"
     )
@@ -708,6 +718,45 @@ async function askKeepAsDocument() {
     }, { go: { open: "doc", id: doc.id } });
   } catch (error) {
     toast(error.message || "Couldn't save that document.", true);
+  }
+}
+
+async function askKeepAsFlashcards() {
+  if (!askKept?.text) return toast("There is no answer to keep yet.");
+  const title = askKeptTitle();
+  try {
+    const deck = await apiJson(`/read/flashcards?title=${encodeURIComponent(title)}&text=${encodeURIComponent(askKept.text.slice(0, 8000))}`);
+    if (!deck.count) return toast("This answer holds nothing to turn into flashcards.");
+    const doc = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: `Flashcards: ${title}`, content: deck.text }) });
+    pushUndo(
+      "Made flashcards from an answer",
+      () => api(`/documents/${doc.id}`, { method: "DELETE" }),
+      () => api(`/documents/${doc.id}/restore`, { method: "POST" })
+    );
+    toastAction(`Made ${nounCount(deck.count, "flashcard")}.`, "Open", () => {
+      switchTab("documents");
+      openDocument(doc.id);
+    }, { go: { open: "doc", id: doc.id } });
+  } catch (error) {
+    toast(error.message || "Couldn't make the flashcards.", true);
+  }
+}
+
+async function askRemindAboutAnswer() {
+  if (!askKept?.question) return toast("There is no answer to remind you about yet.");
+  const due = new Date();
+  due.setDate(due.getDate() + 1);
+  due.setHours(9, 0, 0, 0);
+  try {
+    const made = await apiJson("/reminders", {
+      method: "POST",
+      body: JSON.stringify({ text: `Revisit: ${askKeptTitle()}`, due_at: due.toISOString() }),
+    });
+    reminderMadeUndo(made);
+    loadReminders();
+    toast(`Reminder set for tomorrow at 9: ${askKeptTitle()}.`);
+  } catch (error) {
+    toast(error.message || "Couldn't make that reminder.", true);
   }
 }
 

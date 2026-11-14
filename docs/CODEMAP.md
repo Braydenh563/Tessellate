@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8512, frontend ids 2796, CSS sections 524, backend routes 716, backend modules 11191, test files 2910, tests 22919, plan headings 692, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8514, frontend ids 2796, CSS sections 524, backend routes 717, backend modules 11192, test files 2910, tests 22920, plan headings 692, app scripts 29, boot scripts 38, script files 305.
 
-## Frontend functions (8512)
+## Frontend functions (8514)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2026,42 +2026,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawAskChart` | frontend/js/ask-chart.js:295 |
 | `renderAskChart` | frontend/js/ask-chart.js:279 |
 
-### frontend/js/ask-compose.js (33)
+### frontend/js/ask-compose.js (35)
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1468 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1517 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
 | `askAnswerMenu` | frontend/js/ask-compose.js:660 |
-| `askAsOf` | frontend/js/ask-compose.js:1481 |
-| `askFromNotesFold` | frontend/js/ask-compose.js:884 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:692 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:714 |
-| `askKeptTitle` | frontend/js/ask-compose.js:687 |
-| `askPreAnswerCard` | frontend/js/ask-compose.js:874 |
-| `askQuestion` | frontend/js/ask-compose.js:928 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1406 |
-| `askStatusText` | frontend/js/ask-compose.js:1493 |
+| `askAsOf` | frontend/js/ask-compose.js:1530 |
+| `askFromNotesFold` | frontend/js/ask-compose.js:933 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:702 |
+| `askKeepAsFlashcards` | frontend/js/ask-compose.js:724 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:763 |
+| `askKeptTitle` | frontend/js/ask-compose.js:697 |
+| `askPreAnswerCard` | frontend/js/ask-compose.js:923 |
+| `askQuestion` | frontend/js/ask-compose.js:977 |
+| `askRemindAboutAnswer` | frontend/js/ask-compose.js:745 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1455 |
+| `askStatusText` | frontend/js/ask-compose.js:1542 |
 | `citationVerdictRow` | frontend/js/ask-compose.js:631 |
 | `digestMore` | frontend/js/ask-compose.js:467 |
 | `digestOffer` | frontend/js/ask-compose.js:507 |
 | `digestShape` | frontend/js/ask-compose.js:427 |
-| `drawWhyTrail` | frontend/js/ask-compose.js:795 |
-| `fetchComposedPeek` | frontend/js/ask-compose.js:903 |
+| `drawWhyTrail` | frontend/js/ask-compose.js:844 |
+| `fetchComposedPeek` | frontend/js/ask-compose.js:952 |
 | `markSaidSentences` | frontend/js/ask-compose.js:115 |
 | `readWebPage` | frontend/js/ask-compose.js:361 |
 | `renderActCard` | frontend/js/ask-compose.js:145 |
-| `renderAskBoth` | frontend/js/ask-compose.js:863 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:813 |
-| `renderAskHint` | frontend/js/ask-compose.js:1443 |
-| `renderAskInsights` | frontend/js/ask-compose.js:741 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1512 |
+| `renderAskBoth` | frontend/js/ask-compose.js:912 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:862 |
+| `renderAskHint` | frontend/js/ask-compose.js:1492 |
+| `renderAskInsights` | frontend/js/ask-compose.js:790 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1561 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
-| `renderAskWhy` | frontend/js/ask-compose.js:765 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1302 |
+| `renderAskWhy` | frontend/js/ask-compose.js:814 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1351 |
 | `renderWebSources` | frontend/js/ask-compose.js:285 |
-| `setAsking` | frontend/js/ask-compose.js:1502 |
+| `setAsking` | frontend/js/ask-compose.js:1551 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -13443,7 +13445,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (716)
+## Backend routes (717)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13865,6 +13867,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/read/board` | GET | `board_act` | src/tessellate/api/routes_read.py:83 |
 | `/read/dates` | POST | `date_chips` | src/tessellate/api/routes_read.py:98 |
 | `/read/filter` | GET | `phrase_filter` | src/tessellate/api/routes_read.py:106 |
+| `/read/flashcards` | GET | `answer_flashcards` | src/tessellate/api/routes_read.py:220 |
 | `/read/near` | POST | `near_rows` | src/tessellate/api/routes_read.py:139 |
 | `/read/offers` | POST | `note_offers` | src/tessellate/api/routes_read.py:71 |
 | `/read/words` | GET | `setting_words` | src/tessellate/api/routes_read.py:124 |
@@ -14166,7 +14169,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11191)
+## Backend modules (11192)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23543,7 +23546,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_state` | src/tessellate/api/routes_questions.py:66 |
 | `summary` | src/tessellate/api/routes_questions.py:54 |
 
-### src/tessellate/api/routes_read.py (14)
+### src/tessellate/api/routes_read.py (15)
 
 | Name | File:line |
 |---|---|
@@ -23553,6 +23556,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_clock` | src/tessellate/api/routes_read.py:27 |
 | `act_preview` | src/tessellate/api/routes_read.py:169 |
 | `act_rows` | src/tessellate/api/routes_read.py:159 |
+| `answer_flashcards` | src/tessellate/api/routes_read.py:221 |
 | `board_act` | src/tessellate/api/routes_read.py:84 |
 | `date_chips` | src/tessellate/api/routes_read.py:99 |
 | `find_answer` | src/tessellate/api/routes_read.py:192 |
@@ -28541,7 +28545,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22919)
+## Tests (22920)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28890,7 +28894,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_plan_recount.py | 2 |
 | tests/test_chat_question_queries_1102.py | 2 |
 | tests/test_chat_queue_1321.py | 2 |
-| tests/test_chat_recount_b.py | 10 |
+| tests/test_chat_recount_b.py | 11 |
 | tests/test_chat_recount_l144.py | 11 |
 | tests/test_chat_regenerate_as_e60.py | 4 |
 | tests/test_chat_reload_by_1693.py | 3 |
