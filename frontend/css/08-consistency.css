@@ -4603,8 +4603,11 @@ body .chip.item-label,
     grid-area: text;
     padding-top: var(--space-2);
   }
+  /* The time may take a second line: nowrap ran "Sat, Nov 14, 11:31 AM · in
+     2 h" 6px past its column at 320 (overlap.js, L-world-class-36). */
   #reminder-groups .entry-meta > .entry-date {
     grid-area: when;
+    white-space: normal;
   }
   /* The repeat chip is a painted box on the time's line; the row centres it. */
   #reminder-groups .entry-meta > .chip {

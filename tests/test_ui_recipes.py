@@ -7920,3 +7920,15 @@ def test_the_optional_package_notice_keeps_its_action_whole() -> None:
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
     assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+
+
+def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:
+    """L-world-class-36: the 24px "+N" chip's overhang ran 10px past its box at 390."""
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    assert re.search(r"\.entry-meta\.note-meta > \.note-meta-more \{\s*min-width: var\(--target-min\);", css)
+
+
+def test_a_reminders_phone_time_may_wrap_instead_of_overflowing() -> None:
+    """L-world-class-36: the nowrap time ran 6px past its column at 320."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"#reminder-groups \.entry-meta > \.entry-date \{\s*grid-area: when;\s*white-space: normal;", css)

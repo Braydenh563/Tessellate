@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders at 320: a row's time may wrap to a second line instead of running 6px past its column
+- Notes, narrow widths: the "+N" tags chip takes the 44px finger floor inside its box, so its touch overhang no longer runs 10px past it at 390
 - Settings, Models: the optional-package notice keeps its action's label whole and wraps the row, so "Open Packages" no longer runs 21px past its button at 320 and 390
 - Documents status bar: the caret position, the goal and the suggestions chip give way with an ellipsis (the file type keeps its place), so the bar is no longer 80px wider than its box at 320 to 820
 - The documents dictionary dialog is built on its first open, not parsed at boot: the boot page is back under its element cap after the base merge.

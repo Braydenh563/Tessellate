@@ -2767,6 +2767,12 @@ header#top-bar[data-scrolled="1"],
     aspect-ratio: auto;
     min-width: var(--target-min);
   }
+  /* The "+N" is the same: a 24px chip's finger overhang ran 10px past its box
+     sideways (overlap.js, 390, L-world-class-36); the floor puts the target in
+     the box, as for the icons above. */
+  .entry-meta.note-meta > .note-meta-more {
+    min-width: var(--target-min);
+  }
   button.manage-cat-count {
     min-width: var(--target-min);
     min-height: var(--target-min);
