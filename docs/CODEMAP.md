@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2789, CSS sections 526, backend routes 721, backend modules 11030, test files 2860, tests 22636, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8509, frontend ids 2789, CSS sections 526, backend routes 721, backend modules 11030, test files 2860, tests 22638, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8509)
 
@@ -93,11 +93,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shortcutHint` | frontend/js/prefs.js:227 |
 | `shortcutTitle` | frontend/js/prefs.js:234 |
 
-### frontend/js/store.js (2)
+### frontend/js/store.js (3)
 
 | Name | File:line |
 |---|---|
 | `appState` | frontend/js/store.js:18 |
+| `openReminders` | frontend/js/store.js:80 |
 | `publishNotes` | frontend/js/store.js:68 |
 
 ### frontend/js/lazy-entries.js (12)
@@ -678,46 +679,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
 | `updateBatchCount` | frontend/js/skills.js:954 |
 
-### frontend/js/shell-reminders.js (50)
+### frontend/js/shell-reminders.js (49)
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1540 |
+| `addReminder` | frontend/js/shell-reminders.js:1507 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1077 |
 | `clipText` | frontend/js/shell-reminders.js:842 |
-| `curtainShell` | frontend/js/shell-reminders.js:1682 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1591 |
+| `curtainShell` | frontend/js/shell-reminders.js:1649 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1558 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:443 |
 | `glideStrip` | frontend/js/shell-reminders.js:310 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1705 |
-| `loadReminders` | frontend/js/shell-reminders.js:927 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1672 |
+| `loadReminders` | frontend/js/shell-reminders.js:935 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:514 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:589 |
 | `notePreviewText` | frontend/js/shell-reminders.js:877 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1486 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1453 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:621 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1318 |
-| `presetDate` | frontend/js/shell-reminders.js:1374 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1285 |
+| `presetDate` | frontend/js/shell-reminders.js:1341 |
 | `previewBlocks` | frontend/js/shell-reminders.js:869 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1646 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1507 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1354 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1495 |
-| `reminderItem` | frontend/js/shell-reminders.js:1117 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1531 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1519 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1335 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1613 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1474 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1321 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1462 |
+| `reminderItem` | frontend/js/shell-reminders.js:1084 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1498 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1486 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1302 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:270 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:756 |
-| `setDue` | frontend/js/shell-reminders.js:1423 |
+| `setDue` | frontend/js/shell-reminders.js:1390 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:852 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1437 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1404 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:414 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1429 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1396 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:669 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:233 |
 | `tabBarMode` | frontend/js/shell-reminders.js:227 |
@@ -725,10 +725,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:204 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1367 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1449 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1047 |
-| `watchDoneReminders` | frontend/js/shell-reminders.js:1010 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1334 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1416 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1052 |
+| `watchDoneReminders` | frontend/js/shell-reminders.js:1015 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:803 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:829 |
 | `wikiLinkTarget` | frontend/js/shell-reminders.js:820 |
@@ -1371,141 +1371,140 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `selectionOffsets` | frontend/js/editor.js:2285 |
 | `skillCommands` | frontend/js/editor.js:751 |
 
-### frontend/js/dashboard.js (131)
+### frontend/js/dashboard.js (130)
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3905 |
-| `activityUndoControl` | frontend/js/dashboard.js:4003 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3912 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3986 |
-| `afterFrames` | frontend/js/dashboard.js:2022 |
-| `applyDashDensity` | frontend/js/dashboard.js:1304 |
+| `activityActorName` | frontend/js/dashboard.js:3888 |
+| `activityUndoControl` | frontend/js/dashboard.js:3986 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3895 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3969 |
+| `afterFrames` | frontend/js/dashboard.js:2005 |
+| `applyDashDensity` | frontend/js/dashboard.js:1287 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:328 |
-| `closeFeatures` | frontend/js/dashboard.js:1607 |
-| `dashActionRow` | frontend/js/dashboard.js:3695 |
-| `dashActivityItems` | frontend/js/dashboard.js:3816 |
-| `dashContinueNote` | frontend/js/dashboard.js:1453 |
-| `dashCustomiseItems` | frontend/js/dashboard.js:1502 |
-| `dashDensity` | frontend/js/dashboard.js:1172 |
-| `dashDensityChosen` | frontend/js/dashboard.js:1178 |
+| `closeFeatures` | frontend/js/dashboard.js:1590 |
+| `dashActionRow` | frontend/js/dashboard.js:3678 |
+| `dashActivityItems` | frontend/js/dashboard.js:3799 |
+| `dashContinueNote` | frontend/js/dashboard.js:1436 |
+| `dashCustomiseItems` | frontend/js/dashboard.js:1485 |
+| `dashDensity` | frontend/js/dashboard.js:1155 |
+| `dashDensityChosen` | frontend/js/dashboard.js:1161 |
 | `dashDragOverCard` | frontend/js/dashboard.js:23 |
-| `dashEmpty` | frontend/js/dashboard.js:3748 |
-| `dashEntries` | frontend/js/dashboard.js:503 |
-| `dashFillingSkeleton` | frontend/js/dashboard.js:2033 |
-| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2081 |
-| `dashGlanceFacts` | frontend/js/dashboard.js:623 |
-| `dashGridShape` | frontend/js/dashboard.js:1822 |
+| `dashEmpty` | frontend/js/dashboard.js:3731 |
+| `dashEntries` | frontend/js/dashboard.js:486 |
+| `dashFillingSkeleton` | frontend/js/dashboard.js:2016 |
+| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2064 |
+| `dashGlanceFacts` | frontend/js/dashboard.js:606 |
+| `dashGridShape` | frontend/js/dashboard.js:1805 |
 | `dashLayout` | frontend/js/dashboard.js:187 |
-| `dashLineDraw` | frontend/js/dashboard.js:517 |
-| `dashMarkMenu` | frontend/js/dashboard.js:1272 |
-| `dashMeetingWhen` | frontend/js/dashboard.js:717 |
-| `dashMoreItems` | frontend/js/dashboard.js:1470 |
-| `dashReminders` | frontend/js/dashboard.js:483 |
-| `dashStatsButton` | frontend/js/dashboard.js:2385 |
-| `dashStreak` | frontend/js/dashboard.js:2373 |
-| `dashTensionRow` | frontend/js/dashboard.js:4207 |
-| `dashWidgetRow` | frontend/js/dashboard.js:2137 |
-| `dashWidgetToggle` | frontend/js/dashboard.js:2111 |
-| `dashWidgetsSummary` | frontend/js/dashboard.js:2249 |
+| `dashLineDraw` | frontend/js/dashboard.js:500 |
+| `dashMarkMenu` | frontend/js/dashboard.js:1255 |
+| `dashMeetingWhen` | frontend/js/dashboard.js:700 |
+| `dashMoreItems` | frontend/js/dashboard.js:1453 |
+| `dashStatsButton` | frontend/js/dashboard.js:2368 |
+| `dashStreak` | frontend/js/dashboard.js:2356 |
+| `dashTensionRow` | frontend/js/dashboard.js:4190 |
+| `dashWidgetRow` | frontend/js/dashboard.js:2120 |
+| `dashWidgetToggle` | frontend/js/dashboard.js:2094 |
+| `dashWidgetsSummary` | frontend/js/dashboard.js:2232 |
 | `dashboardGreetingText` | frontend/js/dashboard.js:308 |
-| `dashboardMarkSeed` | frontend/js/dashboard.js:1208 |
+| `dashboardMarkSeed` | frontend/js/dashboard.js:1191 |
 | `fallbackGreetingPhrase` | frontend/js/dashboard.js:276 |
-| `featureRow` | frontend/js/dashboard.js:1619 |
-| `featuresPaint` | frontend/js/dashboard.js:1637 |
+| `featureRow` | frontend/js/dashboard.js:1602 |
+| `featuresPaint` | frontend/js/dashboard.js:1620 |
 | `fetchDashGraph` | frontend/js/dashboard.js:463 |
 | `fetchDashStats` | frontend/js/dashboard.js:438 |
-| `firstNoteImage` | frontend/js/dashboard.js:2467 |
-| `focusChime` | frontend/js/dashboard.js:3448 |
-| `focusRing` | frontend/js/dashboard.js:3382 |
-| `focusStep` | frontend/js/dashboard.js:3522 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3364 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3469 |
-| `focusTimerTick` | frontend/js/dashboard.js:3437 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3371 |
-| `generateDigest` | frontend/js/dashboard.js:2732 |
+| `firstNoteImage` | frontend/js/dashboard.js:2450 |
+| `focusChime` | frontend/js/dashboard.js:3431 |
+| `focusRing` | frontend/js/dashboard.js:3365 |
+| `focusStep` | frontend/js/dashboard.js:3505 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3347 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3452 |
+| `focusTimerTick` | frontend/js/dashboard.js:3420 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3354 |
+| `generateDigest` | frontend/js/dashboard.js:2715 |
 | `greetingBlock` | frontend/js/dashboard.js:267 |
 | `greetingCacheSlot` | frontend/js/dashboard.js:315 |
-| `loadDigestCache` | frontend/js/dashboard.js:2718 |
-| `miniEntryList` | frontend/js/dashboard.js:2504 |
-| `mountWidgetBody` | frontend/js/dashboard.js:1740 |
-| `moveDashWidget` | frontend/js/dashboard.js:2118 |
-| `noteRowFile` | frontend/js/dashboard.js:2499 |
-| `noteRowImage` | frontend/js/dashboard.js:2484 |
-| `noteSkillRun` | frontend/js/dashboard.js:1036 |
-| `openAskFromDashboard` | frontend/js/dashboard.js:942 |
-| `openFeatures` | frontend/js/dashboard.js:1592 |
+| `loadDigestCache` | frontend/js/dashboard.js:2701 |
+| `miniEntryList` | frontend/js/dashboard.js:2487 |
+| `mountWidgetBody` | frontend/js/dashboard.js:1723 |
+| `moveDashWidget` | frontend/js/dashboard.js:2101 |
+| `noteRowFile` | frontend/js/dashboard.js:2482 |
+| `noteRowImage` | frontend/js/dashboard.js:2467 |
+| `noteSkillRun` | frontend/js/dashboard.js:1019 |
+| `openAskFromDashboard` | frontend/js/dashboard.js:925 |
+| `openFeatures` | frontend/js/dashboard.js:1575 |
 | `paintDashClock` | frontend/js/dashboard.js:404 |
-| `paintDashEmblem` | frontend/js/dashboard.js:1234 |
-| `paintDashFace` | frontend/js/dashboard.js:1221 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3163 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3406 |
-| `quickLinkButton` | frontend/js/dashboard.js:1372 |
-| `quickTintColours` | frontend/js/dashboard.js:1366 |
-| `quickTintKey` | frontend/js/dashboard.js:1355 |
-| `quickTints` | frontend/js/dashboard.js:1422 |
-| `recentSkillLinks` | frontend/js/dashboard.js:1107 |
+| `paintDashEmblem` | frontend/js/dashboard.js:1217 |
+| `paintDashFace` | frontend/js/dashboard.js:1204 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3146 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3389 |
+| `quickLinkButton` | frontend/js/dashboard.js:1355 |
+| `quickTintColours` | frontend/js/dashboard.js:1349 |
+| `quickTintKey` | frontend/js/dashboard.js:1338 |
+| `quickTints` | frontend/js/dashboard.js:1405 |
+| `recentSkillLinks` | frontend/js/dashboard.js:1090 |
 | `refreshAiGreeting` | frontend/js/dashboard.js:348 |
-| `refreshArtForTheme` | frontend/js/dashboard.js:2350 |
-| `refreshDashWidgets` | frontend/js/dashboard.js:1797 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3829 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3769 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4071 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:3062 |
-| `renderDashGlance` | frontend/js/dashboard.js:734 |
-| `renderDashMore` | frontend/js/dashboard.js:1562 |
-| `renderDashSubmessage` | frontend/js/dashboard.js:519 |
-| `renderDashWidgetsList` | frontend/js/dashboard.js:2278 |
-| `renderDashboard` | frontend/js/dashboard.js:1826 |
-| `renderDashboardGreeting` | frontend/js/dashboard.js:577 |
-| `renderDigestWidget` | frontend/js/dashboard.js:2791 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:4034 |
-| `renderFeatures` | frontend/js/dashboard.js:1671 |
-| `renderFirstStepsLazy` | frontend/js/dashboard.js:1725 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3532 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2946 |
-| `renderMostLinkedWidget` | frontend/js/dashboard.js:2638 |
-| `renderMostOpenedWidget` | frontend/js/dashboard.js:2601 |
-| `renderMostUsedWidget` | frontend/js/dashboard.js:2627 |
-| `renderNameNudge` | frontend/js/dashboard.js:798 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4265 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4340 |
-| `renderPinnedWidget` | frontend/js/dashboard.js:2596 |
-| `renderQuestionsWidget` | frontend/js/dashboard.js:2687 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2896 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3135 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3220 |
-| `renderRecentNotesWidget` | frontend/js/dashboard.js:2657 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2908 |
-| `renderReviewWidget` | frontend/js/dashboard.js:2606 |
-| `renderStatsWidget` | frontend/js/dashboard.js:2423 |
-| `renderStreakWidget` | frontend/js/dashboard.js:2391 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3324 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4145 |
-| `renderTopTagsWidget` | frontend/js/dashboard.js:2666 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4097 |
+| `refreshArtForTheme` | frontend/js/dashboard.js:2333 |
+| `refreshDashWidgets` | frontend/js/dashboard.js:1780 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3812 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3752 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4054 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:3045 |
+| `renderDashGlance` | frontend/js/dashboard.js:717 |
+| `renderDashMore` | frontend/js/dashboard.js:1545 |
+| `renderDashSubmessage` | frontend/js/dashboard.js:502 |
+| `renderDashWidgetsList` | frontend/js/dashboard.js:2261 |
+| `renderDashboard` | frontend/js/dashboard.js:1809 |
+| `renderDashboardGreeting` | frontend/js/dashboard.js:560 |
+| `renderDigestWidget` | frontend/js/dashboard.js:2774 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:4017 |
+| `renderFeatures` | frontend/js/dashboard.js:1654 |
+| `renderFirstStepsLazy` | frontend/js/dashboard.js:1708 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3515 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2929 |
+| `renderMostLinkedWidget` | frontend/js/dashboard.js:2621 |
+| `renderMostOpenedWidget` | frontend/js/dashboard.js:2584 |
+| `renderMostUsedWidget` | frontend/js/dashboard.js:2610 |
+| `renderNameNudge` | frontend/js/dashboard.js:781 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4248 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4323 |
+| `renderPinnedWidget` | frontend/js/dashboard.js:2579 |
+| `renderQuestionsWidget` | frontend/js/dashboard.js:2670 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2879 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3118 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3203 |
+| `renderRecentNotesWidget` | frontend/js/dashboard.js:2640 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2891 |
+| `renderReviewWidget` | frontend/js/dashboard.js:2589 |
+| `renderStatsWidget` | frontend/js/dashboard.js:2406 |
+| `renderStreakWidget` | frontend/js/dashboard.js:2374 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3307 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4128 |
+| `renderTopTagsWidget` | frontend/js/dashboard.js:2649 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4080 |
 | `saveDashLayout` | frontend/js/dashboard.js:220 |
-| `saveQuickAccess` | frontend/js/dashboard.js:1410 |
-| `saveQuickTints` | frontend/js/dashboard.js:1427 |
-| `setFocusTimer` | frontend/js/dashboard.js:3511 |
-| `sizeDashWidgetSpan` | frontend/js/dashboard.js:854 |
-| `sizeDashWidgets` | frontend/js/dashboard.js:858 |
-| `skillRunTimes` | frontend/js/dashboard.js:1027 |
+| `saveQuickAccess` | frontend/js/dashboard.js:1393 |
+| `saveQuickTints` | frontend/js/dashboard.js:1410 |
+| `setFocusTimer` | frontend/js/dashboard.js:3494 |
+| `sizeDashWidgetSpan` | frontend/js/dashboard.js:837 |
+| `sizeDashWidgets` | frontend/js/dashboard.js:841 |
+| `skillRunTimes` | frontend/js/dashboard.js:1010 |
 | `startDashClock` | frontend/js/dashboard.js:377 |
-| `startFocusTimer` | frontend/js/dashboard.js:3492 |
-| `stopArt` | frontend/js/dashboard.js:2347 |
+| `startFocusTimer` | frontend/js/dashboard.js:3475 |
+| `stopArt` | frontend/js/dashboard.js:2330 |
 | `stopDashClock` | frontend/js/dashboard.js:372 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3501 |
-| `streamDigest` | frontend/js/dashboard.js:2751 |
-| `todayStamp` | frontend/js/dashboard.js:2714 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3484 |
+| `streamDigest` | frontend/js/dashboard.js:2734 |
+| `todayStamp` | frontend/js/dashboard.js:2697 |
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:241 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:249 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3120 |
-| `undoActorFrom` | frontend/js/dashboard.js:3930 |
-| `watchDashWidgets` | frontend/js/dashboard.js:889 |
-| `wireDashDensity` | frontend/js/dashboard.js:1340 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3103 |
+| `undoActorFrom` | frontend/js/dashboard.js:3913 |
+| `watchDashWidgets` | frontend/js/dashboard.js:872 |
+| `wireDashDensity` | frontend/js/dashboard.js:1323 |
 | `withDisplayName` | frontend/js/dashboard.js:291 |
-| `withoutLeadingEmoji` | frontend/js/dashboard.js:1093 |
+| `withoutLeadingEmoji` | frontend/js/dashboard.js:1076 |
 
 ### frontend/js/timeline.js (79)
 
@@ -7142,11 +7141,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reminderFormClear` | frontend/js/quickadd.js:518 |
 | `reminderFormError` | frontend/js/quickadd.js:508 |
 
-### frontend/js/reminder-edit.js (3)
+### frontend/js/reminder-edit.js (4)
 
 | Name | File:line |
 |---|---|
 | `buildSelect` | frontend/js/reminder-edit.js:9 |
+| `clearDoneReminders` | frontend/js/reminder-edit.js:163 |
 | `reminderEditForm` | frontend/js/reminder-edit.js:22 |
 | `snoozeReminderTo` | frontend/js/reminder-edit.js:137 |
 
@@ -28297,7 +28297,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22636)
+## Tests (22638)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30724,7 +30724,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_stop_discards_write.py | 5 |
 | tests/test_stop_reaches_the_model.py | 3 |
 | tests/test_storage_footprint.py | 7 |
-| tests/test_store_module.py | 4 |
+| tests/test_store_module.py | 6 |
 | tests/test_stray_paste_720.py | 3 |
 | tests/test_stream_turn_helpers.py | 4 |
 | tests/test_streaming_laziness.py | 7 |

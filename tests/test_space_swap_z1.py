@@ -266,7 +266,7 @@ const ctx = {
   noteSearchWhy: new Map([[1, 1]]), attachmentMetaCache: new Map([[1, 1]]), categoryMeta: new Map([["a", 1]]), notesRailCache: new Map([[1, 1]]),
   referenceCountsCache: new Map([[1, 1]]), reminderCountsCache: new Map([[1, 1]]), noteTopicsCache: new Map([[1, 1]]), thumbUrlCache: new Map([[1, 1]]),
   mapBoardIndexCache: {}, objOrderCache: new Map([[1, 1]]),
-  dashStatsInflight: {}, dashGraphInflight: {}, dashRemindersInflight: {}, dashStatsAt: 5, dashGraphAt: 5, dashRemindersAt: 5,
+  dashStatsInflight: {}, dashGraphInflight: {}, remindersRead: { inflight: {}, at: 5 }, dashStatsAt: 5, dashGraphAt: 5,
   attachedNoteIds: [1], attachedImages: [1], attachedDocuments: [1], attachedBoards: [1], attachedFiles: [1],
   renderAttachments() {}, renderImageAttachments() {}, renderDocumentAttachments() {}, renderBoardAttachments() {}, renderFileAttachments() {},
   captureDocumentList: [1], captureDocumentTitles: new Map([[1, 1]]), captureDocuments: new Set([1]),
@@ -321,8 +321,10 @@ def test_a_switch_forgets_every_cache_reloads_and_keeps_undo_and_tray() -> None:
     store.spaceId = "alpha";
     await swapSpace("beta");
     const names = ["allEntries", "entriesEverLoaded", "activeCategory", "noteSearch", "attachedNoteIds", "timelineRows", "libraryItems",
-      "docs", "graphStructure", "finderHits", "dashRemindersInflight", "mapBoardIndexCache", "captureDocumentList"];
+      "docs", "graphStructure", "finderHits", "mapBoardIndexCache", "captureDocumentList"];
     const left = names.filter((n) => { const v = globalThis[n]; return Array.isArray(v) ? v.length : v; });
+    // The open reminders read moved from the dashboard into the store (F12): still a cache the switch forgets.
+    if (globalThis.remindersRead.inflight) left.push("remindersRead.inflight");
     const maps = ["noteSearchWhy", "attachmentMetaCache", "referenceCountsCache", "thumbUrlCache", "objOrderCache", "librarySelection", "docHistories", "gcTopicSummaries"]
       .filter((n) => globalThis[n].size);
     __out({ left, maps, undo: globalThis.undoStack.length, tray: globalThis.objTray.length, box: globalThis.__box.value, space: store.spaceId, log, chat: globalThis.chatConv.id });

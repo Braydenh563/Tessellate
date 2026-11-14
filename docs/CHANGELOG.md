@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders are a store slice (F12): one shared read of the open reminders (`openReminders`, store.js) feeds the dashboard, the bell and the lock screen, and the tab badge and due timer subscribe to it; their own `/reminders` reads are gone, and Clear completed moved to the lazy reminder-edit.js (boot scripts 250,444 to 250,343 bytes gzipped). The current note slice is L-world-class-354 (L-world-class-81).
 - World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).
 - CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); the not-installed search message points to Reinstall again; a space switch forgets the held way back for large settings changes.

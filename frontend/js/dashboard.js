@@ -471,23 +471,6 @@ function fetchDashGraph() {
   return dashGraphInflight;
 }
 
-//: **One reminder walk per moment.** Three places on this tab want every
-//: reminder (the greeting line's due count, the stat tile, and the reminders
-//: widget), and all three render in the same pass, so a cold start walked
-//: `/reminders` three times over (WORLD_CLASS_PLAN A2). To the end of the
-//: list, not the first page: `/reminders` is `due_at` ascending, so a first
-//: page of old, ticked-off rows would hide everything upcoming
-//: (`archive/agent-remaining/list-paging.md`).
-let dashRemindersInflight = null;
-let dashRemindersAt = 0;
-function dashReminders() {
-  const now = Date.now();
-  if (dashRemindersInflight && now - dashRemindersAt < 2000) return dashRemindersInflight;
-  dashRemindersAt = now;
-  dashRemindersInflight = apiPagedList("/reminders", 200);
-  return dashRemindersInflight;
-}
-
 //: The notebook, for the four widgets that want the whole of it.
 //:
 //: `entriesEverLoaded`, not `allEntries.length`: an empty list is an answer,
@@ -524,9 +507,9 @@ async function renderDashSubmessage() {
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
-    // (`archive/agent-remaining/list-paging.md`); `dashReminders` shares
-    // the one fetch across the widgets that need it.
-    dashReminders().catch(() => []),
+    // (`archive/agent-remaining/list-paging.md`); `openReminders` (store.js)
+    // shares the one fetch across the widgets that need it.
+    openReminders().catch(() => []),
     //: The Patterns line (CHAT_PLAN decision 32), its short form here and
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
@@ -615,7 +598,7 @@ function renderDashboardGreeting() {
 //: Always four, in one order, each with a calm state: tiles that come and go
 //: with the day's data would move under the pointer and leave the empty
 //: middle back on a quiet day. Every number is a read the dashboard already
-//: makes (`dashReminders`, `fetchDashStats`, `dashEntries`, all shared with
+//: makes (`openReminders`, `fetchDashStats`, `dashEntries`, all shared with
 //: the widgets), so the glance costs no request and no model.
 //:
 //: Pure, so the arithmetic runs in node (tests/test_inbox_675_hero.py); `go`
@@ -749,7 +732,7 @@ async function renderDashGlance() {
     }
   }
   const [reminders, stats, entries] = await Promise.all([
-    dashReminders().catch(() => []),
+    openReminders().catch(() => []),
     fetchDashStats().catch(() => null),
     dashEntries().catch(() => []),
   ]);
@@ -2909,7 +2892,7 @@ async function renderRemindersWidget(body) {
   // To the end before filtering: taking four open ones out of a first page
   // that happens to be all done would show "no open reminders" to someone who
   // has plenty.
-  const reminders = (await dashReminders()).filter((r) => !r.done).slice(0, 4);
+  const reminders = (await openReminders()).filter((r) => !r.done).slice(0, 4);
   if (!reminders.length) {
     dashEmpty(body, "No open reminders.", { label: "ph:plus Add a reminder", run: "reminder", tab: "reminders" });
     return;
