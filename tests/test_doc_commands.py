@@ -100,3 +100,30 @@ def test_every_row_has_a_chord_or_says_none(table):
     for chord, binding in (("Ctrl+Shift+8", "Mod-Shift-8"), ("Ctrl+Shift+7", "Mod-Shift-7"), ("Ctrl+Shift+9", "Mod-Shift-9")):
         assert f'keys: "{chord}"' in table and f'key: "{binding}"' in keymap
     assert 'command.keys === "none" ? "" : (command.alt || command.keys)' in source
+
+
+def test_list_chords_read_the_physical_key():
+    """L882: on a layout where Shift+7 types "/" (German, Spanish, Italian, the
+    Nordic ones) CodeMirror sees the character "/", drops Shift for it and runs
+    Mod-/ (toggle comment) before it ever reaches Mod-Shift-7. Measured with
+    hw882.js: Ctrl+Shift+7 wrapped the line in an HTML comment. The list chords
+    therefore read `event.code` in a first-in-line DOM handler."""
+    source = DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
+    start = source.index("function docRedoChord(")
+    body = source[start : source.index("\n}\n", start)]
+    for code, kind in (("Digit7", "ol"), ("Digit8", "ul"), ("Digit9", "task")):
+        assert f'{code}: "{kind}"' in body
+    assert "event.code" in body and "docFileType().previewable" in body
+    
+
+def test_autocorrect_waits_for_the_composition_to_end():
+    """L883: a pinyin or kana preedit can look like a typo followed by a space
+    ("teh "). CodeMirror reports preedit changes as "input.type.compose", which
+    `isUserEvent("input.type")` also matches, so autocorrect rewrote the preedit
+    and broke the composition (hw883.js: the text became "the tehe " and
+    "the 你好"). The pipeline therefore skips an update while the view composes."""
+    source = DOCUMENTS_VIEW_JS.read_text(encoding="utf-8")
+    start = source.index("function docCmUpdate(")
+    body = source[start : source.index("\n}\n", start)]
+    line = next(row for row in body.splitlines() if row.strip().startswith("if (") and 'isUserEvent("input.type")' in row)
+    assert "update.view.composing" in line

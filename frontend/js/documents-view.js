@@ -8,9 +8,21 @@
 //: **Ctrl+Shift+Z is redo, whatever the key reports.** Shift+Z arrives as
 //: `key: "z"` with Caps Lock on, and the keymap then matched Mod-z (undo):
 //: dogfood item 1. A binding cannot see the event, so a DOM handler.
+//:
+//: **The list chords read the physical key too** (L882). Ctrl+Shift+7/8/9 are Google Docs' numbered,
+//: bulleted and task lists. Where Shift+7 types "/" (German, Spanish, Italian, the Nordic layouts)
+//: CodeMirror sees a character, drops Shift for it and runs Mod-/ (toggle comment) first, so the
+//: line was wrapped in an HTML comment. `event.code` names the key whatever it types.
 function docRedoChord(CM) {
+  const listKinds = { Digit7: "ol", Digit8: "ul", Digit9: "task" };
   return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
     keydown: (event, view) => {
+      const listKind = listKinds[event.code];
+      if (listKind && (event.ctrlKey || event.metaKey) && event.shiftKey && !event.altKey && typeof docCmView !== "undefined" && view === docCmView && docFileType().previewable) {
+        event.preventDefault();
+        applyMarkdown(listKind);
+        return true;
+      }
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return false;
       const key = event.key.toLowerCase();
       //: C32 (gsweep): the keyboard's undo and redo in the document gave no notice while the
@@ -401,7 +413,8 @@ function docCmUpdate(update) {
     //: correction's own transaction, which is what keeps this from looking at
     //: its own work, and false for every scripted rewrite (the AI panel, a
     //: template, a paste is "input.paste"), none of which a writer typed.
-    if (update.transactions.some((tr) => tr.isUserEvent("input.type"))) {
+    //: Not while an input method is composing (L883): the preedit is its text, not the writer's.
+    if (!update.view.composing && update.transactions.some((tr) => tr.isUserEvent("input.type"))) {
       const surface = docSurface();
       queueMicrotask(() => docAutocorrectAt(surface));
     }
