@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library, Contents: By type groups notes under their note type (Meeting, Book, your own), the untyped last (L-world-class-8)
 - Library: checked that every box suggests the person's own titles as they type (already built, tested; L576)
 - Find anything: a chat hit opens the chat at the turn that holds your words and rings it (L562)
 - Notes: the sidebar has a Search everything field; Enter opens Find anything with your words (L592)
