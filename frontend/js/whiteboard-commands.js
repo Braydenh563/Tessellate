@@ -323,6 +323,8 @@ const WB_COMMANDS = [
   { id: "copy-image", group: "Board", icon: "ph:copy", label: "Copy as an image", keys: "", surface: "both", run: () => wbCopyAsImage() },
   { id: "copy-svg", group: "Board", icon: "ph:code", label: "Copy as SVG", keys: "", surface: "both", run: () => wbCopyAsSvg() },
   { id: "rename", group: "Board", icon: "ph:pencil-simple", label: "Rename this board", keys: "", surface: "both", run: wbClickId("wb-rename-board") },
+  { id: "suggest-name", group: "Board", icon: "ph:sparkle", label: "Suggest a name for this board from what is on it", keys: "", surface: "both", run: wbClickId("wb-suggest-board-name") },
+  { id: "board-to-doc", group: "Board", icon: "ph:file-text", label: "Write this board as a document: a heading for each frame", menu: "Write as a document", keys: "", surface: "board", run: wbClickId("wb-board-to-doc") },
   { id: "new-board", group: "Board", icon: "ph:plus", label: "New board", keys: "", surface: "both", run: wbClickId("wb-new-board") },
   { id: "switch-kind", group: "Board", icon: "ph:tree-structure", label: "Switch between a whiteboard and a mind map", keys: "", surface: "both", run: wbClickId("wb-board-kind") },
   { id: "clear", group: "Board", icon: "ph:eraser", label: "Clear this board", keys: "", surface: "both", run: wbClickId("wb-clear-board") },

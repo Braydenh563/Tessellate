@@ -33,7 +33,8 @@ function foldNoteToolbarForFirstPaint() {
     if (!bar.querySelector(".doc-toolbar-tools") && !event.target.closest("button")) startNewNote();
   });
 }
-foldNoteToolbarForFirstPaint();
+//: The strip is in the Notes surface's template, built on first use, so it is not in the page when this file loads.
+onSurface("notes", foldNoteToolbarForFirstPaint);
 
 //: Read by navigation.js's `hasUnsavedWork` (WORLD_CLASS_PLAN 22.1 item 4).
 //: `editingId` alone says a form is *open*, not that anything in it has

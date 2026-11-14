@@ -1033,7 +1033,8 @@ def _page_read_text_map(kind: str, ids: list[int]) -> dict[int, str]:
         text = (row.text or "").strip()
         if text:
             out.setdefault(row.source_id, []).append(text)
-    return {source_id: "\n\n".join(parts) for source_id, parts in out.items()}
+    #: A form feed between pages: the Files row draws a "Page N" mark at each (the one reader of this map).
+    return {source_id: "\n\n\f\n\n".join(parts) for source_id, parts in out.items()}
 
 
 def _page_read_count_map(kind: str, ids: list[int]) -> dict[int, int]:

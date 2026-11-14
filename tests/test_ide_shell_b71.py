@@ -59,8 +59,8 @@ def test_the_head_is_a_dock_with_the_tabs_as_its_identity() -> None:
     assert '"cm-run-head dock"' in panel and '"dock-identity cm-run-identity"' in panel
     assert '"tabs-line cm-panel-tabs"' in panel and '"tablist"' in panel and '"tab"' in panel
     assert '"dock-actions cm-run-actions"' in panel
-    #: Worded ghosts first, the icon run (help, Close) last.
-    assert "actions.append(live, stdinButton, tests, again, stopButton, clear, help, close)" in panel
+    #: Worded ghosts first, the icon run (help, Close) last. L317 added the worded "Query as SQL" ghost for CSV.
+    assert "actions.append(live, stdinButton, tests, query, again, stopButton, clear, help, close)" in panel
     #: A count is the dock's quiet `.dock-chip`, never a pill.
     assert '"dock-chip cm-panel-count"' in panel
 

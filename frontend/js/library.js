@@ -200,6 +200,8 @@ function docTypeMenu(onPick, ariaLabel) {
 //: How big a list row says a document is: a code file's lines, a prose
 //: document's words (1031 CE8: "19 words" for a script). Both lists use it.
 function docSizeText(doc, withKind = false) {
+  //: A diagram's words are Mermaid keywords; the row says what it is instead (R11).
+  if (doc.file_type === "mmd") return "Diagram";
   const kind = docFileTypes.find((t) => t.ext === doc.file_type);
   if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
   return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
@@ -8858,7 +8860,7 @@ function buildFileReadingSummary(image, summary, images) {
   copy.title = "Copy everything read from this file";
   copy.addEventListener("click", (event) => {
     event.stopPropagation();
-    copyToClipboard(mediaReading(image), copy);
+    copyToClipboard(mediaReading(image).replace(/\f/g, ""), copy);
   });
   //: The two controls travel together on the right, with the facts on the
   //: left (the owner, 2026-09-21: "move the files tab row copy text button
@@ -8869,25 +8871,47 @@ function buildFileReadingSummary(image, summary, images) {
   headActions.className = "row library-file-reading-actions";
   headActions.append(copy, open);
   head.append(meta, headActions);
-  //: The whole reading, in place. Reported directly: "the text extracted
-  //: from this file area and dropdown in the library files subtab is
-  //: broken, it only shows the first line on the first page extracted". It
-  //: was the Phase 7.5 one-line summary working as designed, and the design
-  //: was wrong. The box is capped and scrolls (`.library-file-reading-text`),
-  //: so a forty-page scan shows its first few lines and the rest is a scroll
+  //: **A reading column, not a code box** (INBOX 827, L1). Body size and a 1.6
+  //: line height in a measure a person reads, each page under its own "Page N"
+  //: mark when the reading came page by page (the server joins pages with a form
+  //: feed), up to half the window with a fade where more waits, and a find box
+  //: once the text scrolls. The box is capped, so a forty-page scan is a scroll
   //: rather than a column that pushes every other row off the page.
-  const fullText = document.createElement("pre");
+  const fullText = document.createElement("div");
   fullText.className = "library-file-reading-text";
-  fullText.textContent = mediaReading(image);
+  fullText.tabIndex = 0;
+  fullText.setAttribute("role", "region");
+  fullText.setAttribute("aria-label", `Text read from ${image.original_name || "this file"}`);
+  const pages = mediaReading(image).split("\f").map((part) => part.trim()).filter(Boolean);
+  pages.forEach((pageText, index) => {
+    if (pages.length > 1) {
+      const mark = document.createElement("p");
+      mark.className = "library-file-page-mark";
+      mark.textContent = `Page ${index + 1}`;
+      fullText.appendChild(mark);
+    }
+    const body = document.createElement("p");
+    body.className = "library-file-page-text";
+    body.textContent = pageText;
+    fullText.appendChild(body);
+  });
   fullText.addEventListener("scroll", () => {
     readingScrollTops.set(mediaRowKey(image), fullText.scrollTop);
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
   });
   //: After layout, not now: this element is built before it is in the
   //: document, so it has no scroll height yet and `scrollTop` would be
   //: dropped on the floor. One frame is enough, the tile is appended
   //: synchronously in the same task.
   const savedScroll = readingScrollTops.get(mediaRowKey(image)) || 0;
-  if (savedScroll > 0) requestAnimationFrame(() => { fullText.scrollTop = savedScroll; });
+  requestAnimationFrame(() => {
+    if (savedScroll > 0) fullText.scrollTop = savedScroll;
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
+    //: Find only earns its row when the text scrolls.
+    if (fullText.scrollHeight > fullText.clientHeight + 1 && !holder.querySelector(".library-file-find")) {
+      holder.insertBefore(LinkShelf.readingFind(fullText), fullText);
+    }
+  });
   fullText.addEventListener("click", (event) => event.stopPropagation());
   holder.append(head, fullText);
   return holder;
@@ -11006,6 +11030,8 @@ onDomReady(() => {
       const created = await apiJson("/bookmarks", {
         method: "POST",
         body: JSON.stringify({
+          //: The person's own Save: the server may fetch the icon (with the web on); API saves do not.
+          fetch: true,
           url,
           title: titleInput.value.trim(),
           group_name: groupInput.value.trim(),
@@ -11039,6 +11065,7 @@ onDomReady(() => {
         toast(`Saved: you already had this bookmark (${created.title || created.url}).`);
       }
       renderBookmarks();
+      LinkShelf.afterSave();
     } catch (error) {
       toast(error.message, true);
     }
@@ -11081,12 +11108,13 @@ onDomReady(() => {
     if (search) search.value = "";
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     bookmarkStateFilter = "all";
     renderBookmarkGroupChips();
     filterBookmarks();
     search?.focus();
   });
-  $("bookmark-group-new")?.addEventListener("click", newBookmarkGroup);
+  $("bookmark-group-new")?.addEventListener("click", () => LinkShelf.newFolder());
   $("bookmark-group-manage")?.addEventListener("click", manageBookmarkGroups);
   $("bookmark-import")?.addEventListener("click", () => $("bookmark-import-file")?.click());
   $("bookmark-import-file")?.addEventListener("change", (event) => {
@@ -11368,7 +11396,7 @@ onDomReady(() => {
       button.addEventListener("click", run);
       linksEnd.insertBefore(button, linksDelete);
     };
-    linkVerb("library-links-bulk-move", "ph:folder-simple Move to group", "Put the ticked bookmarks in a group", bulkMoveLibraryLinks);
+    linkVerb("library-links-bulk-move", "ph:folder-simple Move to folder", "Put the ticked bookmarks in a folder", bulkMoveLibraryLinks);
     linkVerb("library-links-bulk-read", "ph:check-circle Mark read", "Mark the ticked bookmarks as read", () =>
       bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${nounCount(n, "bookmark")} as read.`));
     linkVerb("library-links-bulk-pin", "ph:push-pin Pin", "Pin the ticked bookmarks to the top", () =>
@@ -11389,7 +11417,7 @@ onDomReady(() => {
 
 let bookmarksCache = [];
 // The group and the tag the Links tab is narrowed to (null = all): one object, so a new filter adds no global name.
-const bookmarkScope = { group: null, tag: null };
+const bookmarkScope = { group: null, tag: null, dupes: false };
 let bookmarkStateFilter = "all"; // "all" | "unread" | "pinned"
 //: Sites folded away in the "By site" grouping, for this visit.
 const bookmarkFoldedSites = new Set();
@@ -11441,6 +11469,7 @@ async function renderBookmarks() {
   nounCount.dock("library-links", bookmarksCache.length, "bookmark");
   //: The empty state's Add a bookmark is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
   $("bookmark-add")?.classList.toggle("hidden", !bookmarksCache.length);
+  LinkShelf.applyView();
   renderBookmarkGroupChips();
   filterBookmarks();
   syncSelectbarCount("library-links", libraryLinksSelection.size);
@@ -11504,7 +11533,7 @@ renderBookmarks.file = {
 async function deleteBookmarksWithUndo(links) {
   const kept = links.map((b) => ({
     url: b.url, title: b.title, note: b.note, group_name: b.group_name, tags: b.tags || [],
-    pinned: Boolean(b.pinned), is_read: Boolean(b.is_read),
+    pinned: Boolean(b.pinned), is_read: Boolean(b.is_read), icon: b.icon || "", color: b.color || "",
   }));
   let deleted = 0;
   for (const bookmark of links) {
@@ -11594,7 +11623,7 @@ async function bulkMoveLibraryLinks() {
   const links = [...libraryLinksSelection.values()];
   if (!links.length) return;
   const value = await promptDialog(
-    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it)`,
+    `Folder for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading)`,
     ""
   );
   //: Cancel and an empty field both resolve "" (see `moveToGroup`), so a bulk
@@ -11689,25 +11718,6 @@ async function deleteBookmarkGroup(group) {
   return renameBookmarkGroup(group, "");
 }
 
-async function newBookmarkGroup() {
-  const name = (await promptDialog("Name for the new group (e.g. Work/Reading)", "")).trim();
-  if (!name) return;
-  if (allBookmarkGroups().includes(name)) {
-    toast(`"${name}" already exists.`);
-    bookmarkScope.group = name;
-    renderBookmarks();
-    return;
-  }
-  setEmptyBookmarkGroups([...emptyBookmarkGroups(), name]);
-  // Pre-fill the Add form so the obvious next move, saving a bookmark into
-  // the group you just made, needs no second trip to the group field.
-  const groupInput = $("bookmark-group-input");
-  if (groupInput) groupInput.value = name;
-  bookmarkScope.group = name;
-  renderBookmarks();
-  toast(`Group "${name}" created. Add a bookmark to it, or it'll be forgotten on the next device.`);
-}
-
 //: The manage dialog. Built by hand rather than reusing confirmDialog because
 //: it is a list with two actions per row, and it re-renders itself in place
 //: after each one: reopening it after every rename would lose your place.
@@ -11716,14 +11726,14 @@ function manageBookmarkGroups() {
   overlay.className = "modal-overlay confirm-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Manage bookmark groups");
+  overlay.setAttribute("aria-label", "Manage bookmark folders");
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card bookmark-groups-card";
   const blurb = document.createElement("p");
   blurb.className = "muted text-sm";
   blurb.textContent =
-    "Renaming a group moves every bookmark in it. Deleting one keeps the bookmarks and just ungroups them.";
+    "Renaming a folder moves every bookmark in it. Deleting one keeps the bookmarks and just takes them out of it.";
   const list = document.createElement("div");
   list.className = "bookmark-groups-list";
 
@@ -11750,7 +11760,7 @@ function manageBookmarkGroups() {
     if (!groups.length) {
       const none = document.createElement("p");
       none.className = "muted";
-      none.textContent = "No groups yet. Use “New group”, or type a group name when you add a bookmark.";
+      none.textContent = "No folders yet. Use “New folder”, or type a folder name when you add a bookmark.";
       list.appendChild(none);
       return;
     }
@@ -11782,8 +11792,8 @@ function manageBookmarkGroups() {
         smallButton("ph:trash", `Delete "${group}"`, async () => {
           const ok = await confirmDialog(
             count === 0
-              ? `Delete the empty group "${group}"?`
-              : `Delete the group "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being grouped.`
+              ? `Delete the empty folder "${group}"?`
+              : `Delete the folder "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being filed.`
           );
           if (!ok) return;
           await deleteBookmarkGroup(group);
@@ -11800,14 +11810,14 @@ function manageBookmarkGroups() {
   const footer = document.createElement("div");
   footer.className = "row confirm-actions";
   footer.append(
-    smallButton("New group", "Create a new group", async () => {
+    smallButton("New folder", "Create a new folder", async () => {
       close();
-      await newBookmarkGroup();
+      await LinkShelf.newFolder();
     }),
     smallButton("Done", "Close", close, false)
   );
 
-  card.append(dialogHead("Manage groups", close), blurb, list, footer);
+  card.append(dialogHead("Manage folders", close), blurb, list, footer);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
@@ -11827,18 +11837,23 @@ function renderBookmarkGroupChips() {
   if (bookmarksCache.length === 0) {
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     bookmarkStateFilter = "all";
+    LinkShelf.scopeBar();
     return;
   }
-  //: A group that has gone (renamed, emptied) cannot stay the filter.
-  if (bookmarkScope.group !== null && !groups.includes(bookmarkScope.group)) bookmarkScope.group = null;
+  //: A folder that has gone (renamed, emptied) cannot stay the filter.
+  const folderNames = LinkShelf.folders(groups);
+  if (bookmarkScope.group !== null && !folderNames.includes(bookmarkScope.group)) bookmarkScope.group = null;
+  if (bookmarkScope.dupes && !LinkShelf.duplicateSets().length) bookmarkScope.dupes = false;
   const apply = () => { renderBookmarkGroupChips(); filterBookmarks(); };
   const chip = (label, count, active, onPress) => {
     const el = document.createElement("button");
     el.type = "button";
     el.className = `library-chip${active ? " active" : ""}`;
     el.setAttribute("aria-pressed", active ? "true" : "false");
-    el.append(document.createTextNode(label));
+    if (label.startsWith("ph:")) setLabel(el, label);
+    else el.append(document.createTextNode(label));
     if (count !== null) {
       const n = document.createElement("span");
       n.className = "library-chip-count";
@@ -11855,12 +11870,15 @@ function renderBookmarkGroupChips() {
   //: and the groups below narrow it further.
   const unread = bookmarksCache.filter((b) => !b.is_read).length;
   const pinned = bookmarksCache.filter((b) => b.pinned).length;
-  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null, () => {
+  const allChip = chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null && !bookmarkScope.dupes, () => {
     bookmarkStateFilter = "all";
     bookmarkScope.group = null;
     bookmarkScope.tag = null;
+    bookmarkScope.dupes = false;
     apply();
   });
+  //: A link dropped on All leaves its folder; a nested folder dropped there moves up.
+  LinkShelf.wireChip(allChip, null);
   chip("Unread", unread, bookmarkStateFilter === "unread", () => {
     bookmarkStateFilter = bookmarkStateFilter === "unread" ? "all" : "unread";
     apply();
@@ -11873,15 +11891,31 @@ function renderBookmarkGroupChips() {
   } else if (bookmarkStateFilter === "pinned") {
     bookmarkStateFilter = "all";
   }
-  for (const group of groups) {
-    const count = bookmarksCache.filter((b) => b.group_name === group).length;
-    // "Work/Reading" renders as "Work / Reading", the "/" is a grouping
-    // convention for the user to type, not meant to display as a raw slash.
-    chip(group.split("/").join(" / "), count, bookmarkScope.group === group, () => {
+  //: Duplicates appear only when the shelf has some: the same address saved twice (scheme, www, a trailing slash and tracking marks aside).
+  const dupeLinks = LinkShelf.duplicateSets().flat().length;
+  if (dupeLinks) {
+    chip("Duplicates", dupeLinks, bookmarkScope.dupes, () => {
+      bookmarkScope.dupes = !bookmarkScope.dupes;
+      if (bookmarkScope.dupes) {
+        //: Copies are found across the whole shelf, not inside the folder that happens to be open.
+        bookmarkScope.group = null;
+        bookmarkScope.tag = null;
+        bookmarkStateFilter = "all";
+      }
+      apply();
+    });
+  }
+  //: Folders: one chip each, nested ones after their parent. A drag source and a drop target (library-links.js).
+  for (const group of folderNames) {
+    LinkShelf.folderChip(box, group, bookmarkScope.group === group, () => {
       bookmarkScope.group = bookmarkScope.group === group ? null : group;
       apply();
     });
   }
+  const fresh = chip("ph:folder-plus New folder", null, false, () => LinkShelf.newFolder(bookmarkScope.group && !bookmarkScope.group.includes("/") ? bookmarkScope.group : ""));
+  fresh.classList.add("bookmark-new-folder");
+  fresh.removeAttribute("aria-pressed");
+  fresh.title = "Make a folder (inside the open one, when a top folder is open)";
   //: Tags after the groups: a link carries several, so a tag filters across groups (one at a time, like a group).
   const tagCounts = new Map();
   for (const b of bookmarksCache) for (const tag of b.tags || []) tagCounts.set(tag.toLowerCase(), { tag, n: (tagCounts.get(tag.toLowerCase())?.n || 0) + 1 });
@@ -11892,6 +11926,7 @@ function renderBookmarkGroupChips() {
       apply();
     }).classList.add("bookmark-tag-chip");
   }
+  LinkShelf.scopeBar();
 }
 
 //: Sorting for the Links sub-tab, the Library's sub-tabs were reported as
@@ -11940,8 +11975,10 @@ function filterBookmarks() {
   const noMatch = $("bookmark-no-match");
   if (!list) return;
   const query = ($("bookmark-search")?.value || "").trim().toLowerCase();
+  const dupeIds = bookmarkScope.dupes ? new Set(LinkShelf.duplicateSets().flat().map((b) => b.id)) : null;
   const visible = bookmarksCache.filter((b) => {
-    if (bookmarkScope.group !== null && b.group_name !== bookmarkScope.group) return false;
+    if (bookmarkScope.group !== null && !LinkShelf.inFolder(b.group_name, bookmarkScope.group)) return false;
+    if (bookmarkScope.dupes && !dupeIds.has(b.id)) return false;
     if (bookmarkScope.tag !== null && !(b.tags || []).some((tag) => tag.toLowerCase() === bookmarkScope.tag)) return false;
     if (bookmarkStateFilter === "unread" && b.is_read) return false;
     if (bookmarkStateFilter === "pinned" && !b.pinned) return false;
@@ -11965,6 +12002,11 @@ function filterBookmarks() {
   //: pinned-first order was being thrown away by the client sort.
   const by = BOOKMARK_SORTS[bookmarkSort()];
   const ordered = [...visible].sort(bookmarkSort() === "site" ? by : (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || by(a, b));
+  //: The duplicates view reads set by set: the copies of one address side by side, whatever the sort.
+  if (bookmarkScope.dupes) {
+    const order = new Map(LinkShelf.duplicateSets().flatMap((set, at) => set.map((b) => [b.id, at])));
+    ordered.sort((a, b) => order.get(a.id) - order.get(b.id));
+  }
   if (bookmarkSort() === "site") {
     //: **"By site" groups, it does not only order.** Sorted by host the rows
     //: of one site already sat together, but nothing said so and nothing
@@ -12067,7 +12109,11 @@ function bookmarkRow(bookmark) {
   mark.className = `bookmark-mark bookmark-mark-${kind.key}`;
   mark.setAttribute("aria-hidden", "true");
   mark.title = kind.label;
-  setLabel(mark, bookmark.pinned ? "ph:push-pin" : kind.icon);
+  //: The icon the person chose, else the site's own (fetched at save, web on), else the kind's glyph; a pin
+  //: shows only where nothing else was chosen. The colour is the row's too (`.has-look`), a quiet tint.
+  LinkShelf.fillMark(mark, bookmark, bookmark.pinned ? "ph:push-pin" : kind.icon);
+  LinkShelf.withLook(row, bookmark.color);
+  LinkShelf.wireRow(row, bookmark);
   row.appendChild(mark);
   row.classList.toggle("is-read", Boolean(bookmark.is_read));
   row.dataset.bookmarkId = bookmark.id;
@@ -12135,6 +12181,13 @@ function bookmarkRow(bookmark) {
       "bookmark-meta",
     ),
   );
+  //: What the page said, two lines of it: shown by the cards view, hidden in the list (CSS).
+  if (bookmark.excerpt) {
+    const excerpt = document.createElement("p");
+    excerpt.className = "bookmark-excerpt";
+    excerpt.textContent = bookmark.excerpt;
+    main.append(excerpt);
+  }
 
   const actions = document.createElement("div");
   actions.className = "row bookmark-actions";
@@ -12201,7 +12254,7 @@ function bookmarkRow(bookmark) {
     const titleInput = field("Title", bookmark.title, "Title");
     const urlInput = field("URL", bookmark.url, "https://example.com");
     // Blank is meaningful here and always was: it means "no group".
-    const groupInput = field("Group", bookmark.group_name, "e.g. Work/Reading");
+    const groupInput = field("Folder", bookmark.group_name, "e.g. Work/Reading");
     const tagsInput = field("Tags", (bookmark.tags || []).join(", "), "Separate with commas");
     //: The note had no way in once a link was saved: the Add form never asked
     //: for one and this form never showed it, though the row and the search
@@ -12256,9 +12309,10 @@ function bookmarkRow(bookmark) {
           note: noteInput.value.trim(),
         };
         const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", tags: bookmark.tags || [], note: bookmark.note || "" };
-        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify(edited) });
+        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify({ ...edited, fetch: true }) });
         pushBookmarksPutUndo("Edited a bookmark", [{ id: bookmark.id, before: wasFields, after: edited }]);
         renderBookmarks();
+        if (url !== bookmark.url) LinkShelf.afterSave();
       } catch (error) {
         save.disabled = false;
         toast(error.message || voiceLine("failed", { what: "save that bookmark" }), true);
@@ -12274,7 +12328,7 @@ function bookmarkRow(bookmark) {
 
   const moveToGroup = async () => {
     const value = await promptDialog(
-      "Group (e.g. Work/Reading: blank clears it)", bookmark.group_name
+      "Folder (e.g. Work/Reading: blank takes it out of its folder)", bookmark.group_name
     );
     // Unlike the title prompt above, an intentionally blank group is a real,
     // useful answer ("ungroup this link"), so only an actual Cancel/Escape
@@ -12313,26 +12367,7 @@ function bookmarkRow(bookmark) {
       row.classList.remove("is-open");
       return;
     }
-    const box = document.createElement("div");
-    box.className = "bookmark-detail";
-    const addr = document.createElement("code");
-    addr.className = "bookmark-detail-url";
-    addr.textContent = bookmark.url;
-    const facts = [kind.label];
-    if (bookmark.group_name) facts.push(bookmark.group_name.split("/").join(" / "));
-    if ((bookmark.tags || []).length) facts.push(bookmark.tags.map((tag) => `#${tag}`).join(" "));
-    const saved = new Date(bookmark.created_at);
-    if (!Number.isNaN(saved.getTime())) facts.push(`saved ${saved.toLocaleDateString()}`);
-    facts.push(bookmark.is_read ? "read" : "unread");
-    const meta = metaLine(facts, "bookmark-detail-meta");
-    box.append(addr, meta);
-    if (bookmark.note) {
-      const note = document.createElement("p");
-      note.className = "bookmark-detail-note";
-      note.textContent = bookmark.note;
-      box.appendChild(note);
-    }
-    row.appendChild(box);
+    row.appendChild(LinkShelf.detailsCard(bookmark, { kind, done: renderBookmarks }));
     row.classList.add("is-open");
   };
 
@@ -12366,14 +12401,15 @@ function bookmarkRow(bookmark) {
       { ...makeMenuItem("ph:eye Details", "Show the whole address, the note and when it was saved", toggleDetails), group: "look" },
       {
         ...makeMenuItem(
-          bookmark.is_read ? "ph:circle Mark as unread" : "ph:check-circle Mark as read",
-          bookmark.is_read ? "Put this back on the reading list" : "Take this off the reading list",
+          bookmark.is_read ? "ph:bookmark-simple Read later" : "ph:check-circle Mark as read",
+          bookmark.is_read ? "Put this back on the reading list (Unread)" : "Take this off the reading list",
           toggleRead
         ),
         group: "look",
       },
-      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group, tags or note", startEditing), group: "change" },
-      { ...makeMenuItem("ph:folder-simple Move to group", "Move this bookmark to a group", moveToGroup), group: "change" },
+      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, folder, tags or note", startEditing), group: "change" },
+      { ...makeMenuItem("ph:palette Icon and colour", "Choose an icon and a highlight colour for this bookmark", () => LinkShelf.chooseBookmarkLook(bookmark, kind)), group: "change" },
+      { ...makeMenuItem("ph:folder-simple Move to folder", "Move this bookmark to a folder", moveToGroup), group: "change" },
       {
         ...makeMenuItem("ph:copy Copy address", "Copy the address to the clipboard", async () => {
           //: `copyToClipboard` flashes the button it is given, and a menu row is

@@ -2654,6 +2654,13 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   if (title && shortcut) title = shortcutTitle(title, shortcut);
   //: A gesture named after the chord ("right-click for the last 3").
   if (title && rest) title = `${title}: ${rest}`;
+  //: The same words again change nothing: the Undo and Redo pair repaints on every document keystroke, and rebuilding the buttons cost
+  //: style and layout work a bare editor does not pay (L323: UpdateLayoutTree 7.7 ms a key at 4x, 2.3 bare). The last paint is kept on the
+  //: function, not a new global, and dropped if the button's children were replaced from outside.
+  const seen = (paintStatusItem.last ||= new WeakMap());
+  const sig = [icon, value, label, title, tone].join("\u0001");
+  if (seen.get(button) === sig && button.firstChild) return;
+  seen.set(button, sig);
   button.replaceChildren();
   if (icon) {
     const glyph = document.createElement("span");

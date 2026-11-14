@@ -10,6 +10,7 @@ Object.assign(LAZY_MODULES, {
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table (stamps, stickers, affinity, boundary).
     "/js/whiteboard.js",
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
@@ -123,6 +124,8 @@ Object.assign(LAZY_MODULES, {
   docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
   docSynced: ["/js/documents-synced.js"],
   docBoard: ["/js/documents-board.js"],
+  //: The csv and tsv grid, fetched on the first press of Grid (documents-csvgrid.js).
+  docCsvGrid: ["/css/doc-csv-grid-lazy.css", "/js/documents-csvgrid.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({

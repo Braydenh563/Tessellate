@@ -28,7 +28,7 @@ FRONTEND = bundles.FRONTEND
 JS = FRONTEND / "js"
 
 BOARD_FILES = [
-    "whiteboard-map.js", "whiteboard-map-more.js", "whiteboard.js", "whiteboard-commands.js",
+    "whiteboard-map.js", "whiteboard-map-more.js", "whiteboard-map-marks.js", "whiteboard.js", "whiteboard-commands.js",
     "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-format.js", "whiteboard-label.js", "whiteboard-hints.js", "whiteboard-keys.js", "whiteboard-layers-more.js", "whiteboard-draw-more.js", "whiteboard-arrange-more.js", "whiteboard-shape-more.js", "whiteboard-library-more.js",
     "whiteboard-interchange.js", "whiteboard-history.js",
 ]

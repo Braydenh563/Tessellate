@@ -81,6 +81,11 @@ step() {  # name, command...
   else failed+=("$name"); fi
 }
 LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_braces.py
+  # Repo-wide ratchets no one file's name selects for --changed: each went red
+  # only on CI on PR 225 (2026-11-12) after targeted tests and lints passed.
+  tests/test_silent_mutations.py tests/test_undo_coverage.py tests/test_add_column_sites_1031.py
+  tests/test_server_detail_wording.py tests/test_list_routes_by_shape.py tests/test_css_regex_anchor.py
+  tests/test_plural_helper.py
   tests/test_css_invalidation.py
   tests/test_frontend_ids.py tests/test_frontend_handlers.py tests/test_dock_grammar.py
   tests/test_status_bar_grammar.py
@@ -334,6 +339,11 @@ changed_tests() {
     esac
   done | sort -u
 }
+# A per-test limit when pytest-timeout is there: a hung test (the full suite
+# stopped twice at 92% and 99% under -q, ledger 2026-11-12b) fails by name,
+# with every thread's stack, instead of running into the shell's timeout and
+# naming nothing. Five minutes is far past any one test's run here.
+TIMEOUT=(); "$PY" -c "import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=300)
 if [ "$CHANGED" = 1 ]; then
   mapfile -t TARGETED < <(changed_tests)
   # A selection this large is not a targeted run any more, and pretending
@@ -346,14 +356,14 @@ if [ "$CHANGED" = 1 ]; then
   if [ "${#TARGETED[@]}" = 0 ]; then skipped+=("changed-tests (none matched)");
   else
     [ "${#TARGETED[@]}" -le 40 ] && echo "changed-tests: ${TARGETED[*]}"
-    step changed-tests "$PY" -m pytest -q -p no:warnings "${TARGETED[@]}"
+    step changed-tests "$PY" -m pytest -q -p no:warnings "${TIMEOUT[@]}" "${TARGETED[@]}"
   fi
 else skipped+=("changed-tests (--changed)"); fi
 # Across every core when pytest-xdist is there (requirements.txt): the suite
 # is 25 minutes serial and under 9 on four cores, and each test already runs
 # in its own data dir, so nothing is shared between workers.
 XDIST=(); "$PY" -c "import xdist" 2>/dev/null && XDIST=(-n auto)
-if [ "$FULL" = 1 ]; then step full-suite "$PY" -m pytest -q -p no:warnings "${XDIST[@]}" tests/; else skipped+=("full-suite (--full)"); fi
+if [ "$FULL" = 1 ]; then step full-suite "$PY" -m pytest -q -p no:warnings "${TIMEOUT[@]}" "${XDIST[@]}" tests/; else skipped+=("full-suite (--full)"); fi
 if [ "$SWEEPS" = 1 ]; then
   export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
   export BASE="${BASE:-http://127.0.0.1:8781}"
@@ -365,7 +375,7 @@ if [ "$SWEEPS" = 1 ]; then
   # dochighlight, spinnershape, featuremodels, btnrows, answersupport, listenerrounds)
   # outlived their files in the sweep cleanup and failed this mode for good;
   # `tests/test_gate_lint_set.py` keeps the list and the folder in step.
-  for s in errors fontmatrix docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily doccodecopy docfallback doctabs dockeyboard doctoolbarstate mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue; do step "sweep-$s" node "scratchpad/ui-sweeps/$s.js"; done
+  for s in errors fontmatrix docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily doccodecopy docfallback doctabs dockeyboard doctoolbarstate mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue calheadalign; do step "sweep-$s" node "scratchpad/ui-sweeps/$s.js"; done
 else
   skipped+=("sweeps (--sweeps, needs BASE)")
 fi

@@ -95,3 +95,10 @@ console.log(JSON.stringify([first, second]));
     assert "DOC_VIEW_VERSION" in text
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
     assert json.loads(out) == ["live", "split"]
+
+
+def test_leaving_plain_for_a_code_files_source_clears_the_stored_plain():
+    """L-documents-12: Plain, then Source, on a .py left "plain" stored, so the next file opened plain
+    and uncoloured (docviews.js saw swift, r, ini and the Python block draw no tokens)."""
+    body = _function("setDocView")
+    assert re.search(r'else if \(docView === "source" && prefs\.get\(DOC_VIEW_KEY, null\) === "plain"\) prefs\.remove\(DOC_VIEW_KEY\)', body)

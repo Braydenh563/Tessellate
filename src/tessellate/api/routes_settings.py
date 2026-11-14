@@ -382,6 +382,8 @@ class PreferencesBody(BaseModel):
     #: the names the writer put away with "Never offer a link to this name".
     #: The list is bounded because a client writes to it freely.
     link_offers: bool | None = None
+    #: Harper's lint kinds the person turned off, by group (L333): the Checks sheet.
+    prose_kinds_off: list[Literal["style", "punctuation", "capitalization", "wording"]] | None = Field(default=None, max_length=4)
     check_link_text: bool | None = None
     link_offer_ignored: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=500)
     #: Autocorrect in the note boxes, the chat and Ask composers and the
@@ -851,6 +853,7 @@ def _prefs_notebook(config) -> dict:
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
         "link_offers": config.get_preference("link_offers", True),
+        "prose_kinds_off": config.get_preference("prose_kinds_off", []),
         "check_link_text": config.get_preference("check_link_text", False),
         "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),

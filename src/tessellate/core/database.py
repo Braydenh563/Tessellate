@@ -32,6 +32,7 @@ from sqlalchemy import (
     TypeDecorator,
     UniqueConstraint,
     event,
+    func,
     inspect as sa_inspect,
     select,
     text as sql_text,
@@ -40,6 +41,7 @@ from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     Session,
+    column_property,
     mapped_column,
     with_loader_criteria,
 )
@@ -1426,6 +1428,21 @@ class Bookmark(Base, WorkspaceMixin):
     #: usually for. Scalar default so the additive auto-migrator backfills
     #: existing rows to unread.
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: The look of the card (INBOX 827 L5). `icon` is "" (the site's own, else its kind's glyph), a Phosphor
+    #: name as "ph:star" or an emoji; `color` is "" or a palette key (`repo/bookmarks.COLORS`). Scalar defaults,
+    #: so the additive auto-migrator backfills "".
+    icon: Mapped[str] = mapped_column(String(80), default="")
+    color: Mapped[str] = mapped_column(String(20), default="")
+    #: What the last fetch found (L3, and the stale-icon bug): the site's own icon as a `data:` address (nothing
+    #: is requested from the site to draw it), a two-line excerpt and the page's text. Written only by
+    #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
+    #: Deferred (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
+    #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    excerpt: Mapped[str] = mapped_column(String(400), default="")
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
+    has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

@@ -78,7 +78,9 @@ def test_the_dock_is_one_row_at_320_because_suggest_folds_into_the_more_menu():
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     rule = css.split(".dgm-compact .dgm-suggest {", 1)[1].split("}", 1)[0]
     assert "display: none;" in rule
-    more = BUILDER.split("  function more(S) {", 1)[1].split("\n  }\n", 1)[0]
+    #: The narrow fold moved from the builder's more() to diagram-kindbar.js's fold() (e768ad94, the builder's
+    #: gzip cap); the same rows are read there.
+    more = (JS_DIR / "diagram-kindbar.js").read_text(encoding="utf-8").split("  function fold(S, DIRS, suggestMenu) {", 1)[1].split("\n  }\n", 1)[0]
     # The hidden button's rect is empty, so the menu anchors the suggestions to its own trigger.
     assert "S.suggestBtn && matchMedia(COMPACT).matches" in more
     assert "ph:sparkle Suggest…" in more and ".dgm-more button" in more

@@ -68,4 +68,4 @@ def test_every_token_issue_releases_the_work_and_the_launch_holds_it():
     app = (root / "api" / "app.py").read_text(encoding="utf-8")
     for held in ('afterunlock.defer("search-warmup"', 'afterunlock.defer("resume-jobs"', 'afterunlock.defer("maintenance"'):
         assert held in app, held
-    assert "afterunlock.arm()" in app
+    assert "afterunlock.arm(_has_password())" in app

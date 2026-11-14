@@ -11804,7 +11804,16 @@ async function wbApplyHistoryEntry(from, to) {
     if (!item) return true;
     const payload = toPayload(item);
     const links = wbLinksTouching(entry.kind, entry.id);
-    const res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    //: Marked first: a save of this item still on its way (a topic just added, then undone) is dropped by
+    //: `wbSaveObject` instead of racing the DELETE into a stale write (L-whiteboard-18).
+    item._undoing = true;
+    let res;
+    try {
+      res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    } catch (err) {
+      delete item._undoing;
+      throw err;
+    }
     //: **A topic that has gained a branch since goes, and comes back, whole**
     //: (INBOX 537). The server takes a map topic's subtree with it; this step
     //: used to keep only the one row, so the branch under it was lost for good.
@@ -15483,6 +15492,21 @@ async function initWhiteboard() {
   //: kind nothing in the segment could match (INBOX 197).
   $("wb-new-board")?.addEventListener("click", () => createNewBoard());
   $("wb-rename-board")?.addEventListener("click", renameCurrentBoard);
+  //: L348: the model names the board from what is on it, else its first words do; renamed through Rename's undoable path.
+  $("wb-suggest-board-name")?.addEventListener("click", async () => {
+    const boardId = window.currentBoardId;
+    if (!boardId) return;
+    const current = document.getElementById("wb-board-select")?.selectedOptions?.[0]?.dataset.title || "";
+    const got = await apiJson(`/whiteboard/boards/${boardId}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+    if (!got?.title || got.title === current || window.currentBoardId !== boardId) return;
+    try {
+      const board = await apiJson(`/whiteboard/boards/${boardId}`, { method: "PUT", body: JSON.stringify({ title: got.title }) });
+      await refreshBoardList(board);
+      wbBoardPutStep(`Renamed the board to \u201c${board.title}\u201d`, boardId, { title: current }, { title: board.title });
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+    }
+  });
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
@@ -16222,6 +16246,7 @@ async function initWhiteboard() {
   $("wb-delete-board")?.addEventListener("click", wbDeleteCurrentBoard);
   $("wb-add-to-note")?.addEventListener("click", wbAddBoardToNote);
   $("wb-map-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
+  $("wb-board-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
   $("wb-map-study")?.addEventListener("click", () => wbMapStartStudy());
   $("wb-map-build")?.addEventListener("click", () => wbMapBuild.start());
   $("wb-copy-link")?.addEventListener("click", () => {
@@ -19786,6 +19811,8 @@ async function refreshBoardList(justCreated = null) {
   // rename: `rename_board` 404s on anything that isn't a real positive id.
   const renameBtn = document.getElementById("wb-rename-board");
   if (renameBtn) renameBtn.disabled = !window.currentBoardId;
+  const suggestBtn = document.getElementById("wb-suggest-board-name");
+  if (suggestBtn) suggestBtn.disabled = !window.currentBoardId;
 }
 
 //: **What the picker says a board holds** (audit 2026-10-05, UX-06). A map
@@ -23792,6 +23819,7 @@ async function wbSaveObject(d) {
   //: A topic still on its way to the server (`wbMapAddChild`'s optimistic
   //: add) is saved once it has its real id.
   if (d._creating) return d._creating.then((ok) => (ok ? wbSaveObject(d) : undefined));
+  if (d._undoing) return;
   delete d._unsaved;
   const body = {
     kind: d.kind, data: d.data, board_id: d.board_id,

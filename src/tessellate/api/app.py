@@ -1335,8 +1335,7 @@ def _start_services() -> Path:
     #: owner's lag log): the search model's load, the speller, the day's
     #: housekeeping and the queued jobs start after the unlock answer has
     #: gone (core/afterunlock.py), never beside it.
-    if _has_password():
-        afterunlock.arm()
+    afterunlock.arm(_has_password())
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
     afterunlock.defer("resume-jobs", jobs.resume)

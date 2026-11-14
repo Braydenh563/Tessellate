@@ -804,6 +804,10 @@ function enhanceSelect(select) {
   select.classList.add("select-native-hidden");
   select.tabIndex = -1;
   select.setAttribute("aria-hidden", "true");
+  //: `select.focus()` anywhere in the app focused nothing, because the native
+  //: control is out of the tab order; it goes to the opener, which is what a
+  //: person would tab to.
+  select.focus = (options) => opener.focus(options);
 
   //: The name the select already has, wherever it was given: its own
   //: `aria-label`, the element `aria-labelledby` points at, or the `<label

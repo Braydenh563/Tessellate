@@ -39,7 +39,6 @@ UNFOLDED: dict[str, str] = {
     "dashboard.js:activityUndoPlanText": "words for the activity undo's confirm",
     "dashboard.js:activityUndoStarts": "finds where that undo starts",
     "dashboard.js:activityUndoControl": "draws that undo's button",
-    "editor.js:inlineAiUndo": "the inline AI bar's discard, on unsaved text in the field",
 }
 
 

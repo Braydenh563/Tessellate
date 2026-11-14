@@ -5215,20 +5215,24 @@ function wbMapExportBranch(id) {
 //: document leads back to its map), and opened.
 async function wbMapWriteDocument() {
   const boardId = window.currentBoardId;
-  if (!boardId || !wbIsMap()) return null;
+  if (!boardId) return null;
+  //: A map is written from its tree; a board from its frames (L-documents-4, `POST /boards/{id}/draft`).
+  const isMap = wbIsMap();
   let tree;
+  let draft;
   try {
-    tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+    if (isMap) tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+    else draft = await apiJson(`/whiteboard/boards/${boardId}/draft`, { method: "POST" });
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "read this map" }), true);
+    toast(err.message || voiceLine("failed", { what: isMap ? "read this map" : "read this board" }), true);
     return null;
   }
   //: The index may predate a map made a moment ago; it is refreshed once.
   if (typeof mapBoardById === "function" && !mapBoardById(boardId) && typeof loadMapBoardIndex === "function") {
     await loadMapBoardIndex(true).catch(() => null);
   }
-  const board = (typeof mapBoardById === "function" && mapBoardById(boardId)) || { id: boardId, type: "map", title: "" };
-  const { title, body } = wbMapTreeMarkdown(tree.roots, board.title);
+  const board = (typeof mapBoardById === "function" && mapBoardById(boardId)) || { id: boardId, type: isMap ? "map" : "board", title: "" };
+  const { title, body } = isMap ? wbMapTreeMarkdown(tree.roots, board.title) : draft;
   let doc;
   try {
     doc = await apiJson("/documents", {
@@ -10910,7 +10914,7 @@ function wbMapDueWords(due, start = null, time = null) {
   const [h, m] = time.split(":").map(Number);
   const at = new Date(end.day);
   at.setHours(h, m);
-  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it

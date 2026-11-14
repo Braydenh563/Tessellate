@@ -81,3 +81,27 @@ def test_ready_to_merge_only_with_no_open_rows():
     named = [p for p in ledger.PLANS if f"`{p}`" in line] or list(ledger.PLANS)
     left = [rid for rid, plan, status in ledger.rows(TEXT) if plan in named and status in ("open", "partly")]
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
+
+
+def test_a_new_row_never_reuses_an_id_already_moved_to_history(tmp_path, monkeypatch):
+    """`ledger.py add` numbered from the LEDGER alone, so once every timeline row was done and
+    moved to HISTORY it handed out L-timeline-1 again (2026-11-13), an id code comments cite."""
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("ledger_cli", ROOT / "scripts" / "ledger.py")
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    ledger, history = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    ledger.write_text("## timeline\n\n", encoding="utf-8")
+    history.write_text("## Moved from the LEDGER\n- [x] **L-timeline-4** `timeline` open, S: old.\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "LEDGER", ledger)
+    monkeypatch.setattr(cli, "HISTORY", history)
+    args = argparse.Namespace(plan="timeline", status="open", size="S", src="a test", evidence=None, title="New row")
+    assert cli.add(args) == "L-timeline-5"
+
+
+def test_the_counts_table_has_one_row_per_plan():
+    """A union merge once left 38 `| all |` rows, which flooded orient.sh past its 40 lines."""
+    names = [m.group(1) for m in ledger.COUNT.finditer(TEXT)]
+    assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})

@@ -48,3 +48,10 @@ def test_a_reminder_row_in_the_bell_can_be_completed():
     assert "/reminders/${item.reminderId}/complete?tz_offset_minutes=" in body
     assert "row.reminderDone = true" in body
     assert 'item.kind === "reminder" && item.reminderId && !item.reminderDone' in bell
+    # Review on #222: Done names the occurrence it was raised for, so a repeat ticked elsewhere
+    # since is refused (409) rather than rolled twice, and the row says where it is now.
+    assert "expected_due_at=${encodeURIComponent(item.reminderDue)}" in body
+    assert "error?.status === 409" in body and "error.detail?.reminder" in body
+    # Focus lands on the row's new line (the button is gone) and the live region says it.
+    assert "announce(detail)" in body and "meta.focus()" in body
+    assert "land(said)" in body and "land(detail)" in body
