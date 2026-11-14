@@ -919,7 +919,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 ### Design requests
 
 - "very messy"
-  Recommendation (taken): the surface is unnamed, so the Brief 41 density census finds the worst one; carried by L-ui-modernisation-53.
+  Done 2026-11-14 (L-ui-modernisation-53): the census's alignment column found Home worst (the first-steps card 3px off the widget column); fixed.
 - "this panel looks like a demo and not professional"
   Recommendation: name the panel, then give it the designed empty, error and first-run states that ROADMAP Direction (reliability gate) asks for. Also carried by Brief 41.
 - "is it possible to add and customise the metadata a little more??"

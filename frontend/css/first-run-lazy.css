@@ -18,8 +18,10 @@
 /* The head row (INBOX 1301 D2): the name, "1 of 3 done", the bar, the fold
    and the menu on one line; on a phone the bar takes its own line under the
    name, so the row never squeezes the words. */
+/* Its sides are a Home widget's (`--panel-pad`), so its heading starts on the same edge as the cards
+   under it (L-ui-modernisation-53: 27px against 30px, the census's one near miss on Home). */
 .first-steps {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--panel-pad);
 }
 .first-steps-head {
   display: flex;
