@@ -206,7 +206,7 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
             if scores:
                 phrase_terms = corrected
     if not scores:
-        scores = matching(require_all=False)
+        scores = matching(require_all=False, words=_any_words(terms))
     if not scores:
         return []
 
@@ -219,6 +219,12 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
 
     entries.sort(key=sort_key)
     return entries[:limit]
+
+
+def _any_words(terms: list[str]) -> list[str]:
+    """The words an "any of them" search ORs: a year or number is no subject beside words (L-chat-254), so
+    "tax return 2019" is not a note that only holds 2019; numbers alone are kept."""
+    return [t for t in terms if not t.isdigit()] or terms
 
 
 def _substring_entries(session: Session, terms: list[str], base: tuple, limit: int) -> list[Entry]:

@@ -872,7 +872,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
     say_args, drawn = _reminder_window_args(got.tool, asked, now, drawn)
-    said = tool_say.say(got.tool, result, say_args, now.date())
+    said = tool_say.say(got.tool, result, {**say_args, **tool_say.form_args(got.tool, asked)}, now.date())
     chart = drawn["chart"] if drawn else None
     #: A window's rows are the count the engine said ("You have 2 reminders
     #: this week", or none), not the whole list's total.

@@ -25,6 +25,8 @@ def ask(client, session, monkeypatch):
         ("what can the graph tab do", "Graph tab shows notes"),
         ("what does the whiteboard do", "pannable canvas"),
         ("what's the bin for", "goes to the bin"),
+        ("what is the bin", "goes to the bin"),
+        ("what can the reminders tab do", "Reminders"),
         ("how do I turn on dark mode", "Appearance controls theme (light/dark/system)"),
     ],
 )
@@ -32,6 +34,9 @@ def test_a_question_about_the_app_is_answered_from_its_help(ask, notes_only, que
     text = ask(question, notes_only)
     assert says in text, text
     assert "general knowledge" not in text
+    #: L-chat-256/257: the reminders and the bin readers answer what is in them, not what they are.
+    assert "waiting" not in text
+    assert "bin is empty" not in text
 
 
 @pytest.mark.parametrize("notes_only", [True, False], ids=["ask", "chat"])

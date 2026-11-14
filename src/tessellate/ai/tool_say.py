@@ -388,6 +388,21 @@ def count_word_of(n: int) -> str:
     return count_noun(n, "x").rsplit(" ", 1)[0]
 
 
+def _list_notes_table(result: dict, args: dict) -> Said:
+    """"show my notes as a table" (L-chat-253): the notes `_list_notes` says, drawn as a table."""
+    lead, body, chips = _list_notes(result, args)
+    notes = [n for n in result.get("notes") or [] if isinstance(n, dict)][:8]
+    if not notes:
+        return lead, body, chips
+    rows = [[link(_name(n.get("content") or n.get("preview") or n.get("title")), note_at(n.get("id") or n.get("note_id"))),
+             str(n.get("category") or "").strip(), str(n.get("created_at") or n.get("written") or "")[:10]] for n in notes]
+    return lead, _table(["Note", "Category", "Written"], rows), chips
+
+
+def _list_notes_said(result: dict, args: dict) -> Said:
+    return (_list_notes_table if args.get("table") else _list_notes)(result, args)
+
+
 def _documents(result: dict, args: dict) -> Said:
     docs = [d for d in result.get("documents") or [] if isinstance(d, dict)]
     total = int(result.get("total_matching") or len(docs))
@@ -892,7 +907,7 @@ def _compress(result: dict, args: dict) -> Said:
 
 
 SAYERS: dict[str, Callable[[dict, dict], Said]] = {
-    "get_current_time": _time, "calculate": _calculate, "count_notes": _count, "list_notes": _list_notes,
+    "get_current_time": _time, "calculate": _calculate, "count_notes": _count, "list_notes": _list_notes_said,
     "search_notes": _search_notes, "get_note": _get_note, "find_similar_notes": _similar, "related_notes": _related,
     "path_between": _path, "find_contradictions": _contradictions, "summarize_notes": _summary,
     "list_tags": _named_counts("tags", "tag"), "list_categories": _named_counts("categories", "category"),
@@ -962,6 +977,11 @@ def _error(tool: str, message: str, args: dict) -> Said:
     text = text.replace("{", "(").replace("}", ")").replace("→", "to")
     text = re.sub(r"\[\d+\]", "", text)
     return f"That did not work: {_lower_first(_sentence(text))}", f"Try again with different words, or do it by hand in {name}.", _chips((f"Open {name}", at))
+
+
+def form_args(tool: str, asked: str) -> dict:
+    """The arguments a question's wish for a table adds: only the notes' list has a table form."""
+    return {"table": True} if tool == "list_notes" and re.search(r"\b(?:as|in) (?:a )?table\b", asked, re.I) else {}
 
 
 def say(tool: str, result: object, args: dict | None = None, today: date | None = None) -> dict:

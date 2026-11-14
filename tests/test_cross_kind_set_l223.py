@@ -100,3 +100,11 @@ def test_no_answer_in_the_set_says_a_sentence_twice_or_shouts(ask) -> None:
         sentences = [s.strip().lower() for s in re.split(r"(?<=[.?!])\s+|\n+", re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", said)) if len(s.strip()) > 12]
         assert len(sentences) == len(set(sentences)), (question, said)
         assert "!" not in said, (question, said)
+
+
+@pytest.mark.parametrize("question", ["show my notes as a table", "list my notes in a table"])
+def test_notes_asked_as_a_table_come_as_a_table(ask, question: str) -> None:
+    """L-chat-253: the same newest notes, drawn as a table, not "I am not sure I can do that"."""
+    said = ask(question)
+    assert "| Note |" in said and "(#/notes/" in said, said
+    assert "not sure" not in said
