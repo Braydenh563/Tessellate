@@ -583,7 +583,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     const noMap = await page.evaluate(STEP_PROBE);
     judge(`${label} no map`, noMap, phone);
     check(
-      noMap.sectionId === "maps" && noMap.sectionTotal === 1 && /New, then Mind map/.test(noMap.text) && noMap.wbFace === "landing",
+      noMap.sectionId === "maps" && noMap.sectionTotal === 1 && /New's arrow, then Mind map/.test(noMap.text) && noMap.wbFace === "landing",
       `${label} with no map, Mind maps is one card on New mind map (${noMap.counter}, ${noMap.shownTarget}, ${noMap.wbFace})`
     );
     await page.evaluate(() => {

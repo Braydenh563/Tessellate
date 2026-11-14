@@ -211,6 +211,17 @@ async function boot(opts={}) {
       return true;
     }, null, {timeout: 4000, polling: 200}).catch(() => {});
   }
+  //: **The semantic question is asked once** (semantic-notice.js): on a fresh data dir the first
+  //: save makes a toast, "No thanks", kept up until answered, and it landed over the tour's Next
+  //: button (tour.js timed out clicking through it). Answered "no" through the API, which is what
+  //: pressing No thanks writes; SEMANTIC_ASK=1 leaves it for a sweep that measures the notice.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(async () => {
+      if (typeof prefsCache === 'undefined' || !prefsCache || prefsCache.semantic_choice_made === true) return;
+      Object.assign(prefsCache, await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }));
+      document.querySelectorAll('#toast-box .toast-action').forEach((b) => { if (/No thanks/.test(b.textContent)) b.click(); });
+    }).catch(() => {});
+  }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
   if (!process.env.RECOVERY_ASK) {

@@ -38,3 +38,32 @@ def test_every_tour_id_is_in_the_page_or_made_by_a_script():
         if f'id="{i}"' not in HTML and f"'{i}'" not in JS_TEXT and f'"{i}"' not in JS_TEXT
     )
     assert not missing, f"tour targets with no element: {missing}"
+
+
+def _step_block(target: str) -> str:
+    """The text of the first tour step naming `target`, up to the next step."""
+    start = TOUR.index(f'target: "{target}"')
+    end = TOUR.find("target:", start + 10)
+    return TOUR[start:end]
+
+
+def test_a_step_on_a_control_a_phone_hides_is_left_out_by_media_not_dropped_mid_run():
+    """Source text: ui-modernisation 60. At 390 wide `#wb-add-note` is
+    display:none (07-whiteboard-misc.css, max-width 599.98px), so the step
+    was planned, counted 4, then dropped mid-run and the counter read 4/4/3.
+    The step names the breakpoint instead, as the map's Add a topic step does,
+    and its words use the button's own name, Sidebar."""
+    block = _step_block("#wb-add-note")
+    assert 'media: "(min-width: 600px)"' in block
+    assert "Sidebar" in block and "Notes opens" not in block
+
+
+def test_the_make_something_new_step_follows_the_create_button_into_the_empty_state():
+    """Source text: ui-modernisation 60. On a notebook with nothing in it
+    library.js hides the dock's `#library-new-doc` and shows
+    `#library-empty-create` in its place, so the step lost its target and was
+    dropped mid-run (1440 Library counter 4/4/3). It carries the other button
+    as `or`, with the words for it."""
+    block = _step_block("#library-new-doc")
+    assert 'or: "#library-empty-create"' in block
+    assert "orText:" in block

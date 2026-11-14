@@ -274,6 +274,8 @@
           library: "library-view-documents",
           title: "Make something new",
           text: "Create starts a new note, document, board or mind map.",
+          or: "#library-empty-create",
+          orText: "With nothing here yet, Create starts your first note, document, board or mind map.",
         },
         {
           target: "#library-subtab-docs",
@@ -316,8 +318,9 @@
           tab: "library",
           library: "library-view-whiteboard",
           wb: "board",
-          title: "Notes on a board",
-          text: "Notes opens your notebook beside the board, so you can drag any note on as a card.",
+          media: "(min-width: 600px)",
+          title: "The sidebar",
+          text: "Sidebar opens shapes, icons, your notes and the layers beside the board; drag a note on as a card.",
         },
         {
           target: "#wb-back-to-boards",

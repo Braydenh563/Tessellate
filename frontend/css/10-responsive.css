@@ -123,6 +123,16 @@
        because of a count pill in the flow).
      After, at 820: seven buttons at 44px tall, the strip 385px in 448, the
      header 64px and one row. */
+  /* **The bar is as tall as the strip it carries** (L-ui-modernisation-60):
+     the buttons keep their 44px floor and the well adds 2px a side, so the
+     strip is 48; the bar has been 44 since Phase 12 and the centred strip stuck
+     out 2.5px above it (tour.js at 1184x760, `#tab-bar` top -2.5). 3.25rem
+     is 52, which leaves 1.5px each side. Only when the strip is centred
+     (absolute, so it does not size the bar): in a row or on its own row it
+     already does, and a taller token would add 8px to 1100, 1000 and 900. */
+  header#top-bar.tabs-centred:not(.tabs-wrapped) {
+    --topbar-h: 3.25rem;
+  }
   #tab-bar {
     --target-min: max(2.75rem, 44px);
   }

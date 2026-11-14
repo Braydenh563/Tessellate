@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2852, tests 22479, plan headings 687, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2853, tests 22483, plan headings 687, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -8163,53 +8163,53 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openTour` | frontend/js/tour.js:1750 |
-| `renderTourReplay` | frontend/js/tour.js:1948 |
-| `tourActiveTab` | frontend/js/tour.js:1246 |
-| `tourAnchorFor` | frontend/js/tour.js:630 |
-| `tourBack` | frontend/js/tour.js:1842 |
-| `tourBlockPanels` | frontend/js/tour.js:933 |
-| `tourBringIntoView` | frontend/js/tour.js:1042 |
-| `tourCandidates` | frontend/js/tour.js:846 |
-| `tourChoose` | frontend/js/tour.js:901 |
-| `tourClamp` | frontend/js/tour.js:828 |
-| `tourClearSpotlight` | frontend/js/tour.js:989 |
-| `tourClearTheWay` | frontend/js/tour.js:1337 |
-| `tourClose` | frontend/js/tour.js:1799 |
-| `tourContext` | frontend/js/tour.js:1471 |
-| `tourCovered` | frontend/js/tour.js:678 |
-| `tourDisable` | frontend/js/tour.js:1990 |
-| `tourFrame` | frontend/js/tour.js:1228 |
-| `tourLibraryView` | frontend/js/tour.js:1405 |
-| `tourNavigate` | frontend/js/tour.js:1377 |
-| `tourNext` | frontend/js/tour.js:1831 |
-| `tourOnScreen` | frontend/js/tour.js:646 |
-| `tourOpenFoldsAround` | frontend/js/tour.js:1438 |
-| `tourOpenSettings` | frontend/js/tour.js:1453 |
-| `tourOrigin` | frontend/js/tour.js:812 |
-| `tourOverlap` | frontend/js/tour.js:835 |
-| `tourPinShell` | frontend/js/tour.js:1563 |
-| `tourPlaceFixed` | frontend/js/tour.js:729 |
-| `tourPosition` | frontend/js/tour.js:1081 |
-| `tourPrepareSection` | frontend/js/tour.js:1497 |
-| `tourReflow` | frontend/js/tour.js:1916 |
-| `tourRender` | frontend/js/tour.js:1164 |
-| `tourResolve` | frontend/js/tour.js:705 |
-| `tourReveal` | frontend/js/tour.js:1625 |
-| `tourSectionPlace` | frontend/js/tour.js:1215 |
-| `tourSheetPlace` | frontend/js/tour.js:1146 |
-| `tourShow` | frontend/js/tour.js:1630 |
-| `tourSpotlight` | frontend/js/tour.js:1015 |
-| `tourStep` | frontend/js/tour.js:1530 |
-| `tourStepsFor` | frontend/js/tour.js:1729 |
-| `tourStrand` | frontend/js/tour.js:1546 |
-| `tourUsable` | frontend/js/tour.js:715 |
-| `tourVerifyCard` | frontend/js/tour.js:1576 |
-| `tourVisible` | frontend/js/tour.js:604 |
-| `tourWaitForTarget` | frontend/js/tour.js:1296 |
-| `tourWatch` | frontend/js/tour.js:779 |
-| `tourWatchFrame` | frontend/js/tour.js:784 |
-| `tourWhiteboard` | frontend/js/tour.js:1417 |
+| `openTour` | frontend/js/tour.js:1753 |
+| `renderTourReplay` | frontend/js/tour.js:1951 |
+| `tourActiveTab` | frontend/js/tour.js:1249 |
+| `tourAnchorFor` | frontend/js/tour.js:633 |
+| `tourBack` | frontend/js/tour.js:1845 |
+| `tourBlockPanels` | frontend/js/tour.js:936 |
+| `tourBringIntoView` | frontend/js/tour.js:1045 |
+| `tourCandidates` | frontend/js/tour.js:849 |
+| `tourChoose` | frontend/js/tour.js:904 |
+| `tourClamp` | frontend/js/tour.js:831 |
+| `tourClearSpotlight` | frontend/js/tour.js:992 |
+| `tourClearTheWay` | frontend/js/tour.js:1340 |
+| `tourClose` | frontend/js/tour.js:1802 |
+| `tourContext` | frontend/js/tour.js:1474 |
+| `tourCovered` | frontend/js/tour.js:681 |
+| `tourDisable` | frontend/js/tour.js:1993 |
+| `tourFrame` | frontend/js/tour.js:1231 |
+| `tourLibraryView` | frontend/js/tour.js:1408 |
+| `tourNavigate` | frontend/js/tour.js:1380 |
+| `tourNext` | frontend/js/tour.js:1834 |
+| `tourOnScreen` | frontend/js/tour.js:649 |
+| `tourOpenFoldsAround` | frontend/js/tour.js:1441 |
+| `tourOpenSettings` | frontend/js/tour.js:1456 |
+| `tourOrigin` | frontend/js/tour.js:815 |
+| `tourOverlap` | frontend/js/tour.js:838 |
+| `tourPinShell` | frontend/js/tour.js:1566 |
+| `tourPlaceFixed` | frontend/js/tour.js:732 |
+| `tourPosition` | frontend/js/tour.js:1084 |
+| `tourPrepareSection` | frontend/js/tour.js:1500 |
+| `tourReflow` | frontend/js/tour.js:1919 |
+| `tourRender` | frontend/js/tour.js:1167 |
+| `tourResolve` | frontend/js/tour.js:708 |
+| `tourReveal` | frontend/js/tour.js:1628 |
+| `tourSectionPlace` | frontend/js/tour.js:1218 |
+| `tourSheetPlace` | frontend/js/tour.js:1149 |
+| `tourShow` | frontend/js/tour.js:1633 |
+| `tourSpotlight` | frontend/js/tour.js:1018 |
+| `tourStep` | frontend/js/tour.js:1533 |
+| `tourStepsFor` | frontend/js/tour.js:1732 |
+| `tourStrand` | frontend/js/tour.js:1549 |
+| `tourUsable` | frontend/js/tour.js:718 |
+| `tourVerifyCard` | frontend/js/tour.js:1579 |
+| `tourVisible` | frontend/js/tour.js:607 |
+| `tourWaitForTarget` | frontend/js/tour.js:1299 |
+| `tourWatch` | frontend/js/tour.js:782 |
+| `tourWatchFrame` | frontend/js/tour.js:787 |
+| `tourWhiteboard` | frontend/js/tour.js:1420 |
 
 ### frontend/js/translate-worker.js (5)
 
@@ -12883,7 +12883,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 item 12: a note row designed for a thumb | frontend/css/07-whiteboard-misc.css:20123 |
 | Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/09-editor.css:1489 |
 | Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/09-editor.css:1472 |
-| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:369 |
+| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:379 |
 | Phase 11 item 2: a row swiped, star right and bin left | frontend/css/07-whiteboard-misc.css:18446 |
 | Phase 11 item 2: the note page, the sheet recipe's `page` variant | frontend/css/09-editor.css:1551 |
 | Phase 11 item 3: the chat composer on a phone | frontend/css/09-editor.css:1176 |
@@ -13042,7 +13042,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4 (under 600): the editor's own targets (DOCUMENTS_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:18561 |
 | band 4: an icon-only chip is still a target (Phase 11) | frontend/css/07-whiteboard-misc.css:15737 |
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:11972 |
-| band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:192 |
+| band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:202 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/09-editor.css:1432 |
 | boot splash | frontend/css/00-tokens-shell.css:4006 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1317 |
@@ -13292,7 +13292,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the spine | frontend/css/00-tokens-shell.css:2263 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:9689 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3026 |
-| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:429 |
+| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:439 |
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3344 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1157 |
@@ -13346,7 +13346,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/06-timeline-dialogs.css | 3840 |
 | frontend/css/07-whiteboard-misc.css | 20333 |
 | frontend/css/09-editor.css | 1779 |
-| frontend/css/10-responsive.css | 515 |
+| frontend/css/10-responsive.css | 525 |
 | frontend/css/answer-foot-lazy.css | 161 |
 | frontend/css/appearance-panel-lazy.css | 348 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22479)
+## Tests (22483)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30546,6 +30546,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tab_press_focus_1534.py | 2 |
 | tests/test_tab_press_reads_1534.py | 14 |
 | tests/test_tab_row_space_boxless_l466.py | 1 |
+| tests/test_tab_strip_inside_bar_820_1199.py | 2 |
 | tests/test_tab_strip_measure.py | 1 |
 | tests/test_table_menu_widget.py | 4 |
 | tests/test_tabspeed_1492.py | 3 |
@@ -30654,7 +30655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_touched_notes.py | 15 |
 | tests/test_tour_follow.py | 7 |
 | tests/test_tour_sweeps_inspect_l_general_14.py | 2 |
-| tests/test_tour_targets.py | 2 |
+| tests/test_tour_targets.py | 4 |
 | tests/test_transcript_81.py | 6 |
 | tests/test_transcript_copy.py | 2 |
 | tests/test_translate_offline.py | 7 |
