@@ -1,4 +1,5 @@
-"""The map theme dialog fits a 900px window (L-general-57)."""
+"""Source text: the map theme dialog fits a 900px window (L-general-57); its height is measured in the app
+(scratchpad map sweeps), and this pins the CSS that keeps it there."""
 
 from pathlib import Path
 

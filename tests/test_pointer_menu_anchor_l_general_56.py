@@ -1,4 +1,5 @@
-"""A right-click menu opens at the pointer, not 14px from it (L-general-56)."""
+"""Source text: a right-click menu opens at the pointer, not 14px from it (L-general-56); placement is
+measured by the anchorsmotion sweep, and this pins the 1x0 pointer anchor that gives it."""
 
 from pathlib import Path
 

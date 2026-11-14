@@ -1,4 +1,5 @@
-"""The map's View menu keeps under its 450px ceiling (L-general-57)."""
+"""Source text: the map's View menu keeps under its 450px ceiling (L-general-57); the height is measured in
+the app, and this pins the folded submenu row that keeps it there."""
 
 from pathlib import Path
 
