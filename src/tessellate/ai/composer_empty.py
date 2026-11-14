@@ -381,7 +381,9 @@ def _unknown_person(question: str, views: list[NoteView]) -> list[str]:
     if not found:
         return []
     word = found.group(1).lower()
-    return [] if any(_says(_stem(word), word, v.words | v.title_words | v.filed_words) for v in views) else [word]
+    #: A synonym counts ("my flatmate" over "My housemate is called Sam").
+    held = [v.words | v.title_words | v.filed_words for v in views]
+    return [] if any(_holds(_stem(word), words) or _says(_stem(word), word, words) for words in held) else [word]
 
 
 #: "i want to book tickets", "book a table": book as in reserve, never the book a note is about.

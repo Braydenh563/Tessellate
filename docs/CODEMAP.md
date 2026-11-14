@@ -15840,19 +15840,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_filtered` | src/tessellate/ai/composer_empty.py:33 |
 | `_in_passing` | src/tessellate/ai/composer_empty.py:355 |
 | `_leads` | src/tessellate/ai/composer_empty.py:349 |
-| `_modifies` | src/tessellate/ai/composer_empty.py:404 |
+| `_modifies` | src/tessellate/ai/composer_empty.py:406 |
 | `_named` | src/tessellate/ai/composer_empty.py:362 |
 | `_nothing` | src/tessellate/ai/composer_empty.py:242 |
 | `_nothing_parts` | src/tessellate/ai/composer_empty.py:280 |
 | `_nothing_planned` | src/tessellate/ai/composer_empty.py:202 |
-| `_reserving` | src/tessellate/ai/composer_empty.py:391 |
+| `_reserving` | src/tessellate/ai/composer_empty.py:393 |
 | `_says` | src/tessellate/ai/composer_empty.py:308 |
 | `_unknown_person` | src/tessellate/ai/composer_empty.py:377 |
 | `_unsaid` | src/tessellate/ai/composer_empty.py:340 |
 | `_window_voice` | src/tessellate/ai/composer_empty.py:195 |
 | `empty_window` | src/tessellate/ai/composer_empty.py:211 |
 | `stray_match` | src/tessellate/ai/composer_empty.py:313 |
-| `stray_reply` | src/tessellate/ai/composer_empty.py:411 |
+| `stray_reply` | src/tessellate/ai/composer_empty.py:413 |
 | `window_said` | src/tessellate/ai/composer_empty.py:79 |
 
 ### src/tessellate/ai/composer_epoch.py (4)
