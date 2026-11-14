@@ -115,7 +115,9 @@ async function runDebugScript(request, source) {
   if (runIsP5(source)) throw new Error("Debug steps scripts: a p5.js sketch draws in a page, so Run it instead.");
   const lowered = runDebugLower(source);
   const interp = await runVendorFetch("/vendor/js-interpreter/js-interpreter.min.js");
-  return { ...runBase(request, "jsdebug"), source: lowered.code, lib: { interp }, dom: lowered.dom };
+  //: A file of tests debugs through the worker's own harness (L314), so a
+  //: breakpoint in a test body stops there and each test is listed.
+  return { ...runBase(request, "jsdebug"), source: lowered.code, lib: { interp }, dom: lowered.dom, tests: runLooksLikeTests("js", source) };
 }
 
 //: JSX in a .js document (the jsx alias, OPEN 1072): a .jsx title, or

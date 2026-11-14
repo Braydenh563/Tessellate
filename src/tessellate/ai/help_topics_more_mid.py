@@ -1237,7 +1237,7 @@ MID_TOPICS.extend(
                 "continues and Shift+F5 stops; the same five are buttons at the "
                 "top of the tab. An error nothing catches stops on the line that "
                 "raised it, with its traceback and the frame's variables. A Python "
-                "file of tests debugs through its tests: a breakpoint inside one "
+                "file of tests, and a JavaScript or TypeScript one, debugs through its tests: a breakpoint inside one "
                 "stops there, and the Tests tab lists each result. Python's "
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "

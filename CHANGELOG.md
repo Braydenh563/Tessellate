@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, Debug: a JavaScript or TypeScript file of tests (describe, it, expect) now debugs through its tests, so a breakpoint in a test body stops there and the Tests tab lists each result (L314).
 - Documents, Debug: the stepper now lowers generators, async and await (a promise queue and resumable frames, so Debug steps across an await and shows promises), tagged templates, spread in `new X(...xs)` and arrow functions with a pattern parameter that has a default; async generators, `for await` and top-level await stay named with their line (L-documents-36, L-documents-38).
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).

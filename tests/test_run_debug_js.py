@@ -37,7 +37,7 @@ globalThis.navigator = globalThis.navigator || { userAgent: "node", platform: ""
 %(lower)s
 const lowerOnly = (src) => { try { const r = runDebugLower(src); return { code: r.code, dom: r.dom }; } catch (e) { return { error: e.message, line: e.line }; } };
 const sessions = [];
-async function session(src, breaks, watches, actions) {
+async function session(src, breaks, watches, actions, tests) {
   const lowered = runDebugLower(src);
   const got = [];
   return await new Promise((resolve) => {
@@ -52,7 +52,7 @@ async function session(src, breaks, watches, actions) {
     globalThis.self = self;
     globalThis.postMessage = postMessage;
     vm.runInThisContext(%(interp)s + "\\n;" + %(worker)s);
-    self.onmessage({ data: { source: lowered.code, breaks, watches, dom: lowered.dom } });
+    self.onmessage({ data: { source: lowered.code, breaks, watches, dom: lowered.dom, tests: Boolean(tests) } });
     setTimeout(() => resolve(got), 4000);
   });
 }
@@ -413,3 +413,49 @@ def test_a_rejection_nothing_catches_is_reported_when_the_program_is_idle():
     assert out[-1] == {"t": "done", "ended": "error"}
     handled = _node({"s": ["session", "var p = Promise.reject(1);\np.catch(function () {});\nasync function f() { throw 2; }\nf().catch(function (e) { console.log('got', e); });\n", [], [], []]})["s"]
     assert [m["text"] for m in handled if m["t"] == "log"] == ["got 2"] and handled[-1]["ended"] == "done"
+
+
+_TESTS = (
+    "function add(a, b) {\n  return a + b;\n}\n"
+    "describe('add', () => {\n"
+    "  let base = 0;\n"
+    "  beforeEach(() => { base = 10; });\n"
+    "  it('adds', () => {\n"
+    "    const s = add(base, 2);\n"
+    "    expect(s).toBe(12);\n"
+    "  });\n"
+    "  it('fails', () => {\n"
+    "    expect(add(1, 1)).toEqual(3);\n"
+    "  });\n"
+    "  it('waits', async () => {\n"
+    "    const v = await Promise.resolve(4);\n"
+    "    expect([v]).toContain(4);\n"
+    "  });\n"
+    "  it.skip('later', () => {});\n"
+    "  it('throws', () => {\n"
+    "    expect(() => { null.x; }).not.toThrow();\n"
+    "  });\n"
+    "});\n"
+)
+
+
+def test_a_file_of_tests_debugs_through_the_harness_and_lists_each_test():
+    out = _node({"s": ["session", _TESTS, [], [], [], True]})["s"]
+    rows = [(m["name"], m["state"], m["line"]) for m in out if m["t"] == "test"]
+    assert rows == [("add > adds", "pass", 7), ("add > fails", "fail", 12), ("add > waits", "pass", 14), ("add > later", "skip", 18), ("add > throws", "fail", 20)], rows
+    fail = next(m for m in out if m["t"] == "test" and m["name"] == "add > fails")
+    assert "Expected: 3" in fail["text"] and "Received: 2" in fail["text"]
+    #: The failure's line is the line of the expect, not of the test's start.
+    assert fail["line"] == 12
+    assert next(m for m in out if m["t"] == "tests-done")["failed"] == 2
+    assert out[-1]["t"] == "done"
+
+
+def test_a_breakpoint_in_a_test_body_stops_there_with_its_locals_and_the_harness_is_no_frame():
+    out = _node({"s": ["session", _TESTS, [{"line": 9}], [], [{"cmd": "continue"}], True]})["s"]
+    stops = [m for m in out if m["t"] == "stop"]
+    assert [s["line"] for s in stops] == [9]
+    assert {"name": "s", "value": "12", "type": "number"} in stops[0]["locals"]
+    assert all(f["name"] not in ("run", "series", "call") for f in stops[0]["stack"]), stops[0]["stack"]
+    #: The harness's own names are not the program's variables.
+    assert not any(v["name"] in ("describe", "expect", "it") for v in stops[0]["locals"] + stops[0].get("globals", []))

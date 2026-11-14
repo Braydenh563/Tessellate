@@ -418,6 +418,135 @@
     it.polyfills_.push("(" + POLY + ").call(this);");
   }
 
+  //: A file of tests (L314): the page's `describe`, `it`, `expect` harness
+  //: (run-tests.js) written again in ES5, since the interpreter has no
+  //: spread, classes or Map. Its text runs as a polyfill, so its frames are
+  //: hidden and only the document's own test bodies stop. The tests start from
+  //: a task the driver queues once the file's top level, its promise reactions and
+  //: its timers are done; each test row goes up as the page's harness sends it.
+  function TESTS() {
+    var g = this, tests = [], scopes = [{ name: "", before: [], after: [] }], passed = 0, failed = 0, skipped = 0, t0 = Date.now();
+    function Failure(message) { this.message = message; this.failure = true; this.line = __line(); }
+    function show(v) {
+      if (typeof v === "string") return JSON.stringify(v);
+      if (typeof v === "function") return "[Function " + (v.name || "anonymous") + "]";
+      if (v instanceof Error) return v.name + ": " + v.message;
+      try { var j = JSON.stringify(v); return j === undefined ? String(v) : j; } catch (e) { return String(v); }
+    }
+    function same(a, b) { return a === b ? (a !== 0 || 1 / a === 1 / b) : (a !== a && b !== b); }
+    function equal(a, b) {
+      if (same(a, b)) return true;
+      if (typeof a !== "object" || typeof b !== "object" || !a || !b) return false;
+      if (Array.isArray(a) !== Array.isArray(b) || Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
+      if (a instanceof Date) return a.getTime() === b.getTime();
+      var ka = Object.keys(a);
+      return ka.length === Object.keys(b).length && ka.every(function (k) { return Object.prototype.hasOwnProperty.call(b, k) && equal(a[k], b[k]); });
+    }
+    function add(name, fn, skip) {
+      var path = scopes.slice(1).map(function (s) { return s.name; }).concat(String(name));
+      var before = [], after = [];
+      scopes.forEach(function (s) { before = before.concat(s.before); after = s.after.concat(after); });
+      tests.push({ name: path.join(" > "), fn: fn, skip: skip, line: __line(), before: before, after: after });
+    }
+    g.describe = function (name, fn) {
+      scopes.push({ name: String(name), before: [], after: [] });
+      try { fn(); } finally { scopes.pop(); }
+    };
+    g.describe.skip = function () {};
+    g.it = function (name, fn) { add(name, fn, false); };
+    g.it.skip = function (name, fn) { add(name, fn, true); };
+    g.test = g.it;
+    g.beforeEach = function (fn) { scopes[scopes.length - 1].before.push(fn); };
+    g.afterEach = function (fn) { scopes[scopes.length - 1].after.push(fn); };
+    function matchers(actual, negate) {
+      function check(pass, said, expected) {
+        if (pass === negate) {
+          var lines = ["expect(received)" + (negate ? ".not" : "") + "." + said];
+          if (expected !== undefined) lines.push("Expected: " + (negate ? "not " : "") + show(expected));
+          lines.push("Received: " + show(actual));
+          throw new Failure(lines.join("\n"));
+        }
+      }
+      function thrown() {
+        try { actual(); } catch (error) { return { error: error }; }
+        return null;
+      }
+      return {
+        toBe: function (e) { check(same(actual, e), "toBe(expected)", e); },
+        toEqual: function (e) { check(equal(actual, e), "toEqual(expected)", e); },
+        toStrictEqual: function (e) { check(equal(actual, e), "toStrictEqual(expected)", e); },
+        toBeTruthy: function () { check(Boolean(actual), "toBeTruthy()"); },
+        toBeFalsy: function () { check(!actual, "toBeFalsy()"); },
+        toBeNull: function () { check(actual === null, "toBeNull()"); },
+        toBeUndefined: function () { check(actual === undefined, "toBeUndefined()"); },
+        toBeDefined: function () { check(actual !== undefined, "toBeDefined()"); },
+        toBeNaN: function () { check(actual !== actual, "toBeNaN()"); },
+        toBeGreaterThan: function (e) { check(actual > e, "toBeGreaterThan(expected)", e); },
+        toBeGreaterThanOrEqual: function (e) { check(actual >= e, "toBeGreaterThanOrEqual(expected)", e); },
+        toBeLessThan: function (e) { check(actual < e, "toBeLessThan(expected)", e); },
+        toBeLessThanOrEqual: function (e) { check(actual <= e, "toBeLessThanOrEqual(expected)", e); },
+        toBeCloseTo: function (e, digits) { check(Math.abs(actual - e) < Math.pow(10, -(digits === undefined ? 2 : digits)) / 2, "toBeCloseTo(expected)", e); },
+        toBeInstanceOf: function (e) { check(actual instanceof e, "toBeInstanceOf(expected)", e); },
+        toContain: function (e) { check(actual != null && (typeof actual === "string" ? actual.indexOf(e) >= 0 : Array.isArray(actual) && actual.indexOf(e) >= 0), "toContain(expected)", e); },
+        toHaveLength: function (e) { check(actual != null && actual.length === e, "toHaveLength(expected)", e); },
+        toHaveProperty: function (key) { check(actual != null && key in Object(actual), "toHaveProperty(key)", key); },
+        toMatch: function (e) { check(typeof actual === "string" && (e instanceof RegExp ? e.test(actual) : actual.indexOf(e) >= 0), "toMatch(expected)", String(e)); },
+        toThrow: function (e) {
+          var got = typeof actual === "function" ? thrown() : null;
+          var message = got ? String((got.error && got.error.message) || got.error) : "";
+          var pass = Boolean(got) && (e === undefined || (e instanceof RegExp ? e.test(message) : typeof e === "function" ? got.error instanceof e : message.indexOf(String(e)) >= 0));
+          check(pass, "toThrow(expected)", e === undefined ? undefined : String(e));
+        },
+      };
+    }
+    g.expect = function (actual) {
+      var m = matchers(actual, false);
+      m.not = matchers(actual, true);
+      return m;
+    };
+    //: A hook or a body may return a promise: the next step waits for it.
+    function call(fn, ok, bad) {
+      var r;
+      try { r = fn(); } catch (e) { return bad(e); }
+      if (r && typeof r.then === "function") r.then(function () { ok(); }, bad); else ok();
+    }
+    function series(list, ok, bad, i) {
+      i = i || 0;
+      if (i >= list.length) return ok();
+      call(list[i], function () { series(list, ok, bad, i + 1); }, bad);
+    }
+    function run(i) {
+      if (i >= tests.length) return __testsDone(passed, failed, skipped, Date.now() - t0);
+      var t = tests[i], start = Date.now();
+      if (t.skip) { skipped++; __testRow(t.name, "skip", 0, "", t.line); return run(i + 1); }
+      function finish(err) {
+        if (err) {
+          failed++;
+          var text = err && err.failure ? err.message : ((err && err.name) || "Error") + ": " + ((err && err.message) || err);
+          __testRow(t.name, "fail", Date.now() - start, text, (err && err.line) || t.line);
+        } else {
+          passed++;
+          __testRow(t.name, "pass", Date.now() - start, "", t.line);
+        }
+        run(i + 1);
+      }
+      series(t.before, function () {
+        call(t.fn, function () { series(t.after, finish, finish); }, function (e) { series(t.after, function () { finish(e); }, function () { finish(e); }); });
+      }, finish);
+    }
+    g.__runTests = function () { run(0); };
+  }
+  function testsPoly(it, g) {
+    it.setProperty(g, "__line", it.createNativeFunction(function () { return lineNow(); }));
+    it.setProperty(g, "__testRow", it.createNativeFunction(function (name, state, ms, text, line) {
+      postMessage({ t: "test", name: String(name), state: String(state), ms: Number(ms) || 0, text: String(text || ""), line: line || null });
+    }));
+    it.setProperty(g, "__testsDone", it.createNativeFunction(function (passed, failed, skipped, ms) {
+      postMessage({ t: "tests-done", passed: Number(passed), failed: Number(failed), skipped: Number(skipped), ms: Number(ms) || 0 });
+    }));
+    it.polyfills_.push("(" + TESTS + ").call(this);");
+  }
+
   function init(it, g) {
     var con = it.nativeToPseudo({});
     ["log", "info", "warn", "error", "debug"].forEach(function (k) {
@@ -429,6 +558,7 @@
     });
     it.setProperty(g, "console", con);
     coroutines(it, g);
+    if (TESTS_ON) testsPoly(it, g);
     if (DOM) stubDocument(it, g);
   }
   //: Scripts that use the DOM debug against a stand-in: every element is a
@@ -523,6 +653,14 @@
       while (budget-- > 0) {
         var more = interp.step();
         if (!more) {
+          if (TESTS_ON && !testsStarted) {
+            testsStarted = true;
+            var task = new I.Task(interp.getProperty(interp.globalObject, "__runTests"), [], interp.globalScope, interp.newNode(), -1);
+            task.node.type = "CallExpression";
+            task.time = 0;
+            interp.tasks.push(task);
+            continue;
+          }
           for (var u = 0; u < unhandled.length; u++) {
             postMessage({ t: "log", level: "error", text: "Uncaught (in promise) " + show(unhandled[u].properties.__v).replace(/^"|"$/g, ""), line: null, uncaught: true });
           }
@@ -552,7 +690,7 @@
     }
     setTimeout(go, 0);
   }
-  var DOM = false;
+  var DOM = false, TESTS_ON = false, testsStarted = false;
   self.onmessage = function (e) {
     var d = e.data || {};
     if (d.reply) {
@@ -577,6 +715,8 @@
     setBreaks(d.breaks || []);
     watches = (d.watches || []).map(String).slice(0, 50);
     DOM = Boolean(d.dom);
+    TESTS_ON = Boolean(d.tests);
+    testsStarted = false;
     unhandled = [];
     builtins = {};
     var bare = new I("", function (it, g) { init(it, g); });
