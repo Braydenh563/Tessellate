@@ -159,7 +159,7 @@ function featureCatalog() {
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
       { name: "Statistics", desc: "Your notebook, reminders and usage, counted, with this week against last.", reveal: "statistics" },
-      { name: "This week", desc: "Notes made, words written and reminders done, against last week.", reveal: "widget-week" },
+      { name: "This week", desc: "Notes made, words written and reminders done, against last week, and one feature not used lately.", reveal: "widget-week" },
       { name: "Streaks", desc: "How many days in a row you've captured something.", reveal: "widget-streak" },
     ]},
     { group: "Make it yours", items: [

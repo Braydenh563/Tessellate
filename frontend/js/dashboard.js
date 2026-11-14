@@ -120,7 +120,7 @@ const DASH_WIDGETS = {
   //: isn't in this object.)
   //: Brief 89 (statistics row 2): Screen Time's weekly report, drawn by
   //: statistics.js, which also holds the page it opens.
-  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week.", render: (body) => renderWeekWidget(body) },
+  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week, and one feature you have not used lately.", render: (body) => renderWeekWidget(body) },
   pace: { title: "ph:chart-line-up Writing pace", description: "How many words you have written each day this fortnight.", render: renderPaceWidget },
 };
 
