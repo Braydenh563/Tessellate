@@ -265,6 +265,8 @@ ACTIVITIES.update({
     "rest_head": Activity("sit", (11.0, 40.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, -0.04), (0.45, 1, 0.98, -0.04), (0.55, 1, 0.98, 0.04), (0.9, 1, 0.98, 0.04), (1, 1, 1, 0)), (("rest", -0.3),)),
     "star_catch": Activity("wave", (3.0, 6.0), _k((0, 1, 1, 0), (0.15, 1, 1.04, 0.03), (0.3, 1, 0.97, -0.03), (0.45, 1, 1.05, 0.04), (0.6, 1, 0.97, -0.02), (0.8, 1, 1.03, 0.02), (1, 1, 1, 0)), (("play", -0.25), ("curiosity", -0.1)), likes="curious"),
     "count_stars": Activity("look", (4.0, 8.0), _k((0, 1, 1, 0), (0.12, 1, 1.02, 0.02), (0.3, 1, 1, -0.02), (0.45, 1, 1.02, 0.02), (0.6, 1, 1, -0.02), (0.8, 1, 1.02, 0.01), (1, 1, 1, 0)), (("curiosity", -0.15),), likes="curious"),
+    #: L-ui-modernisation-41: a floater on its back in the air (the app's third drift, `pos.back_float`); only for a floating look. Its picture is `sprites.EXTRA_FRAMES`'s.
+    "back_float": Activity("back_float", (8.0, 30.0), _k((0, 1, 1, 0), (0.15, 1, 1.01, 0.02), (0.5, 1, 1.02, -0.02), (0.85, 1, 1.01, 0.02), (1, 1, 1, 0)), (("rest", -0.2), ("curiosity", -0.15)), gait="float", likes="curious"),
     "card_nap": Activity("sleep", (6.0, 14.0), _k((0, 1, 1, 0), (0.1, 1, 0.97, 0.02), (0.5, 1, 1, 0.02), (1, 1, 0.97, 0.02)), (("rest", -0.4),), likes="sleepy"),
     "wave_pointer": Activity("wave", (1.5, 2.4), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.03), (0.8, 1, 1.02, 0.03), (1, 1, 1, 0)), (("social", -0.3),), likes="happy"),
 })
@@ -282,6 +284,9 @@ ACTIVITIES.update({
         _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.5, 1, 1.02, -0.02), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("play", -0.25),), likes="happy", where="perch",
     ),
     "hang_one_hand": Activity("hang_one", (4.2, 8.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.1),), likes="proud", where="hang"),
+    #: L-ui-modernisation-10: the app's sleeping hang and its flip by the feet, played inside a hang as the one-handed hold is.
+    "sloth": Activity("hang_sloth", (9.0, 20.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("rest", -0.1),), likes="sleepy", where="hang"),
+    "hang_by_feet": Activity("hang_feet", (7.0, 12.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.15),), likes="happy", where="hang"),
 })
 YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 #: The ones that only make sense in place: all of them (a trip is a different table).
@@ -293,7 +298,7 @@ BASE_WEIGHT = {
     "breathe": 9, "shift_weight": 8, "look_around": 8, "slow_blink": 8, "tail_flick": 7, "nod": 3, "shrug": 3,
     "stretch": 4, "yawn": 3, "glance_pointer": 5, "ponder": 4, "sway": 4, "wiggle": 3, "bounce": 2,
     "scan_horizon": 3, "little_dance": 2, "wave_idle": 2, "sit_down": 4, "doze": 2, "curl_up": 1, "pose_proud": 2,
-    "peek_down": 3, "shake_off": 1, "crouch_watch": 3, "float_loop": 3, "lie_down": 2,
+    "peek_down": 3, "shake_off": 1, "crouch_watch": 3, "float_loop": 3, "lie_down": 2, "back_float": 1,
     "groom": 3, "scratch": 3, "snack": 3, "peer_at_cursor": 3, "pace": 2, "invent_game": 2, "tinker": 3, "dust_off": 2,
 }
 

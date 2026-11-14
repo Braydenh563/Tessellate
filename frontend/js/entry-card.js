@@ -23,7 +23,7 @@ function tagAddChipKind(entry, options) {
 //: **A meeting card shows what the meeting settled, not its raw headings**
 //: (libr-1011 row 1238: `## Agenda` and `## Notes` printed as text). The four
 //: sections of `entry/meetings.py` read for one line each: the first agenda
-//: item, the decisions, and the action items still open. Null for anything
+//: item, the decisions, and the action items not yet ticked. Null for anything
 //: that is not a meeting, so every other card is unchanged.
 const MEETING_GLANCE_SECTIONS = {
   agenda: "agenda", notes: "notes", discussion: "notes", transcript: "notes",
@@ -517,11 +517,11 @@ function entryItem(entry, options = {}) {
   }
 
   const meta = document.createElement("div");
-  //: `note-meta` scopes the one-line facts styling (08-consistency.css) to a
+  //: `note-meta` scopes the one-line facts styling (a component file (08-consistency.css until UI plan 13b)) to a
   //: note card: `.entry-meta` alone is also the chip row of the skills, the
   //: personas and the extras in Settings, which that styling flattened.
   meta.className = "entry-meta note-meta";
-  // A note saved with filing deferred is in its holding category, not its
+  // A note saved with filing postponed is in its holding category, not its
   // real one, and saying "Uncategorised" for the second or two before the
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.
@@ -674,7 +674,7 @@ function entryItem(entry, options = {}) {
     group.replaceChildren();
     group.dataset.tag = tag;
     //: Real buttons (N37), not spans with a role: a keyboard, a screen reader and a
-    //: finger all meet a control. The look is the chip's own (08-consistency.css).
+    //: finger all meet a control. The look is the chip's own (01-forms-settings.css).
     const take = document.createElement("button");
     take.type = "button";
     take.className = "suggested-tag-take";
@@ -916,7 +916,7 @@ function entryItem(entry, options = {}) {
     meta.appendChild(busy);
   }
 
-  //: The actions' corner (`.entry-meta-end`, 08-consistency.css).
+  //: The actions' corner (`.entry-meta-end`, 07-whiteboard-misc.css).
   const metaEnd = document.createElement("span");
   metaEnd.className = "entry-meta-end";
 
@@ -981,7 +981,7 @@ function entryItem(entry, options = {}) {
     metaEnd.appendChild(actions);
     //: A draft's strip holds a fifth target (Publish): the card's first
     //: lines and the row's lane keep that much more clear for it
-    //: (08-consistency.css, "The strip's own width, kept clear").
+    //: (01-forms-settings.css, "The strip's own width, kept clear").
     li.classList.toggle("has-wide-strip", actions.childElementCount > 4);
   }
   if (entry.is_private) {
@@ -1018,10 +1018,19 @@ function entryItem(entry, options = {}) {
   }
   //: **Where an imported note came from**: the file name its `[[links]]`
   //: use. A chip, because the importer must not rewrite the file.
+  //: L-general-13: a document's sections say "Extracted from", a vault's files "Imported from".
   if (entry.source_path) {
-    const fileChip = chip(`ph:file-md ${entry.source_path.split("/").pop()}`, "source-path");
-    fileChip.title = `Imported from ${entry.source_path}`;
+    const extracted = /\.(pdf|docx?|odt|rtf|pptx?|epub)$/i.test(entry.source_path);
+    const fileChip = chip(`${extracted ? "ph:file-text" : "ph:file-md"} ${entry.source_path.split("/").pop()}`, "source-path");
+    fileChip.title = `${extracted ? "Extracted from" : "Imported from"} ${entry.source_path}`;
     meta.insertBefore(fileChip, date);
+  }
+  //: A recording's transcript note names its recording, and opens it (L-general-13).
+  if (entry.recording) {
+    const rec = entry.recording;
+    const recChip = chip(`ph:microphone ${rec.title}`, "source-path", () => ensureModule("meetings").then(() => openRecordings(rec.id)));
+    recChip.title = `Transcribed from the recording “${rec.title}”`;
+    meta.insertBefore(recChip, date);
   }
   li.appendChild(meta);
   noteMetaFit.observe(meta);

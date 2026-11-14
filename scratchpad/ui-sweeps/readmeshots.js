@@ -24,7 +24,7 @@
 // notes it retrieved like any other, so the citation marks on screen are the
 // app's own. It runs only for those two shots, so nothing else on screen
 // (the dashboard's greeting, a digest) is ever written by it.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');

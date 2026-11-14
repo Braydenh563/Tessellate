@@ -27,20 +27,20 @@ const { boot, OUT } = require('./lib.js');
       const s = gcTab;
       const t = s.transform;
       const rect = s.canvas.getBoundingClientRect();
-      const curved = gcCurvedLinks(s) && !s.tree;
+      const curved = gcRequestDraw.inspect.gcCurvedLinks(s) && !s.tree;
       const out = [];
       s.edges.forEach((e, i) => {
         const a = e.source, b = e.target;
         if (!GC_PEEK_KINDS.has(e.kind) || !a || !b || !Number.isFinite(a.x)) return;
-        const c = curved ? gcBowPoint(a, b) : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const c = curved ? gcRequestDraw.inspect.gcBowPoint(a, b) : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
         const m = { x: 0.25 * a.x + 0.5 * c.x + 0.25 * b.x, y: 0.25 * a.y + 0.5 * c.y + 0.25 * b.y };
         const sx = rect.left + t.x + m.x * t.k;
         const sy = rect.top + t.y + m.y * t.k;
         if (Math.hypot(a.x - b.x, a.y - b.y) * t.k < 40) return;
         if (sx < rect.left + 20 || sx > rect.right - 20 || sy < rect.top + 60 || sy > rect.bottom - 20) return;
-        if (gcNodeAtWorld(m.x, m.y, s)) return;
+        if (gcRequestDraw.inspect.gcNodeAtWorld(m.x, m.y, s)) return;
         // Skip a middle another line crosses: there the nearer line is right.
-        if (gcEdgeAtWorld(m.x, m.y, s) !== e) return;
+        if (gcRequestDraw.inspect.gcEdgeAtWorld(m.x, m.y, s) !== e) return;
         out.push({ i, kind: e.kind, sx, sy });
       });
       return out.filter((_, j) => j % Math.max(1, Math.floor(out.length / 20)) === 0).slice(0, 20);

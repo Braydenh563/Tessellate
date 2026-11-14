@@ -330,24 +330,22 @@ def test_the_msi_carries_the_same_repair_shortcut_as_the_exe_installer():
 
 def _release_notes(changelog_dir: Path, version: str, tmp_path: Path) -> str:
     """The notes step's own script, run in bash on `changelog_dir`'s
-    CHANGELOG.md (read only), and the `notes` output it writes."""
+    CHANGELOG.md (read only), and the notes file it writes for
+    `gh release create --notes-file` (a file since the zizmor fix: no notes
+    text is expanded into a script)."""
     import subprocess
     import textwrap
 
     step = WORKFLOW[WORKFLOW.index("Extract changelog entry for this version") :]
-    block = step[step.index("run: |\n") + len("run: |\n") : step.index("\n      - name:")]
-    script = textwrap.dedent(block).replace("${{ needs.resolve-version.outputs.version }}", version)
-    output = tmp_path / "github_output"
+    script = textwrap.dedent(step[step.index("run: |\n") + len("run: |\n") : step.index("\n      - name:")])
+    assert "VERSION: ${{ needs.resolve-version.outputs.version }}" in step.split("run: |", 1)[0]
     subprocess.run(
         ["bash", "-c", script],
         cwd=changelog_dir,
-        env={"GITHUB_OUTPUT": str(output), "GITHUB_REPOSITORY": "o/r", "PATH": "/usr/bin:/bin"},
+        env={"VERSION": version, "RUNNER_TEMP": str(tmp_path), "GITHUB_REPOSITORY": "o/r", "PATH": "/usr/bin:/bin"},
         check=True,
     )
-    lines = output.read_text(encoding="utf-8").splitlines()
-    delim = lines[0].split("<<", 1)[1]
-    assert lines[-1] == delim
-    return "\n".join(lines[1:-1])
+    return (tmp_path / "notes.md").read_text(encoding="utf-8").rstrip("\n")
 
 
 def test_the_release_notes_are_the_versions_changelog_section(tmp_path):

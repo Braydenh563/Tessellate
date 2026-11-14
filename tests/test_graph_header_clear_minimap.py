@@ -1,4 +1,6 @@
-"""A category header in the Map and Tessellation views starts clear of the minimap and zoom strip.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A category header in the Map and Tessellation views starts clear of the minimap and zoom strip.
 
 Seen in L-graph-12's side-by-side sweep (`scratchpad/ui-sweeps/tess-pair.js`):
 the fitted Tessellation's top-left header, "Uncategorised (103)", was drawn

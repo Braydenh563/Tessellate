@@ -1,4 +1,6 @@
-"""Saving a mind map's look for reuse (L-mindmap-1): the theme dialog's
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Saving a mind map's look for reuse (L-mindmap-1): the theme dialog's
 Saved looks row. The look is the whole theme under a name in prefs
 (a preference of this device, like the rest of how a board is looked at);
 applying one is a single theme patch (one Undo step) that clears every key the

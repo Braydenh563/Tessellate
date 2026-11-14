@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -68,7 +69,7 @@ def test_a_field_hover_is_never_weaker_than_its_resting_edge() -> None:
 
 
 def test_a_selected_segment_and_a_chosen_option_carry_an_edge_not_only_a_tint() -> None:
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in FORMER_08)
     flat = re.findall(r"background: color-mix\(in srgb, var\(--ink\) 11%, transparent\);[^}]*\}", text)
     assert len(flat) == 2
     assert all("inset 0 0 0 1px var(--control-edge)" in rule for rule in flat)

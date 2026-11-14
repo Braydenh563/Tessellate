@@ -5,7 +5,7 @@
 // a note saved and a search answered while open, and the locked page showing
 // Open Tessellate only. The window itself (transparency, on top, the taskbar)
 // is a real Windows check this cannot make.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8806';
 const PW = 'testpassword123';
 const SIZES = { rest: [112, 152], menu: [248, 312], context: [248, 268], note: [320, 500], search: [340, 440] };

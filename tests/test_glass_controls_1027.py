@@ -44,7 +44,7 @@ def test_every_rule_is_glass_only_while_the_glass_look_and_the_switch_are_on():
 
 def test_a_chip_leaves_menu_openers_and_chosen_buttons_alone():
     selectors = " ".join(s for s, _b in _rules())
-    #: Kebab openers are dressed once, in 08-consistency.css (test_ui_recipes).
+    #: Kebab openers are dressed once, in 07-whiteboard-misc.css (test_ui_recipes).
     assert ".kebab-opener" not in selectors
     assert ':not([aria-haspopup="menu"])' in selectors
     for state in (".active", '[aria-pressed="true"]', '[aria-expanded="true"]'):

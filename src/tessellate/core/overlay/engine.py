@@ -421,7 +421,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         """How far a frame is drawn below the window's rest line so its lowest drawn row is on
         the floor: every frame is registered to one box, and the margin below the feet varies by
         pose (INBOX 1670). A hang is held by its hands, not stood on; a tumble keeps a held pose's."""
-        if not self.metrics or frame in ("hang", "hang_one"):
+        if not self.metrics or frame.startswith("hang"):
             return 0.0
         if frame in SIT_REGISTERED:  # a dangle sits on the line with its hem below it; a meditation is the sit
             frame = "sit"
@@ -1459,7 +1459,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         effect; False when it cannot be done now (carried, no window to sit on, motion off), and it looks sad."""
         done = self._command(name, now)
         if not done:
-            self.ex.fire("refused", now)
+            self.ex.fire("declined", now)
         return done
 
     def _command(self, name: str, now: float) -> bool:
@@ -1695,6 +1695,10 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         gx = min(max(float(goal), lo), hi)  # on this monitor, on its floor: a screen may have gone with the old runner
         if abs(gx - self.x) >= 12 * self._scale():
             self._go((gx, self.ground_y(m)), str(carried.get("then") or "home"), now)
+
+    def perch_free(self) -> str:
+        """Whether "Sit on a window" can be done now, for the menu: "on" (sitting on one), "none" (no top fits), "" (yes)."""
+        return "on" if self.perch is not None else "" if self._candidates() else "none"
 
     def _sit_on_window(self, now: float) -> bool:
         """Climb to a window's top edge the last scan found. False when there is none to sit on."""

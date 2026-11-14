@@ -15,10 +15,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 PHONE = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
-CSS = re.sub(r"/\*.*?\*/", "", (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8"), flags=re.S)
+CSS = re.sub(r"/\*.*?\*/", "", sheets("04-chat-dock-appearance.css", "07-whiteboard-misc.css"), flags=re.S)
 
 
 def _fold() -> str:

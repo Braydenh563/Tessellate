@@ -41,6 +41,9 @@ const DOC = ["# A page to type on", "", "The first line of text, which is the on
     isMobile: true,
   });
   page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+  //: Chat is built when first visited; its dock is read below.
+  await page.evaluate(() => switchTab("chat"));
+  await page.waitForTimeout(1800);
   await page.evaluate(() => switchTab("documents"));
   await page.waitForTimeout(2400);
   await page.evaluate(async (text) => {

@@ -1,4 +1,6 @@
-"""L304: the diagram builder's Source view can fold long lines.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L304: the diagram builder's Source view can fold long lines.
 
 The field stays unwrapped by default (a line number sits on its own line); the dialog's menu has a
 Wrap long lines row that turns the field's `wrap` to soft, hides the numbers while lines fold (they

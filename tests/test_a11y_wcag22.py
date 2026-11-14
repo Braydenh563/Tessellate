@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import with_pieces
-from tests._css_paths import css_text
+from tests._css_paths import FORMER_08, FORMER_10, css_text, sheets
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,7 +41,7 @@ def test_one_main_landmark_wraps_the_tab_pages():
     main = html[html.index('<main id="app-main">'):html.index("</main>")]
     for tab in ("dashboard", "notes", "chat", "timeline", "graph", "documents", "reminders", "library"):
         assert f'id="tab-{tab}"' in main, tab
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     assert re.search(r"#app-main \{\s*display: contents;\s*\}", css)
     # No rule still names the inner element by its old tag.
     for path in CSS.glob("*.css"):
@@ -137,7 +137,7 @@ def test_focus_is_never_hidden_under_sticky_or_floating_furniture():
     assert ".tab-page:has(> .dock-fab) .tab-main {\n    scroll-padding-bottom:" in misc
     side = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
     assert "#tab-notes .tab-main,\n#tab-library,\n#tab-library .tab-main {\n  scroll-padding-top:" in side
-    resp = (CSS / "10-responsive.css").read_text(encoding="utf-8")
+    resp = sheets(*FORMER_10)
     short = resp[resp.index("@media (max-height: 420px) {"):]
     assert ".notes-subtabs,\n  .library-subtabs {\n    position: static;" in short
     assert 'const PHONE_FAB = "(max-width: 599.98px) and (min-height: 421px)";' in _read("phone-shell.js")
@@ -148,7 +148,9 @@ def test_single_key_shortcuts_can_be_turned_off():
     # way to turn them off.
     wiring = _read("settings-wiring.js")
     assert "const singleKeys = singleKeysOn();" in wiring
-    assert "if (!burst && singleKeys && !boardOwns) {" in wiring
+    # A named key (F2) is not a character key and stays on (L-ui-modernisation-14 follow-up).
+    assert "if (!burst && !boardOwns) {" in wiring
+    assert "(singleKeys || def.keys.length > 1) && matchesShortcut(e, def.keys)" in wiring
     assert 'singleKeys && (e.key === "m" || e.key === "t") && !e.ctrlKey' in wiring
     assert 'prefs.get("singleKeys", null) !== "off"' in _function(wiring, "singleKeysOn")
     assert 'id="pref-single-keys"' in _read("index.html")
@@ -270,7 +272,7 @@ def test_the_heatmap_scroller_is_a_tab_stop_with_a_ring():
 def test_the_folded_tags_chip_keeps_a_24px_target():
     """axe `target-size` (serious, 2026-10-10): the "+N" chip was 23.6 by 24
     px at 390. WCAG 2.5.8 wants 24 on both sides."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     rule = re.search(r"\.note-meta > \.note-meta-more \{([^}]*)\}", css)
     assert rule, ".note-meta-more rule missing"
     assert "min-width: 24px;" in rule.group(1)  # the height is the chip's own 24

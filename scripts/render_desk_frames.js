@@ -50,6 +50,16 @@ const FRAMES = [
   //: W31 E1: the long sit with the eyes shut and the hands on the knees (`nmb-act-meditate`). Lounge and rest head
   //: stay the keyed `sit` (the rig draws them as a 2 to 7 degree lean of it: no picture of their own is worth its bytes).
   { name: "meditate", pose: "sit", classes: ["nmb-act-meditate"], at: 1.0 },
+  //: L-ui-modernisation-10: the app's two other hanging tricks. `hang_sloth` is the sleeping hang (`nmb-sleep` on the hang
+  //: pose: one hand let go, the lids shut, the head lolled); `hang_feet` is the flip (`nmb-act-feet` frozen at 0.5 of its
+  //: 7 s, the figure turned 176 degrees about the hips so the lower body is at the edge and the head hangs).
+  { name: "hang_sloth", pose: "hang", classes: ["nmb-sleep"], at: 0.5, upright: true },
+  { name: "hang_feet", pose: "hang", classes: ["nmb-act-feet"], at: 0.5 },
+  //: L-ui-modernisation-41: the app's side lean (`pos.lean`: the pose a figure takes against a side edge, the near arm up on it and
+  //: the lower body tilted into it) is the desk's side peek; `back_float` is the third drift variant (`nmb-act-drift`, `data-variant` 2:
+  //: the legs crossed, the hands behind the head) laid on its back in the air.
+  { name: "lean", pose: "lean", classes: [], data: { side: "left" } },
+  { name: "back_float", pose: "float", classes: ["nmb-act-drift"], data: { variant: "2" }, spin: -72 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -162,7 +172,7 @@ async function steadyShot(page, file, clip) {
       //: And its face: a page expression (hearts, a blush) came and went over four idle frames in a row.
       if (typeof setAtlasMood === "function") { setAtlasMood("calm", 0); window.setAtlasMood = () => {}; }
       new MutationObserver(() => {
-        for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n)) clone.removeAttribute(n);
+        for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n) && !(n === "data-side" && window.__keepSide)) clone.removeAttribute(n);
         if (clone.dataset.pose !== window.__want) clone.dataset.pose = window.__want;
       }).observe(clone, { attributes: true, attributeFilter: ["data-pose", "data-perch", "data-legs", "data-side"] });
       return { look: atlasLook(), rect: JSON.stringify(clone.getBoundingClientRect()) };
@@ -188,7 +198,10 @@ async function steadyShot(page, file, clip) {
         window.__setProp(b, "transform", window.__pin, "important");
         b.className = frame.classes.join(" ");
         window.__want = frame.pose;
+        window.__keepSide = Boolean(frame.data && frame.data.side);
         b.dataset.pose = frame.pose;
+        //: Extra `data-` attributes the pose reads (the lean's side, a drift's variant).
+        for (const [k, v] of Object.entries(frame.data || {})) b.dataset[k] = v;
         b.dataset.feel = "calm";
       }, f);
       await page.waitForTimeout(60);
@@ -241,7 +254,8 @@ async function steadyShot(page, file, clip) {
           const w = (frame.idle || 0) * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
           if (!box && frame.idle !== undefined) throw new Error("no live tail to sample");
-          if (box) {
+          //: atlas-life.js is an IIFE now (its tail drawing is no longer a global): without it the tail is left as the page has it, and the idle frames cannot be re-sampled.
+          if (box && typeof atlasTailDraw === "function") {
           const tail = box.atlasTail;
           //: Stop the live loop and the compositor sway so nothing redraws over the sample.
           clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;

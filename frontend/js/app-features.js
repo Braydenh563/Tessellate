@@ -403,7 +403,7 @@ function paletteCommands() {
       // started from a file you had already found, which is no answer to "I
       // want to read something". `openPageReader` (library.js) opens it on what
       // you were last reading, else your newest readable file; the decision and
-      // what was deliberately not built is in UI_MODERNISATION_PLAN.md, "how
+      // what was deliberately left out is in UI_MODERNISATION_PLAN.md, "how
       // the page reader is reached".
       //: "OCR" in the words (the owner, 2026-10-10: searching "ocr" in the
       //: palette, Find anything and Quick access's list found nothing).
@@ -533,6 +533,12 @@ function paletteCommands() {
     { label: "ph:pi Symbols", keywords: "symbol symbols arrow greek currency euro degree copyright maths character insert", about: "Arrows, maths, Greek, currency and writing marks; one goes where you were writing, or is copied.", keys: "Ctrl+'", act: () => popupToolMaths.glyph("symbol") },
     //: Over a note, Chat or a board's text; an open document has its own "Insert an equation" row (docPaletteCommands), so this one steps aside there.
     ...(editor.some((c) => /equation/i.test(c.label)) ? [] : [{ label: "ph:function Insert equation", keywords: "equation formula maths math latex fraction root integral matrix insert write", about: "The equation editor, over the box you were writing in: Insert puts it there as TeX, or Copy takes it.", keys: "Alt+=", act: () => openMathEditor({ target: popupToolMaths.box(paletteCaughtNow().target) }) }]),
+    //: A list with ticks on screen (L-ui-modernisation-25): the three keys navigation.js answers, as rows, through the same scope.
+    ...(openSelectionScope() ? [
+      { label: "ph:checks Select all in this list", keywords: "select all tick every row batch", about: "Ticks every row of the list on screen.", keys: "Ctrl+A", act: () => openSelectionScope()?.selectAll() },
+      { label: "ph:x-square Clear the selection", keywords: "deselect untick clear selection none", about: "Unticks every row.", keys: "Esc", act: () => openSelectionScope()?.clear() },
+      { label: "ph:trash Delete what is selected", keywords: "delete remove selected ticked rows bin", about: "The ticked rows, with the same confirm or Undo as the bar's Delete.", keys: "Delete", act: () => openSelectionScope()?.remove() },
+    ] : []),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
@@ -590,7 +596,7 @@ function quickCatalogue(only = null) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
-    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are skipped (5 to 19 ms at 4x
     //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
     if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);

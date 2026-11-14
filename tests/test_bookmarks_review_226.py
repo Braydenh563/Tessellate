@@ -1,4 +1,6 @@
-"""Review 5883447855 on PR 226: the link list stays light, a fetch never overwrites a newer address,
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+Review 5883447855 on PR 226: the link list stays light, a fetch never overwrites a newer address,
 only a save the person made in the app goes online by itself, and an icon fetch is small and quick.
 """
 

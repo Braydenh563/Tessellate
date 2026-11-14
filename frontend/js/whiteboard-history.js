@@ -502,7 +502,7 @@
           const rows = (out.snapshots || []).map((snap) => wbSnapshotRow(snap, boardId, redraw, close));
           if (!rows.length) {
             const empty = document.createElement("p");
-            empty.className = "muted";
+            empty.className = "muted empty-line";
             empty.textContent = "No snapshots yet. Save one before a big change, and Restore puts the board back.";
             rows.push(empty);
           }

@@ -1,4 +1,4 @@
-"""The owner's review 5899342467 on PR #233 (2026-11-13): the lazy parts and the early edit."""
+"""Source text: the review asked for code shapes (where a part is made, when an edit starts) that the map's drawing does not expose to pytest. The owner's review 5899342467 on PR #233 (2026-11-13): the lazy parts and the early edit."""
 
 from pathlib import Path
 

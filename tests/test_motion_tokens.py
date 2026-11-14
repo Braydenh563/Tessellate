@@ -385,7 +385,7 @@ def test_the_skeleton_shimmer_follows_the_os_unless_always_was_chosen():
 #: A colour, a ground or an edge changing is feedback, not a move: it runs on
 #: `--ui-fast` (a hover) or `--ui-base` (a state). `--motion-slow` is for a
 #: surface entering, leaving or moving. The one exception is a label whose
-#: colour follows the glide moving under it (`.has-glide`, 08-consistency.css).
+#: colour follows the glide moving under it (`.has-glide`, 07-whiteboard-misc.css).
 COLOUR_PROPS = re.compile(r"^\s*(color|background(?:-color)?|border(?:-[a-z]+)?-color|outline-color|box-shadow|fill|stroke)\b")
 
 

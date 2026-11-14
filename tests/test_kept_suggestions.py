@@ -86,5 +86,5 @@ def test_the_note_line_is_spaced_in_groups():
     them; one rule now spaces every note line, 16px between groups."""
     from pathlib import Path
 
-    css = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ":is(#entry-list, #raw-results, .timeline-feed, body) .entry-meta.note-meta {\n  column-gap: var(--space-6);" in css

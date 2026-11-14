@@ -19,13 +19,14 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
-CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = sheets("07-whiteboard-misc.css", "characters-lazy.css")
 
 GATE = "nameMarkBuddyBehindCover()"
 #: A layout read, or a call into one of the sweeps that read a box per control.

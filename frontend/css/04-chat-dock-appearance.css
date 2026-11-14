@@ -402,7 +402,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   font-size: var(--text-sm);
 }
 
-
 /* Below the width the script draws it at, never: see NOTES_RAIL_MIN_WIDTH in
    notes-list.js, which has to name the same number. The note's own
    Connections sheet is the way in there. */
@@ -678,7 +677,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      `overflow-y` alone leaves `overflow-x` at `visible`, and CSS refuses that
      combination: a `visible` axis paired with a scrolling one is computed to
      `auto`. So the column silently gained a horizontal scrollbar the moment
-     anything inside it was a pixel too wide, which for a row of follow-up
+     anything inside it was a pixel too wide, which for a row of follow-on
      chips or a pasted URL is most turns.
 
      Clipping here is safe because the things that genuinely need the room
@@ -1052,6 +1051,12 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   }
 }
 
+@container chat-dock (width < 64rem) {
+  .chat-mode-long {
+    display: none;
+  }
+}
+
 .chat-dock-controls .seg {
   display: inline-flex;
   align-items: center;
@@ -1080,6 +1085,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    the operating system's grey. */
 .chat-dock-controls select,
 .chat-dock-controls>.chat-tool-group>button,
+.chat-dock-controls .note-picker>button,
 .chat-dock-controls .chat-dock-more>button,
 .chat-dock-controls .seg {
   border-radius: var(--radius-pill);
@@ -1444,7 +1450,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* Reported live: a long persona prompt (up to 2000 chars, Settings'
    `#persona-prompt` textarea's own limit) grew this panel, then inline in
    the dock's normal flow: without bound, pushing the whole strip down and
-   overlapping the Length/Persona popup still open above it. Moved inside
+   overlapping the Length/Persona popup, open above it. Moved inside
    that popup and capped with its own scroll instead of the popup's. */
 #persona-peek-panel {
   max-height: min(16rem, 50vh);
@@ -1515,30 +1521,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      the sum that was being maintained by hand was maintaining a number the
      layout already knew. */
   height: 100%;
-}
-
-/* --- graph: depth, halos and legible labels -------------------------------- */
-/* These come after the base .graph-node rules so they win the specificity tie
-   and the halo never picks up the node's stroke. */
-.graph-node text.graph-label {
-  font-weight: 500;
-  fill: var(--ink);
-  paint-order: stroke;
-  stroke: #ffffff;
-  stroke-width: 4px;
-  stroke-opacity: 0.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-:root[data-mode="dark"] .graph-node text.graph-label {
-  fill: #ffffff;
-  stroke: #000000;
-}
-
-/* Dimmed nodes fade rather than vanish, so context is never lost. */
-.graph-node.graph-dim {
-  opacity: 0.18;
 }
 
 /* --- graph: physics sliders + node popup ----------------------------------- */
@@ -1959,6 +1941,15 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   border-radius: var(--radius-pill);
 }
 
+/* A segmented control is a choice, not a button run, so it keeps its well
+   and its accent-filled selection (DESIGN.md: "on is the accent"). Only its
+   corners join the rest of the bar - a 15.4px pill beside 8.4px buttons was
+   two of the five radii on its own. */
+.dock .seg,
+.dock .segmented-control {
+  border-radius: var(--radius-md);
+}
+
 /* --- spacious density (third option alongside comfortable/compact) --------- */
 
 /* --- appearance settings: grouped, scannable rows -------------------------- */
@@ -2288,6 +2279,10 @@ label.setting-check,
   line-height: 1.35;
 }
 
+.setting-check > span small {
+  font-weight: 400;
+}
+
 /* A row a stated reason holds down (Performance mode, a paused master). */
 .disabled-row {
   opacity: 0.45;
@@ -2493,6 +2488,29 @@ label.setting-check,
   border-bottom-left-radius: var(--radius-sm);
 }
 
+/* --- Chat: the user's bubble as a quiet surface, not an accent slab --- */
+/* The owner, twice: "the user message bubbles in the chat still look too,
+   and unprofessional much compared to the assistant bubbles ... maybe it's
+   the brightness of the message bubble colour??" It was the brightest
+   thing on the page: a full accent fill (#7b9cff in dark) with white text,
+   next to an assistant bubble that is a hairline and a whisper of tint.
+   Measured in the same frame, the two sat at opposite ends of the page's
+   luminance range. The way the chat apps people compare this to do it: the
+   person's own turn is a tinted surface in the page's own ink, one step
+   stronger than the assistant's ground, so it reads as "mine" by colour
+   and position without shouting. The "You" label and avatar go too: on
+   your own side of your own conversation they said nothing the alignment
+   did not (still read to a screen reader). */
+.msg.user,
+/* The guide panel's own turn is the same bubble as Chat's (the owner at
+   release: "make the user message bubbles in the atlas guide panel be the
+   same as the chat"); it was still the solid accent surface. */
+.help-chat-msg.is-user {
+  background: color-mix(in srgb, var(--accent) 14%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--ink);
+}
+
 /* **The bubble's padding is its inset, and a paragraph's margin was adding a
    second one** (INBOX 270 part 4). `renderMarkdown` writes a `<p>` whose
    browser margin is 1em, so an answer's first line sat 25px below the
@@ -2513,6 +2531,11 @@ label.setting-check,
 .help-chat-msg > :last-child,
 .help-chat-prose > :last-child {
   margin-bottom: 0;
+}
+
+.help-chat-msg.is-user {
+  border-radius: var(--radius) var(--radius) var(--radius-sm) var(--radius);
+  box-shadow: var(--shadow-hair);
 }
 
 /* The answer's two views (INBOX 430): Atlas's answer or the app's help,
@@ -2701,7 +2724,6 @@ span > .chip {
   transform: none;
 }
 
-
 .scroll-top:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -2712,6 +2734,24 @@ span > .chip {
     right: 1rem;
     bottom: calc(var(--status-bar-h) + var(--space-3));
   }
+}
+
+/* --- Two floating buttons that sit over content: opaque, readable hover --- */
+/* The owner: "the back to top hover state is too transparent" and "when I
+   hover over the jump to latest button in the chat, it flickers for a
+   second and doesnt change". Back-to-top hovered to `--accent-soft`, a 10%
+   tint that let the page through; jump-to-latest took the global
+   `button:hover { filter: brightness(1.07) }`, which makes a compositing
+   layer on hover (the flash, on Windows) for a 7% change (the "doesnt
+   change"). Both hover to an opaque accent-mixed ground with an accent
+   edge and accent ink: a state you can see, over nothing that shows
+   through, with no filter. */
+.scroll-top:hover,
+.chat-jump-latest:hover,
+.chat-jump-latest:is(:focus-visible, :has(:focus-visible)) {
+  background: color-mix(in srgb, var(--accent) 18%, var(--modal-bg-opaque));
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* --- screen-reader-only announcements --------------------------------------- */
@@ -2839,6 +2879,16 @@ span > .chip {
   #category-list li:has(.category-actions) .category-actions {
     position: static;
     opacity: 1;
+  }
+}
+
+@media (max-width: 599.98px) {
+  #category-list li .category-actions {
+    flex: 0 0 auto;
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -3057,38 +3107,6 @@ span > .chip {
   color: var(--on-accent);
 }
 
-/* A picture: cropped to fill a fixed frame, so a portrait photo, a wide
-   screenshot and a deleted file all make the same cell. */
-.note-picker-thumb {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--divider);
-  background: var(--surface-2);
-}
-
-.note-picker-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.note-picker-thumb.is-missing::after {
-  content: "\f27f"; /* ph-image-broken, the Phosphor glyph the app ships */
-  font-family: Phosphor, sans-serif;
-  color: var(--muted);
-  font-size: var(--text-h2);
-}
-
-.note-picker-cell:has(.note-picker-box:checked) .note-picker-thumb {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
 /* On a picture the check sits in its corner, on an opaque ground so it reads
    over any photo. Its offset is the cell's padding plus one step, so it sits
    inside the picture's corner rather than on its edge (the owner, 2026-10-11:
@@ -3099,12 +3117,6 @@ span > .chip {
   right: calc(var(--space-2) + var(--space-3));
   background: var(--modal-bg-opaque);
   box-shadow: var(--shadow-hair-lg);
-}
-
-/* Under a picture, one line: its caption, or where it is used. The name is
-   the cell's tooltip. */
-.note-picker-cell-text .note-picker-text {
-  display: none;
 }
 
 /* **A search field with a leading glyph.** Generalised from the Web panel's
@@ -3637,7 +3649,7 @@ span > .chip {
 /* The three selects and the adder are one family on one line, so they take
    the column's control height rather than the global form-field height (the
    same mismatch `.draft-controls` above was written for). */
-/* Two classes: `.draft-controls` in 08-consistency.css comes later in the
+/* Two classes: `.draft-controls` in 07-whiteboard-misc.css comes later in the
    cascade and sets `flex-wrap: wrap`. */
 .draft-controls.draft-desk-controls {
   gap: 0.4rem;
@@ -3692,6 +3704,10 @@ span > .chip {
   gap: var(--space-1);
   max-width: 100%;
   min-width: 0;
+}
+
+.chip {
+  gap: var(--space-1);
 }
 
 .draft-source-text {
@@ -3788,7 +3804,6 @@ span > .chip {
   grid-template-columns: 1fr !important;
 }
 
-
 /* Belt to the `:has()` braces above: whatever hides the sidebar (a class this
    file never heard of, `display: none` from a focus mode, the element removed
    outright), the editor is pinned to the second track and can never be
@@ -3797,6 +3812,54 @@ span > .chip {
 .doc-layout > :not(#doc-sidebar) {
   grid-column: 2;
   min-width: 0;
+}
+
+/* --- chat, de-vibecoded -----------------------------------------------------
+   1. The suggested questions were the generic chip: bold accent text on an
+      accent tint, four of them centred under a centred logo and a bold
+      headline, which is the stock "empty chat" of every generated
+      assistant UI. A suggestion is a question you might type, so it reads
+      as one: regular weight, ink, a hairline, a hover ground.
+   2. The thread's mark was an icon in a tinted accent square (the same
+      metric-card tell as the stat tiles). In the flat looks it is the icon
+      alone, in muted ink. */
+/* 3. "Ask again" and "Try asking" sit on the same Ask screen and were two
+      chips: the history ones the filled accent-soft generic chip, the
+      suggestions this hairline (INBOX 394 a). One style for both; a past
+      question is told apart by its clock icon (`loadRecentQuestions`). */
+:is(#chat-suggest, #suggested-questions, #recent-questions) > .chip-interactive {
+  /* A question you press is an action, so it has the button's corner rather
+     than a label's (DESIGN.md, "Pills are rare"). */
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--control-edge);
+  color: var(--ink);
+  font-weight: 400;
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-4);
+  /* The touch floor, as the Settings starters beside it take it: --target-min
+     is 28px (what these measured) with a mouse and 44px under a coarse
+     pointer or below 820, so a phone's finger gets a real target and the
+     desktop look is unchanged. Measured at 390 touch: 28px before. */
+  min-height: var(--target-min);
+}
+
+.lock-card #lock-submit {
+  width: 100%;
+  justify-content: center;
+  /* 38px under a touch pointer until 2026-10-06 (forgotpw.js, INBOX 663):
+     the lock screen's one action gets a finger's floor like every other. */
+  min-height: var(--target-min);
+}
+
+/* 5. The boards grid is the same reading order by the simpler means: its
+      cards are one height (a picture of fixed size and a line of facts), so
+      a row-major grid packs them as tightly as the masonry did. */
+#library-boards-grid:not(.library-list) {
+  columns: unset;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-6);
 }
 
 /* `.doc-main`, the one other child, rather than `:not(#doc-sidebar)`: a
@@ -3925,10 +3988,6 @@ span > .chip {
   overflow-y: auto;
 }
 
-.doc-item {
-  position: relative;
-}
-
 .doc-item-button {
   display: flex;
   flex-direction: column;
@@ -3937,7 +3996,7 @@ span > .chip {
   width: 100%;
   text-align: left;
   /* No column held back for the kebab (INBOX 722): it overlays the row's
-     right end on hover and the words fade under it (08-consistency.css), so
+     right end on hover and the words fade under it (07-whiteboard-misc.css), so
      the title runs to the row's own padding at rest. */
   padding: 0.4rem 0.6rem;
   border: 1px solid transparent;
@@ -3957,17 +4016,6 @@ span > .chip {
   cursor: pointer;
 }
 
-@media (hover: hover) {
-  .doc-item-button:hover,
-  .doc-item-button:is(:focus-visible, :has(:focus-visible)) {
-    background: var(--surface-3);
-  }
-}
-
-.doc-item.active .doc-item-button {
-  background: var(--accent-soft);
-}
-
 /* **One line, so every row is one height.** The rows came out 56.5px and
    78.5px depending on whether the title wrapped, in a list where nothing else
    varies, and at 0.92rem full weight the title was also the largest thing in
@@ -3980,18 +4028,6 @@ span > .chip {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.doc-item-meta {
-  font-size: var(--text-sm);
-}
-
-/* The file type, first in the meta line because it is the one fact that says
-   what the row *is*: a .py and a .md were indistinguishable before it. Weight
-   rather than colour, so it separates from the count beside it without
-   becoming a second accent in a list of eight rows. */
-.doc-item-type {
-  font-weight: 600;
 }
 
 /* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
@@ -4009,12 +4045,6 @@ span > .chip {
 .doc-item-button:focus-visible ~ .doc-item-menu,
 .doc-item:focus-within .doc-item-menu {
   opacity: 1;
-}
-
-@media (hover: none) {
-  .doc-item-menu {
-    opacity: 1;
-  }
 }
 
 /* The Library's own Documents sub-tab (#library-docs-list): a *different*
@@ -4065,7 +4095,6 @@ span > .chip {
   flex: 0 0 auto;
 }
 
-
 /* Same hover/focus reveal as `.menu-wrap.library-card-menu`
    (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
    column of dots competing with the titles beside them. `hover: none`
@@ -4084,36 +4113,10 @@ span > .chip {
   opacity: 1;
 }
 
-/* `.menu-wrap.doc-list-menu`: the rule it overrides is a compound selector,
-   so the short name loses the cascade and this band did nothing at all.
-   Measured with `scratchpad/ui-sweeps/hoveronly.js` at 390 with `hover: none`
-   emulated: a 44x44 ⋯ at opacity 0 on every document row, still 0 after a
-   real tap. Same fault and same fix as `.menu-wrap.library-card-menu`
-   (00-tokens-shell.css). */
-@media (hover: none) {
-  .menu-wrap.doc-list-menu {
-    opacity: 1;
-  }
-}
-
 .doc-list-icon {
   flex: 0 0 auto;
   font-size: var(--text-h2);
   color: var(--muted);
-}
-
-.doc-list-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-  /* Room for the kebab, reserved rather than taken - or a long title runs
-     underneath it instead of wrapping clear of it. The kebab is a target
-     (44px under a coarse pointer) set `--space-3` in from the row's edge, so
-     the reserve is its width plus that inset and a gap, less the row's own
-     padding: a flat `--space-9` left the 44px one 7px over the meta line at
-     420 (halfwindow.js). */
-  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3) + var(--space-2) - var(--space-5)));
 }
 
 .doc-list-title {
@@ -4122,10 +4125,6 @@ span > .chip {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.doc-list-meta {
-  font-size: var(--text-base);
 }
 
 .doc-main {
@@ -4376,7 +4375,6 @@ span > .chip {
   gap: var(--space-3);
 }
 
-
 /* `.card > .row.space-between > .row` (01-forms-settings.css) sets
    `flex: 0 0 auto` on any inner row of a card head, which is right for a
    card head and wrong for this dock: the dock has its own two-line layout
@@ -4504,6 +4502,16 @@ span > .chip {
 .doc-dock-menu.doc-dock-menu-up > .doc-dock-menu-list {
   top: auto;
   bottom: calc(100% + var(--space-2));
+}
+
+/* Quick set's list kept the id it had when it was a row of chips, and with it
+   that row's `margin: --space-5 0 --space-4` and `gap: --space-3` (02 and 03):
+   the menu opened 19px below its button instead of 6, and its eight rows
+   stood 8px apart where every other menu's rows touch, 392px of list for
+   eight times (menus.js). The id and the class together outrank the id. */
+#reminder-presets.doc-dock-menu-list {
+  margin: 0;
+  gap: 0;
 }
 
 .doc-dock-menu-item {
@@ -4683,14 +4691,9 @@ span > .chip {
   user-select: none;
 }
 
-.doc-gutter-current {
-  color: var(--ink);
-}
-
 .doc-gutter.hidden {
   display: none;
 }
-
 
 /* The Phase 0 backdrop's rules lived here: `.doc-backdrop` (a div behind the
    textarea holding the same text) and `#doc-content.has-backdrop` (the
@@ -4906,6 +4909,24 @@ span > .chip {
   padding-block: 0;
 }
 
+/* **And between 600 and 1100, the same decision** (round 2 hole-poking,
+   `touch.js` at 820 and 1024 with a coarse pointer): the band still took
+   its toasts from the top, full width under the header, and a due
+   reminder's toast sat over all four Notes sub-tabs (every tab's centre
+   answered the toast, not the tab). Off Chat the toast goes back to the
+   corner a desktop gives it, above the status bar; on Chat, whose foot is
+   the composer and its mode switch (the reason the band went to the top),
+   it stays up. */
+@media (min-width: 600px) and (max-width: 1099.98px) {
+  body:not([data-tab=chat]) #toast-box {
+    top: auto;
+    left: auto;
+    right: var(--space-4);
+    bottom: calc(var(--status-bar-h) + var(--space-3));
+    align-items: flex-end;
+  }
+}
+
 /* **The choice was louder than the question.** Measured: the options rendered
    at 16px, the instruction field under them at 13.6px, so the toggle was the
    largest type in the dialog and the field a reader types into was the
@@ -4977,7 +4998,7 @@ span > .chip {
    reads at a glance without any segment looking switched off.
 
    The head itself is now `.dialog-head`/`.dialog-head-actions`/
-   `.dialog-head-btn` (08-consistency.css): DESIGN.md's "A dialog's head"
+   `.dialog-head-btn` (07-whiteboard-misc.css): DESIGN.md's "A dialog's head"
    recipe, rolled out to every modal head that carried a text "Close"
    instead (INBOX 431 f). This panel keeps only what is specific to it, the
    verb segments below. */
@@ -4996,6 +5017,35 @@ span > .chip {
 
 .doc-ai-card > #doc-ai-verb label > .ph {
   color: var(--muted);
+}
+
+/* --- settings: one column for every "?", and a pane title that is a title ---
+   Owner, with screenshots: "some of the settings items were missed like one
+   or more of the '?' tooltip buttons, also they arent aligned" and "section
+   headers like the one in the skills settings page are ugly and horrendously
+   designed, sized, postioned". Measured across Models and Skills at 1440:
+   the "?" buttons ended at five different x positions (1103, 1104, 1112,
+   1121, 1129), because each sat at the edge of a different box (a group's
+   content, a summary with its own 6.4px, a switch row with its own 8px, the
+   bare pane with none), and the switch row's "?" still had the filled
+   ground the flat looks had taken off the others. And the pane's own title
+   ("Skills") was the 12px muted section label, set 16px in from the text
+   under it.
+   Now every "?" ends on the group content edge (16px inside the pane), and
+   the pane title is the pane's heading: ink, flush with the description and
+   the groups below it.
+   **Then the head became the pane's dock** (INBOX 599, the owner: "keep
+   doing it for the settings pages ... make sure all the design styles across
+   all pages and popups are consistent"). Measured with `settingsheads.js`:
+   21 panes opened on a bare 18.4px title with its '?' far right, while Logs
+   and every Library view opened on a `.dock` bar at a 16px title, and Logs'
+   own title drew 12px (the `.card h3` eyebrow). Every pane now opens on the
+   bar, its title the dock's 16px 600 and its '?' in the actions zone. */
+#settings-modal .settings-section > .dock h3 {
+  font-size: var(--text-body);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .doc-ai-card > #doc-ai-verb label:has(input:checked) {
@@ -5077,7 +5127,6 @@ span > .chip {
   flex: 1;
 }
 
-
 /* **The picker dialog** (`pickerDialog`, selection.js; INBOX 548): every
    "choose from your notebook" dialog on the dialog recipes, the head, the
    `.seg` of sources, the `.search-field`, the rich picker's rows (or the
@@ -5089,13 +5138,6 @@ span > .chip {
   flex-direction: column;
   gap: var(--space-4);
   width: min(34rem, calc(100vw - var(--space-8) * 2));
-}
-
-/* A map's facts and its look (`wbInfoDialog`): the same head, no foot. */
-.wb-info-card {
-  width: min(30rem, calc(100vw - var(--space-8) * 2));
-  max-height: calc(100vh - var(--space-8) * 2);
-  overflow-y: auto;
 }
 
 /* One row height for every picker row (INBOX 572): 56px holds the 2rem tile
@@ -5274,6 +5316,21 @@ span > .chip {
   }
 }
 
+/* --- Settings: a section's intro sits under its heading, not above it --- */
+/* Each Settings section is a 12px 600 heading and a one-line intro, and the
+   intro was a bare `<p class="muted">` at the body's 16px: the description
+   out-sized the heading it describes (60 of them across the panes). One
+   step above the rows' own 12.8px descriptions, below nothing it explains. */
+#settings-modal .settings-group > p.muted {
+  font-size: var(--text-md);
+}
+
+/* A unit after a field ("days") is part of the label's sentence, so it takes
+   the label's size: it was the body's 16px beside 14.7px labels. */
+#settings-modal .settings-group .row > input + span.muted {
+  font-size: var(--text-lg);
+}
+
 .entry-pick-empty {
   grid-column: 1 / -1;
   margin: auto;
@@ -5376,7 +5433,7 @@ span > .chip {
    before anyone had touched anything, because `switchTab` focuses
    `#chat-input` so you can arrive typing. That is a good thing for the caret
    to do and a bad thing for the ring to do: a focus ring is feedback on what
-   the reader just did, and on arrival the reader has not done anything yet.
+   the reader just did, and on arrival the reader has done nothing.
 
    `switchTab` sets this marker and any key, any press inside the dock, or
    focus leaving it takes it off again (`chatDockReleaseRing`, app.js), so a
@@ -5466,7 +5523,6 @@ span > .chip {
   gap: var(--space-2);
 }
 
-
 /* The activity-mode picker in the notifications panel head. `select` is
    `width: 100%` by default in this app (see the base rule), which in a row of
    small buttons makes it the whole row, the same trap `.chat-toolbar select`
@@ -5476,7 +5532,6 @@ span > .chip {
   margin: 0;
   min-width: 0;
 }
-
 
 /* The header's context meter. A button, because it does something (opens
    Compress): and coloured only when it is telling you something: quiet under
@@ -5596,7 +5651,6 @@ input.doc-title-input::placeholder {
   color: var(--muted);
 }
 
-
 /* **The turn's status belongs with the turn, not under the box you type in.**
 
    Reported: "maybe remove the little 'the model is writing' line at the bottom
@@ -5638,6 +5692,12 @@ input.doc-title-input::placeholder {
   }
 }
 
+@media (max-width: 599.98px) {
+  #tab-documents .doc-actions,
+  #tab-documents .doc-view-cluster {
+    gap: var(--space-1);
+  }
+}
 
 /* The picker's source strip. It sits above the search box because it decides
    what that box searches -- reading order and cause order agree here. A
@@ -6011,7 +6071,6 @@ button.ghost.tour-row:is(:focus-visible, :has(:focus-visible)) {
   white-space: nowrap;
 }
 
-
 /* The whole tour (the pane's one filled button) and Replay the welcome, the
    quiet one beside it; the sections are the list under them. */
 .tour-replay-row {
@@ -6358,6 +6417,13 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   text-decoration: underline;
 }
 
+@media (max-width: 819.98px), (pointer: coarse) {
+  button.manage-cat-count {
+    min-width: var(--target-min);
+    min-height: var(--target-min);
+  }
+}
+
 /* The tool row wraps on a narrow sheet: the field keeps a line's worth. */
 .manage-cat-tools {
   flex-wrap: wrap;
@@ -6374,6 +6440,42 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   .sheet-card.manage-cat-card:not(.sheet-card-corner) {
     max-width: 40rem;
   }
+}
+
+.sheet-modeless > .sheet-card {
+  pointer-events: auto;
+}
+
+.sheet-card.sheet-card-corner {
+  width: min(28rem, 100%);
+  max-width: min(28rem, 100%);
+  max-height: min(36rem, 80dvh);
+}
+
+/* A dialog stamped a sheet on a phone (`phoneSheetDialogs`) takes the
+   sheet's width even where its id gave the card one: History and
+   Connections measured 359 of 390 wide, 16px off the edge they rise from. */
+:is(#history-card, #connections-card).sheet-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.sheet-overlay.sheet-leaving .sheet-card { transform: translateY(var(--space-4)); }
+
+/* The attach popup inside its own sheet (`openNotePicker`'s phone path,
+   chat-attach.js): same reasoning as `.chat-answers-card` below, the sheet
+   is the surface now, so the popover sheds its own box, width and shadow
+   and becomes the sheet's plain content; its own `.dialog-head` is hidden
+   by the JS that moves it in, the sheet's head already carries a title and
+   a Close. */
+/* One height for every source here too: a sheet sized to its content jumped
+   by a third between Notes and Maps. */
+.sheet-card.attach-card {
+  height: 66dvh;
+}
+
+.sheet-card-corner .sheet-head .atlas-menu {
+  display: inline-flex;
 }
 
 .manage-cat-footer-label {
@@ -6478,6 +6580,17 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   opacity: 1;
 }
 
+/* --- motion: a hover eases (2026-10-05) ------------------------------------
+   A row or a card that changes its ground or edge under the pointer does it
+   over `--ui-base` rather than between two frames. Zero specificity, so a
+   row with a transition of its own keeps it; colours only. A button has its
+   own list (01-forms-settings.css, the press). */
+:where(li, .cat-row, .contents-row, .feature-row, .sheet-row, .space-option, .nav-history-item,
+  .doc-comment-item, .doc-suggest-item, .quick-link, .outline-link, .legend-item, .link-connection,
+  .library-card, .notif-row, .ocr-rail-item, .bench-row, .ask-history-item, .chat-source-row, .link-card, .web-result, .note-picker-row, .note-picker-cell, .manage-cat-row, .att-card, .doc-dictionary-row, .embed-card, .wb-library-item, .check-row, .wb-layer-row, .wb-lib-tile, label.setting-check, .setting-check, .start-step) {
+  transition: background-color var(--ui-base) var(--ease-out), border-color var(--ui-base) var(--ease-out);
+}
+
 @media (hover: none) {
   .manage-cat-menu > button {
     opacity: 1;
@@ -6559,6 +6672,22 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   margin: 0 0 var(--space-2);
 }
 
+/* --- settings, de-vibecoded ---------------------------------------------------
+   1. A switch's label was bold, inherited from the form label rule, so a
+      pane of eight switches was eight bold sentences with nothing left to
+      mark the section headings. Labels are 500; their hints stay regular.
+   2. A healthy status ("Search engine: Built-in ... ready") was a whole
+      line of green text. Health is a dot, not a colour for a sentence: the
+      text is muted and the ok colour is the mark before it. Warnings and
+      errors keep their colour, because those ask for something.
+   3. The section help "?" drew a grey disc on every section of every pane.
+      In the flat looks it is a bare glyph with a hover ground; it is still
+      there, still keyboard reachable, just no longer a thing to look at
+      before the setting it explains. */
+.setting-check > span {
+  font-weight: 500;
+}
+
 /* **No message's action bar over the open Attach panel** (INBOX 485: "a
    popup controls menu keeps poping up when I navigate the attach popup",
    with a screenshot of a reply's copy, regenerate and fork row drawn across
@@ -6587,6 +6716,49 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
    were in the same position. */
 .chat-dock:has(#note-picker-panel:not(.hidden), .chat-skills-panel:not(.hidden), #chat-dock-more-panel:not(.hidden)) {
   z-index: 46;
+}
+
+:root:not([data-glass="off"]) .chat-dock {
+  background: rgb(from var(--modal-bg-opaque) r g b / 0.55);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-rim);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
+}
+
+/* --- the chat dock follows its own width (INBOX 694) ------------------------
+   The owner: "the bottom chat dock isnt responsive in design for the sidebar
+   sizes", with the dock in a narrow column, Skills, Web, Plan, the model
+   picker and Ask|Agent wrapped onto four ragged rows. The chat sits in a
+   column that is a window's width minus a rail, a panel or a sidebar, so no
+   viewport query can know how wide the dock is; the dock says so itself
+   (`container: chat-dock`), and the rules below are written in its width.
+   The range syntax is deliberate: these are a component's own widths, not
+   the page's four bands (tests/test_breakpoints.py counts only `max-width:`).
+   Widths are the container's content box (the dock less its 12px padding and
+   its border, so a 800px dock queries as 774), in rem at 16px. Rows, by what
+   the dock can hold:
+   - 47rem and over: the strip is one line, toggles left, model, mode and
+     gear right, the free space between (the spacer), as it was at 1440.
+   - under 47rem: the spacer goes and the mode group shares the toggles'
+     line on a 16rem basis, the model picker taking whatever the Ask|Agent
+     switch and the gear leave, ellipsised. Where even the squares below
+     leave it less, it is the line under them, never a third line.
+   - under 35rem: the toggles are icon-only squares, so the mode group
+     keeps their line. Their words stay as the accessible names (`font-size:
+     0` keeps the text in the tree, unlike `display: none`) and the titles
+     are untouched.
+   - under 24rem: Ask and Agent give up their icons to the model picker.
+   - the composer: one line (box grows, the icon buttons are fixed, Send
+     last) while the box keeps 12rem or more; under 27rem it is the box on a
+     line of its own and the attach buttons left with the mic and Send right
+     on the line under it. A phone below 600 has already moved the two attach
+     buttons and the model picker out of the strip (`dockChatAttachments`,
+     `dockChatTools`), so its composer is the box, the mic and Send and its
+     strip is the mode, the two attachments and the gear: one line each,
+     which the `:has(> .select-shell)` conditions below leave alone. */
+.chat-dock {
+  container: chat-dock / inline-size;
 }
 
 /* **An insight's verdicts: one compact pair on the sentence's own row**
@@ -6631,6 +6803,22 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
 }
 .insight-verdict.is-confirm .ph {
   color: var(--ok);
+}
+
+:is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label.is-ok > .ph {
+  color: var(--ok);
+}
+
+:is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
+  :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
+:is(.action-menu, .doc-dock-menu-list)
+  .menu-item > span:first-child > .ph:first-child {
+  flex: none;
+  /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
+     where a width means nothing until the box is a block of its own. */
+  display: inline-block;
+  width: 1.25em;
+  text-align: center;
 }
 @media (pointer: coarse) {
   .insight-verdict {

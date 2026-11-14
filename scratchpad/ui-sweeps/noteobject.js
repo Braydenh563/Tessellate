@@ -26,6 +26,9 @@ const PHONE = process.env.PHONE === '1';
   // has (its own earlier runs included), and two boards called "House jobs"
   // would make the title fallback in `boardEmbedTarget` ambiguous, which is
   // the sweep lying about the code rather than the code being wrong.
+  // A board that has been opened has a saved thumbnail, and its preview is then
+  // that picture (`mapRaster`, an img.board-minimap) rather than the drawn svg
+  // (`mapPreview`); both are a preview, so "svg" below means either.
   const tag = String(Date.now()).slice(-6);
   const ids = await page.evaluate(async (tag) => {
     const post = (path, body) => apiJson(path, { method: 'POST', body: JSON.stringify(body) });
@@ -61,7 +64,7 @@ const PHONE = process.env.PHONE === '1';
   // "loading" (a sweep measuring the load, not the app).
   await page.waitForFunction((id) => {
     const cards = [...document.querySelectorAll(`#entry-list li[data-id="${id}"] .board-embed`)];
-    return cards.length > 0 && cards.every((c) => c.querySelector('svg') || c.classList.contains('board-embed-gone'));
+    return cards.length > 0 && cards.every((c) => c.querySelector('svg, img.board-minimap') || c.classList.contains('board-embed-gone'));
   }, ids.note, { timeout: 20000 }).catch(() => {});
 
   const card = await page.evaluate((id) => {
@@ -73,7 +76,7 @@ const PHONE = process.env.PHONE === '1';
         text: el.textContent.trim().slice(0, 80),
         h: Math.round(r.height),
         w: Math.round(r.width),
-        svg: !!el.querySelector('svg'),
+        svg: !!el.querySelector('svg, img.board-minimap'),
         gone: el.classList.contains('board-embed-gone'),
         ref: el.dataset.boardRef || '',
       };
@@ -201,6 +204,10 @@ const PHONE = process.env.PHONE === '1';
   await page.waitForTimeout(2500);
   await page.click('button[aria-controls="wb-board-menu"]').catch(() => {});
   await page.waitForTimeout(600);
+  // The row now lives in the Board menu's "Share and save" submenu (INBOX 1627),
+  // so the sweep opens that group first; the check on the row itself is unchanged.
+  await page.click('#wb-board-menu button:has-text("Share and save")', { timeout: 5000 }).catch(() => {});
+  await page.waitForTimeout(500);
   const boardSide = await page.evaluate(() => {
     const el = document.getElementById('wb-add-to-note');
     if (!el) return null;
@@ -269,7 +276,7 @@ const PHONE = process.env.PHONE === '1';
       const el = document.querySelector('#doc-preview .board-embed');
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      return { h: Math.round(r.height), svg: !!el.querySelector('svg'), gone: el.classList.contains('board-embed-gone') };
+      return { h: Math.round(r.height), svg: !!el.querySelector('svg, img.board-minimap'), gone: el.classList.contains('board-embed-gone') };
     });
     console.log('inDocument', JSON.stringify(drawn));
     if (!drawn) findingsDoc.push('the board object did not render in a document');
@@ -290,7 +297,7 @@ const PHONE = process.env.PHONE === '1';
     const room = body.getBoundingClientRect();
     const e = embed && embed.getBoundingClientRect();
     return {
-      embed: e && { w: Math.round(e.width), h: Math.round(e.height), svg: !!embed.querySelector('svg'), fits: e.left >= room.left - 1 && e.right <= room.right + 1 },
+      embed: e && { w: Math.round(e.width), h: Math.round(e.height), svg: !!embed.querySelector('svg, img.board-minimap'), fits: e.left >= room.left - 1 && e.right <= room.right + 1 },
       docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       bodyW: Math.round(room.width),
     };

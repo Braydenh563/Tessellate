@@ -28,6 +28,7 @@ from pathlib import Path
 from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -349,7 +350,7 @@ def test_the_corner_sheet_variant_floats_rather_than_leaning_on_an_edge() -> Non
     corners, the same inset on both edges, and a foot padded like a card rather
     than like a row under a home indicator.
     """
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("05-sidebars-themes.css", "07-whiteboard-misc.css")
     bodies = [
         body
         for selector, body in _rules(css)
@@ -1092,9 +1093,9 @@ def test_a_panel_head_is_identity_one_fact_and_actions_that_do_not_wrap() -> Non
       control, so that is checked with it.
 
     The `nowrap` itself is checked in the stylesheet: it is one declaration and
-    it has to be in 08-consistency.css, because `.chat-half h3` sets
-    `flex-wrap: wrap` at (0,1,1) and a bare class in an earlier file loses to
-    it whatever the source order (measured: the head stayed 88px tall).
+    it names the element (`.chat-half h3.answer-head`, 01-forms-settings.css),
+    because `.chat-half h3` sets `flex-wrap: wrap` at (0,1,1) and a bare class
+    loses to it whatever the source order (measured: the head stayed 88px tall).
     """
     heads = _panel_heads()
     assert heads, "no .panel-head found: this lint is looking at the wrong markup"
@@ -1117,14 +1118,14 @@ def test_a_panel_head_is_identity_one_fact_and_actions_that_do_not_wrap() -> Non
                 f"{name}: {button['id']} is an icon with no aria-label, which is not a control"
             )
 
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("01-forms-settings.css")
     head_rule = next(
         (body for selector, body in _rules(css) if "h3.answer-head" in selector),
         None,
     )
     assert head_rule is not None, (
-        "the answer head's rule left 08-consistency.css. It has to be in the last "
-        "stylesheet and it has to name the element: `.chat-half h3` sets "
+        "the answer head's rule is missing. It has to come after `.chat-half h3` "
+        "and it has to name the element: `.chat-half h3` sets "
         "flex-wrap: wrap at (0,1,1)"
     )
     assert "flex-wrap: nowrap" in head_rule, (
@@ -2261,7 +2262,7 @@ def test_the_phone_top_bar_menu_is_the_kebab_recipe_and_hides_nothing():
     for verb in ("toggleTheme()", "openSettingsModal()", "lockNow()", "quitApp()"):
         assert verb in body, f"the phone header menu lost {verb}, which the desktop bar has"
 
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     band = css[css.index("Phase 11 item 1: the phone top bar") :]
     band = band[: band.index("}\n}") + 3]
     assert "@media (max-width: 599.98px)" in band
@@ -2284,8 +2285,9 @@ def test_every_sidebar_gets_the_phone_opener_from_the_one_function():
     assert rows, "PHONE_SIDEBAR_OPENERS is missing"
     covered = set(re.findall(r'aside: "([^"]+)"', rows.group(1)))
     assert covered == sidebars, f"sidebars without a phone opener: {sorted(sidebars - covered)}"
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    band = css[css.index("Phase 11 items 2 and 3: no rail on a phone") :]
+    css = sheets(*FORMER_10)
+    # One phone block of 10-responsive.css until UI plan 13b moved it beside the sidebars (07).
+    band = "\n".join(re.findall(r"@media \(max-width: 599\.98px\) \{\n(.*?)\n\}\n", css, flags=re.S))
     for ident in sidebars:
         assert f"#{ident}:not(.sidebar-sheet-open)" in band, f"#{ident} keeps its rail on a phone"
 
@@ -2360,7 +2362,7 @@ def test_a_selection_bubble_returns_on_one_right_click_helper():
 # unnamed one is a second disclosure shape nobody styled.
 BARE_DISCLOSURES = 14
 
-# The families 08-consistency.css dresses as "a heading with a chevron" rather
+# The families the boot sheets dress as "a heading with a chevron" rather
 # than as a control in a row. Every one of its four disclosure rules has to
 # name the same set: a family on the flat rule but not the chevron rule is a
 # fold with no disclosure mark, and one on the chevron rule but not the hover
@@ -2379,8 +2381,11 @@ def _fold_families(css: str, marker: str) -> set[str]:
     The selector list runs from the end of whatever came before (a rule's
     closing brace) to this rule's opening one, with its own comments taken
     out: a comment above these rules quotes selectors while explaining them.
+    The rule is the one that names `.settings-fold` at `marker`: since 08
+    dissolved (UI plan 13b) the four sit in different files, after other
+    rules with the same ending.
     """
-    hit = css.index(marker)
+    hit = re.search(r"\.settings-fold " + re.escape(marker.removesuffix(" {")) + r"(?=\s*[,{])", css).start()
     brace = css.index("{", hit)
     start = max(css.rfind("}", 0, hit), css.rfind("*/", 0, hit)) + 1
     block = re.sub(r"/\*.*?\*/", "", css[start:brace], flags=re.S)
@@ -2422,7 +2427,7 @@ def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:
     the next surface that needs a fold reaches for the same three words
     instead of writing a fourth summary of its own.
     """
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     families = [_fold_families(css, marker) for marker in FOLD_RULES]
     for marker, named in zip(FOLD_RULES[1:], families[1:]):
         assert named == families[0], (
@@ -2786,7 +2791,7 @@ def test_every_status_bar_control_has_a_way_in_on_a_phone() -> None:
         f"status-bar controls with no way in on a phone: {missing}; add each to "
         "PHONE_STATUS_ROWS (app.js), which makes it a row of the header menu"
     )
-    responsive = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    responsive = sheets(*FORMER_10)
     assert "--status-bar-h: 0px" in responsive, (
         "the phone band no longer takes the status bar's height back"
     )
@@ -2918,7 +2923,8 @@ def test_an_icon_picker_keeps_its_name_and_hides_its_word_by_clipping() -> None:
             f"{selector} must clip the word, not remove it: it is the control's name"
         )
     page = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    bar = page.split('id="note-toolbar"', 1)[1].split('id="entry-content"', 1)[0]
+    #: To the strip's own end: it sits under the text since L-ui-modernisation-39.
+    bar = page.split('id="note-toolbar"', 1)[1].split("</div>", 1)[0]
     assert bar.count('data-select-icon="') == 2, "the note strip's colour pickers are words again"
     for select in re.findall(r"<select[^>]*data-select-icon[^>]*>", bar):
         assert "aria-label=" in select and "title=" in select, (
@@ -3130,12 +3136,16 @@ PILL_CONTROLS = {
     ".dock-fab": "the floating action button",
     ".chat-dock-controls select": "the chat composer's row is pills (the radius table)",
     ".chat-dock-controls>.chat-tool-group>button": "the chat composer's row is pills",
+    ".chat-dock-controls .note-picker>button": "the note picker moved into that row at 390 (phone-shell.js), beside #attach-image (L441)",
     ".chat-dock-controls .chat-dock-more>button": "the chat composer's row is pills",
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
     ".chat-context-pill": "the context meter in the chat composer's row",
     ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
     ".minimised-pill-x": "the round x inside that pill",
+    ".entry-meta>.chip.suggested-tag>.suggested-tag-dismiss": "the round x inside a suggested tag, as in a minimised pill",
+    ".link-suggestion-bar": "a strength meter's track, not a control (the name matched the suggest rule, L407)",
+    ".doc-suggest-list-inline>.doc-suggest-item": "inline spelling candidates are quiet pills, the owner's decision (INBOX 549)",
     "#notif-btn.has-unread::after": "an unread dot",
     ".notif-unread-chip": "a count badge",
     ".selection-bar button": "a floating bar over a canvas",
@@ -3151,7 +3161,7 @@ PILL_CONTROLS = {
 
 _PILL_CONTROL = re.compile(
     r"(?<![\w-])(button|summary|select)(?![\w-])"
-    r"|chip|pill|btn|toggle|\.seg(?![\w-])|-close|-nav\b|jump|fab"
+    r"|chip|pill|btn|toggle|\.seg(?![\w-])|-close|-nav\b|jump|fab|suggest|starter"
 )
 
 
@@ -3572,9 +3582,9 @@ def test_the_dialog_head_button_recipe_has_one_shared_definition() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         assert ".doc-ai-head" not in css, (
             f"{path.name} still styles .doc-ai-head*; the recipe is the shared "
-            ".dialog-head/.dialog-head-actions/.dialog-head-btn (08-consistency.css)"
+            ".dialog-head/.dialog-head-actions/.dialog-head-btn (01, 04 and 07)"
         )
-    consistency = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("07-whiteboard-misc.css")
     assert "--dialog-head-btn-size" in consistency
     assert ".dialog-head-btn.ghost" in consistency, (
         "the shared dialog-head-btn sizing rule has moved or gone missing"
@@ -3624,7 +3634,7 @@ def test_a_dialog_head_title_out_ranks_the_card_heading_margin():
     (0,1,0), so every recipe dialog's title sat 4.8px above its buttons'
     centre line (scratchpad/ui-sweeps/dialogheads.js). The reset needs two
     classes."""
-    consistency = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("07-whiteboard-misc.css")
     rule = next(body for sel, body in _rules(consistency) if ".dialog-head > .dialog-head-title" in sel)
     assert "margin: 0" in rule
 
@@ -3696,7 +3706,7 @@ def test_the_dialog_head_title_is_one_size_whatever_tag_carries_it() -> None:
     """`.card h3` is the 12px uppercase eyebrow; a head written as `h3` or
     `strong` was a different surface (Quick note measured 12px uppercase beside
     Earlier versions' 16px)."""
-    consistency = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("07-whiteboard-misc.css")
     rule = next(body for sel, body in _rules(consistency) if sel.strip() == ".dialog-head .dialog-head-title")
     assert "font-size: var(--text-body)" in rule
     assert "text-transform: none" in rule
@@ -3746,7 +3756,7 @@ def test_the_panel_tier_is_padded_by_one_token() -> None:
     """The floating panels (notifications, agent activity, the node popup, the
     tour's card, the board overview) are padded `--panel-pad`; they were
     9.6, 12.8, 16 and 8px."""
-    consistency = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("07-whiteboard-misc.css")
     assert "--panel-pad: var(--space-5)" in consistency
     rule = next(body for sel, body in _rules(consistency) if ".card.agent-monitor" in sel and ".notif-panel" in sel)
     assert "padding: var(--panel-pad)" in rule
@@ -4422,7 +4432,7 @@ def test_a_menu_fades_out_through_the_one_class_every_close_path_sets() -> None:
     a node cancels a transition. `scratchpad/ui-sweeps/kebabfirst.js` samples
     the frames: 4 part way, gone by about 150ms, on all eight kebab and select
     close paths."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     # The motion pass (2026-10-05): the exit runs on Interface animations'
     # `--ui-exit` and shrinks back as it fades; on the closed state only.
     at = css.index(".action-menu.hidden {\n  opacity: 0;\n  scale: 0.96;\n  pointer-events: none;")
@@ -4445,7 +4455,7 @@ FLOATING_PANELS = (
 
 
 def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     enter = css.index(":is(.space-menu, .notif-panel,")
     enter_block = css[enter : css.index("}", enter)]
     assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;" in enter_block
@@ -4710,7 +4720,7 @@ def test_an_on_off_row_is_one_recipe_whichever_class_it_carries() -> None:
     and a `.setting-check` draw the same row (OPEN.md, Settings and help,
     "Toggle rows onto one recipe (no lavender-filled bars)").
 
-    The fill was unified by the consistency pass (08-consistency.css: a checked
+    The fill was unified by the consistency pass (now in the component files: a checked
     checkbox row has no fill, only a hairline between rows), but the gap from
     the switch to its label was not: measured in Settings at 1440,
     `togglerows.js`, 15 `.check-row` switch rows at 6.4px against 8
@@ -4812,7 +4822,8 @@ def test_the_note_edit_form_is_one_composition() -> None:
     assert "ph-hash" not in form and "search-field" not in form
     assert 'chip("", "category note-edit-category"' in form
     assert "meta.append(categoryChip, tagField)" in form
-    assert "surface.append(titleInput, meta, toolbarEl, textarea)" in form
+    #: The strip is under the text since L-ui-modernisation-39 (13.2: the text first).
+    assert "surface.append(titleInput, meta, textarea, toolbarEl)" in form
     assert "li.append(surface, marginHost, chipsHost, foot)" in form
     assert "foot.append(count, marginBtn, row)" in form
     assert form.index('smallButton("Cancel"') < form.index("    saveButton\n  );")
@@ -4915,11 +4926,61 @@ def test_an_empty_line_in_a_small_panel_is_the_recipe():
         assert part in rule, f".empty-line lost {part}"
 
 
+#: "Nothing here yet" lines the scripts build that are not a small panel's
+#: empty line: an empty state's own title, a picker's status, a canvas
+#: placeholder, an embed, a row of its own list. Only shrinks.
+JS_YET_LINES_OFF_RECIPE = {
+    "attach-to.js": "a picker's status line",
+    "documents-graph.js": "a plot's placeholder over its canvas",
+    "documents.js": "a `.notice` (no model), a recipe of its own",
+    "library.js:ocr": "the reading panel's own block (`ocr-empty-title`, `library-image-ocr-empty`)",
+    "markdown.js": "an embed's body, inside the note",
+    "note-edit-panels.js": "the related panel's whole text",
+    "settings-data.js": "a row of the recent-changes list (`li`)",
+    "timeline.js": "a day's bucket on the timeline",
+    "whiteboard-library.js": "a row of the frames list (`li`)",
+}
+
+
+def test_a_scripted_empty_line_is_the_recipe():
+    """L765 (owner decided 2026-11-12: align every empty state to the
+    recipe). Inventory: every `.empty-state` in index.html already had an
+    icon (or the emblem), an `.empty-title` and one sentence; the gap was the
+    lines the scripts build. A `p` that says a panel has nothing "yet" is
+    `p.muted.empty-line`, or an `.empty-title`, or named above. Seven were
+    a bare `p.muted` in five sizes and margins (saved looks, saved setups,
+    map groups, bookmark groups, a note's history, board snapshots, board
+    comments)."""
+    off = []
+    for path in sorted((ROOT / "frontend" / "js").glob("*.js")):
+        lines = path.read_text(encoding="utf-8").split("\n")
+        for i, line in enumerate(lines):
+            said = re.search(r"\b(\w+)\.textContent\s*=\s*[\"'`](?:No |Nothing )[^\"'`]*\byet\b", line)
+            if not said:
+                continue
+            name = said.group(1)
+            made = next((re.search(rf"\b{name}\.className\s*=\s*\"([^\"]*)\"", lines[j]) for j in range(i - 1, max(-1, i - 12), -1)
+                         if re.search(rf"\b{name}\.className\s*=", lines[j])), None)
+            classes = made.group(1).split() if made else []
+            if {"empty-line", "empty-title"} & set(classes):
+                continue
+            key = path.name if path.name in JS_YET_LINES_OFF_RECIPE else f"{path.name}:ocr" if "ocr" in " ".join(classes) else path.name
+            if key not in JS_YET_LINES_OFF_RECIPE:
+                off.append(f"{path.name}:{i + 1}")
+    assert not off, f"an empty line off the recipe (p.muted.empty-line): {off}"
+    for name in ("02-chat-graph.css", "library-lazy.css"):
+        css = (ROOT / "frontend" / "css" / name).read_text(encoding="utf-8")
+        for sel in (".graph-groups-empty", ".wb-comments-empty"):
+            for sel_text, body in _rules(css):
+                if sel in sel_text:
+                    assert "font-size" not in body and "margin" not in body, f"{sel} overrides the recipe"
+
+
 def test_a_label_on_a_settings_list_row_takes_the_ink():
     """`contrast.js` (op4-1005): "Built-in" on a Settings, Skills row read
     4.27:1 in light, `--muted` on three stacked tints (the fold, the row, the
     label). A label there takes `--ink`, as the ok label already does."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     rule = next(
         body for sel, body in _rules(css)
         if ".entry-list > li > :is(.skill-row, .persona-row) .chip.item-label" in sel
@@ -4969,7 +5030,7 @@ def test_the_ocr_toolbars_segment_track_grows_round_its_touch_buttons() -> None:
     the 32px page-size track sat 12px short of its 44px buttons and the
     buttons 6px below their neighbours (`wbtopbar.js` with `ONLY=ocr`). The
     track grows round them on the same band."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     at = css.index("  .sheet-card-page .ocr-toolbar .seg-compact {\n")
     block = css[at : css.index("}", at)]
     assert "height: auto;" in block and "min-height: var(--target-min);" in block
@@ -5060,7 +5121,7 @@ RAIL_PANELS = {
     "doc-sidebar": "Documents (cards with a resting fill; hover is the next neutral tier)",
     "skills-sidebar": "Skill logs: a log, not a list of rows with a menu",
 }
-#: Wrappers of a row's ⋯ in a rail; the recipe rule in 08-consistency.css
+#: Wrappers of a row's ⋯ in a rail; the recipe rule in 04-chat-dock-appearance.css
 #: names each.
 RAIL_MENUS = ("#category-list li .category-actions", "#conversation-list li .entry-actions", ".doc-item .doc-item-menu")
 
@@ -5106,10 +5167,10 @@ def test_every_rail_is_a_known_rail() -> None:
 
 
 def test_a_rail_rows_menu_is_a_plain_ghost_icon_that_fills_on_its_own_hover() -> None:
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("07-whiteboard-misc.css")
     plain = [body for selector, body in _rules(css) if all(menu in selector for menu in RAIL_MENUS) and selector.endswith("button")]
     hover = [body for selector, body in _rules(css) if all(menu in selector for menu in RAIL_MENUS) and re.search(r"button:hover(,|$)", selector)]
-    assert plain and hover, "the rail ⋯ recipe rule (08-consistency.css) is missing or no longer names every rail's menu"
+    assert plain and hover, "the rail ⋯ recipe rule (04-chat-dock-appearance.css) is missing or no longer names every rail's menu"
     assert _rail_background(plain[0]) == "transparent", "a rail ⋯ has no fill at rest or while its row is hovered"
     assert _rail_background(hover[0]) == "var(--ghost-btn-bg)", "a rail ⋯ fills only under its own pointer"
     assert "border-radius: var(--radius-md)" in plain[0], "the fill stays inside the row's own radius"
@@ -5238,18 +5299,21 @@ def test_the_library_hover_tick_shows_its_check_and_names_itself() -> None:
 #: rule, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row: a plain ghost icon, no fill, edge
 #: or shadow at rest, `--ghost-btn-bg` only under its own pointer or while its
 #: menu is open, drawn at `--radius-md`. `kebabMenu` gives every opener the one
-#: class, `kebab-opener`, and it is styled once in 08-consistency.css; a surface
+#: class, `kebab-opener`, and it is styled once in 07-whiteboard-misc.css; a surface
 #: that wants its ⋯ dressed differently does not get to say so.
+SHARED_OPENER = ":is(button, summary).kebab-opener.icon-only"
+
+
 def test_the_kebab_opener_is_one_shared_ghost_icon_styled_once() -> None:
     script = with_pieces("sheets-selects.js")
     assert 'opener.classList.add("icon-only", "kebab-opener")' in script, "kebabMenu's opener carries the shared class"
 
-    shared = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    shared = sheets("07-whiteboard-misc.css")
     named = [(selector, body) for selector, body in _rules(shared) if ".kebab-opener" in selector]
     plain = [body for selector, body in named if ":hover" not in selector]
     at_rest = [body for selector, body in named if ":not(:hover" in selector]
     hover = [body for selector, body in named if ":not(:hover" not in selector and ":is(:hover" in selector]
-    assert plain and at_rest and hover, "the shared kebab opener rule (08-consistency.css) is missing"
+    assert plain and at_rest and hover, "the shared kebab opener rule (07-whiteboard-misc.css) is missing"
     assert all(_rail_background(body) == "transparent" for body in at_rest), "a ⋯ has no fill at rest"
     rest = "\n".join(plain)
     assert re.search(r"border(?:-color)?\s*:\s*transparent", rest), "a ⋯ has no edge at rest"
@@ -5261,14 +5325,15 @@ def test_the_kebab_opener_is_one_shared_ghost_icon_styled_once() -> None:
     # `.kebab-opener`, or the library's ⋯ chip that this replaced, may not set
     # a resting fill, edge or shadow anywhere else.
     for path in CSS:
-        if path.name == "08-consistency.css":
-            continue
         for selector, body in _rules(path.read_text(encoding="utf-8")):
+            # The shared rule itself (07-whiteboard-misc.css since UI plan 13b).
+            if all(part.strip().startswith(SHARED_OPENER) for part in selector.split(",\n")):
+                continue
             names_opener = ".kebab-opener" in selector or (
                 'button[aria-haspopup="menu"]' in selector and "library-card-menu" in selector
             )
             if names_opener and re.search(r"(?:^|;)\s*(?:background(?:-color)?|border(?:-color)?|box-shadow)\s*:", body):
-                raise AssertionError(f"{path.name}: {selector} dresses the ⋯ opener; styled once in 08-consistency.css")
+                raise AssertionError(f"{path.name}: {selector} dresses the ⋯ opener; styled once, under {SHARED_OPENER}")
 
 
 #: **A rail row's ⋮ overlays the row; it never reserves a column** (INBOX 722,
@@ -5311,7 +5376,7 @@ def test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edit
     column flex whose details line has the last `order`, and the "· edited"
     suffix keeps its space as a no-break space, because a plain leading space
     collapses inside the date's inline flex box."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("01-forms-settings.css", "02-chat-graph.css", "07-whiteboard-misc.css")
     card = "#entry-list:not(.is-rows) > li"
     rules = list(_rules(css))
 
@@ -5791,7 +5856,7 @@ def test_a_bar_has_one_select_one_filter_trigger_and_one_view_order() -> None:
     edgeless inset, also in the Ask composer and the chat strip. One filter
     trigger: icon and word, the word a `.dock-word` that leaves on a phone.
     One view order: list, then grid."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("07-whiteboard-misc.css")
     rule = re.search(
         r"\.dock \.select-shell > \.select-opener,\s*\.ask-composer \.select-shell > \.select-opener,\s*"
         r"\.chat-dock-controls \.select-shell > \.select-opener \{([^}]*)\}",
@@ -5946,7 +6011,7 @@ def test_a_panel_head_is_a_title_and_not_the_eyebrow() -> None:
     dialog title's voice; `.card h3` (the eyebrow, 12px) is for a label over
     one group. Measured: five panel heads and both board panel heads at 12px
     beside the Web panel's 16px."""
-    consistency = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("07-whiteboard-misc.css")
     rule = next(
         body for sel, body in _rules(consistency)
         if ".card h3.panel-head" in sel and "h3.wb-sidebar-title" in sel
@@ -5963,7 +6028,7 @@ def test_a_panel_head_is_a_title_and_not_the_eyebrow() -> None:
 #: own opaque ground (the same token, no sheen on a modal card, so no block);
 #: the two `peeking` heads are the translucent state of a panel while the app
 #: behind it is being previewed. A bare sticky head takes its ground only when
-#: stuck, from the recipe in 08-consistency.css, and its `@supports not`
+#: stuck, from the recipe in 07-whiteboard-misc.css, and its `@supports not`
 #: fallback is the card's own wash (`test_nested_surfaces_1489.BARE_STICKY`).
 HEAD_GROUND_ALLOWED = {
     ".modal-card > .dialog-head",
@@ -6042,7 +6107,7 @@ def test_the_local_chip_shows_the_privacy_verdict_and_opens_the_record() -> None
     phone = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
     rows = re.search(r"const PHONE_STATUS_ROWS = \[(.*?)\];", phone, re.S).group(1)
     assert '"privacy-chip"' in rows
-    responsive = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    responsive = sheets(*FORMER_10)
     assert "#top-bar #privacy-chip" in responsive
 
 
@@ -6095,7 +6160,7 @@ def _css_block_in(css: str, selector: str) -> str:
 def test_a_modal_cards_dialog_head_is_sticky_on_an_opaque_surface() -> None:
     """C12: the head stays at the top of a scrolling modal card. Browser half:
     scratchpad/ui-sweeps/dialogheadsticky.js."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("07-whiteboard-misc.css")
     start = css.index(".modal-card > .dialog-head {")
     block = css[start : css.index("}", start)]
     assert "position: sticky;" in block and "top: calc(-1 * var(--card-pad-y));" in block
@@ -6106,7 +6171,7 @@ def test_help_rows_do_not_animate_hover() -> None:
     """C25: scrolling Help at 4x CPU was 33.3ms a frame (median) because the wheel
     starts a hover transition on a new row every frame; 16.7 without them
     (scratchpad/ui-sweeps/helplag.js)."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("07-whiteboard-misc.css")
     start = css.index("#settings-help summary,")
     block = css[start : css.index("}", start)]
     assert "#settings-help .linklike" in block and "transition: none;" in block
@@ -6134,7 +6199,7 @@ def test_ghost_topics_are_one_lazy_layer_with_four_keys():
         assert needle in body, needle
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".wb-ghosts {" in lazy and ".wb-ghost.is-taken {" in lazy
-    for boot in ("00-tokens-shell", "07-whiteboard-misc", "08-consistency"):
+    for boot in ("00-tokens-shell", "01-forms-settings", "02-chat-graph", "03-dashboard-widgets", "04-chat-dock-appearance", "05-sidebars-themes", "06-timeline-dialogs", "07-whiteboard-misc"):
         assert "wb-ghost" not in (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
     rule = lazy[lazy.index(".wb-ghosts {") :].split("}")[0]
     assert "backdrop-filter" not in rule
@@ -6177,7 +6242,7 @@ def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
     for rule in (".lightbox .lightbox-topbar {", ".lightbox-bottom {", ".lightbox .lightbox-filmstrip {", ".lightbox.lightbox-idle .lightbox-topbar,"):
         assert rule in lazy, rule
     assert re.search(r'\[data-motion="reduced"\]\) \.lightbox \.lightbox-glide \{\s*transition: none', lazy)
-    for boot in ("00-tokens-shell", "02-chat-graph", "07-whiteboard-misc", "08-consistency"):
+    for boot in ("00-tokens-shell", "01-forms-settings", "02-chat-graph", "03-dashboard-widgets", "04-chat-dock-appearance", "05-sidebars-themes", "06-timeline-dialogs", "07-whiteboard-misc"):
         text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
         for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
             assert name not in text, f"{name} in {boot}.css: the viewer's chrome is lazy"
@@ -6316,7 +6381,7 @@ def test_every_note_editor_says_how_it_is_bounded() -> None:
         "NOTE_SURFACES changed: place the new editor in _SURFACE_BOUND and make sure its foot "
         "cannot be pushed out of view (DESIGN.md, 'A growing field is capped')"
     )
-    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8")
+    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8") + (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")  # L-ui-modernisation-31
     assert "max-height: 18rem" in sized and "max-height: 22rem" in sized  # size: inline / box
 
 
@@ -6369,7 +6434,9 @@ def test_the_present_bar_caption_is_a_page_picker():
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+        ROOT / "frontend" / "css" / "library-lazy.css"
+    ).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
     assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body
@@ -6648,11 +6715,14 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
     each tab names its section by `data-target`, a glyph and a word, and a
     count is a `.pop-count` with an id the script fills."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
-    assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs"}
+    # Extra classes may follow (`edge-fade` on the two rows that scroll).
+    navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs(?: [a-z-]+)*" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
+    #: Tools and Appearance joined with L771 (the owner 2026-11-12: keep one
+    #: pane each, add the jump row Skills has).
+    assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs", "tools-tabs", "appearance-tabs"}
     for name, inner in navs:
         buttons = re.findall(r"<button[^>]*data-target=(['\"])(.*?)\1[^>]*>(.*?)</button>", inner, flags=re.S)
-        assert len(buttons) == 3, name
+        assert 3 <= len(buttons) <= 7, name
         for _quote, target, body in buttons:
             assert 'class="ph ph-' in body and "pop-tab-glyph" in body, f"{name}: a tab without a glyph"
             if target.startswith("#"):
@@ -6704,7 +6774,7 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     `.dialog-head-actions` must put the title's slack on the title, not
     between the buttons, and the buttons panel-movable.js adds (reset, push,
     minimise) go beside Close, never after it."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     head = re.search(r"\.sheet-head \{([^}]*)\}", css)
     assert head and "space-between" not in head.group(1), "a sheet head spreads its buttons; the title takes the slack"
     title = re.search(r"\.sheet-head > \.sheet-title,\s*\.sheet-title \{([^}]*)\}", css)
@@ -6804,7 +6874,9 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     assert 1.1 <= y1 <= 1.4, f"the overshoot is gentle, not {y1}"
 
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
-    responsive = css["10-responsive.css"]
+    # In 10-responsive.css until UI plan 13b moved the menu recipe beside the
+    # menus (07) and its keyframes to 09's closing block.
+    responsive = css["07-whiteboard-misc.css"] + css["09-editor.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
     assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
     delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
@@ -7130,7 +7202,7 @@ def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
     loop = js[js.index("for (const tag of suggestions) {") :]
     loop = loop[: loop.index("meta.appendChild(group);")]
     assert 'discard.className = "suggested-tag-dismiss"' in loop and '"unlink"' not in loop
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     dismiss = _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss")
     assert "width: 1.5rem" in dismiss, dismiss
     # INBOX 1597 (intent moved, the owner: "these suggested tags still look wierd"): no divider between the
@@ -7503,7 +7575,7 @@ def test_a_panel_fold_is_a_full_width_row_closed_as_open():
                 assert not m or m.group(1).strip() in {"100%", "auto"}, (name, one, m.group(0))
     chat = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
     assert re.search(r"\.chat-sources-summary::before\s*\{\s*order:\s*1;\s*margin-inline-start:\s*auto", chat)
-    disclosure = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    disclosure = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
     assert ":is(.fold-summary, .agent-step-group-summary)::after" in disclosure
     for name, sel, body in every:
         if "[open] > .fold-summary" in sel and ".thinking-fold" in sel + ".thinking-fold":
@@ -7519,7 +7591,7 @@ def test_the_ask_column_heads_are_one_recipe():
 
     m = re.search(r"\.chat-half h3\s*\{([^}]*)\}", strip("frontend/css/01-forms-settings.css"))
     assert m and "min-height: var(--control-h-lg)" in m.group(1)
-    m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/08-consistency.css"))
+    m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/03-dashboard-widgets.css"))
     assert m and "font-size: var(--text-body)" in m.group(1)
 
 
@@ -7680,7 +7752,7 @@ def test_a_menu_that_belongs_to_a_row_is_a_kebab_menu_with_an_anchor_and_a_choic
     selects = (js / "sheets-selects.js").read_text(encoding="utf-8")
     assert "{ vertical = false, anchor = null } = {}" in selects and "kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener)" in selects
     assert 'if (item.current) button.setAttribute("aria-current", "true")' in selects
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("07-whiteboard-misc.css")
     assert '.action-menu .menu-item[aria-current="true"]' in css
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "{ anchor: element }" in design and "`current`" in design
@@ -7825,9 +7897,13 @@ def test_a_split_chips_touch_overhang_is_never_clipped_or_laid_over_a_neighbour(
     finger the chip keeps the overhang's width after it, never clips it, and a
     row's lane keeps the overhang's height as padding with the same negative
     margin (measured: every edge of the box hits the dismiss in rows)."""
-    css = (_SHEETS / "08-consistency.css").read_text(encoding="utf-8")
-    band = css[css.index(".suggested-tag > .suggested-tag-dismiss::before,") :]
-    band = band[: band.index(".entry-meta > .chip.filing-sure")]
+    css = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
+    # The touch band's rules went to more than one file when 08 dissolved
+    # (UI plan 13b); each is still under the same query.
+    head = "@media (max-width: 819.98px), (pointer: coarse) {\n"
+    blocks = [css[m.end() : css.index("\n}\n", m.end())] for m in re.finditer(re.escape(head), css)]
+    assert any(".suggested-tag > .suggested-tag-dismiss::before," in b for b in blocks)
+    band = "\n".join(b for b in blocks if ".suggested-tag" in b)
     assert re.search(r"\.entry-meta > \.chip\.suggested-tag \{\s*margin-inline-end: calc\(var\(--target-min\) - 1\.5rem\);", band)
     assert re.search(r"\.entry-list \.entry-meta > \.chip\.suggested-tag\.suggested-tag \{\s*overflow: visible;", band)
     lane = re.search(r"\.entry-meta:has\(> \.chip\.suggested-tag\) \{([^}]*)\}", band)
@@ -7892,3 +7968,14 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_web_link_names_its_site_one_way() -> None:
+    """Source text: a note's link card and a web search result share one host
+    line rule and both name the site with `sourceHost` (L386)."""
+    chat_css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    assert re.search(r"\.link-card-host,\s*\.web-result-site\s*\{", chat_css)
+    lazy = (ROOT / "frontend" / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
+    assert not re.search(r"\.web-result-site\s*\{", lazy), "a second host-line rule"
+    assert "sourceHost(url)" in (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
+    assert "sourceHost(source.url)" in (ROOT / "frontend" / "js" / "ask-compose.js").read_text(encoding="utf-8")

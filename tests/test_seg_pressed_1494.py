@@ -26,7 +26,7 @@ def test_a_pressed_segment_gets_the_chosen_ground():
 
 
 def test_the_flat_palettes_paint_a_pressed_segment_too():
-    assert CHOSEN.search(_rules("08-consistency.css"))
+    assert CHOSEN.search(_rules("07-whiteboard-misc.css"))
 
 
 def test_hover_never_repaints_a_chosen_segment():

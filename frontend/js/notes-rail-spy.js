@@ -1,5 +1,5 @@
 // notes-rail-spy.js: the Connections rail follows the note you are reading
-// (INBOX 571, a follow-up to 546). The owner: "what constitutes opening a note
+// (INBOX 571, a follow-on to 546). The owner: "what constitutes opening a note
 // if I can see a whole note in the notes section, Id just scroll to it and see
 // it yk??" Notes are read in the list, so there is no "open" moment for the
 // rail to wait for; the decision taken:

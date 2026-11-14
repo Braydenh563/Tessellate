@@ -136,6 +136,9 @@ async function hero(page, density) {
       // stretch aligns the boxes, sub-pixel layout does the rest.
       oneRow: findBox ? Math.abs(findBox.top - heroBox.top) < 1.5 : null,
       findH: findBox ? r(findBox.height) : null,
+      findW: findBox ? r(findBox.width) : null,
+      heroW: r(heroBox.width),
+      findGap: findBox ? r(findBox.top - heroBox.bottom) : null,
       heroRadius: getComputedStyle(heroEl).borderTopLeftRadius,
       findRadius: findEl ? getComputedStyle(findEl).borderTopLeftRadius : null,
       // Every control a person can press inside the hero, which is the measure
@@ -287,36 +290,36 @@ async function statusBar(page) {
   );
   const fp = out.files390;
   check(
-    '289: the same box on a phone is not taller than half the screen',
-    fp.missing || fp.boxH < fp.viewportH / 2,
+    // The box now fits a page's worth of text, capped at min(28rem, 55vh) (library-lazy.css), which
+    // superseded the old half-screen cap, so the phone's bound is 55% of the screen.
+    '289: the same box on a phone is not taller than 55% of the screen',
+    fp.missing || fp.boxH <= fp.viewportH * 0.55 + 1,
     `${fp.boxH}px of ${fp.viewportH}`
   );
 
   // 296: the three levels read as one sequence, smallest hero at the level that
   // shows least, and focused still carries the identity and one way in.
   const [full, compact, focused] = [out['hero-full'], out['hero-compact'], out['hero-focused']];
+  // INBOX 675 made Focused "a hero again" (the banner takes two columns with a glance of today, and
+  // the search stays on its own full-width row beneath, INBOX 425's decision), so its hero is taller than
+  // Compact's by design. What still holds is the sequence of the page above the widgets: Focused shows
+  // less than Full, and Compact's banner is smaller than Full's.
   check(
-    '296: the heroes shrink with the level',
-    full.hero > compact.hero && compact.hero > focused.hero,
-    `${full.hero} / ${compact.hero} / ${focused.hero}`
+    '296: the banner shrinks from Full to Compact, and Focused shows less above the widgets than Full',
+    full.hero > compact.hero && focused.chrome < full.chrome,
+    `hero ${full.hero} / ${compact.hero}, chrome ${full.chrome} / ${focused.chrome}`
   );
   check(
     '296: focused keeps the greeting and the one number',
     focused.bands.greeting !== 'off' && focused.bands.submessage !== 'off',
     JSON.stringify(focused.bands)
   );
-  // The judgement this report turns on: focused is "the one thing you came here
-  // for", so the head at that level has to *carry* that one thing rather than
-  // stack a thinner banner above it.
+  // Focused is the banner with the search doorway full width on its own row beneath it, one step apart
+  // (07-whiteboard-misc.css, INBOX 675 and 425), not one shared row.
   check(
-    '296: focused puts the banner and the search doorway on one row',
-    focused.oneRow === true,
-    `one row ${focused.oneRow}, head ${focused.head}px`
-  );
-  check(
-    '296: and the two read as one row, same height and same corner',
-    Math.abs(focused.hero - focused.findH) < 1.5 && focused.heroRadius === focused.findRadius,
-    `${focused.hero} / ${focused.findH}px, ${focused.heroRadius} / ${focused.findRadius}`
+    '296: focused stacks the search doorway on its own row under the banner',
+    focused.oneRow === false && focused.findGap >= 0 && focused.findGap <= 24,
+    `one row ${focused.oneRow}, gap ${focused.findGap}px, find ${focused.findW} of ${focused.heroW}px`
   );
   check(
     '296: full and compact keep the banner and the doorway as two bands',

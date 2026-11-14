@@ -576,8 +576,19 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
   };
   //: A scroll event is already one per frame; 17 rects are read.
   scroller?.addEventListener("scroll", mark, { passive: true });
+  //: **No forced layout on open** (L702: onload 224 ms, 187 of it layout): the
+  //: chips are marked on the next frame, when layout has run anyway, and the
+  //: pane's height is read only when it is scrolled (a first draw is at the top).
+  let marking = 0;
+  const markSoon = () => {
+    if (marking) return;
+    marking = 1;
+    //: The app's one "after a frame" helper (dashboard.js), not a loop of its own.
+    afterFrames(() => { marking = 0; mark(); }, 1);
+  };
   const draw = () => {
-    const before = scroller?.scrollHeight || 0;
+    const top = scroller?.scrollTop || 0;
+    const before = top > 0 ? scroller.scrollHeight : 0;
     mathEditorPalette(list, search.querySelector("input").value);
     jump.replaceChildren(
       ...[...list.querySelectorAll(".math-editor-group")].map((head) => {
@@ -590,9 +601,9 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
       })
     );
     band.hidden = !jump.children.length;
-    mark();
+    markSoon();
     //: A row arriving above (a pin) must not move what is being looked at.
-    if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;
+    if (top > 0) scroller.scrollTop += scroller.scrollHeight - before;
   };
   //: **Pin mode**: a press on a tile pins it to Favourites or takes it off (a right-click does the same), so a touch screen needs no long press.
   let pinning = false;

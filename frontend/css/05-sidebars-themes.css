@@ -313,6 +313,61 @@
     color: #000;
   }
 }
+
+/* **44: above the top bar (40), under every menu (45), popover, panel and
+   dialog** (INBOX 694, the owner: "the companion covers the attach popup").
+   It was 50, which put it over each action menu (45), the dock's Attach
+   panel (45 inside a dock at 3) and the lock screen (50, a tie it won by
+   coming later in the body). A bar with its own popup open still lifts above
+   it (z 51, the rule at `header#top-bar:has(`), and the chat dock lifts to 46
+   while one of its panels is open. A `<dialog>` opened with `showModal()` is
+   in the browser's top layer, above any z-index, and a `.modal-overlay` is
+   1010, so with a modal open it is seen dimmed behind the scrim, as the
+   modal rule has it for every other thing on the page. */
+#nm-buddy-band {
+  /* Under <html>, not <body> (avatars.js, `nameMarkBuddyBuild`), so it says what it took from body. */
+  font-family: var(--ui-font, system-ui, -apple-system, "Segoe UI", sans-serif);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 44;
+  pointer-events: none;
+  /* Fades with the full-screen flag below, and back. */
+  transition: opacity var(--motion-base) var(--ease-out), visibility 0s linear 0s;
+}
+
+/* The shutter (avatars.js, `nameMarkBuddyRideFrames`): riding, a clipping
+   box the band's own size that the area's scroll slides down (or up), so a
+   head the band was widened for at its perch goes under the bar with the
+   perch rather than over it. Not riding, a point with nothing clipped. */
+#nm-buddy-band .nm-buddy-shutter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+
+#nm-buddy-band .nm-buddy-rider {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The one main landmark (INBOX 433, index.html): a box for the accessibility
+   tree only. `contents` gives it no box of its own, so the tab pages lay out
+   as the body's children exactly as they did before it existed, and every
+   `body > …` and fixed-position rule below is unaffected. */
+#app-main {
+  display: contents;
+}
 /* --- editing a question in place --------------------------------------------- */
 .msg-edit {
   display: flex;
@@ -601,14 +656,6 @@ mark.text-highlight {
   padding: 0 0.12em;
   font-weight: inherit;
 }
-/* `==green|text==` and friends. Written as low-alpha colours rather than
-   solid ones so a highlight sits *behind* `--ink` at whatever the theme's
-   text colour is, instead of forcing a light-on-dark inversion that would
-   need its own foreground colour per theme, the same reason `--warn-soft`
-   above works unchanged in both. The set is closed and matches the
-   allowlist inside INLINE_MD (app.js) exactly: a colour with no rule here
-   cannot be typed. */
-mark.text-highlight-yellow { background: var(--warn-soft); }
 mark.text-highlight-green { background: var(--ok-soft); }
 mark.text-highlight-blue { background: var(--accent-soft); }
 mark.text-highlight-pink { background: rgba(236, 72, 153, 0.22); }
@@ -705,13 +752,18 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
   outline-offset: 2px;
 }
 /* --- rebindable shortcuts ----------------------------------------------------- */
+/* The keys drop under their action when the row cannot hold both: at 320 the
+   name was squeezed to its longest word and ran 48px out of the Shortcuts
+   pane (L-ui-modernisation-26). A 10rem basis keeps one row wherever the
+   pane is wider than about 320px. */
 .shortcut-list li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 .shortcut-list li>span {
-  flex: 1 1 auto;
+  flex: 1 1 10rem;
 }
 /* The row's buttons are fixed hit targets: shrinking with the row cut a
    label at 390 (devibe.js: 55px of text in a 53px button). */
@@ -1160,6 +1212,21 @@ button.map-chip:focus-visible {
 .rich-picker-row.active :is(.rich-picker-about, .rich-picker-keys) {
   color: var(--ink);
 }
+
+/* --- the palette on a touch screen (INBOX 464) ------------------------------
+   Its foot ("↑↓ to choose · Enter to run · Esc to close · ? for shortcuts")
+   and every row's key chip ("M D") describe a keyboard a phone does not have:
+   measured at 390, one hint line and 20 chips, while the field's own words
+   ran 20px past its box (323px of placeholder in 303px). The copy is shorter
+   at every width (index.html) and the keyboard's words go where there is no
+   keyboard. `pointer: coarse` as well as `hover: none`, so a tablet with a
+   trackpad keeps them. */
+@media (hover: none) and (pointer: coarse) {
+  .palette-hint,
+  .rich-picker-keys {
+    display: none;
+  }
+}
 /* A row that is a button (a dialog of choices walked by Tab): the browser's
    own button paint taken off so it is the same row, and the fill follows the
    pointer and the keyboard's focus, since there is no `.active` to move. */
@@ -1280,18 +1347,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 .cm-md-callout-label,
 .doc-block-kind {
   --callout-accent: var(--accent);
-}
-/* The Live view's kind picker is a tile the size of a letter, so under a
-   finger its target grows past its box without moving the line (INBOX 486). */
-@media (pointer: coarse) {
-  .cm-md-callout-kindbtn {
-    position: relative;
-  }
-  .cm-md-callout-kindbtn::after {
-    content: "";
-    position: absolute;
-    inset: calc((var(--target-min) - 1.5em) / -2);
-  }
 }
 /* The title is the ink, not the kind's colour: an amber or a green title on
    its own tint is the pair that fails contrast first, and the kind is already
@@ -1580,19 +1635,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   overflow-x: auto;
   text-align: center;
 }
-/* A numbered display equation, `\tag{1}`: the formula stays centred and its
-   number sits at the right edge of the line. */
-.md-math-numbered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.md-math-number {
-  position: absolute;
-  right: 0;
-  color: var(--muted);
-}
 /* Inline maths, `$x$`: sits in the line of prose it was written in, so it
    takes none of the display block's centring or margin. */
 .md-math-inline {
@@ -1658,6 +1700,43 @@ math .math-xcancel {
 }
 .note-embed-body > :last-child {
   margin-bottom: 0;
+}
+
+.notes-tidy > .tab-badge {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: calc(-1 * var(--space-1));
+  margin-left: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  pointer-events: none;
+}
+
+/* **A corner panel floats; an edge sheet is welded to its edge** (INBOX 270,
+   the owner: "improve/redesign the ui and layout of the guide popup panel").
+   Measured at 1440x900 before this block: the card sat 10px from the right of
+   the window and 0px from the bottom, with `14px 14px 0 0` for a radius, so
+   two of its corners were square against an edge it was not touching and its
+   two insets disagreed by 10px. That is the bottom-sheet geometry `.sheet-card`
+   gives every sheet, applied to the one variant that is deliberately not an
+   edge sheet: above the phone break this panel hovers in the corner over the
+   app, the way the popup agent's card hovers in the middle of it, and a
+   floating surface has four corners and one inset.
+   The foot padding goes back to the card's own `--card-pad-y` here for the
+   same reason: `.sheet-card`'s `env(safe-area-inset-bottom)` foot exists
+   because an edge sheet's last row sits where the home indicator is, and a
+   panel with 16px of window under it has no such row. Measured: 20px of
+   padding above the head against 12.8px under the composer, now 20px both.
+   Below 601px none of this applies and the panel is the bottom sheet it has
+   always been there, which is the variant's own decision (INBOX 224: in a
+   390px window the corner is the window). */
+@media (min-width: 600px) {
+  .sheet-card.sheet-card-corner {
+    border-radius: var(--radius);
+    margin-inline-end: var(--space-6);
+    margin-block-end: var(--space-6);
+    padding-bottom: var(--card-pad-y);
+  }
 }
 /* --- a board or a map as an object in a note (INBOX 309) ---------------------
    The owner: "there is also no way to attach a whiteboard or mindmap to a note
@@ -2102,31 +2181,10 @@ body.resizing-sidebar {
 .doc-toolbar[data-toolbar-mode="row"] {
   flex-wrap: nowrap;
 }
-/* A tool that does not fit on the row, until More is pressed. Scoped to the
-   closed strip rather than undone by the open one, so an open strip shows
-   each tool with its own `display`, not a guessed one. */
-.doc-toolbar:not(.is-more-open) > .doc-toolbar-over {
-  display: none;
-}
 /* More pressed: the strip wraps, as the expanded mode does, and the folded
    tools are back in their own places, with their own menus. */
 .doc-toolbar.is-more-open {
   flex-wrap: wrap;
-}
-/* A narrow strip folds its layout toggle behind More before any tool
-   (`fitDocToolbarRow`); pressed, More brings it back with the rest. */
-.doc-toolbar.is-layout-folded:not(.is-more-open) .doc-toolbar-layout {
-  display: none;
-}
-/* The document strip's group, trimmed when it would sit alone on a row
-   (`trimDocToolbarGroup`): the layout and collapse buttons are rows of the
-   document's own ⋯ menu, and line numbers stays on the strip. */
-.doc-toolbar.is-group-trimmed > .doc-toolbar-tools > :is(.doc-toolbar-layout, .doc-toolbar-collapse) {
-  display: none;
-}
-/* `[hidden]` loses to the strip's own `button` sizing rules otherwise. */
-.doc-toolbar .doc-toolbar-more[hidden] {
-  display: none;
 }
 /* **Un-clipping the strip to free a menu freed the whole toolbar too.**
    This used to be `.doc-toolbar[data-toolbar-mode="row"]:has(details[open])
@@ -2199,14 +2257,6 @@ body.resizing-sidebar {
   width: var(--control-h);
   padding-inline: 0;
 }
-/* The group separators are furniture, not controls: they take the strip's
-   height as a *rule*, and the sizing rule above must not turn them into 2rem
-   blocks. */
-.doc-toolbar-pair {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
 .doc-toolbar .doc-toolbar-sep {
   align-self: center;
   height: calc(var(--control-h) - var(--space-2));
@@ -2252,12 +2302,6 @@ body.resizing-sidebar {
   display: none;
   color: var(--muted);
   font-size: var(--text-sm);
-}
-/* The name appears only while collapsed: expanded, the buttons say what the
-   strip is far better than a word would. */
-.doc-toolbar.is-collapsed .doc-toolbar-collapsed-name {
-  display: inline;
-  margin-right: auto;
 }
 /* Before documents.js has mounted the cluster (the markup says collapsed, so
    the first paint is the folded bar and not a two-row strip that folds when
@@ -2435,7 +2479,7 @@ body.resizing-sidebar {
 }
 /* **The bar recipe's own hover, not an accent one.** consistency.md item 3
    listed this strip as the last surface off `.dock > * > button.ghost`
-   (08-consistency.css), and measuring it said which half: the resting state
+   (07-whiteboard-misc.css), and measuring it said which half: the resting state
    was already exactly right (27 controls, one height at 36px, one radius at
    8.4px, transparent fill, 1px transparent border, no shadow, identical to
    the notes dock's own). What was off was the *state*. A hovered control here
@@ -2478,6 +2522,33 @@ body.resizing-sidebar {
   height: 1.1rem;
   margin: 0 0.25rem;
   background: var(--border);
+}
+
+@media (max-width: 599.98px) {
+  #tab-documents .doc-back-label,
+  #tab-documents .doc-ai-label,
+  #tab-documents .doc-dock-status,
+  #tab-documents .doc-actions > .doc-toolbar-sep,
+  #tab-documents .doc-hint,
+  #tab-documents #doc-caret {
+    display: none;
+  }
+}
+
+/* And on a touch-first tablet, the keyboard help too: the same Ctrl chords,
+   on a screen that is held rather than typed at (INBOX 430, "rework its
+   controls for phone and tablet"). A tablet with a keyboard attached reports
+   a fine pointer and keeps it. */
+@media (hover: none) and (pointer: coarse) {
+  #tab-documents .doc-hint {
+    display: none;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 720px) {
+  #tab-documents .doc-hint {
+    display: none;
+  }
 }
 /* An inline explanation under a setting, shown only when that setting is
    being overridden by something else, so a control that looks like it did
@@ -2955,34 +3026,6 @@ body.resizing-sidebar {
   background: var(--surface-3);
   color: var(--ink);
 }
-/* **The row floor follows the density, and the pointer.** The rows were
-   25.2px at every setting, under DESIGN.md's 28px `--target-min`, which was
-   left on purpose because a table of contents is a dense list you scan and
-   24px is WCAG 2.2 AA's own floor. That reasoning is the compact density's,
-   so compact keeps it; comfortable and spacious are the settings a person
-   picks to get room, and there the rows take the floor every other control
-   has. A coarse pointer takes it at every density, because on a touch screen
-   `--target-min` is 44px and a 25px row is a row you miss
-   (`scratchpad/ui-sweeps/outlinerows.js`). */
-:root:not([data-density="compact"]) .outline-link {
-  min-height: var(--target-min);
-}
-@media (pointer: coarse) {
-  .outline-link {
-    min-height: var(--target-min);
-  }
-}
-/* **The fold gutter** (DOCUMENTS_PLAN Phase 4 item 3). One column, the same
-   width on every row whether or not that row has anything to fold, because
-   the thing this outline's indent rules spend three paragraphs protecting is
-   that a row's left edge is decided by its depth and by nothing else. A
-   caret that appeared only on some rows would move every one of those rows'
-   text by 16px against its own level. */
-.outline-row {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
 .outline-twist {
   flex: none;
   width: 1rem;
@@ -3010,21 +3053,6 @@ button.outline-twist:focus-visible {
 .outline-row > .outline-link {
   flex: 1 1 auto;
   min-width: 0;
-}
-/* **Dragging a section to a new place** (DOCUMENTS_PLAN Phase 4 item 3). A
-   line where it would land, drawn with an inset shadow rather than a border
-   so the row's own box never changes size as the pointer crosses it: a 2px
-   border appearing on hover would push every row below it down by 2px, which
-   makes the list move under the drag. `--accent`, because this is a preview
-   of a thing about to happen, which is what the accent is for. */
-.outline-row.is-dragging {
-  opacity: 0.5;
-}
-.outline-row.is-drop-before {
-  box-shadow: inset 0 2px 0 0 var(--accent);
-}
-.outline-row.is-drop-after {
-  box-shadow: inset 0 -2px 0 0 var(--accent);
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -3058,48 +3086,6 @@ button.outline-twist:focus-visible {
   color: var(--ink);
   font-weight: 600;
 }
-/* Indentation is the whole point of an outline: it shows the shape. One step,
-   declared once and multiplied by depth, because the four levels used to be
-   0.25, 1, 1.5 and 2.4rem: steps of 0.75, 0.5 and 0.9, which reads as an
-   outline whose nesting is uneven rather than as three levels. The owner
-   reported it as indenting "the wrong way", and centred entries (above) were
-   most of why: with the text centred, a deeper `padding-left` moves the whole
-   run right *and* a shorter heading starts further right still, so the
-   left edges came out in no order at all. Left-aligned and evenly stepped,
-   depth is the only thing that moves an entry. */
-/* **Depth is carried by weight, colour and a guide line, not by indent
-   alone.** Measured with a 21-heading document open: h1 and h2 rows were
-   13.6px and h3 rows 12.8px, every one of them weight 400 in the same
-   `rgb(76, 85, 99)`, so three levels differed by 0.8px of type and 12.8px of
-   indent and the panel read as one flat list. DESIGN.md's hierarchy section
-   says it outright: use weight, colour and case before reaching for another
-   size step. So the two top levels are the document's own ink, a step apart
-   in weight, and the two below them are muted at the smaller size, which is
-   two sizes and three levels of contrast rather than four sizes. */
-.outline-h1 .outline-link {
-  font-weight: 600;
-  color: var(--ink);
-}
-.outline-h2 .outline-link {
-  font-weight: 500;
-  color: var(--ink);
-}
-.outline-h3 .outline-link {
-  font-size: var(--text-base);
-}
-.outline-h4 .outline-link {
-  font-size: var(--text-base);
-}
-/* A row, not a stack. `.outline-link` is `width: 100%`, so a ✕ beside one had
-   nowhere to go but the next line: "References stacks a close button above
-   its own select". The link takes the room and shrinks; the action keeps its
-   own size. */
-.doc-outline-row,
-.doc-attach-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
 /* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
    rebuilds every `<select>` inside one on a MutationObserver, so for the frame
    before that runs the select is the row's own child and afterwards it is a
@@ -3110,10 +3096,6 @@ button.outline-twist:focus-visible {
 .doc-attach-row > .select-shell {
   flex: 1 1 auto;
   min-width: 0;
-}
-.doc-outline-row > .doc-outline-row-action,
-.doc-attach-row > .doc-outline-row-action {
-  flex: 0 0 auto;
 }
 /* The line that says what fills an empty outline. One sentence, the muted
    ink, and the same left edge as the entries that will replace it, so the
@@ -3949,15 +3931,6 @@ button.is-on {
   :root {
     --page-gutter: var(--space-5);
   }
-  #dash-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  /* The card tightens through its own tokens, so the compact recipe and
-     anything cancelling the padding (the sidebar head) follow it. */
-  .card {
-    --card-pad-y: var(--space-5);
-    --card-pad-x: var(--space-6);
-  }
   /* Rows of controls wrap instead of pushing the page sideways. */
   .doc-actions,
   .chat-toolbar {
@@ -3998,6 +3971,16 @@ button.is-on {
   .theme-grid {
     grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
   }
+}
+
+/* INBOX 18: the pinned group at the end of a formatting strip had square
+   corners and was opaque only on the note form. It is not pinned any more
+   (INBOX 426 a: it was drawn over Insert), so it has no ground of its own:
+   the strip's is its ground, and a patch of a darker one read as a second
+   bar laid over the first in the owner's screenshot. */
+.doc-toolbar-tools {
+  border-radius: var(--radius-sm);
+  background: none;
 }
 /* Touch targets: a coarse pointer gets the 44px floor at every width (Phase
    11's decision). These were 38px, which held a reminder's +1h at 39.6px on
@@ -4079,6 +4062,16 @@ button.is-on {
   border: 0;
   border-radius: 0;
   box-shadow: inset 0 -1px 0 var(--border);
+}
+/* L414: a Notes sub-tab fades in (`.section-switch` only; the page has its own fade). A hidden
+   panel is `display: none`, so `@starting-style` runs as it is shown: no `:not(.hidden)` needed. */
+#tab-notes.section-switch #notes-subtabs ~ .card {
+  transition: opacity var(--ui-base) var(--ease-out);
+}
+@starting-style {
+  #tab-notes.section-switch #notes-subtabs ~ .card {
+    opacity: 0.4;
+  }
 }
 .notes-subtabs,
 .library-subtabs {
@@ -4187,6 +4180,17 @@ button.is-on {
 .tabs-line > button:not(.active):not([aria-selected="true"]):is(:hover, :focus-visible)::after {
   transform: scaleX(1);
 }
+
+/* A sub-tab strip's indicator is its 2px line, a group's its rail. */
+.tabs-line,
+.settings-nav-groups {
+  --glide-radius: 0;
+  --glide-ring: none;
+}
+
+.tabs-line {
+  --glide-fill: linear-gradient(var(--accent-text), var(--accent-text)) bottom / 100% 2px no-repeat;
+}
 /* Agent mode reads as a mode you switch into, not a checkbox you tick, so the
    label carries a little more weight than the other toolbar controls. */
 .agent-toggle .agent-toggle-label {
@@ -4263,6 +4267,16 @@ textarea.autogrow {
   width: max(var(--control-h-lg), var(--target-min));
   padding-inline: 0;
 }
+
+/* 5. The name nudge was two boxed buttons in the greeting ("Add your name"
+      and its ×), a form control sitting in a sentence. In the flat looks it
+      is an inline text action with a hover ground, like the meta line's. */
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) #dash-name-nudge button {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
 /* On a phone the header wraps to two or three rows and the sidebars stack
    above the content, where sticking them would pin a full-height panel over
    the thing you're reading. */
@@ -4335,7 +4349,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The bar's icon buttons are squares of the bar's one height. */
 #top-bar :is(.header-cluster, .notif-wrap) > button.icon-only {
   width: var(--header-control-h);
-  min-width: var(--header-control-h);
+  min-width: max(var(--header-control-h), var(--target-min));
 }
 /* --- assistant message layout ------------------------------------------------
    Asked for: bring the generated content further left, and stop long links
@@ -4464,33 +4478,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    image tile so the grid stays a grid, a PDF among photos must not make
    the row it is in a different height. See library.js's own comment for why
    these tiles used to delete themselves instead of rendering. */
-/* **The PDF's first page covers the tile; it does not sit on top of it.**
-   Reported with a screenshot: "in the files tab, the file type logo gets cut
-   off and squashed below the preview image". It did. `.library-file-page` had
-   no rule of its own at all, so the rendered page was a plain `<img>` flowing
-   as the first child of a 9rem `overflow: hidden` flex column: pushing the
-   glyph and the "PDF" caption down and off the bottom edge.
-   `library.js`'s own comment says what was meant: "The glyph stays underneath
-   as the fallback for everything without pages, and for a PDF whose render
-   fails." Underneath, not above. Taking the page out of flow and letting it
-   fill the tile makes that true, the glyph is still there, still centred,
-   simply covered while there is a page to show, and revealed the moment the
-   render 404s, because the error handler removes the page and nothing else
-   has to change.
-   `cover`, not `contain`: a tile is a fixed 9rem box and a portrait page in it
-   would otherwise letterbox into a thin strip with the glyph showing through
-   either side. The top of a document is the part worth seeing, so the crop is
-   anchored there rather than to the middle. */
-.library-file-page {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  background: #fff;
-}
 .library-file-thumb {
   position: relative;
   overflow: hidden;
@@ -4514,13 +4501,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   color: var(--muted);
   font-size: var(--text-sm);
   letter-spacing: 0.06em;
-}
-/* A Files row already names the kind first on its facts line, beside a
-   glyph that spells it (PDF, CSV, DOC): the label under the glyph made it
-   three times on one row (INBOX 437 (4)). The grid tile, which has no facts
-   line, keeps it. */
-.library-file-rows .library-file-thumb-kind {
-  display: none;
 }
 /* Direction on a link chip. Colour is deliberately *not* the only signal, 
    the arrow glyph carries it, and DESIGN.md's contrast rule (and WCAG's
@@ -4560,17 +4540,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   line-height: 1;
   padding-block: 0;
 }
-/* Files shown by type rather than by preview, `setLibraryMediaView`
-   (library.js), asked for as "make it togglable to change between filetype
-   and previews".
-   Hiding the page render is the whole switch. The glyph and its caption are
-   already in every tile, centred, and were only ever covered; take the cover
-   away and the type view is simply what the tile looks like underneath. No
-   second markup path, nothing refetched, and a tile cannot end up in a state
-   where neither is showing. */
-.library-image-grid.show-file-types .library-file-page {
-  display: none;
-}
 /* --- the document editor's instruments ---------------------------------------
    Asked for: "take inspo from vs code and word with options to view more info
    like character count, inline auto fill suggestions, grammar checker + auto
@@ -4602,6 +4571,15 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar > * {
   flex: 0 0 auto;
 }
+
+@media (max-width: 599.98px) {
+  #tab-documents .doc-statusbar {
+    overflow: hidden;
+    /* The buttons keep their words, so the gaps give way: the mono font
+       put the file type button 7px past the strip at 390px. */
+    gap: var(--space-1);
+  }
+}
 #doc-counts {
   flex: 1 1 auto;
   min-width: 0;
@@ -4626,16 +4604,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-button:focus-visible {
   border-color: var(--border);
   color: var(--ink);
-}
-/* Only when there is something to look at. A count that is always coloured is
-   a count nobody reads, and a count that is always a chip is a chip nobody
-   presses: "No suggestions" is a statement and stays flat, while a real count
-   takes an edge and a wash so it reads as the control it has always been
-   (DOCUMENTS_PLAN Phase 0 item 3). */
-.doc-statusbar-button.has-findings {
-  color: var(--warn);
-  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
 }
 /* The two writing switches, now rows of the document's own kebab menu
    (DOCUMENTS_PLAN Phase 0 item 3).
@@ -4759,19 +4727,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   height: auto;
   align-self: stretch;
 }
-.doc-prose-resize:has(+ .doc-prose-panel.hidden) {
-  display: none;
-}
-/* Where there is no room beside the editor the panel is under it whatever was
-   chosen (`DOC_PROSE_NARROW`), so the toggle that chooses is not offered. */
-.doc-prose-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
+
 /* The group headings: the eyebrow, its count beside it as quiet text (INBOX
    549: pushed to the far edge it read as a second column of numbers), so the
    panel reads "Spelling 3, Style 11" at a glance. */
@@ -4787,15 +4743,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-/* The first group sits straight under the header, which has its own space
-   below it already. */
-.doc-prose-group:first-of-type {
-  margin-top: 0;
-}
-.doc-prose-group-count {
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-}
+
 /* **A row is its head over its answers** (INBOX 549). It was a flex row, so
    an opened row's answers sat beside it and squeezed the finding to "s…" in
    the right dock. */
@@ -4833,10 +4781,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-align: left;
   cursor: pointer;
 }
-.doc-prose-jump:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
 /* The row's own line: the jump, then one cell of actions centred on it. The
    ground arrives with the pointer, with no edge (the list-row recipe). */
 .doc-prose-rowhead {
@@ -4847,16 +4791,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding-right: var(--space-1);
   border-radius: var(--radius-md);
 }
-.doc-prose-rowhead:hover,
-.doc-prose-rowhead:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--hover-veil);
-}
-.doc-prose-acts {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: var(--space-1);
-}
+
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
    pointer. */
 .doc-prose-rowhead .doc-prose-act.ghost.small {
@@ -4874,15 +4809,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }
-/* **One drawing of a finding** (DOCUMENTS_PLAN 12 D1), used by the panel row
-   and by the menu's head, so the two cannot describe one object in two orders
-   again: a dot in the colour of that kind's underline, the words, the reason. */
-.doc-finding-line {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-}
+
 /* A narrow panel (the right dock, focus mode, a phone) stacks the row the
    same way, the words over the reason, rather than ellipsising both. */
 @container doc-prose (max-width: 34rem) {
@@ -4909,16 +4836,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-finding-line-head .doc-finding-why {
   grid-column: 2;
 }
-/* The link back to the text. The same three colours the squiggles use, solid
-   rather than 80% mixed: a 0.5rem dot has no room to lose contrast. */
-.doc-finding-dot {
-  flex: none;
-  align-self: center;
-  width: var(--space-3);
-  height: var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--muted);
-}
+
 .doc-finding-dot-spelling {
   background: var(--error);
 }
@@ -4956,35 +4874,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   height: var(--space-1);
   background: var(--accent);
 }
-/* Suggestion mode (INBOX 404). An insertion is underlined on a green ground,
-   a deletion struck through in the error ink, the pair every editor with
-   tracked changes uses; the ink of the words themselves is left alone, so
-   contrast is the body text's own. The markers show only outside Live. */
-.cm-suggest-ins {
-  text-decoration: underline;
-  text-decoration-color: var(--ok);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--ok) 14%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.cm-suggest-del {
-  text-decoration: line-through;
-  text-decoration-color: var(--error);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.cm-suggest-marker {
-  color: var(--muted);
-}
-/* The sentence being read aloud (INBOX 404): a ground, not an ink, so every
-   underline a finding or a suggestion draws stays readable on top of it. */
-.cm-read-aloud {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  border-radius: var(--radius-sm);
-}
+
 /* The words carry the identity, so they hold the weight and they are the half
    that ellipsises: the reason is a sentence and can be read from the title. */
 .doc-finding-words {
@@ -5001,15 +4891,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   white-space: nowrap;
   color: var(--muted);
   font-size: var(--text-xs);
-}
-/* **The open row is where you are**, painted from `aria-current` so the mark
-   and its announcement are one thing (DESIGN.md's recipe index), a fill plus a
-   weight step and never an accent edge as well. */
-.doc-prose-row[aria-current] > .doc-prose-rowhead {
-  background: var(--accent-soft);
-}
-.doc-prose-row[aria-current] .doc-finding-words {
-  font-weight: 600;
 }
 /* The completion popup. `position: fixed` because it is placed in viewport
    coordinates against the caret, an absolutely-positioned list would be
@@ -5065,30 +4946,24 @@ html[data-chrome="native"] #top-bar #brand-logo {
   color: inherit;
   font-size: var(--text-md);
 }
-/* The caret mirror (documents.js). Off-screen rather than `display: none`, a
-   box with no layout reports no position, which is the whole reason it exists.
-   Every property that affects text layout is copied onto it in script; these
-   are only the ones that must never be. */
-.doc-caret-mirror {
-  position: absolute;
-  visibility: hidden;
-  top: 0;
-  left: -9999px;
-  overflow: hidden;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  /* `border-width` does nothing without a `border-style`, so the
-     `borderLeftWidth` documents.js copies into this mirror (DOC_MIRROR_PROPS)
-     computed to 0 and the mirror had no border at all. Two consequences, both
-     measured against the Phase 0 backdrop, which lays the same text out
-     independently: every caret point came back 1.00px to the left of the
-     glyph it was for, and, because the copied `box-sizing` is border-box and
-     the copied `width` is the textarea's, the mirror's content box was 2px
-     wider than the textarea's, so a line could wrap one character later here
-     than on screen and put the popup a whole line out. Transparent, because
-     the box is only ever measured. */
-  border-style: solid;
-  border-color: transparent;
+
+/* 10. One title and one facts voice for every Library row (finding 13, and
+       the owner's "plain and hard to read"). Measured at 1440: a Files row's
+       name was 13.6px, a link's 13.6px at 500, a document's 16px, so three
+       lists in one tab set their titles at three ranks. A row's title is
+       `--text-lg` at 600 in ink, and the facts under it are `--text-sm`
+       muted: the split between the two is weight, size and ink at once,
+       which is what makes a title read as one without a badge around it.
+       A Files row also said one thing in four registers: a bordered "Not
+       read" pill, "Read this", "Not used yet" and a full-width filled bar
+       for the fold. Whether a file has been read is a fact, so it is set as
+       one (muted, `--ok` once read), and the fold keeps its tonal ground,
+       which is the app's rule for a disclosure, at the width of its words
+       rather than as a 1,200px bar. */
+:is(.doc-list-title, .bookmark-title),
+.library-file-rows .library-image-tile > figcaption {
+  font-size: var(--text-lg);
+  font-weight: 600;
 }
 /* The autocorrect underline (autocorrect.js, Brief 94): a button over the
    corrected word for five seconds, a click puts the word back. It sits in the
@@ -5105,9 +4980,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: transparent;
   box-shadow: none;
   cursor: pointer;
-}
-.autocorrect-mark:is(:hover, :focus-visible) {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 /* --- the suggestion menu, the dictionary, and the goal ------------------------
    Asked for: "I cant click on the flagged word or phrase and see a popup for
@@ -5145,12 +5017,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-bottom: 1px solid var(--border);
   margin-bottom: var(--space-1);
 }
-/* In the menu the reason is a sentence with room to be one: it is the only
-   place in the app where a finding's why is allowed to wrap. */
-.doc-suggest-head .doc-finding-why {
-  overflow: visible;
-  white-space: normal;
-}
+
 .doc-suggest-list,
 .doc-suggest-actions {
   display: flex;
@@ -5165,16 +5032,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding-top: var(--space-1);
   border-top: 1px solid var(--border);
 }
-/* **The answers, under the row that asked** (DOCUMENTS_PLAN 12 D3): the same
-   controls the floating menu draws, laid out along the row rather than down it,
-   because the panel is the width of the editor and a column of five candidates
-   inside a 33vh box is a scroller inside a scroller. Indented to the width of
-   the dot and its gap, so the answers hang off the finding they belong to. */
-.doc-prose-answers {
-  margin: var(--space-1) 0 var(--space-3) calc(var(--space-3) + var(--space-4));
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--divider);
-}
 .doc-suggest-list-inline,
 .doc-suggest-actions-inline {
   flex-flow: row wrap;
@@ -5183,39 +5040,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-suggest-actions-inline {
   margin-top: var(--space-1);
   padding-top: var(--space-1);
-}
-/* A candidate in a row of candidates is the width of its word, not the width of
-   the panel, and it is the tonal recipe: side by side with no edge, five words
-   read as a sentence rather than as five choices, which is the one thing the
-   list has to say. The menu's own rows stay the quiet full-width kind, where the
-   menu itself is the frame and each row owns a line. */
-.doc-suggest-list-inline > .doc-suggest-item,
-.doc-suggest-actions-inline > .doc-suggest-item {
-  width: auto;
-  border-color: transparent;
-  background: var(--chip-bg);
-}
-/* INBOX 549: the candidates are quiet pills, the first (Enter's) on the
-   accent's soft ground; the actions under them are quiet text. */
-.doc-suggest-list-inline > .doc-suggest-item {
-  border-radius: var(--radius-pill);
-  padding-inline: var(--space-3);
-}
-.doc-suggest-list-inline > .doc-suggest-best {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-}
-.doc-suggest-actions-inline > .doc-suggest-item {
-  background: transparent;
-  color: var(--muted);
-}
-.doc-suggest-list-inline > .doc-suggest-item:hover,
-.doc-suggest-actions-inline > .doc-suggest-item:hover,
-.doc-suggest-list-inline > .doc-suggest-item:focus-visible,
-.doc-suggest-actions-inline > .doc-suggest-item:focus-visible {
-  border-color: transparent;
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
 }
 .doc-suggest-item {
   display: flex;
@@ -5237,22 +5061,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-align: left;
   cursor: pointer;
 }
-.doc-suggest-item:hover,
-.doc-suggest-item:focus-visible {
-  border-color: var(--accent);
-  background: var(--chip-bg);
-}
-/* The first candidate is the one Enter and a double-click take, so it reads
-   as the answer and the rest as the alternatives. Weight only: a second
-   colour here would compete with the accent the hovered row already uses. */
-.doc-suggest-best {
-  font-weight: 600;
-}
-.doc-suggest-none {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-xs);
-}
+
 /* **The writing dictionary as a settings sheet** (INBOX 410: "ugly and needs a
    proper professional modern redesign"). One column: the head (title, the count
    as muted text, the '?', close), a line, one field that finds and adds, a
@@ -5324,16 +5133,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding: 0 var(--space-1) 0 var(--space-3);
   border-radius: var(--radius-sm);
 }
-.doc-dictionary-row:hover,
-.doc-dictionary-row:focus-within {
-  background: var(--hover-veil);
-}
-.doc-dictionary-word {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 /* Remove shows on the row under the pointer or with focus in it; on a touch
    screen, where nothing hovers, it is always there. */
 .doc-dictionary-remove {
@@ -5344,16 +5144,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-dictionary-row:focus-within .doc-dictionary-remove {
   opacity: 1;
 }
-@media (hover: none) {
-  .doc-dictionary-remove {
-    opacity: 1;
-  }
-}
-.doc-dictionary-empty {
-  padding: var(--space-5) var(--space-3);
-  text-align: center;
-  color: var(--muted);
-}
+
 .doc-dictionary-section {
   margin: var(--space-5) 0 var(--space-2);
   color: var(--muted);
@@ -5414,21 +5205,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--divider);
 }
-.doc-prose-title {
-  display: inline-flex;
-  flex: 0 1 auto;
-  align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-  white-space: nowrap;
-  font-size: var(--text-body);
-  font-weight: 600;
-}
-.doc-prose-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 .doc-prose-count {
   flex: none;
   color: var(--muted);
@@ -5456,20 +5233,28 @@ html[data-chrome="native"] #top-bar #brand-logo {
   color: var(--ink);
   white-space: nowrap;
 }
+
+/* 14. "Removing the badges background has made some areas look pretty plain
+       and hard to read" (the owner). Quiet's `--chip-bg` is ink at 5%, so a
+       chip with no border of its own is a 5% smudge: measured on a white
+       card, the skill cards' "2 steps" and "2 tools", a file's "Used in"
+       note and the Contents jump chips were grounds nobody could see around
+       text set at the size of the facts beside them. The better look is the
+       one the note meta row's category pill already settled on after the
+       owner's "improve the look of the category chips": the soft ground plus
+       a hairline edge, so a chip has a shape again without a fill that
+       shouts. Only chips that are still chips; a fact that became text in
+       the first pass stays text. */
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(
+  .skill-card-facts > .skill-fact,
+  .library-image-tile .chip-interactive.library-image-usage-chip
+) {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+}
 .doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:hover,
 .doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small[aria-pressed="true"],
 .doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
-}
-.doc-prose-more {
-  display: inline-flex;
-}
-/* The narrowest panel (the 240px right dock): Check with AI's icon gives
-   way to the ⋯, which holds it too, so the head stays one row. */
-@container doc-prose (max-width: 17rem) {
-  .doc-prose-tools > .doc-prose-ai-run {
-    display: none;
-  }
 }
 /* A narrow panel: Fix N gives up its words too (the `.toolbar-word` way,
    clipped, not dropped: its title and label say the number). */
@@ -5497,38 +5282,51 @@ html[data-chrome="native"] #top-bar #brand-logo {
     margin-inline-end: 0;
   }
 }
-/* Nothing to flag: a mark, one line, and what was checked, quiet. */
-.doc-prose-empty {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: var(--space-2);
-  align-items: baseline;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-sm);
+
+.entry-meta.note-meta > .chip > .ph-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.doc-prose-empty p {
-  margin: 0;
+
+/* Past the "+N", a fact keeps its icon and loses its words (`is-icon`,
+   `fitNoteMetas`); the words stay on its `title`. */
+.entry-meta.note-meta > .chip.is-icon > .ph-text {
+  display: none;
+}
+
+/* One line, cut with an ellipsis, as Ask's results already were (below): at
+   390 a note card's connection pills wrapped their words to two 12px lines
+   inside a pill one line tall (qa-1005, qa1005-polish.js `linkpills`). */
+/* The chip's line-height is 1, so a clipping box exactly one em tall cut
+   the descenders of "g" and "y" (owner's screenshot, 2026-10-12). */
+#entry-list .link-connection > .chip.link > .ph-text,
+.entry-meta.note-meta > .chip > .ph-text {
+  line-height: 1.4;
+}
+
+#entry-list .link-connection > .chip.link > .ph-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* **Ask's record chips, centred and quiet** (K29, the owner: "these badges
+   have poor styling ... the text in them isnt properly centred or aligned").
+   A link chip's words sit in a `.ph-text` that clips (`overflow: hidden` for
+   the ellipsis) and inherited a 12px line box from the fixed-height chip, so
+   the descenders were cut (scrollHeight 13 over clientHeight 12, measured):
+   the words get a line box taller than their glyphs, and the chip's own
+   `align-items: center` keeps them level. */
+#raw-results :is(.chip.link, .result-reason-why) .ph-text {
+  line-height: 1.4;
 }
 .doc-prose-empty .muted {
   grid-column: 2;
   font-size: var(--text-xs);
 }
-.doc-prose-empty-mark {
-  align-self: center;
-  color: var(--ok);
-  font-size: var(--text-lg);
-}
-/* Check with AI's own line (INBOX 410): what it is doing or did, then the ways
-   on, one row that wraps rather than overflowing a narrow right-docked panel.
-   The line is `--muted` at the panel's small size: it reports, it does not ask. */
-.doc-prose-ai {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-sm);
-}
+
 .doc-prose-ai-line {
   flex: 1 1 12rem;
   min-width: 0;
@@ -5537,10 +5335,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-ai-line.error {
   color: var(--error);
 }
-.doc-prose-ai-notice {
-  flex: 1 1 100%;
-  margin: 0;
-}
+
 /* The squiggle's rules lived here, shared by the Live view's `<mark>`s and
    the Source view's backdrop. Both are gone: DOCUMENTS_PLAN Phase 2 made the
    findings mark decorations inside the editor, and a decoration's classes are
@@ -5580,7 +5375,7 @@ button.ghost.doc-template-choice {
   text-align: left;
 }
 /* Two states, two tints, the rule every menu in the app follows
-   (08-consistency.css, "Hover is a ghost tint; accent-soft is reserved for
+   (07-whiteboard-misc.css, "Hover is a ghost tint; accent-soft is reserved for
    selected"): a row is chosen by a click now (INBOX 410) and made only by
    the Use button, so the row under the pointer and the row that will be
    made have to read differently. */
@@ -5698,9 +5493,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   min-height: 0;
   margin: 0;
 }
-.doc-template-empty {
-  margin: 0;
-}
+
 @media (max-width: 43.99rem) {
   .doc-template-body {
     grid-template-columns: minmax(0, 1fr);
@@ -5798,6 +5591,34 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .note-edit-related-list .entry-related-row > * {
   min-height: 1.625rem;
 }
+
+.sheet-card-corner .sheet-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* **A zone can only shrink if every box above it lets it.** With the head set
+   to `nowrap` the badge still refused to ellipsise and the head measured 669.4px
+   inside a 356.4px column at 1024: a grid item's `min-width` is `auto`, which
+   floors it at its own max-content contribution, so the column simply grew past
+   its track and took the card and the page with it. `min-width: 0` on the two
+   halves is what hands the shrinking back to the badge, and it is the half of
+   this recipe that is easiest to leave out, because nothing about the symptom
+   points at the grid. */
+.chat-grid > .chat-half {
+  min-width: 0;
+}
+
+.library-card-meta > .library-card-category {
+  --category-dot: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--ink);
+}
 /* **How far along a section is, on its outline row** (DOCUMENTS_PLAN Phase 3
    item 2, "task lists with progress in the outline"). Pushed to the right
    edge of the row rather than sat after the words: the headings are what the
@@ -5815,11 +5636,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      numbers change under the caret. */
   font-variant-numeric: tabular-nums;
 }
-/* Finished, in the app's own success ink. A colour and the numbers it sits
-   beside, never the colour alone: the count still reads 5/5. */
-.outline-tasks-done {
-  color: var(--ok);
-}
+
 /* --- the phone header fits inside the phone -------------------------------
    Measured at 390x844, on every tab: `document.documentElement.scrollWidth`
    397 against a `clientWidth` of 390, so the whole application slid 7px
@@ -5886,13 +5703,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   gap: var(--space-1);
   padding: var(--space-2) 0;
 }
-.doc-backlink + .doc-backlink {
-  border-top: 1px solid var(--border);
-}
-.doc-backlink > .doc-backlink-title {
-  font-weight: 600;
-  color: var(--ink);
-}
 /* Two lines of the sentence, then an ellipsis: a panel this narrow turns a
    long paragraph into a wall, and the point of the line is to say enough to
    recognise the connection, not to read the note in the sidebar. */
@@ -5952,18 +5762,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   .doc-backlink-foot > button.doc-backlink-action {
     min-height: var(--target-min);
   }
-}
-/* Unlinked mentions is the backlinks section's shape exactly, so the two read
-   as one panel. The help line is the section's one line of description
-   (CLAUDE.md's copy rule) and carries the muted empty-state ink. */
-.doc-mentions-help {
-  margin-top: 0;
-}
-/* The empty collapse the three sections above already have, for the one the
-   script makes. */
-.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-outline-title,
-.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-mentions-help {
-  display: none;
 }
 /* ================= BREADCRUMBS: WHERE THE CARET IS =====================
    DOCUMENTS_PLAN Phase 4 item 3. One quiet line between the find bar and the
@@ -6067,16 +5865,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   color: var(--text);
   font-weight: 600;
 }
-@media (max-width: 819.98px), (pointer: coarse) {
-  /* The phone floor, the same one the docks and the segmented controls take:
-     a crumb is a tap target, and 0.15rem of padding around 0.75rem text is
-     22px of one. */
-  .doc-crumb {
-    min-height: var(--target-min);
-    display: inline-flex;
-    align-items: center;
-  }
-}
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its
    first words, and the "opens elsewhere" mark at the end. Inside the
@@ -6148,6 +5936,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    place and the name read as "Documents / This document". */
 .doc-dock-identity > .doc-back {
   flex: none;
+  min-width: var(--target-min);
   color: var(--muted);
   padding-inline: var(--space-2) var(--space-3);
   margin-inline-end: var(--space-2);
@@ -6173,6 +5962,10 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-dock .doc-dock-identity > .doc-back.ghost:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
 }
+
+.doc-dock-identity {
+  --identity-h: var(--control-h-lg);
+}
 /* **One scroller** (C43; the list used to have its own inside the sidebar's,
    two bars, cut mid-row). The sidebar scrolls, its head sticks. */
 @media (min-width: 820px) {
@@ -6182,7 +5975,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
     z-index: 2;
     margin-top: calc(-1 * var(--card-pad-y));
     padding-block: var(--card-pad-y) var(--space-2);
-    /* Bare at rest (INBOX 1489); the ground comes when it sticks (08-consistency.css). */
+    /* Bare at rest (INBOX 1489); the ground comes when it sticks (07-whiteboard-misc.css). */
   }
   #sidebar {
     scrollbar-width: thin;
@@ -6215,3 +6008,242 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    she melted into it, forehead 1.15:1 off the page; with the outline in
    atlas-lazy.css, 1.32. Still lilac, her rim unchanged. */
 :root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }
+
+/* --- Atlas, the assistant's own character (atlas.js) -----------------------
+   atlas.js draws the parts; this section is everything about how they look
+   and move: the palette (from the live accent), the fifteen moods as one
+   table of custom properties per `[data-atlas-mood]`, the life that loops,
+   and the one-off plays. A mood change is one attribute, and every part
+   eases to its new place in `--motion-slow`. Transform and opacity only.
+   The palette is sampled from the references (k-means per region,
+   scratchpad/palette.py; the owner: "dont stray from the blue, black,
+   purple colour scheme the references use" and "they are very purple and
+   a lot of the blue is missing"): the body is blue, from a sky-blue-white
+   core through periwinkle to a blue-violet shade and deep blue at the far
+   side; violet only at the ear and hair tips and in the nebula; navy for
+   the eyes and the galaxy; white-blue starlight. The live accent tints
+   only the aura, the rings' glow and the iris's foot (`--atl-glow-c`,
+   `--atl-ring-c`, `--atl-iris-c`), never the body; `color-mix` stands in
+   where relative colours are missing (an unsupported value inside a
+   custom property would only fail where it is used, so the modern set is
+   behind `@supports`, not layered). */
+.nm-atlas, .atl-orbits {
+  --nm-delay: 0s;
+  --atl-hi: #dcedfd;
+  --atl-lt: #c2dbf9;
+  --atl-md: #9fb8ee;
+  --atl-dp: #7a90d6;
+  --atl-rim: #505aac;
+  --atl-line: #3f4a95;
+  --atl-ink: #0b1344;
+  --atl-iris-c: color-mix(in oklab, var(--accent) 30%, #4a62b8);
+  --atl-navy: #1c235a;
+  --atl-violet: #413b94;
+  --atl-neb-c: #b098d6;
+  --atl-neb2-c: #5f5fba;
+  --atl-glow-c: color-mix(in oklab, var(--accent) 35%, #c3d8f8);
+  --atl-ring-c: color-mix(in oklab, var(--accent) 25%, #c8d6ff);
+  --atl-blush: #ff7d9c;
+  --atl-heart-c: #ff4f7e;
+  --atl-gold: #ffd35c;
+  --atl-gold-line: #9a6f00;
+  --atl-amber: #f2a65a;
+  --atl-teal: #7fcfd8;
+  --atl-pink: #f28fb8;
+  --atl-pale: #d6e2ff;
+  --atl-lilac: #b9a8e6;
+  /* The drawing's own gradients (atlas.js sets these per drawing). */
+  --atl-skin: var(--atl-md);
+  --atl-rimh: none;
+  --atl-rimb: none;
+  --atl-riml: none;
+  --atl-sheen: white;
+  --atl-aura: none;
+  --atl-core: none;
+  --atl-skirt: var(--atl-md);
+  /* A chest star's brightness (atlas.js sets it per star). */
+  --atl-b: 0.5;
+  --atl-iris: var(--atl-ink);
+  --atl-galaxy: var(--atl-navy);
+  --atl-hneb: none;
+  --atl-earin: var(--atl-navy);
+  --atl-bneb: none;
+  --atl-bandg: none;
+  --atl-cloudp: none;
+  --atl-cloudb: none;
+  --atl-chestglow: none;
+  --atl-hroot: none;
+  --atl-chestshade: none;
+  --atl-belly: none;
+  --atl-tip: none;
+  --atl-aura-a: 0.2;
+  --atl-k: 0;
+  --atl-side: 1;
+  /* The face at rest (calm). Every mood below overrides some of these. */
+  --atl-brow-y: 0px;
+  --atl-knit: 0deg;
+  --atl-bl-y: 0px;
+  --atl-br-y: 0px;
+  --atl-bl-r: 0deg;
+  --atl-br-r: 0deg;
+  --atl-lid: 0;
+  --atl-lid-r: 0deg;
+  --atl-low: 0;
+  --atl-eye-s: 1;
+  --atl-px: 0px;
+  --atl-py: 0px;
+  --atl-lean: 0deg;
+  /* The avatar lab's tune (atlas.js, ATLAS_TUNE) rides on these. */
+  --atl-tune-head: 1;
+  --atl-head-k: 1;
+  --atl-tune-star: 1;
+  --atl-tune-strand: 1;
+  --atl-ps: 1;
+  --atl-open: 1;
+  --atl-happy: 0;
+  --atl-shut: 0;
+  --atl-doze: 0;
+  --atl-squeeze: 0;
+  --atl-hearteye: 0;
+  --atl-m-smile: 1;
+  --atl-m-grin: 0;
+  --atl-m-big: 0;
+  --atl-m-laugh: 0;
+  --atl-m-o: 0;
+  --atl-m-tinyo: 0;
+  --atl-m-rest: 0;
+  --atl-m-hmm: 0;
+  --atl-m-wavy: 0;
+  --atl-m-frown: 0;
+  --atl-m-smug: 0;
+  --atl-m-cat: 0;
+  --atl-m-set: 0;
+  --atl-cheek: 0.35;
+  --atl-tilt: 0deg;
+  --atl-head-y: 0px;
+  --atl-sx: 1;
+  --atl-sy: 1;
+  --atl-halo-o: 1;
+  --atl-crest: 0deg;
+  --atl-tail: 0deg;
+  --atl-star: 1;
+  --atl-glow: 1;
+  --atl-fx-sparkle: 0;
+  --atl-fx-hearts: 0;
+  --atl-fx-zz: 0;
+  --atl-nightcap: 0;
+  --atl-fx-dots: 0;
+  --atl-fx-q: 0;
+  --atl-fx-bang: 0;
+  --atl-fx-tear: 0;
+  --atl-fx-sweat: 0;
+  overflow: visible;
+}
+
+.nm-atlas:not(.atl-layer) .atl-pose { rotate: calc(var(--atl-lean-dir) * 3.5deg); transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
+
+.nm-atlas:is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(var(--atl-lean-dir) * -1.6deg); transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast); }
+
+.nm-atlas.atl-layer-tail { translate: calc(var(--atl-lean-dir) * -1.4px) 0; transition: translate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast); }
+
+/* The Zs and the hearts rise on their own two roots, about where they sit. */
+.nm-atlas.atl-layer-fx-1 { transform-origin: 51px 20px; will-change: transform; }
+
+.nm-atlas.atl-layer-fx-2 { transform-origin: 40px 14px; will-change: transform; }
+
+.nm-atlas.atl-layer-body { transform-origin: 31px 90px; will-change: transform; }
+
+.nm-atlas.atl-layer-tail { transform-origin: 34px 60px; will-change: transform; }
+
+.nm-atlas.atl-layer-front { will-change: opacity; }
+
+.nm-atlas.atl-layer-lids { transform-origin: 31px 37px; opacity: 0; will-change: opacity; transform: translate(calc(var(--atl-lean-dir) * 0.9px), var(--atl-head-y)) rotate(calc(var(--atl-tilt) + var(--atl-lean-dir) * 4deg)) scale(calc(var(--atl-tune-head) * var(--atl-head-k))); scale: var(--atl-open); transition: rotate var(--motion-slow) var(--ease-out); }
+
+/* A blink (atlas.js, `atlasBlink`): each frame of the lid shown from when
+   the lid reaches it on the way down until it passes it on the way up,
+   in and out over 12ms; opacity alone, the compositor's. */
+.nm-atlas.atl-layer-lidf-1.atl-blinking { animation: atl-blink-f1 320ms linear; }
+
+.nm-atlas.atl-layer-lidf-2.atl-blinking { animation: atl-blink-f2 320ms linear; }
+
+.nm-atlas.atl-layer-lidf-1.atl-blinking-slow { animation: atl-blink-slow-f1 1420ms linear; }
+
+.nm-atlas.atl-layer-lidf-2.atl-blinking-slow { animation: atl-blink-slow-f2 1420ms linear; }
+
+/* Off screen or on a hidden tab, every loop stops. */
+.atl-figure-box.atl-off :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe), .atl-figure-box.atl-off, :root[data-atlas-hidden] :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe), :root[data-atlas-hidden] .atl-figure-box { animation-play-state: paused !important; }
+
+/* Thinking: a hand at the chin, as the reference sheet draws it. The
+   forearm is drawn in the head's layer (atlas.js), over the face, and the
+   resting right arm steps aside for it; not while the companion sits or
+   hangs, when its arms are busy. */
+.nm-atlas .atl-chin-hand { opacity: 0; transition: opacity var(--motion-base) var(--ease-out); }
+
+.nm-atlas .nmb-arm-r { transition: opacity var(--motion-base) var(--ease-out); }
+
+.nm-atlas.atl-full :is(.nmb-arm-l, .nmb-arm-r) { transition: transform calc(var(--motion-slow) * 2) var(--ease-spring), opacity var(--motion-base) var(--ease-out); }
+
+/* Under 28px the miniature bust (INBOX 650): a fine line round the
+   silhouette in the figure's own line colour, so it holds its shape on any
+   ground without the sticker's heavy outline the old icon wore; the ear
+   tufts a little shorter so they do not crowd the crop. */
+.nm-atlas.atl-tiny .atl-edge { stroke: var(--atl-line); stroke-width: 1.6; opacity: 0.5; }
+
+.nm-atlas .atl-mane .atl-hair-neb { opacity: 0.22; }
+
+.nm-atlas[data-atlas-look="feminine"] .atl-tail-galaxy { opacity: 0.56; }
+
+/* Round 9: the hair's cap (atlas.js, `atlasHairCap`), fuller than a lock
+   so the crown reads as hair, not skin under a veil, and a faint parting. */
+.nm-atlas .atl-hair-cap .atl-cap-fill { opacity: 0.94; }
+
+.nm-atlas .nmp-coil .atl-band-fill { opacity: calc(0.92 * var(--atl-tune-strand)); }
+
+.nm-atlas .atl-band > .atl-band-fill { opacity: 0.58; }
+
+/* Round 9: the orbit's depth. The far half (under the figure) is quieter,
+   the near half (over the mane and the rings) a little brighter, its lit
+   edge and its stream stronger; they meet where the ribbon turns edge-on,
+   so the step is never seen. */
+.nm-atlas .atl-band-back > .atl-band-fill { opacity: 0.5; }
+
+.nm-atlas .atl-band-back > .atl-band-stream { opacity: 0.12; }
+
+.nm-atlas .atl-band-front > .atl-band-fill { opacity: 0.66; }
+
+.nm-atlas .atl-band-front > .atl-band-stream { opacity: 0.24; }
+
+.nm-atlas .atl-band-front > .atl-band-edge-soft { opacity: 0.34; }
+
+html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-star { display: none; }
+
+.nm-atlas .atl-astral-back .atl-astral-edge { opacity: 0.3; }
+
+/* (The waist and tail wisps turned 16 to 42 degrees lying and curled, with
+   the lower layer; both lie down with the torso now, INBOX 619. The pose
+   shapes, `.atl-lower`, still reach them by class.) */
+/* Each pose shapes the skirt from the group inside the layer, about the
+   waist (a static transform, which costs nothing): seated it pools and
+   spreads over the ledge; floating it trails behind the tilted body;
+   hanging it falls straight; leaning it swings the other way; sitting
+   cross-legged it spreads widest. Gently (INBOX 615, 619): a turn or a
+   spread here moves the outline where the torso fades into it, so each is
+   a few degrees or a few per cent, and the join stays one silhouette. */
+.nm-atlas .atl-lower { transition: transform var(--motion-slow) var(--ease-out); }
+
+/* The inline size has no heart eyes to swap in, so its eyes stay. */
+.nm-atlas.atl-tiny .atl-iris { opacity: 1; }
+
+/* Round 9: the doze's night cap (atlas.js, `atlasNightcap`): night sky
+   with a pale brim and a star at the tip, faded in with the mood. */
+.nm-atlas .atl-nightcap { opacity: var(--atl-nightcap); transition: opacity var(--motion-slow) var(--ease-out); }
+
+/* Between expressions every part eases; nothing here moves a layout box. */
+.nm-atlas :is(.atl-eye, .atl-pupil, .atl-lid, .atl-lid-low, .atl-brow, .atl-head, .atl-pose, .atl-crest, .atl-tail, .atl-star) {
+  transition: transform var(--motion-slow) var(--ease-out);
+}
+
+/* The companion's props in Atlas's own materials (atlas.js,
+   `atlasHeadProps`, `atlasHandProps`); avatars.js shows each slot. Outside
+   the companion they never show. */
+.nm-atlas:not(.atl-figure) .nmp { opacity: 0; }

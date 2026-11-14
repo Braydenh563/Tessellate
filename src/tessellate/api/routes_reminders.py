@@ -6,6 +6,7 @@ nothing runs in the cloud.
 
 from __future__ import annotations
 
+import threading
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
@@ -133,7 +134,7 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
         return "document", document.title or "Untitled"
     if reminder.entry_id is None:
         return None, None
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted:
         return None, None
     text = strip_properties(readable_content(entry))
@@ -164,7 +165,7 @@ def _to_out(session: Session, reminder) -> dict:
     private = False
     target_kind, target_title = _target(session, reminder)
     if reminder.entry_id is not None:
-        entry = session.get(Entry, reminder.entry_id)
+        entry = reminder_repo.its_note(session, reminder)
         private = bool(entry is not None and entry.is_private)
         if entry is not None and not entry.is_deleted:
             # `readable_content`, not the raw column: a private note's
@@ -360,7 +361,7 @@ def _event_details(session: Session, reminder) -> str:
     own text and nothing of the note behind it."""
     if reminder.entry_id is None:
         return ""
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted or entry.is_private:
         return ""
     return " ".join(readable_content(entry).split())[:280]
@@ -801,6 +802,65 @@ def complete_reminder(
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()
     return {**_to_out(session, reminder), "was_due_at": was}
+
+
+class OutcomeBody(BaseModel):
+    text: Annotated[str, Field(min_length=1, max_length=500)]
+
+    @field_validator("text")
+    @classmethod
+    def _words(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("Write what came of it.")
+        return value
+
+
+@router.post("/{reminder_id}/outcome")
+def reminder_outcome(
+    reminder_id: int, body: OutcomeBody, response: Response, session: Session = Depends(get_session)
+) -> dict:
+    """What came of a reminder, one line at the end of the note it is about
+    (L-general-10), so the note keeps the result and not only the task. Goes
+    through `update_entry`, so a private note needs its space unlocked and
+    the edit is in the note's history like any other."""
+    from tessellate.api import routes_entries
+    from tessellate.api.edit_conflicts import content_hash
+    from tessellate.api.schemas import EntryUpdate
+
+    reminder = _writable(session, reminder_id)
+    line = f"Outcome of {' '.join(reminder.text.split())}: {body.text}"
+    #: Read and written under one lock, from a fresh read (review): two
+    #: outcomes at once both read the old text and the second save dropped
+    #: the first's line. `base_hash` also refuses an ordinary edit that lands
+    #: between the read and the write, rather than overwriting it.
+    with _outcome_lock:
+        session.expire_all()
+        entry = reminder_repo.its_note(session, reminder)
+        if entry is None or entry.is_deleted or entry.is_board:
+            raise HTTPException(status_code=400, detail="This reminder is not about a note.")
+        content = readable_content(entry).rstrip()
+        update = EntryUpdate(content=f"{content}\n\n{line}", base_hash=content_hash(readable_content(entry)))
+        routes_entries.update_entry(entry.id, update, response, session, None)
+    return {"entry_id": entry.id, "line": line}
+
+
+_outcome_lock = threading.Lock()
+
+
+@router.get("/{reminder_id}/brief")
+def reminder_brief(reminder_id: int, session: Session = Depends(get_session)) -> dict:
+    """A meeting-prep brief (L-general-11): when a reminder fires, the last
+    notes its words point at (a person, a topic), so the meeting starts with
+    what was written last time. Keyword search, so it works with no model;
+    it already leaves out private notes and boards. The reminder's own note
+    is the one being opened anyway, so it is left out too. Newest first."""
+    from tessellate.search import search_manager
+
+    reminder = _existing(session, reminder_id)
+    hits = [e for e in search_manager.keyword_search(session, reminder.text, limit=8) if e.id != reminder.entry_id]
+    hits.sort(key=lambda e: e.updated_at or e.created_at, reverse=True)
+    return {"notes": [{"id": e.id, "title": plain_label(readable_content(e), 60)} for e in hits[:3]]}
 
 
 @router.post("/{reminder_id}/notification-token")

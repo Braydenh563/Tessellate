@@ -103,8 +103,9 @@ def test_the_frontend_restores_rather_than_recreating():
     documents = (root / "documents.js").read_text(encoding="utf-8")
     undo = documents.split("async function deleteDocumentWithUndo(", 1)[1].split("\n}\n", 1)[0]
     assert "/restore" in undo and 'method: "POST",\n      body' not in undo
-    reminders = (root / "shell-reminders.js").read_text(encoding="utf-8")
-    row = reminders.split("const deleteReminder = async () => {", 1)[1].split("const menuItems", 1)[0]
+    # The row's Delete loads its handler on the press (reminder-edit.js, boot scripts' cap).
+    reminders = (root / "reminder-edit.js").read_text(encoding="utf-8")
+    row = reminders.split("loadReminders.binOne = async function (reminder) {", 1)[1].split("\n  };\n", 1)[0]
     assert "/restore" in row
     library = (root / "library.js").read_text(encoding="utf-8")
     assert "function binRoutes(" in library

@@ -274,6 +274,8 @@
           library: "library-view-documents",
           title: "Make something new",
           text: "Create starts a new note, document, board or mind map.",
+          or: "#library-empty-create",
+          orText: "With nothing here yet, Create starts your first note, document, board or mind map.",
         },
         {
           target: "#library-subtab-docs",
@@ -316,8 +318,9 @@
           tab: "library",
           library: "library-view-whiteboard",
           wb: "board",
-          title: "Notes on a board",
-          text: "Notes opens your notebook beside the board, so you can drag any note on as a card.",
+          media: "(min-width: 600px)",
+          title: "The sidebar",
+          text: "Sidebar opens shapes, icons, your notes and the layers beside the board; drag a note on as a card.",
         },
         {
           target: "#wb-back-to-boards",
@@ -1994,5 +1997,12 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: Read-only view for the tour sweeps (L-general-14): the state moved inside this
+  //: closure, and a property adds no global name.
+  openTour.inspect = {
+    get run() { return tourRun; },
+    sections: TOUR_SECTIONS, needs: TOUR_NEEDS, place: tourSectionPlace, activeTab: tourActiveTab,
+    blockPanels: tourBlockPanels, context: tourContext, next: tourNext, back: tourBack, close: tourClose,
+  };
   Object.assign(window, { TOUR_ENABLED, openTour, renderTourReplay });
 })();

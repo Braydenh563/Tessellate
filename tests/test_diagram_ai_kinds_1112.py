@@ -1,4 +1,6 @@
-"""Suggestions for a mind map, a timeline and a sequence diagram (L-documents-21).
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Suggestions for a mind map, a timeline and a sequence diagram (L-documents-21).
 
 The pure lint in diagram-ai.js reads each kind's own model (diagram-kinds.js) and offers the removals a person would
 make by hand: an empty period, a section with no periods, a participant nobody writes to, a block that holds no steps,

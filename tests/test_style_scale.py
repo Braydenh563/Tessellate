@@ -282,7 +282,7 @@ PAGE_CONTAINERS = (
 #: `.dash-toolbar` moved off this list when it became a bar. It was a pure
 #: wrapper: transparent, no edge, no radius, two 28px controls sitting loose
 #: between the stats strip and the grid, which is what docks.md section 3 left
-#: open about it. 08-consistency.css now gives it the same surface every other
+#: open about it. The consistency rules (07-whiteboard-misc.css since UI plan 13b) give it the same surface every other
 #: head row in the app draws, so it paints, and by this list's own stated
 #: distinction a container that paints owns its padding. The membership test is
 #: "does it have a background", not "is it on the Dashboard": moving it is the
@@ -383,7 +383,7 @@ FALLBACK_ALLOWED = {
 VAR_WITH_FALLBACK = re.compile(r"var\(\s*(--[\w-]+)\s*,")
 #: A registered property (`@property --x { initial-value: ... }`) is declared
 #: on every element, so it counts: the Atlas companion's pose and lean
-#: properties are registered not to inherit (08-consistency.css says why).
+#: properties are registered not to inherit (07-whiteboard-misc.css says why).
 DECLARED = re.compile(r"(?m)^\s*(?:@property\s+)?(--[\w-]+)\s*[:{]")
 
 
@@ -786,12 +786,26 @@ def test_the_nested_surfaces_are_concentric():
 #: 1.75rem went to --control-h-dense or away: 22 to 19, 0 to 1.
 #: 2026-11-03: the m guide's rules moved from 08 to chord-guide-lazy.css (the
 #: boot CSS cap, unslop 1103): its three keycap heights moved, 46 to 43 and 0 to 3.
+#: 2026-11-12: 08 dissolved (UI plan 13b); its 43 moved with their rules, none
+#: added: 01 21 to 26, 02 32 to 36, 03 19 to 20, 06 23 to 24, 07 44 to 64,
+#: characters-lazy.css 0 to 12 (296 in all before and after).
+#: 2026-11-12: 10's component rules moved beside their components (UI plan
+#: 13b, decision 19); its six moved with them, none added: 07 64 to 68, 09 6
+#: to 8, 10 6 to 0 (296 in all before and after).
+#: 2026-11-13: bar controls whose literal equalled a token read it
+#: (L-ui-modernisation-3: the board menus, the floating panel's select, the
+#: help toggles, the lightbox arrows), and the ceilings drop to what is
+#: served, which had slack in eight sheets: 296 to 264.
+#: 2026-11-14: 148 Library-only boot rules moved to library-lazy.css (UI plan
+#: 13b, L-ui-modernisation-31) and their literals went with them: 02 34 to 33,
+#: 06 23 to 22, 07 62 to 57, 09 7 to 3, library-lazy 22 to 30 (264 to 261; the
+#: rules from 00, which this count skips, stayed in boot).
 LITERAL_HEIGHTS = {
-    "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 19,
-    "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 44, "08-consistency.css": 43, "09-editor.css": 6, "10-responsive.css": 6,
-    "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
-    "inbox-lazy.css": 1, "chord-guide-lazy.css": 3,
+    "01-forms-settings.css": 25, "02-chat-graph.css": 33, "03-dashboard-widgets.css": 18,
+    "04-chat-dock-appearance.css": 23, "05-sidebars-themes.css": 32, "06-timeline-dialogs.css": 22,
+    "07-whiteboard-misc.css": 57, "09-editor.css": 3,
+    "library-lazy.css": 30, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
+    "inbox-lazy.css": 1, "chord-guide-lazy.css": 3, "characters-lazy.css": 12,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
 
@@ -869,14 +883,23 @@ COLOUR_HOMES = {"00-tokens-shell.css", "05-sidebars-themes.css"}
 #: The literals still outside them, per file, as Brief 57 left them: a ratchet
 #: that only goes down. A file not named here may hold none.
 COLOUR_LITERALS_LEFT = {
-    "02-chat-graph.css": 45,
-    "08-consistency.css": 63,
-    "library-lazy.css": 31,
-    "06-timeline-dialogs.css": 23,
+    #: 2026-11-14, L-ui-modernisation-31: Library-only rules moved to
+    #: library-lazy.css with their literals: 02 45 to 34, 06 23 to 9,
+    #: library-lazy 31 to 32 (158 to 134 in all; one came from 05, a colour file).
+    "02-chat-graph.css": 34,
+    #: 08 dissolved (UI plan 13b, 2026-11-12): its 58 moved with their rules,
+    #: 23 into the two colour files, 28 to the faces, five to 07 (the Ring room
+    #: section), one each to 02 and 04.
+    "characters-lazy.css": 28,
+    "07-whiteboard-misc.css": 5,
+    "library-lazy.css": 32,
+    "06-timeline-dialogs.css": 9,
     "03-dashboard-widgets.css": 6,
-    "10-responsive.css": 9,
-    "09-editor.css": 6,
-    "04-chat-dock-appearance.css": 4,
+    #: 10's component rules moved beside their components (UI plan 13b,
+    #: decision 19): its nine went with them, all to 09's closing block, the
+    #: rules that must load after every component file (10 9 to 0, 09 4 to 13).
+    "09-editor.css": 13,
+    "04-chat-dock-appearance.css": 5,
     #: Moved from 07-whiteboard-misc.css with the lightbox CSS (4668f1456): the
     #: HTML preview's white page ground, on purpose.
     "lightbox-lazy.css": 1,
@@ -1043,3 +1066,67 @@ def test_important_only_falls():
         re.sub(r"/\*.*?\*/", "", p.read_text(encoding="utf-8"), flags=re.S).count("!important") for p in CSS_FILES
     )
     assert total <= IMPORTANT_LEFT, f"{total} !important (ratchet {IMPORTANT_LEFT}): win by specificity instead"
+
+
+#: **The px escape, closed** (L-ui-modernisation-12; UI_MODERNISATION_PLAN
+#: 13.1 row 3: "spacing literals off the scale ... the scale lint allows them
+#: because they are not in the spacing properties it reads"). The rem check
+#: above never saw a px value. Above a 2px hairline offset, a px margin,
+#: padding or gap is a --space-* step, or one of these, each with its reason.
+PX_FILES_DRAWN = {
+    # The companion's travel effects: sprites placed round a figure drawn in
+    # px, so their offsets are the drawing's own geometry, not spacing.
+    "companion-travel-lazy.css",
+    # The diagram's resize and join handles: each margin is minus half the
+    # handle's own px size, centring it on the point it marks.
+    "diagram-lazy.css",
+}
+PX_ALLOWED = {
+    # The activity strip's bars: a chart's bar spacing, fixed against the
+    # bars' own px widths.
+    ("01-forms-settings.css", "gap: 3px"),
+    # The help popover's caret: minus half its 10px square.
+    ("03-dashboard-widgets.css", "margin-left: -5px"),
+    # The companion's burst ring and dots: minus half their 56px and 9px.
+    ("07-whiteboard-misc.css", "margin: -28px"),
+    ("07-whiteboard-misc.css", "margin: -4.5px"),
+    # The phone document bar's own height: a 44px touch target, its padding
+    # and its rule, which the card's margin has to equal.
+    ("07-whiteboard-misc.css", "margin-bottom: calc(44px + 2 * var(--space-1) + 1px)"),
+    # Scroll room under a list, a share of the window capped in px.
+    ("library-lazy.css", "padding-bottom: min(24dvh, 220px)"),
+    ("library-lazy.css", "padding-bottom: min(52dvh, 460px)"),
+}
+PX = re.compile(r"(?<![\w.-])(-?[0-9]*\.?[0-9]+)px\b")
+#: `overflow-clip-margin` is how far paint may spill, not space between things.
+PX_SPACING = re.compile(
+    r"(?<![\w-])((?:margin|padding|gap|row-gap|column-gap)"
+    r"(?:-top|-right|-bottom|-left|-inline|-block)?\s*:\s*[^;{}]+);"
+)
+
+
+def test_no_spacing_is_written_in_px():
+    from tests._css_paths import CSS_FILES
+
+    found = []
+    for path in CSS_FILES:
+        name = path.name
+        if name in PX_FILES_DRAWN:
+            continue
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for declaration in PX_SPACING.findall(text):
+            declaration = " ".join(declaration.split())
+            if any(abs(float(v)) > 2 for v in PX.findall(declaration)) and (name, declaration) not in PX_ALLOWED:
+                found.append(f"{name}: {declaration}")
+    assert not found, "Spacing in px, off the --space-* scale:\n  " + "\n  ".join(found)
+
+
+def test_every_px_exception_is_still_there():
+    from tests._css_paths import CSS_FILES
+
+    seen = set()
+    for path in CSS_FILES:
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for declaration in PX_SPACING.findall(text):
+            seen.add((path.name, " ".join(declaration.split())))
+    assert not PX_ALLOWED - seen, PX_ALLOWED - seen

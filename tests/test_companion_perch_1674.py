@@ -87,7 +87,7 @@ def test_leaving_during_a_visit_keeps_the_one_frame_cut() -> None:
     changed = _fn("nameMarkBuddyTabChanged")
     assert 'buddy.classList.add("nmb-away")' in changed and "nmb.absent = true" in changed
     assert "if (!nmb.absent) nmb.absentAt = Date.now()" in changed
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".nmb-away" in css and "transition: none" in css[css.index(".nmb-away") : css.index(".nmb-away") + 1500]
 
 

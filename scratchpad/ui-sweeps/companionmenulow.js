@@ -25,10 +25,8 @@ const SIZES = (process.env.SIZES || '1440x900,1440x600').split(',');
       const [w, h] = size.split('x').map(Number);
       const { browser, page } = await boot({ viewport: { width: w, height: h }, reducedMotion: motion === 'reduce' ? 'reduce' : 'no-preference' });
       try {
-        await page.evaluate((m) => {
-          const b = document.getElementById('avatar-buddy');
-          b.value = 'atlas';
-          b.dispatchEvent(new Event('change', { bubbles: true }));
+        await page.evaluate(async (m) => {
+          prefs.set("avatar-buddy", "atlas"); await ensureModule("characters"); syncNameMarkBuddy();
           //: Appearance, Reduce motion: the app's own switch.
           const still = document.getElementById('reduce-motion-toggle');
           if (m === 'app' && still && !still.checked) still.click();

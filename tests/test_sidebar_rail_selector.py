@@ -16,7 +16,9 @@ from html.parser import HTMLParser
 from tests._css_paths import CSS_DIR, FRONTEND_DIR
 
 RAIL = re.compile(r"\.sidebar-panel\s*~\s*(:where\(([^)]*)\)|[^\s{,]+)\s*\{")
-FILES = ("07-whiteboard-misc.css", "10-responsive.css")
+#: The file and the number of scoped rail rules it holds: one was in
+#: 10-responsive.css until UI plan 13b moved it beside 07's.
+FILES = {"07-whiteboard-misc.css": 2}
 
 
 def _css(name: str) -> str:
@@ -34,7 +36,7 @@ def _listed_classes() -> set[str]:
     for name in FILES:
         text = re.sub(r"/\*.*?\*/", "", _css(name), flags=re.DOTALL)
         found = [m for m in RAIL.finditer(text) if m.group(2) is not None]
-        assert found, f"{name} lost its scoped rail rule"
+        assert len(found) >= FILES[name], f"{name} lost a scoped rail rule"
         for match in found:
             listed |= {c.strip().lstrip(".") for c in match.group(2).split(",")}
     return listed
@@ -83,4 +85,4 @@ def test_every_sibling_after_a_sidebar_in_the_page_is_named_by_the_rule() -> Non
 def test_the_scoped_rule_is_where_so_its_specificity_is_unchanged() -> None:
     for name in FILES:
         text = re.sub(r"/\*.*?\*/", "", _css(name), flags=re.DOTALL)
-        assert ".sidebar-panel ~ :where(" in text, f"{name}: the subject must sit in :where()"
+        assert text.count(".sidebar-panel ~ :where(") >= FILES[name], f"{name}: the subject must sit in :where()"

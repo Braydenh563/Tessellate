@@ -13,7 +13,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = "".join(  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
+    (Path(__file__).resolve().parents[1] / "frontend" / "css" / n).read_text(encoding="utf-8")
+    for n in ("07-whiteboard-misc.css", "library-lazy.css")
+)
 CSS = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
 
 

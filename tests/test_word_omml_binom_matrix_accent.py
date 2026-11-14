@@ -1,4 +1,6 @@
-"""L324 and L325: a binomial, a matrix and an accent are Word maths objects.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L324 and L325: a binomial, a matrix and an accent are Word maths objects.
 
 `docWordBlob.math` walks the renderer's MathML into docx's maths parts. The
 walk is run under node with the vendored docx over a small stand-in for the

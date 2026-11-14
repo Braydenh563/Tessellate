@@ -10,12 +10,13 @@ away from coming back, and nothing else in the suite draws Atlas.
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 #: atlas.js and its lazy halves, atlas-motion.js (the blink clock and the arm
 #: rig) and atlas-life.js (the living tail and the rings' loops), read as one.
 ATLAS = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("atlas.js", "atlas-motion.js", "atlas-life.js"))
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 #: The large view's visit and home moved to companion-menu.js (boot budget).
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
@@ -579,7 +580,8 @@ def test_the_feminine_hair_is_a_side_swept_fringe_not_a_cap():
     cap = ATLAS[ATLAS.index("function atlasHairCap(") : ATLAS.index("function atlasEars(")]
     assert "spec.fringePaths" in cap and '"atl-skin atl-lock atl-fringe-lock"' in cap
     for gone in ("fringeShade", "atl-fringe-shade", "frontLocks:", "hairline:", "atl-strand-light", "atl-hairline-shade"):
-        assert gone not in ATLAS and gone not in CSS, gone
+        # Rules only: 07-whiteboard-misc.css, where 08's rules went too, says "not a hairline:" in a comment.
+        assert gone not in ATLAS and gone not in re.sub(r"/\*.*?\*/", "", CSS, flags=re.S), gone
     x, y, k = (float(v) for v in re.search(r"browStar: \[([^\]]+)\]", feminine).group(1).split(","))
     assert abs(x - 31) >= 6 and k <= 1.2, "a small star off centre, an ornament at the parting, not a badge"
     for gone in ("rootDust:", "circlet:", "spec.rootDust", "spec.circlet"):
@@ -1326,7 +1328,11 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # (lag 1111: `data-variant` is written first thing in `into`, so the page settles once after the hand-over's reads.)
     assert "const into = () => {\n    if (variant) buddy.dataset.variant = variant;\n    else delete buddy.dataset.variant;\n    buddy.classList.add(`nmb-act-${act}`, " in AVATARS
     # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
-    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    # (L-ui-modernisation-62: a lids-only act, a blink, glance or turn, eased
+    # nothing in every probed run yet paid the hand-over's reads, so it changes
+    # straight; every other act is still eased in.)
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS
+    assert "const change = joined ? () => (leave(), into()) : into;\n    if (lidsOnly) change();\n    else nameMarkBuddyBlend(buddy, change, NMB_BLEND_IN_MS);" in AVATARS
     assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500

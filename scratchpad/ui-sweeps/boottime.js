@@ -3,14 +3,14 @@
 // for. Written for WORLD_CLASS_PLAN's "Audit, 2026-09-13 night" rows A1 and
 // A2 (per-tab module loading, and boot fetching more than it shows), and
 // kept because both rows are ratchets: the numbers here are the only way to
-// tell a deferred module from a deleted one.
+// tell a lazily loaded module from a deleted one.
 //
 //   BASE=http://127.0.0.1:8804 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     node scratchpad/ui-sweeps/boottime.js
 //
 // Two readings, not one. The first is taken the moment the shell is up: it
 // is the figure A1 and A2 are about. The second is taken after every tab in
-// the bar has been visited, which is what a deferred loader has to pay back:
+// the bar has been visited, which is what a lazy loader has to pay back:
 // if the second reading is much larger than the pre-split boot figure, the
 // split moved the cost rather than removing it.
 const { boot, BASE } = require('./lib.js');

@@ -54,7 +54,7 @@ math-field.math-field::part(menu-toggle) {
 
 /* The field hung over the equation it edits: the popover shell, fixed to the
    window, wide enough for a formula and no wider than the window. Its layer is
-   `.help-popover`'s own 2500 (08-consistency.css), not a second literal. */
+   `.help-popover`'s own 2500 (07-whiteboard-misc.css), not a second literal. */
 .math-field-pop.help-popover {
   position: fixed;
   display: flex;

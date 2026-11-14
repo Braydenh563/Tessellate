@@ -1968,7 +1968,7 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
         window,
         _open_main,
         lambda: f"http://{window_host(PORT)}:{PORT}/desktop-companion.html",
-        on_change=getattr(tray_icon, "update_menu", None),
+        on_change=desk_companion.tray_marshal(tray_icon),
     )
 
 
@@ -2331,6 +2331,7 @@ def _start_tray(
         # The corner companion (core/desk_companion.py): the same switch as
         # Settings, so a person who finds the tray first can turn it on there.
         desk_companion.tray_menu_item(pystray),
+        desk_companion.tray_snooze_item(pystray),
     ]
     if console_hwnd is not None:
         menu_items.append(
@@ -2352,6 +2353,7 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
+    desk_companion.set_tray_refresh(desk_companion.tray_marshal(icon))
     threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
     return icon
 
@@ -2577,6 +2579,11 @@ def _capture() -> int:
 
 def main() -> None:
     _ensure_std_streams()
+    if sys.argv[1:2] == ["tool"]:
+        # A word, not a flag, and the parser below has no positionals.
+        from tessellate import mcp_server
+
+        raise SystemExit(mcp_server.cli(sys.argv[2:], sys.stdout))
     parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
     parser.add_argument(
         "--desktop",

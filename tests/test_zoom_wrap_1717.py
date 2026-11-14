@@ -1,28 +1,37 @@
 """INBOX 1717: at browser zoom 125 to 200 % (a 1440 window rendered as 1152,
 960, 823 and 720 CSS pixels) bars wrapped onto new lines. The measured list
 comes from `scratchpad/ui-sweeps/zoom1717.js`; this pins the rules that fixed
-what it listed, in the one place they live (the end of 10-responsive.css), so
-a later rewrite of a dock or the top bar cannot quietly bring a wrap back."""
+what it listed, so a later rewrite of a dock or the top bar cannot quietly
+bring a wrap back. They lived at the end of 10-responsive.css until UI plan
+13b (decision 19) moved each beside its component; the band rules of the
+tab strip stay in 10."""
 
 import re
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-SECTION = CSS[CSS.index("INBOX 1717") :]
-CLEAN = re.sub(r"/\*.*?\*/", "", SECTION, flags=re.S)
+CSS = sheets(*FORMER_10)
+CLEAN = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+
+
+def has(selector: str, *needles: str) -> bool:
+    """True if one rule whose selector is exactly `selector` holds every needle."""
+    bodies = re.findall(r"(?:^|(?<=[{}]))\s*" + re.escape(selector) + r"\s*\{([^}]*)\}", CLEAN)
+    assert bodies, f"no rule for {selector!r}"
+    return any(all(n in b for n in needles) for b in bodies)
 
 
 def body(selector: str) -> str:
-    """The declarations of the first rule in the 1717 section whose selector is `selector`."""
-    match = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", CLEAN)
-    assert match, f"no rule for {selector!r} in the INBOX 1717 section"
-    return match.group(1)
+    """The declarations of the last rule, in load order, whose selector is exactly `selector`."""
+    bodies = re.findall(r"(?:^|(?<=[{}]))\s*" + re.escape(selector) + r"\s*\{([^}]*)\}", CLEAN)
+    assert bodies, f"no rule for {selector!r}"
+    return bodies[-1]
 
 
 def test_dashboard_find_zone_may_shrink_below_its_prompt():
-    rule = body('.dock[data-dock-name="dashboard"] > .dock-find')
-    assert "min-width: 0" in rule and "flex-basis: 12rem" in rule
+    assert has('.dock[data-dock-name="dashboard"] > .dock-find', "min-width: 0", "flex-basis: 12rem")
 
 
 def test_search_input_does_not_set_the_find_zone_floor():
@@ -30,13 +39,11 @@ def test_search_input_does_not_set_the_find_zone_floor():
         r"@media \(max-width: 1099\.98px\)\s*\{\s*\.dock \.dock-find > \.dock-search > \.search-field-input\s*\{[^}]*width: 0",
         CLEAN,
     )
-    rule = body(".dock .dock-find:has(> .dock-search:only-child),\n  .dock .dock-find:has(> .dock-search):not(:has(> :not(.dock-search, .hidden, :empty)))")
-    assert "flex-basis: 8rem" in rule
+    assert has(".dock .dock-find:has(> .dock-search:only-child),\n  .dock .dock-find:has(> .dock-search):not(:has(> :not(.dock-search, .hidden, :empty)))", "flex-basis: 8rem")
 
 
 def test_quick_access_label_ellipsises_through_the_density_override():
-    rule = body("#tab-dashboard .launch-head .launch-label")
-    assert "flex-shrink: 1" in rule and "text-overflow: ellipsis" in rule and "min-width: 0" in rule
+    assert has("#tab-dashboard .launch-head .launch-label", "flex-shrink: 1", "text-overflow: ellipsis", "min-width: 0")
 
 
 def test_top_bar_keeps_one_row_at_175_percent():
@@ -66,21 +73,19 @@ def test_top_bar_keeps_one_row_at_200_percent():
 
 def test_ask_mode_row_shares_the_line_when_it_fits():
     """A basis, not 100 %: Skills, Web and Plan leave 316px at 200 %, enough for the segment, the gear and a model picker."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    block = re.search(r"@container chat-dock \(width < 47rem\)\s*\{(.*?)\n\}\n", css, flags=re.S).group(1)
-    rule = re.search(r"> \.chat-tool-group-mode\s*\{[^}]*\}", re.sub(r"/\*.*?\*/", "", block, flags=re.S)).group(0)
-    assert "flex: 1 1 16rem" in rule and "100%" not in rule
+    blocks = re.findall(r"@container chat-dock \(width < 47rem\)\s*\{(.*?)\n\}\n", CSS, flags=re.S)
+    rules = [m.group(0) for b in blocks for m in re.finditer(r"> \.chat-tool-group-mode\s*\{[^}]*\}", re.sub(r"/\*.*?\*/", "", b, flags=re.S))]
+    assert rules and all("flex: 1 1 16rem" in r and "100%" not in r for r in rules)
 
 
 def test_timeline_count_chip_may_be_cut_and_says_all_of_it():
-    rule = body(".dock > .dock-identity:has(> .dock-chip)")
-    assert "max-width: max-content" in rule and "min-width: 0" in rule
+    assert has(".dock > .dock-identity:has(> .dock-chip)", "max-width: max-content", "min-width: 0")
     js = (ROOT / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
     assert "chip.title = chip.textContent" in js and "pointerenter" in js
 
 
 def test_day_strip_well_asks_for_less_under_1100():
-    assert "flex-basis: 19rem" in body(".timeline-days")
+    assert has(".timeline-days", "flex-basis: 19rem")
 
 
 def test_document_tools_lose_their_words_under_1100():
@@ -166,9 +171,9 @@ def test_code_document_tools_fold_into_the_kebab_by_the_docks_own_width():
 
 def test_dock_title_shrinks_with_its_ellipsis_on_a_phone():
     """Rule 13: the 08 base is `flex: 0 0 auto`, so the title spilled 31px out of a shrunk identity zone at 390 and 480."""
-    match = re.search(r"@media \(max-width: 599\.98px\)\s*\{\s*\.dock \.dock-identity > :is\(h1, h2, h3\)\s*\{([^}]*)\}", CLEAN)
-    assert match and "flex: 0 1 auto" in match.group(1)
-    phone = CSS[: CSS.index("INBOX 1717")]
+    phone = "\n".join(re.findall(r"@media \(max-width: 599\.98px\)\s*\{\n(.*?)\n\}\n", CLEAN, flags=re.S))
+    rules = re.findall(r"\.dock \.dock-identity > :is\(h1, h2, h3\)\s*\{([^}]*)\}", phone)
+    assert rules and "flex: 0 1 auto" in rules[-1]
     band = re.search(r"\.dock \.dock-identity > :is\(h1, h2, h3, \.dock-chip\)\s*\{([^}]*)\}", phone).group(1)
     assert "text-overflow: ellipsis" in band and "min-width: 0" in band
 

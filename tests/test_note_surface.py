@@ -23,7 +23,9 @@ from tests._app_js import app_js_text
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in the lazy sheet
 
 
 def _region(text: str, name: str) -> str:

@@ -64,7 +64,7 @@
 }
 
 /* --- motion: a dialog element arrives and leaves like the popup recipe ------
-   (08-consistency.css): a rise of one step from a touch smaller, the scrim
+   (07-whiteboard-misc.css): a rise of one step from a touch smaller, the scrim
    fading with it, `display` and `overlay` held for the exit so the top layer
    keeps it until it has faded. */
 dialog.space-dialog {

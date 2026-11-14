@@ -188,7 +188,7 @@ function docTypeSync(type) {
 
 // Everything about the editor that depends on the type, applied in one place
 // so a type change and opening a document of that type cannot diverge.
-//: `prose: false` from `openDocument`, whose deferred `renderDocTools` runs
+//: `prose: false` from `openDocument`, whose postponed `renderDocTools` runs
 //: the same check a frame later (DOCUMENTS 25 row 7).
 function syncDocFileType({ prose = true } = {}) {
   const type = docFileType();
@@ -238,7 +238,7 @@ function syncDocFileType({ prose = true } = {}) {
   //: stays: a code file prints its own listing (`docCodePrintFill`).
   for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-export-slides")?.classList.toggle("hidden", docIsCodeFile());
-  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid left open on another file closes.
+  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid still showing on another file closes.
   for (const grid of document.querySelectorAll("#doc-csv-grid, [data-click-proxy=doc-csv-grid]")) grid.classList.toggle("hidden", type.ext !== "csv");
   if (docViewState.csvGrid?.isOpen() && (type.ext !== "csv" || docViewState.csvGrid.forDoc() !== (currentDoc?.id ?? null))) docViewState.csvGrid.close();
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
@@ -1890,6 +1890,11 @@ function renderDocNotes() {
       setLabel(open, "ph:lock (private note)");
     } else {
       renderInlineMarkdown(open, note.preview, [], true);
+      //: The note icon Linked from gives a note, so these words start where its do (L421).
+      const icon = document.createElement("i");
+      icon.className = "ph ph-note ph-lead";
+      icon.setAttribute("aria-hidden", "true");
+      open.prepend(icon);
     }
     open.title = "Show this note";
     open.addEventListener("click", () => {
@@ -2991,7 +2996,7 @@ const docOutlineState = { headings: [], crumbsKey: "" };
 // action with its shortcut, and a `?` shortcut sheet "generated from the same
 // table so the two cannot disagree". This is that table.
 //
-// **The decision the plan left open, taken here because it had to be.** The
+// **The decision the plan did not settle, taken here because it had to be.** The
 // plan names `Ctrl+K`, written before this app had a command palette of its
 // own on exactly that chord (`openPalette`, app.js). Two palettes on one key
 // is the collision the agent palette's own comment already records being
@@ -3206,7 +3211,7 @@ const DOC_COMMANDS = [
   //: their wording as being for code.
   { id: "format", icon: "ph:brackets-curly", label: "Format the code, or the selected lines", keys: "Shift+Alt+F",
     code: true, run: () => docRunControl("doc-code-format", "Formatting") },
-  { id: "quick-fix", icon: "ph:wrench", label: "Quick fixes for the problem at the caret", keys: "Alt+Enter",
+  { id: "quick-fix", icon: "ph:wrench", label: "Quick fixes, or writing suggestions, at the caret", keys: "Alt+Enter",
     code: true, run: () => docOpenCodeFixes() },
   //: CodeMirror's default keymap has always bound this chord; the row is what
   //: puts it in the palette and the shortcut sheet (INBOX 402).
@@ -3240,6 +3245,18 @@ const DOC_COMMANDS = [
     prose: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
   { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
     prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
+  //: The listener near `docFindingKeyBox` takes the keys; these rows put them
+  //: in the palette and the shortcut sheet (L-ui-modernisation-14).
+  { id: "finding-next", icon: "ph:arrow-circle-down", label: "Go to the next writing suggestion", keys: "F8",
+    prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), false)) },
+  { id: "finding-previous", icon: "ph:arrow-circle-up", label: "Go to the previous writing suggestion", keys: "Shift+F8",
+    prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), true)) },
+  //: The chord is on the quick-fix row: one chord, one row (the shortcut sheet lists it once).
+  { id: "finding-here", icon: "ph:lightbulb", label: "Suggestions for the word at the caret", keys: "none",
+    prose: true, run: () => {
+      const finding = docFindingAtOffset(docOffsetOf(docActiveBox() || docSurface()) ?? -1);
+      if (finding) docOpenSuggestFor(finding, true);
+    } },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
     run: () => docFindInDocuments() },
   { id: "replace-documents", icon: "ph:swap", label: "Replace in every document", keys: "none",
@@ -4032,7 +4049,7 @@ onDomReady(() => {
 //: the caret in Section 3 with the view still at `scrollTop` 0, the outline
 //: marked Section 1.
 //:
-//: **Which wins when the two disagree**, the question the next step left open:
+//: **Which wins when the two disagree**, the question the next step did not settle:
 //: the caret does, while it is visible. A caret you can see is where you are
 //: writing, and every editor this is measured against (Obsidian, Typora)
 //: follows it. Scroll far enough that the caret leaves the box and it is no
@@ -8610,9 +8627,20 @@ function wireMarkdownToolbar(bar) {
   bar.addEventListener("mousedown", (event) => {
     // Keeps the caret in the textarea: a click moves focus first and the
     // selection the action is about to act on is already gone.
-    if (event.target.closest("button[data-md]")) event.preventDefault();
+    if (event.target.closest("button[data-md], button[data-turn], button[data-ask]")) event.preventDefault();
   });
   bar.addEventListener("click", (event) => {
+    //: The two a note's selection bar used to carry (L-ui-modernisation-39):
+    //: the same functions it called, for the box this strip names.
+    const turn = event.target.closest("button[data-turn]");
+    if (turn && bar.contains(turn)) return docTurnIntoMenu(boxId, turn);
+    const ask = event.target.closest("button[data-ask]");
+    if (ask && bar.contains(ask)) {
+      const box = docSurfaceById(boxId);
+      if (box && box.selectionStart !== box.selectionEnd) askAboutSelection(box);
+      else toast("Select some words first, then ask Atlas about them.");
+      return;
+    }
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
@@ -11220,7 +11248,7 @@ function renderDocCaret() {
 }
 
 //: **Which formatting buttons are on for the caret** (DOCUMENTS_PLAN Phase 2,
-//: the third of the three things the engine phase left deliberately unbuilt:
+//: the third of the three things the engine phase deliberately left absent:
 //: "which buttons are 'on' for the caret's position is not driven from the
 //: syntax tree, which the tree now makes cheap").
 //:

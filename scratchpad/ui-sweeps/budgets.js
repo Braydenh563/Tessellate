@@ -4,7 +4,7 @@
 // document). Prints one JSON line; RUNS=n repeats each interaction.
 //
 //   BASE=http://127.0.0.1:8852 BOARD=504 DOC=6 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/budgets.js
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const m = require('../../tests-e2e/budget-measure.js');
 const BASE = process.env.BASE || 'http://127.0.0.1:8852';
 const PW = 'testpassword123';

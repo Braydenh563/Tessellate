@@ -398,6 +398,7 @@ def test_a_menu_item_is_transparent_at_rest():
 #: the wrong thing. Anything else must be in the palette.
 CONTEXTUAL_CHORDS = {
     "palette": "the palette itself",
+    "renameRow": "renames the list row that has focus; with the palette open no row has it",
     "findAnything": "the other palette; Find anything lists the same commands",
     "search": "focuses the search box of the tab you are on",
     "undo": "acts on the last change of the surface in front",

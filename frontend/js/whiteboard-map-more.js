@@ -710,7 +710,7 @@
     for (const text of texts) {
       wbGrammar.asks += 1;
       const lints = await docGrammarAsk(text).catch(() => null);
-      //: No answer (the worker is off or failed): leave the text unasked so a later pass can try.
+      //: No answer (the worker is off or failed): leave the text unasked so a further pass can try.
       if (lints === null) continue;
       const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
       wbGrammar.found.set(text, hits[0] || null);

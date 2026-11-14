@@ -23,7 +23,7 @@ const { boot } = require("./lib.js");
   await page.waitForTimeout(4000);
   await page.evaluate(() => { const w = window.nameMarkBuddyWake; window.__wakes = []; window.nameMarkBuddyWake = function (...a) { window.__wakes.push(new Error().stack.split("\n").slice(1, 5).join(" < ")); return w.apply(this, a); };
     const r = document.getElementById("nm-buddy"); window.__cls = []; new MutationObserver(() => { const c = [...r.classList].filter((x) => /nmb-(sleep|act)/.test(x)).join(" "); if (window.__cls[window.__cls.length - 1] !== c) window.__cls.push(c); }).observe(r, { attributes: true, attributeFilter: ["class"] }); });
-  const sleep = () => page.evaluate(() => { nmb.lastInput = Date.now() - NMB_SLEEP_MS - 1000; nmb.awakeUntil = 0; nameMarkBuddyTick(); });
+  const sleep = () => page.evaluate(() => { nmb.lastInput = Date.now() - NMB_SLEEP_MS - 1000; nmb.awakeUntil = 0; nmb.tick(); });
   await page.mouse.move(W - 5, 5);
   // OPEN=menu opens it from its menu's Enlarge (no wake), as the owner may have.
   const open = () => page.evaluate((how) => how === "menu" ? openNameMarkViewer(document.getElementById("nm-buddy").dataset.seed || "", { visit: true }) : document.querySelector("#nm-buddy .nm-buddy-face").dispatchEvent(new MouseEvent("dblclick", { bubbles: true })), process.env.OPEN || "dbl");

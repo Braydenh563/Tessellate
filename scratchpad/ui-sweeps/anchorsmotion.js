@@ -71,7 +71,7 @@ const OPEN = {
     const at = await page.evaluate(() => {
       const cards = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length);
       //: The lowest card on screen, so the menu has to flip or escape.
-      const card = cards.filter((c) => c.getBoundingClientRect().bottom < innerHeight - 40).pop();
+      const card = cards.filter((c) => c.getBoundingClientRect().bottom < innerHeight - 40)[0];
       const opener = card?.querySelector('.library-card-menu > button');
       if (!opener) return null;
       const r = opener.getBoundingClientRect();
@@ -114,8 +114,17 @@ const OPEN = {
   async rowmenu(page) {
     await page.evaluate(() => switchTab('library'));
     await page.waitForTimeout(1200);
+    //: The grid fills in batches: "the last card in view" was a different card in each motion run
+    //: (y 668 and 783 at 1440x900), so the two placements were 110px apart for no motion reason; the first
+    //: card in view, after the grid settles, is the same card in both.
+    await page.waitForFunction(() => {
+      const n = document.querySelectorAll('#library-grid .library-card').length;
+      const w = window.__amGrid || (window.__amGrid = { n: -1, at: 0 });
+      if (n !== w.n) { w.n = n; w.at = performance.now(); return false; }
+      return n > 0 && performance.now() - w.at > 800;
+    }, null, { polling: 100, timeout: 15000 }).catch(() => {});
     const at = await page.evaluate(() => {
-      const card = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length && c.getBoundingClientRect().bottom < innerHeight - 40).pop();
+      const card = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length && c.getBoundingClientRect().bottom < innerHeight - 40)[0];
       if (!card) return null;
       const r = card.getBoundingClientRect();
       return [Math.round(r.left + 30), Math.round(r.top + r.height / 2)];
@@ -128,11 +137,18 @@ const OPEN = {
     await page.evaluate(() => switchTab('graph'));
     await page.waitForTimeout(3500);
     const at = await page.evaluate(async () => {
-      const node = (typeof graphNodesRef !== 'undefined' && graphNodesRef || [])[0];
-      if (!node) return null;
+      //: Pressed on the node itself: an undragged popup stands beside its own node (INBOX 1413,
+      //: `graphPopupFollowSpot`), so a press at a fixed point away from it measured the distance
+      //: to that point, not to the anchor (L-ui-modernisation-60: 135px).
+      const s = typeof gcTab !== 'undefined' ? gcTab : null;
       const box = document.getElementById('graph-box').getBoundingClientRect();
-      const x = Math.round(box.left + box.width * 0.4);
-      const y = Math.round(box.top + box.height * 0.55);
+      const c = s?.canvas?.getBoundingClientRect();
+      const t = s?.transform;
+      const at = (n) => [c.left + n.x * t.k + t.x, c.top + n.y * t.k + t.y];
+      const inside = ([x, y]) => x > box.left + box.width * 0.2 && x < box.left + box.width * 0.7 && y > box.top + box.height * 0.2 && y < box.bottom - box.height * 0.2;
+      const node = c && t ? [...(s.byId?.values() || [])].find((n) => Number.isFinite(n.x) && inside(at(n))) : null;
+      if (!node) return null;
+      const [x, y] = at(node).map(Math.round);
       await openGraphPopup({ clientX: x, clientY: y, stopPropagation() {}, preventDefault() {} }, node);
       return [x, y];
     });
@@ -147,12 +163,12 @@ const OPEN = {
     await page.waitForTimeout(1500);
     //: A step that points at a control (the first one may be a welcome).
     for (let i = 0; i < 4; i += 1) {
-      const has = await page.evaluate(() => Boolean(tourRun && tourRun.el));
+      const has = await page.evaluate(() => Boolean(openTour.inspect.run && openTour.inspect.run.el));
       if (has) break;
       await page.click('#tour-next').catch(() => null);
       await page.waitForTimeout(1200);
     }
-    await page.evaluate(() => { if (tourRun?.el) tourRun.el.dataset.sweepTour = '1'; });
+    await page.evaluate(() => { if (openTour.inspect.run?.el) openTour.inspect.run.el.dataset.sweepTour = '1'; });
     return { anchorSel: '[data-sweep-tour="1"]', surfaceSel: '#tour-card:not(.hidden)', close: async () => { await page.evaluate(() => { document.querySelector('[data-sweep-tour]')?.removeAttribute('data-sweep-tour'); if (typeof closeTour === 'function') closeTour(); else document.getElementById('tour-skip')?.click(); }); } };
   },
   async palette(page) {
@@ -164,12 +180,28 @@ const OPEN = {
   async selection(page) {
     await page.evaluate(() => switchTab('notes'));
     await page.waitForTimeout(1000);
-    const rect = await page.evaluate(() => {
+    const found = await page.evaluate(() => {
       const body = [...document.querySelectorAll('#entry-list > li .entry-content, #entry-list > li .entry-body, #entry-list > li p')].find((el) => el.textContent.trim().length > 30 && el.getClientRects().length);
       if (!body) return null;
-      body.scrollIntoView({ block: 'center' });
+      body.scrollIntoView({ block: 'center', behavior: 'instant' });
+      return true;
+    });
+    // The list scrolls smoothly (the app's own scroll-behavior), so the card is measured after it has
+    // stopped; measured at once, the pointer went where the text had been 117px away.
+    await page.waitForTimeout(900);
+    const rect = !found ? null : await page.evaluate(() => {
+      const body = [...document.querySelectorAll('#entry-list > li .entry-content, #entry-list > li .entry-body, #entry-list > li p')].find((el) => el.textContent.trim().length > 30 && el.getClientRects().length);
       const r = body.getBoundingClientRect();
-      return [r.left + 4, r.top + Math.min(8, r.height / 2), r.left + Math.min(200, r.width - 4)];
+      // The popup sits at the pointer's release (selection.js, "off the cursor"), so the drag ends on the
+      // first line's own last character: a drag that runs past a short line parked the pointer, and the
+      // popup, 117px from the text the anchor is measured on.
+      const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node && !node.textContent.trim()) node = walker.nextNode();
+      const line = document.createRange();
+      line.selectNodeContents(node);
+      const first = line.getClientRects()[0];
+      return [r.left + 4, first.top + first.height / 2, Math.min(r.left + 200, first.right - 2)];
     });
     if (!rect) return null;
     await page.mouse.move(rect[0], rect[1]);

@@ -397,7 +397,7 @@ def test_atlas_has_a_face_of_its_own() -> None:
     assert 'endState === "done" ? "happy"' in app
     moods = ("calm", "happy", "delighted", "laughing", "thinking", "curious", "surprised",
              "confused", "sleepy", "sad", "proud", "shy", "determined", "love", "worried")
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
     for mood in moods:
         assert f"  {mood}: {{ words:" in atlas, mood
         if mood != "calm":

@@ -24,7 +24,8 @@ RUN python -m venv /venv \
 COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
-COPY alembic.ini ./
+COPY alembic.ini LICENSE ./
+COPY docs/THIRD_PARTY.md ./
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim
@@ -52,4 +53,8 @@ USER mm
 # TESSELLATE_ALLOWED_HOSTS (comma-separated, names only) or the app answers 421.
 ENV TESSELLATE_BIND=0.0.0.0 \
     TESSELLATE_PORT=8000
+# /health is open to the container itself and answers without a session; a
+# 3xx or a timeout marks the container unhealthy for `docker ps` and compose.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
 CMD ["python", "-m", "tessellate"]

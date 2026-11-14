@@ -1,4 +1,6 @@
-"""L371: a topic's due day can carry a time (`due_time`, "HH:MM"), set by the
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L371: a topic's due day can carry a time (`due_time`, "HH:MM"), set by the
 Due row's picker (the date and time fields of DESIGN.md's date recipe). Decision
 37's day stays the day; a time only sharpens "was due" and the words. The pure
 functions run in node under a fixed clock (12 Nov 2026, 10:00)."""

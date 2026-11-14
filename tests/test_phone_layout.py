@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 ROOT = Path(__file__).resolve().parents[1]
 FRONT = ROOT / "frontend"
 
@@ -28,7 +30,7 @@ def test_viewport_lets_ios_report_the_safe_areas():
 
 def test_field_text_is_the_body_size_under_a_finger():
     """iOS zooms into a field under 16px on focus; 16 fields measured 13.6px."""
-    css = _css("10-responsive.css")
+    css = sheets(*FORMER_10)
     block = re.search(r"@media \(pointer: coarse\) \{\s*:is\(input, textarea, select\) \{([^}]*)\}", css)
     assert block, "the coarse-pointer field token block is missing"
     for token in ("--text-xs", "--text-sm", "--text-base", "--text-md"):
@@ -36,7 +38,7 @@ def test_field_text_is_the_body_size_under_a_finger():
 
 
 def test_a_dialog_keeps_out_of_the_notch_and_the_home_indicator():
-    css = _css("10-responsive.css")
+    css = sheets(*FORMER_10)
     rule = re.search(r"\.modal-overlay:not\(\.sheet-overlay\) \{([^}]*)\}", css)
     assert rule
     for edge in ("top", "right", "bottom", "left"):
@@ -45,7 +47,7 @@ def test_a_dialog_keeps_out_of_the_notch_and_the_home_indicator():
 
 
 def test_the_note_page_head_clears_the_notch():
-    css = _css("10-responsive.css")
+    css = sheets(*FORMER_10)
     assert re.search(r"\.sheet-card-page \{\s*padding-top: calc\(var\(--card-pad-y\) \+ env\(safe-area-inset-top, 0px\)\);", css)
 
 

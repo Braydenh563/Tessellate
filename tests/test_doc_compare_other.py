@@ -1,4 +1,6 @@
-"""Compare a code file with another document (L-documents-3): the compare menu's
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Compare a code file with another document (L-documents-3): the compare menu's
 first row, `Another document…`, lists the other documents and puts the chosen
 one's text where a saved version's goes (`docIde.compare`), so the same inline
 hunks, Reject and Stop comparing apply. Driven in the app by

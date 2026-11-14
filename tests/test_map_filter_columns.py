@@ -1,4 +1,6 @@
-"""Decision 34 extended (MINDMAP_PLAN): Filter by marker takes several at once
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Decision 34 extended (MINDMAP_PLAN): Filter by marker takes several at once
 and the topic's labels (its tags), and the outline shows each topic's markers,
 due day and labels as cells. The pure region (`WB-MAP-FILTER-BEGIN` to `-END`)
 runs in node here; the popover and the outline cells are driven in a browser.

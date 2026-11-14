@@ -1,4 +1,6 @@
-"""L-documents-18: a template on a diagram that has blocks can replace the diagram (Undo brings it back)
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L-documents-18: a template on a diagram that has blocks can replace the diagram (Undo brings it back)
 as well as add its blocks as ghosts. Source reads; the measured run is named in HISTORY."""
 
 from __future__ import annotations

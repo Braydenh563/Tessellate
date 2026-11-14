@@ -1425,6 +1425,9 @@ class DeskCompanion:
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
             "lively": _lively_pref(), "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
+        perch_free = getattr(engine, "perch_free", None)
+        if callable(perch_free):
+            out["perch"] = perch_free()  # "Sit on a window" greyed when it cannot be done (L-ui-modernisation-22)
         doing = getattr(engine, "doing", None)
         if callable(doing) and (said := doing()):
             out["doing"] = said  # the menu's first line while a prop or spell is in hand (INBOX 1718 b)
@@ -1476,12 +1479,28 @@ class DeskCompanion:
         """"Hide for 10 minutes": the figure goes now and comes back by itself, as long as it is
         still turned on and the app window is still away. The clock is the injected one."""
         self.snooze_until = self._now() + SNOOZE_MINUTES * 60
-        timer = _SnoozeTimer(SNOOZE_MINUTES * 60 + 1, lambda: self._dispatch("desk-companion", self.sync))
+        timer = _SnoozeTimer(SNOOZE_MINUTES * 60 + 1, lambda: (_refresh_tray(), self._dispatch("desk-companion", self.sync)))
         with _lock:
             old, self._snooze_timer = self._snooze_timer, timer
         if old is not None:
             old.cancel()
         timer.start()
+        _refresh_tray()
+        self._dispatch("desk-companion", self.sync)
+        return True
+
+    def snoozed_for(self) -> float:
+        """Seconds left of "Hide for 10 minutes" (0 when it is not hidden that way)."""
+        return max(0.0, self.snooze_until - self._now())
+
+    def end_snooze(self) -> bool:
+        """The tray's "show it now": the snooze ends and the figure comes back, if it may."""
+        self.snooze_until = -1e9
+        with _lock:
+            timer, self._snooze_timer = self._snooze_timer, None
+        if timer is not None:
+            timer.cancel()
+        _refresh_tray()
         self._dispatch("desk-companion", self.sync)
         return True
 
@@ -2138,3 +2157,78 @@ def tray_menu_item(pystray: Any) -> Any:
                 logger.debug("could not show the companion balloon", exc_info=True)
 
     return pystray.MenuItem("Show desktop companion", _toggle, checked=lambda item: enabled())
+
+#: A message id of the app's own on the tray's window (WM_APP + 0x51; pystray uses WM_USER + 10 and 11).
+WM_TRAY_MENU = 0x8000 + 0x51
+
+
+def tray_marshal(icon: Any, post: "Callable[..., Any] | None" = None) -> "Callable[[], Any] | None":
+    """The tray's `update_menu`, called where the backend wants it.
+
+    pystray's win32 backend rebuilds the menu (DestroyMenu, then a new one) on
+    whatever thread calls it, which raced the tray thread showing that menu
+    (review 5899359161); there the call is posted to the tray's own window and
+    runs in its message loop. GTK and AppIndicator already hop to their main
+    loop, Xorg has no menu, so those are called as they are.
+    """
+    update = getattr(icon, "update_menu", None)
+    if update is None:
+        return None
+    handlers = getattr(icon, "_message_handlers", None)
+    if not isinstance(handlers, dict):
+        return update
+    handlers[WM_TRAY_MENU] = lambda wparam, lparam: update()
+    if post is None:
+        from pystray._util import win32  # noqa: PLC0415 - Windows only, pystray is optional
+
+        post = win32.PostMessage
+
+    def refresh() -> None:
+        #: None until the tray runs; its first menu is built then anyway.
+        if getattr(icon, "_hwnd", None):
+            post(icon._hwnd, WM_TRAY_MENU, 0, 0)
+
+    return refresh
+
+
+#: The tray icon's `update_menu`: a backend without dynamic menus redraws the snooze line only when told.
+_tray_refresh: "Callable[[], Any] | None" = None
+
+
+def set_tray_refresh(refresh: "Callable[[], Any] | None") -> None:
+    global _tray_refresh  # noqa: PLW0603 - one tray per process
+    _tray_refresh = refresh
+
+
+def _refresh_tray() -> None:
+    refresh = _tray_refresh
+    if refresh is None:
+        return
+    try:
+        refresh()
+    except Exception:  # noqa: BLE001 - a tray that cannot redraw keeps its old line
+        logger.debug("could not refresh the tray menu", exc_info=True)
+
+
+def _clock_text(seconds_from_now: float) -> str:
+    """The wall time a snooze ends, for the tray's line ("at 14:32")."""
+    return time.strftime("at %H:%M", time.localtime(time.time() + seconds_from_now))
+
+
+def tray_snooze_item(pystray: Any) -> Any:
+    """Shown only while "Hide for 10 minutes" runs: when the figure comes back, and a way to bring it now."""
+
+    def _left() -> float:
+        with _lock:
+            companion = _active
+        return companion.snoozed_for() if companion is not None else 0.0
+
+    def _wake(icon: Any, item: Any) -> None:
+        with _lock:
+            companion = _active
+        if companion is not None:
+            companion.end_snooze()
+
+    return pystray.MenuItem(
+        lambda item: f"Companion back {_clock_text(_left())}: show it now", _wake, visible=lambda item: _left() > 0
+    )

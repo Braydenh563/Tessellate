@@ -191,6 +191,26 @@ function fillEntryMenu(menu, entry) {
       title: "Start a chat about this note and what it connects to",
       run: () => askAtlasAboutNote(entry),
     },
+    //: **One rule per group** (L763, the owner 2026-11-12): AI actions holds
+    //: every act the AI does, so Similar, Add context (Atlas may refile it) and
+    //: Continue thought live here, not in Connect or Add.
+    { label: "ph:approximate-equals Similar notes", run: () => toggleRelated(entry) },
+    {
+      label: "ph:plus Add context",
+      title: "Append detail: Atlas may refile it",
+      run: () => {
+        inlineAction = inlineActionIs(entry.id, "context") ? null : { id: entry.id, kind: "context" };
+        renderEntries();
+      },
+    },
+    {
+      label: "ph:arrow-bend-down-right Continue thought",
+      title: "Start or extend a thread from this note",
+      run: () => {
+        inlineAction = inlineActionIs(entry.id, "continue") ? null : { id: entry.id, kind: "continue" };
+        renderEntries();
+      },
+    },
     //: Left off with no model: translating needs one (INBOX 1488).
     ...(aiIsOff() ? [] : [{
       label: "ph:translate Translate",
@@ -241,7 +261,6 @@ function fillEntryMenu(menu, entry) {
       },
     },
     appLinkMenuItem("note", entry.id),
-    { label: "ph:approximate-equals Similar notes", run: () => toggleRelated(entry) },
     {
       label: "ph:arrow-u-up-left Referenced by",
       title: "Documents, notes, boards and maps that point at this note",
@@ -295,22 +314,6 @@ function fillEntryMenu(menu, entry) {
         },
       }]
       : []),
-    {
-      label: "ph:plus Add context",
-      title: "Append detail: Atlas may refile it",
-      run: () => {
-        inlineAction = inlineActionIs(entry.id, "context") ? null : { id: entry.id, kind: "context" };
-        renderEntries();
-      },
-    },
-    {
-      label: "ph:arrow-bend-down-right Continue thought",
-      title: "Start or extend a thread from this note",
-      run: () => {
-        inlineAction = inlineActionIs(entry.id, "continue") ? null : { id: entry.id, kind: "continue" };
-        renderEntries();
-      },
-    },
     {
       label: "ph:alarm Remind me",
       run: () => {

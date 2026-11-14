@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -40,7 +41,7 @@ def test_a_note_cards_task_line_is_a_box_not_brackets():
 def test_the_empty_states_atlas_offer_has_no_floating_rule():
     """Chat's, Notes' and Library's empty states drew `.help-atlas`'s popover
     rule as a short centred hairline (qa1005-polish.js `emptyrule`: 3 to 0)."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     rule = _rule(css, ":is(.chat-empty, #empty-message, #library-empty) > .help-atlas")
     assert "border-top: 0" in rule and "padding-top: 0" in rule
 
@@ -49,10 +50,11 @@ def test_a_reminders_actions_are_centred_on_its_first_line():
     """Centred on the whole row, the strip sat 11px low on a reminder with a
     linked note and the top of the time showed (qa1005-polish.js
     `reminders`: 6 rows to 0)."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
-    block = css[css.index("@media (hover: hover) and (min-width: 600px) {\n  /* The strip is centred") :]
-    block = block[: block.index("\n}\n")]
-    assert re.search(r"#reminder-groups li \.entry-meta \{\s*position: relative;", block)
+    css = sheets(*FORMER_08)
+    # The rules sit in the hover, wide-window block of the file each went to (UI plan 13b).
+    blocks = [css[m.end() : css.index("\n}\n", m.end())] for m in re.finditer(r"@media \(hover: hover\) and \(min-width: 600px\) \{\n", css)]
+    assert any(re.search(r"#reminder-groups li \.entry-meta \{\s*position: relative;", block) for block in blocks)
+    block = next(b for b in blocks if "  #reminder-groups li .entry-meta > .entry-actions {" in b)
     assert "right: 0;" in _rule(block, "  #reminder-groups li .entry-meta > .entry-actions")
 
 
@@ -75,7 +77,7 @@ def test_the_notes_find_zone_is_never_narrower_than_its_controls():
     between 1100 and 1170 wide the Filter menu lay 40px under the sort select
     (qa1005-polish.js `dockoverlap`: 1 to 0; one row still at 1184 and 1200,
     the packaged window)."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     rule = _rule(css, '[data-dock-name="notes"] .dock-find')
     assert "flex: 1 1 8rem" in rule and "min-width: min-content" in rule
 
@@ -105,7 +107,7 @@ def test_a_note_cards_connection_pill_is_one_line():
     """At 390 a card's connection pills wrapped their words to two 12px lines
     inside a one-line pill; Ask's results had the fix, the note list did not
     (qa1005-polish.js `linkpills`: 112 of 112 at 390, then 0)."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     chip = _rule(css, "#entry-list .link-connection > .chip.link")
     #: `clip visible`, not `hidden` (audit 1029 rank 46): the words are still cut
     #: across, but the chip keeps the hit overhang above and below.

@@ -214,7 +214,7 @@ def test_the_pick_is_the_weighted_choice_and_never_repeats_back_to_back():
 
 def test_miffed_and_smirk_are_atlas_faces_with_a_cue_a_look_and_a_trigger():
     """D4: the desk's two attitude faces. Each is a mood (words, cue, face rules, arms per look) and something reaches it."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
     for mood in ("miffed", "smirk"):
         assert re.search(rf'^  {mood}: \{{ words: "[^"]+", cue: "rest" \}},$', ATLAS, re.M), mood
         assert f"  {mood}: (g) =>" in ATLAS and f'[data-atlas-mood="{mood}"] .atl-cue-{mood}' in LAZY, mood
@@ -262,7 +262,7 @@ def test_asleep_the_rings_dim_the_nebula_draws_in_and_the_pose_says_so():
 def test_the_slow_down_keeps_the_planets_where_they_are_and_the_waking_rings_ease_back():
     """A longer `animation-duration` on a running loop jumped the planets up to 50 degrees (measured), so the nap changes the
     playback rate instead, and the rings' opacity is a transition both ways."""
-    css08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css08 = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
     assert re.search(r"#nm-buddy \.atl-figure-box > \.atl-orbits \{[^}]*transition: [^;}]*opacity", css08)
     life = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
     assert 'classList.contains("nmb-act-blanket") ? 1 / 3 : 1' in life

@@ -11,13 +11,13 @@ const { boot } = require('./lib.js');
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
   const metric = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     localStorage.setItem('atlas-look', 'masculine'); localStorage.removeItem('nm-buddy-spots');
     const spec = ATLAS_LOOKS.masculine; spec.legs = true; delete spec.legPaths;
-    const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    prefs.set('avatar-buddy', 'me'); await ensureModule('characters'); syncNameMarkBuddy();
   });
   await page.waitForTimeout(500);
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
   await page.waitForTimeout(3000);
   const route = process.env.ROUTE || 'leap';
   const info = await page.evaluate((route) => {

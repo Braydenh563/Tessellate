@@ -1,4 +1,4 @@
-// WHITEBOARD_PLAN section 7's open question, measured: should the context bar
+// WHITEBOARD_PLAN section 7's unsettled question, measured: should the context bar
 // pin to the top of the canvas at phone width, or keep floating above the
 // selection?
 //

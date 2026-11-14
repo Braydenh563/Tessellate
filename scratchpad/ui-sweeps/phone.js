@@ -20,7 +20,7 @@
 // layout at a phone's width, which is a different picture.
 //
 // It prints a row per tab and exits non-zero on any finding, so it can gate.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';

@@ -1,4 +1,6 @@
-"""L333: the person can turn Harper's lint kinds off, by group, in the Checks sheet.
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+L333: the person can turn Harper's lint kinds off, by group, in the Checks sheet.
 
 The preference is `prose_kinds_off`; the page sends it as `groupsOff` with every
 grammar ask and the worker (run here in node on the vendored binary) drops the

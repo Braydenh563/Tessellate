@@ -176,10 +176,10 @@ function outline(n, name) {
       const stored = listed.find((b) => b.id === window.currentBoardId)?.layout;
       const index = wbMapIndex();
       const mirrored = [...document.querySelectorAll(".wb-map-node.wb-map-node-mirrored")].length;
-      // A branch's topic, not the trunk: the centre topic has no parent to face, so
-// its bar is the same both sides (L354/L364: the first match was the centre).
+      // Not the root: in tree-left every topic is mirrored, the first one is the centre, and the centre has no
+      // branch bar (it was measured, 1px each side, and read as the bar missing).
       const rootIds = new Set(index.roots.map((r) => String(r.id)));
-      const sample = [...document.querySelectorAll(".wb-map-node.wb-map-node-mirrored")].find((e) => !rootIds.has(e.dataset.id));
+      const sample = [...document.querySelectorAll(".wb-map-node.wb-map-node-mirrored")].find((n) => !rootIds.has(n.dataset.id));
       const cs = sample ? getComputedStyle(sample) : null;
       return {
         stored, want, mirrored, topics: index.nodes.length,

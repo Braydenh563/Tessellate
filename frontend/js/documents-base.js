@@ -1,7 +1,7 @@
 // documents-base.js: the ```base block (DOCUMENTS_PLAN gap row 6, the Obsidian "Bases" ask): a fence of lines is drawn as
 // a table of the notes whose properties match. Read-only by decision: the table shows the `---` blocks the notes already
 // have (`GET /property-table`, repo/properties.py `table`), and a note's block is changed in the note, so there is one
-// place a value is written. The first column opens the note. Only a table: board and calendar views are not built.
+// place a value is written. The first column opens the note. Only a table: board and calendar views are DOCUMENTS_PLAN gap row 6.
 //
 //   type: Book                one `type:` property
 //   where: status = read      any number of these, all must hold (a list property matches any of its values)

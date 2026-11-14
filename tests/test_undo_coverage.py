@@ -456,6 +456,7 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "reminder-edit.js:(anonymous /reminders/${reminder.id}/outcome)": "send: appends one line to the note through update_entry, so the note's History keeps the text before it",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
@@ -669,6 +670,7 @@ EXEMPT: dict[str, str] = {
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
     "onboarding.js:renderOnboardingActions": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:renderPrefs": "settings: a setting with its own Reset or the settings history",
+    "onboarding.js:saveUpdateChoice": "settings: the first-run answer to update checks; Settings, Updates changes it back",
     "phone-shell.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
     "notifications.js:openExportsFromNotification": "job: starts or stops work or a model; deletes no user data",
     "phone-shell.js:quitApp": "auth: sign-in, recovery or lock; no user data",
@@ -722,6 +724,7 @@ EXEMPT: dict[str, str] = {
     "personas-pane.js:renderPersonas": "read: reads or asks the model; shows a result, writes nothing",
     "personas-pane.js:savePersonaList": "settings: a setting with its own Reset or the settings history",
     "shell-reminders.js:refreshMediaSession": "auth: sign-in, recovery or lock; no user data",
+    "settings-data.js:onclick": "job: deletes media files no note, document, board or chat points at, after a confirm that says it cannot be undone (the bin and older versions are counted as users)",
     "settings-controls.js:onchange": "settings: a setting with its own Reset or the settings history",
     "skills.js:saveFile": "job: writes an export the person asked for to the exports folder, as a download does; it deletes nothing",
     "skills.js:saveSkillList": "settings: a setting with its own Reset or the settings history",

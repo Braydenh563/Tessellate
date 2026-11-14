@@ -31,7 +31,7 @@
 // `visibilitychange`, which is what the app itself listens for. Chromium's own
 // throttling of a real background tab would also slow the timers down, which
 // would hide the very thing being measured.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const PW = 'testpassword123';
 const QUICK = Boolean(process.env.QUICK);

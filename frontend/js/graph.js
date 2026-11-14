@@ -672,7 +672,13 @@ function frameTree(svg, zoomBehavior, nodes, width, height, radial, arc = false,
   const fit = radial || arc || whole || both >= 0.4 ? both : (width - 20) / spanX;
   //: A radial the same (measured before: 1,051px across a 362px phone map
   //: and a 997px tablet one at the 0.35 floor).
-  const scale = arc || radial || whole ? Math.min(1, fit) : Math.max(0.35, Math.min(1, fit));
+  //: **An arc opens no smaller than a readable zoom** (L770, the owner
+  //: 2026-11-12: like the mind map). Framed whole, a long line opened at
+  //: 0.26 at 1024x768, its dots specks; the floor is the mind map's open
+  //: floor (`WB_MAP_OPEN_MIN_SCALE`, 0.45), and a line still too long is
+  //: centred and panned along.
+  const floor = arc ? 0.45 : radial || whole ? 0 : 0.35;
+  const scale = Math.max(floor, Math.min(1, fit));
   //: Where it does not fit, **the root is centred** (INBOX 430, the owner:
   //: "the Tree view sits at the top instead of centred"). A tree's root is
   //: the middle of its column, not its top, so anchoring the top edge put
@@ -681,7 +687,7 @@ function frameTree(svg, zoomBehavior, nodes, width, height, radial, arc = false,
   //: shape the view is named for, with its branches going off either way.
   const root = nodes.find((n) => n.depth === 0);
   const tx =
-    spanX * scale <= width - 20
+    spanX * scale <= width - 20 || arc
       ? width / 2 - scale * (minX + maxX) / 2
       : 10 - scale * minX;
   const ty =
@@ -1650,7 +1656,7 @@ function graphRenderGroups() {
   const groups = graphGroups();
   if (!groups.length) {
     const empty = document.createElement("p");
-    empty.className = "muted graph-groups-empty";
+    empty.className = "muted empty-line graph-groups-empty";
     empty.textContent = "No groups yet. Add a search and its notes take one colour.";
     list.appendChild(empty);
     return;

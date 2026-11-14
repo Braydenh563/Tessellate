@@ -26,12 +26,36 @@ function ok(label, pass, detail) {
     const { page, browser } = await boot({ viewport: vp, isMobile: vp.width < 500 });
     // tour.js is a lazy bundle now; load it before reading its table.
     await page.evaluate(() => (typeof ensureModule === "function" ? ensureModule("tour") : null));
-    const sections = await page.evaluate(() => TOUR_SECTIONS.map((s) => s.id));
+    const sections = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
     for (const sec of sections) {
       const res = await page.evaluate(async (sec) => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        const frame = () => new Promise((r) => requestAnimationFrame(r));
+        //: The card is drawn when the tour clears its busy flag (it is set before `next` returns), then
+        //: two frames for the placement; this was a fixed 650 to 700 ms a step (the sweep ran past 300 s).
+        const settle = async () => {
+          for (let t = 0; t < 600 && openTour.inspect.run && document.getElementById("tour-card").getAttribute("aria-busy") === "true"; t += 1) await wait(16);
+          //: And until the lit control is painted and on top: a board view fades in over about 200 ms and a
+          //: measure at the first frame reads it at opacity 0 (the fault below still fires if it never gets there).
+          const painted = () => {
+            const el = openTour.inspect.run && openTour.inspect.run.el;
+            if (!el) return true;
+            let o = 1;
+            for (let n = el; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || "1");
+            const r = el.getBoundingClientRect();
+            const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return o >= 0.5 && Boolean(hit && (el.contains(hit) || hit.contains(el)));
+          };
+          for (let t = 0; t < 100 && !painted(); t += 1) await wait(16);
+          await frame();
+          await frame();
+        };
+        //: The previous section's "That is the tour" toast is still up (it stays several seconds) and sits
+        //: over the Chat controls; tour.js's own cover test skips #toast-box on purpose, this centre test does
+        //: not, so the toast is closed first rather than the test relaxed.
+        document.querySelectorAll("#toast-box .toast-close").forEach((b) => b.click());
         openTour(sec);
-        await wait(700);
+        await settle();
         const out = [];
         for (let i = 0; i < 40; i += 1) {
           const spot = document.getElementById("tour-spot");
@@ -75,7 +99,7 @@ function ok(label, pass, detail) {
             // control has to be the thing at its own centre (nothing drawn
             // over it), or the ring frames an empty square.
             target: (() => {
-              const el = typeof tourRun !== "undefined" && tourRun && tourRun.el;
+              const el = openTour.inspect.run && openTour.inspect.run.el;
               if (!el) return null;
               let o = 1;
               for (let n = el; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || "1");
@@ -87,7 +111,7 @@ function ok(label, pass, detail) {
           const next = document.getElementById("tour-next");
           if (!next) break;
           next.click();
-          await wait(650);
+          await settle();
         }
         return out;
       }, sec);

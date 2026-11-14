@@ -478,7 +478,7 @@ function initResizableSidebars() {
     syncSidebarInert();
   };
   wire();
-  for (const name of ["documents", "chat", "library"]) onSurface(name, wire);
+  for (const name of ["notes", "documents", "chat", "library"]) onSurface(name, wire);
   onSurface("chat", () => makeWebPanelResizable($("web-panel")));
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
@@ -1370,7 +1370,7 @@ function listFilter(list, { label, threshold = 12, rows = ":scope > li", inside 
 //: the mono font: "there's some overflowing text in some places on
 //: different fonts like mono"; the dashboard ⋯'s "Continue: Here are some
 //: refined, non-corny..." ran into the menu's right padding). The words are
-//: always a `.ph-text` span, which 08-consistency.css lets shrink and end in
+//: always a `.ph-text` span, which 07-whiteboard-misc.css lets shrink and end in
 //: an ellipsis, and a row whose words are cut carries them whole in its
 //: title, with the row's own hint after them.
 function menuRowFits(row, hint) {
@@ -1505,7 +1505,7 @@ function kebabMenu(items, ariaLabel, { vertical = false, anchor = null } = {}) {
   //: fill and edge another rule had already cleared, so the ⋯ read as an
   //: outlined square there and as a plain glyph everywhere else. The class is
   //: the one place a surface cannot override: the ghost recipe is written once,
-  //: in 08-consistency.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
+  //: in 07-whiteboard-misc.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
   opener.classList.add("icon-only", "kebab-opener");
   opener.setAttribute("aria-haspopup", "menu");
   opener.setAttribute("aria-expanded", "false");
@@ -2292,7 +2292,7 @@ async function loadChatSuggestions() {
   // Re-check after the await in case a message was sent while we waited
   if ($("chat-messages").querySelector(".msg")) return;
 
-  // batch-a.md's "left open" item: `#chat-suggest` is on loan to `.chat-empty`
+  // batch-a.md's outstanding item: `#chat-suggest` is on loan to `.chat-empty`
   // (see the long comment on `openConversation` below) and `newChatConversation`
   // used to wipe `#chat-messages` with a bare `replaceChildren()` without
   // sending it home first, so a "+ New" click while this call was still

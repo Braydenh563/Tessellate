@@ -16,7 +16,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
     const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'atlas');
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
     const spots = await page.evaluate(() => {
@@ -75,11 +75,11 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       await page.waitForTimeout(250);
       const held = await page.evaluate(async () => {
         const before = [nmb.x, nmb.y];
-        if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
+        if (typeof nmb.inner.nameMarkBuddyBellErrand === "function") nmb.inner.nameMarkBuddyBellErrand();
         nmb.lastInput = Date.now();
-        nameMarkBuddyTick();
-        nameMarkBuddyBeat();
-        nameMarkBuddyCheck();
+        nmb.tick();
+        nmb.inner.nameMarkBuddyBeat();
+        nmb.inner.nameMarkBuddyCheck();
         await new Promise((r) => setTimeout(r, 2500));
         const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
         const m = nmb.menu && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;
@@ -105,7 +105,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
     const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'atlas');
     await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.theme = 'dark'; });
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);

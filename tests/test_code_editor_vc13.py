@@ -1,4 +1,6 @@
-"""VC13: the rest of CodeMirror's lint and fold commands, in the editor and its palette.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+VC13: the rest of CodeMirror's lint and fold commands, in the editor and its palette.
 
 Fold all, unfold all and the Problems tab were built in Brief 42 (`test_code_ide_b42.py`);
 this holds toggle fold at the caret, the lint keymap and the in-editor problems list, and

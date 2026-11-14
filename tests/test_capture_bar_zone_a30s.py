@@ -17,7 +17,7 @@ from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 CARD_CSS = (ROOT / "frontend" / "css" / "capture-card-lazy.css").read_text(encoding="utf-8")
 #: capture-card.js is one closure now (ranked row 37a); the tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
 CARD = _js_scope.unwrapped((ROOT / "frontend" / "js" / "capture-card.js").read_text(encoding="utf-8"))
@@ -53,9 +53,11 @@ def test_the_row_at_rest_is_quiet_text_with_no_field_look():
 
 
 def test_the_row_controls_are_pinned_to_the_body_control_height():
-    """Unslop 24: the row was 36.4 and the picture button 28."""
+    """Unslop 24: the row was 36.4 and the picture button 28. L-ui-modernisation-80 put
+    the 44px touch floor under the body height, so the pin is the larger of the two."""
     rule = _rule(CSS, ".capture-bar-row .capture-bar-input,\n.capture-bar-row .capture-bar-icon")
-    assert "height: var(--control-h-body)" in rule and "min-height: var(--control-h-body)" in rule
+    assert "height: max(var(--control-h-body), var(--target-min))" in rule
+    assert "min-height: max(var(--control-h-body), var(--target-min))" in rule
 
 
 def test_the_note_todo_seg_left_the_bar_and_to_do_is_an_icon_that_opens_the_card_in_that_mode():

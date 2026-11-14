@@ -138,6 +138,10 @@ a = Analysis(
         # FRONTEND_DIR and __main__.py's icon lookup both expect exactly
         # that path once sys.frozen is true (see their own comments).
         (str(FRONTEND_DIR), "frontend"),
+        # AGPL-3.0 asks that the licence and the credits for vendored code
+        # travel with every copy (L-general-3, tests/test_licence_shipped.py).
+        (str(REPO_ROOT / "LICENSE"), "."),
+        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
         # Same reason, same extraction-root convention:
         # core/database.py's _migrations_root() looks for these two right
         # beside "frontend" once sys.frozen is true. Without them, a frozen

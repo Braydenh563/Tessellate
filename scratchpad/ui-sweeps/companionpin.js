@@ -15,7 +15,7 @@ const { boot, PW } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate(() => revealTab('dashboard'));
   await page.waitForTimeout(3000);
@@ -88,13 +88,13 @@ const { boot, PW } = require('./lib.js');
     for (let i = 0; i < 6; i += 1) {
       nmb.lastAct = '';
       nmb.cool = {};
-      nameMarkBuddyTick();
+      nmb.tick();
     }
-    nameMarkBuddyBeat();
-    nameMarkBuddyCheck();
-    if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
-    if (typeof nameMarkBuddyChatErrand === 'function') nameMarkBuddyChatErrand();
-    nameMarkBuddySeen(false);
+    nmb.inner.nameMarkBuddyBeat();
+    nmb.inner.nameMarkBuddyCheck();
+    if (typeof nmb.inner.nameMarkBuddyBellErrand === "function") nmb.inner.nameMarkBuddyBellErrand();
+    if (typeof nmb.inner.nameMarkBuddyChatErrand === "function") nmb.inner.nameMarkBuddyChatErrand();
+    nmb.inner.nameMarkBuddySeen(false);
     nameMarkBuddyQueuePlace();
     nameMarkBuddyCue('cheer');
     nameMarkBuddyCue('bell');
@@ -128,7 +128,10 @@ const { boot, PW } = require('./lib.js');
       const b = document.getElementById('nm-buddy');
       localStorage.removeItem('nm-buddy-spots');
       nmb.pinned = false;
-      nameMarkBuddyMoveTo(b, { kind: 'air', pose: 'float', x: px, y: py }, !w);
+      // A real perch near the point, as a drag drops it: a pin in the open air is dropped onto one when it is next placed (`nameMarkBuddyNextSpot`, INBOX 1640), so a float is not a place anyone can pin.
+      nameMarkBuddyIndexReset();
+      const dd = nameMarkBuddyDrop(px, py);
+      nameMarkBuddyMoveTo(b, dd, !w);
     }, [x, y, walk]);
     await page.waitForTimeout(walk ? 120 : 200);
     const f = await page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return [r.left + 32, r.top + 40]; });

@@ -103,7 +103,7 @@
 //:   moods, each a combination of all of these plus head tilt, body
 //:   squash, ear, hair, tail and ring lift and star brightness and one
 //:   small extra (sparkles, hearts, a thought, a tear). The combinations
-//:   are CSS (`[data-atlas-mood]` in 08-consistency.css); this file draws
+//:   are CSS (`[data-atlas-mood]` in 05-sidebars-themes.css); this file draws
 //:   the parts and says which mood.
 //: - **Life.** Breathing squash and stretch from the feet, blinks with an
 //:   occasional double blink, the tail swaying (wagging when pleased) with
@@ -2508,7 +2508,7 @@ function atlasBody(parent, id, props, look, route = null) {
     //: companion's leg groups stay, empty, so its behaviours find them.
     //: Its pivot is the ribbon's root at the hips (the first point of
     //: `spec.lower`). In the companion the sway is on the layer's root
-    //: (`.atl-layer-lower`, 08-consistency.css) with the same point as its
+    //: (`.atl-layer-lower`, 07-whiteboard-misc.css) with the same point as its
     //: origin, so the group's own pivot is for the lab and the avatar
     //: levels, where there is no layer; the same point in every layer
     //: keeps edge and fill as one.
@@ -3476,8 +3476,13 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
   const rig = atlasGroup(moodLoop, "atl-rig", anchor);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, false));
-    atlasBody(rig, id, figure, look);
   }
+  //: **The mane under the body** (L461): drawn with the head, after the
+  //: body, its locks covered her right arm held out at the full size. It
+  //: takes the layered figure's order, its own `atl-head` and `atl-sway`
+  //: chain under the body, so every rule that turns the head turns it too.
+  const hairAt = spec.body && !figure ? atlasGroup(atlasGroup(rig, "atl-head", ATLAS_GEO.neck), "atl-sway", ATLAS_GEO.neck) : null;
+  if (spec.body) atlasBody(rig, id, figure, look);
   //: The companion turns the head where it sits on the body
   //: (`.nm-buddy-head`) and looks for its face (`.name-mark`, with
   //: `.nm-eyes` and `.nm-blinks` in it).
@@ -3486,7 +3491,7 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
     host = atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck);
     host = atlasGroup(host, "name-mark atl-face");
   }
-  atlasHead(host, id, level, look);
+  atlasHead(host, id, level, look, hairAt);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, true));
     atlasBand(rig, id, "front", look);
@@ -3531,7 +3536,7 @@ function atlasTailWake(box) {
 //: the rig's next wake (a class change on the companion, the away class coming
 //: off: `atlasRigWake`) looks again, and while it fades looks every three frames.
 //: The boot sheet keeps every animation name off the box until `go` adds
-//: `atl-lit` (08-consistency.css).
+//: `atl-lit` (07-whiteboard-misc.css).
 function atlasWhenShown(box, go) {
   if (box.classList.contains("atl-lit")) return;
   const buddy = box.closest("#nm-buddy");
@@ -3626,7 +3631,7 @@ function atlasApply(svg, mood) {
   //: Written only on a change: a same-value write still restyles ancestors' :has() (INBOX 1726).
   if (svg.dataset.atlasMood !== next) svg.dataset.atlasMood = next;
   //: The layered figure's box carries the mood too: a mood's body move
-  //: (08-consistency.css, `.atl-figure-box[data-atlas-mood]`) runs on the
+  //: (characters-lazy.css, `.atl-figure-box[data-atlas-mood]`) runs on the
   //: box, one element on the compositor moving every layer together, not
   //: on the `.atl-mood` group inside each layer's svg.
   const box = svg.classList.contains("atl-layer") ? svg.closest(".atl-figure-box") : null;

@@ -2,7 +2,7 @@
 // notebook. A changes the look; B, reloaded, shows it. `perf` stays in A. Density is the
 // device's own (DEVICE_ONLY_KEYS), so shadow strength stands in for a mirrored setting below.
 //   BASE=http://127.0.0.1:8863 node scratchpad/ui-sweeps/appsync.js
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const PW = 'testpassword123';
 const fail = [];

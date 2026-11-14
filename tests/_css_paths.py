@@ -34,7 +34,6 @@ CSS_FILES = [
     CSS_DIR / "05-sidebars-themes.css",
     CSS_DIR / "06-timeline-dialogs.css",
     CSS_DIR / "07-whiteboard-misc.css",
-    CSS_DIR / "08-consistency.css",
     #: The documents editor's own layout (DOCUMENTS_PLAN Phase 2). Appended
     #: rather than inserted: it is linked last in index.html, and this list is
     #: load order, which is what makes the concatenation above meaningful.
@@ -75,6 +74,9 @@ CSS_FILES = [
     CSS_DIR / "quickadd-lazy.css",
     #: The search box's kind chip, Show more and saved-search rows (search.js).
     CSS_DIR / "search-lazy.css",
+    #: The faces, the companion and Atlas (`LAZY_MODULES.characters`, UI plan
+    #: 13b): linked before atlas-lazy.css, which atlas.js asks for once it runs.
+    CSS_DIR / "characters-lazy.css",
     #: Atlas's faces at 28 and 20px (atlas.js `atlasSheet`, Brief 34 continues).
     CSS_DIR / "atlas-lazy.css",
     #: The Statistics page and This week (statistics.js, Brief 89).
@@ -183,3 +185,31 @@ def css_text() -> str:
     `cat`'d concatenation of CSS_FILES, to confirm.
     """
     return "".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
+
+
+#: Where 08-consistency.css's rules went when UI plan 13b dissolved it: each
+#: beside its component's rules, the faces and Atlas to the lazy characters
+#: bundle. A test that read 08 for more than one component reads these.
+FORMER_08 = (
+    "00-tokens-shell.css", "01-forms-settings.css", "02-chat-graph.css", "03-dashboard-widgets.css",
+    "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css",
+    "07-whiteboard-misc.css", "characters-lazy.css",
+)
+#: Where 10-responsive.css's component rules went (UI plan 13b, decision 19):
+#: the boot component files; 10 keeps the shell bands.
+FORMER_10 = (
+    "00-tokens-shell.css", "01-forms-settings.css", "02-chat-graph.css", "03-dashboard-widgets.css",
+    "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css",
+    "07-whiteboard-misc.css", "09-editor.css", "10-responsive.css",
+)
+
+
+def sheets(*names: str) -> str:
+    """The named files of CSS_FILES, joined in load order.
+
+    UI plan 13b dissolved 08-consistency.css into the component files and
+    characters-lazy.css, so a test that read 08 now reads the files its
+    rules went to.
+    """
+    order = [p.name for p in CSS_FILES]
+    return "\n".join((CSS_DIR / n).read_text(encoding="utf-8") for n in sorted(names, key=order.index))

@@ -19,7 +19,7 @@ const { boot, PW } = require('./lib.js');
 if (process.env.FIRST) { firstUse(); return; }
 
 async function firstUse() {
-  const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+  const { chromium } = require('playwright');
   const BASE = process.env.BASE || 'http://127.0.0.1:8781';
   const width = Number(process.env.W || 1440);
   const phone = width < 600;

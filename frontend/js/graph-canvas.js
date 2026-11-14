@@ -7774,6 +7774,9 @@
     }
   }
 
+  //: The ui sweeps find a node under a finger through these (as `openTour.inspect` does for the tour); L-ui-modernisation-75.
+  gcRequestDraw.inspect = { gcBowPoint, gcCurvedLinks, gcEdgeAtWorld, gcNodeAtWorld, gcSelectionChanged, gcWorldPoint };
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcTogglePin, gcTokens, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
 })();

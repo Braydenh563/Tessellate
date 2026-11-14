@@ -41,6 +41,8 @@ const document = {
   getElementById: (id) => (id === 'entry-list' ? list : id === 'capture-bar-input' ? field : null),
 };
 const entryListItems = () => rows;
+// Reduced motion's 0s: the leaving row's fade (L462) plays nothing here.
+const getComputedStyle = () => ({ getPropertyValue: () => '0s' });
 const api = async () => {};
 const pushUndo = () => ({});
 const settleUndoFromToast = () => {};

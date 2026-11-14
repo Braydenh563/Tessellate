@@ -13,7 +13,10 @@ the core and filled rules' `background` shorthand, which resets the clip.
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = "".join(  # L-ui-modernisation-31: Library-only rules live in library-lazy.css
+    (Path(__file__).resolve().parent.parent / "frontend" / "css" / n).read_text(encoding="utf-8")
+    for n in ("07-whiteboard-misc.css", "library-lazy.css")
+)
 
 
 def _specificity(selector: str) -> tuple[int, int]:

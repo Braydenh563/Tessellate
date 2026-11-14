@@ -18,7 +18,7 @@
 // 1 on any surface whose gap is over 4px, with no painted edge, or over a
 // control (on a phone, a dock's, a bar's or a floating one, marked `!`), or,
 // on a desktop, on a window bar in the Library or on a board while a panel
-// was free.
+// was free on a visit (at rest the window's bars lead, INBOX 1674).
 const { boot } = require("./lib.js");
 
 const W = Number(process.env.W || 1440);
@@ -53,7 +53,7 @@ async function measure(page) {
     const b = buddy.getBoundingClientRect();
     const pose = buddy.dataset.pose || nmb.pose;
     const legs = buddy.dataset.legs || nmb.legs || "";
-    const [cx, line] = nameMarkBuddyOrigin(b.left, b.top, pose);
+    const [cx, line] = nmb.inner.nameMarkBuddyOrigin(b.left, b.top, pose);
     const name = (el) => (el ? `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${el.classList.length ? `.${[...el.classList].slice(0, 2).join(".")}` : ""}` : "-");
     const glue = nmb.glue?.el;
     let claim = null;
@@ -94,7 +94,7 @@ async function measure(page) {
       }
       if (paint) break;
     }
-    const shape = nameMarkBuddyShape(b.left, b.top, pose, legs);
+    const shape = nmb.inner.nameMarkBuddyShape(b.left, b.top, pose, legs);
     const over = [];
     const sel = "button, a[href], input:not([type='hidden']), select, textarea, [role='tab'], [role='button']";
     for (const el of document.querySelectorAll(sel)) {
@@ -124,18 +124,18 @@ async function measure(page) {
     let free = null;
     if (["bar", "hang", "corner"].includes(nmb.perch)) {
       const tab = nameMarkBuddyTab();
-      nameMarkBuddyIndexReset();
-      const ob = nameMarkBuddyObstacles(tab);
-      for (const p of nameMarkBuddyPerches(tab)) {
+      nmb.inner.nameMarkBuddyIndexReset();
+      const ob = nmb.inner.nameMarkBuddyObstacles(tab);
+      for (const p of nmb.inner.nameMarkBuddyPerches(tab)) {
         if (["bar", "hang"].includes(p.kind) || p.y < 0 || p.y + NMB_H > innerHeight) continue;
-        if (nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
-        if (nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
+        if (nmb.inner.nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nmb.inner.nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
+        if (nmb.inner.nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
         free = `${p.kind} ${name(p.edge.el)} at ${p.x},${Math.round(p.y)}`;
         break;
       }
     }
     return {
-      perch: nmb.perch, pose, legs, free, claim: name(claim), gap: gap === Infinity ? "air" : Math.round(gap), paint,
+      perch: nmb.perch, pose, legs, free, visit: Boolean(nmb.visit), claim: name(claim), gap: gap === Infinity ? "air" : Math.round(gap), paint,
       over: over.slice(0, 3), at: [Math.round(b.left), Math.round(b.top)],
     };
   });
@@ -149,7 +149,9 @@ const PANELLED = /^(library\/|whiteboard|mind map|switch )/;
 function verdict(r, label = "") {
   if (r.err) return r.err;
   const bad = [];
-  if (PANELLED.test(label) && !phone && !process.env.PANEL_OPTIONAL && r.free) bad.push(`window bar while a panel was free (${r.free})`);
+  //: Only on a visit: a resting cat takes the window's hang and bar first (INBOX 1674, the owner's
+  //: blind run, after this rule was written; `nmb.restOrder`), so a bar at rest is the design (L-ui-modernisation-83).
+  if (PANELLED.test(label) && !phone && !process.env.PANEL_OPTIONAL && r.free && r.visit) bad.push(`window bar while a panel was free (${r.free})`);
   if (r.gap === "air" || Math.abs(r.gap) > 4) bad.push(`gap ${r.gap}`);
   if (!r.paint && r.legs !== "peek") bad.push("no painted edge");
   // On a phone a full list leaves nowhere clear: there it peeks over a row's
@@ -163,11 +165,13 @@ function verdict(r, label = "") {
   const opts = { viewport: { width: W, height: H } };
   if (phone) Object.assign(opts, { hasTouch: true, isMobile: true });
   const { browser, page } = await boot(opts);
-  await page.evaluate((k) => {
+  // The Settings select (#avatar-buddy) is not in the page until Settings opens, so
+  // choose the companion the way the other companion sweeps do: the pref, then the module.
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
-    b.value = k;
-    b.dispatchEvent(new Event("change", { bubbles: true }));
+    prefs.set("avatar-buddy", k);
+    await ensureModule("characters");
+    syncNameMarkBuddy();
   }, process.env.KIND || "atlas");
   const boards = await page.evaluate(async () => {
     const r = await (await api("/whiteboard/boards")).json();

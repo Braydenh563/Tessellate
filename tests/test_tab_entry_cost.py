@@ -9,6 +9,7 @@ source-level check can hold; the numbers are in the commit that added it.
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -192,7 +193,7 @@ def test_no_has_anchor_carries_a_universal_descendant():
 
 def test_the_peek_and_first_line_and_blink_rules_keep_their_new_shape():
     base = (FRONTEND / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
-    cons = (FRONTEND / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    cons = sheets("01-forms-settings.css", "02-chat-graph.css", "07-whiteboard-misc.css", "characters-lazy.css")
     assert "--sb-peek: 1" in base and "opacity: var(--sb-peek)" in base
     assert "--sb-peek-transform: none" in cons and "transform: var(--sb-peek-transform)" in cons
     assert "li.row-expanded:not(:has(> .entry-title)) > .entry-content::first-line" not in cons

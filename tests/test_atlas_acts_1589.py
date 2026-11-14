@@ -20,11 +20,12 @@ import math
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
 JS_DIR = ROOT / "frontend" / "js"
-CSS08 = (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = sheets(*FORMER_08)
 LAZY = (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8")
 ATLAS = (JS_DIR / "atlas.js").read_text(encoding="utf-8")
 MICRO = (JS_DIR / "atlas-micro.js").read_text(encoding="utf-8")
@@ -124,7 +125,9 @@ def test_every_act_s_arm_turn_comes_after_the_poses_and_never_crosses() -> None:
     """The pose arms (sit, float) are as specific as an act's and came later,
     so in the large view (which floats) an act kept the pose's arms. Every
     act's arm turn is after them now, and none turns a hand past the middle."""
-    pose_at = max(at for at, sel, decls in RULES if re.search(r'\[data-pose="(sit|float)"\]', sel) and re.search(r"\.nmb-arm-[lr]\b", sel) and "transform:" in decls)
+    # Atlas's pose arms (`.atl-figure`, as specific as an act's); the companion's
+    # own, one class less, went to characters-lazy.css with UI plan 13b.
+    pose_at = max(at for at, sel, decls in RULES if re.search(r'\[data-pose="(sit|float)"\]', sel) and ".atl-figure" in sel and re.search(r"\.nmb-arm-[lr]\b", sel) and "transform:" in decls)
     turns = []
     for at, sel, decls in RULES:
         for one in _split(sel):

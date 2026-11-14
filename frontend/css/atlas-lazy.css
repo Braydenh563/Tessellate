@@ -75,7 +75,7 @@
 :root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
 /* Atlas's acts (INBOX 1589), here with the faces so boot CSS stays under its
    budget: drawn only once Atlas is, and this sheet comes after
-   08-consistency.css. */
+   characters-lazy.css. */
 /* **The eyes and the head go to what it holds** (INBOX 1589, the owner: "it
    doesnt even look at the map"): down to the map or the book, up to the
    stars it juggles, out to the bell or the lantern in its right hand. The

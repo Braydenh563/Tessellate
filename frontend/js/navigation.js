@@ -47,7 +47,7 @@ function wireLongPress(target, handler, { selector = null } = {}) {
         //: about: measured on the graph at 390, holding a node opened its menu
         //: and lifting the finger opened that node's panel underneath it, so
         //: the gesture did two things and the second one took the focus the
-        //: menu had just been given (the menu was still open, and Escape
+        //: menu had just been given (the menu was still showing, and Escape
         //: closed the panel instead of it). Captured, so it never reaches the
         //: surface, and `once` so only that one click is taken; the timer is
         //: the belt for a press that ends in a `pointercancel` and therefore
@@ -174,16 +174,9 @@ wireLongPress(
 //: here because a double-click cannot: a single click on every one of these
 //: rows opens it, so the first half of a double-click would already have
 //: left the list. Runs the row's own Rename item, so there is one rename.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "F2" || event.defaultPrevented) return;
-  const host = event.target instanceof Element ? event.target.closest(ROW_MENU_HOSTS) : null;
-  if (!host) return;
-  const wrap = host.querySelector(".menu-wrap");
-  const item = wrap?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
-  if (!item) return;
-  event.preventDefault();
-  item.run();
-});
+//: The key is the `renameRow` row of the shortcut table (settings-wiring.js).
+//: The function itself lives on the table's `renameRow` row (settings-wiring.js),
+//: not as a global name (the scope ratchet).
 
 //: **Arrow keys between cards and rows, Home and End to the ends.** Chosen by
 //: where the items are drawn rather than by their order in the DOM: the
@@ -830,7 +823,7 @@ function revealTab(name) {
   // and restored when that was reversed, the real fix for "documents feel
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
-  // everything. Worth the note so the next session does not re-derive it.
+  // everything. Worth the note so the next reader does not re-derive it.
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -934,10 +927,15 @@ async function openNavHistoryMenu(anchorEl) {
   // status bar): only `left` needs computing, and only after the menu is
   // visible and populated, so its real width is known.
   const margin = 8;
+  //: **On a phone the opener can be a row in a sheet** (L410): Recent places
+  //: in the bar's sheet clicks a button with no box at 390, which put the menu
+  //: flush on the left edge. It anchors to Back, as the header's long press
+  //: does, so nav-history-lazy.css's phone shift lands it under the header.
+  if (!anchorEl?.getClientRects().length) anchorEl = $("status-back") || anchorEl;
   const anchor = anchorEl.getBoundingClientRect();
   menu.style.left = "0px";
   const box = menu.getBoundingClientRect();
-  let left = anchor.left;
+  let left = Math.max(margin, anchor.left);
   if (left + box.width > window.innerWidth - margin) {
     left = Math.max(margin, window.innerWidth - margin - box.width);
   }
@@ -1161,7 +1159,7 @@ async function openHistoryEntry(entry, { from = null } = {}) {
   // ever called recordTabVisit for it. Restoring a settings entry opens the
   // modal (or moves it to a different section) instead of going through
   // switchTab at all; restoring anything else closes it first if it was
-  // left open, the same way clicking Close would.
+  // kept open, the same way clicking Close would.
   if (entry.tab === "settings") {
     await openSettingsModal(entry.section || "models");
     paintTabHistory();
@@ -1536,7 +1534,7 @@ document.addEventListener(
   true
 );
 
-//: **The arrow keys, in every menu that is not built by `kebabMenu`.**
+//: **The arrow keys, in every menu that is not made by `kebabMenu`.**
 //: `wireMenuKeyboard` gives a built menu ↑, ↓, Home and End once the focus is
 //: inside it, and nothing gave any of that to the two other shapes: a
 //: `details` dock menu (twenty-odd of them, every ⋯ and Options in every dock)
@@ -2059,7 +2057,7 @@ async function switchTab(name) {
 //: 1440) four frames with nothing of the page under any of nine points,
 //: 488 to 550ms before it was whole. Now the page's own controls wait
 //: hidden under one skeleton the size of the page, which fades as they
-//: fade in (`.tab-loading`, `.tab-revealing`, 08-consistency.css).
+//: fade in (`.tab-loading`, `.tab-revealing`, 07-whiteboard-misc.css).
 //:
 //: **The page's shape, and its name when it is slow** (INBOX 598, the owner:
 //: "the loading screen on features like the graph tab and library is a blank
@@ -2286,7 +2284,7 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  //: `getElementById`, not `$`: `$` would build the unbuilt Notes pane on every unlock (audit 1030 Y5).
+  //: `getElementById`, not `$`: `$` would build the Notes pane before it exists on every unlock (audit 1030 Y5).
   if (document.getElementById("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
@@ -2329,6 +2327,13 @@ function showNotesSection(name, { focus = false } = {}) {
   // runs, so by the time a real arrival calls this, it reads "notes".
   if ((prefs.get("activeTab", null) || "dashboard") === "notes") {
     recordTabVisit("notes", wanted);
+  }
+  //: A switch inside Notes cross-fades the panel (L414): marked on the page for the frame that
+  //: shows it, since `@starting-style` cannot tell this from the page arriving (05-sidebars-themes.css).
+  const page = $("tab-notes");
+  if (page && !page.classList.contains("hidden") && $(wanted)?.classList.contains("hidden")) {
+    page.classList.add("section-switch");
+    setTimeout(() => page.classList.remove("section-switch"), 400);
   }
   for (const id of NOTES_SECTIONS) {
     const card = $(id);

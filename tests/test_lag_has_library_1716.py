@@ -28,7 +28,7 @@ def test_no_tile_rule_keys_on_the_select_bar_through_has() -> None:
 
 
 def test_the_ticks_stay_shown_while_a_selection_is_open_by_a_body_class() -> None:
-    for name in ("07-whiteboard-misc.css", "08-consistency.css"):
+    for name in ("07-whiteboard-misc.css", "07-whiteboard-misc.css"):
         text = _css(name)
         assert re.search(r"body\.library-media-selecting\s+\.library-image-tile[^{]*>\s*\.library-tile-tick", text), name
 

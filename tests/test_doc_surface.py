@@ -119,9 +119,9 @@ def test_index_html_has_the_codemirror_host_and_the_editor_stylesheet():
         "cannot check it and $(\"doc-editor\") finds nothing"
     )
     assert '/css/09-editor.css' in html, "09-editor.css is not linked"
-    # After 08-consistency.css: the editor's own layout rules are the last
+    # After 07-whiteboard-misc.css (08 dissolved, UI plan 13b): the editor's own layout rules are the last
     # word on the panes they lay out.
-    assert html.index("/css/08-consistency.css") < html.index("/css/09-editor.css")
+    assert html.index("/css/07-whiteboard-misc.css") < html.index("/css/09-editor.css")
     assert (CSS_DIR / "09-editor.css").exists(), "frontend/css/09-editor.css is missing"
 
 

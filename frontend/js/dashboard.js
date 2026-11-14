@@ -121,6 +121,8 @@ const DASH_WIDGETS = {
   //: Brief 89 (statistics row 2): Screen Time's weekly report, drawn by
   //: statistics.js, which also holds the page it opens.
   week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week.", render: (body) => renderWeekWidget(body) },
+  //: L-ui-modernisation-68: the share of each category as a donut, beside the Categories widget's counts.
+  pie: { title: "ph:chart-pie Notes by category", description: "A donut of your notes by category, the five biggest and the rest.", render: (body) => renderCategoriesWidget.pie(body) },
   pace: { title: "ph:chart-line-up Writing pace", description: "How many words you have written each day this fortnight.", render: renderPaceWidget },
 };
 
@@ -159,7 +161,7 @@ const DASH_DEFAULT_SHOWN = [
 //: offered in the picker rather than appended to every existing dashboard.
 //: Applied only while a saved layout has never seen the widget: once anybody
 //: adds it, or saves a layout with it hidden, the saved layout decides.
-const DASH_OPT_IN = ["activity", "night", "week"];
+const DASH_OPT_IN = ["activity", "night", "week", "pie"];
 
 //: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
 //: calculator, converter, stopwatch etc"). A widget draws the tool itself, not
@@ -1820,7 +1822,7 @@ async function renderDashboard({ refresh = false } = {}) {
   grid.dataset.shape = shape;
   grid.replaceChildren();
   //: Unseen while its widgets draw and their spans settle, then faded in
-  //: whole (`dashSettled` below; `.dash-filling`, 08-consistency.css).
+  //: whole (`dashSettled` below; `.dash-filling`, 07-whiteboard-misc.css).
   grid.classList.add("dash-filling");
   $("dash-editbar").classList.toggle("hidden", !dashEditMode); // only while editing
   const drawing = [];
@@ -2509,7 +2511,8 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "").trim();
+    //: A task's `[ ]` or `[x]` goes with its bullet (L-ui-modernisation-67: "[ ] buy bread" read literally).
+    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|(?:[-*+]|\d+\.)\s+(?:\[[ xX]\]\s+)?)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
     const rest = split === -1 ? "" : flat.slice(split + 1).replace(/\s+/g, " ").trim();
@@ -2518,7 +2521,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
       const title = document.createElement("span");
       title.className = "dash-list-title";
       const cut = safeMdSlice(heading, 70);
-      renderInlineMarkdown(title, cut.text, [], true);
+      renderInlineMarkdown(title, cut.text, [], true, { underscoreSyntax: true });
       if (cut.truncated) title.appendChild(document.createTextNode("…"));
       textEl.appendChild(title);
     }
@@ -2526,7 +2529,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
       const preview = document.createElement("span");
       preview.className = "dash-list-preview";
       const cut = safeMdSlice(rest, 110);
-      renderInlineMarkdown(preview, cut.text, [], true);
+      renderInlineMarkdown(preview, cut.text, [], true, { underscoreSyntax: true });
       if (cut.truncated) preview.appendChild(document.createTextNode("…"));
       textEl.appendChild(preview);
     }
@@ -2674,7 +2677,7 @@ async function renderQuestionsWidget(body) {
   body.appendChild(box);
 }
 
-// Weekly digest caching (Wave J follow-up). The AI digest is expensive,
+// Weekly digest caching (Wave J follow-on). The AI digest is expensive,
 // so once it's generated it STAYS until you regenerate, and it resets
 // itself each day. Generation is a module-level promise, so switching
 // away from the dashboard never cancels it, whenever it finishes, the
@@ -3222,7 +3225,8 @@ async function renderRandomShuffle(body) {
     // paragraph early, which drops the styling this class carries.
     const text = document.createElement("div");
     text.className = "random-note";
-    renderMarkdown(text, truncateMarkdownSafe(stripFrontmatter(note.content), 239));
+    //: renderMarkdown has no `[[...]]`; the list rows unwrap it the same way (L-ui-modernisation-67).
+    renderMarkdown(text, truncateMarkdownSafe(stripFrontmatter(note.content).replace(/\[\[([^[\]]{1,120})\]\]/g, "$1"), 239));
     body.appendChild(text);
 
     // A sketch's picture is never in `note.content` at all: the sketch pad
@@ -4283,6 +4287,74 @@ function renderOnThisDayWidget(body) {
 //: A fortnight rather than a week: seven bars cannot show a trend, and a month
 //: of bars in a widget column is a picket fence.
 const DASH_PACE_DAYS = 14;
+
+//: The pie widget (L-ui-modernisation-68). SVG circles with a dash per slice, so no
+//: path maths; colours set through the CSSOM (`style.stroke`), which the CSP
+//: allows where a `style` attribute is refused. The legend is the Categories
+//: widget's own share rows (`.cat-row`), each bar in its slice's colour.
+renderCategoriesWidget.pie = async function (body) {
+  const stats = await fetchDashStats().catch(() => null);
+  const all = ((stats && stats.categories) || []).filter((c) => c.count > 0);
+  if (!all.length) {
+    dashEmpty(body, "Save a few notes and their categories appear here.", { label: "ph:plus New note", run: "capture" });
+    return;
+  }
+  const slices = all.slice(0, 5).map((c) => ({ ...c, colour: categoryDotColour(c.name) }));
+  const rest = all.slice(5).reduce((sum, c) => sum + c.count, 0);
+  if (rest) slices.push({ name: "Other", count: rest, colour: "var(--muted)", other: true });
+  const total = slices.reduce((sum, c) => sum + c.count, 0);
+  const pct = (n) => `${Math.round((n / total) * 100)}%`;
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 120 120");
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "120");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Notes by category: ${slices.map((c) => `${c.name} ${pct(c.count)}`).join(", ")}`);
+  const r = 44;
+  const round = 2 * Math.PI * r;
+  let at = 0;
+  for (const c of slices) {
+    const arc = document.createElementNS(NS, "circle");
+    for (const [k, v] of Object.entries({ cx: 60, cy: 60, r, fill: "none", "stroke-width": 22, transform: "rotate(-90 60 60)" })) arc.setAttribute(k, v);
+    const len = (c.count / total) * round;
+    //: A hair of gap between slices, none for a single full ring.
+    arc.setAttribute("stroke-dasharray", `${Math.max(0, len - (slices.length > 1 ? 1 : 0))} ${round}`);
+    arc.setAttribute("stroke-dashoffset", String(-at));
+    arc.style.stroke = c.colour;
+    at += len;
+    svg.appendChild(arc);
+  }
+  body.appendChild(svg);
+  const list = document.createElement("div");
+  list.className = "cat-bars";
+  for (const c of slices) {
+    const row = document.createElement(c.other ? "div" : "button");
+    if (!c.other) {
+      row.type = "button";
+      row.title = `Show the ${c.name} notes`;
+      row.addEventListener("click", () => showCategoryNotes(c.name));
+    }
+    row.className = "cat-row";
+    const label = document.createElement("span");
+    label.className = "cat-name";
+    label.textContent = c.name;
+    const track = document.createElement("span");
+    track.className = "cat-track";
+    const fill = document.createElement("span");
+    fill.className = "cat-fill";
+    fill.style.setProperty("--cat-fill", c.colour);
+    fill.style.width = pct(c.count);
+    track.appendChild(fill);
+    const num = document.createElement("span");
+    num.className = "cat-count";
+    num.textContent = pct(c.count);
+    num.title = nounCount(c.count, "note");
+    row.append(label, track, num);
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+};
 
 function renderPaceWidget(body) {
   const entries = typeof allEntries !== "undefined" ? allEntries : [];

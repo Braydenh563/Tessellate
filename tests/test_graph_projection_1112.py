@@ -1,4 +1,6 @@
-"""A 2-D map of the notes from their stored vectors (L-graph-2): PCA through
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A 2-D map of the notes from their stored vectors (L-graph-2): PCA through
 numpy's SVD, so notes that mean alike sit near each other."""
 
 from __future__ import annotations

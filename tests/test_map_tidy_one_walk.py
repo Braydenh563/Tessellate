@@ -1,4 +1,4 @@
-"""L-mindmap-13 (2026-11-13): the tidy measures every topic in one walk.
+"""Source text: the cost was query and layout-read counts per topic, measured in a profile, which pytest cannot count. L-mindmap-13 (2026-11-13): the tidy measures every topic in one walk.
 
 Selecting a topic ends in a pointerup, which empties the size cache
 (`wbClearMapNodeSizeCache`), so the Tab that follows laid the map out with one

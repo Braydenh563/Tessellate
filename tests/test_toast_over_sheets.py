@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 CSS = Path(__file__).resolve().parents[1] / "frontend" / "css"
 
 #: The highest fixed layer a sheet is opened from (the pointer-anchored menu
@@ -27,7 +29,7 @@ BOOT_SPLASH = 3000
 
 
 def _phone_toast_z() -> int:
-    text = (CSS / "10-responsive.css").read_text(encoding="utf-8")
+    text = sheets(*FORMER_10)
     zs: list[int] = []
     for block in re.finditer(r"@media \(max-width: 599\.98px\) \{(.*?)\n\}\n", text, re.S):
         for body in re.findall(r"#toast-box\s*\{([^}]*)\}", block.group(1)):

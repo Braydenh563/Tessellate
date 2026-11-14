@@ -148,7 +148,7 @@ def test_css_loses_its_leading_indentation_but_not_inside_strings_or_urls():
 
 def test_the_real_frontend_files_lose_their_indentation():
     js = (FRONTEND_DIR / "js" / "app.js").read_text(encoding="utf-8")
-    css = (FRONTEND_DIR / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (FRONTEND_DIR / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert re.search(r"^[ \t]+\S", js, re.M) and re.search(r"^[ \t]+\S", css, re.M)
     assert strip_js(js).count("\n") == js.count("\n")
     for out in (strip_js(js), strip_css(css)):
@@ -301,8 +301,8 @@ def test_scripts_and_stylesheets_are_served_stripped_and_disk_is_untouched(clien
     # Without gzip: the same stripped bytes.
     response, raw = _raw(client, "/js/app.js", **{"Accept-Encoding": "identity"})
     assert raw == served and "content-encoding" not in response.headers
-    css = (FRONTEND_DIR / "css" / "08-consistency.css").read_text(encoding="utf-8")
-    response, raw = _raw(client, "/css/08-consistency.css", **{"Accept-Encoding": "gzip"})
+    css = (FRONTEND_DIR / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    response, raw = _raw(client, "/css/07-whiteboard-misc.css", **{"Accept-Encoding": "gzip"})
     assert gzip.decompress(raw) == strip_css(css).encode()
 
 
@@ -318,8 +318,8 @@ def test_the_page_is_served_without_comments_and_stamped_by_content(client):
     assert "<!--" not in html.split('id="settings-body-template"', 1)[1].split("</template>", 1)[0]
     stamp = asset_hash(FRONTEND_DIR / "js" / "app.js")
     assert f'/js/app.js?v={__version__}-{stamp}"' in html
-    css_stamp = asset_hash(FRONTEND_DIR / "css" / "08-consistency.css")
-    assert f"/css/08-consistency.css?v={__version__}-{css_stamp}" in html
+    css_stamp = asset_hash(FRONTEND_DIR / "css" / "07-whiteboard-misc.css")
+    assert f"/css/07-whiteboard-misc.css?v={__version__}-{css_stamp}" in html
     # The lazy scripts and the workers are in the page's stamp map.
     meta = html.split('<meta name="asset-stamps" content="', 1)[1].split('"', 1)[0]
     stamps = dict(pair.split("=", 1) for pair in meta.split(","))

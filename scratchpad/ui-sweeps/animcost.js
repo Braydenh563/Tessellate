@@ -27,7 +27,7 @@
 //
 //   BASE=http://127.0.0.1:8808 node scratchpad/ui-sweeps/animcost.js
 //
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8808';
 const HOLD_MS = 3200;      // longer than the 2.4s crawl
 const WINDOW_MS = 2400;    // the crawl's own duration

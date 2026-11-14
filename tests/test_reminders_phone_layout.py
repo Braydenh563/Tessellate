@@ -1,4 +1,6 @@
-"""TIMELINE_PLAN rows L474/L476/L480/L484 and L-timeline-3: the Reminders tab on a phone, the closed presets menu, Done in the bell.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+TIMELINE_PLAN rows L474/L476/L480/L484 and L-timeline-3: the Reminders tab on a phone, the closed presets menu, Done in the bell.
 
 Measured in Chromium (390x844, 8 rows): scrolled to the foot the last row ends
 at y 683 and the floating + starts at y 730 (47px clear); the + opens a sheet

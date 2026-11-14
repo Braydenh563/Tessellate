@@ -26,7 +26,9 @@ def _html() -> str:
 
 
 def _css() -> str:
-    return (ROOT / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    return (ROOT / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (
+        ROOT / "css" / "library-lazy.css"
+    ).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in the lazy sheet
 
 
 def _body(file: str, name: str) -> str:
@@ -312,6 +314,14 @@ def test_a_fit_goes_into_the_canvas_the_person_can_see():
     assert 'for (const id of ["whiteboard-container", "wb-sidebar", "wb-format", "wb-tools-panel"])' in js
     assert "setTimeout(wbRefitIfFitted, 200)" in js
 
+
+def test_the_map_panel_help_points_at_where_the_templates_are() -> None:
+    """Source text: the map panel's help said templates are dragged in from the Library tab; they are the From a template row in the arrow beside New (L439)."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    body = html[html.index('id="wb-side-map-help"') :]
+    body = body[: body.index("</div>")]
+    assert "From a template" in body and "drag" not in body
+    assert "From a template" in (ROOT / "js" / "boards-gallery.js").read_text(encoding="utf-8")
 
 def test_a_levels_size_is_said_in_words_not_pixels():
     """L366: Classic's levels are 17 and 22px; the level rows and the follow

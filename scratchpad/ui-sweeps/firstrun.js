@@ -8,7 +8,7 @@
 //   BASE=http://127.0.0.1:8865 W=1440 THEME=light SCRATCH=/tmp/fr node firstrun.js
 //
 // The first run against a fresh dir sets the password; later runs unlock.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8865';
 const W = +(process.env.W || 1440);

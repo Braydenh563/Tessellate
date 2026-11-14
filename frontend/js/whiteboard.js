@@ -1485,8 +1485,8 @@ function wbDrawOutSnap(sx, sy, x, y, event) {
 //: lining up, the draw.io/PowerPoint convention of a *different* colour so
 //: the two are never confused at a glance), and "spacing" (equal gaps).
 //: Overridable per the direct ask ("colours should be alterable"); the
-//: picker lives in the whiteboard's own shape-menu dropdown rather than a
-//: new top menu bar, see HISTORY.md for why that redesign is deferred.
+//: picker is the drawer's "Guide colours" group (whiteboard.js, the drawer
+//: section), beside "Draw with".
 //: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
 //: each passes 3:1 on the canvas in light and dark); only a colour the owner
 //: picked is written here, and it wins over the class.
@@ -3257,7 +3257,7 @@ function wbRememberBoardView() {
   if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
   const t = d3.zoomTransform(container);
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
-  //: Past a reload too (per device, like the board's background image): the view of a board left open is its last.
+  //: Past a reload too (per device, like the board's background image): the view of a board still showing at close is its last.
   prefs.set(`wb-view-${id}`, JSON.stringify({ x: t.x, y: t.y, k: t.k }));
 }
 window.addEventListener("pagehide", wbRememberBoardView);
@@ -6886,8 +6886,8 @@ function wbApplySelectionHighlight() {
   // A sketch's resize handles have nowhere else to live between renders
   // (unlike a card/object, which always has 8 handle children of its own), 
   // recomputed here so they track a fresh selection or a just-finished move.
-  // Only for the single-item selection, a multi-selection has no one
-  // bounding box to hang 8 handles off, and resizing a set isn't built.
+  // Only for the single-item selection: a multi-selection draws its own
+  // group box with corner anchors that scale the set (`wbMultiSelectionEntries`).
   wbRenderSketchHandles();
   //: And the box round a sweep that caught more than one thing, which is the
   //: same affordance for the same gesture (see `wbRenderMultiSelectionHandles`).
@@ -7686,7 +7686,7 @@ function wbUpdateSelectionBar(panning = false) {
   const gripsBottom = grips ? grips.getBoundingClientRect().bottom - hostRect.top : bottom;
   if (y < floor) y = Math.max(bottom, gripsBottom) + gapBelow;
   //: **At phone width the board bar is pinned to the top of the canvas**
-  //: (WHITEBOARD_PLAN section 7's open question, answered 2026-09-20 by
+  //: (WHITEBOARD_PLAN section 7's unsettled question, answered 2026-09-20 by
   //: building both and measuring them: `scratchpad/ui-sweeps/wbcontextphone.js`,
   //: five kinds high and low on the board, ten selections each way).
   //:
@@ -8237,6 +8237,62 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
   //: per-frame edge work on any branch drag, and changes nothing about what
   //: is drawn: both ends move by the same delta.
   const claimed = new Set();
+  //: **A link is redrawn once a move, and a link inside the move only
+  //: travels** (L-ui-modernisation-61). A link is listed under both its ends,
+  //: so inside a branch it was drawn twice a frame; and one whose two ends
+  //: both move keeps its shape, so its drawn `d` is compiled once here and
+  //: offset per frame (`origin.rigidLinks`) rather than drawn again from its
+  //: topics. Traced on a 200-topic branch with 300 links: 49ms of each move.
+  //: `linked` stays whole for the callers that are not a translation (a
+  //: frame's turn); `movedLinks` is what a move redraws.
+  const moving = new Set(keys);
+  const claimedLinks = new Set();
+  const rigidLinks = [];
+  const rigidLink = (pair) => {
+    const p = pair.parsed;
+    const ends = [`${p.sourceKind || "node"}:${p.sourceId}`, `${p.targetKind || "node"}:${p.targetId}`];
+    if (!ends.every((end) => moving.has(end))) return false;
+    //: The groups are indexed by id once for the capture: a document query
+    //: per link was 17ms of the pick-up of 300.
+    linkGroups ||= new Map([...document.querySelectorAll(".sketch-group")].map((g) => [g.dataset.id, g]));
+    const el = linkGroups.get(String(pair.sketch.id));
+    const path = el?.querySelector(".sketch-path");
+    const hit = el?.querySelector(".sketch-hitbox");
+    if (!path || el.querySelector(":scope > .wb-link-label")) return false;
+    //: Only a path of absolute points is rigid; the check is a text test, and
+    //: the path is compiled on the moves after the pick-up (`compileRigid`),
+    //: because tokenising 300 of them was 58ms of the pick-up frame.
+    if (!pointsOnly.test(path.getAttribute("d")) || (hit && !pointsOnly.test(hit.getAttribute("d")))) return false;
+    rigidLinks.push({ pair, path, hit, group: el, state: "" });
+    return true;
+  };
+  let linkGroups = null;
+  const pointsOnly = /^[MLCQSTZ\d\s.,eE+-]+$/;
+  //: A link the translator cannot compile is drawn from its two topics, as a
+  //: link that was never rigid is (`state` "bad").
+  origin.compileRigid = (rigid) => {
+    rigid.at = wbTransformPathD.translator(rigid.path.getAttribute("d"));
+    rigid.hitAt = rigid.hit ? wbTransformPathD.translator(rigid.hit.getAttribute("d")) : null;
+    rigid.state = rigid.at && (!rigid.hit || rigid.hitAt) ? "ok" : "bad";
+  };
+  //: The same for a tree line with both topics moving: its two paths are
+  //: compiled like a link's, and its end dots, handle and label are points
+  //: read off the element as drawn, which already holds a label's own nudge.
+  const rigidEdges = [];
+  const rigidEdge = (edge) => {
+    const el = edge.el;
+    if (!el?.isConnected || !moving.has(`object:${edge.parent.id}`) || !moving.has(`object:${edge.child.id}`)) return false;
+    const at = wbTransformPathD.translator(el.getAttribute("d"));
+    const hitAt = el._wbHitTwin ? wbTransformPathD.translator(el._wbHitTwin.getAttribute("d")) : null;
+    if (!at || (el._wbHitTwin && !hitAt)) return false;
+    const points = [];
+    for (const [dot, x, y] of [...(el._wbEnds || []).map((dot) => [dot, "cx", "cy"]), [el._wbHandle, "cx", "cy"], [el._wbLabel, "x", "y"]]) {
+      const x0 = Number(dot?.getAttribute(x)), y0 = Number(dot?.getAttribute(y));
+      if (dot && Number.isFinite(x0) && Number.isFinite(y0)) points.push({ dot, x, y, x0: Math.round(x0 * 100), y0: Math.round(y0 * 100) });
+    }
+    rigidEdges.push({ edge, el, at, hitAt, points });
+    return true;
+  };
   for (const key of keys) {
     if (key === excludeKey) continue; // the dragged item's own handler already moves it
     const sep = key.indexOf(":");
@@ -8265,12 +8321,20 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
           const edgeKey = `${edge.parent.id}:${edge.child.id}`;
           if (claimed.has(edgeKey)) continue;
           claimed.add(edgeKey);
-          mapEdges.push(edge);
+          if (!rigidEdge(edge)) mapEdges.push(edge);
         }
+      }
+      const linked = wbLinkedSketchesFor(id, kind, linkIndex);
+      const movedLinks = [];
+      for (const pair of linked) {
+        if (claimedLinks.has(pair.sketch.id)) continue;
+        claimedLinks.add(pair.sketch.id);
+        if (!rigidLink(pair)) movedLinks.push(pair);
       }
       origin.set(key, {
         kind, id, item, x: item.x, y: item.y,
-        linked: wbLinkedSketchesFor(id, kind, linkIndex),
+        linked,
+        movedLinks,
         mapEdges,
         //: Resolved here when the board is a map (one pass for the whole
         //: capture, above) and on the first frame that needs it otherwise;
@@ -8283,6 +8347,8 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
   //: The selection's box as the gesture found it, for the bar above it to
   //: ride along on (`wbBulkBarBounds`).
   if (keys === wbMultiSelection && wbMultiSelection.size > 1) origin.boundsAtStart = wbSelectionBounds();
+  origin.rigidLinks = rigidLinks;
+  origin.rigidEdges = rigidEdges;
   return origin;
 }
 
@@ -8403,10 +8469,50 @@ function wbApplyBulkMove(origin, dx, dy) {
     // See this entry's own comment in `wbCaptureBulkMoveOrigin`: without
     // this, only the card the pointer is actually on kept its edges live
     // during a multi-select drag.
-    wbUpdateLinkedSketches(entry.id, entry.linked);
+    const moved = entry.movedLinks || entry.linked;
+    if (moved.length) wbUpdateLinkedSketches(entry.id, moved);
     // Same for a map's tree edges, which are not sketches at all: a marquee
     // drag of half a branch left every one of its curves behind.
     if (entry.mapEdges?.length) wbUpdateMapEdges(entry.mapEdges);
+  }
+  //: The links that travel with the move (`wbCaptureBulkMoveOrigin`). One a
+  //: render replaced mid-gesture is drawn from its ends instead.
+  //: Compiled a slice a move after the first (`compileRigid`), the rest at the drop.
+  let compiling = origin.rigidAt ? 15 : 0;
+  for (const rigid of origin.rigidLinks || []) {
+    if (!rigid.state && compiling-- > 0) origin.compileRigid(rigid);
+    if (!rigid.path.isConnected || rigid.state === "bad") {
+      rigid.group.removeAttribute("transform");
+      wbUpdateLinkedSketches(null, [rigid.pair]);
+      continue;
+    }
+    //: One `transform` on the link's group a move, not two `d` rewrites (a
+    //: bare page: 300 transforms 0.5ms, 600 paths 1.7ms; on the map the
+    //: paths were a 1143-element style recalc each move). The `d` is written
+    //: where the drag lands, `wbSaveBulkMove`, or put back here at 0, 0.
+    if (dx || dy) {
+      rigid.group.setAttribute("transform", `translate(${dx} ${dy})`);
+    } else {
+      rigid.group.removeAttribute("transform");
+      if (!rigid.state) origin.compileRigid(rigid);
+      rigid.path.setAttribute("d", rigid.at(0, 0));
+      rigid.hit?.setAttribute("d", rigid.hitAt(0, 0));
+    }
+  }
+  origin.rigidAt = dx || dy ? [dx, dy] : null;
+  const write = wbTransformPathD.translator.write;
+  const x100 = Math.round(dx * 100), y100 = Math.round(dy * 100);
+  for (const rigid of origin.rigidEdges || []) {
+    if (!rigid.el.isConnected) { wbUpdateMapEdges([rigid.edge]); continue; }
+    //: Drawn by hand, as `wbUpdateMapEdges` marks it: the render's cache no
+    //: longer holds what is on screen.
+    rigid.el._wbMoved = true;
+    rigid.el.setAttribute("d", rigid.at(dx, dy));
+    rigid.el._wbHitTwin?.setAttribute("d", rigid.hitAt(dx, dy));
+    for (const point of rigid.points) {
+      point.dot.setAttribute(point.x, write(point.x0 + x100));
+      point.dot.setAttribute(point.y, write(point.y0 + y100));
+    }
   }
 }
 
@@ -8926,6 +9032,20 @@ async function wbSaveMapBulkMove(origin) {
 }
 
 async function wbSaveBulkMove(origin) {
+  //: A link that travelled by its group's transform (`wbApplyBulkMove`) is
+  //: written where it landed, the `d` a full recompute gives, and the
+  //: transform cleared, before anything below reads or replaces the paths.
+  if (origin.rigidAt) {
+    for (const rigid of origin.rigidLinks || []) {
+      if (!rigid.path.isConnected) continue;
+      rigid.group.removeAttribute("transform");
+      if (!rigid.state) origin.compileRigid(rigid);
+      if (rigid.state === "bad") { wbUpdateLinkedSketches(null, [rigid.pair]); continue; }
+      rigid.path.setAttribute("d", rigid.at(...origin.rigidAt));
+      rigid.hit?.setAttribute("d", rigid.hitAt(...origin.rigidAt));
+    }
+    origin.rigidAt = null;
+  }
   //: **And is rebuilt where the items landed, before the save goes out.** The
   //: translate above is a view of the drag, not the truth: the items' own
   //: coordinates have moved, so the outline has to be recomputed from them or
@@ -9520,7 +9640,7 @@ function wbLayoutCloneGrips() {
 //: selected so a second Ctrl+D steps on again. Leaves the clipboard alone,
 //: so a duplicate never overwrites something copied to paste later.
 async function wbDuplicateSelection() {
-  //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit follow-up):
+  //: **On a map a copy is a sibling** (MINDMAP_PLAN, 445 audit follow-on):
   //: the board's copy posts an object with no `parent_id`, so a duplicated
   //: topic landed as a loose root and undoing it left nothing selected.
   //: One selected topic is copied in place right after itself instead.
@@ -12587,7 +12707,7 @@ function wbPaintCommentMarks() {
   const wanted = [];
   for (const kind of ["node", "object", "sketch"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-      //: The mark counts what is still open; a thread that is all resolved
+      //: The mark counts what is unresolved; a thread that is all resolved
       //: keeps a quiet tick, so it can still be opened and read.
       //: A reply is as open as the comment it answers.
       const thread = wbItemComments(kind, item);
@@ -12853,7 +12973,7 @@ function wbFillComments() {
   const thread = wbItemComments(state.kind, item);
   if (!thread.length) {
     const empty = document.createElement("p");
-    empty.className = "muted wb-comments-empty";
+    empty.className = "muted empty-line wb-comments-empty";
     empty.textContent = "No comments yet.";
     list.appendChild(empty);
     return;
@@ -15305,7 +15425,7 @@ function wbStampMenuRoles(menu) {
   //: group label, a file input. `role="none"` is what makes the container a
   //: valid menu, and it is the honest answer for each of them: none of them
   //: is a command.
-  for (const row of menu.querySelectorAll(".wb-menu-row, .wb-panel-group-label, input[type=\"file\"]")) {
+  for (const row of menu.querySelectorAll(".wb-menu-col, .wb-menu-row, .wb-panel-group-label, input[type=\"file\"]")) {
     if (!row.hasAttribute("role")) row.setAttribute("role", "none");
   }
 }
@@ -18520,7 +18640,12 @@ async function initWhiteboard() {
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
     if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    //: The per-gesture box, not a fresh one: this frame runs after the drag
+    //: has written transforms and link paths, so a fresh read laid the whole
+    //: board out again every frame (1,569ms of a 200-topic linked branch
+    //: drag, L-ui-modernisation-61). A button is down while it runs, which
+    //: is when the cache holds.
+    const r = wbCanvasOriginRect();
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
@@ -20279,6 +20404,56 @@ function wbTransformPathD(d, { dx = 0, dy = 0, sx = 1, sy = 1, rotate = 0, ancho
   return out.join(" ");
 }
 
+//: **A path compiled once for a rigid move** (L-ui-modernisation-61): a
+//: function of `(dx, dy)` giving the same path that far away, or null for a
+//: path that is not a list of absolute points (a relative command, an arc or
+//: a one-axis `H`/`V` would need the pen tracked, which is
+//: `wbTransformPathD`'s job). A branch drag offsets every link inside the
+//: branch on every frame; tokenising each one per frame, or drawing its
+//: ribbon again from its two ends, was most of the frame.
+wbTransformPathD.translator = function (d) {
+  const tokens = typeof d === "string" ? d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[A-Za-z]/g) : null;
+  if (!tokens) return null;
+  const heads = [];
+  const nums = [];
+  const ys = [];
+  let text = "";
+  let y = false;
+  for (const tok of tokens) {
+    if (/[A-Za-z]/.test(tok)) {
+      if (!"MLCQSTZ".includes(tok)) return null;
+      text = (text === " " ? "" : text) + tok;
+      y = false;
+      continue;
+    }
+    heads.push(text);
+    nums.push(Math.round(parseFloat(tok) * 100));
+    ys.push(y);
+    y = !y;
+    text = " ";
+  }
+  const tail = text === " " ? "" : text;
+  //: In hundredths, written as whole numbers and a looked-up fraction: a
+  //: fractional number's text is the slow part of the frame, and integers
+  //: and table reads came out four times faster for the same string (87ms
+  //: against 362ms for 60,000 paths of 32 numbers, about one 200-topic drag).
+  const write = wbTransformPathD.translator.write;
+  return (dx, dy) => {
+    const x = Math.round(dx * 100);
+    const yy = Math.round(dy * 100);
+    let out = "";
+    for (let i = 0; i < nums.length; i++) out += heads[i] + write(nums[i] + (ys[i] ? yy : x));
+    return out + tail;
+  };
+};
+//: A whole number of hundredths as the text of the number: "-0.05" for -5,
+//: "12.5" for 1250. ".05" for 5, ".5" for 50, nothing for 0 is how one ends.
+wbTransformPathD.translator.fractions = Array.from({ length: 100 }, (_, r) => (r === 0 ? "" : r % 10 === 0 ? `.${r / 10}` : `.${String(r).padStart(2, "0")}`));
+wbTransformPathD.translator.write = (v) => {
+  const a = v < 0 ? -v : v;
+  return (v < 0 ? "-" : "") + Math.floor(a / 100) + wbTransformPathD.translator.fractions[a % 100];
+};
+
 //: The bounding box of a path this app drew, walked the same way a real SVG
 //: renderer would (tracking the pen's current point through relative
 //: commands) rather than just min/maxing every raw number, `h`/`v`/`a`'s
@@ -21702,7 +21877,7 @@ function wbLinkNearestT(d, p) {
 //: No rotate handle. Rotating a group means rotating each item about the
 //: group's centre, which for a card means a rotation *and* a move, and for a
 //: sketch means baking a rotation into a path that is already rotated. It is
-//: a real feature, not a line of code, and an unbuilt one is better absent
+//: a real feature, not a line of code, and a feature not made is better absent
 //: than drawn and inert.
 function wbMultiSelectionEntries() {
   const entries = [];
@@ -22744,7 +22919,7 @@ function renderWhiteboard() {
       const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(document.getElementById("whiteboard-container")).k);
       if (!step) return;
       // First real movement of this gesture, decide once whether this is
-      // a solo move or a bulk move of the whole multi-selection. Deferred
+      // a solo move or a bulk move of the whole multi-selection. Postponed
       // to here rather than "start" (see its own comment) specifically so
       // a zero-movement click never reaches this at all.
       if (d._bulkOrigin === undefined) {
@@ -24112,7 +24287,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection is deliberately postponed to the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }
@@ -24513,6 +24688,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
   // node: `wbMapColors` walks the whole tree by design (see its own comment),
   // and calling it from inside a per-node callback would walk it once per node.
   const mapIndex = wbIsMap() ? wbMapIndex() : null;
+  //: The accent's ink, read while the page is still clean (`wbMapAccentInk`).
+  if (mapIndex) wbMapAccentInk();
   //: Each topic's level (MINDMAP_PLAN.md decision 38), before anything is
   //: painted or measured: its look, and so its size, depend on it.
   if (mapIndex) wbMapLevels(mapIndex);
@@ -25193,7 +25370,7 @@ function dragStart(event, d) {
     d._moveUndoBefore = WB_KIND_INFO.node.payload(d);
     d._altCopy = Boolean(event.sourceEvent?.altKey);
     d._gesture = wbBeginGesture(() => wbRestoreMove("node", d), true);
-    // Bulk-move detection is deliberately deferred to the first real
+    // Bulk-move detection is deliberately postponed to the first real
     // "drag" frame below, not decided here, see the matching comment on
     // the sketch drag's own "start" for the click-toggle bug that caused.
   }

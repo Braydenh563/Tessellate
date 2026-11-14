@@ -13,10 +13,14 @@
 // which is after the unlock). The pieces become one capture: the title as
 // a heading, the text, the link on its own line, so the link stays a link.
 // The query is then cleared from the address bar, or a reload would share
-// it again. Files (an image shared from the camera roll) need the POST form
-// and a service worker and are not taken here.
+// it again. Files (an image shared from the camera roll) come by the POST
+// form: the service worker keeps them in the `tessellate-share-inbox` cache
+// and sends `share_files` with their count (sw.js `takeShare`); they are
+// staged in the composer as a paste would be (`handleFileUpload`), then the
+// cache is emptied.
 (() => {
-  const SHARE_PARAMS = ["share_title", "share_text", "share_url"];
+  const SHARE_PARAMS = ["share_title", "share_text", "share_url", "share_files"];
+  const SHARE_CACHE = "tessellate-share-inbox";
 
   function sharedCaptureText(params) {
     const title = (params.get("share_title") || "").trim();
@@ -29,21 +33,55 @@
     return lines.join("\n\n");
   }
 
-  function takeSharedIntake() {
+  //: The files the service worker kept, as File objects, oldest first; the cache is emptied either way.
+  async function sharedFiles(count) {
+    if (!count || !window.caches) return [];
+    try {
+      const cache = await caches.open(SHARE_CACHE);
+      const files = [];
+      for (let index = 0; index < count; index += 1) {
+        const hit = await cache.match(`/share-inbox/${index}`);
+        if (!hit) continue;
+        //: Each name on its own: one that will not decode threw to the catch below and lost every file.
+        let name = `shared-${index}`;
+        try {
+          name = decodeURIComponent(hit.headers.get("X-Share-Name") || name);
+        } catch {}
+        files.push(new File([await hit.blob()], name, { type: hit.headers.get("Content-Type") || "" }));
+      }
+      return files;
+    } catch {
+      return [];
+    } finally {
+      caches.delete(SHARE_CACHE).catch(() => {});
+    }
+  }
+
+  async function takeSharedIntake() {
     const params = new URLSearchParams(window.location.search);
     if (!SHARE_PARAMS.some((key) => params.has(key))) return;
     const content = sharedCaptureText(params);
+    const fileCount = Math.min(Number.parseInt(params.get("share_files") || "0", 10) || 0, 10);
     for (const key of SHARE_PARAMS) params.delete(key);
     const rest = params.toString();
     history.replaceState(null, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
-    if (!content) return;
+    const files = await sharedFiles(fileCount);
+    if (!content && !files.length) return;
     const box = $("entry-content");
     if (!box) return;
     switchTab("notes");
     showNotesSection("capture");
-    box.value = box.value ? `${box.value}\n\n${content}` : content;
-    box.dispatchEvent(new Event("input", { bubbles: true }));
+    if (content) {
+      box.value = box.value ? `${box.value}\n\n${content}` : content;
+      box.dispatchEvent(new Event("input", { bubbles: true }));
+    }
     box.focus();
+    if (files.length) {
+      //: Staged like a paste into the composer: pictures inline at the end, other files under it, all saved with the note.
+      if (box.value && !box.value.endsWith("\n")) box.value += "\n\n";
+      box.setSelectionRange(box.value.length, box.value.length);
+      await handleFileUpload(box, files);
+    }
     //: app.js's door fetches the library bundle first; a bare mountNoteSurface is documents.js's, which may not be in yet.
     mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
     toast("Shared to your notebook. Save it when it reads right.");

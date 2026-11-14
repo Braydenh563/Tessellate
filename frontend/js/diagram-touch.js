@@ -65,7 +65,7 @@
     //: Wide, a kind's dock only swaps its palette for the Add sheet (`dgm-addlist`); the rest of `dgm-compact` is the phone's.
     S.root.classList.add(matchMedia(COMPACT).matches ? "dgm-compact" : "dgm-addlist");
     const actions = S.root.querySelector(".dgm-dock .dock-actions");
-    //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes still open this sheet.
+    //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes also open this sheet.
     //: A kind's list is the same sheet once it has a block (1661 m: its list stacked under a 96 px picture at 390;
     //: diagram-kinds.js `sync` says when, with `dgm-listless`).
     if ((S.steps || S.k) && S.pane && actions && matchMedia("(max-width: 599.98px)").matches) {

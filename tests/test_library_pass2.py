@@ -127,7 +127,7 @@ def test_selection_keys_stand_down_inside_a_field():
 # --- the performance work, held by shape (numbers in pass2.md, "Performance
 # by trace"; the trace is scratchpad/ui-sweeps/scrolltrace.js) -------------
 
-CONSISTENCY_CSS = ROOT / "frontend" / "css" / "08-consistency.css"
+CONSISTENCY_CSS = ROOT / "frontend" / "css" / "07-whiteboard-misc.css"
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
 
 

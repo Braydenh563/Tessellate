@@ -31,6 +31,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
@@ -171,7 +172,7 @@ def test_a_panel_moved_by_a_transform_is_followed_every_frame() -> None:
     assert "companionscroll companionbeats" in gate
 
 
-CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = sheets(*FORMER_08)
 
 
 def test_the_companion_is_light_on_the_page() -> None:
@@ -1518,7 +1519,7 @@ def test_a_speech_line_is_as_wide_as_its_words_wherever_it_is_said() -> None:
     132px line; `scratchpad/ui-sweeps/companionsay.js` walks every case).
     The box takes its width from its text, and the figure's rule undoes
     the inset it does not use."""
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     base = _css_rule(css, ".nm-say")
     assert "width: max-content" in base
     assert "max-width:" in base and "100vw" in base
@@ -1540,7 +1541,7 @@ def test_atlas_pupils_stay_inside_its_eyes():
     aim = _fn("nameMarkBuddyAim")
     assert "const len = Math.hypot(lx, ly);" in aim and "lx /= len;" in aim and "ly /= len;" in aim
     assert "Math.max(-1, Math.min(1, (dx / reach)" not in aim
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     assert "#nm-buddy .nm-atlas .nm-eyes { translate: none !important; }" in css
     assert "#nm-buddy:is(.nmb-attend, .nmb-watch) .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 0px; --atl-lean-dir: 0; }" in css
     iris = re.search(r"#nm-buddy:is\(\.nmb-attend, \.nmb-watch\) \.nm-atlas \.atl-iris \{ translate: calc\(var\(--nmb-ex\) \* ([0-9.]+)px\) calc\(var\(--nmb-ey\) \* ([0-9.]+)px\)", css)
@@ -1578,7 +1579,7 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     assert "transition: transform calc(var(--motion-slow) * 3) var(--ease-in-out);" in css
 
 
@@ -1690,7 +1691,7 @@ def test_inbox_669_arm_gestures_start_and_end_at_the_arms_rest() -> None:
     # A gesture's keyframes began and ended at rotate(0deg), the rest only
     # of a calm standing arm: floating (-28deg) or her held-out arm (-50deg)
     # swung to 0 first and swung past rest at the end (20 degrees a frame).
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     for name in ["nmb-wave", "nmb-wave-l", "nmb-scratch", "nmb-hide-l", "nmb-hide-r", "atl-wave", "atl-buddy-wave", "atl-buddy-wave-f", "atl-buddy-scratch"]:
         body = re.search(r"@keyframes " + re.escape(name) + r" \{(.*?)\n\}", css, re.S).group(1)
         assert not re.search(r"(^|\s)(0%|100%|from|to)[ ,{]", body), name
@@ -1881,7 +1882,7 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     inherited, so a frame restyles only them."""
     avatars = frontend_text("avatars.js")
     assert 'setProperty("--nmb-sway"' not in avatars
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     assert "var(--nmb-sway)" not in css
     sway = _fn("nameMarkBuddySway", avatars)
     assert "style.rotate" in sway and "querySelectorAll" in sway
@@ -1904,7 +1905,7 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     rule = css[css.index(":root.is-calm") :]
     rule = rule[: rule.index("{")]
     assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
@@ -1940,8 +1941,8 @@ def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> No
     assert "atlasMotionOK(box)" in cast and "finished.then(" in cast and ".remove()" in cast
     # The look of one: a white four-point glint that is invisible until it plays, so a cast that
     # never started (or ended) leaves nothing on the figure; none under reduced motion.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-    rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
+    css = sheets(*FORMER_08)
+    rule = re.search(r"(?m)^\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
     assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
     assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)
 
@@ -1979,3 +1980,35 @@ def test_a_board_object_or_map_node_is_a_perch_1629() -> None:
     assert "g.dx = g.fx * box.width - NMB_W / 2" in js
     # The chooser never walks to one by itself: no tab's order lists it.
     assert '"node"' not in js[js.index("const NAME_MARK_BUDDY_ORDER") : js.index("const NAME_MARK_BUDDY_ORDER") + 900]
+
+
+def test_a_hold_menu_ignores_the_click_of_the_finger_lifting() -> None:
+    """Source text: `face.addEventListener("pointerdown", ... hold = setTimeout(`.
+
+    A long press opens the menu at the finger (`nameMarkBuddyMenu(buddy, at)`),
+    so a row can sit under it, and a touch that is lifted can still end in a
+    click. companionmenu.js at 1280x800 and 1.5 scale: the menu opened at
+    [8, 205, 257, 739] over a finger at (187, 221), and the release's click
+    (`click BUTTON.menu-item 187,221`) closed it at once. The hold takes that
+    one click off the menu, for a short while after the lift.
+    """
+    start = AV.index("hold = setTimeout(() => {")
+    block = AV[start : AV.index("}, 550);", start)]
+    assert 'document.addEventListener("click", eat, true)' in block
+    assert "nmb.menu?.contains(event.target)" in block
+    assert 'document.removeEventListener("click", eat, true)' in block
+    assert "event.stopPropagation()" in block
+
+
+def test_a_long_note_read_along_counts_a_truncated_preview_as_long() -> None:
+    """Source text: `else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);` in `nameMarkBuddyNoteOpened`.
+
+    companionreact.js: a long note's Show more gave no reading glasses. The
+    list holds a 298-character preview of a 1853-character note
+    (`content_truncated`, "long by definition" in entry-card.js), so the
+    length test never passed on a click, only through the palette jump where
+    the whole note is loaded. The flag now counts.
+    """
+    block = AV[AV.index("function nameMarkBuddyNoteOpened(id)") : AV.index("function nameMarkBuddyNoteOpen(id)")]
+    assert 'entry.content_truncated || String(entry.content || "").length > 1200' in block
+    assert 'nameMarkBuddyReact("read", row)' in block

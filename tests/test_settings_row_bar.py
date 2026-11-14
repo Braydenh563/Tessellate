@@ -4,6 +4,7 @@ the commit names; this keeps the rules that make the numbers from drifting."""
 from tests._help_text import help_more_text
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css"
 
@@ -55,12 +56,12 @@ def test_every_changed_bar_rule_offsets_by_the_one_token():
     assert not bad, bad
     #: The switch that leads a help head hangs like its neighbours, so its bar
     #: is on their x (it sat 9px further in).
-    consistency = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    consistency = sheets("02-chat-graph.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css")
     assert ".row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type=\"checkbox\"]) {\n  margin-inline-start: calc(-1 * var(--space-3) - 1px);" in consistency
 
 
 def test_the_where_line_is_the_last_line_of_its_fold():
-    text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    text = sheets("02-chat-graph.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css")
     i = text.index(".help-accordion > details > p.help-topic-links {")
     rule = text[i : text.index("}", i)]
     assert "margin: 0 0 0 var(--space-7)" in rule

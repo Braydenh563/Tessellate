@@ -15,6 +15,7 @@ Each test pins one defect measured in Chromium at 390 with touch:
 import re
 from pathlib import Path
 from tests import _js_scope
+from tests._css_paths import FORMER_10, sheets
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -44,25 +45,29 @@ def test_a_tap_is_not_settled_as_a_swipe():
 
 
 def _phone_block_with(css: str, needle: str) -> str:
-    """The `max-width: 599.98px` block of 10-responsive.css holding `needle`."""
+    """Every `max-width: 599.98px` block, in load order, joined; one of them holds `needle`.
+
+    One block of 10-responsive.css until UI plan 13b moved each rule beside its
+    component, so the phone rules of one surface now sit in several blocks."""
+    blocks = []
     for match in re.finditer(r"@media \(max-width: 599\.98px\) \{", css):
         depth, i = 1, match.end()
         while depth:
             depth += {"{": 1, "}": -1}.get(css[i], 0)
             i += 1
-        block = css[match.end():i]
-        if needle in block:
-            return block
-    raise AssertionError(f"no phone block holds {needle}")
+        blocks.append(css[match.end():i])
+    assert any(needle in b for b in blocks), f"no phone block holds {needle}"
+    return "\n".join(blocks)
 
 
 def _rule(block: str, selector: str) -> str:
-    rest = block[block.index(selector + " {"):]
+    """The last rule for `selector` in `block`: the one that wins on source order."""
+    rest = block[block.rindex(selector + " {"):]
     return rest[: rest.index("}")]
 
 
 def test_the_categories_drawer_is_one_column_of_touch_rows():
-    css = (FRONTEND / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     block = _phone_block_with(css, "#sidebar ul#category-list {")
     lst = _rule(block, "#sidebar ul#category-list")
     assert "flex-direction: column" in lst and "flex-wrap: nowrap" in lst
@@ -75,7 +80,7 @@ def test_the_categories_drawer_is_one_column_of_touch_rows():
 
 
 def test_a_phone_toast_stands_above_the_floating_button():
-    css = (FRONTEND / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     selector = 'body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box'
     lifted = _rule(_phone_block_with(css, selector), selector)
     # The fab's own line (its offset above the tab bar) plus its height.
@@ -142,7 +147,7 @@ def test_a_note_line_still_too_wide_after_folding_wraps_instead_of_clipping_its_
     button at x 388-432. After the fix a line that `fitNoteMetas` has folded
     (any `.is-icon` child) may wrap: the li scrollWidth equals its clientWidth
     (358) and the button sits at x 312-356."""
-    css = (FRONTEND / "css/08-consistency.css").read_text(encoding="utf-8")
+    css = (FRONTEND / "css/01-forms-settings.css").read_text(encoding="utf-8")
     assert ".entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {\n    flex-wrap: wrap;" in css
 
 

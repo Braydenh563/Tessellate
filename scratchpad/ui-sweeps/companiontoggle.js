@@ -12,7 +12,7 @@ const { boot } = require('./lib.js');
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy(); });
   await page.waitForTimeout(1500);
   const shown = () => page.evaluate(() => !!document.getElementById('nm-buddy') && localStorage.getItem('avatar-buddy') !== 'off');
   const steps = [];

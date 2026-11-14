@@ -1282,17 +1282,17 @@ function wbMapThemeDialog() {
 
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
-  const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  //: One block per group, so a wide window can set them in two columns
+  //: (L-ui-modernisation-61: one column was 1002px in a 900px window and scrolled).
+  return WB_MAP_THEME_GROUPS.map((group) => {
+    const block = document.createElement("div");
+    block.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
     head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
-    }
-  }
-  return out;
+    block.append(head, ...group.fields.map((field) => (field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field))));
+    return block;
+  });
 }
 
 //: **One level's own look** (decision 40): the seven fields a level can set,
@@ -2224,12 +2224,18 @@ function wbRelativeLuminance(channels) {
 //: 390). The accent comes from the root's own attributes (the theme, the
 //: palette, Settings' custom colour on its style) and the system scheme, so
 //: those, read without a style pass, say when to read it again.
-function wbMapAccentInk(node) {
+//:
+//: **Read before the render writes, off the root** (L-ui-modernisation-61):
+//: read from the first topic's paint, with every topic just inserted, it
+//: restyled the whole board (13,022 elements, 180ms opening 500 topics)
+//: and the size pass restyled it all again. `renderWbObjects` asks first,
+//: while the page is clean; every `--accent` is set on the root.
+function wbMapAccentInk() {
   const root = document.documentElement;
   let sig = window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "d" : "l";
   for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
   if (wbMapCache.accentInk == null || wbMapCache.accentFor !== sig) {
-    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(node).getPropertyValue("--accent").trim()) || "";
+    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(root).getPropertyValue("--accent").trim()) || "";
     wbMapCache.accentFor = sig;
   }
   return wbMapCache.accentInk || null;
@@ -2282,7 +2288,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
   //: otherwise take the previous node's ink until the next render.
   //: A topic with no branch colour (the centre) is filled in the accent, so
   //: its ink is worked out from that (§14: the centre is solid by default).
-  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk(node);
+  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk();
   if (ink) node.style.setProperty("--wb-core-ink", ink);
   else node.style.removeProperty("--wb-core-ink");
 
@@ -4263,6 +4269,23 @@ function wbRenderMapEdges({ only = null } = {}) {
     group.setAttribute("class", "wb-map-edges");
     group.setAttribute("aria-hidden", "true");
     zoomGroup.insertBefore(group, zoomGroup.firstChild);
+    //: A line's grips are built the first time it is pointed at or focused
+    //: (`wbMapEdgeElement.grips`): one listener each on the group, not three
+    //: per line. `pointerover` is dispatched before the hover style is
+    //: worked out, so the grips are there when `:hover` first matches them.
+    //: Not while a button is held: a pan or a drag sweeps the pointer over
+    //: dozens of lines whose grips cannot be pressed mid-gesture, and
+    //: building each one cost the pan its frames (mapperf: worst pan frame
+    //: 17 to 150ms at 500 topics). The first plain move over the line after
+    //: the gesture builds them, so the hover still answers.
+    const grips = (event) => {
+      if (event.buttons) return;
+      const wrap = event.target.closest?.(".wb-map-edge-group");
+      if (wrap && !wrap._wbGrips) wrap._wbGrips = Boolean(wbMapEdgeElement.grips(wrap));
+    };
+    group.addEventListener("pointerover", grips);
+    group.addEventListener("pointermove", grips);
+    group.addEventListener("focusin", grips);
   }
   const index = wbMapIndex();
   const colors = wbMapNodeColors(index);
@@ -4444,6 +4467,38 @@ function wbMapEdgeElement(parentId, childId) {
   hit.setAttribute("data-parent", String(parentId));
   hit.setAttribute("data-child", String(childId));
   wrap.appendChild(hit);
+  //: The two ends as given, for the grips built later (`.grips` below):
+  //: the dataset holds them as strings, and a press looks a topic up by id.
+  wrap._wbIds = [parentId, childId];
+  //: On the group, not on the hit stroke: a right-click and a hold belong to
+  //: the *line*, and the line now has two targets in it. Wired on the stroke
+  //: alone, the ring stopped opening wherever the handle was, since the
+  //: handle is a sibling of the stroke and the event never reached it
+  //: (measured by `mapstrip.js`, which caught it the moment the handle
+  //: landed: "right-click on a line opens the line's own ring" came back
+  //: `open: false`). This is the same fault the mid-line `+` already carries
+  //: its own forwarding for, and the same fix one level up: every part of the
+  //: line answers the line's own gestures.
+  wbWireMapEdgeGestures(wrap, childId);
+  return wrap;
+}
+
+//: **A line's grips are built when they can first show**
+//: (L-ui-modernisation-61): the waypoint and the two end grips, each with its
+//: title, were six of a line's eight elements, so a 500-topic map wrote some
+//: 3,000 SVG elements nobody could see, and the first layout read after the
+//: render restyled every one of them (102 to 140ms of 8,503 elements). They
+//: show only on hover, focus or the topic being selected, so they are built
+//: on the first of those (`wbRenderMapEdges`' delegated listeners,
+//: `wbSyncMapEdgeHandles`) and kept, placed from the topics as they are now.
+//: Returns the waypoint handle; a second call returns the one already built.
+wbMapEdgeElement.grips = (wrap) => {
+  const NS = "http://www.w3.org/2000/svg";
+  const path = wrap.querySelector("path.wb-map-edge");
+  if (!path || !wrap._wbIds) return null;
+  if (path._wbHandle?.isConnected) return path._wbHandle;
+  const [parentId, childId] = wrap._wbIds;
+  const label = wrap.querySelector(".wb-map-edge-label");
   //: **The waypoint handle** (§12.1 item 5's third): the third target on a
   //: line, after the visible stroke and the invisible one you can point at. A
   //: circle rather than a button because it has to sit *on* the line at a
@@ -4451,8 +4506,8 @@ function wbMapEdgeElement(parentId, childId) {
   //: already is; the mid-line `+` is HTML for the opposite reason (it is a
   //: button from the app's own ramp).
   //:
-  //: Drawn for every line and shown only for the selected topic's own
-  //: (`wbSyncMapEdgeHandles`), so a map of two hundred lines is not a map of
+  //: Built when first wanted and shown only on hover or for the selected
+  //: topic's own lines (`wbSyncMapEdgeHandles`), so a map of two hundred lines is not a map of
   //: two hundred grab dots, which is the same rule the `+` follows.
   const handle = document.createElementNS(NS, "circle");
   handle.setAttribute("class", "wb-map-edge-handle");
@@ -4466,7 +4521,7 @@ function wbMapEdgeElement(parentId, childId) {
   gripTitle.textContent = "Drag to bend this line · double-click to straighten";
   handle.appendChild(gripTitle);
   wbWireMapEdgeHandle(handle, parentId, childId);
-  wrap.appendChild(handle);
+  wrap.insertBefore(handle, label);
   //: **The line's two ends** (K31): shown with the waypoint, dragged round a
   //: topic to pin the side the line leaves or enters, double-clicked to put
   //: that end back on Auto. Kept on the path so a drag frame moves them with
@@ -4482,21 +4537,26 @@ function wbMapEdgeElement(parentId, childId) {
       : "Drag round this topic to choose the side this line enters · double-click for Auto";
     grip.appendChild(tip);
     wbWireMapEdgeEnd(grip, parentId, childId, end);
-    wrap.appendChild(grip);
+    wrap.insertBefore(grip, label);
     return grip;
   });
-  //: On the group, not on the hit stroke: a right-click and a hold belong to
-  //: the *line*, and the line now has two targets in it. Wired on the stroke
-  //: alone, the ring stopped opening wherever the handle was, since the
-  //: handle is a sibling of the stroke and the event never reached it
-  //: (measured by `mapstrip.js`, which caught it the moment the handle
-  //: landed: "right-click on a line opens the line's own ring" came back
-  //: `open: false`). This is the same fault the mid-line `+` already carries
-  //: its own forwarding for, and the same fix one level up: every part of the
-  //: line answers the line's own gestures.
-  wbWireMapEdgeGestures(wrap, childId);
-  return wrap;
-}
+  path._wbHandle = handle;
+  const index = wbMapIndex();
+  const parent = index.byId.get(parentId);
+  const child = index.byId.get(childId);
+  if (parent && child) {
+    const layout = wbMapLayout();
+    const point = wbMapEdgeHandlePoint(parent, child, layout);
+    handle.setAttribute("cx", String(point.x));
+    handle.setAttribute("cy", String(point.y));
+    wbMapPlaceEdgeEnds(path, wbMapEdgeEndPoints(parent, child, layout));
+  }
+  //: The branch colour the line already carries (`wbMapEdgeApply`).
+  const colour = path.style.getPropertyValue("--wb-map-edge-colour");
+  if (colour) for (const grip of [handle, ...path._wbEnds]) grip.style.setProperty("--wb-map-edge-colour", colour);
+  if (wrap.classList.contains("is-shown")) handle.classList.add("is-shown");
+  return handle;
+};
 
 //: One edge's geometry written onto the elements it already has.
 //:
@@ -4573,16 +4633,18 @@ function wbMapEdgeApply(wrap, geom) {
   else path.style.removeProperty("--wb-map-edge-colour");
   const hit = wrap.querySelector(".wb-map-edge-hit");
   hit.setAttribute("d", geom.line);
+  //: The grips only once built (`wbMapEdgeElement.grips`), which places them
+  //: itself from the topics as they are then.
   const handle = wrap.querySelector(".wb-map-edge-handle");
-  handle.setAttribute("cx", String(geom.grip.x));
-  handle.setAttribute("cy", String(geom.grip.y));
-  wbMapPlaceEdgeEnds(path, geom.ends);
-  for (const grip of path._wbEnds || []) {
-    if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
-    else grip.style.removeProperty("--wb-map-edge-colour");
+  if (handle) {
+    handle.setAttribute("cx", String(geom.grip.x));
+    handle.setAttribute("cy", String(geom.grip.y));
+    wbMapPlaceEdgeEnds(path, geom.ends);
+    for (const grip of [handle, ...(path._wbEnds || [])]) {
+      if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
+      else grip.style.removeProperty("--wb-map-edge-colour");
+    }
   }
-  if (geom.colour) handle.style.setProperty("--wb-map-edge-colour", geom.colour);
-  else handle.style.removeProperty("--wb-map-edge-colour");
   let text = wrap.querySelector(".wb-map-edge-label");
   if (!geom.label) {
     text?.remove();
@@ -5324,7 +5386,7 @@ function mapPaletteCommands() {
   for (const [value, name] of WB_MAP_LAYOUT_NAMES) {
     if (value !== wbMapLayout()) row("Map layout", `ph:tree-structure Layout: ${name}`, () => wbMapSetLayout(value));
   }
-  row("This map", "ph:file-text Write this map as a document", () => wbMapWriteDocument());
+  row("This map", "ph:file-text Write as a document", () => wbMapWriteDocument());
   for (const [format, name] of [["markdown", "Markdown outline"], ["opml", "OPML"], ["freemind", "FreeMind (.mm)"], ["xmind", "XMind (.xmind)"], ["text", "plain text"]]) {
     row("Export the map", `ph:export Export as ${name}`, () => wbExportMapText(format));
   }
@@ -7736,14 +7798,17 @@ function wbSyncMapStrip(node) {
   const data = wbMapThemedData(node);
   wbMapStripSyncing = true;
   try {
-    for (const [id, on] of [
+    for (const [id, on, ...glyphs] of [
       ["wb-map-bold", data.bold], ["wb-map-italic", data.italic],
-      ["wb-map-core", data.core],
+      ["wb-map-core", data.core, "ph ph-crown", "ph ph-crown-simple"],
     ]) {
       const button = document.getElementById(id);
       if (!button) continue;
       button.classList.toggle("active", Boolean(on));
       button.setAttribute("aria-pressed", on ? "true" : "false");
+      //: An icon toggle swaps its glyph as well as its fill (L457, owner B58).
+      const glyph = glyphs.length && button.querySelector("i");
+      if (glyph) glyph.className = on ? glyphs[0] : glyphs[1];
     }
     //: **The blank option says what it does on a themed map** (§13e). Every
     //: select here stores the app's own default as no value at all, so the
@@ -7885,6 +7950,8 @@ function wbSyncMapStrip(node) {
         const on = Boolean(data.edge_dashed);
         dash.classList.toggle("active", on);
         dash.setAttribute("aria-pressed", on ? "true" : "false");
+        const glyph = dash.querySelector("i");
+        if (glyph) glyph.className = on ? "ph ph-rectangle-dashed" : "ph ph-line-segment";
         dash.title = on ? "Draw the line into this topic solid again" : "Dash the line into this topic";
       }
       //: The label's look rows, on the line menu; they read the stored look.
@@ -7904,6 +7971,8 @@ function wbSyncMapStrip(node) {
         const on = wbMapEdgeHasArrow(node);
         arrow.classList.toggle("active", on);
         arrow.setAttribute("aria-pressed", on ? "true" : "false");
+        const glyph = arrow.querySelector("i");
+        if (glyph) glyph.className = on ? "ph ph-arrow-right" : "ph ph-minus";
         arrow.title = on
           ? "Take the arrowhead off the line into this topic"
           : "Put an arrowhead on the line into this topic";
@@ -8150,7 +8219,7 @@ async function wbMapRemovePicture(node) {
 //: `tests/test_ui_recipes.py` counts.)
 
 //: The node the open ring belongs to. Read at click time by every slot, so a
-//: ring left open across a render acts on the node it was opened for rather
+//: ring still showing across a render acts on the node it was opened for rather
 //: than on whatever is selected now.
 let wbMapRadialFor = null;
 
@@ -9163,7 +9232,7 @@ function wbSyncMapEdgeHandles() {
     for (const [key, held] of cache) {
       const cut = key.indexOf(":");
       if (key.slice(0, cut) !== id && key.slice(cut + 1) !== id) continue;
-      const handle = held.wrap.querySelector(".wb-map-edge-handle");
+      const handle = held.wrap.querySelector(".wb-map-edge-handle") || wbMapEdgeElement.grips(held.wrap);
       if (handle) want.add(handle);
     }
   }

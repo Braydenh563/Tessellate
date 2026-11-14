@@ -277,7 +277,7 @@ function refitComposer() {
 //: it scroll"). Measured at 1440x720 with no model connected: the pane is
 //: 295px and the welcome 350px, so a new chat opened on a scrollbar. Below
 //: its own natural height the welcome drops the emblem and tightens its
-//: spacing (`.chat-empty.is-short`, 08-consistency.css), which is 110px back.
+//: spacing (`.chat-empty.is-short`, 07-whiteboard-misc.css), which is 110px back.
 //: The choice is made against the welcome's *full* height, and that is never
 //: read by taking the class off: doing so resized the pane whenever the pane's
 //: own height followed its content, the ResizeObserver fired on it, and the
@@ -410,7 +410,7 @@ function initComposerResize() {
   // the drag set it again, the observer fired again (reported: "it just
   // spasms and fails"). While the pointer is down on the grabber nothing
   // fights the drag; the final height is recorded once on release. The
-  // deferred frame stays: a synchronous autoGrow inside the callback is
+  // delayed frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
   //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
   //: by hand, so a size change without one (the app's Ctrl +/- zoom, the

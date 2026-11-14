@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the
@@ -720,7 +720,7 @@ function showLockScreen(setupMode) {
     if (setupMode) note.textContent = note.dataset.text;
     note.classList.toggle("hidden", !setupMode);
   }
-  $("lock-submit").textContent = setupMode ? "Set password & start" : "Unlock";
+  $("lock-submit").textContent = setupMode ? "Set password and start" : "Unlock";
   $("lock-overlay").dataset.mode = setupMode ? "setup" : "unlock";
   lockFieldForPin(setupMode ? false : pinHere);
   // One field in two modes (no separate setup form), autocomplete has to
@@ -1269,6 +1269,9 @@ function confirmVerb(message) {
 
 // One confirm at a time (HR20): a second ask waits for the first to close, so
 // each takes focus and Esc answers the one the person can see.
+//: `host`: inside the open modal `<dialog>` (top layer, makes the rest inert), else the page: a confirm on <body> sat beneath it (L453). A property, not a global (the scope ratchet).
+confirmDialog.host = () => [...document.querySelectorAll("dialog:modal")].pop() || document.body;
+
 function confirmDialog(message, options = {}) {
   confirmDialog.n = confirmDialog.n || 0;
   const {
@@ -1354,7 +1357,7 @@ function confirmDialog(message, options = {}) {
     // Clicking the backdrop cancels, the way every other overlay here behaves.
     wireBackdropClose(overlay, () => close());
     document.addEventListener("keydown", onKey, true);
-    document.body.appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // Cancel takes focus, not the dangerous one: a stray Enter or Space
     // arriving with the dialog must not be the thing that deletes the notes.
     cancel.focus();
@@ -1480,7 +1483,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     overlay.appendChild(card);
     wireBackdropClose(overlay, () => close(""));
     document.addEventListener("keydown", onKey, true);
-    document.body.appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // The text, selected: a rename usually replaces the name rather than
     // editing it, and a caret at position 0 makes you clear it by hand first.
     input.focus();
@@ -1834,7 +1837,7 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
+  settingsControls: ["ensureSettingsFoldAll", "refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
@@ -1927,4 +1930,5 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
 //: The library bundle is warmed after the first touch (lazy-entries.js), not here.
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments"].forEach(ensureModule), 3000);
+//: The bell's panel too: on a slow link its first press waited 3s with nothing drawn (L409).
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments", "notifications"].forEach(ensureModule), 3000);

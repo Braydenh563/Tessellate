@@ -18,8 +18,8 @@ from tests._repo_files import repo_files
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
 
-#: Unused class names on 2026-10-26. Lower it; never raise it.
-CAP = 196
+#: Unused class names on 2026-11-14 (L-ui-modernisation-30: 196 to 180; the rest are built by template, see the ledger row). Lower it; never raise it.
+CAP = 180
 
 _COMMENT = re.compile(r"/\*.*?\*/", re.S)
 _CLASS = re.compile(r"\.(-?[A-Za-z_][\w-]*)")

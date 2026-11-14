@@ -326,7 +326,7 @@
         ...(nameMarkBuddyMade("me") ? [] : [{ label: "ph:user-circle-plus Create your avatar", run: () => nameMarkBuddyMakeIt("me") }]),
       ],
     });
-    //: The saved look, not the select's value: Settings' body is not built until it opens (INBOX 1501).
+    //: The saved look, not the select's value: Settings' body does not exist until it opens (INBOX 1501).
     const look = appearancePref("atlas-look");
     items.push({
       group: "who",
@@ -656,7 +656,7 @@
     const list = nameMarkBuddyPresets();
     if (!list.length) {
       const empty = document.createElement("p");
-      empty.className = "muted";
+      empty.className = "muted empty-line";
       empty.textContent = "Nothing saved yet: set the companion up how you like it, then save it here.";
       box.appendChild(empty);
     }

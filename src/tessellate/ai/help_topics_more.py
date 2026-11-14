@@ -337,7 +337,8 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
             "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
+            "with a Copy button, and Copy skill, a SKILL.md for an agent; "
+            "that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "
@@ -660,7 +661,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
-            "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
+            "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), Files nothing uses (uploads no note, document, board or chat points at, counting the bin and older versions; Delete them asks first), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
             "beside your notes. The palette's Health goes straight there. The "
@@ -1197,7 +1198,7 @@ MORE_TOPICS: list[dict] = [
             "then Import N. Closing it imports nothing. After the import, the "
             "toast's Undo moves exactly those notes to the recycle bin. Folders and notebooks become categories, "
             "tags and dates come along where the app wrote them, and links between "
-            "Notion pages become wiki links. Each note remembers where it came from, "
+            "Notion pages become wiki links. Each note remembers where it came from (a chip on its card: the file, the document it was extracted from, the page it was clipped from or the recording it was transcribed from), "
             "so importing the same export again adds nothing twice; the toast counts imported, skipped and failed. Imported text is treated as someone else's "
             "words: Atlas never follows instructions written in it. A note's day "
             "comes from the export where it says one with its year: a daily "
@@ -1658,7 +1659,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, About, Install as an app gives Tessellate its own window "
             "and icon, and adds it to your phone's share sheet, so a page or a "
-            "selection shared to it lands in Capture. The button appears only "
+            "selection shared to it lands in Capture, and so does a picture or a "
+            "file shared from the camera roll or another app, staged to be "
+            "saved with the note. The button appears only "
             "when your browser offers the install and the app is not installed "
             "yet; on an iPhone, tap Share, then Add to Home Screen. It is the "
             "same app, still served by the copy running on this computer. When "

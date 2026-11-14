@@ -33,7 +33,7 @@ let currentSettingsSection = "models";
 //: seven panes began with a title and eleven began mid-thought, with a
 //: description, a status line or a group's small label). The ones without a
 //: head get the nav's own label as the same heading the others use
-//: (a `.dock.settings-pane-title`, styled in 08-consistency.css), made
+//: (a `.dock.settings-pane-title`, styled in 07-whiteboard-misc.css), made
 //: once and kept, so the word in the list and the word over the pane can
 //: never disagree.
 //: **Arrow keys walk the pane list**, the way a sidebar of sections moves
@@ -307,6 +307,8 @@ function updatePeekAvailability(section) {
 // Preferences: otherwise it's a link to "somewhere in here, scroll and
 // find it yourself", which is what it was before this existed.
 async function openSettingsModal(section = "models", scrollToId = null) {
+  //: Built first: the control lookups below read the lazy body (settings-body.js).
+  surfaceBuild("settings");
   //: **The control names its own section** (INBOX 444). A caller that passes
   //: both used to be right only until the control moved: Search relevance went
   //: from General to Search and index and every link to it opened a section
@@ -317,9 +319,18 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     const holder = $(scrollToId)?.closest(".settings-section");
     if (holder?.id.startsWith("settings-")) section = holder.id.slice("settings-".length);
   }
+  //: **Popped out, Appearance answers its own links** (L-ui-modernisation-19): a help
+  //: badge or the companion's menu landed on the window's "open in its own panel" note,
+  //: not on the control. The panel holds the control, so the panel is where it lands.
+  const popped = $("settings-appearance")?.classList.contains("appearance-popped-out");
+  if (popped && section === "appearance") {
+    const found = scrollToId && $(scrollToId);
+    if (found && (await ensureModule("settingsUi"))) openSettingRow({ el: found, section });
+    else document.querySelector(".appearance-panel button[aria-current]")?.focus();
+    return;
+  }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
-  surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a
@@ -347,7 +358,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   const aboutHealth = await apiJson("/health").catch(() => null);
   //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
   const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
-  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
+  const aboutBuild = aboutHealth?.source_commit ? ` Build ${aboutHealth.source_commit.slice(0, 7)}.` : "";
+  const aboutWrite = aboutHealth?.data_dir_writable === false ? " The notebook folder cannot be written to." : "";
+  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."}${aboutBuild} ${served}${aboutWrite}`;
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
@@ -485,6 +498,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       //: link to anything else scrolled and drew nothing. Measured while
       //: making the Tools and features rows land on their settings.
       flashRevealed(target);
+      //: **Re-aimed once the scroll ends** (L447: at 390 the row sat at y 1527 of 900, and
+      //: a reopen left a 9,000px row off screen). A smooth scroll aims at where the row was
+      //: when it began, and the pane grows under it; the end is checked and finished instantly.
+      const settle = () => {
+        const at = target.getBoundingClientRect();
+        if (at.top < 0 || at.bottom > innerHeight) target.scrollIntoView({ block: "center" });
+      };
+      document.addEventListener("scrollend", settle, { once: true, capture: true });
+      setTimeout(settle, 2500);
       // The helper takes it off again, the way flashEntry and flashReminder both already
       // do. Reported directly: "the search relevance settings section stays
       // highlighted permanently and doesn't return to normal."
@@ -519,7 +541,7 @@ let changelogLoaded = false;
 //: The fetch stays eager, because its answer decides whether the control is
 //: shown at all: a packaged build may not ship the file, and offering a
 //: disclosure that opens onto nothing is worse than not offering one. Only
-//: the render is deferred, since that is the expensive half.
+//: the render is postponed, since that is the expensive half.
 //:
 //: `toggle` rather than `click`: a `<details>` can also be opened by the
 //: keyboard, by find-in-page, and programmatically, and `toggle` is the one
@@ -2243,7 +2265,7 @@ function renderCustomThemes() {
   box.classList.toggle("theme-presets-empty", !themes.length);
   if (!themes.length) {
     const empty = document.createElement("p");
-    empty.className = "muted";
+    empty.className = "muted empty-line";
     empty.textContent = "Nothing saved yet: set the app up how you like it, then save it here.";
     box.appendChild(empty);
     return;
@@ -2678,7 +2700,7 @@ function renderThemeToggle() {
   const dark = resolvedTheme() === "dark";
   setLabel(button, dark ? "ph:sun" : "ph:moon");
   const next = dark ? "light" : "dark";
-  button.title = shortcutTitle(`Switch to ${next} mode`, "toggleTheme");
+  button.title = `${shortcutTitle(`Switch to ${next} mode`, "toggleTheme")}. Right-click for Appearance`;
   button.setAttribute("aria-label", `Switch to ${next} mode`);
 }
 
@@ -3837,7 +3859,7 @@ function wireSettingsFolds() {
 //: `ResizeObserver` on the wrapper and the summary re-places it whenever
 //: either changes size, which is also when a hidden pane is first shown.
 //: **The rects are divided by the dialog's own scale** (INBOX 1514): Settings
-//: rises from `scale: 0.985` over 240ms (08-consistency.css, the dialog
+//: rises from `scale: 0.985` over 240ms (07-whiteboard-misc.css, the dialog
 //: motion), the observer fires on the first laid-out frame, and a bounding
 //: rect is drawn size, so the offsets came out short of the real ones (up to
 //: 9.8px at 1440) and stayed, because a scale changes no layout size and the

@@ -1,0 +1,22 @@
+# The build context is the repo root (docker/compose.yaml). Nothing here is
+# read by docker/Dockerfile, which copies requirements.txt, pyproject.toml,
+# src, frontend, migrations, alembic.ini, LICENSE and docs/THIRD_PARTY.md.
+.git
+.github
+.venv
+.gate
+data
+dist
+build
+scratchpad
+tests
+tests-e2e
+tools
+man.pdf
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+node_modules
+docs/*
+!docs/THIRD_PARTY.md

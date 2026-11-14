@@ -5,6 +5,8 @@ to the list and the bar with it."""
 
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css" / "10-responsive.css"
 SELECTOR = (
     "#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) "
@@ -13,7 +15,7 @@ SELECTOR = (
 
 
 def test_the_rule_is_top_level_not_inside_a_phone_media_query():
-    css = CSS.read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)  # in 10 until UI plan 13b moved it beside its component
     at = css.index(SELECTOR)
     line_start = css.rindex("\n", 0, at) + 1
     # A top-level rule starts in column 0; the phone version was indented

@@ -4,11 +4,16 @@ stands in a column in the preview's right gutter. Measured in Chromium with a ca
 (a throwaway sweep, see CHANGELOG): the bar's overlap with every text line and every block was 0 px² at 1440 and
 390, and it stayed inside the preview (it was 611 to 833 px² over a block at 1440 before the gutter was reserved)."""
 
+import re
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-BAR = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_10)
+BAR = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8") + (
+    ROOT / "frontend" / "css" / "library-lazy.css"
+).read_text(encoding="utf-8")  # L-ui-modernisation-31: Library-only rules live in the lazy sheet
 JS = (ROOT / "frontend" / "js" / "documents-callouts.js").read_text(encoding="utf-8")
 
 
@@ -18,10 +23,15 @@ def test_the_bar_is_a_column() -> None:
 
 
 def test_the_preview_keeps_the_gutter_last_in_the_cascade_on_hover_devices() -> None:
-    tail = CSS.rsplit("@media (hover: hover) {", 1)[1]
-    assert "#doc-panes.reading > #doc-preview" in tail  # Read view's own padding must not take it back
-    assert "padding-right: calc(var(--target-min)" in tail
-    assert "--target-min" in tail  # the room is the bar's width, whatever the target size
+    # Was the last hover block of 10-responsive.css; UI plan 13b moved it beside the editor (09), so it is
+    # found by its declaration, and nothing loaded after it may set the preview's padding again.
+    i = CSS.rindex("padding-right: calc(var(--target-min)")
+    block = CSS[CSS.rindex("@media (hover: hover) {", 0, i) :]
+    block = block[: block.index("\n}\n")]
+    assert "#doc-panes.reading > #doc-preview" in block  # Read view's own padding must not take it back
+    assert "--target-min" in block  # the room is the bar's width, whatever the target size
+    later = re.sub(r"/\*.*?\*/", "", CSS[i:].split("\n}\n", 1)[1], flags=re.S)
+    assert not re.search(r"#doc-preview[^{]*\{[^}]*padding", later)
 
 
 def test_the_bar_is_placed_right_of_the_block_and_inside_the_preview() -> None:

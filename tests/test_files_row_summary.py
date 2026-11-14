@@ -29,7 +29,8 @@ from tests._app_js import app_js_text
 
 LIBRARY = Path("frontend/js/library.js").read_text(encoding="utf-8")
 APP = app_js_text()
-CSS = Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+#: library-lazy.css too: the rule moved there with the Library-only boot rules (L-ui-modernisation-47).
+CSS = "\n".join(Path(f"frontend/css/{n}").read_text(encoding="utf-8") for n in ("07-whiteboard-misc.css", "library-lazy.css"))
 
 
 def _upload_pdf(client) -> int:

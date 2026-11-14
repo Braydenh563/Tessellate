@@ -44,3 +44,19 @@ def test_the_data_and_model_folders_belong_to_the_user_the_app_runs_as():
 
 def test_the_proxy_host_variable_is_offered_in_compose():
     assert "TESSELLATE_ALLOWED_HOSTS" in COMPOSE
+
+
+def test_the_image_checks_its_own_health_and_ignores_what_it_does_not_need():
+    """A container that started but whose app died should show as unhealthy;
+    and the build context must not carry `.git`, the venv or the data folder
+    into the image (L-general-5; hadolint runs in workflow-lint.yml)."""
+    assert re.search(r"^HEALTHCHECK .*\\\n\s+CMD .*127\.0\.0\.1:8000/health", DOCKERFILE, re.M)
+    ignore = (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
+    for entry in (".git", ".venv", "data", "scratchpad"):
+        assert entry in ignore, entry
+    # A COPY source the ignore file drops would build an empty folder.
+    for line in DOCKERFILE.splitlines():
+        if line.startswith("COPY ") and "--from=" not in line:
+            for source in line.split()[1:-1]:
+                assert source.split("/")[0] not in ignore or source.startswith("docs/"), source
+    assert "!docs/THIRD_PARTY.md" in ignore

@@ -16,10 +16,11 @@ import re
 
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
-CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = sheets(*FORMER_08)
 CSS05 = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 CSS00 = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text(encoding="utf-8")
 

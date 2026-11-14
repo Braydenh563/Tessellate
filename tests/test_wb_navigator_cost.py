@@ -121,3 +121,19 @@ def test_the_inverse_zoom_is_written_onto_the_grips_that_read_it() -> None:
     assert 'setProperty("--wb-inv-zoom"' not in sync
     publish = code(function_text("wbPublishInvZoom"))
     assert "replaceSync(" in publish and "adoptedStyleSheets" in publish
+
+
+def test_the_zoom_level_keeps_its_width_so_a_zoom_does_not_restyle_the_board() -> None:
+    """Source text: library-lazy.css gives the zoom dock's typeable level a fixed width.
+
+    L-ui-modernisation-61, traced on a 200-topic map (mapperf.js's ctrl-wheel
+    zoom): the level is a `field-sizing: content` input, so "85%" drew it 42px
+    and "100%" 50px; the dock's ResizeObserver then wrote `--wb-w-zoom` on
+    `#library-view-whiteboard`, an inherited custom property, and the browser
+    restyled all 4,306 elements of the board: 192ms and 120ms, the zoom's two
+    worst frames (216.7ms). A level as wide as "400%" never resizes its dock.
+    """
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.whiteboard-floating-panel \.wb-zoom-level \.value-field-input \{([^}]*)\}", css)
+    assert rule, "the zoom level's input has no width rule"
+    assert "min-inline-size: 5ch" in rule.group(1)

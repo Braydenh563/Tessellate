@@ -504,7 +504,7 @@ cmdPaletteOverlay.addEventListener("click", (e) => {
 //: clear the chat and start over, idk what it can do, and even if it works".
 //: Every one of those was true of the same handler:
 //:
-//: - It sent `history: []` on every turn, so a follow-up ("now file that as a
+//: - It sent `history: []` on every turn, so a follow-on message ("now file that as a
 //:   note") could not refer to the answer above it. It was a series of
 //:   unrelated one-shot questions in a window that looked like a chat.
 //: - There was no way to clear it, so the only reset was reloading the app.
@@ -558,7 +558,7 @@ async function cmdPaletteSaveAsChat() {
     //: have pushed the way in off the end of it. `toastAction` is the app's
     //: own recipe for "it is done, and here is the thing": the message names
     //: the conversation, the button opens it, and nothing switches tab
-    //: underneath a panel that is still open unless it is pressed.
+    //: underneath a panel that stays open unless it is pressed.
     setLabel(status, "ph:check-circle Saved as a chat");
     let savedRow = null;
     pushUndo(
@@ -1298,7 +1298,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       progress: askLine,
       question: text,
       // The same window the Ask box uses, and for the same reason: enough
-      // for a follow-up to mean something, short enough that a small local
+      // for a follow-on turn to mean something, short enough that a small local
       // model is not re-reading a transcript every turn.
       history: cmdPaletteTurns.slice(-MAX_CLIENT_HISTORY),
       //: **"Use the open note"** (decision 9). The subject is resolved at send

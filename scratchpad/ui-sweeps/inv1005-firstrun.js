@@ -11,7 +11,7 @@
 // person's own typing is not timed (it is the same in every app); the app's
 // waits are. Prints each step's milliseconds and the total. Needs a data
 // folder that has never been opened: it is the first run that is measured.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:8866';
 const NOTE = 'The spare key for the shed is under the blue flower pot by the back door.';

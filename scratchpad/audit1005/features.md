@@ -196,7 +196,7 @@ Counts: High 3, Medium 10, Low 6 (19 findings).
 - NEW. Fix (M): `edit_board_item`, `move_map_node`, `delete_board_item` and `add_board_shape`, each one event and one undo entry, read-before-write. Write-ups belong in AGENT_SKILLS_REFORM's tool budget.
 
 **FEAT-13. Map and board AI growth is missing.**
-- The topic menu (27 rows, `map1.js`) has no AI row. "Suggest branches", "Expand from my notes" and "Summarise this branch" are not built.
+- The topic menu (27 rows, `map1.js`) had no AI row when audited; "Branches from my notes", "Expand from my notes" and "Summarise this branch" were added later (FEAT-13, HISTORY).
 - KNOWN (MINDMAP_PLAN §12.3 item 2). Spec in section 10 (idea M3).
 
 ### Low
@@ -730,7 +730,7 @@ Map (from §12.5 and `map1.js`):
 | Decision 14: frames are the only pages | draw.io pages | keep frames as pages; add a "Pages" view in the sidebar listing frames (no second concept) |
 | MINDMAP §12.5: three surfaces, one job each (ring, strip, dock); decision 5 "nothing added to the canvas" | the Format panel and sidebar are new surfaces | the sidebar and panel sit off-canvas; the strip's three doors move into the panel's tabs, so the topic carries the ring only. One place per action is kept. |
 | `test_freemind_imports_with_its_root_as_the_maps_name` (a code decision) | FEAT-01 | reverse it |
-| BACKLOG 4b open question ("where the template mark lives") | section 8.5 | templates are `library_items` of kind `template`, not a mark on the board |
+| BACKLOG 4b question ("where the template mark lives") | section 8.5 | templates are `library_items` of kind `template`, not a mark on the board |
 
 ## 10. Five gaps per surface, as briefs, and three new ideas each
 
@@ -750,7 +750,7 @@ Map (from §12.5 and `map1.js`):
    - Elbow (orthogonal) routing with several waypoints. Line jumps are optional.
    - The flowchart and General sets from 8.3 as built-in library entries, with connection points.
    - ER caps.
-   - FIXED (Phase B): elbow routing with waypoints, ER caps, sliding labels, clone-and-connect. Line jumps not built.
+   - FIXED (Phase B): elbow routing with waypoints, ER caps, sliding labels, clone-and-connect. Line jumps came later (WHITEBOARD_PLAN decision 31).
    - Gate: a 12-shape flowchart drawn by keyboard, with no edge crossing a shape box.
 5. **W5, interchange.**
    - Paste text (FEAT-09).
@@ -830,7 +830,7 @@ Map (from §12.5 and `map1.js`):
    - Page size (A4, Letter), margins and orientation in the print dialog's pre-step.
    - Page numbers and a running title through `@page` margin boxes where supported, with a fallback note.
    - A "Page break" slash item (`<div class="md-page-break">`, `break-before: page`).
-5. **D5, images in Live.** FIXED 1ac3928 (handles and align; Word pictures not done, python-docx is not in requirements)
+5. **D5, images in Live.** FIXED 1ac3928 (handles and align; Word pictures followed in 568ed51)
    - Resize handles and an align popover on an image widget, writing back the `|300|center` options.
    - The Word export carries pictures (FEAT-18).
 

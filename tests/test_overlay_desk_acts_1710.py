@@ -145,7 +145,7 @@ def test_the_one_handed_hang_is_drawn_inside_a_long_hang_and_nowhere_else(look: 
         while t < 300:
             t += TICK
             out = e.update(t)
-            if out.frame == "hang_one":
+            if out.frame in ("hang_one", "hang_sloth", "hang_feet"):  # L-ui-modernisation-10: the let-go hand is one of three tricks
                 assert e.state == "hang" and e.pulling is None and e.swing_to is None and not e.releasing
                 assert e.state_until - t >= 9.0 - 1e-6 or e.hang_one_until > t  # never begun in the last nine seconds
                 seen += 1
@@ -154,7 +154,7 @@ def test_the_one_handed_hang_is_drawn_inside_a_long_hang_and_nowhere_else(look: 
             elif in_hang:
                 hangs += 1
                 break
-        assert e.mind.done.get("hang_one_hand") is not None, seed  # it fed the mind: it happened
+        assert any(e.mind.done.get(a) is not None for a in ("hang_one_hand", "sloth", "hang_by_feet")), seed  # a trick fed the mind: it happened
     assert hangs == 8 and seen > 8 * 20 / TICK / 20, (hangs, seen)  # every hang had its moments of it, a share of the time held
 
 

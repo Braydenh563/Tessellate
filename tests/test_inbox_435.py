@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests._app_js import app_js_text, documents_text
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -31,7 +32,7 @@ def test_the_checking_dot_is_drawn_and_centred_by_the_grid():
 
 
 def test_a_bar_with_an_open_popup_stands_above_the_companion():
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("00-tokens-shell.css", "05-sidebars-themes.css", "07-whiteboard-misc.css")
     at = css.index("#status-bar:has(.ai-status-wrap:hover")
     rule = css[at:css.index("}", at)]
     assert "header#top-bar:has(" in rule and "z-index: 51;" in rule

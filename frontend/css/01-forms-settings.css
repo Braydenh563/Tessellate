@@ -527,7 +527,7 @@ button:disabled {
    can push".
    So the ramp now splits on where a button stands rather than on what it is:
    - In a bar, the bar is the affordance. `.dock > * > button.ghost`
-     (08-consistency.css) still overrides all three of these to quiet, which
+     (07-whiteboard-misc.css) still overrides all three of these to quiet, which
      is where the 22-in-a-strip measurement was actually taken, so nothing
      that pass fixed comes back.
    - Anywhere else (a card, a panel, a popover, a modal, the agent popup) a
@@ -796,6 +796,15 @@ summary.ghost.small:not(.icon-only, .icon-button):not(.dock *) {
 }
 .stepper-pair .stepper > button.ghost.stepper-btn:active:not(:disabled) {
   background: var(--ghost-btn-bg-hover);
+}
+
+#reminder-due-row > details > summary,
+#reminder-due-row .stepper {
+  border-radius: var(--radius-md);
+}
+
+#reminder-due-row .stepper-btn {
+  border-radius: var(--radius-in-md);
 }
 .stepper-unit {
   padding-inline: var(--space-1);
@@ -1098,6 +1107,55 @@ progress {
      sitting 8px short. */
   min-height: var(--control-h-lg);
 }
+
+/* ---------------------------------------------------------------------------
+   8. A panel head is identity, one fact, then the actions, and it does not
+      wrap
+   ---------------------------------------------------------------------------
+   Reported twice about the same head, the Ask sub-tab's "AI answer". First:
+   "at 100% and 95% zoom on my laptop, the ai answer with the ai model badge
+   and the retry, copy and dictate read out loud buttons are misalligned because
+   of wrap", which was answered by grouping the label with the badge so the row
+   broke into two tidy lines rather than three ragged ones. Then, with a
+   screenshot of that two-line result: "these buttons and badges wrap onto a new
+   line and I want them restructured some other way".
+   Measured before this family (`scratchpad/ui-sweeps/askhead.js`, at 1440, 1024
+   and 820, with the reported model name and with a real long one,
+   hf.co/unsloth/Qwen2.5-14B-Instruct-GGUF:Q4_K_M):
+     width  model name   head height   actions vs label
+     1440   granite      55.6px        27px lower
+     1440   long         73.6px        45px lower
+     1024   granite      55.6px        28px lower
+     1024   long         91.6px        64px lower
+     820    granite      55.6px        28px lower
+     820    long         73.6px        46px lower
+   A 21.2px line of text in a 91.6px head is not a head that wrapped, it is a
+   head that came apart. The cause is that the row had four items competing for
+   one width and no rule about which of them gives way, so the browser decided,
+   differently at every width.
+   The recipe, which is the dock grammar (DESIGN.md) applied to a panel head:
+   **identity, then at most one fact, then the actions; the row never wraps; and
+   the fact is the only zone allowed to shrink**, because it is the only one
+   whose width is not the app's to choose (a model id is whatever the person
+   pulled). An ellipsised fact with the whole phrase on its tooltip is a
+   deliberate loss of the tail of a string; a head that reflows every time the
+   model changes is not a design at all.
+   Each declaration here has to be in this file rather than beside its family in
+   01: `flex-wrap` loses to `.panel-head` (07) and `.chat-half h3`, the badge's
+   `display` loses to `.chip`, and the buttons' height loses to the icon-only
+   floor at the end of 07. All three ties are on equal specificity, all three
+   were measured being lost, and this is the file whose job is to win them by
+   coming last.
+   `.chat-half h3.answer-head` rather than `.answer-head` alone, and the reason
+   is worth the two extra words: `.chat-half h3` (01) declares `flex-wrap: wrap`
+   at (0,1,1), which beats a bare class at (0,1,0) whatever the file order, so
+   the first version of this rule changed nothing at all and was measured doing
+   it (the head still stood 88px tall with a long model id). Source order only
+   settles a tie; it does not win an argument against a more specific rule. */
+.chat-half h3.answer-head {
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+}
 /* **The answer head does not wrap: the badge shrinks instead.**
    Two reports, one shape. First: "at 100% and 95% zoom on my laptop, the ai
    answer with the ai model badge and the retry, copy and dictate read out loud
@@ -1115,7 +1173,7 @@ progress {
    actions), `nowrap`, and the badge is the only zone that may shrink, because
    it is the only one whose width is not ours to choose: a model id is whatever
    the person pulled.
-   **The three declarations that decide it live in 08-consistency.css**, family
+   **The three declarations that decide it live in 01-forms-settings.css**, family
    8, not here. Each of them has to beat a rule that comes later than this file:
    `flex-wrap` against `.panel-head` (07) and `.chat-half h3` (above), the
    badge's `display` against `.chip` (further down this same file), and the
@@ -1409,7 +1467,7 @@ input.md-task-inline:disabled,
   gap: var(--space-2);
   flex: 0 0 auto;
 }
-/* Their height is family 8 in 08-consistency.css: the icon-only floor at the
+/* Their height is family 8 in 07-whiteboard-misc.css: the icon-only floor at the
    end of 07 is (0,1,1) like this selector and comes later, so a height set here
    never reached the screen (measured). */
 /* --- entry lists ---------------------------------------------------------- */
@@ -1436,22 +1494,23 @@ input.md-task-inline:disabled,
 .settings-group .entry-list li {
   background: var(--surface-3);
 }
-/* The notes list's card view only, not the shared `.entry-list li` above:
-   the owner's density ask ("at least 4 note cards above the fold" at
-   1093x614) is about the Browse list's cards specifically, and tightening
-   the general rule would also squeeze reminders, backups, sessions and
-   skill logs, none of which were measured or asked about. `:not(.is-rows)`
-   keeps this off the list's own compact row view, which already has a
-   tighter, already-tuned padding of its own (`.entry-list.is-rows li`,
-   below) that an id selector would otherwise outrank and override. */
-/* The block padding was 0.15rem, which left the first line 2px under the
-   card's top border (the owner at release: "a slightly larger top margin");
-   --space-2 each way keeps the card symmetric and costs 8px a card. */
+/* The notes list's cards only (the owner: "at least 4 note cards above the
+   fold" at 1093x614), not reminders, backups or sessions, and not the rows
+   view's own tuned padding. --space-2 each way: the owner at release, "a
+   slightly larger top margin". */
 #entry-list:not(.is-rows) li {
   padding: var(--space-2) 0.8rem;
   /* 0.15rem read as cards touching (the owner at release: "a slightly
      larger gap between notes"). */
   margin-bottom: var(--space-3);
+  /* A note card is a Library card (L767, the owner 2026-11-12: one card
+     token for border, fill and corner). */
+  background: var(--card);
+  border-radius: var(--radius-lg);
+}
+/* The edge at (0,1,1), so a thread child's own edge still wins. */
+.entry-list:where(#entry-list:not(.is-rows)) li {
+  border-color: var(--glass-border);
 }
 /* ---- Rows: the default way a list of notes is shown --------------------
    Reported directly: "half the screen is taken up by poor ui choices or
@@ -1460,10 +1519,8 @@ input.md-task-inline:disabled,
    body text ran the full 1003px of the card, which is roughly 160
    characters: more than twice the 65-75 the readable-measure rule (and
    every typographic source behind it) puts the limit at.
-   Both numbers come from the same cause: the card is laid out as a
-   document, one block stacked under another across the full width, when a
-   list row wants two columns, what the note says on the left, what the
-   app knows about it on the right.
+   Both come from a card laid out as a document, where a row wants two
+   columns: the note on the left, what the app knows on the right.
    Cards are not deleted and are one click away, because a note carrying an
    image or a file genuinely needs the room. Rows are the default because a
    list of notes is a list. */
@@ -1530,6 +1587,15 @@ input.md-task-inline:disabled,
   grid-column: 3;
   grid-row: 1;
 }
+/* Under 600 the facts take a line of their own (L393): beside the title,
+   the `fit-content(26rem)` track took the whole 220px row at 360 and left
+   the title one letter wide. The third track is then empty and 0px. */
+@media (max-width: 599.98px) {
+  .entry-list.is-rows li:not(:has(textarea)) > .entry-meta {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
 /* Anything else a row grows later (an actions strip, a badge) spans the
    width on its own line rather than silently landing in a text column.
    `.row-expand` is excluded on purpose: it is `position: absolute` (below),
@@ -1551,7 +1617,9 @@ input.md-task-inline:disabled,
   min-width: 0;
 }
 .entry-list.is-rows .entry-meta {
+  /* Room for a --target-min button in the 24px line, which clips (L464). */
   margin: 0;
+  padding-block: 2px;
   flex-wrap: nowrap;
   /* The cap that keeps a note's metadata from crowding out the note's own
      text now lives on the *track* (`fit-content(26rem)` in the
@@ -1764,6 +1832,33 @@ input.md-task-inline:disabled,
      the note list is where the text is actually kept. */
   overflow-wrap: anywhere;
 }
+
+/* A row with no title starts its text where a title would, not one column
+   gap to the right of an empty column (measured 375 against 365px). */
+#entry-list.is-rows > li:not(:has(textarea)):not(:has(> .entry-title)) > .entry-content {
+  grid-column: 1 / 3;
+}
+
+/* **The strip's own width, kept clear** (wrapzoom sweep: a fixed 6.5rem,
+   104px, against a 131px strip of four 28px targets left the strip over the
+   text's line end, 11x6 at 1280, and it was 1em tall against a 28px strip,
+   so the second line ran under it too). The width is the strip's: four
+   targets at `--target-min` and the strip's three 0.4rem gaps, five and four
+   on a draft (`.has-wide-strip`, written by `entryItem`), and a gap. The
+   height is the strip's below the text's top: one target, less the
+   `--space-1` the strip rises into the card's padding (below, "Into the
+   padding"), so a one-line note grows 1px at 28px targets, and at 44px ones
+   the date line steps clear of the strip it ran under (768: 62x5). */
+#entry-list > li > .entry-content::before {
+  content: "";
+  float: right;
+  width: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  height: calc(var(--target-min) - var(--space-1));
+}
+
+#entry-list > li.has-wide-strip > .entry-content::before {
+  width: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
+}
 .entry-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1888,6 +1983,18 @@ input.md-task-inline:disabled,
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* A click on it opens its menu (INBOX 432, 447): a `.chip-interactive`,
+   so it tones under the pointer (the veil over its own fill) and stays a
+   pill at rest. */
+.entry-meta.note-meta > .chip-interactive.category:is(:hover, :focus-visible, :has(:focus-visible)) {
+  background: linear-gradient(var(--hover-veil), var(--hover-veil)) var(--chip-bg);
+}
+
+#entry-list .entry-meta.note-meta > .chip-interactive.category:is(:hover, :focus-visible) {
+  background: var(--hover-veil);
+  color: var(--ink);
+}
 /* One right-aligned group at the end of the meta row: timestamp, then the
    action buttons. A fixed min-width on the date keeps timestamps lining up
    with each other from card to card even when the text length differs
@@ -1987,6 +2094,18 @@ input.md-task-inline:disabled,
    leading icon is accent already), and a danger ghost keeps its red. */
 button:not(.ghost) > .spinner {
   color: currentColor;
+}
+
+/* A visible ring, not the hover background alone: several of this app's
+   other icon-only buttons rely on a background swap for focus (e.g.
+   `.entry-actions > button.ghost:focus-visible`), which a low-contrast theme
+   can render nearly invisible. This recipe's own buttons keep the ring. */
+.dialog-head .dialog-head-btn.ghost:focus-visible,
+.dialog-head-actions > .dialog-head-btn.ghost:focus-visible,
+.popover-head > .popover-close.ghost:focus-visible,
+.palette-head > .dialog-head-btn.ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .entry-busy {
   outline: 1.5px solid var(--accent);
@@ -2138,8 +2257,12 @@ button:not(.ghost) > .spinner {
 }
 @media (pointer: coarse) {
   .lock-card .lock-forgot {
-    min-height: 44px;
+    min-height: var(--target-min);
   }
+}
+
+.lock-card #lock-password {
+  font-size: var(--text-body);
 }
 /* The lock card over the network (INBOX 867): the certificate link and its
    '?' on one centred row; nowhere else and in no other mode. */
@@ -2165,13 +2288,12 @@ button:not(.ghost) > .spinner {
 }
 /* The setup note (index.html, `#lock-setup-note`): the length rule, what the
    password unlocks and what a reset costs, said before the field is filled.
-   Left-aligned inside a centred card on purpose, it is three lines of prose
-   rather than a caption, and centred prose is read a word at a time. Smaller
+   Two short lines since L-ui-modernisation-4, so it sits centred like the line
+   above it. Smaller
    and quieter than the line above it, which is the promise; this is the
    detail under the promise. */
 .lock-setup-note {
   margin-top: var(--space-3);
-  text-align: left;
   font-size: var(--text-sm);
   line-height: 1.5;
 }
@@ -2207,6 +2329,28 @@ button:not(.ghost) > .spinner {
    badges rather than being pushed onto one of them. */
 .entry-links + .entry-meta {
   margin-top: var(--space-2);
+}
+
+/* --- a note's connections: one pill each, its menu inside it -----------------
+   Owner, with two screenshots: "the popup meatball buttons for connected
+   notes leave awkward gaps between the connected note chips". The ⋯ was a
+   36px filled button beside every chip, invisible until the card was
+   hovered but always holding its place, so two connections sat a button's
+   width apart, and on hover every ⋯ on the card appeared at once. The
+   connection is now the pill; the chip inside it is borderless and the ⋯
+   is a small bare glyph at its end, shown when that connection is pointed
+   at or focused (always on touch). Its reserved room is the pill's own end
+   padding, so nothing between the pills is empty. */
+#entry-list .entry-links {
+  gap: var(--space-2);
+}
+
+/* A finger's pill is `--target-min` tall (the chip's and the menu's overhang),
+   so wrapped rows keep that much apart, as the graph's filter chips do. */
+@media (pointer: coarse) {
+  #entry-list .entry-links {
+    row-gap: calc(var(--target-min) - 1.5rem);
+  }
 }
 /* The edit form's own related-notes panel (renderRelatedWhileEditing,
    app.js): same shape as .entry-links above (it reuses the same chip
@@ -2331,26 +2475,7 @@ button:not(.ghost) > .spinner {
   overflow: hidden;
   white-space: nowrap;
 }
-.library-file-meta.bookmark-meta > span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.library-file-meta.bookmark-meta > .library-file-meta-sep {
-  flex: 0 0 auto;
-}
-/* Pinned is a state, so the control that holds it is coloured by it rather
-   than only by its glyph. */
-.bookmark-pinned {
-  color: var(--accent-text);
-}
-/* **Read state.** Unread is the shelf's reading list, so it is drawn three
-   ways that do not lean on colour alone: a heavier title, a dot on the tile,
-   and (for a reader with neither) the word "Unread" before the title. A read
-   link is the same row at body weight with no dot. */
-.bookmark-mark {
-  position: relative;
-}
+
 /* The dot makes the mark a positioned box, which paints over the tick that
    shares its grid cell (the tick takes the mark's place on hover, 08-
    consistency.css). The tick sits above it so the click lands on the tick. */
@@ -2360,17 +2485,6 @@ button:not(.ghost) > .spinner {
 }
 .bookmark-row:not(.is-read) .bookmark-title {
   font-weight: 650;
-}
-.bookmark-row:not(.is-read) .bookmark-mark::after {
-  content: "";
-  position: absolute;
-  top: calc(var(--space-1) * -0.5);
-  right: calc(var(--space-1) * -0.5);
-  width: var(--space-3);
-  height: var(--space-3);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-pill);
-  background: var(--accent);
 }
 .bookmark-count {
   margin: 0 0 var(--space-2);
@@ -2389,9 +2503,6 @@ button:not(.ghost) > .spinner {
   display: flex;
   flex-direction: column;
   gap: var(--row-gap);
-}
-.bookmark-site.is-folded .contents-caret {
-  transform: rotate(-90deg);
 }
 /* The details panel a row opens in place: it spans the row's grid under the
    title, and stays out of the way of the controls above it. */
@@ -2418,65 +2529,12 @@ button:not(.ghost) > .spinner {
   background: var(--surface-2);
   border-color: var(--divider);
 }
-/* **Deleted deliberately, and this comment is the reason.**
-   `#bookmark-search { margin-bottom: var(--space-3) }` dates from when this
-   field sat alone above the list. It now sits in `.library-toolbar`, which is
-   `display: flex; align-items: center`, and centring aligns *margin* boxes,
-   so a 6px bottom margin lifted the input 3px above the sort control beside
-   it. Measured: search at y=291.1, sort at y=294.1, both 36.8px tall. That is
-   the reported "Links sub-tab filter and search aren't aligned", and an ID
-   selector is why the toolbar's own `margin: 0` could not win. The row's
-   `gap` provides the spacing this margin used to. */
-.bookmark-attach-picker {
-  width: auto;
-  max-width: 16rem;
-}
 .bookmark-group-chips {
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
-/* The Links "Manage groups" dialog. Directly requested: "add buttons for
-   creating and managing groups in the links tab top dock", before this, a
-   group could only be made by typing its name into the Add form, and renamed
-   only by editing every link in it one at a time.
-   Wider than `.confirm-card` because it is a list rather than a sentence, and
-   the rows carry a name, a count and two buttons. Capped and scrollable for
-   the same reason every menu in the app now is: a notebook with thirty groups
-   must not push the Done button off the bottom of the screen. */
-.bookmark-groups-card {
-  max-width: 34rem;
-  width: min(34rem, 92vw);
-}
-.bookmark-groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  max-height: 50vh;
-  overflow-y: auto;
-  overflow-x: clip;
-  overscroll-behavior: contain;
-  margin-block: var(--space-3);
-}
-.bookmark-group-row {
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-}
-/* Name over count, so the row reads as one item rather than two columns of
-   unrelated text: the same stacked shape `.bookmark-main` uses. */
-.bookmark-group-row-main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-.bookmark-group-row-actions {
-  flex-shrink: 0;
-  gap: var(--space-1);
-}
+
 /* --- Library -> Contents: an outline (INBOX 496) ----------------------------
    The owner: "the contents library subtab could be redesigned soooo much
    better". It had a four-way segment, a sideways-scrolling strip of jump
@@ -2490,13 +2548,6 @@ button:not(.ghost) > .spinner {
   flex-direction: column;
   gap: var(--space-4);
   margin-top: var(--space-4);
-}
-/* No border, no card ground: a heading and its rows are a section of an
-   index, not an object to click. */
-.contents-section {
-  border: 0;
-  padding: 0;
-  background: none;
 }
 /* A button, because folding is an action. Sticky, so the group you are
    reading keeps saying which group it is: the card's own ground under the
@@ -2521,46 +2572,35 @@ button:not(.ghost) > .spinner {
   position: sticky;
   top: 0;
   z-index: 1;
-  /* Bare at rest, opaque only while stuck (08-consistency.css, INBOX 1489). */
+  /* Bare at rest, opaque only while stuck (07-whiteboard-misc.css, INBOX 1489). */
   background: none;
 }
-/* The hover tint; while stuck it sits over the opaque ground (08-consistency.css). */
-.contents-heading:hover,
-.contents-heading:focus-visible {
-  background: var(--row-hover-bg);
-}
-.contents-heading-name {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* The count is quiet text beside the name ("Work 12"), never a pill. */
-.contents-count {
-  flex: 0 0 auto;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
+
 .contents-caret {
   flex: 0 0 auto;
   color: var(--muted);
   transition: transform var(--ui-base) var(--ease-out);
 }
-.contents-section.is-folded .contents-caret,
-.contents-doc:not(.is-open) .contents-doc-caret {
-  transform: rotate(-90deg);
+
+/* --- motion: one vocabulary for what opens and folds (INBOX 1506 B) ---------
+   Three durations (`--ui-fast` 120, `--ui-base` 180, `--ui-slow` 240 ms), one
+   curve that settles (`--ease-out`) and one gentle overshoot
+   (`--ease-spring`), on `transform` and `opacity` only. **A chevron turns
+   on `--ui-base` and `--ease-out`**: every caret that a state turns (a fold's,
+   a menu opener's, a row's) shares the zero-weight rule below, so a family
+   that names its own transition keeps it and one that named none no longer
+   snaps. **A plus becomes a minus** (`.ui-pm`, library-lazy.css, out of the
+   boot budget, drawn from two bars so the turn is a transform): the glyph
+   makes a half turn on the overshoot while the upright bar folds away on
+   `--ease-out`; the toggle that holds it says which state it is in
+   (`aria-expanded`, or `[open]` on a `<summary>`). A menu's
+   own arrival and its rows are in 10-responsive.css (`ui-grow` on the
+   overshoot, `ui-row` eight deep). The reduced-motion sheet switches the
+   overshoot, the stagger and the plus's turn off (motion-still.css). */
+:where(.ph-caret-down, .contents-caret) {
+  transition: transform var(--ui-base) var(--ease-out);
 }
-/* A category's own colour (`paintCategoryDot`), the dot every surface uses. */
-.contents-dot {
-  --category-dot: var(--accent);
-  flex: 0 0 auto;
-  width: 0.6em;
-  height: 0.6em;
-  border-radius: var(--radius-pill);
-  background: var(--category-dot);
-}
+
 /* One column, under a guide line that starts below the heading's caret, so
    the eye runs down the titles the way it runs down a book's index. */
 .contents-list {
@@ -2572,9 +2612,7 @@ button:not(.ghost) > .spinner {
   flex-direction: column;
   gap: var(--row-gap);
 }
-.contents-list > li {
-  min-width: 0;
-}
+
 /* A row: the `.timeline-row` shape, a transparent border so the hover moves
    nothing, the ground arriving with the pointer. The left gutter is where a
    document's caret sits, so every title starts at one edge whether or not
@@ -2593,22 +2631,7 @@ button:not(.ghost) > .spinner {
   font-size: var(--text-md);
   text-decoration: none;
 }
-.contents-row {
-  min-height: var(--row-h);
-}
-.contents-row:hover,
-.contents-row:focus-visible,
-.contents-heading-row:hover,
-.contents-heading-row:focus-visible {
-  background: var(--row-hover-bg);
-  color: var(--ink);
-}
-.contents-doc-caret {
-  position: absolute;
-  inset-inline-start: 0;
-  width: var(--space-6);
-  text-align: center;
-}
+
 /* The mark: a 2rem square, the picture or the kind's glyph centred in it. */
 .contents-thumb,
 .contents-row > .contents-icon {
@@ -2616,11 +2639,6 @@ button:not(.ghost) > .spinner {
   width: 2rem;
   height: 2rem;
   border-radius: var(--radius-sm);
-}
-.contents-thumb {
-  object-fit: cover;
-  /* A quiet ground while it loads, not a flash of page in a hole. */
-  background: var(--chip-bg);
 }
 .contents-row > .contents-icon {
   display: inline-grid;
@@ -2633,18 +2651,7 @@ button:not(.ghost) > .spinner {
   flex: 0 0 auto;
   color: var(--muted);
 }
-.contents-row-body {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-.contents-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 /* One line, never two: the last fact gives way first. */
 .library-file-meta.contents-meta {
   flex-wrap: nowrap;
@@ -2652,19 +2659,7 @@ button:not(.ghost) > .spinner {
   overflow: hidden;
   white-space: nowrap;
 }
-.library-file-meta.contents-meta > span:last-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* A document's headings: an indented column under its title, deeper headings
-   one step further in (`--depth`, set by the builder). */
-.contents-subtree {
-  margin-inline-start: 0;
-  padding: 0;
-  border-left: 0;
-  gap: 0;
-}
+
 .contents-heading-row {
   --depth: 0;
   padding-block: var(--space-2);
@@ -2764,6 +2759,11 @@ button:not(.ghost) > .spinner {
   background: transparent;
   font-weight: 400;
 }
+
+:is(#chat-suggest, #suggested-questions, #recent-questions) > .chip-interactive:hover,
+:is(#chat-suggest, #suggested-questions, #recent-questions) > .chip-interactive:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--chip-bg);
+}
 #entry-list li:hover .chip.link,
 #entry-list li:focus-within .chip.link {
   color: var(--ink);
@@ -2785,10 +2785,32 @@ button:not(.ghost) > .spinner {
 #entry-list li:focus-within .link-connection > .menu-wrap {
   opacity: 1;
 }
-@media (hover: none) {
-  #entry-list .link-connection > .menu-wrap {
-    opacity: 1;
-  }
+
+#entry-list .link-connection {
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  max-width: 100%;
+}
+
+/* The edge is the connection's (the pill around the chip and its menu). */
+#entry-list .link-connection:is(:hover, :focus-within) {
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* The list's pill: the edge on the connection, the chip inside it bare, so
+   the pill's edge is the card's text edge (the chip's own 1.8px hover bleed
+   had it 2px in). */
+#raw-results .link-connection {
+  gap: 0;
+  max-width: 100%;
+  border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+  border-radius: var(--radius-pill);
+}
+
+#raw-results .link-connection:hover,
+#raw-results .link-connection:focus-within {
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
 }
 .chip.link .unlink {
   cursor: pointer;
@@ -2811,10 +2833,55 @@ button:not(.ghost) > .spinner {
   opacity: 1;
   color: var(--error);
 }
-@media (hover: none) {
-  #entry-list .chip.link .unlink {
-    opacity: 0.7;
-  }
+
+.chip > .unlink:last-child:hover,
+.chip > .unlink:last-child:focus-visible {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
+  color: var(--error);
+}
+
+.chip > .unlink:last-child:is(:hover, :focus-visible) {
+  background: transparent;
+}
+
+.chip > .unlink:last-child:is(:hover, :focus-visible)::before {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
+}
+
+.chip > .unlink:last-child:has(> .ph-x)::after,
+.suggested-tag-dismiss::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 1.2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.2px 100% no-repeat;
+  rotate: 45deg;
+}
+
+.chip > .unlink:last-child:has(> .ph-x) {
+  color: var(--muted);
+}
+
+.chip > .unlink:last-child:has(> .ph-x)::before {
+  background: transparent;
+}
+
+.chip > .unlink:last-child:has(> .ph-x):is(:hover, :focus-visible) {
+  color: var(--error);
+}
+
+.chip > .unlink:last-child:has(> .ph-x):is(:hover, :focus-visible)::before {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
+}
+
+#entry-list .entry-links .unlink:hover,
+#entry-list .entry-links .unlink:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
 }
 li.link-source {
   outline: 2px solid var(--accent);
@@ -3039,6 +3106,12 @@ li.link-source {
 #most-used .count {
   color: var(--muted);
 }
+
+@media (max-width: 599.98px) {
+  #category-list li:has(.category-actions) .count {
+    opacity: 1;
+  }
+}
 #toast-box {
   position: fixed;
   right: 1rem;
@@ -3141,6 +3214,42 @@ li.link-source {
 :is(#toast-box, .toast-host):is(:hover, :focus-within) .toast-more-rest {
   display: none;
 }
+
+/* **Toasts at the bottom on a phone** (the owner's decision, 2026-09-24): at
+   the top a due-reminder toast sat over the Notes sub-tabs for its whole
+   life. Above the bottom tab bar instead, full width. The one exception is
+   the Chat tab, where the bottom is the composer (Send and the microphone,
+   the reason the top was chosen in the first place): there it stays up. */
+@media (max-width: 599.98px) {
+  body:not([data-tab=chat]) #toast-box {
+    top: auto;
+    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px) + var(--space-2));
+  }
+}
+
+/* **Nothing lands on the tab bar.** Measured at 390 (INBOX 392): a toast sat
+   at `bottom: status bar + 10px`, over the tab bar's captions and over the
+   floating +, and the agent activity panel, a bottom sheet here, was pinned
+   to `bottom: 0` over the whole bar, so the one way between tabs went while
+   an agent ran. The panel stands on the bar now.
+   A toast comes from the top below 1100, under the header, the way a
+   phone's own banners do. The foot of a narrow screen is where the thing
+   being worked with is: the tab bar, the floating +, and the chat composer,
+   whose Send and microphone a due-reminder toast covered at 390 once it had
+   been lifted clear of the bar (touch.js), and whose mode switch it covered
+   at 768 from the corner a desktop gives it. The top has only the head of a
+   list for the few seconds a toast lasts, and it takes the width, since a
+   340px card in a 390px window is the width anyway less a crooked gap. */
+@media (max-width: 1099.98px) {
+  #toast-box {
+    left: var(--space-4);
+    right: var(--space-4);
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--space-2));
+    bottom: auto;
+    align-items: center;
+  }
+}
+
 .toast-more > .toast-more-open {
   flex: 1;
   justify-content: flex-start;
@@ -3419,7 +3528,7 @@ mark.global-find-hit.global-find-current {
      §3), so with zero horizontal padding the focus ring's own
      `outline-offset` (2px, on top of a 2px outline) was clipped flat
      against the left edge on the active/focused section button. */
-  padding: 2px 4px;
+  padding: 2px var(--space-1);
 }
 .modal-nav>div {
   display: flex;
@@ -3467,6 +3576,13 @@ mark.global-find-hit.global-find-current {
   padding-bottom: 1.25rem;
   overscroll-behavior: contain;
   /* don't hand the scroll on to the page behind */
+}
+
+/* The pane takes the focus when a section is picked with the pointer
+   (`focusSettingsPane`, settings.js) so the reading keys scroll it; that
+   focus is not a place to draw a ring. */
+#settings-modal .modal-content:focus:not(:focus-visible) {
+  outline: none;
 }
 .settings-section h3:first-child {
   margin-top: 0;
@@ -3521,6 +3637,11 @@ mark.global-find-hit.global-find-current {
   grid-auto-rows: 1fr;
   gap: 0.5rem;
   margin: 0.5rem 0;
+}
+
+/* 12. **A theme card's name has room for "Quiet utilitarian".** */
+.theme-presets {
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
 }
 /* The saved-themes grid and the "name it, save it" row beside `.setting-label`
    - one flex child, not two. `.setting-row-stack` only changes align-items,
@@ -3689,6 +3810,14 @@ html.modal-open body {
   color: var(--muted);
   flex-shrink: 0;
 }
+
+.entry-meta.note-meta:not(.is-measuring) > :is(.when, .refs, .reminders, .review, .untagged, .untagged-ai, .source-path, .tag:not(.hashtag, .suggested-tag)) {
+  flex-shrink: 5;
+  min-width: 2.5em;
+  /* Clipped across, open above and below: `hidden` clipped the chip's own
+     hit-target overhang (`.chip-interactive::after`, audit FE-14) too. */
+  overflow: clip visible;
+}
 .log-list .what {
   font-weight: 700;
   flex-shrink: 0;
@@ -3773,6 +3902,38 @@ html.modal-open body {
    > Personas, the Atlas avatar spills outside its black circle"). */
 :is(.persona-mark, .profile-mark) > :is(.name-mark, .nm-atlas, svg) {
   clip-path: circle(50%);
+}
+
+.persona-row > .persona-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.name-mark {
+  display: block;
+  border-radius: var(--radius-pill);
+  /* Where in its loop this face starts; `nameMark` sets it per face from
+     the seed, and a face drawn anywhere else starts at the top. */
+  --nm-delay: 0s;
+  /* Where the pointer is, from -1 to 1 each way; avatars.js sets them on the
+     faces on screen while "Faces follow the pointer" is on. */
+  --nm-lx: 0;
+  --nm-ly: 0;
+}
+
+/* --- a poke, a look, a large view and a companion (avatars.js) -----------
+   The poke is the one motion that answers a click, so it runs whatever the
+   Avatar animation setting says, except Off and Reduce motion. The look is
+   two custom properties `avatars.js` sets on the faces on screen, turned
+   into a small eye shift and head tilt with the individual `translate` and
+   `rotate` properties, which compose with the looping `transform` rather
+   than replacing it. */
+.name-mark { cursor: pointer; }
+
+#nm-buddy.nm-buddy-dragging .name-mark .nm-eyes {
+  scale: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 /* The emblem and the greeting are one unit, so the clock still pushes to the
    far end. */
@@ -4096,6 +4257,10 @@ html.modal-open body {
 .entry-list li.priority-low .reminder-text {
   color: var(--muted);
 }
+
+#tab-reminders .reminder-text {
+  font-size: var(--text-lg);
+}
 #reminder-magic {
   flex: 1;
 }
@@ -4281,7 +4446,7 @@ html.modal-open body {
    longer rules above: `.is-streaming > :last-child::after` is (0,2,1) against
    `.is-streaming > :last-child:not(:is(ul, ol, blockquote))::after` at
    (0,2,2). So the commonest case of all, an answer ending in a paragraph,
-   blinked straight through `prefers-reduced-motion`, and a later pass
+   blinked straight through `prefers-reduced-motion`, and a second change
    extending the caret down into lists is what quietly broke it. Measured
    before the fix (`scratchpad/ui-sweeps/chatphase2.js`): computed
    animation-name `answer-caret` on the caret with the platform asking for
@@ -4575,10 +4740,11 @@ html.modal-open body {
   text-align: right;
 }
 /* A <summary> carries its own disclosure marker, so the heading inside it must
-   not also start a new block or the arrow and the text sit on separate lines. */
+   not also start a new block or the arrow and the text sit on separate lines.
+   No size of its own: all 25 sit in a card, whose `h3` eyebrow outranks a
+   single class, so a `--text-base` here never drew (L418). */
 .inline-h3 {
   display: inline;
-  font-size: var(--text-base);
 }
 /* The bookmark row's in-place edit form (library.js). Replaces a chain of
    two modal prompts - see that handler's comment for why sequencing the
@@ -4604,13 +4770,7 @@ html.modal-open body {
   flex-direction: column;
   gap: var(--space-1);
 }
-.bookmark-edit-field input {
-  margin: 0;
-  width: 100%;
-}
-.bookmark-edit-actions {
-  gap: var(--space-2);
-}
+
 /* The Links "+ Add" button sat shorter than the three inputs beside it -
    reported directly. `.small` trims a button's padding, which is right in a
    toolbar but wrong in a form row, where the control height is set by the
@@ -4640,6 +4800,52 @@ html.modal-open body {
 .dashboard-persona-row .status {
   flex: 1;
   min-width: 0;
+}
+
+#settings-modal .status.off::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-inline-end: var(--space-2);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-pill);
+  vertical-align: 0.1em;
+}
+
+/* Still finding out (INBOX 435): the same dot, breathing, so the line says
+   "working on it" instead of reading as an answer. */
+#settings-modal .status.is-checking::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-inline-end: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  vertical-align: 0.1em;
+  animation: status-checking 1.2s ease-in-out infinite alternate;
+}
+
+:where(:root[data-motion="reduced"]) #settings-modal .status.is-checking::before {
+  animation: none;
+}
+
+#settings-modal .status.ok::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-inline-end: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--ok);
+  vertical-align: 0.1em;
+}
+
+/* The greeting persona's face beside its picker. */
+.dashboard-persona-row > .dashboard-persona-mark {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 /* A suggested link: one chip holding the note and, at its end, the + that
    says pressing it links (INBOX 709: "these plus buttons feel too separate
@@ -4896,7 +5102,7 @@ select {
 /* The "worth rebuilding now" line in Settings, Search index. An accent
    ground rather than a warning colour: nothing is broken, there is simply
    something useful to do. See `renderReindex` in ai-tools.js. */
-/* The box itself is `.notice.notice-warn` now (08-consistency.css, the recipe
+/* The box itself is `.notice.notice-warn` now (07-whiteboard-misc.css, the recipe
    index): this was the app's only one-line "something is worth knowing here"
    box and it was built inline, which is what made the second one go looking
    for a recipe and find none. What is left here is the one thing that is this
@@ -5230,7 +5436,7 @@ select {
 #settings-modal .settings-section .settings-fold > summary:has(> .help-head) {
   padding-block: 0;
 }
-/* The label, not the '?''s empty slot (08-consistency.css, INBOX 433). */
+/* The label, not the '?''s empty slot (07-whiteboard-misc.css, INBOX 433). */
 #settings-modal .settings-section .settings-fold > summary > .help-head > span:not(.fold-help-slot) {
   flex: 1 1 auto;
   min-width: 0;
@@ -5473,7 +5679,7 @@ select {
   margin-left: auto;
 }
 /* The one head that sits inside a `<summary>` (`#sampling-box`, "Advanced
-   response settings") is a flex item of that summary (08-consistency.css
+   response settings") is a flex item of that summary (a component file (08-consistency.css until UI plan 13b)
    makes every settings summary `display: flex`), so it shrank to its text,
    273.3px in a 565.6px row, and its "?" stayed glued to the heading while
    every other mark moved to the column. It has to take the row to reach it. */
@@ -5537,6 +5743,22 @@ select {
 #settings-modal .settings-group .help-head + p.muted:not(.empty-line) {
   margin-top: calc(var(--space-2) * -1);
   margin-bottom: var(--space-4);
+}
+
+.help-head .atlas-mark-agent {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: var(--text-base);
+}
+
+#settings-modal details.settings-group[data-fold-key] > summary h3,
+#settings-modal details.settings-group[data-fold-key] > summary > .help-head {
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+#settings-modal details.settings-group[data-fold-key][open] {
+  padding-bottom: var(--space-6);
 }
 /* Collapsed, it is `.hidden` and renders nothing; open, `wireHelpPopover`
    moves it to <body> and adds `.help-popover`, which brings the padding,
@@ -5660,7 +5882,7 @@ select {
 /* The master is not one of the seven and must not look like one: it is the
    answer to "stop all of this now", and a person looking for that should not
    have to read seven rows to find it. A gap is the whole separation, because
-   the seven below it are a stack (08-consistency.css: hairline between,
+   the seven below it are a stack (a component file (08-consistency.css until UI plan 13b): hairline between,
    rounded at the two outer ends) and the master is a row on its own, which
    that contract already draws correctly once it is not adjacent to them.
    `.learned-switch-stack` in the markup is what makes it not adjacent. */
@@ -5882,12 +6104,21 @@ select {
 #settings-nav:has(.settings-search:not(:placeholder-shown)) .settings-nav-groups {
   display: none;
 }
+
+.settings-nav-groups {
+  --glide-fill: linear-gradient(var(--accent), var(--accent)) left / 2px 100% no-repeat;
+}
 /* Under a finger a group link keeps the touch floor (touch.js; the mouse
    size above is the Quiet tier's). */
 @media (pointer: coarse) {
   #settings-nav .settings-nav-group {
     min-height: var(--target-min);
   }
+}
+
+#settings-nav {
+  --glide-fill: var(--accent-soft);
+  --glide-radius: var(--radius-md);
 }
 /* **On a phone the pane's New sits on the title's row** (design-rows-1005):
    the title, then the actions pushed to the end. New is its plus there, the
@@ -6053,6 +6284,139 @@ select {
    (scratchpad/ui-sweeps/contrast.js). On a card a label takes the ink. */
 .model-card .chip.item-label:not(.is-warn, .is-yours) {
   color: var(--ink);
+}
+
+/* A chip's icon and words share one centre line, and it is the label
+   recipe's (INBOX 592, 07-whiteboard-misc.css beside `.ph`): the words are
+   never trimmed, so a chip's words and the untrimmed date beside it share a
+   centre, and the icon moves by the live font's own gap. INBOX 503 trimmed
+   them to the x-height band here; in Segoe UI that put the words 2px below
+   the date beside them and the icon 1.6px below the capitals. A chip keeps
+   the height floor that rule set (`:where`, so every family's own floor
+   wins). */
+:where(.chip) {
+  min-height: 1.125rem;
+}
+
+.entry-meta.note-meta > .chip.category + .chip.filing-sure,
+.entry-meta.note-meta > .chip.tag + .chip.tag,
+.entry-meta.note-meta > .chip.tag + :is(.chip.untagged, .chip.untagged-ai),
+.entry-meta.note-meta > .chip.untagged + .chip.untagged-ai {
+  margin-inline-start: calc(var(--space-3) - var(--space-6) - var(--space-1));
+}
+
+/* A suggestion is drawn in a box, and two boxes need a visible gap between
+   them where two bare words need none: 6.4px of box, not 0. */
+.entry-meta.note-meta > .chip.tag ~ .chip.suggested-tag {
+  margin-inline-start: calc(var(--space-2) - var(--space-6) + var(--space-1));
+}
+
+.entry-meta.note-meta > .chip.category.is-action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.entry-meta.note-meta > .chip.category::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--category-dot);
+}
+
+.entry-meta.note-meta > .chip.hashtag::before {
+  content: "#";
+  opacity: 0.6;
+}
+
+/* The category gives way last, and keeps a word of itself. Its factor is
+   the smaller one rather than under 1: a line whose shrinking items sum
+   under 1 only gives that fraction of its overflow back (CSS Flexbox 9.7). */
+.entry-meta.note-meta:not(.is-measuring) > .chip.category {
+  flex-shrink: 1;
+  min-width: 5em;
+}
+
+@media (max-width: 599.98px) {
+  /* And the category does not give way at all here: the facts after it
+     turn to their icons first (`fitNoteMetas`), which is room enough. */
+  .entry-meta.note-meta:not(.is-measuring) > .chip.category {
+    flex-shrink: 0;
+  }
+}
+
+/* Square round its icon (iconchip.js). */
+.entry-meta.note-meta:not(.is-measuring) > .chip.is-icon {
+  aspect-ratio: 1;
+  min-width: 0;
+  flex-shrink: 0;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.entry-meta > .chip.suggested-tag:has(> .suggested-tag-take:is(:hover, :focus-visible)) {
+  background: var(--chip-bg);
+  color: var(--ink);
+}
+
+@media (max-width: 819.98px), (pointer: coarse) {
+  .entry-list .entry-meta > .chip.suggested-tag.suggested-tag {
+    overflow: visible;
+  }
+}
+
+/* The separator rides the fact before it, not the one after: a row that
+   wraps (a long skill name at 1440 did) then ends its first line on "4 steps
+   ·" and starts the next on "3 tools", where a leading dot opened the second
+   line on "· 3 tools". */
+.entry-meta > .chip.item-fact:has(+ .chip.item-fact)::after {
+  content: "·";
+  margin-inline-start: var(--space-2);
+  opacity: 0.7;
+}
+
+/* A label in a Settings list row sits on three tints (the fold's, the row's
+   and its own): "Built-in" in Settings, Skills measured 4.27:1 in light
+   (contrast.js, op4-1005), muted on rgb(219, 219, 221). It takes the ink,
+   the same answer the ok label below took for the same reason. */
+.entry-list > li > :is(.skill-row, .persona-row) .chip.item-label:not(.is-yours):not(.is-ok) {
+  color: var(--ink);
+}
+
+/* The chip's glyphs on one centre line (the ✕ drew 2px low: an inline icon
+   sits on the text baseline) and its last button near the chip's edge
+   rather than 5px in from it (the owner at release). */
+#entry-list .entry-links .chip:has(> .unlink) {
+  align-items: center;
+  padding-inline-end: 2px;
+}
+
+/* Phase 12 decision 7: chips only for state, so the category is its dot and
+   its word, as the Timeline's rows already draw it; the pointer inks it. */
+#entry-list .entry-meta.note-meta > .chip.category {
+  padding-inline-start: 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+#entry-list .chip.link {
+  color: var(--muted);
+}
+
+/* One line, cut with an ellipsis: at 390 the linked note's words wrapped to
+   two lines inside a pill one line tall. */
+#raw-results .link-connection > .chip.link > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#raw-results .chip.link {
+  background: transparent;
+  color: var(--muted);
+  font-weight: 400;
 }
 /* The model bench (WORLD_CLASS_PLAN I8): the models to test as switches in a
    wrapping row, then one row per model on the list-row recipe (DESIGN.md, "A
@@ -6323,9 +6687,172 @@ select {
   animation: ui-fade var(--ui-base) var(--ease-out);
 }
 
+#settings-modal details.settings-group[data-fold-key] > summary {
+  min-height: var(--control-h-lg);
+  margin-block: 0;
+  padding-block: var(--space-2);
+}
+
+#settings-modal details.settings-group[data-fold-key][open] > summary {
+  margin-bottom: var(--space-4);
+}
+
+#settings-modal .settings-section > details.settings-fold > summary {
+  padding-inline-end: var(--space-6);
+}
+
+/* **Settings does not blur what it scrolls over** (INBOX 426 u: "scrolling
+   up and down on the settings page is slow and laggy"). The dialog is two
+   blur passes the size of the window, the overlay's 4px over the page and
+   the card's own `--glass-blur` over that, and both are redrawn on every
+   frame the pane scrolls, because the scrolling text is inside both of
+   their surfaces. Measured with glass on, wheeling Appearance in headless
+   Chromium (`scrolljump.js`, its frame p50): 83 to 100ms a frame with both,
+   50 with either one alone, 16.7 with neither (a blur moved to a static
+   pseudo-element behind the text measured the same 50 to 117, so there is
+   no layer trick). DESIGN.md's rule is the one this applies: blur belongs
+   where something scrolls under a surface, and a window-sized surface whose
+   own contents scroll is the case it names as the cost. The overlay keeps
+   its dim, the card takes the solid modal ground. */
+#settings-modal.modal-overlay {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* The profile autosave's status row (index.html, `.prefs-save-row`) takes
+   no room while it has nothing to say: its button is hidden and its two
+   status lines are empty until a save runs. Collapsed by its margin only,
+   never `display: none`, so its live regions stay in the tree and are read
+   out when they fill. */
+#settings-modal .settings-section .prefs-save-row:not(:has(> :not(.hidden):not(:empty))) {
+  margin-top: 0;
+}
+
 /* A finished job's Logs button stays top right on one line (BACKLOG). */
 #task-history .entry-meta {
   flex-wrap: nowrap;
+}
+
+/* --- one line of facts: a note's meta row -----------------------------------
+   Owner: "I was also wondering if there might be a better ui/ux and more
+   modern and professional way to redesign and display all the metadata,
+   links, badges and more at the bottom of notes in the notes tab and when
+   they appear anywhere else". Measured on a seeded card at 1440: five pills
+   in a row (category, "No tags yet", "AI 63%", the space, "Linked by 5
+   notes"), three of them bold accent fills, so the row outweighed the note's
+   own title. Two of the three were a selector accident (the category rule
+   caught every chip without a listed variant, 06-timeline-dialogs.css).
+   What it is now is the line Linear, Things and Apple Notes draw: facts as
+   text, one weight step apart. The category leads in ink with a dot; tags
+   are `#tag`; the space, the documents, the links and the dates are muted
+   text with their icon; nothing has a fill at rest. A fact that is also an
+   action (every interactive chip) shows a hover ground, so it still reads
+   as pressable the moment it is pointed at. The two marks that ask for
+   something keep colour: a low filing score in warn, and the in-flight
+   states (filing, Atlas reading) in accent. Scoped to `.entry-meta`, which
+   is every place a note card is drawn (the list, search results, the
+   timeline's expanded note), so the note looks the same everywhere. */
+.entry-meta.note-meta {
+  gap: var(--space-1) var(--space-5);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 599.98px) {
+  /* **When every fact is already an icon and the line is still too wide, it
+     wraps rather than clips** (UX audit 2026-10-19). At 390 a long-titled
+     card's category (104px), three 44px icon facts, the time and the 44px
+     "More actions" button need 392px in a 316px line, and the card's
+     `overflow: hidden` cut the button off at x 388-432. `fitNoteMetas`
+     measures with `.is-measuring` on (still `nowrap`, so its overflow sum is
+     honest), folds what it can (words to `.is-icon`), and a line that has
+     folded any fact may then take a second row for the remainder. One that
+     fits is drawn the same wrapped as not, and a line that overflowed with
+     nothing left to fold was never wide enough to need this. */
+  .entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {
+    flex-wrap: wrap;
+  }
+}
+
+/* The "+N" is one of the tags it stands for: the group's own 8px. */
+.entry-meta.note-meta > .chip.hashtag:not([hidden]) ~ .note-meta-more {
+  margin-inline-start: calc(var(--space-3) - var(--space-6) - var(--space-1));
+}
+
+.entry-meta > .chip.suggested-tag > .suggested-tag-take {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline: var(--space-2) var(--space-1);
+}
+
+.entry-meta > .chip.suggested-tag > .suggested-tag-dismiss {
+  position: relative;
+  width: 1.5rem;
+  border-radius: var(--radius-pill);
+}
+
+.entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
+  color: var(--error);
+}
+
+/* Under a finger the half's box is the touch floor (iconfloor.js), its
+   overhang taken back out past the chip's end, so the chip stays 24px. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(*, :hover, :focus-visible) {
+    width: var(--target-min);
+    height: var(--target-min);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+    margin-inline-end: calc(1.5rem - var(--target-min));
+    background: none;
+  }
+  .entry-meta > .chip.suggested-tag > .suggested-tag-take {
+    min-width: 0;
+    overflow: clip;
+  }
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .chip.suggested-tag) {
+    padding-block: calc((var(--target-min) - 1.5rem) / 2);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+  }
+}
+
+/* --- Reminders: the time at the row's end, actions over it on hover --- */
+/* The action strip (two snoozes, edit, the menu) is invisible until hover
+   but kept its 193px in the row, so every reminder's time stood 200px short
+   of the edge with a hole after it, measured at 1280. With a pointer the
+   strip now lies over the time instead (the mail-list convention: the date
+   gives way to what you can do to the row), and the time sits at the end.
+   Touch keeps the strip in the row and always shown, as before. So does a
+   window under 600 (INBOX 433, zoom.js at 400%): in a 271px row the 240px
+   strip lay over the tick box too, so the box Tab had just reached sat under
+   the strip its own focus called up. */
+@media (hover: hover) and (min-width: 600px) {
+  /* The strip is centred on the row's first line, the one the time is on,
+     not on the whole row: a reminder linked to a note has a second line
+     (its note chip), and centred on both the strip sat 11px low and the top
+     half of "in 18 hours" showed above it (qa-1005, 1440: the time's box
+     511 to 535, the strip's 522 to 554). */
+  #reminder-groups li .entry-meta {
+    position: relative;
+  }
+}
+
+/* In the rows view the date keeps its corner and the metadata lane beside
+   the title starts under it (the owner at release: "the date clashes with
+   the metadata below, needs to be a vertical gap"); the lane was centred on
+   the row, so the two drew over each other. */
+/* **One line, the time at its end** (INBOX 432). The gap above put the date
+   on a line of its own and made every row 74px, nine to a screen at 1440
+   against seven cards, which is no denser than the cards. The time is the
+   row's last column instead: its corner centred on the row, and the lane
+   beside the title stops short of it by the time's own width. */
+#entry-list.is-rows > li:not(:has(textarea)) > .entry-meta {
+  align-self: center;
+}
+
+#entry-list > li:not(.list-window-sentinel) > .entry-meta.entry-meta {
+  margin-top: var(--space-4);
+  order: 1;
 }
 #task-history .row-actions {
   margin-inline-start: auto;

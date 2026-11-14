@@ -599,7 +599,7 @@ function renderReindex(status) {
     staleLine.classList.toggle("hidden", !worth);
     if (worth) {
       //: Through `setLabel`, because `.notice` carries its icon as a child
-      //: element (the recipe, 08-consistency.css) and `textContent` would wipe
+      //: element (the recipe, 07-whiteboard-misc.css) and `textContent` would wipe
       //: it and print the token.
       setLabel(
         staleLine,
@@ -749,7 +749,7 @@ let uiStateSaveTimer = null;
 //: yet, which is both a wasted PUT (A2) and, on a browser that had lost
 //: `localStorage`, the one write that could make the loss permanent.
 //:
-//: Dropped rather than deferred, the same as the `authToken()` guard below and
+//: Dropped rather than postponed, the same as the `authToken()` guard below and
 //: for the same reason: `watchMirroredUiKeys` sees every later write, so the
 //: next real change saves, and nothing here is the only copy of anything.
 let uiStateSeeded = false;

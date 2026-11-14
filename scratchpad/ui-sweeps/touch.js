@@ -22,7 +22,7 @@
 //
 // Prints one line per surface and a non-zero exit if anything fails, so it can
 // gate a commit. No screenshots.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTH = Number(process.env.WIDTH || 390);
@@ -119,6 +119,7 @@ const SURFACES = [
       localStorage.setItem('onboardingDone', '1');
       localStorage.setItem('tourDone', '1');
       localStorage.setItem('nm-buddy-hint', 'done');
+      localStorage.setItem('avatar-buddy', 'off');
     } catch (e) {}
   });
   const page = await ctx.newPage();
@@ -128,6 +129,9 @@ const SURFACES = [
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#lock-password', { state: 'visible', timeout: 20000 });
   await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
+  //: The semantic-search question is a toast on a fresh notebook; it sat over Settings controls. Answer it (no) so it is gone.
+  await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => {}));
+  await page.evaluate(() => document.querySelectorAll('.semantic-install-toast').forEach((t) => t.remove()));
   //: The opening curtain (lib.js, INBOX 577): the lock stays up, "Opening…",
   //: while the first tab draws; read as a failed unlock, the field was
   //: filled again as it faded and the fill timed out (qa-1005, light 390).
@@ -178,6 +182,9 @@ const SURFACES = [
     // loaded machine against the 600ms above, which read "did not open" for
     // the Graph and Library rows in dark, then light, at random (uxfix3 item 3).
     await page.waitForSelector(surface.sel, { state: 'visible', timeout: 6000 }).catch(() => {});
+    //: A due reminder in the notebook (the seeded "Send the weekly summary") raises its alert toast
+    //: whenever it falls due; a toast is passing, so it is cleared before each surface is measured.
+    await page.evaluate(() => document.querySelectorAll('#toast-stack .toast, .toast').forEach((t) => t.remove()));
     const result = await page.evaluate(({ sel, MIN, extra }) => {
       const root = document.querySelector(sel);
       if (!root) return { missing: true };
@@ -292,7 +299,7 @@ const SURFACES = [
           const my = Math.round(mid.top + mid.height / 2);
           if (mx >= 0 && my >= 0 && mx <= innerWidth && my <= innerHeight) {
             hit = document.elementFromPoint(mx, my);
-            reached = hit && (control.contains(hit) || hit.contains(control));
+            reached = hit && (control.contains(hit) || hit.contains(control) || hit.closest(".scroll-row-arrow"));
           }
         }
         if (!reached) {

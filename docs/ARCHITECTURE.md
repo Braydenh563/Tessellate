@@ -540,7 +540,8 @@ Tessellate/
 │   ├── task-steps.js · gesture-kit.js · lag-watch.js · screen-context.js # task steps,
 │   │                        #   shared pointer gestures, the slow-frame log, what the Guide sees
 │   ├── sw.js · manifest.webmanifest # PWA
-│   ├── css/                 # eleven files, 00-tokens-shell to 10-responsive;
+│   ├── css/                 # ten boot files, 00-tokens-shell to 10-responsive (no 08;
+│   │                        #   10 holds only the shell bands, UI plan 13b);
 │   │                        #   index.html's <link> order is load-bearing; and
 │   │                        #   about 65 lazy sheets (`*-lazy.css` and a few
 │   │                        #   others: icon-picker, sketch-pad, value-field)
@@ -1065,8 +1066,9 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   fails. **Anything derived from a note's text and stored in the clear has to
   be cleared when the note is made private**, exactly like its embedding:
   "the appointment is tomorrow" plus a date is most of the note.
-- **entry_revisions**: edit history for notes. Documents have no equivalent
-  yet, which is why the AI document edit overwrites on accept.
+- **entry_revisions**: edit history for notes. Documents have their own,
+  `document_revisions` (`DocumentRevision`, `core/database.py`; written by
+  `repo/documents.py`).
 - **documents**: long-form markdown, separate from notes.
 - **document_links**: which notes a document draws on. Its own table because
   the relationship is many-to-many and neither side owns the other: detaching
@@ -1705,7 +1707,9 @@ deliberate animation, and turning it down is a design choice rather than a
 bug fix. **Since answered without turning it down:** the emblem is drawn
 once and turned by a CSS rotation (`canvas.emblem-spin`), at the same
 speed, so the compositor does the turning and no p5 loop runs for it at
-all. Not re-measured with `top` since.
+all. Re-measured 2026-11-12 (`scratchpad/ui-sweeps/idlecpu.js`, 90 s after a
+20 s settle, dashboard open): the tab 0.33% of one core, the server 0.32%,
+0.65% together, under ROADMAP 0.5's 1% line.
 
 What was deliberately *not* cut: the 60-second reminder check, because a
 reminder that waits for you to look at the tab is not a reminder, and the
@@ -1801,10 +1805,10 @@ ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FA
 - A tool argument is either intent (the model's) or a fact the app can compute (never asked of the model): reminder arithmetic, dates, offsets are computed by the harness. (was AGENT_SKILLS_REFORM.md:134; topic: ARCHITECTURE.md agent harness section)
 - Real-model reach for tests is two env vars, TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, read at import by the eval module; no pytest option or conftest hook, so 'every eval skipped' is the default. (was AGENT_SKILLS_REFORM.md:143; topic: CLAUDE.md section 4 / WORKING.md evals)
 - Measured on Qwen2.5-3B-Instruct Q4_K_M (llama-server --jinja): right first tool 9/10, finished 10/10; forced first call fires on 20/20 imperatives and 0/10 questions, right tool 14/20; two calls in one reply 2/20; picture placement 5/5 after fix. At 1.5B the stall on step 1 of 'Auto-tag my notes' is the model, not the scaffolding. 4B and Ollama's native dialect on a real Ollama are unmeasured. (was AGENT_SKILLS_REFORM.md:285; topic: CHAT_PLAN.md harness evals section)
-- MCP server measured: 56 of 67 registry tools offered over stdio (9 destructive withheld by design); initialize+tools/list+two calls in 1.6 s with embedder cached; packaged app has no Python so installer users have no stdio MCP. (was AGENT_SKILLS_REFORM.md:345; topic: ARCHITECTURE.md MCP section)
-- Windows ships an unsigned .msi built with WiX; an unsigned MSI or .exe raises the same SmartScreen prompt, only an Authenticode certificate removes it; idle memory work is lazy imports, not idle suspend (decided 2026-09-20). ANALYSIS later suggested finishing one installer format and dropping MSI until asked; not resolved. (was AGENT_SKILLS_REFORM.md:195; topic: ARCHITECTURE.md packaging section)
-- `filing_similar_id` on Entry is deliberately not a ForeignKey (see its docstring); a periodic dangling-id sweep would be tidier than resolve-and-shrug. (was REDESIGN.md:651; topic: ARCHITECTURE.md data model)
+- MCP server measured: 56 of 67 registry tools offered over stdio (9 destructive withheld by design); initialize+tools/list+two calls in 1.6 s with embedder cached; the packaged app has no Python, so its stdio server is `Tessellate.exe --mcp` (`__main__._run_mcp`), which Settings, Tools it can use shows in the snippet, and `python -m tessellate tool NAME --json` runs one tool from a shell. (was AGENT_SKILLS_REFORM.md:345; topic: ARCHITECTURE.md MCP section)
+- Windows ships an unsigned .exe installer; the WiX .msi is written (`packaging/windows/installer.wxs`) but its release steps are off (`if: false` in `release.yml`) since WiX 7 wants the OSMF EULA accepted. An unsigned MSI or .exe raises the same SmartScreen prompt, only an Authenticode certificate removes it; idle memory work is lazy imports, not idle suspend (decided 2026-09-20). ANALYSIS later suggested finishing one installer format and dropping MSI until asked; not resolved. (was AGENT_SKILLS_REFORM.md:195; topic: ARCHITECTURE.md packaging section)
+- `filing_similar_id` on Entry is deliberately not a ForeignKey (see its docstring); the launch housekeeping clears dangling ids (`entry/filing_sweep.py`), and `_filing_similar` still resolves and shrugs between launches. (was REDESIGN.md:651; topic: ARCHITECTURE.md data model)
 - Bookmark groups are a name on a bookmark (group_name), not a table row; an empty group lives only in a localStorage placeholder in library.js, a deliberate patch not to copy. (was FABLE_BRIEF.md:158; topic: ARCHITECTURE.md data model / LINKS notes in BACKLOG)
 - Tessellate's notification history lives in localStorage while reminders are rows, so a reminder notification's Done cannot complete the reminder (AUDIT A15/B13, MODERNISATION H2c); W7-3 is the fix. (was MODERNISATION_AUDIT.md:803; topic: WORLD_CLASS_PLAN.md reminders section)
 - OpenAPI/docs/redoc are disabled (docs_url, redoc_url, openapi_url None in create_app) so the route surface is not served; do not re-raise. (was MODERNISATION_AUDIT.md:611; topic: ARCHITECTURE.md security section)
-- Assets are served no-cache with an ETag because the ?v= stamp is per release (hash-stamped in current head per CLAUDE.md); a content-hash stamp would permit immutable caching. (was MODERNISATION_AUDIT.md:536; topic: ARCHITECTURE.md static assets)
+- A `?v=` stamp carries a hash of the file's bytes (`api/app.py`), so a stamped asset URL is served `public, max-age=31536000, immutable`; an unstamped one is no-cache with an ETag. (was MODERNISATION_AUDIT.md:536; topic: ARCHITECTURE.md static assets)

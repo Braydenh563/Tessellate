@@ -29,7 +29,7 @@ function ok(label, good, detail) {
   await page.waitForTimeout(500);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
+  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
   await page.waitForTimeout(700);
   await page.fill("#wb-template-name", "Link cue sweep");
   await page.click('#wb-template-kind button[data-value="map"]');
@@ -43,7 +43,9 @@ function ok(label, good, detail) {
     const b = await wbMapCreateNode({ parentId: root.id, text: "Branch B" });
     await wbMapTidy({ quiet: true });
     const loose = await wbMapCreateNode({ text: "Loose idea" });
-    loose.x = a.x + 420;
+    // 300, not 420: with the map laid out as it is now, +420 put the topic's centre 1px past the right edge of a
+    // 1440px window, so the pointer never reached it and no cue could show.
+    loose.x = a.x + 300;
     loose.y = a.y + 40;
     loose.data = { ...loose.data, pinned: true };
     await wbSaveObject(loose);

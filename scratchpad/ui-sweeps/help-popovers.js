@@ -1,6 +1,6 @@
 // Every '?' in Settings opens a popover that is inside the window.
 //
-// The sweep OPEN.md named ("help-popovers.js is not built: open every '?' on
+// The sweep OPEN.md named ("help-popovers.js did not exist: open every '?' on
 // Settings, assert each popover rect is inside the viewport at 1440 and 390").
 // It walks every `.settings-section`, shows it through `showSettingsSection`
 // (the same door the nav uses), presses each visible `[data-help-for]` toggle

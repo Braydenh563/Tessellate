@@ -55,7 +55,8 @@ HELP_TOPICS: list[dict] = [
             "note's first sentence and is named Title from its words. The Writing room has "
             '"Split into notes", which turns a block of pasted text into several '
             "notes, split by its headings, paragraphs and subjects with no model and by meaning, "
-            "auto-linked, with one. A formatting toolbar, here or in a document, is one Tab stop: "
+            "auto-linked, with one. The box's formatting toolbar sits under the text and holds Turn into and Ask Atlas "
+            "about the selected words; / opens the blocks menu. A formatting toolbar, here or in a document, is one Tab stop: "
             "Tab reaches it once, Left and Right move between its buttons, and Tab goes on to the page."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
@@ -476,7 +477,7 @@ HELP_TOPICS: list[dict] = [
             "background and slows the graph physics, for a slow or small machine; Auto "
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
             "and On or Off overrides that. The Appearance panel (Pop out at the top, "
-            "or Ctrl+K, Appearance) holds the same settings beside the app, with "
+            "or Ctrl+K, Appearance, or right-click the theme button) holds the same settings beside the app, with "
             "a strip of sections and a Peek button. The sliders' numbers (Zoom, "
             "Corner rounding, Glass blur) type in too."
         ),
@@ -534,7 +535,7 @@ HELP_TOPICS: list[dict] = [
             "the command palette, Ctrl+P find anything, Ctrl+F find on this "
             "page, / jump to search (the chat box on Chat), Ctrl+Z undo, "
             "Ctrl+Shift+Z redo (on a phone, More then Commands opens the "
-            "palette), Alt+Left and Alt+Right back and forward, a double-click "
+            "palette), Alt+Left and Alt+Right back and forward, F2 rename the item you are on, a double-click "
             "on Notes or Library in the top bar back to its first sub-tab, Ctrl+, "
             "settings, Ctrl+Shift+L light or dark, Ctrl+Shift+Y show or hide the "
             "companion, Ctrl+Alt+R reload clearing "
@@ -894,7 +895,9 @@ HELP_TOPICS: list[dict] = [
             "It never deletes anything and skips itself on battery power. It "
             "also gives a second opinion on notes that were filed by your "
             "notebook's own words while no model was available, moving the "
-            "ones the model files elsewhere."
+            "ones the model files elsewhere. After a run, What the last run "
+            "changed lists each change with its lines out and in and an Undo; "
+            "Keep all accepts the run, Undo all puts every change back."
         ),
         "badge": {"label": "Background tasks", "section": "tasks"},
     },
@@ -1776,8 +1779,8 @@ HELP_TOPICS.extend(
                 "address",
             ),
             "body": (
-                "Settings, About says which version you have, the address and port "
-                "the app runs at, and checks for a newer one. When a check finds one, a bar appears at the top with an "
+                "Settings, About says which version and build you have, the address and port "
+                "the app runs at, whether the notebook folder can be written to, and checks for a newer one. When a check finds one, a bar appears at the top with an "
                 "Update button and a close; the Windows app installs it when you "
                 "press Update, and nothing installs before that. Closing the bar "
                 "hides it for that version, and Show the update bar turns it off. "

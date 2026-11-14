@@ -678,7 +678,8 @@ SOCIAL_PHRASES.update({
 #: "id", "mid", "loosing", "weather"); so is a key with a space, which
 #: `repair` never looks up (it reads one word at a time). The common
 #: misspellings among these look to come from Wikipedia's "Lists of common
-#: misspellings" (CC BY-SA): see docs/THIRD_PARTY.md.
+#: misspellings" (CC BY-SA 4.0, by Wikipedia's contributors); this block is
+#: offered under CC BY-SA 4.0 or GPLv3: see docs/THIRD_PARTY.md.
 SLANG.update({
     "broski": "brother", "brotato": "brother", "brotatochip": "brother", "nocap": "no lie",
     "lowkey": "secretly", "highkey": "obviously", "sus": "suspicious", "rizz": "charm",

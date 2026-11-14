@@ -14,9 +14,9 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((look) => {
+  await page.evaluate(async (look) => {
     localStorage.setItem('atlas-look', look);
-    const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    prefs.set('avatar-buddy', 'atlas'); await ensureModule('characters'); syncNameMarkBuddy();
   }, process.env.LOOK || 'feminine');
   await page.waitForTimeout(3000);
   await page.evaluate(() => {

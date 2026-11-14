@@ -147,7 +147,9 @@ function tabRowSpace() {
   let others = 0;
   let siblings = 0;
   for (const child of header.children) {
-    if (child === bar || child.classList.contains("hidden")) continue;
+    //: An item with no box takes no flex gap: the header's `display: none`
+    //: h1 was charged one, 7.2px the strip never lost (844x390, L466).
+    if (child === bar || !child.getClientRects().length) continue;
     others += child.getBoundingClientRect().width;
     siblings += 1;
   }
@@ -294,7 +296,7 @@ $("tab-bar")?.addEventListener("scroll", syncTabOverflowFade);
 
 //: **One sliding indicator for every strip** (the owner, 2026-10-04: "a
 //: slight css sliding animation ... cheap but looks professional", and
-//: 2026-10-05: "Also like the smooth slide across tabs"; 08-consistency.css,
+//: 2026-10-05: "Also like the smooth slide across tabs"; 07-whiteboard-misc.css,
 //: "one sliding indicator"). The top bar, the sub-tab strips, every
 //: segmented control, the Settings sections and a pane's groups: the strip's
 //: `::before` takes the chosen option's place and size at once (custom
@@ -451,10 +453,14 @@ function edgeFadeWire(bar) {
   const seen = new ResizeObserver(() => syncEdgeFade(bar));
   for (const box of [bar, ...bar.querySelectorAll("[data-status-zone]")]) seen.observe(box);
   bar.addEventListener("scroll", () => syncEdgeFade(bar));
-  bar.addEventListener("click", (event) => {
+  //: And the tab the keyboard reaches (L419): `focus()` leaves a half-shown
+  //: tab where it is, its ring cut by the strip's edge. Both events, as
+  //: Safari does not focus a pressed button.
+  const reveal = (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
     if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+  };
+  for (const type of ["click", "focusin"]) bar.addEventListener(type, reveal);
 }
 
 // The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
@@ -1003,6 +1009,8 @@ async function loadReminders() {
     count.className = "group-count";
     count.textContent = items.length;
     heading.append(text, count);
+    //: Overdue piles up: one menu moves the lot on, ticks it off or bins it (L-general-12).
+    if (label === "Overdue" && items.length > 1) heading.append(loadReminders.overdueTriage(items));
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1020,6 +1028,26 @@ async function loadReminders() {
   // loop above never reaches the branch that would.
   if (!groups.Done.length) donePagination.classList.add("hidden");
 }
+
+//: The Overdue heading's bulk menu (L-general-12). Leaving one where it is
+//: is "still matters"; the menu is for the rest. Each choice is one PUT per
+//: reminder and one Undo for the whole batch; Delete asks first.
+loadReminders.overdueTriage = function (items) {
+  //: The handlers are in the lazy reminder-edit.js (`loadReminders.overdueRun`): only a press needs them.
+  const go = (choice) => () =>
+    lazyScript("/js/reminder-edit.js")
+      .then(() => loadReminders.overdueRun(choice, items))
+      .catch((e) => toast(e.message || "Couldn't load the reminder tools.", true, { action: ["Try again", go(choice)] }));
+  return kebabMenu(
+    [
+      { label: "ph:sun-horizon Move all to tomorrow 9am", run: go("tomorrow"), group: "move" },
+      { label: "ph:calendar-dots Move all to next Monday 9am", run: go("monday"), group: "move" },
+      { label: "ph:check-circle Mark all done", run: go("done"), group: "done" },
+      { label: "ph:trash Delete all", run: go("bin"), group: "remove", danger: true },
+    ],
+    "Triage overdue reminders"
+  );
+};
 
 function paginateDoneReminders(items) {
   const bar = $("reminders-done-pagination");
@@ -1138,25 +1166,21 @@ function reminderItem(reminder, label) {
   checkbox.style.width = "auto";
   checkbox.addEventListener("change", async () => {
     const before = { due_at: reminder.due_at, done: reminder.done };
-    //: Completing a repeating reminder rolls it on to its next time, read
-    //: by the server from the rule (every weekday, the last Friday of the
-    //: month) in this person's own days; its undo puts the due time back.
+    //: A repeating one rolls on to its next time (the lazy reminder-edit.js, `completeRepeat`).
     if (checkbox.checked && reminder.recurring && reminder.recurring !== "none") {
-      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
-      //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
-      if (!rolled) { loadReminders(); return; }
-      const put = (body) => async () => {
-        await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
-        loadReminders();
-      };
-      pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
-      loadReminders();
-      toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
-      return;
+      await lazyScript("/js/reminder-edit.js");
+      return loadReminders.completeRepeat(reminder, before);
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
     if (checkbox.checked) atlasOn("done");
+    //: What came of it, one line written into the note it is about (L-general-10): offered, never asked.
+    if (checkbox.checked && reminder.entry_id && reminder.target_kind === "note") {
+      //: The prompt is in the lazy reminder-edit.js: only a press needs it (boot scripts' cap).
+      toastAction("Reminder done.", "Add outcome", () =>
+        lazyScript("/js/reminder-edit.js").then(() => loadReminders.outcomeAsk(reminder))
+      );
+    }
   });
   row.appendChild(checkbox);
 
@@ -1229,24 +1253,8 @@ function reminderItem(reminder, label) {
   //: is touched for; four same-sized icons were one more than a row reads.
   //: A deleted reminder goes to the recycle bin (WORLD_CLASS_PLAN 5 item
   //: 10); Undo restores the same reminder, its id and its target kept.
-  const deleteReminder = async () => {
-    await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-    loadReminders();
-    const restore = async () => {
-      await apiJson(`/reminders/${reminder.id}/restore`, { method: "POST" });
-      loadReminders();
-    };
-    const rebin = async () => {
-      await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-      loadReminders();
-    };
-    const action = pushUndo("Moved a reminder to the bin", restore, rebin);
-    toastAction(`Moved ${toastName(reminder.text, "the reminder")} to the bin.`, "Undo", async () => {
-      settleUndoFromToast(action);
-      await restore().catch((e) => toast(e.message, true));
-      toast(`Restored ${toastName(reminder.text, "the reminder")}.`);
-    });
-  };
+  //: Bin with Undo, in the lazy reminder-edit.js: only a press needs it.
+  const deleteReminder = () => lazyScript("/js/reminder-edit.js").then(() => loadReminders.binOne(reminder));
   const menuItems = [];
   const target = reminderTarget(reminder);
   if (target) menuItems.push({ label: target.label, run: target.open, group: "go" });

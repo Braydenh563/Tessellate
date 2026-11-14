@@ -2,7 +2,7 @@
 // downloaded. Lazy (app.js `LAZY_MODULES.semanticNotice`), reached from the
 // model status poll (status.js) only when /models/status says `semantic_offer`
 // (a save wanted the model, nothing is on this computer and the question is
-// still open), so the boot scripts carry a few lines of it and nothing else.
+// unanswered), so the boot scripts carry a few lines of it and nothing else.
 //
 // The owner, 2026-10-27: nothing downloads without a yes. The model came from
 // huggingface.co on the first saved note, unasked. Now the app asks once, in

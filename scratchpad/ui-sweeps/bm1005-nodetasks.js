@@ -156,7 +156,7 @@ const { boot, openBoardsTab } = require('./lib.js');
     }
     await page.keyboard.press('Escape');
     worst = Math.max(worst, done ? used : 99);
-    console.log(`task ${name}: ${done ? `${used} press${used === 1 ? '' : 'es'}` : `not done in ${used} presses`} ${done && used <= 2 ? 'PASS' : 'FAIL'}`);
+    console.log(`task ${name}: ${done ? `${used} press${used === 1 ? '' : 'es'}` : `unfinished in ${used} presses`} ${done && used <= 2 ? 'PASS' : 'FAIL'}`);
   }
   // colour, reset, rename are on the bar or the topic itself
   console.log(`worst task: ${worst === 99 ? 'some not done' : worst + ' steps'}`);

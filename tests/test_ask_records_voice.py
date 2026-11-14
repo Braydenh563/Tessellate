@@ -16,16 +16,18 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from tests._app_js import with_pieces
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 ASK = with_pieces("capture-ask.js")
 
 
 def _rule(selector: str) -> str:
-    found = re.search(re.escape(selector) + r" \{([^}]*)\}", CSS)
+    # The last one: the rules that were 08's sit after their component's own.
+    found = re.findall(re.escape(selector) + r" \{([^}]*)\}", CSS)
     assert found, selector
-    return found.group(1)
+    return found[-1]
 
 
 def test_the_reason_is_a_fact_in_the_facts_line_not_a_row_of_its_own():
@@ -36,7 +38,8 @@ def test_the_reason_is_a_fact_in_the_facts_line_not_a_row_of_its_own():
     # went with the old facts line: `replyRecordCards` replaces that line with
     # `.record-meta` on Ask and Chat alike, so the chip is never seen styled.
     assert "#raw-results .entry-meta > .result-reason-chip" not in CSS
-    assert "#raw-results .entry-meta {" not in CSS
+    # The one left is 03-dashboard-widgets.css's own gap rule.
+    assert CSS.count("#raw-results .entry-meta {") == 1
 
 
 def test_the_card_takes_the_notes_lists_inset_and_its_quiet_metadata():

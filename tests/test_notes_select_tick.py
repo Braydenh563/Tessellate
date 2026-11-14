@@ -48,7 +48,7 @@ def _front_css(name: str) -> str:
 
 
 def test_notes_select_is_square_when_its_word_is_hidden():
-    css = _front_css("08-consistency.css")
+    css = _front_css("07-whiteboard-misc.css")
     rule = '[data-dock-name="notes"] .dock-actions > button:has(> .ph-lead + .dock-word)'
     assert rule in css
     block = css[css.index(rule):].split("}", 1)[0]

@@ -246,7 +246,40 @@ async function renderStorageBreakdown() {
   sum.className = "storage-total";
   sum.textContent = `Together ${humanBytes(total)}`;
   legend.appendChild(sum);
+  renderStorageBreakdown.orphans();
 }
+
+//: **Files nothing uses** (L-ui-modernisation-74), a property rather than a new global name. Counted when About opens, deleted only
+//: when asked: a picture uploaded to the gallery alone is one of these and may be
+//: wanted, so the background pass never deletes uploads. The server counts the
+//: bin and older versions as uses, and refuses while a private note is locked.
+renderStorageBreakdown.orphans = async () => {
+  const row = $("media-orphans-row");
+  if (!row) return;
+  const found = await apiJson("/media/orphans?limit=1", { silent: true }).catch(() => null);
+  const total = Number(found?.total) || 0;
+  row.classList.toggle("hidden", !found || (total === 0 && !found.skipped_private));
+  if (!found) return;
+  const line = $("media-orphans-line");
+  const button = $("media-orphans-delete");
+  if (found.skipped_private) {
+    line.textContent = "Unlock private notes to check which files are unused.";
+    button.classList.add("hidden");
+    return;
+  }
+  line.textContent = `${nounCount(total, "file", "files")} no note, document, board or chat points at, counting the bin and older versions.`;
+  button.classList.remove("hidden");
+  button.onclick = async () => {
+    if (!(await confirmDialog(`Delete ${nounCount(total, "file", "files")} nothing uses?\n\nThis cannot be undone.`))) return;
+    try {
+      const done = await apiJson("/media/orphans", { method: "DELETE" });
+      toast(done.skipped_private ? "Nothing deleted: unlock private notes first." : `Deleted ${nounCount(done.deleted || 0, "file", "files")}.`);
+    } catch (error) {
+      toast(error.message, true);
+    }
+    renderStorageBreakdown();
+  };
+};
 
 //: The schedule with its last success (WORLD_CLASS 25e, the Backups row): what
 //: the automatic backup is, when it last ran and whether that worked, and when

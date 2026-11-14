@@ -1,4 +1,6 @@
-"""The span review has a keyboard and phone way in (L-timeline-2 follow-up).
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+The span review has a keyboard and phone way in (L-timeline-2 follow-up).
 
 The brush is Shift and a mouse drag on the strip, and the strip is hidden on a
 phone; Options, Review some days asks for the two days on the sheet recipe and

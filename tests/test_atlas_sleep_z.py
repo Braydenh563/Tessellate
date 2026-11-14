@@ -4,7 +4,7 @@ head would be (the owner, 2026-10-19). Measured once in Chromium, each pose and 
 
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 
 
 def test_each_lying_pose_moves_the_zs_down_to_the_head() -> None:

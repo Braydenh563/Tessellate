@@ -1,4 +1,6 @@
-"""L-documents-1: the diagram picture pans by dragging with the right mouse button.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L-documents-1: the diagram picture pans by dragging with the right mouse button.
 
 The middle button and Space already pan (diagram-view.js). The right button joins them: a press that
 travels over 12 px pans, and the menu the same button opens (a block's or an arrow's) is held back for

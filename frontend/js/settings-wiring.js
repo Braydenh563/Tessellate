@@ -530,7 +530,7 @@ function flashSaved(el) {
   //: dropped that glow for its whole duration and snapped it back at the end,
   //: which reads as the button flickering rather than acknowledging. The
   //: resting value is handed to the keyframes as a custom property and they
-  //: draw it underneath the ring (08-consistency.css). Read before the class
+  //: draw it underneath the ring (07-whiteboard-misc.css). Read before the class
   //: goes on, or it is the animation's own first frame that comes back.
   const resting = getComputedStyle(el).boxShadow;
   el.style.setProperty("--just-saved-rest", resting && resting !== "none" ? resting : "0 0 #0000");
@@ -823,10 +823,11 @@ document.addEventListener("keydown", (e) => {
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!burst && singleKeys && !boardOwns) {
+  if (!burst && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
-      if (bare && matchesShortcut(e, def.keys)) {
+      //: WCAG 2.1.4 is about character keys, which speech input types; a named key (F2) stays on.
+      if (bare && (singleKeys || def.keys.length > 1) && matchesShortcut(e, def.keys)) {
         //: Any open modal, not a list of three (audit 1029 X1), asked only for a matching key.
         if (activeOverlay() || document.querySelector("dialog[open]")) break;
         e.preventDefault();
@@ -1003,7 +1004,7 @@ function maybeShowOnboarding() {
   });
 }
 
-//: The third door into the tour, and it was the one left open (the owner,
+//: The third door into the tour, and it was the one missed (the owner,
 //: 2026-09-21: "the take the tour again button in the about settings page
 //: isnt disabled"). Same flag, same words as the replay strip's buttons.
 //: **After the page has loaded, not now.** `TOUR_ENABLED` is a `const` in
@@ -1133,6 +1134,7 @@ const DEFAULT_SHORTCUTS = {
   lanPanel: { keys: "Alt+L", label: "Other devices on this network: open the switch and the trusted networks" },
   navigateBack: { keys: "Alt+ArrowLeft", label: "Go back to the previous page or view" },
   navigateForward: { keys: "Alt+ArrowRight", label: "Go forward again" },
+  renameRow: { keys: "F2", label: "Rename the list item you are on" },
 };
 
 const SHORTCUT_STORE = "keyboardShortcuts";
@@ -1435,6 +1437,10 @@ function runShortcut(id) {
     // Same call the status bar's own Back/Forward buttons already make.
     navigateBack: () => stepTabHistory(-1),
     navigateForward: () => stepTabHistory(1),
+    renameRow: () => {
+      const host = document.activeElement instanceof Element ? document.activeElement.closest(ROW_MENU_HOSTS) : null;
+      host?.querySelector(".menu-wrap")?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""))?.run();
+    },
   };
   actions[id]?.();
 }
@@ -1766,7 +1772,7 @@ onSurface("notes", () => {
     if (!box.draftTimer) return;
     clearTimeout(box.draftTimer);
     box.draftTimer = 0;
-    //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
+    //: Whitespace alone is not a draft (INBOX 431 follow-on: the box came
     //: back holding three blank lines after a reload, which hid the empty
     //: placeholder). Newlines left behind by a removed image or a stray Enter
     //: must not be kept and restored as if they were writing.
@@ -2185,106 +2191,9 @@ async function uploadStagedFiles(entryId) {
 }
 
 async function handleFileUpload(textarea, files) {
-  // The capture composer is the one place that can stage: it is the only
-  // textarea whose content becomes a note with an id a moment later. A
-  // document's own editor writes into a document, which has no attachment
-  // table, so it keeps the inline-markdown path for everything.
-  const canStage = textarea.id === "entry-content";
-  const images = canStage ? files.filter((f) => f.type.startsWith("image/")) : files;
-  const others = canStage ? files.filter((f) => !f.type.startsWith("image/")) : [];
-  if (others.length) {
-    captureStagedFiles.push(...others);
-    renderCaptureFiles();
-    toast(
-      others.length === 1
-        ? `“${others[0].name}” will be attached when you save.`
-        : `${others.length} files will be attached when you save.`
-    );
-  }
-  if (!images.length) return;
-  files = images;
-
-  const cursorPosition = textarea.selectionStart;
-  const selectionEnd = textarea.selectionEnd;
-  const originalText = textarea.value;
-
-  //: **The composer stages instead of uploading**, see `captureStagedImages`.
-  //: Everywhere else (the document editor) still uploads inline, because a
-  //: document has an id from the moment it exists and nothing to wait for.
-  //:
-  //: Written before the "Uploading…" placeholder below rather than after it:
-  //: assigning `textarea.value` moves the selection, so a branch that ran
-  //: afterwards and re-sliced against `selectionEnd` would cut the note in a
-  //: different place than it meant to.
-  if (canStage) {
-    let inserted = "";
-    for (const file of files) {
-      const key = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      captureStagedImages.push({
-        key,
-        file,
-        objectUrl: URL.createObjectURL(file),
-        name: file.name,
-      });
-      inserted += `![${file.name}](${stagedImageUrl(key)})\n`;
-    }
-    textarea.value =
-      originalText.slice(0, cursorPosition) + inserted + originalText.slice(selectionEnd);
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    const at = cursorPosition + inserted.length;
-    textarea.setSelectionRange(at, at);
-    toast(
-      files.length === 1
-        ? `“${files[0].name}” will be saved with the note.`
-        : `${files.length} images will be saved with the note.`,
-    );
-    return;
-  }
-
-  let textToInsert = "";
-  for (const file of files) {
-    textToInsert += `![Uploading ${file.name}…]()\n`;
-  }
-  textarea.value = originalText.substring(0, cursorPosition) + textToInsert + originalText.substring(selectionEnd);
-  textarea.dispatchEvent(new Event('input', { bubbles: true }));
-
-  let added = 0;
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await apiJson("/media/upload", {
-        method: "POST",
-        headers: authHeaders(),
-        body: formData
-      });
-      // Image syntax (`![]()`) unconditionally became an <img> at render
-      // time (renderInlineMarkdown): a non-image upload (PDF, docx, audio)
-      // failed to decode as an image and the img.onerror handler then
-      // reported it as "filename deleted", which is actively wrong: the
-      // file uploaded fine and is sitting at res.url. Link syntax for
-      // anything that isn't actually an image.
-      const fileMarkdown = file.type.startsWith("image/")
-        ? `![${res.filename}](${res.url})\n`
-        : `[${res.filename}](${res.url})\n`;
-      textarea.value = textarea.value.replace(`![Uploading ${file.name}…]()\n`, fileMarkdown);
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      added += 1;
-    } catch (err) {
-      // Reported directly (§89 item 2): an upload failure rendered as if it
-      // were the AI's own message: literal error text left sitting in the
-      // note/document content, indistinguishable from something the user
-      // actually typed. A toast is a notification; content is what gets
-      // saved. Removing the placeholder outright (not replacing it with
-      // more text) leaves the composer exactly as if the file were never
-      // dropped/pasted, which is the honest description of what happened.
-      console.error("Upload failed", err);
-      textarea.value = textarea.value.replace(`![Uploading ${file.name}…]()\n`, "");
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      toast(err.message || `Couldn't upload "${file.name}".`, true);
-    }
-  }
-  if (added) pushTextUndo("Added a file", textarea, originalText, textarea.value);
+  //: The work is in the lazy attach-accept.js (`handleFileUpload.run`): only a paste, drop or pick needs it, and the boot scripts are at their cap.
+  await lazyScript("/js/attach-accept.js");
+  return handleFileUpload.run(textarea, files);
 }
 
 // ROADMAP.md Tier 2 §16c: a file-picker button for Capture; paste and drop already worked. Same `handleFileUpload`, so all three paths insert alike.

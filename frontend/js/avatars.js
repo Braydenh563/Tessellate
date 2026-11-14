@@ -1,6 +1,6 @@
 // avatars.js: the generated faces. `nameMood` reads a name for what the
 // face should be (mood, creature, costume, hands, limbs, hair, style) and
-// `nameMark` draws it as an SVG; the CSS motion is in 08-consistency.css.
+// `nameMark` draws it as an SVG; the CSS motion is in characters-lazy.css.
 //
 // Split out of app.js on 2026-09-24, when the faces themselves took the
 // gzipped app.js over tests/test_static_compression.py's bound (762,903
@@ -5399,7 +5399,7 @@
   //: with the README's companion shot: "the atlas avatar gets cut off at the
   //: top"; measured, the figure's top at y=55 against the band's at 77).
   //: Worked out from the size and the pose's pivot (the same origins as the
-  //: CSS in 08-consistency.css, `.nm-buddy-face`), not measured: a placement
+  //: CSS in characters-lazy.css, `.nm-buddy-face`), not measured: a placement
   //: often lands while the figure is mid-way through its appear, and a rect
   //: read then is the small one. `ART_REACH` is the drawing's own reach past
   //: its box at size 1, rings and glow included.
@@ -6503,8 +6503,17 @@
     const band = document.getElementById("nm-buddy-band");
     if (!band) return;
     const kind = nmb.ride ? "" : nmb.perch;
-    const { top, bottom } = on && (kind === "hang" || kind === "bar") ? nameMarkBuddyLedges() : {};
+    const want = on && (kind === "hang" || kind === "bar");
+    //: **The bars are read once per perch and window** (L-ui-modernisation-62): every act's state write calls this
+    //: after the act's class went on, and the bars' box read was the task's first layout read, settling the figure's
+    //: restyle and the page's layout (660ms of it over 30 acts at 4x on Atlas, a CPU profile). The bars' edges move
+    //: with the window; the clip is kept while the perch, the window and the written clip are as they were, 15s at most.
+    const key = want ? `${kind}|${innerWidth}x${innerHeight}` : "";
+    const kept = nameMarkBuddyAloft.kept;
+    if (kept && kept.key === key && kept.clip === band.style.clipPath && performance.now() - kept.at < NMB_COVERS_MAX_MS) return;
+    const { top, bottom } = want ? nameMarkBuddyLedges() : {};
     band.style.clipPath = kind === "hang" && top ? `inset(${Math.ceil(top.bottom)}px -9999px -9999px -9999px)` : kind === "bar" && bottom ? `inset(-9999px -9999px -${Math.floor(bottom.top)}px -9999px)` : "";
+    nameMarkBuddyAloft.kept = { key, clip: band.style.clipPath, at: performance.now() };
   };
 
   //: **How it gets there: by the way its body moves, never a slide** (the
@@ -7530,7 +7539,7 @@
   //: idle span and shortens only for input or a toast; none in a hidden window.
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
-  //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
+  //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 07-whiteboard-misc.css).
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
     document.documentElement.classList.toggle("is-calm", on);
@@ -8510,7 +8519,15 @@
       if (![...buddy.classList].some((c) => c.startsWith("nmb-act-") && !NMB_FACELESS_ACTS.includes(c.slice(8)))) buddy.classList.remove("nmb-arms");
     };
     let joined = !!was && !!act && act !== was;
-    if (was && !joined) nameMarkBuddyBlend(buddy, leave);
+    //: **A blink, a glance or a turn is not handed over** (L-ui-modernisation-62, buddylag.js: the act hand-over after
+    //: a tab switch forced 24 to 46ms at 4x with Atlas on). Their classes move only the lids (a plain `scale: 0`, or
+    //: the lids' own `scaleY` loop) and `data-turn` is written outside the hand-over, so between them and rest it
+    //: eased nothing in every run (a per-act probe: 0 eases) and read every part twice, 10 to 370ms at 4x on Atlas.
+    const lidsOnly = [was, act].every((a) => !a || ["blink", "glance", "turn"].includes(a));
+    if (was && !joined) {
+      if (lidsOnly) leave();
+      else nameMarkBuddyBlend(buddy, leave);
+    }
     if (was === "lie" && act !== "lie" && !buddy.classList.contains("nmb-sleep")) nameMarkBuddyGetUp(buddy);
     if (act !== "emerge") buddy.classList.remove("nmb-duck");
     if (was === "turn" || was === "glance") delete buddy.dataset.turn;
@@ -8586,7 +8603,11 @@
     if (act === "land" && nmb.afterLand) {
       if (joined) nameMarkBuddyBlend(buddy, leave);
       into();
-    } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);
+    } else {
+      const change = joined ? () => (leave(), into()) : into;
+      if (lidsOnly) change();
+      else nameMarkBuddyBlend(buddy, change, NMB_BLEND_IN_MS);
+    }
     //: A new act starts with its arms (INBOX 469): a small lift and back.
     if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
     nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
@@ -8798,7 +8819,7 @@
   //: pointerout on div.modal-overlay.nm-viewer`; a30p-1103.md, 113ms a write at 4x CPU). The three
   //: properties were inherited, so each write on `#nm-buddy` restyled all 647 of its descendants
   //: for the four elements that read them. They are registered `inherits: false` now
-  //: (08-consistency.css) and set on those four kinds directly: 0.6ms a write. Properties of the function, not globals
+  //: (07-whiteboard-misc.css) and set on those four kinds directly: 0.6ms a write. Properties of the function, not globals
   //: (`tests/test_global_scope_ratchet.py`).
   nameMarkBuddyAim.readers = ".name-mark .nm-eyes, .nm-char .nm-buddy-head, .atl-layer-lids, .nm-atlas .atl-iris";
   nameMarkBuddyAim.set = (buddy, name, value) => {
@@ -8820,7 +8841,7 @@
   }
 
   //: **Atlas lies down on its nebula and curls up in it** (atlas.js's pose
-  //: hooks, 08-consistency.css: `data-pose` lie-1, lie-2, lie, curl-1,
+  //: hooks, characters-lazy.css: `data-pose` lie-1, lie-2, lie, curl-1,
   //: curl). Its own drawing has these as frames that ease into each other,
   //: so a lie-down is played through them, 450ms apart, and getting up plays
   //: them back to the pose it had (`nmb.pose`, which stays "stand" or "sit"
@@ -9560,7 +9581,9 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: A list row holds only a preview of a long note (`content_truncated`, entry-card.js: "long by definition"), so its
+    //: own text is never past 1200 characters when its Show more is pressed: the flag counts as long.
+    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
@@ -10509,7 +10532,7 @@
   ];
   function nameMarkBuddyNameProps(buddy, face) {
     const words = NMB_PROP_WORDS.filter(([cls]) => buddy.classList.contains(cls)).map(([, said]) => said);
-    //: Asked of the classes that show the cap (08-consistency.css, `.nmp-nightcap`), not of its computed
+    //: Asked of the classes that show the cap (characters-lazy.css, `.nmp-nightcap`), not of its computed
     //: opacity: that read settled the whole figure's pending style (INBOX 1667: `BUTTON.onpointerenter`
     //: 99ms of forced layout; 210ms at 4x CPU in the probe).
     const capShown = '.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie), :is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off)';
@@ -10936,7 +10959,7 @@
     //: with that scroll. It sits under `<html>`, not in the body (INBOX 1726):
     //: a node added under `<body>` re-asks every `:has()` subject (124 to 213ms
     //: on the Library Images tab at 4x), under `<html>` it is 1 to 9ms; the text
-    //: it took from body is restated in 08-consistency.css. Between them the shutter, which closes the band
+    //: it took from body is restated in 07-whiteboard-misc.css. Between them the shutter, which closes the band
     //: down to the bar its perch has gone under (`nameMarkBuddyRideFrames`).
     const band = document.createElement("div");
     band.id = "nm-buddy-band";
@@ -11365,6 +11388,17 @@
         drag = null;
         face.dataset.dragged = "1";
         nameMarkBuddyMenu(buddy, at);
+        //: The menu opens at the finger, so a row can be under it and the lift may end in a click on it
+        //: (companionmenu.js, 1280x800 at 1.5: the menu closed itself): that one click is not a choice.
+        const eat = (event) => {
+          if (nmb.menu?.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+        };
+        document.addEventListener("click", eat, true);
+        document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 350), { once: true, capture: true });
+        setTimeout(() => document.removeEventListener("click", eat, true), 4000);
       }, 550);
     });
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
@@ -11596,6 +11630,11 @@
     for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { arm = null; }, true);
   })();
   // pull-grab:end
+
+  //: Handles for the ui sweeps, which drive the tick and the pat from outside this closure (L-ui-modernisation-75).
+  nmb.tick = nameMarkBuddyTick;
+  nmb.pet = nameMarkBuddyPet;
+  nmb.inner = { nameMarkBuddyBand, nameMarkBuddyBeat, nameMarkBuddyBellErrand, nameMarkBuddyChatErrand, nameMarkBuddyCheck, nameMarkBuddyDrift, nameMarkBuddyHeadAt, nameMarkBuddyCovers, nameMarkBuddyHits, nameMarkBuddyIndexReset, nameMarkBuddyObstacles, nameMarkBuddyOrigin, nameMarkBuddyPerches, nameMarkBuddyShape, nameMarkBuddyWordsUnder, nameMarkBuddyScroller, nameMarkBuddySeen, NMB_EXPR_EVENTS };
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });

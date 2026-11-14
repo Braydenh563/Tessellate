@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -22,7 +23,7 @@ def test_card_children_are_header_title_picture_footer_in_order():
 
 
 def test_picture_spans_the_grid_whatever_element_it_is():
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("00-tokens-shell.css", "07-whiteboard-misc.css")
     sel = ".library-grid:not(.library-list) .library-board-card > :is(.board-minimap, .library-card-meta)"
     assert "grid-column: 1 / -1" in _rule(css, sel)
     # The old `svg`-only selector let the <img> into the title's track.
@@ -30,7 +31,7 @@ def test_picture_spans_the_grid_whatever_element_it_is():
 
 
 def test_title_truncates_and_footer_is_one_line():
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("00-tokens-shell.css", "07-whiteboard-misc.css", "library-lazy.css")  # L459 moved the footer's rules
     base = ".library-grid:not(.library-list) .library-board-card > "
     title = _rule(css, base + ".library-card-title")
     for need in ("text-overflow: ellipsis", "white-space: nowrap", "min-width: 0"):

@@ -425,7 +425,7 @@ async function submitHelpChatQuestion(question, { keepBox = false } = {}) {
     const shown = result?.shown ?? (result?.composed ? content : await helpChatReveal(pending, content, signal));
     pending.remove();
     //: Stopped mid-reveal: what was shown stays, marked, and the history
-    //: keeps the whole answer so a follow-up still makes sense to the model.
+    //: keeps the whole answer so a follow-on question still makes sense to the model.
     answerRow = renderHelpChatMessage(
       "assistant",
       signal.aborted ? `${shown.trimEnd()} (stopped)` : content,

@@ -13,7 +13,7 @@
 //
 //   BASE=http://127.0.0.1:8971 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     NODE_PATH=/opt/node22/lib/node_modules node scratchpad/ui-sweeps/graphphone.js
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTH = Number(process.env.WIDTH || 390);
@@ -142,8 +142,8 @@ async function touch(cdp, type, points) {
         const x = b.left + b.width * fx;
         const y = b.top + b.height * fy;
         if (document.elementFromPoint(x, y) !== canvas) continue;
-        const [wx, wy] = gcWorldPoint({ clientX: x, clientY: y });
-        const node = gcNodeAtWorld(wx, wy);
+        const [wx, wy] = gcRequestDraw.inspect.gcWorldPoint({ clientX: x, clientY: y });
+        const node = gcRequestDraw.inspect.gcNodeAtWorld(wx, wy);
         if (node && !node.isGroup && !onNode) onNode = [Math.round(x), Math.round(y), node.id];
         if (!node && !empty) empty = [Math.round(x), Math.round(y)];
       }
@@ -208,7 +208,7 @@ async function touch(cdp, type, points) {
   if (points.empty) {
     await page.evaluate(() => {
       gcTab.selected.clear();
-      gcSelectionChanged(gcTab);
+      gcRequestDraw.inspect.gcSelectionChanged(gcTab);
     });
     const [ex, ey] = points.empty;
     await hold(ex, ey);
@@ -257,7 +257,7 @@ async function touch(cdp, type, points) {
     check(lassoed.dock, 'the selection dock stayed hidden after a lasso');
     await page.evaluate(() => {
       gcTab.selected.clear();
-      gcSelectionChanged(gcTab);
+      gcRequestDraw.inspect.gcSelectionChanged(gcTab);
     });
   }
 
