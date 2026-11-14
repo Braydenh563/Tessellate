@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram templates: Launch plan (Gantt), Where the time goes (pie), Order states, Shop classes and Shop data, one starter for each chart kind, in Suggest, Templates (L-documents-88).
 - Diagram builder: the Ask box and Suggestions now work on Gantt, pie, state, class and ER blocks (rule path with no model, model path checked like the other kinds); deleting a class or entity also removes the relations that end in it (L-documents-86).
 - Diagram builder: a Gantt chart's title and date format and a pie chart's title are blocks you rename in the pane, and a source you have not touched prints back byte for byte (L-documents-87).
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.

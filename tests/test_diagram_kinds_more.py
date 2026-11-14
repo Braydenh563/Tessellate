@@ -296,3 +296,21 @@ def test_the_builder_routes_the_five_kinds_and_the_plain_list_no_longer_names_th
     lib = (JS / "diagram-library.js").read_text(encoding="utf-8")
     for tile in ("slice", "transition", "relationship"):
         assert f'"{tile}"' in lib
+
+
+def test_each_chart_kind_has_a_template_that_reads_and_prints_unchanged():
+    """L-documents-88: one template for Gantt, pie, state, class and ER, offered by the same picker as the first four."""
+    path = ROOT / "frontend" / "board-library" / "diagram-templates.json"
+    rows = [t for t in json.loads(path.read_text(encoding="utf-8"))["templates"] if t.get("kind") in ("gantt", "pie", "state", "class", "er")]
+    assert sorted(t["kind"] for t in rows) == ["class", "er", "gantt", "pie", "state"]
+    got = _run(
+        f"const rows = {json.dumps(rows)};\n"
+        "console.log(JSON.stringify(rows.map((t) => { const A = K[t.kind]; const m = A.parse(t.source);"
+        " return { id: t.id, same: Boolean(m) && A.print(m) === t.source, head: t.source.startsWith(A.header),"
+        " blocks: m ? O.count(A, m) : 0, kept: m ? O.rows(A, m).filter((r) => r.type === 'k').length : -1 }; })));"
+    )
+    assert all(r["same"] and r["head"] and r["kept"] == 0 and r["blocks"] >= 6 for r in got), got
+    for t in rows:
+        for words in (t["name"], t["hint"], *re.findall(r'"([^"]+)"', t["source"])):
+            assert "\u2014" not in words and "!" not in words, words
+        assert t["name"][0].isupper() and t["hint"].endswith(".")

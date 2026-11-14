@@ -2474,7 +2474,8 @@ MORE_TOPICS.extend([
             "press Title or Date format in the bar, then rename it like any block. The source keeps what you wrote until you change that block. "
             "The Ask box works on all five: add task Test under Build, add slice Cats 30, set Review to 5d, add transition from Idle to Done, "
             "add relation from Order to Customer. Suggestions list a slice named twice, an empty section, a second title, "
-            "or a state, class or entity with nothing joined to it, each with a button that removes it."
+            "or a state, class or entity with nothing joined to it, each with a button that removes it. "
+            "Suggest, Templates has one starter for each kind: Launch plan, Where the time goes, Order states, Shop classes and Shop data."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
