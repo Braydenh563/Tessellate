@@ -99,7 +99,7 @@ function fillEntryMenu(menu, entry) {
       // titled note ("Probe A\nrelates to sourdough"), which reads as
       // two sentences jammed together on one line of the dialog.
       run: () =>
-        lazyScript("/js/connections.js").then(() => openConnections(
+        ensureModule("connections").then(() => openConnections(
           "entries",
           entry.id,
           entry.title || noteNamePlain(entry.content, 80)

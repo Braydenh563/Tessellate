@@ -51,7 +51,9 @@ Object.assign(LAZY_MODULES, {
   //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
   panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: The activity panel and the run folds it shares with Settings, Tasks (task-steps.js).
-  activity: ["/js/task-steps.js", "/js/activity-panel.js"],
+  activity: ["/css/agent-runs-lazy.css", "/js/task-steps.js", "/js/activity-panel.js"],
+  //: The Connections sheet (connections.js) and the rows the Notes column shares; its own stylesheet rides with it.
+  connections: ["/css/connections-lazy.css", "/js/connections.js"],
   //: Settings, Tasks (chat-tasks.js), About's health block (settings-health.js), Personas (personas-pane.js).
   settingsPanes: ["/js/task-steps.js", "/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
   //: Improve (improve-panel.js) and a note's re-check and attach actions (lightbox-actions.js).
@@ -157,7 +159,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "showAskAsOf"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],

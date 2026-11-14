@@ -7585,6 +7585,44 @@ function ocrSyncMoreMenu(canEdit = ocrUi.more.canEdit, canAdd = ocrUi.more.canAd
 //: keeps the shape of the document: each page's text is separately
 //: copyable, and "Save as note" writes them in order with their page
 //: numbers instead of a wall of text nobody can navigate.
+//: Draws the pages a range read has (the finished answer, or the stored readings when Stop lands first);
+//: returns the pages that have text.
+function ocrShowReadPages(body) {
+  const withText = (body.pages || []).filter((page) => (page.text || "").trim());
+  if (withText.length) {
+    ocrRenderRegions({
+      //: `kind: "heading"` on nothing here: these are pages, not layout
+      //: blocks, and the label carries the page number because a reader
+      //: scrolling twelve transcriptions needs to know which is which.
+      regions: withText.map((page, index) => ({
+        index,
+        kind: "text",
+        text: `Page ${page.page + 1}\n\n${page.text.trim()}`,
+        confidence: 0,
+        box: { x: 0, y: 0, w: 1, h: 1 },
+      })),
+      source: "stored-text",
+      message: body.message || `Read ${withText.length} page(s): text only, no page positions.`,
+      pages: ocrWorkspacePages,
+      page: ocrWorkspacePage,
+    });
+  } else {
+    $("ocr-message").textContent = body.message || "Nothing was read on those pages.";
+    $("ocr-message").classList.remove("hidden");
+  }
+  return withText;
+}
+
+//: Stop in the Activity panel ends the read between two pages, but the request answers only then: the pages
+//: already stored are shown now (L-world-class-353); the finished answer repaints the same pages after.
+window.addEventListener("activity-stopped", async (event) => {
+  const image = ocrWorkspaceCurrent;
+  if (event.detail?.kind !== "ocr-range" || !ocrReadInFlight(image)) return;
+  const base = image._isAttachment ? `/files/${image.id}` : `/media/${image.id}`;
+  const body = await apiJson(`${base}/page-reads`, { silent: true }).catch(() => null);
+  if (body && ocrReadInFlight(image)) ocrShowReadPages({ ...body, message: `Stopped. ${body.message || ""}`.trim() });
+});
+
 //: Called from Read's menu (every page, or the range `ocrAskRange` asked for).
 async function ocrReadRange(spec) {
   const image = ocrWorkspaceCurrent;
@@ -7620,29 +7658,7 @@ async function ocrReadRange(spec) {
       ),
       controller
     );
-    const withText = (body.pages || []).filter((page) => (page.text || "").trim());
-    if (withText.length) {
-      ocrRenderRegions({
-        //: `kind: "heading"` on nothing here: these are pages, not layout
-        //: blocks, and the label carries the page number because a reader
-        //: scrolling twelve transcriptions needs to know which is which.
-        regions: withText.map((page, index) => ({
-          index,
-          kind: "text",
-          text: `Page ${page.page + 1}\n\n${page.text.trim()}`,
-          confidence: 0,
-          box: { x: 0, y: 0, w: 1, h: 1 },
-        })),
-        source: "stored-text",
-        message: body.message || `Read ${withText.length} page(s): text only, no page positions.`,
-        pages: ocrWorkspacePages,
-        page: ocrWorkspacePage,
-      });
-    } else {
-      $("ocr-message").textContent =
-        body.message || "Nothing was read on those pages.";
-      $("ocr-message").classList.remove("hidden");
-    }
+    const withText = ocrShowReadPages(body);
     progress?.done(
       withText.length
         ? `Read ${withText.length} page(s) of ${image.original_name}.`

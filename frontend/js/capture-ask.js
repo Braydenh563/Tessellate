@@ -1375,21 +1375,7 @@ onSurface("notes", () => {
 //: answer switch). The Ask scope it sets stays here: `askQuestion` reads it.
 let askScope = null;
 
-function showAskAsOf(on) {
-  const row = $("ask-as-of-row");
-  const box = $("ask-as-of");
-  if (!row || !box) return;
-  row.classList.toggle("hidden", !on);
-  $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
-  if (on) {
-    //: Nothing after today.
-    box.max = new Date().toLocaleDateString("sv");
-    $("ask-as-of-slider").value = "0";
-    box.focus();
-  } else {
-    box.value = "";
-  }
-}
+//: `showAskAsOf` is in the lazy gesture-kit.js (a stand-in, lazy-entries.js).
 
 //: From app.js (its cap), 2026-10-06; read at call time only.
 // --- capture templates (Wave B) ---------------------------------------------------

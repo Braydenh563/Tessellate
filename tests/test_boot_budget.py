@@ -76,7 +76,9 @@ BOOT_JS_CAP = 448_400
 #: 2026-10-31 INBOX 1479: the Notes tab's capture bar (one line of markup that
 #: draws with the tab) and a coloured note's tint cost 151 gzipped bytes; the
 #: card is a lazy file, the bar is not, so the cap rises by 200.
-BOOT_CSS_CAP = 179_300
+#: 2026-11-14 L-world-class-350: the board, run list and Connections rules went to lazy files; boot CSS measured
+#: 176,311 (about 178,600 at L-world-class-232), so the cap comes down to that plus about 500.
+BOOT_CSS_CAP = 176_800
 
 
 def _served_gzip(url: str) -> int:

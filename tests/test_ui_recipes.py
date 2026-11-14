@@ -6399,7 +6399,8 @@ def test_the_present_bar_caption_is_a_page_picker():
     rows are every step, the current one aria-current; the presentation's keys wait while
     it is open and Esc closes it first. The history bar keeps its plain text cell."""
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The present bar blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
     assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body
@@ -7981,6 +7982,10 @@ def test_ask_as_of_slider_is_one_value_with_the_day():
     assert re.search(r"\.ask-as-of-slider \{[^}]*direction: rtl", css)
     wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
     assert '$("ask-as-of-slider").addEventListener("input"' in wiring
+    #: L-world-class-352: the span runs from the oldest note (no fixed 365) and a typed day moves the slider. `showAskAsOf` moved to the lazy gesture-kit.js for the gzip cap.
+    assert not re.search(r'id="ask-as-of-slider"[^>]*max="365"', html)
+    assert "oldest_day" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
+    assert "box.oninput" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "| A day picked on a slider" in design
 

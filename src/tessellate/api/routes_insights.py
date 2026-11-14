@@ -68,8 +68,15 @@ def stats(session: Session = Depends(get_session)) -> dict:
         if 0 <= offset < ACTIVITY_DAYS:
             per_day[ACTIVITY_DAYS - 1 - offset] += 1
 
+    #: Ask's as-of slider spans from here (L-world-class-352); a bare min over the day column.
+    oldest = session.scalar(
+        select(func.min(Entry.created_at)).where(
+            Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
+        )
+    )
     return {
         "total_entries": total or 0,
+        "oldest_day": oldest.date().isoformat() if oldest else None,
         "categories": [{"name": name, "count": count} for name, count in by_category],
         "per_day": per_day,
         "days": ACTIVITY_DAYS,
