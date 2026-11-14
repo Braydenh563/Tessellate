@@ -372,7 +372,7 @@
     captureCard.root.hidden = false;
     captureCard.host.classList.add("is-open");
     //: A bar's To-do icon opens the card as a list; anything else keeps the mode the draft was in.
-    setCaptureMode(from?.closest?.(".capture-bar-todo") ? "todo" : captureCard.mode);
+    setCaptureMode(from?.closest?.(".capture-bar-list") ? "todo" : captureCard.mode);
   }
 
   function closeCaptureCard() {

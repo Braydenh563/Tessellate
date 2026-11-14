@@ -28,7 +28,7 @@ function tagAddChipKind(entry, options) {
 const MEETING_GLANCE_SECTIONS = {
   agenda: "agenda", notes: "notes", discussion: "notes", transcript: "notes",
   decisions: "decisions", decided: "decisions",
-  "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", todo: "actions", "next steps": "actions",
+  "action items": "actions", actions: "actions", "action points": "actions", "to do": "actions", "todo": "actions", "next steps": "actions",
 };
 
 function meetingGlance(entry) {

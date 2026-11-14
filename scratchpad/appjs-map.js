@@ -122,10 +122,10 @@ for (const node of ast.body) walk(node, 'load');
 
 const reach = (start) => {
   const seen = new Set([start]);
-  const todo = [start];
-  while (todo.length) {
-    const f = todo.pop();
-    for (const g of fnCalls.get(f) || []) if (!seen.has(g)) { seen.add(g); todo.push(g); }
+  const stack = [start];
+  while (stack.length) {
+    const f = stack.pop();
+    for (const g of fnCalls.get(f) || []) if (!seen.has(g)) { seen.add(g); stack.push(g); }
   }
   return seen;
 };

@@ -1431,8 +1431,8 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
    line classes (`.cm-md-callout-{kind}`) and label chips read the same ink,
    so a kind is one colour in all three views. */
 :is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-note"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-info"],
-:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-todo"] {
+/* The to-do kind has no rule: it wears the default ink, as note and info do. */
+:is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-info"] {
   --callout-accent: var(--accent);
 }
 :is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-abstract"],

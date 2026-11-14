@@ -89,7 +89,8 @@ def test_the_mode_switch_is_a_seg_in_the_card_and_a_todo_icon_in_the_bar():
     # INBOX 1572 (the owner: the bar is "a little trippy to use"): the Note / To-do seg left the bar's
     # row; the bar keeps one To-do icon that opens the card as a list, and the card keeps the seg.
     assert 'class="seg capture-bar-modes"' not in INDEX
-    assert 'id="capture-bar-todo"' in INDEX and 'data-mode="todo"' in INDEX
+    # INBOX 1811: the bar button is `capture-bar-list`; showCaptureCard opens the card in the to-do mode from it.
+    assert 'id="capture-bar-list"' in INDEX and 'closest?.(".capture-bar-list") ? "todo"' in CARD
     assert '"seg capture-card-modes"' in _function_body(CARD, "captureModeSeg")
     assert "aria-pressed" in _function_body(CARD, "setCaptureMode")
 

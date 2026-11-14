@@ -10316,9 +10316,9 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `capture-anywhere-help` | frontend/index.html:13056 |
 | `capture-bar` | frontend/index.html:2681 |
 | `capture-bar-input` | frontend/index.html:2683 |
+| `capture-bar-list` | frontend/index.html:2687 |
 | `capture-bar-picture` | frontend/index.html:2688 |
 | `capture-bar-row` | frontend/index.html:2682 |
-| `capture-bar-todo` | frontend/index.html:2687 |
 | `capture-clear` | frontend/index.html:1747 |
 | `capture-command` | frontend/index.html:13068 |
 | `capture-command-copy` | frontend/index.html:13069 |

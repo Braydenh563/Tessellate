@@ -305,7 +305,7 @@ const CALLOUT_KINDS = {
   note: { icon: "ph:note", label: "Note", about: "A point worth setting apart" },
   abstract: { icon: "ph:clipboard-text", label: "Summary", about: "The short version, up front", aliases: ["summary", "tldr"] },
   info: { icon: "ph:info", label: "Info", about: "Background the reader may need" },
-  todo: { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
+  "todo": { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
   tip: { icon: "ph:lightbulb", label: "Tip", about: "A better way to do it", aliases: ["hint", "important"] },
   success: { icon: "ph:check-circle", label: "Success", about: "What worked, or what is done", aliases: ["check", "done"] },
   question: { icon: "ph:question", label: "Question", about: "An open question", aliases: ["help", "faq"] },
@@ -388,7 +388,7 @@ function editorFuzzyRank(rows, query) {
 }
 //: What an empty callout body says until something is written in it.
 function calloutHint(kind) {
-  const own = { todo: "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
+  const own = { "todo": "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
   const meta = CALLOUT_KINDS[kind];
   return own[kind] || `Write the ${meta ? meta.label.toLowerCase() : "note"}`;
 }
@@ -542,7 +542,7 @@ function editorApplyAction(textarea, action) {
       .map((line) => (line.startsWith(action.line) ? line : action.line + line))
       .join("\n");
     //: An empty line has nothing to select: the caret goes after the
-    //: marker, so "/todo" then typing writes the item (measured on a board
+    //: marker, so the to-do command then typing writes the item (measured on a board
     //: text box, 2026-10-10: the selected "- [ ] " was typed over).
     editorSplice(textarea, lineStart, Math.max(lineEnd, end), prefixed, {
       from: target.trim() ? 0 : prefixed.length,

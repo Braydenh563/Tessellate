@@ -691,7 +691,7 @@ function renderMarkdown(container, text, depth = 0) {
       }
       const li = document.createElement("li");
       let itemText = entry.text;
-      // GFM task list: "- [ ] todo" / "- [x] done" → a real checkbox.
+      // GFM task list: "- [ ] open" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
         li.className = "md-task";
