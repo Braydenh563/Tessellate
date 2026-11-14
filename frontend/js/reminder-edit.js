@@ -26,6 +26,7 @@
     textInput.type = "text";
     textInput.maxLength = 500;
     textInput.value = reminder.text;
+    textInput.dataset.autocorrect = "";
     const dueInput = document.createElement("input");
     dueInput.type = "datetime-local";
     dueInput.value = toLocalInputValue(reminder.due_at);

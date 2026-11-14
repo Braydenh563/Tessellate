@@ -607,7 +607,7 @@
            second action and a labelled button for it is what made the old head
            row two buttons wide. -->
       <form id="help-chat-form" class="row help-chat-form atlas-composer">
-        <input type="text" id="help-chat-input" data-no-selection-popup placeholder="Ask about the app…" maxlength="1000" autocomplete="off" aria-label="Ask Atlas a question">
+        <input type="text" id="help-chat-input" data-autocorrect data-no-selection-popup placeholder="Ask about the app…" maxlength="1000" autocomplete="off" aria-label="Ask Atlas a question">
         <button type="submit" id="help-chat-send" class="icon-only icon-primary" title="Ask Atlas" aria-label="Ask Atlas"><i class="ph ph-paper-plane-right" aria-hidden="true"></i></button>
         <button type="button" class="icon-only ghost small graph-help-toggle"
           data-help-for="help-chat-help" aria-controls="help-chat-help" aria-expanded="false"
@@ -2130,7 +2130,7 @@ Link to another note with [[its first few words]]."></textarea>
                    with its own action at the end, rather than a loose input
                    wedged between buttons that do not read it. -->
               <div class="row draft-controls draft-refine-row ask-composer">
-                <input id="draft-instruction" type="text" maxlength="300"
+                <input id="draft-instruction" data-autocorrect type="text" maxlength="300"
                   placeholder="Refine: “make it shorter”, “add a summary”…"
                   data-offline-placeholder="Refine: “shorter”, “add a summary”, “as bullets”, “formal”, “tidy it up”"
                   aria-label="An instruction for the next pass">
@@ -5745,7 +5745,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <!-- One composer row (INBOX 804): the field's well holds the
                      question and its send, at the asks' height. -->
                 <form id="doc-assist-form" class="search-field doc-assist-form">
-                  <input id="doc-assist-question" class="search-field-input" type="text" maxlength="2000" autocomplete="off"
+                  <input id="doc-assist-question" data-autocorrect class="search-field-input" type="text" maxlength="2000" autocomplete="off"
                     placeholder="Ask about this code…" aria-label="Ask about this code"
                     data-offline-placeholder="No model: format, run the tests, find where a name is used…">
                   <button type="submit" id="doc-assist-send" class="small accent icon-only" title="Ask (Enter)" aria-label="Ask"><i class="ph ph-paper-plane-right" aria-hidden="true"></i></button>
@@ -5936,7 +5936,7 @@ Link to another note with [[its first few words]]."></textarea>
              above a button on its own line is two controls where there is one
              action, and 40px of dialog for nothing. -->
         <div class="row doc-ai-ask">
-          <input id="doc-ai-instruction" data-needs-model="Rewriting with Atlas needs a model" data-holds-notebook type="text" maxlength="500"
+          <input id="doc-ai-instruction" data-needs-model="Rewriting with Atlas needs a model" data-autocorrect data-holds-notebook type="text" maxlength="500"
             placeholder="e.g. “tighten this”, “make it more formal”"
             aria-label="What should Atlas do?">
           <button id="doc-ai-run" data-needs-model="AI editing needs the local AI" data-model-offer="The writing check, find, outline, export and history work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Suggest an edit</button>
@@ -9184,14 +9184,14 @@ Link to another note with [[its first few words]]."></textarea>
       <form id="bookmark-form" class="row hidden">
         <input id="bookmark-url-input" type="text" class="library-search"
           placeholder="example.com" aria-label="Bookmark URL" required>
-        <input id="bookmark-title-input" type="text"
+        <input id="bookmark-title-input" data-autocorrect type="text"
           placeholder="Title (optional)" aria-label="Bookmark title">
         <input id="bookmark-group-input" type="text" list="bookmark-group-options"
           placeholder="Folder (optional, e.g. Work/Reading)" aria-label="Bookmark folder">
         <datalist id="bookmark-group-options"></datalist>
         <input id="bookmark-tags-input" type="text"
           placeholder="Tags (optional, commas)" aria-label="Bookmark tags" maxlength="400">
-        <input id="bookmark-note-input" type="text"
+        <input id="bookmark-note-input" data-autocorrect type="text"
           placeholder="Note (optional)" aria-label="Bookmark note" maxlength="2000">
         <button type="submit" class="small"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add</button>
         <button type="button" id="bookmark-form-done" class="ghost small" title="Fold the form away (Esc)">Done</button>
@@ -11338,7 +11338,7 @@ Link to another note with [[its first few words]]."></textarea>
             <details class="settings-group settings-fold" data-fold-key="skills-add" id="skill-add-fold">
             <summary><h3 class="inline-h3">Add your own</h3></summary>
             <input id="skill-name" aria-label="Skill name" type="text" maxlength="40" placeholder="Name (e.g. Weekly review)">
-            <input id="skill-description" aria-label="Skill description" type="text" maxlength="200"
+            <input id="skill-description" data-autocorrect aria-label="Skill description" type="text" maxlength="200"
               placeholder="One line about what it does (optional)">
             <textarea id="skill-prompt" aria-label="What the skill should do" rows="2" maxlength="2000"
               placeholder="What it should do, e.g. Summarise everything I saved this week."></textarea>
@@ -11483,7 +11483,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="settings-group">
             <h3>Add your own</h3>
             <input id="template-name" type="text" maxlength="40" aria-label="Template name" placeholder="Name (e.g. Book notes)">
-            <input id="template-description" type="text" maxlength="200" aria-label="Template description"
+            <input id="template-description" data-autocorrect type="text" maxlength="200" aria-label="Template description"
               placeholder="What it's for (optional)">
             <textarea id="template-body" rows="4" maxlength="2000" aria-label="Template text"
               placeholder="Book: &#10;Author: &#10;Started: &#10;Thoughts:"></textarea>
@@ -11543,7 +11543,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="row memory-add">
               <label class="visually-hidden" for="memory-new"
                 data-keys="memory remember standing instructions what it remembers always">Something to always do in answers</label>
-              <input id="memory-new" type="text" maxlength="200"
+              <input id="memory-new" data-autocorrect type="text" maxlength="200"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
