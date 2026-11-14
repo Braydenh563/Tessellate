@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11038, test files 2854, tests 22610, plan headings 691, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8498, frontend ids 2789, CSS sections 524, backend routes 712, backend modules 11039, test files 2854, tests 22611, plan headings 691, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8498)
 
@@ -14136,7 +14136,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11038)
+## Backend modules (11039)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18992,13 +18992,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recently_up` | src/tessellate/ai/ollama_client.py:220 |
 | `remember_up` | src/tessellate/ai/ollama_client.py:215 |
 
-### src/tessellate/ai/openai_client.py (3)
+### src/tessellate/ai/openai_client.py (4)
 
 | Name | File:line |
 |---|---|
-| `OpenAICompatClient` | src/tessellate/ai/openai_client.py:120 |
-| `_fill_null_content` | src/tessellate/ai/openai_client.py:69 |
-| `_looks_like_tools_rejection` | src/tessellate/ai/openai_client.py:80 |
+| `OpenAICompatClient` | src/tessellate/ai/openai_client.py:126 |
+| `_fill_null_content` | src/tessellate/ai/openai_client.py:75 |
+| `_label` | src/tessellate/ai/openai_client.py:69 |
+| `_looks_like_tools_rejection` | src/tessellate/ai/openai_client.py:86 |
 
 ### src/tessellate/ai/page_analysis.py (8)
 
@@ -28288,7 +28289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22610)
+## Tests (22611)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30034,7 +30035,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_offer.py | 2 |
 | tests/test_model_sees_links_l101.py | 4 |
 | tests/test_model_sizes.py | 5 |
-| tests/test_model_specs.py | 17 |
+| tests/test_model_specs.py | 18 |
 | tests/test_model_writes_facts_1027.py | 27 |
 | tests/test_models_api.py | 48 |
 | tests/test_models_composer_line_k13.py | 2 |
