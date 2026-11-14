@@ -1138,7 +1138,8 @@ class EmbeddingService:
         if not self._download_allowed() and not (_package_present() and self._model_on_disk(repo)):
             self.awaiting_consent = True
             raise EmbeddingNeedsConsent(
-                "Search by meaning is not installed yet; search uses keywords until you allow the download in Settings, Search and index."
+                "Search by meaning is not installed yet; search uses keywords until you allow the download "
+                "in Settings, Search and index (or Reinstall in Settings, Models)."
             )
         from fastembed import TextEmbedding
 

@@ -27,6 +27,8 @@ def _words(run, newest):
     script = (
         "const parseServerTime = (s) => new Date(s);\n"
         "const relativeTime = (s) => 'REL(' + s + ')';\n"
+        #: The time reads the page's 12 or 24 hour choice (clockOptions, prefs); the default here.
+        "const clockOptions = () => ({});\n"
         + DAY[start:end]
         + f"\nprocess.stdout.write(JSON.stringify(dashBackupWords({json.dumps(run)}, {json.dumps(newest)}, new Date('{NOW}'))));"
     )

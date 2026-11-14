@@ -52,6 +52,8 @@
       mapBoardIndexAt = 0;
       mapBoardIndexWalk = null;
       if (typeof objOrderCache !== "undefined") objOrderCache.clear();
+      //: The way back for a large settings change is held in memory only; it is not carried into another space.
+      if (typeof settingsHistoryBigKept !== "undefined") settingsHistoryBigKept.clear();
       const box = $("note-search");
       if (box) box.value = "";
       //: The list is drawn from `allEntries`, not read from it, so emptying the array left the old

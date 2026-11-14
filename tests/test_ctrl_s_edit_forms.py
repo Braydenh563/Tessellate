@@ -23,7 +23,9 @@ def test_the_note_edit_form_saves_on_ctrl_s_and_keeps_it_from_the_global_chord()
     assert '"s"' in block and "saveButton.click()" in block
     assert "stopPropagation" in block
     # capture phase, because the page's own handler is a bubbling one on document
-    assert 'document.addEventListener("keydown", escapeFromBody, true)' in src
+    #: One page listener calls the form on screen (test_perf_1031: renders add no page listeners).
+    assert 'document.addEventListener("keydown", (event) => renderEditForm.bodyKeys?.(event), true)' in src
+    assert "renderEditForm.bodyKeys = escapeFromBody" in src
 
 
 def test_the_reminder_edit_form_saves_on_ctrl_s_too():

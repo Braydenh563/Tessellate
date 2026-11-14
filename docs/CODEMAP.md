@@ -6609,13 +6609,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:656 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:683 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:642 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:679 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:779 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:664 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:691 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:650 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:687 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:787 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:709 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:717 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
@@ -7884,11 +7884,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `spaceEnterFor` | frontend/js/space-swap.js:257 |
-| `spaceLeave` | frontend/js/space-swap.js:157 |
-| `spaceReload` | frontend/js/space-swap.js:175 |
-| `spaceSwapNow` | frontend/js/space-swap.js:218 |
-| `swapSpace` | frontend/js/space-swap.js:199 |
+| `spaceEnterFor` | frontend/js/space-swap.js:259 |
+| `spaceLeave` | frontend/js/space-swap.js:159 |
+| `spaceReload` | frontend/js/space-swap.js:177 |
+| `spaceSwapNow` | frontend/js/space-swap.js:220 |
+| `swapSpace` | frontend/js/space-swap.js:201 |
 
 ### frontend/js/spell-second.js (16)
 
@@ -17598,7 +17598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
 | `EmbeddingService` | src/tessellate/ai/embeddings.py:906 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1542 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1543 |
 | `_attachment_parts` | src/tessellate/ai/embeddings.py:548 |
 | `_backfill_chunks` | src/tessellate/ai/embeddings.py:426 |
 | `_backfill_missing` | src/tessellate/ai/embeddings.py:344 |
@@ -31576,14 +31576,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:654 |
+| Needs hardware | docs/roadmap/LEDGER.md:655 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:644 |
+| Owner calls | docs/roadmap/LEDGER.md:645 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31763,7 +31763,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:791 |
+| Plan session briefs | docs/roadmap/LEDGER.md:792 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31817,25 +31817,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:807 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:891 |
+| chat | docs/roadmap/LEDGER.md:808 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:892 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:831 |
-| general | docs/roadmap/LEDGER.md:604 |
+| documents | docs/roadmap/LEDGER.md:832 |
+| general | docs/roadmap/LEDGER.md:605 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:795 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:903 |
+| graph | docs/roadmap/LEDGER.md:796 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:904 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:843 |
+| mindmap | docs/roadmap/LEDGER.md:844 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:867 |
+| timeline | docs/roadmap/LEDGER.md:868 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:855 |
+| ui-modernisation | docs/roadmap/LEDGER.md:856 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:819 |
+| whiteboard | docs/roadmap/LEDGER.md:820 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:879 |
+| world-class | docs/roadmap/LEDGER.md:880 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

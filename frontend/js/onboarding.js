@@ -71,7 +71,7 @@ const onboardingRun = { index: 0, diagnosticsToken: 0 };
 
 // §27's first-run diagnostics: Ollama reachability and where the notebook
 // actually lives, both already computed for other UI (the AI-status pill,
-// Settings, Data) and just not surfaced before a first capture could fail
+// Settings, Import & export) and just not surfaced before a first capture could fail
 // silently into Uncategorised.
 async function loadOnboardingDiagnostics(forSlide) {
   const token = ++onboardingRun.diagnosticsToken;
@@ -581,7 +581,7 @@ async function maybeShowConsoleViewIntro() {
   if (prefsCache.backup_copy_dir || prefs.get("backupFolderAsked", null)) return;
   const wants = await firstRunTurn(() => confirmDialog(
     "Keep a second copy of your backups?\n\nOn an external drive or synced " +
-      "folder, so one disk failing cannot take both. Change it any time in Settings, Data.",
+      "folder, so one disk failing cannot take both. Change it any time in Settings, Import & export.",
     { confirmLabel: "Choose a folder", cancelLabel: "Not now", danger: false }
   ), "backup");
   prefs.set("backupFolderAsked", "1");
@@ -591,6 +591,6 @@ async function maybeShowConsoleViewIntro() {
     prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ backup_copy_dir: value.trim() }) });
     toast("Saved.");
   } catch (error) {
-    toast(`${error.message} Set it in Settings, Data.`, "info");
+    toast(`${error.message} Set it in Settings, Import & export.`, "info");
   }
 }

@@ -415,6 +415,8 @@ const ctx = {
   refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
   noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
+  //: The server-down refusal (22.1 item 6) reads these; the server is up in this harness.
+  serverUnreachable: false, retryServerNow() {}, showServerDownBanner: () => "",
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
   //: A fetch that answers when the test says so, with the kind of body it is told.
   fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),

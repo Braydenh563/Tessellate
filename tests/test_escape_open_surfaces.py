@@ -21,12 +21,13 @@ def test_the_note_edit_form_takes_escape_when_focus_is_on_the_page():
     text = _src("note-edit-panels.js")
     assert "const escapeFromBody = (event) =>" in text
     block = text[text.index("const escapeFromBody"):]
-    block = block[:block.index("document.addEventListener")]
+    block = block[:block.index("renderEditForm.bodyKeys = escapeFromBody")]
     # only a key with no caret anywhere, and never over an open dialog
     assert "event.target === document.body" in block
     assert "dialog[open]" in block and ".modal-overlay:not(.hidden)" in block
     # and it lets go of the listener once the form is gone
-    assert "!li.isConnected" in block and "removeEventListener" in block
+    #: Letting go is unpointing the one page listener (test_perf_1031), not removing a per-render one.
+    assert "!li.isConnected" in block and "renderEditForm.bodyKeys = null" in block
 
 
 def test_the_body_fallback_does_not_see_the_hidden_lock_card():
