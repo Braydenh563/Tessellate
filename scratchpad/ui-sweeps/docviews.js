@@ -175,17 +175,13 @@ function contrast(a, b) {
   say('live_on_a_code_file_lands_on', afterLive);
   if (afterLive !== 'source') fail(`asking for Live on a .py file left the view at "${afterLive}"`);
 
-  // Every file type the app offers, against whether the bundle can highlight
-  // it. Two are deliberately plain and are asserted as such, so "php has no
-  // colours" reads as a decision here rather than as a gap someone should go
-  // and fill: `@codemirror/lang-php` is a full Lezer grammar that also drags
-  // in lang-html, measured at +28,563 bytes gzipped (10.6% of the bundle) for
-  // one language, and a CSV has no syntax to colour at all.
+  // Every file type the app offers, against whether the editor can highlight it. Only csv is deliberately
+  // plain (a CSV has no syntax to colour); php highlights once its lazy php.min.js has landed (L-documents-63).
   const MODES = [
     ['swift', 'func greet(name: String) -> Int {\n    let total = 1 + 2\n    return total\n}\n', true],
     ['r', 'greet <- function(name) {\n  total <- 1 + 2\n  return(total)\n}\n', true],
     ['ini', '[server]\nport = 8080\n; a comment\n', true],
-    ['php', '<?php\nfunction greet($name) { echo "hi"; }\n', false],
+    ['php', '<?php\nfunction greet($name) { echo "hi"; }\n', true],
     ['csv', 'name,count\nalpha,1\n', false],
   ];
   for (const [ext, body, wantColour] of MODES) {

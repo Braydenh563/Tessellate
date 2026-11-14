@@ -15560,6 +15560,21 @@ const docCmParts = {
   code: null,
   //: The empty page's words, which follow the file type (`docPlaceholderFor`).
   placeholder: null,
+  //: **PHP is its own file, fetched on the first .php open** (L-documents-63): the grammar is 28 KB gzipped and
+  //: only this one file type wants it, so `php.min.js` extends the bundle's `CM6` the way `vim.min.js` does
+  //: (called from `docCmViewLanguage`). Until it lands the file is plain text; then the memo is cleared and the
+  //: language compartment reconfigured. A failed fetch leaves it plain, with a toast whose "Try again" asks
+  //: once more (`lazyScript` forgets a failed load).
+  phpLoading: false,
+  async loadPhp() {
+    if (this.phpLoading) return;
+    this.phpLoading = true;
+    const ok = await lazyScript("/vendor/codemirror/php.min.js");
+    this.phpLoading = false;
+    if (!ok || !window.CM6?.php) return toast("The PHP highlighter could not be loaded.", true, { action: ["Try again", () => this.loadPhp()] });
+    docCmApplied.delete("language");
+    docCmSyncLanguage();
+  },
 };
 
 //: How the prose findings tell the view to repaint. A `StateEffect` rather
@@ -15570,8 +15585,8 @@ let docFindingsEffect = null;
 
 //: The vendored modes, by the extension `GET /documents/file-types` uses.
 //: Anything not here is plain text, which is the honest answer: several of
-//: the file types this editor opens (php, swift, r) have no mode in the
-//: bundle, and a wrong highlighter is worse than none.
+//: the file types this editor opens (csv) have no mode, and a wrong
+//: highlighter is worse than none.
 function docCmLanguageFor(CM, ext) {
   const stream = (mode) => (mode ? CM.language.StreamLanguage.define(mode) : []);
   switch (ext) {
@@ -15622,13 +15637,10 @@ function docCmLanguageFor(CM, ext) {
     case "dockerfile": return stream(CM.dockerFile);
     case "vb": return stream(CM.vb);
     case "vbs": return stream(CM.vbScript);
-    //: **`php` and `csv` stay plain text on purpose.** `@codemirror/lang-php`
-    //: is a full Lezer grammar that also drags in lang-html, measured at
-    //: +28,563 bytes gzipped, 10.6% of this bundle, for one language; and a
-    //: CSV has no syntax to colour, so a highlighter would draw attention to
-    //: its commas and nothing else. Both are recorded as decisions in
-    //: DOCUMENTS_PLAN rather than left looking like an oversight. A wrong
-    //: highlighter is worse than none, and so is a pointless one.
+    //: `php` is a separate lazy file (php.min.js, `docCmParts.loadPhp`), so until it is
+    //: loaded this is plain text. **`csv` stays plain on purpose**: a CSV has no syntax to colour, a highlighter
+    //: would draw attention to its commas and nothing else, and what it wants is a table view (DOCUMENTS_PLAN).
+    case "php": return CM.php ? CM.php.php() : [];
     default: return [];
   }
 }

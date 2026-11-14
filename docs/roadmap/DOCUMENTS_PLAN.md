@@ -395,18 +395,13 @@ work found and did *not* fix, which is the part that is still open.
     wrong: `@codemirror/legacy-modes/mode/r` exists. It was written from
     memory rather than from the package, which is the same failure as the two
     entries above it.)
-  - **`php` refused.** `@codemirror/lang-php` is not a legacy mode but a full
-    Lezer grammar that also pulls in `lang-html`, because PHP is embedded in
-    HTML. On its own it costs +98,144 raw and **+28,563 gzipped: 10.6% of the
-    bundle for one language**, in a local notebook whose documents are notes
-    and plans. Revisit if anyone asks for it; the number is here so the answer
-    does not have to be re-derived.
+  - **`php` built as a lazy file**, not refused: see L-documents-63 in HISTORY (`php.min.js`, 28,381 gzipped, fetched on the first .php open).
   - **`csv` refused, permanently.** There is no CSV mode in CodeMirror and
     there should not be: a CSV has no syntax, so a highlighter would colour
     its commas and nothing else. What a CSV wants is a table view, which is a
     different feature.
-  `scratchpad/ui-sweeps/docviews.js` asserts all five, including that `php`
-  and `csv` highlight *nothing*, so adding a mode later has to come with an
+  `scratchpad/ui-sweeps/docviews.js` asserts all five, including that `csv`
+  highlights *nothing* and `php` highlights after its lazy file loads, so adding a mode later has to come with an
   update to this decision rather than silently.
 - "i still cant click on a grammar or misspeled underlined word and see a
   popup like in a realworld editor like obsidian, word, notion, vs code."

@@ -727,7 +727,9 @@ function docCmSyncFileType() {
 //: definition, and it is one compartment rather than a fourth surface.
 function docCmViewLanguage(CM) {
   if (docView === "plain") return [];
-  return docCmLanguageFor(CM, docFileType().ext);
+  const ext = docFileType().ext;
+  if (ext === "php" && !CM.php) docCmParts.loadPhp();
+  return docCmLanguageFor(CM, ext);
 }
 
 //: The view changed, so what the editor is allowed to highlight may have. One
