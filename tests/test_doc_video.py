@@ -69,3 +69,12 @@ def test_the_picker_offers_video_and_both_views_draw_a_player():
     assert '.querySelector(".doc-video-name")' in js, "an export keeps its name"
     print_css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
     assert "#doc-preview .doc-video video {\n    display: none;" in print_css
+
+
+def test_a_note_card_drawn_before_the_bundle_loads_still_gets_a_player():
+    """L-documents-75: no imageLayout yet means a bare video, never an img with a video url."""
+    js = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")
+    at = js.index("!window.imageLayout && /\\.(?:mp4|webm)")
+    block = js[at : at + 500]
+    assert 'createElement("video")' in block and 'preload: "metadata"' in block
+    assert "controls: true" in block

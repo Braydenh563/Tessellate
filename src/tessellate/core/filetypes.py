@@ -104,6 +104,9 @@ FILE_TYPES: tuple[FileType, ...] = (
     FileType("sql", "SQL", line_comment="--", block_comment=("/* ", " */"), indent="    ", icon="file-sql"),
     #: Brief 69 (D6): an SVG previews in the run panel; it edits as XML.
     FileType("svg", "SVG", line_comment="", block_comment=("<!-- ", " -->"), icon="file-svg"),
+    #: Indented Sass and Stylus: no braces, so Emmet's `sass` and `stylus` forms (no highlighter is bundled, so plain text).
+    FileType("sass", "Sass", line_comment="//", indent="  "),
+    FileType("styl", "Stylus", line_comment="//", indent="  "),
     FileType("swift", "Swift", line_comment="//", indent="    "),
     FileType("ts", "TypeScript", line_comment="//", block_comment=("/* ", " */"), icon="file-ts"),
     FileType("vbs", "VBScript", line_comment="'", indent="    "),
@@ -133,12 +136,11 @@ ALIASES = {
     "tsx": "ts",
     "htm": "html",
     "scss": "css",
-    "sass": "css",
-    #: Less, Sass and SCSS open as CSS so their rules, comments and Emmet
-    #: shorthands (`df`, `m10`) work. Stylus is not here: it has no highlighter
-    #: in the editor to open it as, and Emmet's `stylus` output form would need
-    #: a type of its own to be chosen.
+    #: Less and SCSS open as CSS (braces and semicolons, so their rules,
+    #: comments and Emmet shorthands work). Indented Sass and Stylus are types
+    #: of their own (L-documents-76): Emmet writes them without braces.
     "less": "css",
+    "stylus": "styl",
     "patch": "diff",
 }
 

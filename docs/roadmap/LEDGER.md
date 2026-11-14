@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 42 | 1 | 0 | 2 | 43 |
+| documents | 0 | 39 | 1 | 0 | 2 | 40 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 597 | 129 | 2 | 165 | 1209 |
+| all | 483 | 594 | 129 | 2 | 165 | 1206 |
 
 ## graph
 
@@ -345,7 +345,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
 - [ ] **L-documents-50** `documents` open, M: Code linters: ruff-wasm and a JS linter (25 row 4). From DOCUMENTS_PLAN.md:1157, audit 2026-11-14. Evidence: no ruff or eslint in frontend/vendor; only in-house docCodeScan documents-code.js:4951
 - [ ] **L-documents-52** `documents` open, M: Board and calendar views of the base block (1308 item 6). From DOCUMENTS_PLAN.md:1274, audit 2026-11-14. Evidence: documents-base.js:4 says board and calendar views are not built
-- [ ] **L-documents-53** `documents` open, M: Note capture Live, Source, Read switch, Live by default (1308 item 17). From DOCUMENTS_PLAN.md:1285, audit 2026-11-14. Evidence: no view switch near #entry-content (index.html:1735); no record of notecap
 - [ ] **L-documents-54** `documents` open, M: Page-shaped card in the Library Documents list (INBOX 1325). From DOCUMENTS_PLAN.md:1290, audit 2026-11-14. Evidence: no cover or page-card code in library.js; only routes_documents._preview
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
 - [ ] **L-documents-58** `documents` open, M: Diagram per-edge label position and link animation (1679 gap 4). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: curve style built (W18 R13); no id@ animation or label position in diagram-*.js
@@ -364,9 +363,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-6** `documents` open, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open. Doable here: a LanguageTool server can be installed and run here if its download host is allowed.
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
-- [ ] **L-documents-76** `documents` open, S: Sass (indented) and Stylus as their own code types, with Emmet's sass and stylus output. From agent docsvid 2026-11-14, L-documents-51. Evidence: core/filetypes.py aliases sass to css, so a .sass file gets CSS punctuation; the vendored Emmet has sass and stylus output forms; no stylus file type
 - [ ] **L-documents-74** `documents` open, S: A block embed drawn before the document list has loaded stays a chip: redraw it when the list lands. From agent docssync 2026-11-14. Evidence: docEmbedTarget (documents-embeds.js) cannot resolve a title before the document list loads; seen in a second window
-- [ ] **L-documents-75** `documents` open, S: A video in a note card before the library bundle loads shows a player, not a broken img. From agent docsvid 2026-11-14, L-documents-68. Evidence: a note card drawn before the library bundle (image-layout.js) loads falls back to an img for a video
 - [ ] **L-documents-78** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
 - [ ] **L-documents-79** `documents` open, M: Frame measurement of the document editor: scroll and typing frames against the 14 rAF, 7 scroll, 3 RO and 4 MO wake sources (Brief 60). From DOCUMENTS_PLAN.md:1239 Brief 60, audit 2026-11-14. Evidence: documents.js 14 rAF, 7 scroll, 3 ResizeObserver, 4 MutationObserver sites; no frame sweep in scratchpad/ui-sweeps for the editor
 

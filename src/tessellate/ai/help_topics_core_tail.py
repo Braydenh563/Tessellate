@@ -1665,6 +1665,7 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "In Capture a thought, Ctrl+Enter saves, "
+                "the strip's Live, Source and Read buttons change how the box shows (Live by default, Read is the finished note), "
                 "/ (or Ctrl+/) opens the blocks and commands menu, Ctrl+J asks "
                 "Atlas to write at the cursor, and selecting text shows an actions "
                 "menu (Ctrl+Shift+E from the keyboard). From anywhere, Ctrl+Shift+N "

@@ -1724,17 +1724,27 @@
               <button type="button" class="icon-only" data-md="symbol" title="Symbol" aria-label="Symbol"><i class="ph ph-pi" aria-hidden="true"></i></button>
               <button type="button" class="icon-only" data-md="equation" title="Equation (Alt+=)" aria-label="Equation"><i class="ph ph-function" aria-hidden="true"></i></button>
               <span class="doc-toolbar-sep" aria-hidden="true"></span>
-              <!-- Live or Source (INBOX 430): the box renders as you type; this
-                   shows the markdown as typed instead (wiring.js setNoteSource). -->
-              <button type="button" id="entry-preview-toggle" class="doc-toolbar-toggle"
-                aria-pressed="false"
-                title="Source: the markdown as you typed it, without the live formatting">
-                <i class="ph ph-code ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Source</span>
-              </button>
+              <!-- Live, Source or Read (INBOX 430, L-documents-53): Live renders as you type (the
+                   default); Source shows the markdown as typed; Read shows the finished note, as a
+                   card draws it, and is not remembered (wiring.js setNoteSource). The edit form
+                   keeps only the Source button (note-edit-panels.js). -->
+              <div class="seg" id="entry-view-seg" role="group" aria-label="How this note shows">
+                <button type="button" data-note-view="live" aria-label="Live" aria-pressed="true"
+                  title="Live: rendered as you type"><i class="ph ph-article ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Live</span></button>
+                <button type="button" id="entry-preview-toggle" data-note-view="source" aria-label="Source" class="doc-toolbar-toggle"
+                  aria-pressed="false"
+                  title="Source: the markdown as you typed it, without the live formatting">
+                  <i class="ph ph-code ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Source</span>
+                </button>
+                <button type="button" data-note-view="read" aria-label="Read" aria-pressed="false"
+                  title="Read: the finished note, as a card shows it"><i class="ph ph-book-open ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Read</span></button>
+              </div>
             </div>
             <textarea id="entry-content" data-autocorrect rows="3" class="autogrow" aria-label="New note"
               placeholder="Type anything: a joke, a shopping list, a race result…
 Link to another note with [[its first few words]]."></textarea>
+            <!-- Read (L-documents-53): the finished note, drawn by renderNoteText as a card is; the editor is hidden meanwhile and keeps its text. -->
+            <div id="entry-read" class="entry-read entry-content hidden" role="region" aria-label="The note as it reads" tabindex="0"></div>
             <!-- The box's own foot: Clear all (field-clear.js, INBOX 466) at the left, the count at the right; the title and the note have their own x (INBOX 1567). -->
             <div class="note-composer-foot">
               <button type="button" id="capture-clear" class="ghost icon-only small field-clear hidden" title="Clear all" aria-label="Clear all"><i class="ph ph-eraser" aria-hidden="true"></i></button>
