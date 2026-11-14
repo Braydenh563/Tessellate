@@ -125,6 +125,9 @@ FACT_SHAPES = ("count", "when", "who", "yesno", "where")
 FACT_OTHERS = 2
 #: The share of the lead sentence's score another sentence of its note needs to be quoted with it.
 FACT_KEEP = 0.6
+#: A lead scoring this many times the next sentence of its note is the summary: a "what is X" ask
+#: quotes it and what is close to it, not the filler around it (L-chat-247).
+SUMMARY_LEAD = 1.5
 
 
 def _fact_sentences(shape: str, lead: Sentence, same: list[Sentence]) -> list[Sentence]:
@@ -134,6 +137,9 @@ def _fact_sentences(shape: str, lead: Sentence, same: list[Sentence]) -> list[Se
     if shape == "when":
         return [lead]
     if shape in FACT_SHAPES:
+        return [s for s in same if s is lead or s.score >= FACT_KEEP * lead.score]
+    others = [s.score for s in same if s is not lead]
+    if shape == "what" and lead.kind == "prose" and others and lead.score >= SUMMARY_LEAD * max(others):
         return [s for s in same if s is lead or s.score >= FACT_KEEP * lead.score]
     return same
 
