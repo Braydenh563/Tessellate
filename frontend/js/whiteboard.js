@@ -6909,12 +6909,16 @@ function wbApplySelectionHighlight() {
   //: (INBOX 278, and the earlier report it has to keep answering).
   for (const [el, grouped] of wanted) {
     if (!grouped) wbEnsureHandles(el);
+    //: A topic's resize grip is made when it is first selected or pointed at (`wbMapCache.part`).
+    if (el.classList.contains("wb-map-node")) wbMapCache.part(el, "grip");
     marked.add(el);
     if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
     if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
   }
 }
 
+//: Never moves focus: a map add (`wbMapAddChild`) opens the new topic's editor
+//: first and selects it after, so a focus here would take the typing away.
 function selectWbItem(kind, id) {
   if (kind !== "node" || id !== wbAddGate.cardRetypeId) wbAddGate.cardRetypeId = null;
   wbSelectedItem = { kind, id };
@@ -7898,7 +7902,11 @@ function wbStackCompare(a, b) {
   return wbStackBand(a.kind, a.item) - wbStackBand(b.kind, b.item)
     || (Number(a.item.z) || 0) - (Number(b.item.z) || 0)
     || WB_STACK_KIND_RANK[a.kind] - WB_STACK_KIND_RANK[b.kind]
-    || a.item.id - b.item.id;
+    //: An item still waiting for its id holds a negative one and is the newest
+    //: of its tie, not the oldest: by its own number a new map topic moved every
+    //: sibling's rank up by one, and back on the server's answer (L-mindmap-13).
+    || (a.item.id < 0) - (b.item.id < 0)
+    || (a.item.id < 0 ? b.item.id - a.item.id : a.item.id - b.item.id);
 }
 
 //: Every item on the board, bottom first, as `{ kind, item, key }`.
@@ -11145,8 +11153,19 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl, ownText) {
-  if (!contentEl || contentEl.isContentEditable) return;
+//: `early`: only the part that restyles (the attribute and the class), for a
+//: render to write before its measure read; the call that follows opens the editor.
+function wbBeginTextEdit(contentEl, ownText, early = false) {
+  if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
+  if (early) {
+    //: The class before the attribute: setting `contenteditable` restyles the
+    //: tree there and then, so a class written after it was a second restyle
+    //: at the measure (L-mindmap-13: 11 elements, 4 to 7 ms at 6x).
+    contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+    contentEl._wbPreEdit = true;
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    return;
+  }
   //: Back to the source while editing, whatever the rendered view showed.
   //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
@@ -11155,8 +11174,9 @@ function wbBeginTextEdit(contentEl, ownText) {
     contentEl.textContent = ownText;
   } else if (item) {
     contentEl.classList.remove("wb-text-md");
-    contentEl.textContent = item.data.content || "";
+    if (contentEl.textContent !== (item.data.content || "")) contentEl.textContent = item.data.content || "";
   }
+  contentEl._wbPreEdit = false;
   //: **Plain text, so a line break stays a line break.** With
   //: `contenteditable="true"` Enter inserts a `<div>`, and the blur handlers
   //: read `textContent`, which has no line breaks for those: measured,
@@ -11164,12 +11184,23 @@ function wbBeginTextEdit(contentEl, ownText) {
   //: the box a run of text with real "\n"s (Chromium, WebView2 and WebKit
   //: all support it); where it is refused the attribute falls back to
   //: "true" and `wbEditedText` still reads the lines back correctly.
-  contentEl.setAttribute("contenteditable", "plaintext-only");
-  if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  if (contentEl.getAttribute("contenteditable") !== "plaintext-only") {
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  }
   contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
   wbAttachEditorMenu(contentEl);
   contentEl.focus({ preventScroll: true });
 }
+
+//: An early edit (`early` above) the editor never took over: the attribute and
+//: class come off, so the topic is not left typeable with no editor behind it.
+wbBeginTextEdit.drop = (el) => {
+  if (!el?._wbPreEdit) return;
+  el._wbPreEdit = false;
+  el.removeAttribute("contenteditable");
+  el.closest(".wb-object")?.classList.remove("wb-text-editing");
+};
 
 //: **The editor's "/" and "[[" menus, in a box on the board** (the owner,
 //: 2026-10-10: "/ command menus don't appear in text boxes in the
@@ -15071,12 +15102,15 @@ function wbExportBoard() {
   //: The whole board when nothing is selected (audit 1028 U48): "On screen" put "(view)" in a first export's
   //: file name and cut off what was past the edge; it stays one press away.
   let scope = hasSelection ? "selection" : "whole";
+  //: A map branch's menu row says "Export this branch" and hands that title over for this one opening (L267).
+  const title = wbExportBoard.title || "Export this board";
+  wbExportBoard.title = null;
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Export this board");
+  overlay.setAttribute("aria-label", title);
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card wb-export-card";
@@ -15211,7 +15245,7 @@ function wbExportBoard() {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
+  card.append(dialogHead(title, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
@@ -15509,6 +15543,12 @@ async function initWhiteboard() {
   });
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
+  for (const type of ["pointerover", "focusin"]) {
+    $("whiteboard-container")?.addEventListener(type, (e) => {
+      const node = e.target.closest?.(".wb-map-node");
+      if (node) wbMapCache.part(node, "grip");
+    }, { passive: true });
+  }
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
   //: board chrome rather than inside their own render functions, which is the
   //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added
@@ -24808,6 +24848,18 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
         .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
+      //: The topic an add is about to type in is made editable here, before
+      //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
+      const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
+      if (typing) {
+        //: Selected, the old selection let go, in the same pass and before the
+        //: editable attribute (which restyles at once): the `selectWbItem` that
+        //: follows then finds the classes already right.
+        for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
+        this.classList.add("wb-selected");
+        (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+        wbBeginTextEdit(typing, undefined, true);
+      }
     } else if (d.kind === "frame") {
       const title = this.querySelector(".wb-frame-title");
       if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);

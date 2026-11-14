@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 63 | 2 | 59 | 434 |
-| whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
+| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
+| mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 0 | 8 | 3 | 0 | 0 | 11 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 439 | 431 | 129 | 2 | 162 | 999 |
+| all | 406 | 429 | 129 | 2 | 162 | 964 |
 
 ## graph
 
@@ -294,7 +294,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
 - [ ] **L266** `whiteboard` open, S: Resolve .wb-shape-caret pointer-events none leaving the closest branch dead. From OPEN.md:3554. Evidence: 06-timeline-dialogs.css:2910 and whiteboard.js:16834 both present; product choice left, branch still dead.
-- [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Stale sweep not re-checked.
 - [ ] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L270** `whiteboard` open, M: Build native multi-page PDF export instead of the browser print window, and verify it. From OPEN.md:4441; OPEN.md:1235; OPEN.md:3408. Evidence: whiteboard.js:14793 still builds a print window for pdf; no page size or multi-page export
@@ -347,7 +346,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L-mindmap-13** `mindmap` open, M: Cut the style recalcs behind press-to-editable at 390 (6x throttle 135 ms toward 50). From L370 measurement 2026-11-12. Evidence: Tab to focus at 390, 6x CPU: 130-146 ms; 25-30 style recalcs per Tab (190 ms at 6x). Cut 2026-11-12 (INV trace, one/tabedit.js style, 390x844, 41 topics, 6x, median of 11): focus-change `:has(:focus-visible)` on map nodes and line groups re-matched every action row, grip and line end; dropped, 207-235 ms to 107 ms, elements restyled per Tab 3019 to 1943 (trace). Cut 98024d37 (same probe, this machine, median of 9, no trace): `#tab-library:has(> view:not(.hidden))` (10-responsive.css, library-lazy.css skills twin) became `#tab-library > #library-subtabs:has(~ view...)`: 140-158 ms to 105-112 ms (79 'Affected by :has()' recalcs on #tab-library per Tab gone). Tried and measured no gain (117-125 and 117-125 vs 105-112, noise): dropping `:has(:focus-visible)` from the .wb-object resize/rotate reveal (07-whiteboard-misc.css:367-394) and `[class*="help"]` (08-consistency.css:770); both left as they were. Remaining toward 50: ~105 ms is mostly JS/layout of the focus flush at 6x, not selector matching; CPU profile 2026-11-12 (CDP Profiler 100us, 6x, first ~120 ms): wbMapAddChild is 106 of 121 ms; renderWhiteboardNow 76 (renderWbObjects 57, of which the post-write measure loop at whiteboard.js renderWbObjects tail 35 self = the forced style+layout flush; wbApplySearchHighlight querySelectorAll 7, guarded, no measurable gain); wbMapEditNode 16 (setAttribute contenteditable 13-20 ms and focus 8-11 ms, both flush style); style recalcs 13-24 per Tab touching ~1000 elements (edge ends/groups/handles re-set for ~82 edges the tidy moves). Killing at runtime (CSSOM) the .tab-page:has, [class*=help], all 198 :has(:focus-visible) and :empty rules: 104 baseline vs 111-117, so not selectors. Needs the flush smaller: fewer restyled elements (do not re-place unchanged edge ends, move only changed topics) or one flush instead of three. Third pass 2026-11-13 (attribute writes skipped when unchanged, A/B 101/97/108 vs 105/108 ms: noise, not merged; the edge geometry key already skips unchanged edges). The measure loop (whiteboard.js ~24880) already reads only after all writes; the three flushes are that read plus `setAttribute("contenteditable")` and `focus()` in `wbBeginTextEdit` (~11167). What is left is structural: Tab (`wbMapAddChild`) re-renders the whole board (`renderWhiteboardNow` 76 of 121 ms at 6x); under 50 needs an incremental add (insert one topic and its edge, relayout the moved siblings only). **Design (2026-11-13, for the incremental add):** (1) `wbMapRenderAdd(created, origin)` in whiteboard-map.js takes the place of `renderWhiteboardNow()` in `wbMapAddChild`. Fast path only when: the board is a map, no search or filter is live, no collapse was expanded (`expand` false), `origin` holds no sketch, and the objects layer exists. Then it runs `renderWbObjects(canvas)` only (the join adds one element; the repaint key skips unchanged topics) and `wbUpdateMapEdges` for the parent-to-new edge plus the edges of the moved ids in `origin`. It skips the other layers (cards, sketches, frames, bounds, minimap); `wbScheduleCull` covers the minimap. Any other case, or a throw, falls back to `renderWhiteboardNow()`. (2) One flush, not three: `wbAddGate.renderHold.editId = created.id`, so the paint sets `contenteditable` on the new element before the measure loop's read, and `focus({preventScroll:true})` runs after the read on a clean tree. (3) Guards: a node harness proves Tab calls `renderWhiteboardNow` 0 times on the fast path and once on each fallback; a Playwright perf check at 390 and 6x CPU, 41 topics, median of 9, under 50 ms, in the sweep. `renderWhiteboardNow` is not restructured (it is the whiteboard plan's, which has L335 queued); only the `editId` hint is read in `renderWbObjects`.
 
 ## ui-modernisation
 
