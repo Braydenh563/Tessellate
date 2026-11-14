@@ -1038,7 +1038,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
-| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack reopened 2026-11-14: LEDGER L-whiteboard-42 | none here |
+| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack yes (Layout, Rack, L-whiteboard-42) | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack built 2026-11-14: `lmRack`, `test_rack_*` | none here |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 

@@ -639,6 +639,31 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-interchange",
+            "keywords": (
+                "rack layout",
+                "server rack",
+                "stack as a rack",
+                "import graphml",
+                "graphml",
+                "import miro",
+                "miro board",
+                "import emf",
+                "emf file",
+                "plantuml",
+                "import plantuml",
+                "export plantuml",
+                "board configuration",
+                "board config json",
+                "default styles json",
+            ),
+            "body": (
+                "Layout, Rack stacks the two or more selected things in one column, each in a slot of whole 24-unit steps "
+                "with a gap between, like a server rack; it needs no connectors, and one Undo takes it back."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "board-draw-io-keys",
             "keywords": (
                 "draw.io keys",
