@@ -1,6 +1,8 @@
 // documents-save.js: saving a document, a conflict, and expanding a note into one.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docSaveTimer = null;
   //: Counts edits, so a save that lands knows whether words were typed
   //: while it was in flight (those keep the document dirty).
   let docEditSeq = 0;
@@ -198,4 +200,9 @@
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { markDocDirty, docSaveQueue, saveDocument, docFillBlankTitle });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docSaveTimer", () => docSaveTimer, (value) => { docSaveTimer = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

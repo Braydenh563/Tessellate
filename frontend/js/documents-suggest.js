@@ -7,6 +7,8 @@
 // What the popup is made of (`docSuggestAnswers`, `docFindingAnswerRows`) is here too; the prose panel's rows and the
 // suggestion menu await the stand-ins in documents.js. `placeDocSuggest` and the word list's rules stay there.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docLastTranslateLanguage = "";
   function openDocSuggest(finding, anchorRect, focus = true) {
     const menu = $("doc-suggest-menu");
     if (!menu) return;
@@ -409,4 +411,9 @@
   //: One name in the shared scope: documents.js keeps a stand-in per function
   //: (same name), which calls through this once the file is in.
   Object.assign(window, { docSuggestPiece: { openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docFindingAnswerRows, docSuggestAnswers } });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docLastTranslateLanguage", () => docLastTranslateLanguage, (value) => { docLastTranslateLanguage = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

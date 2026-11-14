@@ -1,6 +1,22 @@
 // documents-cm-load.js: fetching the editor engine, its language and search helpers, and the history per document.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  //: True once loading or mounting has failed. Checked before every attempt, so
+  //: a broken bundle costs one request rather than one per document opened.
+  let docCmBroken = false;
+  //: A different document is a different history: carrying the previous one
+  //: over would let Ctrl+Z paste the last document's text into this one, which
+  //: is the worst kind of undo bug because it reads as the app corrupting your
+  //: file. `setState` replaces the history along with the text, which is the
+  //: whole reason this is not a change transaction.
+  //:
+  //: **And each document keeps its own, for the session** (the owner,
+  //: 2026-10-05: "undo and redo history for specific documents"). The history
+  //: of the one being left is kept as JSON by its id and given back when it
+  //: opens again, but only over the very text it was taken against (an edit
+  //: made elsewhere since would make its steps wrong). A lock purges them all.
+  let docHistoryOwner = null;
   function docRedo() {
     const CM = window.CM6;
     if (docCmView && CM) return CM.commands.redo(docCmView) && (toast("Redone: last change on this document", "info"), true);
@@ -489,4 +505,10 @@
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { docRedo, warmDocumentEngine, loadCodeMirror, docCmParts, docCmLanguageFor, docTableGridRules, docListGuides, docCmSearchCount, docCmHighlight, docHistories, docResetDocument, docHistoryPersist, docCmViewShown, docWatchLock });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docCmBroken", () => docCmBroken, (value) => { docCmBroken = value; }],
+    ["docHistoryOwner", () => docHistoryOwner, (value) => { docHistoryOwner = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

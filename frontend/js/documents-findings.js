@@ -1,6 +1,8 @@
 // documents-findings.js: the three shapes a finding is drawn in: gutter, margin and the suggestions panel.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docFirstPress = null;
   // =============================================================================
   // The three shapes a finding is drawn in (DOCUMENTS_PLAN Phase 0 and Phase 2)
   // =============================================================================
@@ -714,4 +716,9 @@
 
   //: The file's surface: what other files call (L-documents-117).
   Object.assign(window, { docTableTab, docFindingAtOffset, docOffsetOf, docRectUsable, docFindingAnchor, docFindingOfMark, docPointerMenuOpen, docFindingAtPoint, docOpenSuggestFor, docOpenSuggestAtCaret, docOpenSuggestAtPoint, docEditorMenuAtPoint, docTableMenuAtPoint, docClipboardMenuItems, DOC_HOVER_SUGGEST_MS, docHoverSuggest, docFindingKeyBox, docFindingStep, docGoToFinding, DOC_PROSE_NARROW, docProseDockSide, applyDocProseDock, toggleDocProseDock });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docFirstPress", () => docFirstPress, (value) => { docFirstPress = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

@@ -1,6 +1,22 @@
 // documents-templates.js: the new-document templates and the dialog that picks one.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  //: **Choosing is not making** (INBOX 410, the owner: "when selecting a
+  //: template, I want to be able to confirm my template selection, not have it
+  //: instantly be made when I press it"). A row is a radio: a click chooses it
+  //: and the preview shows the page it would make; the dialog's one filled
+  //: button (Use this template), Enter on the list, or a double click makes it.
+  //: The arrows walk the rows, and the first row is chosen when the dialog
+  //: opens, so one Enter still makes a page the way one Enter did before. The
+  //: preview follows the choice and not the pointer: a pane showing the row
+  //: under the mouse while the button below would make the row that was
+  //: clicked is two answers to "what will I get". The choice lives here, not
+  //: on a row, so the Use button (wired once, beside the other document
+  //: controls) can read it.
+  let docTemplateMade = false;
+  // Guards against creating several documents from one fast burst of typing.
+  let creatingDocument = null;
   //: **Templates: a starting shape for the five documents people make most.**
   //: Plain markdown with two placeholders; the whole feature is these strings,
   //: the dialog in index.html and `createDocument(template)` below. Kept as
@@ -419,4 +435,10 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { DOC_TEMPLATES, docTemplateFill, docNextName, docDropIfUntouched, startBlankDocument, createDocument, chooseDocTemplate, useDocTemplate });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docTemplateMade", () => docTemplateMade, (value) => { docTemplateMade = value; }],
+    ["creatingDocument", () => creatingDocument, (value) => { creatingDocument = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

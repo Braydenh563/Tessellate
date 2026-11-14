@@ -1,6 +1,8 @@
 // documents-focus.js: block references, the reading modes, focus mode and the markdown toolbars' own commands.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docFocusOwnsFullscreen = false;
   // Block references (DOCUMENTS_PLAN Phase 4 item 2)
   // =============================================================================
   //
@@ -704,4 +706,9 @@
 
   //: The file's surface: what other files call (L-documents-117).
   Object.assign(window, { docPhase2State, initMarkdownToolbars, DOC_WIDTH_KEY, applyDocWidth, toggleDocWidth, DOC_DIM_KEY, DOC_TYPEWRITER_KEY, DOC_SERIF_KEY, docReadingModes, docReadingPlugin, docTypewriterExtension, applyDocDim, applyDocTypewriter, applyDocSerif, docRememberReading, docRestoreReading, DOC_TEXT_SIZES, applyDocTypography, docTypographyNow, docStepTypography, docRestoreTypography, DOC_FOCUS_KEY, docFocusOn, setDocFocusTools, DOC_FOCUS_NARROW, setDocFocusSidebar, toggleDocFocus, docFocusSyncFullscreen, docFocusToggleFullscreen, mountDocToolbarControls });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docFocusOwnsFullscreen", () => docFocusOwnsFullscreen, (value) => { docFocusOwnsFullscreen = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

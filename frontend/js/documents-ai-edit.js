@@ -1,7 +1,9 @@
 // documents-ai-edit.js: the doors to the Atlas panel and the AI edit history, the dock's History buttons, Extract notes, and the sidebar's
 // List and Outline tabs. Moved out of documents.js and wrapped (L-documents-116): only what other files call goes on `window`. At load it binds
-// two listeners through boot helpers and otherwise only declares; `docAiController` stays a documents.js `let` (documents-ai.js assigns it).
+// two listeners through boot helpers and otherwise only declares; `docAiController` is its own (documents-ai.js assigns it through a window accessor).
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docAiController = null;
   //: The Atlas panel's code is documents-ai.js, fetched on the first press of any
   //: of its controls (audit 1031 DC13): `docAiLazy` loads it, then calls the
   //: function of that name the file defines.
@@ -181,4 +183,9 @@
 
   //: The file's surface: what other files call.
   Object.assign(window, { docAiLazy, closeDocAiPanel, openDocExtractPreview, openDocAiHistory, showDocSidebarSection, initDocSidebarTabs });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docAiController", () => docAiController, (value) => { docAiController = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

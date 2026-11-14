@@ -13,6 +13,17 @@
 //: bulleted and task lists. Where Shift+7 types "/" (German, Spanish, Italian, the Nordic layouts)
 //: CodeMirror sees a character, drops Shift for it and runs Mod-/ (toggle comment) first, so the
 //: line was wrapped in an HTML comment. `event.code` names the key whatever it types.
+//: State that moved here from documents.js (L-documents-118).
+//: The CodeMirror view once it exists, null before the bundle has loaded and
+//: null for good if it fails to. Read by `docSurface()` on every call, so the
+//: hand-over is one assignment rather than a re-wiring pass.
+let docCmView = null;
+//: How the prose findings tell the view to repaint. A `StateEffect` rather
+//: than a bare `dispatch({})`, so the plugin can rebuild for exactly this and
+//: ignore every other transaction that does not move the document or the
+//: viewport. Created with the first view, because it needs `CM.state`.
+let docFindingsEffect = null;
+
 function docRedoChord(CM) {
   const listKinds = { Digit7: "ol", Digit8: "ul", Digit9: "task" };
   return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({

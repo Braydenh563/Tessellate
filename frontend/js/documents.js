@@ -23,16 +23,10 @@
 // every half-finished draft into note search and the graph.
 
 
-let docs = [];
-let currentDoc = null;   // {id, title, content, ...}
-let docDirty = false;
-//: Which `openDocument` call is the newest (see there).
-let docOpenSeq = 0;
 //: The `docOpenSeq` the tab's loader last settled at. Anything asked since,
 //: including before the loader started, is an open the loader must not
 //: override with the last document (DC7).
 const docLoadSeen = { seq: 0 };
-let docSaveTimer = null;
 
 // --- which of the four views is showing ----------------------------------------
 //
@@ -56,7 +50,6 @@ const DOC_VIEWS = ["source", "live", "split", "rendered", "plain"];
 //: file may be in. Named once, because three separate places used to spell it
 //: out as `!== "source"` and Plain would have been refused by all three.
 const DOC_VIEWS_UNRENDERED = ["source", "plain"];
-let docView = "source";
 //: True while Source is on screen only because the open file is code (INBOX
 //: 904 B21/B22: a code file's forced Source was written to the stored view,
 //: so every markdown document after it opened in Source, and a document
@@ -145,18 +138,7 @@ function docPreviewShowing(mode = docView) {
   return mode === "split" || mode === "rendered";
 }
 
-//: The editing mode the Edit button returns to after Read (DOCUMENTS_PLAN
-//: Phase 1 item 2): Live, Source or Split, whichever was last in use.
-let lastEditView = "live";
 
-//: The CodeMirror view once it exists, null before the bundle has loaded and
-//: null for good if it fails to. Read by `docSurface()` on every call, so the
-//: hand-over is one assignment rather than a re-wiring pass.
-let docCmView = null;
-//: The empty-document prompt, kept here because the two engines spell it
-//: differently: a textarea has a `placeholder` attribute, CodeMirror has a
-//: placeholder extension that is built from this when the view is created.
-let docPlaceholderText = "";
 
 // =============================================================================
 // Backlinks with context, and unlinked mentions (DOCUMENTS_PLAN Phase 4 item 1)
@@ -184,19 +166,6 @@ let docPlaceholderText = "";
 //: maps, so a deleted one's number is not reused while a higher one exists.
 
 
-//: **Choosing is not making** (INBOX 410, the owner: "when selecting a
-//: template, I want to be able to confirm my template selection, not have it
-//: instantly be made when I press it"). A row is a radio: a click chooses it
-//: and the preview shows the page it would make; the dialog's one filled
-//: button (Use this template), Enter on the list, or a double click makes it.
-//: The arrows walk the rows, and the first row is chosen when the dialog
-//: opens, so one Enter still makes a page the way one Enter did before. The
-//: preview follows the choice and not the pointer: a pane showing the row
-//: under the mouse while the button below would make the row that was
-//: clicked is two answers to "what will I get". The choice lives here, not
-//: on a row, so the Use button (wired once, beside the other document
-//: controls) can read it.
-let docTemplateMade = false;
 
 
 function docTemplateListKeys(event) {
@@ -292,8 +261,6 @@ function showDocTemplatePreview(template) {
   pane.replaceChildren(page);
 }
 
-// Guards against creating several documents from one fast burst of typing.
-let creatingDocument = null;
 // Ids `ensureDocumentExists` made since the page loaded; the only ones `docDropIfUntouched` may bin.
 const docsMadeThisSession = new Set();
 
@@ -326,15 +293,6 @@ async function ensureDocumentExists() {
 }
 
 
-//: While the edit-conflict prompt is up, autosave waits for its answer
-//: rather than asking again every 1.2s of typing behind it.
-//: **An autosave's conflict waits in the status line, not in a dialog** (audit
-//: 1028 D9). A silent save hit the modal in the middle of a sentence, which
-//: took the focus and sent the next keystrokes to it. Now the save stops, the
-//: status says the document changed in another window and offers "Resolve",
-//: and the dialog opens when asked for (or on an explicit save). `{ id,
-//: current }`: the other window's version, for the document it is about.
-let docConflictPending = null;
 
 
 // A note that outgrew itself becomes a document. Notes and documents were
@@ -568,26 +526,7 @@ appendPlainText.icon = (name) => {
 };
 
 
-//: **Where you are in the document, marked in its outline.** The owner, of
-//: the sidebar redesign: "mostly outline". Measured before this existed:
-//: scrolled to 70% of a 21-heading document, zero rows under `#doc-outline`
-//: carried a current class or `aria-current`, and the outline's own scrollTop
-//: stayed 0. A table of contents that cannot say which heading you are in is
-//: a list of links, and it is the one thing every editor this is measured
-//: against (Obsidian, Typora, Notion) does have.
-//:
-//: Kept as a flat line-and-button list rather than re-read from the DOM on
-//: every scroll: the marking runs on a scroll event and must not walk the
-//: document, and rebuilding the outline per scroll was the obvious wrong
-//: answer this avoids.
-let docOutlineRows = [];
-//: What the rows were last drawn from; see the early return in renderDocOutline.
-let docOutlineMarked = -1;
 
-//: Which row is in the air. One number rather than a `dataTransfer` payload,
-//: because the payload a browser hands back on `drop` is a string and the one
-//: thing this needs is an index into the list the drag started from.
-let docOutlineSpyFrame = 0;
 
 
 //: The filter box's own wiring, once. `input` rather than a debounce: the
@@ -611,10 +550,6 @@ onDomReady(() => {
 });
 
 
-//: Set by `renderDocPreview`, read by `docScrollAnchors`. Zero until the
-//: preview has been drawn once, which is also when there are no stamps to
-//: read, so the default is never used as an answer.
-let docPreviewLineShift = 0;
 
 
 // --- the code editor: line numbers, indent, comment toggle ---------------------
@@ -634,25 +569,6 @@ let docPreviewLineShift = 0;
 // half-highlighting a few keywords would look worse than plain monospace.
 
 
-//: **The way out of an editor that takes the Tab key.** Owner: "on the
-//: documents editor, I can't press tab to indent without it selecting an
-//: element." Tab now indents in every document, prose as well as code, which
-//: is what every writing tool does and what the report asks for; the reason
-//: it was restricted to code files was never indentation, it was the exit:
-//: a Tab the editor always swallows leaves a keyboard user inside it with no
-//: way to reach the toolbar, the dock or the rest of the page.
-//:
-//: So the exit moves to the chord CodeMirror's own documentation recommends
-//: for exactly this trade (its `indentWithTab` carries the same warning):
-//: press Escape, then Tab, and the Tab is the browser's again. Escape is
-//: already this app's "leave what you are in" key everywhere else, so it is
-//: the one key a reader is most likely to try first, and it costs a writer
-//: nothing because nothing else in the editor consumes a plain Tab.
-//:
-//: The second way out is unchanged and needs nothing learned: Shift+Tab on a
-//: line with no indentation to remove falls through to the browser's own
-//: focus-backwards rather than doing nothing.
-let docTabEscapes = false;
 
 
 // --- Live preview: the same editor, with decorations on -----------------------
@@ -715,7 +631,6 @@ let docTabEscapes = false;
 // paragraphs would break the code it was copying.
 
 
-let docPastePlain = false;
 
 
 //: **A pasted block starts its own line** (DX3, audit 1102). `## Heading` or a
@@ -733,9 +648,6 @@ docRichPasteEvent.fit = (markdown, before, after) => {
 
 // Frontmatter and the properties panel: documents-props.js (DC13 remainder).
 
-// =============================================================================
-let docPrintComments = false;
-let docAiController = null;
 $("doc-code-snippets-open")?.addEventListener("click", () => docCodeSideFrom("snippets"));
 $("doc-code-assist-open")?.addEventListener("click", () => docCodeSideFrom("assist"));
 $("doc-new").addEventListener("click", () => createDocument());
@@ -1027,7 +939,6 @@ $("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
 $("doc-paste-special")?.addEventListener("click", () => docPasteSpecialMenu());
 $("doc-line-spacing")?.addEventListener("click", () => docStepTypography("spacing"));
 docRestoreTypography();
-let docFocusOwnsFullscreen = false;
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) docFocusOwnsFullscreen = false;
   docFocusSyncFullscreen();
@@ -1223,7 +1134,6 @@ initDocSidebarTabs();
 applyDocToolbarMode(docToolbarMode());
 mountDocToolbarControls();
 
-let docWordlist = null;
 //: **A misspelling's row names its nearest word** (audit 1102 DX19): "libary"
 //: and "tomorow" showed only "not in the dictionary" until the row was opened.
 //: One edit only (`quick`), cached on the finding, for the rows drawn; the menu
@@ -1234,14 +1144,6 @@ docSpellGuesses.hint = (finding) => {
   finding.hint ??= docMatchCase(finding.text, docSpellGuesses(finding.text, 1, true)[0] || "");
   return finding.hint;
 };
-//: One answer per word rather than per occurrence. A document says the same
-//: word many times, the answers cannot change between two of them inside one
-//: pass, and the generation above is the most expensive thing the checker
-//: does. Cleared when the dictionary changes, which is the only thing that
-//: can change an answer.
-let docSpellCache = new Map();
-let docProseFound = [];
-let docCompleteWords = null;
 docListen("input", (event) => {
   //: CodeMirror raises its own `input` on the contenteditable *and* tells us
   //: through the update listener, and the update listener is the one that
@@ -1286,7 +1188,6 @@ docListen("focusout", (event) => {
     if (!docToolsBoxFor(document.activeElement)) hideDocComplete();
   }, 0);
 });
-let docFirstPress = null;
 docListen(
   "mousedown",
   (event) => {
@@ -1526,16 +1427,8 @@ for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {
 //: spell as the British column does for every pair here; Canadian is the
 //: mixed one (`DOC_CA_KEEPS_UK`). The label is what a finding says.
 
-//: Built once from the pairs above, in whichever direction the setting names.
-//: A map rather than a scan, because this runs per word of the document.
-let docVariantFor = null;
 
 
-//: **The popup, and the four answers a person actually has.** Fix it, this is
-//: a word, not this time, and, for a spelling, always correct it. Anchored
-//: at the thing it is about, because a menu that opens somewhere else makes
-//: you re-find the word you were looking at.
-let docSuggestOpenFor = null;
 
 
 // --- ranking the suggestions (DOCUMENTS_PLAN Phase 0 item 2) ------------------
@@ -1562,10 +1455,6 @@ let docSuggestOpenFor = null;
 // reader can feel (one letter out sorts above two).
 
 
-//: The words this app can say it knows, as opposed to the words it has seen.
-//: Rebuilt when the dictionary changes, which is the only thing that can add
-//: to it.
-let docKnownWordsCache = null;
 
 
 //: The answers to a finding (rows as data, and the buttons drawn from them): documents-suggest.js, fetched on first
@@ -1578,11 +1467,6 @@ let docKnownWordsCache = null;
 //: again after the fetch reaches the real one. Nothing reads their return.
 
 
-//: Kept so the menu can be re-placed after it changes size, the AI wordings
-//: arrive seconds after it opens and make it taller, and a menu that grew
-//: downwards off the bottom of the window is a menu whose best suggestion is
-//: unreachable.
-let docSuggestAnchor = null;
 
 
 window.addEventListener("resize", docSuggestFollowAnchor);
@@ -1591,7 +1475,6 @@ window.addEventListener("resize", docSuggestFollowAnchor);
 window.addEventListener("scroll", docSuggestFollowAnchor, true);
 
 
-let docLastTranslateLanguage = "";
 
 
 //: Last line, deliberately: everything above has to exist before the first
@@ -1618,30 +1501,10 @@ renderDocTools();
 // first: this file must never be able to tell which one it is talking to.
 
 
-//: True once loading or mounting has failed. Checked before every attempt, so
-//: a broken bundle costs one request rather than one per document opened.
-let docCmBroken = false;
 
 
-//: How the prose findings tell the view to repaint. A `StateEffect` rather
-//: than a bare `dispatch({})`, so the plugin can rebuild for exactly this and
-//: ignore every other transaction that does not move the document or the
-//: viewport. Created with the first view, because it needs `CM.state`.
-let docFindingsEffect = null;
 
 
-//: A different document is a different history: carrying the previous one
-//: over would let Ctrl+Z paste the last document's text into this one, which
-//: is the worst kind of undo bug because it reads as the app corrupting your
-//: file. `setState` replaces the history along with the text, which is the
-//: whole reason this is not a change transaction.
-//:
-//: **And each document keeps its own, for the session** (the owner,
-//: 2026-10-05: "undo and redo history for specific documents"). The history
-//: of the one being left is kept as JSON by its id and given back when it
-//: opens again, but only over the very text it was taken against (an edit
-//: made elsewhere since would make its steps wrong). A lock purges them all.
-let docHistoryOwner = null;
 
 
 //: **The lock screen has to empty the engine too, and it cannot know how.**

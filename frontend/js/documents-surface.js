@@ -1,6 +1,29 @@
 // documents-surface.js: the editing surface behind one adapter (textarea or CodeMirror), opening a document, the list, and remembering where you were.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docs = [];
+  let currentDoc = null;   // {id, title, content, ...}
+  let docDirty = false;
+  //: Which `openDocument` call is the newest (see there).
+  let docOpenSeq = 0;
+  let docView = "source";
+  //: The editing mode the Edit button returns to after Read (DOCUMENTS_PLAN
+  //: Phase 1 item 2): Live, Source or Split, whichever was last in use.
+  let lastEditView = "live";
+  //: The empty-document prompt, kept here because the two engines spell it
+  //: differently: a textarea has a `placeholder` attribute, CodeMirror has a
+  //: placeholder extension that is built from this when the view is created.
+  let docPlaceholderText = "";
+  //: While the edit-conflict prompt is up, autosave waits for its answer
+  //: rather than asking again every 1.2s of typing behind it.
+  //: **An autosave's conflict waits in the status line, not in a dialog** (audit
+  //: 1028 D9). A silent save hit the modal in the middle of a sentence, which
+  //: took the focus and sent the next keystrokes to it. Now the save stops, the
+  //: status says the document changed in another window and offers "Resolve",
+  //: and the dialog opens when asked for (or on an explicit save). `{ id,
+  //: current }`: the other window's version, for the document it is about.
+  let docConflictPending = null;
   // DOC-SURFACE-BEGIN
   // =============================================================================
   // The editing surface, behind one adapter (DOCUMENTS_PLAN Phase 2 step 2)
@@ -992,4 +1015,16 @@
 
   //: The file's surface: what other files call (L-documents-117).
   Object.assign(window, { docBoxEl, docSetPlaceholder, docPlaceholderFor, textareaSurface, cmSurface, docSurfaceChanged, docSurface, docStr, docText, docSurfaceById, docEventFromCm, docListen, asSurface, setDocView, loadDocuments, renderDocList, showNoDocument, openDocument, docRememberPositionNow, docRememberPosition, keepDocEditLocally, forgetDocEditLocally });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docs", () => docs, (value) => { docs = value; }],
+    ["currentDoc", () => currentDoc, (value) => { currentDoc = value; }],
+    ["docDirty", () => docDirty, (value) => { docDirty = value; }],
+    ["docOpenSeq", () => docOpenSeq, (value) => { docOpenSeq = value; }],
+    ["docView", () => docView, (value) => { docView = value; }],
+    ["lastEditView", () => lastEditView, (value) => { lastEditView = value; }],
+    ["docPlaceholderText", () => docPlaceholderText, (value) => { docPlaceholderText = value; }],
+    ["docConflictPending", () => docConflictPending, (value) => { docConflictPending = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

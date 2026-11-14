@@ -1,6 +1,18 @@
 // documents-instruments.js: the editor's instruments: counts, completion, prose checks and autocorrect.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docWordlist = null;
+  //: One answer per word rather than per occurrence. A document says the same
+  //: word many times, the answers cannot change between two of them inside one
+  //: pass, and the generation above is the most expensive thing the checker
+  //: does. Cleared when the dictionary changes, which is the only thing that
+  //: can change an answer.
+  let docSpellCache = new Map();
+  //: The words this app can say it knows, as opposed to the words it has seen.
+  //: Rebuilt when the dictionary changes, which is the only thing that can add
+  //: to it.
+  let docKnownWordsCache = null;
   // =============================================================================
   // The editor's own instruments: counts, completion, prose checks, autocorrect
   // =============================================================================
@@ -523,4 +535,11 @@
 
   //: The file's surface: what other files call (L-documents-117).
   Object.assign(window, { docActiveBox, docMirrorPoint, docCaretPoint, DOC_PROSE_RULES, DOC_AUTOCORRECT, DOC_LONG_SENTENCE_WORDS, docWordlistReady, docLoadWordlist, docSpellable, docSpellNameKind, docWordKnown, DOC_EDIT_SWAP, DOC_EDIT_DROP, docEditsOnce, docSpellRoot, docSpellGuesses });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docWordlist", () => docWordlist, (value) => { docWordlist = value; }],
+    ["docSpellCache", () => docSpellCache, (value) => { docSpellCache = value; }],
+    ["docKnownWordsCache", () => docKnownWordsCache, (value) => { docKnownWordsCache = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();
