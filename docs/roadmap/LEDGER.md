@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 92 | 34 | 2 | 59 | 302 |
+| chat | 176 | 86 | 34 | 2 | 59 | 296 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,17 +17,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 466 | 103 | 2 | 183 | 1122 |
+| all | 553 | 460 | 103 | 2 | 183 | 1116 |
 
 ## graph
 
 ## chat
 
-- [ ] **L82** `chat` open, S: Measure and fix Atlas arm angle range and downward arc over a walk cycle. From OPEN.md:1071; OPEN.md:3767; OPEN.md:1090. Evidence: atlasarms.js measures still poses only; walk swing in atlas-motion.js atlasRigFrame unmeasured
-- [ ] **L83** `chat` open, S: Generic faces' arms have no rig or speed cap; add and measure. From OPEN.md:1084; OPEN.md:3494. Evidence: avatars.js generic faces keyframed; speed of wave/hide keyframes unmeasured
 - [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
-- [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
-- [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged; tried 2026-11-13: joining loose notes by shared category, then by a shared title word, broke 44 composer tests because both mostly restate the question's own subject ('all mention sara', 'all filed under Fun' for a Fun-category question); needs the question's subject and category passed into themes() and excluded as keys
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
 - [ ] **L110** `chat` open, M: Give model turns composer next chips and add no-model contradictions and list_bin tool. From OPEN.md:4519; parity-1110.md Remaining. Evidence: Needs composer result frame (chat_chips.continue_chips); a model turn has none
@@ -40,7 +36,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L126** `chat` open, M: Library bundle split (D22); E62 (widen on regenerate) already built: attempt goes to widen in routes_chat._search_notes, tests/test_regenerate_widens_e62.py. From v1028-2.md Remaining. Evidence: E62 needs owner axes; D22 design first (a30g-1102.md:20); D22 brief 2026-11-13: split the `library` lazy bundle (frontend/js/app.js:1640; documents.js 260 KB gz, library.js 201, documents-code.js 92, documents-prose.js 52, documents-cm* ~50) into library-list (library.js and list stand-ins) and library-editors (documents family) fetched on first document open; the lazy-entries stand-ins at app.js:1901 are the seam; measure PF4 typing cost before and after; keep tests/test_boot_budget.py green
 - [ ] **L127** `chat` open, M: Narrate lines for Guide, drafting and doc review and announce chat/agent turns. From OPEN.md:2514. Evidence: Placed into owning briefs (SESSION_BRIEFS.md:343); not built
 - [ ] **L128** `chat` open, M: Move remaining AI controls from aiIsOff() gating to model_ready (27 call sites). From OPEN.md:2734. Evidence: grep aiIsOff() finds 27 call sites in frontend/js
-- [ ] **L129** `chat` open, M: Fix avatars.js dashboard/Library timer forced layout and nameMarkBuddyKeepUp cost. From OPEN.md:4424; OPEN.md:4426; INBOX.md:1716. Evidence: No commit or CHANGELOG line names 1667l; timer not re-measured
 - [ ] **L130** `chat` open, M: Shorten _composed_chat 8 s probe after a silent model (P7). From OPEN.md:4516. Evidence: First question pays the probe once (ollama_client.is_running); skip for exact classes untested against a real slow model
 - [ ] **L131** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:1083. Evidence: setAtlasMood still in atlas.js; no optimisation commit found
 - [ ] **L132** `chat` open, M: Atlas tail script-drawn 15 draws a second at rest; verify subtle animations cheap. From OPEN.md:1087; OPEN.md:1091. Evidence: atlas-life.js:542 atlasTailRest compositor rest for held states; tail still script-drawn in live acts
@@ -135,7 +130,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L729** `chat` open, S: Decide the 'Atlas, from your notes' bubble label (decision 36). From OPEN.md:1102. Evidence: Row note: W34 owner-call tracked in the plans (w34-L1-1111.md) Owner decided 2026-11-12: Atlas's assistant label (No model: "Atlas's assistant, from your notes"; with a model: "Atlas, <model name>". Matches the later decision). Build: label on the answer bubble in frontend/js/chat-turn.js plus a frontend test; align the Why trail line 'Atlas wrote it from your notes' (tests/test_why_b30.py) with the chosen name.
 - [ ] **L724** `chat` open, S: Measure Chat panels with a model connected and settle the chip edge decision. From OPEN.md:976; OPEN.md:3212. Evidence: Needs a connected model (llama-dev.sh); cannot open without one Owner decided 2026-11-12: Keep the border (Matches DESIGN.md's label recipe and the test that pins it (META_EDGED); nothing changes). Build: keep META_EDGED; measure #chat-model-panel and How it answers selects at 390 px on the small GGUF via llama-dev.sh, then close.
 - [ ] **L747** `chat` open, L: One shared mind for both companions. From OPEN.md:4412. Evidence: Architecture call; w34-unv2-1111.md owner-call Owner decided 2026-11-12: Yes, two copies count (Close the row; a test keeps the two copies' decisions in step). Build: a parity test comparing behaviour.py Mind and avatars.js nameMarkBuddyDecide weights; close the row.
-- [ ] **L749** `chat` open, S: Determined brow is weakest mood; bolder eye shape; atlasrest1402 sweep fails in setup. From atlasf1696-1108c.md. Evidence: Source: non-scowling determined brow is an owner call; sweep CASE=moods line 93 null element not fixed Owner decided 2026-11-12: Keep the flame cue (No face change; the flame beside the head says determined. The broken mood sweep is fixed). Build: fix scratchpad/ui-sweeps/atlasrest1402.js CASE=moods null element at line 93; no art change.
 - [ ] **L735** `chat` open, M: Owner to list more workflows and actions (AGENT_SKILLS_REFORM). From INBOX.md:904 B34. Evidence: Placed in AGENT_SKILLS_REFORM; needs the owner's list of workflows Owner decided 2026-11-12: Let the agent propose. Build: an agent drafts a list of new workflows and actions for Agent mode and Chat from the research, for the owner to approve; approved ones become rows in this plan.
 - [ ] **L715** `chat` open, S: Decide the offers accept/decline gate (F12). From OPEN.md:4311. Evidence: Built (tests/test_composer_offers_1110.py, 17d5d14); remainder marked owner call. Owner decided 2026-11-12: close as built, but make sure many forms of yes are accepted (yeah, yep, sure, ok and the like). Build: the typed-yes reader accepts many forms of yes (yes, yeah, yep, yup, sure, ok, okay, go ahead, do it, please do) and of no, with a table test; then close.
 - [ ] **L741** `chat` open, S: Atlas CSS loops under reduce-motion cost 1,579 recalcs a minute. From OPEN.md:1089. Evidence: Earlier decision (INBOX 772, 08-consistency.css) keeps loops under reduce; changing it is the owner's call Owner decided 2026-11-12: Let calm loops run again. Build: under the system reduce-motion hint, Atlas's gentle sway and glow loops run again (reverses the full stop of INBOX 772); measure restyles a minute and keep under budget; update the reduce-motion test to the new intent.
