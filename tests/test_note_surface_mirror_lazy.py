@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import JS_DIR, documents_text
+from tests._app_js import documents_text
 
 DOCS = documents_text()
 

@@ -640,7 +640,7 @@ EXEMPT: dict[str, str] = {
     "documents-code.js:docRemoteDiagnostics": "read: reads or asks the model; shows a result, writes nothing",
     "documents-codekit.js:docAssistAsk": "read: reads or asks the model; shows a result, writes nothing",
     "documents-word.js:docWordUploadPicture": "job: a picture inside a Word file being imported goes to the media store; the imported document is the step (Undo bins it)",
-    "documents.js:docDesktopFullscreenToggle": "job: starts or stops work or a model; deletes no user data",
+    "documents-focus.js:docDesktopFullscreenToggle": "job: starts or stops work or a model; deletes no user data",
     "documents-suggest-panel.js:docDictionaryWrite": "settings: a setting with its own Reset or the settings history",
     "documents-suggest.js:docSuggestAnswers": "read: reads or asks the model; shows a result, writes nothing",
     "documents.js:ensureDocumentExists": "board: creates the document being typed into; the editor's history starts there",

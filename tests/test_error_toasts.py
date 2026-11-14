@@ -89,6 +89,8 @@ EXPECTED = {
     ],
     'documents.js': [
         '`${what} is not available here.`',
+    ],
+    'documents-focus.js': [
         '"Full screen is not available in this window."',
     ],
     'documents-commands.js': [
@@ -269,12 +271,18 @@ FAULTS = {
     'documents-history.js': {
         '"Couldn\'t open that version."': 'fetching a saved version failed',
     },
-    'documents.js': {
+    'documents-export-ops.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-surface.js': {
+        '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
+    },
+    'documents-md-actions.js': {
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
+    },
+    'documents-wiring.js': {
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'documents-ai-edit.js': {

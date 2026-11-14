@@ -7,7 +7,6 @@ from __future__ import annotations
 import re
 
 from tests._app_js import documents_text
-from pathlib import Path
 
 from tessellate.entry import highlights, manager
 from tessellate.search import engine
