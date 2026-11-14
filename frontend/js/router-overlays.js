@@ -64,6 +64,12 @@ function routerCloseTopOverlay() {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     return true;
   }
+  //: The graph's note panel is a sheet at a phone and floats on a desktop; Back left it open on the hidden map (L593).
+  const popup = document.getElementById("graph-popup");
+  if (popup && popup.offsetParent !== null && !popup.classList.contains("hidden")) {
+    call("closeGraphPopup");
+    return true;
+  }
   const closers = [
     ["sketch-overlay", "closeSketch"],
     ["palette-overlay", "closePalette"],

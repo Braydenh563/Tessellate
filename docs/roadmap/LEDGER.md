@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 86 | 36 | 0 | 18 | 252 |
+| world-class | 130 | 84 | 36 | 0 | 18 | 250 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 478 | 107 | 2 | 129 | 1138 |
+| all | 553 | 476 | 107 | 2 | 129 | 1136 |
 
 ## graph
 
@@ -499,7 +499,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
 - [ ] **L592** `world-class` open, M: Add a search field to the Notes sidebar (Brief 47). From OPEN.md:3739. Evidence: Routes built are no-match button and saved-search rows; field not added
-- [ ] **L593** `world-class` open, M: Drive lightbox Escape, reminders add form and graph node panel back. From OPEN.md:3876. Evidence: Not driven; chat undo not reproduced
 - [ ] **L594** `world-class` open, M: Count words written including edits to older notes (per-edit word delta). From OPEN.md:1928; OPEN.md:2814. Evidence: No per-edit word delta stored, per row
 - [ ] **L595** `world-class` open, M: Wire the 'Not used lately' list to the weekly offer. From OPEN.md:2812. Evidence: Verified open 2026-11-10
 - [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
@@ -509,7 +508,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
-- [ ] **L608** `world-class` open, M: Sweep not reaching right-click menus, keyboard acts, pickers, library delete. From OPEN.md:1836; OPEN.md:3695. Evidence: Coverage gap; no sweep added found
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L616** `world-class` open, M: Trigger the other 100 toast(...,true) call sites. From OPEN.md:3567. Evidence: Lint test_error_toasts.py covers them; situations never driven in a browser
 - [ ] **L617** `world-class` open, M: phone-shell tab click, openDoc, timeline-calendar onclick lag and 16 s searxng start. From INBOX.md:1716. Evidence: hascss-1111/lag-1110: 'remains', not reproduced at 44 to 200 notes; no later fix found

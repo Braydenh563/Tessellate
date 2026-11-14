@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).
 - Activity: a chat or job that fails on a file shows the reason, not the file's path and errno (L505).
 - Filing: a note saved without defer_filing gives its database connection back while the model thinks (L690).
 - Search: a test pins that tag: narrows the keyword candidates before the depth cut (L626).
