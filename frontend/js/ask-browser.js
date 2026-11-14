@@ -186,7 +186,7 @@
     const [joined, like] = await Promise.all([
       lazyScript("/js/connections.js").catch(() => null),
       apiJson(`/entries/${id}/connections`, { silent: true }).catch(() => null),
-      apiJson(`/entries/${id}/related`, { silent: true }).catch(() => []),
+      apiJson(`/entries/${id}/related`, { silent: true }).catch(() => null),
     ]).then(([, a, b]) => [a, b]);
     if (browse.note?.button !== button) return;
     box.replaceChildren();
