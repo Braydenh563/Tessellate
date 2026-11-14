@@ -119,7 +119,10 @@ def test_composer_row1_a_remark_names_its_note_and_the_bubble_opens_it(client, s
     named = [r for r in remarks if "Lisbon" in r["text"] or "hotel" in r["text"]]
     assert named and old.id in named[0]["sources"]
     remark = (ROOT / "frontend" / "js" / "companion-remark.js").read_text(encoding="utf-8")
-    assert "Date.now() - (nmb.keyAt || 0) < 4000" in remark and remark.index("nmb.keyAt") < remark.index("prefs.setJSON(NMB_REMARK_SEEN")
+    # Intent moved (L-chat-54: the typing quiet window became 20 s in nameMarkRemarkMay, pinned in
+    # test_proactive_remarks_chatplan54): the gate still reads nmb.keyAt before anything is recorded as said.
+    assert "NMB_REMARK_KEY_QUIET_MS = 20000" in remark and "now - (keyAt || 0) >= NMB_REMARK_KEY_QUIET_MS" in remark
+    assert remark.index("nmb.keyAt") < remark.index("prefs.setJSON(NMB_REMARK_SAID")
     assert "flashEntry(source)" in remark and "event.stopPropagation()" in remark
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"\.nm-say\.nm-say-source \{\s*pointer-events: auto;", css)
