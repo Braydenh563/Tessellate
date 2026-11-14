@@ -2492,18 +2492,6 @@ button:not(.ghost) > .spinner {
 .bookmark-count:empty {
   display: none;
 }
-/* The "By site" grouping: a heading and its rows, folding like a Contents
-   section. The heading is `.contents-heading` (sticky, on the glass-off
-   list); its bottom margin is the gap between it and its first row. */
-.bookmark-site {
-  display: flex;
-  flex-direction: column;
-}
-.bookmark-site-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--row-gap);
-}
 /* The details panel a row opens in place: it spans the row's grid under the
    title, and stays out of the way of the controls above it. */
 .bookmark-detail {
@@ -2512,18 +2500,6 @@ button:not(.ghost) > .spinner {
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-2) 0 var(--space-1);
-}
-.bookmark-detail-url {
-  overflow-wrap: anywhere;
-  font-size: var(--text-sm);
-  color: var(--ink);
-}
-.bookmark-detail-note {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .bookmark-row.is-open {
   background: var(--surface-2);
@@ -4764,11 +4740,6 @@ html.modal-open body {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--inner);
-}
-.bookmark-edit-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
 }
 
 /* The Links "+ Add" button sat shorter than the three inputs beside it -

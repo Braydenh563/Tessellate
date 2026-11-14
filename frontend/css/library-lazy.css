@@ -13,6 +13,279 @@
    with belong here: new surfaces (a map's outline and markers, a picture's
    grip in Live, the print step), not overrides of boot rules. */
 
+/* --- moved from the boot sheets for L-ui-modernisation-51 (cascade-blocked rules: where a later rule of equal specificity wrote the same property, :where(:not()) keeps that rule winning; boot order kept) --- */
+/* from 00-tokens-shell.css (L-ui-modernisation-51) */
+.library-card-preview {
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.library-card-preview:where(:not(.card)) {
+  margin-bottom: 0;
+}
+
+.library-card-preview:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-md);
+}
+
+/* A note has no title and no filename, its own words are the only way to
+   recognise it, so three lines was showing a third of what the card had room
+   for. Reported as "I can't see a lot of the response in the cards". Eight,
+   with the server sending 420 characters rather than 160 to fill them. The
+   other kinds keep three: a document has a title, a file has a name, and their
+   preview is a reminder rather than the thing itself. */
+.library-note .library-card-preview:where(:not(.library-list .library-card-preview)) {
+  -webkit-line-clamp: 8;
+  line-clamp: 8;
+}
+
+.library-card-meta {
+  display: flex;
+  justify-content: space-between;
+  column-gap: var(--space-3);
+  /* Pinned to the bottom of the card, so the metadata line agrees across a row
+     whose previews are different lengths. */
+  margin-top: auto;
+}
+
+.library-card-meta:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-3);
+}
+
+.library-card-meta:where(:not(.card, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-2);
+}
+
+.library-card-meta:where(:not(.muted)) {
+  color: var(--muted);
+}
+
+.library-card-meta:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-sm);
+}
+
+.library-image-reading:not([open]) > .library-image-reading-body:where(:not(.card.collapsed> :not(:first-child))) {
+  display: none;
+}
+
+.library-image-reading[open] > .library-image-reading-body {
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.library-image-reading[open] > .library-image-reading-body:where(:not(.card.collapsed> :not(:first-child))) {
+  display: flex;
+}
+
+.library-image-reading[open] > .library-image-reading-body:where(:not(.dock-menu-list > :is(.dock-menu-section, .dock-arrange-label):first-child)) {
+  padding-top: var(--space-3);
+}
+
+.library-image-field {
+  flex-direction: column;
+  column-gap: var(--space-1);
+}
+
+.library-image-field:where(:not(.field)) {
+  display: flex;
+}
+
+.library-image-field:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+/* **A field label, not a heading shouting at you.** Reported with a
+   screenshot: "the ui and tags in the image captions and ocr need a
+   redesign." Uppercase + letter-spaced + semibold is the loudest type in the
+   app, and it was being spent on the word DESCRIPTION above every tile in a
+   grid of twenty: so the labels read as the content and the actual caption
+   read as the fine print. Sentence case, one step down, with a small marker
+   dot doing the work the shouting was doing: it separates the fields at a
+   glance without competing with them. */
+.library-image-field-label {
+  align-items: center;
+  column-gap: var(--space-2);
+  color: var(--muted);
+}
+
+.library-image-field-label:where(:not(.field)) {
+  display: flex;
+  margin: 0;
+}
+
+.library-image-field-label:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.library-image-field-label:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-xs);
+}
+
+.library-image-field-label:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-weight: 500;
+}
+
+/* from 01-forms-settings.css (L-ui-modernisation-51) */
+/* The "By site" grouping: a heading and its rows, folding like a Contents
+   section. The heading is `.contents-heading` (sticky, on the glass-off
+   list); its bottom margin is the gap between it and its first row. */
+.bookmark-site {
+  flex-direction: column;
+}
+
+.bookmark-site:where(:not(.contents-heading)) {
+  display: flex;
+}
+
+.bookmark-site-body {
+  display: flex;
+  flex-direction: column;
+  column-gap: var(--row-gap);
+}
+
+.bookmark-site-body:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--row-gap);
+}
+
+.bookmark-detail-url {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.bookmark-detail-url:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-sm);
+}
+
+.bookmark-detail-note {
+  margin: 0;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bookmark-detail-note:where(:not(:is(.doc-list-title, .bookmark-title), :root)) {
+  font-size: var(--text-sm);
+}
+
+.bookmark-edit-field {
+  flex-direction: column;
+  column-gap: var(--space-1);
+}
+
+.bookmark-edit-field:where(:not(.field)) {
+  display: flex;
+}
+
+.bookmark-edit-field:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+/* from 04-chat-dock-appearance.css (L-ui-modernisation-51) */
+/* **One line, so every row is one height.** The rows came out 56.5px and
+   78.5px depending on whether the title wrapped, in a list where nothing else
+   varies, and at 0.92rem full weight the title was also the largest thing in
+   the sidebar, competing with the card's own headings. `--text-md` is the
+   scale's own size for a list row; the full title is on the row's tooltip. */
+.doc-item-title {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-item-title:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-weight: 600;
+  font-size: var(--text-md);
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+/* A formula the parser had to guess at (documents-math.js `problem`): an
+   error tint, and the title names what it could not read (audit 1102 DX18).
+   Live and Read draw it through the same wrapper. */
+.md-math-error {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: var(--radius-sm);
+  padding-right: var(--space-1);
+  padding-left: var(--space-1);
+}
+
+.md-math-error:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.doc-toolbar-collapsed-name {
+  display: none;
+  color: var(--muted);
+}
+
+.doc-toolbar-collapsed-name:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-size: var(--text-sm);
+}
+
+/* The row itself is what grows; the gutter never does. */
+.outline-row > .outline-link:where(:not(.doc-outline-row > .outline-link)) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.library-file-thumb-kind {
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.library-file-thumb-kind:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-size: var(--text-sm);
+}
+
+/* The group headings: the eyebrow, its count beside it as quiet text (INBOX
+   549: pushed to the far edge it read as a second column of numbers), so the
+   panel reads "Spelling 3, Style 11" at a glance. */
+.doc-prose-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  column-gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-1);
+  padding-inline: var(--space-2);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.doc-prose-group:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.doc-prose-group:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-size: var(--text-xs);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* The `:not(.doc-split-pane)` is carried through deliberately, and it is a
+   specificity fix rather than a copy of the selector above: `#doc-preview`
+   alone is (1,0,0) and `#doc-preview:not(.doc-split-pane)` is (1,1,0), so a
+   tidy `.doc-wide #doc-preview` at (0,2,0) loses to *both*, measured, the
+   toggle flipped its own aria-pressed and moved the preview not one pixel. */
+.doc-wide .doc-source-wrap:not(.doc-split-pane) #doc-content,
+.doc-wide #doc-preview:not(.doc-split-pane) {
+  max-width: none;
+}
+
+.doc-wide #doc-preview:where(:not(.doc-serif #doc-preview)) {
+  max-width: none;
+}
+
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
    name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 /* --- moved from the boot sheets for L-ui-modernisation-47 (the same test as L459, boot order kept) --- */
@@ -199,6 +472,469 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+
+/* from 05-sidebars-themes.css (L-ui-modernisation-51) */
+/* **A row is its head over its answers** (INBOX 549). It was a flex row, so
+   an opened row's answers sat beside it and squeezed the finding to "s…" in
+   the right dock. */
+.doc-prose-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-prose-row:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+/* The row's own line: the jump, then one cell of actions centred on it. The
+   ground arrives with the pointer, with no edge (the list-row recipe). */
+.doc-prose-rowhead {
+  flex-wrap: nowrap;
+  align-items: center;
+  column-gap: var(--space-1);
+  padding-right: var(--space-1);
+  border-radius: var(--radius-md);
+}
+
+.doc-prose-rowhead:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+.doc-prose-rowhead:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+/* The words carry the identity, so they hold the weight and they are the half
+   that ellipsises: the reason is a sentence and can be read from the title. */
+.doc-finding-words {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-finding-words:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+.doc-finding-words:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-weight: 600;
+}
+
+.doc-finding-why {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.doc-finding-why:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+.doc-finding-why:where(:not(:is(.doc-list-title, .bookmark-title))) {
+  font-size: var(--text-xs);
+}
+
+.doc-complete-list li .doc-complete-detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-xs);
+}
+
+.doc-complete-list li .doc-complete-detail:where(:not(.doc-dock-menu-list .doc-dock-menu-check > span, [data-doc-dock-submenu] .doc-dock-menu-check > span)) {
+  min-width: 0;
+}
+
+.doc-complete-list li.active .doc-complete-detail:where(:not(:root[data-palette="utilitarian"] :is( .card h3, .eyebrow, .nav-group-label, .launch-label, .features-group, .reminder-group-head, .dash-widgets-group-label, .connection-heading, .finder-group ), summary:not(.icon-only):not(.icon-button):hover, summary:not(.icon-only):not(.icon-button):is(:focus-visible, :has(:focus-visible)))) {
+  color: var(--muted);
+}
+
+.doc-complete-list li .doc-complete-glyph {
+  font-size: var(--text-md);
+}
+
+.doc-complete-list li .doc-complete-glyph:where(:not(.code-block code :is(.tok-atom, .tok-bool, .tok-number, .tok-literal), .code-block code :is(.tok-punctuation, .tok-operator, .tok-meta), .code-block code :is(.tok-string, .tok-string2, .tok-regexp), .code-block code :is(.tok-typeName, .tok-className, .tok-namespace, .tok-macroName), .doc-template-choice[aria-checked="true"] > strong)) {
+  color: inherit;
+}
+
+/* The autocorrect underline (autocorrect.js, Brief 94): a button over the
+   corrected word for five seconds, a click puts the word back. It sits in the
+   window's coordinates, a layer above its box set in script. */
+.autocorrect-mark {
+  position: fixed;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding-right: 0;
+  padding-left: 0;
+  border: 0;
+  border-bottom: 2px solid var(--accent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.autocorrect-mark:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* The word, and why it is flagged. Both, because "recieve" with no reason is a
+   scold and a reason with no word makes you go and look. The two are drawn by
+   `docFindingLine`, the same function the panel row uses, so this rule only has
+   to place the line and divide it from the answers below. */
+.doc-suggest-head {
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-1);
+}
+
+.doc-suggest-head:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-2);
+}
+
+.doc-suggest-list {
+  display: flex;
+  flex-direction: column;
+  column-gap: 1px;
+}
+
+.doc-suggest-list:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: 1px;
+}
+
+.doc-suggest-actions {
+  flex-direction: column;
+  column-gap: 1px;
+}
+
+.doc-suggest-actions:where(:not(.doc-suggest-item)) {
+  display: flex;
+}
+
+.doc-suggest-actions:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: 1px;
+}
+
+/* The replacements read as the primary answer and the rest as what else you
+   can do, so they are separated by a rule rather than by weight, the actions
+   are still real controls. */
+.doc-suggest-actions {
+  margin-top: var(--space-1);
+}
+
+.doc-suggest-actions:where(:not(.doc-suggest-item, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+}
+
+.doc-suggest-actions:where(:not(.doc-suggest-item)) {
+  border-top: 1px solid var(--border);
+}
+
+.doc-suggest-list-inline {
+  flex-flow: row wrap;
+  column-gap: var(--space-1);
+}
+
+.doc-suggest-list-inline:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+.doc-suggest-actions-inline {
+  flex-flow: row wrap;
+  column-gap: var(--space-1);
+}
+
+.doc-suggest-actions-inline:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+.doc-suggest-actions-inline {
+  margin-top: var(--space-1);
+}
+
+.doc-suggest-actions-inline:where(:not(.doc-suggest-item, :is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-1);
+}
+
+.doc-dictionary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--space-2);
+  min-height: var(--row-h);
+  padding-right: var(--space-1);
+  padding-left: var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.doc-dictionary-row:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-2);
+}
+
+.doc-dictionary-row:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.doc-prose-tools {
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  column-gap: 0;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+}
+
+.doc-prose-tools:where(:not(:is(.persona-row, .skill-row))) {
+  /* Quiet squares side by side need no gap; one more step of it wrapped the
+     group under the name in the 320px dock. */
+  
+  row-gap: 0;
+}
+
+.doc-prose-ai-line {
+  flex: 1 1 12rem;
+}
+
+.doc-prose-ai-line:where(:not(.doc-sidebar *)) {
+  min-width: 0;
+}
+
+.doc-prose-ai-line:where(:not(.notice)) {
+  color: var(--muted);
+}
+
+/* Backlinks with context, and unlinked mentions (DOCUMENTS_PLAN Phase 4.1).
+   A backlink row is three things stacked, not one line: who said it, what
+   they said, and the one action that changes the connection. `.outline-link`
+   on its own is `white-space: nowrap` with an ellipsis, which is right for a
+   heading in an outline and wrong for a sentence, so the sentence is its own
+   element and the link keeps the behaviour every other outline row has. */
+.doc-backlink {
+  display: flex;
+  flex-direction: column;
+  column-gap: var(--space-1);
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.doc-backlink:where(:not(:is(.persona-row, .skill-row))) {
+  row-gap: var(--space-1);
+}
+
+.doc-backlink:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+/* from 07-whiteboard-misc.css (L-ui-modernisation-51) */
+/* K18: a saved picture's caption, one muted line under it (Show captions). */
+.wb-object-caption {
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.wb-object-caption:where(:not(.wb-html-layer)) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+
+.wb-crop-grip {
+  position: absolute;
+  inline-size: 12px;
+  block-size: 12px;
+  padding-right: 0;
+  padding-left: 0;
+  background: var(--accent);
+  border: 1px solid var(--card);
+  border-radius: var(--radius-sm);
+  pointer-events: auto;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+}
+
+.wb-crop-grip:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* The typeable page number before the picker (value-field.js, INBOX 1694 b). */
+.wb-present-page {
+  display: inline-flex;
+}
+
+.wb-present-page:where(:not(.wb-present-count)) {
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+
+.wb-present-pick {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding-inline: var(--space-7);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-present-pick-title {
+  display: block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-present-pick-title:where(:not(.action-menu)) {
+  overflow: hidden;
+}
+
+.action-menu .menu-item.wb-present-pick-row:where(:not(.action-menu .menu-item[aria-current="true"], .action-menu .menu-item[aria-pressed="true"], .doc-dock-menu-list .doc-dock-menu-item[aria-pressed="true"])) {
+  font-weight: 600;
+}
+
+/* An item's comment count (WHITEBOARD_PLAN decision 17): a zero-size pin on
+   the item's top-right corner, scaled back to screen size like a grip
+   (`WB_INV_ZOOM_GRIPS`), holding an accent pill up and right of the corner so
+   the resize handle stays free. Lifted over every item by `zIndex` in JS. */
+.wb-comment-marks {
+  width: 0;
+  height: 0;
+}
+
+.wb-comment-marks:where(:not(.wb-html-layer)) {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* A sketch's own rotate handle, asked for directly. Round like the
+   card/object handles' own `.wb-rotate-handle` (an HTML element; sketches
+   are SVG, hence a separate class here rather than sharing it), connected
+   to the shape with a thin stem the same way every other drawing app's
+   rotate handle reads. */
+.wb-rotate-handle-stem {
+  stroke: var(--accent);
+  stroke-width: 1px;
+  stroke-opacity: 0.7;
+  /* The stem is the line drawn between the box and the dot, and it is
+     decoration: the dot is the control. Without this it also swallows the
+     press meant for the "n" edge handle, which sits at the middle of the top
+     edge, exactly where the stem meets the box. Measured on a group
+     selection: `elementFromPoint` at the n handle's own centre returned the
+     stem, so that edge could not be dragged at all (INBOX 262). */
+  pointer-events: none;
+}
+
+/* **One row of facts, one height, one baseline** (INBOX 450). Every fact in
+   the row, the plain chips ("Reads only", "1 input") and the two toggles
+   ("3 steps", "4 tools"), is a `--skill-fact-h` box with its words centred,
+   so the row has one top, one bottom and one baseline. Before, a 20px chip
+   stood beside 22px `<details>` whose summaries sat 2px lower, and an open
+   one put its list inside the row and pushed the next fact under it. The
+   toggles are buttons now (library.js) and open a panel below the row.
+   One step of padding a side and the row's own gap, so the four facts a
+   card can carry fit a 311px card on one line. */
+.skill-card .skill-card-facts > :is(.chip, button).skill-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--skill-fact-h);
+  min-height: var(--skill-fact-h);
+  margin: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.skill-card .skill-card-facts > :is(.chip, button).skill-fact:where(:not(.library-image-tile .chip:not(.chip.tag))) {
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+/* **The row moved to the other corner, because the chevron owns this one.**
+   Measured at 390x844 with a branch selected: the chevron's box and the row's
+   overlapped by 140px2, and `elementFromPoint` at the chevron's own centre
+   returned the row, so a branch could not be folded by pressing the control
+   that folds it. Dropping the row further under the node was tried first and
+   is not a fix: the chevron is centred on the node's right *edge*, so it hangs
+   half its height below the node's own bottom on a short node and the two
+   still met (91px2). They are separated by the only axis that settles it. The
+   left-bottom corner is clear on both layouts: a sideways map's branch leaves
+   from the right edge, and a downward map's chevron is centred under the node,
+   which a row anchored to the left edge cannot reach on any node wide enough
+   to hold two words. Anchored by its left edge now, so a third button grows
+   rightwards under the node's own bottom rather than back over the chevron. */
+.wb-map-actions {
+  align-items: center;
+  gap: var(--space-1);
+  opacity: 0;
+}
+
+.wb-map-actions:where(:not(.wb-map-resize-grip)) {
+  position: absolute;
+  left: calc(var(--space-8) * -1);
+  right: auto;
+  bottom: calc(var(--space-5) * -1);
+  display: flex;
+  z-index: 4;
+}
+
+.wb-map-actions:where(:not(.wb-clone-grip, .wb-link-waypoint-add)) {
+  pointer-events: none;
+}
+
+.wb-layer-row {
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--row-h);
+  padding-right: var(--space-1);
+  padding-left: var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.wb-layer-row:where(:not(:is(.doc-sidebar-section, .library-view-section, .doc-list))) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* What a toggle opens: the card's full width, under the row. The panel adds
+   no box of its own; the list inside is the steps' bordered panel or the
+   tools' row of code chips. */
+.skill-fact-panel > .skill-fact-list:where(:not(:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.skill-fact-panel > .skill-fact-list:where(:not(:is( .doc-sidebar-section, .doc-sidebar .doc-outline-wrap, .library-view-section, .doc-list, .wb-side-section ), :is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree))) {
+  margin-right: 0;
+  margin-left: 0;
 }
 
 /* The first group sits straight under the header, which has its own space
