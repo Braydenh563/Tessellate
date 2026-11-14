@@ -79,8 +79,16 @@ def _time(q: str, notes: list[dict], today: date) -> str:
     return _subject_rule(insights_more.time_of_day, q, notes, today, "Fewer than three {subject} notes say when you wrote them.")
 
 
-def _streak(q: str, notes: list[dict], today: date) -> str:
+#: The word before "streak" when it means writing at all, not one subject.
+_WRITING_STREAK = {"my", "a", "the", "any", "best", "longest", "current", "writing", "note", "notes", "daily"}
+
+
+def _streak(q: str, notes: list[dict], today: date) -> str | None:
     subject = _subject(q)
+    #: "What is my longest streak" is the app's writing streak (composer_streak), not a tag's.
+    before = re.search(r"(\w+)\s+streaks?\b", q, re.I)
+    if not subject and before and before.group(1).lower() in _WRITING_STREAK:
+        return None
     found = [i for s in ([subject] if subject else _top_tags(notes)) if (i := insights.streak(s, notes, today))]
     return "\n".join(f"- {i.text}" for i in found[:3]) if found else "Nothing has been written about in three weeks running up to now."
 
@@ -104,4 +112,4 @@ _RULES = ((_DRIFT, _drift), (_LOAD, _load), (_SPAN, _span), (_TOGETHER, _togethe
 def answer(question: str, notes: list[dict], today: date) -> str | None:
     """The measured line a rule-named question asks for, else None."""
     q = " ".join(question.split())
-    return next((read(q, notes, today) for pattern, read in _RULES if pattern.search(q)), None)
+    return next((said for pattern, read in _RULES if pattern.search(q) and (said := read(q, notes, today)) is not None), None)
