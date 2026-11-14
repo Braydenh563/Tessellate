@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: whiteboard.js and whiteboard-map.js lost 21 pieces to wrapped files, so the shared global scope has 226 fewer names; no behaviour changes (L286, D24).
 - Whiteboard: a frame bound to a property never writes a locked private note, keeps an edit made meanwhile, and takes only a one-line property name; Suggest a name leaves private notes out and falls back when the model is slow (PR 223 review).
 - Whiteboard: a PDF dropped, pasted or chosen on a board asks "Place as pages" (one picture per page, side by side, the first 20) or "Attach as one object" (page 1, double-click opens the file); one Undo step either way (L-whiteboard-2).
 - Whiteboard: Select all (Ctrl+A) and the Tab walk take connectors too, and a connector is read out as "Connector" with its label (L-whiteboard-21).

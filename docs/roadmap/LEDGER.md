@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 0 | 1 | 0 | 10 | 31 |
+| whiteboard | 30 | 1 | 1 | 0 | 10 | 32 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 528 | 126 | 2 | 182 | 1207 |
+| all | 553 | 529 | 126 | 2 | 182 | 1208 |
 
 ## graph
 
@@ -281,6 +281,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
+- [ ] **L-whiteboard-37** `whiteboard` open, M: Carve the Undo-recorded map commands out of whiteboard-map.js after moving the recorder wrap into a registry. From L286 (D24) remainder. Evidence: whiteboard.js 15,907 and whiteboard-map.js 7,732 lines; global names 7,180. Left: the WB_RECORDED functions (whiteboard-map.js 800-1630 and 4130-6750 areas) and the history/undo block cannot move into a wrapped file until wbRecordGesture wraps by name inside the file, not by replacing window[name]; the 10,000-line onDomReady body in whiteboard.js holds one function.
 
 ## documents
 
