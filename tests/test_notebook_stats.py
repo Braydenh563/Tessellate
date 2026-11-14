@@ -371,3 +371,17 @@ def test_a_recent_count_reads_the_injected_clock_not_the_real_one(client):
         said = notebook_stats.answer("how many notes did I write this week", session, now=fixed)
         assert said is not None and said.text == "You have written 1 note this week.", said and said.text
         assert notebook_stats.answer_chat("how many notes did I write last week", session, now=fixed).text.startswith("You wrote no notes")
+
+
+def test_a16_a_count_answer_carries_a_measure_that_names_where_it_came_from(client):
+    from datetime import datetime
+
+    session = _session()
+    _note(session, "one", tags=["gym"])
+    _note(session, "two", tags=["gym"])
+    session.commit()
+    said = notebook_stats.answer("how many notes are tagged gym", session, now=datetime(2026, 11, 14, 12, 0))
+    assert said is not None
+    measure = said.measures()[0]
+    assert isinstance(measure, notebook_stats.Measure)
+    assert (measure.kind, measure.value, measure.derived_from) == (said.kind, 2, "notes"), said.facts

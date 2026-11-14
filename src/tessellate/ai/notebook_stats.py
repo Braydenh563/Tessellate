@@ -53,6 +53,16 @@ from tessellate.entry import manager
 TOP_N = 10
 
 
+@dataclass(frozen=True)
+class Measure:
+    """One number an answer states: what kind of count it is, its value, and the label it was
+    counted over (a tag, a window), so a test can recount it from the rows instead of reading prose."""
+
+    kind: str
+    value: int
+    derived_from: str
+
+
 @dataclass
 class StatAnswer:
     """One computed answer, ready to be spoken or rendered.
@@ -68,6 +78,10 @@ class StatAnswer:
     facts: list[dict] = field(default_factory=list)
     #: One acting offer under the answer ({"kind": "open", "label", "surface"}).
     offer: dict | None = None
+
+    def measures(self) -> list[Measure]:
+        """The counts in `facts`, as `Measure`s of this answer's kind."""
+        return [Measure(self.kind, int(f["count"]), str(f.get("label", ""))) for f in self.facts if isinstance(f.get("count"), int)]
 
 
 def _visible(query, archived: bool = False):
