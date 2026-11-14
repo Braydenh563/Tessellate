@@ -3294,7 +3294,7 @@ let wbMapProvisionalSeq = 0;
 //: outline taking the topic) and any throw is the whole render, as before.
 wbMapCache.renderAdd = function (created, origin, expand) {
   const layer = document.getElementById("wb-html-layer");
-  const searching = wbBoardSearch.matches.length || wbBoardSearch.query.trim();
+  const searching = wbMapCache.searchLive?.() ?? false;
   const plain = origin ? [...origin.values()].every((entry) => entry.kind !== "sketch") : true;
   if (wbIsMap() && layer && !expand && plain && !searching && !wbOutlineState.adding && wbAddGate.renderHold) {
     try {

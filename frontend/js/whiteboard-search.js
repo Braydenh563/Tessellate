@@ -432,5 +432,8 @@
   }
 
   //: The file's surface: what other files call (L286).
+  //: The map's quick add (wbMapCache.renderAdd) asks this, not the state itself, so
+  //: the state stays private and the shared scope gains no name (global-scope ratchet).
+  wbMapCache.searchLive = () => Boolean(wbBoardSearch.matches.length || wbBoardSearch.query.trim());
   Object.assign(window, { wbBoardSearchRun, wbApplySearchHighlight, wbBoardSearchGo, wbCloseBoardSearch, wbOpenBoardSearch });
 })();

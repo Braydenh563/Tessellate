@@ -145,20 +145,26 @@ async def stop_when_gone(stop, lines):  # noqa: ANN001
     def step():  # noqa: ANN202
         return next(source, done)
 
+    task = None
     try:
         while True:
             task = asyncio.ensure_future(run_in_threadpool(step))
-            try:
-                line = await asyncio.shield(task)
-            except asyncio.CancelledError:
-                stop.set()
-                task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
-                raise
+            line = await asyncio.shield(task)
+            task = None
             if line is done:
                 return
             yield line
     finally:
+        #: Two ways out besides the end. A cancel while a step runs in the worker thread: the
+        #: source closes once that step returns. A cancel that lands in the server's own `send`
+        #: leaves this generator suspended at `yield`; Starlette 1.10 never acloses it, so it is
+        #: finalized when dropped, and nothing else would close the source (the model's stream
+        #: stayed open until the loop shut down, leg 1 on 38c73e48d). Close it here then.
         stop.set()
+        if task is None or task.done():
+            _close_quietly(source)
+        else:
+            task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
 
 
 def _close_quietly(source) -> None:  # noqa: ANN001

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22905, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2848, tests 22908, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
 ## Frontend functions (8945)
 
@@ -21900,16 +21900,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_agent_events` | src/tessellate/api/chat_agent.py:32 |
-| `_close_quietly` | src/tessellate/api/chat_agent.py:164 |
+| `_close_quietly` | src/tessellate/api/chat_agent.py:170 |
 | `_first_agent_event` | src/tessellate/api/chat_agent.py:89 |
-| `_refuse_failed` | src/tessellate/api/chat_agent.py:187 |
-| `_refuse_if_off` | src/tessellate/api/chat_agent.py:179 |
+| `_refuse_failed` | src/tessellate/api/chat_agent.py:193 |
+| `_refuse_if_off` | src/tessellate/api/chat_agent.py:185 |
 | `_starter_read` | src/tessellate/api/chat_agent.py:24 |
-| `_stoppable` | src/tessellate/api/chat_agent.py:173 |
-| `_typed_tool_events` | src/tessellate/api/chat_agent.py:219 |
-| `_undo_steps` | src/tessellate/api/chat_agent.py:202 |
-| `consent_events` | src/tessellate/api/chat_agent.py:236 |
-| `run_card_events` | src/tessellate/api/chat_agent.py:208 |
+| `_stoppable` | src/tessellate/api/chat_agent.py:179 |
+| `_typed_tool_events` | src/tessellate/api/chat_agent.py:225 |
+| `_undo_steps` | src/tessellate/api/chat_agent.py:208 |
+| `consent_events` | src/tessellate/api/chat_agent.py:242 |
+| `run_card_events` | src/tessellate/api/chat_agent.py:214 |
 | `stop_when_gone` | src/tessellate/api/chat_agent.py:127 |
 
 ### src/tessellate/api/chat_attach.py (20)
@@ -29032,7 +29032,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22905)
+## Tests (22908)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30075,7 +30075,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dogfood_round2_ui.py | 13 |
 | tests/test_download_filenames.py | 6 |
 | tests/test_draft_links.py | 6 |
-| tests/test_draft_stop_reaches_model.py | 1 |
+| tests/test_draft_stop_reaches_model.py | 2 |
 | tests/test_draft_unsourced_l77.py | 5 |
 | tests/test_drafts_api.py | 21 |
 | tests/test_drawio_templates_build.py | 4 |
@@ -31865,6 +31865,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_worker_guard.py | 6 |
 | tests/test_workspace_header_1031.py | 6 |
 | tests/test_wrap_toggle.py | 5 |
+| tests/test_wrapped_private_names.py | 2 |
 | tests/test_wrapup_0927_visuals.py | 6 |
 | tests/test_wrapzoom_chat_1111.py | 5 |
 | tests/test_wrapzoom_docs_1111.py | 11 |
