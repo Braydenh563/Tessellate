@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Ledger: L138, L231, L232, L172 and L255 move to the backlog (owner decision 55, Windows numbers, hardware, a human rater); Atlas idle re-measured headless at 1,395 to 1,461 layouts and 1,974 to 2,565 restyles a minute, with no group of animations moving it more than the run-to-run spread.
 - Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
 - CI fixes after the agent merges: ask-chart slice classes read as a built family (unused CSS 201 to 195), one silent empty-list catch removed, the boards acts Guide lead stands alone, "what is the table number" asks the notes, the formal welcome says days running, every no-tool line names the model.
 - Tests: the reminder confirmation and the chart label test read the fact, not one opener or call shape.
