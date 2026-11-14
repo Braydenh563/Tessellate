@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 133 | 29 | 3 | 10 | 162 |
+| world-class | 0 | 132 | 29 | 3 | 10 | 161 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 522 | 100 | 5 | 121 | 994 |
+| all | 372 | 521 | 100 | 5 | 121 | 993 |
 
 ## graph
 
@@ -607,7 +607,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-240** `world-class` open, M: LAN mode: a second HTTPS request from a device whose sign-in is held open can be cut at the handshake under load; reproduce (20 serial runs, 4 busy loops) and fix the cause. From hub 2026-11-14 13:40Z, CI 86918627 py3.13 leg 1. Evidence: tests/test_lan.py:1015 SSLEOFError on a LAN /auth/lan-watch request while a LAN /auth/unlock is held open; passes 3/3 alone 2026-11-14 14:05Z: 20/20 under load, no gate close in any log; netid.read() here never returns None (2000/2000), so the ARP-flicker cause cannot be reproduced on this machine. Fix fd917ac6 (tests/test_lan_gate_arp_flicker.py). The test now raises with the server log tail on any OSError; close when a CI failure shows the cause, or after 5 green CI runs with the test.
-- [ ] **L-world-class-260** `world-class` open, S: Settings pane titles: Models, Help and Your profile still sit off the shared indent; align them or record why. From batch R report 2026-11-14 (L-world-class-84 follow-up). Evidence: after the pane-title indent fix, Models is -1px, Help 0px and Preferences 'Your profile' 69px off the other Settings pane titles; whether any is meant to differ was not checked
 - [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
 - [ ] **L-world-class-201** `world-class` open, S: Status chips Offline and Saver on are keyboard reachable and Enter says what they mean. From L-world-class-104. Evidence: Enter on a focused status chip needs a key handler (about 20 bytes gzipped over the boot cap); the saver chip has no tabindex, so a keyboard user cannot reach its title. Put the handler in a lazy file the bar loads, or a native button.
 - [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.

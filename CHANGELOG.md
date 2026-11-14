@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: the three pane titles that read off the shared 17px indent are by design and now pinned by `tests/test_settings_heading_indent.py` (Models clipped to 1px, Help topic heads on the card edge, the profile name beside its avatar at 68.8px) (L-world-class-260).
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
 - Library, Contents: grouping notes by type was already built (Group by, By type, `tests/test_contents_by_type_wc8.py`); the row's grep looked for the wrong word, so it is closed with a measured check (L-world-class-63).
 - Atlas's own cards (While you were away, the open-questions line, margin cards, the Questions list, Rediscover) carry a small Learned: manage link into Settings, What it learned, kept to questions where they are the subject (L-world-class-88).
