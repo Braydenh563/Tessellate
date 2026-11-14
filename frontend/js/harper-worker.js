@@ -22,7 +22,14 @@
 // Protocol:
 //   in  {id, text, dialect}          dialect: "us" | "uk" | "au" | "ca" | "in"
 //                                    ("off" is us)
-//   in  {type: "own", words}         the person's own words (no reply)
+//   in  {type: "own", words}         the person's own words (no reply); also
+//                                    Harper's own dictionary (`import_words`)
+//   in  {id, text, dialect, ignored} `ignored`: the problem texts (lower case)
+//                                    the person put away in this document,
+//                                    kept dismissed by Harper (`ignore_lints`)
+//   in  {id, text, dialect, groupsOff}  kind groups the person turned off
+//                                    ("style", "punctuation", "capitalization",
+//                                    "wording"); their lints are not returned
 //   in  {id, type: "spell", words, dialect}
 //   out {id, ok: true, spell: {word: {known, suggestions}}}
 //   out {id, ok: true, ms, lints: [{start, end, kind, message, problem,
@@ -39,6 +46,38 @@ import { slimBinary } from "../vendor/harper/slimBinary.js";
 import "./spell-second.js";
 
 const linters = new Map();
+//: The person's own words, kept to hand to a linter built after they arrived.
+let ownWords = [];
+//: What each linter has been told to ignore, as a signature, so the ignore is
+//: redone only when the person's list changes (it is by context hash, so it
+//: holds as the text is edited).
+const ignoredSig = new WeakMap();
+
+//: Words Harper should treat as spelt right: a name is a word to the dictionary
+//: as soon as the notebook uses it twice. Whole list each time, not appended.
+function giveWords(linter) {
+  linter.clear_words();
+  if (ownWords.length) linter.import_words(ownWords);
+}
+
+//: Keep the person's dismissed findings dismissed inside Harper: ignore every
+//: lint of `source` whose problem text is in `ignored`. A list that did not change
+//: costs nothing; a changed one clears Harper's list first so a restore shows again.
+function keepIgnored(linter, source, ignored) {
+  const wanted = [...new Set((ignored || []).map((t) => String(t).toLowerCase()))].sort();
+  const sig = JSON.stringify(wanted);
+  if (!wanted.length && ignoredSig.get(linter) === undefined) return;
+  if (ignoredSig.get(linter) === sig) return;
+  ignoredSig.set(linter, sig);
+  linter.clear_ignored_lints();
+  if (!wanted.length) return;
+  const keep = [];
+  for (const lint of linter.lint(source, Language.Markdown, false, undefined, true, false)) {
+    if (wanted.includes(lint.get_problem_text().toLowerCase())) keep.push(lint);
+    else lint.free();
+  }
+  if (keep.length) linter.ignore_lints(source, keep);
+}
 
 //: **Harper's rules this app turns off**, by the names Harper's lint config
 //: uses. `UseTitleCase` ("Try to use title case in headings") asks for the
@@ -60,6 +99,17 @@ const linters = new Map();
 //: `tests/test_prose_tools.py` runs this worker in node and holds it.
 const HARPER_RULES_OFF = ["UseTitleCase", "NumericRangeEnDash", "OxfordComma", "ToDoHyphen", "ForYourInformation"];
 const HARPER_RULE_PREFIXES_OFF = ["Expand"];
+
+//: **Lint kinds the person can turn off** (L333), grouped as the Checks sheet names
+//: them: `groupsOff` on a lint message holds the group ids, and every lint whose
+//: Harper kind is in one is dropped here, before the page ever sees it. Spelling and
+//: grammar proper are not a group: they are what the checker is for.
+const KIND_GROUPS = {
+  style: ["Style", "Readability", "Redundancy", "Enhancement", "Formatting", "Miscellaneous"],
+  punctuation: ["Punctuation"],
+  capitalization: ["Capitalization"],
+  wording: ["WordChoice", "Usage", "Nonstandard", "Eggcorn", "Malapropism", "Regionalism"],
+};
 
 //: The five dialects Harper ships (VC6): the setting's value to its name.
 const DIALECTS = {
@@ -88,6 +138,7 @@ async function linterFor(name) {
         if (HARPER_RULE_PREFIXES_OFF.some((prefix) => rule.startsWith(prefix))) config[rule] = false;
       }
       made.set_lint_config_from_object(config);
+      giveWords(made);
       return made;
     });
     linters.set(key, linter);
@@ -113,6 +164,8 @@ self.addEventListener("message", async (event) => {
   //: The person's own words, sent whole each time they change; no reply.
   if (type === "own") {
     second.setOwnWords(event.data.words);
+    ownWords = [...new Set((event.data.words || []).map(String).filter((w) => /^\p{L}[\p{L}'-]*$/u.test(w) && w.length > 1))];
+    await Promise.all([...linters.values()].map((made) => made.then(giveWords, () => {})));
     return;
   }
   const started = performance.now();
@@ -137,9 +190,15 @@ self.addEventListener("message", async (event) => {
     }
     const linter = await linterFor(dialect);
     const source = String(text || "");
+    keepIgnored(linter, source, event.data.ignored);
     const lints = linter.lint(source, Language.Markdown, false, undefined, true, false);
     const out = [];
+    const dropped = new Set((Array.isArray(event.data.groupsOff) ? event.data.groupsOff : []).flatMap((group) => KIND_GROUPS[group] || []));
     for (const lint of lints) {
+      if (dropped.has(lint.lint_kind())) {
+        lint.free();
+        continue;
+      }
       const span = lint.span();
       const made = {
         start: span.start,

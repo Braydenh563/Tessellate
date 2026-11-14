@@ -127,6 +127,7 @@ NO_ROW = {
     "response_mode": "the chat's mode picker",
     "spelling_variant": "the document editor's writing panel",
     "grammar_check": "the document editor's writing panel",
+    "prose_kinds_off": "the document editor's writing panel",
     "agent_activity_notices": "the agent activity panel",
     "tools_enabled": "the chat's agent switch",
     "search_provider": "radio rows drawn from the server's engine list",

@@ -1718,6 +1718,8 @@ function editorRunItem(position) {
   }
 }
 
+//: The `[[` list opens on notes alone and gains documents and files a moment later; an empty first list closes the menu, so the
+//: late arrival reopens it while the token is still under the caret (the Embed row opened it with nothing cached: bare `![[`, R12).
 function editorOpenMenu(textarea, trigger) {
   //: The word list the documents editor draws at the caret gives way.
   if (typeof hideDocComplete === "function") hideDocComplete();
@@ -1726,6 +1728,28 @@ function editorOpenMenu(textarea, trigger) {
   editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
+  if (trigger === "[[") {
+    const again = () => {
+      if (editorMenuState.open) editorRefreshMenu();
+      else if (editorMenuState.trigger === "[[" && editorMenuState.textarea && editorTokenAt(editorMenuState.textarea, "[[")) editorOpenMenu(editorMenuState.textarea, "[[");
+    };
+    if (editorDocumentCache === null) {
+      editorDocumentCache = [];
+      //: Paged to the end: a document missing from this list is a `[[link]]` the menu cannot offer, silently.
+      apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+        .then((docs) => {
+          editorDocumentCache = Array.isArray(docs) ? docs : [];
+          again();
+        })
+        .catch(() => {
+          editorDocumentCache = [];
+        });
+    }
+    if (editorFileCache === null) {
+      editorFileCache = [];
+      editorLoadFiles().then(again);
+    }
+  }
   const pane = $("editor-menu-preview");
   if (pane) delete pane.dataset.for;
   editorRefreshMenu();
@@ -1830,33 +1854,6 @@ function editorHandleInput(textarea) {
   //: caret by `editorPlaceMenu`.
   for (const trigger of ["/", "[["]) {
     if (editorTokenAt(textarea, trigger)) {
-      if (trigger === "[[") {
-        // Fetch documents once, then redraw, the list opens on notes alone
-        // and gains documents a moment later rather than blocking on a fetch.
-        if (editorDocumentCache === null) {
-          editorDocumentCache = [];
-          //: Paged to the end, same reason as the file cache above: a
-          //: document missing from this list is a `[[link]]` the menu
-          //: cannot offer, silently.
-          apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
-            .then((docs) => {
-              editorDocumentCache = Array.isArray(docs) ? docs : [];
-              if (editorMenuState.open) editorRefreshMenu();
-            })
-            .catch(() => {
-              editorDocumentCache = [];
-            });
-        }
-        //: Files and images the same way: the menu opens on what is already
-        //: in memory and gains the rest a moment later, rather than making
-        //: the first keystroke wait on two requests.
-        if (editorFileCache === null) {
-          editorFileCache = [];
-          editorLoadFiles().then(() => {
-            if (editorMenuState.open) editorRefreshMenu();
-          });
-        }
-      }
       editorOpenMenu(textarea, trigger);
       return;
     }
@@ -2006,6 +2003,8 @@ const SELECTION_BAR_ACTIONS = [
   { md: "h2", label: "ph:text-h", title: "Heading" },
   { md: "quote", label: "ph:quotes", title: "Quote" },
   { turn: true, label: "ph:swap", title: "Turn into" },
+  //: INBOX 1728: documents only (hidden elsewhere in `selectionBarShow`); opens the two note rows.
+  { note: true, label: "ph:note-pencil", title: "Selection to a note" },
   //: **Not a formatting action, and it says so with a rule beside it.**
   //: REDESIGN.md §R7.1 item 1, quoted from the request: *"able to highlight
   //: text and say something in the chat and the agent gets the context of
@@ -2026,7 +2025,7 @@ const SELECTION_BAR_ACTIONS = [
 const selectionBarState = { textarea: null };
 
 function selectionBarElement() {
-  let bar = $("selection-bar");
+  let bar = document.getElementById("selection-bar");
   if (bar) return bar;
   //: Built once, lazily, rather than sitting in index.html: it belongs to this
   //: file's behaviour, and a hidden bar in the markup would be one more thing
@@ -2056,6 +2055,7 @@ function selectionBarElement() {
     }
     if (action.md) button.dataset.md = action.md;
     if (action.turn) button.dataset.turn = "1";
+    if (action.note) button.dataset.note = "1";
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     setLabel(button, action.label);
@@ -2068,6 +2068,10 @@ function selectionBarElement() {
       if (!textarea) return;
       if (action.turn) {
         if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, button);
+        return;
+      }
+      if (action.note) {
+        docSelectionNoteMenu(textarea, button);
         return;
       }
       if (action.ask) {
@@ -2103,7 +2107,7 @@ function selectionBarElement() {
 
 function selectionBarHide() {
   selectionBarState.textarea = null;
-  $("selection-bar")?.classList.add("hidden");
+  document.getElementById("selection-bar")?.classList.add("hidden");
 }
 
 function selectionBarShow(textarea) {
@@ -2121,6 +2125,8 @@ function selectionBarShow(textarea) {
   //: rewrite in place; the formatting eight and their rule are hidden.
   const code = editorSurfaceKind(textarea) === "document" && editorDocIsCode();
   for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
+  const note = bar.querySelector("[data-note]");
+  if (note) note.hidden = editorSurfaceKind(textarea) !== "document" || typeof docSelectionNoteItems !== "function";
   const turn = bar.querySelector("[data-turn]");
   if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
   //: **Never a second copy of the phone's formatting bar.** Below 600 the
@@ -2570,6 +2576,9 @@ const inlineAiState = {
   instruction: "",
   phase: "idle", // idle | asking | working | review
   controller: null,
+  //: The app's undo-stack entry for the answer in the text (rule 1.8), so the
+  //: bar's Undo, the status bar's Undo and Ctrl+Z are one step, not three.
+  action: null,
 };
 
 //: The bar is one element reused for every invocation, built lazily for the
@@ -2792,23 +2801,31 @@ function inlineAiClose() {
   textarea?.focus();
 }
 
-function inlineAiUndo() {
-  const { textarea, before, start, end } = inlineAiState;
+async function inlineAiUndo() {
+  const { textarea, action } = inlineAiState;
+  inlineAiState.action = null;
   if (!textarea) return inlineAiClose();
-  textarea.value = before;
-  textarea.setSelectionRange(start, end);
-  editorNotifyHost(textarea);
+  if (action && undoStack.at(-1) === action) await performUndo();
+  else if (action && undoStack.includes(action)) {
+    await action.undo();
+    settleUndoFromToast(action);
+  }
   inlineAiClose();
 }
 
 function inlineAiRetry() {
-  const { textarea, before, start, end, instruction } = inlineAiState;
+  const { textarea, before, start, end, instruction, action } = inlineAiState;
   if (!textarea) return;
   //: Put the text back *before* re-asking, or the second answer is written on
-  //: top of the first and the third on top of that.
+  //: top of the first and the third on top of that. The stale stack entry goes
+  //: too: the next answer pushes its own.
   textarea.value = before;
   textarea.setSelectionRange(start, end);
   editorNotifyHost(textarea);
+  const at = undoStack.indexOf(action);
+  if (at !== -1) undoStack.splice(at, 1);
+  inlineAiState.action = null;
+  renderUndoBar();
   inlineAiOpen(textarea, instruction);
 }
 
@@ -2870,6 +2887,14 @@ async function inlineAiSubmit() {
     //: two would drift.
     const to = data.replaced_selection ? end : start;
     editorSplice(textarea, start, to, revised, { from: 0, to: revised.length });
+    //: One stack entry (rule 1.8, decided 2026-11-12 under standing order 3):
+    //: the change is a range swap, so undo and redo are the same swap reversed.
+    const original = before.slice(start, to);
+    inlineAiState.action = pushUndo(
+      "AI edit",
+      () => editorSplice(textarea, start, start + revised.length, original, { from: 0, to: original.length }),
+      () => editorSplice(textarea, start, start + original.length, revised, { from: 0, to: revised.length }),
+    );
     //: The inserted text ends up *selected*. That is the highlight, a
     //: textarea cannot paint a range any other way, and it also means the
     //: next thing typed replaces it, which is what "try it and see" should

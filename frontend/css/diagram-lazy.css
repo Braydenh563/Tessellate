@@ -1477,6 +1477,29 @@
   display: none;
 }
 
+/* 480 px or less (`dgm-narrow`, set by diagram-builder.js `more`): Direction, Ask for a change and Redo are rows of the ... menu, so the dock is one row (L-documents-7). A class, not a width query: test_breakpoints holds the set of widths. */
+.dgm-narrow .dgm-dock :is(.dgm-dirs, .dgm-askbtn, .dgm-redo) {
+  display: none;
+}
+
+/* 360 px or less (`dgm-tight`, set by `more`): the kind button, Add and its caret, the blocks list, Undo and the menu are 280 px
+   at 44 px each, and a 320 dialog gives the dock 270. The caret goes, the dock's side padding and gaps shrink, and the empty
+   direction group (it left a gap) is gone, so the dock is one row (it was two, 110 px tall). */
+.dgm-narrow .dock-group:has(> .dgm-dirs) {
+  display: none;
+}
+
+.dgm-tight .dgm-kindbtn .ph-caret-down {
+  display: none;
+}
+
+.dgm-dialog .dgm-tight .dgm-dock,
+.dgm-dialog .dgm-tight .dgm-dock:has(> .dgm-addsplit) {
+  flex-wrap: nowrap;
+  column-gap: 0;
+  padding-inline: 2px;
+}
+
 /* The sheet's rows give every glyph about the same width, so the names line up. */
 .dgm-add-glyph {
   flex: none;
@@ -1711,6 +1734,29 @@
   user-select: none;
 }
 
+/* Folded lines: a number would sit beside only the first row of a line, so the numbers go (L304). */
+.dgm-srcwrap.is-wrapped .dgm-gutter {
+  display: none;
+}
+
+.dgm-srcwrap.is-wrapped .dgm-source {
+  border-start-start-radius: var(--radius-md);
+  border-end-start-radius: var(--radius-md);
+}
+
+/* The Wrap toggle (diagram-embed.js): in Source only, where the dock and its ... menu are hidden. */
+.dgm-wrapbtn {
+  display: none;
+}
+
+.dgm-dialog[data-view="source"] .dgm-wrapbtn {
+  display: inline-flex;
+}
+
+.dgm-wrapbtn[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+
 .dgm-gutter-bad {
   color: var(--error);
   font-weight: 700;
@@ -1925,6 +1971,11 @@
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
     inline-size: auto;
+  }
+
+  /* Key hints are for a keyboard (R12): a touch screen's foot is Cancel and Done; ? and the ... menu still list the keys. */
+  .dgm-keychip {
+    display: none;
   }
 }
 
@@ -2511,6 +2562,14 @@
   font-size: var(--text-sm);
 }
 
+/* A touch screen's zoom readout is a 44 px target too (it measured 42 x 54 at 390: its 3 characters and padding). */
+@media (pointer: coarse) {
+  .dgm-zoom .dgm-zoom-level .value-field-input {
+    min-inline-size: 2.75rem;
+    box-sizing: border-box;
+  }
+}
+
 /* Find (diagram-multi.js, quick ways): a small dock at the picture's top corner; a found box is ringed dashed. */
 .dgm-find {
   position: absolute;
@@ -2700,4 +2759,16 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
 
 .dgm-versions-legend > .dgm-mark-chg::before {
   background: var(--warn);
+}
+
+/* L321: Named only hides the plain saves and their heading. */
+.dgm-versions-named .dgm-versions-save,
+.dgm-versions-named .dgm-versions-head {
+  display: none;
+}
+.dgm-versions-only {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
 }

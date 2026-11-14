@@ -867,6 +867,18 @@
     }
     prefs.set("read-aloud-voice", e.target.value);
   });
+  //: The browser voice (L333): this computer's own voices, filled when the browser has listed them (it
+  //: lists late, so again on `voiceschanged`). Kept on this device by name; `speakText` and the document's
+  //: read aloud look it up each time and fall back to Automatic when the voice is gone.
+  const voiceName = $("pref-read-aloud-voice-name");
+  const fillVoices = () => {
+    const voices = ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter((v) => v.localService !== false);
+    voiceName.replaceChildren(new Option("Automatic", ""), ...voices.map((v) => new Option(`${v.name} (${v.lang})`, v.name)));
+    voiceName.value = prefs.get("read-aloud-voice-name", "");
+  };
+  fillVoices();
+  if ("speechSynthesis" in window) speechSynthesis.addEventListener("voiceschanged", fillVoices);
+  voiceName.addEventListener("change", (e) => prefs.set("read-aloud-voice-name", e.target.value));
   $("pref-read-aloud-rate").value = prefs.get("read-aloud-rate", "1");
   $("pref-read-aloud-rate").addEventListener("change", (e) => prefs.set("read-aloud-rate", e.target.value));
   $("voice-language-select").addEventListener("change", (e) =>

@@ -3422,6 +3422,14 @@ li.link-source {
   font-size: var(--text-xs);
   white-space: nowrap;
 }
+/* The Documents tab's two reach-outs when the editor engine is missing (wiring.js `openGlobalFind`). */
+.global-find-docs {
+  display: flex;
+  gap: var(--space-1);
+}
+.global-find-docs[hidden] {
+  display: none;
+}
 mark.global-find-hit {
   background: var(--accent-soft);
   color: inherit;

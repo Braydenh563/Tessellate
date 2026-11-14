@@ -132,25 +132,15 @@ const ok = (n, c, d) => {
   await open("guides.py", "py", 'def f():\n    if x:\n        return (a[b({})], "(")\n');
   await page.mouse.move(5, 5);
   await page.waitForTimeout(400);
+  //: Guides are line classes now (documents-code.js docIndentGuides, INBOX 1562): `cm-indent-nN` on a line cuts one gradient to N steps of 2em.
   const guides = await page.evaluate(() => {
-    const marks = [...document.querySelectorAll(".cm-indent-guide")];
-    const step = (line, col) => {
-      const l = docCmView.state.doc.line(line);
-      return docCmView.coordsAtPos(l.from + col).left - docCmView.coordsAtPos(l.from).left;
-    };
-    const left = (el) => Math.round(el.getBoundingClientRect().left);
-    const origin = Math.round(docCmView.coordsAtPos(docCmView.state.doc.line(3).from).left);
-    return {
-      count: marks.length,
-      lefts: marks.slice(1).map((m) => left(m) - origin),
-      cols: [0, 4].map((c) => Math.round(step(3, c))),
-      ends: Math.round(marks[2].getBoundingClientRect().right) - origin,
-      code: Math.round(step(3, 8)),
-    };
+    const lines = [...document.querySelectorAll(".cm-line")];
+    const em = parseFloat(getComputedStyle(lines[1]).fontSize);
+    const info = (el) => ({ cls: [...el.classList].filter((c) => /^cm-indent-n\d$/.test(c)).join(), w: parseFloat(getComputedStyle(el).backgroundSize), img: getComputedStyle(el).backgroundImage !== "none" });
+    return { em, l1: info(lines[0]), l2: info(lines[1]), l3: info(lines[2]) };
   });
-  ok("one guide per indent step: one on line 2, two on line 3", guides.count === 3, J(guides));
-  ok("each at the column its step starts", guides.lefts.length === 2 && guides.lefts.every((l, k) => Math.abs(l - guides.cols[k]) <= 1), J(guides));
-  ok("and none past where the code starts", Math.abs(guides.ends - guides.code) <= 1, J(guides));
+  ok("no guide on line 1, one step on line 2, two on line 3", guides.l1.cls === "" && guides.l2.cls === "cm-indent-n1" && guides.l3.cls === "cm-indent-n2" && guides.l2.img && guides.l3.img, J(guides));
+  ok("each step is 2em wide", Math.abs(guides.l2.w - 2 * guides.em) <= 1 && Math.abs(guides.l3.w - 4 * guides.em) <= 1, J(guides));
   const brackets = await page.evaluate(() => {
     const colour = (k) => [...document.querySelectorAll(`.cm-bracket-${k}`)].map((e) => [e.textContent, getComputedStyle(e).color]);
     const text = getComputedStyle(document.querySelector(".cm-content")).color;

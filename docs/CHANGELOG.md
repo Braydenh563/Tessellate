@@ -144,6 +144,33 @@ below). Versioning is `0.x` while the app stabilises.
 - CSS boot weight (L459): 110 boot rules that only the Library bundle's surfaces can match move to the lazy `library-lazy.css` (a class outside every `:is`/`:where`/`:has` list that no other script, page or server file names; none is reordered against a rule it ties with). Boot CSS 165,450 to 163,749 bytes gzipped, and the cap comes down to 164,300.
 - CSS (UI plan 13b): `08-consistency.css` (11,081 lines) is dissolved into the component files 00 to 07, each rule beside its component and the cascade order kept (11,410 rules, none lost or reordered against a rule it overrides); its 758 face, companion and Atlas rules are the lazy `characters-lazy.css` in the `characters` bundle. Boot CSS 178,870 to 165,450 bytes gzipped, and the cap comes down to 165,900.
 
+- Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
+- Csv and tsv Grid: cells and the row-number column are 44 px touch targets under a coarse pointer (cells were 27 px; L-documents-40); the Grid now hides the preview pane it meant to.
+- Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
+- Documents, Run: a test covers input() asked mid-run (the answer reaches the blocked worker, Escape raises EOFError, the Input box note where SharedArrayBuffer is missing); L-documents-30 and -33 were already built.
+
+- Documents, CSV: a Grid button turns a .csv or .tsv file into a table of cells you edit in place (Tab, Enter and the arrow keys move; add or delete a row or column); each edit is one change to the text, quoted as needed, so the editor's undo and save see it (L328, D42).
+- Documents, Debug: the stepper now lowers class fields and static blocks, destructuring (declarations, parameters, for-of, swaps), rest parameters and spread in lists, calls and objects, with a test per construct; async, generators, private members and getters stay named (L334).
+- Documents: Kinds of suggestion in the writing sheet turn off style, punctuation, capital-letter and word-choice suggestions from the grammar checker (L333).
+- Settings, Read aloud: a Browser voice picker chooses the voice for chat and document read-aloud (L333).
+- Diagram Ask: the ask route understands mind maps, timelines and sequence diagrams (rules and model, checked ops); the builder UI follows (L-documents-27, L-documents-35).
+- Code documents: every language with a snippet has a run path, checked after snippet drag (L351); the DC1 and DC2 rows re-verified (L352).
+- Fix (boards, links): the Library board Suggest a name passes the undo and router lints (its rename is the undoable helper, the queries are in repo/whiteboard.py); the Guide says "Rename a board" again; a saved link's answer is read before its icon fetch starts, so it no longer races it.
+- Documents: Translate this passage uses the offline translator when it is installed (L331).
+- Documents: comment replies take attachments and are drawn as markdown (L332).
+- Documents: the dead surface aliases are gone; decisions D11 and D12 recorded (L329).
+- Fix (Capture, Ask, Chat): the clear buttons show again. Their boxes are on surfaces built on first open, after field-clear.js loads, so the title and note x were never built and Clear all and Chat's x never woke; each spec now names its surface (`tests/test_field_clear.py`). Driven: Capture's three buttons 28x28 (were missing or hidden), Undo restores the note, Chat 36x36.
+- Boards: Suggest a name for a board or map from what is on it, also in the boards menu (L348).
+- Boards: Write as a document turns a board's frames and text into a document draft (L-documents-4).
+- Code files: Compare gains Another document..., with hunks, Reject and Stop comparing as before (L-documents-3).
+- Documents: the live view line length is held against the alphabet at four widths; the [[ menu and connections rail are confirmed and measured; the Add sheet is tap to add; three sweeps repaired (L-documents-25, L336, L-documents-22, L-documents-24).
+- Links: the list no longer carries each site's icon and page text (the icon has its own cached address); a fetch that finishes after the address changed keeps nothing; only the app's own Save fetches a page by itself; an icon fetch stops at 3 seconds or at a too-large size header (PR 226 review).
+- Documents: Connect handles on a diamond sit fully outside the block at 390 px (L-documents-20).
+- Documents: the code editor and the documents surfaces were driven at 1440 and 390 px, with two stale sweeps corrected (L319, L320).
+- Documents: the status bar skips an identical repaint, so typing does less work (L323).
+- Diagrams: mind map, timeline and sequence diagrams get Suggestions with a preview and Apply (L-documents-21).
+- Documents: verified as already built, the split view's second half (L294) and the persistent Python frame (L309); frames with no script do not reproduce (L322).
+- Documents: a #tag in the Read view is a chip; pressing it finds documents with that tag (L349).
 - Timeline: the calendar head's Add button, the Show: reminders chip, the Month, Week and Day strip and the title share one height and one centre line (Add sat 4px below the strip, which was 4px taller).
 - Fixes from the review on PR 222: the span review reads only its own days from the database and stops waiting for the model after 8 seconds (the composed review instead); Done on a reminder in the bell names the time it was raised for, so one ticked elsewhere is not rolled twice, and the row then says where it is, with focus on that line; notes saved before a range's last day was kept are read again once, so the calendar runs them across their days.
 - Claim check reads a line of many tabs or full stops in linear time (CodeQL 2290): the list marker is matched after the indent, and the abbreviation check reads back one word, not the line.

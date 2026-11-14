@@ -96,3 +96,13 @@ def test_the_no_editor_toast_is_worded_per_document_kind() -> None:
     assert '"Open a document first."' in helper and '"Open a code document first."' in helper
     assert "docNeedsDocument()" in _body("docSnippetDragStart")
     assert "docNeedsDocument()" in _body("docSnippetInsert")
+
+
+def test_every_snippet_language_has_a_run_path():
+    """L351: a snippet set is only offered for languages Run (or its one-line reason) covers."""
+    code = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
+    kinds = re.search(r"const DOC_RUN_KINDS = \{([^}]*)\}", code).group(1)
+    runnable = set(re.findall(r"(\w+):", kinds))
+    sets = set(re.findall(r"^\s{2,6}(\w+): \[$", KIT, re.M))
+    assert sets >= {"py", "js", "html", "css", "sql"}
+    assert sets <= runnable, sets - runnable

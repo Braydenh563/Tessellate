@@ -362,6 +362,9 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_voice.py", "message"): "the sentences ai/voice.py remove_model returns, checked in SOURCES",
     ("routes_voice.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
     ("routes_webclip.py", "WEB_OFF"): "a constant in routes_webclip.py, checked below",
+    ("routes_bookmarks.py", "WEB_OFF"): "a constant in routes_bookmarks.py, checked below",
+    ("routes_bookmarks.py", "MOVED"): "a constant in routes_bookmarks.py, checked below",
+    ("routes_bookmarks.py", "str(exc)"): "ClipRefused from core/webclip.py, checked in SOURCES",
     ("routes_webclip.py", "IMAGE_WEB_OFF"): "a constant in routes_webclip.py (a topic picture from a link), checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
@@ -421,7 +424,7 @@ def test_no_route_literal_tells_the_person_to_run_a_command():
     assert not bad, f"a route detail carries developer vocabulary: {bad}"
 
 
-@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "IMAGE_WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST"), ("routes_sync.py", "NO_DEVICE")])
+@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "IMAGE_WEB_OFF"), ("routes_bookmarks.py", "WEB_OFF"), ("routes_bookmarks.py", "MOVED"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST"), ("routes_sync.py", "NO_DEVICE")])
 def test_a_route_constant_reads_as_a_sentence(module, name):
     tree = ast.parse((API / module).read_text(encoding="utf-8"))
     texts = []

@@ -28,11 +28,11 @@ const pngMeasure = async (page, source) => page.evaluate(async (src) => {
   await page.waitForFunction(() => document.querySelector('.wb-object-diagram img')?.naturalWidth > 0, null, {timeout: 20000});
   const stored = () => page.evaluate(() => wbState.objects.find((o) => o.kind === 'diagram')?.data.mermaid);
   const first = await stored();
-  // Insert: the command opens the builder on the sample (a second diagram is not added: Cancel)
+  // Insert asks first (R12): the sheet of diagrams and New; Cancel adds nothing.
   await page.evaluate(() => wbRunCommand('insert-diagram'));
-  await page.waitForSelector('.dgm-dialog .dgm-block', {timeout: 15000});
-  const insertTitle = await page.evaluate(() => document.querySelector('.dgm-dialog .dialog-head-title').textContent);
-  await page.click('.dgm-dialog .space-dialog-actions button:text-is("Cancel")');
+  await page.waitForSelector('.dgm-choose-dialog', {timeout: 15000});
+  const insertTitle = await page.evaluate(() => document.querySelector('.dgm-choose-dialog .dialog-head-title').textContent);
+  await page.click('.dgm-choose-dialog .space-dialog-actions button:text-is("Cancel")');
   await page.waitForTimeout(300);
   console.log('insert', JSON.stringify({insertTitle, diagrams: await page.evaluate(() => wbState.objects.filter((o) => o.kind === 'diagram').length)}));
   // double-click opens the builder; Done with no change keeps the source byte for byte

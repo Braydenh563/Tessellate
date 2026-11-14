@@ -1362,6 +1362,19 @@ Every other embed in this editor draws an *object* through the renderer
 .library-file-rows .library-image-reading > summary {
   width: fit-content;
 }
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button) {
+  /* A quiet disclosure row (DESIGN "Row actions"): no face, no edge at rest. */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+  color: var(--text);
+  font-weight: 500;
+}
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button):hover,
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button):is(:focus-visible, :has(:focus-visible)) {
+  background: var(--accent-soft);
+}
 
 .library-file-rows .library-image-tile > .library-file-facts :is(.library-file-meta, .library-read-strip, .library-read-badge, .library-image-usage, .library-image-usage > .muted) {
   font-size: inherit;
@@ -3887,18 +3900,42 @@ body.printing-doc #doc-preview p,
    the only thing on screen saying there is more to scroll. */
 .library-file-reading-text {
   margin: var(--space-2) 0 0;
-  /* Fits its text up to a real page's worth (the owner: "quite short when
-     there is quite a lot of text in it"); the old one-and-a-bit-line cap is
-     superseded. Files rows stand alone, so the rows below only move down. */
-  max-height: min(28rem, 55vh);
+  /* Half the window, at most a page's worth; a fade at the foot says more waits. */
+  max-height: min(28rem, 50vh);
   overflow: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font: inherit;
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: var(--text-body);
+  line-height: 1.6;
   color: var(--ink);
   user-select: text;
+  max-width: 72ch;
+  padding-right: var(--space-2);
+}
+.library-file-reading-text:not(.is-at-end) {
+  mask-image: linear-gradient(to bottom, black calc(100% - 2.5rem), transparent);
+}
+.library-file-page-text {
+  margin: 0 0 var(--space-3);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.library-file-page-mark {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.library-file-page-mark:first-child {
+  margin-top: 0;
+}
+.library-file-find {
+  max-width: 20rem;
+  margin-top: var(--space-2);
+}
+.library-file-find-count {
+  white-space: nowrap;
+}
+::highlight(reading-find) {
+  background-color: var(--accent-soft);
+  color: var(--ink);
 }
 
 /* **Text inside a shape** (WHITEBOARD_PLAN decision 12; `wbPaintShapeLabel`).
@@ -10345,6 +10382,166 @@ input[type="color"].wb-mixed {
   #tab-documents #doc-view-seg > button {
     min-width: var(--target-min);
   }
+}
+
+/* Links: a look per link and folder, folders, the card view (library-links.js, INBOX 827 L3 to L6).
+   The colour is a palette key the script sets as `--swatch` (library-links.js `LOOKS`), never a free colour. */
+/* A chosen colour shows in every look, the flat ones too (their rule above clears the mark). */
+:root .bookmark-mark.has-look {
+  background: color-mix(in oklab, var(--swatch) 22%, transparent);
+  color: var(--swatch);
+}
+.bookmark-row.has-look:not(:hover):not(.is-open) {
+  background: color-mix(in oklab, var(--swatch) 7%, transparent);
+}
+.bookmark-mark .bookmark-favicon {
+  width: 1.1em;
+  height: 1.1em;
+  object-fit: contain;
+}
+.bookmark-mark.has-favicon:not(.has-look) {
+  background: var(--surface-2);
+}
+.look-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1);
+}
+.look-card-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+.look-card-actions {
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.look-preview {
+  flex: none;
+}
+
+/* The details card. */
+.bookmark-detail-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.bookmark-detail-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bookmark-detail-excerpt,
+.bookmark-excerpt {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bookmark-excerpt {
+  display: none;
+}
+.bookmark-detail-actions {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.bookmark-detail-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.bookmark-detail-text.hidden {
+  display: none;
+}
+.bookmark-page-text {
+  align-self: stretch;
+}
+
+/* Folders: chips that drag and take drops, and the bar over the list. */
+.bookmark-folder-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.bookmark-folder-chip.has-look .bookmark-folder-icon {
+  color: var(--swatch);
+}
+.bookmark-folder-chip.is-nested {
+  margin-inline-start: var(--space-2);
+}
+#bookmark-group-chips input.bookmark-folder-edit {
+  flex: none;
+  width: 9rem;
+  min-height: 0;
+  height: var(--target-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+}
+.bookmark-folder-bar {
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.bookmark-folder-bar.hidden {
+  display: none;
+}
+.is-dragging {
+  opacity: 0.5;
+}
+.is-drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Cards: the same rows as a grid of tiles, with the excerpt under the title. */
+.bookmark-list.is-cards,
+.bookmark-list.is-cards .bookmark-site-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  gap: var(--space-3);
+}
+.bookmark-list.is-cards .bookmark-site {
+  grid-column: 1 / -1;
+}
+.bookmark-list.is-cards .bookmark-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  border-color: var(--divider);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.bookmark-list.is-cards .bookmark-row > .doc-list-tick {
+  display: none;
+}
+.bookmark-list.is-cards .bookmark-row > .bookmark-main {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.bookmark-list.is-cards .bookmark-row > .bookmark-mark {
+  grid-column: 1;
+  grid-row: 1;
+}
+.bookmark-list.is-cards .bookmark-row > .bookmark-actions {
+  grid-column: 3;
+  grid-row: 1;
+}
+.bookmark-list.is-cards .bookmark-excerpt {
+  display: -webkit-box;
+  margin-top: var(--space-1);
+}
+.bookmark-list.is-cards .bookmark-detail {
+  grid-column: 1 / -1;
+}
+.doc-comment-reply-action {
+  margin-left: var(--space-1);
 }
 
 /* The outline's cells (decision 34): a topic's markers, due day and labels

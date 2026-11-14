@@ -100,6 +100,8 @@ CSS_FILES = [
     #: The ```graph and ```base blocks of a document (`LAZY_MODULES.docGraph`, `LAZY_MODULES.docBase`).
     CSS_DIR / "doc-graph-lazy.css",
     CSS_DIR / "doc-base-lazy.css",
+    #: The csv and tsv grid (`LAZY_MODULES.docCsvGrid`, L328).
+    CSS_DIR / "doc-csv-grid-lazy.css",
     #: The quoted span a source opens at (`LAZY_MODULES.reveal`, Brief 88).
     CSS_DIR / "reveal-lazy.css",
     #: The manual (manual.js loads it, WORLD_CLASS_PLAN 25c).
