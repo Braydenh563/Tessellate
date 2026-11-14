@@ -38,3 +38,48 @@ def test_a_reminders_default_text_is_copy_not_work():
     with "Follow up: <note>"; that string is app copy and never a hit."""
     assert open_scan.COPY.search('textInput.value = `Follow up: ${preview}`;')
     assert not open_scan.COPY.search("follow up on the screenshot set next session")
+
+
+def test_a_quoted_string_in_app_code_is_copy_and_a_comment_is_not(tmp_path, monkeypatch):
+    """The documents plan, 2026-11-14: a checkbox's "Not done", a template's
+    "## Still open" and the `todo` callout are app copy; the same words in a
+    comment are still a hit."""
+    js = tmp_path / "frontend" / "js" / "x.js"
+    js.parent.mkdir(parents=True)
+    js.write_text('box.setAttribute("aria-label", on ? "Done" : "Not done");\n// TODO wire this\n', encoding="utf-8")
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [i for _, i, _ in open_scan.hits(["frontend/js/x.js"])] == [2]
+
+
+def test_single_quoted_and_template_js_literals_are_copy_but_a_comment_with_an_apostrophe_is_not(tmp_path, monkeypatch):
+    """The owner's ruling on INBOX 1810: in code, text in quotes is copy. An
+    apostrophe in a comment must not open a quote and hide the marker."""
+    js = tmp_path / "frontend" / "js" / "y.js"
+    js.parent.mkdir(parents=True)
+    js.write_text(
+        "toast('Still open: 3');\n"
+        "const t = `## Still open\nnot done yet`;\n"
+        "// it's a TODO the user's code needs\n"
+        "/* don't ship: FIXME */\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [i for _, i, _ in open_scan.hits(["frontend/js/y.js"])] == [4, 5]
+
+
+def test_a_python_literal_is_copy_and_a_docstring_comment_or_strict_xfail_is_not(tmp_path, monkeypatch):
+    py = tmp_path / "src" / "m.py"
+    py.parent.mkdir(parents=True)
+    py.write_text(
+        'def f():\n'
+        '    """The export is not yet built."""\n'
+        '    label = "Not done:"\n'
+        '    return f"{label} still open"  # TODO trim\n'
+        '\n'
+        '@pytest.mark.xfail(reason="not built", strict=True)\n'
+        'def test_x():\n'
+        '    pass\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [i for _, i, _ in open_scan.hits(["src/m.py"])] == [2, 4, 6]
