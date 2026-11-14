@@ -1800,11 +1800,14 @@ initKeyboardInset();
 //: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
 //: An h3 in a fold's summary is that fold's only name, so it stays (audit 1030 Y3).
 function echoSettingsPaneTitle(select) {
-  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
-  if (select.value.includes("#")) return;
-  const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
+  //: Written only when it changes: a remove and add on every call was two class mutations a key that marked the pane
+  //: stale for the search index (L-world-class-359).
+  const head = !select.value.includes("#") && document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
   const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  if (head && !head.closest("summary") && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+  const want = head && !head.closest("summary") && head.textContent.trim().toLowerCase() === shown && head;
+  const old = document.querySelector("#settings-modal h3.jump-echo");
+  if (old !== want) old?.classList.remove("jump-echo");
+  want?.classList.toggle("jump-echo", true);
 }
 
 function buildSettingsJumpList() {

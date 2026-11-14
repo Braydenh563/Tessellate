@@ -444,6 +444,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
+  //: The search rows are read in idle slots from here, so the first key finds them (settings-find.js).
+  window.settingRowsScan?.warmSoon?.(1500);
   if (typeof renderCredits === "function") renderCredits();
   showSettingsSection(section);
   // Re-read every open, not cached: the panel shows what the *currently
@@ -681,7 +683,7 @@ function settingsSectionText(section) {
             settingsTextCacheStale = true;
           }
           const pane = at?.closest(".settings-section");
-          if (pane) window.settingRowsScan?.panes.delete(pane);
+          if (pane && window.settingRowsScan?.panes.delete(pane)) window.settingRowsScan?.warmSoon?.();
         }
       });
       settingsTextObserver.observe(modal, {

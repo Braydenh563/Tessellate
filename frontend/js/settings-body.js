@@ -47,7 +47,10 @@ const SURFACES = Object.assign(new Map(), {
   fragment(name, entry) {
     if (!entry.frag && entry.tpl) {
       if (entry.tpl.content) entry.frag = entry.tpl.content;
-      else {
+      else if (entry.tpl.dataset?.splitAt) {
+        SURFACES.parseNext(entry, Infinity);
+        entry.frag = entry.partial;
+      } else {
         const holder = document.createElement("template");
         holder.innerHTML = entry.tpl.text;
         entry.frag = holder.content;
@@ -55,6 +58,23 @@ const SURFACES = Object.assign(new Map(), {
       SURFACES.register(entry.frag, name);
     }
     return entry.frag;
+  },
+
+  //: **A big surface parsed in pieces** (`data-split-at` on its script: each such mark starts a piece, and each
+  //: mark is a place the parser is at the top of the body, so the pieces join to what one parse makes). Settings'
+  //: whole text in one `innerHTML` was a 56 ms task at 4x CPU (L-world-class-361); a piece is one pane. Parses
+  //: pieces until `budget` ms are spent; true once none are left.
+  parseNext(entry, budget) {
+    const mark = entry.tpl.dataset.splitAt;
+    entry.pieces ||= entry.tpl.text.split(mark).map((piece, i) => (i ? mark + piece : piece));
+    entry.partial ||= document.createDocumentFragment();
+    const start = performance.now();
+    const holder = document.createElement("template");
+    while (entry.pieces.length && performance.now() - start < budget) {
+      holder.innerHTML = entry.pieces.shift();
+      entry.partial.append(holder.content);
+    }
+    return !entry.pieces.length;
   },
 
   //: Whether the unbuilt surface holds the id: its parsed fragment when it has one, else the ids named in
@@ -82,6 +102,8 @@ const SURFACES = Object.assign(new Map(), {
     const waiting = [...SURFACES].filter(([, entry]) => entry.tpl && !entry.frag && !entry.done && !entry.tpl.content);
     const next = waiting.find(([name]) => name === "settings") ?? waiting[0];
     if (!next) return;
+    //: A split surface is parsed a few ms at a time with the next slot soon; a whole one in this slot.
+    if (next[1].tpl.dataset?.splitAt && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);
     SURFACES.fragment(next[0], next[1]);
     SURFACES.warmLater(1000);
   },

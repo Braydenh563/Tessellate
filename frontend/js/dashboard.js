@@ -1825,9 +1825,13 @@ async function renderDashboard({ refresh = false } = {}) {
   //: below is rebuilt without a pause from `replaceChildren` on, so two
   //: renders that overlap here still leave one set of cards.
   await dashYield();
+  //: Each of the four is 14 to 17 ms at 4x CPU, so a task each (L-world-class-363: together 56 ms).
   renderQuickLinks();
+  await dashYield();
   renderDashMore();
+  await dashYield();
   wireDashDensity();
+  await dashYield();
   renderFirstStepsLazy();
   await dashYield();
   const grid = $("dash-grid");

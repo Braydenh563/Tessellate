@@ -1444,7 +1444,7 @@
     return elements[0];
   }
 
-  function nameMark(seed, size = 20) {
+  function nameMark(seed, size = 20, part = "") {
     //: A registered renderer (a character drawn by hand) answers first.
     const own = characterRendererFor(seed);
     if (own) return own.make(seed).mark(size);
@@ -1452,17 +1452,32 @@
     const named = String(seed || "").trim().toLowerCase();
     const ai = typeof aiNameNow === "function" ? String(aiNameNow() || "").toLowerCase() : "atlas";
     if (named && (named === ai || named === "atlas")) return atlasMark(size);
+    //: `part` "draw": only the first of the face's two tasks (`nameMarkGenerated`); null, no face yet.
+    if (part) return nameMarkGenerated(seed, size, true);
     //: Under 28px a face never moves (one picture); 28px and under is the small mark (drawCharacter).
     const face = nameMarkGenerated(seed, size);
     watchNameMark(face);
     return face;
   }
 
-  function nameMarkGenerated(seed, size) {
+  //: The drawn SVGs of faces whose cut is still to come (`nameMark(seed, size, "draw")`), by cache key.
+  const nameMarkDrawn = new Map();
+
+  function nameMarkGenerated(seed, size, drawOnly = false) {
     const moving = size >= 28;
     const mini = size <= 28;
     const style = JSON.stringify(nameMarkOwnFor(seed) || {});
-    return nameMarkCompose(`gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`, () => drawCharacter(seed, 100, mini ? "mini" : "mark"), { parts: moving ? NM_MARK_PARTS : "", size });
+    const key = `gen|${moving ? "p" : "f"}${mini ? "m" : ""}|${seed}|${style}|${nameMarkLookLean() || ""}`;
+    //: A face's first draw is two tasks, not one: the character drawn (about 45 ms at 4x CPU cold), then cut up and
+    //: measured (about 40; L-world-class-362, 86 ms as one). `drawOnly` does the first; the second finds it here.
+    const draw = () => drawCharacter(seed, 100, mini ? "mini" : "mark");
+    if (drawOnly) return nameMarkFaceCache.has(key) || nameMarkDrawn.has(key) ? null : nameMarkDrawn.set(key, draw()) && null;
+    const build = () => {
+      const drawn = nameMarkDrawn.get(key);
+      nameMarkDrawn.delete(key);
+      return drawn || draw();
+    };
+    return nameMarkCompose(key, build, { parts: moving ? NM_MARK_PARTS : "", size });
   }
 
   //: The Settings head's 56px face (`#profile-avatar`) is cut up once while the page is idle: drawn cold
@@ -1471,7 +1486,8 @@
   function nameMarkWarmOwn() {
     const seed = userMarkSeed();
     if (!seed || characterRendererFor(seed) || isAtlasSeed(seed)) return;
-    nameMarkGenerated(seed, 56);
+    nameMarkGenerated(seed, 56, true);
+    setTimeout(() => nameMarkGenerated(seed, 56), 30);
   }
 
   // --- the generated characters ------------------------------------------------------
