@@ -3720,6 +3720,9 @@
     ]);
     clearSkeletons(list);
     prefsCache = prefs;
+    //: `#pref-mcp-writes` sits here (Other apps) and was filled only by `renderAutonomousSettings`,
+    //: so after a reload it read off over a preference that was on (L-general-54, deepflows).
+    $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
     renderToolFocus(prefs.tool_focus || "auto");
     renderSmallModelMode(prefs.small_model_mode || "auto");
     renderRunBudget(prefs);

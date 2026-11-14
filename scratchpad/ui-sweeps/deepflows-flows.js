@@ -69,10 +69,11 @@ async function createNote(env, text) {
   return found;
 }
 
-//: Open the row's "More actions" menu and press the item whose text contains `label`.
+//: Open the row's "More actions" menu and press the item whose text contains `label`. Labels are
+//: matched by prefix: a card's icon buttons end in the note's name (audit 1029 N17, entry-card.js).
 async function rowMenu(env, id, label, group = null) {
   await openRow(env, id);
-  await actionsOf(env, id).locator('button[aria-label="More actions"]').first().click();
+  await actionsOf(env, id).locator('button[aria-label^="More actions"]').first().click();
   await env.wait(250);
   if (group) {
     await env.page.locator('[role="menuitem"]:visible', { hasText: new RegExp(`^\\s*${group}\\s*›?\\s*$`) }).first().click();
@@ -100,7 +101,7 @@ async function openRow(env, id) {
   }
   const li = env.page.locator(rowSel(id));
   await li.scrollIntoViewIfNeeded();
-  if (!(await li.locator('button[aria-label="More actions"]').first().isVisible().catch(() => false))) {
+  if (!(await li.locator('button[aria-label^="More actions"]').first().isVisible().catch(() => false))) {
     await li.locator('.entry-content').first().click({ position: { x: 20, y: 8 } });
     await env.wait(500);
   }
@@ -118,7 +119,7 @@ flows.note = async (env) => {
   await env.overflow('list with the new note');
   env.at('open the row and press Edit');
   await openRow(env, made.id);
-  await actionsOf(env, made.id).locator('button[aria-label="Edit this entry"]').first().click();
+  await actionsOf(env, made.id).locator('button[aria-label^="Edit this entry"]').first().click();
   await env.wait(800);
   await env.overflow('edit form');
   env.at('type into the edit form');
@@ -571,14 +572,18 @@ async function openSettingsByGear(env) {
 
 //: What the sweep leaves alone, and why: turning these changes how the app is
 //: reached or what it does to the machine, not how it looks or behaves for the
-//: person at the screen.
-const SETTINGS_SKIP = /password when the app opens|other devices on this network|newer version|Update automatically|newest changes|SearXNG|autonomous optimization/i;
+//: person at the screen. Simple mode (`pref-simple-mode`) hides whole sections, so the read-back
+//: and put-back could not reach What it learned behind it; tests/test_usage_ledger.py covers it.
+const SETTINGS_SKIP = /pref-simple-mode|password when the app opens|other devices on this network|newer version|Update automatically|newest changes|SearXNG|autonomous optimization/i;
 
 //: Every switch visible in the current section: its index, label and state.
 const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#settings-modal input[type="checkbox"]')]
   .map((c, i) => ({ c, i }))
   .filter(({ c }) => {
     if (c.disabled) return false;
+    //: A row's selection tick (Extras' `.select-check`, settings-packages.js) picks rows for the
+    //: bar's actions; it is not a preference and is not meant to outlive a reload.
+    if (c.classList.contains('select-check')) return false;
     const label = c.closest('label') || c;
     //: Reachable the way a person reaches it: it has a box, and what is at its
     //: middle is it (a switch in a closed fold, or under another panel, is not).
@@ -601,7 +606,21 @@ const switchesHere = (env) => env.js(() => [...document.querySelectorAll('#setti
   .map((sw, k, all) => ({ ...sw, nth: all.slice(0, k).filter((o) => o.label === sw.label).length })));
 
 //: The switch a `toggled` record means, in a fresh listing.
-const findSw = (here, t) => here.filter((x) => x.label === t.label)[t.nth];
+//: A label may carry a live count ("Hide models too big for this computer (3 hidden)",
+//: settings-models.js) that the press itself changes: compare without it.
+const bareLabel = (s) => s.replace(/\s*\([^()]*\)\s*$/, '');
+const findSw = (here, t) => here.filter((x) => bareLabel(x.label) === bareLabel(t.label))[t.nth];
+//: A list drawn from the server (the tools, the skills) can still be empty when the section's
+//: switches first read as settled: look again for up to three seconds before calling it gone.
+async function findSwSoon(env, t, here) {
+  for (let tries = 0; tries < 6; tries++) {
+    const sw = findSw(here || (await switchesHere(env)), t);
+    if (sw) return sw;
+    here = null;
+    await env.wait(500);
+  }
+  return null;
+}
 
 async function clickSwitch(env, index) {
   const handle = await env.page.evaluateHandle((i) => {
@@ -612,14 +631,15 @@ async function clickSwitch(env, index) {
 }
 
 //: Press back every switch the run pressed (`toggled`: { section, i, id, label, was }).
+//: Last pressed, first put back: a switch that turns another off or greys it out (a tool
+//: another tool needs) is undone before the one it held.
 async function putBack(env, sections, toggled) {
-  for (const section of sections) {
-    const mine = toggled.filter((t) => t.section === section);
+  for (const section of [...sections].reverse()) {
+    const mine = toggled.filter((t) => t.section === section).reverse();
     if (!mine.length) continue;
     await goSettings(env, section);
     for (const t of mine) {
-      const here = await switchesHere(env);
-      const sw = findSw(here, t);
+      const sw = await findSwSoon(env, t);
       if (!sw) throw new Error(`cannot find "${t.label.slice(0, 40)}" in ${section} to put it back`);
       if (sw.on !== t.was) { await clickSwitch(env, sw.i); await env.wait(120); }
     }
@@ -681,14 +701,17 @@ async function settingsBody(env, toggled) {
   await reloadApp(env);
   await openSettingsByGear(env);
   const lost = [];
+  const absent = [];
   for (const section of sections) {
     const mine = toggled.filter((t) => t.section === section);
     if (!mine.length) continue;
     await goSettings(env, section);
     const here = await switchesHere(env);
     for (const t of mine) {
-      const sw = findSw(here, t);
-      if (!sw) { lost.push(`${section}: "${t.label.slice(0, 40)}" is gone after reload`); continue; }
+      const sw = await findSwSoon(env, t, here);
+      //: A switch another pressed switch withdraws (Pause all learning takes the memory tools out of
+      //: /chat/tools) is absent here, not lost: the put-back below must find it, or it fails there.
+      if (!sw) { absent.push(`${section}: ${t.label.slice(0, 30)}`); continue; }
       if (sw.on === t.was) lost.push(`${section}: "${t.label.slice(0, 40)}" went back to ${t.was ? 'on' : 'off'}`);
     }
   }
@@ -705,13 +728,14 @@ async function settingsBody(env, toggled) {
     await goSettings(env, section);
     const here = await switchesHere(env);
     for (const t of mine) {
-      const sw = findSw(here, t);
+      const sw = await findSwSoon(env, t, here);
       if (!sw || sw.on !== t.was) stuck.push(`${section}: "${t.label.slice(0, 40)}"${sw ? '' : ' (not found)'}`);
     }
   }
+  if (absent.length) env.info(`settings: ${absent.length} withdrawn by another switch until put back (${absent.join('; ')})`);
   env.info(`settings: ${toggled.length} switches pressed, ${skipped.length} left alone (${skipped.slice(0, 8).join('; ')})`);
   if (lost.length || stuck.length) {
-    throw new Error(`${lost.length} did not persist: ${lost.slice(0, 6).join(' | ')}${stuck.length ? `; ${stuck.length} would not go back: ${stuck.slice(0, 4).join(' | ')}` : ''}`);
+    throw new Error(`${lost.length} did not persist: ${lost.slice(0, process.env.DF_FULL ? 40 : 6).join(' | ')}${stuck.length ? `; ${stuck.length} would not go back: ${stuck.slice(0, 4).join(' | ')}` : ''}`);
   }
 }
 
