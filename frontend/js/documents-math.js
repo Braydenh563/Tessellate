@@ -601,8 +601,6 @@
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
-  //: A changed fence goes back into the document: the Live view's own editor when `view` is given, else Read's surface (the one
-  //: a ticked task writes through). `pick` names the block among the document's fences of that language.
   const fenceWrite = (lang, pick, next, view) => {
     const surface = view || window.docSurface?.();
     const text = view ? view.state.doc.toString() : surface?.text;

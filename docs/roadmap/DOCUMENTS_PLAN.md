@@ -1099,7 +1099,7 @@ links, Typora for the live view (section 17).
 | 5 | optimisation | Cold open 1,743 ms at 1440 and 3,013 ms at 390: fetch the documents bundle on idle after unlock and paint the first screen before the outline and checks | click to painted editor under 800 ms at both widths (25g budget, Brief 53) | 13 |
 | 6 | fix | Built (found by audit 2026-11-14): a failed save says why, retries and keeps the words locally (HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)") | | 3, 4 |
 | 7 | redesign | Built 2026-11-13 (the recommendation taken): see HISTORY.md, "Moved from the plans, 2026-11-13 (documents-plan: section 1121 row 7)". | | |
-| 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items) | Brief 42's numbers | 6, 13 |
+| 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items; choice built 2026-11-14, HISTORY.md, L-documents-48) | Brief 42's numbers | 6, 13 |
 | 9 | expansion | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): Replace in every document (palette), plain or regex, case, through `POST /documents/contents`, one undo step | `docreplace76.js`: 50 documents, 1 step, one Ctrl+Z restores 50 of 50 | 1, 2 |
 | 10 | expansion | Labelled and linked sections with a local graph (the owner's idea; after 8) | Brief 42's last row | 6 |
 | 11 | optimisation | Built 2026-10-18 (HISTORY "OPEN.md rows closed, 2026-10-18 (open-1018)"): one `data-help-for` per documents section naming its controls, `tests/test_documents_help.py` | `test_documents_help.py` | 6 |

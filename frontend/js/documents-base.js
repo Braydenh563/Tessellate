@@ -10,9 +10,9 @@
 //   columns: author, rating   the properties to show, in order
 //   sort: rating desc         one property, asc or desc (numbers and dates sort as such)
 //   limit: 50                 rows, at most 300
-//   view: board               table (the default), board or calendar; the switch on the block rewrites this line
-//   group: status             the board's column property (a select or a list such as tags); it is read with `columns`
-//   date: due                 the calendar's date property (YYYY-MM-DD)
+//   view: board               table (default), board or calendar; the switch on the block rewrites this line
+//   group: status             the board's column property (a select or a list such as tags)
+//   date: due                 the calendar's date property
 //
 // Lazy: `LAZY_MODULES.docBase`, registered in lazy-entries.js; documents-math.js draws Read and Live and calls
 // `docMathRender.base.fill`. Everything is a property of `docMathRender.base`, so the file adds no global name.
@@ -198,8 +198,6 @@
     body.append(wrap);
   }
 
-  //: The board writes the one property through the route the note's own Properties sheet uses, then draws again from the
-  //: rows it holds; a refusal puts the card back.
   async function moveCard(row, key, from, to) {
     const before = await fullEntry(row.id);
     const found = await apiJson(`/entries/${row.id}/properties`);
@@ -350,8 +348,7 @@
     if (model.errors.length) figure.append(issues);
     const state = {};
     let current = null;
-    //: A line of the fence changed: kept in the document when there is one, and always applied to the figure at once.
-    const setKey = (key, value, reload) => {
+      const setKey = (key, value, reload) => {
       source = setLine(source, key, value);
       model[key] = value || (key === "view" ? "table" : "");
       if (write) write(source);
@@ -384,7 +381,6 @@
         .then((data) => {
           if (mine !== token || !figure.isConnected) return;
           current = data;
-          //: The first listed property stands in until the fence names one.
           if (!model.group && data.columns[0]) model.group = data.columns[0];
           if (!model.date && data.columns[0]) model.date = data.columns.find((c) => data.rows.some((r) => dateOf(r, c))) || "";
           paint();
@@ -447,7 +443,6 @@
           if (mine === token) body.replaceChildren(el("p", "db-empty", "The results could not be read just now."));
         });
     }
-    //: A save of the document may have changed what matches; the listener leaves with the figure.
     const again = () => (figure.isConnected ? load() : document.removeEventListener("doc-saved", again));
     document.addEventListener("doc-saved", again);
     load();

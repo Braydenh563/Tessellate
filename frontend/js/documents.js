@@ -9501,7 +9501,7 @@ function docRestoreReading() {
   try {
     dim = prefs.get(DOC_DIM_KEY, null) === "1";
     typewriter = prefs.get(DOC_TYPEWRITER_KEY, null) === "1";
-    serif = prefs.get(DOC_SERIF_KEY, null) === "1";
+    serif = (prefs.get(DOC_SERIF_KEY, null) ?? (prefsCache?.writing_style === "documents" ? "1" : "")) === "1";
   } catch {
     // Nothing stored, nothing remembered: the defaults below are all off.
   }
