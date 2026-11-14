@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- LAN port: one accept stays pending across the 0.5 s ticks instead of being cancelled by a timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240).
 
 - Boot long tasks and handler lag measured at 4x CPU in headless Chromium (`scratchpad/ui-sweeps/bootlongtasks.js`, `handlerlag.js`): the Settings usage-ledger wiring no longer builds the Settings surface at boot (151-186 ms task gone), Settings search typing reuses cached meaning text, indexes rows while idle and switches panes after the typing pauses (281 to 104 ms), and the Data pane fills a frame after it shows. L-world-class-354 and 355 stay open with the remaining numbers.
 - Back after closing Settings no longer reopens it: each pane visited inside Settings is a history entry, and the close now steps off all of them, not one (sweep `backtabs.js` 4 failing to 0 of 26 checks; L-world-class-356, wc-109). CodeQL: three asserts with side effects in the window teardown test are split.
