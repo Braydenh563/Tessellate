@@ -116,6 +116,23 @@
   //: "dark" and "theme" find the same setting, "chnage pasword" finds the
   //: password. The rule is meaning.js's (`meaningAlts`, in this bundle); the
   //: rows' own words are its vocabulary, so a slip of a label reads as it.
+  //: **The index is read before the first key, a pane per idle slot.** The first letter typed in the search box
+  //: scanned all twenty-two panes and tokenized their text in one go (172 ms of 763 over nine keys at 4x CPU,
+  //: scratchpad/ui-sweeps/handlerlag.js). Focusing the box starts the same reading, one pane at a time; a pane that
+  //: changes is dropped from the cache by `settingsSectionText`'s observer and read again as before.
+  function settingRowsWarm(done = new WeakSet()) {
+    const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !done.has(p));
+    if (!pane) return;
+    done.add(pane);
+    if (!settingRowsScan.panes.has(pane)) settingRowsScan.panes.set(pane, settingRowsScan.pane(pane));
+    for (const row of settingRowsScan.panes.get(pane)) meaningMissing([], row.haystack);
+    meaningMissing([], settingsSectionText(pane));
+    const next = () => settingRowsWarm(done);
+    if (window.requestIdleCallback) requestIdleCallback(next, { timeout: 500 });
+    else setTimeout(next, 50);
+  }
+  $("settings-search")?.addEventListener("focus", () => settingRowsWarm(), { once: true });
+
   let settingVocabCache = null;
   //: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
   //: 37 to 63 ms a key at 4x); a row that is gone leaves its words, which only widens a typo's reach a little.
@@ -161,7 +178,7 @@
     //: or more ("what the ai remembers about me" is a memory question first).
     //: A help topic is held by meaning in its title and keywords only: its
     //: body names half the app. The words as typed still reach the body.
-    const said = (row) => (row.keys ? `${row.text} ${row.keys}` : row.haystack);
+    const said = (row) => (row.keys ? (row.said ??= `${row.text} ${row.keys}`) : row.haystack);
     const plain = (row) => words.every((w) => row.haystack.includes(w));
     const pick = (miss) => rows.filter((row) => meaningMissing(alts, said(row)) <= miss);
     let found = pick(0);

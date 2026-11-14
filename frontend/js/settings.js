@@ -262,14 +262,19 @@ function showSettingsSection(name) {
   }
   if (name === "account") renderAccount().catch(() => {});
   if (name === "privacy") renderPrivacyReceipt().catch(() => {});
+  //: After the pane has painted: the first show of Data loaded and ran three lazy files and read layout, 195 ms
+  //: of the arrow key at 4x CPU (scratchpad/ui-sweeps/handlerlag.js); the pane's rows fill a frame later.
   if (name === "data") {
-    ensureModule("webClip");
-    ensureModule("appImport");
-    renderBackups();
-    renderBackupRetention();
-    ensureModule("settingsData").then(() => {
-      renderSettingsClear();
-      renderSettingsHistory();
+    afterFrames(() => {
+      if (currentSettingsSection !== "data") return;
+      ensureModule("webClip");
+      ensureModule("appImport");
+      renderBackups();
+      renderBackupRetention();
+      ensureModule("settingsData").then(() => {
+        renderSettingsClear();
+        renderSettingsHistory();
+      });
     });
   }
   if (name === "tasks") renderTasks(); // fill it in now, then poll
@@ -757,7 +762,15 @@ function filterSettings(term) {
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
   const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
-  if (first && first !== currentSettingsSection) showSettingsSection(first);
+  //: After the typing pauses, not on every key: building the matched pane (Appearance reads the page's styles) was
+  //: 100 to 190 ms of the key that changed the match at 4x CPU, and a fast "dark mode" switched panes twice on the way
+  //: (scratchpad/ui-sweeps/handlerlag.js). The result list and the nav filter above are already on screen.
+  clearTimeout(filterSettings.showTimer);
+  if (first && first !== currentSettingsSection) {
+    filterSettings.showTimer = setTimeout(function showFirstSettingsMatch() {
+      if (first !== currentSettingsSection && $("settings-search").value.trim().toLowerCase() === query) showSettingsSection(first);
+    }, 160);
+  }
 }
 
 function closeSettingsModal() {
