@@ -34,7 +34,7 @@ MORE: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("The newest page in the notebook is {last}.", "p", ""), ("Fresh ink: {last}.", "p", ""),
     ),
     "w_streak": (
-        ("You have a {streak} writing streak going.", "w", ""), ("Notes {streak} in a row now.", "w", ""), ("Notes on {streak} running, keep it up.", "w", ""), ("{streak} in a row so far.", "w", ""),
+        ("Your writing streak is at {streak} running.", "w", ""), ("Notes on {streak} running now.", "w", ""), ("Notes on {streak} running, keep it up.", "w", ""), ("{streak} running so far.", "w", ""),
         ("Run: {streak}.", "t", ""), ("{streak} and counting.", "t", ""), ("Written {streak} running.", "t", ""),
         ("You have written notes on {streak} in succession.", "f", ""), ("Your streak currently stands at {streak}.", "f", ""), ("A streak of {streak} is on record.", "f", ""),
         ("{streak} without a gap, the notebook is impressed.", "p", ""), ("The pen has not rested for {streak}.", "p", ""),

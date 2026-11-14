@@ -190,7 +190,7 @@
     ]).then(([, a, b]) => [a, b]);
     if (browse.note?.button !== button) return;
     box.replaceChildren();
-    if (!joined) return say("Could not load this note's neighbours.");
+    if (!joined) return say("Couldn't load this note's neighbours.");
     const seen = new Set([Number(id)]);
     const rows = [];
     const add = (note, how) => {
