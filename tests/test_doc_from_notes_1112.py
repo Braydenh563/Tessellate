@@ -19,7 +19,8 @@ def test_several_notes_make_one_document_with_a_section_each(client):
     assert body.index("## Kiln plan") < body.index("## Glaze tests")  # oldest first
     assert "Fire on Friday" in body and "Celadon is runny" in body
     assert f"#{a['id']}" in body and f"#{b['id']}" in body
-    assert client.get(f"/entries/{a['id']}").json()["content"].startswith("# Kiln plan")
+    saved = client.get(f"/entries/{a['id']}").json()
+    assert saved["content"].startswith("# Kiln plan")
 
 
 def test_a_note_with_no_heading_gets_its_first_line_as_title(client):
@@ -39,7 +40,8 @@ def test_private_and_missing_notes_are_left_out(client):
 
 
 def test_nothing_usable_is_a_422(client):
-    assert client.post("/documents/from-notes", json={"note_ids": [9999]}).status_code == 422
+    missing = client.post("/documents/from-notes", json={"note_ids": [9999]})
+    assert missing.status_code == 422
 
 
 def test_a_given_title_is_kept(client):

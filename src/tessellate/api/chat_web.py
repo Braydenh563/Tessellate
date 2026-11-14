@@ -45,6 +45,11 @@ def _web_first(req: _StreamRequest, prepared: dict) -> bool:
     return toolwords.asks_web(req.question) or (not prepared["notes"] and composer_unplaced.worthy(req.question or ""))
 
 
+def _notes_chip(req: _StreamRequest) -> bool:
+    """The "Search my notes instead" chip was pressed: this turn is the notes' alone (L217)."""
+    return str(getattr(getattr(req, "body", None), "question", "") or "").strip() == composer_web.NOTES_INSTEAD
+
+
 def _web_allowed(req: _StreamRequest) -> bool:
     """Web sources only when the person turned web search on in Settings and
     the turn may use tools (decision 43: never fetched without the toggle)."""
@@ -55,7 +60,7 @@ def _web_allowed(req: _StreamRequest) -> bool:
         #: A first-person question is the person's own record: only an
         #: explicit "search the web for" sends it out (audit 1030 A1, A2).
         own = personal.about_own_notes(q) or composer_money.asks(q) or (personal.about_own_record(q) and not toolwords.asks_web(q))
-        return on and not own
+        return on and not own and not _notes_chip(req)
     except Exception:  # noqa: BLE001  # no preference is off
         return False
 
@@ -163,4 +168,4 @@ def _torn_events(req: _StreamRequest, prepared: dict) -> list | None:
     if not composer_unplaced.torn(req.question or "", prepared["notes"], web_on=True):
         return None
     asks = composer_unplaced.torn_chips(req.question or "")
-    return [{"type": "answer", "delta": "Your notes or the web?"}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
+    return [{"type": "answer", "delta": "Did you mean your notes or the web?"}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]

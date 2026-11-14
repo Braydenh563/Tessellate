@@ -126,13 +126,73 @@ def clip_idle_tails(folder: Path) -> None:
         return im.getchannel("A").point(lambda v: 255 if v >= sprites.ALPHA_FLOOR else 0).getbbox()[3]
 
     paths = [folder / f"{n}.png" for n in ("stand", "blink", "look")] + sorted(folder.glob("idle*.png"))
-    limit = min(bottom(Image.open(p).convert("RGBA")) for p in paths)
-    for path in paths:
-        im = Image.open(path).convert("RGBA")
-        if bottom(im) <= limit:
-            continue
-        im.paste((0, 0, 0, 0), (0, limit, im.width, im.height))
-        im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
+    first = {p: Image.open(p).convert("RGBA") for p in paths}
+    limit = min(bottom(im) for im in first.values())
+    # The engine reads the line from the picture shrunk to the shipped scale, where the tail tip's soft last rows
+    # round either way: take the fewest rows off (0 to 5) that leave every rest picture's shrunk line the stand's (L150).
+    for trim in range(6):
+        for path, im in first.items():
+            im = im.copy()
+            im.paste((0, 0, 0, 0), (0, limit - trim, im.width, im.height))
+            im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
+        if rest_line_is_one(folder):
+            return
+
+
+def rest_line_is_one(folder: Path) -> bool:
+    """Whether the stand, blink, look and idle pictures end on one row once shrunk to the shipped scale."""
+    set_ = sprites.SpriteSet(folder.name)
+    was = sprites.frames_dir
+    sprites.frames_dir = lambda: folder.parent
+    try:
+        lows = {set_._build(n, 96, False).box[3] for n in ("stand", "blink", "look", *(f"idle{i}" for i in range(sprites.IDLE_COUNT)))}
+    finally:
+        sprites.frames_dir = was
+    return len(lows) == 1
+
+
+def register_sit_frames(folder: Path) -> None:
+    """The dangle, the kicks and the meditation are the sit with something changed below the seat (or, for the meditation, in the
+    face and the hands), so they are registered to it (L150). Two captures of one pose differ by a stream ribbon that
+    runs 8 px higher in one than the other, which read as a head that jumped on the way into the act (the engine
+    seats each on the sit's line): above the hips a dangle and a kick take the sit's own pixels (a short ramp
+    into their own), and the meditation's hem, which a capture can draw 10 px under the seat, is eased up
+    to end where the sit's does."""
+    def load(name: str) -> Image.Image:
+        return Image.open(folder / f"{name}.png").convert("RGBA")
+
+    def save(im: Image.Image, name: str) -> None:
+        im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(folder / f"{name}.png", optimize=True)
+
+    sit = load("sit")
+    hips, ramp = solid_box(sit)[1] + 73, 10  # the chest: the sit and the acts agree down to here (73 rows under the solid top)
+    mask = Image.new("L", sit.size, 0)
+    mask.paste(255, (0, 0, sit.width, hips))
+    for i in range(ramp):
+        mask.paste(255 * (ramp - i) // ramp, (0, hips + i, sit.width, hips + i + 1))
+    for name in ("dangle", "kick0", "kick1"):
+        im = load(name)
+        im.paste(sit, (0, 0), mask)
+        save(im, name)
+    med = load("meditate")
+    want, have = drawn(sit)[3], drawn(med)[3]
+    if have > want:
+        below = med.crop((0, hips, med.width, have)).resize((med.width, want - hips), Image.Resampling.LANCZOS)
+        med.paste((0, 0, 0, 0), (0, hips, med.width, med.height))
+        med.paste(below, (0, hips))
+        save(med, "meditate")
+
+
+def even_hang_top(folder: Path) -> None:
+    """The hang's first drawn row on an even row, so the hands' share of the frame's height is a whole logical px at 96 dpi
+    (an odd row made it x.5, the engine placed the window a px short of the metrics' round and the hang's top touch hung
+    a px over the work area's top, L150): a faint first row is cleared when it is odd."""
+    for name in ("hang", "hang_one"):
+        im = Image.open(folder / f"{name}.png").convert("RGBA")
+        top = drawn(im)[1]
+        if top % 2:
+            im.paste((0, 0, 0, 0), (0, top, im.width, top + 1))
+            im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(folder / f"{name}.png", optimize=True)
 
 
 def drawn(im: Image.Image) -> tuple[int, int, int, int]:
@@ -248,6 +308,8 @@ def main() -> int:
                 small.save(target / f"{name}.png", optimize=True)
                 total += (target / f"{name}.png").stat().st_size
             clip_idle_tails(target)
+            register_sit_frames(target)
+            even_hang_top(target)
             render_card_frames.render_look(look)
             print(f"{look}: {len(images)} frames, {box[2] - box[0]}x{box[3] - box[1]} px")
         print(f"total {total / 1024:.0f} KB")

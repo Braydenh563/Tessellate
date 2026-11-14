@@ -110,7 +110,9 @@
     fields.className = "row";
     fields.style.flexWrap = "wrap";
     for (const field of [dueInput, prioritySelect, recurringSelect, alertSelect]) {
-      field.style.height = "var(--control-h)";
+      //: The buttons beside them take the touch band's 44px floor below 820px;
+      //: the fields take it too, or the due field sat 12px short (L193).
+      field.style.height = "max(var(--control-h), var(--target-min))";
       fields.append(field);
     }
     wrap.append(textInput, fields, row);

@@ -12,7 +12,7 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import acts, commands, help_chat
-from tessellate.core.database import Entry, EntryLink, Reminder
+from tessellate.core.database import Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -50,7 +50,16 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
     from tessellate.core.database import Category
 
     made = tuple(sorted(c.name for c in session.scalars(select(Category)))) if categories else ()
-    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made
+    #: The surface acts (L-chat-26): documents, saved skills and the cards on the board.
+    surfaces = (
+        tuple(sorted((d.title, d.content) for d in session.scalars(select(Document)))),
+        #: By name: Undo saves the skill again with its defaults filled in.
+        tuple(sorted(str(s.get("name")) for s in deps.get_config().get_preference("skills", []))),
+        tuple(sorted(n.entry_id for n in session.scalars(select(WhiteboardNode)))),
+        #: A suggested preference (remember, L114) is a row that waits for an answer; its Undo drops it.
+        tuple(sorted(p.content for p in session.scalars(select(UserPreference)))),
+    )
+    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made, surfaces
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():
@@ -72,6 +81,7 @@ _BEFORE = {
     "delete_category": ("move the gym note to Hobbies",), "delete_tag": ("tag the gym note with harbor",),
     "merge_categories": ("move the gym note to Work", "move the running note to Job"),
 }
+_PAGE_SIDE = frozenset({"set_theme"})
 #: A category row is made again by Undo with a new id, so these compare the categories by name.
 _BY_NAME = frozenset({"delete_category", "merge_categories"})
 
@@ -79,6 +89,13 @@ _BY_NAME = frozenset({"delete_category", "merge_categories"})
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
 def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act):
     _seed(session)
+    if act.intent == "delete_document":
+        session.add(Document(title="Harbor report", content="Findings for the harbor."))
+        session.commit()
+    if act.intent == "delete_skill":
+        from tessellate.core import deps
+
+        deps.get_config().set_preference("skills", [{"name": "Weekly tidy", "prompt": "Tidy my notes.", "steps": []}])
     if act.intent == "restore":
         manager.create_entry(session, "# Passport\n\nRenew in May.")
         session.commit()
@@ -112,7 +129,8 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     done = acts.run(session, card["steps"], card.get("skipped"))
     session.commit()
     assert done["ok"], (act.intent, done)
-    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
+    #: The theme is the page's preference, not the server's: the step acknowledges it (tests/test_chat_acts_2_1112_d.py).
+    assert act.intent in _PAGE_SIDE or _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
     assert done["undo"] and done["undo"][0]["name"] == act.inverse, (act.intent, done["undo"])
     undone = acts.run(session, done["undo"])
     session.commit()
@@ -192,18 +210,18 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     dentist = session.scalars(select(Entry).where(Entry.content.like("# Dentist%"))).one()
     out = _ask(client, phrase, use_tools=False)
     card = out["act"][0]
-    assert card["label"] == "Remind you on Friday at 9: call the dentist", phrase
+    assert card["label"] == "Remind you on Friday at 9am: call the dentist", phrase
     #: Audit 1028 E64 moved the intent: the note is named by its title, not "#id".
     assert card["items"] == ["Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
     #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
-    assert "remind you on friday at 9: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
+    assert "remind you on friday at 9am: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
     assert session.scalars(select(Reminder)).all() == [], "nothing is set before Confirm"
     from tests._consent import confirmed
 
     done = confirmed(client, out)  # Confirm words the run as the composer did before the consent order
-    assert done["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in done["text"], done["text"]
+    assert done["text"].endswith("remind you on Friday at 9am: call the dentist.") and "!" not in done["text"], done["text"]
     session.expire_all()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"
@@ -211,9 +229,9 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
 
 @pytest.mark.parametrize(
     ("due", "said"),
-    [(datetime(2026, 10, 10, 17, 0), "today at 5pm"), (datetime(2026, 10, 11, 9, 30), "tomorrow at 9:30"),
-     (datetime(2026, 10, 16, 12, 0), "on Friday at noon"), (datetime(2026, 10, 21, 8, 0), "on 21 October at 8"),
-     (datetime(2027, 1, 4, 9, 0), "on 4 January 2027 at 9")],
+    [(datetime(2026, 10, 10, 17, 0), "today at 5pm"), (datetime(2026, 10, 11, 9, 30), "tomorrow at 9:30am"),
+     (datetime(2026, 10, 16, 12, 0), "on Friday at noon"), (datetime(2026, 10, 21, 8, 0), "on 21 October at 8am"),
+     (datetime(2027, 1, 4, 9, 0), "on 4 January 2027 at 9am")],
 )
 def test_reminder_when_says_the_time_against_today(due, said):
     assert commands.reminder_when(due, NOW) == said

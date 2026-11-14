@@ -43,6 +43,25 @@ RELATIVE_FLOOR = 0.3
 #: more when the heading holds every one of them: "Harbor launch plan" is the
 #: note about the Harbor launch plan, whatever its sentences repeat.
 TITLE_WEIGHT = 1.0
+#: A note named for the subject lends its name to every sentence, so a long
+#: dated list under it would fill the answer (INBOX 1544): of the sentences
+#: that score on the name alone, this many are kept from one note.
+TITLE_ONLY_PER_NOTE = 2
+#: Only a dated line is a list entry in that sense ("Crown fitting on 2 June");
+#: an undated sentence under the name is a fact about it ("Rent is $1,200").
+_DATED = re.compile(
+    r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\b\d{1,2}(?:st|nd|rd|th)\b|\b\d{4}-\d\d-\d\d\b",
+    re.I,
+)
+
+
+def _note_is_full(s: Sentence, counts: Counter[int], by_name: Counter[int], per_note: int) -> bool:
+    return counts[s.note_id] >= per_note or (_lent_by_name(s) and by_name[s.note_id] >= TITLE_ONLY_PER_NOTE)
+
+
+def _lent_by_name(s: Sentence) -> bool:
+    """A dated line that scores on its note's name alone (the list the cap keeps short)."""
+    return not s.own and bool(_DATED.search(s.text))
 
 
 #: A note holding no more than this share of the question's words is about
@@ -56,6 +75,25 @@ NOTE_COVERAGE = 0.5
 #: A question word among a note's tags or its category, per word: half a
 #: heading's worth, since a tag says what a note is about less precisely.
 FILED_WEIGHT = 0.5
+
+
+#: Everyday words a question shares with a note by chance ("vacation days left" and a note on "Water
+#: every second day"). When they are the only words of a question any note holds, the notes do not
+#: cover it and nothing is quoted (L-chat-248: PTO, meeting and ship questions quoted a stray note).
+EVERYDAY = frozenset(
+    "day days meeting meetings ship mean flight event set sets book ticket schedule left year time vacation holiday off sign signed".split()
+)
+
+
+@functools.cache
+def _everyday_stems() -> frozenset[str]:
+    return frozenset(_stem(w) for w in EVERYDAY)
+
+
+def _only_everyday(stems: set[str], views: list[NoteView]) -> bool:
+    """A question of two words or more whose only words any note holds are everyday ones."""
+    held = {t for t in stems if any(_holds(t, v.words | v.title_words | v.filed_words) for v in views)}
+    return len(stems) >= 2 and len(held) < len(stems) and held <= _everyday_stems()
 
 
 #: Two sentences sharing this share of their words say the same thing; the
@@ -220,7 +258,9 @@ class _Scorer:
         if hits is None:
             hits = self.headings[view.id] = _heading_hits(view, self.stems, self.term_weight)
         title_hits, filed_hits = hits
-        relevance = self.bm25(s) + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
+        own = self.bm25(s)
+        s.own = own > 0
+        relevance = own + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
         if self.stems and title_hits == self.whole_title:
             relevance += TITLE_WEIGHT
         return relevance
@@ -275,6 +315,22 @@ def _jaccard(a: list[str], b: list[str]) -> float:
     return len(sa & sb) / len(sa | sb) if sa and sb else 0.0
 
 
+def _covering(stems: set[str], views: list[NoteView]) -> list[NoteView]:
+    """The notes that hold more than `NOTE_COVERAGE` of the question's words; every note when none does
+    (a question the notes only half answer), none when the only words held are everyday ones."""
+    if len(stems) < 2:
+        return views
+    if _only_everyday(stems, views):
+        return []
+    covering = [
+        v for v in views
+        if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
+    ]
+    #: None covering is a question the notes only half answer: every note
+    #: stays in, and the closing line says which words none of them hold.
+    return covering or views
+
+
 def select(
     shape: str,
     terms: list[str],
@@ -293,14 +349,7 @@ def select(
     notes say it. `said` is an earlier answer's text ("tell me more"): a
     sentence it already quoted is left for something new."""
     stems = {_stem(t) for t in terms}
-    if len(stems) >= 2:
-        covering = [
-            v for v in views
-            if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
-        ]
-        #: None covering is a question the notes only half answer: every note
-        #: stays in, and the closing line says which words none of them hold.
-        views = covering or views
+    views = _covering(stems, views)
     scored = sorted(_score(shape, terms, views), key=lambda s: (-s.score, s.rank, s.order))
     if said:
         scored = [s for s in scored if not _was_said(s, said)]
@@ -310,6 +359,7 @@ def select(
     floor = scored[0].score * RELATIVE_FLOOR
     chosen: list[Sentence] = []
     counts: Counter[int] = Counter()
+    by_name: Counter[int] = Counter()
     for s in scored:
         if s.score < floor:
             break
@@ -321,10 +371,11 @@ def select(
             if s.note_id != twin.note_id and s.note_id not in {e.note_id for e in twin.echoes}:
                 twin.echoes.append(s)
             continue
-        if len(chosen) >= limit or counts[s.note_id] >= per_note:
+        if len(chosen) >= limit or _note_is_full(s, counts, by_name, per_note):
             continue
         chosen.append(s)
         counts[s.note_id] += 1
+        by_name[s.note_id] += _lent_by_name(s)
     return chosen
 
 

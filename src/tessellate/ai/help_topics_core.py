@@ -10,7 +10,7 @@ this list.
 
 from __future__ import annotations
 
-from tessellate.ai import spelling
+from tessellate.ai import help_targets, spelling
 from tessellate.ai.help_topics_core_tail import TAIL_TOPICS
 from tessellate.ai.help_topics_more import MORE_TOPICS
 
@@ -83,7 +83,7 @@ HELP_TOPICS: list[dict] = [
             "it is there; in Ask, "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
-            "picks who answers: off, the answer is From your notes, quoted from your "
+            "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "
             "notes' own sentences with no AI, and it is the answer when no model runs, "
             "in Ask and in Chat. "
             "They also see your tab and last actions, locally. "
@@ -97,7 +97,7 @@ HELP_TOPICS: list[dict] = [
             "A note's "
             "... menu, under AI actions, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
-            "(a toggle in Chat) lets the assistant use its tools to search, link, "
+            "(a toggle in Chat) needs a model, and lets the assistant use its tools to search, link, "
             "tag, organise and create; changing or removing asks first, "
             "and after it reads a web page or a clipped or imported note, so "
             "does every change and web request. "
@@ -255,7 +255,8 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking". A chat found by words inside '
+            'it opens at the message that has them. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -687,14 +688,14 @@ HELP_TOPICS: list[dict] = [
             "Web results fold under the answer; press a title to read one there, "
             "as text, or the arrow to open it outside. "
             "Paste a link and ask to read it: with web search on and no model "
-            "the page is fetched and told back as its main points, key terms "
-            "and sections; with it off you are told so and given the setting. "
+            "the page comes back as its main points, key terms "
+            "and sections; with it off you are told and given the setting. "
             "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
             '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
-            'Settings", "Open the web panel" and "Use another provider"), and the panel '
+            'Settings", "Open the web panel", "Use another provider" and "Search my notes instead"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
-            "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
+            "and links Web search settings. Banter, slang, a single word or a question both fit "
+            "is never sent to the web unasked: Did you mean your notes or the web?, a chip for each. To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
@@ -850,7 +851,7 @@ HELP_TOPICS: list[dict] = [
             'who (a title like "Sync with Ana friday 2pm" fills When and '
             "Who from its chips), then opens the meeting as a note with Agenda, Notes, Decisions "
             "and Action items; Start and open recorder does the same and opens the "
-            'recorder, writing into its Notes; press Record there (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
+            'recorder, writing into its Notes; press Record in the recorder (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
             '@Sam by Friday": @Name is its owner, the plain words its due. '
             "The meeting chip on the note (or its ... menu, Meeting) opens the "
             "meeting sheet: Remind me makes an action item a reminder, asking "
@@ -933,8 +934,10 @@ HELP_TOPICS: list[dict] = [
             "while smart model routing is on, on the chat model while that is "
             "off, and Settings, Models can give the guide a model of its "
             "own. With no model running it still answers from the help: "
-            "Atlas's answer is put together for your question, and the From "
-            "the help tab above it shows the topic word for word. "
+            "the answer is put together for your question, and the Help "
+            "topic tab above it shows the topic word for word. "
+            "Advice questions (should I use categories or tags?) get a "
+            "recommendation first, then the topics it comes from. "
             "It cannot read your notes or documents (ask the "
             "Chat or Ask tab for those), and nothing said to it is saved: the "
             'conversation is gone on reload, and "New chat" clears it now. '
@@ -1056,6 +1059,8 @@ HELP_TOPICS: list[dict] = [
         "id": "document-history",
         "keywords": (
             "history",
+            "history of a document",
+            "document history",
             "version",
             "revision",
             "restore",
@@ -1381,7 +1386,7 @@ HELP_TOPICS.extend(
                 "make it formal",
             ),
             "body": (
-                "Notes tab, Writing room: pick what to write (draft a note, "
+                "The Writing room (Notes tab) drafts, rewrites and translates: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "
@@ -2004,5 +2009,6 @@ HELP_TOPICS.extend(TAIL_TOPICS)
 #: (INBOX 430): the second half of the reference, in its own module
 #: (help_topics_more.py) so this one stays about how an answer is found.
 HELP_TOPICS.extend(MORE_TOPICS)
+help_targets.apply(HELP_TOPICS)  # each tab-level topic rings its own control (L51)
 # The speller reads the help text for the app's own vocabulary (see spelling.set_topic_source).
 spelling.set_topic_source(lambda: [*HELP_TOPICS, *MORE_TOPICS])

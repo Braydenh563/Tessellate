@@ -23,11 +23,12 @@ from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder, composed_support
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import chat_degrade
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
 from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
+from tessellate.api.chat_said import _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
 from tessellate.core.database import Entry
@@ -136,13 +137,40 @@ def _chat_reply(  # noqa: ANN001
     return ai_response, ai_thinking
 
 
+class _NoModel:
+    """The provider as one turn sees it when the person chose Without a model
+    (L165): not running, so every later check composes the answer from the
+    notebook, and everything else is the real provider's."""
+
+    def __init__(self, real) -> None:  # noqa: ANN001
+        self._real = real
+
+    def is_running(self) -> bool:
+        return False
+
+    def __getattr__(self, name: str):  # noqa: ANN204
+        return getattr(self._real, name)
+
+
+def one_turn_provider(body: ChatRequest):  # noqa: ANN201
+    """The provider this turn talks to: the real one, or none for `composer_only`."""
+    real = deps.get_ollama()
+    return _NoModel(real) if body.composer_only else real
+
+
+def one_turn_models(body: ChatRequest, feature: str):  # noqa: ANN201
+    """The model view this turn answers with: its surface's, or the one named."""
+    manager = deps.get_model_manager().for_feature(feature)
+    return manager.for_model(body.model) if body.model else manager
+
+
 def _composes_offline(body: ChatRequest) -> bool:
     """A turn about the notes is composed from them when no model runs; a hello
     or a question about the app is not, it keeps the plain offline greeting
     ("No model is no reason to answer a hello with an error": a hello was
     getting "this comes from your notes alone" over a welcome). A turn with
     pictures, or with a model running, goes the model's way."""
-    if body.image_media_ids or deps.get_ollama().is_running():
+    if body.image_media_ids or (deps.get_ollama().is_running() and not body.composer_only):
         return False
     kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.media_file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
@@ -224,16 +252,23 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
         #: saving is a number on every turn rather than a claim.
         composition_tokens["notes_brief"] = prepared["brief"]
     streamed_any = False
+    said: list[str] = []
+    stats = None
     try:
         for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
             if "thinking_delta" in piece:
                 yield {"type": "thinking", "delta": piece["thinking_delta"]}
             elif "stats" in piece:
-                # Token counts + timings for the message metadata line.
-                yield {"type": "stats", **piece["stats"], "composition": composition_tokens}
+                #: Token counts + timings for the message metadata line, held to the end so a fallback can mark them.
+                stats = piece["stats"]
             else:
                 streamed_any = True
+                said.append(piece["content_delta"])
                 yield {"type": "answer", "delta": piece["content_delta"]}
+        if chat_degrade.falls_back("".join(said), prepared, req.question or ""):
+            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any, "".join(said))
+        elif stats is not None:
+            yield {"type": "stats", **stats, "composition": composition_tokens}
     except OllamaError as exc:
         # The model died mid-answer, tell the user, keep the results.
         # By construction this is reached only after the not-running
@@ -251,13 +286,14 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
             "chat: model call failed for %r: %s", req.model_manager.chat_model(), exc
         )
         preview = prepared.get("preview")
-        if preview and preview.get("text") and not streamed_any:
+        if preview and preview.get("text"):
             #: **The answer composed from the notes survives the model**
             #: (CHAT_PLAN Phase 6, the first tests: a model dying mid-answer
             #: used to leave only the error). The composed answer the page
             #: already drew as a draft is sent as the answer, under one line
-            #: saying the model stopped.
-            yield {"type": "answer", "delta": f"{preview['text']}\n\n{MODEL_STOPPED_NOTE}"}
+            #: saying the model stopped. After some words (L122) it replaces
+            #: them (`answer_final`) rather than following half a sentence.
+            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any)
             return
         prefix = "\n\n" if streamed_any else ""
         yield {
@@ -599,15 +635,24 @@ def _note_kind(t: _Turn, kind: str, payload: dict) -> None:
         t.marks["answered"] = time.perf_counter() - t.started
 
 
+def _fold_break(t: _Turn, kind: str, payload: dict) -> None:
+    """A tool or step event ends the paragraph; a tool's touched notes are kept."""
+    t.in_prose = False
+    if kind == "tool":
+        for item in payload.get("touched") or []:
+            if item.get("kind") == "note" and isinstance(item.get("id"), int):
+                t.touched_note_ids.append(item["id"])
+
+
 def _fold_event(t: _Turn, kind: str, payload: dict, live_grounder) -> list:  # noqa: ANN001
     """Fold one event into the running answer; the live grounding rows when
     this delta could have closed a sentence."""
     if kind in _PARAGRAPH_BREAKS:
-        t.in_prose = False
-        if kind == "tool":
-            for item in payload.get("touched") or []:
-                if item.get("kind") == "note" and isinstance(item.get("id"), int):
-                    t.touched_note_ids.append(item["id"])
+        _fold_break(t, kind, payload)
+        return []
+    if kind == "answer_final":
+        #: The server's own replacement of what streamed (a model that died mid-answer).
+        t.answer_text, t.in_prose = payload.get("text") or t.answer_text, True
         return []
     if kind != "answer":
         return []

@@ -49,11 +49,15 @@ _SINCE = re.compile(r"^how\s+long\s+(?:has\s+it\s+been\s+)?since\s+(?:i|we)\s+(?
 _MARKERS = (" for ", " before ", " to ", " on ", " at ")
 
 
+#: "to-do list" and "to do list" name the to-do note (L103).
+_TODO_LIST = re.compile(r"\bto[- ]dos?(?= list\b)")
+
+
 def _list_subject(rest: str) -> list[str]:
     """The stems of what a "left" question names: "on the Lisbon packing
     list" -> lisbon, pack; "to do for Atlas" -> atlas (the verb before the
     marker is the asking, not the subject)."""
-    rest = " " + " ".join(rest.lower().split()) + " "
+    rest = " " + _TODO_LIST.sub("todo", " ".join(rest.lower().split())) + " "
     cut = [rest.find(m) for m in _MARKERS if rest.find(m) >= 0]
     if cut and not rest.strip().startswith(("on ", "for ", "at ")):
         rest = rest[min(cut):]
@@ -72,7 +76,7 @@ _VERB_LISTS = {"buy": (["shop"], ["grocer"]), "bought": (["shop"], ["grocer"]), 
 def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
     """`(open, done)` task sentences of the best note the stems name: one
     whose title holds every stem first, then one filed or worded so
-    (`composer_body._notes_named_by`, the reader "still open" questions share)."""
+    (`composer_body._notes_named_by`, the reader the open-items questions share)."""
     for want in (stems, *_VERB_LISTS.get(stems[0], ())) if stems else ():
         named = composer_body._notes_named_by(views, set(want))  # noqa: SLF001
         for view in sorted(named, key=lambda v: (not _title_holds(v, want), v.rank)):
@@ -97,10 +101,10 @@ def _left_in_prose(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
     for view in sorted(views, key=lambda v: v.rank):
         if not all(st in view.title_words or st in view.words for st in stems):
             continue
-        todo = [s for s in view.sentences if s.kind == "prose" and _TO_DO.match(s.text)]
-        if todo:
+        to_do_lines = [s for s in view.sentences if s.kind == "prose" and _TO_DO.match(s.text)]
+        if to_do_lines:
             header = f"There is no checklist for it, but {composer_lists._title(view)} has this to do:"  # noqa: SLF001
-            composer_lists._block(out, header, [(s.text.strip(), view, s) for s in todo[:6]])  # noqa: SLF001
+            composer_lists._block(out, header, [(s.text.strip(), view, s) for s in to_do_lines[:6]])  # noqa: SLF001
             return True
     return False
 
@@ -109,19 +113,19 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     stems = _list_subject(rest)
     if not stems:
         return False
-    open_, done = _tasks(views, stems)
+    open_, finished = _tasks(views, stems)
     #: No list the subject names ("what do I need to buy" names a verb, not a
     #: list): the composer's own readers answer, as they did before the slots.
-    if not open_ and not done:
+    if not open_ and not finished:
         return _left_in_prose(out, stems, views)
-    view = open_[0][0] if open_ else done[0][0]
+    view = open_[0][0] if open_ else finished[0][0]
     title = composer_lists._title(view)  # noqa: SLF001
     if not open_:
-        out.lines.append(f"Nothing is left on {title}: all {len(done)} items are done.")
+        out.lines.append(f"Nothing is left on {title}: all {len(finished)} items are done.")
     else:
         items = [(re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip(), v, task) for v, task in open_[:12]]
         composer_lists._block(out, f"{len(open_)} still to do on {title}:", items)  # noqa: SLF001
-    _say_recorded(out, views, done, today)
+    _say_recorded(out, views, finished, today)
     return True
 
 
@@ -142,9 +146,9 @@ _COUNT_FILLER = frozenset({"of", "the", "my", "items", "item", "things", "thing"
 
 def _counted_ask(q: str) -> tuple[list[str], bool] | None:
     """"How many grocery items are checked off" -> (grocery stems, True);
-    "how many things on the packing list are still open" -> (packing, False).
+    the same ask about the open ones -> (packing, False).
     Read word by word (CodeQL)."""
-    tokens = re.sub(r"[^\w' ]", " ", q.lower()).split()
+    tokens = _TODO_LIST.sub("todo", re.sub(r"[^\w' -]", " ", q.lower())).replace("-", " ").split()
     if tokens[:2] != ["how", "many"]:
         return None
     at = next((i for i, t in enumerate(tokens) if i > 1 and t in _COUNT_VERBS), None)
@@ -152,23 +156,32 @@ def _counted_ask(q: str) -> tuple[list[str], bool] | None:
     ticked, still = bool(tail & _TICKED_WORDS), bool(tail & _OPEN_WORDS) or "to do" in " ".join(tokens[at or 0:])
     if at is None or ticked == still:
         return None
-    stems = _stems(" ".join(t for t in tokens[2:at] if t not in _COUNT_FILLER))
+    stems = _stems(" ".join(t for t in tokens[2:at] if t not in _COUNT_FILLER)) or _list_after_state(tokens, at)
     return (stems, ticked) if stems else None
 
 
+def _list_after_state(tokens: list[str], at: int) -> list[str]:
+    """"How many items are left on the shopping list": the list is named after the state (L103)."""
+    marked = next((i for i, t in enumerate(tokens) if i > at and t in ("on", "in", "from")), None)
+    if marked is None:
+        return []
+    after = [t for t in tokens[marked + 1 :] if t not in _COUNT_FILLER]
+    return _stems(" ".join(after)) or [w for w in ("todo", "checklist") if w in after]
+
+
 def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
-    """How many of a checklist's items are ticked, or still open, named."""
+    """How many of a checklist's items are ticked, or left unticked, named."""
     asked = _counted_ask(q)
     if not asked:
         return False
-    open_, done = _tasks(views, asked[0])
-    if not open_ and not done:
+    open_, finished = _tasks(views, asked[0])
+    if not open_ and not finished:
         return False
-    picked = done if asked[1] else open_
-    view = (open_ or done)[0][0]
+    picked = finished if asked[1] else open_
+    view = (open_ or finished)[0][0]
     names = [re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", t.text).strip().rstrip(".") for _v, t in picked]
     state = "ticked off" if asked[1] else "still open"
-    total = len(open_) + len(done)
+    total = len(open_) + len(finished)
     line = f"{realise.count_word(len(picked)).capitalize()} of {realise.count_word(total)} {'is' if len(picked) == 1 else 'are'} {state} on {composer_lists._title(view)}"  # noqa: SLF001
     line += f": {realise.join_items(names)}." if names else "."
     out.lines.append(line)
@@ -186,7 +199,7 @@ _UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>pa
 _TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$|"
     r"^(?:which|what)\s+(?:tasks|items|things|todos)\s+(?:(?:are|is|have\s+i|did\s+i)\s+(?:now\s+)?(?:done|tick(?:ed)?|check(?:ed)?|complete(?:d)?|finish(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?)$|"
     r"^(?:show|list|give|find|what\s+are)(?:\s+me)?\s+(?:all\s+)?(?:of\s+)?(?:my|the)\s+(?:done|ticked(?:\s+off)?|completed|finished|checked(?:\s+off)?)\s+(?:items?|tasks?|todos?|things)$", re.I)
-#: "What is not done", "what is left to do", "what haven't I finished": the
+#: "What is left to do", "what haven't I finished": the
 #: open items of every checklist, no list named (round 2 E21).
 _BARE_STATE = frozenset({"ticked", "checked", "done"})
 _ALL_OPEN = re.compile(r"^(?:what|which)\s+(?:tasks|items|things|todos)\s+(?:are|is)\s+(?:still\s+)?(?:open|outstanding|left|unticked|remaining|pending|not\s+done)$|^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:left|outstanding|remaining)(?:\s+to\s+do)?$|^what\s+(?:haven't|have\s+not|hasn't)\s+i\s+(?:done|finished|ticked(?:\s+off)?|completed|checked(?:\s+off)?|packed|bought)(?:\s+yet)?$", re.I)
@@ -294,7 +307,7 @@ def _state(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
         return _was_done(out, m, views, today)
     if m := _UN_STATE.match(q):
         bare = m.group("un") or m.group("not")
-        #: A list named ("what is not done in Todo"): its open items, not every checklist's.
+        #: A list named (the `place` group): its open items, not every checklist's.
         if m.group("place"):
             return _left(out, f"on {m.group('place')}", views, today)
         return _open_everywhere(out, views) if bare.lower() in _BARE_STATE else _left(out, bare, views, today)

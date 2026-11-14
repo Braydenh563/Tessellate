@@ -32,4 +32,5 @@ def named(question: str, notes: list[dict]) -> dict | None:
 
 def say(note: dict) -> str:
     word = " ".join(str(note.get("content") or "").split())
-    return f"Your note “{word}” is one word: {word}."
+    #: The quoted name is the word; saying it again after a colon repeated it (L204, E18).
+    return f"Your note “{word}” is just that one word."

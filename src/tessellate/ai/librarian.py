@@ -110,7 +110,7 @@ SYSTEM_PROMPT = f"{DEFAULT_PERSONA} {GROUNDING}"
 # `GROUNDING` alone produces a perfectly grounded answer in the wrong *shape*:
 # it ends "Would you like me to…", because that is what a chat assistant does
 # and nothing had told this surface it isn't one. The results panel beside the
-# answer already offers every follow-up the user could want, opening a note,
+# answer already offers every next step the user could want, opening a note,
 # a similar note, the note's own links: so an offer to do more here is a
 # question the UI has already answered, taking up the space the overview
 # should be using.
@@ -306,7 +306,7 @@ def length_hint(mode: str | None) -> str:
     return presets.resolve(mode).length_hint
 
 
-# Follow-up memory (Round 1): keep the conversation short enough that a
+# Memory of earlier turns (Round 1): keep the conversation short enough that a
 # small local model never runs out of context. Only recent turns matter,
 # and a long past answer gets clipped.
 MAX_HISTORY_TURNS = 4
@@ -335,7 +335,7 @@ def history_messages(history: list[dict] | None) -> list[dict]:
     """The recent turns as chat messages, oldest first.
 
     One clipping rule for every chat path, conversational, grounded and
-    agent: so a follow-up behaves the same wherever it lands: old answers
+    agent: so a later question behaves the same wherever it lands: old answers
     are clipped hard, the latest one travels nearly whole (see
     LAST_ANSWER_CHARS).
     """
@@ -634,6 +634,22 @@ def _match_info_hint(match_info: dict | None) -> str:
     return ""
 
 
+def _shown_hint(note: dict, notes: list[dict]) -> str:
+    """" (why shown: Has the word “skye”) (linked to note 3: same trip)": why the
+    note was shown and which other notes in this prompt it links to, by their
+    numbers here (L101, INBOX 1310). `chat_pool._frame_matches` works both
+    out; the composer said them and the model was never told."""
+    numbers = {n.get("id"): i for i, n in enumerate(notes, start=1)}
+    why = str((note.get("match_info") or {}).get("why") or "").strip()
+    out = f" (why shown: {why})" if why else ""
+    reasons = note.get("link_reasons") or {}
+    for other in note.get("linked_to") or []:
+        if other in numbers and other != note.get("id"):
+            reason = reasons.get(other) or reasons.get(str(other))
+            out += f" (linked to note {numbers[other]}{': ' + reason if reason else ''})"
+    return out
+
+
 def system_content(
     style: str = "friendly",
     profile: str = "",
@@ -737,7 +753,7 @@ def build_messages(
     `history` is prior [{"question", "answer"}] turns, replayed as
     user/assistant messages so follow-ups ("and what about…") keep
     context. The freshly retrieved `notes` still ground the current
-    answer, so a follow-up searches the notebook anew.
+    answer, so a later question searches the notebook anew.
 
     `budget` is what stops this prompt overrunning the model's window.
     ``ai/context.py`` was written for exactly this and then only ever wired
@@ -798,6 +814,7 @@ def build_messages(
         f"{' (attached by me)' if note.get('attached') else ''}"
         f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
         f"{_match_info_hint(note.get('match_info'))}"
+        f"{_shown_hint(note, notes)}"
         f"{_tags_files_hint(note)} "
         # No tools on this path by definition, it is the plain librarian
         # prompt: so notes get the larger allowance and an honest marker.

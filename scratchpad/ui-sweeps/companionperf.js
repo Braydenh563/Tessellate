@@ -110,7 +110,7 @@ async function idleRun() {
       localStorage.removeItem('nm-buddy-spots');
       if (st === 'appreduce') { localStorage.setItem('motion', 'reduced'); document.documentElement.dataset.motion = 'reduced'; }
       if (st === 'animoff') { localStorage.setItem('avatar-motion', 'off'); document.documentElement.dataset.avatarMotion = 'off'; }
-      const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', k); syncNameMarkBuddy();
     }, [kind, state || '']);
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);
@@ -153,7 +153,7 @@ async function idleRun() {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
-    await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, kind);
+    await page.evaluate((k) => { prefs.set('avatar-buddy', k); syncNameMarkBuddy(); }, kind);
     await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);

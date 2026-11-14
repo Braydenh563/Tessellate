@@ -35,6 +35,8 @@ PARTIAL = (".crdownload", ".part", ".tmp", ".download", ".partial")
 DUSK, MORNING = 17, (6, 11)
 #: Typing this long (s, gaps under `BURST_GAP` s) that then rests `BURST_GAP` s is a burst finished (`typing_burst`, a nod).
 BURST_MIN, BURST_GAP = 30.0, 4.0
+#: ...and a run this long is a writing run ended (`writing_stretch`, a stretch: Brief 88 N9, L-chat-7).
+WRITING_RUN = 60.0
 
 
 def downloads_count(folder: Path | None = None) -> int | None:
@@ -121,7 +123,8 @@ class ScreenWatch:
         if self.burst and now - self.burst[1] >= BURST_GAP:
             first, last = self.burst
             self.burst = None
-            return ["typing_burst"] if last - first >= BURST_MIN else []
+            ran = last - first
+            return ["writing_stretch"] if ran >= WRITING_RUN else ["typing_burst"] if ran >= BURST_MIN else []
         return []
 
     def windows_seen(self, keys: Any) -> list[str]:

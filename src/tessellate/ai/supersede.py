@@ -53,6 +53,8 @@ class Replaced:
     newer: dict
     value: str
     written: date | None
+    #: What the newer note says of the subject (the contradiction answer, L-chat-8).
+    now: str = ""
 
 
 def _state(sentence: str) -> tuple[frozenset, str] | None:
@@ -142,8 +144,77 @@ def _replaced_by(row: tuple, read: list[tuple]) -> Replaced | None:
         for words, value, form in old_subjects:
             match = next((v for w, v, f in new_subjects if _same(words, w) and _alike(value, form, v, f)), None)
             if match is not None and match.lower() != value.lower():
-                return Replaced(older, newer, value, old_day)
+                return Replaced(older, newer, value, old_day, match)
     return None
+
+
+#: The newest notes `changes` reads: every pair is two notes' subjects, so the
+#: cost grows with the square, and an old change of mind is the least asked for.
+_CHANGES_NOTES = 400
+
+
+def changes(notes: list[dict]) -> list[Replaced]:
+    """Every subject a newer note says something else of, over the whole
+    notebook (no question to narrow it): "do my notes contradict each other"
+    (L-chat-8). Oldest first; each older note once, with the next note that
+    replaced it."""
+    dated = sorted((n for n in notes if _day(n)), key=_day)[-_CHANGES_NOTES:]
+    read = [(n, _subjects(str(n.get("content") or "")), _day(n)) for n in dated]
+    return [r for r in (_replaced_by(row, read) for row in read if row[1]) if r and _one_thing(r)]
+
+
+def _one_thing(found: Replaced) -> bool:
+    """Two notes about one thing: a note that is the state itself ("My
+    address is now 4 Birch Road"), or two whose first lines match. Two
+    recipes each with "Ingredients:" are two things, not a change of mind."""
+    firsts = [_sentences(str(n.get("content") or ""))[0] for n in (found.older, found.newer)]
+    if all(_state(first) for first in firsts):
+        return True
+    a, b = (frozenset(query_understanding.search_terms(first)) for first in firsts)
+    return bool(a | b) and _same(a, b)
+
+
+#: "contradict each other about the passport", "the passport contradiction", "inconsistencies on my passport".
+_ASK_TAIL = re.compile(r"\b(?:about|on|over|regarding|concerning|around|with)\s+(?:(?:my|the|our)\s+)?(?P<s>[^?.!,]+?)\W*$", re.I)
+_ASK_HEAD = re.compile(r"\b(?:the|my|our)\s+(?P<s>[\w'-]+(?:\s+[\w'-]+){0,2}?)\s+(?:contradictions?|inconsistenc(?:y|ies)|conflicts?|disagreements?)\b", re.I)
+_ASK_NOISE = frozenset({"note", "each", "other", "one", "another", "contradict", "contradiction", "inconsist", "conflict", "disagre", "chang", "mind"})
+
+
+def ask_subject(question: str) -> str:
+    """The words of the subject a contradiction ask names, or "" for the whole
+    notebook ("do my notes contradict each other" names none; L-chat-245)."""
+    from tessellate.ai import study
+
+    found = _ASK_TAIL.search(" ".join(question.split())) or _ASK_HEAD.search(" ".join(question.split()))
+    words = re.findall(r"[\w'-]+", found.group("s")) if found else []
+    return " ".join(w for w in words if study.content_stems(w) and not set(study.content_stems(w)) <= _ASK_NOISE)
+
+
+def about(subject: str, *texts: str) -> bool:
+    """Whether every word of `subject` (stemmed) is in the texts."""
+    from tessellate.ai import study
+
+    return set(study.content_stems(subject)) <= set(study.content_stems(" ".join(texts)))
+
+
+def changes_line(found: Replaced, today: date) -> str:
+    """One change said with both days and both values, newest first."""
+    newer = _day(found.newer)
+    new_day = _said_day(newer, today) if newer else "a later day"
+    old_day = _said_day(found.written, today) if found.written else "an earlier day"
+    said = f"your note of {new_day} says {_you(found.now)}, and an older one, from {old_day}, said {_you(found.value)}."
+    subject = _subject_of(found)
+    return f"{subject}: {said}" if subject else said[0].upper() + said[1:]
+
+
+def _subject_of(found: Replaced) -> str:
+    """The words the older note says its changed value of ("Uni days this semester")."""
+    for sentence in _sentences(str(found.older.get("content") or "")):
+        m = _COLON.match(sentence) or _COPULA.match(sentence)
+        if m and m.group(2).strip() == found.value:
+            words = _you(re.sub(r"^(My|Our|Mine)\b", lambda w: w.group(1).lower(), m.group(1).strip()))
+            return words[0].upper() + words[1:]
+    return ""
 
 
 def _alike(old: str, old_form: str, new: str, new_form: str) -> bool:

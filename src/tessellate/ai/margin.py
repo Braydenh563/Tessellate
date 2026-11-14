@@ -8,7 +8,7 @@ three cards, each typed and each pinned to a sentence in another note:
 - ``repeats``: the paragraph says again what a note already says;
 - ``contradicts``: the same thing with a different number or a "not" (no
   model needed), or what the model judges a disagreement;
-- ``answers``: the paragraph answers an open question the night shift found
+- ``answers``: the paragraph answers an unanswered question the night shift found
   (`DerivedFact` kind ``question``);
 - ``date``: a time phrase in the paragraph, read by the same date reader
   that fills a note's dates, offered as a reminder;

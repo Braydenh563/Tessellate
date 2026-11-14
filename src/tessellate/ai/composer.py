@@ -84,10 +84,10 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
-from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
+from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
 from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
 from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
@@ -96,7 +96,7 @@ from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compar
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
-from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
+from tessellate.ai.composer_empty import _absent, refusal, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
 from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
@@ -217,7 +217,7 @@ def _readings(out: _Answer, question: str, terms: list[str], views: list[NoteVie
     with Sam**; 2. **Meeting notes, Thursday**?" With a model running it
     picks one (or asks); with none, the person does. Never added when
     `_clarify` already asked."""
-    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or _ASKS_FIRST.match(rephrase(question)):
+    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or asked_whole(question):
         return
     stems = {_stem(t) for t in terms}
     named = [v for v in views if v.titled and not v.note.get("connected") and stems <= {w for t in v.title_words for w in (t, _stem(t))}]
@@ -249,7 +249,7 @@ def _fit_terms(terms: list[str], views: list[NoteView], report: list | None = No
     for view in views:
         vocabulary |= view.words | view.title_words | view.filed_words
     fitted: list[str] = []
-    for term in terms:
+    for term in composer_tables.concepts(terms, vocabulary, _stem):
         stem = _stem(term)
         #: Four letters at least, the same first letter, and never to a
         #: shorter word: "peru" is not a typo of "per", "hotle" is of "hotel".
@@ -291,9 +291,10 @@ def compose(
     resolved: bool = False,
     learned=None,  # noqa: ANN001
     register: str = "",
+    retry: int = 0,
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
-    for one question.
+    for one question. `retry` is Ask again's count (E62, L93): see `composer_retry`.
 
     `notes` are the route's retrieved notes, ranked (each with `id`,
     `content`, and `written` or `created_at`). `recent` is the retrieval's
@@ -321,7 +322,7 @@ def compose(
         voice = composer_tables.DEFAULT_VOICE
     #: In a conversation (decisions 34, 35): turn and salt choose the wording; a terse turn is read against the ones before.
     names = composer_names.names_of(notes)
-    asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
+    asked, question = question, composer_small.only_list_question(composer_names.respell(composer_numbers.normalise(question), names), notes)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
@@ -335,8 +336,9 @@ def compose(
     minded = typo_context.CTX.set(typo_context.of_notes(notes, names, previous, history=dialogue.history if dialogue else ()))
     current = _ASKS_NOW.set(asks_now(question))
     try:
-        result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
-                              voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        answer = lambda pool: _answer_turn(question, pool, today=today, recent=recent, embed=embed, said=said, previous=previous, voice=voice, now=now, salt=salt,  # noqa: E731
+                                            turn=turn, dialogue=dialogue, prefer=prefer)
+        result = composer_retry.varied(answer(notes), notes, answer) if retry else answer(notes)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
@@ -354,6 +356,8 @@ def compose(
         helped = _help_result(asked, salt=salt, turn=turn, dialogue=None, previous=previous)
         if helped:
             result = helped
+    #: Out of domain (step 11): the plain no-answer, the closest note, what the app can do.
+    result = composer_ood.framed(asked, result, notes)
     if dialogue is not None:
         dialogue.record(asked, result)
     return result
@@ -449,7 +453,7 @@ def _from_dialogue(out: "_Answer", dialogue) -> None:  # noqa: ANN001  # a Dialo
 
 
 def _checklist_or_until(out: "_Answer", said: object, question: str, views: list, today: date) -> dict | None:
-    """What is still open on a checklist, or the days until a note's day,
+    """The unticked items of a checklist, or the days until a note's day,
     when the question asks that and nothing was said before; else None.
     Read as repaired: "hw many days til the dentst" is the same count."""
     if said:
@@ -663,7 +667,7 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
 def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_list: list, unsure: list) -> dict:
     quotes = "\n\n".join(row["sentence"] for row in out.rows)
     cited = {row["note_id"] for row in out.rows}
-    next_parts = (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3]
+    next_parts = composer_dialogue.voiced_chips(out, (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3])
     readings = [
         {"n": i, "note_id": out.views[v].note.get("source_id", v), "label": out.views[v].title}
         for i, v in enumerate(out.readings, 1)
@@ -716,21 +720,13 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
 
 
-def _refusal(refused: tuple, question: str, shape: str) -> dict:
-    """The answer that says the word asked about is one the notes are kept
-    from (a filter refused it)."""
-    key, word = refused
-    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
-                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
-
-
 def _planned(question: str, today: date, recent: bool, embed, prefer: str, notes: list[dict], views_list: list):  # noqa: ANN001, ANN202
     """The plan for the question, the notes it may read, and the refusal when
     a word it asks about is one the notes are kept from (else None)."""
     p = plan(question, today, recent=recent, embed=embed)
     _steer_to_correction(p, prefer, notes)
     views_list, refused = _filtered(views_list, p)
-    return p, views_list, (_refusal(refused, question, p.shape) if refused else None)
+    return p, views_list, (refusal(refused, question, p.shape) if refused else None)
 
 
 def _compose(

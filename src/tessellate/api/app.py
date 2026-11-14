@@ -1366,6 +1366,9 @@ def _start_services() -> Path:
     from tessellate.search import query as search_query
 
     recognise.configure_date_order(deps.get_config().get_preference("date_order", "auto"))
+    from tessellate.ai import utilities
+
+    utilities.configure_rates(deps.get_config().get_preference("currency_rates", {}))
     search_query.configure_before(deps.get_config().get_preference("before_includes_day", False))
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
         afterunlock.defer("search-warmup", _warm_search_at_launch)

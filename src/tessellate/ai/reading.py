@@ -220,7 +220,7 @@ def tool_of(text: str, reading: Reading) -> str | None:
 def _resolving(body):  # noqa: ANN001, ANN202
     """`body` (the one reading), with the tool the reading reaches named
     (`tool_of`). With `context["turns"]` (the chat's last turns, {"text",
-    "objects"?}), a spoken follow-up ("and delete it", "same for Tuesday",
+    "objects"?}), a spoken reference ("and delete it", "same for Tuesday",
     "the other one") is read as the sentence it stands for (`follow`), and
     says so (decision 59, steps 1 and 3)."""
 
@@ -377,13 +377,13 @@ def repair(reading: Reading | None, *, error: str | None = None, composed: str |
     return Repair("no_match", lead + commands.CAPABILITY_LINE)
 
 
-#: The reading without the follow-up step, for the turns a follow-up leans on.
+#: The reading without the reference step, for the turns a reference leans on.
 _read = read.__wrapped__
 
 
 # --- spoken follow-ups over the last turns (decision 59, step 3; decision 58's context) ----
 
-#: How many turns back a follow-up may lean (decision 58: the last five).
+#: How many turns back a spoken reference may lean (decision 58: the last five).
 FOLLOW_TURNS = 5
 
 #: "undo that" right after a tick (composer-r6 E7): the tick taken back, in words.
@@ -401,7 +401,7 @@ _TOO = r"^(?:and |also )?(?:the )?(?P<x>.+?)(?: note)? (?:too|as well)$"
 _OWN_SUBJECT = r"\b(?:about|called|named|titled|regarding|concerning)\s+\S"
 
 
-#: The verbs a follow-up says about the note just answered with (audit 1029
+#: The verbs a spoken reference says about the note just answered with (audit 1029
 #: C44): "open it", "tell me more about that", "remind me about it".
 _REFER_HEAD = (r"(?:delete|bin|pin|unpin|open|show(?: me)?|summari[sz]e|rename|move|tag|untag|read|explain|link|unlink|compare|"
                r"tell me more about|more about|remind me about|what(?:'s| is) in|what does)")
@@ -497,19 +497,62 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
     return None
 
 
-#: What takes an act back, said as the sentence that does it (B24): "undo" after a tick, an untick, a pin or an unpin.
-_INVERSE = {"complete": "untick {about}", "uncomplete": "tick off {about}", "pin": "unpin the {about} note", "unpin": "pin the {about} note"}
+def _the(done: dict) -> str:
+    """The note an act named, as a phrase a sentence can take: "note 12" as it is, a title as "the X note"."""
+    return done["about"] if done.get("note_id") is not None else f"the {done['about']} note"
+
+
+def _other(done: dict) -> str:
+    return f"note {done['other_id']}" if done.get("other_id") is not None else f"the {done['other']} note"
+
+
+#: What takes an act back, said as the sentence that does it (B24, L223): "undo" after a tick, an untick, a
+#: pin, an unpin, a tag, an untag, a link, an unlink or a reminder. A rename or a move cannot be said (the old
+#: title or category is not in the sentence), so "undo" after those is still the help line about the keys.
+_INVERSE = {
+    "complete": lambda d: f"untick {d['about']}",
+    "uncomplete": lambda d: f"tick off {d['about']}",
+    "pin": lambda d: f"unpin {_the(d)}",
+    "unpin": lambda d: f"pin {_the(d)}",
+    "tag": lambda d: f"remove the tag {', '.join(d['tags'])} from {_the(d)}" if d.get("tags") else None,
+    "untag": lambda d: f"tag {_the(d)} with {', '.join(d['tags'])}" if d.get("tags") else None,
+    "link": lambda d: f"unlink {_the(d)} from {_other(d)}" if d.get("other") or d.get("other_id") is not None else None,
+    "unlink": lambda d: f"link {_the(d)} to {_other(d)}" if d.get("other") or d.get("other_id") is not None else None,
+    "reminder": lambda d: f"cancel the {d['said']} reminder" if d.get("said") else None,
+}
 
 
 def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
-    """The sentence that takes the last turn back when it ticked, unticked, pinned or
-    unpinned something, else None (so "undo" after anything else is still the help
+    """The sentence that takes the last turn back when it ticked, unticked, pinned, unpinned, tagged,
+    untagged, linked, unlinked or set a reminder, else None (so "undo" after anything else is still the help
     line about the keys)."""
     from tessellate.ai import commands
 
-    done = commands.read(str(turn.get("text") or ""), now)
-    inverse = _INVERSE.get(done["intent"]) if done and done.get("about") else None
-    return (inverse.format(about=done["about"]), "undo") if inverse else None
+    ran = commands.read(str(turn.get("text") or ""), now)
+    inverse = _INVERSE.get(ran["intent"]) if ran else None
+    try:
+        said = inverse(ran) if inverse else _put_back(ran)
+    except KeyError:
+        said = None
+    return (said, "undo") if said else None
+
+
+def _put_back(ran: dict | None) -> str | None:
+    """A rename or a move said back as the sentence that restores the old title or category: the old value
+    is not in the sentence typed, so it comes from the log of Undo steps the cards kept (L-chat-29, 33)."""
+    from tessellate.ai import consent_store
+
+    if not ran or ran["intent"] not in ("rename", "move"):
+        return None
+    named = {w for w in re.findall(r"[a-z0-9]+", str(ran.get("about") or "").lower()) if w not in ("note", "the", "my")}
+    for kept in consent_store.undo_log():  # newest first: the last act, then the ones before it, across a restart
+        words = set(re.findall(r"[a-z0-9]+", str(kept["title"]).lower()))
+        if ran.get("note_id") not in (None, kept["note_id"]) or (not ran.get("note_id") and not named <= words):
+            continue
+        if ran["intent"] == "move":
+            return f"move note {kept['note_id']} to {kept['category'] or 'Uncategorised'}"
+        return f"rename note {kept['note_id']} to {kept['title']}"
+    return None
 
 
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:
@@ -550,7 +593,7 @@ def _day_phrase(new, old) -> str:  # noqa: ANN001
 
 
 def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str] | None:
-    """A spoken follow-up resolved against the last `FOLLOW_TURNS` turns
+    """A spoken reference resolved against the last `FOLLOW_TURNS` turns
     (each {"text", "objects"?}, oldest first): (the sentence it stands for,
     the kind: "again", "other", "pronoun", "date", "subject"), or None for a
     sentence that stands on its own. Dates are `recognise` spans, never read

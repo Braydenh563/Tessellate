@@ -19,7 +19,7 @@ clause of a remark is one of:
 - a value the app measured (`measure`): a count, a day, a year.
 
 Everything else comes from `VOICE`, a closed phrasebook that says nothing
-about the world ("Still open in ", " is due today."). The tests hold every
+about the world (the open-items lead and " is due today."). The tests hold every
 part of every remark to that (`tests/test_composer_voice.py`), and the eval
 (`tests/_voice_eval.py`) measures what the owner asked for: grounded, never
 twice the same, short.
@@ -96,7 +96,7 @@ VOICE: dict[str, str] = {
     "v_otd_year_mid": ", you wrote ",
     "v_otd_months_end": " months ago today, you wrote ",
     "v_otd_month": "A month ago today, you wrote ",
-    # Something left open.
+    # An unticked item.
     "v_open_a": "Still open in ",
     "v_open_b": "Not ticked yet, in ",
     "v_open_count": " has ",
@@ -672,7 +672,7 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[dat
 
 def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = None) -> dict:
     """The week in review, composed: how many notes and where they went, the
-    sentence each standout note leads with, what is still open, and which of
+    sentence each standout note leads with, what is left unticked, and which of
     the week's notes are linked to nothing. Markdown, every clause traced."""
     views = _this_week(_views(notes), today)
     v = _Voice({w.id: w for w in views}, today)

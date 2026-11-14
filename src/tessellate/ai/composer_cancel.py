@@ -19,7 +19,7 @@ from tessellate.ai.composer_dialogue import Dialogue
 #: The whole message, so "cancel my gym membership note" is never taken for it.
 _CANCEL = re.compile(
     r"^(?:(?:ok|okay|actually|no|nah|oh|hmm|um|please|just|wait) )*"
-    r"(?:cancel(?: (?:that|it|this|the (?:change|card|act)))?|never ?mind(?: (?:that|it))?|forget (?:it|that|about it)|scrap (?:that|it)|leave it|don'?t (?:do|bother)(?: (?:it|that))?)"
+    r"(?:cancel(?: (?:that|it|this|the (?:change|card|act)))?|undo(?: (?:that|it|this))?|never ?mind(?: (?:that|it))?|forget (?:it|that|about it)|scrap (?:that|it)|leave it|don'?t (?:do|bother)(?: (?:it|that))?)"
     r"(?: (?:please|thanks|thank you))?$"
 )
 
@@ -29,6 +29,25 @@ def says_cancel(question: str) -> bool:
     #: Marks inside the message ("no, cancel that") are blanks: only the words are read.
     low = " ".join(re.sub(r"[,.;:!?]+", " ", str(question or "").lower().replace("’", "'")).split())
     return len(low) <= 40 and _CANCEL.match(low) is not None
+
+
+#: "undo", "undo that", "take that back" (C13): the control that replays the last confirmed card's inverse.
+_UNDO = re.compile(r"^(?:(?:ok|okay|actually|please|oh|wait) )*(?:undo(?: (?:that|it|this|the last (?:one|change|thing)))?|take (?:that|it) back|revert (?:that|it))(?: please)?$")
+
+
+def undo_reply(session, question: str, history: list[dict]) -> list[dict] | None:  # noqa: ANN001
+    """"undo that" after a confirmed card runs its stored inverse steps, once; None for anything else
+    (a card still waiting is cancelled by `reply`, and with nothing to take back the help line answers)."""
+    from tessellate.ai import acts, consent_store
+
+    low = " ".join(re.sub(r"[,.;:!?]+", " ", str(question or "").lower().replace("’", "'")).split())
+    if Dialogue.from_history(history).pending_act or not _UNDO.match(low):
+        return None
+    label, steps = consent_store.take_latest()
+    done = acts.run(session, steps, []) if steps else None
+    if done is None or not done["ok"]:
+        return None
+    return [{"type": "answer", "delta": f"Undone: {label[:1].lower()}{label[1:].rstrip('.')}."}]
 
 
 def reply(question: str, history: list[dict]) -> list[dict] | None:

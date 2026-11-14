@@ -136,9 +136,10 @@ def test_i7_housekeeping_that_worked_is_not_a_bell_row_but_its_failure_is():
 def test_i7_the_filings_to_check_line_needs_a_running_model():
     out = run(["notes-lazy.js"], """
     const wanted = (status) => { globalThis.modelStatus = status; return reviewNudgeWanted(); };
-    __out([wanted(null), wanted({ ollama_running: false }), wanted({ ollama_running: true })]);
+    __out([wanted(null), wanted({ ollama_running: false }), wanted({ ollama_running: true, model_ready: false }), wanted({ ollama_running: true, model_ready: true })]);
     """)
-    assert out == [False, False, True]
+    # A reachable server with no model installed is not a running model (INBOX 778).
+    assert out == [False, False, False, True]
 
 
 @needs_node

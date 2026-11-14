@@ -82,3 +82,27 @@ def test_a_job_can_share_the_runs_signal():
         assert not job.stopped
         job.request_stop()
         assert stop.is_set() and job.stopped
+
+
+def test_a_read_the_model_asked_for_during_stop_does_not_run_either(app_state, fake_embeddings, monkeypatch):
+    """L66: Stop covers a read-only call too, so a long read is not started after it."""
+    from tessellate.ai import tools
+
+    reader = {**WRITER, "name": "Read twice", "tools": ["search_notes"], "steps": [
+        {"text": "Search once.", "expects": "tool_called", "tools": ["search_notes"]},
+    ]}
+    deps.get_config().set_preference("skills", [reader])
+    stop = threading.Event()
+    fake = StopsDuringTheCall(stop)
+    fake.tool_script = [[{"name": "search_notes", "arguments": {"query": "anything"}}], []] * 2
+    deps.override_ai(ollama=fake)
+    ran: list[str] = []
+    real = tools.execute_tool
+
+    def spy(session, name, arguments, **kw):  # noqa: ANN001, ANN003
+        ran.append(name)
+        return real(session, name, arguments, **kw)
+
+    monkeypatch.setattr(tools, "execute_tool", spy)
+    run_for_test(fake, skill="read_twice", budget={"tokens": 0, "stop_event": stop})
+    assert "search_notes" not in ran, "a read started after Stop"

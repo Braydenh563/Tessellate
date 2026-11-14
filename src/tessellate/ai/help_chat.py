@@ -43,6 +43,7 @@ handed on each call.
 from __future__ import annotations
 
 import functools
+import logging
 import math
 from datetime import datetime
 import re
@@ -51,9 +52,11 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, guide_lead, help_words, presets
+from tessellate.ai.provider import ProviderError
+from tessellate.ai import act_registry, guide_lead, guide_titles, help_words, presets, variants
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
+from tessellate.ai import guide_outside
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from typing import TYPE_CHECKING
@@ -316,6 +319,9 @@ _WORD = re.compile(r"[a-z0-9]+")
 _TYPO_MIN = 5
 
 #: How many topics each keyword belongs to, for the rarity weight below.
+#: Every word the topics' keywords use: what a word the English list does not
+#: hold is read as (`help_words.forgive`).
+_KEYWORD_WORDS = frozenset(w for t in HELP_TOPICS for k in t["keywords"] for w in _WORD.findall(k.lower()) if len(w) >= 4)
 _KEYWORD_TOPICS: dict[str, int] = Counter(k for t in HELP_TOPICS for k in set(t["keywords"]))
 
 #: Body vocabulary per topic, for tie-breaking only (see `_matching_topics`).
@@ -428,6 +434,15 @@ def _repaired(question: str) -> str:
 _WHERE_FIND = re.compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
 
 
+def _forgiven(lowered: str, words: list[str]) -> tuple[str, list[str]]:
+    """The question with each word the English list does not hold read as the
+    topics' nearest word (VC15, `help_words.forgive`)."""
+    fixes = help_words.forgive(words, _KEYWORD_WORDS, variants.english())
+    if not fixes:
+        return lowered, words
+    return _WORD.sub(lambda m: fixes.get(m.group(), m.group()), lowered), [fixes.get(w, w) for w in words]
+
+
 def _matching_topics(question: str) -> list[dict]:
     """Which `HELP_TOPICS` entries this question is about, best first.
 
@@ -457,7 +472,9 @@ def _matching_topics(question: str) -> list[dict]:
     #: word the speller does not know.
     lowered = _WHERE_FIND.sub("where", _normalise_keys(_repaired(question).lower()))
     words = [w for w in _WORD.findall(lowered) if w not in _STOP]
+    lowered, words = _forgiven(lowered, words)
     total = len(HELP_TOPICS)
+    english = variants.english()
     scores: dict[str, float] = {}
     for topic in HELP_TOPICS:
         score = 0.0
@@ -468,7 +485,7 @@ def _matching_topics(question: str) -> list[dict]:
             elif (
                 " " not in keyword
                 and len(keyword) >= _TYPO_MIN
-                and any(len(w) >= _TYPO_MIN - 1 and help_words.one_edit_apart(w, keyword) for w in words)
+                and any(help_words.typo_of(w, keyword, english, _TYPO_MIN - 1) for w in words)
             ):
                 score += 0.8 * rarity
         if (score := max(score, _WORD_BAND.score(words, lowered, topic["id"]))) > 0:
@@ -545,12 +562,13 @@ def topic_title(topic: dict) -> str:
 #: link inside the Markdown could only be a URL, and a URL cannot open a
 #: settings row. The same text is the offline answer, so the Guide with no
 #: model answers exactly as the toggle's other side does.
-def system_answer(topics: list[dict]) -> dict:
+def system_answer(topics: list[dict], said: str = "") -> dict:
+    """The topic as written; `said` is the line that says how a misspelt question was read ("I took that to mean ...", L53)."""
     if not topics:
         return {"content": "", "open": None}
     first = topics[0]
     meta = TOPIC_META.get(first["id"], {})
-    lines = [f"### {topic_title(first)}"]
+    lines = ([said.strip()] if said.strip() else []) + [f"### {topic_title(first)}"]
     if meta.get("path"):
         lines.append(f"**Where:** {meta['path']}")
     lines.append(first["body"])
@@ -619,12 +637,6 @@ def _about_the_guide(question: str) -> list[dict]:
 
 #: A question that points at the screen ("how does this work", "what is here").
 _DEICTIC = re.compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
-#: How-to forms that are about the app whatever else they name.
-_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?[\s?.!]*$", re.I)
-
-
-#: A request for writing or a performance, never a question about the app.
-_CREATIVE = re.compile(r"^\s*(?:please\s+)?(?:tell me (?:a|an|some) \w+|write|compose|draft|sing|recite|translate|give me (?:a|an) \w+|make me (?:a|an) \w+)\b", re.I)
 
 
 def _outside_the_app(question: str) -> bool:
@@ -637,9 +649,9 @@ def _outside_the_app(question: str) -> bool:
 
     if _DEICTIC.search(question):
         return False
-    if _off_topic(question) or _CREATIVE.match(question):
+    if _off_topic(question) or guide_outside.CREATIVE.match(question) or guide_outside.world_how_to(question):
         return True
-    return bool(personal.general(question) or (personal.about_own_record(question) and not _HOW_TO_APP.match(question)))
+    return bool(personal.general(question) or (personal.about_own_record(question) and not guide_outside.HOW_TO_APP.match(question)))
 
 
 _INJECTION = re.compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )?(?:previous|prior|above|earlier|system) (?:instructions|rules|prompt)\b|\b(?:print|show|reveal|repeat) (?:me )?(?:your|the) (?:system )?prompt\b", re.I)
@@ -685,7 +697,7 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     of its own ("the person asking has the notes tab open"), which is the part
     of the context that was worth having.
     """
-    about_guide = _about_the_guide(question)
+    about_guide = _about_the_guide(question) or guide_titles.topic(question, HELP_TOPICS)
     if about_guide:
         return about_guide
     if social_reply(question):
@@ -750,7 +762,7 @@ def _prompt_for(
         )
     #: A greeting, thanks, "who are you" or "that didn't help" matches no
     #: topic, and the rule above then had the model say it was not sure
-    #: (INBOX 1414 follow-up). The offline reply is the model's brief.
+    #: (INBOX 1414, second round). The offline reply is the model's brief.
     social = social_reply(question)
     if social:
         messages.append(
@@ -896,7 +908,7 @@ def _beyond(question: str) -> dict:
 
 
 def social_reply(question: str) -> dict | None:
-    """The Guide's reply to a greeting, thanks, complaint or open question
+    """The Guide's reply to a greeting, thanks, complaint or free-form question
     about itself, or None for a question about the app."""
     text = (question or "").strip()
     if _GREETING.match(text):
@@ -906,6 +918,8 @@ def social_reply(question: str) -> dict | None:
         return {"content": reply, "badges": [], "sources": [], "social": True}
     if _WHO.match(text):
         return {"content": WHO_REPLY, "badges": [], "sources": [], "social": True}
+    if guide_outside.WHAT_ARE_YOU.match(text):
+        return {"content": guide_outside.WHAT_ARE_YOU_REPLY, "badges": [], "sources": [], "social": True}
     if _CAPABLE.match(text):
         return {"content": CAPABLE_REPLY, "badges": [], "sources": [], "greeting": True}
     if _MISSED.match(text):
@@ -954,11 +968,6 @@ def _second_sentence(question: str, body: str, said: str) -> str:
     return ""
 
 
-def _place_follows(question: str, steps: tuple) -> bool:
-    """A find question, or a how-to with no steps, ends on its place, after the answer (Q23, E33)."""
-    return bool(_FIND_ASKED.search(question) or (not steps and _HOW_ASKED.match(question)))
-
-
 def _guide_lead(question: str, topics: list[dict]) -> str:
     """The help sentence that best answers `question` (`composer.help_line`).
     Before the composer is loaded (a bare import of this module), the
@@ -983,10 +992,11 @@ def _guide_opening(question: str, path: str, steps: tuple, lead: str) -> tuple[l
     walk = bool(steps) and bool(_HOW_ASKED.match(question)) and len(steps) < len(_COUNTS)
     #: A path that is itself a sentence ("the bin: the Library's Include ...") is not "It's in" it.
     head, colon, tail = path.partition(": ")
-    lines = [f"It's in {head}, reached with {tail}." if colon else f"It's in {_place(path)}."] if where else []
-    #: The numbered list that follows says the steps; no "It takes N steps" first (G5 g).
-    if lead and not walk:
-        lines.append(lead)
+    place = (f"It's in {head}, reached with {tail}." if colon else f"It's in {_place(path)}.") if where else ""
+    #: A place is said first ("where is the bin"); a question about what happens (`guide_lead.place_last`) opens on the topic's sentence.
+    lines = [lead, place] if guide_lead.place_last(question) else [place, lead]
+    #: A how-to with steps says the steps, not the sentence before them (G5 g).
+    lines = [x for x in lines if x and not (x == lead and walk)]
     return lines, where, walk
 
 
@@ -1000,9 +1010,8 @@ def _preference(key: str, default: bool) -> bool:
 
 
 def _stated_lead(question: str, topics: list[dict]) -> str:
-    """The lead, after the switch's state when the topic has one; a lead
-    that only gives the default ("off by default") gives way to the next
-    sentence that answers, since the state now says it."""
+    """The lead, after the switch's state when the topic has one; a lead giving
+    only the default ("off by default") yields to the next answering sentence."""
     state = guide_lead.state_line(topics[0]["id"], _preference)
     lead = _guide_lead(question, topics)
     if state and re.search(r"\bby default\b", lead):
@@ -1012,7 +1021,8 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     #: gets its own sentence (audit 1031 AI12).
     if state.endswith(" is on now."):
         lead = re.sub(r"^Turn it on\b", "Turn it off", lead)
-    return " ".join(x for x in (state, lead) if x)
+    #: The topic's own short line leads a how-to (L-chat-41), then the state.
+    return " ".join(x for x in (guide_lead.short_opening(question, topics[0]), state, lead) if x)
 
 
 def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:
@@ -1038,8 +1048,10 @@ def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | Non
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, guide_lead.own_topic(topics, lead, help_sentences)["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
-    if path and not where and not walk and _place_follows(question, steps):
-        lines.append(f"**Where:** {path}")
+    #: The click path comes right under the lead sentence (the owner, 2026-11-12,
+    #: L725): a question naming an act is still led by the sentence naming it.
+    if path and not where and not walk:
+        lines.insert(min(1, len(lines)), f"**Where:** {path}")
     related = guide_lead.related_titles(topics, " ".join(lines), topic_title)
     return "\n\n".join(lines + (["**Related:** " + ", ".join(related)] if related else []))
 
@@ -1065,7 +1077,7 @@ def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | Non
 
 def with_asks(reply: dict) -> dict:
     """`reply` with every question its text suggests as a chip that asks the
-    Guide (INBOX 1497: "if it suggests a follow up question, I want a button
+    Guide (INBOX 1497: "if it suggests a next question, I want a button
     to one click ask"). The sentence may stay; the chip is the action. A reply
     that already carries its own asks (what to ask in Chat) is left alone."""
     from tessellate.ai import ask_chips
@@ -1104,9 +1116,11 @@ def _early_reply(question: str, tab: str | None) -> dict | None:
 
 def _unplaced(question: str, context: str | None, *, missed: bool) -> dict:
     """A question this could not place is still asked *from somewhere*, and
-    that somewhere describes itself (its help text, when there is any)."""
+    that somewhere describes itself (its help text, when there is any); the world's are outside the app (L-chat-38)."""
+    if (outside := _outside_the_app(question)) and not missed and guide_outside.about_the_world(question):
+        return {"content": guide_outside.outside_reply(question), "badges": [], "sources": [], "social": True}
     on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
-    if on_screen and not missed and not _outside_the_app(question):
+    if on_screen and not missed and not outside:
         return {"content": on_screen, "badges": [], "sources": []}
     return {"content": _nothing_matched(question), "badges": [], "sources": []}
 
@@ -1131,7 +1145,7 @@ def offline_answer(
     if (fixed := composed_only(question)) is not None:
         return fixed
     question, said = _read_as(question)
-    if (fixed := composed_only(question) or _early_reply(question, tab)) is not None:
+    if (fixed := composed_only(question) or _early_reply(question, tab) or guide_outside.summed(question)) is not None:
         return fixed
     #: Understood by its words, so "Taking that as" is not said.
     said = "" if guide_intent.read(question) else said
@@ -1149,7 +1163,7 @@ def offline_answer(
         "content": f"{said}{composed_answer(question, topics, led)}",
         "badges": badges_for(topics),
         "sources": source_names(topics),
-        "system": system_answer(topics),
+        "system": system_answer(topics, said),
     })
 
 
@@ -1162,7 +1176,8 @@ def _read_as(question: str) -> tuple[str, str]:
 
     fixed: list = []
     repaired = question_noise.repair(question_noise.tidy(" ".join(question.split())), fixed=fixed) if question else question
-    if not fixed:
+    #: A repair that breaks one of the help's own phrases is no repair: "note history" is not "not history" (L-chat-1).
+    if not fixed or any(_keyword_in(k, question.lower()) and not _keyword_in(k, repaired.lower()) for k in _KEYWORD_TOPICS):
         return question, ""
     said = "".join(part[1] for part in composer_ack.acknowledge(repaired, voice="natural", seed=question))
     return repaired, said
@@ -1217,16 +1232,24 @@ def answer_stream(
     #: but thinking is not turned off, so the `thinking` events below are
     #: events that can actually happen. Under `"quick"` this loop's
     #: `thinking_delta` branch had never once run on a real backend.
-    for piece in ollama.chat_stream(
-        model_manager.utility_model(), messages, mode=presets.GUIDE_MODE
-    ):
-        thinking = piece.get("thinking_delta")
-        if thinking:
-            yield {"type": "thinking", "text": thinking}
-        delta = piece.get("content_delta")
-        if delta:
-            pieces.append(delta)
-            yield {"type": "delta", "text": delta}
+    try:
+        for piece in ollama.chat_stream(
+            model_manager.utility_model(), messages, mode=presets.GUIDE_MODE
+        ):
+            thinking = piece.get("thinking_delta")
+            if thinking:
+                yield {"type": "thinking", "text": thinking}
+            delta = piece.get("content_delta")
+            if delta:
+                pieces.append(delta)
+                yield {"type": "delta", "text": delta}
+    except ProviderError as exc:
+        #: The model call was cut (a closed tab, a model that failed): not a server fault. The
+        #: app's own help answers, as `/help/ask` does, and the log says why (L52).
+        logging.getLogger("tessellate.help").info("help/ask: the model call ended: %s", exc)
+        offline = _aware(offline_answer(question, tab, context, history), question, tab, actions)
+        yield {"type": "done", **offline, "composed": True}
+        return
     content = "".join(pieces).strip()
     yield {
         "type": "done",

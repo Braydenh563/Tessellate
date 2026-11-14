@@ -49,5 +49,6 @@ def test_every_field_in_the_edit_row_takes_one_height_and_no_margin():
     form = _form()
     loop = re.search(r"for \(const field of \[dueInput, prioritySelect, recurringSelect, alertSelect\]\) \{(.*?)\n    \}", form, re.S)
     assert loop, "the shared-height loop is gone"
-    assert 'field.style.height = "var(--control-h)"' in loop.group(1)
+    #: L193: the one shared height grows to the touch target on a phone (44 at 390, still 32 at 1440).
+    assert 'field.style.height = "max(var(--control-h), var(--target-min))"' in loop.group(1)
     assert "margin" not in form.replace("marginTop = \"var(--space-2)\"", "")

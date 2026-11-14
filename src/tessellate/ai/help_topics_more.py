@@ -314,6 +314,7 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "profile", "my profile", "my name", "display name", "your look",
             "shuffle", "change my name", "what to call me", "greeting name",
+            "call me", "what you call me", "call me by", "make atlas call me",
         ),
         "body": (
             "Settings, Profile is you, kept on this computer: Your name (shown "
@@ -322,7 +323,8 @@ MORE_TOPICS: list[dict] = [
             "undoes that, Choose parts yourself sets each part), and About me, "
             "which Atlas reads for more personal answers only while \"Let Atlas "
             "read your name and About me\" is on. Delete my profile data clears "
-            "it; answers just get less personal."
+            "it; answers just get less personal. Telling Atlas \"call me Sam\" "
+            "sets Your name for you."
         ),
         "badge": {"label": "Profile", "section": "preferences"},
     },
@@ -335,8 +337,7 @@ MORE_TOPICS: list[dict] = [
             "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
+            "Settings, Tools it can use lets another app use these tools: a snippet to paste into an MCP client such as Claude Desktop, "
             "with a Copy button; that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
@@ -418,7 +419,9 @@ MORE_TOPICS: list[dict] = [
             "everything learned act on all of it and never touch your notes. "
             "The Learned from you line under the title counts your corrections "
             "and gives filing accuracy, the share of the notes Atlas filed that "
-            "you left where it put them, older half of the last 200 against newer."
+            "you left where it put them, older half of the last 200 against newer. "
+            "Under it, Clear answers marked not right forgets every answer you marked not right "
+            "in Chat; those marks are kept only on this device."
         ),
         "badge": {"label": "What it learned", "section": "learned"},
     },
@@ -487,7 +490,7 @@ MORE_TOPICS: list[dict] = [
             "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General sets how the calendar and dates read: First day of the week, and Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
@@ -733,7 +736,7 @@ MORE_TOPICS: list[dict] = [
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
-            "headed by a glyph and a title. Its Agent runs tab lists each run this session "
+            "headed by a glyph and a title. Drag its head to move the panel; it stays on screen, remembers where you left it, and a double-click on the head puts it back. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
@@ -1282,7 +1285,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "calculator",
         "keywords": (
-            "calculator", "open the calculator", "keypad", "unit converter",
+            "calculator", "open the calculator", "get to the calculator", "do a sum", "keypad", "unit converter",
             "convert units", "currency converter", "work out a sum",
             "calculator and equations", "equation tab", "insert as equation",
         ),
@@ -1322,6 +1325,23 @@ MORE_TOPICS: list[dict] = [
             "Units alone."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
+        "id": "currency-rates",
+        "keywords": (
+            "currency rates", "exchange rates", "edit the rates", "rates table",
+            "currency table", "update the currency", "exchange rate",
+        ),
+        "body": (
+            "Currency conversions ('50 usd in eur', Units, /calc) read one table and "
+            "say its date in the answer, for example 'at the rates from 1 October'. "
+            "Nothing is fetched. To change it, open Settings, Search and index, "
+            "Currency rates: pick the day the rates are from, then write one line per "
+            "currency, a code and how many units of it make one US dollar (EUR 0.92). "
+            "Save rates keeps it; a code you leave out keeps its built-in rate. Reset "
+            "to the built-in table puts back the rates this version shipped with."
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex", "target": "currency-rates-group"},
     },
     {
         #: INBOX 1481: a chat that is not kept (chat-private.js, `ChatRequest.private`).
@@ -1792,6 +1812,7 @@ TOPIC_META: dict[str, dict] = {
     "tools-setting": {"title": "Tools it can use", "path": "Settings, Tools it can use"},
     "learned": {"title": "What it learned", "path": "Settings, What it learned"},
     "general-settings": {"title": "General settings", "path": "Settings, General"},
+    "currency-rates": {"title": "Currency rates", "path": "Settings, Search and index, Currency rates"},
     "search-index": {"title": "Search and index", "path": "Settings, Search and index"},
     "search-engine-moved": {"title": "Old search files", "path": "Settings, Search and index, Old search files"},
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
@@ -1923,6 +1944,7 @@ TOPIC_META: dict[str, dict] = {
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
     "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
         "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
+    "ask-answerer": {"title": "Who answers plain Ask", "path": "Settings, Models, Who answers plain Ask"},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
@@ -1958,11 +1980,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "chart-maker", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -1979,7 +2001,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "private-spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "calculator", "count-words", "insert-template",
+        "timer", "calculator", "currency-rates", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
@@ -2430,6 +2452,19 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "chart-maker",
+        "keywords": (
+            "chart maker", "make a chart", "bar chart", "line chart", "chart block", "paste values chart",
+            "chart from csv", "save chart as svg", "save chart as png", "slash chart",
+        ),
+        "body": (
+            "The \"/\" menu's Chart takes pasted values (a label and a number a line, or CSV), draws a bar or line chart, "
+            "and adds it to the note as a chart block that draws in the note view. Press a drawn chart to change its values or "
+            "its kind. Save as SVG, PNG or CSV is under the chart."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-kinds",
         "keywords": (
             "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
@@ -2576,6 +2611,7 @@ TOPIC_META.update({
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "chart-maker": {"title": "Make a chart", "path": "A note, the / menu, Chart"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
@@ -2722,7 +2758,7 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
-        "themselves with no AI: a subject that came up again and again (\"university "
+        "themselves with no AI. Each is a subject that came up again and again (\"university "
         "came up 4 times since 16 July\"), one written about every week, a plan "
         "still open, a decision you went back on, or a busy week. They change as you write, "
         "since each is counted again whenever the dashboard draws. Press the "

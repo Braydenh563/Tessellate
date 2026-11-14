@@ -1,0 +1,1147 @@
+{
+ "about": "CHAT_PLAN section 4 utilities set (L-chat-22): 120 rows, each worked out by hand from arithmetic, known conversion factors and the calendar, never by running the module. Every row has a fixed now (the clock is never read), the headline value and unit, and the Read as line; a sum typed in symbols has read_as null (its own reading). Calculator is symbols, percent, roots, powers and list statistics; text is arithmetic said in words; currency reads the built-in table (RATES, 1 June 2025), so it never moves with the clock. Random rows give the range and count, not a value. The hostile list is 20 expressions that must be refused.",
+ "rows": [
+  {
+   "id": "util-001",
+   "family": "calculator",
+   "input": "what is 17 + 25",
+   "now": "2026-10-11T10:00:00",
+   "value": "42",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-002",
+   "family": "calculator",
+   "input": "what is 144 / 12",
+   "now": "2026-10-11T10:00:00",
+   "value": "12",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-003",
+   "family": "calculator",
+   "input": "what is 3 + 4 * 2",
+   "now": "2026-10-11T10:00:00",
+   "value": "11",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-004",
+   "family": "calculator",
+   "input": "what is (3 + 4) * 2",
+   "now": "2026-10-11T10:00:00",
+   "value": "14",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-005",
+   "family": "calculator",
+   "input": "what is 12 * 7",
+   "now": "2026-10-11T10:00:00",
+   "value": "84",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-006",
+   "family": "calculator",
+   "input": "what is 250 / 5",
+   "now": "2026-10-11T10:00:00",
+   "value": "50",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-007",
+   "family": "calculator",
+   "input": "what is 0.1 + 0.2",
+   "now": "2026-10-11T10:00:00",
+   "value": "0.3",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-008",
+   "family": "calculator",
+   "input": "what is 2 ** 5",
+   "now": "2026-10-11T10:00:00",
+   "value": "32",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-009",
+   "family": "calculator",
+   "input": "what is 1000 * 1.05",
+   "now": "2026-10-11T10:00:00",
+   "value": "1,050",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-010",
+   "family": "calculator",
+   "input": "what is 99 * 99",
+   "now": "2026-10-11T10:00:00",
+   "value": "9,801",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-011",
+   "family": "calculator",
+   "input": "-5 + 3",
+   "now": "2026-10-11T10:00:00",
+   "value": "-2",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-012",
+   "family": "calculator",
+   "input": "10 / 3",
+   "now": "2026-10-11T10:00:00",
+   "value": "3.333333",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-013",
+   "family": "calculator",
+   "input": "what is 1/8",
+   "now": "2026-10-11T10:00:00",
+   "value": "0.125",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-014",
+   "family": "calculator",
+   "input": "what is 17 % 5",
+   "now": "2026-10-11T10:00:00",
+   "value": "2",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-015",
+   "family": "calculator",
+   "input": "what is 2 ^ 16",
+   "now": "2026-10-11T10:00:00",
+   "value": "65,536",
+   "unit": "",
+   "read_as": null
+  },
+  {
+   "id": "util-016",
+   "family": "calculator",
+   "input": "what is 15% of 80",
+   "now": "2026-10-11T10:00:00",
+   "value": "12",
+   "unit": "",
+   "read_as": "15 hundredths of 80"
+  },
+  {
+   "id": "util-017",
+   "family": "calculator",
+   "input": "20% of 150",
+   "now": "2026-10-11T10:00:00",
+   "value": "30",
+   "unit": "",
+   "read_as": "20 hundredths of 150"
+  },
+  {
+   "id": "util-018",
+   "family": "calculator",
+   "input": "what is 12.5% of 64",
+   "now": "2026-10-11T10:00:00",
+   "value": "8",
+   "unit": "",
+   "read_as": "12.5 hundredths of 64"
+  },
+  {
+   "id": "util-019",
+   "family": "calculator",
+   "input": "square root of 144",
+   "now": "2026-10-11T10:00:00",
+   "value": "12",
+   "unit": "",
+   "read_as": "the square root of 144"
+  },
+  {
+   "id": "util-020",
+   "family": "calculator",
+   "input": "square root of 2",
+   "now": "2026-10-11T10:00:00",
+   "value": "1.41",
+   "unit": "",
+   "read_as": "the square root of 2"
+  },
+  {
+   "id": "util-021",
+   "family": "calculator",
+   "input": "cube root of 27",
+   "now": "2026-10-11T10:00:00",
+   "value": "3",
+   "unit": "",
+   "read_as": "the cube root of 27"
+  },
+  {
+   "id": "util-022",
+   "family": "calculator",
+   "input": "cube root of 1000",
+   "now": "2026-10-11T10:00:00",
+   "value": "10",
+   "unit": "",
+   "read_as": "the cube root of 1000"
+  },
+  {
+   "id": "util-023",
+   "family": "calculator",
+   "input": "what is 5 squared",
+   "now": "2026-10-11T10:00:00",
+   "value": "25",
+   "unit": "",
+   "read_as": "5 to the power of 2"
+  },
+  {
+   "id": "util-024",
+   "family": "calculator",
+   "input": "what is 9 cubed",
+   "now": "2026-10-11T10:00:00",
+   "value": "729",
+   "unit": "",
+   "read_as": "9 to the power of 3"
+  },
+  {
+   "id": "util-025",
+   "family": "calculator",
+   "input": "average of 4, 8, 15",
+   "now": "2026-10-11T10:00:00",
+   "value": "9",
+   "unit": "",
+   "read_as": "the mean of 3 numbers, added and divided by 3"
+  },
+  {
+   "id": "util-026",
+   "family": "calculator",
+   "input": "median of 3, 9, 1",
+   "now": "2026-10-11T10:00:00",
+   "value": "3",
+   "unit": "",
+   "read_as": "the median of 3 numbers"
+  },
+  {
+   "id": "util-027",
+   "family": "calculator",
+   "input": "largest of 4, 9, 2",
+   "now": "2026-10-11T10:00:00",
+   "value": "9",
+   "unit": "",
+   "read_as": "the largest of 3 numbers"
+  },
+  {
+   "id": "util-028",
+   "family": "calculator",
+   "input": "smallest of 4, 9, 2",
+   "now": "2026-10-11T10:00:00",
+   "value": "2",
+   "unit": "",
+   "read_as": "the smallest of 3 numbers"
+  },
+  {
+   "id": "util-029",
+   "family": "calculator",
+   "input": "sum of 1.5, 2.5, 3",
+   "now": "2026-10-11T10:00:00",
+   "value": "7",
+   "unit": "",
+   "read_as": "the sum of 3 numbers"
+  },
+  {
+   "id": "util-030",
+   "family": "calculator",
+   "input": "range of 3, 9, 4",
+   "now": "2026-10-11T10:00:00",
+   "value": "6",
+   "unit": "",
+   "read_as": "the range of 3 numbers"
+  },
+  {
+   "id": "util-031",
+   "family": "units",
+   "input": "5 miles in km",
+   "now": "2026-10-11T10:00:00",
+   "value": "8.05",
+   "unit": "kilometres",
+   "read_as": "5 miles in kilometres"
+  },
+  {
+   "id": "util-032",
+   "family": "units",
+   "input": "convert 10 kg to pounds",
+   "now": "2026-10-11T10:00:00",
+   "value": "22.05",
+   "unit": "pounds",
+   "read_as": "10 kilograms in pounds"
+  },
+  {
+   "id": "util-033",
+   "family": "units",
+   "input": "how many cm in an inch",
+   "now": "2026-10-11T10:00:00",
+   "value": "2.54",
+   "unit": "centimetres",
+   "read_as": "1 inch in centimetres"
+  },
+  {
+   "id": "util-034",
+   "family": "units",
+   "input": "20 celsius in fahrenheit",
+   "now": "2026-10-11T10:00:00",
+   "value": "68",
+   "unit": "°F",
+   "read_as": "20 °C in °F"
+  },
+  {
+   "id": "util-035",
+   "family": "units",
+   "input": "72 f to c",
+   "now": "2026-10-11T10:00:00",
+   "value": "22.22",
+   "unit": "°C",
+   "read_as": "72 °F in °C"
+  },
+  {
+   "id": "util-036",
+   "family": "units",
+   "input": "100 km to miles",
+   "now": "2026-10-11T10:00:00",
+   "value": "62.14",
+   "unit": "miles",
+   "read_as": "100 kilometres in miles"
+  },
+  {
+   "id": "util-037",
+   "family": "units",
+   "input": "3 feet in inches",
+   "now": "2026-10-11T10:00:00",
+   "value": "36",
+   "unit": "inches",
+   "read_as": "3 feet in inches"
+  },
+  {
+   "id": "util-038",
+   "family": "units",
+   "input": "2 litres in ml",
+   "now": "2026-10-11T10:00:00",
+   "value": "2,000",
+   "unit": "millilitres",
+   "read_as": "2 litres in millilitres"
+  },
+  {
+   "id": "util-039",
+   "family": "units",
+   "input": "1 gallon in litres",
+   "now": "2026-10-11T10:00:00",
+   "value": "3.79",
+   "unit": "litres",
+   "read_as": "1 US gallon in litres"
+  },
+  {
+   "id": "util-040",
+   "family": "units",
+   "input": "5 oz in grams",
+   "now": "2026-10-11T10:00:00",
+   "value": "141.75",
+   "unit": "grams",
+   "read_as": "5 ounces in grams"
+  },
+  {
+   "id": "util-041",
+   "family": "units",
+   "input": "1 hour in minutes",
+   "now": "2026-10-11T10:00:00",
+   "value": "60",
+   "unit": "minutes",
+   "read_as": "1 hour in minutes"
+  },
+  {
+   "id": "util-042",
+   "family": "units",
+   "input": "2 days in hours",
+   "now": "2026-10-11T10:00:00",
+   "value": "48",
+   "unit": "hours",
+   "read_as": "2 days in hours"
+  },
+  {
+   "id": "util-043",
+   "family": "units",
+   "input": "1 mile in feet",
+   "now": "2026-10-11T10:00:00",
+   "value": "5,280",
+   "unit": "feet",
+   "read_as": "1 mile in feet"
+  },
+  {
+   "id": "util-044",
+   "family": "units",
+   "input": "100 cm in m",
+   "now": "2026-10-11T10:00:00",
+   "value": "1",
+   "unit": "metre",
+   "read_as": "100 centimetres in metres"
+  },
+  {
+   "id": "util-045",
+   "family": "units",
+   "input": "32 f to celsius",
+   "now": "2026-10-11T10:00:00",
+   "value": "0",
+   "unit": "°C",
+   "read_as": "32 °F in °C"
+  },
+  {
+   "id": "util-046",
+   "family": "units",
+   "input": "0 c to kelvin",
+   "now": "2026-10-11T10:00:00",
+   "value": "273.15",
+   "unit": "K",
+   "read_as": "0 °C in K"
+  },
+  {
+   "id": "util-047",
+   "family": "units",
+   "input": "10 m/s in km/h",
+   "now": "2026-10-11T10:00:00",
+   "value": "36",
+   "unit": "kilometres an hour",
+   "read_as": "10 metres a second in kilometres an hour"
+  },
+  {
+   "id": "util-048",
+   "family": "units",
+   "input": "1 acre in square metres",
+   "now": "2026-10-11T10:00:00",
+   "value": "4,046.9",
+   "unit": "square metres",
+   "read_as": "1 acre in square metres"
+  },
+  {
+   "id": "util-049",
+   "family": "units",
+   "input": "6 feet in cm",
+   "now": "2026-10-11T10:00:00",
+   "value": "182.88",
+   "unit": "centimetres",
+   "read_as": "6 feet in centimetres"
+  },
+  {
+   "id": "util-050",
+   "family": "units",
+   "input": "1 lb in kg",
+   "now": "2026-10-11T10:00:00",
+   "value": "0.45",
+   "unit": "kilograms",
+   "read_as": "1 pound in kilograms"
+  },
+  {
+   "id": "util-051",
+   "family": "units",
+   "input": "500 g in oz",
+   "now": "2026-10-11T10:00:00",
+   "value": "17.64",
+   "unit": "ounces",
+   "read_as": "500 grams in ounces"
+  },
+  {
+   "id": "util-052",
+   "family": "units",
+   "input": "1 tonne in kg",
+   "now": "2026-10-11T10:00:00",
+   "value": "1,000",
+   "unit": "kilograms",
+   "read_as": "1 tonne in kilograms"
+  },
+  {
+   "id": "util-053",
+   "family": "units",
+   "input": "12 inches in cm",
+   "now": "2026-10-11T10:00:00",
+   "value": "30.48",
+   "unit": "centimetres",
+   "read_as": "12 inches in centimetres"
+  },
+  {
+   "id": "util-054",
+   "family": "units",
+   "input": "1 km in m",
+   "now": "2026-10-11T10:00:00",
+   "value": "1,000",
+   "unit": "metres",
+   "read_as": "1 kilometre in metres"
+  },
+  {
+   "id": "util-055",
+   "family": "units",
+   "input": "30 mph in kph",
+   "now": "2026-10-11T10:00:00",
+   "value": "48.28",
+   "unit": "kilometres an hour",
+   "read_as": "30 miles an hour in kilometres an hour"
+  },
+  {
+   "id": "util-056",
+   "family": "units",
+   "input": "1 cup in ml",
+   "now": "2026-10-11T10:00:00",
+   "value": "236.59",
+   "unit": "millilitres",
+   "read_as": "1 cup in millilitres"
+  },
+  {
+   "id": "util-057",
+   "family": "units",
+   "input": "1 tablespoon in ml",
+   "now": "2026-10-11T10:00:00",
+   "value": "14.79",
+   "unit": "millilitres",
+   "read_as": "1 tablespoon in millilitres"
+  },
+  {
+   "id": "util-058",
+   "family": "units",
+   "input": "1 week in days",
+   "now": "2026-10-11T10:00:00",
+   "value": "7",
+   "unit": "days",
+   "read_as": "1 week in days"
+  },
+  {
+   "id": "util-059",
+   "family": "units",
+   "input": "90 minutes in hours",
+   "now": "2026-10-11T10:00:00",
+   "value": "1.5",
+   "unit": "hours",
+   "read_as": "90 minutes in hours"
+  },
+  {
+   "id": "util-060",
+   "family": "units",
+   "input": "100 f to c",
+   "now": "2026-10-11T10:00:00",
+   "value": "37.78",
+   "unit": "°C",
+   "read_as": "100 °F in °C"
+  },
+  {
+   "id": "util-061",
+   "family": "dates",
+   "input": "how many days until 25 December",
+   "now": "2026-10-11T10:00:00",
+   "value": "75",
+   "unit": "days",
+   "read_as": "the days from today to 25 December"
+  },
+  {
+   "id": "util-062",
+   "family": "dates",
+   "input": "days until christmas",
+   "now": "2026-10-11T10:00:00",
+   "value": "75",
+   "unit": "days",
+   "read_as": "the days from today to christmas"
+  },
+  {
+   "id": "util-063",
+   "family": "dates",
+   "input": "days until new year",
+   "now": "2026-10-11T10:00:00",
+   "value": "82",
+   "unit": "days",
+   "read_as": "the days from today to new year"
+  },
+  {
+   "id": "util-064",
+   "family": "dates",
+   "input": "how many days until 31 October",
+   "now": "2026-10-11T10:00:00",
+   "value": "20",
+   "unit": "days",
+   "read_as": "the days from today to 31 October"
+  },
+  {
+   "id": "util-065",
+   "family": "dates",
+   "input": "what's the time in tokyo",
+   "now": "2026-10-11T10:00:00",
+   "value": "19:00",
+   "unit": "",
+   "read_as": "Asia/Tokyo, from this computer's clock"
+  },
+  {
+   "id": "util-066",
+   "family": "dates",
+   "input": "how many days since 1 October",
+   "now": "2026-10-11T10:00:00",
+   "value": "10",
+   "unit": "days",
+   "read_as": "the days from 1 October to today"
+  },
+  {
+   "id": "util-067",
+   "family": "dates",
+   "input": "days since 1 January",
+   "now": "2026-10-11T10:00:00",
+   "value": "283",
+   "unit": "days",
+   "read_as": "the days from 1 January to today"
+  },
+  {
+   "id": "util-068",
+   "family": "dates",
+   "input": "how many days until 1 December",
+   "now": "2026-10-11T10:00:00",
+   "value": "51",
+   "unit": "days",
+   "read_as": "the days from today to 1 December"
+  },
+  {
+   "id": "util-069",
+   "family": "dates",
+   "input": "days between 1 January and 1 March",
+   "now": "2026-10-11T10:00:00",
+   "value": "59",
+   "unit": "days",
+   "read_as": "the days from the first to the second"
+  },
+  {
+   "id": "util-070",
+   "family": "dates",
+   "input": "what day is 3 March",
+   "now": "2026-10-11T10:00:00",
+   "value": "Wednesday",
+   "unit": "",
+   "read_as": "3 March, the next one from today"
+  },
+  {
+   "id": "util-071",
+   "family": "dates",
+   "input": "what day of the week is 25 December",
+   "now": "2026-10-11T10:00:00",
+   "value": "Friday",
+   "unit": "",
+   "read_as": "25 December, the next one from today"
+  },
+  {
+   "id": "util-072",
+   "family": "dates",
+   "input": "what day of the week is 4 July",
+   "now": "2026-10-11T10:00:00",
+   "value": "Sunday",
+   "unit": "",
+   "read_as": "4 July, the next one from today"
+  },
+  {
+   "id": "util-073",
+   "family": "dates",
+   "input": "what day is 1 January 2027",
+   "now": "2026-10-11T10:00:00",
+   "value": "Friday",
+   "unit": "",
+   "read_as": "1 January 2027"
+  },
+  {
+   "id": "util-074",
+   "family": "dates",
+   "input": "how many days in February",
+   "now": "2027-02-27T09:00:00",
+   "value": "28",
+   "unit": "days",
+   "read_as": "the days in February 2027"
+  },
+  {
+   "id": "util-075",
+   "family": "dates",
+   "input": "how many days in February",
+   "now": "2028-02-10T09:00:00",
+   "value": "29",
+   "unit": "days",
+   "read_as": "the days in February 2028, a leap year"
+  },
+  {
+   "id": "util-076",
+   "family": "dates",
+   "input": "how many days in February 2100",
+   "now": "2026-10-11T10:00:00",
+   "value": "28",
+   "unit": "days",
+   "read_as": "the days in February 2100"
+  },
+  {
+   "id": "util-077",
+   "family": "dates",
+   "input": "how many days in February 2000",
+   "now": "2026-10-11T10:00:00",
+   "value": "29",
+   "unit": "days",
+   "read_as": "the days in February 2000, a leap year"
+  },
+  {
+   "id": "util-078",
+   "family": "dates",
+   "input": "how many days in December",
+   "now": "2026-10-11T10:00:00",
+   "value": "31",
+   "unit": "days",
+   "read_as": "the days in December 2026"
+  },
+  {
+   "id": "util-079",
+   "family": "dates",
+   "input": "how old is someone born in 1990",
+   "now": "2026-10-11T10:00:00",
+   "value": "36",
+   "unit": "this year",
+   "read_as": "the years from 1990 to 2026"
+  },
+  {
+   "id": "util-080",
+   "family": "dates",
+   "input": "how old is someone born in 1990",
+   "now": "2027-03-01T09:00:00",
+   "value": "37",
+   "unit": "this year",
+   "read_as": "the years from 1990 to 2027"
+  },
+  {
+   "id": "util-081",
+   "family": "dates",
+   "input": "what day is it",
+   "now": "2026-10-11T10:00:00",
+   "value": "Sunday 11 October 2026",
+   "unit": "",
+   "read_as": "this computer's clock"
+  },
+  {
+   "id": "util-082",
+   "family": "dates",
+   "input": "9am London in Tokyo",
+   "now": "2026-10-11T10:00:00",
+   "value": "17:00",
+   "unit": "",
+   "read_as": "09:00 today in Europe/London (BST), in Asia/Tokyo (JST)"
+  },
+  {
+   "id": "util-083",
+   "family": "dates",
+   "input": "what year is it",
+   "now": "2026-10-11T10:00:00",
+   "value": "2026",
+   "unit": "",
+   "read_as": "this computer's clock"
+  },
+  {
+   "id": "util-084",
+   "family": "dates",
+   "input": "what time is it",
+   "now": "2026-10-11T10:00:00",
+   "value": "10:00",
+   "unit": "",
+   "read_as": "this computer's clock"
+  },
+  {
+   "id": "util-085",
+   "family": "dates",
+   "input": "what time is it in Sydney",
+   "now": "2026-10-11T10:00:00",
+   "value": "21:00",
+   "unit": "",
+   "read_as": "Australia/Sydney, from this computer's clock"
+  },
+  {
+   "id": "util-086",
+   "family": "text",
+   "input": "what is 7 plus 8",
+   "now": "2026-10-11T10:00:00",
+   "value": "15",
+   "unit": "",
+   "read_as": "7 + 8"
+  },
+  {
+   "id": "util-087",
+   "family": "text",
+   "input": "what is 6 times 7",
+   "now": "2026-10-11T10:00:00",
+   "value": "42",
+   "unit": "",
+   "read_as": "6 × 7"
+  },
+  {
+   "id": "util-088",
+   "family": "text",
+   "input": "what is 90 divided by 6",
+   "now": "2026-10-11T10:00:00",
+   "value": "15",
+   "unit": "",
+   "read_as": "90 ÷ 6"
+  },
+  {
+   "id": "util-089",
+   "family": "text",
+   "input": "what is 20 minus 8",
+   "now": "2026-10-11T10:00:00",
+   "value": "12",
+   "unit": "",
+   "read_as": "20 - 8"
+  },
+  {
+   "id": "util-090",
+   "family": "text",
+   "input": "what is 3 to the power of 4",
+   "now": "2026-10-11T10:00:00",
+   "value": "81",
+   "unit": "",
+   "read_as": "3 to the power of 4"
+  },
+  {
+   "id": "util-091",
+   "family": "text",
+   "input": "what is 5 times 5 plus 5",
+   "now": "2026-10-11T10:00:00",
+   "value": "30",
+   "unit": "",
+   "read_as": "5 × 5 + 5"
+  },
+  {
+   "id": "util-092",
+   "family": "text",
+   "input": "whats 9 plus 10",
+   "now": "2026-10-11T10:00:00",
+   "value": "19",
+   "unit": "",
+   "read_as": "9 + 10"
+  },
+  {
+   "id": "util-093",
+   "family": "text",
+   "input": "what's 8 times 12",
+   "now": "2026-10-11T10:00:00",
+   "value": "96",
+   "unit": "",
+   "read_as": "8 × 12"
+  },
+  {
+   "id": "util-094",
+   "family": "text",
+   "input": "how much is 7 plus 7",
+   "now": "2026-10-11T10:00:00",
+   "value": "14",
+   "unit": "",
+   "read_as": "7 + 7"
+  },
+  {
+   "id": "util-095",
+   "family": "text",
+   "input": "calculate 6 times 9",
+   "now": "2026-10-11T10:00:00",
+   "value": "54",
+   "unit": "",
+   "read_as": "6 × 9"
+  },
+  {
+   "id": "util-096",
+   "family": "text",
+   "input": "what is 64 divided by 8",
+   "now": "2026-10-11T10:00:00",
+   "value": "8",
+   "unit": "",
+   "read_as": "64 ÷ 8"
+  },
+  {
+   "id": "util-097",
+   "family": "text",
+   "input": "what is 50 percent of 80",
+   "now": "2026-10-11T10:00:00",
+   "value": "40",
+   "unit": "",
+   "read_as": "50 hundredths of 80"
+  },
+  {
+   "id": "util-098",
+   "family": "text",
+   "input": "what is 15 percent of 200",
+   "now": "2026-10-11T10:00:00",
+   "value": "30",
+   "unit": "",
+   "read_as": "15 hundredths of 200"
+  },
+  {
+   "id": "util-099",
+   "family": "text",
+   "input": "what is 10 to the power of 3",
+   "now": "2026-10-11T10:00:00",
+   "value": "1,000",
+   "unit": "",
+   "read_as": "10 to the power of 3"
+  },
+  {
+   "id": "util-100",
+   "family": "text",
+   "input": "what is 2 to the power of 0.5",
+   "now": "2026-10-11T10:00:00",
+   "value": "1.414214",
+   "unit": "",
+   "read_as": "2 to the power of 0.5"
+  },
+  {
+   "id": "util-101",
+   "family": "random",
+   "input": "roll a d6",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "one roll of a 6-sided die, picked at random",
+   "rand": "dice",
+   "count": 1,
+   "low": 1,
+   "high": 6
+  },
+  {
+   "id": "util-102",
+   "family": "random",
+   "input": "roll 2d6",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "2 rolls of a 6-sided die, picked at random",
+   "rand": "dice",
+   "count": 2,
+   "low": 1,
+   "high": 6
+  },
+  {
+   "id": "util-103",
+   "family": "random",
+   "input": "roll a d20",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "one roll of a 20-sided die, picked at random",
+   "rand": "dice",
+   "count": 1,
+   "low": 1,
+   "high": 20
+  },
+  {
+   "id": "util-104",
+   "family": "random",
+   "input": "roll 3d8",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "3 rolls of a 8-sided die, picked at random",
+   "rand": "dice",
+   "count": 3,
+   "low": 1,
+   "high": 8
+  },
+  {
+   "id": "util-105",
+   "family": "random",
+   "input": "roll a die",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "one roll of a 6-sided die, picked at random",
+   "rand": "dice",
+   "count": 1,
+   "low": 1,
+   "high": 6
+  },
+  {
+   "id": "util-106",
+   "family": "random",
+   "input": "flip a coin",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "one coin toss, picked at random",
+   "rand": "coin",
+   "count": 1,
+   "low": 0,
+   "high": 1
+  },
+  {
+   "id": "util-107",
+   "family": "random",
+   "input": "toss a coin",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "one coin toss, picked at random",
+   "rand": "coin",
+   "count": 1,
+   "low": 0,
+   "high": 1
+  },
+  {
+   "id": "util-108",
+   "family": "random",
+   "input": "pick a number between 1 and 10",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "a whole number from 1 to 10, picked at random",
+   "rand": "pick",
+   "count": 1,
+   "low": 1,
+   "high": 10
+  },
+  {
+   "id": "util-109",
+   "family": "random",
+   "input": "pick a random number from 5 to 15",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "a whole number from 5 to 15, picked at random",
+   "rand": "pick",
+   "count": 1,
+   "low": 5,
+   "high": 15
+  },
+  {
+   "id": "util-110",
+   "family": "random",
+   "input": "random number between 1 and 100",
+   "now": "2026-10-11T10:00:00",
+   "value": null,
+   "unit": "",
+   "read_as": "a whole number from 1 to 100, picked at random",
+   "rand": "pick",
+   "count": 1,
+   "low": 1,
+   "high": 100
+  },
+  {
+   "id": "util-111",
+   "family": "currency",
+   "input": "20 USD in AUD",
+   "now": "2026-10-11T10:00:00",
+   "value": "31",
+   "unit": "AUD",
+   "read_as": "20 USD in AUD"
+  },
+  {
+   "id": "util-112",
+   "family": "currency",
+   "input": "convert 50 euros to dollars",
+   "now": "2026-10-11T10:00:00",
+   "value": "56.82",
+   "unit": "USD",
+   "read_as": "50 EUR in USD"
+  },
+  {
+   "id": "util-113",
+   "family": "currency",
+   "input": "100 GBP to USD",
+   "now": "2026-10-11T10:00:00",
+   "value": "135.14",
+   "unit": "USD",
+   "read_as": "100 GBP in USD"
+  },
+  {
+   "id": "util-114",
+   "family": "currency",
+   "input": "1000 JPY in USD",
+   "now": "2026-10-11T10:00:00",
+   "value": "6.94",
+   "unit": "USD",
+   "read_as": "1,000 JPY in USD"
+  },
+  {
+   "id": "util-115",
+   "family": "currency",
+   "input": "50 CAD to EUR",
+   "now": "2026-10-11T10:00:00",
+   "value": "32.12",
+   "unit": "EUR",
+   "read_as": "50 CAD in EUR"
+  },
+  {
+   "id": "util-116",
+   "family": "currency",
+   "input": "10 USD to GBP",
+   "now": "2026-10-11T10:00:00",
+   "value": "7.4",
+   "unit": "GBP",
+   "read_as": "10 USD in GBP"
+  },
+  {
+   "id": "util-117",
+   "family": "currency",
+   "input": "200 AUD to NZD",
+   "now": "2026-10-11T10:00:00",
+   "value": "215.48",
+   "unit": "NZD",
+   "read_as": "200 AUD in NZD"
+  },
+  {
+   "id": "util-118",
+   "family": "currency",
+   "input": "15 EUR in GBP",
+   "now": "2026-10-11T10:00:00",
+   "value": "12.61",
+   "unit": "GBP",
+   "read_as": "15 EUR in GBP"
+  },
+  {
+   "id": "util-119",
+   "family": "currency",
+   "input": "500 INR to USD",
+   "now": "2026-10-11T10:00:00",
+   "value": "5.85",
+   "unit": "USD",
+   "read_as": "500 INR in USD"
+  },
+  {
+   "id": "util-120",
+   "family": "currency",
+   "input": "75 CHF in USD",
+   "now": "2026-10-11T10:00:00",
+   "value": "91.46",
+   "unit": "USD",
+   "read_as": "75 CHF in USD"
+  }
+ ],
+ "hostile": [
+  "__import__('os').system('ls')",
+  "what is 9**9**9",
+  "9**9**9**9",
+  "what is 9^9^9",
+  "().__class__",
+  "what is ().__class__.__bases__",
+  "what is 100000!",
+  "what is factorial(100000)",
+  "__import__('os')",
+  "what is open('/etc/passwd').read()",
+  "eval('1+1')",
+  "what is exec('x=1')",
+  "what is 10**10**10",
+  "what is 2**1000000000",
+  "what is [].__class__",
+  "what is \"a\"*10**9",
+  "what is __builtins__",
+  "what is globals()",
+  "what is 99999999**99999999",
+  "what is sum(range(10**10))"
+ ]
+}

@@ -930,7 +930,7 @@
         with Stop where a job can stop part way, and every model call is one of
         them. Under it, what finished in the last half hour says how it ended,
         how long it took and when, with its lines. Stop the model, in the menu,
-        ends any answer and lets the model leave memory. Agent runs lists each
+        ends any answer and lets the model leave memory. Drag the head to move the panel; it stays on screen and remembers where you left it, and a double-click on the head puts it back. Agent runs lists each
         run this session with its steps; the log is in the menu. The two tabs
         show how many each holds, and each part is a card.
       </p>
@@ -2424,6 +2424,10 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <div class="chat-half">
+              <!-- Under 600px the records are one closed row (INBOX 1843): the heading below
+                   hides and this row, `askRecordsFold` (ask-compose.js), opens the list. -->
+              <button type="button" id="ask-records-fold" class="ghost disclosure-row ask-records-fold"
+                aria-expanded="false" aria-controls="raw-results">Matching records <span id="ask-records-count" class="chip item-label"></span></button>
               <h3 class="panel-head">
                 <i class="ph ph-cards ph-lead" aria-hidden="true"></i>
                 Matching records <span id="search-mode" class="chip item-label"></span>
@@ -10468,6 +10472,27 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="chat-model-stop" class="ghost small" type="button" title="Stop any answer and unload the model from memory"><i class="ph ph-stop-circle ph-lead" aria-hidden="true"></i> Stop the model</button>
               </div>
               <p id="chat-model-note" class="status"></p>
+              <div class="row align-center" id="ask-answerer-row">
+                <label for="ask-answerer-select">Who answers plain Ask</label>
+                <select id="ask-answerer-select" aria-label="Who answers plain Ask">
+                  <option value="ai">Your model</option>
+                  <option value="notes">Quoted from your notes</option>
+                </select>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="ask-answerer-help" aria-controls="ask-answerer-help" aria-expanded="false"
+                  title="About who answers Ask" aria-label="About who answers Ask">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="ask-answerer-help" role="dialog" aria-label="About who answers Ask">
+                <p>
+                  Your model writes the answer in Ask, citing your notes. Choose
+                  quoted from your notes and a plain question is answered by the
+                  app's own answerer, with no model. The switch beside the answer
+                  length in Ask is the same choice. With no model running the
+                  answer is always from your notes.
+                </p>
+              </div>
               <!-- What the backend actually says about the model in use: its
                    size, quantisation, the window it will run at, and whether
                    it can call tools. That last one is the first thing worth
@@ -11099,6 +11124,38 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="pref-search-reset" class="ghost small" type="button">Reset to default</button>
               </div>
             </div>
+            </div>
+
+            <!-- Currency rates (CHAT_PLAN decision 43): the table "50 usd in eur"
+                 reads, dated, in the person's hands. One rate per line in a
+                 textarea; the date is said with every answer. -->
+            <div class="settings-group" id="currency-rates-group">
+              <div class="row space-between help-head">
+                <h3>Currency rates</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="currency-rates-help" aria-controls="currency-rates-help" aria-expanded="false"
+                  title="About the currency rates" aria-label="About the currency rates">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="currency-rates-help" role="dialog" aria-label="About the currency rates">
+                <p>Conversions between currencies use this table and say its date, for example "at the rates from 1 October".
+                  Nothing is fetched. Each line is a code and how many units of it make one US dollar. Codes you leave out keep their built-in rate.
+                  Reset to the built-in table puts back the rates this version shipped with.</p>
+              </div>
+              <div class="row">
+                <label for="currency-rates-date" class="muted">Rates from</label>
+                <input id="currency-rates-date" type="date">
+              </div>
+              <div class="row">
+                <label for="currency-rates-text" class="muted">Units per US dollar</label>
+                <textarea id="currency-rates-text" rows="8" spellcheck="false" autocomplete="off"></textarea>
+              </div>
+              <div class="row">
+                <button id="currency-rates-save" class="ghost small" type="button">Save rates</button>
+                <button id="currency-rates-reset" class="ghost small" type="button">Reset to the built-in table</button>
+                <span id="currency-rates-status" class="muted" role="status"></span>
+              </div>
             </div>
           </section>
 

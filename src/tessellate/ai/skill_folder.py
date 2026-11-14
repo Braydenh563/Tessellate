@@ -17,7 +17,7 @@ optionally a `## Steps` heading with a numbered or bulleted list::
     tools: search_notes, list_notes
     inputs: topic
     ---
-    Find this week's notes about {{topic}} and list what is still open.
+    Find this week's notes about {{topic}} and list the items left unticked.
 
     ## Steps
     1. Search for notes about {{topic}} from the last seven days.

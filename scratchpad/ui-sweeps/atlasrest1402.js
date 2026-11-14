@@ -92,8 +92,7 @@ async function setup() {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, clock: process.env.CLOCK || '2026-10-27T14:00:00' });
   await page.evaluate((look) => {
     localStorage.removeItem('nm-buddy-spots');
-    const sel = document.getElementById('atlas-look'); sel.value = look; sel.dispatchEvent(new Event('change', { bubbles: true }));
-    const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    prefs.set('avatar-buddy', 'atlas'); prefs.set('atlas-look', look); syncNameMarkBuddy();
     revealTab('dashboard');
   }, LOOK);
   await page.waitForFunction(() => document.querySelector('#nm-buddy .atl-figure-box')?.atlasRig, null, { timeout: 20000 });

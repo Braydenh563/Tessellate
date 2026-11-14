@@ -478,3 +478,14 @@ def test_a_sent_library_file_comes_back_as_a_card_and_is_not_an_orphan(client, s
     from tessellate.core import media_gc
 
     assert row.id in media_gc._conversation_referenced_ids(session)
+
+
+def test_a_picture_attached_as_a_file_reads_as_a_picture_to_the_composer():
+    from tessellate.ai import composer_read
+    from tessellate.api.chat_attach import _file_pictures
+
+    block = _file_pictures(["bean.png (a blue bean drawn in pen)", "plan.pdf (two pages)", "dot.png (x)"])
+    assert block.count("\n- ") == 1 and "- bean.png: shows a blue bean drawn in pen" in block
+    view = composer_read.read_note({"id": 1, "content": "Sketches" + block}, 0)
+    assert [s.kind for s in view.sentences if s.kind.startswith("picture")] == ["picture"]
+    assert _file_pictures([]) == ""

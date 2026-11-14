@@ -224,6 +224,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         self.squash_at = -math.inf  # when a thrown floater last came to rest
         self.shift_at = -math.inf  # when a sit or a sleep last shifted its weight (A4)
         self.kick = 0.0  # the change of turn rate a contact has still to pay out (`_spin`)
+        self.bounce_k = BOUNCE_DAMP  # this throw's wall and ceiling give (`_start_fly` draws it)
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
         self.grounded = False  # a walker's tumble that has reached the floor

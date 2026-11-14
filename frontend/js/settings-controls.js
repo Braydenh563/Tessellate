@@ -1003,6 +1003,48 @@
     savePrefs();
   });
 
+  //: Currency rates (CHAT_PLAN decision 43): lines of "EUR 0.88" and the day they are from.
+  async function showCurrencyRates() {
+    const got = await apiJson("/utilities/units");
+    $("currency-rates-date").value = got.rates_date || "";
+    $("currency-rates-text").value = Object.entries(got.rates || {})
+      .filter(([code]) => code !== "USD")
+      .map(([code, rate]) => `${code} ${rate}`)
+      .join("\n");
+  }
+  async function saveCurrencyRates(clear) {
+    const status = $("currency-rates-status");
+    const rates = {};
+    for (const line of $("currency-rates-text").value.split("\n")) {
+      const [code, rate] = line.trim().split(/[\s:=,]+/);
+      if (code && Number(rate) > 0) rates[code.toUpperCase()] = Number(rate);
+    }
+    const day = $("currency-rates-date").value;
+    if (!clear && !day) {
+      status.textContent = "Pick the day these rates are from.";
+      return;
+    }
+    //: The rates kept before this save, so Undo puts them back (or the built-in table).
+    const before = (await apiJson("/preferences").catch(() => ({})))?.currency_rates || null;
+    const put = async (value) => {
+      await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify(value ? { currency_rates: value } : { unset: ["currency_rates"] }),
+      });
+      await showCurrencyRates();
+    };
+    const after = clear ? null : { date: day, rates };
+    try {
+      await put(after);
+      status.textContent = clear ? "Back to the built-in table." : "Saved.";
+      offerUndo("Currency rates", clear ? "Built-in rates back." : "Rates saved.", () => put(before), () => put(after));
+    } catch (e) {
+      status.textContent = "Couldn't save the currency rates. Check each line reads like EUR 0.92.";
+    }
+  }
+  $("currency-rates-save").addEventListener("click", () => saveCurrencyRates(false));
+  $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates(true));
+
   $("searxng-reinstall").addEventListener("click", async () => {
     if (
       !(await confirmDialog(
@@ -1927,7 +1969,7 @@
       aiBox.type = "checkbox";
       aiBox.id = `merge-ai-${group.entries[0].id}`;
       // Only offer the AI when it can actually do the job.
-      const aiReady = !modelStatus || modelStatus.ollama_running !== false;
+      const aiReady = !aiIsOff(true);
       aiBox.checked = aiReady;
       aiBox.disabled = !aiReady;
       useAi.append(aiBox, document.createTextNode(
@@ -4974,6 +5016,20 @@
     const text = learnedFromYouText(sum);
     line.textContent = text;
     line.classList.toggle("hidden", !text);
+    //: Answers marked not right (L225): a count and one button, kept only on this device.
+    const marks = (await apiJson("/learned/answer-verdicts").catch(() => null))?.count || 0;
+    let row = line.parentElement.querySelector(".learned-not-right");
+    if (!marks) return void row?.remove();
+    if (!row) {
+      row = document.createElement("p");
+      row.className = "muted row learned-not-right";
+      line.after(row);
+    }
+    const clear = smallButton("ph:eraser Clear answers marked not right", "Forget every answer you marked not right", async () => {
+      await api("/learned/answer-verdicts", { method: "DELETE" });
+      renderLearnedFromYou();
+    }, true);
+    row.replaceChildren(`${nounCount(marks, "answer mark")} kept on this device. `, clear);
   }
 
   async function renderLearned() {

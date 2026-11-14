@@ -1535,6 +1535,8 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
+  //: The chart maker and the ```chart block it saves (ask-chart.js, `drawAskChart.maker`).
+  chartMaker: ["/css/utilities-lazy.css", "/js/ask-chart.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
@@ -1543,7 +1545,10 @@ const LAZY_MODULES = {
   settingsData: ["/js/settings-data.js"],
   settingsUi: ["/js/meaning.js", "/js/settings-find.js", "/js/settings-models.js"],
   tagSuggest: ["/js/tag-suggest.js"],
-  searchSuggest: ["/js/search-suggest.js"],
+  //: The NDJSON stream reader (L170): only a streamed answer needs it, so it is not boot code.
+  ndjson: ["/js/ndjson-read.js"],
+  //: meaning.js first: the suggestions take its words for what was typed (L199, Brief 86).
+  searchSuggest: ["/js/meaning.js", "/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
   writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.

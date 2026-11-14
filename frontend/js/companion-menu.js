@@ -188,7 +188,7 @@
     const atlas = nameMarkBuddyHasAtlas(buddy);
     for (const [act, label] of NM_VIEWER_ACTS) {
       const spec = NAME_MARK_BUDDY_ACTS[act];
-      if (!spec || !spec.poses.includes(nmb.pose) || (spec.atlas && !atlas)) continue;
+      if (!spec || !spec.poses.includes(nmb.pose) || (spec.atlas && !atlas) || (spec.generated && atlas)) continue;
       row.appendChild(chip(label, "nm-viewer-act", () => {
         //: Asked for an act, Atlas opens its eyes for it, in 0.6s. Its face dozes on its own mood (atlas.js), which the
         //: body's sleep does not cover, so a drowsy Atlas waved and cheered with its eyes shut (the owner, 2026-11-04).
@@ -704,16 +704,17 @@
 
   //: **The day and the desk, the in-app side** (INBOX 1719 b, 1696 j; the desk's `extras.REACTIONS` rows of the same
   //: names): dusk, the first evening hour, is a stretch; the morning's first key or press of the day a sleepy wave; a
-  //: full-screen view left a look back out; a run of typing of 30 s or more that rests 4 s a nod. Played by
+  //: full-screen view left a look back out; a run of typing of 30 s or more that rests 4 s a nod, and of a minute or more a stretch. Played by
   //: `nameMarkBuddyReact` with the world's other rows (Little habits off, reduced motion or a hidden page: none).
   Object.assign(NMB_REACTIONS, {
     night_falls: { cool: 20 * 60 * 60 * 1000, ms: 2400, world: true, play: ["stretch", "happy", 2400] },
     morning_hello: { cool: 20 * 60 * 60 * 1000, ms: 2200, world: true, play: ["wave", "sleepy", 2200] },
     fullscreen_app: { cool: 30000, ms: 1400, world: true, play: ["look", "curious", 1400] },
     typing_burst: { cool: 5 * 60 * 1000, ms: 1400, world: true, play: ["nod", "happy", 1400] },
+    writing_stretch: { cool: 5 * 60 * 1000, ms: 2400, world: true, play: ["stretch", "happy", 2400] },
   });
   nmb.dayLife = {
-    dusk: 17, morning: [6, 11], burst: 30000, rest: 4000,
+    dusk: 17, morning: [6, 11], burst: 30000, long: 60000, rest: 4000,
     //: What a key or a press at `now` (a Date) says: the morning hello once a day, and the typing run's bounds.
     input(now, key) {
       const s = nmb.dayLife;
@@ -728,9 +729,10 @@
     rested(t) {
       const s = nmb.dayLife;
       if (!s.run || t - s.run[1] < s.rest) return [];
-      const long = s.run[1] - s.run[0] >= s.burst;
+      const ran = s.run[1] - s.run[0];
       s.run = null;
-      return long ? ["typing_burst"] : [];
+      //: A minute or more is a stretch (Brief 88 N9, L-chat-7); half a minute a nod.
+      return ran >= s.long ? ["writing_stretch"] : ran >= s.burst ? ["typing_burst"] : [];
     },
     //: Ms to the next dusk from `now` (a Date).
     toDusk(now) {
@@ -922,6 +924,7 @@
         if (!spec || !spec.poses.includes(nmb.pose) || (nmb.cool[next] || 0) > now || nameMarkBuddyActOff(next)) return "";
         if (NMB_LOUD_ACTS.includes(next) && !nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return "";
         if (spec.atlas && !nmb.atlasLook) return "";
+        if (spec.generated && nmb.atlasLook) return "";
         return next;
       }
       return "";

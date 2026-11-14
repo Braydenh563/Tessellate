@@ -56,13 +56,13 @@ class _Sim:
         return None
 
     def under(self, node: dict) -> list[dict]:
-        out, todo = [], [node["uid"]]
-        while todo:
-            at = todo.pop()
+        out, pending = [], [node["uid"]]
+        while pending:
+            at = pending.pop()
             for n in self.nodes:
                 if n.get("parent") == at and n not in out:
                     out.append(n)
-                    todo.append(n["uid"])
+                    pending.append(n["uid"])
         return out
 
 

@@ -267,6 +267,7 @@ chatSendTurn.stage = {
       history: chatHistoryToSend(),
       attempt: opts.attempt,
       persona: sentPersona,
+      oneModel: opts.oneModel,
       mode: $("response-mode-select").value || null,
       useTools: effectiveUseTools,
       isPrivate: convRef.private,
@@ -635,7 +636,7 @@ chatSendTurn.stage = {
     //: costs nothing and closes every path at once, which is the property the
     //: success-path-only version could never have.
     timeline.finalise?.();
-    //: Whatever step group is still open stops saying "Working", see
+    //: Whatever step group is unfinished stops saying "Working", see
     //: `agentTimeline.finish`.
     timeline.finish?.();
     //: …and the same for this turn's row in the activity panel, on the same
@@ -665,6 +666,7 @@ chatSendTurn.stage = {
     // leaving Stop wired to nothing while a stream was genuinely running.
     if (chatController === controller) {
       chatController = null;
+      matchReasonBadge.reveal();
       $("chat-messages").removeAttribute("aria-busy"); // end, error and Stop all land here
       stopChatTimer();
       syncEmblemBusy();
@@ -711,7 +713,7 @@ chatSendTurn.stage = {
       sentences: t.groundingSentences,
       composed: Boolean(t.meta?.composed),
     });
-    //: The page this turn went out to read, for a follow-up about it
+    //: The page this turn went out to read, for a spoken ask about that page
     //: (`webFollowUp`, web-clip.js).
     chatWeb.lastUrl = turnSources.find((source) => source.kind === "web" && source.url)?.url || null;
     if (t.groundingSentences?.length) {
@@ -838,7 +840,7 @@ chatSendTurn.stage = {
       // Start the run as its own message, down the same path the Skill dropdown
       // uses: so the plan, the ticked steps, the change list and every Undo
       // work here exactly as they do when the user picks the skill themselves.
-      // Deferred by a task because this turn is still finishing: it re-enables
+      // Run in a later task because this turn is still finishing: it re-enables
       // the input box in `finally`, and the run needs to disable it again.
       //: A plan the model drew waits for Run the plan (row 3: approved once,
       //: with each step's writes listed); a skill the person saved starts.
@@ -894,6 +896,10 @@ chatSendTurn.stage = {
     // Per-message actions: one shared list with the reopened-conversation path,
     // see `assistantMessageActions` for why that matters (it places the row).
     assistantMessageActions({ bubble, text: answerRaw, question });
+    bubble.answerSources = t.meta?.raw_results || [];
+    if (opts.priorVersions?.length) {
+      assistantMessageActions.pager(bubble, [...opts.priorVersions, { text: answerRaw, sources: bubble.answerSources, made_at: new Date().toISOString() }]);
+    }
 
     // Regenerate replaces the last turn; a normal send appends a new one.
     chatHistoryToSend.heldOffer = t.groundingSupport?.offer?.offer_id || "";
@@ -947,6 +953,7 @@ chatSendTurn.stage = {
         elapsed_ms: elapsedMs,
         //: For a reload (W1).
         stopped: t.stopped,
+        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         wrote: bubble.dataset.wrote,
         // The "N matching notes" disclosure's own data. Reported: "semantic
         // search results in chat messages keep disappearing" - true on every
@@ -1070,6 +1077,7 @@ chatSendTurn.stage = {
     const { question, opts, timeline, toolEvents, sentImages, sentDocuments, sentFiles, sentMediaFiles, sentAttachments, sentBoards, followupOf, sentPersona, convRef, viewing } = t;
     try {
       const partial = {
+        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         question,
         // A turn that ended by asking saves the question as its answer, so a
         // reloaded thread shows what was asked rather than an empty bubble
@@ -1643,6 +1651,20 @@ function agentTimeline(holder, options = {}) {
         for (const change of changes) box.appendChild(changeRow(change, options));
       }
       if (check) box.appendChild(verificationRow(check));
+      //: **What the run spent against its budget** (L55): the result event's `budget`, one muted line under the
+      //: changes: "Used 2 of 12 steps, 3,100 of 20,000 tokens, 8 of 90 s." A cap of 0 is no cap and is left out.
+      function budgetRow(budget) {
+        const caps = budget?.caps || {};
+        const part = (used, cap, unit) => (cap > 0 ? `${used.toLocaleString("en")} of ${cap.toLocaleString("en")} ${unit}` : null);
+        const parts = [part(budget?.steps ?? 0, caps.steps, "steps"), part(budget?.tokens ?? 0, caps.tokens, "tokens"), part(budget?.seconds ?? 0, caps.seconds, "seconds")].filter(Boolean);
+        if (!parts.length) return null;
+        const row = document.createElement("div");
+        row.className = "skill-budget muted";
+        row.textContent = `Used ${parts.join(", ")}.`;
+        return row;
+      }
+      const spent = budgetRow(event.budget);
+      if (spent) box.appendChild(spent);
       holder.appendChild(box);
       current = null;
     },
@@ -1667,7 +1689,7 @@ function agentTimeline(holder, options = {}) {
       groupSummary(entry);
       current = null; // whatever comes next begins a fresh step
     },
-    //: The turn is over: whatever group is still open stops saying "Working".
+    //: The turn is over: whatever group is unfinished stops saying "Working".
     //: Called from the stream's `finally`, so it runs on an error and an
     //: abort too: a group left mid-sentence is how a stopped turn ends up
     //: looking like a running one forever.
@@ -1751,7 +1773,7 @@ function agentTimeline(holder, options = {}) {
       //: model finished without writing anything." That message is written by
       //: the app, after `finalise()` has already run, and `startAnswer` builds
       //: its node in the live, mid-stream state: a caret on a sentence that
-      //: was never streaming and no later pass to take it down.
+      //: was never streaming and nothing after it to take it down.
       step.el.classList.remove("is-streaming", "is-generating");
       return step.body;
     },
@@ -2604,8 +2626,57 @@ function addBubble(role, text, attachments = null) {
 //: flow (CHAT_PLAN B2: "actions in the head"): hung under the bubble or
 //: floated over its corner, a row lay over text (B2's review); a question's
 //: row stays under its bubble.
-function assistantMessageActions({ bubble, text, question, onEdit }) {
+assistantMessageActions.models = [];
+apiJson("/models/status", { cacheMs: 600, silent: true })
+  .then((s) => Object.assign(assistantMessageActions.models, (s.installed_models || []).map((m) => m.name), { current: s.chat_model }))
+  .catch(() => {});
+
+//: L165: every version of an answer is kept; the pager (answer-versions.js) shows past one.
+assistantMessageActions.versionsOf = function (bubble) {
+  if (bubble?.versions?.length) return bubble.versions;
+  if (!bubble || bubble.answerText === undefined) return [];
+  return [{ text: bubble.answerText, sources: bubble.answerSources || [], made_at: bubble.dataset.madeAt || new Date().toISOString() }];
+};
+
+assistantMessageActions.pager = function (bubble, versions) {
+  bubble.versions = versions;
+  bubble.querySelector(".answer-version-pager")?.remove();
+  if (!(versions.length > 1)) return;
+  const pager = document.createElement("div");
+  pager.className = "answer-version-pager row";
+  pager.setAttribute("role", "group");
+  pager.setAttribute("aria-label", "Versions of this answer");
+  const label = document.createElement("span");
+  label.className = "muted";
+  label.setAttribute("aria-live", "polite");
+  let at = versions.length - 1;
+  const show = (to) => {
+    at = Math.max(0, Math.min(versions.length - 1, to));
+    const version = versions[at];
+    const el = [...bubble.querySelectorAll(".bubble-answer")].pop();
+    if (el) {
+      el.replaceChildren();
+      renderMarkdown(el, version.text);
+    }
+    bubble.answerText = version.text;
+    const old = bubble.querySelector(".chat-sources");
+    const panel = chatSourcesPanel({ meta: { raw_results: version.sources || [] }, sources: chatSourcesFrom({ meta: { raw_results: version.sources || [] } }) });
+    if (old) (panel ? old.replaceWith(panel) : old.remove());
+    else if (panel) bubble.querySelector(".msg-body, .agent-steps")?.after(panel);
+    label.textContent = `${at + 1} of ${versions.length}`;
+    previous.disabled = at === 0;
+    next.disabled = at === versions.length - 1;
+  };
+  const previous = smallButton("ph:caret-left", "Earlier version", () => show(at - 1));
+  const next = smallButton("ph:caret-right", "Later version", () => show(at + 1));
+  pager.append(previous, label, next);
+  bubble.appendChild(pager);
+  show(at);
+};
+
+function assistantMessageActions({ bubble, text, question, onEdit, message }) {
   const off = aiIsOff();
+  bubble.answerText = text;
   //: Both are local here, not top-level: the shared scope has a name cap (test_global_scope_ratchet).
   //: **Not right on an answer** (audit 1028 E59): one correction per note it cited, against
   //: the question; the next question like it reads those notes last (and leaves them out
@@ -2618,9 +2689,12 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     try {
       let made = await post();
       bubble.dataset.notRight = "1";
+      //: Said once (L225): what is kept, where, and how to clear it.
+      const first = !prefs.has("notRightNoted");
+      prefs.set("notRightNoted", "1");
       offerUndo(
         "Marked an answer not right",
-        "Marked not right. Those notes come last for a question like this.",
+        first ? "Stored only on this device. Clear it in Settings, What it learned." : "Marked not right. Those notes come last for a question like this.",
         async () => {
           await Promise.all(made.ids.map((id) => api(`/learned/corrections/${id}`, { method: "DELETE" })));
           delete bubble.dataset.notRight;
@@ -2649,6 +2723,22 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
         title: `Answer this question again as ${name}`,
         run: () => regenerateFromBubble(bubble, { persona: name }),
       })),
+    };
+  }
+
+  //: Regenerate with (L165): this answer only, on the same model, another, or none.
+  function regenerateWithItems(bubble) {
+    const run = (oneModel) => () => regenerateFromBubble(bubble, { oneModel });
+    const known = assistantMessageActions.models;
+    const others = known.filter((name) => name !== known.current);
+    return {
+      label: "ph:cpu",
+      title: "Regenerate with…",
+      items: [
+        { label: "ph:arrow-clockwise Same model", title: "Answer again with the same model", run: run(known.current || "") },
+        ...others.map((name) => ({ label: `ph:cpu ${name}`, title: `Answer this once with ${name}`, run: run(name) })),
+        { label: "ph:notebook Without a model", title: "Answer from your notes alone, no model", run: run("composer") },
+      ],
     };
   }
 
@@ -2692,6 +2782,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     },
     //: **Regenerate in another persona** (audit 1028 E60): once, for this answer; the picker stays where it was.
     regenerateAsItems(bubble),
+    regenerateWithItems(bubble),
     {
       label: "ph:speaker-high",
       title: "Read aloud",
@@ -2731,6 +2822,11 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       onClick: () => deleteChatTurn(bubble),
     },
   ]);
+  //: A reopened turn (L165): its sources and, past one version, the pager.
+  if (message) {
+    bubble.answerSources = message.raw_results || [];
+    if (message.versions?.length > 1) assistantMessageActions.pager(bubble, message.versions);
+  }
   return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);
 }
 
@@ -2772,7 +2868,8 @@ function renderRecordsDetails(holder, meta) {
   }
   details.appendChild(list);
   holder.appendChild(details);
-  ensureModule("replyKit").then(() => replyRecordCards(list, meta.raw_results, matchInfo, scored)).catch(() => {});
+  matchReasonBadge.hold(list);
+  ensureModule("replyKit").then(() => replyRecordCards(list, meta.raw_results, matchInfo, scored)).then(() => matchReasonBadge.hold(list)).catch(() => {});
 }
 
 // Delete one Q&A exchange: its assistant bubble AND the user bubble just
@@ -2784,10 +2881,11 @@ async function deleteChatTurn(assistantBubble) {
   if (index === -1) return;
   if (!(await confirmDialog("Delete this message?"))) return;
 
+  let result = null;
   if (chatConv.id !== null) {
     try {
       const id = chatConv.id;
-      const result = await apiJson(`/conversations/${id}/turns/${index}`, {
+      result = await apiJson(`/conversations/${id}/turns/${index}`, {
         method: "DELETE",
       });
       chatWriteRecord("chatTurnUndo", id, index, result);
@@ -2808,7 +2906,12 @@ async function deleteChatTurn(assistantBubble) {
   if (userBubble?.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
-  renderChatTurnCount();
+  //: The chat counts the turns that are left, said at once (L-chat-19, the owner: "the token
+  //: usage I was at for that chat has lowered??"); the undo toast says the change.
+  if (result && Number.isFinite(result.tokens)) renderChatUsage(result.tokens);
+  else renderChatTurnCount();
+  //: The meter read the last turn's prompt: with that turn gone it describes nothing left.
+  if (index === bubbles.length - 1) renderChatContextMeter(null);
   // The turn below is the end of the thread now, so its saved chips come back.
   refreshFollowupVisibility();
   if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
@@ -2901,7 +3004,7 @@ async function forkFromBubble(bubble) {
 // Manual (step-through) mode's pause card: a text box to add what the agent
 // missed or answer a question it raised, and a Continue button, the answer
 // to "a manual mode" asked for directly, and the single most-requested
-// unbuilt thing on the roadmap. `onContinue(note)` gets whatever was typed,
+// requested thing on the roadmap when it was built. `onContinue(note)` gets whatever was typed,
 // or an empty string if nothing was.
 function manualPauseControls({ onContinue }) {
   const row = document.createElement("div");

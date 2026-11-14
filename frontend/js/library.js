@@ -1818,7 +1818,7 @@ function openLibraryItem(item) {
     openDocumentFromNote(item.id); // the Documents page, on this document
   } else if (item.kind === "chat") {
     switchTab("chat");
-    openConversation(item.id);
+    openConversation(item.id, item.turn);
   } else if (item.kind === "file") {
     // The note, not the raw file: a download is one click further and the note
     // is the thing that says why the file was kept.

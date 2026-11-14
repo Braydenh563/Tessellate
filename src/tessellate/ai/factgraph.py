@@ -2,7 +2,7 @@
 decision 30): the layer the composer measures, times and relates notes with.
 
 A fact is a span of the note's own text and what kind of thing it says: an
-event ("met Sam"), a quantity ("5 km"), money ("$1,200"), a date ("on
+event ("met Sam"), a quantity ("5 km"), a count of things ("5 sets"), money ("$1,200"), a date ("on
 Friday", resolved against the day the note was written), a duration, an
 entity (a capitalised name), a list or checklist item, a decision, a
 preference, a plan, a question, a link, a quotation, a topic. Every fact
@@ -16,12 +16,13 @@ taken from inside a quotation, and the realiser never shifts its pronouns.
 Rules only: tables and patterns, no model, no network. Built lazily per note
 and cached per revision (the note's id, its edit time and a hash of its
 text), so a notebook read twice is read once. Polarity by lexicon, in the
-specification, is not built: no feature asked for uses it (decision 30's own
+specification, is left out: no feature asked for uses it (decision 30's own
 condition), and the contrast insight reads preferences, which are typed here.
 """
 
 from __future__ import annotations
 
+import calendar
 import hashlib
 import re
 from collections import OrderedDict
@@ -29,6 +30,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, time
 
 from tessellate.ai import recognise
+from tessellate.ai import recognise_units
 from tessellate.ai import recognise_questions
 from tessellate.ai import when as when_words
 from tessellate.core import clock
@@ -37,7 +39,7 @@ from tessellate.core.lazyre import lazy_compile
 _WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday mon tue tues wed thu thur thurs fri sat sun".split())
 
 KINDS = (
-    "event", "quantity", "money", "date", "duration", "entity", "list_item", "check_item",
+    "event", "quantity", "count", "money", "date", "duration", "entity", "list_item", "check_item",
     "decision", "preference", "plan", "question", "link", "quote", "topic",
 )
 MODES = ("asserted", "negated", "hypothetical", "conditional", "question", "quoted")
@@ -163,6 +165,9 @@ _UNITS = frozenset(
     oz cm mm l litres liters ml percent % sets reps laps times steps pages words people notes loaves cups tbsp tsp
     degrees grit bpm kcal calories items tickets users testers""".split()
 )
+#: Plural-looking words that are not things counted: "10 miles across", "2 less".
+_NOT_THINGS = frozenset("less always perhaps towards afterwards sometimes besides yours ours theirs hers its".split())
+_MEASURES = frozenset(u.lower() for u in recognise_units.UNITS)
 _QUANTITY = lazy_compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
 _DECISION = lazy_compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
 _PREFERENCE = lazy_compile(
@@ -215,10 +220,23 @@ def _anchor(note: dict) -> date | None:
     written = _written(note)
     edited = str(note.get("entry_edited_at") or note.get("edited_at") or note.get("updated_at") or "")
     try:
-        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else None
+        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else _edited_in_words(note)
     except ValueError:
         later = None
-    return max(written, later) if written and later else written
+    return max(written, later) if written and later else (written or later)
+
+
+_EDITED_WORDS = re.compile(r", edited \w+ (\d{1,2}) (\w+) (\d{4})")
+
+
+def _edited_in_words(note: dict) -> date | None:
+    """The edit day the chat route states in the note's `written` words ("..., edited Monday 2 November 2026,
+    10:00"), the only form a retrieved note carries it in (L106 E17)."""
+    found = _EDITED_WORDS.search(str(note.get("written") or ""))
+    months = [m.lower() for m in calendar.month_name]
+    if not found or found.group(2).lower() not in months:
+        return None
+    return date(int(found.group(3)), months.index(found.group(2).lower()), int(found.group(1)))
 
 
 def _line_units(content: str, line: str, start: int, body_end: int) -> list[tuple[int, int, str, bool | None]]:
@@ -298,6 +316,13 @@ def _mode(sentence: str, local_start: int, quoted: list) -> str:
     if _HEDGES.search(sentence):
         return "hypothetical"
     return "asserted"
+
+
+def sentence_mode(sentence: str) -> str:
+    """The assertion mode of a whole sentence, for a reader that answers yes or no from it."""
+    if any(w.strip(",.") in _NEGATORS for w in sentence.lower().split()):
+        return "negated"
+    return "conditional" if _IF.search(sentence) else "hypothetical" if _HEDGES.search(sentence) else "asserted"
 
 
 def _object(sentence: str, start: int) -> tuple[int, str]:
@@ -429,7 +454,8 @@ class _SentenceReader:
     @staticmethod
     def _counted_unit(unit: str) -> bool:
         """Whether a word after a number is a unit worth keeping."""
-        if unit not in _UNITS and not (unit.endswith("s") and len(unit) > 3 and unit not in ("is", "was", "this", "has", "as")):
+        plural = unit.endswith("s") and len(unit) > 3 and not unit.endswith(("ss", "us", "is")) and unit not in _NOT_THINGS
+        if unit not in _UNITS and not plural:
             return False
         return unit not in ("am", "pm", "st", "nd", "rd", "th") and unit not in _TIME_UNITS
 
@@ -450,7 +476,10 @@ class _SentenceReader:
             if match.group(3) and not re.fullmatch(r"\d.*", match.group(3)):
                 attrs["of"] = match.group(3)
                 end = match.end(3)
-            self.add("quantity", match.start(), end, attrs, confidence=0.85)
+            #: A measure is a unit `recognise` knows ("80 kg"); anything else a
+            #: number counts is a count of things ("5 sets", "three times").
+            measured = unit in _MEASURES or unit == "%"
+            self.add("quantity" if measured else "count", match.start(), end, attrs, confidence=0.85)
             self.taken.append((match.start(), end))
 
     def _bare_past_verb(self, match: re.Match, low: str) -> bool:

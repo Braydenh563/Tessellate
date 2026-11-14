@@ -129,7 +129,25 @@ def _joined(members: list[dict], links: list[tuple[int, int]], common: set[str])
     return tag, said
 
 
-def themes(notes: list[dict]) -> list[Group]:
+def skip_words(question: str, named: list[dict]) -> set[str]:
+    """What is no theme (L102): the question's own words, and the category the question names."""
+    return {*question.lower().split(), *(str(n.get("category") or "").strip().lower() for n in named)}
+
+
+def _category_pairs(notes: list[dict], joined: set[int], skip: set[str]) -> list[tuple[int, int]]:
+    """Pairs of notes not yet joined by a link or tag that sit in one category (L102). A category
+    on every note, or one the question names (`skip`), says nothing the question did not
+    ("all filed under Fun" for a Fun question), so it is no key."""
+    cats = {n["id"]: str(n.get("category") or "").strip().lower() for n in notes}
+    every = set(cats.values()) if len(set(cats.values())) == 1 else set()
+    holders: dict[str, list[int]] = {}
+    for i, c in cats.items():
+        if c and i not in joined and c not in skip and c not in every:
+            holders.setdefault(c, []).append(i)
+    return [(held[0], other) for held in holders.values() if len(held) > 1 for other in held[1:]]
+
+
+def themes(notes: list[dict], skip: set[str] | frozenset[str] = frozenset()) -> list[Group]:
     """The notes as groups, closest first; a note joined to no other is a
     group of one, after the rest."""
     if not notes:
@@ -137,10 +155,12 @@ def themes(notes: list[dict]) -> list[Group]:
     by_id = {n["id"]: n for n in notes}
     links = _links(notes)
     tag_pairs, common = _tag_pairs(notes)
+    touched = {i for p in (*links, *tag_pairs) for i in p}
+    cat_pairs = _category_pairs(notes, touched, {s.lower() for s in skip})
     groups = []
-    for ids in _components(list(by_id), links + tag_pairs):
+    for ids in _components(list(by_id), links + tag_pairs + cat_pairs):
         members = [by_id[i] for i in ids]
-        name, joined = _joined(members, links, common) if len(ids) > 1 else ("", "")
+        name, joined = _theme_name(members, ids, links, common) if len(ids) > 1 else ("", "")
         inside = [p for p in links if p[0] in ids and p[1] in ids]
         groups.append(Group(ids, name, joined, sum(_score(m) for m in members) / len(members), links=inside))
     order = {n["id"]: i for i, n in enumerate(notes)}
@@ -148,10 +168,19 @@ def themes(notes: list[dict]) -> list[Group]:
     return groups
 
 
-def groups(notes: list[dict]) -> list[Group]:
+def _theme_name(members: list[dict], ids: list[int], links: list[tuple[int, int]], common: set[str]) -> tuple[str, str]:
+    """A theme's name and what joins it: a shared tag, else (for notes no link holds) their category."""
+    name, joined = _joined(members, links, common)
+    if name or any(p[0] in ids and p[1] in ids for p in links):
+        return name, joined
+    cat = next((str(n.get("category") or "").strip() for n in members if n.get("category")), "")
+    return (cat, f"all filed under {cat}") if cat else (name, joined)
+
+
+def groups(notes: list[dict], skip: set[str] | frozenset[str] = frozenset()) -> list[Group]:
     """The groups an answer is said in, each with its band, or [] when a
     frame would not help (too few notes, or no two of them go together)."""
-    found = themes(notes)
+    found = themes(notes, skip)
     multi = [g for g in found if len(g.ids) > 1]
     if len(notes) < FRAME_MIN or not multi:
         return []
@@ -231,7 +260,9 @@ def _plain_lower(text: str) -> str:
 
 #: What a note's first line is when it is a name: a heading's or bold
 #: marks, the colon after "Ice Breakers:", a split "Follow- Up" (INBOX 1420).
-_MARK = lazy_compile(r"[*_`]")
+#: Only real marks: "**", "__" and "~~" runs, backticks, and a "*" or "_"
+#: at a word's edge. "my_file_name", "2 * 3" and "5*" keep theirs (1696).
+_MARK = lazy_compile(r"\*\*|~~|`+|(?<!\w)__|__(?!\w)|(?<![\w*])[*_](?=\w)|(?<=[^\W\d])[*_](?![\w*])")
 _SPLIT_HYPHEN = lazy_compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
 _ARTICLE = lazy_compile(r"(?:the|a|an)\b", re.I)
 #: Searched on right-stripped text with no leading `\s*`: `\s*(face)\s*$`

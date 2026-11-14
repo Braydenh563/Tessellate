@@ -383,3 +383,30 @@ def write(out, versus: Versus) -> None:  # noqa: ANN001
     out.name(first.view, cap=True).t(versus.key).m(first.shown)
     for i, row in enumerate(rest):
         out.t("and" if i else "figure_against").m(row.shown).t("figure_for").name(row.view)
+
+
+def _table_rows(views: list, today: date) -> list[tuple[str, list[str]]]:
+    money = ""
+    prices: list[str] = []
+    for view in views:
+        got = figure_of(view, money or None)
+        prices.append(got[1] if got else "")
+        money = money or (got[2] if got else "")
+    ahead = [(d[0][1] if (d := dates_of(v, today)) else "") for v in views]
+    written = [(w[1] if (w := written_of(v, today)) else "") for v in views]
+    return [(label, cells) for label, cells in (("Price", prices), ("Next day", ahead), ("Written", written)) if all(cells) and len(set(cells)) > 1]
+
+
+def table(names: list[str], sides: list[list], today: date) -> str:
+    """The sides' shared facts as a markdown table, a column a side and a row
+    a thing every side's note says (what it costs, the next day it names, the
+    day it was written), for a comparison of notes (decision 71, L104). Empty
+    when fewer than two such rows differ between the sides."""
+    views = [side[0] if side else None for side in sides]
+    if len(views) < 2 or any(v is None for v in views):
+        return ""
+    rows = _table_rows(views, today)
+    if len(rows) < 2:
+        return ""
+    head = "| | " + " | ".join(n[:1].upper() + n[1:] for n in names) + " |"
+    return "\n".join([head, "|" + " --- |" * (len(names) + 1), *("| " + label + " | " + " | ".join(cells) + " |" for label, cells in rows)])

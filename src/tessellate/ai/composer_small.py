@@ -372,3 +372,29 @@ def something_old(question: str, notes: list[dict], *, today: date | None = None
 def answer(question: str, notes: list[dict], *, today: date | None = None, salt: str = "", turn: int | None = None) -> dict | None:
     """The first of the three that the question is."""
     return what_if(question, notes, today=today) or where_written(question, notes, today=today) or something_old(question, notes, today=today, salt=salt, turn=turn)
+
+
+# --- "what is on my list" when one note is the only list ------------------------------
+
+_MY_LIST = lazy_compile(r"^what(?:'s| is| are)? (?:on|in) (?:my|the) (?:check ?)?lists?$", re.I)
+_LIST_LINE = lazy_compile(r"(?:[-*+]|\d{1,3}[.)])\s|\[[ xX]\]")
+
+
+def only_list_question(question: str, notes: list[dict]) -> str:
+    """"what is on my list" when exactly one note is a list (a title, up to two
+    lines of intro, then two or more items) is asked of that note by name:
+    "What is in Packing?" (L-chat-14). The question as typed otherwise."""
+    from tessellate.ai import composer_frame
+
+    if not _MY_LIST.match(" ".join((question or "").split()).strip(" ?.!")):
+        return question
+    names = []
+    for note in notes:
+        content = str(note.get("content") or "")
+        lines = [ln.strip() for ln in content.splitlines() if ln.strip()][1:]
+        kinds = [bool(_LIST_LINE.match(ln)) for ln in lines]
+        first = kinds.index(True) if True in kinds else len(kinds)
+        title = composer_frame.title_line(content)
+        if title and first <= 2 and len(kinds) - first >= 2 and all(kinds[first:]):
+            names.append(title)
+    return f"What is in {names[0]}?" if len(names) == 1 else question

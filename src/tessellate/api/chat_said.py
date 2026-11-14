@@ -172,6 +172,8 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
 
 #: Under an answer composed from the notes because the model stopped mid-turn.
 MODEL_STOPPED_NOTE = "The model stopped before it could answer, so this is Atlas's answer from your notes."
+#: The model finished, but no sentence of its answer was backed by the notes (review 5899348594).
+MODEL_UNBACKED_NOTE = "The model's answer said things your notes do not, so this is Atlas's answer from your notes."
 
 
 #: A how-to about the app, answered from its Help when no model writes the
@@ -323,6 +325,16 @@ def _asks_capability(req: _StreamRequest, prepared: dict) -> bool:
     what Atlas can do, answered from the app's own list on every surface,
     model or none, and never a search, a web call or a tool."""
     return prepared["intent"] == intent.ABOUT_APP and capability.asks(req.question or "")
+
+
+def _capability_answer(req: _StreamRequest, ollama_running: bool, voice: str) -> str:
+    try:
+        web = bool(deps.get_config().get_preference("web_search_enabled", False))
+    except Exception:  # noqa: BLE001  # an unreadable preference is off
+        web = False
+    recent, seed = _reply_seed(req)
+    return capability.answer(req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
+                             voice=voice, recent=recent, seed=seed)
 
 
 def _app_answers(req: _StreamRequest, ollama_running: bool) -> bool:

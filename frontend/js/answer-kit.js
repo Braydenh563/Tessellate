@@ -4,7 +4,7 @@
 // inline citations, the evidence view and the citation peek, the answer's
 // figures and foot, the sources panel (`chatSourcesFrom`, `chatSourcesPanel`),
 // the tool, change and plan cards, the chat bubble's meta line and actions,
-// the follow-up strip and the chat's position keeping, and the small helpers
+// the follow-on strip and the chat's position keeping, and the small helpers
 // only these call.
 //
 // Every caller is in a lazy file whose bundle lists this one first (chat-turn.js,
@@ -998,6 +998,28 @@ function matchReasonBadge(info, scored = true) {
   return badge;
 }
 
+//: **No match numbers while an answer is being written** (L736, the owner, 2026-11-12: "Hide them while thinking"). Found
+//: notes show without a percentage until the turn is done; the number stays in the hover text, and `.reveal`
+//: puts it back when the stream ends. Hung on `matchReasonBadge` and block-scoped, so no name joins the shared scope.
+{
+  const held = new Map();
+  const percent = /\b(\d+)% (similar|match)\b/;
+  matchReasonBadge.hold = (root) => {
+    if (!chatController && !askController) return;
+    for (const el of root.querySelectorAll(".result-reason-chip, .record-score")) {
+      for (const node of [...el.childNodes].filter((n) => n.nodeType === 3 && percent.test(n.textContent))) {
+        const word = percent.exec(node.textContent)[2];
+        held.set(node, node.textContent);
+        node.textContent = node.textContent.replace(percent, word[0].toUpperCase() + word.slice(1));
+      }
+    }
+  };
+  matchReasonBadge.reveal = () => {
+    for (const [node, text] of held) node.textContent = text;
+    held.clear();
+  };
+}
+
 //: **The one place the phase vocabulary meets the stream** (INBOX 649). A
 //: caller that passes `progress` (a `progressLine`) gets its words and shape
 //: driven from the events that really arrive: the request leaving is "Reaching
@@ -1109,6 +1131,7 @@ async function streamChatEvents({
   peek,
   attempt,
   isPrivate,
+  oneModel,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
@@ -1117,6 +1140,9 @@ async function streamChatEvents({
   if (attempt) body.attempt = attempt;
   if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
+  //: Regenerate with (L165): a model name for this answer, or "composer" for the app's own words.
+  if (oneModel === "composer") body.composer_only = true;
+  else if (oneModel) body.model = oneModel;
   // Per-turn, not a setting: one quick answer shouldn't change the default
   // for every answer after it.
   if (mode) body.mode = mode;
@@ -1206,56 +1232,13 @@ async function streamChatEvents({
     signal,
   });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
-  while (true) {
-    // **No timeout on the stream** (reported: "the AI fails to respond
-    // while still saying it is writing"). The backend's own read against
-    // Ollama times out and turns into a real "offline" line on the wire, 
-    // but only for a hang *inside that one socket call*. Anything that
-    // stalls the backend before or between chunks (retrieval, a stuck
-    // lock, a dead process) has nothing to catch it, and `reader.read()`
-    // then waits forever with no sign of life. `STREAM_IDLE_TIMEOUT_MS` is
-    // comfortably longer than the backend's own 120s per-chunk timeout, so
-    // a real recovery message from *that* always wins the race; this is
-    // only for the case where nothing, not even an error, ever arrives.
-    const chunk = await Promise.race([
-      reader.read(),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("stream_idle_timeout")),
-          STREAM_IDLE_TIMEOUT_MS
-        )
-      ),
-    ]).catch((err) => {
-      if (err.message === "stream_idle_timeout") {
-        reader.cancel().catch(() => {}); // stop the underlying fetch too
-        throw new Error(
-          "The model stopped responding. It may still be loading a large " +
-            "model, or Ollama may have stalled, try again, or check " +
-            "Settings, Models."
-        );
-      }
-      throw err;
-    });
-    const { done, value } = chunk;
-    if (done) break;
-    buffered += decoder.decode(value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop(); // last piece may be a partial line
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      let event;
-      // One malformed line must not abort a whole answer. Before this, a
-      // single bad frame threw out of the read loop and the user saw a
-      // half-written reply with no error.
-      try {
-        event = JSON.parse(line);
-      } catch (parseErr) {
-        recordBrowserLog("WARN", [`[Chat stream] Unparseable line: ${line.slice(0, 80)}`]);
-        continue;
-      }
+  //: **No timeout on the stream** (reported: "the AI fails to respond while still saying it is
+  //: writing"). The backend's own read against Ollama times out into a real "offline" line, but
+  //: only for a hang inside that one socket call; anything that stalls it before or between chunks
+  //: has nothing to catch it. `STREAM_IDLE_TIMEOUT_MS` is longer than the backend's own 120s per
+  //: chunk, so a real recovery message from it always wins; this is for when nothing ever arrives.
+  await ensureModule("ndjson");
+  await api.ndjson(response, (event) => {
       if (event.type === "meta") onMeta(event);
       //: The first byte the server flushes, before retrieval (routes_chat.py,
       //: `_stream_lines`); it was ignored here until the phase line used it.
@@ -1330,8 +1313,11 @@ async function streamChatEvents({
           `[Agent tool error] ${event.label || event.name || "?"}: ${event.error || "unknown error"}`,
         ]);
       }
-    }
-  }
+  }, {
+    idleMs: STREAM_IDLE_TIMEOUT_MS,
+    label: "Chat stream",
+    idleMessage: "The model stopped responding. It may still be loading a large model, or Ollama may have stalled, try again, or check Settings, Models.",
+  });
 }
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.
@@ -1357,6 +1343,9 @@ function chatHistoryToSend() {
   let turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
   //: The answer's note offer (Gather them, Track your lifts) is held by the server under an id; the last turn
   //: carries it until the button is pressed, so a typed yes makes that note (`composer_talk.held_offer`).
+  //: A card confirmed on the last turn tells the next one what ran, so a goodbye can name it (`done_act`).
+  const ran = chatHistoryToSend.ran;
+  if (ran && ran.turns === turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), done_act: ran.label }];
   if (chatHistoryToSend.heldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHistoryToSend.heldOffer }];
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
@@ -1372,6 +1361,7 @@ function chatHistoryToSend() {
 }
 
 chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
+  chatHistoryToSend.ran = outcome === "done" ? { label: event.label || event.name || "", turns: chatConv.turns.length } : null;
   const msg = card.closest(".msg.assistant");
   const send = () => {
     const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
@@ -2573,6 +2563,12 @@ function chatSourcesPanel(input) {
   body.className = "chat-sources-body";
   const grid = document.createElement("div");
   grid.className = row ? "chat-sources-list" : "chat-sources-grid";
+  //: Scrolls past a screenful (decision 37, L730), so a keyboard reaches it too.
+  if (!row) {
+    grid.tabIndex = 0;
+    grid.setAttribute("role", "region");
+    grid.setAttribute("aria-label", "Sources");
+  }
   const icons = Object.fromEntries(CHAT_SOURCE_GROUPS.map((g) => [g.key, g.icon]));
   sources.forEach((source, index) => {
     if (row) return grid.appendChild(row(source, icons, numbering.indexOf(source) + 1));
@@ -2785,7 +2781,7 @@ function buildFollowupStrip(bubble, picks) {
   chatScrollToEnd();
 }
 
-// --- where a follow-up came from (INBOX 490: "hyperlinked bread crumbs") ----
+// --- where a follow-on came from (INBOX 490: "hyperlinked bread crumbs") ----
 // A chip's question keeps the one it was offered under (`followup_of` on the
 // turn, words not an index, which a deleted turn would shift); its bubble
 // links the chain back, a press scrolling to that question and lighting it.

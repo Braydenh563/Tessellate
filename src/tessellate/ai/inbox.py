@@ -140,7 +140,7 @@ class _PairFinder:
         return [m for m in blocks.values() if 2 <= len(m) <= BLOCK_CAP]
 
     def _comparable(self, a: int, b: int) -> bool:
-        """Whether a pair is still open to a spelling check."""
+        """Whether a pair can still be offered for a spelling check."""
         key = (a, b) if a < b else (b, a)
         if key in self.found or frozenset(key) in self.exclude:
             return False

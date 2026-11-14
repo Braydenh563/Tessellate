@@ -24,7 +24,7 @@ from tessellate.ai import (
     when as when_words,
 )
 from tessellate.ai import recognise_questions
-from tessellate.ai.composer_lists import clean
+from tessellate.ai.composer_lists import PREFIX as _LIST_PREFIX, clean
 
 
 #: The connecting words, one table (decision 72: a voice swaps this, never
@@ -562,7 +562,7 @@ FACETS: tuple[tuple[str, re.Pattern, tuple[tuple[str, re.Pattern], ...]], ...] =
 
 _DAYS_PLURAL = re.compile(r"\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?(?:\s+(?:and|or|,)\s+|,\s*)?)+\b", re.I)
 _RELATIVE = re.compile(r"(?<!\s)\s*\b(?:before |by |until )?(?:next|this|last) (?:week|month|weekend)\b", re.I)
-_PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
+_PREFIX = _LIST_PREFIX
 _TIME_LABEL = re.compile(r"^((?:this|next|last) (?:semester|term|year|month|week|weekend)),?\s+(.+)$", re.I)
 _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|order|read|check|remember to|pay|send|bring)\b[^.;,]*)$", re.I)
 _STILL_TO = re.compile(r"\b([a-z]+(?: [a-z]+)?) (?:are |is )?still to (book|buy|pay|do|send|order|sort)\b", re.I)
@@ -630,7 +630,7 @@ _ASKS = {
     "compare": re.compile(r"^\s*+(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
     #: "who is coming for Christmas" asks who does something: its first word is a verb in -ing, not a name.
     "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?!\w+ing\s)(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
-    "when": re.compile(r"^\s*(?:when|what (?:days?|dates?)|which (?:days?|dates?))\b", re.I),
+    "when": re.compile(r"^\s*(?:when|what (?:days?|dates?|times?)|which (?:days?|dates?))\b", re.I),
     #: "How many notes mention Lisbon" counts notes: the overview, which leads
     #: with that count (2026-10-30 sweep: it answered with a dated line).
     "count": re.compile(r"^\s*how (?:much|many)\b(?! (?:of my )?(?:notes|entries)\b)", re.I),
@@ -638,11 +638,11 @@ _ASKS = {
     "opinion": re.compile(r"\bwhat did i (?:think|make) of\b|\bhow did i (?:find|like)\b|\bmy (?:review|opinion|thoughts) (?:of|on)\b", re.I),
     "left": re.compile(r"\bwhat do i (?:still )?(?:need|have|want|plan|hope) to\b|\bwhat would i like to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
     "overview": re.compile(
-        r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
-        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
+        r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?: else)?(?:'s| is) there\b|\bwhat (?:else )?do i have\b|"
+        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
         r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|^\s*how many (?:of my )?(?:notes|entries)\b|"
         #: "what about social connections" asks for the lot (INBOX 1420).
-        r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b|"
+        r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat (?:else )?do i know (?:about|on)\b|"
         #: "show me my study notes": the notes on a subject, said whole, not one fact from one of them.
         + _SHOW_NOTES,
         re.I,
@@ -666,7 +666,10 @@ _THIS = re.compile(
     #: Every demonstrative is the open note (audit 1030 Z54): "what is this",
     #: "what's in here", "explain this", "describe this note", "what is here".
     r"|what(?:'s| is) (?:this|here)(?: note| page)?|what(?:'s| is) in (?:here|this(?: note| page)?)"
+    r"|what(?:'s| is) (?:going on|happening)(?: in)? (?:here|this(?: note| page)?)|what happened(?: in)? (?:here|this(?: note| page)?)"
     r"|(?:explain|describe|read(?: out)?|go (?:over|through)|run (?:me )?through) (?:this|it)(?: note| page)?"
+    #: "tell me about this", "give me a summary of this note" (L46): a request for the open note, said as a request.
+    r"|(?:tell|talk|walk) me (?:about|through) this(?: note| page| one)?|give me (?:a |an |the )?(?:summary|overview|rundown) of this(?: note| page| one)?"
     r"|what(?:'s| is) (?:the )?(?:main|key|big|core) (?:point|idea|takeaway)s?(?: of (?:this|it))?|(?:the )?(?:main|key) (?:points?|ideas?|takeaways?)|(?:key )?take-?aways?"
     r")(?: for me| please)?$",
     re.I,
@@ -1167,12 +1170,14 @@ def _pin(text: str, written: date) -> str:
     for found in reversed(_spans(text, written)):
         if _in_a_title(text, found):
             continue
-        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
+        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (written != today and _RELATIVE_TIME.match(found.text))):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
             if day == today and written == today:
                 #: Today's "today" and "tonight" are still true (INBOX 1461).
                 continue
-            on = f"on {_day(day, today)}"
+            #: "Tomorrow at 3pm" keeps its clock time: "on 6 October at 3pm" (L94).
+            at = re.search(r" at .+$", found.text, re.I) if found.kind == "datetime" else None
+            on = f"on {_day(day, today)}{at.group(0) if at else ''}"
             if day < today:
                 gone.append(_when_gone(on, day, today))
                 on = gone[-1]
@@ -1247,9 +1252,10 @@ def _said_gone(text: str, gone: list[str]) -> str:
 
 #: The words for the day a note was written, said as that day once read:
 #: the recogniser gives the day each means from the note's own date.
-#: "Tomorrow" is said as its day too once that day is past (INBOX 1357, class
-#: D: "tomorrow you pick up your student card" from a July note).
+#: "Tomorrow" is said as its day too once that day is past (INBOX 1357).
 _DEICTIC = frozenset(("today", "tonight", "yesterday"))
+#: Time words true only on the day written: "tomorrow (at 3pm)", "in 3 days", "two weeks ago" (L94).
+_RELATIVE_TIME = re.compile(r"(?:tomorrow|yesterday)(?: at .+)?$|in \w+ (?:days?|weeks?)$|\w+ (?:days?|weeks?) ago$", re.I)
 
 
 @lru_cache(maxsize=4096)

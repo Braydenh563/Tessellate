@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from tessellate.api import paging
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import facts, learning
@@ -129,6 +130,24 @@ def mark_answer_wrong(body: AnswerVerdictBody, session: Session = Depends(get_se
         raise HTTPException(status_code=422, detail="None of those notes could be found.")
     session.commit()
     return {"ids": ids, "count": len(ids)}
+
+
+@router.get("/answer-verdicts")
+def count_answer_verdicts(session: Session = Depends(get_session)) -> dict:
+    """How many answers-marked-not-right corrections this device holds (L225)."""
+    return {"count": len(learning.corrections(session, kind="wrong_answer"))}
+
+
+@router.delete("/answer-verdicts")
+def clear_answer_verdicts(session: Session = Depends(get_session)) -> dict:
+    """Settings' "Clear answers marked not right": every `wrong_answer` correction, no other kind (L225)."""
+    from tessellate.core.database import AuditLog
+
+    ids = [row.id for row in learning.corrections(session, kind="wrong_answer")]
+    for row in session.scalars(select(AuditLog).where(AuditLog.id.in_(ids), AuditLog.action == "correction")):
+        session.delete(row)
+    session.commit()
+    return {"removed": len(ids)}
 
 
 @router.get("/corrections")

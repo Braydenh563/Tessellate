@@ -421,6 +421,7 @@
   function setAgentMonitorVisible(visible) {
     agentMonitor.classList.toggle("hidden", !visible);
     document.body.classList.toggle("has-agent-monitor", visible);
+    if (visible) ensureModule("activityDrag");
     if (!visible) clearTimeout(agentMonitorIdleTimer);
   }
 

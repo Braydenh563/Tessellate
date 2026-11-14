@@ -181,9 +181,11 @@ _PART_OF_DAY = (
 #: days back from today, and the answer says so (`LATELY_DAYS`).
 LATELY_DAYS = 14
 _LATELY = r"(?:very )?(?:recently|lately|of late)"
-_BEFORE_LAST = r"(?:the )?(?:week|month|year) before last"
+_BEFORE_LAST = r"(?:the )?(?:week|weekend|month|year) before last"
 _QUARTER = r"(?:the )?(?:last|this|next|previous|coming) quarter"
 _PREVIOUS_UNIT = r"the previous (?:week|weekend|month|year|quarter)"
+#: "Tuesday last week", "the Monday of the week before last": a day inside a named week (CHAT_PLAN U9).
+_DAY_IN_WEEK = r"(?:the )?(?:" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r") (?:of |in )?(?:the )?(last week|this week|previous week|week before last)"
 #: "from Monday to Wednesday", "between March and May", "between 1 and 5
 #: October": two days or months, joined. A bare number is only the first end,
 #: and only before a day and month ("from 9 to 5" is a clock).
@@ -265,6 +267,7 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            "(?:on )?" + _DAY_IN_WEEK,
             *_EDGES,
             *_PERIODS,
             _WEEKEND,
@@ -569,6 +572,9 @@ def _span_week_before_last(text: str, a: date, tense: str | None) -> Any:
     if unit == "week":
         first, last = _week_of(a - timedelta(days=14))
         return first, last, "week"
+    if unit == "weekend":
+        #: The weekend just gone, one week earlier (the same weekday a week back has the same "last weekend").
+        return _calendar_unit_span("last", "weekend", a - timedelta(days=7))
     if unit == "month":
         first = _shift_months(a.replace(day=1), -2)
         return first, _month_end(first), "month"
@@ -776,6 +782,15 @@ def _span_weekday(text: str, a: date, tense: str | None) -> Any:
     if not found:
         return _MISS
     return _one_day(_weekday_named(found.group(1), _WEEKDAYS[found.group(2)], a, tense))
+
+
+def _span_day_in_week(text: str, a: date, tense: str | None) -> Any:
+    found = re.fullmatch(_DAY_IN_WEEK, text)
+    if not found:
+        return _MISS
+    week = span(found.group(1), a, tense)
+    day = _WEEKDAYS[text.removeprefix("the ").split()[0]]
+    return _one_day(week[0] + timedelta(days=day)) if week else None
 
 
 def _span_iso(text: str, a: date, tense: str | None) -> Any:
@@ -1067,7 +1082,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
 _SPAN_READERS = (
     _span_edge, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_ahead, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
-    _span_nth, _span_weekday, _span_year, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
+    _span_nth, _span_day_in_week, _span_weekday, _span_year, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
 )
 

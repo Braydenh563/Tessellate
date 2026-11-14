@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
+from tessellate.ai import consent, consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
 from tessellate.ai import recognise_questions
 
 #: The charts the app can already draw from the notes, in the order offered.
@@ -301,11 +301,11 @@ def chart_ask(session: Session, question: str, history: list[dict], today: date)
 
 # --- an offer taken up (B23) ----------------------------------------------------
 
-_YES = re.compile(
-    r"^(?:oh )?(?:yes|yeah|yep|yup|ya|sure|ok|okay|alright|all right|please|do it|go ahead|go on|why not|sounds good|that would be great|that'd be great)"
-    r"(?:[,.!]? (?:please|do it|go ahead|thanks|thank you|then))*[.!]*$",
-    re.I,
-)
+def is_yes(question: str) -> bool:
+    """A bare yes in any of its forms (yeah, yep, sure, ok, go ahead, please do), the reader typed consent uses."""
+    return consent.says(_clean(question).strip()) == "yes"
+
+
 #: The offers an answer ends with that a sentence can carry out: a reminder, said as the prose asks it or as its button does.
 _REMIND_OFFER = re.compile(
     r"^(?:shall i remind you|remind you|set a reminder|want a nudge|should i remind you|want me to remind you)(?: (?P<every>(?:each|every) \w+))? to (?P<action>.+?)\??$", re.I
@@ -320,7 +320,7 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
     what that answer showed (`follow_items`)."""
     if history and (said := follow_items.read(question, history, now)[0]):
         return said
-    if not history or not _YES.match(_clean(question).strip()):
+    if not history or not is_yes(question):
         return None
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
@@ -337,7 +337,7 @@ def held_offer(question: str, history: list[dict] | None) -> str | None:
     last line, so a yes to another question reaches nothing."""
     last = (history or [{}])[-1] if history else {}
     key = str(last.get("offer_id") or "")
-    if not key or not _YES.match(_clean(question).strip()):
+    if not key or not is_yes(question):
         return None
     held = (consent_store.peek(key) or {}).get("offer")
     lines = [ln.strip(" *_") for ln in str(last.get("answer") or "").splitlines() if ln.strip()]
@@ -509,7 +509,20 @@ class Closing:
         if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
             asks = composer_chips.resume_chips(self.session, self.history, self.today.isoformat(), self.question)
+            #: A hello or thanks with nothing before it has no answer to resume: the starters (L48).
+            asks = asks or self._starters()
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
+
+    def _starters(self) -> list[str]:
+        """Where to begin, under a bare hello or thanks that follows no answer."""
+        from tessellate.ai import question_noise  # lazy: see `social_turn`
+
+        #: Nothing before it offers none (F5, R3: small talk opening a chat stays chip-free), and the starters are
+        #: not the generic trio, which a "thanks" never repeats (`composer_chips.GENERIC`).
+        if not self.history or question_noise.social_kind(self.question) not in ("greeting", "morning", "thanks"):
+            return []
+        asked = [self.question, *(str(t.get("question") or "") for t in self.history or [] if isinstance(t, dict))]
+        return [c for c in composer_chips.STARTERS if not composer_chips.spent(c, asked)]
 
     def apply(self, events: list[dict]) -> list[dict]:
         """A whole turn's events with the chips in."""

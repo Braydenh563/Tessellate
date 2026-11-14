@@ -294,6 +294,12 @@ def _overview():
     return composer_overview
 
 
+def asked_whole(question: str) -> bool:
+    """A question, or a subject asked about as a whole ("an overview of my
+    sourdough notes"): no bare name to ask "which do you mean" about (L-chat-31)."""
+    return bool(_ASKS_FIRST.match(rephrase(question)) or _overview().topic(question))
+
+
 @functools.lru_cache(maxsize=1 << 16)
 def _unaccented(word: str) -> str:
     """"josé" as "jose": the key a word is matched on, so a name typed on a
@@ -622,6 +628,7 @@ _COMPARE_EXTRA = lazy_compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 
 
 _NOTES_NOUNS = ("note", "notes", "entries")
+_TODO_NAMES = frozenset(("todo", "to-do", "to do", "todos", "to dos"))
 
 
 _SIDE_NUMBERS = r"one|two|three|four|five|1|2|3|4|5|first|second|third|a|b|c|old|new"
@@ -714,7 +721,8 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
         #: "the Porto and Lisbon notes": one "notes" names every side.
         shared = bool(raw) and raw[-1].rpartition(" ")[2].casefold() in _NOTES_NOUNS
         sides = [_bare_side(side, shared_noun=shared) for side in raw]
-        sides = [side for side in sides if subject_terms(side)]
+        #: The `_TODO_NAMES` are a note's name here, though the parser reads them as the command (L-chat-6).
+        sides = [side for side in sides if subject_terms(side) or side.casefold().strip() in _TODO_NAMES]
         if len(sides) >= composer_sides.MIN_SIDES:
             return None if _one_category(tuple(sides)) else tuple(sides[: composer_sides.MAX_SIDES])
     pair = _lower_pair(text)

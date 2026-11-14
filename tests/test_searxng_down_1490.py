@@ -15,7 +15,17 @@ LABELS = ("Start SearXNG", "Set it up in Settings", "Open the web panel", "Use a
 
 
 def _buttons(offer: dict) -> list[dict]:
-    return [{k: v for k, v in offer.items() if k != "also"}, *offer.get("also", [])]
+    """The labelled buttons. L217 added the "Search my notes instead" chip
+    (a `kind: "ask"` entry, the shape `composer_talk` gives every chip row in
+    `also`); it is a chip, not one of the four buttons, and has its own test."""
+    rest = [o for o in offer.get("also", []) if o.get("kind") != "ask"]
+    return [{k: v for k, v in offer.items() if k != "also"}, *rest]
+
+
+def test_the_down_buttons_carry_the_notes_instead_chip():
+    for start in (True, False):
+        chips = [o for o in composer_web.down_buttons(can_start=start)["also"] if o.get("kind") == "ask"]
+        assert chips == [{"kind": "ask", "label": "", "asks": [composer_web.NOTES_INSTEAD]}]
 
 
 @pytest.mark.parametrize(("url", "provider"), [("http://127.0.0.1:8888", "auto"), ("", "searxng"), ("http://localhost:8888", "searxng"), ("", "auto")])
@@ -93,7 +103,7 @@ def test_start_it_after_a_down_search_gives_the_buttons_never_a_command(monkeypa
         said = composer_web.start_reply(can_start=can)
         text, offer = said["text"], said["offer"]
         assert "docker" not in text.lower() and "can not start" not in text and chr(0x2014) not in text and "!" not in text
-        labels = [offer["label"], *(o["label"] for o in offer["also"])]
+        labels = [b["label"] for b in _buttons(offer)]
         assert all(label in text.split("\n\n") for label in labels), (labels, text)
         assert (offer["kind"] == "searxng-start") is can
         assert composer_web.SETUP_LABEL in labels and composer_web.PANEL_LABEL in labels and composer_web.PROVIDER_LABEL in labels

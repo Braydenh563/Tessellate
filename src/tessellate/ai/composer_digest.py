@@ -38,16 +38,17 @@ from datetime import date, datetime, timedelta
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, question_noise, realise
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
-from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
-from tessellate.ai import composer_select
+from tessellate.ai import composer_ahead, composer_ask, composer_notime, composer_clean, composer_event_verdict, factgraph
+from tessellate.ai import composer_aliases, composer_assign, composer_chip_subject, composer_overview
+from tessellate.ai import composer_close, composer_jokes, composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser, recognise_questions
 from tessellate.search import query as query_understanding
+from tessellate.ai.composer_clause import trailing_clause
 from tessellate.ai.composer_digest_sentences import (
     CONTEXT_TAGS, Fact, LINES, PHRASES, VOICES, _ASKED_AS, _ASKS, _ASKS_WORDS, _BAD, _CUES,
-    _DAYS_PLURAL, _DAY_NAMES, _FEELING_ASK, _GAPS, _GOOD, _KNOWN, _NAMES, _Out, _PREFIX, _RATING,
+    _DAYS_PLURAL, _DAY_NAMES, _FEELING_ASK, _GAPS, _GOOD, _KNOWN, _NAMES, _Out, _RATING,
     _REMINDABLE, _REVIEWED_WORDS, _SEED, _STILL_TO, _SUBJECT_STEMS, _TIMED, _TIME_LABEL, _TODAY,
     _TURN, _VIEWS, _VOICE, _WHEN_ASK, _WORK, _capitalised_inside, _day, _dictionary, _feeling,
     _fragment, _from_source, _isolated, _lead_day, _note_called, _said_day, _says_day,
@@ -66,9 +67,14 @@ from tessellate.ai.composer_digest_lines import (
 )
 
 
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
+    picked = composer_jokes.pick(facts, stems)
+    if picked is not None:
+        return picked
     asks = _ask_stems(question) if not _LATEST_ASK.search(question) else set()
     predicate = _predicate_stems(question)
     if isinstance(cue, _MoneyCue):
@@ -329,7 +335,7 @@ def _say_fact_ahead(out: _Out, lead: Fact, today: date, question: str) -> None:
     """`_say_fact` for a "when" ask, where a day still ahead is said by its distance (R9-17), not by the write date."""
     token = _WHEN_ASK.set(True)
     try:
-        _say_fact(out, lead, today, question)
+        composer_notime.say_noted(_say_fact, out, lead, today, clean(question), question)
     finally:
         _WHEN_ASK.reset(token)
 
@@ -616,6 +622,10 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
     else:
         _say_fact(out, lead, today, question)
         rest = [f for f in rest if f.view.id == lead.view.id and _same_label_asked(lead, f, question)]
+        #: "the skeleton joke" is that one, not the noodle joke listed under it.
+        stems = set(_subject(question))
+        if stems - composer_jokes.CONTEXT_STEMS and composer_jokes.pick([lead], stems) is lead:
+            rest = []
     _lines(out, rest, LINES.get(kind, 2))
     _single_close(out, kind, rest, members, question)
 
@@ -656,7 +666,7 @@ def _titled_body(view, name: str, sentence) -> str:  # noqa: ANN001
 def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     """Every note that names the person: how many, then a line from each."""
     out.lines.append(PHRASES["who_many"].format(name=_name_said(name), count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
-    said: set[str] = set()
+    said, told = set[str](), list[str]()  # the lines read as one paragraph (L210)
     for v, s2 in found[:LINES["overview"]]:
         body = _titled_body(v, name, s2) or _tidy(_second_person(composer_refer.resolved(v, s2)), v.written)
         if not _TIMED.get() and body.lower() in said:
@@ -666,10 +676,11 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
         if v.title and re.match(rf"{re.escape(name)}\s*:", body, re.I) and not _defines(v, name.split()):
             body = f"your {v.title} note has {body}"
         body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
-        out.lines.append(f"{_lead_day(v.written, today)}{body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
+        told.append(f"{_lead_day(v.written, today)}{body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
         #: Each line cites its own note (second eye F2: one row, for the lead,
         #: stood behind sentences taken from several notes).
         out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})
+    out.lines.append(" ".join(told))
 
 
 def _who_found(name: str, views) -> list:  # noqa: ANN001
@@ -1132,7 +1143,7 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     stands for, who someone is, a comparison, what a category holds): the
     result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
     names = _NAMES.get()
-    if _no_number(out, question, views) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
+    if _no_number(out, question, views) or composer_assign.answer(out, asked, views, today) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
         return _result(out, "fact", asked)
     kind, asked = _which_names(kind, asked)
     kind, asked = _as_who(kind, asked, names, views)
@@ -1211,7 +1222,8 @@ def _defines(view, words: list[str]) -> float:
     subject ("Sara", "Uni"), 1 when an opening sentence says what it is
     ("Sara is my sister") or it is filed under the subject, else 0 (a passing
     mention). Saying what it is (1.5) outranks being filed under it (1)."""
-    if not words:
+    #: "Tell me one of my jokes": the top matching record is the one said (`composer_jokes`).
+    if composer_jokes.only_context(words):
         return 0
     title = re.sub(r"^(?:the|my|a|an)\s+", "", (view.title or "").strip().lower()) if getattr(view, "titled", False) else ""
     if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
@@ -1362,11 +1374,12 @@ _KIND_WORDS = frozenset({"list", "checklist", "note", "tasklist"})
 
 
 def _pick_members(asked: str, views: list, wants_context: bool) -> list:
-    """The notes the question is about, oldest first."""
+    """The notes the question is about, oldest first; jokes and quotes in the search's order, so
+    the top matching record is the one said (the owner's 2026-10-10 jokes bug, L-chat-19)."""
     if wants_context:
         members = [v for v in views if _context_note(v) or any(composer._holds(st, v.words) for st in composer._words(asked))]
-    else:
-        members = _members(asked, views)
+        return sorted(members, key=lambda v: v.rank)
+    members = _members(asked, views)
     members.sort(key=lambda v: (v.written or date.min, v.rank))
     return members
 
@@ -1388,10 +1401,10 @@ def _kind_if_mine(asked: str) -> str | None:
     return None if kind != "compare" and composer.compare_sides(asked) else kind
 
 
-def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[list, tuple | None]:
+def _chosen(asked: str, kind: str, views: list, wants_context: bool, question: str = "") -> tuple[list, tuple | None]:
     """The notes the answer is about, the defining one first, and the tie an
     overview splits on (None when there is none)."""
-    members = _corrected_first(asked, _defining_first(asked, _pick_members(asked, views, wants_context)))
+    members = composer_close.close_by_meaning(kind, question or asked, views, _corrected_first(asked, _defining_first(asked, _pick_members(asked, views, wants_context))))
     tie = _tie(asked, members) if members and kind == "overview" else None
     return (tie[0] if tie else members), tie
 
@@ -1461,6 +1474,7 @@ def _answer(
     if reply is not _ORDINARY:
         return reply
     kind = _kind_if_mine(asked)
+    kind = "overview" if kind == "fact" and composer_jokes.wants_all(question) else kind
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
     #: the subject, it would find the gym log and summarise it.
     if kind is None or composer._lead_act_verb(question):
@@ -1474,7 +1488,7 @@ def _answer(
     early = _early(out, kind, asked, question, views, today)
     if early is not _ORDINARY:
         return early
-    members, tie = _chosen(asked, kind, views, wants_context)
+    members, tie = _chosen(asked, kind, views, wants_context, question)
     if _named_list(kind, asked, members):
         return None
     if checklist := _named_checklist(kind, asked, members):
@@ -1878,27 +1892,8 @@ def _lift_table(members, today: date) -> tuple[str, str] | None:
     return what, "\n".join([what.capitalize(), "", head, rule, *body])
 
 
-def _open_lists(question: str, views) -> list:  # noqa: ANN001
-    """The notes' lists of three or more things as (view, sentence, heading
-    match); for "what do I need to buy", only the shopping ones."""
-    buying = re.search(r"\b(buy|shop|get)\b", question, re.I)
-    #: "what do I want to read": the list headed "to read", not any list of three (W7b B7b); "do" and "get" name nothing.
-    verb = re.search(r"\b(?:need|have|want|plan|hope|like) to ([a-z]{3,})", question, re.I)
-    verb = verb.group(1).lower()[:4] if verb and verb.group(1).lower() not in {"buy", "get", "shop", "do", "bring", "pack", "take"} else ""
-    lists = []
-    for v in views:
-        for s in v.sentences:
-            head = _PREFIX.match(s.text.strip())
-            if not (head and len(head.group(2).split(",")) >= 3):
-                continue
-            shop = re.search(r"\b(grocer|shopping|buy|list)", head.group(1) + " " + " ".join(v.note.get("tags") or []) + " " + str(v.note.get("category") or ""), re.I)
-            if (shop or not buying) and (not verb or verb in head.group(1).lower()):
-                lists.append((v, s, head))
-    return lists
-
-
 def _still_open(views, listed) -> list[str]:  # noqa: ANN001
-    """The other things still to do that notes besides the list name."""
+    """The other open items that notes besides the list name."""
     open_bits = []
     for w in views:
         for t in w.sentences:
@@ -1913,8 +1908,8 @@ def _still_open(views, listed) -> list[str]:  # noqa: ANN001
 
 def _left(out: _Out, question: str, members, views, names: set[str], today: date) -> bool:  # noqa: ANN001
     """"What do I need to buy": the open list first, then the other things
-    still to do the notes name."""
-    lists = _open_lists(question, views)
+    the notes leave open."""
+    lists = composer_lists.open_lists(question, views)
     if not lists:
         return False
     v, s, head = lists[-1]
@@ -2014,7 +2009,12 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
     text = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), text)
     text = _DAY_OF_MONTH.sub(lambda m: m.group(0).title() if m.group(1) or m.group(3) else m.group(0), text)
     text = _SENTENCE_START.sub(_capital, text)
-    return realise.mend_stops(re.sub("(\\d+)", lambda m: held[int(m.group(1))], text))
+    #: A held quote can hold a kept phrase ("“Why don't skeletons fight? ...”"): restored until none is left.
+    for _ in range(len(held) + 1):
+        if "" not in text:
+            break
+        text = re.sub("(\\d+)", lambda m: held[int(m.group(1))], text)
+    return realise.mend_stops(text)
 
 
 #: A note's own emphasis marks (`*Bring wine*`, a one-word `cash` code span)
@@ -2032,13 +2032,7 @@ def _polish_out(out: _Out, kind: str) -> None:
     pages' own words under a one-line lead, so it is not touched."""
     if kind == "web":
         return
-    keep = []
-    for v in _VIEWS.get():
-        for s in v.sentences if _context_note(v) else ():
-            text = s.text.strip().rstrip(".!")
-            #: Said without its "Joke:" label, so the words alone are kept too.
-            head = _PREFIX.match(text)
-            keep += [text, head.group(2)] if head else [text]
+    keep = composer_jokes.kept(_VIEWS.get())
     #: A quote is the note's own words, whatever frame said it (INBOX 1515).
     pool = [t for v in _VIEWS.get() for t in (str(v.note.get("content") or ""), *map(str, (v.note.get("link_reasons") or {}).values()))]
     for lines in (out.lines, out.more, out.closing, out.next):
@@ -2061,10 +2055,9 @@ def _rows_as_polished(out: _Out, said_as=_plain_marks) -> None:
     whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
     for row in out.rows:
         said = said_as(str(row.get("sentence") or ""))
-        row["sentence"] = said
         found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
-        if found:
-            row["sentence"] = found.group(0)
+        row["sentence"] = found.group(0) if found else said
+        row["sentence"] += "" if row.get("anchor") else trailing_clause(whole, row["sentence"])
 
 
 #: Shapes whose chips are their own (a web answer, a "more" turn).

@@ -252,10 +252,13 @@ def reply(question: str, tab: str | None, by_id: dict[str, dict]) -> dict | None
             "content": f"{lead} {example}\n\n{guard} {model}",
             "badges": [],
             "sources": ["Ask chat"],
-            "asks": [act_registry.ACTS["tag"].example, act_registry.ACTS["reminder"].example],
+            "asks": [act_registry.ACTS["tag"].chip, act_registry.ACTS["reminder"].chip],
             "asks_to": "chat",
         }
-    return None
+    #: Asked for advice ("should I use categories or tags?"): answered first, then the topics (L-chat-34).
+    from tessellate.ai import guide_advice
+
+    return guide_advice.reply(question, by_id)
 
 
 def topics(question: str, tab: str | None, by_id: dict[str, dict], tab_topics: dict[str, tuple]) -> list[dict] | None:

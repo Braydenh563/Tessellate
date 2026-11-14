@@ -91,7 +91,9 @@ def test_a_stretch_still_to_go_is_found_like_a_balance_still_due(ask, question):
 
 def test_a_stretch_still_to_go_is_not_counted_as_done(ask):
     said = ask("how many hours did I spend on the deck", DECK)
-    assert said.startswith("Your notes record 3 hours on the deck, going by Deck build: 3 hours."), said
+    #: The one figure is said once (2026-11-14, `test_one_figure_in_one_note_is_said_once`); the intent, 3 hours
+    #: done and not the 8 all up, is unchanged.
+    assert said.startswith("Your notes record 3 hours on the deck, going by Deck build."), said
     assert "Another 5 hours is still to go (Deck build), so 8 hours all up." in said, said
 
 

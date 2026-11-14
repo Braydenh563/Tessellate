@@ -683,7 +683,7 @@
       return plain && /[+\-*/^%]/.test(sum.replace(/^\s*-/, "")) ? sum.trim() : null;
     },
 
-    //: Whether a typed sum is still being written: it ends in a sign, a joining word ("5 km to") or has a bracket left open. Such a sum is not an error yet (INBOX 1579).
+    //: Whether a typed sum is still being written: it ends in a sign, a joining word ("5 km to") or has a bracket not yet closed. Such a sum is not an error yet (INBOX 1579).
     pending(text) {
       const sum = String(text || "").trim();
       if (!sum) return false;
@@ -700,7 +700,7 @@
       const consts = { pi: "\\pi", π: "\\pi", tau: "\\tau", τ: "\\tau", e: "e" };
       //: The empty box the math renderer draws where a sign has nothing after it yet.
       const slot = "\u25a1";
-      //: The bracket that opens at `from`: its inside and where it ends (a bracket still open runs to the end).
+      //: The bracket that opens at `from`: its inside and where it ends (a bracket never closed runs to the end).
       const inside = (s, from) => {
         let depth = 0;
         for (let j = from; j < s.length; j++) {
@@ -1771,9 +1771,9 @@
     if (composed) {
       return help
         ? ["From the help", "No model answered: this is the app's own help for what you asked", "help"]
-        : ["From your notes", "Answered from your notes with no model: every sentence comes from a note", "notes"];
+        : ["Atlas's assistant, from your notes", "Atlas's assistant answered from your notes with no model: every sentence comes from a note", "notes"];
     }
-    if (model) return [model, `Answered by ${model}`];
+    if (model) return [`Atlas, ${model}`, `Atlas answered with ${model}`];
     if (engine) return ["Composer", "The app answered this itself, with no model", "engine"];
     return null;
   }

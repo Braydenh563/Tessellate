@@ -33,6 +33,7 @@ async function renderPrefs() {
   $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
   $("pref-search-min-sim").value = prefsCache.search_min_similarity;
   $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
+  showCurrencyRates().catch(() => {});
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
   $("pref-week-start").value = prefsCache.week_start || "auto";

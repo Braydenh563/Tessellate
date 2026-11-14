@@ -99,7 +99,7 @@ REVIEWS: dict[str, Review] = {
     for r in (
         Review(
             "link-reasons", "Links to explain",
-            "These links only say “similar in meaning”. Add reasons gives each one what its two notes share: a tag, a name or a week.",
+            "These links only say “similar in meaning”. Add reasons gives each one what its two notes share: a tag, a name, a week or a sentence each that says the same.",
             True, True, finds="Links that only say “similar in meaning”.",
         ),
         Review(

@@ -299,8 +299,12 @@ def capitalise_names(text: str) -> str:
 _HOW_MANY = r"^(?:how (?:many|long) (?P<unit>days|weeks|months)?|(?:the )?(?:number of |count of )?(?P<bare>days|weeks|months)|countdown)"
 _DAYS_UNTIL = lazy_compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
 _DAYS_SINCE = lazy_compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
+_N_UNIT = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+(days?|weeks?|months?|years?)"
+#: "what date is it in 3 weeks" and "what is the date in 10 days" (the prefix, the suffix optional), or the bare
+#: "10 days from today" (no prefix, so the suffix is required); a real model run found both read as other questions.
 _DATE_FROM_NOW = lazy_compile(
-    r"^what (?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?(?:in\s+)?(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+(days?|weeks?|months?|years?)(?:\s+(from now|from today|ago))?$",
+    r"^(?:what (?:(?:day|date)(?: of the week)? (?:is|will it be|was|is it (?:gonna|going to) be)\s+(?:it\s+)?|(?:is|was) the (?:day|date)\s+)(?:in\s+)?" + _N_UNIT
+    + r"(?:\s+(from now|from today|ago))?|" + _N_UNIT + r"\s+(from now|from today|ago))$",
     re.I,
 )
 
@@ -335,7 +339,8 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     found = _DATE_FROM_NOW.match(text)
     if not found:
         return None
-    return found.group(1), found.group(2), not (found.group(3) or "from").startswith("from")
+    amount, unit, tail = (found.group(1), found.group(2), found.group(3)) if found.group(1) else (found.group(4), found.group(5), found.group(6))
+    return amount, unit, not (tail or "from").startswith("from")
 
 #: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
 #: months and weekdays, "21st", "3/11", "due". A cheap test before the

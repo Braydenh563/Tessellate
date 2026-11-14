@@ -218,21 +218,20 @@ def _create_document(session: Session, args: dict) -> dict:
 
 
 def _delete_document(session: Session, args: dict) -> dict:
-    """Remove a document. Destructive, so the user confirms it first.
+    """Move a document to the recycle bin, as the Documents list does. Destructive in the user's eyes, so they confirm it first.
 
-    Exists mainly so `create_document` has an inverse: §21 lists "links and
-    reminders have no inverse tool" as a real cost, and shipping a new write
-    without one would be adding to that list rather than working it down.
-    """
-    from tessellate.core.database import Document
+    Exists mainly so `create_document` has an inverse. Binned, not deleted: its history, links and
+    attachments stay, and the Undo (`restore_document`) brings back the same row. A private document is
+    not the AI's to touch (the same refusal a private note gets)."""
+    from tessellate.core.database import Document, utcnow
 
     document = session.get(Document, int(args.get("document_id") or 0))
     if document is None:
         raise ToolError(f"No document with id {args.get('document_id')}")
+    if document.is_private:
+        raise ToolError(f"Document #{document.id} is private, so it isn't available to the AI")
     title = document.title
-    session.delete(document)
-    manager.log_action(session, "deleted", "document", None, title[:80])
+    document.deleted_at = utcnow()
+    manager.log_action(session, "deleted", "document", document.id, title[:80])
     session.commit()
-    return {"title": title, "label": f"ph:trash Deleted the document “{_clip(title, 40)}”"}
-
-
+    return {"title": title, "label": f"ph:trash Moved the document “{_clip(title, 40)}” to the recycle bin", "undo": {"tool": "restore_document", "arguments": {"document_id": document.id}}}

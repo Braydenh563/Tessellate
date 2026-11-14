@@ -1173,7 +1173,7 @@ def test_the_arm_is_a_jointed_chain_that_the_rig_eases(tmp_path):
     assert "Math.max(ATLAS_EL_UP, Math.min(135, j.el.x))" in rig and "Math.max(-35, Math.min(35, j.wr.x))" in rig
     # Counter-phase swing, anticipation, the head's lag, and no loop at rest
     # or under reduced motion.
-    assert '(arm.side === "r" ? 0 : Math.PI)' in rig and "arm.antic = { until: now + 90" in rig
+    assert '(side === "r" ? 0 : Math.PI)' in rig and "arm.antic = { until: now + 90" in rig
     assert 'querySelectorAll(".atl-head-lag")' in rig
     assert "if (live && rig.still < 6) rig.raf = requestAnimationFrame" in rig
     assert ".nm-atlas .nmb-arm.atl-rigged { transition: opacity var(--motion-base) var(--ease-out) !important; animation-name: none !important; }" in CSS

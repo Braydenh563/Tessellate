@@ -91,8 +91,10 @@ def test_capability_question_describes_the_app_not_the_notes(ai_client, fake_oll
     body = ai_client.post("/chat", json={"question": "what can you do?"}).json()
 
     assert body["raw_results"] == []
-    system = fake_ollama.chat_calls[-1][0]["content"]
-    assert "asking what you can do" in system.lower()
+    #: L65 moved the answer from the model's prompt to the app's own capability
+    #: list (`capability.answer`): still the app described, never the notes.
+    assert "I'm Atlas" in body["ai_response"]
+    assert "private note" not in body["ai_response"]
 
 
 def test_greeting_answers_even_with_an_empty_notebook(ai_client, fake_ollama):

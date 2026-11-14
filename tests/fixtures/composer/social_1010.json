@@ -1,0 +1,571 @@
+{
+ "about": "Conversational turns (CHAT_PLAN section 4): the kind each message is, by what it says. Controls are read against the answer before (`previous`); a thanks after an act is a thanks. The runner reads the kind off `composer_smalltalk.social_kind` or `composer.follow_on`.",
+ "history": [
+  {
+   "question": "what do my notes say about running",
+   "answer": "You ran twice. **Running log** says 5 km."
+  }
+ ],
+ "rows": [
+  {
+   "id": "social-01",
+   "group": "kind",
+   "message": "hi",
+   "previous": "",
+   "kind": "greeting"
+  },
+  {
+   "id": "social-02",
+   "group": "kind",
+   "message": "hello there",
+   "previous": "",
+   "kind": "greeting"
+  },
+  {
+   "id": "social-03",
+   "group": "kind",
+   "message": "hey",
+   "previous": "",
+   "kind": "greeting"
+  },
+  {
+   "id": "social-04",
+   "group": "kind",
+   "message": "good evening",
+   "previous": "",
+   "kind": "greeting"
+  },
+  {
+   "id": "social-05",
+   "group": "kind",
+   "message": "good morning",
+   "previous": "",
+   "kind": "morning"
+  },
+  {
+   "id": "social-06",
+   "group": "kind",
+   "message": "morning",
+   "previous": "",
+   "kind": "morning"
+  },
+  {
+   "id": "social-07",
+   "group": "kind",
+   "message": "morning all",
+   "previous": "",
+   "kind": "morning"
+  },
+  {
+   "id": "social-08",
+   "group": "kind",
+   "message": "thanks",
+   "previous": "",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-09",
+   "group": "kind",
+   "message": "thank you",
+   "previous": "",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-10",
+   "group": "kind",
+   "message": "cheers",
+   "previous": "",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-11",
+   "group": "kind",
+   "message": "thanks a lot",
+   "previous": "",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-12",
+   "group": "kind",
+   "message": "bye",
+   "previous": "",
+   "kind": "bye"
+  },
+  {
+   "id": "social-13",
+   "group": "kind",
+   "message": "goodbye",
+   "previous": "",
+   "kind": "bye"
+  },
+  {
+   "id": "social-14",
+   "group": "kind",
+   "message": "see you later",
+   "previous": "",
+   "kind": "bye"
+  },
+  {
+   "id": "social-15",
+   "group": "kind",
+   "message": "sorry",
+   "previous": "",
+   "kind": "sorry"
+  },
+  {
+   "id": "social-16",
+   "group": "kind",
+   "message": "my bad",
+   "previous": "",
+   "kind": "sorry"
+  },
+  {
+   "id": "social-17",
+   "group": "kind",
+   "message": "sorry about that",
+   "previous": "",
+   "kind": "sorry"
+  },
+  {
+   "id": "social-18",
+   "group": "kind",
+   "message": "how are you",
+   "previous": "",
+   "kind": "how"
+  },
+  {
+   "id": "social-19",
+   "group": "kind",
+   "message": "how's it going",
+   "previous": "",
+   "kind": "how"
+  },
+  {
+   "id": "social-20",
+   "group": "kind",
+   "message": "what's up",
+   "previous": "",
+   "kind": "how"
+  },
+  {
+   "id": "social-21",
+   "group": "kind",
+   "message": "asdfgh",
+   "previous": "",
+   "kind": "unclear"
+  },
+  {
+   "id": "social-22",
+   "group": "kind",
+   "message": "qwerty",
+   "previous": "",
+   "kind": "unclear"
+  },
+  {
+   "id": "social-23",
+   "group": "kind",
+   "message": "zxcvbn",
+   "previous": "",
+   "kind": "unclear"
+  },
+  {
+   "id": "social-24",
+   "group": "kind",
+   "message": "test",
+   "previous": "",
+   "kind": "test"
+  },
+  {
+   "id": "social-25",
+   "group": "kind",
+   "message": "testing",
+   "previous": "",
+   "kind": "test"
+  },
+  {
+   "id": "social-26",
+   "group": "kind",
+   "message": "testing 1 2 3",
+   "previous": "",
+   "kind": "test"
+  },
+  {
+   "id": "social-27",
+   "group": "kind",
+   "message": "ok",
+   "previous": "",
+   "kind": "ack"
+  },
+  {
+   "id": "social-28",
+   "group": "kind",
+   "message": "okay",
+   "previous": "",
+   "kind": "ack"
+  },
+  {
+   "id": "social-29",
+   "group": "kind",
+   "message": "got it",
+   "previous": "",
+   "kind": "ack"
+  },
+  {
+   "id": "social-30",
+   "group": "kind",
+   "message": "alright then",
+   "previous": "",
+   "kind": "ack"
+  },
+  {
+   "id": "social-31",
+   "group": "kind",
+   "message": "wow",
+   "previous": "",
+   "kind": "reaction"
+  },
+  {
+   "id": "social-32",
+   "group": "kind",
+   "message": "whoa",
+   "previous": "",
+   "kind": "reaction"
+  },
+  {
+   "id": "social-33",
+   "group": "kind",
+   "message": "yay",
+   "previous": "",
+   "kind": "reaction"
+  },
+  {
+   "id": "social-34",
+   "group": "kind",
+   "message": "you are great",
+   "previous": "",
+   "kind": "compliment"
+  },
+  {
+   "id": "social-35",
+   "group": "kind",
+   "message": "you're brilliant",
+   "previous": "",
+   "kind": "compliment"
+  },
+  {
+   "id": "social-36",
+   "group": "kind",
+   "message": "good job",
+   "previous": "",
+   "kind": "compliment"
+  },
+  {
+   "id": "social-37",
+   "group": "kind",
+   "message": "what?",
+   "previous": "",
+   "kind": "confused"
+  },
+  {
+   "id": "social-38",
+   "group": "kind",
+   "message": "huh?",
+   "previous": "",
+   "kind": "confused"
+  },
+  {
+   "id": "social-39",
+   "group": "kind",
+   "message": "I don't understand",
+   "previous": "",
+   "kind": "confused"
+  },
+  {
+   "id": "social-40",
+   "group": "kind",
+   "message": "this is useless",
+   "previous": "",
+   "kind": "frustrated"
+  },
+  {
+   "id": "social-41",
+   "group": "kind",
+   "message": "ugh, wrong again",
+   "previous": "",
+   "kind": "frustrated"
+  },
+  {
+   "id": "social-42",
+   "group": "kind",
+   "message": "still wrong",
+   "previous": "",
+   "kind": "frustrated"
+  },
+  {
+   "id": "social-43",
+   "group": "kind",
+   "message": "that worked",
+   "previous": "",
+   "kind": "glad"
+  },
+  {
+   "id": "social-44",
+   "group": "kind",
+   "message": "awesome, it works",
+   "previous": "",
+   "kind": "glad"
+  },
+  {
+   "id": "social-45",
+   "group": "kind",
+   "message": "so happy",
+   "previous": "",
+   "kind": "glad"
+  },
+  {
+   "id": "social-46",
+   "group": "kind",
+   "message": "I feel sad today",
+   "previous": "",
+   "kind": "emotion"
+  },
+  {
+   "id": "social-47",
+   "group": "kind",
+   "message": "I'm so tired",
+   "previous": "",
+   "kind": "emotion"
+  },
+  {
+   "id": "social-48",
+   "group": "kind",
+   "message": "I am really stressed",
+   "previous": "",
+   "kind": "emotion"
+  },
+  {
+   "id": "social-49",
+   "group": "humour",
+   "message": "tell me a joke",
+   "previous": "",
+   "kind": "joke"
+  },
+  {
+   "id": "social-50",
+   "group": "humour",
+   "message": "make me laugh",
+   "previous": "",
+   "kind": "joke"
+  },
+  {
+   "id": "social-51",
+   "group": "humour",
+   "message": "got any jokes",
+   "previous": "",
+   "kind": "joke"
+  },
+  {
+   "id": "social-52",
+   "group": "humour",
+   "message": "say something funny",
+   "previous": "",
+   "kind": "joke"
+  },
+  {
+   "id": "social-53",
+   "group": "humour",
+   "message": "haha",
+   "previous": "",
+   "kind": "laugh"
+  },
+  {
+   "id": "social-54",
+   "group": "humour",
+   "message": "lol",
+   "previous": "",
+   "kind": "laugh"
+  },
+  {
+   "id": "social-55",
+   "group": "humour",
+   "message": "that was hilarious",
+   "previous": "",
+   "kind": "laugh"
+  },
+  {
+   "id": "social-56",
+   "group": "humour",
+   "message": "lmao",
+   "previous": "",
+   "kind": "laugh"
+  },
+  {
+   "id": "social-57",
+   "group": "identity",
+   "message": "who are you",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-58",
+   "group": "identity",
+   "message": "what's your name",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-59",
+   "group": "identity",
+   "message": "are you a robot",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-60",
+   "group": "identity",
+   "message": "are you an AI",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-61",
+   "group": "identity",
+   "message": "are you human",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-62",
+   "group": "identity",
+   "message": "who made you",
+   "previous": "",
+   "kind": "who"
+  },
+  {
+   "id": "social-63",
+   "group": "control",
+   "message": "shorter",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-64",
+   "group": "control",
+   "message": "longer",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-65",
+   "group": "control",
+   "message": "make it shorter",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-66",
+   "group": "control",
+   "message": "make it longer",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-67",
+   "group": "control",
+   "message": "in more detail",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-68",
+   "group": "control",
+   "message": "briefly",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "length"
+  },
+  {
+   "id": "social-69",
+   "group": "control",
+   "message": "tell me more",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "more"
+  },
+  {
+   "id": "social-70",
+   "group": "control",
+   "message": "more",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "more"
+  },
+  {
+   "id": "social-71",
+   "group": "control",
+   "message": "say more",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "more"
+  },
+  {
+   "id": "social-72",
+   "group": "control",
+   "message": "go on",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "more"
+  },
+  {
+   "id": "social-73",
+   "group": "control",
+   "message": "why?",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "why"
+  },
+  {
+   "id": "social-74",
+   "group": "control",
+   "message": "and why?",
+   "previous": "You ran twice. **Running log** says 5 km.",
+   "kind": "why"
+  },
+  {
+   "id": "social-75",
+   "group": "gratitude",
+   "message": "thanks",
+   "previous": "Pinned the dentist note.",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-76",
+   "group": "gratitude",
+   "message": "thank you",
+   "previous": "Moved the sourdough note to Cooking.",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-77",
+   "group": "gratitude",
+   "message": "cheers",
+   "previous": "Set a reminder to call the plumber on Friday.",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-78",
+   "group": "gratitude",
+   "message": "nice, thanks",
+   "previous": "Tagged the knife note with kitchen.",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-79",
+   "group": "gratitude",
+   "message": "perfect, thank you",
+   "previous": "Deleted the boiler note. Undo is in the bin.",
+   "kind": "thanks"
+  },
+  {
+   "id": "social-80",
+   "group": "gratitude",
+   "message": "thanks, that worked",
+   "previous": "Renamed the gym note to Strength plan.",
+   "kind": "thanks"
+  }
+ ]
+}

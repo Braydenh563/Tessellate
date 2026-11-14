@@ -160,7 +160,8 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-think") || mood === "thinking" || mood === "determined") return "think";
   if (["happy", "delighted", "laughing", "love", "proud"].includes(mood)) return "happy";
   if (["sad", "sleepy", "worried"].includes(mood) || has("nmb-drowsy")) return "sad";
-  return "idle";
+  //: A float (L173) is its own lower body: a longer, narrower trail than the standing idle, after every mood and act.
+  return pose === "float" ? "float" : "idle";
 }
 //: The acts that pose the lower body of their own (INBOX 1681, avatars.js, after `NMB_ATLAS_ACTS`); a hang does too, climbing or not (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasLowerState.acts = ["crouch", "lounge", "glide", "drift", "dangle", "kick", "swing", "sloth"];
@@ -205,6 +206,7 @@ function atlasRigAttach(box) {
       drawn: [0, 0],
       shown: "",
       antic: null,
+      cloneHands: [],
       //: What animates on the probe, kept by its events (`atlasProbeWatch`).
       running: new Set(),
     });
@@ -535,6 +537,37 @@ atlasRigWake.look.soon = (rig, ms) => {
   rig.looking = true;
   setTimeout(atlasRigWake.look, ms, rig);
 };
+//: The walk's arm swing, [shoulder, elbow] offsets in degrees (L82): 1.3 strides a second, 9 masculine, 6 feminine, arms half a stride apart.
+atlasRigFrame.walkSwing = function (side, look, now) {
+  const ph = (now / 1000) * 2 * Math.PI * 1.3 + (side === "r" ? 0 : Math.PI);
+  const amp = look === "masculine" ? 9 : 6;
+  return [amp * Math.sin(ph), amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5];
+};
+
+//: Covering its eyes (L175): the arms sit under the head's layer, so for the hide act a copy of each arm is drawn on the front layer.
+atlasRigFrame.hideHands = function (rig, on) {
+  if (!on === !rig.hideCopies) return;
+  const host = rig.box.querySelector(".atl-layer-front .atl-rig");
+  for (const c of rig.hideCopies || []) c.remove();
+  rig.hideCopies = on && host ? [] : null;
+  for (const arm of rig.arms) {
+    arm.groups = arm.groups.filter((g) => g.isConnected);
+    arm.paths = arm.paths.filter((q) => q.isConnected);
+    arm.cloneHands = [];
+    arm.shown = "";
+    arm.drawn = [1e9, 1e9];
+    if (!rig.hideCopies) continue;
+    for (const g of [...arm.groups]) {
+      const c = g.cloneNode(true);
+      host.appendChild(c);
+      arm.groups.push(c);
+      arm.paths.push(...c.querySelectorAll(":scope > path"));
+      arm.cloneHands.push(...c.querySelectorAll(":scope > .atl-hand"));
+      rig.hideCopies.push(c);
+    }
+  }
+};
+
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
@@ -566,6 +599,7 @@ function atlasRigFrame(rig, now) {
   }
   const dt = rig.at ? Math.min(0.05, (now - rig.at) / 1000) : 1 / 60;
   rig.at = now;
+  atlasRigFrame.hideHands(rig, !!buddy && buddy.classList.contains("nmb-act-hide"));
   const walking = live && !!buddy && buddy.classList.contains("nmb-walking");
   let busy = walking;
   //: **The frame reads nothing** (INBOX 1766, the owner's lag log on a documents page with a diagram open:
@@ -607,10 +641,9 @@ function atlasRigFrame(rig, now) {
     let sh = shT;
     if (walking && Math.abs(((((raise + 180) % 360) + 360) % 360) - 180) < 35) {
       //: Counter-phase: the right arm forward while the left is back.
-      const ph = (now / 1000) * 2 * Math.PI * 1.3 + (arm.side === "r" ? 0 : Math.PI);
-      const amp = rig.look === "masculine" ? 9 : 6;
-      sh += amp * Math.sin(ph);
-      elT += amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5;
+      const swing = atlasRigFrame.walkSwing(arm.side, rig.look, now);
+      sh += swing[0];
+      elT += swing[1];
     }
     if (toss?.hold?.[arm.side]) {
       sh = -toss.hold[arm.side] * arm.sgn;
@@ -652,7 +685,9 @@ function atlasRigFrame(rig, now) {
     if (Math.abs(bend - arm.drawn[0]) > 0.1 || Math.abs(wrist - arm.drawn[1]) > 0.1 || (!moving && (bend !== arm.drawn[0] || wrist !== arm.drawn[1]))) {
       const d = atlasArmPath(arm.geo, bend, wrist);
       for (const p of arm.paths) p.setAttribute("d", d);
-      arm.hand?.setAttribute("transform", atlasArmHand(arm.geo, bend, wrist));
+      const handT = atlasArmHand(arm.geo, bend, wrist);
+      arm.hand?.setAttribute("transform", handT);
+      for (const h of arm.cloneHands || []) h.setAttribute("transform", handT);
       arm.drawn = [bend, wrist];
     }
     if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, arm.side, +j.sh.x.toFixed(2), +j.el.x.toFixed(2), +j.wr.x.toFixed(2)]);

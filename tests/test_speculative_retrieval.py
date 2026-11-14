@@ -4,6 +4,7 @@ embedding model."""
 
 from __future__ import annotations
 
+import threading
 import time
 from pathlib import Path
 
@@ -75,9 +76,16 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
     order: list[str] = []
     monkeypatch.setattr(embedding_service, "wait_for_quiet", lambda max_wait: order.append(f"quiet {max_wait}"))
 
+    release = threading.Event()
+    started = threading.Event()
+
     class Cold:
+        """Blocks inside the load until the test releases it: if `warm` ran the
+        load on the caller's thread it could not return while this is held."""
+
         def __init__(self):
             self.calls = []
+            self.thread = None
 
         def is_ready(self):
             return False
@@ -88,17 +96,21 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
         def embed_text(self, text):
             order.append("embed")
             self.calls.append(text)
-            time.sleep(0.05)
+            self.thread = threading.get_ident()
+            started.set()
+            release.wait(30)
             return None
 
     cold = Cold()
-    began = time.perf_counter()
-    assert search_manager.warm(session, "", cold) is False
-    assert time.perf_counter() - began < 0.05
-    for _ in range(100):
-        if cold.calls:
-            break
-        time.sleep(0.01)
+    try:
+        assert search_manager.warm(session, "", cold) is False
+        # Returned with the load not yet finished (release is still unset), and
+        # the load is running elsewhere, not on this thread.
+        assert not release.is_set()
+        assert started.wait(30), "the background load never started"
+        assert cold.thread != threading.get_ident()
+    finally:
+        release.set()
     assert cold.calls == ["warm up"]
     assert order == [f"quiet {search_manager.LOAD_LATER_MAX_WAIT_SECONDS}", "embed"]
 
@@ -118,3 +130,30 @@ def test_the_focus_call_with_no_words_does_not_touch_the_database(session, fake_
 
     assert search_manager.warm(NoSession(), "", fake_embeddings) is False
     assert not touched, f"the database was read for an empty question: {touched}"
+
+
+def test_a_load_asked_twice_queues_once_and_a_finished_one_can_queue_again(monkeypatch):
+    """L-chat-242: the flag is the only guard, set under a lock. A job
+    `dedupe_key` that matched a load just finishing dropped the new one while
+    the flag stayed set, so the model never loaded later."""
+    from tessellate.ai import embeddings as embedding_service
+    from tessellate.core import jobs
+
+    monkeypatch.setattr(embedding_service, "warmup_running", lambda: False)
+    monkeypatch.setattr(embedding_service, "wait_for_quiet", lambda max_wait: None)
+    queued: list = []
+    monkeypatch.setattr(jobs, "enqueue", lambda kind, func, *a, **k: queued.append((func, k)))
+
+    class Svc:
+        def embed_text(self, text):
+            return None
+
+    svc = Svc()
+    search_manager._load_later(svc)
+    search_manager._load_later(svc)
+    assert len(queued) == 1
+    assert "dedupe_key" not in queued[0][1]
+    queued[0][0]()  # the load runs and finishes
+    assert svc._warm_loading is False
+    search_manager._load_later(svc)
+    assert len(queued) == 2

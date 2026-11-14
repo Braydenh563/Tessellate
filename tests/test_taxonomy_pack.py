@@ -30,7 +30,9 @@ class TaxonomyTests(unittest.TestCase):
         #: The pack's own file: the live map also carries Tessellate's everyday
         #: vocabulary (`memorymap_everyday.json`, INBOX 1297), which has its own tests.
         pack = json.loads((DATA_DIR / "memorymap_taxonomy.json").read_text(encoding="utf-8"))["taxonomy"]
-        self.assertEqual(len({normalize_text(k).lower() for words in pack.values() for k in words}), 6441)
+        #: Nine phrases live in code (`taxonomy.RELOCATED_PHRASES`, L-chat-243): the pack's set is both.
+        words = [k for ws in pack.values() for k in ws] + [k for ws in taxonomy.RELOCATED_PHRASES.values() for k in ws]
+        self.assertEqual(len({normalize_text(k).lower() for k in words}), 6441)
     def test_no_duplicates(self):
         self.assertEqual(audit_taxonomy()["duplicates_within_categories"], {})
     def test_functions_are_defined(self):

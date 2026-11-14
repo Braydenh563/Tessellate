@@ -153,7 +153,7 @@ async function viewAskHistoryTurn(id) {
   //: `meta` carries only `raw_results` because that is all `chatSourcesFrom`
   //: reads for a notes-only turn, which every Ask turn is.
   //:
-  //: What is deliberately *not* rebuilt: the follow-up chips and the stats
+  //: What is deliberately *not* rebuilt: the follow-on chips and the stats
   //: line. Both are a fresh model call and a live timing, neither belongs to
   //: the turn being reopened, and `setAnsweredBy` below already says this is
   //: a remembered answer rather than one just written.

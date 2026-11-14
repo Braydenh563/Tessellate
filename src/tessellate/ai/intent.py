@@ -54,7 +54,7 @@ _SMALLTALK_PATTERNS = (
     r"who are you|what(?:'?s| is) your name|tell me about yourself",
     r"are you (?:there|awake|ok|okay|alive|real|human|(?:an )?ai|a (?:robot|bot|person|real person))",
     r"nice to meet you|glad to meet you",
-    r"(?:tell|say) (?:me )?(?:a joke|something funny)|make me laugh|know any jokes",
+    r"(?:tell|say) (?:me )?(?:a joke|something funny)(?: about (?:the |a |an )?[a-z]+)?|make me laugh|know any jokes",
     #: Closers and reactions that are whole turns (stress run 2026-10-30:
     #: "That helped, thank you", "bye for now", "Sorry, wrong chat" were
     #: searched for and answered with a note).

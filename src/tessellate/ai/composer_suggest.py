@@ -142,7 +142,15 @@ def closest(question: str, embed=None, limit: int = 3) -> list[Option]:  # noqa:
     and silently left out when it does not."""
     asked = _tokens(question)
     rows = _catalogue()
-    scores = [len(asked & words) / math.sqrt(max(len(words), 1)) for _, words, _ in rows]
+    #: A narrower act ("delete_document") shares its verb with the broad one
+    #: ("delete"); without its own noun asked it is not the closer act, however
+    #: short its word list ("delete the boiler note" is a note's delete).
+    broad = {act.intent: words for act, words, _ in rows}
+    scores = [
+        0.0 if (parent := broad.get(act.intent.split("_")[0])) is not None and act.intent != act.intent.split("_")[0] and not (asked & words) - parent
+        else len(asked & words) / math.sqrt(max(len(words), 1))
+        for act, words, _ in rows
+    ]
     if embed is not None:
         try:
             vectors = embed([question] + [text for _, _, text in rows])
@@ -375,10 +383,23 @@ def _app_tool(request: str) -> str | None:
     return f"I cannot run that from chat, but you can: {found[0]}"
 
 
+#: "make it simpler", "shorten that", "rephrase this": a rewrite of the words just said, which only a model
+#: can do (L45); said as that, never offered as a new note or a category.
+_REWRITE = re.compile(
+    r"^(?:please |can you |could you )*(?:(?:make|keep)\s+(?:it|this|that|the (?:note|text|draft|answer|reply))\s+(?:a (?:bit|little) |much |way )?"
+    r"(?:simpler|shorter|longer|clearer|plainer|easier|friendlier|funnier|more \w+|less \w+|formal|casual|better)"
+    r"|(?:simplify|shorten|lengthen|rephrase|reword|rewrite|paraphrase|polish|improve)\s+(?:it|this|that)\b)",
+    re.I,
+)
+_REWRITE_NEEDS_MODEL = "Rewording needs a model. Connect one in Settings, then ask again. Your words are untouched."
+
+
 def unknown_action(question: str, titles: list[str], *, embed=None, seed: str = "") -> dict | None:  # noqa: ANN001
     """For a request in the imperative that no act understood: the closest
     acts as choices, never a notes search for its words. None for a question."""
     q = " ".join((question or "").split())
+    if q and _REWRITE.match(q) and not _ASKING.match(q):
+        return {"text": _REWRITE_NEEDS_MODEL, "asks": []}
     if not q or _ASKING.match(q) or not _IMPERATIVE.match(q):
         return None
     if _FORM.match(q):

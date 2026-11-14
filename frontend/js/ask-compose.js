@@ -89,6 +89,7 @@ function wireAskUseAi() {
   if (offline) watch.observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
   const pill = $("ai-status");
   if (pill) watch.observe(pill, { attributes: true, attributeFilter: ["data-level"] });
+  document.addEventListener("ask-answerer-changed", renderAskUseAi);
   renderAskUseAi();
 }
 
@@ -142,6 +143,16 @@ function markSaidSentences(targets, sentences) {
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
+  //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
+  //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
+  function applyThemeSteps(steps, result) {
+    const step = (steps || []).find((one) => one.name === "set_theme");
+    if (!step || !result) return result;
+    const before = prefs.get("theme", null) || "system";
+    applyThemeChoice(step.arguments.theme, true);
+    for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
+    return result;
+  }
   //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
   const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
@@ -165,7 +176,7 @@ function renderActCard(holder, event) {
   card.className = "tool-confirm";
   const run = (steps, then) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [], consent_id: steps === event.steps ? event.consent_id || null : null }) })
-      .then((result) => (refreshAfterToolChanges(), then(result)))
+      .then((result) => (refreshAfterToolChanges(), then(applyThemeSteps(steps, result))))
       .catch((error) => toast(error.message, true));
   const line = (label, ...more) => {
     const text = document.createElement("p");
@@ -179,7 +190,7 @@ function renderActCard(holder, event) {
   const post = (steps) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [] }) }).then((result) => {
       refreshAfterToolChanges();
-      return result;
+      return applyThemeSteps(steps, result);
     });
   //: `said`: the answer above already read this sentence (a reminder, a new
   //: note or a pin ran at once), so the card carries only Undo; drawing the
@@ -222,6 +233,8 @@ function renderActCard(holder, event) {
     }
     line(`ph:check-circle ${summary}`, row);
   };
+  //: A typed yes ran the step on the server; the page applies the theme it named, once (a restored card already did).
+  if (event.done && !restored) applyThemeSteps(event.steps, event);
   if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);
   else {
     const notice = document.createElement("p");
@@ -241,7 +254,12 @@ function renderActCard(holder, event) {
         card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
       })
     );
-    line(`ph:warning ${event.label}`, notice, row);
+    //: The line above the card already says the change (L57: the bubble read it twice); the label stays on the group for a screen reader.
+    if (event.label_said) {
+      card.setAttribute("role", "group");
+      card.setAttribute("aria-label", event.label);
+      card.replaceChildren(notice, row);
+    } else line(`ph:warning ${event.label}`, notice, row);
     if (event.state === "expired") {
       for (const button of row.querySelectorAll("button")) button.disabled = true;
       return void holder.appendChild(card);
@@ -483,11 +501,11 @@ function digestMore(answerEl, more) {
 //: (`/reminders/parse`, rules first, the person's clock); a checklist or a
 //: note is a new note. Each one says what it did, with Undo.
 //: A call's asks ("yo brotato", `vocative.py`), waiting for the Ask box's
-//: follow-up strip, which is drawn just after the offer.
+//: follow-on strip, which is drawn just after the offer.
 let askOfferAsks = null;
 
 function digestOffer(answerEl, offer) {
-  //: An "ask" offer is what to say next: the follow-up chips draw it, in
+  //: An "ask" offer is what to say next: the follow-on chips draw it, in
   //: Chat on the answer's own bubble (kept with the turn), in Ask next.
   if (offer?.kind === "ask") {
     const bubble = answerEl?.closest(".msg.assistant");
@@ -782,7 +800,7 @@ function drawWhyTrail(parent, lines, before = null) {
   renderAskWhy(lines, holder);
 }
 
-//: **A follow-up is a question that keeps the answer above it** (decision 8:
+//: **A follow-on is a question that keeps the answer above it** (decision 8:
 //: "'Ask again' chips become follow-ups that carry the previous answer as
 //: context"). The chips themselves are `/chat/followups`, the same second
 //: model call the Chat tab makes after a turn is on screen, and clicking one
@@ -927,7 +945,7 @@ async function askQuestion(preset) {
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = question;
-  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: A chip, a follow-on or Retry asks without typing: the box shows it
   //: anyway (K29, "I forgot instantly"), the one place the question is said;
   //: a "You asked:" line above the answer said it twice (INBOX 1301).
   if (preset != null) questionBox.value = question;
@@ -979,7 +997,7 @@ async function askQuestion(preset) {
   $("ai-answer-grounding").replaceChildren();
   $("ai-answer-grounding").classList.add("hidden");
   //: The whole foot goes with it, not only the grounding chips: a sources
-  //: disclosure left open from the previous question is a list of notes that
+  //: disclosure still expanded from the previous question is a list of notes that
   //: have nothing to do with the one being asked.
   clearAskAnswerFoot();
   thinkingText.textContent = "";
@@ -1271,6 +1289,7 @@ async function askQuestion(preset) {
     progress?.remove();
     setBusy($("retry-btn"), false);
     askController = null;
+    matchReasonBadge.reveal();
     setAsking(false);
     // The question used to be cleared here, which left an answer on screen with
     // nothing saying what it answered (user-reported). It stays in the box, 
@@ -1288,9 +1307,9 @@ function renderChatMeta(meta) {
   //: the quote style the composer's lead is drawn in (`.answer-composed`).
   $("ai-answer").classList.toggle("answer-composed", !!meta.composed);
   //: "Atlas" heads the answer; the chip says where it came from (CHAT_PLAN
-  //: decision 36): "From your notes" with no model, the model's name with one.
-  if (meta.composed) setAnsweredBy("From your notes", "Atlas answered from your notes, with no model: every sentence comes from a note");
-  else if (meta.answered_by) setAnsweredBy(meta.answered_by, `Answered by ${meta.answered_by}`);
+  //: decision 36): "Atlas's assistant, from your notes" with no model, "Atlas, <model>" with one.
+  if (meta.composed) setAnsweredBy("Atlas's assistant, from your notes", "Atlas's assistant answered from your notes, with no model: every sentence comes from a note");
+  else if (meta.answered_by) setAnsweredBy(`Atlas, ${meta.answered_by}`, `Atlas answered with ${meta.answered_by}`);
   else if (meta.ollama_running === false) {
     setAnsweredBy("chat model offline", "The chat model is not running, so nothing answered this");
   } else setAnsweredBy("", "");
@@ -1306,6 +1325,13 @@ function renderChatMeta(meta) {
     return;
   }
   document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  //: Under 600px Matching records is one closed row (INBOX 1843, 10-responsive.css).
+  const fold = $("ask-records-fold");
+  $("ask-records-count").textContent = String(meta.raw_results.length);
+  if (!fold.dataset.wired) {
+    fold.dataset.wired = "1";
+    fold.addEventListener("click", () => fold.setAttribute("aria-expanded", String(fold.getAttribute("aria-expanded") !== "true")));
+  }
   if (meta.search_mode === "outside_range" && meta.raw_results.length) {
     // Matched what was asked about, not when it was asked about, the note
     // is real, the stated time was just wrong (reported directly: a joke
@@ -1364,7 +1390,8 @@ function renderChatMeta(meta) {
   //: note list uses, pointed at this list: one implementation, and a second
   //: one is how the two would come to disagree about what "linked by" counts.
   ensureCardCounts(rawList, _entriesLoadGeneration);
-  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).catch(() => {});
+  matchReasonBadge.hold(rawList);
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).then(() => matchReasonBadge.hold(rawList)).catch(() => {});
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
 }
@@ -1443,7 +1470,7 @@ function announceAskFoot() {
   const parts = [
     ["related note", shown("#ask-answer-related .answer-related-chip")],
     ["source", shown("#ask-answer-sources .chat-source-card")],
-    ["follow-up question", shown("#ask-followups .chip-interactive")],
+    ["suggested question", shown("#ask-followups .chip-interactive")],
   ].filter(([, count]) => count);
   announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
 }

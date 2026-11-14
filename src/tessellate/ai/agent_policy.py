@@ -134,7 +134,7 @@ FORCED_PROSE_NUDGE = (
 )
 
 #: Sent, with the tools withdrawn, when a turn runs out of rounds (see the end
-#: of `run_agent`): what it found is worth an answer even if the job is not done.
+#: of `run_agent`): what it found is worth an answer even if the job is unfinished.
 WRAP_UP_NUDGE = (
     "You have used all your tool calls for this turn. Answer my request now, "
     "from what your tool results above show. Say plainly what you did and "
@@ -1313,7 +1313,7 @@ def claims_a_write(answer: str) -> bool:
     return bool(_CLAIM_PATTERN.search(answer))
 
 
-#: **Which pages a tainted turn may still open without a card** (SEC-02's last
+#: **Which pages a tainted turn may keep opening without a card** (SEC-02's last
 #: step). Parking every `read_url` once outside text is in the turn stopped a
 #: page sending the notebook anywhere, and made every research turn a stack of
 #: cards. Two addresses carry nothing the model could have put there:

@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
 from tessellate.ai import composer_ask, composer_property, composer_tables
-from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
+from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _file_pictures, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import content as content_repo
@@ -432,8 +432,10 @@ def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
         # worth the extra characters: doing this for all ten search hits would
         # spend the notes budget on pictures nobody asked about.
         return f"{content}{_media_readings(session, content)}{_attachment_readings(session, entry.id)}"
+    #: A picture held as an attached file, by its stored caption (phase 5 d).
+    held = _file_pictures(ctx.files_on.get(entry.id, []))
     if _mostly_pictures(content):
-        return f"{content}{_media_readings(session, content)}"
+        return f"{content}{_media_readings(session, content)}{held}"
     if _MEDIA_REF.search(content or ""):
         #: **A picture's caption is the note's content** (CHAT_PLAN decision
         #: 37; the owner: "Note captions arent counted as note content"): every
@@ -441,8 +443,8 @@ def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
         #: each, so an answer can quote the caption. The text read in them stays
         #: for a note that is mostly pictures or was picked by hand: it can run
         #: to pages.
-        return f"{content}{_media_readings(session, content, captions_only=True)}"
-    return content
+        return f"{content}{_media_readings(session, content, captions_only=True)}{held}"
+    return f"{content}{held}" if held else content
 
 
 def _document_row(document, session: Session | None = None) -> dict:  # noqa: ANN001
@@ -474,7 +476,7 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
     return {"kind": stats.kind, "text": stats.text, "facts": stats.facts, "offer": stats.offer}
 
 
-def _raw_results(session: Session, found: _Found) -> list:
+def _raw_results(session: Session, found: _Found, notes: list[dict] | None = None) -> list:
     from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
 
     rows = []
@@ -484,7 +486,20 @@ def _raw_results(session: Session, found: _Found) -> list:
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)
-    return rows
+    return rows + _source_boards(session, found, notes or [])
+
+
+def _source_boards(session: Session, found: _Found, notes: list[dict]) -> list:
+    """The maps and boards the answer read, as rows of `raw_results` so Ask draws
+    each as a map or board card with an open link (L112, the owner's taken
+    recommendation). Only the ones `_with_sources` brought in: attached ones are
+    the person's own pick and keep their own chip."""
+    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
+
+    have = {e.id for e in found.entries}
+    ids = [n["id"] for n in notes if n.get("kind") in ("map", "board") and not n.get("attached") and n["id"] not in have]
+    boards = [e for e in (session.get(Entry, i) for i in dict.fromkeys(ids)) if e is not None and not e.is_deleted and not e.is_private]
+    return list(_to_out_bulk(session, boards)) if boards else []
 
 
 def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
@@ -501,7 +516,7 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
         #: matched, said with the answer.
         "meaning_loading": found.meaning_loading,
         "meaning_off": found.meaning_off,
-        "raw_results": _raw_results(session, found),
+        "raw_results": _raw_results(session, found, notes),
         #: The day asked about and, per note, the revision its text came from
         #: (None for a note that read the same then as now).
         "as_of": as_of.isoformat() if as_of is not None else None,

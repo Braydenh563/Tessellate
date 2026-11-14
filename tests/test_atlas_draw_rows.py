@@ -1,0 +1,363 @@
+"""Atlas look, rig and drawing ledger rows (agent atlas-draw)."""
+import json
+import re
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def test_atlasrest1402_setup_uses_prefs_not_removed_selects():
+    """L749: the moods sweep read #atlas-look, a select that no longer exists, and died on null."""
+    src = (ROOT / "scratchpad/ui-sweeps/atlasrest1402.js").read_text()
+    assert "getElementById('atlas-look')" not in src
+    assert "getElementById('avatar-buddy')" not in src
+    assert "prefs.set('atlas-look', look)" in src
+
+
+needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+MOTION = (ROOT / "frontend/js/atlas-motion.js").read_text(encoding="utf-8")
+
+
+def _node(src: str):
+    run = subprocess.run(["node", "-e", src], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    return json.loads(run.stdout)
+
+
+@needs_node
+def test_walk_swing_range_and_counter_phase_l82():
+    """L82: measured on a held walk, the raise ranged 4.6 to 21.4 of hanging (17 degrees)."""
+    fn = re.search(r"^atlasRigFrame\.walkSwing = function .*?^\};", MOTION, re.S | re.M).group(0)
+    out = _node("function atlasRigFrame() {}\n" + fn + r"""
+const walkSwing = (...a) => atlasRigFrame.walkSwing(...a);
+const r = {};
+for (const look of ["masculine", "feminine"]) {
+  let sh = [0, 0], el = [0, 0], opp = 0;
+  for (let t = 0; t < 4000; t += 10) {
+    const a = walkSwing("r", look, t), b = walkSwing("l", look, t);
+    sh = [Math.min(sh[0], a[0]), Math.max(sh[1], a[0])];
+    el = [Math.min(el[0], a[1], b[1]), Math.max(el[1], a[1], b[1])];
+    opp = Math.max(opp, Math.abs(a[0] + b[0]));
+  }
+  r[look] = { sh, el, opp };
+}
+console.log(JSON.stringify(r));""")
+    assert out["masculine"]["sh"][1] <= 9.001 and out["masculine"]["sh"][0] >= -9.001
+    assert out["feminine"]["sh"][1] <= 6.001 and out["feminine"]["sh"][0] >= -6.001
+    assert out["masculine"]["sh"][1] > 8.9, "the swing reaches its amplitude"
+    for look in out.values():
+        assert look["opp"] < 1e-9, "the arms swing half a stride apart"
+        assert look["el"][0] >= 0, "the elbow never straightens past hanging while walking"
+    assert out["masculine"]["el"][1] <= 5.5
+
+
+CSS = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+AVATARS = (ROOT / "frontend/js/avatars.js").read_text(encoding="utf-8")
+#: The Atlas rig's cap is 200 degrees a second at its fastest (`ATLAS_RIG_MAX_SPEED`); an ease-in-out
+#: curve's fastest moment is 1.55 times its mean over a segment, so a generic face's arm keyframes
+#: stay under 200 / 1.55 = 129 a second between frames (5 percent slack for the rounded offsets).
+ARM_MEAN_CAP = 200 / 1.55 * 1.05
+
+
+def _keyframe_speeds(name: str, seconds: float, rest: float = 0.0) -> list[tuple[float, float]]:
+    """(offset, degrees) frames of a rotate keyframes block, from and back to `rest`; returns mean deg/s per segment."""
+    body = re.search(r"@keyframes " + re.escape(name) + r" \{(.*?)\n\}", CSS, re.S).group(1)
+    frames: dict[float, float] = {}
+    for sel, val in re.findall(r"([\d%,\s]+)\{\s*transform: rotate\((-?\d+(?:\.\d+)?)deg\)", body):
+        for off in re.findall(r"(\d+(?:\.\d+)?)%", sel):
+            frames[float(off) / 100] = float(val)
+    pts = [(0.0, rest)] + sorted(frames.items()) + [(1.0, rest)]
+    return [(abs(b[1] - a[1]) / ((b[0] - a[0]) * seconds), b[0] - a[0]) for a, b in zip(pts, pts[1:]) if b[0] > a[0]]
+
+
+def _arm_animations() -> list[tuple[str, float]]:
+    """Every generic-face arm animation: (keyframes name, seconds), from the rules that set one on an arm."""
+    found = []
+    for m in re.finditer(r"^\s*(&[^{]*\.nmb-arm-[lr])\s*\{\s*animation:\s*([\w-]+)\s+(\d+(?:\.\d+)?)s", CSS, re.M):
+        sel, name, secs = m.groups()
+        if ".atl-figure" in sel or name.startswith(("atl-", "nmv-")):
+            continue
+        found.append((name, float(secs)))
+    return found
+
+
+def test_generic_arm_keyframes_obey_the_rig_speed_cap_l83():
+    """L83: the wave swung 98 degrees in 240 ms (408 a second mean, 3x the Atlas rig's cap); hide 352; scratch 385."""
+    anims = _arm_animations()
+    names = {n for n, _ in anims}
+    assert {"nmb-wave", "nmb-wave-l", "nmb-hide-l", "nmb-hide-r", "nmb-scratch"} <= names, names
+    for name, secs in anims:
+        worst = max(v for v, _ in _keyframe_speeds(name, secs))
+        assert worst <= ARM_MEAN_CAP, f"{name} over {secs}s turns {worst:.0f} degrees a second (cap {ARM_MEAN_CAP:.0f})"
+
+
+def test_viewer_wave_obeys_the_cap_l83():
+    """The large view's wave (nameMarkIdleAct) is a Web Animation: lift 120 degrees, swing, return."""
+    m = re.search(r'act === "wave"\) \{\s*part\("\.nmb-arm-r"\)\?\.animate\(\[(.*?)\], \{ duration: (\d+)', AVATARS, re.S)
+    frames = re.findall(r'\{ rotate: "(-?\d+)deg"(?:, offset: ([\d.]+))? \}', m.group(1))
+    assert frames
+    secs = int(m.group(2)) / 1000
+    pts = [(float(o) if o else (0.0 if i == 0 else 1.0), float(d)) for i, (d, o) in enumerate(frames)]
+    worst = max(abs(b[1] - a[1]) / ((b[0] - a[0]) * secs) for a, b in zip(pts, pts[1:]))
+    assert worst <= ARM_MEAN_CAP, f"viewer wave turns {worst:.0f} a second"
+
+
+@needs_node
+def test_limb_gesture_arm_frames_obey_the_cap_l83():
+    """Leap, glide, float and cue arm frames, at the durations the callers pass, are clamped to the cap."""
+    fn = re.search(r"^  function nmbArmKeys\(.*?^  \}", AVATARS, re.S | re.M)
+    assert fn, "nmbArmKeys is the clamp"
+    out = _node("const NMB_ARM_MEAN_SPEED = %s;\n%s\nconsole.log(JSON.stringify(nmbArmKeys([[0.14, -16], [0.5, 52], [0.84, 16]], 700)))" % (
+        re.search(r"const NMB_ARM_MEAN_SPEED = ([\d.]+);", AVATARS).group(1), fn.group(0)))
+    pts = [(0.0, 0.0)] + [tuple(p) for p in out] + [(1.0, 0.0)]
+    for a, b in zip(pts, pts[1:]):
+        assert abs(b[1] - a[1]) / ((b[0] - a[0]) * 0.7) <= ARM_MEAN_CAP + 0.01, (a, b)
+    assert max(abs(d) for _, d in out) >= 10, "it still moves"
+
+
+REVEAL = (ROOT / "frontend/js/reveal-targets.js").read_text(encoding="utf-8")
+
+
+@needs_node
+def test_reveal_scrolls_a_control_clipped_above_its_scroller_l85():
+    """L85: a Settings control at 148 with its scroller's top at 174 (390 wide) counted as in view and never scrolled."""
+    fn = re.search(r"^function flashRevealed\(.*?^\}", REVEAL, re.S | re.M).group(0)
+    out = _node(
+        r"""
+const calls = [];
+const doc = { documentElement: {}, body: {} };
+globalThis.document = doc; globalThis.window = { innerHeight: 844, innerWidth: 390 };
+const revealTimers = new Map();
+const reducedMotionWanted = () => true;
+const scroller = { getBoundingClientRect: () => ({ top: 174, bottom: 806 }) };
+function nearestScrollParent() { return scroller; }
+const make = (top) => {
+  const el = { classList: { remove() {}, add() {} }, offsetWidth: 1, parentElement: null,
+    closest: () => null, matches: () => false,
+    getBoundingClientRect: () => ({ top, bottom: top + 40, left: 10, right: 300 }),
+    scrollIntoView: (o) => calls.push([top, o.block]) };
+  return el;
+};
+""" + fn + r"""
+for (const top of [148, 300, 790]) flashRevealed(make(top));
+console.log(JSON.stringify(calls));""")
+    assert [c[0] for c in out] == [148, 790], "clipped above and below the scroller are brought into view; 300 is left alone"
+
+
+def test_atlas_lids_hide_runs_with_the_arms_l175():
+    """L175: the lids shut over 2.4s (18% to 82%) while the arms took 3.6s (33% to 67%), so the eyes were shut
+    before the hands came up and open again before they came down."""
+    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    arms = re.search(r"\.nmb-arm-l \{ animation: nmb-hide-l ([\d.]+)s", css).group(1)
+    lids = re.search(r"\.atl-layer-lids \{ animation: atl-lids-hide ([\d.]+)s", css).group(1)
+    assert lids == arms == "3.6"
+    arm_keys = re.search(r"@keyframes nmb-hide-l \{\s*([\d%, ]+) \{", css).group(1)
+    lid_keys = re.search(r"@keyframes atl-lids-hide \{.*?\n\s*([\d%, ]+) \{ opacity: 1", css, re.S).group(1)
+    assert arm_keys.replace(" ", "") == lid_keys.replace(" ", "") == "33%,67%"
+
+
+def test_every_endless_atlas_loop_holds_at_rest_l742():
+    """L742 (owner: motion still pauses at rest): `.atl-lw-wisps`, `-wisps-back` and the two glints loop
+    forever (atl-wisp-drift) but were missing from the is-calm hold, so her wisps drifted on at rest."""
+    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    hold = re.search(r":root\.is-calm :is\((.*?)\) \{ animation-play-state: paused !important; \}", css, re.S).group(1)
+    looped = set(re.findall(r"& :is\(([^)]*)\) \{ animation: atl-wisp-drift", css)[0].replace(" ", "").split(","))
+    looped |= {".atl-lw-wisps"}
+    for sel in looped:
+        assert sel in hold.replace(" ", ""), f"{sel} loops endlessly and is not held at rest"
+
+
+def test_animal_only_acts_stay_off_atlas_l746():
+    """L746: the table (WORLD_CLASS_PLAN.md) names groom, sniff and shake as the generated faces' own (a coat and
+    a nose); the picker, the mind's next act and the viewer's chips all read `generated` as they read `atlas`."""
+    avatars = (ROOT / "frontend/js/avatars.js").read_text(encoding="utf-8")
+    menu = (ROOT / "frontend/js/companion-menu.js").read_text(encoding="utf-8")
+    for act in ("shake", "groom", "sniff"):
+        assert re.search(rf"^\s+{act}: \{{[^}}\n]*generated: true", avatars, re.M), act
+    assert "if (spec.generated && nmb.atlasLook) w = 0;" in avatars
+    assert "if (spec.generated && nmb.atlasLook) return \"\";" in menu
+    assert "(spec.generated && atlas)" in menu
+
+
+@needs_node
+def test_hide_act_draws_its_hands_on_the_front_layer_l175():
+    """L175: measured in the browser, 130 pixels of the 64 by 92 figure differ with the front copies hidden, and
+    the copies are gone (0) once the act ends. The rig drives a copy with its original."""
+    assert 'atlasRigFrame.hideHands(rig, !!buddy && buddy.classList.contains("nmb-act-hide"));' in MOTION
+    fn = re.search(r"^atlasRigFrame\.hideHands = function .*?^\};", MOTION, re.S | re.M).group(0)
+    out = _node("function atlasRigFrame() {}\n" + fn + r"""
+const mk = () => { const o = { isConnected: true, children: [], remove() { this.isConnected = false; }, cloneNode() { return mk(); },
+  querySelectorAll() { return []; }, querySelector() { return null; } }; return o; };
+const host = mk(); host.appendChild = (c) => host.children.push(c);
+const arm = { groups: [mk(), mk()], paths: [], cloneHands: [], shown: "x", drawn: [0, 0] };
+const rig = { box: { querySelector: () => host }, arms: [arm], hideCopies: null };
+atlasRigFrame.hideHands(rig, true);
+const on = { groups: arm.groups.length, copies: rig.hideCopies.length, shown: arm.shown };
+atlasRigFrame.hideHands(rig, true);
+const again = host.children.length;
+atlasRigFrame.hideHands(rig, false);
+console.log(JSON.stringify({ on, again, off: { groups: arm.groups.length, copies: rig.hideCopies } }));""")
+    assert out["on"] == {"groups": 4, "copies": 2, "shown": ""}
+    assert out["again"] == 2, "a second call adds nothing"
+    assert out["off"] == {"groups": 2, "copies": None}
+
+
+@needs_node
+def test_lower_body_weave_adds_texture_to_both_looks_l742():
+    """L742: the dress and the trail each carry the same 18 fine specks on top of their dust (a speck's radius
+    0.07 to 0.11, inside the stem's width), and both looks read it."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    assert atlas.count("...atlasSpecks.weave()") == 2
+    line = re.search(r"^atlasSpecks\.weave = .*;$", atlas, re.M).group(0)
+    out = _node("const atlasSpecks = () => 0;\n" + line + "\nconsole.log(JSON.stringify(atlasSpecks.weave()))")
+    assert len(out) == 18
+    assert all(0.27 <= t <= 0.92 and abs(a) <= 0.35 and 0.069 <= r <= 0.111 for t, a, r in out)
+    assert len({round(a, 2) for _, a, _ in out}) >= 14, "the rows never line up"
+
+
+def test_companionperf_sets_the_buddy_through_prefs_not_the_removed_select():
+    """The sweep read #avatar-buddy, a select that no longer exists, and died on null (the same break as L749)."""
+    src = (ROOT / "scratchpad/ui-sweeps/companionperf.js").read_text()
+    assert "getElementById('avatar-buddy')" not in src
+    assert src.count("prefs.set('avatar-buddy', k); syncNameMarkBuddy();") == 2
+
+
+def test_desk_renderer_captures_every_frame_at_full_size_l150():
+    """The renderer could not finish (no `tumble` capture, though its handler stayed) and shot about half its takes
+    with the app's fit scale at 0.75 (a 48 by 69 figure box for 64 by 92), which seamed the idle cycle."""
+    js = (ROOT / "scripts/render_desk_frames.js").read_text(encoding="utf-8")
+    assert 'name: "tumble"' in js and "spin: 115" in js
+    assert '#nm-buddy .nm-buddy-face { scale: 1 !important; transition: none !important; }' in js
+    life = (ROOT / "frontend/js/atlas-life.js").read_text(encoding="utf-8")
+    assert "atlasTailFrame.kit = {" in life and "if (atlasTailFrame.kit.hold === tail) return;" in life
+
+
+def test_the_bust_carries_the_mood_cue_so_close_moods_read_apart_l135():
+    """At 104 px smirk and worried differed by 0.0 and sad and shy by 0.09 (mean RGB difference of the two avatars;
+    median pair 29.8), at 28 px curious and thinking by 0.59: the bust drew no cue (only the head and tiny levels did)."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    assert re.search(r'if \(tiny \|\| level === "head" \|\| level === "bust"\) atlasCue\(sway, tiny\);', atlas)
+
+
+def test_masculine_trail_has_a_back_wisp_pair_behind_the_body_l742():
+    """L742: his trail gets two wisps drawn wholly behind the body (`back: [[0, 1]]`, low so they take the cloak's pose),
+    the gradients read the look's own list, and the layer list builds the wisp layers for any look with wisps."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    male = atlas.split("  masculine: {", 1)[1].split("  feminine: {", 1)[0]
+    block = male.split("    wisps: [", 1)[1].split("\n    ],", 1)[0]
+    assert block.count("back: [[0, 1]]") == 2 and block.count("low: true") == 2
+    assert "ATLAS_LOOKS.feminine.wisps" not in atlas and "lookSpec.wisps.forEach" in atlas
+
+
+@needs_node
+def test_float_has_a_lower_state_and_float_and_lean_differ_from_idle_by_6px_l173():
+    """L173: measured in the app (1x, getBoundingClientRect of the lower layer's paths) a float and a stand were the same
+    37 by 38 (feminine), a lean 38 by 36. The dress box is modelled as the rig poses it (`atlasRigLower`: a shear of (skew - turn) x the state's
+    shear gain and a stretch of (length - 1) x its stretch gain, from the measured standing box of each look); every float and lean row differs from every
+    idle row by more than 6 px in width or in length."""
+    from tests._js_scope import unwrapped_copy
+
+    fn = re.search(r"^function atlasLowerState\(.*?^\}", MOTION, re.S | re.M).group(0)
+    acts = re.search(r"^atlasLowerState\.acts = .*;$", MOTION, re.M).group(0)
+    life = str(unwrapped_copy(ROOT / "frontend/js/atlas-life.js"))
+    script = fn + acts + r"""
+const fs = require("fs"), vm = require("vm");
+const ctx = { atlasFix: (v) => v, console, Math, Map, Set, Object, Array, Number, performance, document: {}, window: {}, setTimeout, clearTimeout };
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;this.__x = { L: ATLAS_LOWER_STATES, H: ATLAS_HAIR_STATES, N: ATLAS_NEB_STATES, flow: atlasRigLower.flowByState, rests: atlasRigLower.rests };", ctx);
+const x = ctx.__x;
+const make = (classes, pose) => ({ classList: { contains: (c) => classes.includes(c) }, dataset: { pose, travel: "" } });
+const box = (state, row, [w0, h0]) => {
+  const [shear, stretch] = x.L[state].dress || [0.4, 0.5], h = h0 * (1 + (row[2] - 1) * stretch);
+  return [w0 + h * Math.tan(Math.abs(row[3] - row[0]) * shear * Math.PI / 180), h];
+};
+const gap = (state, base) => Math.min(...x.L[state].v.flatMap((a) => x.L.idle.v.map((b) => {
+  const [aw, ah] = box(state, a, base), [bw, bh] = box("idle", b, base);
+  return Math.max(Math.abs(aw - bw), Math.abs(ah - bh));
+})));
+console.log(JSON.stringify({
+  floating: atlasLowerState(make([], "float"), { dataset: {} }), calm: atlasLowerState(make([], "stand"), { dataset: {} }),
+  moody: atlasLowerState(make([], "float"), { dataset: { atlasMood: "happy" } }),
+  feminine: ["float", "lean"].map((s) => gap(s, [37, 38])), masculine: ["float", "lean"].map((s) => gap(s, [25, 39])),
+  tables: ["H", "N"].map((t) => !!x[t].float), flow: x.flow.float, rests: x.rests.has("float"),
+}));
+"""
+    run = subprocess.run(["node", "-e", script, life], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    assert (got["floating"], got["calm"], got["moody"]) == ("float", "idle", "happy"), "a float after every mood and act"
+    assert all(g > 6 for g in got["feminine"] + got["masculine"]), got
+    assert got["tables"] == [True, True] and got["flow"] and got["rests"]
+
+
+def test_hands_and_feet_are_part_of_each_limb_outline_and_atl_hand_is_only_an_anchor_l174():
+    """L174 (decided: one path per limb, hand and foot included; the rig keeps an empty hand anchor). Measured in the app
+    (1x, both looks): each arm group draws one skin path plus its rim shade (the hand is that path's tip, y 40 to 61 with the
+    wrist at 54) and its `atl-hand` holds no shape of its own at rest; Atlas has no separate leg shapes (the lower body
+    is the dress or the trail), and the leg tables take a foot in the same stem."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    for name, tip in (("ATLAS_ARM_R", "atlasHand"), ("ATLAS_HOLD_R", "atlasHand"), ("ATLAS_LEG_L", "atlasFoot"), ("ATLAS_LEG_R", "atlasFoot")):
+        assert re.search(rf"^const {name} = atlasStem\(.*tip: {tip}\(", atlas, re.M), name
+    assert "hand: atlasHand(thumbL, k)" in atlas and "atlasArmPath(spec.armRig[side], 0, 0)" in atlas
+    assert 'const hand = atlasMake("g", { class: "atl-hand" }, arm);' in atlas
+    assert 'atlasMake("g", { class: "atl-hand" }, arm);\n        arms[side] = hand;' in atlas, "the anchor is made empty and handed to the props"
+
+
+MOOD_SIM = r"""
+const fs = require("fs"), vm = require("vm");
+const micro = fs.readFileSync(process.argv[1], "utf8"), atlas = fs.readFileSync(process.argv[2], "utf8");
+const grab = (re) => atlas.match(re)[0];
+const pick = (seed) => { let s = seed; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; };
+const out = {};
+for (const [name, hour] of [["morning", 8], ["afternoon", 14], ["evening", 19], ["night", 23]]) {
+  const rates = [];
+  for (let seed = 1; seed <= 6; seed++) {
+    const ctx = { console, Math: Object.create(Math), Date, globalThis: {}, document: {}, nmb: {} };
+    ctx.Math.random = pick(seed * 7919);
+    vm.createContext(ctx);
+    vm.runInContext(micro + "\n" + grab(/^const atlasDriftState = .*;$/m).replace("changedAt: 0", "changedAt: 0") + "\n" + grab(/^atlasDriftState\.pace = .*;$/m) + "\n" + grab(/^atlasDriftState\.gap = .*;$/m) + "\n" + grab(/^atlasDriftState\.coolMs = .*;$/m) + "\n;this.__x = { gap: atlasMicroGap, pick: atlasMicroPick, MOOD: ATLAS_MICRO_MOOD, drift: atlasDriftState };", ctx);
+    const x = ctx.__x, R = ctx.Math.random;
+    const END = 20 * 60000;
+    let mood = "calm", changed = 0, since = 9, starts = 0, last = "", until = 0, tick = 2500 + R() * 2500, drift = 30000;
+    for (let t = 0; t < END; t += 100) {
+      if (mood !== "calm" && t >= until) { mood = "calm"; changed = t; }
+      if (t >= drift) {
+        drift = t + x.drift.gap(name);
+        if (mood === "calm" && t - changed >= x.drift.coolMs) { mood = "drift"; changed = t; until = t + 4000 + R() * 4000; starts++; }
+      }
+      if (t >= tick) {
+        tick = t + x.gap();
+        since++;
+        const kind = x.pick({ typing: false, idle: 120000, hour, phase: name, mood, look: "masculine", sinceCast: 1e9, now: t, rareAt: {}, rareOff: false, pointer: false }, last);
+        last = kind;
+        if (x.MOOD[kind] && mood === "calm" && since >= 2 && t - changed >= 3000) {
+          since = 0; mood = kind; changed = t; until = t + (kind === "surprised" ? 1400 : 1800 + R() * 1600); starts++;
+        }
+      }
+    }
+    rates.push(starts / 20);
+  }
+  out[name] = { min: Math.min(...rates), mean: rates.reduce((a, b) => a + b) / rates.length };
+}
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_figure_at_rest_changes_its_face_three_or_more_times_a_minute_l180():
+    """L180 (decided order: the mood rate first): measured in the app on 60 s of idle, 2 changes (a determined at 8.1 s, back to
+    calm at 10.6 s). The same clocks, simulated for 20 minutes on six seeds in each part of the day with nobody typing,
+    gave 1.75 to 2.3 a minute before (the old gates and weights), 3.3 to 4.1 now, and must never give under 3 on any seed."""
+    micro = ROOT / "frontend/js/atlas-micro.js"
+    run = subprocess.run(["node", "-e", MOOD_SIM, str(micro), str(ROOT / "frontend/js/atlas.js")], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    print(got)
+    for part, row in got.items():
+        assert row["min"] >= 3, (part, got)
+    # The simulation restates the face gate; the source must still carry exactly that gate, or the rate above is for nothing.
+    assert 'atlasMoodNow !== "calm" || atlasMicroState.sinceMood < 2 || Date.now() - atlasDriftState.changedAt < 3000' in micro.read_text(encoding="utf-8")

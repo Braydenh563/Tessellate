@@ -35,6 +35,7 @@ def _install_fake_needle():
     from tessellate.ai import needle_provider
 
     names = [needle_provider.library_name(), "needle3.cact", "LICENSE"]
+    assert needle_provider.library_name().startswith("libcactus.")
     for name in names:
         (target / name).write_bytes(b"x")
     (target / extra_downloads.MARKER).write_text(
@@ -63,11 +64,11 @@ class FakeLib:
         self.inits = []
         self.completes = []
         self.loads = 0
-        self.needle_load = _FakeFn(self._load)
-        self.needle_init = _FakeFn(self._init)
-        self.needle_complete = _FakeFn(self._complete)
-        self.needle_reset = _FakeFn(lambda: None)
-        self.needle_last_error = _FakeFn(lambda: b"too many tools")
+        self.cactus_load = _FakeFn(self._load)
+        self.cactus_init = _FakeFn(self._init)
+        self.cactus_complete = _FakeFn(self._complete)
+        self.cactus_reset = _FakeFn(lambda: None)
+        self.cactus_last_error = _FakeFn(lambda: b"too many tools")
 
     def _load(self, data, n):
         self.loads += 1
@@ -77,7 +78,8 @@ class FakeLib:
         self.inits.append((system, tools))
         return -1 if b"FAIL" in tools else 10
 
-    def _complete(self, text, max_new, buf, cap):
+    def _complete(self, text, floats, n_floats, max_new, buf, cap):
+        assert floats is None and n_floats == 0
         self.completes.append(text)
         answer = self.answers.pop(0) if self.answers else {"function_calls": []}
         raw = json.dumps(answer).encode()
@@ -193,7 +195,7 @@ def test_telemetry_is_off_before_the_library_loads(fake_engine):
     provider = needle_provider.NeedleProvider()
     provider.chat_tools("any", [{"role": "user", "content": "remind me"}], TOOLS)
     assert fake_engine, "the engine was never loaded"
-    assert fake_engine[0].env_at_load == {"NEEDLE_TELEMETRY": "0", "DO_NOT_TRACK": "1"}
+    assert fake_engine[0].env_at_load == {"NEEDLE_TELEMETRY": "0", "DO_NOT_TRACK": "1", "CACTUS_TELEMETRY": "0"}
     assert fake_engine[0].path.endswith(needle_provider.library_name())
     assert fake_engine[0].loads == 1
 
@@ -371,3 +373,18 @@ def test_the_real_engine_takes_the_apps_own_core_tools(monkeypatch):
     )
     names = [c["name"] for c in reply["tool_calls"]]
     assert names and set(names) <= {t["function"]["name"] for t in offered}, reply
+
+
+def test_a_call_the_engine_suppressed_is_still_read(fake_engine):
+    """Engine 4.1.0 files a call it judged too unsure under `suppressed_calls`
+    (measured: 0.875 tool accuracy only when both lists are read)."""
+    from tessellate.ai import needle_provider
+
+    needle_provider.NeedleProvider()._engine()
+    fake_engine[0].answers.append(
+        {"function_calls": [], "suppressed_calls": [{"name": "create_reminder", "arguments": {"text": "call mum"}}]}
+    )
+    reply = needle_provider.NeedleProvider().chat_tools(
+        "any", [{"role": "user", "content": "remind me to call mum"}], TOOLS
+    )
+    assert [c["function"]["name"] for c in reply["raw_tool_calls"]] == ["create_reminder"]

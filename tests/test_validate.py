@@ -112,7 +112,12 @@ class _Says:
         yield {"content_delta": self.text}
 
 
-@pytest.mark.parametrize(("said", "flagged"), [("Harbor ships on the 14th of next month.", False), ("Harbor ships on the 28th of next month.", True)])
+#: The flagged answer has one sentence the note backs: an answer the notes back
+#: nowhere is replaced by the composed one instead (L-chat-21, `test_chat_degrades.py`).
+@pytest.mark.parametrize(("said", "flagged"), [
+    ("Harbor ships on the 14th of next month.", False),
+    ("Harbor goes to the public next month. It ships on the 28th.", True),
+])
 def test_the_model_path_runs_the_same_validators(ai_client, fake_ollama, session, monkeypatch, said, flagged):
     """Decision 53 on the route: the model's plain answer is checked against
     the notes it was given; a number in none of them is said under it."""

@@ -58,7 +58,7 @@ def _search_chat_history(session: Session, args: dict) -> dict:
     """Past conversations. "What did we decide last week?" was unanswerable:
     each turn only ever saw its own thread, so the assistant had no memory of
     anything said in a different chat."""
-    from tessellate.api.routes_conversations import conversation_matches
+    from tessellate.core.conversation_text import conversation_matches
     from tessellate.core.database import Conversation
 
     limit = _limit_arg(args, default=5)
@@ -144,10 +144,10 @@ def _delete_skill(session: Session, args: dict) -> dict:
         if any(name == shipped["name"] for shipped in skills.builtins()):
             raise ToolError(f"“{name}” is a built-in skill and can't be deleted")
         if any(name == own["name"] for own in skills.folder_skills(config)[0]):
-            # The person's own file (B8): the app does not delete it for them.
-            raise ToolError(
-                f"“{name}” comes from a file in the skills folder; delete the file to remove it"
-            )
+            raise ToolError(f"“{name}” comes from a file in the skills folder; delete the file to remove it")  # the person's own file (B8)
         raise ToolError(f"There's no saved skill called “{name}”")
+    from tessellate.ai.tools.undo_inverses import skill_restore
+
+    gone = next(s for s in stored if s.get("name") == name)
     config.set_preference("skills", remaining)
-    return {"name": name, "label": f"ph:lightning Deleted the “{name}” skill"}
+    return {"name": name, "label": f"ph:lightning Deleted the “{name}” skill", "undo": skill_restore(gone)}

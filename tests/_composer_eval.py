@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from tessellate.ai import composer, composer_answer
@@ -974,8 +974,259 @@ def sources_summary(rows: list[dict]) -> dict:
     }
 
 
+def run_windows() -> list[dict]:
+    """Each time phrase read against its own clock (`when.span`, tense past) beside the
+    first day, last day and grain the row's calendar arithmetic gives."""
+    from tessellate.ai import when
+
+    out = []
+    for row in _fixture("windows_1010.json")["rows"]:
+        got = when.span(row["phrase"], date.fromisoformat(row["now"]), "past")
+        want = (date.fromisoformat(row["start"]), date.fromisoformat(row["end"]), row["grain"])
+        out.append({"id": row["id"], "phrase": row["phrase"], "got": got, "want": want, "right": got == want})
+    return out
+
+
+def windows_summary(rows: list[dict]) -> dict:
+    return {"rows": len(rows), "exact": round(sum(r["right"] for r in rows) / len(rows), 3), "missed": [r["phrase"] for r in rows if not r["right"]]}
+
+
+_NUMBER_WORDS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split())}
+_NOTE_LINK = re.compile(r"#/notes/(\d+)")
+
+
+def _said_count(text: str, noun: str) -> int | None:
+    """The number a lead says ("You wrote three notes", "Four unticked checklist items"), or None."""
+    found = re.search(rf"\b(\d+|{'|'.join(_NUMBER_WORDS)})\s+(?:\w+\s+)?{noun}", text, re.I)
+    if not found:
+        return None
+    word = found.group(1).lower()
+    return int(word) if word.isdigit() else _NUMBER_WORDS[word]
+
+
+def _in_memory_notebook(notes: list[dict]):  # noqa: ANN202
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    from tessellate.core.database import Base, Entry
+
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    session = Session(engine)
+    for n in notes:
+        made = datetime.fromisoformat(n["created_at"]).replace(hour=9)
+        edited = datetime.fromisoformat(n["edited_at"]).replace(hour=9) if n.get("edited_at") else made
+        session.add(Entry(id=n["id"], content=n["content"], created_at=made, updated_at=edited, edited_at=edited if n.get("edited_at") else None))
+    session.commit()
+    return session
+
+
+def _recall_answer(row: dict) -> tuple[list[int], int | None, str]:
+    """The note ids a recall lists in order, the count it states, and its text, by the
+    engine path the question takes in the app."""
+    from tessellate.ai import activity_new, composer_plan, composer_study, insights
+
+    now = datetime.fromisoformat(row["now"]).replace(hour=10)
+    notes = row["notes"]
+    kind = row["kind"]
+    if kind == "contradicts":
+        found = insights.contrast(notes, now.date())
+        return [i for f in found for i in f.note_ids], len(found), "\n".join(f.text for f in found)
+    if kind == "changed":
+        session = _in_memory_notebook(notes)
+        try:
+            stat = activity_new.answer(row["question"], session, now)
+        finally:
+            session.close()
+        text = stat.text if stat else ""
+        return [int(i) for i in _NOTE_LINK.findall(text)], len(stat.facts) if stat else None, text
+    if kind in ("due", "open"):
+        #: The plan reads the question first; "still open in <note>" is the note's own checklist (composer).
+        reply = composer_plan.answer(composer_study.Ctx(question=row["question"], notes=notes, now=now))
+        if reply is not None:
+            text = reply.text
+            return list(dict.fromkeys(int(i) for i in _NOTE_LINK.findall(text))), _said_count(text, "(?:dated items?|unticked)"), text
+        result = composer.compose(row["question"], notes, today=now.date())
+        ids = list(dict.fromkeys(g["note_id"] for g in result["grounding"] if g.get("note_id") is not None))
+        return ids, _said_count(result["text"], "(?:of \\w+ )?items? (?:are|is) still open"), result["text"]
+    result = composer.compose(row["question"], notes, today=now.date())
+    ids = list(dict.fromkeys(g["note_id"] for g in result["grounding"] if g.get("note_id") is not None))
+    return ids, _said_count(result["text"], "notes?") if kind == "time" else len(ids), result["text"]
+
+
+def run_recall() -> list[dict]:
+    out = []
+    for row in _fixture("recall_1010.json")["rows"]:
+        ids, count, text = _recall_answer(row)
+        out.append({"id": row["id"], "kind": row["kind"], "question": row["question"], "empty": row["empty"], "got": ids, "want": row["expect_ids"],
+                    "ids_right": ids == row["expect_ids"], "count_right": (count if count is not None else len(ids)) == row["expect_count"],
+                    "says_empty": bool(re.search(r"\bnothing\b|\bno notes\b|\bnone\b", text, re.I)), "text": text})
+    return out
+
+
+def recall_summary(rows: list[dict]) -> dict:
+    empties = [r for r in rows if r["empty"]]
+    by_kind = {k: round(sum(r["ids_right"] for r in rows if r["kind"] == k) / sum(r["kind"] == k for r in rows), 3) for k in dict.fromkeys(r["kind"] for r in rows)}
+    return {
+        "rows": len(rows),
+        "ids_in_order": round(sum(r["ids_right"] for r in rows) / len(rows), 3),
+        "count_rederived": round(sum(r["count_right"] for r in rows) / len(rows), 3),
+        "empty_window_says_so": round(sum(r["says_empty"] for r in empties) / len(empties), 3),
+        "by_kind": by_kind,
+        "missed": [(r["id"], r["question"], r["got"], r["want"]) for r in rows if not r["ids_right"]],
+    }
+
+def run_social() -> list[dict]:
+    """Each turn's kind: a control is read against the answer before it (`composer.follow_on`),
+    anything else by `composer_smalltalk.social_kind` as the router calls it."""
+    from tessellate.ai import intent
+
+    data = _fixture("social_1010.json")
+    out = []
+    for row in data["rows"]:
+        message = row["message"]
+        if row["group"] == "control":
+            follow = composer.follow_on(message, [{"question": data["history"][0]["question"], "answer": row["previous"]}])
+            got = follow.kind if follow else None
+            reply = ""
+        else:
+            kind = composer_smalltalk.social_kind(message, intent.classify(message))
+            got = kind
+            reply = composer_smalltalk.social(message, intent.classify(message), seed=row["id"])
+        out.append({**row, "got": got, "right": got == row["kind"], "reply": reply})
+    return out
+
+
+#: A capitalised word a reply may say with no notebook behind it: its own name and the app's.
+_REPLY_NAMES = {"Atlas", "Atlas's", "Tessellate", "I", "I'm", "I'll", "I've", "I'd"}
+
+
+def invented_in(reply: str) -> list[str]:
+    """Every number or name a reply says that no notebook holds: a digit, or a capitalised
+    word that does not open a sentence and is not the assistant's own name."""
+    reply = re.sub(r"\u201c[^\u201d]*\u201d", " ", reply)  # a quoted phrase is an example the app offers, not a fact
+    found = re.findall(r"\d+", reply)
+    for match in re.finditer(r"(?<![.!?]\s)(?<!^)\b[A-Z][\w']+", reply):
+        if match.group(0) not in _REPLY_NAMES and not reply[: match.start()].rstrip().endswith((".", "?", "!", "\u201c", "\"")):
+            found.append(match.group(0))
+    return found
+
+
+def regenerations_differ(message: str, times: int = 3) -> bool:
+    """Ask for the same turn three times, each with the last replies in view: three different replies."""
+    from tessellate.ai import intent
+
+    said: list[str] = []
+    for k in range(times):
+        said.append(composer_smalltalk.social(message, intent.classify(message), recent=said[-3:], seed=f"regen{k}"))
+    return len(set(said)) == times
+
+
+def social_summary(rows: list[dict]) -> dict:
+    identity = [r for r in rows if r["group"] == "identity"]
+    by_group = {g: round(sum(r["right"] for r in rows if r["group"] == g) / sum(r["group"] == g for r in rows), 3) for g in dict.fromkeys(r["group"] for r in rows)}
+    replied = [r for r in rows if r["reply"]]
+    probes = ("hi", "thanks", "tell me a joke", "who are you", "ok", "good morning", "how are you", "bye")
+    return {
+        "rows": len(rows),
+        "kind_accuracy": round(sum(r["right"] for r in rows) / len(rows), 3),
+        "by_group": by_group,
+        "regenerations_differ": round(sum(regenerations_differ(m) for m in probes) / len(probes), 3),
+        "replies_invent_nothing": all(not invented_in(r["reply"]) for r in replied),
+        "identity_names_atlas": all("Atlas" in r["reply"] for r in identity),
+        "missed": [(r["message"], r["got"], r["kind"]) for r in rows if not r["right"]],
+    }
+
+
+_NO_ANSWER = re.compile(r"(?i)\b(?:no mention|nothing (?:comes up|i found|in these|there)|not something this app|don'?t mention|do not mention|none of these notes|nothing about|not (?:in|anywhere in) your notes|(?:couldn'?t|can'?t|could not|cannot) find (?:anything|a thing)|no note i found says|(?:there is|there'?s) nothing in these notes)\b|\bnothing\b.{0,40}\b(?:mention|written|found)")
+_CAPABILITY = re.compile(r"(?i)\b(?:i can|i answer from|i work from|i read your notes|ask me|try asking|what i can do)\b")
+
+
+def run_ood() -> list[dict]:
+    """Each out-of-domain question answered by `composer.compose` over the decoy notebook, read for:
+    whether anything it shows is a real sentence of a real note (`grounded`), whether it says plainly
+    there is no answer, whether it says what the app can do, and whether a note it shows is called the closest."""
+    data = _fixture("ood_1010.json")
+    notes = data["notes"]
+    today = date.fromisoformat(data["today"])
+    by_id = {n["id"]: n["content"] for n in notes}
+    out = []
+    for row in data["rows"]:
+        result = composer.compose(row["question"], notes, today=today)
+        text = result.get("text") or ""
+        shown = result.get("grounding") or []
+        out.append({
+            **row,
+            "text": text,
+            "shown": len(shown),
+            "grounded": all(g.get("sentence", "") in by_id.get(g.get("note_id"), "") for g in shown),
+            "no_answer": bool(_NO_ANSWER.search(text)),
+            "capability": bool(_CAPABILITY.search(text)),
+            "closest": not shown or "closest" in text.lower(),
+        })
+    return out
+
+
+def ood_summary(rows: list[dict]) -> dict:
+    def rate(key: str) -> float:
+        return round(sum(r[key] for r in rows) / len(rows), 3)
+
+    return {
+        "rows": len(rows),
+        "grounded": rate("grounded"),
+        "plain_no_answer": rate("no_answer"),
+        "capability_line": rate("capability"),
+        "closest_labelled": rate("closest"),
+        "missed": [(r["question"], r["shown"], r["no_answer"], r["capability"]) for r in rows if not (r["no_answer"] and r["capability"] and r["closest"])],
+    }
+
+
+def _read_flat(text: str) -> str:
+    """Text as read: no markdown marks, one space between words, lower case."""
+    return " ".join(re.sub(r"[*_`]", "", text or "").lower().split())
+
+
+def help_sentences(body: str) -> list[str]:
+    """A topic's text split at sentence ends, the way the fixture counts `topic#n`."""
+    return re.split(r"(?<=[.!?])\s+(?=[A-Z\"\u201c(])", body)
+
+
+def run_help() -> list[dict]:
+    """Each how-to question asked of the Guide with no model: whether the answer opens on the sentence
+    of the topic's text that is the first step, and whether every control the row names still exists."""
+    from tessellate.ai import help_chat
+    from tessellate.ai.help_topics_core import HELP_TOPICS
+
+    bodies = {t["id"]: t["body"] for t in HELP_TOPICS}
+    page = (Path(__file__).resolve().parent.parent / "frontend" / "index.html").read_text(encoding="utf-8")
+    ids = set(re.findall(r'\bid="([A-Za-z0-9_-]+)"', page))
+    out = []
+    for row in _fixture("help_1010.json")["rows"]:
+        topic, number = row["sentence_id"].split("#")
+        expected = _read_flat(help_sentences(bodies[row["topic"]])[int(number)])[:48]
+        answer = _read_flat(help_chat.offline_answer(row["question"]).get("content", ""))
+        #: A topic with numbered steps opens on step 1 (ledger L108), the first step said as a step.
+        first = answer.startswith(expected) or bool(row.get("steps")) and answer.startswith(_read_flat(row["steps"]))
+        out.append({**row, "first": first, "controls_exist": all(c in ids for c in row["controls"]), "opening": answer[:80]})
+    return out
+
+
+def help_summary(rows: list[dict]) -> dict:
+    return {
+        "rows": len(rows),
+        "first_sentence": round(sum(r["first"] for r in rows) / len(rows), 3),
+        "controls_exist": round(sum(r["controls_exist"] for r in rows) / len(rows), 3),
+        "missed": [(r["question"], r["cue"], r["opening"]) for r in rows if not r["first"]],
+    }
+
+
 def phase6_report() -> dict:
     return {
+        "help": help_summary(run_help()),
+        "ood": ood_summary(run_ood()),
+        "social": social_summary(run_social()),
+        "recall": recall_summary(run_recall()),
+        "windows": windows_summary(run_windows()),
         "insights": insights_summary(run_insights()),
         "dialogues": dialogues_summary(run_dialogues()),
         "acts": acts_summary(run_acts()),
@@ -1023,3 +1274,123 @@ if __name__ == "__main__":  # pragma: no cover - the report's table
                 print(f"- {row['message']!r}: {row['got']} (expected {row['expect']})")
         print(json.dumps(conversation_summary(conversation), indent=1))
         print(json.dumps(run_did_you_mean(), indent=1))
+
+
+def run_person_shift() -> list[dict]:
+    """`person_shift_1010.json`: each note sentence said back to its writer."""
+    from tessellate.ai import realise
+
+    rows = []
+    for row in _fixture("person_shift_1010.json")["rows"]:
+        got = realise.shift_person(row["text"], quoted=row["quoted"])
+        rows.append({**row, "got": got, "exact": got == row["expected"]})
+    return rows
+
+
+def person_shift_summary(rows: list[dict]) -> dict:
+    kinds = {r["kind"] for r in rows}
+    return {
+        "rows": len(rows),
+        "exact": sum(r["exact"] for r in rows) / max(len(rows), 1),
+        "missed": [(r["text"], r["expected"], r["got"]) for r in rows if not r["exact"]],
+        "kinds": kinds,
+    }
+
+
+def _bounded(value: str, unit: str) -> "re.Pattern[str]":
+    """`value unit` as its own token run: not inside a longer number ("31" in "131", "7.4" in "7.45")."""
+    return re.compile(r"(?<![\w.,:-])" + re.escape(f"{value} {unit}".strip()) + r"(?![\w:]|[.,]\d)")
+
+
+def _dice_ok(row: dict, head: str) -> bool:
+    """A roll, toss or pick is in range, and its in-all total is the sum of its rolls."""
+    if row["rand"] == "coin":
+        return head in ("Heads.", "Tails.")
+    numbers = [int(n) for n in re.findall(r"\d+", head.split(":")[0])]
+    if row["rand"] == "pick":
+        return len(numbers) == 1 and row["low"] <= numbers[0] <= row["high"]
+    total = re.search(r": (\d+) in all", head)
+    ok = len(numbers) == row["count"] and all(row["low"] <= n <= row["high"] for n in numbers)
+    return ok and (total is None) == (row["count"] == 1) and (total is None or int(total.group(1)) == sum(numbers))
+
+
+def _said(parts: list) -> tuple[str, str]:
+    head, _, read = "".join(t for _, t in parts).partition("\nRead as ")
+    return head, read
+
+
+def run_utilities() -> list[dict]:
+    """`utilities_1010.json`: each question answered at its own fixed clock. A random row is asked under
+    12 salts: the same salt twice must agree, and the salts must not all agree."""
+    import os
+    import time
+    from datetime import datetime
+
+    from tessellate.ai import utilities
+
+    #: A naive `now` is this computer's local time; pin it so the rows read the same anywhere.
+    zone = os.environ.get("TZ")
+    os.environ["TZ"] = "UTC"
+    time.tzset()
+    try:
+        return _run_utilities(utilities, datetime)
+    finally:
+        os.environ.pop("TZ") if zone is None else os.environ.__setitem__("TZ", zone)
+        time.tzset()
+
+
+def _run_utilities(utilities, datetime) -> list[dict]:
+    rows = []
+    for row in _fixture("utilities_1010.json")["rows"]:
+        now = datetime.fromisoformat(row["now"])
+        head, read = _said(utilities.answer(row["input"], now=now, salt="s") or [])
+        stable = varies = True
+        if "rand" in row:
+            asked = [utilities.answer(row["input"], now=now, salt=f"salt{i}") or [] for i in range(12)]
+            heads = [_said(p)[0] for p in asked]
+            stable = asked == [utilities.answer(row["input"], now=now, salt=f"salt{i}") or [] for i in range(12)]
+            varies = len(set(heads)) > 1
+            value_ok = all(_dice_ok(row, h) for h in [head, *heads])
+        else:
+            value_ok = bool(_bounded(row["value"], row["unit"]).search(head))
+        read_ok = row["read_as"] is None or read == row["read_as"] + "."
+        rows.append({**row, "text": f"{head}\nRead as {read}", "value_ok": value_ok, "read_ok": read_ok, "stable": stable, "varies": varies})
+    return rows
+
+
+def hostile_utilities() -> list[dict]:
+    """Each hostile expression, asked after a warm-up (patterns compile and word lists load lazily), with its time."""
+    import time
+    from datetime import datetime
+
+    from tessellate.ai import utilities
+
+    now = datetime(2026, 10, 11, 10, 0)
+    hostile = _fixture("utilities_1010.json")["hostile"]
+    #: Patterns compile and the speller's word lists load once per process (about 120 ms in a
+    #: fresh worker). Each row is warmed with a trailing space: the same path, but a different key
+    #: for `_kind_of_cached`, so the timed call below is not a cache hit.
+    for text in hostile:
+        utilities.answer(text + " ", now=now, salt="w")
+    out = []
+    for text in hostile:
+        start = time.perf_counter()
+        got = utilities.answer(text, now=now, salt="s")
+        out.append({"input": text, "got": got, "ms": (time.perf_counter() - start) * 1000})
+    return out
+
+
+def utilities_summary(rows: list[dict]) -> dict:
+    families: dict[str, int] = {}
+    for r in rows:
+        families[r["family"]] = families.get(r["family"], 0) + 1
+    return {
+        "rows": len(rows),
+        "families": families,
+        "value": sum(r["value_ok"] for r in rows) / max(len(rows), 1),
+        "read_as": sum(r["read_ok"] for r in rows) / max(len(rows), 1),
+        "missed": [(r["input"], r["value"], r["text"]) for r in rows if not (r["value_ok"] and r["read_ok"])],
+        "exempt": [r["input"] for r in rows if r["read_as"] is None],
+        "unstable": [r["input"] for r in rows if not r["stable"]],
+        "flat": [r["input"] for r in rows if not r["varies"]],
+    }

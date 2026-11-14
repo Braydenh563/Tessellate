@@ -2,7 +2,7 @@
   "about": "CHAT_PLAN decision 59, step 1 (access, Brief 84): one typed sentence per tool in ai/tools and per act in the registry, each read with no model by reading.read (tools) and acts.parse (acts). tests/test_atlas_access.py.",
   "now": "2026-10-10T10:00:00",
   "tools": {
-    "create_category": "make a category called Travel",
+    "create_category": "make a new category called Garden",
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
     "check_learned": "check what you learned about me against my notes",
@@ -67,7 +67,6 @@
     "list_reminders": "what reminders do I have",
     "complete_reminder": "mark the dentist reminder as done",
     "rename_tag": "rename the tag kitchen to cooking everywhere",
-    "create_category": "make a new category called Garden",
     "rename_category": "rename the category Garden to Outdoors",
     "merge_categories": "merge the Cooking category into Food",
     "move_notes": "move notes 12 and 14 to the Work space",
@@ -109,6 +108,12 @@
     "navigate": "open settings",
     "summarise": "summarise my gym notes",
     "cancel": "cancel the dentist task",
-    "snooze": "snooze the dentist task until Friday"
+    "snooze": "snooze the dentist task until Friday",
+    "delete_document": "delete the document Harbor report",
+    "delete_skill": "delete the skill Weekly tidy",
+    "board_card": "put the boiler note on the whiteboard",
+    "make_map": "make a mind map from the boiler note",
+    "set_theme": "switch to dark mode",
+    "similar": "find notes similar to the boiler note"
   }
 }

@@ -116,12 +116,14 @@ function editAndResend(bubble, text) {
         return;
       }
     }
+    const answered = bubbles[bubbles.indexOf(bubble) + 1];
+    const priorVersions = answered?.classList.contains("assistant") ? assistantMessageActions.versionsOf(answered) : [];
     // Drop this bubble and everything after it, then ask again.
     for (const later of bubbles.slice(bubbles.indexOf(bubble))) dropChatBubble(later);
     chatConv.turns = chatConv.turns.slice(0, turnIndex);
     close();
     loadConversationList();
-    await sendChatMessage(edited);
+    await sendChatMessage(edited, { priorVersions });
     //: Once the new answer is in, so the step knows the chat it landed in.
     if (cut) chatWriteRecord("chatEditUndo", wasId, turnIndex, cut, chatConv.id);
   });
@@ -210,6 +212,7 @@ async function regenerateFrom(bubble, opts = {}) {
       return toast(`Couldn't regenerate that: ${error.message}`, true);
     }
   }
+  const versions = assistantMessageActions.versionsOf(bubble);
   //: The question stays; everything after it goes, including this answer.
   for (const node of kept.slice(from + 1)) dropChatBubble(node);
   //: How many times this question has been asked again, kept on its bubble:
@@ -217,7 +220,7 @@ async function regenerateFrom(bubble, opts = {}) {
   //: notes (audit 1028 E62; `attempt`, as `regenerateLast` sends it).
   const attempt = (Number(asked.bubble.dataset.attempt) || 0) + 1;
   asked.bubble.dataset.attempt = String(attempt);
-  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true, attempt, ...(opts.persona ? { persona: opts.persona } : {}) });
+  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true, attempt, priorVersions: versions, ...(opts.persona ? { persona: opts.persona } : {}), ...(opts.oneModel ? { oneModel: opts.oneModel } : {}) });
 }
 
 //: **An answer that changed the notebook is not re-run silently.** A composer
@@ -265,8 +268,10 @@ async function regenerateLast() {
   if (lastAssistant?.dataset.wrote && !(await confirmRerun(lastAssistant))) return;
   regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   //: Put back by `sendChatMessage` if no new answer comes (audit 1029 H7).
+  const versions = assistantMessageActions.versionsOf(lastAssistant);
   if (lastAssistant) lastAssistant.remove();
   sendChatMessage(lastChatQuestion, {
+    priorVersions: versions,
     skipUserBubble: true,
     replaceLast: true,
     restore: lastAssistant,

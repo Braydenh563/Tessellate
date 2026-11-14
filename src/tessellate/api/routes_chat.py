@@ -35,9 +35,9 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
+from tessellate.ai import address, composer_retry, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
-from tessellate.ai import consent, consent_store, recognise
+from tessellate.ai import consent, consent_store, recognise, timetravel
 from tessellate.ai import (
     acts,
     context,
@@ -60,7 +60,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import chat_extra, chat_web
+from tessellate.api import chat_chips, chat_extra, chat_pick, chat_web
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
@@ -81,9 +81,8 @@ from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api import chat_chips
-from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _capability_answer, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
+from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, one_turn_models, one_turn_provider, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -263,7 +262,7 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     stats = _activity(session, question) if as_of is None and not attached else None
     if stats is not None:
         return intent.NOTES, stats
-    stats = notebook_stats.answer_chat(question, session, as_of) if detected == intent.NOTES else None
+    stats = notebook_stats.answer_chat(question, session, as_of, user_now(deps.get_config())) if detected == intent.NOTES else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
     if stats is None and as_of is None and not attached:
@@ -525,17 +524,16 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     #: A view over the same manager, so everything downstream, the agent
     #: loop included, goes on asking for `chat_model()` and gets this
     #: surface's answer without knowing features exist.
-    model_manager = deps.get_model_manager().for_feature(_feature_for(body))
-    ollama = deps.get_ollama()
+    model_manager = one_turn_models(body, _feature_for(body))
+    ollama = one_turn_provider(body)
     ollama_running = ollama.is_running()
+    #: Captioned once: the capability check below reuses these rather than asking the model again.
+    seen = _chat_images(session, body, model_manager, ollama)
+    if (plain := _capability_response(body, session, prepared, ollama_running, seen)) is not None:
+        return plain
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
-    images_raw = _resolve_chat_images(session, body.image_media_ids)
-    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
-    images = [uri for _, uri in images_raw] if chat_sees_images else []
-    image_context = (
-        "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
-    )
+    images_raw, images, image_context = seen
     #: A counted answer *is* an answer, and it does not need a model running to
     #: be one: which is the whole point of computing it. Without this the
     #: response would carry a correct sentence and simultaneously report that
@@ -588,6 +586,16 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         ollama_running=ollama_running,
         sentence_grounding=sentence_grounding,
     )
+
+
+def _chat_images(session: Session, body: ChatRequest, model_manager, ollama) -> tuple[list, list[str], str]:  # noqa: ANN001
+    """The attached pictures, those the chat model sees itself, and the
+    captions written for a model that cannot see them."""
+    images_raw = _resolve_chat_images(session, body.image_media_ids)
+    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
+    images = [uri for _, uri in images_raw] if chat_sees_images else []
+    image_context = "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
+    return images_raw, images, image_context
 
 
 def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
@@ -876,16 +884,11 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     return out
 
 
-def _capability_answer(req: _StreamRequest, ollama_running: bool) -> str:
-    try:
-        web = bool(deps.get_config().get_preference("web_search_enabled", False))
-    except Exception:  # noqa: BLE001  # an unreadable preference is off
-        web = False
-    recent, seed = _reply_seed(req)
-    return capability.answer(
-        req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
-        voice=_composer_voice(), recent=recent, seed=seed,
-    )
+def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool, seen: tuple) -> ChatResponse | None:
+    if prepared["intent"] != intent.ABOUT_APP:  # the only intent `_asks_capability` accepts: no request to build for the rest
+        return None
+    answer = _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req := _stream_request(body, session, seen), prepared) else None
+    return answer and ChatResponse(ai_response=answer, raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
 
 
 def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
@@ -944,6 +947,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
     if kind == "test" and (subject := composer_social.ping_subject(req.question)):
         said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
+    said = composer_social.with_act_ran(said, kind, last)
     sees = _sees(req, kind, seed)
     return f"{said}\n\n{sees}" if sees else said
 
@@ -979,7 +983,7 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     if itself:
         return itself
     if _asks_capability(req, prepared):
-        return [{"type": "answer", "delta": _capability_answer(req, ollama_running)}]
+        return [{"type": "answer", "delta": _capability_answer(req, ollama_running, _composer_voice())}]
     if req.address is not None and req.address.call:
         return _call_events(req)
     placed = find_it.answer(req.question or "") if not req.images_raw else None
@@ -1173,7 +1177,7 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
         context="\n".join(
             part
             for part in (
-                _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+                _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req, prepared) else "",
                 composer_aware.model_context(_awareness(req)) if req.body.screen else "", chat_extra.remark_facts(req.session, req.question or ""),  # remark parity, INBOX 1749
             )
             if part
@@ -1253,14 +1257,14 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
     if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
         return digest
+    ask = lambda pool: composer.offered(composer_digest.answer(  # noqa: E731
+        follow.question if restated else req.question, pool, today=today,
+        #: A retry rewords the answer (INBOX 1466) and, over one note, reads the others (L93).
+        voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
+        insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
+    ), req.question)
     try:
-        return composer.offered(composer_digest.answer(
-            follow.question if restated else req.question, current, today=today,
-            #: A retry rewords the answer itself: since the closing offer became the
-            #: chips (INBOX 1466) the body is the only thing "Try again" can change.
-            voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
-            insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-        ), req.question)
+        return composer_retry.retried(ask(current), current, ask, req.body.attempt)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None
@@ -1300,9 +1304,13 @@ def _earlier_rows(question: str, current: list, today) -> list:  # noqa: ANN001
 
 
 def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
-    #: The conversation the history describes (decisions 34 and 35): its
-    #: turn and salt word this answer, a retry ("Try again") rewords it,
-    #: and the words earlier answers used are not used again.
+    """The composed answer; with a model running it picks among numbered readings (decision 45)."""
+    one = lambda pool: _compose_over(req, prepared, follow, pool, today)  # noqa: E731
+    return chat_pick.settle(req, one(current), current, one)
+
+
+def _compose_over(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
+    #: The conversation's turn and salt word this answer; a retry rewords it and earlier words are not reused (decisions 34, 35).
     dialogue = composer.Dialogue.from_history(req.history)
     attempt = req.body.attempt
     return composer.compose(
@@ -1321,7 +1329,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
         turn=len(req.history or []) + 1 + attempt,
         dialogue=dialogue,
         prefer=follow.prefer if follow else "",
-        resolved=True,
+        resolved=True, retry=attempt,
         #: Insights the person confirmed are said as their word; the
         #: ones they dismissed are not said (decision 60).
         learned=_insight_memory(req.session),
@@ -1332,10 +1340,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     """The composer's result with the follow-up it answered, the notes it read
     and the older ones those replaced."""
     follow = prepared.get("follow_on")
-    #: A follow-on that is a question in its own right ("what about
-    #: running?", "and last month?", "the second one") is answered the
-    #: same way as the first turn (B8); "tell me more", "shorter" and a
-    #: correction lean on the turn before and keep the composer's.
+    #: A follow-on that is a question in its own right ("and last month?") is answered like the first turn (B8); "tell me more" and corrections keep the composer's.
     restated = follow is not None and follow.kind in composer_dialogue._RESTATES
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
@@ -1348,8 +1353,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
     if follow is None and result.get("grounding"):
         _remember_rows(req.question, current, today, result)
-    #: A question the answer itself suggests ("ask me “...”") is a chip too
-    #: (INBOX 1497): the sentence may stay, the chip is the action.
+    #: A question the answer suggests ("ask me “...”") is a chip too (INBOX 1497).
     suggested = ask_chips.lift(str(result.get("text") or ""))
     if suggested:
         result["next"] = list(dict.fromkeys([*suggested, *(result.get("next") or [])]))
@@ -1912,7 +1916,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         # preference is accounted for and an unset flag cannot land a
         # Request turn in the chip row.
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
-        as_of=None if req.skill else req.body.as_of,
+        as_of=None if req.skill else req.body.as_of or timetravel.as_of_in(req.question or "", user_now(deps.get_config())),
         locale=req.body.locale,
         skip_search=early is not None,
         composed=_app_answers(req, req.ollama.is_running()), widen=req.body.attempt,
@@ -2154,24 +2158,19 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     return address.question, address
 
 
-def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
+def _stream_request(body: ChatRequest, session: Session, seen: tuple | None = None) -> _StreamRequest:
     """What one chat turn settles before it answers: the same for the stream and
     for the non-streaming route when no model runs."""
-    ollama = deps.get_ollama()
+    ollama = one_turn_provider(body)
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
     #: loop included, goes on asking for `chat_model()` and gets this
     #: surface's answer without knowing features exist.
-    model_manager = deps.get_model_manager().for_feature(_feature_for(body))
+    model_manager = one_turn_models(body, _feature_for(body))
     history = [turn.model_dump(exclude_none=True) for turn in body.history]
     persona_prompt = _resolve_persona(body.persona, session)
     mode = _resolve_mode(body.mode)
-    images_raw = _resolve_chat_images(session, body.image_media_ids)
-    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
-    images = [uri for _, uri in images_raw] if chat_sees_images else []
-    image_context = (
-        "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
-    )
+    images_raw, images, image_context = seen or _chat_images(session, body, model_manager, ollama)
     use_tools = (
         body.use_tools
         if body.use_tools is not None

@@ -2071,7 +2071,9 @@ function editedMarker() {
   return tag;
 }
 
-async function openConversation(id) {
+async function openConversation(id, turn = null) {
+  //: A leave held for a reply is resumed on the same turn the call named.
+  if (turn !== null && chatLeaveHeld(() => openConversation(id, turn))) return;
   if (chatLeaveHeld(() => openConversation(id))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
@@ -2243,6 +2245,7 @@ async function openConversation(id) {
         bubble: handles.bubble,
         text: message.content,
         question: lastQuestionText,
+        message,
         onEdit: () => editChatAnswer(handles, turnIndex, message.content),
       });
       if (lastQuestionText !== null) {
@@ -2279,7 +2282,10 @@ async function openConversation(id) {
   loadConversationList();
   //: Where it was left, not always its end (Placed 2026-09-09 item 99 (b)).
   if (isStreamingConversation(full.id)) chatScrollToEnd();
-  else restoreChatPosition(full.id);
+  else if (Number.isInteger(turn) && $("chat-messages").querySelectorAll(".msg")[turn]) {
+    //: A Library hit inside the chat opens at the message that has the words (L78).
+    flashRevealed($("chat-messages").querySelectorAll(".msg")[turn]);
+  } else restoreChatPosition(full.id);
 }
 
 async function loadChatSuggestions() {

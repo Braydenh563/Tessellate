@@ -880,7 +880,7 @@ _READING_TOOLS = ["search_notes", "list_notes", "get_note", "count_notes"]
 #:
 #: - `tool_called` for a step that *looks*, a read, a search, an overview,
 #:   an audit tool. There is always something to read, so a model that
-#:   narrates instead of calling has certainly not done the step. This is the
+#:   narrates instead of calling has certainly skipped the step. This is the
 #:   reported failure ("I ran a skill and it ran no tools") and most of the
 #:   shipped steps are this.
 #: - `notes_changed` where the step exists to change something and the step
@@ -1358,7 +1358,7 @@ BUILTIN_SKILLS: list[dict] = [
         "prompt": "Find the loose ends in my notes and list them.",
         "steps": [
             #: **A paged pass, not a search** (Brief 13; CHAT_PLAN decision
-            #: 10). This step used to be one `search_notes` call for "todo,
+            #: 10). This step used to be one `search_notes` call for "to-do,
             #: need to, should", which is a top-k similarity query: it returns
             #: the five or twenty notes that most resemble those words, and
             #: the skill's whole claim is *the* loose ends, all of them. A

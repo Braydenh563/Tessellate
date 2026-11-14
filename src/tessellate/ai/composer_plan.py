@@ -2,7 +2,7 @@
 week", "how long until the exam" (INBOX 1351).
 
 The week is read from three places and nothing is guessed: the person's
-reminders (not done, not binned), the dates their notes give in a sentence
+reminders (unfinished, not binned), the dates their notes give in a sentence
 ("Exam on 12 November.", read against the day the note was written, so
 "tomorrow" in an old note is not today's tomorrow), and the open checklist
 items in their notes. Every line of an answer is a reminder's text, a note's
@@ -52,6 +52,9 @@ _KINDS = {"birthday": "birthday", "appointment": "appointment", "meeting": "meet
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
+    #: "what is most important right now", "what's urgent", "what matters most" (L155): the day's plan.
+    rf"^{_LEAD}what(?:'s|’s| is| are)? (?:(?:the|my) )?(?P<imp>(?:most |more )?(?:important|urgent|pressing)(?: (?:thing|things|task|tasks|item|items|job|jobs))?(?: to do)?|(?:top |main |biggest )?priorit(?:y|ies)|matters? most)(?: (?:{recognise.now_scope()}))?\W*$|"
+    rf"^{_LEAD}what(?:'s|’s| is)? my (?P<imp2>most (?:important|urgent|pressing) (?:thing|task|item|job))(?: to do)?(?: (?:{recognise.now_scope(short=True)}))?\W*$|"
     #: "spread these over the week", "how should I spread my tasks this week" (audit 1030 Z57).
     rf"^{_LEAD}(?:how (?:should|do|can|could) i |help me |can you )?spread (?:out )?(?P<sp>.*)$|"
     rf"^{_LEAD}(?:what does|how does) (?P<w>my (?:week|day|schedule|weekend|month))(?: look| looks)?(?: like)?.*$|"
@@ -59,6 +62,16 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$|"
     #: "make a study plan": no model writes it, so the notes' own dated items are laid out (F13 g).
     rf"^{_LEAD}(?:(?:can|could) you )?(?:make|create|build|write|draft|put together|give|get)(?: me)? (?:an? |my )?(?:study|revision|exam) (?:plan|schedule|timetable)(?P<st>.*)$", re.I)
+#: "organise everything about the harbor", "sort out my boiler stuff": a topic to file or read, not a week to plan (L-chat-32).
+_TOPIC = re.compile(r"\b(?:everything|all (?:my |the )?(?:notes?|things?|stuff)|anything) (?:about|on|to do with|regarding|related to)\b|\b(?:notes?|stuff|things) (?:about|on|to do with|regarding|related to)\b|^(?:my |the )?\w+ (?:stuff|things)$", re.I)
+
+
+def _topic_target(plan: re.Match | None) -> bool:
+    """True when the verb form of `_PLAN` was given a topic and no time to plan it in."""
+    target = (plan.group("t") if plan else None) or ""
+    return bool(target and _TOPIC.search(target) and not recognise.names_a_time(target))
+
+
 _UNTIL = re.compile(
     r"^(?:so |and |hey |ok |okay )*(?:how (?:long|many days|many weeks|much time|far)(?: is it| is there| do i have| have i got| have we got| left)?(?: until| till| to| before| left until| left till)"
     r"|(?:days|weeks) (?:until|till|to|before|left until)|countdown (?:to|until|for)|time (?:until|till|left until|left before)|how soon is|how close is)\s+(?:my |the |our |this )?(?P<t>.+?)\W*$", re.I)
@@ -66,7 +79,7 @@ _UNTIL = re.compile(
 _LEFT = re.compile(
     rf"^{_LEAD}(?:what(?:'s| is| do i have| have i got| have i| else)?\s+(?:still\s+)?(?:left|outstanding|open|unfinished|incomplete|remaining|pending|undone)(?:\s+to\s+do)?"
     r"|what(?:'s| is)?\s+(?:left\s+)?(?:on\s+)?(?:my\s+)?(?:to-?do|todo)(?:\s+list)?"
-    #: "what's still to do" (INBOX 1357, class I: it listed the newest notes).
+    #: "what's left to do" (INBOX 1357, class I: it listed the newest notes).
     r"|what(?:'s| is)?\s+(?:still|left)\s+to\s+do"
     r"|what\s+(?:do|should)\s+i\s+(?:still\s+)?(?:have|need)\s+to\s+(?:do|finish|get done|tick off)"
     r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items)"
@@ -805,7 +818,7 @@ def _open_tasks(ctx: Ctx, limit: int = OPEN_LIMIT) -> list[tuple[str, dict]]:
 
 def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
     """Leaves out an unticked line a later note records as done: "what is
-    still open" agrees with "is X still on my list" (fable-eye F15). The
+    left" agrees with "is X still on my list" (fable-eye F15). The
     notes are read only when there is an open line to check."""
     if not tasks:
         return tasks
@@ -835,6 +848,15 @@ def _not_reminded(reminders: list[dict], tasks: list[tuple[str, dict]]) -> list[
     """A reminder and a checklist line with the same words are one thing to do (G14 b)."""
     said = {study.clean(str(r.get("text") or "")).lower() for r in reminders}
     return [(task, note) for task, note in tasks if study.clean(task).lower() not in said]
+
+
+#: "my to-do list" names the to-do note when there is one (its own items, L103); else every open item.
+_TODO_LIST = re.compile(r"\bto[- ]?do list\b", re.I)
+
+
+def _has_todo_note(ctx: Ctx) -> bool:
+    first = lambda n: re.sub(r"^#+\s*", "", str(n.get("title") or str(n.get("content") or "").split("\n", 1)[0]).strip())  # noqa: E731
+    return any(re.fullmatch(r"to[- ]?do", first(n), re.I) for n in ctx.notes[:300])
 
 
 def _left(ctx: Ctx) -> Reply | None:
@@ -927,7 +949,7 @@ def _asks_due(text: str, today: date) -> bool:
     return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and win is not None and win[1] >= today and not _written_from(text, today))
 
 
-#: "what is in my todo" names the note called Todo (R3-8), not the next two weeks' dated items.
+#: The in-my-to-do ask (`_IN_TODO`) names the to-do note (R3-8), not the next two weeks' dated items.
 _IN_TODO = re.compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
 
 
@@ -954,7 +976,7 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if _BARE_ON.match(text):
         return _due(ctx, ahead_default(today))
     if _LEFT.match(text):
-        return _left(ctx)
+        return None if _TODO_LIST.search(text) and _has_todo_note(ctx) else _left(ctx)
     if _OVERDUE.match(text):
         return _overdue(ctx)
     until = _UNTIL.match(text)
@@ -963,8 +985,17 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if (reply := _when_reply(ctx, text)) is not None:
         return reply
     plan = _PLAN.match(text)
-    if plan and plan.group("st") is not None:
-        return _plan(ctx, ahead_default(today))
     if plan:
-        return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
+        return _plan_reply(ctx, text, plan, today)
     return _due_reply(ctx, text, today) if _asks_due(text, today) else None
+
+
+def _plan_reply(ctx: Ctx, text: str, plan: re.Match, today: date) -> Reply | None:
+    """The plan a `_PLAN` match asks for; None for a topic to organise, which is no week (L-chat-32)."""
+    if _topic_target(plan):
+        return None
+    if plan.group("st") is not None:
+        return _plan(ctx, ahead_default(today))
+    if plan.group("imp") or plan.group("imp2"):
+        return _plan(ctx, (today, today, "today"))
+    return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))

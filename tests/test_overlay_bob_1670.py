@@ -32,9 +32,9 @@ def test_the_engine_has_no_bob_and_the_drawn_window_does_not_move_in_the_air() -
     assert not hasattr(eng, "BOB") and not hasattr(e, "bob_gain")
 
 
-def centroid_y(path: Path, upper: float = 1.0) -> float:
+def centroid_y(path: Path, upper: float = 1.0, left: int | None = None) -> float:
     alpha = np.array(Image.open(path).convert("RGBA"))[..., 3].astype(float)
-    alpha = alpha[: int(alpha.shape[0] * upper)]
+    alpha = alpha[: int(alpha.shape[0] * upper), :left]
     return float((alpha * np.arange(alpha.shape[0])[:, None]).sum() / alpha.sum()) / 2.0  # css px
 
 
@@ -47,7 +47,10 @@ def test_no_frame_set_bobs_the_figure_by_itself(look: str) -> None:
     # Intent moved (INBOX 1696 hh, deskframes-1108): the idle frames now hold the tail at the loop's own 24 moments, so the
     # whole figure's centroid carries the tail's swing (masculine 1.75 px, its curl and glow rising and falling over the
     # loop; the live tail does the same). A bob is the body going up and down, so the idle bound reads the upper half.
-    idle = [centroid_y(d / f"idle{i}.png", 0.5) for i in range(IDLE_COUNT)]
+    # Intent kept, how it is measured moved (L150, the new 269 px wide desk frames): the feminine tail's curl still reaches
+    # into the upper half's right side (0.90 over the loop with it, 0.80 without), so the body is read left of column 150
+    # (feminine 0.80, masculine 0.49); the bound stays 0.9.
+    idle = [centroid_y(d / f"idle{i}.png", 0.5, 150) for i in range(IDLE_COUNT)]
     assert max(walk) - min(walk) <= 3.0, (look, max(walk) - min(walk))
     # Intent kept (no up and down of its own faster than a breath): 24 frames sample the tail's swing
     # at more points than 12 did, and two renders of the same frame differ by about half a pixel, so the

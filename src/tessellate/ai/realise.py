@@ -88,6 +88,7 @@ _AND_WAS = lazy_compile(
 )
 #: "Sam and I", "Sam and me": the person first, as people say it of others.
 _AND_I = lazy_compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
+_YOU_AND_WAS = lazy_compile(r"\b(you and [A-Z][a-z]+(?: [A-Z][a-z]+)?) was(n't)?\b")
 #: A sentence's opening word is not a person: "Then Sam and I" is Sam.
 _NOT_A_NAME = frozenset(
     "Then And But So When After Before Yesterday Today Tomorrow Later Also Now Once Last This Next Finally".split()
@@ -112,7 +113,7 @@ def _case_like(word: str, said: str) -> str:
 #: "oh my", "my bad") or a numeral ("Part I", "World War I", "I/O"). Said as
 #: written; each has a pair in the tests.
 _KEEP = lazy_compile(
-    r"(?i:\b(?:let|excuse|trust|believe|pardon|beats)\s+me\b|\boh my\b|\bmy (?:god|goodness|gosh|bad)\b)"
+    r"(?i:\b(?:let|excuse|trust|believe|pardon|beats)\s+me\b|\bbetween you and me\b|\boh my\b|\bmy (?:god|goodness|gosh|bad)\b)"
     r"|\b(?:Part|Chapter|Book|War|Phase|Season|Volume|Act|Henry|Elizabeth|Charles|George|Louis|Type|Level|Grade|Class)\s+I\b"
     r"|\bI/O\b|\bI-\d",
 )
@@ -137,12 +138,24 @@ def _with_you(match: re.Match) -> str:
     return f"you and {match.group(1)}"
 
 
+#: "ran into a uni friend and we caught the next one": one companion, named
+#: before "we" in the same sentence, is "the two of you" (L-chat-39); "we" alone
+#: or with a group ("her kids") keeps its own word.
+_WE_TWO = lazy_compile(
+    r"\b((?:[Aa]n?|[Mm]y|[Yy]our|[Tt]he) (?:[\w-]+ )?(?:friend|mate|partner|colleague|classmate|flatmate|housemate|mum|dad|"
+    r"brother|sister|neighbour)\b(?:(?! and (?:his|her|their)\b)[^.!?;])*?)\bwe\b"
+)
+
+
 def _shift_words(text: str) -> str:
     text = _AND_I.sub(_with_you, text)
+    #: "Sam and I was late" is "you and Sam were late": the pair takes the plural.
+    text = _YOU_AND_WAS.sub(r"\1 were\2", text)
     text = _AND_WAS.sub(lambda m: f"I{m.group(1)} were{m.group(2) or ''}", text)
     for pattern, said in _PHRASE_RES:
         text = pattern.sub(said, text)
-    return _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    text = _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    return _WE_TWO.sub(lambda m: f"{m.group(1)}the two of you", text)
 
 
 def _shift_part(text: str) -> str:
@@ -392,7 +405,8 @@ def variety(results: list[dict]) -> dict:
     return {
         "openers": len({opener(r["parts"]) for r in results}),
         "wordings": len({wording(r["parts"]) for r in results}),
-        "facts": len({protected(r["parts"]) for r in results}),
+        #: Which note said it is not a fact: an opener that names the note stands in for its title (E23).
+        "facts": len({tuple(p for p in protected(r["parts"]) if p[0] != "title") for r in results}),
     }
 
 
@@ -635,7 +649,7 @@ _TODO_TITLE = frozenset({"todo", "todos", "to-do", "to-dos", "tasks", "chores", 
 
 
 def todo_titled(title: str | None) -> bool:
-    """Whether a note's title names it a to-do list ("Todo", "Weekend todo", "Things to do"): its plain "- "
-    lines are tasks not yet done (bt-compcomp-1109 item 9)."""
+    """Whether a note's title names it a to-do list ("To-do", "Weekend to-do", "Things to do", and their one-word spellings): its plain "- "
+    lines are tasks not yet ticked (bt-compcomp-1109 item 9)."""
     words = [w for w in str(title or "")[:200].lower().split(" ") if w]
     return bool(words) and (words[-1] in _TODO_TITLE or words[-2:] == ["to", "do"])

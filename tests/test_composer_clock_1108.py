@@ -46,8 +46,8 @@ def test_leap_year_totals():
 
 
 def test_tomorrow_and_yesterday():
-    assert said("what's tomorrow's date") == "Tomorrow is Monday 9 November 2026.\n\n_Read as tomorrow as Monday 9 November 2026._"
-    assert said("what was yesterday's date") == "Yesterday was Saturday 7 November 2026.\n\n_Read as yesterday as Saturday 7 November 2026._"
+    assert said("what's tomorrow's date") == "Tomorrow is Monday 9 November 2026.\n\n_Read as the day after today._"
+    assert said("what was yesterday's date") == "Yesterday was Saturday 7 November 2026.\n\n_Read as the day before today._"
     assert said("what was the date yesterday").startswith("Yesterday was Saturday 7 November 2026.")
 
 
@@ -109,3 +109,13 @@ def test_a_20k_text_is_linear_for_the_date_readers(text):
     start = time.perf_counter()
     composer_clock.answer(ctx(text))
     assert time.perf_counter() - start < 0.5
+
+
+def test_a_read_as_line_never_repeats_the_answer_it_follows():
+    """L89 (Z49): the line says how the question was read, not the answer again.
+    Decision 54 keeps the line; these two only echoed their own sentence."""
+    from tessellate.ai import utilities
+
+    assert "Monday 9 November 2026" not in said("what's tomorrow's date").split("_Read as")[1]
+    assert "Saturday 7 November 2026" not in said("what was yesterday's date").split("_Read as")[1]
+    assert utilities._CLOCK_READ[1] == "\nRead as this computer's clock."

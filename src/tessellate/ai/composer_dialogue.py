@@ -15,9 +15,9 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import date as date_type, datetime, time as time_type
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from tessellate.ai import composer_chip_subject, composer_frame, composer_shift, question_noise, recognise as rec, repair_turn, when as when_words
+from tessellate.ai import composer_chip_subject, composer_tables, composer_frame, composer_shift, question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
@@ -26,6 +26,9 @@ from tessellate.ai.composer_read import NoteView
 from tessellate.core import clock
 from tessellate.search import query as query_understanding
 from tessellate.core.lazyre import lazy_compile
+
+if TYPE_CHECKING:
+    from tessellate.ai.composer_answer import _Answer
 
 
 # --- what to ask next -----------------------------------------------------------
@@ -86,7 +89,8 @@ def _subject_pick(question: str, shape: str, terms: list[str], views: list[NoteV
     #: A noun phrase the notes use, never the question's leftover words (R9-1).
     subject = composer_chip_subject.clean(subject, views, question) if subject else subject
     #: Never a stop word, a pronoun or a piece of a contraction (INBOX 1590: "about ve").
-    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
+    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare", "yesno"):
+        #: A yes or no question's span holds its predicate ("Harbor work offline"): no subject to ask the latest on.
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
         return [("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])]
     return None
@@ -112,7 +116,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
     return out[:3]
 
 
-# --- a follow-up, read against the turn before ----------------------------------
+# --- a spoken reference, read against the turn before ----------------------------------
 
 _MORE = lazy_compile(
     r"^\s*(?:tell me more|more|go on|continue|keep going|say more|what else|anything else|and|more please|"
@@ -204,7 +208,7 @@ _CORRECTION = lazy_compile(
 
 #: "shorter", "in more detail": the turn before again, at another length.
 _LENGTH = lazy_compile(
-    r"^\s*(?:shorter|briefer|less|in short|tl;?dr|summari[sz]e that|longer|more detail|in (?:more )?detail|"
+    r"^\s*(?:shorter|briefer|briefly|less|in short|tl;?dr|summari[sz]e that|longer|more detail|in (?:more )?detail|"
     r"(?:make it|say it|be|can you be) (?:shorter|briefer|longer|more detailed))(?:\s+please)?[\s.?!]*$",
     re.I,
 )
@@ -310,7 +314,7 @@ def _spoken_turns(history: list[dict] | None) -> list[dict]:
 
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
-    follow-up that only means something against the turn before (INBOX 725,
+    request that only means something against the turn before (INBOX 725,
     6). None for a question that stands on its own, or with no turn before.
 
     - "Tell me more" is the earlier question again, quoting what it did not.
@@ -399,6 +403,28 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
     return _NOT_THIS
 
 
+#: "the third item", "how many are left" after a checklist answer (CHAT_PLAN U13): said again about that list.
+_ITEM_NTH = lazy_compile(r"^\s*(?:and |what(?:'s| is) )?(?:the )?(first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last)(?: item| one| thing)?[\s?.]*$", re.I)
+_ITEMS_LEFT = lazy_compile(r"^\s*(?:and )?how many (?:items |are |is )*(left|open|done|remaining|ticked|unticked|to go)[\s?.]*$", re.I)
+_LIST_NAME = lazy_compile(r"\bYour (?:note )?\**([^*\n]+?)\**(?: note)? has\b")
+
+
+def _follow_item(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    nth, left = _ITEM_NTH.match(text), _ITEMS_LEFT.match(text)
+    if not (nth or left):
+        return _NOT_THIS
+    #: The list may be a turn or two back ("the second one", then "how many are left").
+    named = next((m for t in reversed(turns[-4:]) if "- [" in str(t.get("answer") or "") and (m := _LIST_NAME.search(str(t.get("answer"))))), None)
+    if not named:
+        return _NOT_THIS
+    if nth:
+        return FollowOn(f"what is the {nth.group(1).lower()} item on the {named.group(1)}", previous, "", "ordinal")
+    if left:
+        state = "done" if left.group(1).lower() in ("done", "ticked") else "open"
+        return FollowOn(f"how many items are {state} on the {named.group(1)}", previous, "", "ordinal")
+    return _NOT_THIS
+
+
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     correction = _CORRECTION.match(text)
     #: "no, that's wrong" complains; it names no note to prefer (INBOX 1668 b).
@@ -414,7 +440,7 @@ def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) 
 def _follow_length(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     if not _LENGTH.match(text):
         return _NOT_THIS
-    shorter = text.lstrip().lower().startswith(("shorter", "briefer", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
+    shorter = text.lstrip().lower().startswith(("shorter", "briefer", "briefly", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
     base = _without_length(previous)
     return FollowOn(f"briefly, {base}" if shorter else f"{base.rstrip('?.!')} in detail?", previous, "", "length", str(last.get("prefer") or ""))
 
@@ -523,9 +549,19 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return _swap_reading(text, previous)
 
 
+#: "and the dentist" with no "?" after a question: a thing of its own (an article, then up to three words), so it
+#: asks the turn before again of it (L-chat-9); "and I went home" or "and then" is a statement.
+_BARE_AND_THING = lazy_compile(r"^(?:the|my|our|his|her|their)\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}$", re.I)
+
+
+def _statement_not_ask(swap: Any, text: str) -> bool:
+    """A swap with a side but no "?" is a statement, unless the side is a bare thing ("and the dentist")."""
+    return swap.group("y") is not None and not text.rstrip().endswith("?") and not _BARE_AND_THING.match(swap.group("y").strip())
+
+
 def _swap_reading(text: str, previous: str) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
-    if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
+    if swap and _statement_not_ask(swap, text):
         swap = None
     if not swap:
         return _NOT_THIS
@@ -725,7 +761,16 @@ def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 
 #: "until then", "before then": the day the last answer showed.
-_THEN = lazy_compile(r"\b(?:until|till|til|before|after|since|by) then\b", re.I)
+_THEN = lazy_compile(r"\b(?:until|till|til|before|after|since|by) then\b|^(?:what|who|where|how|which|did|do|was|were)\b.{3,60}?\s(?P<bare>then)\W*$", re.I)
+#: "what did I do there": the place the last answer named, said as "in Lisbon" (not "is there" or "there is").
+_THERE = lazy_compile(r"^(?:what|who|where|how|which|did|do|was|were|when)\b(?!.*\b(?:is|are|was|were)\s+there\b)(?!.*\bthere\s+(?:is|are|was|were)\b).{3,60}?\s(?=there\W*$)", re.I)
+
+
+def _follow_there(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    found, place = _THERE.match(text), str(_frame_of(last).get("place") or "")
+    if not found or not place:
+        return _NOT_THIS
+    return FollowOn(f"{found.group(0)}in {place}", previous, "", "bound")
 
 
 def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -737,7 +782,7 @@ def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any
         day = date_type.fromisoformat(days[0])
     except ValueError:
         return _NOT_THIS
-    said = found.group(0)[: -len("then")] + f"{day.day} {day:%B} {day.year}"
+    said = (found.group(0)[: found.start("bare") - found.start()] + "on " if found.group("bare") else found.group(0)[: -len("then")]) + f"{day.day} {day:%B} {day.year}"
     return FollowOn(text[: found.start()] + said + text[found.end():], previous, "", "bound")
 
 
@@ -773,12 +818,16 @@ def other_in_frames(text: str, turns: list[dict]) -> bool:
 
 
 def _follow_other(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
-    if not _OTHER_ONE.match(text.strip()) or len(turns) < 2:
+    if not _OTHER_ONE.match(text.strip()):
         return _NOT_THIS
-    listed, picked = _frame_of(turns[-2]), _frame_of(last).get("note_ids") or []
+    listed, picked = _frame_of(turns[-2]) if len(turns) >= 2 else {}, _frame_of(last).get("note_ids") or []
     left = [i for i in listed.get("note_ids") or [] if isinstance(i, int) and i not in picked[:1]]
-    if not left:
+    if not left and last.get("objects"):
         return _NOT_THIS
+    if not left:
+        #: No list was picked from: "the other one" is the question before again, quoting what it did not
+        #: (L-chat-249: it was searched as the bare words and answered with any note).
+        return _follow_more("more", previous, last, turns)
     return FollowOn(str(listed.get("ask") or previous), previous, "", "bound", note_ids=(left[0],))
 
 
@@ -835,8 +884,8 @@ def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
 
 
 _FOLLOW_READERS = (
-    _follow_shift, _follow_more, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_then, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
+    _follow_shift, _follow_more, _follow_item, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
+    _follow_then, _follow_there, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
 )
 
 
@@ -959,6 +1008,20 @@ def _person(asked: str, lead: dict) -> str:
     return next((n for n in sorted(names) if re.search(rf"\b{n}\b", asked, re.I) and n not in _CALENDAR_NAMES), "")
 
 
+#: "flew to Lisbon", "stayed in Porto": a motion or stay verb, or in/at/near, then the name; the fact graph
+#: types "to X" as a person, so the verb is what tells a place from "talked to Anna".
+_PLACE_CUE = lazy_compile(r"\b(?:flew|went|drove|travell?ed|moved|visited|trip|walked|sailed|stayed|lived|in|at|near)\s+(?:(?:out |back )?to\s+|in\s+|at\s+)?(?:the\s+)?$", re.I)
+
+
+def _place(text: str, today) -> str:  # noqa: ANN001  # a date
+    """The first place the answer's lead names ("We flew to Lisbon"), read by the fact graph."""
+    from tessellate.ai import factgraph
+
+    lead = text.strip().split("\n\n", 1)[0]
+    found = factgraph.of_kind({"id": 0, "content": lead, "created_at": today.isoformat()}, "entity")
+    return next((str(f.attrs.get("name") or "") for f in found if f.attrs.get("type") == "place" or (f.attrs.get("type") in ("person", "unknown") and _PLACE_CUE.search(lead[: f.start]))), "")[:60]
+
+
 def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
     lead = text.strip().split("\n\n", 1)[0]
     days: list[str] = []
@@ -967,6 +1030,17 @@ def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
         if got is not None and got.date().isoformat() not in days:
             days.append(got.date().isoformat())
     return days[:FRAME_NOTES]
+
+
+#: The question's own words inside or at the edge of a subject span: "book am I reading" holds
+#: "am I", "left on my to-do list" starts with a state word and "on my" (L125).
+_SPAN_VERB = re.compile(r"\b(?:am|is|are|do|does|did|have|has|was|were|will|can|could|would)\s+(?:i|we|you)\s+", re.I)
+_SPAN_EDGE = re.compile(r"^(?:(?:left|on|in|my|the|of|about|for)\s+)+", re.I)
+
+
+def _noun_span(span: str) -> str:
+    """A subject span as a noun phrase: no question verb inside it, no leading state word."""
+    return _SPAN_EDGE.sub("", _SPAN_VERB.sub("", span)).strip()
 
 
 def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # noqa: ANN001  # a date
@@ -980,12 +1054,14 @@ def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # n
         return {}
     by_id = {n.get("source_id", n.get("id")): n for n in notes or []}
     lead = by_id.get(ids[0]) or {}
-    span = _asked_span(asked, subject_terms(asked)).strip(" “”\"'") if asked else ""
+    span = _noun_span(_asked_span(asked, subject_terms(asked)).strip(" “”\"'")) if asked else ""
     text = str(result.get("text") or "")
+    place = _place(text, today)
     return {
         "note_ids": ids,
         "subject": _plain(span or composer_frame.note_title(lead)),
         "person": _person(asked, lead) if lead else "",
+        **({"place": place} if place else {}),
         "ask": " ".join(asked.split())[:200],
         "dates": _frame_days(text, today),
         "items": [_plain(m.group("line")) for m in _LIST_LINE.finditer(text)][:FRAME_ITEMS],
@@ -998,3 +1074,26 @@ def repeats(text: str, history: list[dict] | None) -> bool:
     lead = (text or "").strip().split("\n", 1)[0].strip()
     last = str(((history or [{}])[-1] or {}).get("answer") or "").strip().split("\n", 1)[0].strip()
     return bool(lead) and lead == last
+
+
+#: The wording of each next-question chip in the natural voice, to the key whose variants the other voice has.
+_CHIP_KEYS = ("next_tag_a", "next_tag_b", "next_note_a", "next_note_b", "next_latest_a", "next_when_a")
+
+
+def voiced_chips(out: "_Answer", chips: list[list[tuple]]) -> list[list[tuple]]:
+    """The chips' fixed words in the answer's voice (L97). A chip is built with the natural wording; the second
+    half of a pair takes the index its first half chose, so "What does the entry “X” state?" never splits."""
+    voice = composer_tables.VOICE_VARIANTS[out.voice]
+    keys = {PHRASES[k]: k for k in _CHIP_KEYS}
+    chosen: dict[str, int] = {}
+
+    def said(part: tuple) -> tuple:
+        key = keys.get(part[1]) if part[0] == "template" else None
+        if key is None:
+            return part
+        lead = composer_tables.PAIRED.get(key, key)
+        if lead == key:
+            chosen[key] = voice[key].index(out.voiced(key))
+        return ("template", PHRASES[voice[key][chosen.get(lead, 0)]])
+
+    return [[said(part) for part in chip] for chip in chips]

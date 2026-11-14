@@ -133,9 +133,20 @@ def _has_phrase(subject: str, topics: list[dict]) -> bool:
 
 
 _OPENINGS = (
-    (re.compile(r"\bscan(?:ning)?\b", re.I), "ocr-workspace"),
-    (re.compile(r"\b(?:make|create|add|start|write|use)\b.{0,20}\b(?:check ?lists?|to-?do lists?|task lists?)\b", re.I), "tasks"),
-    (re.compile(r"\bnothing (?:happens|works|responds)\b|\b(?:doesn'?t|does not|won'?t) (?:work|respond)\b", re.I), "troubleshooting"),
+    (re.compile(r"\bscan(?:ning)?\b", re.I), "ocr-workspace", ""),
+    (re.compile(r"\b(?:make|create|add|start|write|use)\b.{0,20}\b(?:check ?lists?|to-?do lists?|task lists?)\b", re.I), "tasks", ""),
+    (re.compile(r"\bnothing (?:happens|works|responds)\b|\b(?:doesn'?t|does not|won'?t) (?:work|respond)\b", re.I), "troubleshooting", ""),
+    #: A how-to whose words the keyword rules weigh against the topic's own point (L-chat-41): the third is the sentence
+    #: that is its first step, when that is not the topic's first ("Switch or create one from the picker").
+    (re.compile(r"\b(?:lock|protect|secure)\b.{0,30}\bpassword\b|\bpassword\b.{0,30}\b(?:lock|protect)\b", re.I), "security", ""),
+    (re.compile(r"\bundo\b.{0,20}\bdelet\w*", re.I), "undo-bin", ""),
+    (re.compile(r"\btour\b", re.I), "tour", ""),
+    (re.compile(r"\b(?:switch|change|go)\b.{0,15}\bspaces?\b", re.I), "spaces", r"Switch"),
+    (re.compile(r"\baction items?\b", re.I), "meetings", r"Write an action item"),
+    (re.compile(r"\bsearch\b.{0,12}\bby\b|\boperators?\b", re.I), "search", r"Operators"),
+    (re.compile(r"\btags?\b.{0,15}\b(?:as i (?:type|write)|while i (?:type|write))", re.I), "tags-categories", r"Type #word"),
+    (re.compile(r"\b(?:do|work out|calculate)\b.{0,6}\bsums?\b", re.I), "calculator", r"Sum takes"),
+    (re.compile(r"\b(?:get to|open|find)\b.{0,10}\bcalculator\b", re.I), "calculator", r"Open it from"),
 )
 _OFF = re.compile(r"\b(?:turn|switch|shut|get rid of|disable|hide|stop)\b.{0,10}\boff\b|\b(?:turn off|switch off|disable|hide|get rid of)\b", re.I)
 _OFF_SENTENCE = re.compile(r"\bOff\b|\bturn(?:ed)? off\b")
@@ -148,16 +159,22 @@ def _fronted(topic: dict, topics: list[dict]) -> list[dict]:
 def _opening_lead(question: str, topics: list[dict], by_id: dict[str, dict]) -> Led | None:
     """A how-to that opens with its topic's first sentence, or a "turn off"
     that leads with the sentence naming Off (the steps turn it on)."""
-    for pattern, topic_id in _OPENINGS:
+    for pattern, topic_id, starts in _OPENINGS:
         if pattern.search(question) and topic_id in by_id:
             first = _sentences(by_id[topic_id])
-            return Led(_fronted(by_id[topic_id], topics), first[0] if first else "")
+            step = next((s for s in first if re.match(starts, s)), "") if starts else ""
+            return Led(_fronted(by_id[topic_id], topics), step or (first[0] if first else ""))
     if _OFF.search(question):
         for topic in topics:
             line = next((s for s in _sentences(topic) if _OFF_SENTENCE.search(s)), "")
             if line:
                 return Led(_fronted(topic, topics), line, steps=False)
     return None
+
+
+def _bare(words: str) -> str:
+    """A phrase without its articles, as `subject_of` gives it ("choose model")."""
+    return " ".join(w for w in words.lower().split() if w not in ("a", "an", "the"))
 
 
 def _subject_lead(subject: str, topics: list[dict], by_id: dict[str, dict], title_of) -> Led | None:  # noqa: ANN001
@@ -171,6 +188,12 @@ def _subject_lead(subject: str, topics: list[dict], by_id: dict[str, dict], titl
     found = _subject_sentence(subject, everything)
     if found is not None:
         return Led(_fronted(found[0], topics), found[1])
+    #: "what is note history": X is a topic's own keyword, after a sentence that says what X is (L-chat-1, INBOX 904 B86).
+    asked = _bare(subject)
+    topic = next((t for t in everything if asked in (_bare(k) for k in t.get("keywords") or ())), None)
+    if topic is not None:
+        first = _sentences(topic)
+        return Led(_fronted(topic, topics), _first_clause(first[0]) if first else "")
     named = _has_phrase(subject, topics[:2]) or set(_stems(subject)) <= set(_stems(title_of(topics[0])))
     #: "the document views": every word is the top topic's own (title or body), so it is about it.
     named = named or set(_stems(subject)) <= set(_stems(title_of(topics[0]) + " " + str(topics[0].get("body") or "")))
@@ -212,7 +235,8 @@ def hands_over(question: str) -> dict | None:
     if not text:
         return None
     if review_kind(text) or any(rx.search(text) for rx in _MINE):
-        return {"content": NOTEBOOK, "badges": [], "sources": [], "asks": [text], "asks_to": "chat"}
+        #: The chip is the question as a button says it: a capital first (L-chat-35).
+        return {"content": NOTEBOOK, "badges": [], "sources": [], "asks": [text[:1].upper() + text[1:]], "asks_to": "chat"}
     return None
 
 
@@ -226,6 +250,7 @@ _COST = re.compile(
     r"|\b(?:price|pricing|subscription|free of charge)\b|\bcosts?\b",
     re.I,
 )
+_SIZE = re.compile(r"\b(?:space|room|disk|storage|memory|ram|megabytes?|gigabytes?|mb|gb)\b", re.I)
 _PLATFORM = re.compile(r"\b(?P<p>android|ios|iphone|ipad)\b", re.I)
 _APP_FOR = re.compile(r"\b(?:app|apps|available|download|install|version)\b", re.I)
 
@@ -236,7 +261,8 @@ def yes_no(question: str) -> tuple[str, list[str]] | None:
     text = " ".join((question or "").split())
     if _NEEDS_MODEL.search(text):
         return "No. Everything except Chat, drafting and skills works without one, and Notes, Ask answers from your notes.", ["models", "troubleshooting"]
-    if _COST.search(text):
+    #: "how much space does it use" asks about the disk, not the price (L-chat-38).
+    if _COST.search(text) and not _SIZE.search(text):
         return (
             "There is nothing to buy in the app: Tessellate is AGPL-3.0 open source (Settings, Help, Credits). "
             "A hosted model you connect is billed by its own provider.",
@@ -317,3 +343,30 @@ def related_titles(topics: list[dict], shown: str, title_of) -> list[str]:  # no
     said in the answer (G5 h: "Related: Set a reminder" under that answer)."""
     first, said = title_of(topics[0]), shown.lower()
     return [t for t in (title_of(topic) for topic in topics[1:]) if t != first and t.lower() not in said]
+
+
+# --- the topic's opening line, and where a place goes (L-chat-41) -----------
+
+_HOW_OR_WHERE = re.compile(r"^\s*(?:how (?:do|can|should|would) (?:i|you|we)|how to|can i|is there a way|where|which (?:tab|setting|menu))\b", re.I)
+_SHORT_VERB = re.compile(r"\b(?:is|are|keeps?|has|have|lets?|needs?|works?)\b")
+#: "Where do my notifications go", "where is my data stored": about what happens, not a place to open, so the topic's own sentence leads and the place follows it.
+_PLACE_LAST = re.compile(
+    r"^where (?:do|does|will) .{2,40}\b(?:go|end up|show up|appear|live)\W*$|^where (?:is|are) .{2,40}\b(?:stored|saved|kept)\W*$", re.I
+)
+
+
+def place_last(question: str) -> bool:
+    """Whether the lead sentence comes before "It's in ..." for this where-question."""
+    #: Stripped first and one `\W*` at the end (not `\s*\W*`, which overlap): linear on a run of tabs (CodeQL 2296).
+    return bool(_PLACE_LAST.match((question or "").strip()))
+
+
+def short_opening(question: str, topic: dict) -> str:
+    """A topic's own opening line when it is too short to be a help sentence
+    ("Web search is opt-in.", "Documents keep a history."): a how-to is
+    answered from the top of its topic, so that line leads."""
+    if not _HOW_OR_WHERE.match(question or ""):
+        return ""
+    first = re.split(r"(?<=[.!?])\s+(?=[A-Z\"“(])", str(topic.get("body") or "").strip(), maxsplit=1)[0]
+    #: A heading ("Settings, Import & export.") has no verb and is not a line.
+    return first if first.endswith(".") and 2 <= len(first.split()) < 5 and _SHORT_VERB.search(first) else ""

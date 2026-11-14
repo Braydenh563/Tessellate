@@ -10,11 +10,11 @@ unparseable call impossible. It writes no prose, and this provider does not
 pretend it does.
 
 **How it runs.** The `needle` extra (`core/extras.py`) downloads the prebuilt
-engine for this platform, `libneedle3`, and the `needle3.cact` weights into
+engine for this platform, `libcactus` (cactus_runtime 4.1.0), and the `needle3.cact` weights into
 the data dir. This module loads the library with `ctypes`, hands it the
 weights once, and speaks the five-function C API its header declares
-(`needle_load`, `needle_init`, `needle_complete`, `needle_reset`,
-`needle_last_error`). The engine is one process-global model and not
+(`cactus_load`, `cactus_init`, `cactus_complete`, `cactus_reset`,
+`cactus_last_error`). The engine is one process-global model and not
 thread-safe, so every call holds `_lock`. The `cactus-needle` Python package
 is not used: it would fetch from Hugging Face at first use and carries its
 own telemetry client.
@@ -33,7 +33,7 @@ because the promise is cheap to keep. INBOX 699, 2026-10-06: the install now
 reads the engine's imported symbols itself (`core/native_imports.py`, ELF, PE
 and Mach-O) and refuses one that imports a socket, name-lookup or HTTP call;
 all six pinned glibc, macOS and Windows engines were read that way and import
-none. Not verified: a packet capture of a real run, and the two musl engines'
+none. Engine 4.1.0 (L-chat-241): all eight `libcactus` wheels read the same way, none imports a network call; `CACTUS_TELEMETRY=0` is set too. Not verified: a packet capture of a real run, and the two musl engines'
 contents (their hashes are pinned; the install check covers them).
 
 **Only imported when installed.** `ai/tool_fallback.py` asks the extra's
@@ -69,7 +69,7 @@ from tessellate.ai import needle_control
 from tessellate.ai.provider import Provider, ProviderError, normalise_tool_calls
 
 #: Written into the environment before the engine loads (see the docstring).
-TELEMETRY_OFF = {"NEEDLE_TELEMETRY": "0", "DO_NOT_TRACK": "1"}
+TELEMETRY_OFF = {"NEEDLE_TELEMETRY": "0", "DO_NOT_TRACK": "1", "CACTUS_TELEMETRY": "0"}
 
 #: The name the agent's stats and Settings show.
 MODEL_NAME = "needle3"
@@ -84,10 +84,10 @@ _engine: _Engine | None = None
 def library_name() -> str:
     """The engine's file name on this platform, as the extra unpacks it."""
     if sys.platform == "darwin":
-        return "libneedle3.dylib"
+        return "libcactus.dylib"
     if sys.platform == "win32":
-        return "libneedle3.dll"
-    return "libneedle3.so"
+        return "libcactus.dll"
+    return "libcactus.so"
 
 
 def _folder() -> Path | None:
@@ -109,18 +109,23 @@ class _Engine:
         # them: the whole point of the owner's "telemetry forced off".
         os.environ.update(TELEMETRY_OFF)
         lib = _load_library(str(folder / library_name()))
-        lib.needle_init.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-        lib.needle_init.restype = ctypes.c_int
-        lib.needle_complete.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int]
-        lib.needle_complete.restype = ctypes.c_int
-        lib.needle_load.argtypes = [ctypes.c_char_p, ctypes.c_uint64]
-        lib.needle_load.restype = ctypes.c_int
-        lib.needle_reset.argtypes = []
-        lib.needle_reset.restype = None
-        lib.needle_last_error.argtypes = []
-        lib.needle_last_error.restype = ctypes.c_char_p
+        lib.cactus_init.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+        lib.cactus_init.restype = ctypes.c_int
+        #: (text, float samples, their count, max new tokens, buffer, size);
+        #: the samples are for audio models and unused here.
+        lib.cactus_complete.argtypes = [
+            ctypes.c_char_p, ctypes.POINTER(ctypes.c_float), ctypes.c_int,
+            ctypes.c_int, ctypes.c_char_p, ctypes.c_int,
+        ]
+        lib.cactus_complete.restype = ctypes.c_int
+        lib.cactus_load.argtypes = [ctypes.c_char_p, ctypes.c_uint64]
+        lib.cactus_load.restype = ctypes.c_int
+        lib.cactus_reset.argtypes = []
+        lib.cactus_reset.restype = None
+        lib.cactus_last_error.argtypes = []
+        lib.cactus_last_error.restype = ctypes.c_char_p
         weights = (folder / "needle3.cact").read_bytes()
-        if lib.needle_load(weights, len(weights)) < 0:
+        if lib.cactus_load(weights, len(weights)) < 0:
             raise ProviderError(f"needle could not load its weights: {self._error(lib)}")
         self.lib = lib
         self._bound: tuple[bytes, bytes] | None = None
@@ -129,7 +134,7 @@ class _Engine:
     @staticmethod
     def _error(lib) -> str:
         try:
-            raw = lib.needle_last_error()
+            raw = lib.cactus_last_error()
         except Exception:  # noqa: BLE001  # the reason is a courtesy
             return "no reason given"
         if isinstance(raw, bytes):
@@ -141,15 +146,15 @@ class _Engine:
         key = (system.encode("utf-8"), tools_json.encode("utf-8"))
         with _lock:
             if key != self._bound:
-                if self.lib.needle_init(key[0], key[1], None) < 0:
+                if self.lib.cactus_init(key[0], key[1], None) < 0:
                     self._bound = None
                     raise ProviderError(f"needle could not take these tools: {self._error(self.lib)}")
                 self._bound = key
             # Every turn stands alone: the agent sends the whole request each
             # time, and needle's own history would only repeat it.
-            self.lib.needle_reset()
-            code = self.lib.needle_complete(
-                text.encode("utf-8"), MAX_NEW_TOKENS, self._buffer, len(self._buffer)
+            self.lib.cactus_reset()
+            code = self.lib.cactus_complete(
+                text.encode("utf-8"), None, 0, MAX_NEW_TOKENS, self._buffer, len(self._buffer)
             )
             if code < 0:
                 raise ProviderError(f"needle failed: {self._error(self.lib)}")
@@ -250,6 +255,12 @@ def _names_a_tool(arguments: object, offered: dict) -> bool:
         return False
     words = " ".join(str(v) for v in arguments.values() if isinstance(v, str)).lower()
     return any(name and name in words for name in offered)
+
+
+def _engine_calls(answer: dict) -> list:
+    """Engine 4.1.0 files a call it judged unsure under `suppressed_calls`;
+    the 40-case bench scores 0.875 reading both, 0.85 on 3.0.1 (L-chat-241)."""
+    return list(answer.get("function_calls") or []) + list(answer.get("suppressed_calls") or [])
 
 
 def _cleaned_calls(calls: list, schemas: list[dict], text: str, strict: bool = True) -> list[dict]:
@@ -423,7 +434,7 @@ class NeedleProvider(Provider):
         #: fills its slots (`ai/needle_control.py`).
         shown = needle_control.offer(schemas, decided) if decided else shortlist(schemas, text)
         answer = self._engine().complete(_date_fact(), json.dumps(shown), text)
-        raw_calls = _cleaned_calls(answer.get("function_calls") or [], shown, text, strict=not decided)
+        raw_calls = _cleaned_calls(_engine_calls(answer), shown, text, strict=not decided)
         if decided:
             verdict = needle_control.validate(decided, raw_calls, text, datetime.now(), mood)
             raw_calls = [needle_control.call_for(decided, verdict.call)] if verdict.call else []

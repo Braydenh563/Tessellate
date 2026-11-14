@@ -352,7 +352,7 @@ MID_TOPICS.extend(
                     "rule that needs no AI, with its count and one line on what it finds, the ones with "
                     "nothing to tidy last; press a row to open that review and its back button to return to "
                     "the overview. The reviews: Links to explain (Add reasons gives a link that only says "
-                    "similar in meaning what the two notes share, a tag, a name or a week), Weak automatic "
+                    "similar in meaning what the two notes share, a tag, a name, a week or a sentence each that says the same), Weak automatic "
                     "links (Remove links), Tags Atlas added (tags written by Atlas or a background pass, "
                     "never changed by you, that fit their note poorly; Remove tags), Tags used once (Remove "
                     "tags), Tags that look alike (Merge tags), Notes without a category (Move notes, to the "
@@ -644,7 +644,7 @@ MID_TOPICS.extend(
             "body": (
                 (
                     "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
-                    "answer, with From your notes under it; off, the answer is From your notes, with no AI. It opens with the answer, or for"
+                    "answer, marked Atlas and the model's name; off, it is marked Atlas's assistant, from your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which months (You have eleven notes about uni, and they follow one"
                     " semester, July to early November). Three or more dated notes then read as a few short paragraphs, notes that go together in one sentence, and one"
                     " closing insight (your slang is quoted, a finish congratulated). One source mark lights its note. "
@@ -660,7 +660,7 @@ MID_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence cites a note; the app adds only joining words and what it measured, and says "
                     "which of your words no note held. The badge by the name says who "
-                    "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
+                    "wrote it (Atlas's assistant, Atlas, or Composer); hover or click it for what "
                     "that means. The No model connected line above the Chat box "
                     "and the Ask box has a close button: it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
@@ -668,6 +668,22 @@ MID_TOPICS.extend(
                 )
             ),
             "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            #: L737 (owner, 2026-11-12): who answers plain Ask, as a Settings choice.
+            "id": "ask-answerer",
+            "keywords": (
+                "who answers ask", "who answers plain ask", "ask answered by", "ask use my model", "ask from my notes by default",
+                "default answerer", "notes answerer", "ask without the model", "small model ask",
+            ),
+            "body": (
+                "Settings, Models, Who answers plain Ask: Your model (the default) or Quoted from your notes. With your model, "
+                "Ask writes the answer and cites your notes. With Quoted from your notes, a plain question is answered by "
+                "Atlas's assistant, quoting your notes with no AI; a small model (3B and under) answers best this way. It is "
+                "the Ask box's own switch beside the answer length, and this computer keeps its own choice. "
+                "With no model running the answer is always from your notes."
+            ),
+            "badge": {"label": "Models", "section": "models", "target": "ask-answerer-row"},
         },
         {
             "id": "follow-up-trail",
@@ -762,7 +778,11 @@ MID_TOPICS.extend(
                 "reads more notes (5, then 10, 15, up to 20) and ignores a category the "
                 "question named, so a note the first read missed can come in. Regenerate "
                 "as lists your personas: the same question answered as one of them, for "
-                "this answer only, and the persona picker stays as it was. This answer "
+                "this answer only, and the persona picker stays as it was. Regenerate "
+                "with answers once with the same model, another installed one, or "
+                "without a model, from your notes alone. Every regenerate or edit and "
+                "resend keeps the earlier answer: a pager reading 1 of 2 under the "
+                "answer steps between versions, and the latest shows first. This answer "
                 "is wrong marks the whole answer wrong: the notes it cited come last for a "
                 "question like it, and are left out once you say so twice. It shows "
                 "only where the answer cites a note, never in a private chat, and Undo "
@@ -792,7 +812,8 @@ MID_TOPICS.extend(
                 "In Chat, a run's What changed list has an Undo on each change, "
                 "and Undo the run puts back every note it changed at once, after "
                 "showing what will go back (a board item cannot be undone, and "
-                "the list says so)."
+                "the list says so). A muted line under the list says what the run "
+                "used of its steps, tokens and seconds."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -864,7 +885,7 @@ MID_TOPICS.extend(
                 "installed models", "remove a model", "uninstall a model", "free disk space",
             ),
             "body": (
-                "Settings, Models, Suggested downloads: cards grouped by purpose "
+                "Settings, Models, Suggested downloads lists models to download as cards grouped by purpose "
                 "(chat and filing, bigger machines, search, images, reading "
                 "text), each with its size on disk, the memory it asks for, what "
                 "it is good at and whether it fits this computer, and one "

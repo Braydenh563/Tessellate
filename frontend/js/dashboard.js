@@ -1987,13 +1987,6 @@ async function renderDashboard({ refresh = false } = {}) {
   }));
 }
 
-//: `fn` once `count` animation frames have passed: the first has painted what
-//: was just changed. The one frame loop for "after it has drawn" in this file
-//: (tests/test_frontend_wake_sources.py counts them).
-function afterFrames(fn, count = 2) {
-  requestAnimationFrame(() => (count > 1 ? afterFrames(fn, count - 1) : fn()));
-}
-
 //: **While the grid fills unseen, its outline shows** (INBOX 596, the owner:
 //: "some skeleton loaders are missing like on the dashboard"). The grid is
 //: hidden until its widgets settle (`.dash-filling`, so the cards do not move
@@ -2721,26 +2714,11 @@ function generateDigest(onDelta) {
 
 async function streamDigest(onDelta) {
   const response = await api("/insights/digest/stream", { method: "POST" });
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
   let text = "";
   let cacheable = true;
   // NDJSON: one JSON object per line, same shape as the chat stream.
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      let event;
-      try {
-        event = JSON.parse(line);
-      } catch {
-        continue; // a partial line: the next chunk completes it
-      }
+  await ensureModule("ndjson");
+  await api.ndjson(response, (event) => {
       if (event.type === "answer") {
         text += event.delta;
         if (onDelta) onDelta(text);
@@ -2753,8 +2731,7 @@ async function streamDigest(onDelta) {
       } else if (event.type === "done") {
         cacheable = event.cacheable !== false;
       }
-    }
-  }
+  }, { label: "Digest stream" });
   return { text, cacheable };
 }
 

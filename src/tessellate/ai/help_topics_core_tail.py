@@ -66,7 +66,7 @@ TAIL_TOPICS.extend(
                 "auto size",
             ),
             "body": (
-                "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
+                "A key picks each tool (Ctrl+Shift+B opens Boards & maps). "
                 "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
                 "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
@@ -163,7 +163,7 @@ TAIL_TOPICS.extend(
                 "present with a pointer",
             ),
             "body": (
-                "The laser pointer, while presenting a board or a map. Press L, or the pointer button in the "
+                "The laser pointer turns your cursor into a dot while you present a board or a map. Press L, or the pointer button in the "
                 "presentation bar, and the cursor becomes a dot that follows your mouse; nothing is drawn on the "
                 "board. The small menu beside the button sets the trail (on or off), the look (dot, trail, ring "
                 "or spotlight), the ring's pulse (on or off, shown while the look is Ring) and the colour (from the board's colours). Your choice is kept in this browser. "
@@ -347,7 +347,7 @@ TAIL_TOPICS.extend(
                 "architecture diagram",
             ),
             "body": (
-                "To save your own: select things and press "
+                "Save your own to the library: select things and press "
                 "Ctrl+Shift+S, or right-click, Save to the library, for a selection, a drawn shape, a style, a sticky "
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
@@ -732,7 +732,7 @@ TAIL_TOPICS.extend(
                 "alphabetical branches",
             ),
             "body": (
-                "Mind map keys (Library, Boards and maps). With a topic selected: Tab adds a child, Enter adds a "
+                "A map is built by keyboard: with a topic selected, Tab adds a child, Enter adds a "
                 "topic right after it and Shift+Enter right before it (what you "
                 "type next is the new topic's words), Ctrl+D copies it as the "
                 "next sibling, Ctrl+Shift and the arrows move it among its "
@@ -774,7 +774,9 @@ TAIL_TOPICS.extend(
                 "tree table",
                 "colour by",
                 "color by",
-                "tidy",
+                "tidy the map",
+                "tidy my map",
+                "tidy the layout",
                 "layout of the map",
                 "checkbox on a topic",
                 "topic a task",
@@ -923,8 +925,7 @@ TAIL_TOPICS.extend(
                 "find in every document",
             ),
             "body": (
-                "Document editor keys (Library, Documents; Ctrl+Shift+D starts "
-                "one). While a document is open, Ctrl+K lists every document "
+                "Ctrl+Shift+D starts a document; while one is open, Ctrl+K lists every document "
                 "command (on selected text it makes a link) and ? shows the ones with keys. Ctrl+S saves, Ctrl+B "
                 "bold, Ctrl+I italic, Ctrl+U underline, Ctrl+E inline code, Ctrl+Shift+S strike "
                 "through, Ctrl+1, Ctrl+2, Ctrl+3 or Ctrl+Alt+1 to 6 headings, Ctrl+Shift+8, "

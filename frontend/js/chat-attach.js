@@ -1,5 +1,5 @@
 // chat-attach.js: extract notes, attaching notes and images, the attach button,
-// follow-up chips, the answer timer. Moved out of app.js on 2026-09-26 as one
+// suggested-question chips (`.followups`), the answer timer. Moved out of app.js on 2026-09-26 as one
 // contiguous range (INBOX 426 cc, docs/roadmap/agent-remaining/appjs-split.md).
 // A classic script sharing app.js's globals, loaded in app.js's old order;
 // nothing in an earlier file calls into it while the page loads
@@ -1097,7 +1097,7 @@ function newChatConversation() {
   // A pending question belongs to the conversation that asked it, starting
   // a new one must not silently answering_agent-tag whatever gets typed first.
   chatAwaitingAgentAnswer = false;
-  // batch-a.md's "left open" item, its actual cause: `#chat-suggest` is on
+  // batch-a.md's last item, its actual cause: `#chat-suggest` is on
   // loan to `.chat-empty` (see `openConversation`'s own long comment below)
   // whenever the pane it is leaving was itself empty with suggestions
   // already shown. A bare `replaceChildren()` throws the loaned element away

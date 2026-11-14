@@ -173,24 +173,16 @@ async function streamDraft(body, signal, onEvent) {
     body: JSON.stringify(body),
     signal,
   });
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffered += decoder.decode(value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop(); // the last piece may be half a line
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      try {
-        onEvent(JSON.parse(line));
-      } catch {
-        recordBrowserLog("WARN", [`[Draft stream] Unparseable line: ${line.slice(0, 80)}`]);
-      }
+  //: A handler that throws on one frame is logged, not allowed to end a draft that is half written.
+  const safely = (event) => {
+    try {
+      onEvent(event);
+    } catch (err) {
+      recordBrowserLog("WARN", [`[Draft stream] A handler threw on a ${event?.type} line: ${err?.message}`]);
     }
-  }
+  };
+  await ensureModule("ndjson");
+  await api.ndjson(response, safely, { label: "Draft stream" });
 }
 
 //: **Name the draft.** `POST /drafts/title` shipped with the writing room

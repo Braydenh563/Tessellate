@@ -299,3 +299,31 @@
   font-variant-numeric: tabular-nums;
   text-align: end;
 }
+
+/* Ask below 600px (INBOX 1843, L228): the answer head wraps with the model badge on its
+   own line, Matching records is one closed row, the answer's line is capped. */
+#ask .ask-records-fold {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  .chat-half h3.answer-head {
+    flex-wrap: wrap;
+  }
+  .chat-half h3.answer-head > .answer-model {
+    order: 3;
+    flex: 1 1 100%;
+  }
+  #ask .chat-half > h3.panel-head:not(.answer-head) {
+    display: none;
+  }
+  #ask .ask-records-fold {
+    display: flex;
+    min-height: max(var(--control-h-lg), var(--target-min));
+  }
+  #ask .chat-half:has(> .ask-records-fold[aria-expanded="false"]) > #raw-results {
+    display: none;
+  }
+  #ai-answer {
+    max-width: 68ch;
+  }
+}

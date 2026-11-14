@@ -94,3 +94,11 @@ def test_money_is_one_dimension_of_the_same_reader(text, read):
 
 def test_money_has_no_reader_of_its_own():
     assert not hasattr(recognise, "amounts")
+
+
+def test_one_figure_in_one_note_is_said_once(ask):
+    """Found by `handoff_1010` (2026-11-14): "Your notes record 5 km run, going by Running: 5 km." said the one figure twice."""
+    said = ask("how far did I cycle")
+    first = said.split(". ")[0]
+    assert said.startswith("Your notes record 14 km cycled, going by Bike commute."), said
+    assert first.count("14 km") == 1, said

@@ -25,6 +25,8 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai import composer_frame
+
 #: Two notes are a pair, said in the question's own shape; from three a stretch
 #: is written as one. Up to MAX_NOTES the paragraphs are cut at the biggest
 #: gaps; past it a paragraph holds at most PARAGRAPH_NOTES, a sentence at most
@@ -56,6 +58,13 @@ _LEAD = re.compile(r"^(?:back in [a-z]+|in [a-z]+|on \d{1,2} [a-z]+|(?:[a-z]+ (?
 #: A quote that says "today" (or yesterday, tonight) means the day it was written, not the day it is read.
 _QUOTED_RELATIVE = re.compile(r"“[^”]*\b(?:today|tonight|yesterday|tomorrow|this (?:morning|afternoon|evening)|last night)\b[^”]*”", re.I)
 _REPORT = re.compile(r"^you (?:mentioned|said|noted|recorded|put down|jotted down) that ", re.I)
+#: "This note pulls together ..." (L-chat-39): the note's own subject is its title.
+_THIS_NOTE = re.compile(r"^(?:this|the) note\s+(?=[a-z])", re.I)
+#: The digest's provenance tail: the story cites the note instead.
+_FROM_NOTE = re.compile(r",? from your [^,.]{1,60} note$")
+#: "your uni days ... are Tuesday": the person's own line in the present ("My uni days ..."), under a
+#: time opener, is what was noted then; "your Guide is in four phases" describes the note and stays.
+_PRESENT = re.compile(r"^your\b(?:\s+[^\s,.]+){0,8}?\s+(?:are|is)\b", re.I)
 #: Typed without its apostrophe: said back flat ("You didnt lock in") it reads as the app's typo, so it is quoted.
 _RAW = re.compile(r"\b(?:didnt|dont|cant|wont|couldnt|wouldnt|isnt|im|ive)\b", re.I)
 _DEFINES = re.compile(r"^(?P<term>[^.]{2,60}?) (?:is|are|means|refers to) (?P<what>(?:the|a|an|when|how|any)\b.+)$", re.I | re.S)
@@ -157,10 +166,16 @@ def _lower(clause: str) -> str:
     return clause if re.match(r"I\b|[A-Z]{2,}", clause) else clause[:1].lower() + clause[1:]
 
 
-def _clipped(quote: str) -> str:
-    """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause."""
+def clipped(quote: str, limit: int = 12) -> str:
+    """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause.
+    A line quoted whole keeps its two sentences up to `limit` words (R3-11)."""
     words = quote.split()
-    return quote if len(words) <= 12 else " ".join(words[:6]).rstrip(",;:") + "…"
+    return quote if len(words) <= limit else " ".join(words[:6]).rstrip(",;:") + "…"
+
+
+def _short_quotes(body: str) -> str:
+    """Each quote in `body` cut like any other quote (`_clipped`): a filler note's whole run-on was quoted (audit 1031 C5)."""
+    return re.sub(r"“([^”]*)”", lambda m: f"“{clipped(m.group(1))}”", body)
 
 
 def _clean_quote(text: str) -> str:
@@ -214,10 +229,14 @@ def _clause(line: str, title: str, quote: str) -> str:
         #: "You mentioned that you ..." keeps its clause; "that uni is done" has no "you" to lead and is quoted.
         body = body[reported.end():] if re.match(r"you\b", body[reported.end():], re.I) else "-"
     #: One sentence a unit: the claim is the first, and a second would be uncited.
-    body = re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0]
+    body = _FROM_NOTE.sub("", re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0])
+    if title and (this := _THIS_NOTE.match(body)):
+        return _caps_days(f"your “{_clean_quote(title)}” note {_short_quotes(body[this.end():])}")
+    if _PRESENT.match(body) and re.match(r"(?:my|i)\b", quote, re.I):
+        return _caps_days(f"you noted that {_lower(_short_quotes(body))}")
     if re.match(r"(?:you|your)\b", body, re.I):
-        return _caps_days(_lower(body))
-    said = _clean_quote(title) if title and len(title.split()) <= 6 else _clipped(quote)
+        return _caps_days(_lower(_short_quotes(body)))
+    said = _clean_quote(title) if title and len(title.split()) <= 6 else clipped(quote)
     return f"you wrote “{said}”"
 
 
@@ -252,7 +271,7 @@ def _clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN00
     if defined := _defined(view, first, title):
         return defined
     if _said_raw(first.text, quote):
-        return Unit(view, f"you wrote “{_clipped(quote)}”", first)
+        return Unit(view, f"you wrote “{clipped(quote)}”", first)
     source = next((s for s in view.sentences if row and s.start == row.get("start")), first)
     return Unit(view, _clause(line, title, quote), source, row) if line else None
 
@@ -346,34 +365,76 @@ def _beat(out, group: list[Unit], opener: str) -> str:  # noqa: ANN001
     return text
 
 
-def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None) -> None:  # noqa: ANN001
+def _lead_line(count: str, topic: str, p: Plan) -> str:
+    """The opening sentence: the count, the topic, and the span (or the one semester they follow)."""
+    span = span_words(p.first, p.last)
+    if p.arc == "one semester":
+        return f"You have {count} about {topic}, and they follow {p.arc}, {span}."
+    return f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}."
+
+
+def _tell_run(out, run: list[int], last: bool, units: list[Unit], days: list[date], said: list[str], themes: list[list[int]]) -> str:  # noqa: ANN001
+    """One stretch as a paragraph: a sentence a beat, then the hard-stretch or finished note when it applies."""
+    sentences, prev = [], None
+    for k, beat in enumerate(_beats(run, themes)):
+        opener = _when(prev, days[beat[0]], said, k == 0)
+        said.append(opener)
+        sentences.append(_beat(out, [units[i] for i in beat], opener))
+        prev = days[beat[-1]]
+    hard = _hard_run([units[i] for i in run])
+    if len(hard) >= 2:
+        note = "That reads like a hard stretch."
+        sentences.append(note)
+        out.rows.append(_row(hard[0], note))
+    elif last and _FINISH.search(units[run[-1]].source.text):
+        note = "Congratulations on getting it done."
+        sentences.append(note)
+        out.rows.append(_row(units[run[-1]], note))
+    return " ".join(sentences)
+
+
+def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None, first: tuple | None = None) -> None:  # noqa: ANN001
     """Fill `out.lines` and `out.rows` from the units, oldest first; the pace
     insight waits in `out.spare` for `_finish`, which says it only when no
     other rule found an insight. `themes` are the unit indexes that go together."""
     said: list[str] = []
     lead_unit = next((u for u in units if _SEMESTER.search(u.source.text)), units[0])
-    span = span_words(p.first, p.last)
-    lead = f"You have {count} about {topic}, and they follow {p.arc}, {span}." if p.arc == "one semester" else (
-        f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}.")
+    lead = _lead_line(count, topic, p)
     out.lines.append(lead)
     out.rows.append(_row(lead_unit, lead))
+    if first and first[0] is not None:
+        #: The best-ranked note of a crowded notebook, told on its own ahead of the stretches (audit 1031 C4).
+        said.append(_when(None, first[1], said, True))
+        out.lines.append(_beat(out, [first[0]], said[-1]))
     for n, run in enumerate(p.chunks):
-        sentences, prev = [], None
-        for k, beat in enumerate(_beats(run, themes or [])):
-            opener = _when(prev, days[beat[0]], said, k == 0)
-            said.append(opener)
-            sentences.append(_beat(out, [units[i] for i in beat], opener))
-            prev = days[beat[-1]]
-        hard = _hard_run([units[i] for i in run])
-        if len(hard) >= 2:
-            note = "That reads like a hard stretch."
-            sentences.append(note)
-            out.rows.append(_row(hard[0], note))
-        elif n == len(p.chunks) - 1 and _FINISH.search(units[run[-1]].source.text):
-            note = "Congratulations on getting it done."
-            sentences.append(note)
-            out.rows.append(_row(units[run[-1]], note))
-        out.lines.append(" ".join(sentences))
+        out.lines.append(_tell_run(out, run, n == len(p.chunks) - 1, units, days, said, themes or []))
     found = _pace(units, days)
     if found:
         out.spare = (found[0], _row(found[1], found[0]))
+
+
+def plan_of(members, lead):  # noqa: ANN001
+    """The dated notes (lead apart) and their plan, or None when the notes do not fit the story shape."""
+    #: Past MAX_NOTES the best-ranked note (the defining one leads `members`) is told first, on its own; the rest
+    #: follow oldest first (audit 1031 C4: filler with the word repeated is not what the story opens with).
+    dated = sorted((v for v in members if v.written and v is not lead), key=lambda v: (v.written, v.id))
+    made = plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) - (lead is not None) else None
+    #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
+    #: told some of them as "More loosely related" or "More from X" (INBOX 1743, second round).
+    if made is None or (len(dated) < PLAIN_NOTES and not _would_fill(dated)):
+        return None
+    if lead is not None and lead.written:
+        #: The span says all the notes' days, the lead's too.
+        made.first, made.last = min(made.first, lead.written), max(made.last, lead.written)
+    return dated, made
+
+
+def _would_fill(dated) -> bool:  # noqa: ANN001
+    """Whether the frame would tell any of these notes as "more loosely related": the filler a story replaces."""
+    return any(g.band == "loose" for g in composer_frame.groups([v.note for v in dated]))
+
+
+def themed(dated) -> list[list[int]]:  # noqa: ANN001
+    """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
+    place = {v.id: i for i, v in enumerate(dated)}
+    return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]

@@ -211,7 +211,7 @@ def execute_tool(
     if not tool_enabled(name):
         return {"error": f"The '{name}' tool is turned off in Settings, Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:
-    #: the write is discarded, not done late (the stream only sees Stop between
+    #: the write is discarded, not run late (the stream only sees Stop between
     #: yields, `activity.bind`). Reads are harmless and still run.
     if name in WRITE_TOOLS and activity.current_stopped():
         return {"error": "You stopped this run before this step ran, so nothing was changed."}

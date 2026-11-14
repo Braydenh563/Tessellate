@@ -149,6 +149,13 @@ _FAMILIES: dict[str, dict[str, list[str]]] = {
         "natural": ["Among the notes found, ", "Looking at the notes found, "],
         "professional": ["Of the notes retrieved, ", "Among the notes retrieved, "],
     },
+    #: A compare asked again in one chat (L205 left its counts as the only opener: one way over twenty turns).
+    "compare_lead": {
+        "natural": ["Side by side, ", "By the count, ", "Counting the notes, ", "Put side by side, ", "Going by your notes, ",
+                    "To compare, ", "In numbers, ", "Laid side by side, ", "Weighing them up, "],
+        "professional": ["In comparison, ", "By count, ", "Comparing the records, ", "Set side by side, ", "On the record, ",
+                         "For comparison, ", "In terms of number, ", "Measured by notes, ", "Taken together, "],
+    },
     "across_found": {
         "natural": ["Looking across the notes found, ", "Taking the notes found together, "],
         "professional": ["Across the notes retrieved, ", "Taken together, the notes retrieved show that "],
@@ -329,6 +336,7 @@ PAIRED = {
     "wrote_on_b": "wrote_on_a", "mention_mid": "mention_lead", "summary_mid": "summary_lead",
     "ov_lead_b": "ov_lead_a", "ov_span_b": "ov_span_a", "ov_who_end": "ov_who_mid",
     "ov_shared_end": "ov_shared_mid", "ov_more_b": "ov_more_a",
+    "echo_end": "echo", "next_tag_b": "next_tag_a", "next_note_b": "next_note_a",
 }
 
 
@@ -736,13 +744,31 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                               'The provided records do not address ',
                               'An absence of documentation was noted for ']},
  'nothing': {'natural': [], 'professional': []}}
-_PAIRS_ADDED: dict[str, dict[str, list[str]]] = {}
+#: The professional register for the fragments that had none (L97): how many notes mention a thing, an
+#: echoed sentence, a note that lists, the citation tail and the next-question chips. Natural keeps its one
+#: wording, so only the professional voice changes; each pair has equal lengths.
+_PAIRS_ADDED: dict[str, dict[str, list[str]]] = {
+    "mentions_one": {"natural": [], "professional": [" refers to ", " makes reference to ", " records "]},
+    "mention_many": {"natural": [], "professional": [" refer to ", " make reference to ", " record "]},
+    "echo": {"natural": [], "professional": [" (This statement is repeated ", " (The same statement appears "]},
+    "echo_end": {"natural": [], "professional": [" times in the records.)", " times across the entries.)"]},
+    "lists": {"natural": [], "professional": [" enumerates ", " itemises ", " sets out "]},
+    "cite_from": {"natural": [], "professional": [" Source: your ", " Recorded in your ", " Taken from your "]},
+    "cite_from_note": {"natural": [], "professional": [" Source: your note ", " Recorded in your note ", " Taken from your note "]},
+    "next_tag_a": {"natural": [], "professional": ["What further records exist on ", "Which other entries address "]},
+    "next_tag_b": {"natural": [], "professional": ["?", "?"]},
+    "next_note_a": {"natural": [], "professional": ["What does the entry “", "What is recorded in the entry “"]},
+    "next_note_b": {"natural": [], "professional": ["” state?", "” contain?"]},
+    "next_latest_a": {"natural": [], "professional": ["What is the most recent entry on ", "What is the latest record on "]},
+    "next_when_a": {"natural": [], "professional": ["On what date was an entry made on ", "When was a record made about "]},
+}
 #: Nothing found, eight ways a voice (the owner: "can it have more varied
 #: responses??"); the families start empty here and take their lines whole.
 for _key in composer_replies.NOTHING_FAMILIES:
     _FAMILIES.setdefault(_key, {"natural": [], "professional": []})
 for _table, _added in ((_FAMILIES, _FAMILIES_ADDED), (_PAIRS, _PAIRS_ADDED), (_FAMILIES, composer_replies.NOTHING_FAMILIES)):
     for _key, _by_voice in _added.items():
+        _table.setdefault(_key, {"natural": [], "professional": []})
         for _voice, _variants in _by_voice.items():
             _table[_key][_voice] = _table[_key][_voice] + _variants
 
@@ -961,6 +987,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     lazy_compile(rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+(?P<a>.+?)(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+(?P<b>.+?)[?.!]*$", re.I),
     lazy_compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
     lazy_compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    #: "which of alpha, beta and gamma is the newest": the names between "of" and the verb (L105).
+    lazy_compile(rf"^which(?: one)? of (?:the |my )?(?P<a>.+?),? (?:or|and) (?P<b>.+?) (?:is|are|was|were|comes?|came) (?:the )?(?:{_MORE}|earliest|latest|first|last)[?.!]*$", re.I),
     #: "which comes first, the dentist or the trip".
     lazy_compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
@@ -990,6 +1018,7 @@ COMPARE_SHAPE_EXTRA = (
     rf"^{_EACH_LEAD}\s+{_EACH_NAME}\s+and\s+{_EACH_NAME}[?.!]*$|"
     r"^[\w' -]{1,40}? or [\w' -]{1,40}?,?\s+which\b|"
     r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
+    rf"^which(?: one)? of .+? (?:or|and) .+? (?:is|are|was|were|comes?|came) (?:the )?(?:{_MORE}|earliest|latest|first|last)\W*$|"
     r"^which(?: one| note)? costs? (?:more|less)\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? which(?: one| note)? costs? (?:more|less)\W*$|"
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
     rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
@@ -1240,6 +1269,19 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
  ['help', 'assist', 'support', 'aid', 'guide', 'advice', 'advise'],
  ['change', 'modify', 'alter', 'adjust', 'adapt', 'transform', 'update'],
  ['use', 'utilize', 'employ', 'apply', 'operate', 'consume']])
+
+#: A concept word and the members a note may name instead: "sport" is a note that says only "swimming".
+#: Read by `composer._fit_terms`, for scoring only (the answer never prints the member as if it were typed).
+CONCEPTS: dict[str, tuple[str, ...]] = {
+    "sport": ("swimming", "swam", "running", "ran", "football", "tennis", "cycling", "cycled", "gym", "yoga", "climbing", "hiking", "badminton", "rugby", "cricket", "golf"),
+    "exercise": ("swimming", "swam", "running", "ran", "gym", "yoga", "cycling", "hiking", "climbing", "workout"),
+    "gym": ("swimming", "swam", "running", "ran", "yoga", "workout", "lifting", "weights"),
+    "food": ("dinner", "lunch", "breakfast", "recipe", "pasta", "pizza", "soup", "curry", "salad", "cooked", "restaurant"),
+    "meal": ("dinner", "lunch", "breakfast", "supper", "brunch"),
+    "travel": ("flight", "hotel", "airport", "train", "itinerary", "passport", "trip", "holiday"),
+    "pet": ("dog", "cat", "puppy", "kitten", "hamster", "rabbit"),
+    "drink": ("coffee", "tea", "wine", "beer", "juice", "water"),
+}
 
 #: The verb a person asks with and the noun a note is written with ("when do I
 #: fly" is the "Flight to Lisbon" note; audit 1029 C21). `fly` and `flight`,
@@ -1628,3 +1670,15 @@ EXTRA_WRAPPERS = EXTRA_WRAPPERS + (
 EXTRA_TRAILERS = EXTRA_TRAILERS + (
     "it was a joke", "it was funny", "it was a funny one", "something like that", "or something", "to something",
 )
+
+
+def concepts(terms: list[str], vocabulary: set[str], stem) -> list[str]:
+    """Each concept word no note holds ("sport") put to the first member, in the
+    table's order, that a note does hold ("swimming"); any other word kept."""
+
+    def member(term: str) -> str:
+        if term in vocabulary:
+            return ""
+        return next((w for m in CONCEPTS.get(term, ()) for w in (m, stem(m)) if w in vocabulary), "")
+
+    return [member(t) or t for t in terms]

@@ -1,0 +1,374 @@
+{
+ "about": "How-to questions (CHAT_PLAN section 4): the help topic each belongs to and the sentence of its text that is the first step (`topic#n`, n counted by splitting the topic text at sentence ends; `cue` is how that sentence begins). `controls` are element ids in frontend/index.html the step names.",
+ "rows": [
+  {
+   "id": "help-01",
+   "question": "how do I pin a note",
+   "topic": "favourites",
+   "sentence_id": "favourites#0",
+   "cue": "Starring (pinning)",
+   "controls": []
+  },
+  {
+   "id": "help-02",
+   "question": "how do I lock the app with a password",
+   "topic": "security",
+   "sentence_id": "security#0",
+   "cue": "Settings, Account & security: set a password",
+   "controls": [
+    "lock-btn"
+   ]
+  },
+  {
+   "id": "help-03",
+   "question": "how do I open the command palette",
+   "topic": "command-palette",
+   "sentence_id": "command-palette#0",
+   "cue": "Ctrl/Cmd+K opens the command palette",
+   "controls": [
+    "command-palette-input"
+   ]
+  },
+  {
+   "id": "help-04",
+   "question": "how do I find a note",
+   "topic": "find-anything",
+   "sentence_id": "find-anything#0",
+   "cue": "Find anything (Ctrl+P",
+   "controls": [
+    "finder-input"
+   ]
+  },
+  {
+   "id": "help-05",
+   "question": "how do I change the theme",
+   "topic": "appearance",
+   "sentence_id": "appearance#0",
+   "cue": "Settings, Appearance controls theme",
+   "controls": [
+    "theme-btn"
+   ]
+  },
+  {
+   "id": "help-06",
+   "question": "where do my notifications go",
+   "topic": "notifications",
+   "sentence_id": "notifications#0",
+   "cue": "The bell in the top bar",
+   "controls": [
+    "notif-btn"
+   ]
+  },
+  {
+   "id": "help-07",
+   "question": "how do I connect a model",
+   "topic": "models",
+   "sentence_id": "models#0",
+   "cue": "Connect a model in Settings, Models",
+   "controls": [
+    "settings-btn"
+   ]
+  },
+  {
+   "id": "help-08",
+   "question": "how do I turn on web search",
+   "topic": "websearch",
+   "sentence_id": "websearch#0",
+   "cue": "Web search is opt-in",
+   "controls": [
+    "web-search-toggle"
+   ]
+  },
+  {
+   "id": "help-09",
+   "question": "does it work offline",
+   "topic": "privacy",
+   "sentence_id": "privacy#0",
+   "cue": "Yes, it works offline",
+   "controls": [
+    "privacy-chip"
+   ]
+  },
+  {
+   "id": "help-10",
+   "question": "how do I archive a note",
+   "topic": "archive",
+   "sentence_id": "archive#0",
+   "cue": "Archiving keeps a note",
+   "controls": []
+  },
+  {
+   "id": "help-11",
+   "question": "how do I undo a delete",
+   "topic": "undo-bin",
+   "sentence_id": "undo-bin#0",
+   "cue": "Undo and Redo cover everything",
+   "controls": []
+  },
+  {
+   "id": "help-12",
+   "question": "how do I dictate a note",
+   "topic": "voice",
+   "sentence_id": "voice#0",
+   "cue": "The microphone icon on the note composer",
+   "controls": [
+    "mic-note"
+   ]
+  },
+  {
+   "id": "help-13",
+   "question": "how do I link two notes",
+   "topic": "links",
+   "sentence_id": "links#0",
+   "cue": "Link one note to another",
+   "controls": []
+  },
+  {
+   "id": "help-14",
+   "question": "how do I use a template",
+   "topic": "templates",
+   "sentence_id": "templates#0",
+   "cue": "Capture has templates",
+   "controls": [
+    "entry-template"
+   ]
+  },
+  {
+   "id": "help-15",
+   "question": "how do I tag a note",
+   "topic": "tags-categories",
+   "sentence_id": "tags-categories#0",
+   "cue": "Atlas files each note into a category",
+   "controls": [
+    "entry-tags"
+   ]
+  },
+  {
+   "id": "help-16",
+   "question": "how do I make a mind map",
+   "topic": "mind-maps",
+   "sentence_id": "mind-maps#0",
+   "cue": "Mind maps live in the Library",
+   "controls": [
+    "tab-btn-library"
+   ]
+  },
+  {
+   "id": "help-17",
+   "question": "how do I see my timeline",
+   "topic": "timeline",
+   "sentence_id": "timeline#0",
+   "cue": "The Timeline tab lists",
+   "controls": [
+    "tab-btn-timeline"
+   ]
+  },
+  {
+   "id": "help-18",
+   "question": "how do I use the graph",
+   "topic": "graph",
+   "sentence_id": "graph#0",
+   "cue": "The Graph tab shows notes",
+   "controls": [
+    "tab-btn-graph"
+   ]
+  },
+  {
+   "id": "help-19",
+   "question": "how do I check for updates",
+   "topic": "updates",
+   "sentence_id": "updates#0",
+   "cue": "Settings, About says which version",
+   "controls": [
+    "settings-btn"
+   ]
+  },
+  {
+   "id": "help-20",
+   "question": "how do I turn on simple mode",
+   "topic": "simple-mode",
+   "sentence_id": "simple-mode#0",
+   "cue": "Settings, General, Simple mode",
+   "controls": []
+  },
+  {
+   "id": "help-21",
+   "question": "how do I translate text",
+   "topic": "translate",
+   "sentence_id": "translate#0",
+   "cue": "The Writing room translates",
+   "controls": []
+  },
+  {
+   "id": "help-22",
+   "question": "what is a persona",
+   "topic": "personas",
+   "sentence_id": "personas#0",
+   "cue": "A persona changes how Atlas talks",
+   "controls": [
+    "persona-select"
+   ]
+  },
+  {
+   "id": "help-23",
+   "question": "how do I see my statistics",
+   "topic": "statistics",
+   "sentence_id": "statistics#0",
+   "cue": "Statistics counts your notebook",
+   "controls": []
+  },
+  {
+   "id": "help-24",
+   "question": "how do I check my spelling",
+   "topic": "spelling-check",
+   "sentence_id": "spelling-check#0",
+   "cue": "Spelling gets a second opinion",
+   "controls": []
+  },
+  {
+   "id": "help-25",
+   "question": "where is my data stored",
+   "topic": "storage",
+   "sentence_id": "storage#0",
+   "cue": "Everything lives in a data folder",
+   "controls": []
+  },
+  {
+   "id": "help-26",
+   "question": "what is a space",
+   "topic": "spaces",
+   "sentence_id": "spaces#0",
+   "cue": "A space is a separate notebook",
+   "controls": [
+    "space-switcher-btn"
+   ]
+  },
+  {
+   "id": "help-27",
+   "question": "how do I see the history of a document",
+   "topic": "document-history",
+   "sentence_id": "document-history#0",
+   "cue": "Documents keep a history",
+   "controls": [
+    "doc-history"
+   ]
+  },
+  {
+   "id": "help-28",
+   "question": "how do I export my notes",
+   "topic": "import-export",
+   "sentence_id": "import-export#1",
+   "cue": "Export your data as JSON",
+   "controls": []
+  },
+  {
+   "id": "help-29",
+   "question": "how do I add a reminder",
+   "topic": "reminders",
+   "sentence_id": "reminders#1",
+   "cue": "To add, make or set a reminder",
+   "steps": "1. Open the Reminders tab",
+   "controls": [
+    "tab-btn-reminders"
+   ]
+  },
+  {
+   "id": "help-30",
+   "question": "how do I switch to another space",
+   "topic": "spaces",
+   "sentence_id": "spaces#1",
+   "cue": "Switch or create one",
+   "controls": [
+    "space-switcher-btn"
+   ]
+  },
+  {
+   "id": "help-31",
+   "question": "how do I add an action item to a meeting",
+   "topic": "meetings",
+   "sentence_id": "meetings#1",
+   "cue": "Write an action item",
+   "controls": []
+  },
+  {
+   "id": "help-32",
+   "question": "how do I search by tag",
+   "topic": "search",
+   "sentence_id": "search#1",
+   "cue": "Operators: tag:work",
+   "controls": [
+    "finder-input"
+   ]
+  },
+  {
+   "id": "help-33",
+   "question": "how do I add a tag as I type",
+   "topic": "tags-categories",
+   "sentence_id": "tags-categories#1",
+   "cue": "Type #word anywhere",
+   "controls": [
+    "entry-tags"
+   ]
+  },
+  {
+   "id": "help-34",
+   "question": "how do I write my own persona",
+   "topic": "personas",
+   "sentence_id": "personas#1",
+   "cue": "Pick one in the Chat tab",
+   "controls": []
+  },
+  {
+   "id": "help-35",
+   "question": "how do I lock the screen right now",
+   "topic": "security",
+   "sentence_id": "security#1",
+   "cue": "The lock button in the top bar",
+   "controls": [
+    "lock-btn"
+   ]
+  },
+  {
+   "id": "help-36",
+   "question": "how do I do a sum",
+   "topic": "calculator",
+   "sentence_id": "calculator#2",
+   "cue": "Sum takes a sum typed or keyed",
+   "controls": []
+  },
+  {
+   "id": "help-37",
+   "question": "how do I get to the calculator",
+   "topic": "calculator",
+   "sentence_id": "calculator#1",
+   "cue": "Open it from the command palette",
+   "controls": [
+    "command-palette-input"
+   ]
+  },
+  {
+   "id": "help-38",
+   "question": "how do I make a diagram without a model",
+   "topic": "make-a-diagram",
+   "sentence_id": "make-a-diagram#0",
+   "cue": "With no model, two places make a diagram",
+   "controls": []
+  },
+  {
+   "id": "help-39",
+   "question": "how do I speed up a slow app",
+   "topic": "performance",
+   "sentence_id": "performance#0",
+   "cue": "If the app feels slow",
+   "controls": []
+  },
+  {
+   "id": "help-40",
+   "question": "is there a tour of the app",
+   "topic": "tour",
+   "sentence_id": "tour#0",
+   "cue": "The guided tour walks",
+   "controls": []
+  }
+ ]
+}

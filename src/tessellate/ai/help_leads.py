@@ -74,6 +74,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Asking Atlas
     "ask-chat": "Ask questions about your notes and get answers that show where they came from.",
     "answers-from-notes": "Get answers quoted from your own notes when the AI is off or not running.",
+    "ask-answerer": "Choose whether plain Ask uses your model or quotes your notes.",
     "chat-controls": "Send, stop and queue messages, attach notes and switch agent mode without the mouse.",
     "chat-context": "What happens when a long chat no longer fits in what the model can read.",
     "context-window": "Set how much text the chat model holds at once, or leave it on auto.",
@@ -110,6 +111,7 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-blocks": "Add shapes and connect them in a diagram's block list, with the picture beside it.",
     "diagram-reading": "How the block list orders a diagram so it reads the way the chart flows.",
     "diagram-kinds": "Switch a diagram to another kind and build it from that kind's own blocks.",
+    "chart-maker": "Paste values in the / menu's Chart and get a bar or line chart in the note.",
     "diagram-elsewhere": "Edit a diagram as blocks wherever it is drawn, and save it as a picture.",
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
     "diagram-lines": "Shape a diagram's arrows and spacing, export it, and move a picture too big for its pane.",
@@ -210,6 +212,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Small tools
     "timer": "Time a task, run a stopwatch or set an alarm without leaving the app.",
     "calculator": "Work out a sum, convert units or write an equation in one dialog.",
+    "currency-rates": "Edit the dated table that currency conversions read, in Settings, Search and index.",
     "count-words": "Count the words, characters and reading time of any text you select.",
     "insert-template": "Drop one of your templates where the cursor is, in any editor.",
     # Look and feel

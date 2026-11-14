@@ -643,6 +643,9 @@ def _total_rest(q: str):  # noqa: ANN202
     if m := _SPENT.match(q) or _TOTAL.match(q):
         return m.group(1)
     if (m := _ADD_UP.match(q)):
+        #: Two named things ("the dentist and the car service") are summed by composer_sum, not scoped here.
+        if " and " in (m.group("thing") or ""):
+            return None
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
     if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
         return f"{kind[0]} {kind[1]}"
@@ -828,7 +831,9 @@ def _measures_line(items: list[Item], unit: str, tail: str) -> str:
         by_note[name] = by_note.get(name, 0) + item.value
     total = _figure(sum(by_note.values()), unit)
     if len(by_note) == 1:
-        return f"Your notes record {total}{tail}, going by {next(iter(by_note))}: {_listed([_figure(i.value, i.symbol) for i in items])}."
+        #: One figure is said once ("14 km cycled, going by Bike commute"), several are listed after it.
+        listed = f": {_listed([_figure(i.value, i.symbol) for i in items])}" if len(items) > 1 else ""
+        return f"Your notes record {total}{tail}, going by {next(iter(by_note))}{listed}."
     ranked = sorted(by_note.items(), key=lambda kv: -kv[1])
     return f"Your notes record {total}{tail}: {_listed([f'{name} {_figure(v, unit)}' for name, v in ranked])}."
 

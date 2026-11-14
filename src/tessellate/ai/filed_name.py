@@ -70,3 +70,24 @@ def shows_the_lot(question: str) -> bool:
     my university notes"); "my pinned notes" and the like are no subject."""
     found = _SHOW_NOTES.match(" ".join((question or "").split()))
     return bool(found) and found.group("name").split()[0].lower() not in _NOT_FILED
+
+
+#: "what are my goals", "show my lists": the notes tagged or titled goal or
+#: list (L254). A tag or category is not required, so a note headed "Shopping
+#: list" counts; `titled` is the one test both the entry and the view side use.
+_KEPT = re.compile(
+    r"^(?:(?:can|could|would) you |please |pls )?(?:what (?:are|were) |(?:list|show|give)(?: me)? )(?:all )?(?:of )?(?:my |the )(?P<w>goal|list)s[?.!]*$",
+    re.I,
+)
+KEPT_WORDS = ("goal", "list")
+
+
+def kept_word(text: str) -> str | None:
+    """"goal" or "list" when `text` asks for the user's goals or lists."""
+    found = _KEPT.match(" ".join((text or "").split()))
+    return found.group("w").lower() if found else None
+
+
+def titled(word: str, first_line: str) -> bool:
+    """Whether a note's first line names `word` ("Goals 2026", "Shopping list")."""
+    return word in KEPT_WORDS and re.search(rf"\b{word}s?\b", first_line or "", re.I) is not None

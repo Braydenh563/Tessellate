@@ -231,3 +231,24 @@ def test_the_summary_gap_names_notes_and_skips_a_single_use_tag(seeded):
     text = _ask(seeded, "summarise my month").text
     assert "note more than by the same point last month" in text
     assert "(1 note)" not in _ask(seeded, "summarise my week").text
+
+
+# --- L92 (G9): the week answers use the same point of last week, as the month ones do ---
+
+
+def test_the_week_comparison_is_through_the_same_day_of_last_week(seeded):
+    #: Wed 14 Oct: this week is Mon 12 to Wed 14 (2 notes). Last week already has
+    #: Mon 5; with Tue 6, Wed 7 and Fri 9 added it has 3 by Wed 7 and 4 in all.
+    for day in (6, 7, 9):
+        seeded.add(Entry(content="one two three", tags=json.dumps(["idea"]), created_at=_day(10, day)))
+    seeded.commit()
+    text = _ask(seeded, "this week vs last week").text
+    assert "3 by the same day last week" in text and "4 in all of last week" in text
+    assert "1 fewer note" in text
+
+
+def test_the_week_summary_names_a_tag_used_three_times(seeded):
+    for day in (12, 13, 14):
+        seeded.add(Entry(content="one two three", tags=json.dumps(["garden"]), created_at=_day(10, day)))
+    seeded.commit()
+    assert "Most used tag: garden (3 notes)" in _ask(seeded, "summarise my week").text

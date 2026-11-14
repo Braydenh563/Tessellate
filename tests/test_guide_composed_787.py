@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import help_chat, reading
+from tests._help_text import after_path
 
 #: Importing `reading` wires the Guide's reader and the composer's help line.
 READER_LOADED = reading.__name__
@@ -111,7 +112,8 @@ def test_the_client_draws_the_starters_under_a_greeting():
 
 def test_the_guide_topic_says_what_the_two_views_are():
     guide = next(t for t in help_chat.HELP_TOPICS if t["id"] == "guide")
-    assert "From the help" in guide["body"]
+    #: The second view is "Help topic" since L-chat-36 (one provenance mark: the badge says "From the help").
+    assert "Help topic tab" in guide["body"]
 
 
 # The Guide's gold questions (fixtures/composer/guide_1011.json): first topic right and first line answering, switch topics, sentence ends
@@ -121,7 +123,7 @@ FLOOR = 1.0
 
 
 def _lead(question: str) -> str:
-    paras = help_chat.offline_answer(question)["content"].split("\n\n")
+    paras = after_path(help_chat.offline_answer(question)["content"]).split("\n\n")
     return next(p for p in paras if not p.startswith(("My reading", "Reading that", "I read that"))).lower()
 
 
@@ -154,9 +156,11 @@ def test_a_help_sentence_ends_where_a_sentence_ends(body, want):
 def test_a_switch_topic_says_how_the_switch_is_set_now(monkeypatch):
     for on in (False, True):
         monkeypatch.setattr(help_chat, "_preference", lambda _key, _default, on=on: on)
-        lead = help_chat.offline_answer("how do i turn on web search")["content"].split("\n\n")[0]
+        lead = after_path(help_chat.offline_answer("how do i turn on web search")["content"]).split("\n\n")[0]
         #: One instruction per state (audit 1031 AI12): "is on now. Turn it
         #: on in ..." contradicted itself, so on says how to turn it off.
+        #: The topic's own opening line comes first (L-chat-41), then the state.
+        lead = lead.removeprefix("Web search is opt-in. ")
         assert lead.startswith(f"Web search is {'on' if on else 'off'} now. Turn it {'off' if on else 'on'} in Settings, Web search"), lead
         assert "by default" not in lead
 

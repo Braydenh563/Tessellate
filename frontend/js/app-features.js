@@ -47,7 +47,7 @@ function featureCatalog() {
       //: INBOX 691: the tidying tools, each findable here (the owner: "no use
       //: having them if the user doesnt know about them").
       { name: "Tidy", desc: "Reviews with no AI: weak links, stray tags, notes without a category, duplicates, old reminders.", reveal: "tidy" },
-      { name: "Specific link reasons", desc: "Name what two linked notes share, a tag, a name or a week, instead of “similar in meaning”.", reveal: "tidy-links" },
+      { name: "Specific link reasons", desc: "Name what two linked notes share, a tag, a name, a week or a sentence each, instead of “similar in meaning”.", reveal: "tidy-links" },
       { name: "Find duplicates", desc: "Notes that say much the same thing, merged into one with nothing lost.", reveal: "tidy-duplicates" },
       { name: "Manage tags", desc: "Rename, merge or remove tags across every note.", reveal: "tag-manager" },
       { name: "Filings to check", desc: "Notes Atlas filed with little certainty, each with Accept, Refile and Split.", reveal: "notes-review" },

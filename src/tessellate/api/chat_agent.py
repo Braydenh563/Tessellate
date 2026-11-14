@@ -14,6 +14,7 @@ from collections.abc import Iterator
 from fastapi import HTTPException
 
 from tessellate.ai import acts, agent, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
+from tessellate.ai.tools import tool_off
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
 from tessellate.core import deps
 from tessellate.core.logbuffer import safe_value
@@ -68,6 +69,9 @@ def _agent_events(req: _StreamRequest, prepared: dict, tools_provider) -> Iterat
             budget=_stoppable(run_budget.for_skill(deps.get_config(), req.skill["skill"]), req),
             **shared,
         )
+    elif not req.allowed_tools and (off := tool_off.switched_off_line(_in_full(req))):
+        #: Said before any model call (L-chat-2), not as a refusal after the model tried.
+        agent_events = iter([{"type": "answer", "delta": off}])
     else:
         agent_events = agent.run_agent(
             req.session,

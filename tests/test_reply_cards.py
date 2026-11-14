@@ -205,7 +205,7 @@ def test_who_wrote_a_reply_is_one_badge_on_every_surface():
     assert 'chip.className = "chip item-label answer-model reply-by";' in kit
     assert "if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);" in kit
     facts = kit[kit.index("function replyBylineFacts(") :].split("\n}\n", 1)[0]
-    assert '"From your notes"' in facts and '"Composer"' in facts and '"From the help"' in facts
+    assert '"Atlas\'s assistant, from your notes"' in facts and "`Atlas, ${model}`" in facts and '"Composer"' in facts and '"From the help"' in facts
     chat = with_pieces("chat-attach.js")
     assert 'const head = bubble.querySelector(".msg-role");' in chat and "who.textContent" not in chat
     palette = (JS / "palette.js").read_text(encoding="utf-8")

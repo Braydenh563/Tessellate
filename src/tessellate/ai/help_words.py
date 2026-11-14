@@ -69,6 +69,13 @@ class WordBand:
         return best
 
 
+def typo_of(word: str, keyword: str, english: frozenset[str] | set[str], least: int) -> bool:
+    """`word` read as a typo of `keyword`. A real word is not a swapped letter
+    ("mount" is not "count", L-chat-38); one letter more or less still reads
+    ("phone" for "iphone")."""
+    return len(word) >= least and not (word in english and len(word) == len(keyword)) and one_edit_apart(word, keyword)
+
+
 def one_edit_apart(a: str, b: str) -> bool:
     """True when `a` becomes `b` by one insertion, deletion, substitution or
     swap of two neighbours: the typos a person makes in a help box ("remnder",
@@ -94,3 +101,45 @@ def one_edit_apart(a: str, b: str) -> bool:
     while k < len(a) and a[k] == b[k]:
         k += 1
     return a[k:] == b[k + 1 :]
+
+
+# --- a word the English list does not hold (VC15) ----------------------------------
+
+
+def _within(a: str, b: str, limit: int) -> int | None:
+    """The edit distance between `a` and `b` (insert, delete, substitute, swap
+    of neighbours) when it is at most `limit`, else None."""
+    if abs(len(a) - len(b)) > limit:
+        return None
+    prev2: list[int] | None = None
+    prev = list(range(len(b) + 1))
+    for i in range(1, len(a) + 1):
+        row = [i] + [0] * len(b)
+        for j in range(1, len(b) + 1):
+            row[j] = min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] != b[j - 1]))
+            if prev2 is not None and i > 1 and j > 1 and a[i - 1] == b[j - 2] and a[i - 2] == b[j - 1]:
+                row[j] = min(row[j], prev2[j - 2] + 1)
+        prev2, prev = prev, row
+    return prev[-1] if prev[-1] <= limit else None
+
+
+def forgive(words: Iterable[str], vocabulary: Iterable[str], english: frozenset[str]) -> dict[str, str]:
+    """Each word that is not English, and is no topic's own word, mapped to the
+    nearest word the topics use (two edits for a word of seven letters or more,
+    one for five or six). A word the list holds is never touched: "quick
+    thoughts" is spelt right, "thuoght" is not (CHAT_PLAN VC15, the word list
+    `frontend/vendor/wordlist/en.txt`)."""
+    vocab = sorted(set(vocabulary))
+    fixes: dict[str, str] = {}
+    for word in words:
+        if len(word) < 5 or not word.isalpha() or word in english or word in vocab:
+            continue
+        limit = 2 if len(word) >= 7 else 1
+        best: tuple[int, str] | None = None
+        for candidate in vocab:
+            distance = _within(word, candidate, limit)
+            if distance is not None and (best is None or distance < best[0]):
+                best = (distance, candidate)
+        if best:
+            fixes[word] = best[1]
+    return fixes

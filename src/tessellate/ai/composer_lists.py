@@ -73,6 +73,9 @@ _DATES = re.compile(
     re.I,
 )
 
+#: "Label: the rest" (a heading and its words), read by the digest as `_PREFIX`.
+PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
+
 
 _NOT_A_FILING = frozenset({"your", "our", "their", "his", "her", "its", "recent", "latest", "newest", "last", "new", "old", "oldest", "some", "any", "other"})
 
@@ -132,6 +135,9 @@ def list_target(question: str) -> tuple[str, str] | None:
     #: listing is "list my X notes" and "notes tagged X".
     if filed_name.shows_the_lot(question):
         return None
+    kept = filed_name.kept_word(question)
+    if kept:
+        return kept, "either"
     lead = _LIST_LEAD.match(_q(question))
     if not lead:
         bare = filed_name.filed_listing(_q(question))
@@ -269,8 +275,10 @@ _METADATA_WORDS = frozenset(
 
 
 #: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
-#: "what is not done" and "why did I not go" are not.
-_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
+#: "what is not ticked" and "why did I not go" are not.
+_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without|anything|everything)\b", re.I)
+#: "not tagged work": the word left out is a tag, read on the note's filing as well as its words (CHAT_PLAN U10).
+_TAGGED = re.compile(r"^(?:tagged|filed)(?:\s+(?:with|under|as))?\s+(?:the\s+)?(?:tag\s+)?#?", re.I)
 
 
 def without_ask(question: str) -> tuple[str, str] | None:
@@ -570,13 +578,18 @@ def _title(view) -> str:  # noqa: ANN001
     return _trim(first.strip().rstrip(":.!"), 70)
 
 
+def _and_titled(key: str, views: list, tagged: list) -> list:
+    """L254: for "goal" and "list", the notes headed so are filed there too."""
+    return tagged + [v for v in views if filed_name.titled(key, _title(v)) and v not in tagged]
+
+
 def _filed(name: str, how: str, views: list) -> tuple[list, str]:
     """The views filed under `name` and how that reads ("in Work" or
     "tagged launch")."""
     key = name.lower().strip()
     variants = {key, key.rstrip("s"), key + "s"}
     by_category = [v for v in views if str(v.note.get("category") or "").lower() in variants]
-    by_tag = [v for v in views if {str(t).lower() for t in v.note.get("tags") or []} & variants]
+    by_tag = _and_titled(key, views, [v for v in views if {str(t).lower() for t in v.note.get("tags") or []} & variants])
     if how == "tag" or (how == "either" and not by_category):
         return by_tag, f"tagged {name.lower()}"
     if by_category:
@@ -908,21 +921,42 @@ def _holds_all(view, words: list[str]) -> bool:  # noqa: ANN001
     return bool(words) and all(composer._holds(w, have) for w in words)  # noqa: SLF001
 
 
+def _without_members(views: list, kept_words: list, left_words: list, tagged: bool) -> list:
+    """The notes that hold `kept_words` and leave `left_words` out (as words, or as a tag)."""
+    def has_left(v) -> bool:  # noqa: ANN001
+        if tagged:
+            tags = " ".join(str(t).lower() for t in (v.note.get("tags") or []))
+            return all(w in tags for w in left_words)
+        return _holds_all(v, left_words)
+
+    members = [v for v in views if v.sentences and not has_left(v) and (not kept_words or _holds_all(v, kept_words))]
+    members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
+    return members
+
+
+def _without_head(count: str, n: int, kept: str, left: str, tagged: bool) -> str:
+    if kept:
+        return f"{count} {'mentions' if n == 1 else 'mention'} {kept} and not {left}:"
+    if tagged:
+        return f"{count} {'is' if n == 1 else 'are'} not tagged {left}:"
+    return f"{count} {'does' if n == 1 else 'do'} not mention {left}:"
+
+
 def _without(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """The notes that hold the subject asked about and leave the other out; with
     no subject asked about, every note that leaves it out (round 2 E2)."""
     kept, left = without_ask(asked)  # type: ignore[misc]
+    tagged = bool(_TAGGED.match(left))
+    left = _TAGGED.sub("", left)
     kept_words, left_words = composer._words(kept), composer._words(left)  # noqa: SLF001
     if not left_words:
         return False
-    members = [v for v in views if v.sentences and not _holds_all(v, left_words) and (not kept_words or _holds_all(v, kept_words))]
-    members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
+    members = _without_members(views, kept_words, left_words, tagged)
     if not members:
         out.lines.append(f"Every note I looked through that mentions {kept} also mentions {left}." if kept_words else f"Every note I looked through mentions {left}.")
         return True
-    verb = "does" if len(members) == 1 else "do"
-    head = f"{_plural_words(len(members), 'note').capitalize()} {'mentions' if len(members) == 1 else 'mention'} {kept} and not {left}:" if kept_words else (
-        f"{_plural_words(len(members), 'note').capitalize()} {verb} not mention {left}:")
+    count = _plural_words(len(members), "note").capitalize()
+    head = _without_head(count, len(members), kept if kept_words else "", left, tagged)
     lines = [(f"{_title(v)}, {_day(v.written, today)}" if v.written else _title(v), v, v.sentences[0]) for v in members[:SHOWN]]
     _block(out, head, lines)
     if len(members) > SHOWN:
@@ -996,6 +1030,7 @@ def counted_filing(question: str) -> str | None:
 #: The shapes `kind` tries first, in this order. Defined last so that every
 #: test it names (`holding_ask` is near the end) exists by then.
 _ASKED_IN_ORDER = (
+    ("listed", filed_name.kept_word),  # L254: "show my lists" is not a "holding" question
     ("without", without_ask),
     ("until", utilities.until_subject),
     ("ordered", list_order),
@@ -1005,3 +1040,22 @@ _ASKED_IN_ORDER = (
     ("which", composer_versus.asks),
     ("holding", holding_ask),
 )
+
+
+def open_lists(question: str, views) -> list:  # noqa: ANN001
+    """The notes' lists of three or more things as (view, sentence, heading
+    match); for "what do I need to buy", only the shopping ones."""
+    buying = re.search(r"\b(buy|shop|get)\b", question, re.I)
+    #: "what do I want to read": the list headed "to read", not any list of three (W7b B7b); "do" and "get" name nothing.
+    verb = re.search(r"\b(?:need|have|want|plan|hope|like) to ([a-z]{3,})", question, re.I)
+    verb = verb.group(1).lower()[:4] if verb and verb.group(1).lower() not in {"buy", "get", "shop", "do", "bring", "pack", "take"} else ""
+    lists = []
+    for v in views:
+        for s in v.sentences:
+            head = PREFIX.match(s.text.strip())
+            if not (head and len(head.group(2).split(",")) >= 3):
+                continue
+            shop = re.search(r"\b(grocer|shopping|buy|list)", head.group(1) + " " + " ".join(v.note.get("tags") or []) + " " + str(v.note.get("category") or ""), re.I)
+            if (shop or not buying) and (not verb or verb in head.group(1).lower()):
+                lists.append((v, s, head))
+    return lists

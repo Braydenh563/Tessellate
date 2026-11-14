@@ -196,9 +196,16 @@
     return wrap;
   }
 
-  //: The chart as a PNG: the SVG with its resolved colours written onto each
-  //: mark (a file has no stylesheet), on the card's own flat background.
-  async function askChartPng(svg, title) {
+  //: The SVG as a standalone file: the resolved colours written onto each mark.
+  function askChartSvgText(svg) {
+    const clone = askChartInline(svg);
+    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
+    clone.setAttribute("width", wide);
+    clone.setAttribute("height", ASK_CHART_H);
+    return new XMLSerializer().serializeToString(clone);
+  }
+
+  function askChartInline(svg) {
     const clone = svg.cloneNode(true);
     const live = [svg, ...svg.querySelectorAll("*")];
     const copies = [clone, ...clone.querySelectorAll("*")];
@@ -208,8 +215,15 @@
         copies[i].setAttribute(prop, style.getPropertyValue(prop));
       }
     });
-    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
     clone.setAttribute("xmlns", SVG_NS);
+    return clone;
+  }
+
+  //: The chart as a PNG: the SVG with its resolved colours written onto each
+  //: mark (a file has no stylesheet), on the card's own flat background.
+  async function askChartPng(svg, title) {
+    const clone = askChartInline(svg);
+    const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
     clone.setAttribute("width", wide * 2);
     clone.setAttribute("height", ASK_CHART_H * 2);
     const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" }));
@@ -392,6 +406,136 @@
     host._chartObserver = observer;
     observer.observe(host);
   }
+
+  //: **The chart maker** (L171, L254): paste values (CSV or two columns), get a bar
+  //: or line chart, export it as SVG, PNG or CSV, and save it to a note as a fenced
+  //: chart block that every note view draws. One object on `drawAskChart`, so the
+  //: shared scope gains no name (tests/test_global_scope_ratchet.py).
+  //:
+  //: The block is plain text: `title:` and `kind:` lines, then a label and a number a
+  //: line, split on a comma, tab or semicolon (or the last run of spaces).
+  const chartMaker = {
+    parse(text) {
+      const chart = { title: "Chart", kind: "bar", rows: [] };
+      for (const raw of String(text || "").split(/\r?\n/)) {
+        const line = raw.trim();
+        if (!line) continue;
+        const head = line.match(/^(title|kind)\s*:\s*(.+)$/i);
+        if (head) {
+          if (head[1].toLowerCase() === "title") chart.title = head[2].trim().slice(0, 80);
+          else chart.kind = /^line/i.test(head[2]) ? "line" : "bar";
+          continue;
+        }
+        const cells = line.split(/[,;\t]/).length > 1 ? line.split(/[,;\t]/) : line.split(/\s+(?=\S+$)/);
+        const value = Number(String(cells[cells.length - 1]).trim().replace(/^\$/, "").replace(/,/g, ""));
+        const label = cells.slice(0, -1).join(", ").trim();
+        //: A header row ("Day, Hours") has no number in its last cell: skipped, not an error.
+        if (!label || !Number.isFinite(value) || value < 0) continue;
+        chart.rows.push({ label: label.slice(0, 60), value });
+      }
+      chart.rows = chart.rows.slice(0, 60);
+      return chart;
+    },
+    csv(chart) {
+      const cell = (text) => (/[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text);
+      return ["Label,Value", ...chart.rows.map((row) => `${cell(row.label)},${row.value}`)].join("\n") + "\n";
+    },
+    fence(chart) {
+      return ["```chart", `title: ${chart.title}`, `kind: ${chart.kind}`, ...chart.rows.map((row) => `${row.label}, ${row.value}`), "```"].join("\n");
+    },
+    //: The finished card for a block's text: the chart, the numbers, and the three exports.
+    render(host, text) {
+      const chart = chartMaker.parse(text);
+      if (!chart.rows.length) return false;
+      host.className = "ask-chart chart-block";
+      drawAskChart(host, { ...chart, source: "from a chart block", unit: ["", ""] });
+      const head = host.querySelector(".ask-chart-head");
+      const name = chart.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "chart";
+      const svgButton = smallButton("ph:download-simple Save as SVG", "Save this chart as an SVG file", async () => {
+        const svg = host.querySelector(".ask-chart-svg");
+        await saveFile(`${name}.svg`, new Blob([askChartSvgText(svg)], { type: "image/svg+xml" })).catch((error) => toast(error.message, true));
+      });
+      const csvButton = smallButton("ph:download-simple Save as CSV", "Save these numbers as a CSV file", () =>
+        saveFile(`${name}.csv`, new Blob([chartMaker.csv(chart)], { type: "text/csv" })).catch((error) => toast(error.message, true))
+      );
+      svgButton.classList.add("quiet");
+      csvButton.classList.add("quiet");
+      head?.append(svgButton, csvButton);
+      return true;
+    },
+    //: The maker: a sheet with the paste box, Bar or Line, the live chart, and Add to note
+    //: (`onInsert(block)`) when it was opened from a note's editor.
+    open({ onInsert = null, text = "" } = {}) {
+      openSheet({
+        label: "Chart maker",
+        name: "chart-maker",
+        build: (card, close) => {
+          const help = document.createElement("p");
+          help.className = "muted text-sm";
+          help.textContent = "Paste values, one label and number a line, or CSV.";
+          const box = document.createElement("textarea");
+          box.className = "chart-maker-box";
+          box.rows = 6;
+          box.value = text || "title: My chart\nMon, 3\nTue, 5\nWed, 4";
+          box.setAttribute("aria-label", "Chart values");
+          const kinds = document.createElement("div");
+          kinds.className = "tabs-line popup-kinds chart-maker-kinds";
+          kinds.setAttribute("role", "tablist");
+          kinds.setAttribute("aria-label", "Chart kind");
+          let kind = "bar";
+          const preview = document.createElement("div");
+          const draw = () => {
+            const source = /^kind\s*:/im.test(box.value) ? box.value.replace(/^kind\s*:.*$/im, `kind: ${kind}`) : `kind: ${kind}\n${box.value}`;
+            preview.replaceChildren();
+            if (!chartMaker.render(preview, source)) {
+              preview.className = "muted text-sm";
+              preview.textContent = "Add a label and a number on each line to see the chart.";
+            }
+            return chartMaker.parse(source);
+          };
+          for (const [key, name] of [["bar", "Bar"], ["line", "Line"]]) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = name;
+            button.setAttribute("role", "tab");
+            const choose = (on) => {
+              button.setAttribute("aria-selected", String(on));
+              button.classList.toggle("active", on);
+              button.tabIndex = on ? 0 : -1;
+            };
+            choose(key === kind);
+            button.addEventListener("click", () => {
+              kind = key;
+              for (const other of kinds.children) other.choose(other === button);
+              draw();
+            });
+            button.choose = choose;
+            kinds.appendChild(button);
+          }
+          box.addEventListener("input", draw);
+          const actions = document.createElement("div");
+          actions.className = "row right space-dialog-actions";
+          const add = smallButton(onInsert ? "ph:plus Add to note" : "ph:copy Copy chart block", onInsert ? "Put this chart in the note" : "Copy the chart block to paste into a note", async () => {
+            const chart = draw();
+            if (!chart.rows.length) return toast("Add at least one label and number first.", "info");
+            if (onInsert) onInsert(chartMaker.fence(chart));
+            else await navigator.clipboard?.writeText(chartMaker.fence(chart));
+            close();
+          }, false);
+          actions.appendChild(add);
+          card.append(help, box, kinds, preview, actions);
+          draw();
+          box.focus();
+        },
+      });
+    },
+  };
+  //: A ```chart fence in a note view (L171): drawn in place of its code card; code when it holds no number.
+chartMaker.swap = (block, text) => {
+  const host = document.createElement("div");
+  if (block.isConnected && chartMaker.render(host, text)) block.replaceWith(host);
+};
+drawAskChart.maker = chartMaker;
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { askChartSvgEl, drawAskChart, renderAskChart });

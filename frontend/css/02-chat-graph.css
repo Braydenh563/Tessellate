@@ -173,6 +173,13 @@
    protect: still `position: absolute`, so there is no gap when unhovered and
    nothing shifts when the pointer arrives; still per-role, aligned to the
    edge its own bubble is anchored to. */
+.answer-version-pager {
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
 .msg-actions {
   position: absolute;
   /* **Over its own bubble's foot, not the next message's head.** Hung 2px
@@ -876,6 +883,10 @@ details.tool-chip[open] > .tool-chip-body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--card);
+}
+.skill-budget {
+  margin-top: 0.4rem;
+  font-size: var(--text-sm);
 }
 .skill-result-title {
   font-weight: 600;
@@ -4387,6 +4398,10 @@ details[open] > :is(.agent-step-group-summary, .fold-summary) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: var(--space-2);
+  /* A long list of web pages scrolls inside the bubble instead of stretching it (L730, decision 37). */
+  max-height: min(24rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* **A link the AI wrote on a line of its own** (CHAT_PLAN.md decision 12).
    The source card's recipe, deliberately: this is the same object (something

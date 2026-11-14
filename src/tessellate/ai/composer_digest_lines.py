@@ -11,6 +11,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import (
     composer,
     composer_aliases,
+    composer_jokes,
     composer_ask,
     composer_brief,
     composer_frame,
@@ -29,6 +30,7 @@ from tessellate.ai import (
 )
 from tessellate.ai.composer_lists import clean
 from typing import NamedTuple
+from tessellate.ai.composer_jokes import context_facts as _context_facts, context_note as _context_note
 from tessellate.ai.composer_digest_sentences import (
     _FUNCTION_WORDS, _a_name, _as_you, _starts_a_title,
     CONTEXT_TAGS, FACETS, Fact, LINES, PHRASES, VOICES, _ACTION, _ASKING, _ASKS_WORDS, _BASE,
@@ -76,21 +78,6 @@ def _tidy(text: str, written: date | None = None) -> str:
     text = re.sub(r"(?<![\w&/])#([A-Za-z][\w-]*)", r"\1", text)
     text = re.sub(r"\s+([,.;])", r"\1", text)
     return text.strip().rstrip(".!").strip()
-
-
-def _context_note(view: composer.NoteView) -> bool:
-    tags = {str(t).lower().strip("#") for t in (view.note.get("tags") or [])}
-    return bool(tags & CONTEXT_TAGS)
-
-
-def _context_facts(view: composer.NoteView) -> list[Fact]:
-    """A joke or a quote is one piece (decision 67): its question and its
-    punchline are never two facts."""
-    whole = " ".join(s.text.strip() for s in view.sentences)
-    head = _PREFIX.match(whole)
-    label = head.group(1).strip() if head else "Joke"
-    body = head.group(2) if head else whole
-    return [Fact(view, view.sentences[0], label, body.strip().rstrip("."), "")] if view.sentences else []
 
 
 def _picture_shows(subject: str, caption: str, what: str) -> str:
@@ -736,11 +723,11 @@ def _wrote(body: str, i: int) -> str:
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
         said, pinned = _unpinned(said)
-        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{said}”{pinned}"
+        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(said, 30)}”{pinned}"
     #: A noun phrase is what the note says, not a speech act ("You jotted
     #: down Dentist appointment on 4 November": audit 1031 C32). The quote
     #: is the note, so no unnamed "Your note says" (INBOX 1512).
-    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{body[:1].upper() + body[1:].rstrip('.')}”"
+    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(body[:1].upper() + body[1:].rstrip('.'), 30)}”"
 
 
 #: A note's own words quoted whole, with the one plain verb (fable-composer-1110 F7: a rotation of verbs read as a table).
@@ -930,7 +917,7 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
             by_note: dict[int, list[Fact]] = {}
             for f in held:
                 by_note.setdefault(f.view.id, []).append(f)
-            items += [(label, h) for h in by_note.values()]
+            items += [(label, run) for h in by_note.values() for run in _contiguous(h)]
         else:
             items += [(label, run) for run in _contiguous(held)]
     return items
@@ -1634,7 +1621,7 @@ def _answered(out: _Out, facts: list[Fact]) -> list[Fact]:
 
 
 def _open_actions(facts: list[Fact]) -> list[str]:
-    """The to-dos the facts hold that are still to do: a checklist line a later
+    """The to-dos the facts hold that are unticked: a checklist line a later
     note records as done is not (second eye F15)."""
     views = _VIEWS.get()
     return [
@@ -1681,8 +1668,8 @@ _SPECIFIC_CASED = re.compile(r"(?<=\s)[A-Z][a-z]+")
 def _task_of(f: Fact) -> str:
     """The to-do a fact states, or "". An open checkbox is one; an
     instruction in prose is one only when it names what it is about: "ask
-    the tutor on Thursday" is a task, "ask follow-up questions that reflect
-    genuine interest" (a guide's advice) is not (INBOX 1301 D5: it was
+    the tutor on Thursday" is a task, the advice sentence in the social-skills
+    guide of `tests/fixtures/gold_answers.json` is not (INBOX 1301 D5: it was
     offered as a reminder)."""
     if f.sentence.kind == "task":
         return "" if f.sentence.done else f.body
@@ -1841,7 +1828,7 @@ _HAS_SUBJECT = re.compile(r"(?:you|we|i|they|he|she|it|you're|we're|i'm|they're)
 def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[str, list[Fact]]:  # noqa: ANN001
     """The opening of an overview, and the facts still to say. It answers in
     the person's terms (INBOX 870): where they have got to, or how much is
-    still open, not only how many notes."""
+    left unticked, not only how many notes."""
     opening = PHRASES["overview"].format(count=_count(composer_overview.pooled(len(members))), topic=topic, span=_span(members, today))
     landed = next((f for f in facts if f.label == "Where you landed"), None)
     left = [f for f in facts if f.label == "Still to do"]
@@ -1868,7 +1855,7 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
 #: list item and quoted example it holds, glued with ";" ("not cheesy:;",
 #: "Follow- Up Questions:;", '"..."; "..."'), then its "Phase 1: ..." lines as
 #: notes of their own. A note is now at most two sentences: what it is, then
-#: its shape (its sections) or what is still to do on it, or a second line.
+#: its shape (its sections) or what is left to do on it, or a second line.
 #: Quoted examples are the note's material, never the person's facts.
 _QUOTED = re.compile(r'^["\u201c\u2018\']')
 _NUMBERED = re.compile(r"^(.*?\S)\s+(\d{1,2})$")
@@ -2047,6 +2034,10 @@ def _list_gist(view: composer.NoteView, items: list[Fact]) -> list[Fact]:
         #: "a list: how did that go?, what happened next? And ..." (1420).
         asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in items]
         return [Fact(view, items[0].sentence, "", PHRASES["a_list_asked"].format(name=name, count=realise.count_word(len(items)), items=_listed(asked)))]
+    if _context_note(view) or composer_jokes.whole_sentences([f.body for f in items]):
+        #: Quoted as written, never run into "and what do you call a fake noodle" (L-chat-19).
+        quoted = composer_jokes.quoted_listed([f.body for f in items], GIST_ITEMS)
+        return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=quoted))]
     return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(name=name, count=realise.count_word(len(items)), items=_listed(items)))]
 
 
@@ -2353,8 +2344,8 @@ def _counted_groups(question: str, members, kind: str) -> tuple[list, list | Non
     count and the list share one set (audit 1030 Z9). A note the question's
     own category holds is never loose: it is in the pool, so it is counted
     and told like the rest (INBOX 1665 a: "seven notes" over eleven)."""
-    groups = composer_frame.groups([v.note for v in members]) if kind == "overview" and not _GOING.search(question) else []
     held = _in_named_category(question, members)
+    groups = composer_frame.groups([v.note for v in members], composer_frame.skip_words(clean(question), [v.note for v in members if v.id in held])) if kind == "overview" and not _GOING.search(question) else []
     for g in groups:
         g.in_topic = g.band == "loose" and set(g.ids) <= held
     loose = {i for g in groups if g.band == "loose" and not g.in_topic for i in g.ids}
@@ -2430,37 +2421,35 @@ def _story_unit(v, gisted: list[Fact], today: date):  # noqa: ANN001, ANN202
     return composer_story.clause_of(v, scratch.lines[0] if scratch.lines else "", scratch.rows[0] if scratch.rows else None)
 
 
+def _story_tellable(members, facts, today: date, lead):  # noqa: ANN001
+    """The dated notes, their plan, units and the lead's unit, or None when the notes do not fit the story shape."""
+    planned = composer_story.plan_of(members, lead)
+    if planned is None:
+        return None
+    dated, plan = planned
+    gisted = _gists(members, facts)
+    units = [_story_unit(v, gisted, today) for v in dated]
+    first = _story_unit(lead, gisted, today) if lead is not None and lead.written else None
+    if None in units or (lead is not None and first is None):
+        return None
+    return dated, plan, units, first
+
+
 def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # noqa: ANN001
     """An overview of several dated notes written as paragraphs (INBOX 1743):
     the lead, a paragraph a stretch, the read of how it went, one insight.
     False, with `out` untouched, when the notes do not fit that shape."""
-    dated = sorted((v for v in members if v.written), key=lambda v: (v.written, v.id))
-    plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) else None
-    #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
-    #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
-    if plan is None or (len(dated) < composer_story.PLAIN_NOTES and not _would_fill(dated)):
+    lead = members[0] if len(members) > composer_story.MAX_NOTES else None
+    told = _story_tellable(members, facts, today, lead)
+    if told is None:
         return False
-    gisted = _gists(members, facts)
-    units = [_story_unit(v, gisted, today) for v in dated]
-    if None in units:
-        return False
+    dated, plan, units, first = told
     out.framed = True
-    composer_story.story(out, _count(composer_overview.pooled(len(dated))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
-    if (whole := composer_overview.pooled(len(dated))) > len(dated):
+    composer_story.story(out, _count(composer_overview.pooled(len(members))), units, [v.written for v in dated], _topic(question, members), plan, composer_story.themed(dated), (first, lead.written if first else None))
+    if (whole := composer_overview.pooled(len(members))) > len(dated) + (lead is not None):
         #: The lead counts every note; the story tells the pool it read, and says so.
-        out.lines.append(f"That tells {realise.count_word(len(dated))} of the {whole}; ask for a month or a tag to see the rest.")
+        out.lines.append(f"That tells {realise.count_word(len(dated) + (lead is not None))} of the {whole}; ask for a month or a tag to see the rest.")
     return True
-
-
-def _would_fill(dated) -> bool:  # noqa: ANN001
-    """Whether the frame would tell any of these notes as "more loosely related": the filler a story replaces."""
-    return any(g.band == "loose" for g in composer_frame.groups([v.note for v in dated]))
-
-
-def _themed(dated) -> list[list[int]]:  # noqa: ANN001
-    """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
-    place = {v.id: i for i, v in enumerate(dated)}
-    return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]
 
 
 #: A question that asks for the figure ("count my notes about Hobart", "how many notes on Sara"): the count, not a story.

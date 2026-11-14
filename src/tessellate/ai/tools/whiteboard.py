@@ -19,6 +19,7 @@ from tessellate.entry import manager
 from tessellate.entry import manager_text
 from tessellate.entry.properties import strip as strip_properties
 
+from .undo_inverses import board_card_removed, board_note_binned
 from ._common import DEFAULT_LIST_LIMIT, PREVIEW_CHARS, ToolError, _clip, _limit_arg, _require_note, board_top_z, mark_outside
 
 def _whiteboard_board_filter(model, board_id: int | None):
@@ -329,7 +330,7 @@ def _search_whiteboard(session: Session, args: dict) -> dict:
     "whiteboard content becomes searchable the same way notes are." Words,
     not meaning: an embedding index over text-box content needs a table, a
     backfill and a place in the embedding-refresh cycle, and nothing measured
-    asks for it (data-1011 decision: not built; the notes the cards stand for
+    asks for it (data-1011 decided against it; the notes the cards stand for
     are already searched by meaning). A keyword scan across every board's card
     previews and text boxes answers "which board did I put that on?".
     """
@@ -425,6 +426,7 @@ def _add_whiteboard_card(session: Session, args: dict) -> dict:
         "x": node.x,
         "y": node.y,
         "label": f"ph:folders Placed “{_clip(entry.content, 40)}” on the whiteboard",
+        "undo": board_card_removed(node.id),
     }
 
 
@@ -868,11 +870,19 @@ def _create_mindmap(session: Session, args: dict) -> dict:
     if not title:
         raise ToolError("title is required: what is this map about?")
     root_text = str(args.get("root_text") or "").strip() or title
+    plain = args.get("kind") == "board"
 
     entry = Entry(content=f"# {title}", is_board=True)
     # "tree-right", not the API's own "free" default: every position this
     # module computes is a tree-right ladder (`_next_position`), so telling
     # the client anything else would be describing a map it isn't.
+    if plain:
+        #: "make a board called Launch": an empty free board, nothing on it yet (L114).
+        _store_board_settings(entry, "board", "free")
+        _new_board(session, entry, title, "board", "free")
+        session.commit()
+        session.refresh(entry)
+        return {"board_id": entry.id, "title": title, "label": f"ph:chalkboard Created the board “{_clip(title, 40)}”", "undo": board_note_binned(entry.id)}
     _store_board_settings(entry, "map", "tree-right")
     # Two events, on two entities, the same pair a person creating this map
     # by hand records (`POST /boards` then `POST /boards/{id}/nodes`): the
@@ -900,6 +910,7 @@ def _create_mindmap(session: Session, args: dict) -> dict:
         "title": title,
         "next": "Add nodes with add_map_node, passing this board_id and parent_id.",
         "label": f"ph:tree-structure Created the mindmap “{_clip(title, 40)}”",
+        "undo": board_note_binned(entry.id),
     }
 
 
@@ -929,6 +940,7 @@ def _map_from_note(session: Session, args: dict) -> dict:
         "title": name,
         "nodes": count,
         "label": f"ph:tree-structure Made the mind map “{_clip(name, 40)}” from the note",
+        "undo": board_note_binned(board.id),
     }
 
 

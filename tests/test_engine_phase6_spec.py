@@ -309,6 +309,95 @@ def test_relative_day(day, said):
     assert realise.relative_day(day, TODAY) == said
 
 
+@pytest.mark.parametrize(
+    ("text", "due", "said"),
+    [
+        ("you plan to go on Friday", date(2026, 10, 2), "you planned to go on Friday"),
+        ("you are planning to go", date(2026, 10, 2), "you were planning to go"),
+        ("you're going to call Sam", date(2026, 10, 5), "you were going to call Sam"),
+        ("you want to leave", date(2026, 10, 1), "you wanted to leave"),
+        ("you plan to go on Friday", date(2026, 10, 9), "you plan to go on Friday"),
+        ("you plan to go today", date(2026, 10, 6), "you plan to go today"),
+        ("you plan to go", None, "you plan to go"),
+    ],
+)
+def test_past_plan_table(text, due, said):
+    from tessellate.ai import realise
+
+    assert realise.past_plan(text, due, TODAY) == said
+
+
+@pytest.mark.parametrize(
+    ("n", "noun", "article", "said"),
+    [
+        (1, "note", False, "one note"),
+        (2, "note", False, "two notes"),
+        (1, "day", True, "a day"),
+        (1, "item", True, "an item"),
+        (3, "entry", False, "three entries"),
+        (2, "day", False, "two days"),
+        (2, "person", False, "two people"),
+        (2, "key", False, "two keys"),
+        (13, "note", False, "13 notes"),
+    ],
+)
+def test_count_noun_table(n, noun, article, said):
+    from tessellate.ai import realise
+
+    assert realise.count_noun(n, noun, article=article) == said
+
+
+@pytest.mark.parametrize(
+    ("items", "said"),
+    [
+        ([], ""),
+        (["bread"], "bread"),
+        (["bread", "salt"], "bread and salt"),
+        (["bread", "salt", "fish"], "bread, salt and fish"),
+        (["bread", "salt", "fish and chips"], "bread, salt, and fish and chips"),
+        (["bread", "", "fish"], "bread and fish"),
+    ],
+)
+def test_join_items_table(items, said):
+    from tessellate.ai import realise
+
+    assert realise.join_items(items) == said
+
+
+@pytest.mark.parametrize(
+    ("text", "said"),
+    [
+        ("The dentist is on Friday", "the dentist is on Friday"),
+        ("It rained", "it rained"),
+        ("Sara called", "Sara called"),
+        ("I am late", "I am late"),
+        ("Friday is the dentist", "Friday is the dentist"),
+        ("", ""),
+    ],
+)
+def test_after_comma_table(text, said):
+    from tessellate.ai import realise
+
+    assert realise.after_comma(text) == said
+
+
+@pytest.mark.parametrize(
+    ("title", "limit", "said"),
+    [
+        ("Buy milk", 40, "Buy milk"),
+        ("Buy   milk", 40, "Buy milk"),
+        ("Dentist appointment on 4 November at the clinic", 30, "Dentist appointment on 4\u2026"),
+        ("Remember to bring the folder with the old receipts", 24, "Remember to bring the\u2026"),
+    ],
+)
+def test_cut_title_table(title, limit, said):
+    from tessellate.ai import realise
+
+    out = realise.cut_title(title, limit)
+    assert out == said or (len(out) <= limit + 1 and out.endswith("\u2026") and title.startswith(out[:-1]))
+    assert not out.removesuffix("\u2026").endswith((" the", " on", " a", " of", " at"))
+
+
 # --- Decision 34: session-salted variation ----------------------------------------------
 
 
@@ -400,6 +489,66 @@ def test_archive_is_not_a_verb():
 
     assert "archive" not in commands.VERBS
     assert commands.parse("archive the gym note", NOW) is None
+
+
+_VERB_SENTENCES = {
+    "remind": "remind me to call Sam on Friday",
+    "complete": "complete the gym task",
+    "cancel": "cancel the dentist reminder",
+    "snooze": "snooze the call reminder until tomorrow",
+    "tag": "tag the gym note with fitness",
+    "untag": "untag fitness from the gym note",
+    "file": "file the gym note under Fitness",
+    "rename": "rename the gym note to Gym plan",
+    "restore": "restore the gym note",
+    "pin": "pin the gym note",
+    "unpin": "unpin the gym note",
+    "link": "link the gym note to the diet note",
+    "unlink": "unlink the gym note from the diet note",
+    "delete": "delete the gym note",
+    "create": "create a note called Ideas",
+    "summarise": "summarise the gym note",
+    "find": "find notes about gym",
+    "open": "open the gym note",
+}
+_READ_ONLY = {"summarise", "find", "open"}
+
+
+def test_decision_38_every_verb_is_read_and_every_write_waits_for_confirm():
+    """L728: the verbs, kept as decided; a write waits on a confirm card, a read does not."""
+    from tessellate.ai import commands
+
+    assert set(_VERB_SENTENCES) == set(commands.VERBS) - {"add"}
+
+    for verb, sentence in _VERB_SENTENCES.items():
+        cmd = commands.parse(sentence, NOW)
+        assert cmd is not None and cmd.verb == verb, sentence
+        assert cmd.confirm is (verb not in _READ_ONLY), sentence
+
+
+def test_decision_38_every_write_act_has_an_undo():
+    from tessellate.ai import acts
+
+    writes = [a for a in acts.ACTS.values() if a.writes]
+    assert len(writes) >= 15
+    assert all(a.inverse for a in writes), [a.intent for a in writes if not a.inverse]
+
+
+def test_decision_38_the_web_search_tool_is_offered_only_with_web_on(monkeypatch):
+    from tessellate.ai.tools import tool_sets
+    from tessellate.core import deps
+
+    class _Cfg:
+        def __init__(self, on):
+            self.on = on
+
+        def get_preference(self, key, default=None):
+            return self.on if key == "web_search_enabled" else default
+
+    monkeypatch.setattr(deps, "peek_config", lambda: _Cfg(False))
+    assert not tool_sets.tool_enabled("web_search") and not tool_sets.tool_enabled("read_url")
+    monkeypatch.setattr(deps, "peek_config", lambda: _Cfg(True))
+    assert tool_sets.tool_enabled("web_search") and tool_sets.tool_enabled("read_url")
 
 
 # --- Decisions 41 and 43: utilities -----------------------------------------------------------

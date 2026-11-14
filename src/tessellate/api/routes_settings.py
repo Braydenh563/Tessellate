@@ -14,6 +14,7 @@ import platform
 import re
 import sys
 import zipfile
+from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -520,6 +521,11 @@ class PreferencesBody(BaseModel):
     #: undeclared setting is a control that looks saved and is not.
     model_context_windows: dict[str, int | None] | None = None
 
+    #: The currency table and the day it is from (CHAT_PLAN decision 43):
+    #: `{"date": "2026-10-01", "rates": {"EUR": 0.9}}`, units of each currency to
+    #: one US dollar, laid over the built-in table. Empty is the built-in table.
+    currency_rates: dict | None = None
+
     # Optional self-hosted SearXNG instance; empty string = use DuckDuckGo.
     searxng_url: str | None = Field(default=None, max_length=200)
     # Which engine answers: "auto" | "searxng" | "duckduckgo". Validated
@@ -860,6 +866,7 @@ def _prefs_notebook(config) -> dict:
         #: recording: a preference that saves and does not come back reads as
         #: one that did not save.
         "model_context_windows": config.get_preference("model_context_windows", {}),
+        "currency_rates": config.get_preference("currency_rates", {}),
         # Saved correctly and honoured correctly (routes_auth.py's three
         # idle-timeout checks all read it) but never once echoed back here, 
         # the same shape of bug Tier 1 item 4a already fixed for eight other
@@ -1117,6 +1124,29 @@ def _validated_context_windows(value: object) -> dict[str, int | None]:
     return cleaned
 
 
+def _validated_currency_rates(value: object) -> dict:
+    """A dated table of positive rates by three-letter code; a bad date or no usable rate is the empty (built-in) table."""
+    if not isinstance(value, dict) or not isinstance(value.get("rates"), dict):
+        return {}
+    try:
+        when = date.fromisoformat(str(value.get("date")))
+    except ValueError:
+        return {}
+    from tessellate.ai import utilities as _utilities
+
+    rates: dict[str, float] = {}
+    for code, rate in value["rates"].items():
+        key = str(code).strip().upper()
+        try:
+            number = float(rate)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        #: Only codes the recogniser can name: a rate for any other could never be asked for.
+        if key in _utilities.RATES and key != "USD" and 0 < number < 1e9:
+            rates[key] = number
+    return {"date": when.isoformat(), "rates": rates} if rates else {}
+
+
 #: Preferences that point this computer somewhere, start or install
 #: something on it, let it go online, or change how its own window behaves.
 #: Another device may move one only the safe way (the value given), or not at
@@ -1187,6 +1217,7 @@ def _validated_preference(key: str, value):  # noqa: ANN001, ANN202
         "dashboard_quick_access": _validated_quick_access,
         "dashboard_quick_tints": _validated_quick_tints,
         "model_context_windows": _validated_context_windows,
+        "currency_rates": _validated_currency_rates,
         "birthday": _validated_birthday,
     }.get(key)
     return check(value) if check else value
@@ -1220,6 +1251,10 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
         recognise.configure_hemisphere(
             config.get_preference("season_hemisphere", "auto"), config.get_preference("season_locale", "")
         )
+    if key == "currency_rates":
+        from tessellate.ai import utilities
+
+        utilities.configure_rates(value)
     if key == "date_order":
         from tessellate.ai import recognise
 
@@ -1301,6 +1336,10 @@ def update_preferences(
         if key in values:
             continue
         config.unset_preference(key)
+        if key == "currency_rates":
+            from tessellate.ai import utilities
+
+            utilities.configure_rates(None)
         changed_keys.add(key)
     for key, value in values.items():
         _apply_preference(config, session, key, value)

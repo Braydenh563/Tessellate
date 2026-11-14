@@ -88,7 +88,7 @@ SPUN_KEEP = 6
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
 #: the sit is a few px off it, found by matching the box.
 LID_FRAME = "sitblink"
-LID_EYES = {"masculine": (110, 109, 155, 125), "feminine": (112, 110, 157, 126)}
+LID_EYES = {"masculine": (111, 109, 156, 125), "feminine": (111, 108, 156, 124)}
 LID_REACH = 6
 LID_INK = (44, 42, 112)
 DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)
@@ -228,11 +228,12 @@ def premultiplied_bgra(image: Any) -> bytes:
 #: INBOX 1724 (the feminine desk companion "very purple or pink compared to the in-app one"): the desk capture leaves out
 #: the app's blue aura and rings, so beside the app the figure tilted violet (the translucent stream 4.4 degrees in the
 #: light theme and 10.3 in the dark, the body bands 0.7 to 3.1). A look's grade is the hue turn, toward blue, of a solid
-#: pixel and of a translucent one, in Pillow's 1/256 of a turn (1.41 degrees). Saturation is left alone: it was already
-#: within 8 points of the app in every band, and lowering it pushed the highlights out of that. Measured by band in
+#: pixel and of a translucent one, in Pillow's 1/256 of a turn (1.41 degrees). The re-rendered frames' highlights sat 8.1 points under the app's,
+#: so solid highlights take a 1.1 saturation gain (-2.5 and 2.0 after). Measured by band in
 #: `tests/test_overlay_palette_1724.py`. Colour only: alpha is never touched.
 GRADE = {"feminine": (1, 5)}
 GLOW_BELOW = 200
+LIGHT_FROM, LIGHT_GAIN = 209, 1.1
 
 
 def graded(image: Any, look: str) -> Any:
@@ -246,6 +247,12 @@ def graded(image: Any, look: str) -> Any:
     alpha = image.getchannel("A")
     hue, sa, val = image.convert("RGB").convert("HSV").split()
     hue = ImageChops.subtract(hue, alpha.point(lambda a: glow if a < GLOW_BELOW else solid))
+    # The desk frames' highlights (lightness 0.82 and up, solid) read paler than the app's: a gain on their saturation.
+    lit = ImageChops.multiply(
+        image.convert("L").point(lambda v: 255 if v >= LIGHT_FROM else 0),
+        alpha.point(lambda a: 255 if a >= GLOW_BELOW else 0),
+    )
+    sa = Image.composite(sa.point(lambda v: min(255, round(v * LIGHT_GAIN))), sa, lit)
     out = Image.merge("HSV", (hue, sa, val)).convert("RGB").convert("RGBA")
     out.putalpha(alpha)
     return out

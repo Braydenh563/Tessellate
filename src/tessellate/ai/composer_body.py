@@ -1,5 +1,5 @@
 """Laying out the answer by its shape: the opening, the lead, the other
-notes, a timeline, a comparison, a broad summary, what is still open, the
+notes, a timeline, a comparison, a broad summary, what is left unticked, the
 newest.
 
 Moved whole from `composer.py` (audit AR3, gods-1101): the code is unchanged,
@@ -14,7 +14,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_frame, factgraph, composer_versus, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai import recognise_questions
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
@@ -33,7 +33,7 @@ _LEARNED: contextvars.ContextVar = contextvars.ContextVar("composer_learned", de
 
 _OPENERS = (
     "open_notes", "open_wrote", "open_put", "open_figure", "open_date", "open_where",
-    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a",
+    "closest_a", "closest_b", "going_by", "notes_have", "wrote_on_a", "not_that", "only_plan",
 )
 
 
@@ -81,6 +81,10 @@ def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tu
         #: A sentence that holds every word the question is about answers it
         #: in the note's own words: "Going by your notes, the deposit is
         #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
+        mode = factgraph.sentence_mode(s.text)
+        if mode != "asserted":
+            #: A negated sentence is not a yes and a plan is not a done thing (U14).
+            return ("not_that",) if mode == "negated" else ("only_plan",)
         stems = out.subject
         #: An entry of a risks list says what might go wrong, not how things
         #: stand ("The pricing page is not signed off in time."): the nearest
@@ -123,6 +127,25 @@ FACT_SHAPES = ("count", "when", "who", "yesno", "where")
 
 
 FACT_OTHERS = 2
+#: The share of the lead sentence's score another sentence of its note needs to be quoted with it.
+FACT_KEEP = 0.6
+#: A lead scoring this many times the next sentence of its note is the summary: a "what is X" ask
+#: quotes it and what is close to it, not the filler around it (L-chat-247).
+SUMMARY_LEAD = 1.5
+
+
+def _fact_sentences(shape: str, lead: Sentence, same: list[Sentence]) -> list[Sentence]:
+    """The lead note's sentences an answer quotes. A fact asked for is the sentence that holds
+    it: a neighbour scoring under `FACT_KEEP` of the lead's is a padding quote (L219: "who
+    leads the review" also gave the budget line)."""
+    if shape == "when":
+        return [lead]
+    if shape in FACT_SHAPES:
+        return [s for s in same if s is lead or s.score >= FACT_KEEP * lead.score]
+    others = [s.score for s in same if s is not lead]
+    if shape == "what" and lead.kind == "prose" and others and lead.score >= SUMMARY_LEAD * max(others):
+        return [s for s in same if s is lead or s.score >= FACT_KEEP * lead.score]
+    return same
 
 
 def _lead_block(out: _Answer, shape: str, lead: Sentence, chosen: list[Sentence], terms: list[str], question: str) -> None:
@@ -130,8 +153,7 @@ def _lead_block(out: _Answer, shape: str, lead: Sentence, chosen: list[Sentence]
     in the note's own order; then its list, when the answer is a list."""
     view = out.views[lead.note_id]
     same = [s for s in chosen if s.note_id == lead.note_id]
-    if shape == "when":
-        same = [lead]
+    same = _fact_sentences(shape, lead, same)
     if shape in FACT_SHAPES and lead.kind == "item":
         #: "Is the pricing page signed off?" is answered by the one entry of
         #: the risks list that says so, not by the whole list.
@@ -474,16 +496,35 @@ def _only_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
         out.asked(label)
 
 
+def _capital(word: str) -> str:
+    return word[:1].upper() + word[1:]
+
+
 def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
     sides = tuple(_cased(out, label) for label in sides)
     if 0 in counts and any(counts):
         _only_lead(out, sides, counts)
         return
-    out.t(_unlike_before(out, ["of_found", "across_found"])[0])
+    #: No "Of the notes found," before it: the counts are the opener (L205, D20). Said twice running the same way,
+    #: the second opens on the first name instead ("Tokyo comes up in two notes and Lisbon in three notes").
+    again = bool(re.match(r"\w+ notes? mention", out.previous or ""))
+    #: Asked again later in the chat: a varied lead before the counts, so twenty turns do not open one way.
+    led = out.later_turn() and not again
+    if led:
+        out.t("compare_lead")
+    _compare_counts(out, sides, counts, again=again, led=led)
+
+
+def _compare_counts(out: _Answer, sides: tuple[str, ...], counts: list[int], *, again: bool, led: bool) -> None:
+    """Each side's count: "Tokyo comes up in two notes" when said again, else "Three notes mention Tokyo"."""
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
             out.t("and")
-        out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
+        if again:
+            out.asked(label).t("side_in" if i else "comes_up_in").m(out.count(n)).t("side_note" if n == 1 else "side_notes")
+            continue
+        out.m(_capital(out.count(n)) if not (i or led) else out.count(n))
+        out.t(*((("side_note" if n == 1 else "side_notes"),) if not i else ())).t("mentions_one" if n == 1 else "mention_many").asked(label)
 
 
 _LENGTH_ASK = lazy_compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)
@@ -550,6 +591,13 @@ def _compare_shares(stems, own, picks) -> tuple[list, list]:  # noqa: ANN001
     return only, both
 
 
+def _compare_grid(out: _Answer, sides: tuple[str, ...], own: list[list[NoteView]]) -> None:
+    grid = composer_versus.table([heading_name(label) for label in sides], own, out.today)
+    if grid:
+        out.t("para")
+        out.parts.append(("template", grid))
+
+
 def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
     """A line that counts each side, each side its own short list, then what
     speaks of two or more of them."""
@@ -567,6 +615,7 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     for label, side, side_terms in zip(sides, only, terms):
         if side or not any(only):
             _compare_side(out, label, side, side_terms)
+    _compare_grid(out, sides, own)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
@@ -786,6 +835,22 @@ def _broad_pool(out: _Answer, chosen: list[Sentence], terms: list[str]) -> list[
     return pool
 
 
+def _topic_extras(out: _Answer, pool: list[Sentence], stems: set[str]) -> list[Sentence]:
+    """A note whose name or tags are the subject is the note about it, so a
+    broad question quotes its next-best sentence as well (INBOX 813, 2700); a
+    note that only mentions the subject in passing is quoted once. The extra
+    is a sentence of that note that is not already in the pool and not said."""
+    extras: list[Sentence] = []
+    for first in pool:
+        view = out.views[first.note_id]
+        if not stems or not stems <= (view.title_words | view.filed_words) or view.note.get("connected"):
+            continue
+        more = [s for s in view.sentences if s.kind == "prose" and s.key != first.key and s.score > 0 and not _was_said(s, out.said)]
+        if more:
+            extras.append(max(more, key=lambda s: (s.score, -s.order)))
+    return extras
+
+
 def _status_body(out: _Answer, chosen: list[Sentence], terms: list[str], question: str, skip: set[tuple]) -> Sentence:
     ordered = sorted(chosen, key=lambda s: (out.views[s.note_id].written or date.min, s.score), reverse=True)
     lead = ordered[0]
@@ -833,8 +898,9 @@ def _broad_body(
     )
     if not _mentions(out, question, terms, list(out.views.values())):
         _summary(out, question, terms, firsts)
-    _lead_block(out, shape, lead, [lead], terms, question)
-    _others(out, meaning, lead, [s for s in firsts if s.note_id != lead.note_id and s.key not in skip], terms, question)
+    more = _topic_extras(out, firsts, stems)
+    _lead_block(out, shape, lead, [lead] + [s for s in more if s.note_id == lead.note_id], terms, question)
+    _others(out, meaning, lead, [s for s in firsts + more if s.note_id != lead.note_id and s.key not in skip], terms, question)
     return lead
 
 
@@ -883,7 +949,7 @@ def _body(
     return lead
 
 
-#: "what is still open on the harbor launch", "whats left to do for X",
+#: The open-items ask on one subject, as in "whats left to do for X",
 #: "what do I still need to do for X" (ledger row 444).
 _STILL_OPEN = lazy_compile(
     r"^(?:what(?:'s|s| is| are)?|which)(?: things?| items?| tasks?)?(?: is| are)?(?: still)? "
@@ -896,7 +962,7 @@ _STILL_OPEN = lazy_compile(
 
 
 def _notes_named_by(views: list[NoteView], wanted: set[str], names: set[str] = frozenset()) -> list[NoteView]:
-    """The notes a "still open" question names, best-ranked first."""
+    """The notes an open-items question names, best-ranked first."""
 
     def titled(v: NoteView) -> set[str]:
         return {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
@@ -949,7 +1015,7 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:
-    """"Two of three items are still open on Harbor launch:", then each."""
+    """The count line for one note's open items (two of three), then each."""
     still = [s for s in tasks if not s.done]
     total = len(tasks)
     if not still:
@@ -987,7 +1053,7 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), asked[1], lambda v: v.note):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:
             continue
-        dated = _days_named(view, today, asked[0])
+        dated, ahead = _dated_either_way(view, today, asked[0], ahead)
         if not dated:
             continue
         day, at = min(dated, key=lambda d: abs((d[0] - today).days))
@@ -1000,6 +1066,14 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     return False
 
 
+def _dated_either_way(view: NoteView, today: date, tense: str, ahead: bool) -> tuple[list[tuple[date, int]], bool]:
+    """The days the note names in the tense asked; none there, the other tense, said the way it stands ("until" of a day gone by)."""
+    dated = _days_named(view, today, tense)
+    if dated:
+        return dated, ahead
+    return _days_named(view, today, "past" if ahead else "future"), not ahead
+
+
 def _say_until(out: _Answer, day: date, today: date, ahead: bool) -> None:
     """"Ten days from today, on 21 October", or "That's today"."""
     days = abs((day - today).days)
@@ -1007,7 +1081,8 @@ def _say_until(out: _Answer, day: date, today: date, ahead: bool) -> None:
         out.t("until_today")
         return
     unit = "day" if days == 1 else "days"
-    out.m(out.count(days).capitalize()).t(f"until_{'ahead' if ahead else 'ago'}_{unit}").m(out.day(day))
+    #: The day by its date, never "yesterday" after "one day ago".
+    out.m(out.count(days).capitalize()).t(f"until_{'ahead' if ahead else 'ago'}_{unit}").m(composer_versus._said_day(day, "day", today))  # noqa: SLF001
 
 
 def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int]]:

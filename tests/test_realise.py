@@ -34,6 +34,11 @@ TODAY = date(2026, 10, 6)
         ("My plan is simple.", "Your plan is simple."),
         ("We decided to go with Lisbon.", "We decided to go with Lisbon."),
         ("Our flat needs a new boiler.", "Our flat needs a new boiler."),
+        # One companion named before "we" in the sentence: the two of them (L-chat-39).
+        ("I ran into a uni friend at the stop and we caught the next one.",
+         "you ran into a uni friend at the stop and the two of you caught the next one."),
+        ("Met my sister and we had lunch.", "Met your sister and the two of you had lunch."),
+        ("My sister and her kids came, and we had lunch.", "Your sister and her kids came, and we had lunch."),
         # Someone else's words are theirs.
         ('Sam wrote: "I am not sure we should ship it."', 'Sam wrote: "I am not sure we should ship it."'),
         ('I said "my turn" and left.', 'you said "my turn" and left.'),

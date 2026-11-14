@@ -139,7 +139,7 @@ and every run ends with a verification line and an Undo.
     loud on the step, in its history and on the result rather than reporting
     a partial pass as a complete one.
 10d. **"Find loose ends" pages the notebook instead of searching it**
-    (Brief 13). Its first step was one `search_notes` call for "todo, need
+    (Brief 13). Its first step was one `search_notes` call for "to-do, need
     to, should", which is a top-k similarity query, and the skill's claim is
     *the* loose ends, all of them: a note saying "ring the landlord back"
     resembles nothing on that list and is exactly what the skill is for.
@@ -360,28 +360,17 @@ load 13 to 22, 55 minutes): "Find loose ends" named **2 of 8** (the dentist,
 Priya) and one note that is not a loose end. Read from the run: the model
 wrote `list_notes({...})` into its prose and then "I cannot execute the tool
 call", so the paging never happened; that shape is now recovered as a call
-for a read (`provider.extract_text_tool_calls`, pass 5). **Still open**: the
-gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
+for a read (`provider.extract_text_tool_calls`, pass 5). The gate itself is LEDGER L-chat-62: the
+gate (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
 
-### Phase 5: the composer, after INBOX 725 (open)
-Left from INBOX 725, each its own step: (a) when a model runs, feed it the
-composer's chosen sentences as context (the owner: "the composer can assist
-the ai"); (b) run the 25-question eval with a real embedder and set the
-cosine thresholds from it (decision 19's are reasoned, the lexical ones are
-measured); (c) a "Your notes, no AI" label on a composed Chat bubble, as
-Ask's chip has; (d) a picture attached as a file (`files` captions), not only
-one inside a mostly-picture note; (e) re-capture the eval's retrieval when
-search changes (`tests/fixtures/composer/showcase_725.json`); (f) "the
-composer acts" (the owner: "or the composer can somehow call tools and act
-like an agent"): deterministic commands parsed from a Chat message ("make a
-reminder for X on Friday", "tag these notes Y"), shown as the action they
-would take and confirmed before anything is written, the same confirm card
-an agent's write uses; Agent mode then opens with no model for those verbs;
-(g) link reasons beyond "similar in meaning" (the owner: "can the composer be
-user to write better link reasons"): INBOX 691's concrete overlaps first,
-then the composer's quoted sentence pair, a model's checked line when one
-runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
-numbers: `composer725-1006.md` (git history).
+### Phase 5: the composer, after INBOX 725
+From INBOX 725: (b), the 25-question eval with a real embedder setting the
+cosine thresholds (decision 19's are reasoned, the lexical ones are
+measured), is LEDGER L-chat-63. (a), (c), (d) and (g): built, see
+HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)"; (e): built, see HISTORY.md
+"Moved from the plans, 2026-11-12 (composer closeout)"; (f) "the composer
+acts": built, see HISTORY.md "Moved from the plans, 2026-11-12 (CHAT_PLAN Phase 5 f)".
+Open items and numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
 ### Phase 6: the deterministic engine (the owner, 2026-10-10; Brief 39)
@@ -501,13 +490,9 @@ What follows is the architecture that gets there; each decision is a step.
 Steps 0 to 10, the first tests and the specification moved there whole, with
 the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 
-#### Open from Phase 6 (one line each; the agent's ledger is `engine-1010.md` (git history))
+#### From Phase 6 (one line each; the agent's ledger is `engine-1010.md` (git history))
 
-- The blind panel (decision 40), composer half run 2026-11-11 (PR 216 composer spoke; the 1 to 3B model half is rerun below once a GGUF is up; the owner's own-notebook rating is an owner check, not open work). Three independent blind-tester raters saw only the 25 showcase questions, the notes and two unlabelled answers each (the composer's and a naive baseline: the top note's first three sentences), scoring 0 to 5 on facts, grounded, human and useful. Composer (75 ratings): facts 4.28, grounded 4.31, human 3.19, useful 3.73 (sum 15.5 of 20). Baseline: 4.72, 4.84, 2.09, 3.13 (14.8). The composer beats it on human (+1.1) and useful (+0.6) and loses on facts and grounded (-0.4, -0.5): raters were not shown the notes' dates, so several measured dates read as unverifiable. Rater means within 0.16 of each other on every criterion. Marked down and fixed: a "latest" walk back in time used forward joiners ("Soon after, on 29 August" under 12 September; `composer_body._earlier`), and "Due in March." was left out of "when is the boiler service due" (`composer_select._Scorer.score`'s subject-only halving hit a sentence that carries the cue); `tests/test_composer_panel_216.py`. Also fixed from the panel (`tests/test_composer_panel_216.py`): Q10 no longer counts "Stay one night" as a hotel (`composer_unfound._VERB_SYNONYMS`), so the answer ends "None of these notes say anything about “hotel”."; Q6's comparison lead counts every found note that names a side ("four mention Lisbon and five mention Porto", not the lines shown; three older tests asserted the old singular count and now accept either number); Q17 an entry of a risks list is said as the nearest the notes come, not as the page's status. Q22's "That may be a hobby forming." stays: it is the owner's own insight hedge (INBOX 883, decision 60), computed from a count and dates, not a model's guess. **Model half run 2026-11-11** (Qwen2.5-1.5B on llama-cpp-python, `librarian.build_messages` over `composer.brief`; one blind-tester rater, same 25 questions, two unlabelled answers each, 0 to 5, dates shown): model on facts 2.92, grounded 2.76, human 3.20, useful 3.28 (12.2); the composer on the same pairs 4.72, 4.64, 2.72, 4.00 (16.1). The model rates worse on 17 of 25 (a misread checklist, two notes merged, a date or a hotel that no note holds) and ties or wins on 8 (Q2, Q4, Q10, Q12, Q13, Q16, Q24); the answer validators flag 4 of the 17. Decision 75 keeps the model leading, so no answer was swapped; recommendation: at 3B and below a plain Ask defaults to `answer_from: "notes"`.
-- Probe P15 (`engine-probe-1010.md` (git history)): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
-- The currency table's Settings editor (decision 43); the rates are dated and fixed.
-- The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
-- The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
+- The blind panel (decision 40): composer half run and fixed, see HISTORY.md "Moved from the plans, 2026-11-14 (chat plan recount)"; the model half is LEDGER L823.
 
 #### Not verified until built
 Polarity in the fact layer was dropped (decision 30's condition: no feature
@@ -540,7 +525,7 @@ session that builds the phase should confirm it in the product first.
 - **Perplexity** puts numbered marks inline at sentence ends, renders the
   source list as a horizontal strip of small cards above the answer (not a
   grid below it), shows "N sources" as a count you can expand, and offers
-  follow-up questions as the primary next action. Its marks come from the
+  follow-on questions as the primary next action. Its marks come from the
   model being asked to cite by number over a numbered context; the marks
   are therefore only as honest as the model. Implication: decision 2
   (grounding computed by us, by passage) is stronger than Perplexity's
@@ -563,8 +548,8 @@ session that builds the phase should confirm it in the product first.
 - **Raycast AI, Spotlight-style agents** win on quick actions because
   each starter is a verb with a slot ("Remind me to ___"), not a full
   sentence, and the panel remembers the last three used. Implication:
-  decision 9's twelve starters should be verb-plus-slot chips, with the
-  three most recent first.
+  decision 9's twelve starters are verb-plus-slot chips, with the three
+  most recent first (built, L-chat-16, `tests/test_agent_starters_l_chat_16.py`).
 - **Small-model reality**: a 3B model asked to cite by number over 17
   sources will drop marks or invent numbers; the eval fixtures must
   include this case so decision 2's grounding, not the model's marks, is
@@ -574,19 +559,19 @@ session that builds the phase should confirm it in the product first.
 
 ## Placed from INBOX, 2026-11-10 (libraries for the composer)
 
-- INBOX 1730: **Owner, 2026-11-10, chat (composer), verbatim:** "also the conversational ability, social skills and biological feel need major improvement. I dont want the same robotic responses every time and also I want it to sound more natural and note generated." (read "not generated"). Follows 1729 (follow-ons). Recommendation (taken, order 3): (a) phrasing variety: each answer shape gets several openers and closers chosen by a seed from the question and the turn number (stable for one question, varied across a conversation), never the same opener twice in a row in one chat; (b) conversational glue: acknowledge the follow-on ("Here are the 13 tags", "Sure, the other charts are"), short replies to thanks, greetings and small talk that answer in kind and offer one next step; (c) contractions and plain spoken English in the composer's templates ("you've", "there's", "nothing yet"), no stacked stat sentences: the most interesting fact first, the rest in the card; (d) an eval: twenty two to four turn chats scored for repeated openers, repeated sentences across turns, and a readability ceiling, gated in the composer suite. Placed: after 1729 (agent conv-1110), Sonnet, next session top.
-- **Owner, 2026-11-10, verbatim:** "are there any other repos or libraries we can use or vendor for anything else like the composer or anything else?". Recommendation (taken, order 3; each licence read from its own LICENSE file before it comes in, AGPL-compatible only): (1) `holidays` (MIT) for holiday dates in the composer and dates reader ("last Christmas" gets its year; holiday-as-topic told from holiday-as-date, W8 left B19); (2) `inflect` (MIT) for plurals, "a"/"an", ordinals and number words in composer sentences; (3) `rapidfuzz` (MIT) for fuzzy binding of follow-ons to the previous answer's items and for speller candidates (replaces hand-written edit-distance loops where it is faster, measured); (4) `textstat` (MIT) for the readability ceiling in the voice eval (INBOX 1730 d); (5) a word-frequency list for ranking (SCOWL sizes or `wordfreq`, whose data is CC-BY-SA 4.0: checked before use). Not taken now: spaCy (MIT, a 12 MB model and compiled parts; only if the rule-based follow-on binding of 1729 falls short on the eval); anything that needs torch (CLAUDE.md section 7). Placed: with conv-1110's follow-up batch (1730), Sonnet; the dependency added in `pyproject.toml` with its licence named in `THIRD_PARTY` (or the repo's notices file) in the same commit.
+- INBOX 1730 (conversational variety and the voice eval): built, see HISTORY.md "Moved from the plans, 2026-11-14 (chat plan recount)".
+- **Owner, 2026-11-10, verbatim:** "are there any other repos or libraries we can use or vendor for anything else like the composer or anything else?". Recommendation (taken, order 3; each licence read from its own LICENSE file before it comes in, AGPL-compatible only): (1) `holidays` (MIT) for holiday dates in the composer and dates reader ("last Christmas" gets its year; holiday-as-topic told from holiday-as-date, W8 left B19); (2) `inflect` (MIT) for plurals, "a"/"an", ordinals and number words in composer sentences; (3) `rapidfuzz` (MIT) for fuzzy binding of follow-ons to the previous answer's items and for speller candidates (replaces hand-written edit-distance loops where it is faster, measured); (4) `textstat` (MIT) for the readability ceiling in the voice eval (INBOX 1730 d); (5) a word-frequency list for ranking (SCOWL sizes or `wordfreq`, whose data is CC-BY-SA 4.0: checked before use). Not taken now: spaCy (MIT, a 12 MB model and compiled parts; only if the rule-based follow-on binding of 1729 falls short on the eval); anything that needs torch (CLAUDE.md section 7). Placed: with conv-1110's follow-on batch (1730), Sonnet; the dependency added in `pyproject.toml` with its licence named in `THIRD_PARTY` (or the repo's notices file) in the same commit. The build is LEDGER L-chat-64.
 
-## Placed from INBOX, 2026-11-11 (1743: the Ask sub-tab as a smart browser; design, not built)
+## Placed from INBOX, 2026-11-11 (1743: the Ask sub-tab as a smart browser; design; the build is LEDGER L-chat-58)
 - INBOX 1743, owner: "Ive always wanted the ask subtab to be a smart browser for your notes". **Design entry, composer batch 2 (2026-11-11); nothing built; the recommendation is taken unless the owner says otherwise.**
-  - **Exists:** the woven overview names its threads in prose (`composer_story`: lead, stretches by thread, one insight); the Matching records column (`#raw-results`, cards in `reply-kit.js`) shows the notes the answer cites, numbered to match its marks; a digest answer draws no chips of its own (`answer-kit.js` `renderAnswerGrounding`, digest branch); the follow-up strip (`renderFollowups`) offers next questions.
+  - **Exists:** the woven overview names its threads in prose (`composer_story`: lead, stretches by thread, one insight); the Matching records column (`#raw-results`, cards in `reply-kit.js`) shows the notes the answer cites, numbered to match its marks; a digest answer draws no chips of its own (`answer-kit.js` `renderAnswerGrounding`, digest branch); the follow-on strip (`renderFollowups`) offers next questions.
   - **Recommendation, in three slices, each shippable alone:**
     1. *Thread chips filter the column.* The server already knows the threads (`composer_story._themed`, `_beats`): send them on `support.threads` as `{label, note_ids}`. The page draws them as one `.chip` row above Matching records (not under the answer: the column is the browser). A chip press filters the column to its notes (client only, no new request, the ids are already loaded), a second press clears it, the count in the heading says "3 of 11". Chips are never an act, so no consent applies. Tests: a threads fixture with two themes gives two chips whose ids partition the cited cards; pressing one hides the others (`tests/test_ui_recipes.py` for the chip recipe; a Playwright sweep for the measured count).
     2. *A card opens its neighbours in place.* The card's existing links row gains "Around this note": press it and the column shows that note's linked and similar notes (`/entries/{id}/related`, already used by the graph and the note's Connections) under the card, indented one step, never replacing the answer. The answer text is untouched; it is a browse, not a new question.
     3. *Back walks the trail.* Each filter or opened neighbourhood pushes one step on a small trail (`[answer] > thread > note`), shown as a breadcrumb in the heading; Back (the heading's arrow and the browser's Back through `router.js` `navId` state) pops one step. Reload keeps the answer, not the trail.
   - **Why this order:** slice 1 is the owner's "smart browser" feel at the lowest cost (data exists, client only) and proves the chips; slice 2 needs the related-notes route's cost measured on a 2,000-note notebook before it ships; slice 3 only matters once 2 exists.
   - **Parity both ways (decision 75):** the threads come from the composer, so a model answer sends none and shows no chips; the model path may later fill `support.threads` from its own cited sources' categories, which needs no change to the page.
-  - **Not decided, for the owner:** whether a chip filter should also narrow the answer text itself (it does not in this design: the answer stays whole). **Not verified:** nothing here has run; slice 1's chip row at 360 px and the column's dimmed-versus-bright cards (INBOX 1743 follow-up) need a measured sweep before closing.
+  - **Decided (standing order 3, 2026-11-14, the design's own recommendation):** a chip filter narrows the Matching records column only; the answer text stays whole. **Not verified:** nothing here has run; slice 1's chip row at 360 px and the column's dimmed-versus-bright cards (INBOX 1743 follow-on) need a measured sweep before closing.
 - **Gather and Track-in-a-table taken up by a typed yes (OPEN O5, 2026-11-11).** The offer's note is parked server-side with an `offer_id` (`consent_store`, single use, 30 minutes); the page sends the id back on the last turn until the button is pressed; a bare yes in Chat makes the held note with Undo, never the page's text. Parity (75): with a model, the same yes becomes "make a note: ..." and its tool card asks Confirm. Ask still declines acts.
 
 ## Placed from INBOX, 2026-09-09
@@ -685,12 +670,12 @@ phrasebook, offline, deterministic) hold everywhere; one style guide for the
 app's voice in DESIGN.md; each surface gets a measured eval like 725's.
 
 Addenda, the owner, 2026-10-06, verbatim: "also the composer could be used to
-write better and cheaper followup questions, suggested search results, auto
+write better and cheaper follow-on questions, suggested search results, auto
 fills, suggested stuff and more"; "the composer can assist the ai and
 complement features"; "the ai still should be used as the chat bot when it is
 available". So:
 
-8. **Cheap suggestions**: follow-up questions, suggested searches, autofill
+8. **Cheap suggestions**: follow-on questions, suggested searches, autofill
    (titles, tags, reminder wording, link reasons) composed first; a model is
    asked only where it adds something the composer cannot.
 9. **The composer assists the model, never replaces it**: when a model is
@@ -704,7 +689,7 @@ available". So:
 composer to be soooo good that users dont even need to install ai ... some of
 my friends dont like ai and probs wont want to install a local model so I want
 it to be the best and most capable and well spoken, coherent, well made
-composer the world has seen." Next session: the Phase 5 rows and
+composer the world has seen." Then: the Phase 5 rows and
 `composer725-1006.md` (git history) (link reasons from sentence pairs, the
 composer feeding a running model, "the composer acts"), each measured on the
 725 eval. The owner may run this phase with a Fable planning pass later, by
@@ -720,7 +705,7 @@ the owner says otherwise).
       (who, what, when, the measured counts, quoted sentences with ids), not
       raw note dumps; fewer tokens, less to misread.
     - **Tool results**: each agent tool's result is summarised in one fixed
-      shape ("Done: tagged 3 notes #trip. Not done: 1, it is private.") so the
+      shape (a "Done:" count, then each note it skipped with the reason, such as a private note) (LEDGER L821) so the
       model's next step reads a clean state, and the person sees the same line.
     - **Guard notices**: the agent's own rails (what it may not do, what needs
       confirming, what came from a note rather than the person) as fixed,
@@ -795,7 +780,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 - "why is the token window limit for this model soooo low :("
   Recommendation: show the model's real context limit and the reason for it in the token pill. Also carried by Brief 37 (token pill popover).
 - "I tried to ask for more info from the retrieved website in the previous prompt and it just straight up ignored me and started talking about my notes"
-  Recommendation: a follow-up about the last retrieved page reuses that page as its source. Also carried by Brief 37 (web sources) and Brief 39 (dialogue state).
+  Recommendation: a follow-on about the last retrieved page reuses that page as its source. Also carried by Brief 37 (web sources) and Brief 39 (dialogue state).
 - "also I just asked another question, didnt like the response so I deleted it, and now somehow the token usage I was at for that chat has lowered??"
   Recommendation: count tokens from the turns that still exist and show the change when a turn is deleted, then measure the figure before and after. Also carried by Brief 37 (token pill popover).
 - "not every chat response needs to be related to notes if it is othe rthings about the application."
@@ -904,10 +889,10 @@ ms with the status call held 4000 ms); "show them" lands on Your notes from 4
 of 4 sub-tabs; hovering an in-text reference opened the Sources disclosure,
 now it previews and a press opens it (the mark is a white digit on a blue
 pill, 10 by 13px); the web panel's Try again holds (2 requests, 1 result).
-Still open: the web-search store (only a 60 s one-shot prefetch exists, no
-stored page text, fetch time or re-fetch control) and a per-item
-suppressed-suggestions list (Settings, Data has counts by kind and Clear all
-with Undo; no list of the items).
+Both built since: the web-search store (decision 1692,
+`tests/test_web_store_1111.py`) and the per-item suppressed list
+(`tests/test_dismissed_list_1110.py`); a joke is said from the top matching
+record (`tests/test_joke_source_1114.py`).
 
 ## The assistant catalogue, 2026-10-10
 
@@ -968,9 +953,8 @@ step 2 or Brief 35):
 5. **A correction is read as a new question.** "no, the gym one" is classified
    `list` and answered with the quoted sentences; `follow_on` has `more`,
    `ordinal`, `meant` and `it`, and no `correction` (decision 35 owns it).
-6. **`ai/tool_summary.py` does not exist**, and `ai/commands.py` exists only on
-   `origin/wip/composer-acts` (626 lines, 56 phrasings, never run); Phase 6
-   step 7 and decision 10 (one fixed result line per tool) both lean on them.
+6. **`ai/tool_summary.py` is dropped** (L96, 2026-11-12): nothing references it, and
+   the fixed result line per tool is `ai/tool_say.py`'s; `ai/commands.py` is built.
 
 ### 1. What the best rule-based and offline assistants do
 
@@ -1241,7 +1225,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
 | U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
 | U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
-| U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
+| U18 | Out-of-domain | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | | | |
 
 #### Answering
 
@@ -1271,7 +1255,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
 | A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
-| A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
+| A25 | No answer | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | | | |
 
 #### Acting
 
@@ -1294,7 +1278,7 @@ and always show the exact change before running.
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
 | X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
-| X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 |
+| X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13." then the one it skipped and why; one undo for the batch | M | 7 (LEDGER L-chat-61) |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
 | X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
@@ -1308,13 +1292,13 @@ and always show the exact change before running.
 | C2 | Thanks, sorry, bye | `thanks` 21, `sorry` 21, `bye` 21 | Next step offered only for some kinds | Keep; add the last answer's subject to the bye line ("Your passport reminder is set for Friday.") when an act ran | S | 8 |
 | C3 | Mood | `SOCIAL["emotion"]` 21 | Replies are generic | Name the feeling word the person used; if their recent notes show a streak or a hard week (measured), say that measured fact, never advice | S | 8 |
 | C4 | Small talk | how, laugh, reaction, confused, ack, compliment, insult (20 lines each) | No memory of what was said; the same kind repeats | Kind plus the last two replies: avoid repeats across the session (decision 34) | S | 4 |
-| C5 | About the app | `intent.ABOUT_APP`, `SOCIAL["about_app"]` 10; the Guide separately (`help_chat`) | Chat and Guide are two engines | One engine with a `help` register (decision 36): the step sentence first, the rest behind "More about the Dashboard" | M | 8 |
+| C5 | About the app | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 | C6 | Identity | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | C7 | Capability questions | `ABOUT_APP` patterns; `get_app_navigation` tool | Answers are static | Generated from the act registry and utility table (X18, T-rows) with one example each | S | 8 |
-| C8 | Help | `help_chat.HELP_TOPICS` 121, keyword and edit-distance matching, `offline_answer` pastes whole paragraphs | Whole paragraphs; no step-first answer | `help` register composer picks the one sentence (owner's widgets example) | M | 8 |
+| C8 | Help | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 | C9 | Encouragement | `composer_voice` remarks (week count, open items) | None in Chat | When a measured streak, a finished checklist or a long gap ends, say it plainly ("All 5 items on the Trip list are ticked."); no praise words the data cannot back | S | 6 and 8 |
 | C10 | Humour by rule | None | Owner: "social and conversational aspects" | "Tell me a joke": a jokes line the person wrote (quoted, with its source note, the owner's own bug about jokes from notes), else one from a table of 100 short, clean jokes labelled as the app's; opt-out in Answer style | M | 8 |
-| C11 | Personality across voices | `natural` and `professional` (`VOICE_VARIANTS`); Gen Z voice to be removed (owner) | A third voice named in decision 26 ("playful") | Not built: needs the owner's yes after removing the Gen Z voice; until then two voices, each with a phrasebook test | none | n/a |
+| C11 | Personality across voices | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-13 (CHAT_PLAN C11)"). | | | | |
 | C12 | Name and preferences | `save_user_preference` tool | The person's name is not used | "call me Sam" stored as a preference; used in greetings only, off by default for professional | S | 8 |
 | C13 | Conversation controls | `_MORE` | Repeat, shorter, longer, back, next, start over, stop, yes, no (Alexa's built-ins; section 1) | A small table: "say that again" re-renders the last answer with a different salt (A/B), "shorter"/"longer" re-run with `length_wish`, "back" restores the previous answer, "yes" accepts the last offer | S | 4 |
 | C14 | Honest limits | `_nothing`; web gating message planned | A line for each thing it cannot do | "I can only search the web when web search and tools are on." ; "I cannot do that without a model." with the specific step to enable | S | 8 and 9 |
@@ -1346,14 +1330,14 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | A due item | `composer_voice._due`, reminders | Route `GET /insights/voice` and companion bubble unbuilt (`composer-everywhere-1006.md` 1 and 2) | Fires for a reminder due within the hour or overdue today, once, with the note's sentence | M | new (6) |
+| P1 | A due item | `composer_voice._due`, reminders | Route `GET /insights/voice` and companion bubble are the build (`composer-everywhere-1006.md` 1 and 2) | Fires for a reminder due within the hour or overdue today, once, with the note's sentence | M | new (6) (LEDGER L-chat-54) |
 | P2 | Resurfacing | `resurface.for_day` (three a day), `composer_voice._back` | Not spoken | One "back" remark a day for the top faded note, quoting its best sentence | S | new (6) |
 | P3 | On this day | `composer_voice._on_this_day`, `/insights/on-this-day` | Not in Chat or dashboard line | Same date in earlier years, one quoted sentence | S | new (6) |
 | P4 | A pattern | `composer_voice._patterns` | Rule thresholds | Decision 32's threshold (at least 3 mentions across at least 3 weeks), hedge fixed, marked measured | M | 6 |
-| P5 | Drift | Open items (`_open_items`) | Age threshold | A plan fact older than 30 days with no later event or tick: "still open" | S | 6 |
+| P5 | Drift | Open items (`_open_items`) | Age threshold | A plan fact older than 30 days with no later event or tick: said as unticked | S | 6 (LEDGER L-chat-54) |
 | P6 | A daily line | `composer_voice.today_line` | Not drawn | One sentence under the greeting from the day's strongest signal, else nothing (nothing is a valid output) | S | new (6) |
 | P7 | A weekly review | `composer_voice.week_review`, `/insights/digest` (model) | No-model digest shows nothing | `week_review` with the "Your notes, no AI" label | S | new (6) |
-| P8 | An open question answered | `margin.py` (answers card), `questions.py` | Not surfaced when a note is saved | On save, if a new sentence answers an open question, say so once with both quoted | M | 6 |
+| P8 | An unanswered question answered | `margin.py` (answers card), `questions.py` | Not surfaced when a note is saved | On save, if a new sentence answers an unanswered question, say so once with both quoted | M | 6 (LEDGER L-chat-57) |
 | P9 | A contradiction found | `tensions.py` | Not spoken | Once per new tension, both sentences, the newer named | S | 6 |
 | P10 | An upcoming dated plan | Date facts in notes | Nothing reads them forward | A plan or event fact dated in the next 7 days with no reminder: "Your trip note says you fly on the 14th. No reminder is set." with an act chip | M | 6 and 7 |
 | P11 | Rate and quiet rules | Spec in `composer-everywhere-1006.md` 2 (about one remark per 5 minutes, quiet while typing) | Build | At most 3 a day, none within 20 s of a key press, a seen-key store, never the same fact twice in 7 days, one switch to turn all off | S | new (6) |
@@ -1370,14 +1354,12 @@ same facts. What the code does today (checked): `routes_chat._assist` builds the
 composed answer and a `composer.brief` of the notes cut to the sentences on the
 question; the plain path yields `composed_preview` before the model's first
 token (`routes_chat.py` ~1906 to 1910); grounding marks and `source_check.py`
-(numbers, dates and names with no source) run on the model's answer. Not built:
-the frontend draws no draft (`composer-model-1006.md` 1); the model is not
-given the composer's chosen sentences as ids, only the cut notes; no
-disagreement is shown; and **a model that dies mid-answer leaves an error line,
-not the composed answer** (`routes_chat.py` ~1963 to 1976 yields
-`model_error_message` only). So the degrade property the owner wants ("the
-model path degrades to the deterministic one") is not true today, and is the
-first test below.
+(numbers, dates and names with no source) run on the model's answer. A model
+that dies mid-answer now sends the composed answer under one line
+(`api/chat_turn.py`, `chat_degrade.fallback_events`), so the path degrades to
+the deterministic one. The draft drawn before the first token and the chosen
+sentences given to the model as ids are LEDGER L-chat-59 (rechecked 2026-11-14:
+no frontend reader of `composed_preview`).
 
 **The handoff protocol** (proposed, one per turn, in this order):
 
@@ -1450,19 +1432,19 @@ first measured run, not a promise.
 | `insights_1010.json` | 40 (30 positive, 10 negative) | id, notebook ref, question, `rule` (recurrence, streak, drift, contrast, load, time_of_day, first_last, silence, none), `measures` (kind, value, `derived_from` spans), `hedge` | measured lines re-derivable from the fixture 1.0; fires only when the threshold is met: all 10 negatives silent; positive recall 0.9; hedge string exact; every template slot a count, date or quoted span (lint) | decision 40 |
 | `dialogues_1010.json` | 30 dialogues of 20 turns (600 turns) | dialogue id, notebook, turns of user text, expected kind, expected referent ids, `effect` (none, ellipsis, correction, control, reference) | kind accuracy 0.90; reference, ellipsis and correction resolved 0.90 (each tagged subset reported alone); `lead_in_repeats` 0 and `openers_distinct` at 15 or more per session; three regenerations differ (token distance 0.3 or more) while the lead stays when one sentence is clearly best | decision 40 |
 | `acts_1010.json` | 30 acts and 10 look-alikes (questions about acts) | phrase, now, notebook, expected verb, object ids, args, card text, confirm flag, undo steps | parse accuracy 0.95; false-positive acts on look-alikes 0; the card's change equals the tool call's arguments 1.0; undo restores the database snapshot 1.0; a clarifying question asked exactly when a slot is missing | decision 40 |
-| `web_1010.json` | 20 | question, stored pages (url, text), `web_on`, `tools_on`, expected sentences (url, span) | every quoted web sentence is a span of its page 1.0; cited by URL 1.0; with web off or tools off, zero search calls and the reason said 1.0; a follow-up reuses the last page 1.0 | decision 40 |
+| `web_1010.json` | 20 | question, stored pages (url, text), `web_on`, `tools_on`, expected sentences (url, span) | every quoted web sentence is a span of its page 1.0; cited by URL 1.0; with web off or tools off, zero search calls and the reason said 1.0; a follow-on reuses the last page 1.0 | decision 40 |
 | `sources_1010.json` | 30 | question, sources (kind: note, board, map, document, caption; id; text), expected (kind, id, span) | grounded 1.0; the kind label is right 1.0; a caption-only fact is found (the owner's "captions arent counted"); a picture is described only from its stored caption | decision 40 |
-| `utilities_1010.json` | 120 (30 calculator, 30 units, 25 dates, 15 text, 10 random and dice, 10 currency) | input, now, expected value, expected unit, expected "Read as" | exact value 1.0; "Read as" present 1.0; 20 hostile expressions (`__import__`, `9**9**9`, a huge factorial, attribute access) all refused within 50 ms; random and dice results in range and deterministic for a given salt | proposed |
-| `windows_1010.json` | 60 phrases | phrase, now, expected start, end, grain | exact 1.0 on all 60, including the forms measured as missed ("since March", "the week before last", "on 3 March" read as past) and the regression that "last friday" is the past Friday | proposed |
-| `recall_1010.json` | 30 (time 8, person 4, place 3, what changed 5, due 4, open 3, contradicts 3) | question, now, notebook, expected note ids in order, expected measured count | ids exact in order 0.9; the count re-derived 1.0; an empty window says so 1.0 | proposed |
-| `social_1010.json` | 80 turns (15 kinds, humour 8, identity 6, controls 12, gratitude after an act 6) | message, previous turn, expected kind | kind accuracy 0.95; three regenerations give 3 different replies; every number or name in a reply derives from the notebook; the identity reply names Atlas | proposed |
-| `ood_1010.json` | 30 (weather, scores, trivia, requests the app cannot do) | question | no invented answer: grounded 1.0; the plain no-answer and a capability line present 1.0; the closest note labelled as closest | proposed |
-| `help_1010.json` | 40 how-to questions | question, expected topic, expected step sentence id | the first sentence is the expected one 0.90; every control named exists in the UI id index 1.0 | proposed |
-| `handoff_1010.json` | 25 questions under 6 failure modes (150 turns) | question, failure mode | composed text present, label right, no error-only bubble, `fallback` true: 1.0 (fake transport) | proposed |
-| `person_shift_1010.json` | 100 pairs | note sentence, expected shifted sentence, `quoted` flag | exact 1.0; never inside a quoted fact; verb agreement ("I am", "I was", "am I", "Sam and I") | proposed |
-| budgets (not a fixture) | n/a | n/a | import of `tessellate.ai.composer` under 0.5 s; `compose()` under 150 ms for 20 notes; fact cache invalidated by `entry_edited_at` | decision, spec |
+| `utilities_1010.json` | 120 (30 calculator, 30 units, 25 dates, 15 text, 10 random and dice, 10 currency) | input, now, expected value, expected unit, expected "Read as" | exact value 1.0; "Read as" present 1.0; 20 hostile expressions (`__import__`, `9**9**9`, a huge factorial, attribute access) all refused within 50 ms; random and dice results in range and deterministic for a given salt | built (`tests/test_composer_eval_1113.py`; also reads comma-grouped numbers, mod, factorial and word numbers, and "weeks until" in weeks: `tests/test_utilities_gaps_1114.py`) |
+| `windows_1010.json` | 60 phrases | phrase, now, expected start, end, grain | exact 1.0 on all 60, including the forms measured as missed ("since March", "the week before last", "on 3 March" read as past) and the regression that "last friday" is the past Friday | built (60 of 60 exact, `tests/test_composer_eval_1113.py`) |
+| `recall_1010.json` | 30 (time 8, person 4, place 3, what changed 5, due 4, open 3, contradicts 3) | question, now, notebook, expected note ids in order, expected measured count | ids exact in order 0.9; the count re-derived 1.0; an empty window says so 1.0 | built (ids 1.0, count 1.0, empty 1.0) |
+| `social_1010.json` | 80 turns (15 kinds, humour 8, identity 6, controls 12, gratitude after an act 6) | message, previous turn, expected kind | kind accuracy 0.95; three regenerations give 3 different replies; every number or name in a reply derives from the notebook; the identity reply names Atlas | built (kind 1.0, regenerations differ 1.0) |
+| `ood_1010.json` | 30 (weather, scores, trivia, requests the app cannot do) | question | no invented answer: grounded 1.0; the plain no-answer and a capability line present 1.0; the closest note labelled as closest | built (grounded 1.0, no-answer 1.0, capability 1.0, closest 1.0) |
+| `help_1010.json` | 40 how-to questions | question, expected topic, expected step sentence id | the first sentence is the expected one 0.90; every control named exists in the UI id index 1.0 | built (first sentence 1.0, controls 1.0, `tests/test_composer_eval_1113.py`) |
+| `handoff_1010.json` | 25 questions under 6 failure modes (150 turns) | question, failure mode | composed text present, label right, no error-only bubble, `fallback` true: 1.0 (fake transport) | built (`tests/test_chat_handoff_1010.py`) |
+| `person_shift_1010.json` | 100 pairs | note sentence, expected shifted sentence, `quoted` flag | exact 1.0; never inside a quoted fact; verb agreement ("I am", "I was", "am I", "Sam and I") | built (100 of 100 exact, `tests/test_composer_eval_1113.py`) |
+| budgets (not a fixture) | n/a | n/a | import of `tessellate.ai.composer` under 0.5 s; `compose()` under 150 ms for 20 notes; fact cache invalidated by `entry_edited_at` | built (`tests/test_engine_budgets.py`, `test_composing_is_cheap` in `tests/test_composer_compose_1026.py`, the edit test in `tests/test_factgraph.py`) |
 
-Totals: 16 fixtures (3 exist, 5 in decision 40, 8 proposed) and one budget
+Totals: 16 fixtures (3 exist, 5 in decision 40, all 8 proposed built) and one budget
 group; 645 new rows, which expand to 1,340 turns once the 30 twenty-turn
 dialogues and the 25 handoff questions under 6 failure modes are counted turn
 by turn. A blind panel
@@ -1492,11 +1474,11 @@ capability.
 | 8 | Corrections, ellipsis, references (U4, U7, U8) | `ai/composer.py` `follow_on` growing into `Dialogue` | "no, the gym one" demotes quoted notes and boosts the named one; "and last week?" re-runs the last plan with a new window | M |
 | 9 | Recall kinds: by time, due, open, contradicts (A9, A12 to A14) | `ai/composer.py` plan kinds calling `routes_reminders`, `questions.py`, `tensions.listing` | Each is a window or a status filter over rows that already exist, with the count stated | S each |
 | 10 | Captions are content (sources) | `ai/composer.read_note`, retrieval text in `search/` | A picture's stored caption joins the note's sentences, labelled as a picture reading | S |
-| 11 | Out-of-domain and the capability line (U18, A25, X18) | `ai/composer._nothing`, act registry | Plain no-answer, the closest note, and one line listing the acts and utilities that run, generated from the registry | S |
+| 11 | Out-of-domain and the capability line (U18, A25, X18) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 11)"). | | |
 | 12 | The fact layer, first six kinds (step 1) | new `ai/factgraph.py` | event, date, quantity, entity, negation and mode, list item, each with a span and cached by `entry_edited_at` | L |
 | 13 | Insights: recurrence, silence, first and last (A15) | new `ai/insights.py` | A topic in at least 3 notes across at least 3 weeks, one fixed hedge, every slot a count, date or quoted span | M |
-| 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` from `origin/wip/composer-acts`, new `ai/tool_summary.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |
-| 15 | The help register (C5, C8) | `ai/help_chat.offline_answer`, `composer.compose(voice="help")` | A how-to question gets the one step sentence; the rest of the topic sits behind "More about the Dashboard" | M |
+| 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` (built), result lines in `ai/tool_say.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |
+| 15 | The help register (C5, C8) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 
 Proposed decisions for the orchestrator to take or drop (none is remade here):
 
@@ -1592,7 +1574,7 @@ Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets
 55. **The app speaks in one voice**: system copy moves to the realiser surface by surface; no big bang.
 56. **No network in the deterministic layer**: currency and the like are dated tables that say their date.
 57. **The bar is a voice assistant's, offline** (the owner, 2026-10-10, INBOX 748): any surface's bar takes a spoken-style sentence with pronouns, follow-ups ("and the other one", "no, tomorrow") and compound requests, answers in one line with the act it took, asks one question when a slot is missing, never more, and offers the next likely act; measured by Brief 64's corpus extended with 200 spoken-style lines, each with its expected act.
-58. **The bar is a frontier model's, offline** (the owner, 2026-10-10, INBOX 754: "make the deterministic chatbot on par with a fontier ai model"). Parity is a scorecard, not a feeling: six columns (understanding: the eval corpus's act and slot accuracy; grounding: source_check 1.0; structure: the right shape for the answer, list, table, one line, measured by the maxims lint; variety: the floor of decision 51; follow-up: pronoun and ellipsis resolution on the 200 spoken lines; repair: the ladder's one-question rate), each with the engine's number beside a local model's on the same corpus, run by `scratchpad/parity.py` and printed in Brief 68's report. "On par" is every column within five points of the model's and grounding above it; where the engine cannot reach a column without inference (open-world knowledge), the scorecard says so rather than widening the engine. The owner, 2026-10-10 (INBOX 764): "the insights and context understanding and general user query/prompt understanding needs to be flawless"; so the understanding column's target is 1.0 on the owner's own corpus (every miss is a filed row, not a tolerance), and the scorecard carries a context column: pronoun, ellipsis and "same again" resolution over the last five turns, measured on the 200 spoken lines.
+58. **The bar is a frontier model's, offline** (the owner, 2026-10-10, INBOX 754: "make the deterministic chatbot on par with a fontier ai model"). Parity is a scorecard, not a feeling: six columns (understanding: the eval corpus's act and slot accuracy; grounding: source_check 1.0; structure: the right shape for the answer, list, table, one line, measured by the maxims lint; variety: the floor of decision 51; follow-on: pronoun and ellipsis resolution on the 200 spoken lines; repair: the ladder's one-question rate), each with the engine's number beside a local model's on the same corpus, run by `scratchpad/parity.py` and printed in Brief 68's report. "On par" is every column within five points of the model's and grounding above it; where the engine cannot reach a column without inference (open-world knowledge), the scorecard says so rather than widening the engine. The owner, 2026-10-10 (INBOX 764): "the insights and context understanding and general user query/prompt understanding needs to be flawless"; so the understanding column's target is 1.0 on the owner's own corpus (every miss is a filed row, not a tolerance), and the scorecard carries a context column: pronoun, ellipsis and "same again" resolution over the last five turns, measured on the 200 spoken lines.
 59. **Atlas widens only after the bar, then powers the Guide** (the owner, 2026-10-10, INBOX 758: "eventually when the deterministic chatbot gets good enout, I want to give it more utility, more abilities, mnore capability, more access, new ways to do and output info, better conversational abilities, better social variation, better context and understanding handling, better responses, better outputs and structure, use it to upgrade the guide??"). Gated on decision 58's scorecard. Then, in this order, each a measured step: access (every read tool and act in the registry, decision 53); output forms (the realiser renders a table, a list, a card, a small chart through the chat's existing blocks, never new markup); conversation (a per-chat context of the last readings so "the other one" and "same for Tuesday" resolve, social variation from the voice tables with the salt of decision 51); the Guide (`ai/help_chat.py`'s keyword matcher becomes a reading through `ai/reading.py`, the Guide answers acts from the registry and the topics from the same realiser, so help and chat are one voice). Phase F5, Brief 84.
 60. **A confirmed insight becomes a fact the owner vouched for; a dismissed one is learned** (the owner, 2026-10-10, INBOX 764: "what if the user confirms insights??"). Every insight line (chat, Tidy's "Patterns", the dashboard) carries Confirm and Not right. Confirm writes a fact with source "confirmed by you, <date>" and the measurement it came from, so it is quoted as the owner's own word, never re-hedged; Not right suppresses that insight and its near-variants and records the dismissal in the learned store (`test_learned_spec.py`), so the next similar measurement is not shown again without a new reason. Both feed the reading's context (decision 47) and retrieval. Measured: a confirmed insight answers the matching question as a fact in the next turn; a dismissed one does not reappear in 20 runs. Brief 67 (the validators and acts) builds it.
 61. **No model is the first mode, a small model the second, and the app is power-aware** (the owner, 2026-10-10, INBOX 765: a 2B to 9B Ollama model, "or no model at all because ollama makes my computer slow and drains battery so I can only run it when on charge and not trying to play video games"). Every surface is designed and measured with no model first (the no-model sweep of WORLD_CLASS 28.1 is the primary run, the with-model run the second); the model is never started by the app on its own, every start and every call shows in the Activity panel with Stop (decision 70), a model idle for the unload interval is unloaded (`keep_alive` 0 on the last call), and a "Save power" state (on battery, or set by hand, or while a full-screen app has the GPU) answers from the engine alone and says so in one line. Measured: on battery with Save power on, zero model calls in a 10-minute session; a model start always shows in Activity within one second. Amended 2026-10-10 (INBOX 766): "no model first" orders the measurements, it does not narrow the targets; see 62.
@@ -1609,7 +1591,7 @@ Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets
 | F2 quick add and the palette | The grammar, chips, slot questions in quick note, reminders, meetings, timeline, palette | 60-phrase set at 1.0; `quickadd.js` sweep: chips within 150 ms, saved value equals chip | 66, built 2026-10-10 (HISTORY "CHAT_PLAN Briefs 65 and 66") |
 | F3 realiser, validators, acts | Modules 3 to 5; chat and Ask become clients; the maxims lint | variety floor met; maxims lint 0 on the evals; every act has an inverse | 67, built 2026-10-10 (HISTORY "CHAT_PLAN Brief 67") |
 | F4 the surfaces | Section 2's rows outside chat, one commit each | each row's measure | 68, built 2026-10-10 (HISTORY "Moved from the plans, 2026-10-10 (CHAT_PLAN F4, Brief 68)"): ten rows, understanding 165 of 165, grounding 12 of 12 caught, repair 14 of 14 |
-| F5 Atlas everywhere | decision 59: the four steps built by Brief 84 (HISTORY.md, "Moved from the plans, 2026-10-10 (CHAT_PLAN F5, Brief 84)"); open: the Ask box draws the chart event, the client sends each answer's objects for "the other one", write tools beyond the acts run from a sentence | scorecard of decision 58 after Brief 84: understanding 165 of 165, grounding 12 of 12, structure 0, variety min 8 of 20 (was 3), follow-up 200 of 200 (first measured; 20 before), repair 14 of 14 | 84 (Opus, high), after 68 |
+| F5 Atlas everywhere | decision 59: the four steps built by Brief 84 (HISTORY.md, "Moved from the plans, 2026-10-10 (CHAT_PLAN F5, Brief 84)"); open: the Ask box draws the chart event, the client sends each answer's objects for "the other one", write tools beyond the acts run from a sentence | scorecard of decision 58 after Brief 84: understanding 165 of 165, grounding 12 of 12, structure 0, variety min 8 of 20 (was 3), follow-on 200 of 200 (first measured; 20 before), repair 14 of 14 | 84 (Opus, high), after 68 |
 
 ### 6. Not verified
 
@@ -1700,7 +1682,7 @@ item lights), Raycast's and Notion's in-app help, Apple Tips.
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
 - **VC1, Harper and the word list on the composer and the Ask box** (M, rank 1). Today Harper runs only in `documents-prose.js` (17 of 67 Harper members called) and the word list only in `documents.js` (2 of 9 uses). The composer is where most prose is typed and neither reaches it. Measure: a seeded typo and a seeded agreement error in the composer are underlined after a pause; lint time per 500 characters through `harper-worker.js` measured with the `p2-harper.js` method and held to decision 54's interaction budget; the composer keeps its caret and undo.
-- **VC15, the Guide's "did you mean" from the word list** (S, rank 15). `_matching_topics` in `ai/help_chat.py` forgives one typo by its own rules and never reads `frontend/vendor/wordlist/en.txt` (92,972 words). Measure: of 30 misspelt Guide questions (the `question_noise.py` table is the source), the count that reach the right topic, before and after.
+- **VC15, the Guide's "did you mean" from the word list.** Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-12 (CHAT_PLAN VC15 ...)").
 
 ## Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744)
 
@@ -1874,7 +1856,7 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 
 ## Placed from INBOX, 2026-11-05 (the Ask columns and folds)
 
-A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN A1 and A2)").
+A1, A2 and the A2 follow-on built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN A1 and A2)").
 
 B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
 
