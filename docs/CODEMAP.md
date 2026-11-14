@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11059, test files 2877, tests 22701, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11059, test files 2877, tests 22702, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -2111,14 +2111,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasMicroCast` | frontend/js/atlas-micro.js:130 |
-| `atlasMicroDo` | frontend/js/atlas-micro.js:216 |
-| `atlasMicroGap` | frontend/js/atlas-micro.js:47 |
-| `atlasMicroMay` | frontend/js/atlas-micro.js:87 |
-| `atlasMicroPick` | frontend/js/atlas-micro.js:51 |
-| `atlasMicroPlay` | frontend/js/atlas-micro.js:99 |
-| `atlasMicroStart` | frontend/js/atlas-micro.js:297 |
-| `atlasMicroTick` | frontend/js/atlas-micro.js:278 |
+| `atlasMicroCast` | frontend/js/atlas-micro.js:133 |
+| `atlasMicroDo` | frontend/js/atlas-micro.js:219 |
+| `atlasMicroGap` | frontend/js/atlas-micro.js:50 |
+| `atlasMicroMay` | frontend/js/atlas-micro.js:90 |
+| `atlasMicroPick` | frontend/js/atlas-micro.js:54 |
+| `atlasMicroPlay` | frontend/js/atlas-micro.js:102 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:300 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:281 |
 
 ### frontend/js/atlas-motion.js (18)
 
@@ -2169,7 +2169,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasDraw` | frontend/js/atlas.js:3455 |
 | `atlasDrawFigure` | frontend/js/atlas.js:3110 |
 | `atlasDressMarks` | frontend/js/atlas.js:3518 |
-| `atlasDrift` | frontend/js/atlas.js:4040 |
+| `atlasDrift` | frontend/js/atlas.js:4044 |
 | `atlasDrop` | frontend/js/atlas.js:1578 |
 | `atlasEars` | frontend/js/atlas.js:1849 |
 | `atlasExtras` | frontend/js/atlas.js:1690 |
@@ -2227,7 +2227,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4063 |
+| `atlasStreak` | frontend/js/atlas.js:4067 |
 | `atlasStyle` | frontend/js/atlas.js:3665 |
 | `atlasTail` | frontend/js/atlas.js:1897 |
 | `atlasTailMasks` | frontend/js/atlas.js:2771 |
@@ -2239,10 +2239,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1095 |
 | `atlasTuneStyle` | frontend/js/atlas.js:3071 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1010 |
-| `atlasWake` | frontend/js/atlas.js:4096 |
+| `atlasWake` | frontend/js/atlas.js:4100 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3599 |
 | `atlasWhenShown` | frontend/js/atlas.js:3544 |
-| `charactersArrived` | frontend/js/atlas.js:4193 |
+| `charactersArrived` | frontend/js/atlas.js:4197 |
 | `setAtlasMood` | frontend/js/atlas.js:3889 |
 
 ### frontend/js/attach-to.js (4)
@@ -28331,7 +28331,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22701)
+## Tests (22702)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28442,7 +28442,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_crest_1696.py | 2 |
 | tests/test_atlas_daylife_1719.py | 2 |
 | tests/test_atlas_desk_acts_1696.py | 14 |
-| tests/test_atlas_draw_rows.py | 17 |
+| tests/test_atlas_draw_rows.py | 18 |
 | tests/test_atlas_e3_1111.py | 3 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
 | tests/test_atlas_fade_1107.py | 5 |
@@ -31635,14 +31635,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:737 |
+| Needs hardware | docs/roadmap/LEDGER.md:736 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:722 |
+| Owner calls | docs/roadmap/LEDGER.md:721 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31823,7 +31823,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:925 |
+| Plan session briefs | docs/roadmap/LEDGER.md:924 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31877,25 +31877,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:941 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1025 |
-| documents | docs/roadmap/LEDGER.md:306 |
-| documents | docs/roadmap/LEDGER.md:965 |
-| general | docs/roadmap/LEDGER.md:681 |
+| chat | docs/roadmap/LEDGER.md:940 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1024 |
+| documents | docs/roadmap/LEDGER.md:305 |
+| documents | docs/roadmap/LEDGER.md:964 |
+| general | docs/roadmap/LEDGER.md:680 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:929 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1037 |
+| graph | docs/roadmap/LEDGER.md:928 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1036 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:322 |
-| mindmap | docs/roadmap/LEDGER.md:977 |
-| timeline | docs/roadmap/LEDGER.md:443 |
-| timeline | docs/roadmap/LEDGER.md:1001 |
-| ui-modernisation | docs/roadmap/LEDGER.md:326 |
-| ui-modernisation | docs/roadmap/LEDGER.md:989 |
-| whiteboard | docs/roadmap/LEDGER.md:259 |
-| whiteboard | docs/roadmap/LEDGER.md:953 |
-| world-class | docs/roadmap/LEDGER.md:445 |
-| world-class | docs/roadmap/LEDGER.md:1013 |
+| mindmap | docs/roadmap/LEDGER.md:321 |
+| mindmap | docs/roadmap/LEDGER.md:976 |
+| timeline | docs/roadmap/LEDGER.md:442 |
+| timeline | docs/roadmap/LEDGER.md:1000 |
+| ui-modernisation | docs/roadmap/LEDGER.md:325 |
+| ui-modernisation | docs/roadmap/LEDGER.md:988 |
+| whiteboard | docs/roadmap/LEDGER.md:258 |
+| whiteboard | docs/roadmap/LEDGER.md:952 |
+| world-class | docs/roadmap/LEDGER.md:444 |
+| world-class | docs/roadmap/LEDGER.md:1012 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas moods: passing moods come at least 3 a minute at rest (was 2 in 60 s), on a seeded 10-minute simulation test; rub, flip and the Show-companion notice were already built (L180).
 - Atlas lower body: a float has its own state (the dress 48 to 50 px tall against 36 to 38 standing) and a lean sweeps 9 to 15 px wider than idle in both looks (L173); the masculine trail gets a back-wisp pair (L742, 2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).
 - The speculative warm test proves the background load without a wall-clock bound (2026-11-14).

@@ -305,3 +305,59 @@ def test_hands_and_feet_are_part_of_each_limb_outline_and_atl_hand_is_only_an_an
     assert "hand: atlasHand(thumbL, k)" in atlas and "atlasArmPath(spec.armRig[side], 0, 0)" in atlas
     assert 'const hand = atlasMake("g", { class: "atl-hand" }, arm);' in atlas
     assert 'atlasMake("g", { class: "atl-hand" }, arm);\n        arms[side] = hand;' in atlas, "the anchor is made empty and handed to the props"
+
+
+MOOD_SIM = r"""
+const fs = require("fs"), vm = require("vm");
+const micro = fs.readFileSync(process.argv[1], "utf8"), atlas = fs.readFileSync(process.argv[2], "utf8");
+const grab = (re) => atlas.match(re)[0];
+const pick = (seed) => { let s = seed; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; };
+const out = {};
+for (const [name, hour] of [["morning", 8], ["afternoon", 14], ["evening", 19], ["night", 23]]) {
+  const rates = [];
+  for (let seed = 1; seed <= 6; seed++) {
+    const ctx = { console, Math: Object.create(Math), Date, globalThis: {}, document: {}, nmb: {} };
+    ctx.Math.random = pick(seed * 7919);
+    vm.createContext(ctx);
+    vm.runInContext(micro + "\n" + grab(/^const atlasDriftState = .*;$/m).replace("changedAt: 0", "changedAt: 0") + "\n" + grab(/^atlasDriftState\.pace = .*;$/m) + "\n" + grab(/^atlasDriftState\.gap = .*;$/m) + "\n" + grab(/^atlasDriftState\.coolMs = .*;$/m) + "\n;this.__x = { gap: atlasMicroGap, pick: atlasMicroPick, MOOD: ATLAS_MICRO_MOOD, drift: atlasDriftState };", ctx);
+    const x = ctx.__x, R = ctx.Math.random;
+    const END = 20 * 60000;
+    let mood = "calm", changed = 0, since = 9, starts = 0, last = "", until = 0, tick = 2500 + R() * 2500, drift = 30000;
+    for (let t = 0; t < END; t += 100) {
+      if (mood !== "calm" && t >= until) { mood = "calm"; changed = t; }
+      if (t >= drift) {
+        drift = t + x.drift.gap(name);
+        if (mood === "calm" && t - changed >= x.drift.coolMs) { mood = "drift"; changed = t; until = t + 4000 + R() * 4000; starts++; }
+      }
+      if (t >= tick) {
+        tick = t + x.gap();
+        since++;
+        const kind = x.pick({ typing: false, idle: 120000, hour, phase: name, mood, look: "masculine", sinceCast: 1e9, now: t, rareAt: {}, rareOff: false, pointer: false }, last);
+        last = kind;
+        if (x.MOOD[kind] && mood === "calm" && since >= 2 && t - changed >= 3000) {
+          since = 0; mood = kind; changed = t; until = t + (kind === "surprised" ? 1400 : 1800 + R() * 1600); starts++;
+        }
+      }
+    }
+    rates.push(starts / 20);
+  }
+  out[name] = { min: Math.min(...rates), mean: rates.reduce((a, b) => a + b) / rates.length };
+}
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_figure_at_rest_changes_its_face_three_or_more_times_a_minute_l180():
+    """L180 (decided order: the mood rate first): measured in the app on 60 s of idle, 2 changes (a determined at 8.1 s, back to
+    calm at 10.6 s). The same clocks, simulated for 20 minutes on six seeds in each part of the day with nobody typing,
+    gave 1.75 to 2.3 a minute before (the old gates and weights), 3.3 to 4.1 now, and must never give under 3 on any seed."""
+    micro = ROOT / "frontend/js/atlas-micro.js"
+    run = subprocess.run(["node", "-e", MOOD_SIM, str(micro), str(ROOT / "frontend/js/atlas.js")], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    print(got)
+    for part, row in got.items():
+        assert row["min"] >= 3, (part, got)
+    # The simulation restates the face gate; the source must still carry exactly that gate, or the rate above is for nothing.
+    assert 'atlasMoodNow !== "calm" || atlasMicroState.sinceMood < 2 || Date.now() - atlasDriftState.changedAt < 3000' in micro.read_text(encoding="utf-8")

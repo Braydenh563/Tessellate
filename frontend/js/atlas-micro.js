@@ -39,10 +39,13 @@
 const atlasMicroState = { timer: 0, last: "", sinceMood: 9, castAt: 0, rareAt: {} };
 const ATLAS_MICRO_BASE = {
   glance: 4, tilt: 2.2, shift: 2.5, ear: 1.5, blink: 2,
-  curious: 0.9, focus: 0.4, pleased: 0.7, sleepy: 0.2, surprised: 0.15, cast: 1.1,
+  curious: 2.1, focus: 0.8, pleased: 1.7, sleepy: 0.45, surprised: 0.35, cast: 1.1,
   around: 0.35, hum: 0.3, settle: 0.4, double: 0.3,
 };
 
+//: (Inlined in `atlasMicroDo`, no new global.) **How often a face changes at rest** (L180, owner 2026-11-14: at least 3 a minute with nothing happening; it was 2, one
+//: passing expression behind 3 ticks and 8 s of calm): a passing expression needs a calm face, two ticks since the last
+//: one and 3 s since the face last changed; `tests/test_atlas_draw_rows.py` simulates the minute.
 const ATLAS_MICRO_MOOD = { curious: "curious", focus: "determined", pleased: "happy", sleepy: "sleepy", surprised: "surprised" };
 function atlasMicroGap() {
   //: Skewed short: a quarter of the gaps are over six seconds.
@@ -271,7 +274,7 @@ function atlasMicroDo(kind, box) {
   }
   //: A passing expression, only over a calm face, and not twice in a row
   //: of ticks: it lasts 1.4 to 3.4 seconds and eases back.
-  if (atlasMoodNow !== "calm" || atlasMicroState.sinceMood < 3 || Date.now() - atlasDriftState.changedAt < 8000) return;
+  if (atlasMoodNow !== "calm" || atlasMicroState.sinceMood < 2 || Date.now() - atlasDriftState.changedAt < 3000) return;
   atlasMicroState.sinceMood = 0;
   setAtlasMood(ATLAS_MICRO_MOOD[kind], kind === "surprised" ? 1400 : 1800 + Math.random() * 1600, { quiet: true, backEaseMs: 900 });
 }

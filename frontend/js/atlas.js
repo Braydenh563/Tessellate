@@ -4036,11 +4036,15 @@ const ATLAS_DRIFT_POOL = {
   night: [["sleepy", 2], ["curious", 1.5], ["happy", 1], ["shy", 1], ["love", 0.5]],
 };
 atlasDriftState.pace = { morning: 0.85, afternoon: 1, evening: 1.15, night: 1.3 };
+//: L180: a drift every 20 to 40 s (it was 35 to 75) and 8 s of calm after a face change (it was 20), so with the small
+//: expressions (atlas-micro.js) a still figure changes its face 3 or more times a minute.
+atlasDriftState.gap = (phase) => (20000 + Math.random() * 20000) * atlasDriftState.pace[phase];
+atlasDriftState.coolMs = 8000;
 atlasDriftState.phase = (hour) => (hour >= 22 || hour < 6 ? "night" : hour < 11 ? "morning" : hour < 17 ? "afternoon" : "evening");
 function atlasDrift() {
   const phase = atlasDriftState.phase(new Date().getHours());
-  atlasDriftState.timer = setTimeout(atlasDrift, (35000 + Math.random() * 40000) * atlasDriftState.pace[phase]);
-  if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < 20000) return;
+  atlasDriftState.timer = setTimeout(atlasDrift, atlasDriftState.gap(phase));
+  if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < atlasDriftState.coolMs) return;
   //: Not at rest (owner decision Q10): a mood is two face changes, 40 layouts; the next input ends the rest (`atlasTailCalm.rest`).
   if (globalThis.atlasTailCalm?.rest.on) return;
   if (!document.querySelector(".nm-atlas")) return;
