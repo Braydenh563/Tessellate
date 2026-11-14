@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Styles: 85 more Library-only rules moved from the boot sheets to library-lazy.css, computed styles unchanged in light and dark at 1280 and 390 including the board and map views (L-ui-modernisation-51); 98 of 231 stay on the row.
 - The desk companion does something short where it is between two long pastimes, keeps each pastime to its share of the while, and reads a map by day, so no picture fills over 40% of an hour and no pastime over 20% (L-ui-modernisation-99)
 - A floating desk companion no longer gets stuck stepping back and forth beside its goal at the end of a fast glide (L-ui-modernisation-140)
 - The desk companion's own naps end after a few minutes with a stretch, so it no longer sleeps 40 to 68% of an hour while the person is about (L-ui-modernisation-104)

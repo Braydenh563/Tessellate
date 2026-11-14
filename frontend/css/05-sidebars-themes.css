@@ -2172,11 +2172,6 @@ body.resizing-sidebar {
 .doc-toolbar[data-toolbar-mode="row"] {
   flex-wrap: nowrap;
 }
-/* More pressed: the strip wraps, as the expanded mode does, and the folded
-   tools are back in their own places, with their own menus. */
-.doc-toolbar.is-more-open {
-  flex-wrap: wrap;
-}
 /* **Un-clipping the strip to free a menu freed the whole toolbar too.**
    This used to be `.doc-toolbar[data-toolbar-mode="row"]:has(details[open])
    { overflow: visible }`, the popup escaped, and so did the ~59 controls
@@ -3007,11 +3002,6 @@ body.resizing-sidebar {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.outline-link:hover,
-.outline-link:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--surface-3);
-  color: var(--ink);
-}
 .outline-twist {
   flex: none;
   width: 1rem;
@@ -3030,10 +3020,6 @@ body.resizing-sidebar {
   /* A span in the same slot on a row with nothing under it: no pointer, no
      ink, exactly the same box. */
   cursor: default;
-}
-button.outline-twist:hover,
-button.outline-twist:focus-visible {
-  color: var(--ink);
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -3055,17 +3041,6 @@ button.outline-twist:focus-visible {
   font: inherit;
   font-size: var(--text-md);
   padding: 0 var(--space-3);
-}
-/* **The heading you are in.** Keyed off the attribute rather than off the
-   class beside it, so a mark that is only painted and never announced is a
-   mark that does not appear at all: `documents.js` sets both together and
-   this rule pays for the pair. A fill and a weight, never the colour alone
-   (one in twelve men cannot use a colour-only cue), and a fill *without* an
-   accent edge, which is DESIGN.md's rule for a selected row. */
-.outline-link[aria-current] {
-  background: var(--accent-soft);
-  color: var(--ink);
-  font-weight: 600;
 }
 /* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
    rebuilds every `<select>` inside one on a MutationObserver, so for the frame
@@ -4687,13 +4662,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-panel:has(.doc-prose-row[aria-current]) {
   max-height: min(24vh, 15rem);
 }
-.doc-prose-panel.doc-prose-right,
-.doc-prose-panel.doc-prose-right:has(.doc-prose-row[aria-current]) {
-  flex: 0 0 var(--doc-prose-w);
-  width: var(--doc-prose-w);
-  max-height: none;
-  margin-top: 0;
-}
 /* The sidebars' grip as a flex item between the text and the column rather
    than absolutely placed inside a box that scrolls, where it would scroll away
    with the list. Gone with the panel when the panel is closed. */
@@ -4774,9 +4742,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   grid-template-columns: auto 1fr;
   column-gap: var(--space-2);
   row-gap: 2px;
-}
-.doc-finding-line-head .doc-finding-why {
-  grid-column: 2;
 }
 
 .doc-finding-dot-spelling {
@@ -5167,10 +5132,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 #raw-results :is(.chip.link, .result-reason-why) .ph-text {
   line-height: 1.4;
 }
-.doc-prose-empty .muted {
-  grid-column: 2;
-  font-size: var(--text-xs);
-}
 
 .doc-prose-ai-line.error {
   color: var(--error);
@@ -5451,14 +5412,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   min-width: 0;
 }
 
-.library-card-meta > .library-card-category {
-  --category-dot: var(--accent);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  color: var(--ink);
-}
 /* **How far along a section is, on its outline row** (DOCUMENTS_PLAN Phase 3
    item 2, "task lists with progress in the outline"). Pushed to the right
    edge of the row rather than sat after the words: the headings are what the
@@ -5680,18 +5633,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      height, so the ellipsis above still applies. */
   min-height: var(--target-min);
   line-height: calc(var(--target-min) - 0.3rem);
-}
-.doc-crumb:hover,
-.doc-crumb:focus-visible {
-  color: var(--text);
-  text-decoration: underline;
-}
-/* Where you are, which is the one crumb that is not a destination you are
-   navigating *to*. Hangs off `aria-current` so the mark and the thing a
-   screen reader announces cannot drift apart. */
-.doc-crumb[aria-current="location"] {
-  color: var(--text);
-  font-weight: 600;
 }
 /* --- an embedded document, drawn as a card (INBOX 421 b) ---------------------
    One button: the document's tile, its title over one facts line and its

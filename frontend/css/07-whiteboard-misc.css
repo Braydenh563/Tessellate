@@ -24,8 +24,6 @@
   top: 50%;
   pointer-events: none;
 }
-.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
-.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
@@ -191,9 +189,6 @@
   touch-action: none;
   user-select: none;
 }
-.wb-object-grip:active {
-  cursor: grabbing;
-}
 .wb-resize-handle {
   position: absolute;
   width: 10px;
@@ -302,9 +297,6 @@
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
 }
-.wb-rotate-handle:active {
-  cursor: grabbing;
-}
 /* A link's own two endpoints, round, not the square resize handles above,
    so the two read as a different kind of control (reattach/detach an end,
    not resize a shape). */
@@ -318,46 +310,6 @@
   pointer-events: auto;
 }
 
-.wb-resize-handle[data-handle="nw"] {
-  top: -5px;
-  left: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="n"] {
-  top: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="ne"] {
-  top: -5px;
-  right: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="e"] {
-  top: calc(50% - 5px);
-  right: -5px;
-  cursor: ew-resize;
-}
-.wb-resize-handle[data-handle="se"] {
-  bottom: -5px;
-  right: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="s"] {
-  bottom: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="sw"] {
-  bottom: -5px;
-  left: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="w"] {
-  top: calc(50% - 5px);
-  left: -5px;
-  cursor: ew-resize;
-}
 /* ======================= SIDEBAR COLLAPSE & PEEK ======================= */
 .sidebar-collapse-toggle {
   position: absolute;
@@ -2172,9 +2124,6 @@ body.scroll-top-visible .skills-split > .tab-main {
   :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content, .sketch-group) {
   cursor: inherit;
 }
-.wb-panel-grip.is-dragging {
-  cursor: grabbing;
-}
 .wb-sidebar-head h3 {
   margin: 0;
 }
@@ -3142,12 +3091,6 @@ dialog::backdrop {
   min-height: 11rem;
   padding: var(--space-4);
   padding-right: calc(var(--target-min) + var(--space-3));
-}
-/* The wrap is the box's stand-in inside the surface, so it takes neither the
-   `.gutter-wrap` recipe's own bottom margin (which would open a gap inside
-   the composer, above the counter) nor any width of its own. */
-.note-composer > .gutter-wrap {
-  margin-bottom: 0;
 }
 /* The foot: Clear and the counter sit inside the surface, so they take its padding
    instead of the negative margin it used to pull itself up against a box it
@@ -5278,23 +5221,8 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   }
 }
 
-/* The first head sits under the lead line rather than against it; every
-   later one opens a group, so it gets the space above that says so. */
-.wb-map-theme .setting-subhead {
-  margin: var(--space-3) 0 var(--space-1);
-}
 .wb-map-theme .setting-subhead:first-of-type {
   margin-top: 0;
-}
-/* The map proposal dialog (`wbReviewMapProposal`, whiteboard.js: "make a map
-   of these notes"). `.confirm-card`'s min(30rem, 92vw) is sized for a question
-   and two buttons; what this holds is a twenty-line outline, and at that width
-   the lines it exists to let you read wrap. Compound selector for the reason
-   `.confirm-card.graph-link-panel` gives at its own override: equal
-   specificity would let source order decide, and `.confirm-card` is declared
-   in a later file. */
-.confirm-card.wb-proposal-card {
-  width: min(36rem, 94vw);
 }
 /* A board's actual layout, in miniature. The dots are cards drawn at their
    real relative positions, so two boards look different from each other in
@@ -5926,27 +5854,6 @@ rect.board-minimap-card,
    caption competing with the real one. It wraps rather than scrolls, because
    unlike the collapsed note row's chip lane this is the last row of a card
    with room below it. */
-/* Reported with a screenshot of three tiles side by side: the chips sat
-   hard against the DESCRIPTION label under them, and started a whole
-   `--space-4` to the left of it, the usage row had vertical rhythm but no
-   horizontal padding, while `.library-image-fields` below it (00-tokens-
-   shell.css) is inset on both sides. Two different left edges inside one
-   card reads as a mistake even when nothing is technically broken, so this
-   matches that inset and adds the missing gap underneath. */
-.library-image-usage {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  /* Was `--space-2`, and reported as no gap at all: this section sits under
-     the fields' own badges, and a rule with a top border needs enough room
-     above it to read as a divider rather than as an underline on the badge
-     immediately before it. */
-  margin-top: var(--space-4);
-  padding: var(--space-2) var(--space-4) 0;
-  margin-bottom: var(--space-3);
-  border-top: 1px solid var(--border);
-}
 /* A chip that goes somewhere. Capped so one long note title cannot push the
    rest of the row out of the card, with the full text still in the title. */
 /* The tile's own tick. Top-left, over the thumbnail, the same corner (and
@@ -5971,24 +5878,6 @@ body.library-media-selecting
   .library-image-tile:has(> .library-image-frame) > .library-tile-tick {
   opacity: 1;
 }
-/* **`text-overflow` has to go on the text, not on the chip.** Reported: "the
-   text in the used in tokens are cut off", with a screenshot of a chip whose
-   label was sliced at *both* ends, "ome ideas for features I h".
-   `.chip` is `inline-flex`, and `text-overflow` does nothing on a flex
-   container: its children are flex items, so the label was never a line box
-   that could ellipsise. It just got clipped by `overflow: hidden` instead,
-   and clipped symmetrically, which is the same shape as the bug the Timeline's
-   old note cards had, a centred child losing an equal slice off each side
-   rather than ending in an ellipsis.
-   `setLabel` already wraps the text in `.ph-text` (app.js), so the fix is to
-   put the rule where the text actually is, and to stop the icon shrinking
-   with it. */
-.library-image-usage-chip > .ph-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
 
 .menu-item .ph-text {
   min-width: 0;
@@ -5998,12 +5887,6 @@ body.library-media-selecting
 }
 .library-image-usage-chip > .ph-lead {
   flex: 0 0 auto;
-}
-
-.library-image-usage-chip:hover,
-.library-image-usage-chip:focus-visible {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
 }
 
 .timeline-row-meta > .chip {
@@ -6661,14 +6544,6 @@ button.connection-row:is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   cursor: pointer;
 }
-.ocr-box:hover,
-.ocr-box:focus-visible {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.ocr-box.is-active {
-  border-width: 2.5px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
-}
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
@@ -6691,10 +6566,6 @@ button.connection-row:is(:hover, :focus-visible) {
 
 .ocr-region:hover {
   border-color: var(--accent);
-}
-.ocr-region.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
 }
 /* A disabled control has to read as disabled, the `<input>` greys itself, and
    without this the words beside it stayed at full strength and the pair looked
@@ -7587,12 +7458,6 @@ button.connection-row:is(:hover, :focus-visible) {
   border-radius: var(--radius-strip);
   background: var(--inner);
 }
-.library-read-badge {
-  /* The number is the point, "Read · 1,240 words" says what came out, where
-     "Read" alone only says a job finished, so it must not be clipped away by
-     the tile's own width. It wraps rather than truncating. */
-  white-space: normal;
-}
 /* The usage row was written as a *section* of the image card: a rule above
    it, an inset, and rhythm on both sides. On one line beside the meta strip
    that rule becomes a 333px hairline hanging in the middle of the row, and
@@ -7620,12 +7485,6 @@ button.connection-row:is(:hover, :focus-visible) {
 
 .library-file-meta-sep {
   opacity: 0.5;
-}
-.library-file-reading-head > .library-file-open-reading,
-.library-file-reading-actions > .library-file-open-reading,
-.library-file-reading-actions > .library-file-copy-reading {
-  margin-top: 0;
-  flex: 0 0 auto;
 }
 
 /* The bend point on a selected link, a sibling of the endpoint handles,
@@ -8511,9 +8370,6 @@ button.connection-row:is(:hover, :focus-visible) {
      account for, which is exactly how far it overlapped the top bar. */
   margin: 0;
 }
-.wb-topbar .wb-more-wrap {
-  display: none;
-}
 @media (max-width: 819.98px) {
   /* Search and Overview are also switches in the View menu; the two icons
      and their divider are what pushed the bar onto a third row. */
@@ -8732,18 +8588,6 @@ button.connection-row:is(:hover, :focus-visible) {
 .skill-card .skill-fact-toggle > .ph-trail {
   margin-inline-start: 0;
   transition: rotate var(--ui-base) var(--ease-out);
-}
-
-/* **The card's gap is its only rhythm** (INBOX 437 (4); DESIGN.md, "zero the
-   margins, not just the heights"). The card is a flex column on one gap,
-   but the title kept an 8px bottom margin inside its head, the description
-   a paragraph's 12px each side and the run line 11.2px each side, so the
-   steps between the parts ran 28, 20, 19 and 27px for no reason a reader
-   could see. The footer keeps its own hairline and the space above it. */
-.skill-card .skill-card-header > .skill-card-title,
-.skill-card > .skill-card-desc,
-.skill-card > .skill-card-when {
-  margin: 0;
 }
 
 .entry-meta.note-meta > .chip {
@@ -9246,32 +9090,6 @@ header#top-bar > #tab-bar {
    note edit form can carry one: the gutter takes the textarea's own metrics
    through the CSSOM at mount, and a numbered box stops soft-wrapping so the
    numbers stay true. */
-/* The numbers keep their width: only the text box gives way (owner,
-   0.3.32: a preview beside the box crushed the column to a sliver). */
-.gutter-wrap > .doc-gutter {
-  flex: 0 0 auto;
-}
-/* **A gutter numbers a box, so a hidden box has no numbers.** Reported (INBOX
-   119, with a screenshot): "when I press preview in the capture a thought
-   formatting toolbar and possibly other places with the toolbar as well, the
-   top of the line numbers can still be hidden and is just a little dot above
-   the text panel."
-   The two preview toggles hide the textarea (`setEntryPreview` in the capture
-   composer, `setView` in the note edit form) and show a rendered panel in its
-   place. The gutter is the textarea's *sibling*, not its child, so nothing
-   hid it, and it kept whatever height the last sync gave it: measured on
-   :8895, 1440x900 dark, a 27.2x21.2px tinted box at y=281.4 with the preview
-   panel starting at 309 in Capture, and the same box at y=278.6 against a
-   panel at 306.1 in the note edit form. That is the dot in the screenshot.
-   Here rather than in either toggle, because the rule is about the pair and
-   not about one surface's button: any textarea that mounts a gutter and is
-   then hidden, by these two toggles or by a third written later, drops its
-   numbers with it. The documents editor is already right for the same reason
-   read the other way round: it hides `#doc-source-wrap`, the gutter and the
-   box together, so the gutter can never be left behind on its own. */
-.gutter-wrap:has(> textarea.hidden) > .doc-gutter {
-  display: none;
-}
 /* **And once the box is an editor view, the whole numbered area goes.** The
    note surface (`mountNoteSurface`) moves the textarea inside
    `.note-surface` as an invisible mirror, so the `>` rule above stopped
@@ -9496,11 +9314,6 @@ input[type="file"] {
 .wb-map-node[data-shape="rect"] {
   border-radius: 0;
 }
-.wb-map-node[data-shape="none"] {
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
-}
 /* The fourth, and the one the core node brought with it (MINDMAP_PLAN.md item
    177 names "rounded rectangle, pill, ellipse" as a core idea's shape set).
    A radius, like the three above it, so it still holds any label: what an
@@ -9557,13 +9370,6 @@ input[type="file"] {
   border-left-width: 6px;
   box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in srgb, var(--wb-branch-edge) 45%, transparent);
 }
-/* A map that grows downward reads top-to-bottom, so the spine belongs on the
-   top edge: a left bar on a node whose parent is directly above it points at
-   nothing. */
-.wb-map-down .wb-map-node {
-  border-left-width: 1.5px;
-  border-top: 4px solid var(--wb-branch);
-}
 /* --- the spine on the other edge (MINDMAP_PLAN.md §13e) ---------------------
    A topic whose parent is to its *right* carries the branch bar on its right
    edge, for the same reason a downward map carries it on the top: a bar on
@@ -9573,10 +9379,6 @@ input[type="file"] {
    Each of the three rules above has its mirror here, in the same order and
    for the same reason: the explicit choice has to win over the weight a core
    mark gave the edge, and source order is what decides that. */
-.wb-map-node.wb-map-node-mirrored {
-  border-left-width: 1.5px;
-  border-right: 4px solid var(--wb-branch);
-}
 /* **Em, not a token.** Reported: "the icons in mindmap nodes dont resize with
    the text or size of the node". A topic's own text size is written on the
    node as a px `font-size` (`wbMapApplyNodeStyle`), and a token here is an
@@ -9627,11 +9429,6 @@ input[type="file"] {
   padding: 0 var(--space-1);
   font-size: 0.92em;
 }
-.wb-map-text .wb-map-inline-link {
-  color: var(--accent-text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
 /* The node's two "grow the map here" buttons: `+` (a topic) and the library
    one (a node pointing at a real note/document/file/link). They are an
    affordance, not furniture: they appear on the node you are pointing at or
@@ -9648,14 +9445,6 @@ input[type="file"] {
 .wb-map-node:focus-visible .wb-map-actions {
   opacity: 1;
   pointer-events: auto;
-}
-/* Both of these buttons are also slots on the node's ring, and they sit inside
-   the ring's own circle. While the ring is open it is the one place those two
-   actions are offered, rather than a second pair of small round buttons under
-   it (INBOX 114, "fix the look of the mindmap item radial"). */
-.wb-map-node.wb-radial-open .wb-map-actions {
-  opacity: 0;
-  pointer-events: none;
 }
 /* **The topic's resize grip, on its own bottom right corner** (INBOX 610:
    "resizing the mindmap nodes, resizing the text" was "unintuitive"). It was
@@ -9878,19 +9667,6 @@ input[type="file"] {
 .wb-map-strip-menu .wb-menu-controls {
   gap: 2px;
 }
-/* The icon slot's eleven and None are a palette, six to a row like the
-   swatch picker's (DESIGN.md "A choice among colours"): two rows by design,
-   not a run that wrapped, with More icons and emoji under them. */
-.wb-map-picks.is-grid {
-  display: grid;
-  grid-template-columns: repeat(6, var(--wb-map-pick));
-}
-.wb-map-strip-menu .wb-map-icon-more {
-  grid-row: 2;
-  justify-self: stretch;
-  white-space: nowrap;
-  font-size: var(--text-sm);
-}
 
 /* Chosen: the choice control's selected state (DESIGN.md: `--accent-surface`
    behind `--on-accent`, no shadow), on the previews and on the door's own
@@ -9990,15 +9766,6 @@ input[type="file"] {
 #wb-map-reset:hover,
 #wb-map-reset:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
-}
-.wb-map-strip-menu .wb-menu-row .wb-map-pick-follow:disabled {
-  opacity: 0.4;
-}
-/* The text size on the bar: the stepper recipe at the bar's own control
-   height, so it does not stand taller than the round buttons beside it. */
-.wb-map-size-stepper > .stepper-btn {
-  width: var(--target-min);
-  height: var(--target-min);
 }
 
 /* The rows themselves stand on the same height as a menu item, so a label
@@ -10222,28 +9989,6 @@ input[type="file"] {
   padding: var(--space-3);
 }
 
-/* On a core topic's full colour and on a filled topic's tint the muted ink
-   is not a quiet grey any more: measured, 4.39:1 on the blue branch's tint in
-   light. The label's own ink there, which the fill was chosen to keep legible;
-   the smaller size keeps it second to the name. */
-.wb-map-core .wb-map-number,
-.wb-map-filled .wb-map-number {
-  color: inherit;
-}
-.wb-map-progress.wb-map-progress-complete {
-  color: var(--ok);
-}
-/* On a core topic's colour and a filled topic's tint, the label's ink, for
-   the reason given for the number above: the muted grey there is the same
-   4.39:1 on the blue tint, and the success green is a second hue on a hue.
-   Complete still reads, from the count itself ("5/5"). */
-.wb-map-core .wb-map-progress,
-.wb-map-filled .wb-map-progress,
-.wb-map-core .wb-map-progress.wb-map-progress-complete,
-.wb-map-filled .wb-map-progress.wb-map-progress-complete {
-  color: inherit;
-}
-
 /* The arrowhead takes the branch's own colour: `context-stroke` is what
    makes one marker serve every colour without a marker per branch. */
 #wb-map-arrow path {
@@ -10265,17 +10010,6 @@ input[type="file"] {
    attribute stays on the row (an ordinary board still draws it, and a map
    turned back into a board gets it back); on a map this rule wins, because a
    CSS declaration beats the presentation attribute the renderer writes. */
-/* **Superseded 2026-09-23 by the owner** (MINDMAP_PLAN decisions): "these
-   links I drew using the cross-link tools are different from the ones between
-   the other mind map nodes ... I want them to be the same". The half of the
-   above that stands is "the map's own ink, not the pen's": a cross-link now
-   takes the branch's colour, shape, weight and taper from the renderer
-   (`wbMapCrossLinkLook` in whiteboard.js), so this rule only has to stop
-   the stroke width and paint the attributes carry from being overridden,
-   and it no longer dashes or mutes the line. */
-.sketch-group.wb-map-crosslink .sketch-path {
-  opacity: 1;
-}
 /* --- the Library on a phone (BACKLOG §116.1 item 3) -------------------------
    Measured at 390px with the session's phone probes: the eight sub-tabs
    wrapped to four rows (161px), the Everything filter chips to five rows
@@ -15264,10 +14998,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .wb-layer-row:hover {
   background: var(--hover-veil);
 }
-.wb-layer-row[aria-selected="true"] {
-  background: var(--accent-soft);
-  font-weight: 600;
-}
 
 .chat-toolbar .chat-headline > :first-child {
   flex: 0 1 auto;
@@ -15757,12 +15487,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   opacity: 0.55;
   cursor: default;
 }
-.wb-layer-row.drop-above {
-  border-top-color: var(--accent);
-}
-.wb-layer-row.drop-below {
-  border-bottom-color: var(--accent);
-}
 /* The template gallery's name field: its word over the field, as every
    dialog field is, with the focus ring's reach added to the gap (INBOX 715:
    "name text clashes with border"; `.space-dialog label` above is a block,
@@ -16095,15 +15819,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 
 .ph-caret-down {
   --ph-ink-dy: 0.035em;
-}
-
-/* "Never run." / "Last run ..." is a sentence about the card, not a control
-   on it. A fill and a radius made it the fourth box in a row of three. */
-.skill-card-when {
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
 }
 
 .dash-widget-row-cluster {
