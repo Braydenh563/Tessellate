@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 0 | 7 | 2 | 0 | 0 | 9 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 4 | 2 | 0 | 0 | 6 |
-| all | 457 | 435 | 130 | 2 | 162 | 1022 |
+| general | 0 | 2 | 2 | 0 | 0 | 4 |
+| all | 457 | 433 | 130 | 2 | 162 | 1020 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Delete the dead SVG-graph CSS (.graph-node, .graph-edge, .graph-core, .graph-label rules) with the tests that pin them. From L-ui-modernisation-30. Evidence: frontend/css/02-chat-graph.css, 04-chat-dock-appearance.css, 07-whiteboard-misc.css, graph-lazy.css hold about 30 rules for .graph-node, .graph-edge, .graph-core and .graph-label; the graph is a canvas (graph-canvas.js) and no JS creates those elements (grep: only comments and graph-edge-hover on the canvas). The unused-names test passes them because comments name the tokens. Rules are dead but tests/test_graph_hover_fade.py, test_motion_tokens.py and test_svg_paint_attributes.py read some.
@@ -602,12 +602,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
-- [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
-- [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L-general-48** `general` open, M: Companion sweeps still failing (interact, life, menu, pin, sleeptab, scroll, smooth, react, perf): compare each asserted behaviour with the current buddy, then change the sweep or the app. From L-general-47. Evidence: scratchpad/ui-sweeps/companioninteract.js, companionlife.js, companionmenu.js, companionpin.js, companionsleeptab.js, companionscroll.js, companionsmooth.js, companionreact.js, companionperf.js fail after the nmb hooks; behaviour drifted
 - [ ] **L-general-56** `general` partly, M: anchorsmotion repaired 2026-11-14 (graph popup 135/85 to 16/16 by pressing the node itself; row menu 14 to 4 with the pointer anchor a 1x0 block; full run 19/20, selection 1440x600 flaky in the full run and 2/2 alone); left: tour, toursteps, fontmatrix. Tour sweeps, anchorsmotion and fontmatrix still failing or over 300s after the L-general-53 repairs. From L-general-53. Evidence: tour.js: doors and the welcome hand-off now pass, then it runs past 400s at nine sizes (8456 lines) with FAILs left: 'with no map, Mind maps is one card on New mind map' at 1440x900 and 1184x760, '#tab-bar target is inside the window' at 1184x760 (top -2), and 390 'welcome boards count 4/4/3, 3 shown'; toursteps.js: over 300s; anchorsmotion.js: graph popup 135px (1440x900) and 85px (1440x600) from its anchor against a 16 limit, row menu 14px against 4 at 1440x600, note kebab 3px apart between reduced and full motion at 1440x600, 161s; fontmatrix.js at 390: a 1px run in a note paragraph ('as well, and' after a board link) and the 'Install' button 2px past its padding
 - [ ] **L-general-57** `general` partly, M: Map perf budgets still failing (built: the View menu, 587px to 427px with the seven branch and report rows behind one Branches and reports submenu row and the map's Present row in the Map group, mapviewmenu.js 8 of 8 at 1440 and 390; the theme dialog fit: four group blocks in two columns from 1100px, 1002px to 669px tall at 1440x900, maptheme.js 24 of 24) after the L-general-49 repairs. From L-general-49. Evidence: mapviewmenu.js: the map's View menu is 587px (25 rows, columns 452 and 572) against a 450 ceiling, the board's is 427px, so the Map group (9 rows) wants a submenu and the columns a rebalance; maptheme.js: the theme dialog is 924px tall in a 900px window and scrolls (23 of 24 pass); mapperf.js: worst zoom frame 100ms at 200 topics and 667ms at 500, and open to painted 1238ms at 500, against 50ms and 1s on this runner (36 of 39, 78s)
+- [ ] **L-general-67** `general` open, S: Companion perch look after a Home tab switch forces 74 ms at 4x. From scratchpad buddylag.js 2026-11-14. Evidence: With Atlas on at 4x CPU, the perch look after a tab switch (avatars.js afterClean, nameMarkBuddyAfterCleanTask) forced 74 ms of layout on a repeat Home visit and 26 on Library (13 on Notes); it waits for a frame with no page writes (nmb.pageAt) but Home's widgets fill after that frame
 
 ## Owner calls
 
