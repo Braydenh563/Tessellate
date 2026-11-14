@@ -386,7 +386,7 @@
       return;
     }
     if (wbAudioLive(node.id)) selectWbItem("object", node.id);
-    const made = await wbMapPasteText(lines.join("\n"));
+    const made = await wbRecordGesture(wbMapPasteText, [lines.join("\n")]);
     if (made) toast(`${nounCount(made, "topic")} from the transcript. Ctrl+Z takes them off.`, "info");
   }
 

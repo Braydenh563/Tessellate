@@ -22,7 +22,7 @@ def _body(text: str, name: str) -> str:
 def test_the_transcript_is_read_and_pasted_as_one_topic_per_line():
     body = _body(MORE, "wbMapTopicsFromRecording")
     assert "/recordings/${id}/transcript" in body
-    assert "wbMapPasteText(" in body
+    assert "wbRecordGesture(wbMapPasteText" in body
     # One picker for both the audio note and this, not a second copy.
     assert "wbAudioChoose(" in body and "wbAudioChoose(" in _body(MORE, "wbAudioPick")
     # A recording with no transcript says what to do, rather than nothing.
@@ -35,8 +35,9 @@ def test_the_map_offers_it_by_name_on_a_topic_and_through_the_lazy_surface():
 
 
 def test_the_guide_says_where_it_is():
+    # In the import topic: the features topic sits near the reply budget.
     help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core_tail.py").read_text(encoding="utf-8")
-    assert "Topics from a recording" in help_text
+    assert "Topics from a recording for one topic per transcript line" in help_text
 
 
 def test_the_plan_no_longer_calls_voice_to_map_out_of_scope():
