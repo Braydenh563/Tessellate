@@ -546,6 +546,20 @@ def _forget_asked_image_readers():
 
 
 @pytest.fixture(autouse=True)
+def _forget_span_reviews():
+    """`routes_timeline` keeps a span's model review per process; a test's
+    note ids repeat in the next test's notebook."""
+    module = sys.modules.get("tessellate.api.routes_timeline")
+    if module is not None:
+        module._SPAN_SAID.clear()
+        module._SPAN_FLIGHTS.clear()
+    yield
+    if module is not None:
+        module._SPAN_SAID.clear()
+        module._SPAN_FLIGHTS.clear()
+
+
+@pytest.fixture(autouse=True)
 def _reset_the_librarian():
     """The librarian's Quit flag and hold are module level (one scheduler per
     process), so a test that pressed Quit left them set for every test after
