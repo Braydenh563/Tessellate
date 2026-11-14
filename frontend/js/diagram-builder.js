@@ -309,6 +309,8 @@
       { label: isNode ? "ph:plus Add block after" : "ph:plus Add block inside", run: () => addBlock(S, { after: isNode ? key : null, into: isNode ? null : key }), group: "edit" },
     ];
     if (isNode) {
+      const n = diagramOps.node(S.m, diagramOps.split(key)[1]);
+      items.push({ label: n.md ? "ph:text-aa Plain text" : "ph:text-b Markdown text", run: () => ((n.md = !n.md), n.md || delete n.md, commit(S, `${n.text} is now ${n.md ? "markdown text: **bold**, *italic*" : "plain text"}.`)), group: "edit" });
       items.push({
         label: "ph:diamond Shape",
         items: shapeItems(S, key).map(shapeRow),

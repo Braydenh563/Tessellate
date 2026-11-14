@@ -68,9 +68,9 @@
     return text.replace(/#(quot|lt|gt|amp|\d{1,7});/g, (all, k) => DGM_ENTITY[k] ?? (Number(k) <= 0x10ffff ? String.fromCodePoint(Number(k)) : all));
   }
 
-  //: A line break in a label stays the `<br/>` Mermaid reads; every other `<` is a code.
+  //: A line break in a label stays the `<br/>` Mermaid reads (a newline written is one); every other `<` is a code.
   function dgmEscape(text, inBars = false) {
-    return String(text ?? "").replace(/\s*\n\s*/g, " ").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
+    return String(text ?? "").replace(/\s*\n\s*/g, "<br/>").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
   }
 
   function dgmUnquote(text) {
@@ -99,20 +99,21 @@
   }
 
   //: The text of a shape from after its opening mark: quoted (a backtick right
-  //: after the quote is a markdown string, which is kept) or up to the closing
-  //: mark. Null when it is not whole.
+  //: after the quote is a markdown string, `md`, its text kept raw) or up to the
+  //: closing mark. Null when it is not whole.
   function dgmShapeText(rest, close) {
     const lead = rest.length - rest.trimStart().length;
     if (rest[lead] !== '"') {
       const end = rest.indexOf(close);
       return end === -1 ? null : { text: dgmDecode(rest.slice(0, end).trim()), used: end + close.length };
     }
-    const end = rest.indexOf('"', lead + 1);
-    if (end === -1 || rest[lead + 1] === "`") return null;
+    const md = rest[lead + 1] === "`";
+    const end = md ? rest.indexOf('`"', lead + 2) + 1 || -1 : rest.indexOf('"', lead + 1);
+    if (end === -1) return null;
     const after = rest.slice(end + 1);
     const gap = after.length - after.trimStart().length;
     if (!after.startsWith(close, gap)) return null;
-    return { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
+    return md ? { text: rest.slice(lead + 2, end - 1), md: true, used: end + 1 + gap + close.length } : { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
   }
 
   //: One node reference: an id and, optionally, its shape and text.
@@ -126,7 +127,7 @@
     for (const [open, close, shape] of DGM_SHAPES) {
       if (!tail.startsWith(open)) continue;
       const body = dgmShapeText(tail.slice(open.length), close);
-      return body && { id: id[0], shape, text: body.text, end: i + open.length + body.used };
+      return body && { id: id[0], shape, text: body.text, ...(body.md ? { md: true } : {}), end: i + open.length + body.used };
     }
     return { id: id[0], shape: null, text: null, end: i };
   }
@@ -209,7 +210,9 @@
       m.nodes.forEach((n, i) => {
         if ((ids.has(n.group) ? n.group : null) !== group) return;
         const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
-        rows.push({ depth, line: `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
+        //: A markdown string is written raw on one line; a text with a quote, a backtick or a `<br>` is plain.
+        const md = n.md && !/["`\n]|<br/i.test(n.text);
+        rows.push({ depth, line: md ? `${n.id}${open}"\`${n.text}\`"${close}` : `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
       });
     };
     emit(null, 0);
@@ -273,11 +276,12 @@
     const touch = (ref) => {
       let n = byId.get(ref.id);
       if (!n) {
-        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null };
+        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null, ...(ref.md ? { md: true } : {}) };
         byId.set(ref.id, n);
         born.set(ref.id, born.size);
         m.nodes.push(n);
-      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text });
+      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text, md: ref.md });
+      if (n.md === undefined || n.md === false) delete n.md;
       //: A node belongs to the first subgraph it is named inside.
       if (n.group == null && open.length) n.group = open[open.length - 1];
     };

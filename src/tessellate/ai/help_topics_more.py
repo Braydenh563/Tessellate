@@ -1964,7 +1964,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2889,6 +2889,19 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and the overview of a diagram", "path": "A diagram document, the ... menu"}
+
+
+MORE_TOPICS.append({
+    "id": "diagram-styling",
+    "keywords": (
+        "diagram markdown text", "diagram line break", "diagram bold name", "br in a diagram",
+    ),
+    "body": (
+        "A block's menu has Markdown text, which draws **bold** and *italic* in its name; write <br/> in a name for a line break."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["diagram-styling"] = {"title": "Names, groups and styles of a diagram's blocks", "path": "A diagram document, Blocks, a block's menu"}
 
 
 #: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2773, tests 22293, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8520, frontend ids 2782, CSS sections 524, backend routes 712, backend modules 10882, test files 2774, tests 22299, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8520)
 
@@ -3232,13 +3232,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:343 |
-| `beginEdit` | frontend/js/diagram-builder.js:385 |
+| `addBlock` | frontend/js/diagram-builder.js:345 |
+| `beginEdit` | frontend/js/diagram-builder.js:387 |
 | `blockEl` | frontend/js/diagram-builder.js:39 |
 | `blockItems` | frontend/js/diagram-builder.js:302 |
 | `blockKeys` | frontend/js/diagram-builder.js:141 |
 | `buildBlock` | frontend/js/diagram-builder.js:209 |
-| `buildPalette` | frontend/js/diagram-builder.js:549 |
+| `buildPalette` | frontend/js/diagram-builder.js:551 |
 | `buildRow` | frontend/js/diagram-builder.js:222 |
 | `commit` | frontend/js/diagram-builder.js:44 |
 | `drawPicture` | frontend/js/diagram-builder.js:59 |
@@ -3246,34 +3246,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `groupGlyph` | frontend/js/diagram-builder.js:280 |
 | `icon` | frontend/js/diagram-builder.js:143 |
 | `joinChip` | frontend/js/diagram-builder.js:285 |
-| `joinPick` | frontend/js/diagram-builder.js:511 |
-| `joins` | frontend/js/diagram-builder.js:507 |
-| `kindOf` | frontend/js/diagram-builder.js:648 |
-| `menuAt` | frontend/js/diagram-builder.js:491 |
-| `more` | frontend/js/diagram-builder.js:528 |
-| `mount` | frontend/js/diagram-builder.js:551 |
+| `joinPick` | frontend/js/diagram-builder.js:513 |
+| `joins` | frontend/js/diagram-builder.js:509 |
+| `kindOf` | frontend/js/diagram-builder.js:650 |
+| `menuAt` | frontend/js/diagram-builder.js:493 |
+| `more` | frontend/js/diagram-builder.js:530 |
+| `mount` | frontend/js/diagram-builder.js:553 |
 | `nameOf` | frontend/js/diagram-builder.js:37 |
-| `nameOnPicture` | frontend/js/diagram-builder.js:367 |
-| `nestBlock` | frontend/js/diagram-builder.js:423 |
-| `onKey` | frontend/js/diagram-builder.js:445 |
+| `nameOnPicture` | frontend/js/diagram-builder.js:369 |
+| `nestBlock` | frontend/js/diagram-builder.js:425 |
+| `onKey` | frontend/js/diagram-builder.js:447 |
 | `reconcile` | frontend/js/diagram-builder.js:133 |
-| `refreshMore` | frontend/js/diagram-builder.js:540 |
-| `relabel` | frontend/js/diagram-builder.js:371 |
-| `removeBlock` | frontend/js/diagram-builder.js:431 |
+| `refreshMore` | frontend/js/diagram-builder.js:542 |
+| `relabel` | frontend/js/diagram-builder.js:373 |
+| `removeBlock` | frontend/js/diagram-builder.js:433 |
 | `render` | frontend/js/diagram-builder.js:93 |
 | `say` | frontend/js/diagram-builder.js:30 |
-| `select` | frontend/js/diagram-builder.js:329 |
+| `select` | frontend/js/diagram-builder.js:331 |
 | `shapeButton` | frontend/js/diagram-builder.js:188 |
 | `shapeGlyph` | frontend/js/diagram-builder.js:149 |
 | `shapeItems` | frontend/js/diagram-builder.js:157 |
 | `shapeRow` | frontend/js/diagram-builder.js:170 |
-| `show` | frontend/js/diagram-builder.js:658 |
-| `stepBlock` | frontend/js/diagram-builder.js:421 |
+| `show` | frontend/js/diagram-builder.js:660 |
+| `stepBlock` | frontend/js/diagram-builder.js:423 |
 | `stops` | frontend/js/diagram-builder.js:121 |
-| `styleDo` | frontend/js/diagram-builder.js:513 |
-| `suggest` | frontend/js/diagram-builder.js:501 |
-| `suggestMenu` | frontend/js/diagram-builder.js:519 |
-| `sync` | frontend/js/diagram-builder.js:623 |
+| `styleDo` | frontend/js/diagram-builder.js:515 |
+| `suggest` | frontend/js/diagram-builder.js:503 |
+| `suggestMenu` | frontend/js/diagram-builder.js:521 |
+| `sync` | frontend/js/diagram-builder.js:625 |
 | `titleOf` | frontend/js/diagram-builder.js:36 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -4282,31 +4282,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chooseDiagram` | frontend/js/documents-mermaid.js:508 |
-| `dgmChain` | frontend/js/documents-mermaid.js:152 |
+| `chooseDiagram` | frontend/js/documents-mermaid.js:512 |
+| `dgmChain` | frontend/js/documents-mermaid.js:153 |
 | `dgmDecode` | frontend/js/documents-mermaid.js:67 |
 | `dgmEscape` | frontend/js/documents-mermaid.js:72 |
-| `dgmFence` | frontend/js/documents-mermaid.js:333 |
-| `dgmFront` | frontend/js/documents-mermaid.js:253 |
-| `dgmLift` | frontend/js/documents-mermaid.js:318 |
-| `dgmLink` | frontend/js/documents-mermaid.js:136 |
-| `dgmParse` | frontend/js/documents-mermaid.js:260 |
-| `dgmPrint` | frontend/js/documents-mermaid.js:232 |
-| `dgmRef` | frontend/js/documents-mermaid.js:119 |
-| `dgmRows` | frontend/js/documents-mermaid.js:193 |
+| `dgmFence` | frontend/js/documents-mermaid.js:337 |
+| `dgmFront` | frontend/js/documents-mermaid.js:256 |
+| `dgmLift` | frontend/js/documents-mermaid.js:322 |
+| `dgmLink` | frontend/js/documents-mermaid.js:137 |
+| `dgmParse` | frontend/js/documents-mermaid.js:263 |
+| `dgmPrint` | frontend/js/documents-mermaid.js:235 |
+| `dgmRef` | frontend/js/documents-mermaid.js:120 |
+| `dgmRows` | frontend/js/documents-mermaid.js:194 |
 | `dgmShapeText` | frontend/js/documents-mermaid.js:104 |
 | `dgmStatements` | frontend/js/documents-mermaid.js:83 |
-| `dgmSubgraph` | frontend/js/documents-mermaid.js:184 |
-| `dgmTint` | frontend/js/documents-mermaid.js:227 |
+| `dgmSubgraph` | frontend/js/documents-mermaid.js:185 |
+| `dgmTint` | frontend/js/documents-mermaid.js:230 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:526 |
-| `diagramMadeKnown` | frontend/js/documents-mermaid.js:519 |
-| `docMermaidBlocks` | frontend/js/documents-mermaid.js:371 |
-| `docMermaidField` | frontend/js/documents-mermaid.js:380 |
-| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:361 |
-| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:353 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:501 |
-| `wireToolbarRoving` | frontend/js/documents-mermaid.js:589 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:530 |
+| `diagramMadeKnown` | frontend/js/documents-mermaid.js:523 |
+| `docMermaidBlocks` | frontend/js/documents-mermaid.js:375 |
+| `docMermaidField` | frontend/js/documents-mermaid.js:384 |
+| `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:365 |
+| `docRenderMermaidIn` | frontend/js/documents-mermaid.js:357 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:505 |
+| `wireToolbarRoving` | frontend/js/documents-mermaid.js:593 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -28092,7 +28092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22293)
+## Tests (22299)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28942,6 +28942,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
+| tests/test_diagram_markdown_l_documents_59.py | 6 |
 | tests/test_diagram_minimap_1110.py | 7 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
