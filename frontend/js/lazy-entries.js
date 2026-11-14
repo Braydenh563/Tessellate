@@ -149,7 +149,7 @@ installStandIns({
   libraryPick: ["pickLibraryItemDialog", "pickMediaDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
-  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine", "renderBackupsWidget"],
   dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
