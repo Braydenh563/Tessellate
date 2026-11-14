@@ -113,6 +113,7 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-elsewhere": "Edit a diagram as blocks wherever it is drawn, and save it as a picture.",
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
     "diagram-lines": "Shape a diagram's arrows and spacing, export it, and move a picture too big for its pane.",
+    "diagram-styling": "Name a block in markdown, set a group's direction, and give a block a class or link.",
     "equation-numbers": "Number a display equation with a label and cite it elsewhere in the document.",
     "document-base": "Show the notes that share a type or property as a table inside a document.",
     "document-synced": "Show one paragraph of another document inside this one, and edit it from either place.",

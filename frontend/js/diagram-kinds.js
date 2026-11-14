@@ -204,10 +204,14 @@
     const r = kxLines(source, /^sequenceDiagram$/i);
     if (!r) return null;
     const m = { kind: "sequence", front: r.front, title: null, participants: [], steps: [] };
+    //: L-documents-56: `box` groups declarations (`p.box`, the words after it), `create` and `destroy` belong to the message that
+    //: follows (`step.create`, `step.destroy`: a participant id), and a leading `autonumber` is `m.autonumber`.
+    let boxed = null;
+    const pend = {};
     const dec = (t) => diagramModel.decode(t.trim());
     const who = (id, label = null, actor = null) => {
       let p = m.participants.find((x) => x.id === id);
-      if (!p) m.participants.push((p = { type: "a", uid: kxUid(m), id, label: id, actor: false }));
+      if (!p) m.participants.push((p = { type: "a", uid: kxUid(m), id, label: id, actor: false, ...(boxed !== null ? { box: boxed } : {}) }));
       if (label != null) p.label = label;
       if (actor != null) p.actor = actor;
       return p;
@@ -215,13 +219,24 @@
     const open = [];
     const into = () => (open.length ? open.at(-1).steps : m.steps);
     for (const s of diagramModel.statements(r.body.join("\n"))) {
-      if (/^(?:box|create|destroy)\b/i.test(s)) return null;
       let hit;
-      if (s.startsWith("%%")) into().push({ type: "k", uid: kxUid(m), line: s });
+      const lead = (pend.create || pend.destroy) && !KX_MSG.test(s) && !/^(?:create|destroy)\b/i.test(s);
+      if (lead || (boxed !== null && !KX_DECL.test(s) && !/^end$/i.test(s) && !s.startsWith("%%")) || (/^box\b/i.test(s) && (boxed !== null || open.length || m.steps.length))) return null;
+      if (boxed !== null && /^end$/i.test(s)) boxed = null;
+      else if ((hit = /^box\b\s*(.*)$/i.exec(s))) boxed = dec(hit[1]);
+      else if (/^autonumber$/i.test(s) && !m.steps.length && !open.length) m.autonumber = true;
+      else if ((hit = new RegExp(`^create\\s+(participant|actor)\\s+(${KX_ID})(?:\\s+as\\s+(.+))?$`, "iu").exec(s))) pend.create = who(hit[2], hit[3] ? dec(hit[3]) : null, /^actor$/i.test(hit[1])).id;
+      else if ((hit = new RegExp(`^destroy\\s+(${KX_ID})$`, "iu").exec(s))) pend.destroy = hit[1];
+      else if (/^(?:create|destroy)\b/i.test(s)) return null;
+      else if (s.startsWith("%%")) into().push({ type: "k", uid: kxUid(m), line: s });
       else if ((hit = KX_MSG.exec(s))) {
         who(hit[1]);
         who(hit[4]);
-        into().push({ type: "m", uid: kxUid(m), from: hit[1], to: hit[4], arrow: hit[2], act: hit[3], text: dec(hit[5]) });
+        const step = { type: "m", uid: kxUid(m), from: hit[1], to: hit[4], arrow: hit[2], act: hit[3], text: dec(hit[5]) };
+        for (const k of ["create", "destroy"]) if (pend[k] && [step.from, step.to].includes(pend[k])) step[k] = pend[k];
+        if ((pend.create && !step.create) || (pend.destroy && !step.destroy)) return null;
+        pend.create = pend.destroy = null;
+        into().push(step);
       } else if ((hit = KX_DECL.exec(s))) who(hit[2], hit[3] ? dec(hit[3]) : null, /^actor$/i.test(hit[1]));
       else if ((hit = KX_NOTE.exec(s))) {
         const ids = [hit[2], hit[3]].filter(Boolean);
@@ -236,18 +251,39 @@
       else if (/^end$/i.test(s) && open.length) open.pop();
       else into().push({ type: "k", uid: kxUid(m), line: s });
     }
-    return m;
+    return pend.create || pend.destroy || boxed !== null ? null : m;
   }
 
   function kxSeqPrint(m) {
     const out = [...m.front, "sequenceDiagram"];
     if (m.title != null) out.push(`${kxPad(1)}title ${kxEsc(m.title, ";")}`);
-    for (const p of m.participants) out.push(`${kxPad(1)}${p.actor ? "actor" : "participant"} ${p.id}${p.label !== p.id ? ` as ${kxEsc(p.label, ";")}` : ""}`);
+    //: A participant made by a `create` line is declared there; one whose creating message is gone is declared up here.
+    const ends = (s, k) => s[k] && (s.from === s[k] || s.to === s[k]);
+    const made = new Set(kxSteps(m.steps).filter((s) => s.type === "m" && ends(s, "create")).map((s) => s.create));
+    const decl = (p, word) => `${word} ${p.id}${p.label !== p.id ? ` as ${kxEsc(p.label, ";")}` : ""}`;
+    if (m.autonumber) out.push(`${kxPad(1)}autonumber`);
+    let boxed = null;
+    for (const p of m.participants) {
+      if (made.has(p.id)) continue;
+      const b = typeof p.box === "string" ? p.box : null;
+      if (b !== boxed) {
+        if (boxed !== null) out.push(`${kxPad(1)}end`);
+        if (b !== null) out.push(`${kxPad(1)}box${b ? ` ${kxEsc(b, ";")}` : ""}`);
+        boxed = b;
+      }
+      out.push(kxPad(boxed === null ? 1 : 2) + decl(p, p.actor ? "actor" : "participant"));
+    }
+    if (boxed !== null) out.push(`${kxPad(1)}end`);
     const tail = (text) => (kxEsc(text, ";") ? ` ${kxEsc(text, ";")}` : "");
     const put = (steps, depth) => {
       for (const s of steps) {
         if (s.type === "k") out.push(kxPad(depth) + s.line);
-        else if (s.type === "m") out.push(`${kxPad(depth)}${s.from}${s.arrow}${s.act || ""}${s.to}:${tail(s.text)}`);
+        else if (s.type === "m") {
+          const born = ends(s, "create") && m.participants.find((p) => p.id === s.create);
+          if (born) out.push(kxPad(depth) + "create " + decl(born, born.actor ? "actor" : "participant"));
+          if (ends(s, "destroy")) out.push(`${kxPad(depth)}destroy ${s.destroy}`);
+          out.push(`${kxPad(depth)}${s.from}${s.arrow}${s.act || ""}${s.to}:${tail(s.text)}`);
+        }
         else if (s.type === "t") out.push(`${kxPad(depth)}Note ${s.pos} ${s.who.join(",")}:${tail(s.text)}`);
         else if (s.type === "d") out.push(`${kxPad(depth - 1)}${s.kw}${tail(s.text)}`);
         else {
@@ -792,6 +828,7 @@
     const A = S.k;
     const say = (text) => kit.commit(S, text);
     const sub = (title, list, current, set) => ({ label: `ph:caret-right ${title}`, group: "edit", items: list.map(([value, name]) => ({ label: `${value === current ? "ph:check" : "ph:square"} ${name}`, run: () => set(value) })) });
+    const numbering = { label: `${S.m.autonumber ? "ph:check-square" : "ph:square"} Number the messages`, group: "edit", run: () => (S.m.autonumber ? delete S.m.autonumber : (S.m.autonumber = true), say(S.m.autonumber ? "Messages are numbered." : "Messages are not numbered.")) };
     const items = [{ label: "ph:pencil-simple Rename", run: () => relabel(S, key), group: "edit" }];
     if (A.name === "mindmap") items.push(sub("Shape", ops.SHAPES.map((s) => [s, MM_NAME[s]]), n.shape || "default", (shape) => (delete n.raw, (n.shape = shape), say(`${nameOf(S, key)} is now ${MM_NAME[shape].toLowerCase()}.`))));
     if (n.type === "m") {
@@ -800,6 +837,15 @@
         { label: "ph:arrow-line-right To…", group: "edit", run: () => pickWho(S, "Message to", () => true, (id) => ((n.to = id), say(`Message now goes to ${whoLabel(S, id)}.`))) },
         sub("Arrow", Object.entries(ops.ARROWS), n.arrow, (arrow) => ((n.arrow = arrow), say(`Arrow is now ${ops.ARROWS[arrow].toLowerCase()}.`))),
         sub("Activation", [["", "None"], ["+", "Activate the receiver"], ["-", "Deactivate the sender"]], n.act, (act) => ((n.act = act), say("Activation changed."))),
+        //: L-documents-56: a message can make its receiver appear (`create`) or end a participant (`destroy`); autonumber is the diagram's.
+        sub("Lifetime", [["", "Neither"], ["create", "Creates the receiver"], ["destroy-to", "Destroys the receiver"], ["destroy-from", "Destroys the sender"]], n.create ? "create" : n.destroy ? `destroy-${n.destroy === n.to ? "to" : "from"}` : "", (v) => {
+          delete n.create;
+          delete n.destroy;
+          if (v === "create") n.create = n.to;
+          else if (v) n.destroy = v === "destroy-to" ? n.to : n.from;
+          say(v ? `Message ${v === "create" ? "creates" : "destroys"} a participant.` : "Message ends no participant.");
+        }),
+        numbering,
       );
     } else if (n.type === "t") {
       items.push(
@@ -807,9 +853,23 @@
         { label: "ph:user-circle About…", group: "edit", run: () => pickWho(S, "Note about", () => true, (id) => ((n.who = [id, ...n.who.slice(1)]), say(`Note is now about ${whoLabel(S, id)}.`))) },
         ...(n.pos === "over" ? [{ label: "ph:users Also about…", group: "edit", run: () => pickWho(S, "Note also about", (p) => p.id !== n.who[0], (id) => ((n.who = id ? [n.who[0], id] : [n.who[0]]), say(id ? `Note now spans to ${whoLabel(S, id)}.` : "Note is about one participant.")), "Just one") }] : []),
       );
-    } else if (n.type === "b") items.push(sub("Kind", SEQ_BLOCKS.map((b) => [b, b]), n.kw, (kw) => ((n.kw = kw), say(`Block is now a ${kw}.`))));
+    } else if (n.type === "b") items.push(...(n.kw === "rect" ? [{ label: "ph:palette Colour…", group: "edit", run: () => openSheet({ label: "Colour of the highlight", sub: "Tints the steps inside. Pale blue is the default.", name: "diagram-colour", build: (card, close) => {
+      card.classList.add("swatch-card");
+      card.append(swatchPicker({ label: "Colour", value: null, onChange: () => {}, onChoose: (key) => {
+        close();
+        const [r, g, b] = key ? CATEGORY_PALETTE[key].slice(1).match(/\w\w/g).map((x) => parseInt(x, 16)) : [191, 223, 255];
+        n.text = `rgba(${r}, ${g}, ${b}, ${key ? 0.3 : 1})`;
+        say(`Highlight is now ${key || "pale blue"}.`);
+      }, none: "Pale blue" }));
+    } }) }] : []), sub("Kind", SEQ_BLOCKS.map((b) => [b, b]), n.kw, (kw) => ((n.kw = kw), say(`Block is now a ${kw}.`))));
     else if (n.type === "d") items.push(sub("Word", [["else", "else"], ["and", "and"], ["option", "option"]], n.kw, (kw) => ((n.kw = kw), say(`Divider is now ${kw}.`))));
-    else if (n.type === "a") items.push({ label: n.actor ? "ph:user-circle Make it a participant" : "ph:user Make it an actor", group: "edit", run: () => ((n.actor = !n.actor), say(`${n.label} is now ${n.actor ? "an actor" : "a participant"}.`)) });
+    else if (n.type === "a") items.push({ label: "ph:selection Box…", group: "edit", run: async () => {
+      const text = await promptDialog(`Box around ${n.label} (the words on its edge; blank takes it out)`, n.box || "", { confirmLabel: "Save" });
+      if (text == null) return;
+      if (text.trim()) n.box = text.trim();
+      else delete n.box;
+      say(n.box ? `${n.label} sits in the box ${n.box}.` : `${n.label} is out of its box.`);
+    } }, numbering, { label: n.actor ? "ph:user-circle Make it a participant" : "ph:user Make it an actor", group: "edit", run: () => ((n.actor = !n.actor), say(`${n.label} is now ${n.actor ? "an actor" : "a participant"}.`)) });
     if (!f.level.fixed) {
       items.push(
         { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },

@@ -68,9 +68,9 @@
     return text.replace(/#(quot|lt|gt|amp|\d{1,7});/g, (all, k) => DGM_ENTITY[k] ?? (Number(k) <= 0x10ffff ? String.fromCodePoint(Number(k)) : all));
   }
 
-  //: A line break in a label stays the `<br/>` Mermaid reads; every other `<` is a code.
+  //: A line break in a label stays the `<br/>` Mermaid reads (a newline written is one); every other `<` is a code.
   function dgmEscape(text, inBars = false) {
-    return String(text ?? "").replace(/\s*\n\s*/g, " ").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
+    return String(text ?? "").replace(/\s*\n\s*/g, "<br/>").replace(/<br\s*\/?>|[#"<>|]/gi, (c) => (c.length > 1 || (c === "|" && !inBars) ? c : DGM_CODE[c]));
   }
 
   function dgmUnquote(text) {
@@ -99,20 +99,21 @@
   }
 
   //: The text of a shape from after its opening mark: quoted (a backtick right
-  //: after the quote is a markdown string, which is kept) or up to the closing
-  //: mark. Null when it is not whole.
+  //: after the quote is a markdown string, `md`, its text kept raw) or up to the
+  //: closing mark. Null when it is not whole.
   function dgmShapeText(rest, close) {
     const lead = rest.length - rest.trimStart().length;
     if (rest[lead] !== '"') {
       const end = rest.indexOf(close);
       return end === -1 ? null : { text: dgmDecode(rest.slice(0, end).trim()), used: end + close.length };
     }
-    const end = rest.indexOf('"', lead + 1);
-    if (end === -1 || rest[lead + 1] === "`") return null;
+    const md = rest[lead + 1] === "`";
+    const end = md ? rest.indexOf('`"', lead + 2) + 1 || -1 : rest.indexOf('"', lead + 1);
+    if (end === -1) return null;
     const after = rest.slice(end + 1);
     const gap = after.length - after.trimStart().length;
     if (!after.startsWith(close, gap)) return null;
-    return { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
+    return md ? { text: rest.slice(lead + 2, end - 1), md: true, used: end + 1 + gap + close.length } : { text: dgmDecode(rest.slice(lead + 1, end)), used: end + 1 + gap + close.length };
   }
 
   //: One node reference: an id and, optionally, its shape and text.
@@ -126,7 +127,7 @@
     for (const [open, close, shape] of DGM_SHAPES) {
       if (!tail.startsWith(open)) continue;
       const body = dgmShapeText(tail.slice(open.length), close);
-      return body && { id: id[0], shape, text: body.text, end: i + open.length + body.used };
+      return body && { id: id[0], shape, text: body.text, ...(body.md ? { md: true } : {}), end: i + open.length + body.used };
     }
     return { id: id[0], shape: null, text: null, end: i };
   }
@@ -203,13 +204,16 @@
         const plain = /^[A-Za-z0-9_][\w-]*$/.test(g.id);
         const line = plain && g.title !== g.id ? `subgraph ${g.id} ["${dgmEscape(g.title)}"]` : `subgraph ${g.id}`;
         rows.push({ depth, line, unit: { t: "s", i } });
+        if (/^(?:TD|BT|LR|RL)$/.test(g.dir)) rows.push({ depth: depth + 1, line: `direction ${g.dir}`, unit: null });
         emit(g.id, depth + 1);
         rows.push({ depth, line: "end", unit: null });
       });
       m.nodes.forEach((n, i) => {
         if ((ids.has(n.group) ? n.group : null) !== group) return;
         const [open, close] = DGM_SHAPES.find((s) => s[2] === n.shape) || ["[", "]"];
-        rows.push({ depth, line: `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
+        //: A markdown string is written raw on one line; a text with a quote, a backtick or a `<br>` is plain.
+        const md = n.md && !/["`\n]|<br/i.test(n.text);
+        rows.push({ depth, line: md ? `${n.id}${open}"\`${n.text}\`"${close}` : `${n.id}${open}"${dgmEscape(n.text)}"${close}`, unit: { t: "n", i } });
       });
     };
     emit(null, 0);
@@ -226,6 +230,14 @@
   //: other `style` stays a kept line, byte for byte.
   const dgmTint = (hue) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hue.slice(i, i + 2), 16) * 0.25 + 191.25).toString(16).padStart(2, "0")).join("");
   const DGM_STYLE = /^style\s+([\w-]+)\s+fill:(#[0-9a-f]{6}),stroke:(#[0-9a-f]{6}),color:#1a1a1a$/;
+
+  //: L-documents-55: `classDef name props` is `m.classes` (the props kept raw), `class a,b name` is `n.cls` and
+  //: `click id "url" "tip"` is `n.href` (+ `n.tip`) when the target is http(s) or a `[[note]]`; a callback, any other
+  //: scheme (`javascript:`) and every other form stay kept lines. The `:::name` shorthand also stays kept.
+  const DGM_CLASSDEF = /^classDef\s+([\w-]+)\s+(\S.*)$/;
+  const DGM_CLASS = /^class\s+([\w-]+(?:\s*,\s*[\w-]+)*)\s+([\w-]+)$/;
+  const DGM_CLICK = /^click\s+([\w-]+)\s+(?:href\s+)?"([^"]*)"(?:\s+"([^"]*)")?$/;
+  const dgmSafeTarget = (url) => /^(?:https?:\/\/[^\s"]+|\[\[[^\]"\n]+\]\])$/i.test(url);
 
   const DGM_LINKSTYLE = /^linkStyle\s+(\d+)\s+stroke:(#[0-9a-f]{6}),stroke-width:2px$/;
 
@@ -244,6 +256,12 @@
     }
     flush(Infinity, 0);
     for (const n of m.nodes) if (/^#[0-9a-f]{6}$/.test(n.fill || "")) out.push(`${indent(0)}style ${n.id} fill:${dgmTint(n.fill)},stroke:${n.fill},color:#1a1a1a`);
+    for (const c of m.classes || []) if (/^[\w-]+$/.test(c.name) && c.name !== "default" && c.css && !/[\n"]/.test(c.css)) out.push(`${indent(0)}classDef ${c.name} ${c.css}`);
+    for (const c of m.classes || []) {
+      const ids = m.nodes.filter((n) => n.cls === c.name).map((n) => n.id);
+      if (ids.length) out.push(`${indent(0)}class ${ids.join(",")} ${c.name}`);
+    }
+    for (const n of m.nodes) if (dgmSafeTarget(n.href || "")) out.push(`${indent(0)}click ${n.id} "${n.href}"${n.tip && !/["\n]/.test(n.tip) ? ` "${n.tip}"` : ""}`);
     //: An arrow's colour (1679 slice 10): `linkStyle N`, N the edge's place in the canonical order, which is `m.edges`' own.
     m.edges.forEach((e, i) => /^#[0-9a-f]{6}$/.test(e.colour || "") && out.push(`${indent(0)}linkStyle ${i} stroke:${e.colour},stroke-width:2px`));
     return out.join("\n") + "\n";
@@ -265,7 +283,7 @@
     const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?$/i.exec(statements[at] || "");
     if (!head && DGM_OTHER.test(statements[at] || "")) return null;
     if (head) at++;
-    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front };
+    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front, classes: [] };
     const byId = new Map();
     const born = new Map();
     const open = [];
@@ -273,11 +291,12 @@
     const touch = (ref) => {
       let n = byId.get(ref.id);
       if (!n) {
-        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null };
+        n = { id: ref.id, text: ref.text ?? ref.id, shape: ref.shape || "rect", group: null, ...(ref.md ? { md: true } : {}) };
         byId.set(ref.id, n);
         born.set(ref.id, born.size);
         m.nodes.push(n);
-      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text });
+      } else if (ref.shape) Object.assign(n, { shape: ref.shape, text: ref.text ?? n.text, md: ref.md });
+      if (n.md === undefined || n.md === false) delete n.md;
       //: A node belongs to the first subgraph it is named inside.
       if (n.group == null && open.length) n.group = open[open.length - 1];
     };
@@ -287,7 +306,10 @@
     };
     for (const s of statements.slice(at)) {
       const sub = /^subgraph\s+(.+)$/.exec(s);
-      if (DGM_KEPT.test(s)) keep(s);
+      //: `direction` inside a subgraph is that group's own flow; at the top it stays a kept line.
+      const way = open.length && /^direction\s+(TD|TB|BT|LR|RL)$/i.exec(s);
+      if (way) m.subgraphs.find((g) => g.id === open[open.length - 1]).dir = way[1].toUpperCase().replace("TB", "TD");
+      else if (DGM_KEPT.test(s)) keep(s);
       else if (sub) {
         const g = dgmSubgraph(sub[1].trim(), open.length ? open[open.length - 1] : null);
         if (!m.subgraphs.some((o) => o.id === g.id)) m.subgraphs.push(g);
@@ -310,6 +332,8 @@
     snaps.forEach((snap, k) => {
       m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
     });
+    //: Twice: a `class` line ahead of its `classDef` is read on the second pass.
+    dgmLift(m);
     dgmLift(m);
     return m;
   }
@@ -317,6 +341,14 @@
   //: The builder's own `style` and `linkStyle` lines become `fill` and `colour`; every other one stays a kept line.
   function dgmLift(m) {
     m.kept = m.kept.filter((k) => {
+      const def = DGM_CLASSDEF.exec(k.line);
+      if (def && def[1] !== "default" && !m.classes.some((c) => c.name === def[1])) return m.classes.push({ name: def[1], css: def[2].trim() }), false;
+      const put = DGM_CLASS.exec(k.line);
+      const ids = put && put[1].split(/\s*,\s*/).map((id) => m.nodes.find((n) => n.id === id));
+      if (ids && ids.every((n) => n && !n.cls) && m.classes.some((c) => c.name === put[2])) return ids.forEach((n) => (n.cls = put[2])), false;
+      const go = DGM_CLICK.exec(k.line);
+      const linked = go && dgmSafeTarget(go[2]) && m.nodes.find((n) => n.id === go[1] && !n.href);
+      if (linked) return (linked.href = go[2]), go[3] && (linked.tip = go[3]), false;
       const hit = DGM_STYLE.exec(k.line);
       const node = hit && dgmTint(hit[3]) === hit[2] && m.nodes.find((n) => n.id === hit[1]);
       if (node) node.fill = hit[3];

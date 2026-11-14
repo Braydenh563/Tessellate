@@ -1,10 +1,9 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
-// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
-// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
-// in lazy files. One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder`. Blocks, connector rows and the live picture; each gesture is one model change printed
+// to the source (`io.set`), so the source is the only state and its history the undo. Held to 12 KB gzipped: new
+// behaviour goes in lazy files. One export: `diagramModel.builder`.
 (() => {
-  //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
+  //: The pure half (diagram-ops.js): keys name blocks, every change is one call.
   let diagramOps;
 
   // ---------------------------------------------------------------------------
@@ -315,6 +314,7 @@
         group: "edit",
       });
     }
+    items.push(...(diagramModel.style?.items?.(S, helpers, key) || []));
     items.push(
       { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
       { label: "ph:arrow-down Move down", run: () => stepBlock(S, key, 1), group: "move" },
@@ -659,7 +659,7 @@
     //: The renderer and the toolbar fetch with the first batch.
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
+    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline"), ensureModule("diagramStyle")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     Object.assign(SHAPE_LABEL, diagramOps.LABEL);
