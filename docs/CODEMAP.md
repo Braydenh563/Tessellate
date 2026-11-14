@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2793, CSS sections 525, backend routes 721, backend modules 11030, test files 2858, tests 22623, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8509, frontend ids 2793, CSS sections 525, backend routes 721, backend modules 11030, test files 2858, tests 22624, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8509)
 
@@ -1135,40 +1135,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addAtlasLine` | frontend/js/wiring.js:141 |
-| `askAtlasAbout` | frontend/js/wiring.js:130 |
-| `chatRecallStep` | frontend/js/wiring.js:720 |
-| `clearDueNudges` | frontend/js/wiring.js:1397 |
-| `closeGlobalFind` | frontend/js/wiring.js:558 |
-| `copyWebLink` | frontend/js/wiring.js:1340 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:829 |
-| `escapeForFind` | frontend/js/wiring.js:332 |
-| `globalFindClearHighlights` | frontend/js/wiring.js:390 |
-| `globalFindRun` | frontend/js/wiring.js:401 |
-| `globalFindShowActive` | frontend/js/wiring.js:473 |
-| `globalFindStep` | frontend/js/wiring.js:486 |
-| `globalFindWalkableRoot` | frontend/js/wiring.js:365 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:913 |
-| `initHelpToggles` | frontend/js/wiring.js:150 |
-| `noteSourceOn` | frontend/js/wiring.js:793 |
-| `nudgeDueShown` | frontend/js/wiring.js:1401 |
-| `openGlobalFind` | frontend/js/wiring.js:492 |
-| `openReminderCompose` | frontend/js/wiring.js:1356 |
-| `openWebPageExternally` | frontend/js/wiring.js:1335 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:835 |
+| `addAtlasLine` | frontend/js/wiring.js:144 |
+| `askAtlasAbout` | frontend/js/wiring.js:133 |
+| `chatRecallStep` | frontend/js/wiring.js:723 |
+| `clearDueNudges` | frontend/js/wiring.js:1400 |
+| `closeGlobalFind` | frontend/js/wiring.js:561 |
+| `copyWebLink` | frontend/js/wiring.js:1343 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:832 |
+| `escapeForFind` | frontend/js/wiring.js:335 |
+| `globalFindClearHighlights` | frontend/js/wiring.js:393 |
+| `globalFindRun` | frontend/js/wiring.js:404 |
+| `globalFindShowActive` | frontend/js/wiring.js:476 |
+| `globalFindStep` | frontend/js/wiring.js:489 |
+| `globalFindWalkableRoot` | frontend/js/wiring.js:368 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:916 |
+| `initHelpToggles` | frontend/js/wiring.js:153 |
+| `noteSourceOn` | frontend/js/wiring.js:796 |
+| `nudgeDueShown` | frontend/js/wiring.js:1404 |
+| `openGlobalFind` | frontend/js/wiring.js:495 |
+| `openReminderCompose` | frontend/js/wiring.js:1359 |
+| `openWebPageExternally` | frontend/js/wiring.js:1338 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:838 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:647 |
-| `renderPlanToggle` | frontend/js/wiring.js:1180 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1013 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:934 |
-| `setNoteSource` | frontend/js/wiring.js:808 |
-| `settingsSectionContaining` | frontend/js/wiring.js:378 |
-| `startNewNote` | frontend/js/wiring.js:1073 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:801 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1123 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1107 |
-| `toggleWebSearch` | frontend/js/wiring.js:1215 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1019 |
+| `renameCurrentConversation` | frontend/js/wiring.js:650 |
+| `renderPlanToggle` | frontend/js/wiring.js:1183 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1016 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:937 |
+| `setNoteSource` | frontend/js/wiring.js:811 |
+| `settingsSectionContaining` | frontend/js/wiring.js:381 |
+| `startNewNote` | frontend/js/wiring.js:1076 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:804 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1126 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1110 |
+| `toggleWebSearch` | frontend/js/wiring.js:1218 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1022 |
 
 ### frontend/js/settings-wiring.js (46)
 
@@ -28300,7 +28300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22623)
+## Tests (22624)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30720,7 +30720,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_status_bar_fit.py | 4 |
 | tests/test_status_bar_fit_1672.py | 4 |
 | tests/test_status_bar_grammar.py | 5 |
-| tests/test_status_chips_say_what_they_mean.py | 3 |
+| tests/test_status_chips_say_what_they_mean.py | 4 |
 | tests/test_status_item_repaint_1112.py | 2 |
 | tests/test_stop_discards_write.py | 5 |
 | tests/test_stop_reaches_the_model.py | 3 |
@@ -31580,14 +31580,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:655 |
+| Needs hardware | docs/roadmap/LEDGER.md:654 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:645 |
+| Owner calls | docs/roadmap/LEDGER.md:644 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31767,7 +31767,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:792 |
+| Plan session briefs | docs/roadmap/LEDGER.md:791 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31821,25 +31821,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:808 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:892 |
+| chat | docs/roadmap/LEDGER.md:807 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:891 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:832 |
-| general | docs/roadmap/LEDGER.md:605 |
+| documents | docs/roadmap/LEDGER.md:831 |
+| general | docs/roadmap/LEDGER.md:604 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:796 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:904 |
+| graph | docs/roadmap/LEDGER.md:795 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:903 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:844 |
+| mindmap | docs/roadmap/LEDGER.md:843 |
 | timeline | docs/roadmap/LEDGER.md:462 |
-| timeline | docs/roadmap/LEDGER.md:868 |
+| timeline | docs/roadmap/LEDGER.md:867 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:856 |
+| ui-modernisation | docs/roadmap/LEDGER.md:855 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:820 |
+| whiteboard | docs/roadmap/LEDGER.md:819 |
 | world-class | docs/roadmap/LEDGER.md:464 |
-| world-class | docs/roadmap/LEDGER.md:880 |
+| world-class | docs/roadmap/LEDGER.md:879 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

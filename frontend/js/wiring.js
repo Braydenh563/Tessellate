@@ -21,7 +21,10 @@ window.addEventListener("online", reflectOnlineState);
 reflectOnlineState();
 
 //: status-chip-says (L-world-class-104)
-for (const chip of [$("power-saver-indicator"), $("offline-indicator")]) chip?.addEventListener("click", () => toast(chip.title, "info"));
+for (const chip of [$("power-saver-indicator"), $("offline-indicator")]) {
+  chip?.addEventListener("click", () => toast(chip.title, "info"));
+  chip?.addEventListener("keydown", (e) => e.key === "Enter" && chip.click());
+}
 
 // --- writing room wiring ---
 onSurface("notes", () => ensureModule("notesLazy"));

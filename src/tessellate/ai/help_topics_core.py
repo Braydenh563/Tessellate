@@ -510,8 +510,8 @@ HELP_TOPICS: list[dict] = [
             "green open, amber closed on this network, plain off; press it (or "
             "Alt+L) for the switch, the address and the trusted networks. The offline "
             "badge, the power-saver badge and the running-job slot appear only "
-            "when there is something to say; hover or press the first two to read "
-            "what they mean. Settings, Appearance, Status "
+            "when there is something to say; hover or press the first two (or Tab "
+            "to one and press Enter) to read what they mean. Settings, Appearance, Status "
             "bar chooses which of the rest to show."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},

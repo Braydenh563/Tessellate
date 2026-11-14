@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Status bar: the Offline and Saver on chips are a Tab stop with a focus ring, and Enter says what they mean (the same sentence a click toasts); the Guide says so (L-world-class-201).
 - Documents: an exported Markdown file and bundle carry `[@key]` citations as footnotes (`docexport.citations_to_footnotes`, as the Read view draws them); print and PDF already did (one footnote reference and one list item measured under print media). The Word TOC field, shaded callout and real columns were already built (`tests/test_word_toc_callout_columns.py`) (L-world-class-89, L-world-class-110).
 - Files: `GET /files/readings?source=&id=` now exists (the plan and HISTORY named it but it was not in code) and the lightbox panel reads its vision and Tesseract readings from it, so the panel and the search index agree (L-world-class-80).
 - Autocorrect: the reminder edit form, the Atlas help chat, the editor ask and rewrite lines, the draft refine line, a bookmark title and note, a new memory and the skill and template descriptions now correct typos with the same undo underline as the note boxes (reminders and magic add already did; driven in the app: "teh " becomes "the " in each; L-world-class-1).

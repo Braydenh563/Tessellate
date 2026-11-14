@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 120 | 29 | 3 | 10 | 149 |
+| world-class | 0 | 119 | 29 | 3 | 10 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 509 | 100 | 5 | 121 | 981 |
+| all | 372 | 508 | 100 | 5 | 121 | 980 |
 
 ## graph
 
@@ -595,7 +595,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-240** `world-class` open, M: LAN mode: a second HTTPS request from a device whose sign-in is held open can be cut at the handshake under load; reproduce (20 serial runs, 4 busy loops) and fix the cause. From hub 2026-11-14 13:40Z, CI 86918627 py3.13 leg 1. Evidence: tests/test_lan.py:1015 SSLEOFError on a LAN /auth/lan-watch request while a LAN /auth/unlock is held open; passes 3/3 alone 2026-11-14 14:05Z: 20/20 under load, no gate close in any log; netid.read() here never returns None (2000/2000), so the ARP-flicker cause cannot be reproduced on this machine. Fix fd917ac6 (tests/test_lan_gate_arp_flicker.py). The test now raises with the server log tail on any OSError; close when a CI failure shows the cause, or after 5 green CI runs with the test.
 - [ ] **L-world-class-200** `world-class` open, S: Escape on the chat undo line, and undo.js reading the mind map's own undo stack (what is left of 94 after the four surfaces). From L-world-class-94.
-- [ ] **L-world-class-201** `world-class` open, S: Status chips Offline and Saver on are keyboard reachable and Enter says what they mean. From L-world-class-104. Evidence: Enter on a focused status chip needs a key handler (about 20 bytes gzipped over the boot cap); the saver chip has no tabindex, so a keyboard user cannot reach its title. Put the handler in a lazy file the bar loads, or a native button.
 - [ ] **L-world-class-202** `world-class` open, S: Ctrl+Z inside dialog text fields, and the wording of the Ctrl+S answer on tabs with nothing to save. From L-world-class-102. Evidence: Ctrl+S audit was driven on 7 tabs; Ctrl+Z in dialog text fields (promptDialog and others) was not measured reliably, and tabs with nothing to save answer 'Nothing to save yet.' where a closer line would say what to do.
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
 - [ ] **L-world-class-231** `world-class` open, S: Reproduce the 486 ms first document open at 2,000 notes and profile it before choosing a warm. From L-world-class-40, 2026-11-14. Evidence: Cold probe (fresh page each, Documents tab idle 6.5 s, 6 docs of 80 sections, 1440 wide): openDocument first call 35, 49, 46, 39 ms, second call 53 to 81 ms, so the 486 ms first open does not reproduce without the 2,000-note data; the cost is the data size, not a cold compile a warm can remove. Needs a profile at 2,000 notes before any third warm is written.

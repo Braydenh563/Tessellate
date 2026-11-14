@@ -36,3 +36,10 @@ def test_a_click_on_either_chip_says_it_too():
     block = block[: block.index("\n\n")]
     assert "power-saver-indicator" in block and "offline-indicator" in block
     assert 'toast(chip.title, "info")' in block
+
+
+def test_the_chips_are_a_tab_stop_and_enter_says_it():
+    for chip_id in ("power-saver-indicator", "offline-indicator"):
+        tag = _chip(chip_id)
+        assert "tabindex=\"0\"" in tag and "chip-interactive" in tag, tag
+    assert "e.key === \"Enter\" && chip.click()" in WIRING
