@@ -226,7 +226,8 @@ def test_miffed_and_smirk_are_atlas_faces_with_a_cue_a_look_and_a_trigger():
     smirk = re.search(r'\.nm-atlas\[data-atlas-mood="smirk"\] \{([^}]*)\}', css).group(1)
     assert "--atl-m-smug: 1" in smirk and "--atl-bl-y: -" in smirk
     # What reaches them: a pout, a grumble, a shake and a facepalm (miffed), a shrug (smirk).
-    assert re.search(r'\{ unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk" \}', AVATARS)
+    # (L-ui-modernisation-101 added `excited: "delighted"` to the same map.)
+    assert re.search(r'\{ unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk", excited: "delighted" \}', AVATARS)
     assert 'shrug: "sly"' in AVATARS and "isAtlasSeed(buddy.dataset.seed" in AVATARS
 
 

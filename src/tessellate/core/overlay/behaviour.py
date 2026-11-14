@@ -703,9 +703,10 @@ FLOW_BANDS = 7
 FLOW_PERIODS = ((9.0, 13.0), (5.6, 8.6), (4.4, 5.9))
 FLOW_WEIGHTS = (0.4, 0.6, 1.0)
 #: Largest ambient sway of a strand's tip and its rise and fall, px of the shipped frame. At the hem this is
-#: under 3 degrees off the torso over the lower body's length (INBOX 615 and 619: never more than 4).
-FLOW_TIP = 2.2
-FLOW_RISE = 1.1
+#: 2.4 to 2.5 degrees off the torso over the lower body's length (INBOX 615 and 619: never more than 4); 2.2 px
+#: (1.4 to 1.5 degrees) was 3 to 4 px peak to peak, too small to see on the desk (L-ui-modernisation-100, INBOX 1833).
+FLOW_TIP = 3.5
+FLOW_RISE = 1.75
 #: Outer strands (the orbiting streams) sway more than the middle ones; a middle's lead over its tip.
 FLOW_EDGE = 1.0
 FLOW_MID = 0.35
@@ -728,7 +729,7 @@ FLOW_BREATH_LAG = 0.22
 #: position"). The shipped frames carry one lower body per pose, so each strand also holds an arrangement of its
 #: own, a new one every `FLOW_ARR_HOLD` seconds (its own length per strand) reached by an eased move over
 #: `FLOW_ARR_EASE` seconds: its tip's lean and its rise, px of the shipped frame. Together with the sway the tip
-#: stays under `FLOW_TIP * FLOW_ARR_SWAY + FLOW_ARR_TIP` (2.65 px, under 4 degrees off the torso at the hem: INBOX 615 and 619).
+#: stays under `FLOW_TIP * FLOW_ARR_SWAY + FLOW_ARR_TIP` (3.6 px; with a lower state's lean 3.6 to 3.8 degrees off the torso at the hem, under 4: INBOX 615 and 619).
 FLOW_ARR_TIP = 1.0
 #: With an arrangement the sway takes this share of its reach, so the two together stay inside the torso's 4 degrees.
 FLOW_ARR_SWAY = 0.75

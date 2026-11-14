@@ -64,3 +64,13 @@ def pick_spell(rng: random.Random, hour: int, mood: str, recent: list[str]) -> s
 def length_of(rng: random.Random, name: str) -> float:
     lo, hi = SPELLS[name].seconds
     return rng.uniform(lo, hi)
+
+
+#: A beat inside a spell (L-ui-modernisation-99, INBOX 1832: "a visible beat in a spell every 20 to 40 s"), by the act's
+#: own picture: the picture of the beat and its least and most seconds (`engine_beats`).
+SPELL_BEAT_EVERY = (20.0, 40.0)
+SPELL_BEATS = {
+    "sit": (("look", 3.2, 5.6), ("meditate", 4.8, 8.0)),
+    "stand": (("look", 3.2, 5.6),),
+    "look": (("stand", 3.2, 5.6),),
+}

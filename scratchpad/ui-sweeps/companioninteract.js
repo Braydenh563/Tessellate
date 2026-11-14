@@ -24,7 +24,7 @@ const { boot } = require('./lib.js');
   await page.mouse.move(f[0], f[1], { steps: 4 });
   await page.waitForTimeout(1400);
   // A face drawn from a name wears `data-expr` happy; Atlas has no `data-expr` (its face is its mood, and
-  // `nameMarkBuddyExpress` passes a pet's happy over on Atlas), so its pet reads as the wiggle on the figure.
+  // a pet's happy is its mood, L-ui-modernisation-101), so its pet reads as the wiggle on the figure.
   const pet = await page.evaluate(() => { const b = document.getElementById('nm-buddy'); return { act: nmb.act, wiggle: b.classList.contains('nmb-act-wiggle'), atlas: !!b.querySelector('.nm-atlas'), expr: b.dataset.expr || '' }; });
   if (pet.act !== 'wiggle' || !pet.wiggle || (!pet.atlas && pet.expr !== 'happy')) fails.push(`petted: ${JSON.stringify(pet)}`);
   await page.mouse.move(100, 100);
@@ -50,6 +50,9 @@ const { boot } = require('./lib.js');
   await page.mouse.move(100, 100);
   await page.waitForTimeout(3000);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'off'; nameMarkBuddyRelease(); nmb.target = null; nmb.lastMove = null; });
+  // Atlas's own glances (atlas-micro.js, the only caller of the global `nameMarkBuddyAim`) still look round with the
+  // setting off, never at the pointer (L-ui-modernisation-98): eyes on at the check count against it unless a micro look away from the pointer ran.
+  await page.evaluate(() => { const aim = window.nameMarkBuddyAim; window.__microLooks = []; window.nameMarkBuddyAim = Object.assign(function (point, ...rest) { window.__microLooks.push(!!point && !!nmb.pointer && point[0] === nmb.pointer[0] && point[1] === nmb.pointer[1]); return aim.call(this, point, ...rest); }, aim); });
   const off = [];
   // Slowly (a pointer passing, not a sudden flick, which still catches it).
   for (const dx of [-120, 120]) {
@@ -58,18 +61,26 @@ const { boot } = require('./lib.js');
     for (let i = 1; i <= 24; i += 1) { await page.mouse.move(from[0] + ((f[0] + dx - from[0]) * i) / 24, from[1] + ((f[1] - 40 - from[1]) * i) / 24); await page.waitForTimeout(40); }
     await page.waitForTimeout(200);
     // Its eyes move only while it attends (the CSS keys the look on nmb-attend).
-    off.push(await page.evaluate(() => document.getElementById('nm-buddy').classList.contains('nmb-attend')));
+    off.push(await page.evaluate(() => { const looks = window.__microLooks.splice(0); return { attend: document.getElementById('nm-buddy').classList.contains('nmb-attend'), micro: looks.length, atPointer: looks.some(Boolean) }; }));
   }
-  if (off.some(Boolean)) fails.push(`eyes with the setting off: ${off}`);
+  if (off.some((o) => o.attend && (o.atPointer || !o.micro))) fails.push(`eyes with the setting off: ${JSON.stringify(off)}`);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'on'; });
   await page.mouse.move(100, 100);
   // Tossed: a fast pull to the right and let go at speed.
+  // The throw is a lazy file fetched on the first carry, and a let-go before it arrives is a drop by design (companion-throw.js).
+  await page.evaluate(() => ensureModule('companionThrow'));
   await put(300, 420);
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); await page.waitForTimeout(12); }
-  await page.mouse.up();
+  // The pull and the let-go carry their own times, 12ms apart (L-ui-modernisation-98): Playwright sends a move only once the
+  // page has taken the last, so on a busy page the let-go was stamped over 100ms after the last move, which is a drop by
+  // design (avatars.js nameMarkBuddyReleaseVelocity). A hand's input is stamped when it happens, not when the page reads it.
+  const cdp = await page.context().newCDPSession(page);
+  const t0 = Date.now() / 1000;
+  for (let i = 1; i <= 6; i += 1) await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: f[0] + i * 30, y: f[1] - i * 6, button: 'left', buttons: 1, timestamp: t0 + i * 0.012 });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: f[0] + 180, y: f[1] - 36, button: 'left', buttons: 0, clickCount: 1, timestamp: t0 + 0.076 });
+  await page.mouse.move(f[0] + 180, f[1] - 36);
   await page.waitForTimeout(150);
   const flying = await page.evaluate(() => ({ thrown: !!(nmb.thrown && nmb.thrown.v), running: !!nmb.flight }));
   if (process.env.SCRATCH) await page.screenshot({ path: `${process.env.SCRATCH}/toss-midflight.png`, clip: { x: 250, y: 200, width: 900, height: 450 } });

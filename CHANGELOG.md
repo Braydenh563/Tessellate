@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The desk companion looks up, or settles with its eyes shut, every 20 to 40 seconds while it reads, writes or knits, instead of holding one picture for minutes (L-ui-modernisation-99, partly)
+- The desk companion's lower wisps and nebula streams sway further at rest, about 2.4 degrees at their tips (were 1.5), and a posed lean stays under 4 degrees (L-ui-modernisation-100)
+- The companion keeps to a sliding panel instead of trailing it by a frame: it leads by the panel's measured speed up to the slide's end, and a slide that starts slow is found at once (L-ui-modernisation-94).
+- Atlas with following off no longer glances at the pointer, a stand over the bar's right-hand buttons no longer drops it on a far seat, and the interaction sweep passes 5 of 5 (L-ui-modernisation-98).
+- Atlas takes a face it has a mood for (L-ui-modernisation-101): a pet's happy, love, laughing and surprised now show on Atlas the quiet way, excited as delighted, and a face it has no mood for is passed over rather than read as calm; probe101 at 4x CPU: 0 of 6 faces taken before, 5 of 6 after at 2 to 10 ms each (tests/test_atlas_named_face_l_ui_101.py).
 - Maps: a tidy no longer throws in the bulk move (a tidy entry has no link list), which stopped Tidy and every map sweep that calls it; mapstripcover.js now asks for the lazy boards bundle (maplabels.js PASS, mapstripcover.js 0 of 166 handles covered, each run twice; L-ui-modernisation-102).
 - Styles: 48 more Library-only rules moved from the boot sheets to library-lazy.css, boot CSS 443 lines lighter, computed styles unchanged (dark board views not yet compared) (L-ui-modernisation-51); 183 stay on the row.
 - Maps: a tree line builds its waypoint and end grips on its first hover, focus or selection, so a line is 3 SVG elements, not 8 (500 topics: 4491 edge elements to 1497, the first layout read after opening restyles 8501 to 4010 elements, 104 to 56ms CPU; L-ui-modernisation-61, still open).

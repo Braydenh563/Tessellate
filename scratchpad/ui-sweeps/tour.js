@@ -269,7 +269,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
       );
       break;
     }
-    //: No wait after the press: the click runs `tourNext`, which sets the card busy before it
+    //: No wait after the press: the click runs `openTour.inspect.tourNext`, which sets the card busy before it
     //: returns, and `settled` at the top of the loop waits for that flag to clear.
     await page.click("#tour-next");
   }
