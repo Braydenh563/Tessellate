@@ -149,11 +149,13 @@ def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollam
 
     doc, note, other = _setup(ai_client)
     real = fake_ollama.chat
-    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    #: The model takes 4 s and the route's budget is 0.1 s: an answer well inside 4 s is the timeout, not the model.
+    #: (It was 1.0 s against a 0.9 s bound, which a loaded CI runner missed at 2.4 s; the claim is unchanged.)
+    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(4.0), real(*a, **k))[1])
     monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
     started = time.perf_counter()
     got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
-    assert time.perf_counter() - started < 0.9
+    assert time.perf_counter() - started < 3.0
     assert got["source"] == "words" and got["reason"] == "failed"
     assert _verdicts(got)["Tomatoes need pruning"] == "supported"
 
