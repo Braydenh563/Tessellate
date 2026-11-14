@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Companion life (L-ui-modernisation-58): the life-1109 ranked list and the composer audit round are confirmed built (vertical follow-through, startle exhale, micro-saccades, stand drift; 49 tests passed; media stays the hardware row L-chat-4); plan item 1719 moved to HISTORY.
 - Companion interact sweep (L-ui-modernisation-96): the pet check reads Atlas's pet as the wiggle act and class (Atlas carries no `data-expr`), and Atlas is set down floating so its perch check no longer walks it off first; KIND=atlas pet check 5 of 5 runs, KIND=me passes. The Atlas face on a pet and the sweep's two other Atlas flakes are L-ui-modernisation-97 and 98.
 - Companion lag (L-ui-modernisation-62): an act no longer reads the top and status bars after its class goes on (the bar clip is kept per perch and window, 15 s at most), and a blink, glance or turn skips the hand-over that eased nothing. 4x CPU, Atlas, buddylag: forced layout in the companion's timers on repeat tab visits 93 ms over 4 frames (max 37) to 9 and 19 ms in one frame (two runs); the bars' reads 660 to 19 ms over 30 acts.
 - Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
