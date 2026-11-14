@@ -35,5 +35,11 @@ def test_the_earlier_drafts_row_is_one_fixed_line_and_the_thoughts_footer_makes_
     css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
     row = re.search(r"\n\.draft-versions \{([^}]*)\}", css)
     assert row and "flex-wrap: nowrap;" in row.group(1) and "min-height: var(--control-h);" in row.group(1)
-    grown = re.search(r"@media \(min-width: 72\.01rem\) \{\n  \.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", css)
+    # Grown everywhere, reset inside the existing 72rem one-column query (a new 72.01rem
+    # breakpoint failed test_the_breakpoints_only_shrink).
+    grown = re.search(r"\n\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", css)
     assert grown and "+ var(--control-h));" in grown.group(1)
+    one = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    block = one[one.index("@media (max-width: 72rem) {") :]
+    reset = re.search(r"\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", block)
+    assert reset and "+ 2 * 0.4rem);" in reset.group(1) and "--control-h));" not in reset.group(1)

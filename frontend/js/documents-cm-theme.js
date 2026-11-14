@@ -721,6 +721,7 @@
         //: which is how a block reads as a highlighted paragraph rather than
         //: as a panel of code (17c).
         ".cm-md-fence": {
+          position: "relative",
           fontFamily: "var(--mono, ui-monospace, monospace)",
           backgroundColor: "var(--field-inset)",
           paddingInline: "var(--space-5)",
@@ -790,6 +791,32 @@
           userSelect: "none",
         },
         ".cm-md-fence-label:hover, .cm-md-fence-label:focus-visible": { color: "var(--ink)" },
+        //: Copy, over the first code line's corner (L-documents-65). Absolute, so the fence row keeps its 8px; shown while the line is hovered or the button focused, always on a touch screen, where a pseudo-element grows the hit area to 44px.
+        ".cm-md-fence-copy": {
+          position: "absolute",
+          right: "0.6em",
+          top: "0",
+          fontSize: "0.85em",
+          lineHeight: "1.6",
+          color: "var(--muted)",
+          background: "none",
+          border: "none",
+          padding: "0 0.3em",
+          minHeight: "0",
+          cursor: "pointer",
+          userSelect: "none",
+          opacity: "0",
+        },
+        ".cm-md-fence:hover .cm-md-fence-copy, .cm-md-fence-copy:focus-visible, .cm-md-fence-copy.is-touch": { opacity: "1" },
+        ".cm-md-fence-copy:hover, .cm-md-fence-copy:focus-visible": { color: "var(--ink)" },
+        ".cm-md-fence-copy.is-touch::after": {
+          content: '""',
+          position: "absolute",
+          top: "-8px",
+          right: "-8px",
+          width: "44px",
+          height: "44px",
+        },
         //: A rule whose own `---` is hidden is an empty line, and an empty line
         //: with a bottom border is a hairline sitting on the baseline of nothing.
         //: The height is what makes it read as a divider between two blocks

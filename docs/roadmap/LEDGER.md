@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 50 | 1 | 0 | 4 | 71 |
+| documents | 20 | 49 | 1 | 0 | 4 | 70 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 605 | 129 | 2 | 167 | 1237 |
+| all | 503 | 604 | 129 | 2 | 167 | 1236 |
 
 ## graph
 
@@ -370,7 +370,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-64** `documents` open, S: A Today button in the documents dock that opens today's document daily note. From DOCUMENTS_PLAN.md:671, hub 2026-11-14: session-decided unbuilt, reopened.
-- [ ] **L-documents-65** `documents` open, M: Code bar with Copy on fenced code in Live view (s15 kept it to Read for the caret trap and the 8 px row: solve both). From DOCUMENTS_PLAN.md:700, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-66** `documents` open, S: Underline a link while the modifier key is held (VS Code style Mod+click cue). From DOCUMENTS_PLAN.md:749, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-67** `documents` open, S: A how far through figure for long documents (s17d). From DOCUMENTS_PLAN.md:812, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-68** `documents` open, M: Video in a document: an embed with a player (attachments allowlist and a player). From DOCUMENTS_PLAN.md:1269, hub 2026-11-14: session-decided unbuilt, reopened.

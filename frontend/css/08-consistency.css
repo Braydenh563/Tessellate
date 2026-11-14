@@ -1406,6 +1406,10 @@ summary > .ph-lead,
   .draft-columns {
     grid-template-columns: 1fr;
   }
+  /* One column: the boxes are not beside each other, so the foot keeps its own height. */
+  .draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+    min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 2 * 0.4rem);
+  }
   /* The attach row is a label, a select and five labelled buttons in about
      675px. Re-merging it with the commit row below is the one fix ruled out:
      index.html:708 records why the attach family was moved out of that row.

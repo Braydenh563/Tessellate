@@ -3728,11 +3728,9 @@ span > .chip {
   scrollbar-width: none;
 }
 
-/* Side by side only (it is one column below 72rem, where the boxes are not beside each other). */
-@media (min-width: 72.01rem) {
-  .draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
-    min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 3 * 0.4rem + var(--control-h));
-  }
+/* Side by side only: 08-consistency.css resets it in its 72rem one-column query (no new breakpoint). */
+.draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+  min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 3 * 0.4rem + var(--control-h));
 }
 
 .draft-versions-label {
