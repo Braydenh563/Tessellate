@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8804, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10966, test files 2817, tests 22701, plan headings 691, app scripts 29, boot scripts 38, script files 345.
+Counts: frontend functions 8804, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10966, test files 2818, tests 22703, plan headings 691, app scripts 29, boot scripts 38, script files 345.
 
 ## Frontend functions (8804)
 
@@ -28713,7 +28713,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22701)
+## Tests (22703)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31517,6 +31517,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_worker_guard.py | 6 |
 | tests/test_workspace_header_1031.py | 6 |
 | tests/test_wrap_toggle.py | 5 |
+| tests/test_wrapped_private_names.py | 2 |
 | tests/test_wrapup_0927_visuals.py | 6 |
 | tests/test_wrapzoom_chat_1111.py | 5 |
 | tests/test_wrapzoom_docs_1111.py | 11 |
