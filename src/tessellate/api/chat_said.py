@@ -23,7 +23,7 @@ from tessellate.ai import capability, composer, composer_aware, composer_lists, 
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import acts, composer_dialogue, task_acts
 from tessellate.ai import composer_frame, composer_read
-from tessellate.ai import composer_smalltalk, composer_talk
+from tessellate.ai import composer_jokebook, composer_smalltalk, composer_talk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.entry import manager
 from tessellate.api import chat_extra
@@ -387,7 +387,18 @@ def _saved_joke_reply(req: _StreamRequest, seed: str) -> str:
     """One you saved, said as it is written, before owning up to having none
     (audit 1031 C46); empty when no note is a joke."""
     joke = chat_extra.saved_joke(req.session, req.question + seed)
-    return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})" if joke else ""
+    if joke:
+        return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})"
+    return _jokebook_reply(req, seed)
+
+
+def _jokebook_reply(req: _StreamRequest, seed: str) -> str:
+    """C10: with no joke saved, one from the app's table, labelled as its own,
+    unless the answer style is Neutral or Plain (the opt-out)."""
+    if deps.get_config().get_preference("composer_voice", "natural") in ("professional", "plain"):
+        return ""
+    told = tuple(str(turn.get("answer") or "") for turn in (req.history or []))
+    return composer_jokebook.said(f"{req.question}|{seed}|{len(told)}", tuple(t.split(": ", 1)[-1] for t in told))
 
 
 def _ping_offer(req: _StreamRequest, prepared: dict) -> list[dict]:

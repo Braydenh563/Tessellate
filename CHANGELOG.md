@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a past window no longer misreads "the day before yesterday" as yesterday or "the last week of October" as last week; a 60-phrasing window gate (57 of 60 read right, gate 95%) pins both readers; the limits and labels rows (L-chat-116, 117, 127) are pinned by tests. L-chat-128.
+- Chat: the first hello of a chat takes the saved name after a comma too ("Good afternoon, Sam, and welcome back.") and not in the Neutral voice; "back" restores the answer before the last, "start over", "stop" and "never mind" end the thread (L-chat-114, L-chat-115).
+- Chat: "tell me a joke" with no joke saved is one of 100 short jokes from the app's own table, labelled as its own (Neutral and Plain answer styles opt out); "10 ton to kg" asks which ton (metric, short or long) instead of reading "gon" (L-chat-113, L-chat-118).
 - Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
 - Companion: L180 closed; the enlarged view and framed Atlas clip are pinned by a test (INBOX 1840).
 

@@ -122,6 +122,7 @@ _PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out
 #: "how many days between 1 March and 2 April" (INBOX 1550): two days the
 #: device can count between, so never the web or the notes.
 _BETWEEN = lazy_compile(r"^(?:how many\s+)?(days|weeks)\s+(?:are there\s+)?(?:between|from)\s+(\S.*?)\s+(?:and|to|until|till)\s+(\S.*)$", re.I)
+_AGE_OF = lazy_compile(r"^how (?:old|long ago) (?:is|was) (?:the date |the day )?(\S.*\b\d{4})$", re.I)
 _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
 _DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(?:an?\s+)?(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
@@ -226,6 +227,8 @@ def _convert(text: str) -> list[tuple] | None:
         else:
             raw, src, dst = match.group(1), match.group(2), match.group(3)
         a, b = _UNITS[src.lower()] if src.lower() in _UNITS else _UNITS[src], _UNITS[dst.lower()] if dst.lower() in _UNITS else _UNITS[dst]
+        if "tons" in (a[2], b[2]):
+            return [("computed", "A ton is three different weights: metric tonnes (1,000 kg), US short tons (907 kg) or UK long tons (1,016 kg). Which one do you mean?")]
         if a[0] != b[0]:
             return [("computed", f"{a[2].capitalize()} and {b[2]} measure different things ({a[0]} and {b[0]}), so one does not convert to the other.")]
         value = _number(raw)
@@ -313,6 +316,28 @@ def _weekday_of(match: re.Match, today: date) -> list[tuple] | None:
             ("computed", f"\nRead as {match.group(1)}{which}.")]
 
 
+def _span_words(start: date, end: date) -> str:
+    """"36 years, 8 months and 11 days" from `start` up to `end` (start first)."""
+    months = (end.year - start.year) * 12 + end.month - start.month - (end.day < start.day)
+    back = date(start.year + (start.month - 1 + months) // 12, (start.month - 1 + months) % 12 + 1, 1)
+    days = (end - back.replace(day=min(start.day, 28))).days - (start.day - min(start.day, 28))
+    parts = [(months // 12, "year"), (months % 12, "month"), (days, "day")]
+    said = [_plural(n, w) for n, w in parts if n]
+    return " and ".join([", ".join(said[:-1]), said[-1]] if len(said) > 1 else said) or "0 days"
+
+
+def _age_of(match: re.Match, today: date) -> list[tuple] | None:
+    """T4: "how old is 3 March 1990" as years, months and days, from the date to today."""
+    found = when_words.span(match.group(1), today, "past")
+    if found is None or found[2] != "day":
+        return None
+    day = found[0]
+    first, last = sorted((day, today))
+    ago = "ago" if day <= today else "from today"
+    return [("computed", f"{_day_words(day)} is {_span_words(first, last)} {ago}." if day != today else "That is today."),
+            ("computed", f"\nRead as the time from {match.group(1)} to today.")]
+
+
 def _dates(text: str, now: datetime) -> list[tuple] | None:
     today = now.date()
     asked = recognise_questions.days_question(text)
@@ -324,7 +349,8 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
     match = _WEEKDAY_OF.match(text)
     if match:
         return _weekday_of(match, today)
-    return None
+    match = _AGE_OF.match(text)
+    return _age_of(match, today) if match else None
 
 
 def _between(text: str, today: date) -> tuple[str, tuple[date, date]] | None:
@@ -578,6 +604,8 @@ def _date_kind(text: str) -> str | None:
     if _between(text, now_day()):
         return "dates"
     if recognise_questions.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
+        return "dates"
+    if _AGE_OF.match(text) and when_words.span(_AGE_OF.match(text).group(1), now_day(), "past"):
         return "dates"
     return None
 

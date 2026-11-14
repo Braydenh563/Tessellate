@@ -124,7 +124,7 @@ def run_step(config, args: dict) -> dict:  # noqa: ANN001
 
 
 #: A hello that can take ", Name" before its first full stop.
-_HELLO = re.compile(r"^(Good (?:morning|afternoon|evening)|Morning|Evening|Hello|Hi|Hey)(?=\.)")
+_HELLO = re.compile(r"^(Good (?:morning|afternoon|evening)|Morning|Evening|Hello|Hi|Hey)(?=[.,])")
 
 
 def greet(text: str, name: str, history: list[dict] | None) -> str:

@@ -67,3 +67,28 @@ def test_weeks_until_a_day_a_whole_number_of_weeks_away():
 
 def test_days_until_stays_in_days():
     assert "17 days away" in _said("how many days until 1 December")
+
+
+@pytest.mark.parametrize("question", ["10 ton to kg", "convert 3 tons to pounds", "2 kg in tons"])
+def test_a_bare_ton_asks_which_ton_it_is(question):
+    """L-chat-118 (T2): ton, tons are metric, short or long, so the answer asks."""
+    said = _said(question)
+    assert "Which one do you mean" in said and "short tons" in said and "gon" not in said
+
+
+@pytest.mark.parametrize(("question", "value"), [("2 short tons to kg", "1,814.4"), ("1 tonne to kg", "1,000")])
+def test_a_named_ton_still_converts(question, value):
+    assert value in _said(question)
+
+
+@pytest.mark.parametrize(
+    ("question", "said"),
+    [
+        ("how old is 3 March 1990", "3 March 1990 is 36 years, 8 months and 11 days ago."),
+        ("how long ago was 14 November 2025", "1 year ago"),
+        ("how old is 14 October 2026", "1 month"),
+    ],
+)
+def test_how_old_is_a_date(question, said):
+    """L-chat-120 (T4): the age of a dated day, in years, months and days."""
+    assert said in _said(question) and "Read as the time from" in _said(question)
