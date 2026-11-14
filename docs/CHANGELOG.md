@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Companion lag (L-ui-modernisation-62): an act no longer reads the top and status bars after its class goes on (the bar clip is kept per perch and window, 15 s at most), and a blink, glance or turn skips the hand-over that eased nothing. 4x CPU, Atlas, buddylag: forced layout in the companion's timers on repeat tab visits 93 ms over 4 frames (max 37) to 9 and 19 ms in one frame (two runs); the bars' reads 660 to 19 ms over 30 acts.
 - Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
