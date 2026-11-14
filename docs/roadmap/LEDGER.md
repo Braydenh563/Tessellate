@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 0 | 7 | 4 | 0 | 0 | 11 |
+| ui-modernisation | 0 | 8 | 4 | 0 | 0 | 12 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 439 | 430 | 130 | 2 | 162 | 999 |
+| all | 439 | 431 | 130 | 2 | 162 | 1000 |
 
 ## graph
 
@@ -361,7 +361,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-61** `ui-modernisation` partly, M: Map perf budgets still failing (built: the View menu, 587px to 427px with the seven branch and report rows behind one Branches and reports submenu row and the map's Present row in the Map group, mapviewmenu.js 8 of 8 at 1440 and 390; the theme dialog fit: four group blocks in two columns from 1100px, 1002px to 669px tall at 1440x900, maptheme.js 24 of 24) after the L-ui-modernisation-77 repairs. From L-ui-modernisation-77. Evidence: mapviewmenu.js: the map's View menu is 587px (25 rows, columns 452 and 572) against a 450 ceiling, the board's is 427px, so the Map group (9 rows) wants a submenu and the columns a rebalance; maptheme.js: the theme dialog is 924px tall in a 900px window and scrolls (23 of 24 pass); mapperf.js: worst zoom frame 100ms at 200 topics and 667ms at 500, and open to painted 1238ms at 500, against 50ms and 1s on this runner (36 of 39, 78s) Renamed from L-general-57 2026-11-14 (general ids clashed across branches).
 - [ ] **L-ui-modernisation-94** `ui-modernisation` open, S: Companion scroll sweep: follow loop trails a moving panel by one frame (7.6px at 0.6s slide), owner call. From L-ui-modernisation-76. Evidence: companionscroll.js with the 1673 and 1766 edits passes the not-re-placed check but still shows glueErrorPx 7.6 and a 7px jump at the end of a 0.6s card slide: the follow loop reads in a task after the draw (tests/test_lag_layout_reads_1766.py), so it trails by one frame; a frame-callback read for a panel known to be moving made it exact (0.5px) but contradicts that test and the lag log. Owner call: accept a one-frame trail and change the sweep to frames of lag, or read in the frame while nmbFollow.moving. Also found: a transition set going since the last look waits out the 120ms throttle (nmbFollow.movingAt) and the loop naps 300ms at a slow ease-in start.
 - [ ] **L-ui-modernisation-95** `ui-modernisation` open, S: Companion perf sweep: re-measure idle cost on a quiet machine, atlas idle layouts 52 a second. From L-ui-modernisation-76. Evidence: companionperf.js on a loaded box (load average 9 on 4 cores): me +0.188 scroll, +0.808 idle (earlier run +0.239), atlas +0.414 idle, +529ms/s; limits 1, 0.2, 120. Run-to-run spread 3x, so no stale-or-app call. Needs a quiet machine; atlas idle also shows 52 layouts a second (traceLayouts 218 in 4s).
-- [ ] **L-ui-modernisation-96** `ui-modernisation` open, S: Companion interact sweep: the pet face check has no Atlas reading. From L-ui-modernisation-76. Evidence: KIND=atlas companioninteract.js: the pet check reads data-expr, which Atlas does not carry (expr '' not happy); the default KIND=me passes.
+- [ ] **L-ui-modernisation-97** `ui-modernisation` open, S: Atlas takes no face from a pet or any same-name expression. From L-ui-modernisation-96. Evidence: frontend/js/avatars.js:9306 nameMarkBuddyExpress applies a face on Atlas only as a drift or a renamed one (miffed, worried, smirk), so a pet's happy and every other same-name face (27 callers) never shows; KIND=atlas companioninteract.js: pet expr '' 5 of 5 runs. Recommendation: apply a named Atlas mood the same quiet way (setAtlasMood, quiet) and measure its restyle at 4x before and after
+- [ ] **L-ui-modernisation-98** `ui-modernisation` open, S: Companion interact sweep on Atlas: eyes-off and toss checks fail 2 runs in 5. From L-ui-modernisation-96. Evidence: scratchpad/ui-sweeps/companioninteract.js KIND=atlas, 5 runs after the float put: pet 5 of 5, whole sweep 3 of 5; one run 'eyes with the setting off: true,false', one toss landed at x 244 (needs over 300, far 194). KIND=me 2 of 2
 
 ## timeline
 
