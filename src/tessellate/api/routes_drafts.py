@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_mermaid, diagram_ask, drafter, no_model_text
+from tessellate.api.chat_agent import stop_when_gone
 from tessellate.core import activity, deps
 from tessellate.core.database import Entry
 
@@ -162,8 +163,9 @@ def compose_draft_stream(
         ):
             yield json.dumps(event) + "\n"
 
+    stop = activity.StopEvent()
     return StreamingResponse(
-        activity.tracked_stream("generation", "Drafting", lines(), stopped_line=activity.STOPPED_DONE),
+        stop_when_gone(stop, activity.tracked_stream("generation", "Drafting", lines(), stop_event=stop, stopped_line=activity.STOPPED_DONE)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
