@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 92 | 34 | 2 | 59 | 302 |
+| chat | 176 | 86 | 34 | 2 | 59 | 296 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 466 | 103 | 2 | 183 | 1122 |
+| all | 553 | 460 | 103 | 2 | 183 | 1116 |
 
 ## graph
 
@@ -25,7 +25,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L82** `chat` open, S: Measure and fix Atlas arm angle range and downward arc over a walk cycle. From OPEN.md:1071; OPEN.md:3767; OPEN.md:1090. Evidence: atlasarms.js measures still poses only; walk swing in atlas-motion.js atlasRigFrame unmeasured
 - [ ] **L83** `chat` open, S: Generic faces' arms have no rig or speed cap; add and measure. From OPEN.md:1084; OPEN.md:3494. Evidence: avatars.js generic faces keyframed; speed of wave/hide keyframes unmeasured
-- [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
 - [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged; tried 2026-11-13: joining loose notes by shared category, then by a shared title word, broke 44 composer tests because both mostly restate the question's own subject ('all mention sara', 'all filed under Fun' for a Fun-category question); needs the question's subject and category passed into themes() and excluded as keys
@@ -42,7 +41,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L128** `chat` open, M: Move remaining AI controls from aiIsOff() gating to model_ready (27 call sites). From OPEN.md:2734. Evidence: grep aiIsOff() finds 27 call sites in frontend/js
 - [ ] **L129** `chat` open, M: Fix avatars.js dashboard/Library timer forced layout and nameMarkBuddyKeepUp cost. From OPEN.md:4424; OPEN.md:4426; INBOX.md:1716. Evidence: No commit or CHANGELOG line names 1667l; timer not re-measured
 - [ ] **L130** `chat` open, M: Shorten _composed_chat 8 s probe after a silent model (P7). From OPEN.md:4516. Evidence: First question pays the probe once (ollama_client.is_running); skip for exact classes untested against a real slow model
-- [ ] **L131** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:1083. Evidence: setAtlasMood still in atlas.js; no optimisation commit found
 - [ ] **L132** `chat` open, M: Atlas tail script-drawn 15 draws a second at rest; verify subtle animations cheap. From OPEN.md:1087; OPEN.md:1091. Evidence: atlas-life.js:542 atlasTailRest compositor rest for held states; tail still script-drawn in live acts
 - [ ] **L133** `chat` open, M: Measure learning loop past a test-sized notebook. From OPEN.md:1937. Evidence: No large-notebook measure found; O(notes) pass
 - [ ] **L134** `chat` open, M: help-popovers.js 6 unclickable triggers; two ratchets fail. From OPEN.md:3838. Evidence: Found not fixed; lanserve.py and routes_recordings.py threads
@@ -53,11 +51,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L139** `chat` open, M: Companion trips to places with no window; trip frequency measured in visible modes. From OPEN.md:4430; OPEN.md:4431. Evidence: w34-unv2-1111.md marks true; trips to taskbar edge/free corner not confirmed built
 - [ ] **L140** `chat` open, M: Right-click to change companion in the enlarged popup view. From OPEN.md:1080; OPEN.md:3441. Evidence: contextmenu handlers exist for avatars.js:11286 and desk-companion.js:554 only; none in atlas*.js enlarged view
 - [ ] **L142** `chat` open, M: Scrabble, pull-up, fling, miffed face and airborne flail on wall slide. From OPEN.md:4410; OPEN.md:4411. Evidence: w34-unv2-1111.md marks true; in-app motions not complete
-- [ ] **L143** `chat` open, M: Throw frame step with no layout reads, under 4 ms at 4x. From OPEN.md:4351. Evidence: W34 true, w34-unv2-1111.md.
-- [ ] **L144** `chat` open, M: Keep-up reads layout once a frame and stops when still. From OPEN.md:4352. Evidence: W34 true, w34-unv2-1111.md.
 - [ ] **L145** `chat` open, M: Landing outcomes on both companions, prop tip-over included. From OPEN.md:4427. Evidence: No test or CHANGELOG entry for prop tip-over landing outcomes on both
 - [ ] **L146** `chat` open, M: Interrupted glide restarts at ease peak speed. From OPEN.md:1489. Evidence: No fix found in atlas.js by grep (13-16px vs 7px step recorded)
-- [ ] **L147** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:3493. Evidence: setAtlasMood still in atlas.js; atlas669 clickcost sweep not found; no optimisation commit.
 - [ ] **L148** `chat` open, M: Atlas props contrast, throw restitution/friction variety (Brief 88). From SESSION_BRIEFS.md:251. Evidence: avatars.js:6618 throw squash on landing; no per-throw restitution/spin; props contrast unmeasured
 - [ ] **L149** `chat` open, M: atlasSmooth/atlasStem string building per drawn frame 3-5 ms at 4x. From a30v-1103.md Found, not fixed. Evidence: Source recommends coarser stem samples; no commit found
 - [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found
@@ -134,7 +129,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L746** `chat` open, L: Two tracks: Atlas more detailed, generated companions own behaviour. From OPEN.md:4398. Evidence: Design call; w34-unv1-1111.md:81 (1692 c/g design passes, no check to run) Owner decided 2026-11-12: Table first, then build (List Atlas-only and generated-only behaviours for your review, then build the agreed ones). Build: a table of Atlas-only vs generated-only acts in the companion plan, then acts in avatars.js NMB_TRAITS/decide and behaviour.py.
 - [ ] **L729** `chat` open, S: Decide the 'Atlas, from your notes' bubble label (decision 36). From OPEN.md:1102. Evidence: Row note: W34 owner-call tracked in the plans (w34-L1-1111.md) Owner decided 2026-11-12: Atlas's assistant label (No model: "Atlas's assistant, from your notes"; with a model: "Atlas, <model name>". Matches the later decision). Build: label on the answer bubble in frontend/js/chat-turn.js plus a frontend test; align the Why trail line 'Atlas wrote it from your notes' (tests/test_why_b30.py) with the chosen name.
 - [ ] **L724** `chat` open, S: Measure Chat panels with a model connected and settle the chip edge decision. From OPEN.md:976; OPEN.md:3212. Evidence: Needs a connected model (llama-dev.sh); cannot open without one Owner decided 2026-11-12: Keep the border (Matches DESIGN.md's label recipe and the test that pins it (META_EDGED); nothing changes). Build: keep META_EDGED; measure #chat-model-panel and How it answers selects at 390 px on the small GGUF via llama-dev.sh, then close.
-- [ ] **L747** `chat` open, L: One shared mind for both companions. From OPEN.md:4412. Evidence: Architecture call; w34-unv2-1111.md owner-call Owner decided 2026-11-12: Yes, two copies count (Close the row; a test keeps the two copies' decisions in step). Build: a parity test comparing behaviour.py Mind and avatars.js nameMarkBuddyDecide weights; close the row.
 - [ ] **L749** `chat` open, S: Determined brow is weakest mood; bolder eye shape; atlasrest1402 sweep fails in setup. From atlasf1696-1108c.md. Evidence: Source: non-scowling determined brow is an owner call; sweep CASE=moods line 93 null element not fixed Owner decided 2026-11-12: Keep the flame cue (No face change; the flame beside the head says determined. The broken mood sweep is fixed). Build: fix scratchpad/ui-sweeps/atlasrest1402.js CASE=moods null element at line 93; no art change.
 - [ ] **L735** `chat` open, M: Owner to list more workflows and actions (AGENT_SKILLS_REFORM). From INBOX.md:904 B34. Evidence: Placed in AGENT_SKILLS_REFORM; needs the owner's list of workflows Owner decided 2026-11-12: Let the agent propose. Build: an agent drafts a list of new workflows and actions for Agent mode and Chat from the research, for the owner to approve; approved ones become rows in this plan.
 - [ ] **L715** `chat` open, S: Decide the offers accept/decline gate (F12). From OPEN.md:4311. Evidence: Built (tests/test_composer_offers_1110.py, 17d5d14); remainder marked owner call. Owner decided 2026-11-12: close as built, but make sure many forms of yes are accepted (yeah, yep, sure, ok and the like). Build: the typed-yes reader accepts many forms of yes (yes, yeah, yep, yup, sure, ok, okay, go ahead, do it, please do) and of no, with a table test; then close.
