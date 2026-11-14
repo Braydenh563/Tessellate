@@ -8,6 +8,7 @@ log tail showing no line for the lost connection). One accept now stays
 pending across the ticks; a tick only stops waiting, never cancels it."""
 
 import asyncio
+from pathlib import Path
 import socket
 
 from tessellate.core import lanserve
@@ -67,7 +68,7 @@ def test_a_connection_that_arrives_at_the_tick_is_returned_on_the_next():
 
 
 def test_the_accept_is_never_cancelled_by_a_timeout():
-    source = (lanserve.__file__ and open(lanserve.__file__, encoding="utf-8").read())
-    body = source[source.index("async def _accept"):]
+    source = Path(lanserve.__file__).read_text(encoding="utf-8")
+    body = source[source.index("async def _accept") :]
     body = body[: body.index("\nasync def ")]
     assert "wait_for(" not in body
