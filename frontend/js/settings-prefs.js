@@ -36,6 +36,11 @@ async function renderPrefs() {
   showCurrencyRates().catch(() => {});
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
+  //: Like the chat dock's Length picker, these two save on change (`setPreference`), and the dock's picker is read again.
+  $("pref-answer-length").value = prefsCache.response_mode;
+  $("pref-answer-length").onchange = (event) => setPreference("response_mode", event.target.value).then(loadResponseModes);
+  $("pref-personas-off").checked = prefsCache.personas_off;
+  $("pref-personas-off").onchange = (event) => setPreference("personas_off", event.target.checked);
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-birthday").value = prefsCache.birthday || "";

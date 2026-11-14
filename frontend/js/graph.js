@@ -1359,6 +1359,7 @@ const GRAPH_LINK_TYPES = [
   ["supports", "Supports", "This is evidence for that"],
   ["contradicts", "Contradicts", "These disagree"],
   ["example_of", "Example of", "This is an instance of that"],
+  ["supersedes", "Supersedes", "Replaces it"],
 ];
 
 // Ask what kind of link this is before making it. Resolves to

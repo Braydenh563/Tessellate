@@ -846,6 +846,18 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     return titles
 
 
+def _cited_bodies(session: Session, result: dict) -> list[tuple[str, str]]:
+    """(title, text) of the notes an answer drew on, for Detailed's supporting sentences."""
+    from tessellate.ai.tools._common import _visible
+
+    out: list[tuple[str, str]] = []
+    for kind, nid in _cited_ids(result)[:3]:
+        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first() if kind != "document" else None
+        if row and (title := _closing_name(str(row[0] or ""))):
+            out.append((title, str(row[0] or "")))
+    return out
+
+
 def _name_documents(session: Session, rows: list[dict]) -> None:
     """A document row a digest quoted names its document, as the composer's own
     rows do, so the page can draw it as a source card (INBOX 1466)."""

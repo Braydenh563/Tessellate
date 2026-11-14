@@ -1036,7 +1036,7 @@ class EntryLink(Base, WorkspaceMixin):
 
 class RelationType(Base):
     """A kind of link a person added (GRAPH_PLAN KG3): "Part of" with its
-    inverse "Has part". The six built-ins (`LINK_TYPES`) stay in code, so a
+    inverse "Has part". The seven built-ins (`LINK_TYPES`) stay in code, so a
     notebook with none of these rows behaves exactly as before; `key` is what
     `EntryLink.link_type` stores."""
 
@@ -1102,6 +1102,9 @@ LINK_TYPES: dict[str, str] = {
     "supports": "Supports: this is evidence for that",
     "contradicts": "Contradicts: these disagree",
     "example_of": "Example of: this is an instance of that",
+    #: INBOX 1842 (L163 O11): this note replaces that one; the older one reads
+    #: "Superseded by" with a link to the newer (the inverse below).
+    "supersedes": "Supersedes: this replaces that",
 }
 
 #: Each built-in's name from its other end (GRAPH_PLAN KG3), and whether it
@@ -1113,6 +1116,7 @@ LINK_TYPE_INVERSES: dict[str, str | None] = {
     "supports": "Supported by",
     "contradicts": None,
     "example_of": "Has example",
+    "supersedes": "Superseded by",
 }
 
 # ROADMAP §87.5's first slice, using only what a link already stores, no new

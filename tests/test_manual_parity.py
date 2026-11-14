@@ -18,6 +18,7 @@ from __future__ import annotations
 from tests._help_text import help_chat_text, help_more_text
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -755,3 +756,16 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+
+
+def test_answer_length_personas_off_supersedes_and_tools_are_in_the_guide_and_settings() -> None:
+    """L161 and L163: each control is in Settings with its `data-help-for`, and the Guide names it in the controls' words."""
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    #: The Guide's bodies are split across adjacent string literals: join them.
+    guide = re.sub(r'"\s*\n\s*"', "", help_more_text() + help_chat_text())
+    for control, said in (
+        ("answer-length-help", "Short (one or two sentences)"),
+        ("personas-off-help", "Personas off makes every"),
+    ):
+        assert f'data-help-for="{control}"' in html and said in guide, control
+    assert "Supersedes marks the newer note" in guide and "/tools [n]" in (Path(__file__).resolve().parents[1] / "src/tessellate/ai/slash_table.py").read_text(encoding="utf-8")

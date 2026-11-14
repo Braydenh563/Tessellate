@@ -197,6 +197,10 @@ def resolve_persona_prompt(name: str | None, config) -> str | None:
     chat routes, the dashboard greeting, and chat auto-naming, so the voice the
     user picked is used consistently everywhere.
     """
+    #: "Personas off" (L161 c, INBOX 1841): no persona's words reach a prompt
+    #: or pick the composer's voice; the app's own persona answers.
+    if config.get_preference("personas_off", False):
+        return None
     wanted = name or config.get_preference("active_persona", "Atlas")
     custom = config.get_preference("personas", [])
     #: A custom persona saved under the old name wins over the alias, so an
