@@ -134,10 +134,12 @@ def _frames(fh) -> Iterator[tuple[int, int, int]]:  # noqa: ANN001
 
 
 def _whole(fh) -> list[tuple[int, int, int]]:  # noqa: ANN001
-    """Every frame, or SealedDamaged when there is none or bytes trail the last."""
+    """Every whole frame, or SealedDamaged when there is none. Bytes after the
+    last whole frame are a partial frame a crash mid-append left (the next
+    append drops them) and are not read; a cut that leaves a whole frame last
+    is still refused, since that frame is not flagged as the last."""
     frames = list(_frames(fh))
-    end = frames[-1][1] + _NONCE + frames[-1][2] if frames else 0
-    if end != os.fstat(fh.fileno()).st_size:
+    if not frames:
         raise SealedDamaged(DAMAGED_DETAIL)
     return frames
 
