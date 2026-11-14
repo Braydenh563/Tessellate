@@ -54,7 +54,6 @@ console.log(JSON.stringify(diagramModel.print(m)));"""
 
 
 def test_the_block_menu_has_class_and_link_and_the_link_opens_through_the_document_link_path():
-    js = (ROOT / "frontend/js/diagram-builder.js").read_text(encoding="utf-8")
-    assert "Class…" in js and "Link…" in js and "Open link" in js
     style = (ROOT / "frontend/js/diagram-style.js").read_text(encoding="utf-8")
+    assert "Class…" in style and "Link…" in style and "Open link" in style
     assert "docOpenLink(href)" in style and "docOpenWikiTarget(" in style and "window.open" not in style

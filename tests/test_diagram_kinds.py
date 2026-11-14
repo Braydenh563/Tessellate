@@ -206,8 +206,8 @@ def test_lines_the_reader_does_not_know_are_kept_in_place_for_every_kind():
     ("kind", "source"),
     [
         ("mindmap", "mindmap\n  root((One))\n    A\n  second((Two))\n"),
-        ("sequence", "sequenceDiagram\n  box Aqua Group\n  participant A\n  end\n  A->>B: hi\n"),
-        ("sequence", "sequenceDiagram\n  participant A\n  create participant B\n  A->>B: hi\n"),
+        ("sequence", "sequenceDiagram\n  box Aqua Group\n  participant A\n  A->>B: hi\n"),
+        ("sequence", "sequenceDiagram\n  participant A\n  create participant B\n  Note over A: hi\n"),
         ("sequence", "sequenceDiagram\n  A->>B: hi\n  destroy B\n"),
         ("timeline", "flowchart TD\n  A --> B\n"),
     ],

@@ -1,10 +1,9 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
-// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
-// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
-// in lazy files. One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder`. Blocks, connector rows and the live picture; each gesture is one model change printed
+// to the source (`io.set`), so the source is the only state and its history the undo. Held to 12 KB gzipped: new
+// behaviour goes in lazy files. One export: `diagramModel.builder`.
 (() => {
-  //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
+  //: The pure half (diagram-ops.js): keys name blocks, every change is one call.
   let diagramOps;
 
   // ---------------------------------------------------------------------------
@@ -211,7 +210,7 @@
     const level = base + (item.depth || 0);
     const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
     const kids = (item.kids || []).map((k) => buildBlock(S, k, level + 1, edgesFrom, fresh));
-    const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}\n${diagramOps.node(S.m, item.id).href || ""}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
+    const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
     const sig = `${level}\n${own}\n${kids.map((k) => fresh.get(k.dataset.key).sig).join("|")}`;
     const hit = S.cache.get(id);
     const made = hit && hit.sig === sig ? hit.el : buildRow(S, item, level, edgesFrom, kids);
@@ -255,7 +254,6 @@
     const label = el("span", "dgm-label", text);
     label.title = text;
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
-    if (data.href) card.append(icon("ph-link-simple dgm-linked"));
     //: The arrow is on every row, its words on the chosen one.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
     connect.classList.add("dgm-connect");
@@ -310,21 +308,13 @@
       { label: isNode ? "ph:plus Add block after" : "ph:plus Add block inside", run: () => addBlock(S, { after: isNode ? key : null, into: isNode ? null : key }), group: "edit" },
     ];
     if (isNode) {
-      const n = diagramOps.node(S.m, diagramOps.split(key)[1]);
-      items.push({ label: "ph:shapes Class…", run: () => styleDo(S, "cls", key), group: "edit" }, { label: "ph:link-simple Link…", run: () => styleDo(S, "link", key), group: "edit" });
-      if (n.href) items.push({ label: "ph:arrow-square-out Open link", run: () => styleDo(S, "follow", key), group: "edit" });
-      items.push({ label: n.md ? "ph:text-aa Plain text" : "ph:text-b Markdown text", run: () => ((n.md = !n.md), n.md || delete n.md, commit(S, `${n.text} is now ${n.md ? "markdown text: **bold**, *italic*" : "plain text"}.`)), group: "edit" });
       items.push({
         label: "ph:diamond Shape",
         items: shapeItems(S, key).map(shapeRow),
         group: "edit",
       });
     }
-    if (!isNode) {
-      const g = diagramOps.group(S.m, diagramOps.split(key)[1]);
-      const turn = (dir) => () => (dir ? (g.dir = dir) : delete g.dir, commit(S, dir ? `${g.title} flows ${DIRS.find(([d]) => d === dir)[2].toLowerCase()}.` : `${g.title} follows the diagram's direction.`));
-      items.push({ label: "ph:arrows-out-line-horizontal Direction", items: [...DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: turn(d) })), { label: "Same as the diagram", run: turn("") }], group: "edit" });
-    }
+    items.push(...(diagramModel.style?.items?.(S, helpers, key) || []));
     items.push(
       { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
       { label: "ph:arrow-down Move down", run: () => stepBlock(S, key, 1), group: "move" },
@@ -669,7 +659,7 @@
     //: The renderer and the toolbar fetch with the first batch.
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
+    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline"), ensureModule("diagramStyle")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     Object.assign(SHAPE_LABEL, diagramOps.LABEL);

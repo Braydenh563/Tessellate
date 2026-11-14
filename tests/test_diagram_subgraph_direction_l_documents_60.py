@@ -37,5 +37,5 @@ console.log(JSON.stringify({ set, cleared: diagramModel.print(m) }));"""
 
 
 def test_the_group_menu_offers_a_direction():
-    js = (ROOT / "frontend/js/diagram-builder.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend/js/diagram-style.js").read_text(encoding="utf-8")
     assert "Same as the diagram" in js and "g.dir" in js

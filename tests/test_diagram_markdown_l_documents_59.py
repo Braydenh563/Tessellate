@@ -53,7 +53,7 @@ console.log(JSON.stringify(diagramModel.print(m)));"""
 
 
 def test_the_block_menu_toggles_markdown():
-    js = (ROOT / "frontend/js/diagram-builder.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend/js/diagram-style.js").read_text(encoding="utf-8")
     assert "Markdown text" in js and "Plain text" in js
 
 

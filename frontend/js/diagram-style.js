@@ -106,6 +106,25 @@
     else docOpenLink(href);
   }
 
+  //: The block menu's own rows for a flowchart block (diagram-builder.js `blockItems` adds them once this file is loaded, which `show` asks for): a block's
+  //: Markdown text, Class and Link (and Open link), a group's Direction (`g.dir`, the group's own flow, L-documents-59, 60, 55).
+  function items(S, h, key) {
+    const [type, id] = h.ops.split(key);
+    if (type === "n") {
+      const n = h.ops.node(S.m, id);
+      const flip = () => ((n.md = !n.md), n.md || delete n.md, h.commit(S, `${n.text} is now ${n.md ? "markdown text: **bold**, *italic*" : "plain text"}.`));
+      return [
+        { label: "ph:shapes Class…", run: () => cls(S, h, key), group: "edit" },
+        { label: "ph:link-simple Link…", run: () => link(S, h, key), group: "edit" },
+        ...(n.href ? [{ label: "ph:arrow-square-out Open link", run: () => follow(S, h, key), group: "edit" }] : []),
+        { label: n.md ? "ph:text-aa Plain text" : "ph:text-b Markdown text", run: flip, group: "edit" },
+      ];
+    }
+    const g = h.ops.group(S.m, id);
+    const turn = (dir) => () => (dir ? (g.dir = dir) : delete g.dir, h.commit(S, dir ? `${g.title} flows ${S.bar.dirs.find(([d]) => d === dir)[2].toLowerCase()}.` : `${g.title} follows the diagram's direction.`));
+    return [{ label: "ph:arrows-out-line-horizontal Direction", items: [...S.bar.dirs.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: turn(d) })), { label: "Same as the diagram", run: turn("") }], group: "edit" }];
+  }
+
   function shortcuts(S, h) {
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
@@ -147,5 +166,5 @@
     });
   }
 
-  diagramModel.style = { colour, edge, shortcuts, cls, link, follow };
+  diagramModel.style = { colour, edge, shortcuts, items };
 })();
