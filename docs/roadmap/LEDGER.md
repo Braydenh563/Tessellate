@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 141 | 29 | 3 | 10 | 170 |
+| world-class | 0 | 140 | 29 | 3 | 10 | 169 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 532 | 100 | 5 | 121 | 1037 |
+| all | 405 | 531 | 100 | 5 | 121 | 1036 |
 
 ## graph
 
@@ -540,7 +540,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-60** `world-class` open, S: Settle 1.3's remaining 'no' cells in the object menu table: each built or marked n/a with its reason. From WORLD_CLASS_PLAN.md:158. Evidence: WORLD_CLASS_PLAN.md:158 says the 'no' cells are 'not planned'; no owner decision found in HANDOVER or ARCHITECTURE
 - [ ] **L-world-class-61** `world-class` open, M: Fold the last seven undo implementations into pushUndo (decision 53, rule 1.8). From WORLD_CLASS_PLAN.md:220. Evidence: tests/test_undo_contract.py:73 UNFOLDED <= 7 (six of 2026-10-10 plus one)
 - [ ] **L-world-class-62** `world-class` open, S: Re-run the busiest-screen recipe-count gate (scratchpad/audit/recipes.js) and fix what it finds. From WORLD_CLASS_PLAN.md:302. Evidence: WORLD_CLASS_PLAN.md:302 'the recipe-count gate was not re-run'; target 8 recipes, 22 on Chat at 696
-- [ ] **L-world-class-63** `world-class` open, S: Library: group notes by type (D5's last left item). From WORLD_CLASS_PLAN.md:357. Evidence: no grouping by type in frontend/js/library*.js (grep 'group.*type' 0 hits)
 - [ ] **L-world-class-64** `world-class` open, S: Re-run the prose metric (paragraphs over 120 characters outside popovers) and move what it finds behind data-help-for. From WORLD_CLASS_PLAN.md:427. Evidence: WORLD_CLASS_PLAN.md:427 and :949 (54 paragraphs, ~60 at :699); not re-run since 2026-09-24
 - [ ] **L-world-class-65** `world-class` open, S: Writing desk: verify Stop mid-pass and a real model's thinking stream. From WORLD_CLASS_PLAN.md:458. Evidence: WORLD_CLASS_PLAN.md:458: two not-verified lines; every provider test runs on a fake transport (CLAUDE.md 4)
 - [ ] **L-world-class-66** `world-class` open, M: Stop a running job: a cooperative stop per handler, not only a queued one (B2). From WORLD_CLASS_PLAN.md:530. Evidence: src/tessellate/core/jobstore.py:370 returns 'a running job is not interrupted'

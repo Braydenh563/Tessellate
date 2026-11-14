@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library, Contents: grouping notes by type was already built (Group by, By type, `tests/test_contents_by_type_wc8.py`); the row's grep looked for the wrong word, so it is closed with a measured check (L-world-class-63).
 - Atlas's own cards (While you were away, the open-questions line, margin cards, the Questions list, Rediscover) carry a small Learned: manage link into Settings, What it learned, kept to questions where they are the subject (L-world-class-88).
 - CI: the e2e job runs scratchpad/ui-sweeps/boottime.js on a fresh notebook and fails on a page error; the numbers go to the job summary (L-world-class-92).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
