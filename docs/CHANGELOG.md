@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: hovering or focusing a [[link]] previews the note it opens, in the citation peek (L573).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).
 - Activity: a chat or job that fails on a file shows the reason, not the file's path and errno (L505).

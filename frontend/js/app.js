@@ -1537,6 +1537,7 @@ const LAZY_MODULES = {
   noteHistory: ["/js/note-history.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
+  wikiPeek: ["/js/citation-peek.js", "/js/wiki-peek.js"],
   askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
@@ -1778,6 +1779,12 @@ document.addEventListener("focusin", (event) => {
     //: steal the caret back.
     if (surface?.kind === "codemirror" && document.activeElement === host) surface.focus();
   });
+});
+
+//: L573: a note's [[link]] previews its note on hover or focus (wiki-peek.js).
+for (const t of ["mouseover", "focusin"]) document.addEventListener(t, (e) => {
+  const el = e.target.closest?.(".wiki-link[data-wiki]");
+  if (el) ensureModule("wikiPeek").then((ok) => ok && wikiPeek(el, t == "focusin"));
 });
 
 //: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and dedenting across the app also doesnt come in the form it should"). The editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`) arrives with the Library bundle on a note box's first focus, and until it has, the box is a plain textarea: measured on a fresh boot, "- alpha" plus Tab moved focus to the tags field instead of indenting. This bridges that second or two with the same rule the editor applies: whole lines, two spaces, list items as blocks, Shift+Tab only when there is something to take off (so a flush-left caret still tabs backwards out of the box). Once the bundle is in, the textarea is replaced and this never runs.

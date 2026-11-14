@@ -1630,6 +1630,7 @@ function renderNoteInline(element, text, terms) {
     const link = document.createElement("button");
     link.type = "button";
     link.className = "wiki-link";
+    link.dataset.wiki = name;
     const label = wikiLinkLabel(name);
     link.textContent = label;
     link.title = `Go to the note starting "${label}"`;

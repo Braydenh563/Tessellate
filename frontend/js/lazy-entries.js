@@ -99,6 +99,8 @@ Object.assign(LAZY_MODULES, {
   entryCard: ["/js/entry-card.js"],
   //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
   tableBlock: ["/js/table-block.js"],
+  //: A `![[board]]` card's fill (board-embed.js): `boardEmbedElement` (markdown.js) waits for it.
+  boardEmbed: ["/js/board-embed.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB

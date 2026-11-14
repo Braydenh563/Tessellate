@@ -196,8 +196,12 @@ def test_a_tracked_job_that_fails_on_a_file_keeps_the_sentence_not_the_path():
     import pytest
 
     seen = {}
-    with pytest.raises(OSError):
+
+    def fail_on_a_file():
         with activity.track("generation", "Answering in Chat") as job:
             seen["run"] = job.run
             raise OSError(28, "No space left on device", "/home/someone/private/notes.db")
+
+    with pytest.raises(OSError):
+        fail_on_a_file()
     assert seen["run"]._error == "No space left on device"

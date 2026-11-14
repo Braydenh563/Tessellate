@@ -163,6 +163,7 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "markdown.js:boardEmbedFill": "inside `fill`, which boardEmbedElement first runs from `ensureModule(\"boardEmbed\").then` and later only from that fill's own walk (2026-11-14)",
     "wiring.js:docFindInDocuments": "a click on the All documents button in the find bar, which openGlobalFind shows only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:openDocReplace": "a click on the Replace in all button in the find bar, shown only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",

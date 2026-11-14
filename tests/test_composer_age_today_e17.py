@@ -21,13 +21,14 @@ def _fresh_answer_state():
     ContextVar is pinned to its default for the test."""
     from contextvars import Context, ContextVar
 
+    _UNSET = object()
     tokens = []
     for value in vars(composer_digest_sentences).values():
         if isinstance(value, ContextVar):
-            try:
-                tokens.append((value, value.set(Context().run(value.get))))
-            except LookupError:
-                pass
+            #: A var with no default has nothing to pin: it is left as it is.
+            fresh = Context().run(value.get, _UNSET)
+            if fresh is not _UNSET:
+                tokens.append((value, value.set(fresh)))
     yield
     for var, token in reversed(tokens):
         var.reset(token)

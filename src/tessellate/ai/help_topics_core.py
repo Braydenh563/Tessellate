@@ -1515,13 +1515,13 @@ HELP_TOPICS.extend(
                 "link properties",
             ),
             "body": (
-                "Link one note to another by typing [[ and the start of its title, "
-                "then picking it from the list. The link shows on both notes as a "
+                "Link one note to another by typing [[ and picking its title "
+                "from the list. Hover or focus a [[link]] to preview its note. The link shows on both notes as a "
                 "connection, with a menu to add a reason, open or remove it. Atlas "
                 "also suggests links as you write, and every note's menu has Link "
-                "to. The Graph draws all of them. A note's menu also has Copy wiki "
+                "to. The Graph draws them all. A note's menu also has Copy wiki "
                 "link (a [[link]] for another note) and Copy app link (an address "
-                "that opens the note in the app). Delete the [[name]] and its link "
+                "that opens the note). Delete the [[name]] and its link "
                 "goes with it; rename a note and a toast offers to rename the "
                 "[[links]] other notes have to it. A note's Connections show the "
                 'sentence each linking note says it in, and "Mentioned, not '
