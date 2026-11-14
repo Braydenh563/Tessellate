@@ -24,7 +24,7 @@ def test_the_document_is_asked_for_before_the_modules_and_the_editor_load():
     body = _body()
     early = body.index("const early = ")
     assert early < body.index('await ensureModule("library")') < body.index("await ensureDocEditor()")
-    assert "apiJson(`/documents/${id}`)" in body[early : early + 200]
+    assert "apiJson(`/documents/${id}`)" in body[early - 120 : early + 200]
 
 
 def test_a_pending_save_still_comes_first():

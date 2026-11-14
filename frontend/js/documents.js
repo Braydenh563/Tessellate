@@ -1327,8 +1327,9 @@ async function openDocument(id) {
   //: the one it just made race, and the fetch that landed last won, leaving
   //: a person typing into an old document they took for the new one.
   const seq = ++docOpenSeq;
-  //: **Asked for now, not after the modules and the editor.** The fetch waited for both (a waterfall: files at 0 to 150 ms, the editor bundle at 205, the document at 330 to 400, so a cold first open was 419 to 518 ms against 84 to 109 for the second, L-world-class-40). Not when something is waiting to be saved: the same document must be fetched after its save.
-  const early = docDirty ? null : apiJson(`/documents/${id}`).catch(() => null);
+  //: Asked for now, not after the editor loads; after a pending save (L-world-class-40).
+  const get = () => apiJson(`/documents/${id}`).catch(() => null);
+  const early = docDirty ? null : get();
   //: The block bar belongs to the page being left: opened from a link under the pointer, nothing fires mouseleave, and it hung over the new page.
   docBlockBarClose();
   //: The place being left is written down first, while the surface still
@@ -1350,7 +1351,7 @@ async function openDocument(id) {
   //: paint. Failing is not an error path: `ensureDocEditor` resolves to null
   //: and everything below carries on against the textarea.
   await ensureDocEditor();
-  const doc = await (early || apiJson(`/documents/${id}`).catch(() => null));
+  const doc = await (early || get());
   if (seq !== docOpenSeq) return;
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.

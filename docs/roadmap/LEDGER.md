@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 118 | 29 | 0 | 0 | 147 |
+| world-class | 0 | 117 | 29 | 0 | 0 | 146 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 507 | 100 | 2 | 111 | 979 |
+| all | 372 | 506 | 100 | 2 | 111 | 978 |
 
 ## graph
 
@@ -541,7 +541,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
-- [ ] **L-world-class-103** `world-class` open, M: Right-click, and a hold on touch, on every card and row. From WORLD_CLASS_PLAN.md:2292. Evidence: 38 contextmenu sites, not every card (:2292)
 - [ ] **L-world-class-105** `world-class` open, S: Re-measure 22.3: card padding and body size at laptop widths, section-head weight, one Phosphor weight lint, the toast corner at 1093x614. From WORLD_CLASS_PLAN.md:2294. Evidence: WORLD_CLASS_PLAN.md:2294 '22.3 not re-measured'
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
