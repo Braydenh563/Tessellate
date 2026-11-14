@@ -184,3 +184,11 @@ def test_other_sentences_are_not_board_acts(sentence):
     from tessellate.ai import board_acts
 
     assert board_acts.read(sentence) is None
+
+
+def test_the_registrys_board_intents_match_the_board_acts_intents():
+    """The Guide splits acts into board and other lists by `act_registry._BOARD_INTENTS`; a board intent
+    added in `board_acts.INTENTS` and not there would land in the wrong list."""
+    from tessellate.ai import act_registry, board_acts
+
+    assert act_registry._BOARD_INTENTS == board_acts.INTENTS  # noqa: SLF001
