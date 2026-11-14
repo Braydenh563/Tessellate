@@ -1549,6 +1549,7 @@ const LAZY_MODULES = {
   ndjson: ["/js/ndjson-read.js"],
   //: meaning.js first: the suggestions take its words for what was typed (L199, Brief 86).
   searchSuggest: ["/js/meaning.js", "/js/search-suggest.js"],
+  chatGhost: ["/js/chat-ghost.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
   writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.

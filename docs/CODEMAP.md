@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8511, frontend ids 2795, CSS sections 524, backend routes 715, backend modules 11206, test files 2917, tests 22938, plan headings 692, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8517, frontend ids 2795, CSS sections 524, backend routes 715, backend modules 11206, test files 2919, tests 22942, plan headings 692, app scripts 29, boot scripts 38, script files 306.
 
-## Frontend functions (8511)
+## Frontend functions (8517)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1272 |
 | `confirmVerb` | frontend/js/app.js:1263 |
-| `ensureModule` | frontend/js/app.js:1742 |
+| `ensureModule` | frontend/js/app.js:1743 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1913 |
-| `lazyAssetStamp` | frontend/js/app.js:1699 |
-| `lazyScript` | frontend/js/app.js:1721 |
+| `installStandIns` | frontend/js/app.js:1914 |
+| `lazyAssetStamp` | frontend/js/app.js:1700 |
+| `lazyScript` | frontend/js/app.js:1722 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1766 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1767 |
 | `promptDialog` | frontend/js/app.js:1376 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1680 |
+| `whenScriptsLoaded` | frontend/js/app.js:1681 |
 | `wireBackdropClose` | frontend/js/app.js:1492 |
 
 ### frontend/js/prefs.js (7)
@@ -378,7 +378,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadAskHistoryBadge` | frontend/js/capture-ask.js:1331 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:286 |
 | `loadSuggestions` | frontend/js/capture-ask.js:1301 |
-| `loadTemplates` | frontend/js/capture-ask.js:1403 |
+| `loadTemplates` | frontend/js/capture-ask.js:1404 |
 | `newChat` | frontend/js/capture-ask.js:1276 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:471 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:453 |
@@ -397,7 +397,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:581 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:876 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:1376 |
+| `showAskAsOf` | frontend/js/capture-ask.js:1377 |
 | `stampDate` | frontend/js/capture-ask.js:440 |
 | `stopAnswer` | frontend/js/capture-ask.js:1272 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
@@ -2792,6 +2792,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `regenerateFrom` | frontend/js/chat-edit.js:190 |
 | `regenerateLast` | frontend/js/chat-edit.js:265 |
 | `showCopyFallback` | frontend/js/chat-edit.js:143 |
+
+### frontend/js/chat-ghost.js (6)
+
+| Name | File:line |
+|---|---|
+| `chatGhostAccept` | frontend/js/chat-ghost.js:77 |
+| `chatGhostHide` | frontend/js/chat-ghost.js:46 |
+| `chatGhostPlace` | frontend/js/chat-ghost.js:51 |
+| `chatGhostPool` | frontend/js/chat-ghost.js:15 |
+| `chatGhostRest` | frontend/js/chat-ghost.js:31 |
+| `openChatGhost` | frontend/js/chat-ghost.js:89 |
 
 ### frontend/js/chat-private.js (5)
 
@@ -12944,7 +12955,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:8102 |
 | Settings headings sit at one left edge | frontend/css/08-consistency.css:1477 |
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2258 |
-| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6259 |
+| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6279 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4618 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5710 |
@@ -13033,7 +13044,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7871 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3696 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8763 |
-| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5670 |
+| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5690 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3516 |
 | a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5263 |
 | a note's connections: one pill each, its menu inside it | frontend/css/08-consistency.css:3278 |
@@ -13102,7 +13113,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3793 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:653 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1429 |
-| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5776 |
+| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5796 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2339 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2687 |
@@ -13125,7 +13136,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8350 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1902 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1599 |
-| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5930 |
+| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5950 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9891 |
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
@@ -13362,7 +13373,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | File | Lines |
 |---|---|
 | frontend/css/00-tokens-shell.css | 4337 |
-| frontend/css/01-forms-settings.css | 6336 |
+| frontend/css/01-forms-settings.css | 6356 |
 | frontend/css/02-chat-graph.css | 5298 |
 | frontend/css/03-dashboard-widgets.css | 4931 |
 | frontend/css/04-chat-dock-appearance.css | 6639 |
@@ -20433,19 +20444,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_counter` | src/tessellate/ai/surface_acts.py:122 |
-| `_delete_document` | src/tessellate/ai/surface_acts.py:142 |
-| `_delete_skill` | src/tessellate/ai/surface_acts.py:155 |
+| `_delete_document` | src/tessellate/ai/surface_acts.py:143 |
+| `_delete_skill` | src/tessellate/ai/surface_acts.py:156 |
 | `_map` | src/tessellate/ai/surface_acts.py:93 |
 | `_name` | src/tessellate/ai/surface_acts.py:53 |
 | `_named` | src/tessellate/ai/surface_acts.py:57 |
-| `_note` | src/tessellate/ai/surface_acts.py:170 |
+| `_note` | src/tessellate/ai/surface_acts.py:171 |
 | `_one` | src/tessellate/ai/surface_acts.py:110 |
 | `_theme_of` | src/tessellate/ai/surface_acts.py:64 |
-| `drop_preference` | src/tessellate/ai/surface_acts.py:227 |
-| `plan` | src/tessellate/ai/surface_acts.py:178 |
+| `drop_preference` | src/tessellate/ai/surface_acts.py:228 |
+| `plan` | src/tessellate/ai/surface_acts.py:179 |
 | `read` | src/tessellate/ai/surface_acts.py:71 |
-| `restore_document` | src/tessellate/ai/surface_acts.py:212 |
-| `run_step` | src/tessellate/ai/surface_acts.py:239 |
+| `restore_document` | src/tessellate/ai/surface_acts.py:213 |
+| `run_step` | src/tessellate/ai/surface_acts.py:240 |
 
 ### src/tessellate/ai/tagging.py (35)
 
@@ -28558,7 +28569,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22938)
+## Tests (22942)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28892,6 +28903,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_followups.py | 14 |
 | tests/test_chat_followups_race.py | 2 |
 | tests/test_chat_foot_1706.py | 7 |
+| tests/test_chat_ghost_l141.py | 3 |
 | tests/test_chat_handoff_1010.py | 2 |
 | tests/test_chat_head_phone_e50.py | 2 |
 | tests/test_chat_intent.py | 13 |
@@ -30129,6 +30141,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_learned_audit.py | 17 |
 | tests/test_learned_audit_run.py | 14 |
 | tests/test_learned_check_ui.py | 5 |
+| tests/test_learned_row_grid_l143.py | 1 |
 | tests/test_learned_spec.py | 17 |
 | tests/test_learning_large_l133.py | 1 |
 | tests/test_ledger.py | 9 |

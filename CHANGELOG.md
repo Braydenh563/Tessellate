@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: the chat box shows grey ghost text for the end of its last word (from your tags, titles and recent searches, no model; Tab or Right takes it, typing or Escape drops it; the existing "Suggest as you type" switch turns it off). What it learned: each fact is one line (chip, text and meta, actions) instead of four, 63px a row instead of 142, stacked below 600px. L-chat-141, 143.
 - Chat: counters. "add 1 to coffee" (or "count 2 coffees", "+1 coffee") waits for Confirm and adds a dated line to the note "Counter: coffee" (made the first time); "how many coffees this week" sums those lines and names the note it read. Also "tip on 60 at 15%", "reading time for 1200 words", "1/3 as a decimal", "is 17 prime", "which of my to-dos are open", "the start of the month", "the end of last month" and "what is coming up"; the 60-phrasing windows gate reads 60 of 60 and the utilities gate 59 of 60. L-chat-122, 125, 128, 132, 135.
 - Chat recount batch 1: digest counts link to their notes, no repeated sentences in a row, remark bubbles wait while you type and open their source, and the command palette previews a typed act.
 - Chat: a past window no longer misreads "the day before yesterday" as yesterday or "the last week of October" as last week; a 60-phrasing window gate (60 of 60 read right, gate 95%) pins both readers; the limits and labels rows (L-chat-116, 117, 127) are pinned by tests. L-chat-128.

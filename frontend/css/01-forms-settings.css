@@ -5626,12 +5626,24 @@ select {
    quiet under it, and the row's actions where every other list already puts
    them. Nothing here sets a colour, a radius or a spacing that is not a
    token. */
+.learned-row {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr) auto;
+  grid-template-areas: "head text acts" "head meta acts";
+  column-gap: var(--space-3);
+  align-items: center;
+}
+.learned-row > :last-child {
+  grid-area: acts;
+}
 .learned-row-head {
+  grid-area: head;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
 }
 .learned-text {
-  margin: 0 0 var(--space-2);
+  grid-area: text;
+  margin: 0;
   /* The claim is the row. A note title elsewhere in the app is `--text-lg`
      inside a list row; a derived sentence is body copy, and reading it is
      the whole action this screen asks for. */
@@ -5643,8 +5655,16 @@ select {
   overflow-wrap: anywhere;
 }
 .learned-meta {
-  margin: 0 0 var(--space-2);
+  grid-area: meta;
+  margin: 0;
   font-size: var(--text-sm);
+}
+@media (max-width: 600px) {
+  .learned-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "text" "meta" "acts";
+    row-gap: var(--space-2);
+  }
 }
 /* The pager sits under the list, not beside it: the count belongs between
    its two buttons, which is where a reader looks for "where am I". */

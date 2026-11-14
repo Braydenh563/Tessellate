@@ -1357,6 +1357,7 @@ for (const type of ["focusin", "input", "click"]) {
     //: suggestions (search-suggest.js, lazy), and typing or a press after Escape
     //: opens them again. Not a `LAZY_ENTRY_POINTS` stand-in: app.js is at its cap.
     else if (box.matches?.("input[data-search-scope]")) ensureModule("searchSuggest").then(() => openSearchSuggest(box));
+    else if (box.id === "chat-input" && type !== "click") ensureModule("chatGhost").then(() => openChatGhost(box));
   });
 }
 
