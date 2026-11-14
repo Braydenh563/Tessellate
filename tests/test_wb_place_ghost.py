@@ -19,7 +19,7 @@ def test_a_placing_drag_draws_a_ghost_not_the_marquee():
     body = body[:body.index("\n  }\n")]
     assert 'wbInstances.layer("wb-html-layer")' in body
     #: The capture goes through the one helper (L271), which calls setPointerCapture.
-    assert "wbBoardState.capture(containerEl, pointerId)" in body
+    assert "wbBoardState.capture(boardEl(), pointerId)" in body
     assert "el.setPointerCapture(pointerId)" in WB
 
 

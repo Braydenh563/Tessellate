@@ -46,6 +46,7 @@ function fakeEl(tag, name) {
       return walk(this);
     },
     focus() { focused = this; },
+    contains(other) { for (let e = other; e; e = e.parent) if (e === this) return true; return false; },
   };
   return el;
 }
@@ -420,3 +421,128 @@ def test_load_time_wiring_never_asks_for_the_active_instance():
                 if "wbInstances." in lines[j] and len(lines[j]) - len(lines[j].lstrip()) == body:
                     found.append(f"{path.name}:{j + 1}")
     assert found == [], found
+
+
+#: A board edit the way initWhiteboard's handlers make one, through the live globals:
+#: it adds a card to the active state, records it (wbPushUndo's tail is
+#: `wbInstances.changed()`), and saves to the active board.
+_EDITING = """
+const saves = [], seen = [];
+let nextId = 100;
+function wbPushUndo(entry) { wbUndoStack.push(entry); wbRedoStack = []; I.changed(); }
+I.on("pointerdown", function () {
+  seen.push([window.currentBoardId, I.container().name]);
+  const id = nextId++;
+  wbState.objects.push({ id, kind: "sticky" });
+  wbPushUndo({ action: "create", kind: "object", id });
+  saves.push({ board: window.currentBoardId, into: I.container().name, objects: wbState.objects.map((o) => o.id) });
+});
+I.on("keydown", () => undo());
+I.on("wheel", () => seen.push(["wheel", window.currentBoardId, I.container().name]), { passive: false }, true);
+"""
+
+
+def test_two_editable_embeds_of_one_board_edit_undo_and_save_independently():
+    """L-whiteboard-54: initWhiteboard's handlers are bound per instance container,
+    and the one that hears an event makes its own instance live first."""
+    out = _run(_EDITING + """
+(async () => {
+out.pageListeners = PAGE_EL.listeners.length;
+const hostA = fakeEl("div", "hostA"), hostB = fakeEl("div", "hostB");
+const a = await window.wbInstance.create(hostA, 5, { editable: true });
+const b = await window.wbInstance.create(hostB, 5, { editable: true });
+hostA.children[0].name = "boxA"; hostB.children[0].name = "boxB";
+const A = a.instance, B = b.instance;
+const fired = { a: 0, b: 0 };
+a.onChange(() => fired.a++);
+b.onChange(() => fired.b++);
+A.container.fire("pointerdown");
+A.container.fire("pointerdown");
+B.container.fire("pointerdown");
+A.container.fire("keydown");
+out.aLive = snap();
+B.container.fire("wheel");
+out.b = snap();
+A.container.fire("focusin");
+out.a = snap();
+PAGE_EL.fire("pointerdown");
+out.page = snap();
+out.saves = saves;
+out.seen = seen;
+out.fired = fired;
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    #: The page board gets its own copy of each handler, as before: one listener per `on`.
+    assert out["pageListeners"] == 3
+    assert out["seen"] == [[5, "boxA"], [5, "boxA"], [5, "boxB"], ["wheel", 5, "boxB"], [1, "page"]]
+    assert out["saves"] == [
+        {"board": 5, "into": "boxA", "objects": [50, 100]},
+        {"board": 5, "into": "boxA", "objects": [50, 100, 101]},
+        {"board": 5, "into": "boxB", "objects": [50, 102]},
+        {"board": 1, "into": "page", "objects": [10, 103]},
+    ]
+    #: Undo in A took back A's last card only; B kept its own card and stack.
+    assert [o["id"] for o in out["aLive"]["state"]["objects"]] == [50, 100] and [e["id"] for e in out["aLive"]["redo"]] == [101]
+    assert [o["id"] for o in out["b"]["state"]["objects"]] == [50, 102] and [e["id"] for e in out["b"]["undo"]] == [102] and out["b"]["redo"] == []
+    assert [o["id"] for o in out["a"]["state"]["objects"]] == [50, 100] and [e["id"] for e in out["a"]["undo"]] == [100]
+    assert [o["id"] for o in out["page"]["state"]["objects"]] == [10, 103] and out["page"]["board"] == 1
+    #: onChange fires once per recorded edit, on the instance edited only.
+    assert out["fired"] == {"a": 2, "b": 1}
+
+
+def test_a_read_only_embed_pans_and_zooms_only_and_destroy_unbinds_every_handler():
+    out = _run(_EDITING + """
+(async () => {
+const hostA = fakeEl("div", "hostA"), hostR = fakeEl("div", "hostR");
+const a = await window.wbInstance.create(hostA, 5, { editable: true });
+const r = await window.wbInstance.create(hostR, 5, {});
+const boxA = a.instance.container, boxR = r.instance.container;
+out.classes = [boxA.className, boxR.className];
+out.counts = { a: boxA.listeners.length, r: boxR.listeners.length, aBound: a.instance.listeners.length, rBound: r.instance.listeners.length };
+let changes = 0;
+r.onChange(() => changes++);
+boxR.fire("pointerdown");
+boxR.fire("keydown");
+boxR.fire("wheel");
+out.readOnly = { saves: saves.length, changes, seen, objects: wbState.objects.length, live: I.active === r.instance };
+const f = r.instance.zoom.filter();
+out.filter = [f === filt, f({ type: "mousedown", button: 0 }), f({ type: "mousedown", button: 2 }), f({ type: "wheel" }), a.instance.zoom.filter() === filt];
+//: Registered after the embeds exist (initWhiteboard runs late): bound to both at once.
+I.on("dblclick", () => seen.push("dbl"));
+out.late = [boxA.listeners.length, boxR.listeners.length, PAGE_EL.listeners.length];
+a.destroy();
+a.destroy();
+r.destroy();
+out.after = { a: boxA.listeners.length, r: boxR.listeners.length, aBound: a.instance.listeners.length, page: PAGE_EL.listeners.length };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["classes"] == ["whiteboard-container wb-embed", "whiteboard-container wb-embed wb-embed-readonly"]
+    #: Editable: its three handlers plus the two wake listeners; read-only: the wheel pan and the two wakes.
+    assert out["counts"] == {"a": 5, "r": 3, "aBound": 3, "rBound": 1}
+    assert out["readOnly"] == {"saves": 0, "changes": 0, "seen": [["wheel", 5, "div"]], "objects": 1, "live": True}
+    #: Any plain drag pans a read-only board; the wheel keeps the page's own rule.
+    assert out["filter"] == [False, True, False, True, True]
+    #: The page's three plus the late one; the embeds' wake listeners on the page while they live.
+    assert out["late"] == [6, 3, 3 + 1 + 3]
+    assert out["after"] == {"a": 0, "r": 0, "aBound": 0, "page": 4}
+
+
+def test_init_whiteboard_binds_container_listeners_through_the_instances():
+    """No handler in the board files is bound to the page container directly, so
+    none is missing from an embed (L-whiteboard-54)."""
+    text = "".join(p.read_text(encoding="utf-8") for p in sorted(JS.glob("whiteboard*.js")))
+    direct = re.findall(r'(?:containerEl|container\.node\(\)\??|wbInstances\.container\(\)\??|\$\("whiteboard-container"\)\??)\.addEventListener\(', text)
+    assert direct == [], direct
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert not re.search(r"^(?!\s*//).*\bcontainerEl\b", wb, re.M)
+    assert wb.count("wbInstances.on(") >= 26
+    #: The document-wide key handler asks whose board a key is for, and a read-only one takes none.
+    assert "const embed = wbInstances.embedFor(e.target);" in wb and "embed ? !embed.editable" in wb
+    cmds = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert "wbInstances.embedFor(document.activeElement)" in cmds
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".wb-embed-readonly > [data-wb-layer] {\n  pointer-events: none;" in css

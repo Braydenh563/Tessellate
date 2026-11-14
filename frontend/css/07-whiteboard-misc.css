@@ -2023,6 +2023,11 @@ body.scroll-top-visible .skills-split > .tab-main {
 [data-wb-layer="wb-overlay-layer"] {
   pointer-events: none;
 }
+/* A read-only embed pans and zooms only (L-whiteboard-54): its layers take no
+   pointer, so no card's drag starts and every press reaches the box's zoom. */
+.wb-embed-readonly > [data-wb-layer] {
+  pointer-events: none;
+}
 /* **The three layers that pan together, and the origin they pan about.**
    `handleWbZoom` moves all of them with the same CSS `transform` now: the
    two SVG groups used to take the `transform` *attribute* instead, which is a

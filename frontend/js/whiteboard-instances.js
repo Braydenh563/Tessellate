@@ -26,7 +26,7 @@
     return {
       container, boardId: boardId ?? null, state: { nodes: [], sketches: [], objects: [] },
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
-      mapState: null, renderPending: false, changeFns: new Set(),
+      mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
     };
   }
 
@@ -38,6 +38,14 @@
     const zoom = d3.zoom();
     const base = wbInstances.page.zoom;
     for (const key of ZOOM_SETTINGS) zoom[key](base[key]());
+    //: A read-only board has no tool, so any plain drag pans it (L-whiteboard-54);
+    //: the wheel keeps the page's rule.
+    if (!inst.editable) {
+      const wheel = base.filter();
+      zoom.filter(function (event) {
+        return event.type === "wheel" ? wheel.call(this, event) : !event.ctrlKey && !(event.button > 1);
+      });
+    }
     for (const name of ZOOM_EVENTS) {
       const handler = base.on(name);
       if (handler) zoom.on(name, function (event) {
@@ -106,18 +114,56 @@
 
   //: A board inside `container`, on `boardId`, with its own state and zoom.
   //: Not activated: the first gesture on it, or the caller, does that.
-  function mount(container, boardId) {
+  function mount(container, boardId, editable = true) {
     const inst = create(container, boardId);
+    inst.editable = editable;
     inst.zoom = zoomFor(inst);
     d3.select(container).call(inst.zoom).on("dblclick.zoom", null);
     list.push(inst);
+    for (const entry of handlers) bindOne(inst, entry);
     return inst;
+  }
+
+  //: **The board's own listeners, on every instance's container** (L-whiteboard-54).
+  //: initWhiteboard binds its pointer, key, wheel and drop handlers through `on`,
+  //: once; each instance, the page's and every embed's, gets its own copy, which
+  //: makes that instance live before the handler runs, so a handler reads the
+  //: board the event happened on. A read-only embed gets only the `view` ones
+  //: (pan and zoom).
+  const handlers = [];
+  function bindOne(inst, entry) {
+    if (!inst.editable && !entry.view) return;
+    const el = inst.container || document.getElementById(PAGE_CONTAINER);
+    if (!el) return;
+    const fn = function (event) {
+      if (active !== inst) activate(inst);
+      return entry.fn.call(this, event);
+    };
+    el.addEventListener(entry.type, fn, entry.opts);
+    inst.listeners.push([el, entry.type, fn, entry.opts]);
+  }
+  function on(type, fn, opts, view = false) {
+    const entry = { type, fn, opts, view };
+    handlers.push(entry);
+    for (const inst of list) bindOne(inst, entry);
+  }
+  function unbind(inst) {
+    for (const [el, type, fn, opts] of inst.listeners) el.removeEventListener(type, fn, opts);
+    inst.listeners = [];
+  }
+
+  //: The embed an event's target is inside, or null: document-wide handlers
+  //: (keys, paste) ask it to know whose board a keystroke is for.
+  function embedFor(target) {
+    if (!target) return null;
+    return list.find((inst) => inst.container && inst.container.contains?.(target)) || null;
   }
 
   function unmount(inst) {
     if (inst === wbInstances.page) throw new Error("the page board is never unmounted");
     if (active === inst) activate(wbInstances.page);
     d3.select(inst.container).on(".zoom", null);
+    unbind(inst);
     const at = list.indexOf(inst);
     if (at >= 0) list.splice(at, 1);
   }
@@ -191,8 +237,9 @@
   //: **The mount API** (L-documents-104): a board inside `host`, an empty element
   //: the caller owns. Resolves once the board is read and drawn.
   async function createEmbed(host, boardId, opts = {}) {
+    const editable = opts.editable === true;
     const box = document.createElement("div");
-    box.className = "whiteboard-container wb-embed";
+    box.className = editable ? "whiteboard-container wb-embed" : "whiteboard-container wb-embed wb-embed-readonly";
     box.tabIndex = 0;
     box.setAttribute("role", "application");
     box.setAttribute("aria-roledescription", "canvas");
@@ -200,8 +247,7 @@
     skeleton(box);
     host.append(box);
     if (list.length === 1) pageListeners(true);
-    const inst = mount(box, boardId);
-    inst.editable = opts.editable === true;
+    const inst = mount(box, boardId, editable);
     inst.destroyed = false;
     const wake = () => activate(inst);
     for (const type of ["pointerdown", "focusin"]) box.addEventListener(type, wake, { capture: true, passive: true });
@@ -254,7 +300,7 @@
   active = page;
 
   const wbInstances = {
-    page, list, mount, unmount, activate, container, layer, changed,
+    page, list, mount, unmount, activate, container, layer, changed, on, embedFor,
     get active() { return active; },
   };
 

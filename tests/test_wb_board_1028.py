@@ -67,7 +67,7 @@ def test_a_failed_delete_behaves_as_if_nothing_happened():
 
 
 def test_the_eraser_hit_tests_the_whole_pointer_path_not_only_enter_events():
-    start = WB.index('containerEl.addEventListener("pointermove", (e) => {\n    if (window.currentTool !== "eraser"')
+    start = WB.index('wbInstances.on("pointermove", (e) => {\n    if (window.currentTool !== "eraser"')
     body = WB[start : start + 600]
     body += WB[WB.index("  function wbEraseAt(") : start]
     # Every sample the browser coalesced, so a fast touch or pen stroke skips nothing.
@@ -83,7 +83,7 @@ def test_the_unthrottled_container_pointermoves_share_one_frame_gate():
     assert "function wbOnFrame(" in WB
     gate = _function(WB, "wbOnFrame")
     assert "requestAnimationFrame" in gate
-    for marker in ('containerEl.addEventListener("pointermove", wbOnFrame(', ):
+    for marker in ('wbInstances.on("pointermove", wbOnFrame(', ):
         assert marker in WB
 
 

@@ -6044,13 +6044,14 @@ async function initWhiteboard() {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
   }, true);
   container.call(wbZoom).on("dblclick.zoom", null);
-  container.node().addEventListener("scroll", wbFoldNativeScroll);
+  //: Pan and zoom listeners: `view`, so a read-only embed gets them too.
+  wbInstances.on("scroll", wbFoldNativeScroll, undefined, true);
   // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
   // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
   // here so the page behind the board does not scroll on a shifted wheel.
   if (!container.node().dataset.wbWheelPan) {
     container.node().dataset.wbWheelPan = "1";
-    container.node().addEventListener("wheel", (e) => {
+    wbInstances.on("wheel", (e) => {
       //: **A wheel held down is a pan, not a scroll** (the owner, 2026-09-24,
       //: from the desktop window: the middle-button pan "jerks repeatedly to
       //: the left side of the screen until i let go"). Pressing a wheel hard
@@ -6071,14 +6072,15 @@ async function initWhiteboard() {
       }
       if (e.ctrlKey || e.metaKey || !(e.shiftKey || wbTrackpadPan(e))) return;
       e.preventDefault();
-      const k = d3.zoomTransform(container.node()).k || 1;
+      const el = d3.select(e.currentTarget);
+      const k = d3.zoomTransform(el.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
       //: Shift+wheel on a mouse turns the notch sideways; a trackpad scroll
       //: already carries both axes and keeps them.
       if (!dx && !wbTrackpadPan(e)) { dx = dy; dy = 0; }
-      container.call(wbZoom.translateBy, -dx / k, -dy / k);
-    }, { passive: false });
+      el.call(wbZoom.translateBy, -dx / k, -dy / k);
+    }, { passive: false }, true);
   }
   
   // Toolbar hooks
@@ -6188,7 +6190,7 @@ async function initWhiteboard() {
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
   for (const type of ["pointerover", "focusin"]) {
-    $("whiteboard-container")?.addEventListener(type, (e) => {
+    wbInstances.on(type, (e) => {
       const node = e.target.closest?.(".wb-map-node");
       if (node) wbMapCache.part(node, "grip");
     }, { passive: true });
@@ -6650,7 +6652,7 @@ async function initWhiteboard() {
   const bgColorReset = document.getElementById("wb-bg-color-reset");
   if (bgColorPicker) {
     bgColorPicker.addEventListener("input", (e) => {
-      container.node().style.setProperty("--wb-board-bg", e.target.value);
+      wbInstances.container().style.setProperty("--wb-board-bg", e.target.value);
     });
     bgColorPicker.addEventListener("change", (e) => {
       wbSetBackground({ color: e.target.value });
@@ -7344,12 +7346,14 @@ async function initWhiteboard() {
     if (wbSelectedItem?.kind === "node") wbArrangeMindMap(wbSelectedItem.id, "radial");
   });
 
-  const containerEl = wbInstances.container();
+  //: The active board's container, read when a handler runs: the same element
+  //: for the page board, an embed's own box for an embed (L-whiteboard-54).
+  const boardEl = () => wbInstances.container();
   const undoBtn = document.getElementById("wb-undo");
 
   function updateWbCursor() {
-    containerEl.setAttribute("data-current-tool", window.currentTool);
-    containerEl.style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, WB_STROKE_WIDTH);
+    boardEl().setAttribute("data-current-tool", window.currentTool);
+    boardEl().style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, WB_STROKE_WIDTH);
   }
 
   // The six shape tools folded into the toolbar's own dropdown: asked for
@@ -7385,7 +7389,7 @@ async function initWhiteboard() {
     // the canvas while any drawing tool was selected without switching tool
     // and switching back. That was a large part of the reported "constantly
     // having to switch between tools".
-    container.call(wbZoom).on("dblclick.zoom", null);
+    d3.select(wbInstances.container()).call(wbZoom).on("dblclick.zoom", null);
     // The toggle shows whichever shape is actually active (and reads as
     // "on" the same way any other tool button does) instead of a fixed
     // icon: picking "circle" from the menu should look exactly like
@@ -8154,7 +8158,7 @@ async function initWhiteboard() {
   // they act on. It was out of the tab order while Tab on it did nothing; it
   // is a stop since INBOX 445, because Tab on it now walks the items
   // (`wbWalkItems`), which is the only way to a shape without a pointer.
-  container.node()?.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     // Any editable body, not the two class names that were editable when
     // this was written: pulling focus to the canvas out from under a map
     // node's editor is the other half of "I cant highlight text in mindmap
@@ -8171,7 +8175,7 @@ async function initWhiteboard() {
   //: from the top bar added fifteen). The canvas, its topics and the editor
   //: inside a topic are not "outside", so a topic being typed into keeps it.
   document.addEventListener("focusin", (e) => {
-    if (!container.node()?.contains(e.target)) wbMapKeysArmed = false;
+    if (!wbInstances.container()?.contains(e.target)) wbMapKeysArmed = false;
   });
 
   //: On `window`, capturing, so it runs before the app zoom's own capture
@@ -8180,7 +8184,11 @@ async function initWhiteboard() {
   document.addEventListener("keydown", (e) => {
     if (typeof e.key !== "string") return; // a keydown with no key (see the ring's handler above)
     const view = document.getElementById("library-view-whiteboard");
-    if (!view || view.classList.contains("hidden")) return;
+    //: A key typed inside an embed is for that board (L-whiteboard-54), and only
+    //: when it may be edited; any other is the page board's, while it shows.
+    const embed = wbInstances.embedFor(e.target);
+    if (embed ? !embed.editable : (!view || view.classList.contains("hidden"))) return;
+    wbInstances.activate(embed || wbInstances.page);
     //: **Escape takes back a gesture in flight** before it does anything
     //: else (see `wbCancelGesture`): with a drag, a resize, a turn or a line
     //: half drawn, that is the only thing the key can mean, and the
@@ -8723,7 +8731,7 @@ async function initWhiteboard() {
   // them for a stylus. `touch-action: none` on .whiteboard-container (CSS)
   // is the other half of this: without it the browser eats the gesture for
   // page-scroll before a single pointer event reaches here.
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (window.currentTool === "eraser") {
       wbErasing = true;
       wbEraseHad = new Set(wbUndoStack);
@@ -8781,7 +8789,7 @@ async function initWhiteboard() {
       if (item) wbDeleteObject(item);
     }
   }
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     if (window.currentTool !== "eraser" || !wbErasing) return;
     const samples = e.getCoalescedEvents?.() ?? [];
     for (const p of samples.length ? samples : [e]) wbEraseAt(p.clientX, p.clientY);
@@ -8794,7 +8802,7 @@ async function initWhiteboard() {
   // gets no automatic click-suppression), `wbMarqueeJustSelected` is the
   // one-shot flag that stops it from wiping out the selection the marquee
   // just made.
-  containerEl.addEventListener("click", (e) => {
+  wbInstances.on("click", (e) => {
     //: A press on a shape's own grip that did not move is not a click on
     //: the canvas. The grips live in their own handle group rather than in
     //: the shape (see `wbIsEmptyCanvasTarget`), so nothing stopped this
@@ -8805,7 +8813,7 @@ async function initWhiteboard() {
     if (window.currentTool === "select" || window.currentTool === "lasso") {
       if (wbMarqueeJustSelected) {
         wbMarqueeJustSelected = false;
-      } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(containerEl).k || 1))) {
+      } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(boardEl()).k || 1))) {
         // A click on a panel's body or a frame's edge selected that frame.
       } else if (window.currentTool === "select" && wbPointInSelectionBounds(...getLogicalMouse(e))) {
         // A click inside the selection's box is on the selection: it stays.
@@ -8905,7 +8913,7 @@ async function initWhiteboard() {
     wbMarqueeFrame = 0;
     wbMarqueeAt = null;
   }
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     //: A new press is a new gesture: a one-shot left by a drag released off
     //: the board (no click ever reached the canvas to spend it) must not
     //: swallow this press's click.
@@ -9001,28 +9009,28 @@ async function initWhiteboard() {
     wbMarqueeEl.dataset.label = place === "frame" ? "Frame" : place === "sticky" ? "" : "Text";
     wbMarqueeEl.setAttribute("aria-hidden", "true");
     layer.appendChild(wbMarqueeEl);
-    wbBoardState.capture(containerEl, pointerId);
+    wbBoardState.capture(boardEl(), pointerId);
   }
   function wbBeginMarqueeRect(pointerId) {
     wbMarqueeEl = document.createElement("canvas");
     wbMarqueeEl.className = "wb-marquee";
     wbMarqueeEl.setAttribute("aria-hidden", "true");
     const ratio = window.devicePixelRatio || 1;
-    const w = containerEl.clientWidth, h = containerEl.clientHeight;
+    const w = boardEl().clientWidth, h = boardEl().clientHeight;
     wbMarqueeEl.width = Math.max(1, Math.round(w * ratio));
     wbMarqueeEl.height = Math.max(1, Math.round(h * ratio));
     wbMarqueeEl.style.width = `${w}px`;
     wbMarqueeEl.style.height = `${h}px`;
     //: Through `wbExportColour`, because a canvas cannot read a `var()` and
     //: the accent may be a `color-mix()` the canvas does not parse either.
-    const accent = wbExportColour(getComputedStyle(containerEl).getPropertyValue("--accent").trim());
+    const accent = wbExportColour(getComputedStyle(boardEl()).getPropertyValue("--accent").trim());
     wbMarqueeInk = accent && accent !== "none" ? accent : "#3b82f6";
-    containerEl.appendChild(wbMarqueeEl);
+    boardEl().appendChild(wbMarqueeEl);
     // **The capture is the fix.** Without it every pointermove and pointerup
     // outside the container went to whatever element was under the cursor,
     // so a drag that ended over the top bar, over the left rail or off the
     // window simply never finished, and left its rectangle behind.
-    wbBoardState.capture(containerEl, pointerId);
+    wbBoardState.capture(boardEl(), pointerId);
   }
   //: The selection drag's frames: the same 4-unit threshold as the marquee,
   //: then the whole selection by the pointer's travel from the press, Shift on
@@ -9035,7 +9043,7 @@ async function initWhiteboard() {
       start.origin = wbSelectionDragOrigin();
       if (!start.origin) return wbEndMarqueeDrag();
       start.pending = false;
-      wbBoardState.capture(containerEl, start.pointerId);
+      wbBoardState.capture(boardEl(), start.pointerId);
     }
     const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
     wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
@@ -9079,7 +9087,7 @@ async function initWhiteboard() {
   function wbDrawMarquee() {
     wbMarqueeFrame = 0;
     if (!wbMarqueeEl || !wbMarqueeStart || !wbMarqueeAt) return;
-    const t = d3.zoomTransform(containerEl);
+    const t = d3.zoomTransform(boardEl());
     //: A box being placed is drawn at the size it will be made, minimum and
     //: all, so what the ghost shows is what the release creates.
     const box = wbMarqueeStart.place ? wbPlaceBox(wbMarqueeStart, wbMarqueeAt[0], wbMarqueeAt[1]) : null;
@@ -9142,7 +9150,7 @@ async function initWhiteboard() {
   //: before written: a style write on every move would re-layerize the
   //: page (tests/test_marquee_cost.py), so this is a resize, not a draw.
   function wbFitMarqueeCanvas(ratio) {
-    const cw = containerEl.clientWidth, ch = containerEl.clientHeight;
+    const cw = boardEl().clientWidth, ch = boardEl().clientHeight;
     const bw = Math.max(1, Math.round(cw * ratio)), bh = Math.max(1, Math.round(ch * ratio));
     if (wbMarqueeEl.width === bw && wbMarqueeEl.height === bh) return;
     wbMarqueeEl.width = bw;
@@ -9168,14 +9176,14 @@ async function initWhiteboard() {
   }
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
-    if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    if (!wbEdgePanWanted() || !document.body.contains(boardEl())) return;
+    const r = boardEl().getBoundingClientRect();
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
     if (!vx && !vy) return;
-    const k = d3.zoomTransform(containerEl).k || 1;
-    d3.select(containerEl).call(wbZoom.translateBy, vx / k, vy / k);
+    const k = d3.zoomTransform(boardEl()).k || 1;
+    d3.select(boardEl()).call(wbZoom.translateBy, vx / k, vy / k);
     const at = { clientX: wbEdgePan.x, clientY: wbEdgePan.y, buttons: wbEdgePan.buttons, bubbles: true, cancelable: true, view: window };
     if (wbMarqueeEl && wbMarqueeStart) {
       wbMarqueeAt = getLogicalMouse(at);
@@ -9212,7 +9220,7 @@ async function initWhiteboard() {
   //: On the container, not on each handle: the handles are rebuilt by the
   //: render on every change, and a listener bound per handle is a listener
   //: lost on the next repaint (the mistake `wbWireContextMenu` documents).
-  containerEl.addEventListener("dblclick", (e) => {
+  wbInstances.on("dblclick", (e) => {
     const turn = e.target.closest?.(".wb-rotate-handle, .wb-sketch-rotate-handle");
     if (turn) {
       e.preventDefault();
@@ -9255,7 +9263,7 @@ async function initWhiteboard() {
   //: says for a marquee: a double-click on a line asks for its label (see
   //: `wbWireMapEdgeGestures`), and it used to fall through to this and make a
   //: new trunk on top of the line.
-  containerEl.addEventListener("dblclick", (e) => {
+  wbInstances.on("dblclick", (e) => {
     if (window.currentTool !== "select") return;
     if (!wbIsEmptyCanvasTarget(e.target) || wbIsEditingTarget(e.target)) return;
     if (e.target.closest?.(".wb-map-edge-group, .sketch-group")) return;
@@ -9349,7 +9357,7 @@ async function initWhiteboard() {
   };
 
   //: The first press on a locked item, which lets the pointer through, says how to unlock it.
-  containerEl.addEventListener("pointerdown", wbOnLockPress, true);
+  wbInstances.on("pointerdown", wbOnLockPress, true);
 
   const wbCanvasMenuWanted = (target) =>
     wbIsEmptyCanvasTarget(target) && !wbIsEditingTarget(target)
@@ -9372,7 +9380,7 @@ async function initWhiteboard() {
   const wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
   window.addEventListener("mousedown", (e) => {
     if (e.button !== 2) return;
-    wbRightPress = containerEl.contains(e.target) && wbCanvasMenuWanted(e.target)
+    wbRightPress = boardEl().contains(e.target) && wbCanvasMenuWanted(e.target)
       ? { x: e.clientX, y: e.clientY, moved: false, up: false, upAt: 0 } : null;
   }, true);
   window.addEventListener("mousemove", (e) => {
@@ -9396,7 +9404,7 @@ async function initWhiteboard() {
       setTimeout(() => openCanvasMenu(clientX, clientY), 0);
     }
   }, true);
-  containerEl.addEventListener("contextmenu", (e) => {
+  wbInstances.on("contextmenu", (e) => {
     //: A topic and a line have rings of their own, and both stop the event
     //: before it reaches here; this is the canvas itself, which had nothing.
     if (!wbCanvasMenuWanted(e.target)) return;
@@ -9406,18 +9414,18 @@ async function initWhiteboard() {
   });
 
   //: The same menu from a hold, which is the right-click a phone has.
-  wireLongPress(containerEl, (event, point) => {
+  wireLongPress({ addEventListener: (type, fn, opts) => wbInstances.on(type, fn, opts) }, (event, point) => {
     if (!wbCanvasMenuWanted(event.target)) return;
     openCanvasMenu(point.x, point.y);
   });
 
   //: Where a keyboard paste lands (`wbPointerOnBoard`).
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     wbPointerClient = { clientX: e.clientX, clientY: e.clientY };
   }, { passive: true });
-  containerEl.addEventListener("pointerleave", () => { wbPointerClient = null; });
+  wbInstances.on("pointerleave", () => { wbPointerClient = null; });
 
-  containerEl.addEventListener("pointermove", wbOnFrame((e) => {
+  wbInstances.on("pointermove", wbOnFrame((e) => {
     if (wbLinkDragActive) return;
     //: Off a link tool there are no dots to show, and any left over go (INBOX
     //: 573: the cross-link tool's dots stayed on a topic after switching back
@@ -9448,7 +9456,7 @@ async function initWhiteboard() {
   // Not on what is selected (its resize grips sit where its ports are), a
   // locked item, a map (whose lines are its tree), or touch (no hover).
   const port = { kind: null, item: null, drag: null };
-  const zoomK = () => d3.zoomTransform(containerEl).k || 1;
+  const zoomK = () => d3.zoomTransform(boardEl()).k || 1;
   const portTarget = (x, y) => {
     let hit = wbLinkCandidateAt(x, y);
     if (!hit && port.item) {
@@ -9481,7 +9489,7 @@ async function initWhiteboard() {
     wbClearAnchorHints();
     wbFmtState.linkEdge?.cue(null);
   };
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
     //: A selected connector's end grip wins over a port beneath it (INBOX
     //: 1328: dragging the end of an arrow drew a second arrow instead,
@@ -9512,7 +9520,7 @@ async function initWhiteboard() {
     wbInstances.layer("wb-zoom-group")?.appendChild(path);
     port.drag = { kind: port.kind, item: port.item, anchor, start, path, moved: false, id: e.pointerId };
     wbLinkDragActive = true;
-    wbBoardState.capture(containerEl, e.pointerId);
+    wbBoardState.capture(boardEl(), e.pointerId);
   }, true);
   //: The line and `moved` follow every event (release reads `moved`); only
   //: the anchor hit test waits for the frame.
@@ -9523,7 +9531,7 @@ async function initWhiteboard() {
     else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
     wbFmtState.linkEdge?.cue(hit ? null : [x, y]);
   });
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     const drag = port.drag;
     if (!drag) return;
     const [x, y] = getLogicalMouse(e);
@@ -9531,13 +9539,13 @@ async function initWhiteboard() {
     drag.path.setAttribute("d", `M ${drag.start.x} ${drag.start.y} L ${x} ${y}`);
     portHints({ drag, x, y });
   });
-  containerEl.addEventListener("keydown", (e) => {
+  wbInstances.on("keydown", (e) => {
     if (port.drag && e.key === "Escape") {
       e.stopPropagation();
       portEnd();
     }
   }, true);
-  containerEl.addEventListener("pointerup", async (e) => {
+  wbInstances.on("pointerup", async (e) => {
     const drag = port.drag;
     if (!drag) return;
     const [x, y] = getLogicalMouse(e);
@@ -9729,7 +9737,7 @@ async function initWhiteboard() {
     }
     return inFlight;
   };
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     // Unlike the marquee (`wbIsEmptyCanvasTarget`, above: empty canvas
     // only, since a drag starting *on* a card there means "move it"), a
     // lasso loop is drawn freeform and routinely starts right at the edge
@@ -9749,7 +9757,7 @@ async function initWhiteboard() {
     // base SVG the loop was drawn *under* every card and sticky (reported:
     // "the lasso select tool is behind everything").
     wbInstances.layer("wb-overlay-zoom-group").appendChild(wbLassoEl);
-    wbBoardState.capture(containerEl, e.pointerId);
+    wbBoardState.capture(boardEl(), e.pointerId);
   });
   wbBoardState.onGestureLost(() => wbEndLassoDrag());
   window.addEventListener("pointermove", (e) => {
@@ -9894,10 +9902,10 @@ async function initWhiteboard() {
     }
   }
 
-  containerEl.addEventListener("dragover", (e) => {
+  wbInstances.on("dragover", (e) => {
     if (e.dataTransfer?.types?.includes("Files")) e.preventDefault();
   });
-  containerEl.addEventListener("drop", (e) => {
+  wbInstances.on("drop", (e) => {
     if (!e.dataTransfer?.files?.length) return;
     e.preventDefault();
     const [x, y] = getLogicalMouse(e);
@@ -9972,16 +9980,16 @@ async function initWhiteboard() {
     imageFileInput.value = "";
   });
 
-  // On `containerEl`, not `svgCanvas`, the same reasoning the eraser
+  // On the container, not `svgCanvas`, the same reasoning the eraser
   // listener above already follows. `svgCanvas` only ever sees a
   // pointerdown that lands directly on it or on something inside it; a
   // click that starts on a card (`#wb-html-layer`, a sibling painted on
   // top) never reaches it at all, which is the exact mechanism behind
-  // "drawing over a note just moves the note". `containerEl` is an
+  // "drawing over a note just moves the note". the container is an
   // ancestor of both layers, so it sees every pointerdown either way, 
   // and, with the card/object drags above now filtered out while a brush
   // tool is active, nothing else claims the gesture first.
-  containerEl.addEventListener("pointerdown", (e) => {
+  wbInstances.on("pointerdown", (e) => {
     if (!WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     isDrawing = true;
@@ -10040,7 +10048,7 @@ async function initWhiteboard() {
     const width = tool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH;
     return wbFmtState.inkMore.outline(currentDrawData, tool, width, ink.pointer, last);
   }
-  containerEl.addEventListener("pointermove", (e) => {
+  wbInstances.on("pointermove", (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     let [x, y] = getLogicalMouse(e);
@@ -10123,7 +10131,7 @@ async function initWhiteboard() {
   }, true);
   window.addEventListener("pointercancel", wbAbandonStroke);
   window.addEventListener("pointerup", wbAbandonStroke);
-  containerEl.addEventListener("pointerup", async (e) => {
+  wbInstances.on("pointerup", async (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
     isDrawing = false;
@@ -10232,12 +10240,12 @@ async function initWhiteboard() {
   });
 
   // Drop handler for Library
-  wbInstances.container().addEventListener("dragover", (e) => {
+  wbInstances.on("dragover", (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   });
   
-  wbInstances.container().addEventListener("drop", async (e) => {
+  wbInstances.on("drop", async (e) => {
     e.preventDefault();
     const dropped = e.dataTransfer.getData("text/plain");
     if (!dropped) return;

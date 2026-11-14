@@ -2327,7 +2327,9 @@ def test_every_right_click_menu_has_a_long_press_twin():
     #: whiteboard.js (2026-09-24); its node and edge menus came with it.
     for name in ("app.js", "documents.js", "graph-canvas.js", "whiteboard.js", "whiteboard-map.js"):
         text = frontend_text(name)
-        right_clicks = len(re.findall(r'addEventListener\(\s*"contextmenu"', text))
+        #: `wbInstances.on` is how the board binds its container's listeners since
+        #: L-whiteboard-54 (one copy per board instance); it is a right-click all the same.
+        right_clicks = len(re.findall(r'(?:addEventListener|wbInstances\.on)\(\s*"contextmenu"', text))
         #: The selection bubble's return is not a menu: a finger already has the
         #: system's own selection bar, and the helper steps aside for touch.
         right_clicks -= text.count('addEventListener("contextmenu", selectionRestoreOnContextMenu)')
