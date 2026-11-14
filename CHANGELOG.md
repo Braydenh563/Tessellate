@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- - Chat: with a model up, the composer's answer shows as a muted draft until the model's first words replace it (L-chat-59, partly: the sentence ids for the model need a real-model check).
 - - Chat: a bulk act's card lists the first five notes it changes with a Show all control; the cap stays 50 and a partial run ends with the Done line then what was left and why (L-chat-61).
 - Companion: remarks on real signals (CHAT_PLAN P1 to P5, P8 to P11): a reminder due within the hour or overdue, one back note a day, a checklist item unticked over 30 days, a new tension said once with both sentences, a dated plan in 7 days with no reminder plus a Set a reminder chip, a new note answering an open question; patterns need 3 mentions across 3 weeks; at most 3 a day, none within 20 s of a key press, a fact once a week; the dashboard line says this day every other draw; the no-model digest is captioned Your notes, no AI (L-chat-54, 55, 56, 57).
 - Ask: the chart a no-model answer makes (a window's counts, a graph ask) is drawn in the chart box above the answer, as Chat does (L-chat-60).
