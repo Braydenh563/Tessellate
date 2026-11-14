@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -34,5 +36,5 @@ def test_the_suggestions_grip_is_placed_in_focus_mode_and_hidden_on_a_phone() ->
     css = _read("frontend", "css", "library-lazy.css")
     assert "#tab-documents.doc-focus .doc-prose-resize.sidebar-resize {\n  position: fixed;" in css
     assert "#tab-documents.doc-focus .doc-prose-resize {\n  display: none;" not in css
-    js = _read("frontend", "js", "documents.js")
+    js = documents_text()
     assert "applyDocProseDock();" in js.split('tab.classList.toggle("doc-focus", on);')[1][:300]

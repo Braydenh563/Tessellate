@@ -893,7 +893,8 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
     assert "string|template" in mask and "comment" in mask
     spell = _fn(docs, "docCmSpellcheck")
     assert "!docFileType().previewable" in spell
-    assert "docOpenSuggestFor(finding, false, point)" in docs[docs.index("DOC_HOVER_SUGGEST_MS =") :]
+    #: The hover wiring stays in documents.js, the constant moved to documents-findings.js (L-documents-117): no slice order between them.
+    assert "DOC_HOVER_SUGGEST_MS =" in docs and "docOpenSuggestFor(finding, false, point)" in docs
 
 
 # Audit 1028 D8: the ASCII word regex split "café" into "caf" and "naïve" into
