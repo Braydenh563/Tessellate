@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 86 | 98 | 0 | 0 | 184 |
+| chat | 0 | 80 | 93 | 0 | 0 | 173 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 458 | 167 | 0 | 124 | 951 |
+| all | 326 | 452 | 162 | 0 | 124 | 940 |
 
 ## graph
 
@@ -91,19 +91,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-141** `chat` open, S: Atlas A8: decision 69 absent. From CHAT_PLAN.md:1776. Evidence: Recount 2026-11-14 (audit, verify in code first): no ghost-text code in frontend/js
 - [ ] **L-chat-142** `chat` partly, S: Atlas A9: tag and kind gating unverified. From CHAT_PLAN.md:1777. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/facts.py:391 candidates
 - [ ] **L-chat-143** `chat` partly, S: Atlas A10: card layout unverified. From CHAT_PLAN.md:1778. Evidence: Recount 2026-11-14 (audit, verify in code first): frontend/js/settings-controls.js:5073 Check what it learned
-- [ ] **L-chat-155** `chat` open, S: B12: turn-into-note chips (guess from absence). From CHAT_PLAN.md:1828. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Remaining step: add Make flashcards and Remind me to askAnswerMenu (ask-compose.js ~662) with undo, plus a test; keep-as-note and keep-as-map exist.
-- [ ] **L-chat-156** `chat` open, S: B20: decision 69 absent. From CHAT_PLAN.md:1829. Evidence: Recount 2026-11-14 (audit, verify in code first): no ghost-text code in frontend/js Remaining step: ghost-text completions (decision 69) are unbuilt; add a no-model completion source in a sibling module of composer.py, Tab to accept, with a test on the fake transport.
-- [ ] **L-chat-158** `chat` open, S: B22: gist line absent. From CHAT_PLAN.md:1831. Evidence: Recount 2026-11-14 (audit, verify in code first): gist absent from frontend (guess) Remaining step: a no-model gist function (under 90 characters) in a sibling of composer_voice.py and the note-card line, with a test.
-- [ ] **L-chat-161** `chat` partly, S: B25: settings sentences unverified. From CHAT_PLAN.md:1834. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/relations.py explain_pair Remaining step: verify the settings sentences with a per-setting test.
-- [ ] **L-chat-162** `chat` open, S: B26: document edits absent (guess). From CHAT_PLAN.md:1835. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Remaining step: no-model document edits (summarise selection, tighten, continue a list) with undo; a real-model check after.
-- [ ] **L-chat-163** `chat` partly, S: B27: composed text unverified. From CHAT_PLAN.md:1836. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_reminders.py Remaining step: composed notification wording needs the reminder_notifier Due/announce text routed through the composer; see L-chat-172.
-- [ ] **L-chat-165** `chat` open, S: B40: absent. From CHAT_PLAN.md:1840. Evidence: Recount 2026-11-14 (audit, verify in code first): no rating or gallery hits Remaining step: answer rating and a gallery are unbuilt; needs a store and a UI from the DESIGN recipes.
+- [ ] **L-chat-156** `chat` partly, S: B20: ghost-text completions (decision 69). Built: every search box completes in grey with Tab or Right (frontend/js/search-suggest.js), and the offered and taken counts are kept in prefs (`searchSuggestAcceptRate`, test_chat_recount_b). Remaining step: the chat box (a textarea; `placeSearchGhost` measures one line) and the capture bar (typing there hands over to the note card) need their own placement and a source of their own words; give each a `data-search-scope` and a multi-line ghost placement, and keep their suggestions out of the search recents.
 - [ ] **L-chat-167** `chat` partly, S: 413 chat stutter (ResizeObserver loop): owner confirmation on next run; no row. From CHAT_PLAN.md:618. Evidence: Recount 2026-11-14 (audit, verify in code first): fit deferred one frame, 500 ms flip limit, per plan (o-webpanel.js); owner run not done Owner step: on the next real run confirm the chat stutter and the ResizeObserver loop errors are gone; the loop guard in chat.js is in code and tested (tests/test_chat_recount_l144.py), so this stays open until confirmed.
-- [ ] **L-chat-169** `chat` partly, S: 3 toasts and confirmations that name the thing: toasts outside chat unverified. From CHAT_PLAN.md:657. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_frame.py:597-601 names linked notes in chat text only Remaining step: check toasts outside chat name the thing, one test per toast site.
-- [ ] **L-chat-172** `chat` open, S: 6 reminders read back; notification says why it matters: notification wording. From CHAT_PLAN.md:663. Evidence: Recount 2026-11-14 (audit, verify in code first): no why-now text found in reminder code (grep; reminder_parser.py not read) Remaining step: reminder_notifier.announce should add why it matters (the note title); test with a fixed clock.
-- [ ] **L-chat-173** `chat` partly, S: 7 tidy and filing reasons in one voice: one voice across reasons not checked. From CHAT_PLAN.md:665. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_tidy.py exists Remaining step: a one-voice test across filing, link and tidy reasons.
-- [ ] **L-chat-174** `chat` partly, S: 8 cheap suggestions: follow-ons, searches, autofill composed first: autofill of titles, tags, reminder wording not found. From CHAT_PLAN.md:678. Evidence: Recount 2026-11-14 (audit, verify in code first): followups.py, composer_suggest.py exist; follow-ups run in Quick mode (plan 1691) Remaining step: compose autofill of titles, tags and reminder wording first; test per field.
-- [ ] **L-chat-175** `chat` partly, S: 23 light rewrites, original one tap away: "b4" rule and undo to original not found. From CHAT_PLAN.md:742. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_digest_lines.py:2704 grammar pass (closed lists) Remaining step: add the b4 to before rule and original one tap away undo; test both.
 - [ ] **L-chat-176** `chat` partly, S: 27 notes mix: short jottings and long writing weighted equally: equal weighting not verified. From CHAT_PLAN.md:756. Evidence: Recount 2026-11-14 (audit, verify in code first): tests/test_eval_numbers_l30.py counts Remaining step: a test that short jottings and long writing weigh equally in the notes mix (decision 27).
 - [ ] **L-chat-177** `chat` open, S: Bug: first-pull note only when image absent: the check before the message. From CHAT_PLAN.md:776. Evidence: Recount 2026-11-14 (audit, verify in code first): not grepped; no evidence in plan E20
 - [ ] **L-chat-178** `chat` partly, S: Bug: ask about this should switch to agent: switch to agent with reason. From CHAT_PLAN.md:778. Evidence: Recount 2026-11-14 (audit, verify in code first): frontend/js/chat.js:625-645 askAboutPage forces useTools true; no mode switch
