@@ -323,18 +323,27 @@ def stray_match(terms: list[str], views: list[NoteView]) -> list[str]:
     note is about, in its name, tags or category ("the car repair" and the
     note called Car service; "the meeting" and Meeting with Priya)."""
     asked = [(_stem(t), t) for t in dict.fromkeys(terms) if len(t) >= 2]
+    if len({s for s, _ in asked}) < 2:
+        return []
     held = [v.words | v.title_words | v.filed_words for v in views]
-    if len({s for s, _ in asked}) < 2 or any(_covers(asked, words) for words in held):
-        return []
+    # The cheap set tests first; the one-edit reading (`_seen`) runs once per
+    # word and note, and only for a question that got this far.
     found = [(s, t) for s, t in asked if any(_holds(s, words) for words in held)]
-    heads = [v.title_words | v.filed_words | _leads(v) for v in views]
-    if not found or len(found) == len(asked) or not all(_in_passing(s, t, heads) for s, t in found):
+    if not found or len(found) == len(asked):
         return []
-    return [t for s, t in asked if not any(_says(s, t, words) for words in held)]
+    heads = [v.title_words | v.filed_words | _leads(v) for v in views]
+    if not all(_in_passing(s, t, heads) for s, t in found):
+        return []
+    return _unsaid(asked, held)
 
 
-def _covers(asked: list[tuple[str, str]], words: set[str]) -> bool:
-    return sum(_says(s, t, words) for s, t in asked) / len(asked) > NOTE_COVERAGE
+def _unsaid(asked: list[tuple[str, str]], held: list[set[str]]) -> list[str]:
+    """The asked words no note says, or nothing when one note says more than
+    `NOTE_COVERAGE` of them."""
+    says = [[_says(s, t, words) for words in held] for s, t in asked]
+    if any(sum(row[i] for row in says) / len(asked) > NOTE_COVERAGE for i in range(len(held))):
+        return []
+    return [t for (_, t), row in zip(asked, says) if not any(row)]
 
 
 def _leads(view) -> set[str]:

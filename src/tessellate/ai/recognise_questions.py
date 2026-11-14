@@ -492,8 +492,8 @@ _EVENT_WINDOW_WORDS = rf"this week|next week|this weekend|next weekend|this mont
 #: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
 _EVENT_TAIL = lazy_compile(rf" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight|{_WEEKDAY_WINDOW}) ?[?.!]*$", re.I)
 #: "are we meeting on Tuesday", "is there a team sync on Wednesday": a meeting word stands where "the plumber" does.
-EVENT_LEAD = (r"(?:(?:is|are|will) (?:the|my|our|a)\b|(?:are we|am i|will we|will i|do we have|do i have|is there|will there be) (?:an? |the |any )?"
-               r"(?:[a-z]+ ){0,2}(?:meeting|meet\w*|call|sync|lunch|dinner|appointment|session|class|visit|interview|catch-?up)\b)")
+EVENT_LEAD = (r"(?:(?:is|are|will) (?:the|my|our|a)\b|(?:are we|am i|will we|will i|do we have|do i have|is there|are there|will there be) (?:an? |the |any )?"
+               r"(?:[a-z]+ ){0,2}(?:meet\w*|(?:call|sync|lunch|dinner|appointment|session|visit|interview|catch-?up)s?|class(?:es)?)\b)")
 _EVENT_ASK = lazy_compile(rf"^\W*{EVENT_LEAD}.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = lazy_compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 

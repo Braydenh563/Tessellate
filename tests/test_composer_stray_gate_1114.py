@@ -55,3 +55,23 @@ def test_a_ledger_row_named_by_the_question_is_not_stray():
 def test_a_note_holding_most_of_the_question_is_not_stray():
     garden = _view(1, "# Garden\n\nWater every second day.", "Home")
     assert stray_match(["day", "water"], [garden]) == []
+
+
+def test_an_empty_day_lead_names_the_thing_asked():
+    # L-timeline-12: "is there a call tomorrow" was told "No meeting is written", naming a word it never asked.
+    from tessellate.ai.composer_event_verdict import lead
+
+    assert lead("is there a call tomorrow", "") == "No call is written for tomorrow."
+    assert lead("are we meeting on Tuesday", "") == "No meeting is written for Tuesday."
+    assert lead("are there interviews on Friday", "") == "No interview is written for Friday."
+
+
+def test_a_plural_meeting_ask_reads_as_an_event_question():
+    # L-timeline-13: plural asks fell through the event reader and lost their verdict.
+    from tessellate.ai.composer_event_verdict import lead
+    from tessellate.ai.recognise_questions import event_window_asked
+
+    assert event_window_asked("do i have calls tomorrow") == "tomorrow"
+    assert event_window_asked("are there interviews on Friday") == "on Friday"
+    assert event_window_asked("do I have any classes this week") == "this week"
+    assert lead("are there interviews on Friday", "") == "No interview is written for Friday."
