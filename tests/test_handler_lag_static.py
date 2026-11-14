@@ -125,7 +125,8 @@ def test_chat_model_panel_does_not_build_a_surface():
 
 def test_settings_body_parses_in_pieces():
     # One 56 ms parse task at 4x; 22 pieces of about 1 ms each (L-world-class-361).
-    assert "data-split-at='<section class=\"settings-section'" in (JS.parent / "index.html").read_text(encoding="utf-8")
+    # The mark is in the script, not an attribute on the tag: the test lints read the tag as `<template id=.. data-surface="settings">`.
+    assert 'splitMark(entry)' in read("settings-body.js") and "data-split-at" not in (JS.parent / "index.html").read_text(encoding="utf-8")
     src = read("settings-body.js")
     assert "parseNext(entry, budget)" in src and "parseNext(next[1], 8)" in src
 

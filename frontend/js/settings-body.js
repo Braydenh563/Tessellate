@@ -47,7 +47,7 @@ const SURFACES = Object.assign(new Map(), {
   fragment(name, entry) {
     if (!entry.frag && entry.tpl) {
       if (entry.tpl.content) entry.frag = entry.tpl.content;
-      else if (entry.tpl.dataset?.splitAt) {
+      else if (SURFACES.splitMark(entry)) {
         SURFACES.parseNext(entry, Infinity);
         entry.frag = entry.partial;
       } else {
@@ -64,8 +64,11 @@ const SURFACES = Object.assign(new Map(), {
   //: mark is a place the parser is at the top of the body, so the pieces join to what one parse makes). Settings'
   //: whole text in one `innerHTML` was a 56 ms task at 4x CPU (L-world-class-361); a piece is one pane. Parses
   //: pieces until `budget` ms are spent; true once none are left.
+  //: Where a surface's text is cut for `parseNext`: each mark is a place the parser is at the top of the body.
+  splitMark: (entry) => ({ settings: '<section class="settings-section' })[entry.tpl.dataset?.surface],
+
   parseNext(entry, budget) {
-    const mark = entry.tpl.dataset.splitAt;
+    const mark = SURFACES.splitMark(entry);
     entry.pieces ||= entry.tpl.text.split(mark).map((piece, i) => (i ? mark + piece : piece));
     entry.partial ||= document.createDocumentFragment();
     const start = performance.now();
@@ -103,7 +106,7 @@ const SURFACES = Object.assign(new Map(), {
     const next = waiting.find(([name]) => name === "settings") ?? waiting[0];
     if (!next) return;
     //: A split surface is parsed a few ms at a time with the next slot soon; a whole one in this slot.
-    if (next[1].tpl.dataset?.splitAt && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);
+    if (SURFACES.splitMark(next[1]) && !SURFACES.parseNext(next[1], 8)) return SURFACES.warmLater(30);
     SURFACES.fragment(next[0], next[1]);
     SURFACES.warmLater(1000);
   },

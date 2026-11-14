@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:155 |
-| `surfaceBuild` | frontend/js/settings-body.js:119 |
-| `surfaceFind` | frontend/js/settings-body.js:143 |
+| `onSurface` | frontend/js/settings-body.js:158 |
+| `surfaceBuild` | frontend/js/settings-body.js:122 |
+| `surfaceFind` | frontend/js/settings-body.js:146 |
 
 ### frontend/js/app.js (45)
 
