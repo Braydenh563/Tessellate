@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Autocorrect: the reminder edit form, the Atlas help chat, the editor ask and rewrite lines, the draft refine line, a bookmark title and note, a new memory and the skill and template descriptions now correct typos with the same undo underline as the note boxes (reminders and magic add already did; driven in the app: "teh " becomes "the " in each; L-world-class-1).
+- Audit A8: the other three items re-measured at 1440x900 and 390x844 and all pass (graph options panel 520 in 520, Notes sidebar 726 in 726, every segmented track on the radius table) (L-world-class-77).
 - Settings: the three pane titles that read off the shared 17px indent are by design and now pinned by `tests/test_settings_heading_indent.py` (Models clipped to 1px, Help topic heads on the card edge, the profile name beside its avatar at 68.8px) (L-world-class-260).
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
 - Library, Contents: grouping notes by type was already built (Group by, By type, `tests/test_contents_by_type_wc8.py`); the row's grep looked for the wrong word, so it is closed with a measured check (L-world-class-63).
