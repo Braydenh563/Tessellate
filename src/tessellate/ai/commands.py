@@ -444,7 +444,7 @@ def _tag(text: str) -> dict | None:
     low = text.lower()
     if low.startswith(("tag ", "label ")):
         body = text.split(" ", 1)[1]
-        return _tag_with(body) or _note_then_tags(body) or _tag_these(body)
+        return _tag_with(body) or _note_then_tags(body) or _tag_hashed(body) or _tag_these(body)
     added = _tag_added(text)
     if added:
         return added
@@ -510,6 +510,16 @@ def _tag_with(body: str) -> dict | None:
             tags = tags[len(lead):]
     found = _target(target) or _bare_target(target)
     return {"intent": "tag", **found, "tags": _tags(tags)} if found and _tags(tags) else None
+
+
+def _tag_hashed(body: str) -> dict | None:
+    """"tag my gym notes #fitness": the notes, then tags written with a hash and no "with" (CHAT_PLAN X2)."""
+    tail = re.search(r"((?:\s#[\w-]+)+)\s*$", " " + body)
+    if not tail or not body[: len(body) - len(tail.group(1).strip())].strip():
+        return None
+    found = _target(body[: len(body) - len(tail.group(1).strip())].strip())
+    tags = _tags(tail.group(1))
+    return {"intent": "tag", **found, "tags": tags} if found and tags else None
 
 
 def _tag_these(body: str) -> dict | None:
