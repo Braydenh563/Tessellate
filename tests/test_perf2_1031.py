@@ -1,4 +1,4 @@
-"""perf-1031 findings 1 and 2 (perf2-1031): work the person cannot see is not done.
+"""perf-1031 findings 1 and 2 (perf2-1031): work the person cannot see is skipped.
 Each test names the cost it keeps out; the numbers are in CHANGELOG.md."""
 
 from tests._app_js import frontend_text

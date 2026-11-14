@@ -3,7 +3,7 @@
 Written during the §40 audit, because the whiteboard shipped with no tests at
 all and four of the five things asserted here were broken. Each test names the
 failure it caught rather than the method it calls, a test called
-`test_create_node` tells the next session nothing about why it exists.
+`test_create_node` tells a reader nothing about why it exists.
 """
 
 from __future__ import annotations

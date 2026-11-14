@@ -128,7 +128,7 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
     """Every part of the answer that is not what it says it is: a template not
     in `PHRASES`, a quote not in the note it names, a measured value nothing
     measured. Empty for an answer that keeps the rule. `asked_from` is any
-    earlier question a follow-up was resolved against: its words are the
+    earlier question a follow-on was resolved against: its words are the
     person's too."""
     by_id = {note["id"]: note for note in notes}
     failures: list[str] = []
