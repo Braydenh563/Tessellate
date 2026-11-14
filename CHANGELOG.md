@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sub-pages follow-ups (L-documents-103): on a phone a sub-page's trail is the nearest parent on its own line under the title plus a ⋯ menu of every parent (the title field was 21px beside a 49px crumb nav at 390, now 85px); sync carries a document's parent by sid and links it once every document is in (a loop or a missing parent leaves the page at the top level); Move under leaves out the page and its own sub-pages.
+- Exported HTML of a base block (L-documents-98): checked in Chromium on a real file (no script in it): board cards kept draggable and dropped nowhere, and the Group by and Date in pickers and the view switch were empty shells, so they are stripped; the month arrows were already gone and the calendar's month title stays as text.
 - CodeQL: the PlantUML comment strip is a linear scan (no backtracking regex on a pasted file); the whiteboard route module lists its re-exports in `__all__`; a board test reads its CSS through `Path`.
 - CI leg 2: tests follow L-documents-47 (fetch before the editor), -89 (pan reads once per press) and the resolved `data-motion` read; the moving-arrow check uses `reducedMotionWanted()`; lint and math read text through `docStr`; the Gantt menu says Set timing; the Ruff help names Settings, Packages; the diagram builder topic keeps "Cancel changes nothing." under the 1,900 budget; credits regenerated.
 - CI fixes: the Ruff extra has its install notice sentence; document save harnesses stub `document` for the query block's "doc-saved" event; the new-note test follows L-documents-48's `startNewNote(1)`; three one-off docsverify sweeps removed (scratchpad cap).
