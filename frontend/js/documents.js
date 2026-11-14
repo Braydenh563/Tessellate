@@ -6362,9 +6362,10 @@ function docBlockDocumentText(doc) {
 
 //: Copy a link to the block at the caret, and put the caret on a block a link led to: documents-blockref.js,
 //: fetched on first use. Each name is a stand-in that the piece's function of the same name replaces on load.
-async function docCopyBlockRef() {
-  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", docCopyBlockRef] });
-  return docBlockrefPiece.docCopyBlockRef();
+//: `mode`: "link" copies `[[Title#^id]]`; "copy" copies the embed `![[Title#^id]]` (a synced block); "paste" inserts the last one copied.
+async function docCopyBlockRef(mode = "link") {
+  if (!(await lazyScript("/js/documents-blockref.js"))) return toast("The block references could not be loaded.", true, { action: ["Try again", () => docCopyBlockRef(mode)] });
+  return docBlockrefPiece.docCopyBlockRef(mode);
 }
 
 async function docRevealBlock(blockId) {
@@ -6937,6 +6938,9 @@ const MD_ACTIONS = {
   //: inserts nothing at the caret: it gives the block the caret is in an id
   //: and puts the link to it on the clipboard.
   blockref: { custom: "blockref" },
+  //: A synced block (DOCUMENTS_PLAN 26): the same block reference as an embed, copied now and inserted in another document later.
+  syncedcopy: { custom: "syncedcopy" },
+  syncedpaste: { custom: "syncedpaste" },
   //: Two columns, with the caret in the first one. The `block`/`suffix` shape
   //: rather than `insert`, so the selection lands on the placeholder and the
   //: first thing typed replaces it, which is what the table and the code
@@ -7184,8 +7188,8 @@ function applyMarkdown(kind, boxId = "doc-content") {
     docInsertProperties();
     return;
   }
-  if (action.custom === "blockref") {
-    docCopyBlockRef();
+  if (action.custom === "blockref" || action.custom === "syncedcopy" || action.custom === "syncedpaste") {
+    docCopyBlockRef(action.custom === "blockref" ? "link" : action.custom === "syncedcopy" ? "copy" : "paste");
     return;
   }
   if (action.custom === "table") {

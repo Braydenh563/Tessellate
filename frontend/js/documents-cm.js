@@ -663,6 +663,49 @@ function docLivePlugin(CM) {
     }
   }
 
+  //: **Where a block is shown elsewhere, its own document says so** (DOCUMENTS_PLAN 26, decision 82 b). A block carrying `^id`
+  //: that other documents or notes embed or link keeps a small pencil with the count, in the place its hidden id sits; the
+  //: pencil opens the same edit box a synced block has (documents-synced.js). The widget is always drawn for a hidden id and
+  //: fills itself in when the count is known (`GET /documents/{id}/block-uses`, asked once per document and then at most every
+  //: 5 seconds), so nothing here waits on the request.
+  const blockUses = { doc: null, at: 0, ask: null };
+  class DocBlockUseWidget extends WidgetType {
+    constructor(id) {
+      super();
+      this.id = id;
+    }
+    eq(other) {
+      return other.id === this.id;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    toDOM() {
+      const host = document.createElement("span");
+      host.className = "cm-md-blockuse";
+      host.hidden = true;
+      const doc = currentDoc?.id;
+      if (!doc) return host;
+      if (blockUses.doc !== doc || Date.now() - blockUses.at > 5000) {
+        blockUses.doc = doc;
+        blockUses.at = Date.now();
+        blockUses.ask = apiJson(`/documents/${doc}/block-uses`, { silent: true }).then((body) => body?.uses || {}).catch(() => ({}));
+      }
+      blockUses.ask.then((uses) => {
+        const count = uses[this.id] || 0;
+        if (!count || !host.isConnected) return;
+        const edit = smallButton(`ph:pencil-simple ${count}`, `Shown in ${count === 1 ? "1 other place" : `${count} other places`}. Edit this block here.`, () =>
+          ensureModule("docSynced").then(() => host.dispatchEvent(new CustomEvent("synced-own", { bubbles: true, detail: { id: this.id, anchor: edit } })))
+        );
+        edit.classList.add("doc-block-use");
+        edit.addEventListener("mousedown", (event) => event.preventDefault());
+        host.replaceChildren(edit);
+        host.hidden = false;
+      });
+      return host;
+    }
+  }
+
   //: `record` collects every reveal this build decided (`probes`, flat
   //: `[from, to, revealed]`) and whether anything read the caret's exact
   //: position rather than "touched or not" (`selFree`: a table's active cell
@@ -1379,7 +1422,9 @@ function docLivePlugin(CM) {
           ranges.push(Decoration.mark({ class: "cm-md-blockid" }).range(from, to));
           return;
         }
-        hide(from, to);
+        //: Hidden, with the "shown elsewhere" pencil where it was (a document with a title only: that is what others name it by).
+        if (currentDoc?.title) ranges.push(Decoration.replace({ widget: new DocBlockUseWidget(match[1]) }).range(from, to));
+        else hide(from, to);
       });
       scan(/\[\[([^[\]\n]{1,120})\]\]/g, (match, from, to) => {
         const spec = match[1].trim();

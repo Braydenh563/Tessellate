@@ -2944,18 +2944,20 @@ MORE_TOPICS.append({
     ),
     "body": (
         "A paragraph can live in one document and be shown in others. In its own document, put the caret in it and "
-        "choose Link to this block in the / menu: it gets a short id at the end of its last line. In another document "
-        "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
-        "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
-        "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
-        "shows it follows, and that document's History has the change. Other edits to that document in the meantime "
-        "stay; if the paragraph itself was changed somewhere else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is "
-        "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
-        "shown: there the text is simply the text."
+        "choose Copy as synced block in the / menu (or Link to this block for a plain link): it gets a short id at the "
+        "end of its last line and ![[Document title#^the-id]] is copied. In another document paste it, or choose Paste "
+        "synced block, and the paragraph appears there as text you can press to edit; the line under it names where it "
+        "comes from (press that to open the document). Save writes it into the document it lives in, so there is only "
+        "ever one copy, every other place that shows it follows at once (in other open windows too), and that "
+        "document's History has the change. In the paragraph's own document, a small pencil with a number appears where "
+        "the id is hidden when other documents or notes show it: it opens the same box, and Save changes the text you "
+        "are writing. Other edits to a document in the meantime stay; if the paragraph itself was changed somewhere "
+        "else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is not "
+        "allowed, and an empty one cannot be saved."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}
+TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Copy as synced block"}
 
 #: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
 MORE_TOPICS.append({

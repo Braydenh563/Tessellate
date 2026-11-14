@@ -126,6 +126,18 @@
         const edit = smallButton("ph:pencil-simple", "Edit this block here", () => ensureModule("docSynced").then(() => box.dispatchEvent(new CustomEvent("synced-edit", { bubbles: true, detail: { text: found.text, target, draw: () => docEmbedNode(target, name), cache: docBlockTextCache } }))));
         edit.classList.add("icon-only", "doc-embed-block-edit");
         box.append(edit);
+        //: Reads as a copy: the text itself is the way in (a press on it, not on a link inside it, opens the box), and the
+        //: box remembers how to be drawn again for the redraw after a save (`syncedRedraw` below).
+        box.classList.add("doc-embed-synced");
+        box.dataset.syncedDoc = String(target.doc.id);
+        box.syncedDraw = () => docEmbedNode(target, name);
+        body.addEventListener("click", (event) => {
+          if (event.target instanceof Element && event.target.closest("a, button, input, textarea")) return;
+          if (window.getSelection()?.toString()) return;
+          //: Not on to the Live widget's own press, which opens the document the block came from.
+          event.stopPropagation();
+          edit.click();
+        });
       }
       return box;
     }
@@ -262,18 +274,24 @@
     //: than waiting for a repaint a document nobody is typing in will never get.
     if (target && target.kind === "block") {
       host.replaceChildren(docEmbedChip(name, target));
-      if (docBlockTextCache.has(target.doc.id)) return;
-      docBlockTextCache.set(target.doc.id, null);
-      apiJson(`/documents/${target.doc.id}`, { silent: true })
-        .then((doc) => {
-          docBlockTextCache.set(target.doc.id, doc.content || "");
-          if (!host.isConnected) return;
-          const later = docEmbedNode(target, name);
-          if (later) host.replaceChildren(later);
-        })
-        .catch(() => {
-          docBlockTextCache.delete(target.doc.id);
-        });
+      //: One fetch per document, and every embed of it waits on that one (a second embed of the same document used to stay a chip).
+      const fills = (docBlockTextCache.pending ||= new Map());
+      if (docBlockTextCache.has(target.doc.id) && !fills.has(target.doc.id)) return;
+      if (!fills.has(target.doc.id)) {
+        docBlockTextCache.set(target.doc.id, null);
+        fills.set(
+          target.doc.id,
+          apiJson(`/documents/${target.doc.id}`, { silent: true })
+            .then((doc) => void docBlockTextCache.set(target.doc.id, doc.content || ""))
+            .catch(() => void docBlockTextCache.delete(target.doc.id))
+            .finally(() => fills.delete(target.doc.id))
+        );
+      }
+      fills.get(target.doc.id).then(() => {
+        if (!host.isConnected) return;
+        const later = docEmbedNode(target, name);
+        if (later) host.replaceChildren(later);
+      });
       return;
     }
     //: `keep` is the Read view asking: it already drew its own "Nothing called that yet" box and only wants it
@@ -461,6 +479,34 @@
       }));
     }
   };
+
+  //: **Live refresh of a synced block** (DOCUMENTS_PLAN 26, decision 82 c). A save in documents-synced.js says so on the page
+  //: (`synced-saved`) and on a BroadcastChannel; every box showing a block of that document is drawn again from the text
+  //: just saved (this page) or just fetched (another window), except one with its edit box open. The document itself, open in
+  //: another window and not being typed in, is opened again; one being typed in is left, and says so.
+  const syncedRedraw = (docId) => {
+    for (const box of document.querySelectorAll(`.doc-embed-synced[data-synced-doc="${docId}"]`)) {
+      if (box.querySelector("textarea")) continue;
+      const fresh = box.syncedDraw?.();
+      if (fresh) box.replaceWith(fresh);
+    }
+  };
+  document.addEventListener("synced-saved", (event) => syncedRedraw(event.detail.id));
+  if (window.BroadcastChannel) {
+    new BroadcastChannel("memorymap-doc-synced").onmessage = (event) => {
+      const id = Number(event.data?.id);
+      if (!id) return;
+      apiJson(`/documents/${id}`, { silent: true })
+        .then((doc) => {
+          docBlockTextCache.set(id, doc.content || "");
+          syncedRedraw(id);
+          if (currentDoc?.id !== id) return;
+          if (docDirty) toast("This document was changed in another window. Save to keep yours, or reopen it.", "info");
+          else openDocument(id);
+        })
+        .catch(() => {});
+    };
+  }
 
   //: The file's whole surface: what documents.js, documents-cm.js and markdown.js call.
   Object.assign(window, { docEmbedFill, docImageLive, docResolveWikiTarget, docWikiTargetLabel, docOpenResolvedWikiTarget, docOpenWikiTarget, docOpenLink, docFileDropBox });
