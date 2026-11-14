@@ -7,9 +7,16 @@
 // (client only: the cards are already loaded), a second press clears it, and
 // the heading says "3 of 11". The answer text is untouched, and a chip is
 // never an act, so no consent applies.
+//
+// Slice 3: the trail. Answer, then the thread filtered to, then the note opened
+// around, is one small stack shown as a breadcrumb above the chips; its arrow,
+// a crumb and the browser's Back each pop it. Each step pushes one history
+// entry that keeps the Ask entry's `navId`, and `routerBack.browse`
+// (router-overlays.js) hands a popstate to `onBack` first. A reload keeps the
+// answer and not the trail: nothing here is stored.
 
 (() => {
-  const browse = { threads: [], lit: -1 };
+  const browse = { threads: [], lit: -1, note: null, pushed: 0, swallow: 0, wired: false };
   const cards = () => [...document.querySelectorAll("#raw-results > li[data-id]")];
 
   //: One thread as the recipe's counted filter chip (DESIGN.md, a filter that carries a count).
@@ -23,6 +30,82 @@
     n.textContent = String(count);
     el.append(n);
     return el;
+  }
+
+  //: The trail as steps, root first: `pop` takes the stack back to that step.
+  function steps() {
+    const out = [{ text: "Answer", title: "Back to the whole answer", to: 0 }];
+    const lit = browse.threads[browse.lit];
+    if (lit) out.push({ text: lit.label, title: `Back to the ${lit.label} thread`, to: 1 });
+    if (browse.note) out.push({ text: browse.note.name, title: browse.note.name, to: out.length });
+    return out;
+  }
+
+  function paintTrail() {
+    const list = steps();
+    const nav = $("ask-browse-trail");
+    nav.classList.toggle("hidden", list.length < 2);
+    nav.querySelector("ol").replaceChildren(
+      ...list.map((step, i) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "linklike doc-crumb";
+        button.textContent = step.text;
+        button.title = step.title;
+        if (i === list.length - 1) button.setAttribute("aria-current", "location");
+        else button.addEventListener("click", () => popTo(i));
+        li.append(button);
+        return li;
+      })
+    );
+    syncHistory(list.length - 1);
+  }
+
+  //: One browser-history entry a step, so the browser's Back is a step back. What is pushed is
+  //: rewound when the trail shrinks by any other road (the arrow, a crumb, a new answer), so the
+  //: app's own Back still counts the entries it made.
+  function syncHistory(depth) {
+    if (!browse.wired) return;
+    try {
+      for (; browse.pushed < depth; browse.pushed += 1) history.pushState({ ...history.state, browse: browse.pushed + 1 }, "", location.href);
+      if (browse.pushed > depth) {
+        browse.swallow = 1;
+        history.go(-(browse.pushed - depth));
+        browse.pushed = depth;
+      }
+    } catch {
+      browse.wired = false;
+    }
+  }
+
+  //: The stack back to `depth` steps under the answer: the note's neighbourhood first, then the thread.
+  function popTo(depth) {
+    while (steps().length - 1 > depth) {
+      if (browse.note) closeNote();
+      else browse.lit = -1;
+    }
+    paint();
+  }
+
+  function closeNote() {
+    const { li, button } = browse.note;
+    li.querySelector(":scope > .ask-around")?.remove();
+    button.setAttribute("aria-expanded", "false");
+    browse.note = null;
+  }
+
+  //: The browser's Back or Forward (router-overlays.js `routerBackHook`): true when it was spent on a step.
+  function onBack(state) {
+    if (browse.swallow) {
+      browse.swallow = 0;
+      return true;
+    }
+    const depth = (state && state.browse) || 0;
+    if (steps().length - 1 <= depth) return false;
+    browse.pushed = depth;
+    popTo(depth);
+    return true;
   }
 
   function paint() {
@@ -44,12 +127,14 @@
     row.replaceChildren(
       ...browse.threads.map((thread, i) =>
         askThreadChip(thread.label, thread.note_ids.length, i === browse.lit, () => {
+          if (browse.note) closeNote();
           browse.lit = browse.lit === i ? -1 : i;
           paint();
           row.children[browse.lit === -1 ? i : browse.lit]?.focus();
         })
       )
     );
+    paintTrail();
   }
 
   //: Draw the chips for an answer's threads, or clear them (null) when the cards are replaced.
@@ -57,6 +142,7 @@
     const row = $("ask-threads");
     if (!row) return;
     const present = new Set(cards().map((li) => li.dataset.id));
+    browse.note = null;
     browse.lit = -1;
     browse.threads = (threads || [])
       .map((t) => ({ label: t.label, note_ids: (t.note_ids || []).filter((id) => present.has(String(id))) }))
@@ -66,6 +152,7 @@
       row.replaceChildren();
       $("ask-records-shown").classList.add("hidden");
       $("ask-records-count").textContent = String(cards().length || "");
+      paintTrail();
       return;
     }
     paint();
@@ -77,9 +164,12 @@
   //: own panels use (`/connections`, `/related`), so nothing new is asked of the server.
   async function around(li, button) {
     const open = button.getAttribute("aria-expanded") !== "true";
-    button.setAttribute("aria-expanded", String(open));
-    li.querySelector(":scope > .ask-around")?.remove();
-    if (!open) return;
+    if (browse.note) closeNote();
+    if (!open) return paintTrail();
+    button.setAttribute("aria-expanded", "true");
+    const name = noteNamePlain(li.querySelector(":scope > .entry-content")?.textContent || "", 28) || "This note";
+    browse.note = { li, button, name };
+    paintTrail();
     const id = li.dataset.id;
     const box = document.createElement("div");
     box.className = "ask-around";
@@ -98,7 +188,7 @@
       apiJson(`/entries/${id}/connections`, { silent: true }).catch(() => null),
       apiJson(`/entries/${id}/related`, { silent: true }).catch(() => []),
     ]).then(([, a, b]) => [a, b]);
-    if (button.getAttribute("aria-expanded") !== "true") return;
+    if (browse.note?.button !== button) return;
     box.replaceChildren();
     if (!joined) return say("Could not load this note's neighbours.");
     const seen = new Set([Number(id)]);
@@ -117,6 +207,14 @@
     box.append(...rows);
   }
   digestMore.around = around;
+
+  //: Back's arrow, once. The history hook rides with the quick-note bundle (router-overlays.js);
+  //: without it the trail still works in the page, with no browser-history entries.
+  $("ask-browse-back").addEventListener("click", () => popTo(steps().length - 2));
+  ensureModule("quickNote").then(() => {
+    routerBack.browse = onBack;
+    browse.wired = true;
+  }).catch(() => {});
 
   digestMore.threads = drawThreads;
 })();

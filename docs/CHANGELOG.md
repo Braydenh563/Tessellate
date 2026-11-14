@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Ask as a smart browser, slice 3 (L-chat-58): a breadcrumb trail (Answer, thread, note) above the chips with a Back arrow; the arrow, a crumb and the browser's Back each pop a step, through `router-overlays.js` and one history entry a step that keeps the Ask entry's `navId`. Measured at 1440 in a real browser: depth 0, 1, 2 and back to 0 by two Backs; a crumb row 28px tall; a reload keeps the answer, not the trail.
 - Ask as a smart browser, slice 2 (L-chat-58): each Matching records card has Around this note, which opens its linked and similar notes under it (the Connections rows, one step in; the answer and the column stay as they were). Measured at 1440: 119 ms, three rows of 53px, indented 23px; `/connections` 7 to 69 ms and `/related` 3 to 48 ms on a 2,000-note notebook (no meaning engine there, so similar-note scoring is unmeasured).
 - Ask as a smart browser, slice 1 (L-chat-58): a woven overview sends its threads on `support.threads` and the page draws one chip per thread above Matching records; a press narrows the column to that thread (heading "3 of 9"), a second press clears it. Measured at 1440: 9 cards, 3 after a press, 9 after the second.
 - Atlas cost, measured in a real browser at 4x CPU (L232, L233, L238): a class change on the buddy restyles 113 to 166 elements (was 1,244), a mood change is 3 to 5 restyles, and a click's handlers run in 0.1 to 7.6 ms; `tests/test_atlas_cost_live_1114.py` keeps those budgets.

@@ -2434,6 +2434,11 @@ Link to another note with [[its first few words]]."></textarea>
                 Matching records <span id="search-mode" class="chip item-label"></span>
                 <span id="ask-records-shown" class="muted hidden"></span>
               </h3>
+              <!-- The trail (L-chat-58): answer, thread, note; the breadcrumb recipe (`.doc-crumbs`), drawn by `ask-browser.js`. -->
+              <nav id="ask-browse-trail" class="doc-crumbs ask-browse-trail hidden" aria-label="Where you are in the records">
+                <button type="button" id="ask-browse-back" class="ghost small icon-button" aria-label="Back one step" title="Back one step"><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+                <ol class="doc-crumbs-list" data-holds-notebook></ol>
+              </nav>
               <!-- Thread chips (L-chat-58): a woven overview's themes, each a filter on the column below; `ask-browser.js` draws them. -->
               <div id="ask-threads" class="ask-threads hidden" role="group" aria-label="Threads in this answer"></div>
               <ul id="raw-results" class="entry-list"></ul>

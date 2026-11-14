@@ -365,3 +365,11 @@
   margin: 0;
   font-size: var(--text-sm);
 }
+
+/* The trail above the chips (L-chat-58): the breadcrumb recipe with Back's arrow before it. */
+.ask-browse-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}

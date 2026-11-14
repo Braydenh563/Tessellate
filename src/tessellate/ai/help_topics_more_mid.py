@@ -747,7 +747,11 @@ MID_TOPICS.extend(
                 "(the heading says 3 of 9), press it again to show them all. "
                 "The answer itself does not change. "
                 "Around this note, on a card, opens the notes linked to it and "
-                "the notes like it right under that card; press it again to close."
+                "the notes like it right under that card; press it again to close. "
+                "Once you have narrowed to a thread or opened a note's "
+                "neighbours, a trail above the cards (Answer, thread, note) "
+                "shows where you are: its arrow, a step on it or the "
+                "browser's Back goes back one step."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },

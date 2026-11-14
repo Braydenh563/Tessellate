@@ -67,3 +67,39 @@ def test_the_neighbourhood_is_linked_and_similar_rows_under_the_card_never_cards
 def test_the_neighbourhood_is_indented_one_step_by_a_token():
     rule = re.search(r"\.ask-around \{([^}]*)\}", CSS)
     assert rule and "margin-inline-start: var(--space-4)" in rule.group(1)
+
+
+# --- slice 3: the trail and Back ---------------------------------------------------------
+
+OVERLAYS = (JS / "router-overlays.js").read_text(encoding="utf-8")
+
+
+def test_the_trail_is_the_breadcrumb_recipe_with_a_back_arrow_above_the_chips():
+    nav = HTML.index('id="ask-browse-trail"')
+    assert HTML.index('id="ask-records-fold"') < nav < HTML.index('id="ask-threads"')
+    block = HTML[nav - 40 : nav + 600]
+    assert "doc-crumbs" in block and 'aria-label="Where you are' in block
+    assert "doc-crumbs-list" in block and "data-holds-notebook" in block
+    assert 'id="ask-browse-back"' in block and 'aria-label="Back one step"' in block
+
+
+def test_the_trail_is_answer_then_thread_then_note_and_a_step_pops_the_ones_after_it():
+    body = BROWSER.split("function steps(", 1)[1].split("\n  }\n", 1)[0]
+    assert '"Answer"' in body and "browse.lit" in body and "browse.note" in body
+    assert 'aria-current' in BROWSER and "doc-crumb" in BROWSER
+
+
+def test_the_browsers_back_pops_one_step_through_router_overlays_without_a_new_global():
+    hook = OVERLAYS.split("function routerBackHook(", 1)[1].split("\n}\n", 1)[0]
+    assert "routerBack.browse" in hook
+    assert "const routerBrowse" not in OVERLAYS
+    assert "routerBack.browse = " in BROWSER and "history.pushState(" in BROWSER
+
+
+def test_every_step_rewinds_what_it_pushed_so_in_app_back_keeps_its_count():
+    body = BROWSER.split("function syncHistory(", 1)[1].split("\n  }\n", 1)[0]
+    assert "history.go(-" in body and "browse.swallow" in body
+
+
+def test_reload_keeps_the_answer_not_the_trail():
+    assert "sessionStorage" not in BROWSER and "localStorage" not in BROWSER
