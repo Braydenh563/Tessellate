@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 77 | 30 | 2 | 59 | 283 |
+| chat | 176 | 76 | 30 | 10 | 59 | 282 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 451 | 99 | 2 | 183 | 1103 |
+| all | 553 | 450 | 99 | 10 | 183 | 1102 |
 
 ## graph
 
@@ -121,7 +121,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L724** `chat` open, S: Measure Chat panels with a model connected and settle the chip edge decision. From OPEN.md:976; OPEN.md:3212. Evidence: Needs a connected model (llama-dev.sh); cannot open without one Owner decided 2026-11-12: Keep the border (Matches DESIGN.md's label recipe and the test that pins it (META_EDGED); nothing changes). Build: keep META_EDGED; measure #chat-model-panel and How it answers selects at 390 px on the small GGUF via llama-dev.sh, then close.
 - [ ] **L747** `chat` open, L: One shared mind for both companions. From OPEN.md:4412. Evidence: Architecture call; w34-unv2-1111.md owner-call Owner decided 2026-11-12: Yes, two copies count (Close the row; a test keeps the two copies' decisions in step). Build: a parity test comparing behaviour.py Mind and avatars.js nameMarkBuddyDecide weights; close the row.
 - [ ] **L749** `chat` open, S: Determined brow is weakest mood; bolder eye shape; atlasrest1402 sweep fails in setup. From atlasf1696-1108c.md. Evidence: Source: non-scowling determined brow is an owner call; sweep CASE=moods line 93 null element not fixed Owner decided 2026-11-12: Keep the flame cue (No face change; the flame beside the head says determined. The broken mood sweep is fixed). Build: fix scratchpad/ui-sweeps/atlasrest1402.js CASE=moods null element at line 93; no art change.
-- [ ] **L735** `chat` open, M: Owner to list more workflows and actions (AGENT_SKILLS_REFORM). From INBOX.md:904 B34. Evidence: Placed in AGENT_SKILLS_REFORM; needs the owner's list of workflows Owner decided 2026-11-12: Let the agent propose. Build: an agent drafts a list of new workflows and actions for Agent mode and Chat from the research, for the owner to approve; approved ones become rows in this plan.
 - [ ] **L741** `chat` open, S: Atlas CSS loops under reduce-motion cost 1,579 recalcs a minute. From OPEN.md:1089. Evidence: Earlier decision (INBOX 772, 08-consistency.css) keeps loops under reduce; changing it is the owner's call Owner decided 2026-11-12: Let calm loops run again. Build: under the system reduce-motion hint, Atlas's gentle sway and glow loops run again (reverses the full stop of INBOX 772); measure restyles a minute and keep under budget; update the reduce-motion test to the new intent.
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder
@@ -600,6 +599,14 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
+- [ ] **L-chat-46** `chat` owner-call, S: Approve the act archive and unarchive for Agent mode and Chat ("archive the old trip notes"), inverse of each other. From L735 draft 2026-11-14. Evidence: ai/acts.py has no archive verb; notes archive from the menu only
+- [ ] **L-chat-47** `chat` owner-call, S: Approve the act reschedule ("move the dentist reminder to Friday 9"), with the old time as its undo. From L735 draft 2026-11-14. Evidence: ai/acts.py has no reschedule verb; snooze moves by a span only
+- [ ] **L-chat-48** `chat` owner-call, M: Approve the act tag_many ("tag everything from March with spring"), confirmed with the count first, one undo for the batch. From L735 draft 2026-11-14. Evidence: no multi-note tag verb; tag acts one note at a time
+- [ ] **L-chat-49** `chat` owner-call, S: Approve the act make_board ("start a board for the kitchen"), reading the board it made back as its answer. From L735 draft 2026-11-14. Evidence: ai/acts.py has create_category but no board verb besides board_card
+- [ ] **L-chat-50** `chat` owner-call, M: Approve the skill Prepare for a meeting: notes on the people and topic, open reminders, a short agenda drafted into a new note. From L735 draft 2026-11-14. Evidence: skills.py BUILTIN_SKILLS has 22 skills; none prepares a meeting
+- [ ] **L-chat-51** `chat` owner-call, M: Approve the skill Monthly look back: what was written, spent and finished, as one note with the numbers cited. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Summarise my week; no month view over money or reminders
+- [ ] **L-chat-52** `chat` owner-call, S: Approve the skill Archive stale notes: lists untouched notes past a span the person names, archives only the ones ticked. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Find notes worth combining; nothing about stale notes
+- [ ] **L-chat-53** `chat` owner-call, M: Approve the skill Everything about a person: their entity page, linked notes and open reminders in one reading note. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Catch up on a topic; none gathers a person
 
 ## Needs hardware
 
