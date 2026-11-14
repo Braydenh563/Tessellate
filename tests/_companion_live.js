@@ -172,7 +172,7 @@ const SPY = () => {
     // Where the figure is now, and only if it is what a click there would reach (a dialog or the companion may be over it).
     let head = null;
     for (let tries = 0; tries < 10 && !head; tries += 1) {
-      head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); return f.contains(top) || top?.closest?.('.nm-viewer-figure') ? [x, y] : null; });
+      head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); if (f.contains(top) || top?.closest?.('.nm-viewer-figure')) return [x, y]; window.__blocked = (top ? top.tagName + '#' + top.id + '.' + String(top.className).slice(0, 60) : 'none') + ' @' + Math.round(x) + ',' + Math.round(y) + ' fig ' + Math.round(r.width) + 'x' + Math.round(r.height); return null; });
       if (!head) await sleep(300);
     }
     if (head) { landed += 1; await page.mouse.click(head[0], head[1]); }
@@ -180,7 +180,7 @@ const SPY = () => {
   }
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   const mood = (await page.evaluate(() => window.__mood)).sort((a, b) => a - b);
-  out.click = { landed, calls: mood.length, medianMs: +(mood[Math.floor(mood.length / 2)] || 0).toFixed(2), maxMs: +(mood[mood.length - 1] || 0).toFixed(2), rate: RATE };
+  out.click = { blocked: await page.evaluate(() => window.__blocked || ''), landed, calls: mood.length, medianMs: +(mood[Math.floor(mood.length / 2)] || 0).toFixed(2), maxMs: +(mood[mood.length - 1] || 0).toFixed(2), rate: RATE };
   console.log(JSON.stringify(out));
   await browser.close();
 })().catch((e) => { console.error(e.stack || e); process.exit(1); });
