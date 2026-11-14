@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 567 | 129 | 2 | 183 | 1249 |
+| all | 553 | 571 | 129 | 2 | 183 | 1253 |
 
 ## graph
 
@@ -339,6 +339,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
+- [ ] **L-documents-41** `documents` open, M: Opt-in Vim keymap: @replit/codemirror-vim in the vendored CM6 entry.js and rebuilt, a persisted keymap setting (off by default), the mode shown in the dock, Help and manual parity in the same commit. From owner research via hub 2026-11-14. Evidence: @replit/codemirror-vim MIT 6.4.0 (hub licence check)
+- [ ] **L-documents-42** `documents` open, M: JSON files with a $schema get lint and key completion from a small in-house validator. From owner research via hub 2026-11-14. Evidence: no new dependency; study codemirror-json-schema pointer-to-node mapping
+- [ ] **L-documents-43** `documents` open, M: Query block: a fenced block that renders a saved search live (SilverBullet-style). From owner research via hub 2026-11-14. Evidence: check the existing saved-search code first
+- [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
 
 ## mindmap
 
