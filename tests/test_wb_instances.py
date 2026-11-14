@@ -963,3 +963,35 @@ out.backInEmbed = live;
     assert out2["onPage"] == {"unit": "cm", "pagesKey": "page"}
     assert out2["backInEmbed"] == {"unit": "mm", "pagesKey": "emb"}
 
+
+def test_a_map_line_in_an_embed_gets_the_plain_menu():
+    """L-whiteboard-68: a line's right-click and hold ask the ring first; where the ring opens
+    nothing (an embed) they fall back to the node's plain menu, as a topic's already does."""
+    text = (JS / "whiteboard-map-waypoints.js").read_text(encoding="utf-8")
+    fn = text[text.index("function wbWireMapEdgeGestures"):text.index("function wbOpenMapLinkRadial")]
+    stubs = r"""
+const asked = [];
+let ringTakes = true;
+const wbOpenMapLinkRadial = () => (ringTakes ? undefined : false);
+const wbOpenContextMenuFor = (...a) => asked.push(a);
+const wbMapLabelEdge = () => {};
+let hold = null;
+const wireLongPress = (el, fn) => { hold = fn; };
+const handlers = {};
+const hit = { addEventListener: (t, f) => { handlers[t] = f; } };
+const ev = { preventDefault() {}, stopPropagation() {}, clientX: 5, clientY: 6 };
+"""
+    body = r"""
+wbWireMapEdgeGestures(hit, 42);
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+const onPage = asked.length;
+ringTakes = false;
+handlers.contextmenu(ev); hold(ev, { x: 7, y: 8 });
+process.stdout.write(JSON.stringify({ onPage, asked }));
+"""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    got = subprocess.run([node, "-e", stubs + fn + body], capture_output=True, text=True, timeout=30)
+    assert got.returncode == 0, got.stderr
+    assert json.loads(got.stdout) == {"onPage": 0, "asked": [["node", 42, 5, 6], ["node", 42, 7, 8]]}

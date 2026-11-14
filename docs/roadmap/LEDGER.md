@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 7 | 0 | 0 | 0 | 7 |
+| whiteboard | 0 | 6 | 0 | 0 | 0 | 6 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 534 | 125 | 2 | 172 | 1131 |
+| all | 472 | 533 | 125 | 2 | 172 | 1130 |
 
 ## graph
 
@@ -286,7 +286,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-64** `whiteboard` open, S: Fire an instance onChange on undo and redo. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: undo and redo do not call the onChange callbacks
 - [ ] **L-whiteboard-65** `whiteboard` open, S: Reload a board that is not live after a failed save-many. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: a failed save-many on a board that is no longer live skips the reload
 - [ ] **L-whiteboard-66** `whiteboard` open, S: Keep two live instances of one board from sharing one persisted undo history. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: two instances of one board share the persisted undo history key
-- [ ] **L-whiteboard-68** `whiteboard` open, S: Give a map line's right-click in an embed the plain menu. From L-whiteboard-60 to 62 agent report, 2026-11-14. Evidence: whiteboard-map-waypoints.js wbOpenMapLinkRadial returns false in an embed and its contextmenu prevents the native menu, so nothing opens
 
 ## documents
 
