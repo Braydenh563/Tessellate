@@ -1766,7 +1766,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
 
     @app.get("/health", tags=["system"])
     async def health(request: Request) -> dict[str, str | bool]:
-        from tessellate.core import build_stamp, instance_lock, reminder_notifier
+        from tessellate.core import build_stamp, instance_lock, reminder_notifier, security
         from tessellate.core.config import resolved_data_dir
 
         #: The desktop shell and its notifier belong to this computer. A phone
@@ -1774,7 +1774,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         #: offered "Open folder", which opened Explorer here (the owner,
         #: 2026-10-11); now it downloads to itself like any browser tab.
         here = not is_another_device(request)
-        return {
+        body = {
             "status": "ok",
             "app": "Tessellate",
             "version": __version__,
@@ -1793,14 +1793,20 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             #: the token): Settings, Running copies tells a copy that really
             #: holds its port from a leftover record of one that is gone.
             "instance": instance_lock.current_instance_id(),
-            #: The running build (L-general-6): the commit it came from, when
-            #: this process started, which notebook folder (a hash, never the
-            #: path) and whether that folder can be written to.
-            "source_commit": build_stamp.source_commit(),
-            "started_at": build_stamp.STARTED_AT,
-            "data_dir_id": instance_lock.data_dir_id(resolved_data_dir()),
-            "data_dir_writable": build_stamp.data_dir_writable(resolved_data_dir()),
         }
+        #: The running build (L-general-6): the commit it came from, when this
+        #: process started, which notebook folder (a hash, never the path) and
+        #: whether that folder can be written to. Only to this computer or a
+        #: signed-in session (review): the route is open, so any device on the
+        #: LAN read which commit ran and since when.
+        if here or security._session_is_live(request.headers.get("x-auth-token") or ""):
+            body.update(
+                source_commit=build_stamp.source_commit(),
+                started_at=build_stamp.STARTED_AT,
+                data_dir_id=instance_lock.data_dir_id(resolved_data_dir()),
+                data_dir_writable=build_stamp.data_dir_writable(resolved_data_dir()),
+            )
+        return body
 
     _add_instance_routes(app)
 

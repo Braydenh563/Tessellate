@@ -62,3 +62,20 @@ def test_about_shows_the_build_and_a_folder_that_cannot_be_written():
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
     fill = js[js.index('const aboutHealth = await apiJson("/health")') :][:1400]
     assert "source_commit" in fill and "data_dir_writable" in fill
+
+
+_BUILD = {"source_commit", "started_at", "data_dir_id", "data_dir_writable"}
+
+
+def test_another_device_gets_the_stamp_only_when_signed_in(client, monkeypatch):
+    """Source text: review (/health): the open route told any device on the LAN
+    which commit runs, since when, and which folder; they go only to this
+    computer or a signed-in session, and the LAN gets the old body."""
+    from tessellate.core import security
+
+    monkeypatch.setattr(security, "_session_is_live", lambda token: token == "live")
+    lan = {"X-Forwarded-For": "192.168.1.20"}
+    assert not _BUILD & client.get("/health", headers=lan).json().keys()
+    assert not _BUILD & client.get("/health", headers={**lan, "X-Auth-Token": "stale"}).json().keys()
+    assert _BUILD <= client.get("/health", headers={**lan, "X-Auth-Token": "live"}).json().keys()
+    assert client.get("/health", headers=lan).json()["status"] == "ok"

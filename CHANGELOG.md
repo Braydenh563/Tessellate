@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- /health tells another device which build runs and which folder it uses only when that device is signed in (review).
 - A shared file whose name will not decode keeps the others: it arrives as shared-N instead of losing the whole share (review).
 - The SKILL.md snippet shell-quotes the data folder and the command, so a quote, dollar or backtick in a path cannot break the line (review).
 - Cleaning up unused media no longer stops at a revision that will not decrypt: it is skipped like a locked private note (review).

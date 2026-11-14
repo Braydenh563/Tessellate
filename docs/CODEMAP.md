@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22454, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22455, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -13527,7 +13527,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:82 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1769 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1812 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1818 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2011 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
@@ -21004,7 +21004,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `asset_hash` | src/tessellate/api/app.py:235 |
 | `asset_stamps` | src/tessellate/api/app.py:264 |
 | `clear_static_cache` | src/tessellate/api/app.py:580 |
-| `create_app` | src/tessellate/api/app.py:1848 |
+| `create_app` | src/tessellate/api/app.py:1854 |
 | `out_of_space_body` | src/tessellate/api/app.py:1175 |
 | `pin_static_mime_types` | src/tessellate/api/app.py:202 |
 | `served_index_html` | src/tessellate/api/app.py:309 |
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22454)
+## Tests (22455)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29441,7 +29441,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_harper_dictionary_vc6.py | 5 |
 | tests/test_has_invalidation.py | 8 |
 | tests/test_headings_1029b.py | 2 |
-| tests/test_health_build_stamp.py | 6 |
+| tests/test_health_build_stamp.py | 7 |
 | tests/test_health_dir_cache.py | 3 |
 | tests/test_health_page.py | 3 |
 | tests/test_heatmap_end_1578.py | 2 |
