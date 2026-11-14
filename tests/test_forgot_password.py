@@ -242,9 +242,8 @@ def test_a_re_key_without_a_recovery_key_makes_none(client):
 def test_wrong_keys_earn_the_same_waits_as_wrong_passwords(client, monkeypatch):
     _note, key = _notebook(client)
     local = _local(client)
-    # A fixed clock: the first wait is one second, and a slow runner (a 28 minute
-    # CI leg, 2026-11-13) spent longer than that between the guesses and the
-    # password, which was then let in with 200.
+    # A fixed clock: the first wait is 1 s, and on the real clock a slow
+    # runner's sixth guess landed past it and got a 401 (CI, 2026-11-14).
     now = routes_auth.time.time()
     monkeypatch.setattr(routes_auth.time, "time", lambda: now)
     for _ in range(routes_auth._FAILURE_ALLOWANCE):
