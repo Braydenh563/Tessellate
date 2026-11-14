@@ -364,6 +364,27 @@ async function commitExtractPreview() {
 let recorder = null; // the active MediaRecorder, if any
 let recorderTarget = null; // which input gets the transcript
 
+//: Ask's "as of" line (moved from capture-ask.js for the gzip budget; row 23, H8). The slider runs back
+//: to the oldest note (L-world-class-352) and a typed day moves it.
+function showAskAsOf(on) {
+  const row = $("ask-as-of-row");
+  const box = $("ask-as-of");
+  if (!row || !box) return;
+  row.classList.toggle("hidden", !on);
+  $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
+  if (on) {
+    const slider = $("ask-as-of-slider");
+    box.max = new Date().toLocaleDateString("sv");
+    slider.value = "0";
+    const back = (day) => Math.round((new Date().setHours(0, 0, 0, 0) - new Date(`${day}T00:00`)) / 864e5);
+    box.oninput = () => { slider.value = back(box.value) || 0; };
+    fetchDashStats().then((stats) => { slider.max = Math.max(stats.oldest_day ? back(stats.oldest_day) : 0, 1); }, () => {});
+    box.focus();
+  } else {
+    box.value = "";
+  }
+}
+
 async function toggleDictation(button, targetInput) {
   if (recorder) {
     recorder.stop(); // second press = stop → transcribe

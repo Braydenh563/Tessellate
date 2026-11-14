@@ -7981,5 +7981,9 @@ def test_ask_as_of_slider_is_one_value_with_the_day():
     assert re.search(r"\.ask-as-of-slider \{[^}]*direction: rtl", css)
     wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
     assert '$("ask-as-of-slider").addEventListener("input"' in wiring
+    #: L-world-class-352: the span runs from the oldest note (no fixed 365) and a typed day moves the slider. `showAskAsOf` moved to the lazy gesture-kit.js for the gzip cap.
+    assert not re.search(r'id="ask-as-of-slider"[^>]*max="365"', html)
+    assert "oldest_day" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
+    assert "box.oninput" in (ROOT / "frontend" / "js" / "gesture-kit.js").read_text(encoding="utf-8")
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "| A day picked on a slider" in design
