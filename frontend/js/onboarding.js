@@ -373,7 +373,7 @@ function renderOnboardingSlide() {
 //: it fakes `/health`'s `desktop`). Now every surface names its slot in
 //: `FIRST_RUN_ORDER`, the queue shows the lowest slot waiting, and on a first
 //: run (no `onboardingDone`) nothing opens until the welcome has had its turn.
-const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "updates"];
+const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "backup", "updates"];
 //: How long the queue holds the others for a welcome that never arrives (its
 //: module failed to load): a stuck queue would hide the recovery offer for good.
 const FIRST_RUN_WELCOME_WAIT_MS = 15000;
@@ -575,5 +575,21 @@ async function maybeShowConsoleViewIntro() {
     );
   } catch (error) {
     toast(error.message || voiceLine("failed", { what: "save your console view choice" }), true);
+  }
+  // 22.1.8: then the second backup folder, once per device, while none is set.
+  if (prefsCache.backup_copy_dir || prefs.get("backupFolderAsked", null)) return;
+  const wants = await firstRunTurn(() => confirmDialog(
+    "Keep a second copy of your backups?\n\nOn an external drive or synced " +
+      "folder, so one disk failing cannot take both. Change it any time in Settings, Data.",
+    { confirmLabel: "Choose a folder", cancelLabel: "Not now", danger: false }
+  ), "backup");
+  prefs.set("backupFolderAsked", "1");
+  const value = wants && (await promptDialog("Folder for the second copy"));
+  if (!value) return;
+  try {
+    prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ backup_copy_dir: value.trim() }) });
+    toast("Saved.");
+  } catch (error) {
+    toast(`${error.message} Set it in Settings, Data.`, "info");
   }
 }

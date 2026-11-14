@@ -2007,7 +2007,7 @@ mobile first, as the owner's web design class teaches. Measured with
    but none is on the Dashboard or in the note menu as "Version history",
    "Export", "Back up now". Target: version history in every note and
    document menu with a diff, a "Last backup" line in Settings and on the
-   About page, and a first-run prompt to choose a backup folder. Per-note versions came with 25e; the first-run prompt is LEDGER L-world-class-101.
+   About page, and a first-run prompt to choose a backup folder. Per-note versions came with 25e; the first-run prompt (the desktop app asks once for a second backup folder, after the console question) was built 2026-11-14 (HISTORY.md, "Moved from the plans, 2026-11-14 (22.1 items 5, 6, 8)").
 9. ~~**Offline promise, visible.**~~ Built 2026-10-11 (row 1641): the Local chip; HISTORY.md, "Moved from the plans, 2026-10-11 (rows agent)".
 
 ### 22.2 Small things people expect, and 22.3 where the design is below standard

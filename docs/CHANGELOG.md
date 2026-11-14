@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- On the desktop, first run asks once where to keep a second copy of the backups (after the console question, only while none is set); the answer is saved as Settings, Data, "Also copy each backup to" (L-world-class-101).
 - A write while the server is unreachable is refused at once with the banner's message (`Can't reach Tessellate. Retrying…`) and asks the health poll to look now; sign-in and reads still go out. Measured offline: 0 PUT requests sent, banner cleared on the next poll (L-world-class-99).
 - Two windows, one note now covers the lightbox file-text save (409 with keep mine or take theirs), the graph's tag edit (`base_tags`, merged and sent again) and the card's Remove image; card task boxes are disabled, so there is no write there (L-world-class-98).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
