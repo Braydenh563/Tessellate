@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 75 | 36 | 0 | 18 | 241 |
+| world-class | 130 | 70 | 35 | 0 | 19 | 235 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 467 | 107 | 2 | 129 | 1127 |
+| all | 553 | 462 | 106 | 2 | 130 | 1121 |
 
 ## graph
 
@@ -486,11 +486,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded
-- [ ] **L578** `world-class` open, M: Recorder: keep timed lines in saved transcripts (transcribe-meeting returns text only). From OPEN.md:1619; OPEN.md:2623. Evidence: No transcribe-meeting route in src now (grep none); core/recordings.py transcription_of:111 holds timed data
-- [ ] **L579** `world-class` open, M: Let notes link or embed a recording and make search find recordings. From OPEN.md:1621; OPEN.md:2739. Evidence: No recording link or search hits in core/search.py or routes_search; only entry_id on Recording
-- [ ] **L580** `world-class` open, M: Replace deprecated ScriptProcessorNode in live captions (AudioWorklet blocked by CSP). From OPEN.md:1630; OPEN.md:2767. Evidence: captions.js:239 still createScriptProcessor, kept deliberately (comment at :237); CSP worker-src is 'self' only
-- [ ] **L581** `world-class` open, M: Route whole-reading delete from lightbox and gallery through the bin. From OPEN.md:1632; OPEN.md:2846. Evidence: library.js:9885 and :10073 still send analyseMediaRow(..., {text: next}) with empty text; only workspace paths use ocrBinField (:8598)
-- [ ] **L582** `world-class` open, M: Add more translation pairs and a pair picker beyond English to Spanish. From OPEN.md:2749. Evidence: translate-worker.js pair-based; no picker built
 - [ ] **L583** `world-class` open, M: Sweep the remaining literal toast("...", true) error calls so each carries a what-to-do action instead of the default Open the logs. From OPEN.md:4247; OPEN.md:1389; OPEN.md:1396; OPEN.md:3465. Evidence: toast action support exists (status.js:347); per-error call-site sweep not done.
 - [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
@@ -528,7 +523,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
-- [ ] **L666** `world-class` partly, M: Verify captions stop attaches audio via the recording object. From OPEN.md:2766. Evidence: routes_captions._save attaches audio only after Brief 80 object; recordings exist but wiring unverified
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L668** `world-class` partly, M: Left: rowActions in the suggestions inbox and the tag manager (categories-panel.js); built in meetings.js:1870, settings-data.js:352,:838. Kinds all is built (timeline.js:336). From OPEN.md:957; OPEN.md:2522.
 - [ ] **L669** `world-class` partly, M: Left: one process ledger for every AI and background run. The backups list already says why each backup was made (settings-data.js:334,406 origin_words). From OPEN.md:1786.
@@ -758,6 +752,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
+- [ ] **L-world-class-41** `world-class` blocked-hardware, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run
 
 ## Plan session briefs
 

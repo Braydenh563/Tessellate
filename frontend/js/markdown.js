@@ -707,7 +707,7 @@ function mdEmbedElement(name, depth) {
   } else {
     body.textContent = `Nothing called \u{201C}${name}\u{201D} yet.`;
     //: A recording or a file the index has not loaded yet is swapped in when it arrives (documents-embeds.js).
-    window.docEmbedFill?.(body, name, { keep: true });
+    (window.docEmbedFill || noteRecording)(body, name, { keep: true });
   }
   box.appendChild(body);
   return box;

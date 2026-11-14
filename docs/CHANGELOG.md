@@ -15,6 +15,12 @@ below). Versioning is `0.x` while the app stabilises.
 - Library: checked that every box suggests the person's own titles as they type (already built, tested; L576)
 - Find anything: a chat hit opens the chat at the turn that holds your words and rings it (L562)
 - Notes: the sidebar has a Search everything field; Enter opens Find anything with your words (L592)
+- Live captions listen through an AudioWorklet instead of the deprecated ScriptProcessorNode, loaded from the app's own origin so the security policy is unchanged.
+- Translate this has a pair registry and a language picker that appears once a second pair is installed; only English to Spanish is downloadable so far.
+- Checked that stopping live captions with the audio switch on attaches the audio as a recording linked to the note.
+- A note can embed a recording with `![[Name]]` and link it with `[[Name]]`, by the name the Library shows; the recorder's file answers both, so the boot files only name it (L579)
+- A recorder transcript is saved as timed lines (`[m:ss] Speaker: text`) instead of one run of words (L578)
+- Emptying a reading in a gallery card moves it to the bin, with Undo, instead of clearing it for good (L581)
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).
 - Reminders at 320: a row's time may wrap to a second line instead of running 6px past its column
 - Notes, narrow widths: the "+N" tags chip takes the 44px finger floor inside its box, so its touch overhang no longer runs 10px past it at 390

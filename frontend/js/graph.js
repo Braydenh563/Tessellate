@@ -2953,11 +2953,6 @@ function graphPopupMediaRefs(entry) {
 //: thumbnail" without opening it. `formatFileSize` returns "" for an unknown
 //: or zero size, which is why nothing is appended in that case rather than a
 //: claim the panel cannot make.
-//: The attachment card states it itself now (INBOX 440 (2)), given the size.
-function graphPopupFileCard(name, url, size) {
-  return fileCard(name, url, size);
-}
-
 function renderGraphPopupMedia(entry) {
   const box = $("graph-popup-media");
   box.replaceChildren();
@@ -2970,7 +2965,7 @@ function renderGraphPopupMedia(entry) {
   if (!all.length && !refFiles.length) return;
   for (const attachment of files) {
     box.appendChild(
-      graphPopupFileCard(
+      fileCard(
         attachment.filename || attachment.name || "",
         attachment.url || `/files/${attachment.id}`,
         attachment.size

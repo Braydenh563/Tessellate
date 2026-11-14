@@ -1592,7 +1592,8 @@ MORE_TOPICS: list[dict] = [
             "(Languages); until then the row says so and opens that page. "
             "In a document, a flagged word's Translate this passage uses it "
             "too once installed, and asks your model in the chat before. "
-            "Other languages: the Writing room translates with your model."
+            "With more than one language pair installed the sheet shows a "
+            "picker. Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },

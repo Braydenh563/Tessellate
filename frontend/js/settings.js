@@ -304,10 +304,6 @@ function setSettingsPeek(on) {
   }
 }
 
-function settingsPeekIsOn() {
-  return $("settings-modal").classList.contains("peeking");
-}
-
 function updatePeekAvailability(section) {
   const button = $("settings-peek");
   const appearance = section === "appearance";
@@ -1514,10 +1510,6 @@ function applyEffectiveAccent() {
   applyCustomAccent(preset ? preset.swatch : null);
 }
 
-function contrastOn() {
-  return prefs.get("contrast", null) === "on";
-}
-
 // --- Wave O: expanded appearance controls -------------------------------------------
 // Each preference is a data-attribute on <html> + a localStorage key, all
 // applied before first paint by applyAppearance() so there's no flash.
@@ -2288,7 +2280,7 @@ function savedThemeCard(theme) {
   // every neutral around it. Anything the saved look does not carry falls back
   // to the live theme, which is also what applying it would do.
   const named = (ACCENTS || []).find((a) => a.name === values.accent);
-  const accent = values["accent-custom"] || named?.swatch || cssVarNow("--accent");
+  const accent = values["accent-custom"] || named?.swatch || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
   const dark = (values.theme || document.documentElement.dataset.theme || "dark") !== "light";
   const page = dark ? "#12141c" : "#f5f6f9";
   const surface = dark ? "#1b1f2b" : "#ffffff";
@@ -2333,12 +2325,6 @@ function savedThemeCard(theme) {
 
   card.append(preview, foot);
   return card;
-}
-
-//: One resolved custom property, for building a preview out of the live theme
-//: when a saved look predates a given key.
-function cssVarNow(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "";
 }
 
 // "#rrggbb" -> "r, g, b" so a custom colour can drive rgba() softs.
@@ -2888,7 +2874,7 @@ function renderAppearance() {
     const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
     if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
   }), 1);
-  $("contrast-toggle").checked = contrastOn();
+  $("contrast-toggle").checked = prefs.get("contrast", null) === "on";
   _segActive("motion-seg", "motionChoice", MOTION.choice(appearancePref("motion")));
   for (const b of document.querySelectorAll("#motion-seg button")) b.setAttribute("aria-pressed", String(b.classList.contains("active")));
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
@@ -3437,7 +3423,7 @@ document.addEventListener("motionchange", () => {
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
 $("settings-close").addEventListener("click", closeSettingsModal);
-$("settings-peek").addEventListener("click", () => setSettingsPeek(!settingsPeekIsOn()));
+$("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 
 
 wireBackdropClose($("settings-modal"), () => closeSettingsModal()); // backdrop click

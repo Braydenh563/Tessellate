@@ -9917,6 +9917,12 @@ function filterLibraryImagesGallery() {
         if (next === (image.ocr_text || "")) return cancel();
         finish(next); // optimistic, corrected below if the server refuses it
         try {
+          if (!next) {
+            //: Emptying the box deletes the whole reading, so it goes to the bin like the workspace's Delete (L581).
+            const binned = await ocrBinField(image, "ocr");
+            ocrOfferBinUndo(image, "Delete the reading", "Reading moved to the bin.", binned, () => ocrBinField(image, "ocr"));
+            return;
+          }
           const updated = await analyseMediaRow(image, "ocr", { text: next });
           setOcrState(updated.ocr_text);
         } catch (error) {
@@ -10105,6 +10111,11 @@ function filterLibraryImagesGallery() {
         // about text that no longer exists.
         finish(next, next ? previousModel : "");
         try {
+          if (!next) {
+            const binned = await ocrBinField(image, "vision-ocr");
+            ocrOfferBinUndo(image, "Delete the reading", "Reading moved to the bin.", binned, () => ocrBinField(image, "vision-ocr"));
+            return;
+          }
           const updated = await analyseMediaRow(image, "vision-ocr", { text: next });
           setVisionOcrState(updated.vision_ocr_text, updated.vision_ocr_model);
         } catch (error) {

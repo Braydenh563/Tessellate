@@ -87,6 +87,22 @@ def to_srt(segments: list[dict]) -> str:
     return "\n".join(cues)
 
 
+def _clock(ms: int) -> str:
+    hours, rest = divmod(ms // 1000, 3600)
+    minutes, seconds = divmod(rest, 60)
+    return f"{hours}:{minutes:02d}:{seconds:02d}" if hours else f"{minutes}:{seconds:02d}"
+
+
+def to_lines(segments: list[dict]) -> str:
+    """One `[m:ss] Speaker: text` line per segment, for a note that keeps the
+    moments (the recorder's review box); `[h:mm:ss]` past an hour."""
+    out = []
+    for seg in clean(segments):
+        lead = f"{seg['speaker']}: " if seg["speaker"] else ""
+        out.append(f"[{_clock(seg['start'])}] {lead}{seg['text']}")
+    return "\n".join(out)
+
+
 def _vtt_text(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
