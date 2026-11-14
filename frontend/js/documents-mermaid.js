@@ -231,6 +231,14 @@
   const dgmTint = (hue) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hue.slice(i, i + 2), 16) * 0.25 + 191.25).toString(16).padStart(2, "0")).join("");
   const DGM_STYLE = /^style\s+([\w-]+)\s+fill:(#[0-9a-f]{6}),stroke:(#[0-9a-f]{6}),color:#1a1a1a$/;
 
+  //: L-documents-55: `classDef name props` is `m.classes` (the props kept raw), `class a,b name` is `n.cls` and
+  //: `click id "url" "tip"` is `n.href` (+ `n.tip`) when the target is http(s) or a `[[note]]`; a callback, any other
+  //: scheme (`javascript:`) and every other form stay kept lines. The `:::name` shorthand also stays kept.
+  const DGM_CLASSDEF = /^classDef\s+([\w-]+)\s+(\S.*)$/;
+  const DGM_CLASS = /^class\s+([\w-]+(?:\s*,\s*[\w-]+)*)\s+([\w-]+)$/;
+  const DGM_CLICK = /^click\s+([\w-]+)\s+(?:href\s+)?"([^"]*)"(?:\s+"([^"]*)")?$/;
+  const dgmSafeTarget = (url) => /^(?:https?:\/\/[^\s"]+|\[\[[^\]"\n]+\]\])$/i.test(url);
+
   const DGM_LINKSTYLE = /^linkStyle\s+(\d+)\s+stroke:(#[0-9a-f]{6}),stroke-width:2px$/;
 
   function dgmPrint(m) {
@@ -248,6 +256,12 @@
     }
     flush(Infinity, 0);
     for (const n of m.nodes) if (/^#[0-9a-f]{6}$/.test(n.fill || "")) out.push(`${indent(0)}style ${n.id} fill:${dgmTint(n.fill)},stroke:${n.fill},color:#1a1a1a`);
+    for (const c of m.classes || []) if (/^[\w-]+$/.test(c.name) && c.name !== "default" && c.css && !/[\n"]/.test(c.css)) out.push(`${indent(0)}classDef ${c.name} ${c.css}`);
+    for (const c of m.classes || []) {
+      const ids = m.nodes.filter((n) => n.cls === c.name).map((n) => n.id);
+      if (ids.length) out.push(`${indent(0)}class ${ids.join(",")} ${c.name}`);
+    }
+    for (const n of m.nodes) if (dgmSafeTarget(n.href || "")) out.push(`${indent(0)}click ${n.id} "${n.href}"${n.tip && !/["\n]/.test(n.tip) ? ` "${n.tip}"` : ""}`);
     //: An arrow's colour (1679 slice 10): `linkStyle N`, N the edge's place in the canonical order, which is `m.edges`' own.
     m.edges.forEach((e, i) => /^#[0-9a-f]{6}$/.test(e.colour || "") && out.push(`${indent(0)}linkStyle ${i} stroke:${e.colour},stroke-width:2px`));
     return out.join("\n") + "\n";
@@ -269,7 +283,7 @@
     const head = /^(flowchart|graph)(?:\s+(TD|TB|BT|LR|RL))?$/i.exec(statements[at] || "");
     if (!head && DGM_OTHER.test(statements[at] || "")) return null;
     if (head) at++;
-    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front };
+    const m = { kind: "flowchart", dir: (head?.[2] || "TD").toUpperCase().replace("TB", "TD"), nodes: [], edges: [], subgraphs: [], kept: [], front, classes: [] };
     const byId = new Map();
     const born = new Map();
     const open = [];
@@ -318,6 +332,8 @@
     snaps.forEach((snap, k) => {
       m.kept[k].at = rows.filter((r) => seen(r.unit, snap)).length;
     });
+    //: Twice: a `class` line ahead of its `classDef` is read on the second pass.
+    dgmLift(m);
     dgmLift(m);
     return m;
   }
@@ -325,6 +341,14 @@
   //: The builder's own `style` and `linkStyle` lines become `fill` and `colour`; every other one stays a kept line.
   function dgmLift(m) {
     m.kept = m.kept.filter((k) => {
+      const def = DGM_CLASSDEF.exec(k.line);
+      if (def && def[1] !== "default" && !m.classes.some((c) => c.name === def[1])) return m.classes.push({ name: def[1], css: def[2].trim() }), false;
+      const put = DGM_CLASS.exec(k.line);
+      const ids = put && put[1].split(/\s*,\s*/).map((id) => m.nodes.find((n) => n.id === id));
+      if (ids && ids.every((n) => n && !n.cls) && m.classes.some((c) => c.name === put[2])) return ids.forEach((n) => (n.cls = put[2])), false;
+      const go = DGM_CLICK.exec(k.line);
+      const linked = go && dgmSafeTarget(go[2]) && m.nodes.find((n) => n.id === go[1] && !n.href);
+      if (linked) return (linked.href = go[2]), go[3] && (linked.tip = go[3]), false;
       const hit = DGM_STYLE.exec(k.line);
       const node = hit && dgmTint(hit[3]) === hit[2] && m.nodes.find((n) => n.id === hit[1]);
       if (node) node.fill = hit[3];

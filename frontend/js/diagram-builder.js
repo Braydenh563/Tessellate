@@ -211,7 +211,7 @@
     const level = base + (item.depth || 0);
     const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
     const kids = (item.kids || []).map((k) => buildBlock(S, k, level + 1, edgesFrom, fresh));
-    const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
+    const own = item.type === "k" ? item.line : [item.type === "g" ? diagramOps.group(S.m, item.id).title : `${diagramOps.node(S.m, item.id).text}\n${diagramOps.node(S.m, item.id).shape}\n${diagramOps.node(S.m, item.id).href || ""}`, ...(edgesFrom.get(item.id) || []).map(({ e, i }) => `${i}:${titleOf(S, e.from)}>${titleOf(S, e.to)}:${e.label || ""}:${e.style}:${e.arrow}`)].join("\n");
     const sig = `${level}\n${own}\n${kids.map((k) => fresh.get(k.dataset.key).sig).join("|")}`;
     const hit = S.cache.get(id);
     const made = hit && hit.sig === sig ? hit.el : buildRow(S, item, level, edgesFrom, kids);
@@ -255,6 +255,7 @@
     const label = el("span", "dgm-label", text);
     label.title = text;
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
+    if (data.href) card.append(icon("ph-link-simple dgm-linked"));
     //: The arrow is on every row, its words on the chosen one.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
     connect.classList.add("dgm-connect");
@@ -310,6 +311,8 @@
     ];
     if (isNode) {
       const n = diagramOps.node(S.m, diagramOps.split(key)[1]);
+      items.push({ label: "ph:shapes Class…", run: () => styleDo(S, "cls", key), group: "edit" }, { label: "ph:link-simple Link…", run: () => styleDo(S, "link", key), group: "edit" });
+      if (n.href) items.push({ label: "ph:arrow-square-out Open link", run: () => styleDo(S, "follow", key), group: "edit" });
       items.push({ label: n.md ? "ph:text-aa Plain text" : "ph:text-b Markdown text", run: () => ((n.md = !n.md), n.md || delete n.md, commit(S, `${n.text} is now ${n.md ? "markdown text: **bold**, *italic*" : "plain text"}.`)), group: "edit" });
       items.push({
         label: "ph:diamond Shape",

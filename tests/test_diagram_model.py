@@ -177,12 +177,12 @@ def test_subgraphs_nest_and_a_node_belongs_to_the_first_one_that_names_it():
 
 def test_a_line_it_cannot_place_is_kept_verbatim_where_it_stood():
     src = (
-        "flowchart TD\n  %% first\n  A[One] --> B[Two]\n  style A fill:#f9f\n  classDef hot fill:#f00\n"
+        "flowchart TD\n  %% first\n  A[One] --> B[Two]\n  style A fill:#f9f\n  classDef default fill:#f00\n"
         "  C@{ shape: rect } --> A\n  D>flag] --> A\n  click A callback\n  E:::hot --> A\n  F[[sub]] --> A\n  B --> C\n"
     )
     g = _parse(src)
     assert [k["line"] for k in g["kept"]] == [
-        "%% first", "style A fill:#f9f", "classDef hot fill:#f00", "C@{ shape: rect } --> A", "D>flag] --> A",
+        "%% first", "style A fill:#f9f", "classDef default fill:#f00", "C@{ shape: rect } --> A", "D>flag] --> A",
         "click A callback", "E:::hot --> A", "F[[sub]] --> A",
     ]
     #: A kept line has no node of its own: C comes from the last line only.

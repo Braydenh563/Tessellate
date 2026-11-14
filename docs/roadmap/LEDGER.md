@@ -352,7 +352,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-56** `documents` open, M: Sequence diagram autonumber, box, create/destroy, rect colour (1679 gap 2). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-kinds.js:218 returns null for box, create, destroy; autonumber and rect open in Source
 - [ ] **L-documents-57** `documents` open, L: Gantt, pie, state, class, ER as block kinds (1679 gap 3). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-ops.js:20 DGB_PLAIN lists state, class, pie as Source only
 - [ ] **L-documents-58** `documents` open, M: Diagram per-edge label position and link animation (1679 gap 4). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: curve style built (W18 R13); no id@ animation or label position in diagram-*.js
-- [ ] **L-documents-60** `documents` open, S: Flowchart sub-direction inside a subgraph (1679 gap 6). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: direction is a kept line, documents-mermaid.js:54
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function
 - [ ] **L880** `documents` open, M: Brief 69 checks on desktop webview, dark panel rows, large SQL result and touch (hardware). From OPEN.md:608; OPEN.md:2912. Evidence: Desktop webview and touch hardware. Device-only remainder: the real desktop webview and real touch; dark panel rows, the large SQL result and emulated touch run here.
@@ -375,6 +374,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-69** `documents` open, L: Synced blocks: a copy that stays in step in both places (decision 82 a). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-70** `documents` open, S: Synced blocks: a pencil on the block in its own document (decision 82 b). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-71** `documents` open, M: Synced blocks: live refresh of other open windows after a save (decision 82 c). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
+- [ ] **L-documents-74** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
 
 ## mindmap
 
