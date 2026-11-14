@@ -231,6 +231,11 @@ class _Parser(HTMLParser):
                 and in_run
                 and not in_seg
                 and "ghost" not in classes
+                # A link-style button (`.linklike`, DESIGN.md's recipe index:
+                # "a link in a dock") is plain text with a press, as quiet as
+                # a ghost, and never the dock's action (the Documents bar's
+                # "Install Python" line).
+                and "linklike" not in classes
                 and "icon-only" not in classes
                 # And a chip is not a primary either, for the same reason a
                 # segment's cell is not: `.library-chip` is the app's own

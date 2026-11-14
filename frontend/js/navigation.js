@@ -1474,7 +1474,9 @@ document.addEventListener(
   (event) => {
     const menu = event.target;
     if (!(menu instanceof HTMLElement)) return;
-    const isDock = menu.matches("details.dock-menu");
+    //: The document dock's kebab carries `.dock-menu` for the grammar lint
+    //: (its switches count as in a menu) but keeps its own placement below.
+    const isDock = menu.matches("details.dock-menu:not(#doc-dock-menu)");
     //: The dock kebab's own shape: a `.doc-dock-menu` that is neither a dock
     //: menu nor one of the editor toolbars `clampToolbarMenu` owns.
     const isDockKebab = !isDock && menu.matches("details.doc-dock-menu:not(.doc-toolbar-menu)");
