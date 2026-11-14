@@ -246,3 +246,17 @@ def test_the_render_after_the_servers_answer_redraws_only_the_new_topics_lines()
     body = _code("wbRenderMapEdges")
     assert body.index("only.has(parent.id)") < body.index("wbMapEdgeGeometry(")
     assert "only.has(parent.id)" in _code("wbRenderMapEdgePluses")
+
+
+def test_the_accent_is_read_before_the_render_writes() -> None:
+    """Source text: wbMapAccentInk and renderWbObjects (L-ui-modernisation-61).
+
+    Traced opening a 500-topic map: the first topic's paint read `--accent`
+    with every topic just inserted, so the read restyled all 13,022 elements
+    (180ms), and the size pass after the writes restyled them again (210ms).
+    The render asks for it before its first write, while the page is clean.
+    """
+    assert "getComputedStyle(root)" in _code("wbMapAccentInk")
+    render = _code("renderWbObjects")
+    asked = render.find("if (mapIndex) wbMapAccentInk();")
+    assert 0 <= asked < render.find(".data(objectData")

@@ -2224,12 +2224,18 @@ function wbRelativeLuminance(channels) {
 //: 390). The accent comes from the root's own attributes (the theme, the
 //: palette, Settings' custom colour on its style) and the system scheme, so
 //: those, read without a style pass, say when to read it again.
-function wbMapAccentInk(node) {
+//:
+//: **Read before the render writes, off the root** (L-ui-modernisation-61):
+//: read from the first topic's paint, with every topic just inserted, it
+//: restyled the whole board (13,022 elements, 180ms opening 500 topics)
+//: and the size pass restyled it all again. `renderWbObjects` asks first,
+//: while the page is clean; every `--accent` is set on the root.
+function wbMapAccentInk() {
   const root = document.documentElement;
   let sig = window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "d" : "l";
   for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
   if (wbMapCache.accentInk == null || wbMapCache.accentFor !== sig) {
-    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(node).getPropertyValue("--accent").trim()) || "";
+    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(root).getPropertyValue("--accent").trim()) || "";
     wbMapCache.accentFor = sig;
   }
   return wbMapCache.accentInk || null;
@@ -2282,7 +2288,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
   //: otherwise take the previous node's ink until the next render.
   //: A topic with no branch colour (the centre) is filled in the accent, so
   //: its ink is worked out from that (§14: the centre is solid by default).
-  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk(node);
+  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk();
   if (ink) node.style.setProperty("--wb-core-ink", ink);
   else node.style.removeProperty("--wb-core-ink");
 

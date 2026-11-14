@@ -8,6 +8,10 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 
 - Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
+- Maps: opening a map reads the accent before the render writes, so it no longer restyles the whole board twice (180ms of a 500-topic open; L-ui-modernisation-61).
+- Maps: a branch drag offsets the tree lines inside the branch instead of redrawing them, writes the moved paths four times faster, and the edge pan reads the canvas box once a gesture (1,569ms of forced layout in a 200-topic drag; L-ui-modernisation-61).
+- Maps: a link with both ends inside a dragged branch is translated, not re-routed, each move, and a link shared by two moved topics is updated once (L-ui-modernisation-61).
+- Maps: the zoom level holds its width, so a zoom past 100% no longer restyles the whole board (192ms and 120ms frames at 200 topics; L-ui-modernisation-61). mapperf.js waits for the board bundle instead of sleeping.
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).
 - Reworded signal words in frontend and scratchpad comments (follow-on, unclosed, postponed) so the open-work scan sees only real work.
 - LEDGER: every row this branch made under `general` (35 to 66) and L-graph-19 is now L-ui-modernisation-63 to 93, because general ids clashed across parallel branches.
