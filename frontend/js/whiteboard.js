@@ -13942,7 +13942,12 @@ async function wbSaveManyBatch(slice, inst = wbInstances.active) {
     return true;
   } catch {
     recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
-    if (wbInstances.active !== inst) return false;
+    //: A board not live is read again by itself, not in the live one's place (L-whiteboard-65).
+    if (wbInstances.active !== inst) {
+      if (!inst.reload) inst.stale = true;
+      else if (!inst.destroyed) inst.reload().catch(() => {});
+      return false;
+    }
     await fetchWhiteboardState();
     wbScheduleRender();
     return false;

@@ -880,3 +880,41 @@ out.embed = puts.splice(0);
 """)
     assert [k for k, _ in out["page"]] == ["board:5"]
     assert out["embed"] == []
+
+
+def test_a_failed_save_many_reloads_the_board_that_is_not_live():
+    """L-whiteboard-65: the stale selection belongs to the board that began the
+    save. An embed reloads itself; the page board, which has no embed object, is
+    marked stale and reloads when it is next live."""
+    fns = _wb_functions("WB_SAVE_MANY_MAX", "wbSaveManyBatch")
+    out = _run(fns + """
+const reloads = [], embedReloads = [];
+let scheduledRenders = 0;
+apiJson = async () => { throw new Error("409"); };
+function recordBrowserLog() {}
+async function fetchWhiteboardState() { reloads.push(window.currentBoardId); }
+const WB_KIND_INFO = { node: { list: "nodes", payload: () => ({}) } };
+wbScheduleRender = () => { scheduledRenders++; };
+(async () => {
+const embed = I.mount(fakeEl("div", "box"), 5);
+embed.reload = async () => { embedReloads.push(5); };
+const slice = [{ kind: "node", item: { id: 1 } }];
+out.okA = await wbSaveManyBatch(slice, embed);
+out.a = { reloads: [...reloads], embedReloads: [...embedReloads], pageStale: I.page.stale === true };
+I.activate(embed);
+out.okB = await wbSaveManyBatch(slice, I.page);
+out.b = { reloads: [...reloads], pageStale: I.page.stale === true };
+I.activate(I.page);
+await new Promise((r) => setTimeout(r, 5));
+out.c = { reloads: [...reloads], pageStale: I.page.stale === true, scheduled: scheduledRenders };
+await wbSaveManyBatch(slice, I.page);
+out.d = [...reloads];
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["okA"] is False and out["okB"] is False
+    assert out["a"] == {"reloads": [], "embedReloads": [5], "pageStale": False}
+    assert out["b"] == {"reloads": [], "pageStale": True}
+    assert out["c"] == {"reloads": [1], "pageStale": False, "scheduled": 1}
+    assert out["d"] == [1, 1]

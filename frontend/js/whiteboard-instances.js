@@ -28,6 +28,9 @@
       container, boardId: boardId ?? null, state: { nodes: [], sketches: [], objects: [] },
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
       mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
+      //: `stale`: a save failed while this board was not live, so it reads itself again when it is
+      //: (the page board); `reload`: an embed's own read, which needs no live globals.
+      stale: false, reload: null,
       invZoom: "1", invTimer: 0, key: ++made,
       //: `wbHistoryBoard`, the board whose stacks `wbHistoryFor` holds live: an
       //: instance's own, so its first read keeps the stacks it has.
@@ -112,6 +115,10 @@
     restoreGlobals(inst);
     dropBoardCaches();
     wbUpdateUndoRedoButtons();
+    if (inst.stale) {
+      inst.stale = false;
+      fetchWhiteboardState().then(() => wbScheduleRender());
+    }
     if (inst.renderPending) {
       inst.renderPending = false;
       wbScheduleRender();
@@ -302,6 +309,7 @@
       if (list.length === 1) pageWakeListeners(false);
     }
 
+    inst.reload = reloadEmbed;
     try {
       await reloadEmbed();
     } catch (err) {
