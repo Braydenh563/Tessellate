@@ -287,8 +287,9 @@ and every run ends with a verification line and an Undo.
    most two other notes.
 
 19. **Meaning is the embedder's when it runs, shared words when not.**
-   Cosine 0.9 is one claim said twice, 0.55 one topic; the lexical twins are
-   Jaccard 0.6 and 0.12 over the words that are not the question's own. A
+   Cosine 0.86 is one claim said twice, 0.55 one topic; the lexical twins are
+   Jaccard 0.6 and 0.12 over the words that are not the question's own
+   (both cosine lines measured on bge-small 2026-11-14, L-chat-63). A
    repeated sentence is said once with "(Your notes say this N times.)"; a
    pair that differs in a figure or a "not" is never folded as a repeat. A
    broad answer's lead is the note named for the subject, else the sentence
@@ -366,7 +367,7 @@ gate (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5
 ### Phase 5: the composer, after INBOX 725
 From INBOX 725: (b), the 25-question eval with a real embedder setting the
 cosine thresholds (decision 19's are reasoned, the lexical ones are
-measured), is LEDGER L-chat-63. (a), (c), (d) and (g): built, see
+measured): built 2026-11-14, see HISTORY.md (L-chat-63). (a), (c), (d) and (g): built, see
 HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)"; (e): built, see HISTORY.md
 "Moved from the plans, 2026-11-12 (composer closeout)"; (f) "the composer
 acts": built, see HISTORY.md "Moved from the plans, 2026-11-12 (CHAT_PLAN Phase 5 f)".

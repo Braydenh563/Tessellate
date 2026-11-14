@@ -389,8 +389,10 @@ MEANING_POOL = 24
 #: Two sentences this alike say the same thing (cosine over the embedder's
 #: vectors). Above the paraphrase line of the small sentence models, below
 #: the near-identical: "The launch is on the 14th" and "We launch on the
-#: 14th" are one claim, said twice.
-SAME_COSINE = 0.9
+#: 14th" are one claim, said twice. Measured with bge-small (L-chat-63,
+#: tests/test_composer_cosine_evals.py): one-claim pairs 0.904 to 0.991,
+#: same-subject different claims at most 0.813; 0.86 is the gap's middle.
+SAME_COSINE = 0.86
 
 
 #: ...and share at least this much of their words (token Jaccard over stems):
@@ -400,7 +402,9 @@ SAME_WORDS = 0.34
 
 #: Two sentences this alike are about the same thing, the line between
 #: "also" and "separately" (cosine, then token Jaccard over the words that are
-#: not the question's own, which every candidate shares).
+#: not the question's own, which every candidate shares). Measured with
+#: bge-small (L-chat-63): different subjects at most 0.538, one subject from
+#: 0.433; 0.539 to 0.565 all misread 4 of 28 pairs, the fewest, so 0.55 stays.
 TOPIC_COSINE = 0.55
 
 

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Composer: the one-claim cosine line is measured on the real embedder (0.86), the topic line confirmed at 0.55 (L-chat-63).
 - Chat: "how much more did I walk than run" is two sums and a subtraction over the same notes, citing both, and "how close am I to my 10k goal" counts the runs the goal note names instead of every distance written (L-chat-234).
 - Chart maker: area, pie, scatter, histogram and table join bar and line, in the / menu, a chart block, and Chat's chart answer ("chart this as a pie" draws a pie instead of saying it is bars); the pie's slices are 5.9 to 1 or more against the card in both looks (L-chat-252).
 - Chat: every wording slot now has 20 or more distinct sentences across the four voices and five moods (23 abilities had 7 to 19; the quiz lines, the welcome, the small talk and the act lines now vary), and the terse voice's lines average 3.8 words against 8.4 for formal (L-chat-229, 230).

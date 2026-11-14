@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 48 | 21 | 0 | 0 | 69 |
+| chat | 0 | 47 | 21 | 0 | 0 | 68 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 420 | 90 | 0 | 124 | 836 |
+| all | 326 | 419 | 90 | 0 | 124 | 835 |
 
 ## graph
 
@@ -50,7 +50,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-59** `chat` partly, M: Model path: give the model the composer's chosen sentences as ids (the draft drawn before the first token is built, tests/test_composed_draft_chatplan59.py). Remaining step: in routes_chat._assist, number the sentences composer.brief keeps and have the prompt cite them by id, then check with `pytest -m evals` on the real model that it quotes by id (needs `scratchpad/llama-dev.sh serve`; a fake transport cannot show it). From CHAT_PLAN.md:1355-1360 recount 2026-11-14. Evidence: scout: routes_chat.py:736 yields composed_preview, no frontend consumer
 - [ ] **L-chat-60** `chat` partly, M: F5 remainder: write tools beyond the acts run from a sentence (the Ask chart event is built, tests/test_ask_chart_event_chatplan60.py). From CHAT_PLAN.md:1597 recount 2026-11-14. Evidence: write tools with no act in act_registry.ACTS: add_board_shape, add_map_node, add_whiteboard_card, add_whiteboard_link, check_learned, create_document, edit_board_item, delete_board_item, move_board_item, restore_board_item, generate_diagram, link_map_nodes, map_from_note, place_library_item, save_skill, audit_link_reasons
 - [ ] **L-chat-62** `chat` open, M: Phase 4 skills gate: Find loose ends 8 of 8 and 80% of built-in skills with no invalid call on a local 1.5 to 3B model. From CHAT_PLAN.md:363. Evidence: Phase 4 gate unmet: 3B found 2 of 8 (2026-10-05), 1.5B 2 of 8, skills 1/9 pass (2026-11-11); runnable headless on llama-server Remaining step: needs a real 1.5 to 3B model; run `scratchpad/llama-dev.sh serve`, then `pytest -m evals` on the skills set and tune the step prompts until Find loose ends passes 8 of 8; no fake-transport work reaches the gate.
-- [ ] **L-chat-63** `chat` open, M: Phase 5 (b): run the 25-question composer eval with the real embedder and set the cosine thresholds from it. From CHAT_PLAN.md:367. Evidence: Decision 19 cosine thresholds are reasoned, not measured; bge-small is runnable here (L-chat-43 measured it) Remaining step: needs the real embedder (bge-small, runnable here per L-chat-43); write the 25-question set under tests/evals, run it with the embedder on, read the cosine spread and set the Decision 19 thresholds from it. Not started this pass.
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14) Licences read 2026-11-14 from the wheels' metadata: holidays 0.108, inflect 7.6.0, rapidfuzz 3.14.6 and textstat 0.7.13 are all MIT (AGPL-compatible). Remaining step: add them to pyproject.toml with a docs/THIRD_PARTY.md line each in the same commit as the first use (holidays in the dates reader so 'last Christmas' gets its year, composer_empty.py:83; inflect for a/an and plurals; rapidfuzz for follow-on binding); an unused dependency is not added. wordfreq data licence still to check first.
 - [ ] **L-chat-156** `chat` partly, S: B20: ghost-text completions (decision 69). Built: every search box completes in grey with Tab or Right (frontend/js/search-suggest.js), and the offered and taken counts are kept in prefs (`searchSuggestAcceptRate`, test_chat_recount_b). The chat box is built too (frontend/js/chat-ghost.js, L-chat-141, test_chat_ghost_l141). Remaining step: the capture bar (typing there hands off to a note, so its ghost needs the quick-note field measured).
 - [ ] **L-chat-167** `chat` partly, S: 413 chat stutter (ResizeObserver loop): owner confirmation on next run; no row. From CHAT_PLAN.md:618. Evidence: Recount 2026-11-14 (audit, verify in code first): fit deferred one frame, 500 ms flip limit, per plan (o-webpanel.js); owner run not done Owner step: on the next real run confirm the chat stutter and the ResizeObserver loop errors are gone; the loop guard in chat.js is in code and tested (tests/test_chat_recount_l144.py), so this stays open until confirmed.
