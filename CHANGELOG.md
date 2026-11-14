@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings import: tests pin that skills, personas and templates merge by name and never replace (L588).
 - Dashboard: a Backups card (off by default, add it from Edit layout) shows the last backup, the next due and a failed last try, with a button to Settings (L591).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).
