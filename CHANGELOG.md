@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
+- Settings: undoing the avatar look puts the old look back in memory too, so the next autosave no longer re-sends the undone one (test_settings_recent_changes; L-world-class-32).
 - Documents: the title row at 320 wide and the sidebar tab strip at 820 no longer overflow their boxes (overlap.js documents: 2 overflows to 0 at all five widths; L-world-class-39).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).
 - Activity: a chat or job that fails on a file shows the reason, not the file's path and errno (L505).

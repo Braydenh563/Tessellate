@@ -237,3 +237,37 @@ console.log(JSON.stringify({ afterSwitch, afterDrag, quiet: undoStack.length, ch
     assert got["afterDrag"] == ["A b: 1 to 2", "Radius: 8 to 12"], "the drag leaves one step, back to where it began"
     assert got["quiet"] == 2, "a caller that raised its own Undo adds none here"
     assert got["change"] == "a_b"
+
+
+def test_undoing_the_avatar_look_updates_the_copy_every_autosave_sends() -> None:
+    """The look is held in memory (`nameMarkOwn`) and `savePrefs` re-sends it, so an
+    Undo that only PUT the old value was put back by the next unrelated save
+    (L-world-class-32: profile-look-look and profile-look-mood stayed NOT UNDONE)."""
+    apply_fn = _slice(DATA, "async function settingsHistoryApply", "async function settingsHistoryUndo")
+    out = _node(
+        """
+const calls = [];
+let busy = false, prefsCache = null;
+const settingsHistoryBigKept = new Map();
+const settingsHistoryFind = () => null, settingsHistoryLoad = () => [], settingsHistorySave = () => {};
+const renderSettingsHistory = () => {}, settingsModalOpen = () => false;
+const apiJson = async (path, o) => JSON.parse(o.body);
+let held = null, repainted = 0;
+const setOwnNameMarkStyle = (s) => { held = s; };
+const repaintOwnFace = () => { repainted++; };
+const ensureModule = async () => true;
+"""
+        + apply_fn.replace("settingsHistoryBusy", "busy")
+        + """
+(async () => {
+  await settingsHistoryApply({ id: 1, kind: "prefs", changes: [{ key: "avatar_style", old: { look: "a" }, new: { look: "b" } }] }, "old");
+  const back = JSON.stringify(held);
+  await settingsHistoryApply({ id: 2, kind: "prefs", changes: [{ key: "avatar_style", old: undefined, new: { look: "b" }, unset: true }] }, "old");
+  console.log(JSON.stringify({ back, cleared: JSON.stringify(held), repainted }));
+})();
+"""
+    )
+    got = json.loads(out)
+    assert got["back"] == '{"look":"a"}'
+    assert got["cleared"] == "{}", "an avatar that had no saved look goes back to none"
+    assert got["repainted"] == 2
