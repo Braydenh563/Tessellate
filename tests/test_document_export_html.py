@@ -174,3 +174,14 @@ def test_a_board_and_a_calendar_export_with_their_own_layout_on_screen_and_on_pa
     assert "grid-template-columns: repeat(7" in css and "flex-wrap: wrap" in css
     printed = css[css.index("@media print") :]
     assert ".db-card" in printed and "break-inside: avoid" in printed
+
+
+def test_a_saved_board_and_calendar_carry_no_dead_controls() -> None:
+    """L-documents-98, found in a real exported file opened in Chromium (no script in it): the six board cards kept
+    draggable="true" and picked up a ghost that dropped nowhere, the view switch and the Group by and Date in pickers were
+    empty shells (a bare "Group by" label, empty .menu-wrap spans), and the month arrows were already gone with the other
+    buttons, so the calendar's title stays as plain text for the month it was exported in."""
+    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    rest = docs[docs.index("docExportClean.rest = ") :][:3500]
+    for gone in (".db-choose", ".db-views", ".db-body .menu-wrap", 'removeAttribute("draggable")'):
+        assert gone in rest, gone

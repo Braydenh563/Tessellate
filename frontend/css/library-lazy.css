@@ -9910,6 +9910,32 @@ input[type="color"].wb-mixed {
 .doc-crumbs > .doc-crumb:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
 }
+/* A phone has 143px beside the back button for a title and a trail (measured at 390: the nav 49px, the title 21px), so a
+   sub-page's trail takes the row under them: a menu of every parent, then the nearest parent, cut to what is left. */
+.doc-crumb-more {
+  display: none;
+}
+@media (max-width: 599.98px) {
+  .doc-dock-identity:has(> .doc-crumbs) {
+    flex-wrap: wrap;
+  }
+  .doc-dock-identity > .doc-crumbs {
+    order: 3;
+    flex: 1 0 100%;
+    overflow: visible;
+  }
+  .doc-crumbs > .doc-crumb.doc-crumb-far,
+  .doc-crumbs > .doc-crumb-sep {
+    display: none;
+  }
+  .doc-crumbs > .doc-crumb-more {
+    display: inline-flex;
+  }
+  .doc-crumbs > .doc-crumb {
+    flex: 0 1 auto;
+    max-width: none;
+  }
+}
 /* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
 /* Page view (Format > Board): the printed page frames, under the cards. */
 .wb-page-frame {

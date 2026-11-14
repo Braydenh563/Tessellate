@@ -4090,6 +4090,10 @@ docExportClean.rest = (root) => {
       if (attribute.name === "style") node.removeAttribute("style");
     }
   }
+  //: A saved file has no script (L-documents-98, measured in Chromium): a board card dragged there dropped nowhere, and the
+  //: view switch and the Group by and Date in pickers were empty shells (a bare "Group by" label), so none of it goes in.
+  for (const node of root.querySelectorAll(".db-choose, .db-views, .db-body .menu-wrap")) node.remove();
+  for (const card of root.querySelectorAll(".db-card[draggable]")) card.removeAttribute("draggable");
   return root;
 };
 

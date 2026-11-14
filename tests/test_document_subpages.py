@@ -121,3 +121,23 @@ def test_the_frontend_draws_the_tree_and_offers_the_two_menu_items():
     assert "documents-subpages.js" in library
     editor = read_text("frontend/js/editor.js")
     assert 'id: "subpage"' in editor
+
+
+def test_a_phone_trail_is_the_nearest_parent_and_a_menu_of_all_of_them():
+    js = read_text("frontend/js/documents-subpages.js")
+    css = read_text("frontend/css/library-lazy.css")
+    #: Every parent is a row of one kebabMenu (DESIGN.md "A menu behind a button"); only the nearest stays a crumb.
+    assert 'kebabMenu(parents.map' in js and '"Parent pages"' in js and "doc-crumb-more" in js
+    assert 'classList.add("doc-crumb-far")' in js and "i < parents.length - 1" in js
+    phone = css[css.index("@media (max-width: 599.98px) {\n  .doc-dock-identity:has(> .doc-crumbs)"):]
+    phone = phone[: phone.index("\n}\n")]
+    assert "doc-crumb.doc-crumb-far" in phone and "flex: 1 0 100%" in phone and "doc-crumb-more" in phone
+    #: Off a phone the menu is not drawn: the whole trail shows as it did.
+    assert ".doc-crumb-more {\n  display: none;" in css
+
+
+def test_move_under_leaves_out_the_page_and_its_sub_pages():
+    js = read_text("frontend/js/documents-subpages.js")
+    pick = read_text("frontend/js/library-pick.js")
+    assert "exclude: await selfAndBelow(doc)" in js and "out.has(d.parent_id)" in js
+    assert "exclude = null" in pick and "exclude.has(row.id)" in pick
