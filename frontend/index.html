@@ -3820,6 +3820,9 @@ Link to another note with [[its first few words]]."></textarea>
                while the notebook has no dated notes. -->
           <select id="timeline-year" class="small-select timeline-year hidden" aria-label="Show one year"
             title="Narrow the timeline to one year"></select>
+          <!-- The journal streak (D6, L495): quiet text, not a control; hidden
+               under two days. Filled by `renderTimelineDayStrip`. -->
+          <span id="timeline-streak" class="timeline-streak muted hidden"></span>
         </div>
         <div class="timeline-days" id="timeline-daystrip-days"></div>
       </div>

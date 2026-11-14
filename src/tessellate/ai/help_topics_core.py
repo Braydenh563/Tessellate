@@ -392,7 +392,8 @@ HELP_TOPICS: list[dict] = [
             'names a time too ("on Friday at 3pm") shows that time. '
             'A range ("away 3 to 7 March") sits on its first day and runs through the last in the calendar. '
             "A daily note is an ordinary note whose title is its day, such as 2026-09-13; "
-            "the strip under the bar opens or starts one, and its head steps to the day before and after. "
+            "the strip under the bar opens or starts one, and its head steps to the day before and after; "
+            "after two days running with a daily note, the strip's head says how many days in a row. "
             "A week or more with nothing written shows a line between the dates; its What happened here? "
             "starts a page for the first empty day."
         ),
