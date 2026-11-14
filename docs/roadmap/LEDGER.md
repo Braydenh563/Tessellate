@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 17 | 1 | 0 | 7 | 18 |
+| documents | 0 | 17 | 1 | 0 | 1 | 18 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 533 | 125 | 2 | 159 | 1060 |
+| all | 402 | 533 | 125 | 2 | 153 | 1060 |
 
 ## graph
 
@@ -766,8 +766,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L869** `chat` blocked-hardware, S: Desk bust 20/28 px and live companion not swept; light-theme p10 contrast 2.6. From atlasf1696-1108c.md. Evidence: Needs real desk/Windows render and a sweep
 - [ ] **L870** `chat` blocked-hardware, M: Windows: foot offsets, hang on a real title bar, z-order vs taskbar, UpdateLayeredWindow. From desk-1670.md Remaining. Evidence: Source: unverified on Windows; fakes only
 - [ ] **L871** `chat` blocked-hardware, M: Linux desk: real window manager z-order, _NET_WORKAREA, suspend/resume, per-monitor scale. From desk-1670.md Remaining. Evidence: Xvfb has no WM; needs a real Linux desktop
-- [ ] **L884** `documents` blocked-hardware, S: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces.
-- [ ] **L887** `documents` blocked-hardware, S: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless.
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
 - [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable
 - [ ] **L899** `ui-modernisation` blocked-hardware, S: Verify phone foot bar touch and scroll-driven animation in webview. From OPEN.md:3860. Evidence: Needs touch device and desktop webview
@@ -867,11 +865,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
-- [ ] **L-documents-91** `documents` blocked-hardware, M: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here
-- [ ] **L-documents-92** `documents` blocked-hardware, M: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code
-- [ ] **L-documents-93** `documents` blocked-hardware, M: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested
 - [ ] **L-documents-94** `documents` blocked-hardware, M: Device check: writing desk Stop mid-pass against the real model via scratchpad/llama-dev.sh serve. From L889. Evidence: delayed reasoning stub: Stop reaches the model (hw889.js); llama-server not available here
-- [ ] **L-documents-95** `documents` blocked-hardware, M: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
 
 ## Plan session briefs
 
