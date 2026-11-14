@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 96 | 7 | 1 | 0 | 20 | 104 |
+| ui-modernisation | 96 | 6 | 1 | 0 | 20 | 103 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 442 | 130 | 2 | 182 | 1125 |
+| all | 553 | 441 | 130 | 2 | 182 | 1124 |
 
 ## graph
 
@@ -358,7 +358,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
 - [ ] **L-ui-modernisation-46** `ui-modernisation` open, M: Appearance panel: peek dimming of the strip and body and a shorter default height on tall windows, only if a measured read shows the panel reads poorly; a committed sweep. From L-ui-modernisation-40. Evidence: Split from L-ui-modernisation-40 once its door was built. Peek fades only the ground by design (appearance-panel-own-lazy.css: the controls stay sharp, against Settings' body at 0.32); the 788px height and dimming wait on a measured reading; the sweep on the scratchpad file cap.
-- [ ] **L-ui-modernisation-47** `ui-modernisation` open, M: Fix the base-merge reds on PR 224: boot CSS 165,033 over cap 164,300, 80 dead duplicate declarations, z-index ratchet 116 over 115. From merge of 7d501441..base 2026-11-13. Evidence: pytest tests/test_boot_budget.py tests/test_css_dead_duplicates.py tests/test_style_scale.py::test_no_new_literal_layer fail on the merged head; whether the base alone fails them is unchecked
 
 ## timeline
 

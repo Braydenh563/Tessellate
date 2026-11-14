@@ -7910,23 +7910,7 @@ button.connection-row:is(:hover, :focus-visible) {
 .library-image-meta > .library-image-reading[open] {
   flex: 1 1 100%;
 }
-/* The chip that replaced that fold (INBOX 279): it opens the picture rather
-   than the card, so it never has to hold a paragraph. It takes the step down
-   the type scale and the quiet padding the fold's summary took before it, for
-   the same reason, a 180px card cannot carry a control at the prose's own
-   rank; `min-height` rather than `height` so the 44px touch floor below 820
-   (10-responsive.css) still raises it.
-   On the chip's own class rather than on `.library-image-meta > ...`: a rule
-   led by a facts line's handle may not carry a `font-size`, because the rank
-   of a facts line comes from `.library-file-meta` alone
-   (`tests/test_ui_recipes.py`), and this is the control's size, not the
-   line's. */
-.library-image-text-chip {
-  height: auto;
-  min-height: var(--target-min);
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
-}
+
 .library-file-meta-sep {
   opacity: 0.5;
 }
@@ -7936,14 +7920,7 @@ button.connection-row:is(:hover, :focus-visible) {
   margin-top: 0;
   flex: 0 0 auto;
 }
-.library-file-summary {
-  margin: 0;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--text-sm);
-}
+
 /* The bend point on a selected link, a sibling of the endpoint handles,
    filled with the accent so it reads as "the curve's own control", not a
    third endpoint. Same pointer-events opt-in, for the same reason. */
@@ -15362,14 +15339,8 @@ h3.wb-sidebar-title {
    four and then five identical "v" buttons in a row, which no one can tell
    apart without opening each (INBOX 392's screenshot). Each carries an icon
    now, drawn only where its word is not, so the wide bar is what it was. */
-.wb-topbar .wb-menu-icon {
-  display: none;
-}
 
 @media (max-width: 56rem) {
-  .wb-topbar .wb-menu-icon {
-    display: inline-block;
-  }
 }
 
 .doc-dock-menu-list .doc-dock-menu-item[aria-pressed="true"],
@@ -19839,28 +19810,9 @@ input[type="file"]:active::file-selector-button {
    first card began at y=371 of 768 in landscape); the clamp is the phone's,
    where the cards are one column. */
 @media (max-width: 1099.98px) {
-  #tab-library .library-controls {
-    padding-inline: 0;
-    padding-top: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-  #tab-library .library-overview {
-    display: none;
-  }
   /* The kind chips are one sideways row, as they already are below 820
      (07-whiteboard-misc.css): at 1024 thirteen of them wrapped to two rows,
      48px of the first screen spent on a filter. */
-  #tab-library .library-filters {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  #tab-library .library-filters > * {
-    flex: 0 0 auto;
-  }
 }
 
 .attach-card > #note-picker-panel {
@@ -20529,13 +20481,6 @@ header#top-bar[data-scrolled="1"],
      the toast's centre): covered when the opener sat at 1050 or higher,
      at 1050 and every layer above it. 2700 clears the highest opener and stays under the boot splash
      (3000); `tests/test_toast_over_sheets.py` holds both ends. */
-  #toast-box {
-    z-index: 2700;
-    align-items: stretch;
-  }
-  #toast-box > .toast {
-    max-width: none;
-  }
   /* Above the floating + too, not over it: measured at 390 on Notes, the
      toast box stood on the tab bar (bottom 64px) and the New note button's
      centre (y 752) answered the toast. The page's own fab sets the line:
@@ -20543,12 +20488,6 @@ header#top-bar[data-scrolled="1"],
   /* The five pages that own a floating button; it floats only at 421px tall
      and up (phone-shell.js PHONE_FAB), hence the height query. */
   @media (min-height: 421px) {
-    body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box {
-      bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
-    }
-  }
-  .agent-monitor {
-    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -20614,10 +20553,6 @@ header#top-bar[data-scrolled="1"],
   /* The meta line's height (a 44px box hung off the card's corner, owner);
      the ::after, placed on .menu-wrap (positioned for its menu), gives a
      finger the 44px (L425). */
-  #entry-list > li .menu-wrap > button {
-    min-height: 0;
-    height: var(--control-h);
-  }
   #entry-list > li .menu-wrap > button::after {
     content: "";
     position: absolute;
@@ -20625,28 +20560,14 @@ header#top-bar[data-scrolled="1"],
   }
   /* The list is the page: the card that framed it on a desktop is a second
      frame inside the window's own, and cost each row 33px of its width. */
-  #tab-notes #browse,
-  #tab-chat #chat-main {
-    padding-inline: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
-  }
-  #tab-notes #browse {
-    padding-block: 0;
-  }
   #tab-notes .layout > .tab-main {
     /* Not 0: the cards stand on this edge, and their focus ring needs
        `--ring-room` (07-whiteboard-misc.css, "Ring room"; the margin there takes
        it back out). */
-    padding-right: var(--ring-room);
   }
   /* The list ends above the floating New note, 53.6px of back-to-top
      clearance being less than the fab's own height, offset and a step. Only
      while scrolled (the clearance rule's own condition). */
-  body.scroll-top-visible #tab-notes .layout > .tab-main {
-    padding-bottom: max(var(--scroll-top-clearance), calc(var(--target-min) + var(--space-5) + var(--space-3)));
-  }
 }
 
 /* A suggested tag's two controls are buttons (N37) that keep the chip's face. */

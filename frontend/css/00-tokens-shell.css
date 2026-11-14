@@ -1939,11 +1939,7 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
-.library-overview-note {
-  flex-basis: 100%;
-  margin: 0;
-  font-size: var(--text-sm);
-}
+
 /* --- the strips that appear only when they apply ---------------------------- */
 .library-contextbar {
   display: flex;
@@ -2214,10 +2210,7 @@ button.scroll-row-arrow[hidden] {
   min-width: 0;
   padding-right: var(--space-8);
 }
-.library-card-icon {
-  flex: 0 0 auto;
-  font-size: var(--text-lg);
-}
+
 .library-card-title {
   /* Two lines, then ellipsis. One line loses too many document titles; three
      makes the cards ragged, and a grid whose rows are different heights is the
@@ -2860,26 +2853,7 @@ button.scroll-row-arrow[hidden] {
 .library-image-reading > summary:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
 }
-/* **The count is a line you read, not a control you press** (INBOX 118: the
-   fold "sets two unrelated facts in one control"). Where a picture is used
-   and whether anything has read it were one summary line for one revision,
-   `.library-image-facts`, whose rules stood here; the two facts have two
-   shapes now, and this is the first of them. Nothing opens, nothing toggles,
-   so there is no ground, no border and no caret.
-   Measured before this rule existed, at 1440 dark on the seeded row: the
-   paragraph rendered at 16px with 16px of user-agent margin above and below
-   it, against 12px for the description it sits under and 12px for the fold
-   under that. The least important line on the card was its largest type and
-   cost 56px of the card's height. The utilities on the element
-   (`muted text-xs`) set the type and the colour; this kills the margin and
-   holds it to one line, so a card used in nine places is the same height as
-   one used in two. */
-.library-image-uses {
-  margin: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+
 /* The two blocks that moved inside the fold were written as sections of the
    card's outside: a rule above the usage chips, an inset on the byline. In
    here the fold's own padding and gap already separate them, and a hairline
@@ -3076,16 +3050,7 @@ button.scroll-row-arrow[hidden] {
 .library-image-caption-empty {
   font-style: italic;
 }
-/* The description's More/Less toggle is a real tonal button now, not
-   `.entry-more`'s accent-coloured link (INBOX 56: three accent links stacked
-   down a card read as its three actions). It sits at the paragraph's own
-   left edge, so it lines up with the text it belongs to rather than with the
-   card. */
-.library-image-ocr-more,
-.library-image-vision-ocr-more {
-  align-self: flex-start;
-  margin: 0 0 var(--space-3);
-}
+
 .library-image-caption-input {
   width: 100%;
   min-width: 0;

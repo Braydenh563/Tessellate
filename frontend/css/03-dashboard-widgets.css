@@ -2840,9 +2840,6 @@ button.answer-figure-open {
    not shown in this band; in the sheet it sheds its card, since the sheet is
    the card. */
 @media (max-width: 1099.98px) {
-  #tab-reminders > #reminder-compose {
-    display: none;
-  }
 }
 
 /* The horizontal inset is `.tab-page`'s job (--page-gutter), not the card's. */

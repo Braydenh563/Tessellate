@@ -2483,11 +2483,7 @@ button:not(.ghost) > .spinner {
 .library-file-meta.bookmark-meta > .library-file-meta-sep {
   flex: 0 0 auto;
 }
-/* Pinned is a state, so the control that holds it is coloured by it rather
-   than only by its glyph. */
-.bookmark-pinned {
-  color: var(--accent-text);
-}
+
 /* The dot makes the mark a positioned box, which paints over the tick that
    shares its grid cell (the tick takes the mark's place on hover, 08-
    consistency.css). The tick sits above it so the click lands on the tick. */
@@ -2573,40 +2569,7 @@ button:not(.ghost) > .spinner {
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
-/* The Links "Manage groups" dialog. Directly requested: "add buttons for
-   creating and managing groups in the links tab top dock", before this, a
-   group could only be made by typing its name into the Add form, and renamed
-   only by editing every link in it one at a time.
-   Wider than `.confirm-card` because it is a list rather than a sentence, and
-   the rows carry a name, a count and two buttons. Capped and scrollable for
-   the same reason every menu in the app now is: a notebook with thirty groups
-   must not push the Done button off the bottom of the screen. */
-.bookmark-groups-card {
-  max-width: 34rem;
-  width: min(34rem, 92vw);
-}
-.bookmark-groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  max-height: 50vh;
-  overflow-y: auto;
-  overflow-x: clip;
-  overscroll-behavior: contain;
-  margin-block: var(--space-3);
-}
-/* Name over count, so the row reads as one item rather than two columns of
-   unrelated text: the same stacked shape `.bookmark-main` uses. */
-.bookmark-group-row-main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-.bookmark-group-row-actions {
-  flex-shrink: 0;
-  gap: var(--space-1);
-}
+
 /* --- Library -> Contents: an outline (INBOX 496) ----------------------------
    The owner: "the contents library subtab could be redesigned soooo much
    better". It had a four-way segment, a sideways-scrolling strip of jump
@@ -2647,20 +2610,7 @@ button:not(.ghost) > .spinner {
   /* Bare at rest, opaque only while stuck (07-whiteboard-misc.css, INBOX 1489). */
   background: none;
 }
-.contents-heading-name {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* The count is quiet text beside the name ("Work 12"), never a pill. */
-.contents-count {
-  flex: 0 0 auto;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
+
 .contents-caret {
   flex: 0 0 auto;
   color: var(--muted);
@@ -2689,15 +2639,7 @@ button:not(.ghost) > .spinner {
 :where(.ph-caret-down, .contents-caret) {
   transition: transform var(--ui-base) var(--ease-out);
 }
-/* A category's own colour (`paintCategoryDot`), the dot every surface uses. */
-.contents-dot {
-  --category-dot: var(--accent);
-  flex: 0 0 auto;
-  width: 0.6em;
-  height: 0.6em;
-  border-radius: var(--radius-pill);
-  background: var(--category-dot);
-}
+
 /* One column, under a guide line that starts below the heading's caret, so
    the eye runs down the titles the way it runs down a book's index. */
 .contents-list {
@@ -2709,9 +2651,7 @@ button:not(.ghost) > .spinner {
   flex-direction: column;
   gap: var(--row-gap);
 }
-.contents-list > li {
-  min-width: 0;
-}
+
 /* A row: the `.timeline-row` shape, a transparent border so the hover moves
    nothing, the ground arriving with the pointer. The left gutter is where a
    document's caret sits, so every title starts at one edge whether or not
@@ -2733,12 +2673,7 @@ button:not(.ghost) > .spinner {
 .contents-row {
   min-height: var(--row-h);
 }
-.contents-doc-caret {
-  position: absolute;
-  inset-inline-start: 0;
-  width: var(--space-6);
-  text-align: center;
-}
+
 /* The mark: a 2rem square, the picture or the kind's glyph centred in it. */
 .contents-thumb,
 .contents-row > .contents-icon {
@@ -2758,18 +2693,7 @@ button:not(.ghost) > .spinner {
   flex: 0 0 auto;
   color: var(--muted);
 }
-.contents-row-body {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-.contents-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 /* One line, never two: the last fact gives way first. */
 .library-file-meta.contents-meta {
   flex-wrap: nowrap;
@@ -2782,14 +2706,7 @@ button:not(.ghost) > .spinner {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* A document's headings: an indented column under its title, deeper headings
-   one step further in (`--depth`, set by the builder). */
-.contents-subtree {
-  margin-inline-start: 0;
-  padding: 0;
-  border-left: 0;
-  gap: 0;
-}
+
 .contents-heading-row {
   --depth: 0;
   padding-block: var(--space-2);
@@ -3371,13 +3288,6 @@ li.link-source {
    list for the few seconds a toast lasts, and it takes the width, since a
    340px card in a 390px window is the width anyway less a crooked gap. */
 @media (max-width: 1099.98px) {
-  #toast-box {
-    left: var(--space-4);
-    right: var(--space-4);
-    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--space-2));
-    bottom: auto;
-    align-items: center;
-  }
 }
 .toast-more > .toast-more-open {
   flex: 1;
@@ -4899,10 +4809,7 @@ html.modal-open body {
   flex-direction: column;
   gap: var(--space-1);
 }
-.bookmark-edit-field input {
-  margin: 0;
-  width: 100%;
-}
+
 /* The Links "+ Add" button sat shorter than the three inputs beside it -
    reported directly. `.small` trims a button's padding, which is right in a
    toolbar but wrong in a form row, where the control height is set by the

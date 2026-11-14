@@ -194,14 +194,6 @@
      text cut 4px each side, the Add button 4px on the left). The room is
      padding, pulled back out by the same negative margin, so the form does
      not move. */
-  margin: calc(-1 * var(--ring-room));
-  padding: var(--ring-room);
-  border: 0;
-  background: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  overflow-y: auto;
 }
 
 /* **A table in the Read view is set like the prose around it** (audit 1102
@@ -310,14 +302,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.doc-prop-value {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1);
-  min-width: 0;
 }
 
 /* The chip's own remove button, and the row's: the app's icon-only ghost, at
@@ -429,24 +413,6 @@
    is moved into the sheet's card and sheds the popover it is elsewhere; its
    rows take the card's width at the band's 44px floor, and its hairlines
    between groups stay. */
-.action-menu-card > .action-menu {
-  position: static;
-  inset: auto;
-  width: auto;
-  min-width: 0;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  overflow-y: auto;
-  transform: none;
-  animation: none;
-}
 
 .cm-md-task-hit::before {
   content: "";
@@ -506,13 +472,6 @@
   text-align: right;
 }
 
-.cm-md-caption {
-  display: block;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  margin-top: var(--space-1);
-}
-
 /* A phone is one column wide, whatever the document says. Two 170px columns
    of prose are not two columns, they are two ragged strips. */
 @media (max-width: 599.98px) {
@@ -520,16 +479,6 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
   }
-}
-
-/* The source line is a link, not a caption: it opens the document at the
-   block. Right-aligned and small, which is where a citation goes. */
-.doc-embed-block-source {
-  display: block;
-  margin-top: var(--space-1);
-  margin-left: auto;
-  font-size: var(--text-sm);
-  color: var(--muted);
 }
 
 /* =============================================================================
@@ -872,42 +821,12 @@
    the gap between them is the tighter `--space-4` the phone docks were
    measured at. */
 @media (max-width: 599.98px) {
-  .dock {
-    column-gap: var(--space-4);
-  }
   /* Never wider than the dock: a zone of many actions (the Writing room's,
      515px of them) takes a row of its own and wraps inside it, right
      aligned, rather than running off the window (errors.js at 390). */
-  .dock > .dock-actions {
-    flex: 0 1 auto;
-    max-width: 100%;
-    min-width: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin-left: auto;
-  }
-  .dock > .dock-find {
-    order: 1;
-  }
   /* Chat's title is the conversation's name over the model it runs on, the
      way a phone's navigation bar puts a subtitle under its title, so the two
      share the width the three actions leave rather than each wanting it. */
-  .chat-toolbar .chat-headline {
-    flex-direction: column;
-    align-items: flex-start;
-    row-gap: 0;
-  }
-  .chat-toolbar .chat-headline > :first-child,
-  .chat-toolbar #chat-title {
-    min-width: 0;
-    max-width: 100%;
-  }
-  .chat-toolbar .chat-subline {
-    flex: 0 1 auto;
-    max-width: 100%;
-    font-size: var(--text-xs);
-    overflow: hidden;
-  }
   /* The model and the turn count leave the head: both are the model's
      business, and the model is named and chosen in the "How it answers"
      sheet a phone opens from the gear (`dockChatTools`). Measured with them
@@ -915,22 +834,11 @@
      model's name is a button at the band's 44px floor. The "reading a
      summary" pill stays, since it is about this conversation and shows only
      when it is true. */
-  .chat-toolbar #chat-active-model,
-  .chat-toolbar #chat-turns {
-    display: none;
-  }
   /* The lane the toolbar kept for the sidebar's own toggle: below 600 that
      toggle is not on the page (the opener in the head stands for it), so the
      lane was 42px of nothing before the opener. */
-  #tab-chat .chat-toolbar {
-    padding-left: var(--space-3);
-  }
 }
 
-.action-menu-card .action-menu .menu-item {
-  width: 100%;
-  min-height: var(--target-min);
-}
 
 .chat-dock-more-model > .select-shell > .select-opener {
   max-width: 100%;
@@ -1235,19 +1143,6 @@
   gap: var(--space-2);
   --doc-margin-offset: 0px;
   margin-top: var(--doc-margin-offset);
-}
-
-.doc-margin-card-text {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--text);
-  overflow-wrap: anywhere;
-}
-
-.doc-margin-card-reason {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--muted);
 }
 
 @media (max-width: 1099.98px) {
@@ -1570,18 +1465,12 @@
 }
 
 @media (max-width: 599.98px) and (pointer: coarse) {
-  #wb-gestures {
-    display: none;
-  }
 }
 
 /* ...and from 1100 up, where the form is on the page, "New reminder" only
    put the caret in it: a second filled "add" 200px under the form's own Add,
    two primaries for one action on one screen (INBOX 437 (4)). */
 @media (min-width: 1100px) {
-  #reminders-new {
-    display: none;
-  }
 }
 
 /* --- Phase 11 item 2: the note page, the sheet recipe's `page` variant -------

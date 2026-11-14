@@ -1272,17 +1272,7 @@
 .edit-conflict-compare .diff-viewer {
   max-height: 40vh;
 }
-/* showDetailDialog (app.js): confirmDialog's card shape, read-only. A
-   heading names what is being shown (an activity card's title) since there
-   is no yes/no question here for the message alone to frame. */
-.detail-dialog-card h3 {
-  margin: 0;
-}
-.detail-dialog-text {
-  max-height: 60vh;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
+
 .confirm-actions button {
   display: inline-flex;
   align-items: center;
@@ -1318,23 +1308,14 @@
 .library-create-picker {
   width: min(30rem, 96vw);
 }
-/* The sentence under the head, at the secondary size: it was the body's
-   16px under a 13px title. */
-.library-create-sub {
-  margin: var(--space-2) 0 0;
-  font-size: var(--text-sm);
-}
+
 /* The kinds, as rich picker rows (rich-picker.js): the list's own inset is
    the card's padding already, so the rows sit flush with the title. */
 .library-create-list {
   margin: var(--space-3) calc(var(--space-2) * -1) 0;
   padding: 0;
 }
-/* A choice is read in full: at 390 five of the seven descriptions ended in
-   an ellipsis (dog3-1026 row 22), so here they wrap to a second line. */
-.library-create-list .rich-picker-about {
-  white-space: normal;
-}
+
 /* --- the Ask box explaining itself (§35A) ----------------------------------
    Shown when someone types a greeting into a box that searches notes. It is
    styled as a prompt, NOT as an answer or an error: the first version put a

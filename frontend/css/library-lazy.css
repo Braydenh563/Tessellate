@@ -15,6 +15,441 @@
 
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
    name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
+/* --- moved from the boot sheets for L-ui-modernisation-47 (the same test as L459, boot order kept) --- */
+/* from 00-tokens-shell.css */
+.library-overview-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* from 00-tokens-shell.css */
+.library-card-icon {
+  flex: 0 0 auto;
+  font-size: var(--text-lg);
+}
+
+/* from 00-tokens-shell.css */
+/* **The count is a line you read, not a control you press** (INBOX 118: the
+   fold "sets two unrelated facts in one control"). Where a picture is used
+   and whether anything has read it were one summary line for one revision,
+   `.library-image-facts`, whose rules stood here; the two facts have two
+   shapes now, and this is the first of them. Nothing opens, nothing toggles,
+   so there is no ground, no border and no caret.
+   Measured before this rule existed, at 1440 dark on the seeded row: the
+   paragraph rendered at 16px with 16px of user-agent margin above and below
+   it, against 12px for the description it sits under and 12px for the fold
+   under that. The least important line on the card was its largest type and
+   cost 56px of the card's height. The utilities on the element
+   (`muted text-xs`) set the type and the colour; this kills the margin and
+   holds it to one line, so a card used in nine places is the same height as
+   one used in two. */
+.library-image-uses {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* from 00-tokens-shell.css */
+/* The description's More/Less toggle is a real tonal button now, not
+   `.entry-more`'s accent-coloured link (INBOX 56: three accent links stacked
+   down a card read as its three actions). It sits at the paragraph's own
+   left edge, so it lines up with the text it belongs to rather than with the
+   card. */
+.library-image-ocr-more,
+.library-image-vision-ocr-more {
+  align-self: flex-start;
+  margin: 0 0 var(--space-3);
+}
+
+/* from 01-forms-settings.css */
+/* Pinned is a state, so the control that holds it is coloured by it rather
+   than only by its glyph. */
+.bookmark-pinned {
+  color: var(--accent-text);
+}
+
+/* from 01-forms-settings.css */
+/* The Links "Manage groups" dialog. Directly requested: "add buttons for
+   creating and managing groups in the links tab top dock", before this, a
+   group could only be made by typing its name into the Add form, and renamed
+   only by editing every link in it one at a time.
+   Wider than `.confirm-card` because it is a list rather than a sentence, and
+   the rows carry a name, a count and two buttons. Capped and scrollable for
+   the same reason every menu in the app now is: a notebook with thirty groups
+   must not push the Done button off the bottom of the screen. */
+.bookmark-groups-card {
+  max-width: 34rem;
+  width: min(34rem, 92vw);
+}
+
+/* from 01-forms-settings.css */
+.bookmark-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: clip;
+  overscroll-behavior: contain;
+  margin-block: var(--space-3);
+}
+
+/* from 01-forms-settings.css */
+/* Name over count, so the row reads as one item rather than two columns of
+   unrelated text: the same stacked shape `.bookmark-main` uses. */
+.bookmark-group-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* from 01-forms-settings.css */
+.bookmark-group-row-actions {
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+/* from 01-forms-settings.css */
+.contents-heading-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* from 01-forms-settings.css */
+/* The count is quiet text beside the name ("Work 12"), never a pill. */
+.contents-count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* from 01-forms-settings.css */
+/* A category's own colour (`paintCategoryDot`), the dot every surface uses. */
+.contents-dot {
+  --category-dot: var(--accent);
+  flex: 0 0 auto;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: var(--radius-pill);
+  background: var(--category-dot);
+}
+
+/* from 01-forms-settings.css */
+.contents-list > li {
+  min-width: 0;
+}
+
+/* from 01-forms-settings.css */
+.contents-doc-caret {
+  position: absolute;
+  inset-inline-start: 0;
+  width: var(--space-6);
+  text-align: center;
+}
+
+/* from 01-forms-settings.css */
+.contents-row-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* from 01-forms-settings.css */
+.contents-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* from 01-forms-settings.css */
+/* A document's headings: an indented column under its title, deeper headings
+   one step further in (`--depth`, set by the builder). */
+.contents-subtree {
+  margin-inline-start: 0;
+  padding: 0;
+  border-left: 0;
+  gap: 0;
+}
+
+/* from 01-forms-settings.css */
+.bookmark-edit-field input {
+  margin: 0;
+  width: 100%;
+}
+
+/* from 04-chat-dock-appearance.css */
+.doc-list-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  /* Room for the kebab, reserved rather than taken - or a long title runs
+     underneath it instead of wrapping clear of it. The kebab is a target
+     (44px under a coarse pointer) set `--space-3` in from the row's edge, so
+     the reserve is its width plus that inset and a gap, less the row's own
+     padding: a flat `--space-9` left the 44px one 7px over the meta line at
+     420 (halfwindow.js). */
+  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3) + var(--space-2) - var(--space-5)));
+}
+
+/* from 04-chat-dock-appearance.css */
+.doc-gutter-current {
+  color: var(--ink);
+}
+
+/* from 05-sidebars-themes.css */
+/* Where there is no room beside the editor the panel is under it whatever was
+   chosen (`DOC_PROSE_NARROW`), so the toggle that chooses is not offered. */
+.doc-prose-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* from 05-sidebars-themes.css */
+/* The first group sits straight under the header, which has its own space
+   below it already. */
+.doc-prose-group:first-of-type {
+  margin-top: 0;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-prose-acts {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* from 05-sidebars-themes.css */
+/* **One drawing of a finding** (DOCUMENTS_PLAN 12 D1), used by the panel row
+   and by the menu's head, so the two cannot describe one object in two orders
+   again: a dot in the colour of that kind's underline, the words, the reason. */
+.doc-finding-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* from 05-sidebars-themes.css */
+/* The link back to the text. The same three colours the squiggles use, solid
+   rather than 80% mixed: a 0.5rem dot has no room to lose contrast. */
+.doc-finding-dot {
+  flex: none;
+  align-self: center;
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+}
+
+/* from 05-sidebars-themes.css */
+.cm-suggest-marker {
+  color: var(--muted);
+}
+
+/* from 05-sidebars-themes.css */
+/* In the menu the reason is a sentence with room to be one: it is the only
+   place in the app where a finding's why is allowed to wrap. */
+.doc-suggest-head .doc-finding-why {
+  overflow: visible;
+  white-space: normal;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-suggest-none {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+/* from 05-sidebars-themes.css */
+.doc-dictionary-word {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-dictionary-empty {
+  padding: var(--space-5) var(--space-3);
+  text-align: center;
+  color: var(--muted);
+}
+
+/* from 05-sidebars-themes.css */
+.doc-prose-title {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  white-space: nowrap;
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-prose-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-prose-empty-mark {
+  align-self: center;
+  color: var(--ok);
+  font-size: var(--text-lg);
+}
+
+/* from 05-sidebars-themes.css */
+/* Check with AI's own line (INBOX 410): what it is doing or did, then the ways
+   on, one row that wraps rather than overflowing a narrow right-docked panel.
+   The line is `--muted` at the panel's small size: it reports, it does not ask. */
+.doc-prose-ai {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+}
+
+/* from 05-sidebars-themes.css */
+.doc-prose-ai-notice {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+/* from 05-sidebars-themes.css */
+.doc-template-empty {
+  margin: 0;
+}
+
+/* from 05-sidebars-themes.css */
+/* Finished, in the app's own success ink. A colour and the numbers it sits
+   beside, never the colour alone: the count still reads 5/5. */
+.outline-tasks-done {
+  color: var(--ok);
+}
+
+/* from 06-timeline-dialogs.css */
+/* showDetailDialog (app.js): confirmDialog's card shape, read-only. A
+   heading names what is being shown (an activity card's title) since there
+   is no yes/no question here for the message alone to frame. */
+.detail-dialog-card h3 {
+  margin: 0;
+}
+
+/* from 06-timeline-dialogs.css */
+.detail-dialog-text {
+  max-height: 60vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* from 06-timeline-dialogs.css */
+/* The sentence under the head, at the secondary size: it was the body's
+   16px under a 13px title. */
+.library-create-sub {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+}
+
+/* from 06-timeline-dialogs.css */
+/* A choice is read in full: at 390 five of the seven descriptions ended in
+   an ellipsis (dog3-1026 row 22), so here they wrap to a second line. */
+.library-create-list .rich-picker-about {
+  white-space: normal;
+}
+
+/* from 07-whiteboard-misc.css */
+/* The chip that replaced that fold (INBOX 279): it opens the picture rather
+   than the card, so it never has to hold a paragraph. It takes the step down
+   the type scale and the quiet padding the fold's summary took before it, for
+   the same reason, a 180px card cannot carry a control at the prose's own
+   rank; `min-height` rather than `height` so the 44px touch floor below 820
+   (10-responsive.css) still raises it.
+   On the chip's own class rather than on `.library-image-meta > ...`: a rule
+   led by a facts line's handle may not carry a `font-size`, because the rank
+   of a facts line comes from `.library-file-meta` alone
+   (`tests/test_ui_recipes.py`), and this is the control's size, not the
+   line's. */
+.library-image-text-chip {
+  height: auto;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+/* from 07-whiteboard-misc.css */
+.library-file-summary {
+  margin: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-sm);
+}
+
+/* from 09-editor.css */
+.doc-prop-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* from 09-editor.css */
+.cm-md-caption {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+/* from 09-editor.css */
+/* The source line is a link, not a caption: it opens the document at the
+   block. Right-aligned and small, which is where a citation goes. */
+.doc-embed-block-source {
+  display: block;
+  margin-top: var(--space-1);
+  margin-left: auto;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* from 09-editor.css */
+.doc-margin-card-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* from 09-editor.css */
+.doc-margin-card-reason {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
 /* --- rows instead of cards (from 00-tokens-shell.css, L767: the class is set only by library.js and boards-gallery.js, both of whose bundles load this file first) ---------------------------------------------------
    Cards to browse, rows to manage: a list shows forty things at once with
    their metadata lined up in columns, which is what you want when the job is

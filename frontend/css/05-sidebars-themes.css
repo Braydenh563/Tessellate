@@ -4826,16 +4826,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-resize:has(+ .doc-prose-panel.hidden) {
   display: none;
 }
-/* Where there is no room beside the editor the panel is under it whatever was
-   chosen (`DOC_PROSE_NARROW`), so the toggle that chooses is not offered. */
-.doc-prose-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
+
 /* The group headings: the eyebrow, its count beside it as quiet text (INBOX
    549: pushed to the far edge it read as a second column of numbers), so the
    panel reads "Spelling 3, Style 11" at a glance. */
@@ -4851,11 +4842,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-/* The first group sits straight under the header, which has its own space
-   below it already. */
-.doc-prose-group:first-of-type {
-  margin-top: 0;
-}
+
 /* **A row is its head over its answers** (INBOX 549). It was a flex row, so
    an opened row's answers sat beside it and squeezed the finding to "s…" in
    the right dock. */
@@ -4903,12 +4890,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding-right: var(--space-1);
   border-radius: var(--radius-md);
 }
-.doc-prose-acts {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: var(--space-1);
-}
+
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
    pointer. */
 .doc-prose-rowhead .doc-prose-act.ghost.small {
@@ -4926,15 +4908,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }
-/* **One drawing of a finding** (DOCUMENTS_PLAN 12 D1), used by the panel row
-   and by the menu's head, so the two cannot describe one object in two orders
-   again: a dot in the colour of that kind's underline, the words, the reason. */
-.doc-finding-line {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-}
+
 /* A narrow panel (the right dock, focus mode, a phone) stacks the row the
    same way, the words over the reason, rather than ellipsising both. */
 @container doc-prose (max-width: 34rem) {
@@ -4961,16 +4935,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-finding-line-head .doc-finding-why {
   grid-column: 2;
 }
-/* The link back to the text. The same three colours the squiggles use, solid
-   rather than 80% mixed: a 0.5rem dot has no room to lose contrast. */
-.doc-finding-dot {
-  flex: none;
-  align-self: center;
-  width: var(--space-3);
-  height: var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--muted);
-}
+
 .doc-finding-dot-spelling {
   background: var(--error);
 }
@@ -5028,9 +4993,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
-.cm-suggest-marker {
-  color: var(--muted);
-}
+
 /* The words carry the identity, so they hold the weight and they are the half
    that ellipsises: the reason is a sentence and can be read from the title. */
 .doc-finding-words {
@@ -5198,12 +5161,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-bottom: 1px solid var(--border);
   margin-bottom: var(--space-1);
 }
-/* In the menu the reason is a sentence with room to be one: it is the only
-   place in the app where a finding's why is allowed to wrap. */
-.doc-suggest-head .doc-finding-why {
-  overflow: visible;
-  white-space: normal;
-}
+
 .doc-suggest-list,
 .doc-suggest-actions {
   display: flex;
@@ -5257,11 +5215,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-align: left;
   cursor: pointer;
 }
-.doc-suggest-none {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-xs);
-}
+
 /* **The writing dictionary as a settings sheet** (INBOX 410: "ugly and needs a
    proper professional modern redesign"). One column: the head (title, the count
    as muted text, the '?', close), a line, one field that finds and adds, a
@@ -5333,12 +5287,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding: 0 var(--space-1) 0 var(--space-3);
   border-radius: var(--radius-sm);
 }
-.doc-dictionary-word {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 /* Remove shows on the row under the pointer or with focus in it; on a touch
    screen, where nothing hovers, it is always there. */
 .doc-dictionary-remove {
@@ -5354,11 +5303,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
     opacity: 1;
   }
 }
-.doc-dictionary-empty {
-  padding: var(--space-5) var(--space-3);
-  text-align: center;
-  color: var(--muted);
-}
+
 .doc-dictionary-section {
   margin: var(--space-5) 0 var(--space-2);
   color: var(--muted);
@@ -5419,21 +5364,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--divider);
 }
-.doc-prose-title {
-  display: inline-flex;
-  flex: 0 1 auto;
-  align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-  white-space: nowrap;
-  font-size: var(--text-body);
-  font-weight: 600;
-}
-.doc-prose-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 .doc-prose-count {
   flex: none;
   color: var(--muted);
@@ -5563,22 +5494,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
   grid-column: 2;
   font-size: var(--text-xs);
 }
-.doc-prose-empty-mark {
-  align-self: center;
-  color: var(--ok);
-  font-size: var(--text-lg);
-}
-/* Check with AI's own line (INBOX 410): what it is doing or did, then the ways
-   on, one row that wraps rather than overflowing a narrow right-docked panel.
-   The line is `--muted` at the panel's small size: it reports, it does not ask. */
-.doc-prose-ai {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-sm);
-}
+
 .doc-prose-ai-line {
   flex: 1 1 12rem;
   min-width: 0;
@@ -5587,10 +5503,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-ai-line.error {
   color: var(--error);
 }
-.doc-prose-ai-notice {
-  flex: 1 1 100%;
-  margin: 0;
-}
+
 /* The squiggle's rules lived here, shared by the Live view's `<mark>`s and
    the Source view's backdrop. Both are gone: DOCUMENTS_PLAN Phase 2 made the
    findings mark decorations inside the editor, and a decoration's classes are
@@ -5748,9 +5661,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   min-height: 0;
   margin: 0;
 }
-.doc-template-empty {
-  margin: 0;
-}
+
 @media (max-width: 43.99rem) {
   .doc-template-body {
     grid-template-columns: minmax(0, 1fr);
@@ -5893,11 +5804,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      numbers change under the caret. */
   font-variant-numeric: tabular-nums;
 }
-/* Finished, in the app's own success ink. A colour and the numbers it sits
-   beside, never the colour alone: the count still reads 5/5. */
-.outline-tasks-done {
-  color: var(--ok);
-}
+
 /* --- the phone header fits inside the phone -------------------------------
    Measured at 390x844, on every tab: `document.documentElement.scrollWidth`
    397 against a `clientWidth` of 390, so the whole application slid 7px
