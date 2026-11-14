@@ -85,7 +85,7 @@ def test_one_refused_reminder_does_not_stop_the_batch_or_its_undo():
     for choice, verb in (("tomorrow", "PUT"), ("done", "PUT"), ("bin", "DELETE")):
         log = _run_in_node(choice)
         assert log["forward"] == 3, choice
-        assert ["Could not change 1 of 3 overdue reminders.", True] in log["toasts"], choice
+        assert ["Couldn't change 1 of 3 overdue reminders.", True] in log["toasts"], choice
         assert log["undo"] and "2 overdue reminders" in log["undo"], choice
         assert log["back"] and all("/reminders/2" not in c for c in log["back"]) and len(log["back"]) == 2, choice
         assert log["reloads"] == 2, choice

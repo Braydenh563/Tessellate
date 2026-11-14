@@ -46,9 +46,10 @@ def test_outcome_needs_a_note_and_words(client):
     assert (no_note.status_code, blank.status_code, missing.status_code) == (400, 422, 404)
 
 def test_ticking_off_a_reminder_with_a_note_offers_the_outcome():
-    source = frontend_text("shell-reminders.js")
-    assert "Add outcome" in source
-    assert "/outcome`" in source
+    # The offer is at boot; the prompt and the POST load on the press (boot scripts' cap).
+    assert "Add outcome" in frontend_text("shell-reminders.js")
+    assert "loadReminders.outcomeAsk(reminder)" in frontend_text("shell-reminders.js")
+    assert "/outcome`" in frontend_text("reminder-edit.js")
 
 
 def test_two_outcomes_at_once_both_land(client, monkeypatch):

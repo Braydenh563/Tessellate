@@ -681,43 +681,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1577 |
+| `addReminder` | frontend/js/shell-reminders.js:1544 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
 | `clearDoneReminders` | frontend/js/shell-reminders.js:1101 |
 | `clipText` | frontend/js/shell-reminders.js:848 |
-| `curtainShell` | frontend/js/shell-reminders.js:1719 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1628 |
+| `curtainShell` | frontend/js/shell-reminders.js:1686 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1595 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:445 |
 | `glideStrip` | frontend/js/shell-reminders.js:312 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1742 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1709 |
 | `loadReminders` | frontend/js/shell-reminders.js:934 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:520 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:595 |
 | `notePreviewText` | frontend/js/shell-reminders.js:883 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1523 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1490 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:627 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1356 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1323 |
 | `paginateDoneReminders` | frontend/js/shell-reminders.js:1052 |
-| `presetDate` | frontend/js/shell-reminders.js:1412 |
+| `presetDate` | frontend/js/shell-reminders.js:1379 |
 | `previewBlocks` | frontend/js/shell-reminders.js:875 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1683 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1544 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1392 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1532 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1650 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1511 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1359 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1499 |
 | `reminderItem` | frontend/js/shell-reminders.js:1142 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1568 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1556 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1373 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1535 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1523 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1340 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:272 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:762 |
-| `setDue` | frontend/js/shell-reminders.js:1461 |
+| `setDue` | frontend/js/shell-reminders.js:1428 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:858 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1475 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1442 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:416 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1467 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1434 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:675 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:235 |
 | `tabBarMode` | frontend/js/shell-reminders.js:229 |
@@ -725,8 +725,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:206 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1405 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1487 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1372 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1454 |
 | `updateReminderBadge` | frontend/js/shell-reminders.js:1071 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:809 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:835 |
@@ -1217,7 +1217,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1465 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1472 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2320 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2223 |
 | `stagedImageUrl` | frontend/js/settings-wiring.js:2111 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1171 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
@@ -12818,17 +12818,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 7. Meta looks like meta | frontend/css/07-whiteboard-misc.css:4356 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/01-forms-settings.css:1111 |
 | A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4795 |
-| A card's date is in the same corner on every card (INBOX 719) | frontend/css/07-whiteboard-misc.css:20045 |
+| A card's date is in the same corner on every card (INBOX 719) | frontend/css/07-whiteboard-misc.css:20031 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/07-whiteboard-misc.css:16095 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/07-whiteboard-misc.css:18697 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:484 |
 | A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:6944 |
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/07-whiteboard-misc.css:2017 |
-| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/07-whiteboard-misc.css:19752 |
+| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/07-whiteboard-misc.css:19738 |
 | A note's time: the same corner on every card | frontend/css/07-whiteboard-misc.css:11251 |
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3637 |
-| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:20171 |
-| A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:20027 |
+| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:20157 |
+| A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:20013 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2980 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2680 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/07-whiteboard-misc.css:16764 |
@@ -12872,15 +12872,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3308 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:983 |
 | On this day | frontend/css/03-dashboard-widgets.css:4572 |
-| One sidebar row recipe for every rail (INBOX 702) | frontend/css/07-whiteboard-misc.css:19994 |
-| One ⋯ opener, styled once (INBOX 722) | frontend/css/07-whiteboard-misc.css:20081 |
+| One sidebar row recipe for every rail (INBOX 702) | frontend/css/07-whiteboard-misc.css:19980 |
+| One ⋯ opener, styled once (INBOX 722) | frontend/css/07-whiteboard-misc.css:20067 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:9543 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3235 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/09-editor.css:1175 |
 | Phase 10, INBOX 101: concentric corners | frontend/css/09-editor.css:1204 |
 | Phase 11 item 12: a dock's head is one row on a phone | frontend/css/09-editor.css:811 |
 | Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:646 |
-| Phase 11 item 12: a note row designed for a thumb | frontend/css/07-whiteboard-misc.css:20534 |
+| Phase 11 item 12: a note row designed for a thumb | frontend/css/07-whiteboard-misc.css:20520 |
 | Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/09-editor.css:1421 |
 | Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/09-editor.css:1404 |
 | Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:439 |
@@ -12904,7 +12904,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | RESPONSIVE BY DEVICE (UI_MODERNISATION_PLAN.md: Phase 9) | frontend/css/07-whiteboard-misc.css:11512 |
 | Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:2102 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/01-forms-settings.css:6858 |
-| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/07-whiteboard-misc.css:19321 |
+| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/07-whiteboard-misc.css:19307 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3538 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1515 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:725 |
@@ -12936,7 +12936,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:5542 |
 | The bordered card | frontend/css/popup-anatomy-lazy.css:59 |
 | The chat header stays one line (INBOX 91) | frontend/css/07-whiteboard-misc.css:15742 |
-| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/07-whiteboard-misc.css:19657 |
+| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/07-whiteboard-misc.css:19643 |
 | The connection pill's menu button, concentric with the pill | frontend/css/07-whiteboard-misc.css:11680 |
 | The consistency pass (once 08-consistency.css) - one recipe per repeated shape | frontend/css/07-whiteboard-misc.css:16449 |
 | The documents editor: layout around the engine (DOCUMENTS_PLAN Phase 2) | frontend/css/09-editor.css:1 |
@@ -12953,7 +12953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:159 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4098 |
 | The surface model pickers on a phone | frontend/css/07-whiteboard-misc.css:16319 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/07-whiteboard-misc.css:20518 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/07-whiteboard-misc.css:20504 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:688 |
 | The two dialogs reported as off the modal recipe | frontend/css/07-whiteboard-misc.css:4880 |
 | The two rows that still wrapped at 1024 | frontend/css/07-whiteboard-misc.css:5921 |
@@ -13119,7 +13119,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/07-whiteboard-misc.css:18850 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/01-forms-settings.css:2624 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/07-whiteboard-misc.css:19247 |
-| motion: the opening curtain lifts (INBOX 577) | frontend/css/07-whiteboard-misc.css:19297 |
+| motion: the opening curtain lifts (INBOX 577) | frontend/css/07-whiteboard-misc.css:19283 |
 | moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:8241 |
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:6753 |
 | moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors | frontend/css/library-lazy.css:16 |
@@ -13320,7 +13320,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | top bar polish | frontend/css/05-sidebars-themes.css:4370 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1690 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:12306 |
-| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/07-whiteboard-misc.css:20230 |
+| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/07-whiteboard-misc.css:20216 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1938 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:993 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3606 |
@@ -13344,7 +13344,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/04-chat-dock-appearance.css | 6890 |
 | frontend/css/05-sidebars-themes.css | 6433 |
 | frontend/css/06-timeline-dialogs.css | 3892 |
-| frontend/css/07-whiteboard-misc.css | 20623 |
+| frontend/css/07-whiteboard-misc.css | 20609 |
 | frontend/css/09-editor.css | 1681 |
 | frontend/css/10-responsive.css | 1079 |
 | frontend/css/answer-foot-lazy.css | 161 |

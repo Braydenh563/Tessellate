@@ -156,6 +156,54 @@
 
   //: The Overdue heading's bulk choices (L-general-12), pressed from `loadReminders.overdueTriage`
   //: (shell-reminders.js). A property, not a global (the scope ratchet).
+  //: Completing a repeating reminder rolls it on to its next time, read
+  //: by the server from the rule (every weekday, the last Friday of the
+  //: month) in this person's own days; its undo puts the due time back.
+  loadReminders.completeRepeat = async function (reminder, before) {
+    const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
+    //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
+    if (!rolled) { loadReminders(); return; }
+    const put = (body) => async () => {
+      await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+      loadReminders();
+    };
+    pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
+    loadReminders();
+    toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
+  };
+
+  //: A reminder to the bin, and its Undo restores rather than recreating (row 30).
+  loadReminders.binOne = async function (reminder) {
+    await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
+    loadReminders();
+    const restore = async () => {
+      await apiJson(`/reminders/${reminder.id}/restore`, { method: "POST" });
+      loadReminders();
+    };
+    const rebin = async () => {
+      await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
+      loadReminders();
+    };
+    const action = pushUndo("Moved a reminder to the bin", restore, rebin);
+    toastAction(`Moved ${toastName(reminder.text, "the reminder")} to the bin.`, "Undo", async () => {
+      settleUndoFromToast(action);
+      await restore().catch((e) => toast(e.message, true));
+      toast(`Restored ${toastName(reminder.text, "the reminder")}.`);
+    });
+  };
+
+  //: "Add outcome" on a ticked-off reminder (L-general-10): one line, appended to its note.
+  loadReminders.outcomeAsk = async function (reminder) {
+    const text = await promptDialog("What came of it? One line, added to the end of the note.", "", { confirmLabel: "Add" });
+    if (!text?.trim()) return;
+    try {
+      await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) });
+      toast("Added to the note.");
+    } catch (err) {
+      toast(`Couldn't add it to the note: ${err.message}`, true);
+    }
+  };
+
   loadReminders.overdueRun = function (choice, items) {
     const rows = items.map((r) => ({ id: r.id, due_at: r.due_at, done: r.done }));
     //: allSettled, not all: one refused reminder stopped the batch's reload and its Undo while the
@@ -164,7 +212,7 @@
       const results = await Promise.allSettled(list.map(call));
       loadReminders();
       const ok = list.filter((_, i) => results[i].status === "fulfilled");
-      if (ok.length < list.length) toast(`Could not change ${list.length - ok.length} of ${list.length} overdue reminders.`, true);
+      if (ok.length < list.length) toast(`Couldn't change ${list.length - ok.length} of ${list.length} overdue reminders.`, true);
       return ok;
     };
     const put = (bodyOf) => (r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) });

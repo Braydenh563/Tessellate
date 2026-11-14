@@ -1037,7 +1037,7 @@ loadReminders.overdueTriage = function (items) {
   const go = (choice) => () =>
     lazyScript("/js/reminder-edit.js")
       .then(() => loadReminders.overdueRun(choice, items))
-      .catch((e) => toast(e.message || "Could not load the reminder tools.", true));
+      .catch((e) => toast(e.message || "Couldn't load the reminder tools.", true));
   return kebabMenu(
     [
       { label: "ph:sun-horizon Move all to tomorrow 9am", run: go("tomorrow"), group: "move" },
@@ -1166,37 +1166,20 @@ function reminderItem(reminder, label) {
   checkbox.style.width = "auto";
   checkbox.addEventListener("change", async () => {
     const before = { due_at: reminder.due_at, done: reminder.done };
-    //: Completing a repeating reminder rolls it on to its next time, read
-    //: by the server from the rule (every weekday, the last Friday of the
-    //: month) in this person's own days; its undo puts the due time back.
+    //: A repeating one rolls on to its next time (the lazy reminder-edit.js, `completeRepeat`).
     if (checkbox.checked && reminder.recurring && reminder.recurring !== "none") {
-      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
-      //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
-      if (!rolled) { loadReminders(); return; }
-      const put = (body) => async () => {
-        await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
-        loadReminders();
-      };
-      pushUndo("Rescheduled a reminder", put(before), put({ due_at: rolled.due_at, done: false }));
-      loadReminders();
-      toast(`Rescheduled to ${whenText(rolled.due_at)}.`);
-      return;
+      await lazyScript("/js/reminder-edit.js");
+      return loadReminders.completeRepeat(reminder, before);
     }
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
     if (checkbox.checked) atlasOn("done");
     //: What came of it, one line written into the note it is about (L-general-10): offered, never asked.
     if (checkbox.checked && reminder.entry_id && reminder.target_kind === "note") {
-      toastAction("Reminder done.", "Add outcome", async () => {
-        const text = await promptDialog("What came of it? One line, added to the end of the note.", "", { confirmLabel: "Add" });
-        if (!text?.trim()) return;
-        try {
-          await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) });
-          toast("Added to the note.");
-        } catch (err) {
-          toast(`Couldn't add it to the note: ${err.message}`, true);
-        }
-      });
+      //: The prompt is in the lazy reminder-edit.js: only a press needs it (boot scripts' cap).
+      toastAction("Reminder done.", "Add outcome", () =>
+        lazyScript("/js/reminder-edit.js").then(() => loadReminders.outcomeAsk(reminder))
+      );
     }
   });
   row.appendChild(checkbox);
@@ -1270,24 +1253,8 @@ function reminderItem(reminder, label) {
   //: is touched for; four same-sized icons were one more than a row reads.
   //: A deleted reminder goes to the recycle bin (WORLD_CLASS_PLAN 5 item
   //: 10); Undo restores the same reminder, its id and its target kept.
-  const deleteReminder = async () => {
-    await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-    loadReminders();
-    const restore = async () => {
-      await apiJson(`/reminders/${reminder.id}/restore`, { method: "POST" });
-      loadReminders();
-    };
-    const rebin = async () => {
-      await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
-      loadReminders();
-    };
-    const action = pushUndo("Moved a reminder to the bin", restore, rebin);
-    toastAction(`Moved ${toastName(reminder.text, "the reminder")} to the bin.`, "Undo", async () => {
-      settleUndoFromToast(action);
-      await restore().catch((e) => toast(e.message, true));
-      toast(`Restored ${toastName(reminder.text, "the reminder")}.`);
-    });
-  };
+  //: Bin with Undo, in the lazy reminder-edit.js: only a press needs it.
+  const deleteReminder = () => lazyScript("/js/reminder-edit.js").then(() => loadReminders.binOne(reminder));
   const menuItems = [];
   const target = reminderTarget(reminder);
   if (target) menuItems.push({ label: target.label, run: target.open, group: "go" });

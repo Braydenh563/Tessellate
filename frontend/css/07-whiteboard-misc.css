@@ -19280,20 +19280,6 @@ input[type="file"]:active::file-selector-button {
 
 .sheet-overlay.sheet-leaving { opacity: 0; pointer-events: none; }
 
-/* **An open board or map is a full editor, like a document: the Library's
-   sub-tab strip goes** (INBOX 476: "the library submenu bar shows on the
-   whiteboard and mindmap but not on the documents editor"). The document
-   editor is its own page and never showed the strip; a board lives inside the
-   Library, so the strip is hidden while the canvas view (not the list of
-   boards) is open, at every width. "Boards", the bar's own button, is the way
-   back, and it brings the strip with it. It was phone-only first (52px of a
-   604px canvas); a desktop board takes the same row for itself now. The
-   map's gesture hint names two keys a phone does not have; there the +
-   handles on a selected node are the gesture, and they are already 44px. */
-#tab-library:has(> #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) #library-subtabs {
-  display: none;
-}
-
 /* --- motion: the opening curtain lifts (INBOX 577) --------------------------
    After the password, the lock screen stays up while the first tab draws
    (`curtainShell`, app.js) and then fades once over the finished page;
