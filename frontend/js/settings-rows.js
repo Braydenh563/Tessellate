@@ -62,6 +62,7 @@
     { key: "auto_link_enabled", id: "pref-auto-link" },
     { key: "auto_dedupe_enabled", id: "pref-auto-dedupe" },
     { key: "auto_stale_review_enabled", id: "pref-auto-stale-review" },
+    { key: "learned_audit_enabled", id: "pref-learned-audit" },
     { key: "auto_capture_enabled", id: "pref-auto-capture" },
     { key: "mcp_writes_enabled", id: "pref-mcp-writes" },
     { key: "autonomous_tasks_interval_hours", id: "pref-autonomous-interval" },

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 62 | 35 | 0 | 19 | 227 |
+| world-class | 130 | 61 | 35 | 0 | 19 | 226 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 456 | 106 | 2 | 130 | 1115 |
+| all | 553 | 455 | 106 | 2 | 130 | 1114 |
 
 ## graph
 
@@ -483,7 +483,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded
 - [ ] **L583** `world-class` open, M: Sweep the remaining literal toast("...", true) error calls so each carries a what-to-do action instead of the default Open the logs. From OPEN.md:4247; OPEN.md:1389; OPEN.md:1396; OPEN.md:3465. Evidence: toast action support exists (status.js:347); per-error call-site sweep not done.
-- [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
 - [ ] **L587** `world-class` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found

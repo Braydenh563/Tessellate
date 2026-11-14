@@ -412,7 +412,7 @@ MORE_TOPICS: list[dict] = [
             "or a sentence inside a quote or a list of questions and answers; a "
             "sentence you marked wrong; a repeat), and flags what needs your eye "
             "(two notes that disagree, a date that has passed), marked on the row "
-            "with a Check this line. It also runs after each background pass, as a "
+            "with a Check this line and a Keep it button (the flag goes and is not raised again). It also runs after each background pass, unless Check what it learned on its own schedule, at the top of the pane, is off, as a "
             "job in Settings, Background tasks with its lines, and as the skill "
             "Check what it learned. Export what it learned and Forget "
             "everything learned act on all of it and never touch your notes. "

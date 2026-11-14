@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- What it learned: a flagged row has Keep it (the flag goes and no later check raises it), and a Settings switch turns the scheduled check off (L584).
 - Settings import: tests pin that skills, personas and templates merge by name and never replace (L588).
 - Dashboard: a Backups card (off by default, add it from Edit layout) shows the last backup, the next due and a failed last try, with a button to Settings (L591).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
