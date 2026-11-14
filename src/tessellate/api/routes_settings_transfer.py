@@ -18,7 +18,7 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -215,6 +215,52 @@ def export_markdown(
         content=build_markdown_export(session, chosen),
         media_type="application/zip",
         headers={"Content-Disposition": "attachment; filename=tessellate-markdown.zip"},
+    )
+
+
+class BoardFolderIn(BaseModel):
+    """A board's picture, drawn by the browser, and the notes on it."""
+
+    name: str = Field(default="", max_length=200)
+    svg: str = Field(max_length=20_000_000)
+    #: Base64 PNG, optional: a browser that could not draw one still exports.
+    png: str | None = Field(default=None, max_length=40_000_000)
+    ids: list[int] = Field(default_factory=list, max_length=5000)
+
+
+@router.post("/export/board-folder")
+def export_board_folder(body: BoardFolderIn, session: Session = Depends(get_session)) -> Response:
+    """A board or map as a folder (WORLD_CLASS_PLAN decision 66): its picture
+    as SVG and PNG, and every note it links as Markdown, the same files the
+    selection's Export writes, under `notes/`. One zip, one folder inside."""
+    import base64
+    import binascii
+
+    if not body.svg.lstrip().startswith(("<svg", "<?xml")):
+        raise HTTPException(status_code=422, detail="That is not an SVG picture.")
+    png = None
+    if body.png:
+        try:
+            png = base64.b64decode(body.png, validate=True)
+        except (binascii.Error, ValueError):
+            raise HTTPException(status_code=422, detail="The PNG could not be read.") from None
+        if not png.startswith(b"\x89PNG"):
+            raise HTTPException(status_code=422, detail="The PNG could not be read.")
+    #: The ASCII form: it names the download in a header, which is Latin-1.
+    slug = paths.slug(body.name, 60, ascii_only=True, fallback="board")
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(f"{slug}/{slug}.svg", body.svg)
+        if png is not None:
+            archive.writestr(f"{slug}/{slug}.png", png)
+        if body.ids:
+            notes = zipfile.ZipFile(io.BytesIO(build_markdown_export(session, sorted(set(body.ids)))))
+            for name in notes.namelist():
+                archive.writestr(f"{slug}/notes/{name}", notes.read(name))
+    return Response(
+        content=buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{slug}.zip"'},
     )
 
 

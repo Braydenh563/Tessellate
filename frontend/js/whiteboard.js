@@ -14990,6 +14990,30 @@ const WB_EXPORT_FORMATS = [
     run: () => wbExportDrawio(),
   },
   {
+    //: **A folder with its notes** (WORLD_CLASS_PLAN decision 66,
+    //: L-world-class-130): one zip holding the picture as SVG and PNG and
+    //: every note on the board (or in the selection) as Markdown, the files
+    //: the Notes selection's Export writes. Inline so the shared scope does
+    //: not grow; the server only packs what the browser drew.
+    value: "folder", label: "Folder with notes", scopes: ["selection", "whole"], picture: true,
+    note: "A zip: the picture as SVG and PNG, with every note on it as Markdown.",
+    run: async (scope) => {
+      const { scale, transparent } = wbExportPngPrefs();
+      const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
+      const png = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png").catch(() => null);
+      const base64 = png ? await blobToBase64(png).catch(() => null) : null;
+      const keys = scope === "selection" ? wbSelectedKeys() : null;
+      const ids = [...new Set(wbState.nodes.filter((n) => n.entry_id && (!keys || keys.has(wbMultiKey("node", n.id)))).map((n) => n.entry_id))];
+      const name = wbBoardTitleForExport() || "Board";
+      const response = await api("/export/board-folder", {
+        method: "POST",
+        body: JSON.stringify({ name, svg: await wbInlineSvgImages(svg), png: base64, ids }),
+      });
+      await saveFile(wbExportFileName(scope, "zip"), await response.blob());
+      toast(`Board exported as a folder with ${nounCount(ids.length, "note")}.`);
+    },
+  },
+  {
     value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
     note: "Opens Print: choose “Save as PDF” as the destination.",
     run: (scope) => wbExportPdf(scope),
