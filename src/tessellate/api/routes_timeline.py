@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import threading
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from functools import partial
@@ -907,21 +908,45 @@ def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: AN
     return trim_assistant_padding(said)
 
 
+#: One model call per span (review 5899369381): the call left running past
+#: SPAN_MODEL_TIMEOUT is reused by the next open of the same span, and its
+#: review is kept, keyed by the span's ends and its newest note, so a note
+#: written into the span asks again. Small: one sheet is open at a time.
+_SPAN_FLIGHTS: dict[tuple, object] = {}
+_SPAN_SAID: dict[tuple, str] = {}
+_SPAN_KEPT_MAX = 16
+_SPAN_LOCK = threading.Lock()
+
+
 def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
     """`_span_said_by_model`, or "" when it takes longer than
     SPAN_MODEL_TIMEOUT or fails. On `jobs.future`, so the call is listed and a
-    late one is left to finish, never joined."""
+    late one is left to finish, never joined; at most one runs per span."""
     from concurrent.futures import TimeoutError as FutureTimeout
 
     from tessellate.core import jobs
 
-    flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
+    key = (first, last, max((n["id"] for n in notes), default=None))
+    with _SPAN_LOCK:
+        if key in _SPAN_SAID:
+            return _SPAN_SAID[key]
+        flight = _SPAN_FLIGHTS.get(key)
+        if flight is None:
+            flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
+            _SPAN_FLIGHTS[key] = flight
     try:
-        return flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
+        said = flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
     except FutureTimeout:
         return ""
     except Exception:  # noqa: BLE001  # a failed call is the composer's turn
-        return ""
+        said = ""
+    with _SPAN_LOCK:
+        _SPAN_FLIGHTS.pop(key, None)
+        if said:
+            _SPAN_SAID[key] = said
+            while len(_SPAN_SAID) > _SPAN_KEPT_MAX:
+                _SPAN_SAID.pop(next(iter(_SPAN_SAID)))
+    return said
 
 
 @router.get("/digest")
