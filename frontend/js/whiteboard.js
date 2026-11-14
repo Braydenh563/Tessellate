@@ -8254,6 +8254,24 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
     rigidLinks.push({ pair, path, hit, at, hitAt });
     return true;
   };
+  //: The same for a tree line with both topics moving: its two paths are
+  //: compiled like a link's, and its end dots, handle and label are points
+  //: read off the element as drawn, which already holds a label's own nudge.
+  const rigidEdges = [];
+  const rigidEdge = (edge) => {
+    const el = edge.el;
+    if (!el?.isConnected || !moving.has(`object:${edge.parent.id}`) || !moving.has(`object:${edge.child.id}`)) return false;
+    const at = wbTransformPathD.translator(el.getAttribute("d"));
+    const hitAt = el._wbHitTwin ? wbTransformPathD.translator(el._wbHitTwin.getAttribute("d")) : null;
+    if (!at || (el._wbHitTwin && !hitAt)) return false;
+    const points = [];
+    for (const [dot, x, y] of [...(el._wbEnds || []).map((dot) => [dot, "cx", "cy"]), [el._wbHandle, "cx", "cy"], [el._wbLabel, "x", "y"]]) {
+      const x0 = Number(dot?.getAttribute(x)), y0 = Number(dot?.getAttribute(y));
+      if (dot && Number.isFinite(x0) && Number.isFinite(y0)) points.push({ dot, x, y, x0: Math.round(x0 * 100), y0: Math.round(y0 * 100) });
+    }
+    rigidEdges.push({ edge, el, at, hitAt, points });
+    return true;
+  };
   for (const key of keys) {
     if (key === excludeKey) continue; // the dragged item's own handler already moves it
     const sep = key.indexOf(":");
@@ -8282,7 +8300,7 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
           const edgeKey = `${edge.parent.id}:${edge.child.id}`;
           if (claimed.has(edgeKey)) continue;
           claimed.add(edgeKey);
-          mapEdges.push(edge);
+          if (!rigidEdge(edge)) mapEdges.push(edge);
         }
       }
       const linked = wbLinkedSketchesFor(id, kind, linkIndex);
@@ -8309,6 +8327,7 @@ function wbCaptureBulkMoveOrigin(excludeKey, keys = wbMultiSelection) {
   //: ride along on (`wbBulkBarBounds`).
   if (keys === wbMultiSelection && wbMultiSelection.size > 1) origin.boundsAtStart = wbSelectionBounds();
   origin.rigidLinks = rigidLinks;
+  origin.rigidEdges = rigidEdges;
   return origin;
 }
 
@@ -8443,6 +8462,20 @@ function wbApplyBulkMove(origin, dx, dy) {
     }
     rigid.path.setAttribute("d", rigid.at(dx, dy));
     rigid.hit?.setAttribute("d", rigid.hitAt(dx, dy));
+  }
+  const write = wbTransformPathD.translator.write;
+  const x100 = Math.round(dx * 100), y100 = Math.round(dy * 100);
+  for (const rigid of origin.rigidEdges || []) {
+    if (!rigid.el.isConnected) { wbUpdateMapEdges([rigid.edge]); continue; }
+    //: Drawn by hand, as `wbUpdateMapEdges` marks it: the render's cache no
+    //: longer holds what is on screen.
+    rigid.el._wbMoved = true;
+    rigid.el.setAttribute("d", rigid.at(dx, dy));
+    rigid.el._wbHitTwin?.setAttribute("d", rigid.hitAt(dx, dy));
+    for (const point of rigid.points) {
+      point.dot.setAttribute(point.x, write(point.x0 + x100));
+      point.dot.setAttribute(point.y, write(point.y0 + y100));
+    }
   }
 }
 
@@ -18524,7 +18557,12 @@ async function initWhiteboard() {
   function wbEdgePanTick() {
     wbEdgePan.frame = 0;
     if (!wbEdgePanWanted() || !document.body.contains(containerEl)) return;
-    const r = containerEl.getBoundingClientRect();
+    //: The per-gesture box, not a fresh one: this frame runs after the drag
+    //: has written transforms and link paths, so a fresh read laid the whole
+    //: board out again every frame (1,569ms of a 200-topic linked branch
+    //: drag, L-ui-modernisation-61). A button is down while it runs, which
+    //: is when the cache holds.
+    const r = wbCanvasOriginRect();
     const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
     const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
     const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
@@ -20306,17 +20344,31 @@ wbTransformPathD.translator = function (d) {
       continue;
     }
     heads.push(text);
-    nums.push(parseFloat(tok));
+    nums.push(Math.round(parseFloat(tok) * 100));
     ys.push(y);
     y = !y;
     text = " ";
   }
   const tail = text === " " ? "" : text;
+  //: In hundredths, written as whole numbers and a looked-up fraction: a
+  //: fractional number's text is the slow part of the frame, and integers
+  //: and table reads came out four times faster for the same string (87ms
+  //: against 362ms for 60,000 paths of 32 numbers, about one 200-topic drag).
+  const write = wbTransformPathD.translator.write;
   return (dx, dy) => {
+    const x = Math.round(dx * 100);
+    const yy = Math.round(dy * 100);
     let out = "";
-    for (let i = 0; i < nums.length; i++) out += heads[i] + Math.round((nums[i] + (ys[i] ? dy : dx)) * 100) / 100;
+    for (let i = 0; i < nums.length; i++) out += heads[i] + write(nums[i] + (ys[i] ? yy : x));
     return out + tail;
   };
+};
+//: A whole number of hundredths as the text of the number: "-0.05" for -5,
+//: "12.5" for 1250. ".05" for 5, ".5" for 50, nothing for 0 is how one ends.
+wbTransformPathD.translator.fractions = Array.from({ length: 100 }, (_, r) => (r === 0 ? "" : r % 10 === 0 ? `.${r / 10}` : `.${String(r).padStart(2, "0")}`));
+wbTransformPathD.translator.write = (v) => {
+  const a = v < 0 ? -v : v;
+  return (v < 0 ? "-" : "") + Math.floor(a / 100) + wbTransformPathD.translator.fractions[a % 100];
 };
 
 //: The bounding box of a path this app drew, walked the same way a real SVG

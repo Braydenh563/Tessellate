@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Maps: a branch drag offsets the tree lines inside the branch instead of redrawing them, writes the moved paths four times faster, and the edge pan reads the canvas box once a gesture (1,569ms of forced layout in a 200-topic drag; L-ui-modernisation-61).
 - Maps: a link with both ends inside a dragged branch is translated, not re-routed, each move, and a link shared by two moved topics is updated once (L-ui-modernisation-61).
 - Maps: the zoom level holds its width, so a zoom past 100% no longer restyles the whole board (192ms and 120ms frames at 200 topics; L-ui-modernisation-61). mapperf.js waits for the board bundle instead of sleeping.
 - LEDGER: the highlighter-opacity row L-whiteboard-19 is L-whiteboard-51 (whiteboard reserved it; its own 19 is another row).

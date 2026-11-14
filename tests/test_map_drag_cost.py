@@ -204,7 +204,7 @@ def test_the_selection_chrome_is_found_once_per_gesture() -> None:
 
 def _translator_js() -> str:
     """The text of `wbTransformPathD.translator`, from its assignment to its closing `};`."""
-    match = re.search(r"^wbTransformPathD\.translator = function \(d\) \{.*?^\};", WB, re.M | re.S)
+    match = re.search(r"^wbTransformPathD\.translator = function \(d\) \{.*?^\};\n(?://[^\n]*\n)*wbTransformPathD\.translator\.fractions = .*?^\};", WB, re.M | re.S)
     assert match, "wbTransformPathD.translator is gone"
     return match.group(0)
 
@@ -245,10 +245,45 @@ def test_the_translator_offsets_every_point_and_refuses_what_is_not_a_point_list
         "function wbTransformPathD() {}\n" + _translator_js() + "\n"
         "const t = wbTransformPathD.translator;\n"
         "const ribbon = t('M10 20C1.5 2.5 3 4 -5 6L7 8.25Z');\n"
-        "console.log(JSON.stringify([ribbon(0, 0), ribbon(100, -10), t('M0 0A5 5 0 0 1 10 10'), t('M0 0h10'), t(null)]));\n",
+        "console.log(JSON.stringify([ribbon(0, 0), ribbon(100, -10), t('M0 0A5 5 0 0 1 10 10'), t('M0 0h10'), t(null),\n"
+        "  t('M0.05 -0.3L-12.5 1')(-0.1, 0.3), t('M1.004 2')(0, 0)]));\n",
         encoding="utf-8",
     )
     out = json.loads(subprocess.run(["node", str(script)], capture_output=True, text=True, check=True).stdout)
     assert out[0] == "M10 20C1.5 2.5 3 4 -5 6L7 8.25Z"
     assert out[1] == "M110 10C101.5 -7.5 103 -6 95 -4L107 -1.75Z"
-    assert out[2:] == [None, None, None]
+    assert out[2:5] == [None, None, None]
+    # Hundredths either side of zero, which the whole-number writing has to sign
+    # and pad by hand, and a third decimal place, which it rounds away.
+    assert out[5] == "M-0.05 0L-12.6 1.3"
+    assert out[6] == "M1 2"
+
+
+def test_the_edge_pan_reads_the_canvas_box_from_the_gesture_cache() -> None:
+    """Source text: the edge pan's frame reads the per-gesture canvas box.
+
+    It runs as an animation frame during every drag, after the drag has
+    written transforms and link paths, so its own `getBoundingClientRect` laid
+    out the whole board again each frame: 1,569ms of a 25-move linked branch
+    drag at 200 topics (L-ui-modernisation-61). The pointer is down for as long
+    as it runs, which is exactly when the cached box cannot be stale."""
+    match = re.search(r"^  function wbEdgePanTick\(\) \{\n(.*?)^  \}\n", WB, re.MULTILINE | re.DOTALL)
+    assert match, "wbEdgePanTick is gone; this lint is about its body"
+    tick = "\n".join(line for line in match.group(1).splitlines() if not line.lstrip().startswith("//"))
+    assert "wbCanvasOriginRect()" in tick
+    assert "containerEl.getBoundingClientRect()" not in tick
+
+
+def test_a_tree_line_inside_the_moved_branch_is_translated_not_recomputed() -> None:
+    """Source text: wbCaptureBulkMoveOrigin and wbApplyBulkMove (L-ui-modernisation-61).
+
+    Once the links travelled, the tree lines were the largest script cost of a
+    200-topic branch drag: `wbUpdateMapEdges` redrew each one from its two
+    topics every move, 1,392ms of the 25-move drag, 747ms of it the ribbon's
+    spline. A line with both topics in the moved set only travels, like a
+    link, so its paths, its two end dots, its handle and its label are read
+    once at the pick-up and offset per frame."""
+    capture = _code("wbCaptureBulkMoveOrigin")
+    assert "origin.rigidEdges" in capture and "rigidEdge(edge)" in capture
+    apply = _code("wbApplyBulkMove")
+    assert "origin.rigidEdges" in apply and "_wbMoved = true" in apply
