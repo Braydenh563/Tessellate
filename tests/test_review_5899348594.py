@@ -52,3 +52,31 @@ def test_a_zoned_clock_in_brisbane_reads_the_same_wall_clock(session):
     brisbane = NOW.replace(tzinfo=timezone(timedelta(hours=10)))
     assert _settle(session, "remind me an hour before the gym", brisbane)["due_at"] == datetime(2026, 11, 11, 14, 0)
     assert _settle(session, "remind me an hour before the gym")["due_at"] == datetime(2026, 11, 11, 14, 0)
+
+
+# --- 3. a rejected answer says why, not that the model stopped ------------------------------------
+
+
+def test_an_unbacked_answer_gets_its_own_note_and_a_stopped_one_keeps_its_own():
+    from tessellate.api import chat_degrade
+    from tessellate.api.chat_said import MODEL_STOPPED_NOTE, MODEL_UNBACKED_NOTE
+
+    prepared = {"preview": {"text": "Composed."}}
+    rejected = list(chat_degrade.fallback_events(prepared, None, {}, True, "Harbor ships on the 28th."))
+    stopped = list(chat_degrade.fallback_events(prepared, None, {}, True))
+    assert rejected[0]["text"].endswith(MODEL_UNBACKED_NOTE) and MODEL_STOPPED_NOTE not in rejected[0]["text"]
+    assert stopped[0]["text"].endswith(MODEL_STOPPED_NOTE)
+    assert MODEL_UNBACKED_NOTE != MODEL_STOPPED_NOTE and "—" not in MODEL_UNBACKED_NOTE
+
+
+# --- 4. a question that matches no tool group is never told its tools are off ---------------------
+
+
+def test_a_question_no_group_matches_gets_no_switched_off_line(ai_client):
+    from tessellate.ai.tools import tool_off
+    from tessellate.ai.tools.tool_off import TOOL_GROUPS
+
+    every = sorted({name for group, *_ in TOOL_GROUPS for name in group})
+    ai_client.put("/preferences", json={"disabled_tools": every})
+    assert tool_off._top_groups("good morning to you") == []
+    assert tool_off.switched_off_line("good morning to you") is None

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 10996, test files 2818, tests 22507, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 10996, test files 2819, tests 22512, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -20666,7 +20666,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_disabled` | src/tessellate/ai/tools/tool_off.py:21 |
 | `_top_groups` | src/tessellate/ai/tools/tool_off.py:26 |
-| `switched_off_line` | src/tessellate/ai/tools/tool_off.py:32 |
+| `switched_off_line` | src/tessellate/ai/tools/tool_off.py:35 |
 
 ### src/tessellate/ai/tools/tool_path.py (1)
 
@@ -21391,67 +21391,67 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_app_answers` | src/tessellate/api/chat_said.py:338 |
-| `_asked_before` | src/tessellate/api/chat_said.py:703 |
-| `_asks_capability` | src/tessellate/api/chat_said.py:321 |
-| `_asks_only_a_time` | src/tessellate/api/chat_said.py:650 |
-| `_awareness` | src/tessellate/api/chat_said.py:805 |
-| `_capability_answer` | src/tessellate/api/chat_said.py:328 |
-| `_chart_line` | src/tessellate/api/chat_said.py:668 |
-| `_chat_topic` | src/tessellate/api/chat_said.py:785 |
-| `_cited_ids` | src/tessellate/api/chat_said.py:815 |
-| `_cited_titles` | src/tessellate/api/chat_said.py:830 |
-| `_closing_name` | src/tessellate/api/chat_said.py:441 |
-| `_composed_lines` | src/tessellate/api/chat_said.py:952 |
-| `_count_lead` | src/tessellate/api/chat_said.py:200 |
-| `_counted_lead` | src/tessellate/api/chat_said.py:213 |
-| `_current_notes` | src/tessellate/api/chat_said.py:601 |
-| `_diagram_events` | src/tessellate/api/chat_said.py:905 |
-| `_engine_counts` | src/tessellate/api/chat_said.py:536 |
-| `_engine_stands` | src/tessellate/api/chat_said.py:503 |
-| `_filed_or_counted_events` | src/tessellate/api/chat_said.py:288 |
-| `_filed_said` | src/tessellate/api/chat_said.py:256 |
-| `_first_cited_has_list` | src/tessellate/api/chat_said.py:882 |
-| `_held_reply` | src/tessellate/api/chat_said.py:556 |
-| `_help_events` | src/tessellate/api/chat_said.py:638 |
-| `_in_notes` | src/tessellate/api/chat_said.py:347 |
-| `_late_panel` | src/tessellate/api/chat_said.py:481 |
-| `_linked_notes` | src/tessellate/api/chat_said.py:856 |
-| `_listed_below` | src/tessellate/api/chat_said.py:489 |
-| `_miss_events` | src/tessellate/api/chat_said.py:575 |
-| `_model_said` | src/tessellate/api/chat_said.py:547 |
-| `_name_documents` | src/tessellate/api/chat_said.py:847 |
-| `_newest_titles` | src/tessellate/api/chat_said.py:428 |
-| `_newest_word` | src/tessellate/api/chat_said.py:399 |
-| `_older_dates` | src/tessellate/api/chat_said.py:609 |
-| `_open_note_answer` | src/tessellate/api/chat_said.py:722 |
-| `_open_title` | src/tessellate/api/chat_said.py:753 |
-| `_ping_offer` | src/tessellate/api/chat_said.py:391 |
+| `_app_answers` | src/tessellate/api/chat_said.py:340 |
+| `_asked_before` | src/tessellate/api/chat_said.py:705 |
+| `_asks_capability` | src/tessellate/api/chat_said.py:323 |
+| `_asks_only_a_time` | src/tessellate/api/chat_said.py:652 |
+| `_awareness` | src/tessellate/api/chat_said.py:807 |
+| `_capability_answer` | src/tessellate/api/chat_said.py:330 |
+| `_chart_line` | src/tessellate/api/chat_said.py:670 |
+| `_chat_topic` | src/tessellate/api/chat_said.py:787 |
+| `_cited_ids` | src/tessellate/api/chat_said.py:817 |
+| `_cited_titles` | src/tessellate/api/chat_said.py:832 |
+| `_closing_name` | src/tessellate/api/chat_said.py:443 |
+| `_composed_lines` | src/tessellate/api/chat_said.py:954 |
+| `_count_lead` | src/tessellate/api/chat_said.py:202 |
+| `_counted_lead` | src/tessellate/api/chat_said.py:215 |
+| `_current_notes` | src/tessellate/api/chat_said.py:603 |
+| `_diagram_events` | src/tessellate/api/chat_said.py:907 |
+| `_engine_counts` | src/tessellate/api/chat_said.py:538 |
+| `_engine_stands` | src/tessellate/api/chat_said.py:505 |
+| `_filed_or_counted_events` | src/tessellate/api/chat_said.py:290 |
+| `_filed_said` | src/tessellate/api/chat_said.py:258 |
+| `_first_cited_has_list` | src/tessellate/api/chat_said.py:884 |
+| `_held_reply` | src/tessellate/api/chat_said.py:558 |
+| `_help_events` | src/tessellate/api/chat_said.py:640 |
+| `_in_notes` | src/tessellate/api/chat_said.py:349 |
+| `_late_panel` | src/tessellate/api/chat_said.py:483 |
+| `_linked_notes` | src/tessellate/api/chat_said.py:858 |
+| `_listed_below` | src/tessellate/api/chat_said.py:491 |
+| `_miss_events` | src/tessellate/api/chat_said.py:577 |
+| `_model_said` | src/tessellate/api/chat_said.py:549 |
+| `_name_documents` | src/tessellate/api/chat_said.py:849 |
+| `_newest_titles` | src/tessellate/api/chat_said.py:430 |
+| `_newest_word` | src/tessellate/api/chat_said.py:401 |
+| `_older_dates` | src/tessellate/api/chat_said.py:611 |
+| `_open_note_answer` | src/tessellate/api/chat_said.py:724 |
+| `_open_title` | src/tessellate/api/chat_said.py:755 |
+| `_ping_offer` | src/tessellate/api/chat_said.py:393 |
 | `_related_elsewhere` | src/tessellate/api/chat_said.py:96 |
-| `_related_sentence` | src/tessellate/api/chat_said.py:656 |
-| `_remember_rows` | src/tessellate/api/chat_said.py:695 |
-| `_reminder_window` | src/tessellate/api/chat_said.py:300 |
-| `_reply_seed` | src/tessellate/api/chat_said.py:367 |
-| `_row_source` | src/tessellate/api/chat_said.py:713 |
-| `_rows_key` | src/tessellate/api/chat_said.py:691 |
-| `_run_title` | src/tessellate/api/chat_said.py:920 |
-| `_said_events` | src/tessellate/api/chat_said.py:276 |
+| `_related_sentence` | src/tessellate/api/chat_said.py:658 |
+| `_remember_rows` | src/tessellate/api/chat_said.py:697 |
+| `_reminder_window` | src/tessellate/api/chat_said.py:302 |
+| `_reply_seed` | src/tessellate/api/chat_said.py:369 |
+| `_row_source` | src/tessellate/api/chat_said.py:715 |
+| `_rows_key` | src/tessellate/api/chat_said.py:693 |
+| `_run_title` | src/tessellate/api/chat_said.py:922 |
+| `_said_events` | src/tessellate/api/chat_said.py:278 |
 | `_save_ask_turn` | src/tessellate/api/chat_said.py:62 |
-| `_saved_joke_reply` | src/tessellate/api/chat_said.py:384 |
-| `_says_cannot` | src/tessellate/api/chat_said.py:748 |
-| `_search_footer` | src/tessellate/api/chat_said.py:894 |
-| `_sees` | src/tessellate/api/chat_said.py:377 |
-| `_slash_chart` | src/tessellate/api/chat_said.py:936 |
-| `_stats_chart` | src/tessellate/api/chat_said.py:190 |
-| `_stats_listed` | src/tessellate/api/chat_said.py:521 |
-| `_suggest_events` | src/tessellate/api/chat_said.py:421 |
-| `_things_counted` | src/tessellate/api/chat_said.py:241 |
-| `_things_lead` | src/tessellate/api/chat_said.py:228 |
-| `_topic_word` | src/tessellate/api/chat_said.py:769 |
-| `_with_words_only` | src/tessellate/api/chat_said.py:620 |
-| `_worked_kind` | src/tessellate/api/chat_said.py:475 |
-| `acts_on_listed_task` | src/tessellate/api/chat_said.py:963 |
-| `reply_panel` | src/tessellate/api/chat_said.py:457 |
+| `_saved_joke_reply` | src/tessellate/api/chat_said.py:386 |
+| `_says_cannot` | src/tessellate/api/chat_said.py:750 |
+| `_search_footer` | src/tessellate/api/chat_said.py:896 |
+| `_sees` | src/tessellate/api/chat_said.py:379 |
+| `_slash_chart` | src/tessellate/api/chat_said.py:938 |
+| `_stats_chart` | src/tessellate/api/chat_said.py:192 |
+| `_stats_listed` | src/tessellate/api/chat_said.py:523 |
+| `_suggest_events` | src/tessellate/api/chat_said.py:423 |
+| `_things_counted` | src/tessellate/api/chat_said.py:243 |
+| `_things_lead` | src/tessellate/api/chat_said.py:230 |
+| `_topic_word` | src/tessellate/api/chat_said.py:771 |
+| `_with_words_only` | src/tessellate/api/chat_said.py:622 |
+| `_worked_kind` | src/tessellate/api/chat_said.py:477 |
+| `acts_on_listed_task` | src/tessellate/api/chat_said.py:965 |
+| `reply_panel` | src/tessellate/api/chat_said.py:459 |
 
 ### src/tessellate/api/chat_turn.py (41)
 
@@ -28227,7 +28227,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22507)
+## Tests (22512)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30427,6 +30427,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_resurface_spec.py | 16 |
 | tests/test_review_5850946759.py | 3 |
 | tests/test_review_5883496750.py | 13 |
+| tests/test_review_5899348594.py | 5 |
 | tests/test_review_digest_1110.py | 14 |
 | tests/test_review_fixes_1029.py | 6 |
 | tests/test_review_fixes_palette_docs.py | 6 |

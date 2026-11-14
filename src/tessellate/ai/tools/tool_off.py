@@ -26,6 +26,9 @@ def _disabled() -> set[str]:
 def _top_groups(question: str) -> list[tuple[str, ...]]:
     ranked = focus_detail(question).ranked
     best = ranked[0][1] if ranked else 0
+    #: Nothing asked for: `score_groups` already drops scores under its threshold, and this keeps a zero from ever counting as best.
+    if best <= 0:
+        return []
     return [TOOL_GROUPS[index][0] for index, score in ranked if score == best]
 
 

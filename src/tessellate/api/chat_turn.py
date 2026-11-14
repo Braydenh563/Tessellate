@@ -239,7 +239,7 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
                 said.append(piece["content_delta"])
                 yield {"type": "answer", "delta": piece["content_delta"]}
         if chat_degrade.falls_back("".join(said), prepared, req.question or ""):
-            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any)
+            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any, "".join(said))
         elif stats is not None:
             yield {"type": "stats", **stats, "composition": composition_tokens}
     except OllamaError as exc:

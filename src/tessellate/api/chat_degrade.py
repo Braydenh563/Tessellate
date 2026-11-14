@@ -16,7 +16,7 @@ import re
 from collections.abc import Iterator
 
 from tessellate.ai import validate
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, MODEL_UNBACKED_NOTE
 
 _SENTENCE = re.compile(r"(?<=[.?!])\s+")
 
@@ -37,8 +37,12 @@ def falls_back(text: str, prepared: dict, question: str) -> bool:
     return not text.strip() or _unbacked_throughout(text, prepared, question)
 
 
-def fallback_events(prepared: dict, stats: dict | None, composition: dict, streamed_any: bool) -> Iterator[dict]:
-    """The composed draft as the answer (replacing any words already sent), then the stats marked as a fallback."""
-    said = f"{prepared['preview']['text']}\n\n{MODEL_STOPPED_NOTE}"
+def fallback_events(prepared: dict, stats: dict | None, composition: dict, streamed_any: bool, rejected: str = "") -> Iterator[dict]:
+    """The composed draft as the answer (replacing any words already sent), then the stats marked as a fallback.
+
+    `rejected` is the model's finished answer when the notes backed none of it: the note then says so,
+    since the model did not stop."""
+    note = MODEL_UNBACKED_NOTE if rejected.strip() else MODEL_STOPPED_NOTE
+    said = f"{prepared['preview']['text']}\n\n{note}"
     yield {"type": "answer_final", "text": said} if streamed_any else {"type": "answer", "delta": said}
     yield {"type": "stats", **(stats or {}), "composition": {**composition, "fallback": True}}

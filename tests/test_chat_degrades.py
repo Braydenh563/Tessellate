@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, MODEL_UNBACKED_NOTE
 from tests.test_composer_route_688 import _ask
 from tests.test_engine_identity import _seed
 
@@ -88,7 +88,8 @@ def test_the_bubble_keeps_the_composed_answer(ai_client, fake_ollama, session, m
     out = _ask(ai_client, question, notes_only=True, use_tools=False, answer_from="ai")
     final = _final(out)
     assert COMPOSED in final, (failure, final)
-    assert MODEL_STOPPED_NOTE in final, (failure, final)
+    #: A finished answer the notes do not back says so; every other failure says the model stopped (review 5899348594).
+    assert (MODEL_UNBACKED_NOTE if failure == "unsupported" else MODEL_STOPPED_NOTE) in final, (failure, final)
     assert "cancelled in 2019" not in final
     stats = out.get("stats") or [{}]
     assert stats[-1].get("composition", {}).get("fallback") is True, (failure, stats)

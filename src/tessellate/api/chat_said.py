@@ -172,6 +172,8 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
 
 #: Under an answer composed from the notes because the model stopped mid-turn.
 MODEL_STOPPED_NOTE = "The model stopped before it could answer, so this is Atlas's answer from your notes."
+#: The model finished, but no sentence of its answer was backed by the notes (review 5899348594).
+MODEL_UNBACKED_NOTE = "The model's answer said things your notes do not, so this is Atlas's answer from your notes."
 
 
 #: A how-to about the app, answered from its Help when no model writes the
