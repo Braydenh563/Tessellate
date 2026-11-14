@@ -85,7 +85,7 @@ def test_a_note_edited_since_the_card_was_made_is_not_overwritten(client):
     card = _card(client, "add buy milk to today's note")
     client.put(f"/entries/{note}", json={"content": f"{HEADING}\n\n- call the bank\n- written meanwhile"})
     done = _confirm(client, card)
-    assert not done["ok"] and "changed since the card was made" in done["summary"]
+    assert done["ok"] is False and "changed since the card was made" in done["summary"]
     assert client.get(f"/entries/{note}").json()["content"].endswith("- written meanwhile")
 
 

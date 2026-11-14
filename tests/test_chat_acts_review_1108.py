@@ -114,12 +114,12 @@ def test_the_confirm_route_runs_the_same_checks_as_the_planner(client, session):
     secret = _note(client, "# Secret\n\nx", tags=["fitness"])
     _seal(session, secret)
     done = _run(client, [{"name": "rename_tag", "arguments": {"old": "gym", "new": "fitness"}}])
-    assert not done["ok"]
+    assert done["ok"] is False
     assert json.loads(_tags(session, secret)) == ["fitness"]
     a = _note(client, "# A\n\nx", category="Work")
     _note(client, "# B\n\nx", category="Job")
     done = _run(client, [{"name": "rename_category", "arguments": {"old": "Work", "new": "Job"}}])
-    assert not done["ok"] and client.get(f"/entries/{a}").json()["category"] == "Work"
+    assert done["ok"] is False and client.get(f"/entries/{a}").json()["category"] == "Work"
 
 
 def test_the_command_route_is_behind_the_apps_origin_check(client):
@@ -250,7 +250,7 @@ def test_restore_leaves_a_binned_board_to_the_bin_view(client, session):
     card, events = _card(client, "restore the kitchen plan from the bin")
     assert card is None and "nothing in the bin" in _text(events)
     done = _run(client, [{"name": "restore_note", "arguments": {"note_id": board}}])
-    assert not done["ok"]
+    assert done["ok"] is False
     session.expire_all()
     assert session.get(Entry, board).is_deleted
 
