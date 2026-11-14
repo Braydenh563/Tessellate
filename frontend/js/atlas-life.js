@@ -477,7 +477,7 @@
     tail.act = act;
     tail.state = state;
     const calm = !base.ms && atlasTailCalm(tail, tail.box);
-    tail.until = now + (base.ms || (calm ? 5000 + Math.random() * 4000 : 4000 + Math.random() * 5000));
+    tail.until = now + (base.ms || (calm ? (5000 + Math.random() * 4000) : 4000 + Math.random() * 5000));
     tail.settle = now + ATLAS_TAIL_SETTLE_MS;
   }
   //: **A frame budget** (audit AI1, 2026-10-31: at 4x CPU the companion at
@@ -529,12 +529,7 @@
     //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
     const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
     if (live) atlasFrameBudget(now);
-    //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
-    //: beat's own writes, the loops' play and pause and the breath's scale,
-    //: made the next read settle style: `atlasPropsFrame` 71ms, the breath's
-    //: rise 107ms and the rest's release 73ms at 4x CPU in 45s of idle). The
-    //: props read first; the rest's release, which reads where the sway is,
-    //: comes before anything is written; the breath and the loops are writes.
+    //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this beat's writes made the next read settle style, 71 to 107ms at 4x).
     //: Thirty a second: each draw repaints the tail's layer.
     tail.tick += 1;
     //: The props' own loops, while each is shown (`atlasPropsFrame`).
@@ -542,11 +537,11 @@
     //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
     //: state holds and the act has not run out; the breath and the props
     //: are all this beat does.
-    const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && (now < tail.until || atlasTailCalm.resting(box, tail.state));
+    const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy, #desk-pet"), box) === tail.state && (now < tail.until || atlasTailCalm.resting(box, tail.state));
     if (tail.resting && !holds) atlasTailUnrest(tail);
     //: And the chest's breath (`atlasBreathFrame`), at the rate of the moment.
     atlasBreathFrame(box, live);
-    atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
+    atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy, #desk-pet"), box.dataset.atlasMood, now);
     //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
     //: Read when `loops` flips or once a second, not every beat (B55: 120 style reads a second through an agent turn).
     //: **A nap slows the rings** (INBOX 1770): a third of the pace, by the animations' playback rate, which keeps every
@@ -572,15 +567,11 @@
       tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
       return;
     }
-    //: The clock runs at the wall's speed up to half a second a frame, so a
-    //: slow frame does not slow the tail (atlas601-tail.js, under load: at
-    //: four frames a second a 0.1s cap ran it at 40% and read the tip still
-    //: for over a second); the springs step in thirtieths, where they are
-    //: stable, however long the frame.
+    //: The clock runs at the wall's speed up to half a second a frame, so a slow frame does not slow the tail; the springs step in thirtieths.
     const dt = tail.at ? Math.min(0.5, (now - tail.at) / 1000) : 1 / 30;
     tail.at = now;
     if (live) {
-      const buddy = box.closest("#nm-buddy");
+      const buddy = box.closest("#nm-buddy, #desk-pet");
       const state = atlasRigLower.spell(buddy, box);
       if (state !== tail.state || now >= tail.until) atlasTailPick(tail, state, now);
       const goal = tail.goal || ATLAS_TAIL_ACTS[tail.act];
@@ -613,17 +604,8 @@
     const stretch = live ? () => 1 + 0.03 * Math.cos(tail.ph3) : null;
     atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0, follow), stretch);
     tail.drawn = true;
-    //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34
-    //: decision 7: the companion must never cost the rest of the app).
-    //: Measured at 1440 on the dashboard (companionperf.js IDLE=1, a loaded
-    //: machine): the corner Atlas idle cost 35s of main thread a minute and
-    //: 1,399 layouts, against 0.5s and 3 with the companion off, most of it
-    //: this loop: a frame asked for sixty times a second to draw the tail's
-    //: paths on every other one. Resting, sitting, lying, thinking or low,
-    //: the tail moves on clocks of 1.7s and longer, so fifteen steps a second
-    //: read as the same sway, and a timer between them asks for no frames.
-    //: Walking, carried, gesturing, startled or glad, and always in the large
-    //: view, where it is the one thing on screen, it keeps the frame loop.
+    //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34 decision 7): the tail moves on clocks of 1.7s and longer, so fifteen
+    //: steps read as the same sway and a timer between them asks for no frames. Walking, carried, gesturing, startled or glad, and the large view, keep the frame loop.
     tail.calm = live && atlasTailCalm(tail, box);
     if (live && tail.calm && now >= tail.settle) {
       atlasTailRest(tail, p);
@@ -637,7 +619,7 @@
   }
   const ATLAS_TAIL_CALM_MS = 66;
   function atlasTailCalm(tail, box) {
-    return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
+    return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy, #desk-pet") && !box.closest(".nm-viewer-figure");
   }
   //: **Two seconds without input and not walking: the drawn loops stop** (owner decision Q10; the lag log: 21 rig calls a
   //: second, 20 to 27 restyles a second at rest, the dress morph alone 35 path writes a second). The CSS loops (sway,
@@ -666,13 +648,15 @@
         }, () => {});
       }
     }
-    return r.mode === "still" || (r.mode === "mains" && !!r.battery);
+    return r.mode === "still" || (r.mode === "mains" && (!!r.battery || !!globalThis.document?.body?.classList.contains("desk-page")));
   };
   //: At rest: a corner companion, in a calm lower-body state, not walking, doing no act, and two seconds from the last input.
   atlasTailCalm.resting = (box, state) => {
-    const buddy = box.closest("#nm-buddy");
-    return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after && atlasTailCalm.rest.holds();
+    const buddy = box.closest("#nm-buddy, #desk-pet");
+    return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after && atlasTailCalm.rest.holds() && (buddy.id !== "desk-pet" || (document.body.dataset.state || "rest") === "rest");
   };
+  //: **The desk window rests too** (L744: no `#nm-buddy` there, so nothing ever rested: 43% of a core). Its pet button stands in; only "always" keeps it drawing.
+
   //: Entering a rest pauses the loops that never end (the sway, the breath, the glow: on SVG parts they are drawn on the main
   //: thread, a restyle and layout a frame, 38 a second at rest); leaving it plays the ones this paused. A finite one (a blink
   //: in flight) is left to finish; one that has since been cancelled is idle, not paused, and stays so.
@@ -681,7 +665,7 @@
     const resting = atlasTailCalm.resting(box, state);
     r.on = resting;
     if (resting && !r.held) {
-      r.held = box.closest("#nm-buddy").getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
+      r.held = box.closest("#nm-buddy, #desk-pet").getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
       for (const a of r.held) a.pause();
     } else if (!resting && r.held) {
       for (const a of r.held) if (a.playState === "paused") a.play();
@@ -1459,7 +1443,7 @@
       timer: 0,
     };
     atlasRigWake(box);
-    atlasRigLower.morph.run(box.atlasRig, box.closest("#nm-buddy"));
+    atlasRigLower.morph.run(box.atlasRig, box.closest("#nm-buddy, #desk-pet"));
   }
   //: The lower body's pose for the state: its variant (a new one as the
   //: state begins, and every 5 to 9 seconds at rest, on a timer), and the

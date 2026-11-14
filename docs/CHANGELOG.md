@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion window rests after 2 s without input: tail and dress loops stop, a calm tail act holds three times as long, the look beat is a second; idle 43.3% to 1.7% of a core and 3,366 to 341 restyles a minute headless (L744, 2026-11-14).
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
 - LEDGER: chat plan recount filed as rows (176 from the catalogue and prose audits), plan-file cell 0, pinned by tests/test_chat_plan_recount.py (2026-11-14).
 - Fix E2E: ask-search spec reads the Atlas answerer chip (L737 copy), help topics name it the same; Guide path lint green (2026-11-14).

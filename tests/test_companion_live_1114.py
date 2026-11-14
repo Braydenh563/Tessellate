@@ -60,6 +60,9 @@ def live(tmp_path_factory: pytest.TempPathFactory):
         calm = subprocess.run(["node", str(ROOT / "tests" / "_companion_calm.js")], capture_output=True, text=True, env=node_env, timeout=120)
         assert calm.returncode == 0, calm.stderr[-2000:]
         result["calm"] = json.loads(calm.stdout.strip().splitlines()[-1])
+        desk = subprocess.run(["node", str(ROOT / "tests" / "_companion_desk.js")], capture_output=True, text=True, env=node_env, timeout=120)
+        assert desk.returncode == 0, desk.stderr[-2000:]
+        result["desk"] = json.loads(desk.stdout.strip().splitlines()[-1])
         return result
     finally:
         server.terminate()
@@ -112,3 +115,11 @@ def test_under_the_system_reduce_hint_the_calm_loops_run_and_cost_next_to_nothin
     assert calm["anims"] >= 3, "the sway, breath and glow loops exist (the app's own rest rule may hold them)"
     assert calm["mood"] not in ("delighted", "laughing"), "a mood loop would make the count meaningless"
     assert calm["recalcPerMin"] < 400
+
+
+def test_the_desk_page_rests_after_two_quiet_seconds_and_wakes_on_input(live: dict) -> None:
+    """L744. The desk page at 1280x800, headless: before the rest rule it ran 2,150 to 3,500 restyles a minute with every loop going (3,366 and 69 running animations on the row); at rest 48 to 640 (150 in this run) and 0 to 4 running animations; a pointer move plays them all again."""
+    desk = live["desk"]
+    assert desk["idleRecalcPerMin"] < 900
+    assert desk["idleRunning"] <= 4
+    assert desk["awakeRunning"] > 40
