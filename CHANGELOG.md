@@ -162,6 +162,10 @@ Voice: the last literal template failure toasts (21 in 14 files) now speak throu
 - LAN (L507): a new device's held sign-in request is kept in `lan-pending.json` (0600) and comes back when the app restarts, until its ten minutes are up (`tests/test_lan.py`).
 - Quit (L502): the registry (`background.stop_all`) is signalled first on every quit path, the server lifespan and the abrupt desktop exits, so the reminder notifier no longer waits out the job pool's 5 s deadline (`tests/test_background_workers.py`).
 - Background (L506): `core/background.py` is the registry of named workers (register, start, stop, stop_all, status); the reminder notifier is its first entry (`tests/test_background_workers.py`).
+- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
+- Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
+- Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
 - Documents plan: the plan-file open cell is 0, every item a LEDGER row (L-documents-79 added for the Brief 60 frame measurement), pinned by tests/test_documents_plan_recount.py.
