@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-SOURCE = "\n".join((JS / f"{name}.js").read_text(encoding="utf-8") for name in ("whiteboard", "whiteboard-library"))
+SOURCE = "\n".join(frontend_text(f"{name}.js") for name in ("whiteboard", "whiteboard-library"))
 
 
 def _function(name: str) -> str:

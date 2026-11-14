@@ -65,7 +65,7 @@ def test_b17_link_lookups_parse_each_sketch_once_per_version_of_its_data() -> No
 def test_b14_branch_export_opens_the_one_export_dialog() -> None:
     mapjs = frontend_text("whiteboard-map.js")
     branch = _function(mapjs, "wbMapExportBranch")
-    assert "wbExportBoard();" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
+    assert "wbExportBoard({ branch: true });" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
     assert BOARD.count("function wbExportBoard(") == 1  # one dialog; it takes { branch } since L267
     assert 'overlay.className = "modal-overlay confirm-overlay wb-export-overlay"' in BOARD
     assert mapjs.count("wb-export-overlay") == 0, "no second export dialog in the map file"

@@ -194,12 +194,14 @@ EXPECTED = {
         '"A summary covers topics side by side under one parent."',
         '"That time has gone: pick a later due date for a reminder."',
     ],
-    'whiteboard.js': [
-        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
-        '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
+    'whiteboard-export.js': [
         '"There is nothing in the outline to build."',
         '"That file is empty."',
         '`That outline is ${content.length.toLocaleString()} characters: the limit is ${WB_MAX_IMPORT_CHARS.toLocaleString()}.`',
+    ],
+    'whiteboard.js': [
+        '"The default board keeps the theme\'s look. Make a board of your own to give it one."',
+        '`A thread holds ${WB_COMMENTS_MAX} comments. Delete one first.`',
         '"The default board cannot change kind. Make a new board to start a mind map."',
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',
@@ -302,12 +304,14 @@ FAULTS = {
     'update-dialogs.js': {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
+    'whiteboard-export.js': {
+        'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
+    },
     'whiteboard.js': {
         'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
         'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
-        'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
     },
 }

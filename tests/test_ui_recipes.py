@@ -5160,7 +5160,7 @@ SEG_BUILT_IN_SCRIPT = {
     ("app.js", "seg seg-compact confirm-seg"): "promptDialog's `segment`, a value",
     ("documents-export.js", "seg"): "the print setup's values",
     ("skills.js", "seg seg-compact chat-skill-pace"): "a skill's pace, a value",
-    ("whiteboard.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
+    ("whiteboard-export.js", "seg seg-compact wb-export-seg"): "Export this board: the format, a value",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "not a popup: the calendar head's view mode (Month, Week, Day)",
     ("dashboard.js", "seg focus-presets-seg"): "not a popup: the focus timer's length, a value (UI_MODERNISATION V8)",
 }
@@ -6443,6 +6443,7 @@ PANEL_FIXED_JS = {
     "status-panels.js": "an anchored readout (the model offer popover)",
     "tag-suggest.js": "an anchored suggestion panel",
     "update-dialogs.js": "update prompts: small, blocking",
+    "whiteboard-export.js": "the export dialog, moved from whiteboard.js with its anchored panel",
     "whiteboard-format.js": "an anchored panel",
     "whiteboard-map.js": "anchored map panels",
     "whiteboard.js": "anchored board panels",
@@ -6974,7 +6975,7 @@ GHOST_TILE_DRIFT: set[tuple[str, str]] = set()
 SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("documents-export.js", "seg"): "the print setup's `.doc-print-row`: the label, then its choices",
     ("skills.js", "seg seg-compact chat-skill-pace"): "`paceRow`: the label, then Auto and Manual",
-    ("whiteboard.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
+    ("whiteboard-export.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
     ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "the calendar head, beside the month and its arrows",
     ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
     ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
