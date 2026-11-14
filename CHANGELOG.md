@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Fixed: a span of days ("9 to 11 December 2026", "December 9 to 11") names both its days, so the fact check keeps a model's correct range wording (L-chat-240: 5 of 6 date answers kept on a 1.5B, now 6 of 6 phrasings).
 - Chat: a sentence the registry reads as an act, answered by the model with no tool call, gets the act's Confirm card even when the reply claims nothing (L114: a 1.5B answered "Make a mind map of Trips" with invented XML and "Remember that I prefer short answers" with "Understood", 0 of 3 drew a card, now all 3); the real-model chat checks are one eval file (L820, L822, L824, L825, L-chat-240).
 - Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
 - CI fixes after the agent merges: ask-chart slice classes read as a built family (unused CSS 201 to 195), one silent empty-list catch removed, the boards acts Guide lead stands alone, "what is the table number" asks the notes, the formal welcome says days running, every no-tool line names the model.

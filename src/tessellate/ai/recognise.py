@@ -326,6 +326,10 @@ _MENTION_ISO = lazy_compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)(?=\b|t\d)")
 _MENTION_WD_DAY = lazy_compile(
     rf"\b({_WD_WORD})\.?,?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b)(?!\s+(?!at\b|by\b|for\b|and\b|is\b|to\b|the\b)[a-z])"
 )
+#: "9 to 11 December 2026" and "December 9 to 11, 2026": a span of days in one month names both ends (L-chat-240).
+_RANGE = r"\s*(?:to|until|through|-|\u2013)\s*"
+_RANGE_DM = lazy_compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?{_RANGE}(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
+_RANGE_MD = lazy_compile(rf"\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?{_RANGE}(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
 #: (year or None, month or None, day, weekday or None)
 DateMention = tuple[int | None, int | None, int, int | None]
 
@@ -335,7 +339,8 @@ def date_mentions(text: str) -> list[DateMention]:
     "October 28, 2026"), an ISO date, or a weekday with a day number
     ("Thursday 29"). Clock times and spans are no dates; a day that no month
     has (31 Feb) is skipped. The caller decides what they must match."""
-    low = (text or "").lower()
+    low = _RANGE_MD.sub(lambda m: f"{m[1]} {m[2]} {m[4] or ''}, {m[1]} {m[3]} {m[4] or ''}", _RANGE_DM.sub(
+        lambda m: f"{m[1]} {m[3]} {m[4] or ''}, {m[2]} {m[3]} {m[4] or ''}", (text or "").lower()))
     found: list[DateMention] = []
 
     def add(year: str | None, month: int | None, day: str, weekday: str | None) -> None:
