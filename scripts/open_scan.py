@@ -140,7 +140,7 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         except (UnicodeDecodeError, FileNotFoundError):
             continue
         lines = text.splitlines()
-        seen = _js_quoted(lines) if f.endswith(".js") else _py_quoted(text, lines) if f.endswith(".py") else lines
+        seen = _js_quoted(lines) if f.endswith((".js", ".css")) else _py_quoted(text, lines) if f.endswith(".py") else lines
         in_done_row = f == "docs/roadmap/LEDGER.md"
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):

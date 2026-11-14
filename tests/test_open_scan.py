@@ -83,3 +83,14 @@ def test_a_python_literal_is_copy_and_a_docstring_comment_or_strict_xfail_is_not
     )
     monkeypatch.setattr(open_scan, "ROOT", tmp_path)
     assert [i for _, i, _ in open_scan.hits(["src/m.py"])] == [2, 4, 6]
+
+
+def test_a_quoted_css_selector_value_is_copy_and_a_css_comment_is_not(tmp_path, monkeypatch):
+    """The `todo` callout's selector, `[class*="-todo"]`, is a class name the
+    app's copy produces (INBOX 1810's rule for code files); a TODO in a CSS
+    comment is still a hit."""
+    css = tmp_path / "frontend" / "css" / "x.css"
+    css.parent.mkdir(parents=True)
+    css.write_text('.callout[class*="-todo"] { color: red; }\n/* TODO tint this */\n', encoding="utf-8")
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [i for _, i, _ in open_scan.hits(["frontend/css/x.css"])] == [2]
