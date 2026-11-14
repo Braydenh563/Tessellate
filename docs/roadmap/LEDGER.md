@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 42 | 7 | 0 | 0 | 49 |
+| chat | 0 | 41 | 7 | 0 | 0 | 48 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 413 | 76 | 0 | 124 | 815 |
+| all | 326 | 412 | 76 | 0 | 124 | 814 |
 
 ## graph
 
@@ -46,7 +46,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-240** `chat` partly, S: Date and time wording in fact_check: design open; needs real-model evals. From CHAT_PLAN.md:1881. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/fact_check.py:555 _moments (nearest unit, year rule) Today 2026-11-14: needs a real model, so stays open. `_moments` (fact_check.py:555) is covered by fake-transport tests only; the next step is `scratchpad/llama-dev.sh serve` then `pytest -m evals` on a date-wording set (nearest unit, year rule) to count refusals of a model's correct date phrasing.
 - [ ] **L-chat-258** `chat` open, S: audit_link_reasons by sentence: needs a real model to rewrite reasons and an inverse (audit-log row revert); run with scratchpad/llama-dev.sh serve then pytest -m evals. From L-chat-60 split 2026-11-14. Evidence: src/tessellate/ai/tools/tool_learn.py:105, audit_link_reasons rewrites link reasons with a model and has no Undo
 - [ ] **L-chat-273** `chat` open, S: Fold the lower body's per-pose spring curves into NMB_CURVE (a visual judgement: merging 18 springs changes how each pose lands). From L183 close 2026-11-14. Evidence: frontend/js/atlas-life.js:979 ATLAS_LOWER_STATES, 18 per-pose spring curves (ease:) outside NMB_CURVE
-- [ ] **L-chat-259** `chat` open, M: Japanese and Chinese checker pack, and a server reader of the English variant lists. From L-chat-236 remainder. Evidence: Measured 2026-11-14: no Hunspell list exists for Japanese or Chinese (the wooorm dictionaries have none), so there is no downloadable checker to install; documents in ja, zh or ko are never space-split or flagged (docProse.cjk). A segmenter pack needs a source and licence decision; nothing reads variants.english(variant) on the server yet (spelling.english('uk') is available).
 
 ## whiteboard
 
