@@ -4813,10 +4813,10 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </div>
         <div id="graph-zoom" class="graph-zoom" role="group" aria-label="Zoom the map">
-          <button id="graph-zoom-in" class="icon-only graph-zoom-btn" title="Zoom in" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
-          <button id="graph-zoom-out" class="icon-only graph-zoom-btn" title="Zoom out" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-          <button id="graph-zoom-fit" class="icon-only graph-zoom-btn" title="Fit the whole map to view" aria-label="Fit map to view"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
-          <button id="graph-fullscreen" class="icon-only graph-zoom-btn" title="Full screen" aria-label="Full screen" aria-pressed="false"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+          <button id="graph-zoom-out" class="icon-only graph-zoom-btn" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
+          <button id="graph-zoom-in" class="icon-only graph-zoom-btn" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
+          <button id="graph-zoom-fit" class="icon-only graph-zoom-btn" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+          <button id="graph-fullscreen" class="icon-only graph-zoom-btn" title="Full screen (Esc to leave)" aria-label="Full screen" aria-pressed="false"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
         </div>
         <div id="graph-empty" class="empty-state hidden">
           <!-- The app's own mark, the slot EMBLEM_SLOTS (app.js) has named
@@ -7322,7 +7322,6 @@ Link to another note with [[its first few words]]."></textarea>
         <span class="wb-topbar-divider" aria-hidden="true"></span>
         <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Sidebar</span></button>
         <button id="wb-format-btn" type="button" class="ghost small wb-panel-primary" aria-pressed="false" aria-controls="wb-format" title="Format panel: style, text, arrange and data for what is selected (Ctrl+Shift+P)"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Format</span></button>
-        <button id="wb-fullscreen" class="ghost small icon-button" title="Full screen (Esc to leave)" aria-label="Toggle full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
       </div>
     </div>
     <div class="whiteboard-floating-panel wb-rail bottom-center card glass" data-panel-id="tools" id="wb-tools-panel" data-dock="bottom">
@@ -7745,6 +7744,9 @@ Link to another note with [[its first few words]]."></textarea>
       <span id="wb-zoom-level" class="wb-zoom-level" title="Zoom level: type a number, or pick one. Ctrl+1 is 100%"></span>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
       <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+      <!-- One zoom order on every canvas (L-world-class-351): Zoom out, the
+           level, Zoom in, Fit, Full screen, the same as the graph's strip. -->
+      <button id="wb-fullscreen" class="ghost small icon-only" title="Full screen (Esc to leave)" aria-label="Full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
     </div>
 
     <!-- **The context bar** (WHITEBOARD_PLAN.md decision 2): one surface in

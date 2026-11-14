@@ -1307,10 +1307,10 @@ TAIL_TOPICS.extend(
                 "connection",
             ),
             "body": (
-                "Click the map, then the arrow keys move between notes, N steps "
+                "Click the map; the arrow keys move between notes, N steps "
                 "to the next connected note, Enter or Space opens one, + and - zoom, 0 fits the whole "
-                "map, Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
-                "drop); double-click it to pin it, again to free. Hold Alt and drop one note onto another to link "
+                "map (Ctrl too), Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
+                "drop); double-click to pin it, again to free. Hold Alt and drop one note onto another to link "
                 "them, double-click empty space to add a note (Private seals it; ? says more), hover a note for its dates, links "
                 "and properties, point at a line to light it and click it to see what it is, its reason and "
                 "how sure, the two notes, and for a link Edit reason, Two-way (no arrow) and Remove, and "

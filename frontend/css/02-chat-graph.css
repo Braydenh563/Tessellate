@@ -5048,7 +5048,9 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   left: var(--space-3);
   bottom: var(--space-3);
   z-index: 5;
-  max-width: calc(100% - var(--space-3) * 2 - 4rem);
+  /* Short of the zoom strip, a row of four buttons since L-world-class-351
+     (its padding, gaps and edge are the `--space-1` steps and the 2px). */
+  max-width: calc(100% - var(--space-3) * 3 - 4 * max(var(--control-h-lg), var(--target-min)) - var(--space-1) * 5 - 2px);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

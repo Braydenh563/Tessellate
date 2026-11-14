@@ -2307,6 +2307,13 @@ header#top-bar[data-scrolled="1"],
   #tab-graph:has(.dock-fab) .graph-zoom {
     bottom: calc(var(--target-min) + var(--space-5));
   }
+  /* The zoom strip is a row now (L-world-class-351) and takes most of a
+     phone's width, so the legend stands on a line of its own above it, the
+     strip's height (a target, two `--space-1` and its edge) and a step up. */
+  #tab-graph:has(.dock-fab) .graph-legend-row {
+    bottom: calc(var(--target-min) * 2 + var(--space-5) + var(--space-1) * 2 + 2px + var(--space-2));
+    max-width: calc(100% - var(--space-3) * 2);
+  }
 }
 /* --- the Documents editor on a phone (INBOX 430) -----------------------------
    "On phone, the Documents editor's lower half is blank or cut off; rework
