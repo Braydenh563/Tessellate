@@ -29,3 +29,11 @@ def test_view_seg_buttons_are_a_finger_wide_and_tall_on_a_phone_370():
     assert "(max-width: 599.98px)" in css[css.rindex("@media", 0, start) :][:40]
     assert "min-height: var(--target-min)" in rule
     assert "min-width: var(--target-min)" in rule
+
+
+def test_doc_dock_keeps_the_dock_recipe_padding_on_a_phone_371():
+    """The 4px phone override left the doc dock at 4px, the writing room's
+    dock at 8px 9.6px; both now take the recipe's tokens."""
+    css = _css("10-responsive.css")
+    assert not re.search(r"#tab-documents \.dock\.doc-dock \{[^}]*padding", css)
+    assert "padding: var(--space-3) var(--space-4);" in _rule(_css("08-consistency.css"), ".dock")
