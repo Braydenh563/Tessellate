@@ -2509,7 +2509,8 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "").trim();
+    //: A task's box goes with its bullet (L-world-class-178: "- [ ] email Sam" read "[ ] email Sam").
+    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
     const rest = split === -1 ? "" : flat.slice(split + 1).replace(/\s+/g, " ").trim();
@@ -2899,7 +2900,9 @@ async function renderRemindersWidget(body) {
     //: the time read as part of the sentence.
     const what = document.createElement("span");
     what.className = "dash-reminder-text";
-    what.textContent = reminder.text;
+    //: Its words as inline Markdown, as the note rows above draw theirs (L-world-class-178:
+    //: a reminder made from a note showed "**Sam**" and "[the venue](https://...)" raw).
+    renderInlineMarkdown(what, reminder.text, [], true);
     const at = document.createElement("span");
     at.className = "dash-reminder-when muted";
     at.textContent = when;
