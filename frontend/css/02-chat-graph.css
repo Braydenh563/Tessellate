@@ -961,9 +961,6 @@ details.tool-chip[open] > .tool-chip-body {
 #wb-canvas-view {
   transition: opacity var(--ui-slow) var(--ease-out);
 }
-#wb-canvas-view.wb-entering {
-  opacity: 0;
-}
 /* Fullscreen mode for the graph map.
    **Reported directly: square corners.** This used to be `top/left: 0`,
    `100vw x 100vh` and `border-radius: 0 !important`, a true edge-to-edge
@@ -2637,15 +2634,6 @@ kbd {
    there is no longer a narrow shell to guarantee a minimum against. */
 .select-menu.action-menu-escaped {
   min-width: 0;
-}
-/* The whiteboard's right-click/long-press selection menu (ROADMAP §89.12).
-   Appended straight to <body> and positioned at the pointer, same reasoning
-   as `wbOpenDockedMenu`'s reparent: a fixed pixel position rather than
-   `.action-menu`'s default `absolute; right:0` anchored to a `.menu-wrap`
-   ancestor it doesn't have here. */
-.wb-ctx-menu {
-  position: fixed;
-  z-index: 200;
 }
 /* **One menu row, everywhere.** Reported: "make the documents ellipse kebab
    button dropdown menu the same ui style as the one in the chat tab", with

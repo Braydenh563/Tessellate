@@ -8,7 +8,7 @@ JS = ROOT / "frontend" / "js"
 FMT = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
 WB = frontend_text("whiteboard.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")  # L308: the board rules moved with the Library bundle
 
 
 def test_link_takes_the_label_look_rows():

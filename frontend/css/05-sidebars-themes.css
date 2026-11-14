@@ -191,10 +191,7 @@
   }
 }
 @media (max-width: 819.98px) {
-  .doc-layout {
-    grid-template-columns: 1fr;
-  }
-  /* The heading row does not wrap. In a 260px column "Recent documents" broke
+    /* The heading row does not wrap. In a 260px column "Recent documents" broke
    over two lines and took "＋ New" with it, so the sidebar opened with a
    three-line header above a three-item list. The heading is the part that
    gives way: the button is a fixed hit target. */
@@ -1283,16 +1280,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 }
 /* The Live view's kind picker is a tile the size of a letter, so under a
    finger its target grows past its box without moving the line (INBOX 486). */
-@media (pointer: coarse) {
-  .cm-md-callout-kindbtn {
-    position: relative;
-  }
-  .cm-md-callout-kindbtn::after {
-    content: "";
-    position: absolute;
-    inset: calc((var(--target-min) - 1.5em) / -2);
-  }
-}
 /* The title is the ink, not the kind's colour: an amber or a green title on
    its own tint is the pair that fails contrast first, and the kind is already
    said twice, by the edge and by the tile. */
@@ -1403,28 +1390,12 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 :is(.callout, .cm-md-callout, .cm-md-callout-label, .doc-block-kind)[class*="-toggle"] {
   --callout-accent: var(--muted);
 }
-/* A toggle is a disclosure, not a box: no tint, no edge, only the caret and
-   an indent that says what belongs to it (Notion's toggle, spelled as a
-   callout so it stays a quote anywhere else). */
-.callout-toggle {
-  --callout-tint: transparent;
-  --callout-edge: transparent;
-  padding: var(--space-1) 0;
-  border-left-color: transparent;
-}
 .callout-toggle > .callout-head {
   flex-direction: row-reverse;
   justify-content: flex-end;
 }
 .callout-toggle > .callout-head .callout-icon {
   display: none;
-}
-.callout-toggle > .callout-head::after {
-  margin-left: 0;
-  transform: rotate(-45deg);
-}
-.callout-toggle[open] > .callout-head::after {
-  transform: rotate(45deg);
 }
 .callout-toggle > .callout-body {
   padding-left: var(--space-5);
@@ -1453,11 +1424,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   text-align: center;
   color: var(--muted);
   line-height: 1;
-}
-.md-rule-dots::before {
-  content: "\2022\2003\2022\2003\2022";
-  font-size: var(--text-md);
-  letter-spacing: 0.1em;
 }
 /* A quote with its attribution: the words, then the name on its own line,
    set small and muted, under the quote's own edge. */
@@ -1513,9 +1479,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   color: var(--accent-text);
   text-decoration: underline;
 }
-.md-toc-depth-1 { padding-left: var(--space-5); }
-.md-toc-depth-2 { padding-left: var(--space-7); }
-.md-toc-depth-3 { padding-left: var(--space-9); }
 .md-toc-empty {
   font-size: var(--text-sm);
   color: var(--muted);
@@ -2110,9 +2073,6 @@ body.resizing-sidebar {
 }
 /* More pressed: the strip wraps, as the expanded mode does, and the folded
    tools are back in their own places, with their own menus. */
-.doc-toolbar.is-more-open {
-  flex-wrap: wrap;
-}
 /* A narrow strip folds its layout toggle behind More before any tool
    (`fitDocToolbarRow`); pressed, More brings it back with the rest. */
 .doc-toolbar.is-layout-folded:not(.is-more-open) .doc-toolbar-layout {
@@ -2202,11 +2162,6 @@ body.resizing-sidebar {
 /* The group separators are furniture, not controls: they take the strip's
    height as a *rule*, and the sizing rule above must not turn them into 2rem
    blocks. */
-.doc-toolbar-pair {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
 .doc-toolbar .doc-toolbar-sep {
   align-self: center;
   height: calc(var(--control-h) - var(--space-2));
@@ -2859,32 +2814,6 @@ body.resizing-sidebar {
   align-self: stretch;
   justify-content: center;
 }
-/* **An empty section does not reserve a heading and a button.** Measured with
-   no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
-   12px uppercase "REFERENCES" eyebrow and a full-width "Attach a link" over
-   nothing, sitting above roughly 290px of empty sidebar. Backlinks and "notes
-   it draws on" already hide themselves when they have nothing to list
-   (`renderDocBacklinks`, `renderDocNotes`); References cannot, because the
-   way to attach the first one is inside it.
-   So the section empties out instead: the eyebrow goes, the empty list goes,
-   the rule above it goes, the 4rem floor every section otherwise keeps goes,
-   and what is left is one quiet action at the panel's left edge, the same
-   weight and the same muted ink as the storage help below it, which is the
-   only other thing down there. Written with `:has` against the list's own
-   emptiness rather than a class from JS: the three renderers all end in
-   `replaceChildren()`, so the DOM already knows, and a class would be a
-   fourth thing to keep in step.
-   `#doc-outline-wrap` is deliberately not in this list. It is what the tab is
-   called, so it keeps its heading and answers with a sentence instead
-   (`#doc-outline-empty`), which `docoutline.js` asserts. */
-#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline-title,
-#doc-backlinks-wrap:has(> .doc-outline:empty) > .doc-outline,
-#doc-notes-wrap:has(> .doc-outline:empty) > .doc-outline,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) > .doc-outline {
-  display: none;
-}
 #doc-bookmarks-wrap:has(> .doc-outline:empty) {
   margin-top: var(--space-3);
   padding-top: 0;
@@ -2901,21 +2830,6 @@ body.resizing-sidebar {
      `0 1 auto` and its 4rem floor, which is the rule this is the exception
      to. */
   flex: 0 0 auto;
-}
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark {
-  margin-top: 0;
-  padding-left: 0;
-  padding-right: 0;
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  font-weight: 400;
-}
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:hover,
-#doc-bookmarks-wrap:has(> .doc-outline:empty) #doc-attach-bookmark:focus-visible {
-  color: var(--accent-text);
-  text-decoration: underline;
 }
 .outline-link {
   background: none;
@@ -3020,12 +2934,6 @@ button.outline-twist:focus-visible {
 .outline-row.is-dragging {
   opacity: 0.5;
 }
-.outline-row.is-drop-before {
-  box-shadow: inset 0 2px 0 0 var(--accent);
-}
-.outline-row.is-drop-after {
-  box-shadow: inset 0 -2px 0 0 var(--accent);
-}
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
    rather than a gap because `.doc-outline-wrap` is a flex column whose other
@@ -3090,16 +2998,6 @@ button.outline-twist:focus-visible {
 .outline-h4 .outline-link {
   font-size: var(--text-base);
 }
-/* A row, not a stack. `.outline-link` is `width: 100%`, so a ✕ beside one had
-   nowhere to go but the next line: "References stacks a close button above
-   its own select". The link takes the room and shrinks; the action keeps its
-   own size. */
-.doc-outline-row,
-.doc-attach-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
 /* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
    rebuilds every `<select>` inside one on a MutationObserver, so for the frame
    before that runs the select is the row's own child and afterwards it is a
@@ -3110,19 +3008,6 @@ button.outline-twist:focus-visible {
 .doc-attach-row > .select-shell {
   flex: 1 1 auto;
   min-width: 0;
-}
-.doc-outline-row > .doc-outline-row-action,
-.doc-attach-row > .doc-outline-row-action {
-  flex: 0 0 auto;
-}
-/* The line that says what fills an empty outline. One sentence, the muted
-   ink, and the same left edge as the entries that will replace it, so the
-   panel does not shift sideways the moment a heading is written. */
-.doc-outline-empty {
-  margin: 0 0 var(--space-2);
-  padding-left: 0.25rem;
-  font-size: var(--text-base);
-  line-height: 1.45;
 }
 /* The heading's own count, beside the word rather than under it. */
 .doc-outline-count:not(:empty) {
@@ -4595,21 +4480,8 @@ html[data-chrome="native"] #top-bar #brand-logo {
   color: var(--muted);
   font-size: var(--text-xs);
 }
-.doc-statusbar-fact {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 .doc-statusbar > * {
   flex: 0 0 auto;
-}
-#doc-counts {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.doc-statusbar-spacer {
-  flex: 1 1 auto;
 }
 .doc-statusbar-button {
   display: inline-flex;
@@ -4626,16 +4498,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-button:focus-visible {
   border-color: var(--border);
   color: var(--ink);
-}
-/* Only when there is something to look at. A count that is always coloured is
-   a count nobody reads, and a count that is always a chip is a chip nobody
-   presses: "No suggestions" is a statement and stays flat, while a real count
-   takes an edge and a wash so it reads as the control it has always been
-   (DOCUMENTS_PLAN Phase 0 item 3). */
-.doc-statusbar-button.has-findings {
-  color: var(--warn);
-  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
 }
 /* The two writing switches, now rows of the document's own kebab menu
    (DOCUMENTS_PLAN Phase 0 item 3).
@@ -4743,22 +4605,9 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-panel:has(.doc-prose-row[aria-current]) {
   max-height: min(24vh, 15rem);
 }
-.doc-prose-panel.doc-prose-right,
-.doc-prose-panel.doc-prose-right:has(.doc-prose-row[aria-current]) {
-  flex: 0 0 var(--doc-prose-w);
-  width: var(--doc-prose-w);
-  max-height: none;
-  margin-top: 0;
-}
 /* The sidebars' grip as a flex item between the text and the column rather
    than absolutely placed inside a box that scrolls, where it would scroll away
    with the list. Gone with the panel when the panel is closed. */
-.doc-prose-resize.sidebar-resize {
-  position: static;
-  flex: 0 0 var(--space-3);
-  height: auto;
-  align-self: stretch;
-}
 .doc-prose-resize:has(+ .doc-prose-panel.hidden) {
   display: none;
 }
@@ -4791,10 +4640,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    below it already. */
 .doc-prose-group:first-of-type {
   margin-top: 0;
-}
-.doc-prose-group-count {
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
 }
 /* **A row is its head over its answers** (INBOX 549). It was a flex row, so
    an opened row's answers sat beside it and squeezed the finding to "s…" in
@@ -4859,21 +4704,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 }
 /* Accept and Ignore: quiet squares of one size, the ink arriving with the
    pointer. */
-.doc-prose-rowhead .doc-prose-act.ghost.small {
-  width: var(--control-h-lg);
-  height: var(--control-h-lg);
-  min-height: 0;
-  padding: 0;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--muted);
-}
-.doc-prose-rowhead .doc-prose-act.ghost.small:hover,
-.doc-prose-rowhead .doc-prose-act.ghost.small:focus-visible {
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
-}
 /* **One drawing of a finding** (DOCUMENTS_PLAN 12 D1), used by the panel row
    and by the menu's head, so the two cannot describe one object in two orders
    again: a dot in the colour of that kind's underline, the words, the reason. */
@@ -4956,35 +4786,11 @@ html[data-chrome="native"] #top-bar #brand-logo {
   height: var(--space-1);
   background: var(--accent);
 }
-/* Suggestion mode (INBOX 404). An insertion is underlined on a green ground,
-   a deletion struck through in the error ink, the pair every editor with
-   tracked changes uses; the ink of the words themselves is left alone, so
-   contrast is the body text's own. The markers show only outside Live. */
-.cm-suggest-ins {
-  text-decoration: underline;
-  text-decoration-color: var(--ok);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--ok) 14%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.cm-suggest-del {
-  text-decoration: line-through;
-  text-decoration-color: var(--error);
-  text-decoration-thickness: 2px;
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
 .cm-suggest-marker {
   color: var(--muted);
 }
 /* The sentence being read aloud (INBOX 404): a ground, not an ink, so every
    underline a finding or a suggestion draws stays readable on top of it. */
-.cm-read-aloud {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  border-radius: var(--radius-sm);
-}
 /* The words carry the identity, so they hold the weight and they are the half
    that ellipsises: the reason is a sentence and can be read from the title. */
 .doc-finding-words {
@@ -5007,9 +4813,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    weight step and never an accent edge as well. */
 .doc-prose-row[aria-current] > .doc-prose-rowhead {
   background: var(--accent-soft);
-}
-.doc-prose-row[aria-current] .doc-finding-words {
-  font-weight: 600;
 }
 /* The completion popup. `position: fixed` because it is placed in viewport
    coordinates against the caret, an absolutely-positioned list would be
@@ -5136,21 +4939,8 @@ html[data-chrome="native"] #top-bar #brand-logo {
   box-shadow: var(--shadow-lg);
   font-size: var(--text-sm);
 }
-/* The word, and why it is flagged. Both, because "recieve" with no reason is a
-   scold and a reason with no word makes you go and look. The two are drawn by
-   `docFindingLine`, the same function the panel row uses, so this rule only has
-   to place the line and divide it from the answers below. */
-.doc-suggest-head {
-  padding: var(--space-1) var(--space-2) var(--space-2);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: var(--space-1);
-}
 /* In the menu the reason is a sentence with room to be one: it is the only
    place in the app where a finding's why is allowed to wrap. */
-.doc-suggest-head .doc-finding-why {
-  overflow: visible;
-  white-space: normal;
-}
 .doc-suggest-list,
 .doc-suggest-actions {
   display: flex;
@@ -5160,29 +4950,10 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The replacements read as the primary answer and the rest as what else you
    can do, so they are separated by a rule rather than by weight, the actions
    are still real controls. */
-.doc-suggest-actions {
-  margin-top: var(--space-1);
-  padding-top: var(--space-1);
-  border-top: 1px solid var(--border);
-}
-/* **The answers, under the row that asked** (DOCUMENTS_PLAN 12 D3): the same
-   controls the floating menu draws, laid out along the row rather than down it,
-   because the panel is the width of the editor and a column of five candidates
-   inside a 33vh box is a scroller inside a scroller. Indented to the width of
-   the dot and its gap, so the answers hang off the finding they belong to. */
-.doc-prose-answers {
-  margin: var(--space-1) 0 var(--space-3) calc(var(--space-3) + var(--space-4));
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--divider);
-}
 .doc-suggest-list-inline,
 .doc-suggest-actions-inline {
   flex-flow: row wrap;
   gap: var(--space-1);
-}
-.doc-suggest-actions-inline {
-  margin-top: var(--space-1);
-  padding-top: var(--space-1);
 }
 /* A candidate in a row of candidates is the width of its word, not the width of
    the panel, and it is the tonal recipe: side by side with no edge, five words
@@ -5252,14 +5023,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The first candidate is the one Enter and a double-click take, so it reads
    as the answer and the rest as the alternatives. Weight only: a second
    colour here would compete with the accent the hovered row already uses. */
-.doc-suggest-best {
-  font-weight: 600;
-}
-.doc-suggest-none {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-xs);
-}
 /* **The writing dictionary as a settings sheet** (INBOX 410: "ugly and needs a
    proper professional modern redesign"). One column: the head (title, the count
    as muted text, the '?', close), a line, one field that finds and adds, a
@@ -5322,15 +5085,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   border-top: 1px solid var(--divider);
   border-bottom: 1px solid var(--divider);
 }
-.doc-dictionary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  min-height: var(--row-h);
-  padding: 0 var(--space-1) 0 var(--space-3);
-  border-radius: var(--radius-sm);
-}
 .doc-dictionary-row:hover,
 .doc-dictionary-row:focus-within {
   background: var(--hover-veil);
@@ -5346,15 +5100,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-dictionary-remove {
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
-}
-.doc-dictionary-row:hover .doc-dictionary-remove,
-.doc-dictionary-row:focus-within .doc-dictionary-remove {
-  opacity: 1;
-}
-@media (hover: none) {
-  .doc-dictionary-remove {
-    opacity: 1;
-  }
 }
 .doc-dictionary-empty {
   padding: var(--space-5) var(--space-3);
@@ -5453,24 +5198,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   flex: 0 0 auto;
   margin-inline-start: auto;
 }
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small {
-  flex: none;
-  height: var(--dialog-head-btn-size);
-  min-height: 0;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-  white-space: nowrap;
-}
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:hover,
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small[aria-pressed="true"],
-.doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
-}
-.doc-prose-more {
-  display: inline-flex;
-}
 /* The narrowest panel (the 240px right dock): Check with AI's icon gives
    way to the ⋯, which holds it too, so the head stays one row. */
 @container doc-prose (max-width: 17rem) {
@@ -5505,14 +5232,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   }
 }
 /* Nothing to flag: a mark, one line, and what was checked, quiet. */
-.doc-prose-empty {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: var(--space-2);
-  align-items: baseline;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-sm);
-}
 .doc-prose-empty p {
   margin: 0;
 }
@@ -5703,9 +5422,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   height: 0.9em;
   min-width: 0;
   min-height: 0;
-  margin: 0;
-}
-.doc-template-empty {
   margin: 0;
 }
 @media (max-width: 43.99rem) {
@@ -5963,9 +5679,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 /* Unlinked mentions is the backlinks section's shape exactly, so the two read
    as one panel. The help line is the section's one line of description
    (CLAUDE.md's copy rule) and carries the muted empty-state ink. */
-.doc-mentions-help {
-  margin-top: 0;
-}
 /* The empty collapse the three sections above already have, for the one the
    script makes. */
 .doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-outline-title,
@@ -6012,17 +5725,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-crumbs::-webkit-scrollbar {
   display: none;
 }
-.doc-crumbs-list {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  /* A trail is one line: a document nested five headings deep scrolls
-     sideways rather than growing the row and shifting the writing down. */
-  white-space: nowrap;
-}
 /* The separator belongs to the list, not to the buttons: a crumb rendered
    with a trailing character of its own would put that character inside the
    button's hit area and read it out as part of the heading's name. */
@@ -6031,12 +5733,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-crumbs-list > li {
   display: flex;
   align-items: center;
-}
-.doc-crumbs-list li + li::before {
-  content: "\203A";
-  color: var(--muted);
-  opacity: 0.7;
-  padding: 0 0.15rem;
 }
 .doc-crumb {
   color: var(--muted);
