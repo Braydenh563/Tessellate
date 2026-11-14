@@ -36,11 +36,11 @@ from collections import Counter
 from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 
+from tessellate.core.lazyre import lazy_compile
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, question_noise, realise
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
-from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
-from tessellate.ai import composer_select
+from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview, composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser, recognise_questions
@@ -164,7 +164,7 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     return f"From {name}{day}: {body}."
 
 
-_PRONOUN_SAID = re.compile(r"(?:he|she|it)\s+(?=(?:is|was|will|has|had|[a-z]{3,}s)\b)(?!also\b|then\b|still\b)", re.I)
+_PRONOUN_SAID = lazy_compile(r"(?:he|she|it)\s+(?=(?:is|was|will|has|had|[a-z]{3,}s)\b)(?!also\b|then\b|still\b)", re.I)
 
 
 def _with_its_name(lead: Fact) -> str:
@@ -191,7 +191,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
 
 
 #: "When did I last write about Harbor?" is answered with the day, not only with the note (F5).
-_LAST_WROTE = re.compile(r"^\s*when did i last (?:write|wrote|note|jot|save|mention) (?:about |on |down )?(?P<subject>.+?)\s*\??\s*$", re.I)
+_LAST_WROTE = lazy_compile(r"^\s*when did i last (?:write|wrote|note|jot|save|mention) (?:about |on |down )?(?P<subject>.+?)\s*\??\s*$", re.I)
 
 
 def _dated_last(out: _Out, lead: Fact, today: date, question: str) -> None:
@@ -202,11 +202,11 @@ def _dated_last(out: _Out, lead: Fact, today: date, question: str) -> None:
 
 
 #: "have bought", "'ve got": said in the past once its day leads.
-_PERFECT = re.compile(r"(?:'ve|(?<!\s)\s+have|(?<!\s)\s+has)\s+(?=(?:\w+ed|bought|got|gone|made|found|sold|paid|spent|won|lost|had|taken|seen|met|left|done|read|heard|sent|built|kept|written)\b)", re.I)
+_PERFECT = lazy_compile(r"(?:'ve|(?<!\s)\s+have|(?<!\s)\s+has)\s+(?=(?:\w+ed|bought|got|gone|made|found|sold|paid|spent|won|lost|had|taken|seen|met|left|done|read|heard|sent|built|kept|written)\b)", re.I)
 _PARTICIPLE = {"gone": "went", "taken": "took", "seen": "saw", "done": "did", "written": "wrote"}
 
 
-_AIMED_AT = re.compile(r"\b(?:for|until|till|by|before|ahead of|in time for)\s*$", re.I)
+_AIMED_AT = lazy_compile(r"\b(?:for|until|till|by|before|ahead of|in time for)\s*$", re.I)
 
 
 def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
@@ -305,8 +305,8 @@ _SINGLE_CUES = {
 }
 
 
-_IN_A_ROW = re.compile(r"\b(\d{1,4})\s+days?\s+(?:in a row|running|straight)\b", re.I)
-_STARTED = re.compile(r"\b(?:start|started|begin|began|begun)\b", re.I)
+_IN_A_ROW = lazy_compile(r"\b(\d{1,4})\s+days?\s+(?:in a row|running|straight)\b", re.I)
+_STARTED = lazy_compile(r"\b(?:start|started|begin|began|begun)\b", re.I)
 
 
 def _streak_start(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact] | None:
@@ -448,7 +448,7 @@ def _single_close(out: _Out, kind: str, rest: list[Fact], members, question: str
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
 
 
-_TASKY = re.compile(r"\b(?:to-?do|tasks?|checklist|left|open|unfinished)\b", re.I)
+_TASKY = lazy_compile(r"\b(?:to-?do|tasks?|checklist|left|open|unfinished)\b", re.I)
 
 
 def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[Fact]:
@@ -464,14 +464,14 @@ def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[
 #: the subject ("Next book is Piranesi"; 2026-10-30 sweep).
 #: "What does Priya do", "what is Tom's job": the sentence that says the
 #: work leads, not the note's first line (audit 1030 Z12).
-_ROLE_ASK = re.compile(
+_ROLE_ASK = lazy_compile(
     r"^\s*(?:what (?:does|did) [\w' -]+ do(?: for (?:a )?(?:living|work))?|what(?:'s| is) [\w' -]+'s? (?:job|role|work|title|job title|position|occupation)"
     r"|where (?:does|did) [\w' -]+ work)\s*\??$",
     re.I,
 )
 _ROLE_CUE = re.compile(r"\b(?:works?|worked|job|role|position|employed|is (?:a|an|the|our) )", re.I)
-_WHERE_ASK = re.compile(r"^\s*where(?:'s| is| are| was| were| do| does| did| can| should)?\b", re.I)
-_WHERE_CUE = re.compile(
+_WHERE_ASK = lazy_compile(r"^\s*where(?:'s| is| are| was| were| do| does| did| can| should)?\b", re.I)
+_WHERE_CUE = lazy_compile(
     r"\b(?:at|in|on|near|under|behind|beside|inside|above|below|next to|outside|by)\s+(?:the\s+|my\s+|a\s+|an\s+|our\s+)?[\w'-]+", re.I
 )
 
@@ -509,11 +509,11 @@ class _MoneyCue:
         return recogniser.says_shape("money", text)
 
 
-_MONEY_ASK = re.compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
+_MONEY_ASK = lazy_compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
 
 
 #: "how long do I bake it": the lead is the sentence that holds a length of time (audit 1031 C16).
-_HOW_LONG = re.compile(r"^\s*how long\s+(?:do|does|did|will|would|should|can|could|is|are|was|were)\b", re.I)
+_HOW_LONG = lazy_compile(r"^\s*how long\s+(?:do|does|did|will|would|should|can|could|is|are|was|were)\b", re.I)
 #: "2h50" and "1h 30m" are a length of time too: the journey time of a timetable line.
 _DURATION = re.compile(
     r"\b(?:\d+(?:[.,]\d+)?\s*(?:-\s*\d+\s*)?|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a few|several)\s+)"
@@ -576,7 +576,7 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
     return None
 
 
-_PRICE_WORDS = re.compile(r"\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
+_PRICE_WORDS = lazy_compile(r"\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
 
 
 def _no_price(out: _Out, cue, question: str, members) -> bool:  # noqa: ANN001
@@ -684,7 +684,7 @@ def _who_found(name: str, views) -> list:  # noqa: ANN001
     return found or _named_in_fragment(name, views)
 
 
-_PRONOUN_LEAD = re.compile(r"(?:mine|yours|it|he|she|they|his|hers|its|this|that)\b", re.I)
+_PRONOUN_LEAD = lazy_compile(r"(?:mine|yours|it|he|she|they|his|hers|its|this|that)\b", re.I)
 
 
 def _who_fact(view, s) -> str:  # noqa: ANN001
@@ -766,7 +766,7 @@ def _full_names(sentences: list, a: str, b: str) -> dict[str, str]:
     return full
 
 
-_LEANING = re.compile(r"\b(leaning towards|prefer|decided on|going with|chose|picked)\s+(?:the\s+)?(\w+)", re.I)
+_LEANING = lazy_compile(r"\b(leaning towards|prefer|decided on|going with|chose|picked)\s+(?:the\s+)?(\w+)", re.I)
 
 
 def _leaning(sentences: list, sides: dict[str, set[str]], a: str, b: str, names: set[str]) -> tuple[str, object, str]:
@@ -987,7 +987,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
     return bool(computed and composer_lists.answer(out, computed, asked, views, today))
 
 
-_DENIAL = re.compile(r"(?:I found (?:no|nothing)|None of (?:your|these) notes|Your notes do not|There's nothing in your notes|No note )", re.I)
+_DENIAL = lazy_compile(r"(?:I found (?:no|nothing)|None of (?:your|these) notes|Your notes do not|There's nothing in your notes|No note )", re.I)
 
 
 @_isolated
@@ -1013,12 +1013,12 @@ def exact(question: str, notes: list[dict], *, today: date | None = None) -> dic
     return _result(out, "fact", asked)
 
 
-_HOW_MET = re.compile(r"^(?:how|where|when) (?:did|do) (?:i|we) (?:first )?(?:meet|know|get to know) (?P<name>.+?)(?: (?:again|from|first))*$", re.I)
+_HOW_MET = lazy_compile(r"^(?:how|where|when) (?:did|do) (?:i|we) (?:first )?(?:meet|know|get to know) (?P<name>.+?)(?: (?:again|from|first))*$", re.I)
 
 
 #: "Which note mentions Dr Patel": the notes that name someone, which is what
 #: "who is" lists; so it is said that way (audit 1030 Z13).
-_WHICH_NAMES = re.compile(
+_WHICH_NAMES = lazy_compile(
     r"^which (?:of my )?(?:notes?|entries|entry) (?:mentions?|names?|has|have|contains?|says? anything about|talks? about|refers? to)"
     r" (?!the (?:word|phrase)\b)(?:(?:the|a|an|my) )?(?P<name>[\w.' -]{2,40})$",
     re.I,
@@ -1032,7 +1032,7 @@ def _which_names(kind: str, asked: str) -> tuple[str, str]:
 
 
 #: "how many cells", "number of cells": one counted noun and nothing else.
-_COUNTED = re.compile(r"^(?:how many|(?:the )?number of) (?P<noun>[a-z]{3,})(?: (?:do i have|are there|have i got))?$", re.I)
+_COUNTED = lazy_compile(r"^(?:how many|(?:the )?number of) (?P<noun>[a-z]{3,})(?: (?:do i have|are there|have i got))?$", re.I)
 #: Nouns other readers count (notes, words, days): never answered here.
 _COUNTED_ELSEWHERE = frozenset({"notes", "entries", "words", "characters", "letters", "sentences", "days", "weeks", "months", "years", "hours", "minutes", "nights", "times", "items", "tasks", "reminders", "lists", "files", "documents", "boards", "pictures", "tags", "categories", "things"})
 
@@ -1061,10 +1061,10 @@ def _count_of_unwritten(asked: str, views: list) -> str:
     return f"{realise.count_word(len(mentioning)).capitalize()} of your notes mention {noun}."
 
 
-_MY_LIST = re.compile(r"^what(?:'s| is| are)? (?:on|in) (?:my|the) (?:check ?)?lists?$", re.I)
+_MY_LIST = lazy_compile(r"^what(?:'s| is| are)? (?:on|in) (?:my|the) (?:check ?)?lists?$", re.I)
 
 
-_LIST_ITEM_LINE = re.compile(r"(?:[-*+]|\d{1,3}[.)])\s|\[[ xX]\]")
+_LIST_ITEM_LINE = lazy_compile(r"(?:[-*+]|\d{1,3}[.)])\s|\[[ xX]\]")
 
 
 def _list_title(note: dict) -> str:
@@ -1258,7 +1258,7 @@ def _lead_then_rest(members: list, rank: dict, best: int, terms: list[str]) -> l
     return [lead] + sorted((v for v in rest if id(v) not in place), key=lambda v: -rank[id(v)]) + [v for v in rest if id(v) in place]
 
 
-_PLACE_BEFORE = re.compile(r"\b(?:in|under|on|near|from|to|inside|behind|at|by) (?:the |my |our )?(?:\w+ )?$", re.I)
+_PLACE_BEFORE = lazy_compile(r"\b(?:in|under|on|near|from|to|inside|behind|at|by) (?:the |my |our )?(?:\w+ )?$", re.I)
 
 
 def _in_a_place(text: str, stems: set[str]) -> bool:
@@ -1319,7 +1319,7 @@ def _named_note(kind: str, asked: str, members: list):  # noqa: ANN202
 
 #: "What's in", "what goes in", "what do I need for": a question for what a
 #: note holds, which a list note answers whole (audit 1030 Z46).
-_HOLDS_ASK = re.compile(r"^\W*what(?:'s| is| goes| go)? in(?:to)?\b|^\W*what do (?:i|you) need (?:for|to make)\b|\bingredients\b", re.I)
+_HOLDS_ASK = lazy_compile(r"^\W*what(?:'s| is| goes| go)? in(?:to)?\b|^\W*what do (?:i|you) need (?:for|to make)\b|\bingredients\b", re.I)
 
 
 def _named_list(kind: str, asked: str, members: list) -> bool:
@@ -1765,8 +1765,8 @@ def _tie(question: str, members: list) -> tuple[list, str, list] | None:
     return first, b, second
 
 
-_PLACE = re.compile(r"\b(?:the )?(driving range|range|gym|pool|court|course|track|studio|climbing wall|park)\b", re.I)
-_REVIEWED = re.compile(rf"\b({_REVIEWED_WORDS})s?\b", re.I)
+_PLACE = lazy_compile(r"\b(?:the )?(driving range|range|gym|pool|court|course|track|studio|climbing wall|park)\b", re.I)
+_REVIEWED = lazy_compile(rf"\b({_REVIEWED_WORDS})s?\b", re.I)
 
 
 def _note_offer(label: str, text: str) -> dict:
@@ -1814,7 +1814,7 @@ def _count_offer(question: str, text: str) -> dict | None:
 
 #: A question that asks for things still to try, want or do: only there is
 #: the first listed item a thing to be reminded of ("words I have learned" is not).
-_TO_TRY = re.compile(r"\b(?:want|wanna|should|plan(?:ning)?|hope|hoping|wish|meaning|going) to\b|\b(?:to try|to do|to see|to visit|to watch|to read|ideas?|bucket|wish ?list|next)\b", re.I)
+_TO_TRY = lazy_compile(r"\b(?:want|wanna|should|plan(?:ning)?|hope|hoping|wish|meaning|going) to\b|\b(?:to try|to do|to see|to visit|to watch|to read|ideas?|bucket|wish ?list|next)\b", re.I)
 
 
 def _fact_offer(out: _Out, question: str = "") -> dict | None:
@@ -1958,16 +1958,16 @@ def _lead_figure(line: str) -> str | None:
     return found.text if found and found.start <= len("You've spent ") else None
 
 
-_DAY_OF_MONTH = re.compile(r"\b(?:(\d{1,2}(?:st|nd|rd|th)?) (may|march)|(may|march) (\d{1,2})(?:st|nd|rd|th)?)\b(?!:\d)", re.I)
-_SET_ASIDE = re.compile(
+_DAY_OF_MONTH = lazy_compile(r"\b(?:(\d{1,2}(?:st|nd|rd|th)?) (may|march)|(may|march) (\d{1,2})(?:st|nd|rd|th)?)\b(?!:\d)", re.I)
+_SET_ASIDE = lazy_compile(
     r"“[^”]*”|\"[^\"\n]*\"|`[^`]*`|\[[^\]]*\]\([^)]*\)|https?://\S+|\S+@\S+|"
     r"[\w-]+\.(?:txt|md|pdf|docx?|pptx?|xlsx?|csv|json|png|jpe?g|gif|zip|py|js|html?)\b|^>.*$",
     re.M,
 )
 #: A sentence opens at a line start or after a full stop; "e.g." and "5 p.m."
 #: do not end one.
-_SENTENCE_START = re.compile(r"(?:^|(?<=[.!?] ))(\*\*)?([a-z][a-z']*)(?!\w)", re.M)
-_NOT_AN_END = re.compile(r"(?:\b(?:e\.g|i\.e|etc|vs|approx|dr|mr|mrs|ms|st|no|cf)|\b[ap]\.m)\. $", re.I)
+_SENTENCE_START = lazy_compile(r"(?:^|(?<=[.!?] ))(\*\*)?([a-z][a-z']*)(?!\w)", re.M)
+_NOT_AN_END = lazy_compile(r"(?:\b(?:e\.g|i\.e|etc|vs|approx|dr|mr|mrs|ms|st|no|cf)|\b[ap]\.m)\. $", re.I)
 _VERB_TO = r"(?:go|goes|going|went|gone|head|heads|heading|headed|walk|walks|walking|walked|drive|drives|driving|drove|run|runs|running|ran|come|comes|coming|came|nip|nipped|pop|popped|back)"
 #: Places said with "the". Not school, work, bed, church, hospital, uni,
 #: college or town, which are said bare.
@@ -1983,7 +1983,7 @@ _AFTER_WORDS = (
     "once", "twice", "daily", "weekly", "early", "late", "now", "soon", "later", "instead", "still", "too", "to",
 )
 _AFTER_PLACE = rf"(?=\s*(?:$|[.,;:!?)]|(?i:{'|'.join(_AFTER_WORDS)}|{_WEEKDAYS})\b))"
-_NEEDS_THE = re.compile(rf"\b((?i:{_VERB_TO}(?: back)?)) to ({_PLACES}){_AFTER_PLACE}")
+_NEEDS_THE = lazy_compile(rf"\b((?i:{_VERB_TO}(?: back)?)) to ({_PLACES}){_AFTER_PLACE}")
 
 
 def _capital(m: re.Match) -> str:
@@ -2019,8 +2019,8 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
 
 #: A note's own emphasis marks (`*Bring wine*`, a one-word `cash` code span)
 #: show as plain words in a quote: the answer's own bold stays (round 2, research row 11).
-_ITALIC_MARK = re.compile(r"(?<![*\w])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![*\w])")
-_CODE_WORD = re.compile(r"`(\w+)`")
+_ITALIC_MARK = lazy_compile(r"(?<![*\w])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![*\w])")
+_CODE_WORD = lazy_compile(r"`(\w+)`")
 
 
 def _plain_marks(line: str) -> str:
@@ -2073,8 +2073,8 @@ _OWN_NEXT = frozenset({"web", "more"})
 
 #: The verb a question leaves on its subject ("sara like jazz", "tokyo trip cost"): no name to ask about.
 #: The question's own verb in a topic: no chip is built from it (D19, R3-36).
-_OWN_VERB = re.compile(r"\b(?:am|is|are|was|were|do|does|did|have|has|had|i)\b", re.I)
-_TAIL_VERB = re.compile(r"\b(?:likes?|loves?|wants?|needs?|costs?|owes?)\b", re.I)
+_OWN_VERB = lazy_compile(r"\b(?:am|is|are|was|were|do|does|did|have|has|had|i)\b", re.I)
+_TAIL_VERB = lazy_compile(r"\b(?:likes?|loves?|wants?|needs?|costs?|owes?)\b", re.I)
 
 
 def _topic_chips(kind: str, topic: str) -> list[str]:
@@ -2131,7 +2131,7 @@ def _fresh_chips(said: list[str], question: str) -> list[str]:
     return out
 
 
-_FRAME_CUT = re.compile(r"\s(?:about|on|in|with)\s|[“\"]")
+_FRAME_CUT = lazy_compile(r"\s(?:about|on|in|with)\s|[“\"]")
 
 
 def _chip_frame(chip: str) -> str:
@@ -2144,7 +2144,7 @@ def _chip_frame(chip: str) -> str:
 _PERSON_NOUNS = frozenset(
     "friend mate mum mom dad brother sister partner boss teacher tutor girlfriend boyfriend wife husband flatmate "
     "roommate housemate cousin aunt uncle son daughter colleague coworker mentor therapist coach grandma grandpa nan".split())
-_CHIP_WORD = re.compile(r"[\w'&-]+")
+_CHIP_WORD = lazy_compile(r"[\w'&-]+")
 
 
 def _chip_hits(wanted: list[str], lower: list[str]) -> list[int]:
@@ -2265,13 +2265,13 @@ def _result(out: _Out, kind: str, question: str) -> dict:
 
 
 #: "search the web for X", "look up X": the words that ask, not the subject.
-_WEB_ASK = re.compile(r"^(?:(?:hey|hi|ok|okay),? )?(?:(?:can|could|will) (?:you|u) )?(?:(?:please|pls|plz) )?(?:search (?:the )?(?:web|internet|online) (?:for|about)|search up|look up|google|find (?:on|from) the web|web search(?: for)?)\s+", re.I)
+_WEB_ASK = lazy_compile(r"^(?:(?:hey|hi|ok|okay),? )?(?:(?:can|could|will) (?:you|u) )?(?:(?:please|pls|plz) )?(?:search (?:the )?(?:web|internet|online) (?:for|about)|search up|look up|google|find (?:on|from) the web|web search(?: for)?)\s+", re.I)
 
 
 #: A question whose answer depends on where the person is ("the weather
 #: today", "pharmacies near me") and that names no place itself.
-_LOCAL = re.compile(r"\b(?:weather|forecast|temperature|rain(?:ing)?|sunrise|sunset|near me|nearby|open now)\b", re.I)
-_NAMES_PLACE = re.compile(r"\b(?:in|at|for|near) (?-i:[A-Z])\w+")
+_LOCAL = lazy_compile(r"\b(?:weather|forecast|temperature|rain(?:ing)?|sunrise|sunset|near me|nearby|open now)\b", re.I)
+_NAMES_PLACE = lazy_compile(r"\b(?:in|at|for|near) (?-i:[A-Z])\w+")
 
 
 def web_query(question: str, place: str = "") -> str:

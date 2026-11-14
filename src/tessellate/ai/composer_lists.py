@@ -18,6 +18,7 @@ from datetime import date, timedelta
 
 from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_recency, realise, recognise, utilities
 from tessellate.ai import composer_body
+from tessellate.core.lazyre import lazy_compile
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -26,12 +27,12 @@ SHOWN = 8
 #: is a floor, and is said so.
 POOL_LIMIT = 300
 
-_ORDER = re.compile(
+_ORDER = lazy_compile(
     #: Word by word, so a run of blanks cannot be split every way (CodeQL).
     r"^(?:is|was|does|will)\s+(?:the\s+|my\s+)?(?P<a>[\w'-]+(?:\s[\w'-]+){0,7}?)\s+(?P<rel>before|after|earlier than|later than|sooner than)\s+(?:the\s+|my\s+)?(?P<b>[\w'-]+(?:\s[\w'-]+){0,7})$",
     re.I,
 )
-_MENTION = re.compile(
+_MENTION = lazy_compile(
     r"^how (?:many times|often) (?:did|do|have|had) i (?:mention(?:ed)?|(?:write|wrote|written|talk|talked|say|said|jot|jotted down) about)\s+(?:the\s+|my\s+)?(?P<what>[\w' -]{1,40})$",
     re.I,
 )
@@ -46,22 +47,22 @@ _NEWEST_FIRST = (
     r"newest first|latest first|most recent first|last to first|newest to (?:oldest|earliest)|latest to (?:oldest|earliest)|from (?:the )?newest(?: to (?:the )?oldest)?"
     r"|(?:in )?reverse(?: chronological)?(?: order|ly)?|backwards"
 )
-_ORDERED = re.compile(
+_ORDERED = lazy_compile(
     r"^(?:(?:can|could|would) you )?(?:please\s+)?(?:(?:list|show(?: me)?|give me|display|sort|order|put|see)\s+)?(?:all\s+)?(?:of\s+)?(?:my|the)\s+(?:notes|entries)"
     rf"(?:\s+(?:sorted|ordered|arranged|listed))?[,\s]*(?:(?:by|from)\s+)?(?P<old>{_OLDEST_FIRST})?(?P<new>{_NEWEST_FIRST})?(?:\s+(?:please|pls))?$",
     re.I,
 )
-_LIST_LEAD = re.compile(
+_LIST_LEAD = lazy_compile(
     r"^(?:please\s+)?(?:list|show(?: me)?|give me|display|what are|which are)\s+(?:all\s+|every\s+|everything\s+|each\s+)?(?:of\s+)?(?:my\s+|the\s+)?",
     re.I,
 )
-_BY_WORD = re.compile(
+_BY_WORD = lazy_compile(
     r"^(?:notes?\s+|entries\s+)?(?P<how>tagged(?: with)?(?: the)?|with the tag|in(?: my)?|under|filed under|from)\s+(?:the\s+)?(?P<name>[\w&' -]{1,40}?)(?:\s+(?:notes?|category|folder|tag))?$",
     re.I,
 )
-_NAME_NOTES = re.compile(r"^(?P<name>[\w&' -]{1,40}?)\s+(?:notes?|entries)$", re.I)
+_NAME_NOTES = lazy_compile(r"^(?P<name>[\w&' -]{1,40}?)\s+(?:notes?|entries)$", re.I)
 _NOT_A_NAME = frozenset({"notes", "note", "entries", "all", "the", "my", "everything", "me", "it", "them", "these", "those", "ones"})
-_DATES = re.compile(
+_DATES = lazy_compile(
     #: Only a time window may follow the due word: "what are the deadlines for
     #: the tax return" names a subject, so the digest answers it from that note
     #: (`_only_a_window` reads `rest`).
@@ -80,13 +81,13 @@ _NOT_A_FILING = frozenset({"your", "our", "their", "his", "her", "its", "recent"
 #: Spoken shorthand a hurried hand types (stress run 2026-10-30): "whens" is
 #: "when's", and a repair at the end ("no the new one", "I mean the moved
 #: one") asks for the newer value, as "now" does.
-_NO_APOSTROPHE = re.compile(r"\b(when|where|what|who|how)s\b", re.I)
-_REPAIR = re.compile(r"[,;]? (?:no|nah|sorry|i mean|wait),? (?:wait,? )?(?:the )?(?:new|newer|latest|updated|moved|current|rescheduled) one$", re.I)
+_NO_APOSTROPHE = lazy_compile(r"\b(when|where|what|who|how)s\b", re.I)
+_REPAIR = lazy_compile(r"[,;]? (?:no|nah|sorry|i mean|wait),? (?:wait,? )?(?:the )?(?:new|newer|latest|updated|moved|current|rescheduled) one$", re.I)
 
 
 #: "plumbers number pls": a closing courtesy is not part of the ask (R9-14).
 #: Read after `clean` has made every gap one space, so the gap is a literal (no quantified whitespace: CodeQL).
-_COURTESY_TAIL = re.compile(r"(?:, ?| )(?:pls|plz|please|thanks|thx) ?([?.!]*)$", re.I)
+_COURTESY_TAIL = lazy_compile(r"(?:, ?| )(?:pls|plz|please|thanks|thx) ?([?.!]*)$", re.I)
 
 
 def clean(question: str) -> str:
@@ -178,12 +179,12 @@ def _only_a_window(rest: str | None) -> bool:
 
 #: What a "what is due" question asks for besides the time: the kind of date
 #: ("exams") narrows the sentences, the rest names whose notes they come from.
-_DUE_TRIGGER = re.compile(
+_DUE_TRIGGER = lazy_compile(
     r"\b(?:due|deadlines?|coming up|upcoming|exams?|tests?|quizzes|quiz|assignments?|assessments?|presentations?|"
     r"hand(?:ed)?[ -]in|submit|submission|turn in|scheduled)\b",
     re.I,
 )
-_DUE_LEAD = re.compile(
+_DUE_LEAD = lazy_compile(
     r"^(?:(?:please|pls|hey|ok|okay|so|and|right|can you|could you|just)[, ]+)*"
     r"(?:what(?:'?s)?|which|any|anything|show|list|tell|give|do i have|have i got|i need to know|\w+ (?:deadlines?|exams?|tests?))\b",
     re.I,
@@ -191,7 +192,7 @@ _DUE_LEAD = re.compile(
 #: A question about the past or about what a thing is is not a list of dates.
 #: Nor is "what do my notes mentioning test say": the word "test" is the thing
 #: searched for, not a date asked after (audit 1031 C19).
-_DUE_NOT = re.compile(r"\b(?:did|was|were|wrote|written|had|mean|means|about|format|worth|weigh|cover|covers|covered|say|says|mention\w*|contain\w*|hold|holds|holding)\b", re.I)
+_DUE_NOT = lazy_compile(r"\b(?:did|was|were|wrote|written|had|mean|means|about|format|worth|weigh|cover|covers|covered|say|says|mention\w*|contain\w*|hold|holds|holding)\b", re.I)
 _KIND_WORDS = frozenset("exam test quiz quizz assignment assessment presentation essay".split())
 _DUE_FILLER = frozenset(
     "what what's whats which is are do does i have got any anything the my me our show list tell give need know to for of in on at by a an "
@@ -202,7 +203,7 @@ _DUE_FILLER = frozenset(
 )
 
 
-_DUE_WORD = re.compile(r"\b(?:due|deadlines?|coming up|upcoming)\b", re.I)
+_DUE_WORD = lazy_compile(r"\b(?:due|deadlines?|coming up|upcoming)\b", re.I)
 
 
 def due_ask(question: str) -> tuple[list[str], list[str], tuple[str, int] | None] | None:
@@ -248,7 +249,7 @@ def counted_order(question: str) -> tuple[bool, int, str] | None:
 #: "nothing about Lisbon": a word the notes must leave out (round 2 E2). The
 #: mark is the first of these after the lead; the words before it, less the
 #: ask's own, are the subject kept, and the words after it the subject dropped.
-_WITHOUT_MARK = re.compile(
+_WITHOUT_MARK = lazy_compile(
     r"(?:^|(?<=[,\s]))(?:but\s+(?:not|without)|and\s+not|not\s+(?:about|on|mentioning)|without|excluding|except(?:\s+for)?|other\s+than"
     r"|nothing\s+(?:about|on)|(?:that\s+)?(?:do|does)(?:n't|\s+not)\s+(?:mention|include|have|say\s+anything\s+about|talk\s+about)"
     r"|(?:are|is)(?:n't|\s+not)\s+(?:about|on)|not)\s+(?=\S)",
@@ -270,7 +271,7 @@ _METADATA_WORDS = frozenset(
 
 #: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
 #: "what is not done" and "why did I not go" are not.
-_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
+_WITHOUT_NOTES = lazy_compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
 
 
 def without_ask(question: str) -> tuple[str, str] | None:
@@ -385,7 +386,7 @@ def _the(subject: str) -> str:
 
 #: "my passport expires" in "how many days until my passport expires": the
 #: verb is the sentence's own ("The passport expires 1586 days from today").
-_ENDING_VERB = re.compile(r"^(?P<noun>.+?) (?P<verb>expires|ends|starts|begins|arrives|happens|renews|finishes)$", re.I)
+_ENDING_VERB = lazy_compile(r"^(?P<noun>.+?) (?P<verb>expires|ends|starts|begins|arrives|happens|renews|finishes)$", re.I)
 
 
 def _the_and_verb(subject: str) -> tuple[str, str]:
@@ -543,7 +544,7 @@ def _trim(text: str, width: int = 110) -> str:
 
 #: A first line that is itself an item: a list with no title is named by
 #: where it is filed, never "[x] Milk" (stress run 2026-10-30).
-_LIST_LINE = re.compile(r"^\s*(?:(?:[-*+]|\d{1,3}[.)])\s+)?\[[ xX]\]|^\s*[-*+]\s")
+_LIST_LINE = lazy_compile(r"^\s*(?:(?:[-*+]|\d{1,3}[.)])\s+)?\[[ xX]\]|^\s*[-*+]\s")
 
 
 def _named_by_filing(view) -> str:  # noqa: ANN001
@@ -650,7 +651,7 @@ def _dates(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_BEFORE = re.compile(r"\b(before|by|until|till)\s+(?:the\s+)?(?:end of\s+)?(?P<when>[a-z0-9 ]{2,24}?)\s*[?.!]*$", re.I)
+_BEFORE = lazy_compile(r"\b(before|by|until|till)\s+(?:the\s+)?(?:end of\s+)?(?P<when>[a-z0-9 ]{2,24}?)\s*[?.!]*$", re.I)
 
 
 def _due_window(asked: str, window: tuple[str, int] | None, today: date) -> tuple[date, date, str]:
@@ -845,9 +846,9 @@ def _holding_items_of(view, kind: str) -> list:  # noqa: ANN001
     return [s for s in view.sentences if s.kind in ("item", "task")]
 
 
-_NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
+_NUMBERED = lazy_compile(r"^\s*\d{1,3}[.)]\s")
 #: A link to another note: a [[wiki link]] or a markdown link to a note's own address (W10 B31).
-_LINKS = re.compile(r"\[\[[^\]\n]{1,120}\]\]|\]\(#/notes/\d+\)")
+_LINKS = lazy_compile(r"\[\[[^\]\n]{1,120}\]\]|\]\(#/notes/\d+\)")
 
 
 def _line_of_item(view, sentence) -> str:  # noqa: ANN001
@@ -860,7 +861,7 @@ def _line_of_item(view, sentence) -> str:  # noqa: ANN001
     return "numbered" if _NUMBERED.match(line) else ""
 
 
-_TICK = re.compile(r"^\s*[-*+]\s*\[[ xX]\]\s*")
+_TICK = lazy_compile(r"^\s*[-*+]\s*\[[ xX]\]\s*")
 
 
 def _holding_detail(view, got: list, kind: str, today: date) -> str:  # noqa: ANN001
@@ -949,13 +950,13 @@ def holds_days(notes: list[dict], today: date) -> bool:
 
 _COUNT_LEAD = r"^how many (?:(?P<pre>[\w&' -]{1,30}?)\s+)?(?:notes|entries)"
 _COUNT_TAIL = r"(?:\s+(?:do i have|have i (?:got|written|saved|made)|are there|did i (?:write|save|make)))?"
-_COUNTED = re.compile(
+_COUNTED = lazy_compile(
     _COUNT_LEAD + _COUNT_TAIL + r"(?:\s+(?:are\s+)?(?:about|in|on|under|for|tagged(?: with)?|filed under)\s+(?:the\s+|my\s+)?(?P<post>[\w&' -]{1,40}?))?" + r"(?:\s+(?:category|folder|tag))?$",
     re.I,
 )
 
 
-_THINGS = re.compile(
+_THINGS = lazy_compile(
     r"^how many (?P<name>[a-z][\w&' -]{1,30}?)\s+(?:do i have|have i (?:got|saved|written|kept|filed)|are there|did i (?:save|write|keep|file))"
     r"(?:\s+(?:saved|written down|in my notes|so far))?$",
     re.I,

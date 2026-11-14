@@ -25,6 +25,7 @@ from tessellate.ai import (
 )
 from tessellate.ai import recognise_questions
 from tessellate.ai.composer_lists import clean
+from tessellate.core.lazyre import lazy_compile
 
 
 #: The connecting words, one table (decision 72: a voice swaps this, never
@@ -255,7 +256,7 @@ _TIMED: ContextVar[bool] = ContextVar("digest_timed", default=True)
 _CURRENT: ContextVar[bool] = ContextVar("digest_current", default=True)
 #: "Do I like golf?" asks how a taste stands now, so old notes say their
 #: age; "what do I like to cook?" asks for a list, not a verdict.
-_ASKS_CURRENT = re.compile(
+_ASKS_CURRENT = lazy_compile(
     r"\b(?:latest|current(?:ly)?|up to date|still|now|stale|how old|recent(?:ly)?|newest|lately)\b|"
     r"^\W*(?:so,? )?(?:do|am) i (?:really )?(?:like|love|enjoy|prefer|hate|into)\b", re.I)
 
@@ -281,18 +282,18 @@ _SAY_WHEN: dict[str, dict[str, str]] = {
     "ago": {"close": "{rel}", "week": "{rel}, {on_weekday}", "near": "{rel}, {on}", "far": "{rel}, {on}", "distant": "{rel}, {on}"},
 }
 #: "When did I ...", "what date ...": the exact date first, every time.
-_EXACT = re.compile(r"^\W*(?:when (?:did|was|were|have|had|is|are)|what (?:date|day)|which (?:date|day))\b", re.I)
-_AGO = re.compile(r"\bhow long (?:ago|since|has it been)\b", re.I)
+_EXACT = lazy_compile(r"^\W*(?:when (?:did|was|were|have|had|is|are)|what (?:date|day)|which (?:date|day))\b", re.I)
+_AGO = lazy_compile(r"\bhow long (?:ago|since|has it been)\b", re.I)
 #: A question said casually, or with a relative time of its own, is
 #: answered in kind ("what did I do last week", "yooo what's been going on").
-_CASUAL = re.compile(
+_CASUAL = lazy_compile(
     r"\b(?:yo+|lol|haha|gonna|wanna|kinda|lately|been up to|going on|what'?s up|the other day|recently|"
     r"last (?:week|month|weekend|night)|yesterday|this (?:week|month)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b",
     re.I,
 )
 #: The person's own time words, said back when the day falls in them: they
 #: said "last week", the answer says "last week" (the owner, 2026-10-31).
-_ECHO_WORDS = re.compile(r"\b(today|yesterday|this week|last week|this month|last month)\b", re.I)
+_ECHO_WORDS = lazy_compile(r"\b(today|yesterday|this week|last week|this month|last month)\b", re.I)
 _ECHO: ContextVar[tuple] = ContextVar("digest_echo", default=())
 
 
@@ -416,7 +417,7 @@ def _lead_day(day: date | None, today: date | None, capital: bool = True) -> str
 #: A phrase's date clause, marked ‹...› whole: kept when the question is
 #: about time, dropped with every word of it otherwise ("You have six notes
 #: about hobbies." says the count; "the last on {day}" never leaves "the last").
-_DATE_CLAUSE = re.compile(r"‹([^›]*)›")
+_DATE_CLAUSE = lazy_compile(r"‹([^›]*)›")
 
 
 def _vary(key: str) -> _Capitals:
@@ -566,19 +567,19 @@ _PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
 _TIME_LABEL = re.compile(r"^((?:this|next|last) (?:semester|term|year|month|week|weekend)),?\s+(.+)$", re.I)
 _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|order|read|check|remember to|pay|send|bring)\b[^.;,]*)$", re.I)
 _STILL_TO = re.compile(r"\b([a-z]+(?: [a-z]+)?) (?:are |is )?still to (book|buy|pay|do|send|order|sort)\b", re.I)
-_PAST_START = re.compile(
+_PAST_START = lazy_compile(
     r"^(went|hit|got|saw|had|did|made|tried|watched|closed|opened|finished|started|played|bought|ate|met|"
     r"wrote|ran|walked|visited|spent|called|rang|rung|booked|fixed|cooked|cleaned|learnt|took)\b",
     re.I,
 )
 _RATING = re.compile(r"\b(\d+(?:\.\d+)?)\s*(?:out of|/)\s*(10|5|100)\b", re.I)
 _WORK = re.compile(r"^(?:watched|saw|read|played|finished|listened to)\s+(.+?)\.?$", re.I)
-_GOOD = re.compile(r"\b(incredible|amazing|great|loved|love|brilliant|beautiful|fun|good|excellent|fantastic|enjoyed|perfect)\b", re.I)
-_BAD = re.compile(r"\b(dragged|boring|bad|hated|awful|terrible|slow|meh|disappointing|too long|weak|annoying)\b", re.I)
+_GOOD = lazy_compile(r"\b(incredible|amazing|great|loved|love|brilliant|beautiful|fun|good|excellent|fantastic|enjoyed|perfect)\b", re.I)
+_BAD = lazy_compile(r"\b(dragged|boring|bad|hated|awful|terrible|slow|meh|disappointing|too long|weak|annoying)\b", re.I)
 
 #: What a feeling question looks for in a sentence (audit 1030 Z20: "how did
 #: I feel on Saturday" dropped "Felt happy."), and how such a question is asked.
-_FELT_LINE = re.compile(r"\b(?:felt|feel|feels|happy|sad|calm|calmer|tired|anxious|stressed|glad|proud|relaxed|annoyed|excited|liked|enjoyed)\b", re.I)
+_FELT_LINE = lazy_compile(r"\b(?:felt|feel|feels|happy|sad|calm|calmer|tired|anxious|stressed|glad|proud|relaxed|annoyed|excited|liked|enjoyed)\b", re.I)
 _FEELING_ASK = re.compile(r"\b(?:feel|feeling|felt|happy|sad|calm|tired|anxious|stressed|mood|enjoy|enjoyed|like|liked|think of|think about)\b", re.I)
 
 
@@ -652,13 +653,13 @@ _ASKS = {
 
 #: A question that opens with none of these is a topic ("games notes"):
 #: an overview.
-_ASKED = re.compile(r"^(?:what|what's|whats|when|who|whom|whose|how|how's|do|does|did|is|are|was|were|where|why|which|can|could|should|will|have|has|had|tell|show|list|give|any)\b"
+_ASKED = lazy_compile(r"^(?:what|what's|whats|when|who|whom|whose|how|how's|do|does|did|is|are|was|were|where|why|which|can|could|should|will|have|has|had|tell|show|list|give|any)\b"
                     r"|^(?:the )?(?:latest|newest|most recent|news|updates?) (?:on|about|with)\b", re.I)
 
 
 #: "Summarise this", "what's this about", "tl;dr" (B10): a question about
 #: whatever is open where it was asked, with no subject of its own.
-_THIS = re.compile(
+_THIS = lazy_compile(
     r"^(?:(?:can|could) you |please )?(?:"
     r"(?:summari[sz]e|sum up|recap|give me the gist of|what(?:'s| is| are) the (?:gist|main points) of)"
     r"(?: (?:this|it|these|this note|the note|this page|this category|what(?:'s| is| i have) open))?"
@@ -673,7 +674,7 @@ _THIS = re.compile(
 )
 #: "summarise Travel", "what's in Uni?", "what do I have in my Work notes":
 #: a category by its name (B10), matched against the notebook's own names.
-_IN_CATEGORY = re.compile(
+_IN_CATEGORY = lazy_compile(
     r"^(?:(?:can|could) you |please )?(?:summari[sz]e|sum up|recap|what(?:'s| is) in|what do i have in|what have i got in|show me)"
     r" (?:my |the )?(?P<name>[\w&' -]{2,60}?)(?: notes| category| folder)?$",
     re.I,
@@ -682,7 +683,7 @@ _IN_CATEGORY = re.compile(
 
 #: "tell me more", "what else": with a note open and nothing said before, more
 #: of the only thing in view (audit 1030 Z54).
-_MORE_OF_THIS = re.compile(r"^(?:(?:please )?(?:tell|show|give) me (?:some )?more(?: about (?:this|it|that))?|more(?: please)?|what else|anything else)$", re.I)
+_MORE_OF_THIS = lazy_compile(r"^(?:(?:please )?(?:tell|show|give) me (?:some )?more(?: about (?:this|it|that))?|more(?: please)?|what else|anything else)$", re.I)
 
 
 def more_of_this(question: str) -> bool:
@@ -875,7 +876,7 @@ def _dictionary() -> frozenset[str]:
 #: "Remind you to", "you planned to") goes only before a verb, a title is
 #: named and never said as if spoken, and "[[x]]" is said as x.
 
-_WIKI = re.compile(r"\[\[([^\]|\n]{1,120})(?:\|([^\]\n]{1,120}))?\]\]")
+_WIKI = lazy_compile(r"\[\[([^\]|\n]{1,120})(?:\|([^\]\n]{1,120}))?\]\]")
 
 
 def _unlinked(text: str) -> str:
@@ -884,7 +885,7 @@ def _unlinked(text: str) -> str:
     return _WIKI.sub(lambda m: (m.group(2) or m.group(1)).strip(), text or "")
 
 
-_CALENDAR_WORD = re.compile(r"(?:(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day|January|February|March|April|May|June|July|August|September|October|November|December)\b")
+_CALENDAR_WORD = lazy_compile(r"(?:(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day|January|February|March|April|May|June|July|August|September|October|November|December)\b")
 
 
 def _titles() -> list[str]:
@@ -940,7 +941,7 @@ def _starts_a_title(text: str, verb: bool) -> bool:
     return any(text.startswith(t) for t in _titles())
 
 
-_CITED = re.compile(r"[A-Z][\w'-]+(?: [A-Z][\w'-]+)?,? \(?(?:1[5-9]|20)\d\d[a-z]?\b")
+_CITED = lazy_compile(r"[A-Z][\w'-]+(?: [A-Z][\w'-]+)?,? \(?(?:1[5-9]|20)\d\d[a-z]?\b")
 
 
 def _fragment(text: str, names: set[str]) -> str:
@@ -1042,7 +1043,7 @@ def _title_only(view) -> bool:  # noqa: ANN001
 
 #: A diary line's "-ing" start is what the writer was doing then, but only
 #: before a lower-case word: "Thinking, Fast and Slow" is a book (C39).
-_DOING_NOW = re.compile(r"^(?:thinking|planning|looking|hoping|considering|saving up|trying|learning|getting into)\s+(?=[a-z])", re.I)
+_DOING_NOW = lazy_compile(r"^(?:thinking|planning|looking|hoping|considering|saving up|trying|learning|getting into)\s+(?=[a-z])", re.I)
 #: "-ed" words that describe the writer rather than say what they did.
 _FELT = frozenset("""
 tired bored excited scared stressed worried interested pleased relieved annoyed surprised confused exhausted motivated
@@ -1116,7 +1117,7 @@ _SUBJECT_STEMS: ContextVar[frozenset] = ContextVar("digest_subject_stems", defau
 #: The person's word on sentences (B31, B32; `ai/verdicts.py`): one marked
 #: wrong is not quoted, one pinned is said as theirs.
 _KNOWN: ContextVar = ContextVar("digest_known", default=None)
-_PIN = re.compile(
+_PIN = lazy_compile(
     r"\b(?P<pre>(?:before|by|until|in|from) )?(?:the (?P<nth>\d{1,2})(?:st|nd|rd|th) of )?(?P<which>next|this|last) (?P<unit>week|month|weekend)\b",
     re.I,
 )
@@ -1189,8 +1190,8 @@ def _in_a_title(text: str, found) -> bool:  # noqa: ANN001
 
 #: A weekday said alone ("moved to Friday", "on Monday", "next Tuesday"):
 #: the note's week tells which, so it is said with its date once read.
-_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|back in|[\w-]+ (?:weeks?|months?|years?) ago|(?:mornings|afternoons|evenings|nights)\b|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
-_WEEKDAY_ALONE = re.compile(r"^(?P<pre>on )?(?:(?:this|next|last) )?(?P<day>(?:mon|tues|wednes|thurs|fri|satur|sun)day)$", re.I)
+_WEEK_SAID = lazy_compile(r"\s*,?\s*(?:(?:in )?the week of|back in|[\w-]+ (?:weeks?|months?|years?) ago|(?:mornings|afternoons|evenings|nights)\b|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
+_WEEKDAY_ALONE = lazy_compile(r"^(?P<pre>on )?(?:(?:this|next|last) )?(?P<day>(?:mon|tues|wednes|thurs|fri|satur|sun)day)$", re.I)
 
 
 def _pin_weekdays(text: str, written: date, today: date, gone: list[str]) -> str:

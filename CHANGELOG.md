@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Start-up: the composer's money and digest regex tables compile on first use and the money stop-word list is built at the first question, not at import (L-world-class-51).
 - Undo: every preference written outside Settings (dock switches, saved lists, dictionary words) now reaches the one history and Ctrl+Z; 31 of 287 undo-coverage exemptions removed (L-world-class-31).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).

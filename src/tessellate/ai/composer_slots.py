@@ -17,6 +17,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import NamedTuple
 
+from tessellate.core.lazyre import lazy_compile
 from tessellate.ai import composer, composer_doings, composer_lists, realise, recognise
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_body
@@ -87,7 +88,7 @@ def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
 
 #: A sentence that sets something to do: "Book the train to Leeds",
 #: "Need to call the bank".
-_TO_DO = re.compile(r"^\s*(?:[-*]\s*)?(?:(?:i\s+)?(?:need|have|want|plan) to\s+|remember to\s+|don't forget to\s+)?(?:go|buy|call|book|get|ask|pay|send|bring|check|email|text|draft|write|pack|order|fix|renew|sort|finish|print|post|return|clean)\b", re.I)
+_TO_DO = lazy_compile(r"^\s*(?:[-*]\s*)?(?:(?:i\s+)?(?:need|have|want|plan) to\s+|remember to\s+|don't forget to\s+)?(?:go|buy|call|book|get|ask|pay|send|bring|check|email|text|draft|write|pack|order|fix|renew|sort|finish|print|post|return|clean)\b", re.I)
 
 
 def _left_in_prose(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
@@ -181,15 +182,15 @@ def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
 #: "what have I ticked off": one checklist state, read the same by every
 #: phrasing (audit 1030 Z56).
 _STATE = r"packed|bought|ticked(?:\s+off)?|checked(?:\s+off)?|done|finished|completed|sorted|booked|crossed\s+off"
-_IS_STATE = re.compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
-_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|(?:not|isn['’]?t|aren['’]?t)\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+(?:off|yet))?)(?:\s+(?:in|on|from|of)\s+(?:my\s+|the\s+|our\s+)?(?P<place>\S.*?))?$", re.I)
-_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$|"
+_IS_STATE = lazy_compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
+_UN_STATE = lazy_compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|(?:not|isn['’]?t|aren['’]?t)\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+(?:off|yet))?)(?:\s+(?:in|on|from|of)\s+(?:my\s+|the\s+|our\s+)?(?P<place>\S.*?))?$", re.I)
+_TICKED_SO_FAR = lazy_compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$|"
     r"^(?:which|what)\s+(?:tasks|items|things|todos)\s+(?:(?:are|is|have\s+i|did\s+i)\s+(?:now\s+)?(?:done|tick(?:ed)?|check(?:ed)?|complete(?:d)?|finish(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?)$|"
     r"^(?:show|list|give|find|what\s+are)(?:\s+me)?\s+(?:all\s+)?(?:of\s+)?(?:my|the)\s+(?:done|ticked(?:\s+off)?|completed|finished|checked(?:\s+off)?)\s+(?:items?|tasks?|todos?|things)$", re.I)
 #: "What is not done", "what is left to do", "what haven't I finished": the
 #: open items of every checklist, no list named (round 2 E21).
 _BARE_STATE = frozenset({"ticked", "checked", "done"})
-_ALL_OPEN = re.compile(r"^(?:what|which)\s+(?:tasks|items|things|todos)\s+(?:are|is)\s+(?:still\s+)?(?:open|outstanding|left|unticked|remaining|pending|not\s+done)$|^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:left|outstanding|remaining)(?:\s+to\s+do)?$|^what\s+(?:haven't|have\s+not|hasn't)\s+i\s+(?:done|finished|ticked(?:\s+off)?|completed|checked(?:\s+off)?|packed|bought)(?:\s+yet)?$", re.I)
+_ALL_OPEN = lazy_compile(r"^(?:what|which)\s+(?:tasks|items|things|todos)\s+(?:are|is)\s+(?:still\s+)?(?:open|outstanding|left|unticked|remaining|pending|not\s+done)$|^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:left|outstanding|remaining)(?:\s+to\s+do)?$|^what\s+(?:haven't|have\s+not|hasn't)\s+i\s+(?:done|finished|ticked(?:\s+off)?|completed|checked(?:\s+off)?|packed|bought)(?:\s+yet)?$", re.I)
 _EVERYTHING = frozenset({"everything", "all", "it all", "all of it", "everything on the list"})
 
 
@@ -270,7 +271,7 @@ def asks_state(question: str) -> bool:
 #: "Is the library membership renewed", "is the laptop backed up", "is the
 #: invoice paid": the be-verb and a participle ask what "did I renew it" asks
 #: (second eye F9).
-_IS_PASSIVE = re.compile(
+_IS_PASSIVE = lazy_compile(
     r"^(?:is|are|was|were|has|have)\s+(?:the\s+|my\s+|our\s+)?(?P<thing>.+?)\s+(?:been\s+)?(?P<verb>\w{3,}ed|paid|sent|bought|made|done|written|taken)(?:\s+(?:up|off|out|in|away|down))?(?:\s+(?:yet|already))?$",
     re.I,
 )
@@ -345,7 +346,7 @@ def _first_did(views: list, verb: frozenset[str], obj):  # noqa: ANN001
     return next(filter(None, (said, task, _titled_sentence(views, verb, obj))), None)
 
 
-_OPEN_BOX = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+)$", re.M)
+_OPEN_BOX = lazy_compile(r"^\s*[-*]\s*\[ \]\s*(.+)$", re.M)
 
 
 def open_doings(content: str) -> list[str]:
@@ -403,7 +404,7 @@ def _imperative_of(text: str, verb_word: str) -> bool:
 
 
 #: A line that lists what is still to come ("Three gates before then: ... the pricing page signed off") is a plan, not a record.
-_GATE = re.compile(r"\b(?:gates?|before then|criteria|requirements?|conditions?|still to)\b", re.I)
+_GATE = lazy_compile(r"\b(?:gates?|before then|criteria|requirements?|conditions?|still to)\b", re.I)
 
 
 def _newest_saying(views: list, verb: frozenset[str], obj, best):  # noqa: ANN001, ANN202
@@ -507,7 +508,7 @@ def _nearest(views: list, obj: list[str]):  # noqa: ANN202
 _TASTE = frozenset({"like", "enjoy", "love", "hate", "rate", "mind"})
 
 
-_VERDICT = re.compile(
+_VERDICT = lazy_compile(
     r"\b(?:lov|lik|enjoy|hat|dislik|great|good|bad|boring|amazing|favou?rite|meh|okay|brilliant|terrible|awful|excellent|disappoint)\w*"
     r"|\b\d+(?:\.\d)?\s*/\s*(?:10|5)\b|\bstars?\b",
     re.I,
@@ -683,7 +684,7 @@ def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
 
 #: "compare the two X notes", "what changed between the two X notes",
 #: "the difference between my two X notes" (2026-10-30 sweep).
-_PAIR_LEAD = re.compile(
+_PAIR_LEAD = lazy_compile(
     r"^(?:compare|what(?:'s| is| are)? (?:changed|different|the differences?) between|(?:the )?differences? between) (?:the |my )?two "
 )
 
@@ -1096,7 +1097,7 @@ def _start_day(view, today: date) -> tuple[date, object] | None:  # noqa: ANN001
     return min(found, key=lambda f: f[0]) if found else None
 
 
-_WORD = re.compile(r"[\w'\u2019-]+")
+_WORD = lazy_compile(r"[\w'\u2019-]+")
 _YEARS_OLD = re.compile(r"\b(?:\d{1,3}\s+years?\s+old|aged?\s+\d{1,3}|turned\s+\d{1,3}|turns\s+\d{1,3})\b", re.I)
 _BIRTHDAY = re.compile(r"\b(?:birthday|born)\b", re.I)
 
@@ -1129,7 +1130,7 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_BORN = re.compile(r"\b(?i:born)(?: in| on)? (?:(?P<d>\d{1,2}) )?(?:(?P<m>[A-Z][a-z]{2,8}) )?(?P<y>(?:19|20)\d\d)\b")
+_BORN = lazy_compile(r"\b(?i:born)(?: in| on)? (?:(?P<d>\d{1,2}) )?(?:(?P<m>[A-Z][a-z]{2,8}) )?(?P<y>(?:19|20)\d\d)\b")
 _MONTH_NUMBER = {m: n for n, m in enumerate("January February March April May June July August September October November December".split(), 1)}
 
 

@@ -41,6 +41,7 @@ from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
+from tessellate.core.lazyre import lazy_compile
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
 VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
@@ -102,7 +103,7 @@ _TRAILING = (" please", " pls", " plz", " for me", " thanks", " thank you so muc
 #: Said of when: it is a due hint, never part of the words an act writes ("call
 #: mum as soon as possible" is a reminder soon, not a title).
 _URGENT_TAIL = (" asap", " as soon as possible", " right now")
-_ASKING = re.compile(r"^(?:what|who|where|when|how|why|which|whether|if|of|out)\b", re.IGNORECASE)
+_ASKING = lazy_compile(r"^(?:what|who|where|when|how|why|which|whether|if|of|out)\b", re.IGNORECASE)
 
 
 def _fold(text: str) -> tuple[str, bool, bool]:
@@ -166,7 +167,7 @@ _THESE = {
     "this note": True, "this": True, "it": True, "that note": True,
 }
 _ABOUT_WORDS = ("about ", "on ", "for ", "mentioning ", "that mention ", "called ", "named ", "titled ")
-_NOTE_HEADS = re.compile(
+_NOTE_HEADS = lazy_compile(
     r"^(?:all )?(?:of )?(?:my |the |all |any |every )?(notes?|everything|anything|entries|entry) ",
     re.IGNORECASE,
 )
@@ -174,13 +175,13 @@ _NOTE_HEADS = re.compile(
 
 #: A note by its number (OPEN 1522: "pin note 12", as "open note 12" already
 #: was); `about` keeps the words so a line that quotes it still reads.
-_NOTE_NUMBER = re.compile(r"(?:(?:the|this|my) )?(?:note|entry) ?#?(\d{1,9})", re.IGNORECASE)
+_NOTE_NUMBER = lazy_compile(r"(?:(?:the|this|my) )?(?:note|entry) ?#?(\d{1,9})", re.IGNORECASE)
 
 
 #: "the interesting bean one", "that gym one", "the one about the gym": a note
 #: pointed at by its name and the word "one" (INBOX 1570).
-_ONE_ABOUT = re.compile(r"(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)", re.IGNORECASE)
-_NAME_ONE = re.compile(r"(?:(?:the|that|this|my) )?(?P<name>.+?\S) one", re.IGNORECASE)
+_ONE_ABOUT = lazy_compile(r"(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)", re.IGNORECASE)
+_NAME_ONE = lazy_compile(r"(?:(?:the|that|this|my) )?(?P<name>.+?\S) one", re.IGNORECASE)
 
 
 def _one_named(text: str) -> str:
@@ -369,7 +370,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
 
 _MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _MONTH_DAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-_DAY_MONTH = re.compile(
+_DAY_MONTH = lazy_compile(
     r"\b(?:(?P<d1>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m1>%s)|(?P<m2>%s) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)\b"
     % ("|".join(_MONTH_NAMES), "|".join(_MONTH_NAMES)),
     re.I,
@@ -500,7 +501,7 @@ _BIN_WORDS = {"bin", "the bin", "trash", "the trash", "recycle bin", "the recycl
 
 
 #: The daily note said as a place: the starter acts' append, never a category named so.
-_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$|^my (?:journal|diary)$")
+_DAILY_NOTE = lazy_compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$|^my (?:journal|diary)$")
 
 
 def _move_category(category: str) -> str:
@@ -552,11 +553,11 @@ _NAMED = ("called ", "titled ", "named ")
 #: The words that join a note's name to what it says: "called X with Y",
 #: "titled X saying Y", "named X that says Y", "called X: Y" (audit 1028 E25).
 _JOIN = r"(?:with|saying|containing|including|that says|which says|that reads|reading|having|and (?:say|says|put|write|writes))"
-_QUOTED_NAME = re.compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
+_QUOTED_NAME = lazy_compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
 #: A name that is not quoted runs to the end of what was said ("called Shopping with milk, eggs and bread" is
 #: titled that, the owner's Q5), unless a word that can only introduce text ("saying", "that says") or a colon follows it.
-_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN.replace('(?:with|', '(?:')}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
-_BODY_LEAD = re.compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
+_PLAIN_NAME = lazy_compile(rf"^(?P<name>.+?)(?:\s+{_JOIN.replace('(?:with|', '(?:')}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
+_BODY_LEAD = lazy_compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
 
 
 def _name_and_words(rest: str) -> str:
@@ -647,10 +648,10 @@ _FIND_HEADS = ("search for ", "look for ", "look up ", "show me ", "where is ", 
 _OPEN_HEADS = ("take me to ", "jump to ", "pull up ", "bring up ", "go to ", "open ")
 _FREE_FIND = ("find ", "search for ", "search ", "look for ", "look up ")
 _LIST_HEADS = ("show me ", "show ", "list ", "get me ")
-_WHOLE_LISTING = re.compile(r"(?:me )?(?:all |every )?(?:of )?(?:my |the |your )?(?:notes|entries)(?: please| pls| plz)?[?.!]*", re.I)
+_WHOLE_LISTING = lazy_compile(r"(?:me )?(?:all |every )?(?:of )?(?:my |the |your )?(?:notes|entries)(?: please| pls| plz)?[?.!]*", re.I)
 
 
-_ON_THE_WEB = re.compile(r"(?:the )?(?:web|internet|online)\b", re.I)
+_ON_THE_WEB = lazy_compile(r"(?:the )?(?:web|internet|online)\b", re.I)
 
 
 def _note_topic(rest: str) -> bool:
@@ -679,15 +680,15 @@ def _listing(text: str, head: str, rest: str) -> dict | None:
 
 
 #: "stuff ive mentioned abt gym": the filler before the topic is not part of it.
-_TOPIC_FILLER = re.compile(
+_TOPIC_FILLER = lazy_compile(
     r"^(?:(?:any ?thing|every ?thing|some ?thing|stuff|things|notes?|whatever|all) )?"
     r"(?:(?:that |which )?(?:i|ive|i've|i have|ive) )?(?:(?:mentioned|said|wrote|written|noted|saved|made|put|jotted|talked|typed) )?"
     r"(?:(?:about|abt|on|regarding|re|around|for) )?",
     re.I,
 )
-_NOTES_SCOPE = re.compile(r"\s+(?:in|from|within|across|inside) (?:all )?(?:of )?(?:my|the|your) (?:notes|notebook|entries)$", re.I)
-_MENTIONING = re.compile(r"(?:what|which) notes (?:mention|contain|include) (?P<topic>.+?)[?.!\s]*", re.I)
-_ASKED_FIND = re.compile(
+_NOTES_SCOPE = lazy_compile(r"\s+(?:in|from|within|across|inside) (?:all )?(?:of )?(?:my|the|your) (?:notes|notebook|entries)$", re.I)
+_MENTIONING = lazy_compile(r"(?:what|which) notes (?:mention|contain|include) (?P<topic>.+?)[?.!\s]*", re.I)
+_ASKED_FIND = lazy_compile(
     r"(?:do i have (?:any ?thing|any notes?|notes?)|(?:are there|is there|have i got)(?: any)?(?: notes?)?(?: anything)?|any notes?|"
     r"what notes (?:are about|do i have)|(?:show|give|get) me (?:everything|anything|all(?: of)? (?:my )?notes?))"
     r"(?: (?:i )?(?:wrote|have|saved|made|took))? (?:on|about|for|regarding|mentioning|mention|with|containing) (?P<topic>.+?)[?.!\s]*",
@@ -704,7 +705,7 @@ _HOLDING = (
     r"(?:(?:that |which |where i )?(?:mentioning|mentions?|mentioned|containing|contains?|including|includes?|have|has|say|says|use|name|talk about)"
     r"|with(?= (?:the )?(?:words?|phrase|term) | [\w' -]{1,40} in (?:them|it)\W*(?:say\W*)?$))"
 )
-_WORD_NOTES = re.compile(
+_WORD_NOTES = lazy_compile(
     r"(?:(?:please )?(?:(?:what|which) (?:do|does|did) |tell me what |show me what |what(?:'s| is) in |what are |which of |"
     r"(?:show(?: me)?|list|find|give me|get me|search for|look for|pull up|bring up) )(?:all )?)?"
     rf"{_HOLDERS} (?:do )?{_HOLDING} (?:the )?(?:(?:words?|phrase|term) )?(?P<topic>.+?)(?: in (?:them|it|there))?"
@@ -722,7 +723,7 @@ def _word_notes(text: str) -> dict | None:
     return {"intent": "find", "about": topic}
 
 
-_WHATS_IN = re.compile(
+_WHATS_IN = lazy_compile(
     r"(?:what(?:'s|s| is) in (?:my |the )?(?P<a>[\w&-]+(?: [\w&-]+)?) (?:category|folder|tag)"
     r"|(?:pull up|bring up) (?:my |the )?(?:notes|entries) (?:tagged(?: with)?|in|under) #?(?P<b>[\w&-]+(?: [\w&-]+)?))[?.!\s]*",
     re.I,
@@ -805,12 +806,12 @@ def _found_object(intent: str, head: str, rest: str) -> dict | None:
     return None
 
 
-_MEETING = re.compile(
+_MEETING = lazy_compile(
     r"^(?:(?:start|begin|new|create|open|record|make|run|hold)(?: recording)?|take) (?:(?:a|an|the|new|my|our) )*meeting(?: notes?)?"
     r"(?: (about|on|for|called|named|titled|with) (.+)|: ?(.+))?$",
     re.IGNORECASE,
 )
-_NAMED_MEETING = re.compile(r"^(?:start|begin|record|open) (?:(?:a|an|the|my|our) )?([\w' -]{1,80}) meeting$", re.IGNORECASE)
+_NAMED_MEETING = lazy_compile(r"^(?:start|begin|record|open) (?:(?:a|an|the|my|our) )?([\w' -]{1,80}) meeting$", re.IGNORECASE)
 
 
 def _meeting(text: str) -> dict | None:
@@ -837,7 +838,7 @@ _SURFACES = {
 
 
 _CLOCK_UNIT = r"(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)"
-_CLOCK = re.compile(
+_CLOCK = lazy_compile(
     r"^(?:please )?(?:(?P<verb>set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
     rf"(?: (?P<n1>\d+(?:\.\d+)?) ?(?P<u1>{_CLOCK_UNIT}))? ?(?P<kind>timer|countdown|pomodoro|stopwatch|clock)"
     rf"(?:(?: for| of)? (?P<n2>\d+(?:\.\d+)?) ?(?P<u2>{_CLOCK_UNIT}))?$")
@@ -940,8 +941,8 @@ def _pin(text: str) -> dict | None:
 
 #: Verbs that take a tag off a note; all but "untag" need the word tag or label said.
 _UNTAG_VERBS = ("untag", "remove", "take", "delete", "strip", "drop", "clear", "unlabel")
-_TAG_WORD = re.compile(r"^(?:the |a )?(?:tags?|labels?) ", re.I)
-_TAG_TAIL = re.compile(r" (?:tags?|labels?)$", re.I)
+_TAG_WORD = lazy_compile(r"^(?:the |a )?(?:tags?|labels?) ", re.I)
+_TAG_TAIL = lazy_compile(r" (?:tags?|labels?)$", re.I)
 
 
 #: "keep the passport note pinned", "put the budget note at the top": a pin said without the verb.
@@ -1050,7 +1051,7 @@ def _rename(text: str) -> dict | None:
 #: a list-like name, so "put this note in projects" stays a filing.
 _APPEND_VERBS = {"add": False, "append": False, "put": True, "stick": True, "pop": True, "tack": True, "update": True}
 _APPEND_EXCEPT = ("add tag", "add the tag", "add a tag", "add label", "add the label", "add a reminder", "add a note")
-_LINE_NOUN = re.compile(r"^(?:a |one |another )?(?:line|bullet|item|entry|point|row)s? (?:on )?(?=to |onto |on to |in |into )", re.I)
+_LINE_NOUN = lazy_compile(r"^(?:a |one |another )?(?:line|bullet|item|entry|point|row)s? (?:on )?(?=to |onto |on to |in |into )", re.I)
 _LISTISH = ("list", "checklist", "log", "journal", "diary", "tracker")
 
 
@@ -1112,7 +1113,7 @@ _SUMMARISE_HEADS = (
     "quick summary of ", "short summary of ", "a summary of ", "summary of ", "tl;dr ", "tldr ", "recap ", "what is the gist of ",
     "what's the gist of ", "the gist of ", "gist of ",
 )
-_WROTE = re.compile(r"^(everything|all) (?:that )?i(?:'ve| have)? (?:wrote|written|noted|said) ", re.I)
+_WROTE = lazy_compile(r"^(everything|all) (?:that )?i(?:'ve| have)? (?:wrote|written|noted|said) ", re.I)
 
 
 def _summarise(text: str) -> dict | None:
@@ -1138,7 +1139,7 @@ OWN_WORDS = ("content", "title", "tags", "text", "said", "old", "new")
 #: lookup is helped by it); what it writes keeps every word as typed.
 _KEYS_NAMED = ("about", "asked")
 _WRITTEN = (*OWN_WORDS, "on_list")
-_WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
+_WORD = lazy_compile(r"[^\W_]+(?:['’][^\W_]+)*")
 
 
 def _respellings(text: str, fixed: str, fixes: list) -> list[tuple[str, str, bool]]:
@@ -1241,7 +1242,7 @@ def _time_of(words: str, now: datetime, locale: str | None) -> datetime | None:
 
 #: Matched on single-spaced text (see `read`), words joined by one space, so
 #: a run of blanks has one reading and the match stays linear.
-_TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|into|to) the (?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
+_TO_THE_BIN = lazy_compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|into|to) the (?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
 
 
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
@@ -1268,7 +1269,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
 #: "call Anna": a bare imperative to a person, a task not a search. A name as typed (capitalised), a kin
 #: word, "the dentist" or "my boss", and for the phone verbs a name in lower case ("call anna", B25).
 _KIN = r"mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle"
-_BARE_CALL = re.compile(
+_BARE_CALL = lazy_compile(
     rf"^(?i:(?P<verb>call|ring|phone|text|email|message|ping|whatsapp))\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:{_KIN})|(?i:(?:the|my|our) [a-z]+))(?P<more>\s+(?i:(?:on|at|by|about|for|tomorrow|tonight|today|this|next|in)\b).+)?$"
     rf"|^(?i:(?P<verb2>call|ring|phone))\s+(?P<who2>[a-z][a-z'’-]{{1,20}})$"
 )
@@ -1862,7 +1863,7 @@ def ask_when_for(parsed: dict) -> str:
 
 #: A task said as a thing, not a doing ("don't let me forget the bins"):
 #: reminded about, never "remind you to the bins" (INBOX 1459).
-_THING = re.compile(r"^(?:the|my|a|an|your|our|his|her|their|this|that|these|those)\b", re.I)
+_THING = lazy_compile(r"^(?:the|my|a|an|your|our|his|her|their|this|that|these|those)\b", re.I)
 
 
 def ask_when(said: str) -> str:
@@ -2028,7 +2029,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
 
 
 #: A place a thing is added to that reads as a list the person keeps ("the packing list", "my groceries").
-_LIST_NAME = re.compile(r"^(?:my |the |our )?(?P<name>[a-z][a-z' -]{1,40}? list|groceries|shopping)$", re.I)
+_LIST_NAME = lazy_compile(r"^(?:my |the |our )?(?P<name>[a-z][a-z' -]{1,40}? list|groceries|shopping)$", re.I)
 
 
 def _the_list_note(session: Session, parsed: dict, note_ids: list[int] | None, question: str) -> tuple:

@@ -19,6 +19,7 @@ import re
 from collections.abc import Callable
 
 from tessellate.ai import phrasing, question_noise
+from tessellate.core.lazyre import lazy_compile
 
 #: Words that make a message a question or an order, never a remark.
 _ASKING = frozenset(
@@ -26,7 +27,7 @@ _ASKING = frozenset(
     "show find search list tell give remind add make create open delete remove write note save set call send read help explain count "
     "summarise summarize compare plan draft translate convert calculate remember log record store jot put keep pin tag move rename archive mark schedule book buy text email message ring phone check cancel turn".split()
 )
-_TIMED = re.compile(r"\b(?:tomorrow|next|monday|tuesday|wednesday|thursday|friday|saturday|sunday|at \d|\d{1,2}(?::\d\d)? ?(?:am|pm)|on the \d)\b")
+_TIMED = lazy_compile(r"\b(?:tomorrow|next|monday|tuesday|wednesday|thursday|friday|saturday|sunday|at \d|\d{1,2}(?::\d\d)? ?(?:am|pm)|on the \d)\b")
 _END = r"[\s?.!,]*$"
 
 
@@ -36,7 +37,7 @@ def _clean(text: str) -> str:
 
 
 #: A turn that names the notebook is about it, not a remark ("what's the weather note").
-_NOTEBOOK = re.compile(r"\b(?:notes?|reminders?|notebook|tasks?)\b")
+_NOTEBOOK = lazy_compile(r"\b(?:notes?|reminders?|notebook|tasks?)\b")
 
 
 def _asks(said: str) -> bool:
@@ -54,7 +55,7 @@ def _is_remark(said: str) -> bool:
 # --- the register of a hello -----------------------------------------------------------------
 
 #: The hellos that are written out, not tapped: they get the welcome, with the day's facts.
-_FORMAL = re.compile(r"^\W*(?:good (?:morning|afternoon|evening|day)|greetings|salutations|hello)\b(?!\s+there)", re.I)
+_FORMAL = lazy_compile(r"^\W*(?:good (?:morning|afternoon|evening|day)|greetings|salutations|hello)\b(?!\s+there)", re.I)
 _OPENERS = {"hi": "Hi", "hey": "Hey", "heya": "Heya", "hiya": "Hiya", "yo": "Yo", "sup": "Hey", "howdy": "Howdy", "gday": "G'day", "morning": "Morning", "hello": "Hello", "evening": "Evening", "afternoon": "Afternoon"}
 _TAILS = {
     "natural": ("", "How is your day going?", "What are you up to?", "What is on your mind?", "Good to see you.", "Anything I can dig up for you?"),
@@ -119,11 +120,11 @@ _WEATHER_WORDS = (
     r"hot|boiling|baking|roasting|warm|sweltering|humid|muggy|sunny|heatwave|cold|freezing|chilly|frosty|icy|snow|snowing|snowy|rain|raining|rainy|drizzling|"
     r"pouring|snowed|rained|hailed|thundered|windy|stormy|storm|foggy|cloudy|grey|gloomy|weather"
 )
-_WEATHER = re.compile(rf"\b(?P<w>{_WEATHER_WORDS})\b")
+_WEATHER = lazy_compile(rf"\b(?P<w>{_WEATHER_WORDS})\b")
 #: A weather word is a remark only in a statement ("it's so hot", "so cold outside", "raining again"), never inside a
 #: search for a thing ("rainy day ideas", "hot sauce recipes today", "heat pump"): it leads with a subject or an
 #: intensifier, or it is the word alone with only a where or when after it.
-_WEATHER_SUBJECT = re.compile(
+_WEATHER_SUBJECT = lazy_compile(
     rf"^(?:it|its|it's|it is|the weather|the day|today|this morning|tonight|outside|in here|so|really|very|wow|ugh|nice|lovely|horrible|awful)\b|"
     rf"^(?:{_WEATHER_WORDS})(?: (?:today|again|outside|out there|in here|now|tonight|this morning))*$"
 )
@@ -142,7 +143,7 @@ _WEATHER_PRO = {
     "wet": ("I hope you are able to stay dry.",),
     "fair": ("That sounds pleasant.",),
 }
-_FAIR = re.compile(r"\b(?:nice|lovely|beautiful|gorgeous|great|perfect|glorious|sunny)\b")
+_FAIR = lazy_compile(r"\b(?:nice|lovely|beautiful|gorgeous|great|perfect|glorious|sunny)\b")
 
 
 def _weather(said: str) -> tuple[str, str] | None:
@@ -159,12 +160,12 @@ def _weather(said: str) -> tuple[str, str] | None:
     return kind, word
 
 
-_SLEPT = re.compile(
+_SLEPT = lazy_compile(
     r"\b(?:couldn'?t sleep|can'?t sleep|cannot sleep|didn'?t sleep|no sleep|barely slept|hardly slept|slept (?:badly|terribly|poorly|awfully)|up all night|insomnia|"
     r"(?:bad|rough|terrible|awful|restless|sleepless) night|tossing and turning)\b"
 )
-_SLEPT_WELL = re.compile(r"\bslept (?:well|great|like a baby|really well|so well)\b|\b(?:good|great|lovely) (?:night'?s? sleep|sleep)\b")
-_BEDTIME = re.compile(r"^(?:i'?m |i am |ok |okay |right |well ){0,6}(?:off to bed|going to bed|going to sleep|heading to bed|heading off to bed|time for bed|bedtime|time to sleep|turning in|calling it a night|hitting the hay|need to sleep)\b")
+_SLEPT_WELL = lazy_compile(r"\bslept (?:well|great|like a baby|really well|so well)\b|\b(?:good|great|lovely) (?:night'?s? sleep|sleep)\b")
+_BEDTIME = lazy_compile(r"^(?:i'?m |i am |ok |okay |right |well ){0,6}(?:off to bed|going to bed|going to sleep|heading to bed|heading off to bed|time for bed|bedtime|time to sleep|turning in|calling it a night|hitting the hay|need to sleep)\b")
 _SLEEP_LINES = ("That is rotten. A bad night makes everything harder, so go gently today.", "Sorry to hear that. Tired days are slow ones; be kind to yourself.", "That sounds like a long night. Try to rest when you can today.")
 _SLEEP_WELL_LINES = ("Good. A proper night's sleep sets the day up.", "Lovely, that makes everything easier.")
 _BEDTIME_LINES = ("Sleep well. Your notes will keep.", "Goodnight, then. Rest well.", "Sleep well. Everything you wrote is saved.")
@@ -173,14 +174,14 @@ _WORK_ENDS = (
     r"(?:rough|hard|tough|busy|crazy|mad|stressful|exhausting|boring|awful|terrible|long|slow|hectic|a nightmare|a lot|too much|killing me|a drag|draining|a grind|chaos|a mess)"
 )
 _WORK_NOUN = r"(?:work|my job|the job|the office|my boss|meetings?|my commute|the commute|uni|school|class|lectures?|the exam|exams|homework|college|the deadline|monday|mondays|traffic|emails?)"
-_BAD_DAY = re.compile(
+_BAD_DAY = lazy_compile(
     rf"^(?:ugh|urgh|argh|oof|god|man|omg|wow|well|so|just)* ?(?:{_WORK_NOUN}(?: (?:is|was|has been|are|were|today|again))*(?: (?:so|really|very|just|too|a bit|pretty|quite))* {_WORK_ENDS}|"
     rf"(?:a |what a |such a |it was a |it'?s been a |today was a |today'?s been a |had a |what a )?(?:really |very |so |pretty )*(?:bad|rough|tough|long|hard|terrible|awful|stressful|busy|exhausting|crazy|mad|draining|hectic) (?:day|week|morning|afternoon|one))(?: (?:at work|today|again|so far))*{_END}"
 )
-_WHAT_A_DAY = re.compile(rf"^what a (?:day|week|morning|afternoon|night)(?: (?:it'?s been|it was|today|so far))*{_END}")
+_WHAT_A_DAY = lazy_compile(rf"^what a (?:day|week|morning|afternoon|night)(?: (?:it'?s been|it was|today|so far))*{_END}")
 _WHAT_A_DAY_LINES = ("Sounds like quite a day. I hope it settles down.", "That sounds like a lot. Take a breath when you can.", "Quite a day, then. I hope the rest of it is kinder.")
-_BAD_WORK_ONLY = re.compile(rf"^(?:ugh|urgh|argh|oof)+ {_WORK_NOUN}{_END}")
-_GOOD_DAY = re.compile(
+_BAD_WORK_ONLY = lazy_compile(rf"^(?:ugh|urgh|argh|oof)+ {_WORK_NOUN}{_END}")
+_GOOD_DAY = lazy_compile(
     r"^(?:(?:i )?(?:had|having|just had|'?ve had|have had) |(?:a |such a |what a ))(?:a |such a )?(?:really |very |so |pretty )*(?:great|good|lovely|nice|wonderful|fantastic|brilliant|amazing|productive|relaxing|fun) (?:day|week|morning|afternoon|weekend|time)"
     r"(?: (?:today|so far|at work|overall))*[\s.!]*$|^(?:today|it) (?:was|has been|'s been|is) (?:a )?(?:really |very |so |pretty )*(?:great|good|lovely|nice|wonderful|fantastic|brilliant|amazing|productive|relaxing|fun)"
     r"(?: (?:day|today|so far))*[\s.!]*$"
@@ -190,40 +191,40 @@ _BAD_DAY_PRO = ("I am sorry to hear it has been a difficult day.",)
 _GOOD_DAY_LINES = ("Glad to hear it. Those days are worth holding on to.", "Lovely, I am glad it went well.", "That is good to hear.")
 _GOOD_DAY_PRO = ("I am glad to hear it went well.",)
 
-_HUNGRY = re.compile(r"^(?:i'?m |i am |getting |so |really |feeling ){0,6}(?:hungry|starving|famished|peckish|ravenous|hangry)\b")
-_ATE = re.compile(
+_HUNGRY = lazy_compile(r"^(?:i'?m |i am |getting |so |really |feeling ){0,6}(?:hungry|starving|famished|peckish|ravenous|hangry)\b")
+_ATE = lazy_compile(
     r"^(?:i |we |just |i'?ve |i have ){0,6}(?:had|ate|eaten|having|eating|made|am making|cooked|am cooking|'?m cooking|'?m making|cooking|making|baking|baked|grabbed|am grabbing|'?m grabbing|got)"
     r" (?:some |a |an |the |my |another |leftover |leftovers of )?(?P<what>[a-z][a-z ]{1,24}?)(?: for (?:breakfast|brunch|lunch|dinner|tea|supper|dessert|a snack))?(?: (?:today|tonight|again|earlier|just now))*[\s.!]*$"
 )
-_NEED = re.compile(r"^(?:i |we )?(?:really |just |badly )*(?:need|want|could do|could use|am craving|'?m craving) (?:a |an |some |another )?(?:coffee|tea|food|snack|drink|break|nap|rest|lie down|sleep)\b")
+_NEED = lazy_compile(r"^(?:i |we )?(?:really |just |badly )*(?:need|want|could do|could use|am craving|'?m craving) (?:a |an |some |another )?(?:coffee|tea|food|snack|drink|break|nap|rest|lie down|sleep)\b")
 _NEED_LINES = ("Go and get it. Your notes will wait.", "Sounds like it is time. I will be here when you are back.", "Then take it. Nothing here needs you this minute.")
-_MEAL_TIME = re.compile(r"^(?:it'?s |its |time for |time to eat|lunch ?time|dinner ?time|breakfast ?time|coffee ?time|tea ?time|snack ?time|(?:i'?m |i am |we'?re ){0,4}(?:cooking|baking|making (?:dinner|lunch|tea|breakfast|supper)|having (?:a )?(?:takeaway|takeout|bbq|barbecue)))\b")
-_FOOD_NOUNS = re.compile(r"\b(?:breakfast|brunch|lunch|dinner|tea|supper|dessert|snack|coffee|food|meal|pizza|pasta|soup|curry|salad|toast|cake|pancakes?|sandwich|noodles|rice|burger|steak|eggs|bread|cookies|biscuits|cooking|baking|bbq|barbecue|takeaway|takeout|curry|stir fry)\b")
+_MEAL_TIME = lazy_compile(r"^(?:it'?s |its |time for |time to eat|lunch ?time|dinner ?time|breakfast ?time|coffee ?time|tea ?time|snack ?time|(?:i'?m |i am |we'?re ){0,4}(?:cooking|baking|making (?:dinner|lunch|tea|breakfast|supper)|having (?:a )?(?:takeaway|takeout|bbq|barbecue)))\b")
+_FOOD_NOUNS = lazy_compile(r"\b(?:breakfast|brunch|lunch|dinner|tea|supper|dessert|snack|coffee|food|meal|pizza|pasta|soup|curry|salad|toast|cake|pancakes?|sandwich|noodles|rice|burger|steak|eggs|bread|cookies|biscuits|cooking|baking|bbq|barbecue|takeaway|takeout|curry|stir fry)\b")
 _FOOD_LINES = ("Sounds good. Enjoy it.", "Nice, I hope it is a good one.", "Hope it hits the spot.", "Enjoy your meal.")
 _HUNGRY_LINES = ("Go and get something to eat. Your notes will wait.", "Sounds like it is time for a snack.", "Feed yourself first; I am not going anywhere.")
 _FOOD_PRO = ("I hope you enjoy it.",)
 
-_GOING = re.compile(
+_GOING = lazy_compile(
     r"^(?:i'?m |i am |we'?re |just |right |ok |okay |well |off |heading |going ){0,6}(?:going|headed|heading|off|popping|nipping|running|walking) (?:out )?(?:to|for|down to|over to|into) (?:the |a |my |some )?"
     r"(?P<what>gym|run|jog|walk|swim|shops?|shopping|store|supermarket|work|class|lecture|uni|school|park|beach|doctor|dentist|library|cinema|pub|bank|yoga|climbing|hike|bike ride|cycle|workout|training|practice)\b"
 )
-_BACK = re.compile(r"^(?:i'?m |i am |just ){0,4}(?:back|home|back home|back again|here again|just got home|got home|just got back|got back)\b[\s.!]*$")
+_BACK = lazy_compile(r"^(?:i'?m |i am |just ){0,4}(?:back|home|back home|back again|here again|just got home|got home|just got back|got back)\b[\s.!]*$")
 _GOING_LINES = ("Have a good one. I will be here when you are back.", "Enjoy it. Your notes will keep.", "Sounds good. See you after.", "Have fun with that.")
 _GOING_PRO = ("Have a good time. I will be here when you return.",)
 _BACK_LINES = ("Welcome back. How did it go?", "Good to have you back.", "Welcome back. Anything to jot down?")
 
-_WISH_NAMED = re.compile(r"^(?P<w>happy|merry) (?P<what>birthday|christmas|new year|easter|halloween|diwali|eid|hanukkah|thanksgiving|valentines?|anniversary|friday|monday|saturday|sunday|weekend|holidays?|mothers? day|fathers? day|year|day)")
-_WELLWISH = re.compile(r"\bhope (?:you(?:'re| are| have|'ve)? (?:doing |been |having |feeling )*(?:well|good|ok|okay|great|fine|a (?:good|great|nice) (?:day|one))|all is well|everything is (?:well|good|ok)|things are (?:well|good|going well))")
-_PRAISE = re.compile(r"^(?:i |we )?(?:really |just |absolutely )*(?:love|like|adore|enjoy|appreciate)(?: using)? (?:this|the|my) (?:app|assistant|tool|notebook|chat|bot)\b|^(?:this|the) (?:app|assistant|tool|notebook|chat|bot) (?:is|'?s) (?:so |really |very |pretty |quite )*(?:great|amazing|awesome|good|brilliant|useful|cool|helpful|nice|fantastic|handy|lovely)\b")
+_WISH_NAMED = lazy_compile(r"^(?P<w>happy|merry) (?P<what>birthday|christmas|new year|easter|halloween|diwali|eid|hanukkah|thanksgiving|valentines?|anniversary|friday|monday|saturday|sunday|weekend|holidays?|mothers? day|fathers? day|year|day)")
+_WELLWISH = lazy_compile(r"\bhope (?:you(?:'re| are| have|'ve)? (?:doing |been |having |feeling )*(?:well|good|ok|okay|great|fine|a (?:good|great|nice) (?:day|one))|all is well|everything is (?:well|good|ok)|things are (?:well|good|going well))")
+_PRAISE = lazy_compile(r"^(?:i |we )?(?:really |just |absolutely )*(?:love|like|adore|enjoy|appreciate)(?: using)? (?:this|the|my) (?:app|assistant|tool|notebook|chat|bot)\b|^(?:this|the) (?:app|assistant|tool|notebook|chat|bot) (?:is|'?s) (?:so |really |very |pretty |quite )*(?:great|amazing|awesome|good|brilliant|useful|cool|helpful|nice|fantastic|handy|lovely)\b")
 _PRAISE_LINES = ("That is good to hear. I am glad it helps.", "Thank you. That is kind of you to say.", "Glad it is useful. Tell me if anything could be better.")
-_GRUMBLE = re.compile(r"^(?:i |we )?(?:really |just |absolutely )*(?:hate|dislike|can'?t stand) (?:this|the|my) (?:app|assistant|tool|notebook|chat|bot)\b|^(?:this|the) (?:app|assistant|tool|notebook|chat|bot) (?:is|'?s) (?:so |really |very |pretty |quite )*(?:bad|slow|useless|rubbish|annoying|broken|terrible|awful|confusing|frustrating|crap|rubbish)\b")
+_GRUMBLE = lazy_compile(r"^(?:i |we )?(?:really |just |absolutely )*(?:hate|dislike|can'?t stand) (?:this|the|my) (?:app|assistant|tool|notebook|chat|bot)\b|^(?:this|the) (?:app|assistant|tool|notebook|chat|bot) (?:is|'?s) (?:so |really |very |pretty |quite )*(?:bad|slow|useless|rubbish|annoying|broken|terrible|awful|confusing|frustrating|crap|rubbish)\b")
 _GRUMBLE_LINES = ("Sorry about that. What is not working for you?", "That is fair to say if it is getting in your way. What went wrong?", "I am sorry. Tell me what is annoying you and I will try to do better.")
-_MEET = re.compile(r"^(?:it'?s |its )?(?:nice|good|great|a pleasure|lovely|pleased|glad) to (?:meet|see|talk to|chat with|speak with|speak to) you\b")
+_MEET = lazy_compile(r"^(?:it'?s |its )?(?:nice|good|great|a pleasure|lovely|pleased|glad) to (?:meet|see|talk to|chat with|speak with|speak to) you\b")
 _MEET_LINES = ("Nice to meet you too.", "Likewise. I am glad you are here.")
 
 #: "can you read pdfs" and "would you read this aloud" are requests; only do, did and would ask about a taste.
-_LIKE = re.compile(r"^(?:do|did|would) you (?:really |actually |even )?(?:like|love|enjoy|prefer|listen to|watch|play|eat|drink)(?: [a-z]+)? (?P<what>[a-z][a-z' ]{1,24}?)(?: at all| too| much)?$")
-_WHATSUP = re.compile(r"^(?:hey |hi |so )*(?:what'?s|whats|what is|wassup|wazzup|whassup) (?:up|new with you|going on)(?: with you)?$")
+_LIKE = lazy_compile(r"^(?:do|did|would) you (?:really |actually |even )?(?:like|love|enjoy|prefer|listen to|watch|play|eat|drink)(?: [a-z]+)? (?P<what>[a-z][a-z' ]{1,24}?)(?: at all| too| much)?$")
+_WHATSUP = lazy_compile(r"^(?:hey |hi |so )*(?:what'?s|whats|what is|wassup|wazzup|whassup) (?:up|new with you|going on)(?: with you)?$")
 _WHATSUP_LINES = ("Not much, just keeping your notes in order. What is up with you?", "All quiet here. What are you up to?", "Nothing much on my side. How about you?")
 _LIKE_LINES = ("I am a program, so I do not have tastes, but I am curious about yours. Do you like {what}?", "Not the way you do, being a program. What about you, do you like {what}?")
 
