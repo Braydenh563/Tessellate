@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11059, test files 2877, tests 22696, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11059, test files 2877, tests 22697, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -28113,61 +28113,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:995 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1412 |
-| `_candidates` | src/tessellate/search/search_manager.py:1257 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1161 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1216 |
-| `_category_only` | src/tessellate/search/search_manager.py:1210 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1429 |
+| `Retrieval` | src/tessellate/search/search_manager.py:1000 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1417 |
+| `_candidates` | src/tessellate/search/search_manager.py:1262 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1166 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1221 |
+| `_category_only` | src/tessellate/search/search_manager.py:1215 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1434 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:271 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1442 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1233 |
-| `_fuse` | src/tessellate/search/search_manager.py:740 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1450 |
-| `_learned_down` | src/tessellate/search/search_manager.py:1638 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1587 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:779 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1447 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1238 |
+| `_fuse` | src/tessellate/search/search_manager.py:745 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1455 |
+| `_learned_down` | src/tessellate/search/search_manager.py:1643 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1592 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:784 |
 | `_load_later` | src/tessellate/search/search_manager.py:412 |
-| `_match_info` | src/tessellate/search/search_manager.py:1351 |
+| `_match_info` | src/tessellate/search/search_manager.py:1356 |
 | `_meaningful_terms` | src/tessellate/search/search_manager.py:353 |
-| `_named_category` | src/tessellate/search/search_manager.py:1176 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1273 |
+| `_named_category` | src/tessellate/search/search_manager.py:1181 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1278 |
 | `_near_words` | src/tessellate/search/search_manager.py:309 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1319 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1297 |
-| `_rank` | src/tessellate/search/search_manager.py:1109 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1122 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:714 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1514 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:581 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:620 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1324 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1302 |
+| `_rank` | src/tessellate/search/search_manager.py:1114 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1127 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:719 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1519 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:586 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:625 |
 | `_substring_entries` | src/tessellate/search/search_manager.py:224 |
 | `_user_today` | src/tessellate/search/search_manager.py:47 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1483 |
-| `_within` | src/tessellate/search/search_manager.py:979 |
-| `_without_private` | src/tessellate/search/search_manager.py:1657 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1488 |
+| `_within` | src/tessellate/search/search_manager.py:984 |
+| `_without_private` | src/tessellate/search/search_manager.py:1662 |
 | `_word_for_stem` | src/tessellate/search/search_manager.py:326 |
-| `_written_at` | src/tessellate/search/search_manager.py:938 |
-| `clip_query` | src/tessellate/search/search_manager.py:1506 |
+| `_written_at` | src/tessellate/search/search_manager.py:943 |
+| `clip_query` | src/tessellate/search/search_manager.py:1511 |
 | `configured_thresholds` | src/tessellate/search/search_manager.py:358 |
-| `day_mentions` | src/tessellate/search/search_manager.py:949 |
-| `direct_before_linked` | src/tessellate/search/search_manager.py:1399 |
+| `day_mentions` | src/tessellate/search/search_manager.py:954 |
+| `direct_before_linked` | src/tessellate/search/search_manager.py:1404 |
 | `entries_between` | src/tessellate/search/search_manager.py:104 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:844 |
-| `in_range` | src/tessellate/search/search_manager.py:910 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:849 |
+| `in_range` | src/tessellate/search/search_manager.py:915 |
 | `is_exact_term` | src/tessellate/search/search_manager.py:264 |
 | `keyword_search` | src/tessellate/search/search_manager.py:131 |
-| `last_search` | src/tessellate/search/search_manager.py:1104 |
-| `meaning_floor` | src/tessellate/search/search_manager.py:1380 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1117 |
+| `last_search` | src/tessellate/search/search_manager.py:1109 |
+| `meaning_floor` | src/tessellate/search/search_manager.py:1385 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1122 |
 | `query_vector` | src/tessellate/search/search_manager.py:387 |
 | `recent_entries` | src/tessellate/search/search_manager.py:82 |
-| `retrieve` | src/tessellate/search/search_manager.py:1074 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1042 |
-| `semantic_search` | src/tessellate/search/search_manager.py:476 |
-| `warm` | src/tessellate/search/search_manager.py:447 |
-| `widened_limit` | src/tessellate/search/search_manager.py:1038 |
+| `retrieve` | src/tessellate/search/search_manager.py:1079 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1047 |
+| `semantic_search` | src/tessellate/search/search_manager.py:481 |
+| `warm` | src/tessellate/search/search_manager.py:452 |
+| `widened_limit` | src/tessellate/search/search_manager.py:1043 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -28331,7 +28331,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22696)
+## Tests (22697)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30746,7 +30746,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_space_swap_z1.py | 20 |
 | tests/test_spaces.py | 28 |
 | tests/test_speakers_81.py | 7 |
-| tests/test_speculative_retrieval.py | 5 |
+| tests/test_speculative_retrieval.py | 6 |
 | tests/test_spell_contractions.py | 2 |
 | tests/test_spell_packs_1111.py | 19 |
 | tests/test_spell_second_opinion_1731.py | 8 |

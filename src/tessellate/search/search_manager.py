@@ -414,12 +414,17 @@ def _load_later(embeddings: EmbeddingService) -> None:
     the launch warm-up (`embeddings.start_warmup`) is already loading it."""
     from tessellate.ai import embeddings as embedding_service
 
-    if getattr(embeddings, "_warm_loading", False) or embedding_service.warmup_running():
-        return
-    try:
-        embeddings._warm_loading = True
-    except AttributeError:
-        return
+    #: Check and set under one lock: two requests in the same burst both saw
+    #: the flag unset and queued two loads. The flag alone is the guard, not
+    #: a job `dedupe_key`: a key that matched a job just finishing dropped the
+    #: new one while the flag stayed set, and the model never loaded later.
+    with _query_lock:
+        if getattr(embeddings, "_warm_loading", False) or embedding_service.warmup_running():
+            return
+        try:
+            embeddings._warm_loading = True
+        except AttributeError:
+            return
 
     def load() -> None:
         try:
@@ -441,7 +446,7 @@ def _load_later(embeddings: EmbeddingService) -> None:
 
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", load, name="the search model", dedupe_key="search-warm")
+    jobs.enqueue("warm", load, name="the search model")
 
 
 def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:

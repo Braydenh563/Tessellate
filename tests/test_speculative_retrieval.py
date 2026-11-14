@@ -130,3 +130,30 @@ def test_the_focus_call_with_no_words_does_not_touch_the_database(session, fake_
 
     assert search_manager.warm(NoSession(), "", fake_embeddings) is False
     assert not touched, f"the database was read for an empty question: {touched}"
+
+
+def test_a_load_asked_twice_queues_once_and_a_finished_one_can_queue_again(monkeypatch):
+    """L-chat-242: the flag is the only guard, set under a lock. A job
+    `dedupe_key` that matched a load just finishing dropped the new one while
+    the flag stayed set, so the model never loaded later."""
+    from tessellate.ai import embeddings as embedding_service
+    from tessellate.core import jobs
+
+    monkeypatch.setattr(embedding_service, "warmup_running", lambda: False)
+    monkeypatch.setattr(embedding_service, "wait_for_quiet", lambda max_wait: None)
+    queued: list = []
+    monkeypatch.setattr(jobs, "enqueue", lambda kind, func, *a, **k: queued.append((func, k)))
+
+    class Svc:
+        def embed_text(self, text):
+            return None
+
+    svc = Svc()
+    search_manager._load_later(svc)
+    search_manager._load_later(svc)
+    assert len(queued) == 1
+    assert "dedupe_key" not in queued[0][1]
+    queued[0][0]()  # the load runs and finishes
+    assert svc._warm_loading is False
+    search_manager._load_later(svc)
+    assert len(queued) == 2
