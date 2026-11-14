@@ -73,7 +73,7 @@ def test_a_wiki_link_with_no_target_offers_to_create_it_in_the_card():
 
 def test_the_picker_inserts_the_whole_title_up_to_what_a_link_can_hold():
     """N19: the value was cut at 60, so the note held `[[Atlas project line 183:
-    remember to follow up about Atlas pr]]`, a name that no longer matched its
+    remember to ask about Atlas pr]]`, a name that no longer matched its
     note. A link holds 120 (the card's and the document's pattern)."""
     editor = frontend_text("editor.js")
     body = _body(editor, "function editorLinkMatches(")

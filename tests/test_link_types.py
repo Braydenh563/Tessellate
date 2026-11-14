@@ -62,7 +62,7 @@ def _note(client, text: str) -> int:
 
 
 def test_a_link_stores_and_returns_its_kind(client):
-    """Asserted on a follow-up GET, never on the POST response.
+    """Asserted on a second GET, never on the POST response.
 
     CLAUDE.md trap 3: SQLAlchemy hands back the in-memory object, so a create
     response can happily report a value that was never written.
