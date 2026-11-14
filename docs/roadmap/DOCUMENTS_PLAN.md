@@ -430,6 +430,7 @@ work found and did *not* fix, which is the part that is still open.
 - "the whole documents sidebar and ui needs fixing and the document editor
   still needs a lot of refinement and cleaning but its still in development
   so just make sure you cover it all."
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-63 (PHP mode, lazy).
 
 ## 10. The spelling check: decided 2026-09-12
 
@@ -672,6 +673,7 @@ choice, not the app's.*
 template gallery is two clicks from the same place, the Timeline's day view is
 the surface that knows about days, and a third door onto one page is what this
 decision exists to refuse.
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-64 (Today button).
 
 ## 15. The code block's own bar, and where it belongs: measured 2026-09-20
 
@@ -700,6 +702,7 @@ keeps the corner label with no button.** Three reasons, in order of weight:
    undone.
 3. The live view is editable text. The code is already under a caret that can
    select it, and Read is one tap away on every band including the phone.
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-65 (code bar in Live).
 
 **What the measurement did find, and what was fixed here**: the bar's Copy
 button read `⧉ Copy`, a typed U+29C9 standing where an icon belongs, in an app
@@ -750,6 +753,7 @@ improve it is the underline-while-the-modifier-is-held that VS Code draws, and
 it costs a window-level key listener with a reset on blur for a hover hint
 that is already available by resting on the chip. Left unbuilt on purpose; a
 row here rather than a fourth session rediscovering the tooltip.
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-66 (held-modifier underline).
 
 Section 16 item 4 (the table cell menu, `kebabMenu` item `group`) is built. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
@@ -811,6 +815,7 @@ compared with.
   `contrast.js` with `ONLY=document` are the gates. One half of 17d was
   decided against there (a "how far through" figure, the scrollbar and the
   outline mark already say it).
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-67 (how far through).
 
 **Not verified, and to be taken first by whoever opens this.** 17a to 17c
 are measured at 1280, 1440, 1920 and 2560, light and dark, in the default
@@ -1284,6 +1289,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). `\begin{equation}` numbers itself in Read view (s9c-1110; Live draws only one-line `$$`). **The graph block is built** (HISTORY, "Moved from the plans, 2026-11-11 (F1 graph block)"); a click on a rendered equation opens the editor (built). The Ctrl+K row "Insert equation" is built (over a note, Chat or a board's text; a document's own row stands in a document).
 17. **The owner, 2026-10-26, verbatim (screenshot: Notes "Capture a thought", source view showing `<u>underlined</u>` with line numbers):** "also the note capture doesnt have view options, I want it to use the live view by dafault and then the user can change it if they want." The note composer gets the Documents view switch (Live, Source, Read), Live by default, the choice remembered per device (prefs) - S/M. Owner: notecap (Sonnet), check the running app first.
 18. Built 2026-11-10 (s9c-1110): live code blocks, stated language coloured, indented and completed in Live; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)". The title on the fence is drawn and the corner label is a language picker (built 2026-11-11, bd-1111; CHANGELOG).
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-68 (video).
 
 ## Placed from INBOX, 2026-10-19
 
@@ -1452,6 +1458,7 @@ Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 - **Refused, not merged:** a block changed elsewhere since the box opened (the text is kept), and a block made two by a blank line.
 - **Not built:** a copy that stays in step in both places (no second source of truth, no sync engine); a pencil in the block's own document (it is edited there as text); live refresh of other open windows after a save (they update when the document is next drawn).
 - Code: `frontend/js/documents-synced.js` (lazy, `LAZY_MODULES.docSynced`), the pencil in `docEmbedNode` (documents-embeds.js), `tests/test_doc_blockrefs.py`; Guide topic `document-synced`.
+Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents-69 to 71 (synced blocks a, b, c).
 
 **Row 10, a board editable from a document (built 2026-11-11).** The whiteboard is one page-wide instance (`wbState`, `#whiteboard-container`, ids all through 25,000 lines), so there is no second one to mount in a document. A board card (`![[board:12]]`) has Edit here, which lends `#library-view-whiteboard` to a dialog over the document (`documents-board.js`, lazy `docBoard`) and puts it back on close. Whiteboard side, two hooks only: `openWhiteboardBoard(id, { stay: true })`, and a cancelable `wb-leave` event before `wbShowBoardsLanding`.
 - **Cost:** while the dialog is open the Library has no board window (closing puts the Library back: its open board again with its camera, or its list); the dialog is modal, so the document cannot be typed in meanwhile.
