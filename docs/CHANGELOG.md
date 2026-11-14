@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents list: the page card's cover is found by a linear scan instead of a pattern that slowed to quadratic time on a long run of "![" (CodeQL 2305); a test counts the characters scanned.
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Documents: a paste from Word no longer logs a CSP error (its `<style>` block is cut before parsing); `hw890.js` pastes Word-shaped HTML (headings, mso-list bullets and numbers, a table, o:p noise, a script) at 1440 and at 390 with touch (L890).

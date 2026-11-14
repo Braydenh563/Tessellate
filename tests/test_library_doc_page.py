@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tests._app_js import frontend_text
 
 
@@ -34,6 +36,45 @@ def test_the_summary_names_the_first_embedded_picture_as_the_cover() -> None:
     assert _cover("plain words, ![[note]] and [a link](/media/x.pdf)") == ""
     assert _cover("![far](https://example.com/x.png)") == ""
     assert _cover("") == ""
+
+
+class _Tally(str):
+    """A string that counts the characters each find or rfind walks over (to its hit, or across its whole range on a miss)."""
+
+    walked = 0
+
+    def _span(self, sub, start, end, hit, back):
+        start = 0 if start is None else start
+        end = len(self) if end is None else end
+        _Tally.walked += (end - start) if hit == -1 else (end - hit if back else hit + len(sub) - start)
+        return hit
+
+    def find(self, sub, start=None, end=None):
+        return self._span(sub, start, end, str.find(self, sub, start, end), False)
+
+    def rfind(self, sub, start=None, end=None):
+        return self._span(sub, start, end, str.rfind(self, sub, start, end), True)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["![" * 50_000, "![" * 50_000 + "](/media/x.png)", "](/media/x " * 20_000, "![a](/media/" * 20_000, "![" * 50_000 + "]" + "(" * 1000],
+)
+def test_the_cover_scan_is_linear_on_repeated_openers(text) -> None:
+    """CodeQL 2305: an alt pattern searched from each "![" was quadratic on 100k characters of "![".
+
+    The proof is the characters scanned, not a wall clock: at most five characters scanned per character (three
+    look-backs, each over the span since the last hit, and the forward step), and twice the text costs twice the scan, where the old search grew fourfold.
+    """
+    from tessellate.api.routes_documents import _cover
+
+    walked = []
+    for times in (1, 2):
+        _Tally.walked = 0
+        _cover(_Tally(text * times))
+        walked.append(_Tally.walked)
+    assert walked[0] <= 5 * len(text)
+    assert walked[1] <= 2.01 * walked[0]
 
 
 def test_the_page_card_draws_the_cover_lazily_in_the_same_box() -> None:

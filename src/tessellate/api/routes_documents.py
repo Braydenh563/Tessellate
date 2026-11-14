@@ -204,13 +204,27 @@ def _preview(content: str) -> str:
 
 
 #: The first picture a document embeds from the app's own uploads, as `![alt](/media/name.ext)`; the options ride in the alt text.
-_COVER = re.compile(r"!\[[^\]\n]*\]\((/media/[A-Za-z0-9._-]{1,200})[ )]")
+#: Only the path is a pattern, matched at a fixed place: an alt pattern searched from every "![" rescans the rest of the
+#: line from each one, quadratic on a run of "![" (CodeQL 2305), so `_cover` finds the "](" end first and looks back.
+_COVER_PATH = re.compile(r"/media/[A-Za-z0-9._-]{1,200}(?=[ )])")
 
 
 def _cover(content: str) -> str:
-    """The page card's cover (L-documents-80): taken from the content the summary already holds, so the list pays no request per row."""
-    found = _COVER.search(content or "")
-    return found.group(1) if found else ""
+    """The page card's cover (L-documents-80): taken from the content the summary already holds, so the list pays no request per row.
+
+    Each look-back stops at the previous "]" or line end, and the "](" before it is one, so every scan covers a span
+    no other scan covers: linear in the content however it repeats.
+    """
+    content = content or ""
+    end, before = content.find("](/media/"), 0
+    while end != -1:
+        stop = max(content.rfind("]", before, end), content.rfind("\n", before, end))
+        start = content.find("![", stop + 1, end)
+        path = _COVER_PATH.match(content, end + 2) if start != -1 else None
+        if path:
+            return path.group(0)
+        end, before = content.find("](/media/", end + 1), end
+    return ""
 
 
 def _summary(document: Document) -> dict:
