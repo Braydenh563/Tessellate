@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 47 | 1 | 0 | 2 | 68 |
+| documents | 20 | 46 | 1 | 0 | 3 | 67 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 602 | 129 | 2 | 165 | 1234 |
+| all | 503 | 601 | 129 | 2 | 166 | 1233 |
 
 ## graph
 
@@ -367,7 +367,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L889** `documents` open, M: Verify writing desk Stop mid-pass, real thinking and draft prompts with a slow real backend. From OPEN.md:1933; OPEN.md:3083. Evidence: Needs slow real backend; stand-in answers in 150ms. Doable here: Stop mid-pass runs here against a delayed stub backend.
 - [ ] **L890** `documents` open, S: Verify real-clipboard Ctrl+V from Word and phone touch. From OPEN.md:3859. Evidence: Needs real clipboard source and phone. Device-only remainder: a real Word clipboard source and a phone; synthetic paste events run here.
 - [ ] **L891** `documents` open, M: Docs audit needing real print dialog, clipboard image paste, phone IME, Safari/Firefox, screen reader, harper cost. From audit-1102-docs.md 6. Evidence: Needs real browsers/devices and a human. Device-only remainder: real print dialog, Safari, screen reader, phone IME; Firefox, harper cost and image paste run here.
-- [ ] **L892** `documents` open, M: Verify diagram shelf on real touch; 390px shelf kinds hidden. From dgml-1109.md Left. Evidence: Needs real touch device; touch uses Add sheet. Doable here: drive the shelf at 390 with Playwright touch emulation here.
 - [ ] **L893** `documents` open, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human. Device-only remainder: real inference, Windows, screen reader; >10 block perf, light 390, touch emulation and print to PDF run here.
 - [ ] **L894** `documents` open, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost. Device-only remainder: a Windows display for ClearType; the 12 ms per key CodeMirror cost is measured here.
 - [ ] **L-documents-5** `documents` open, M: Have the local model summarise a document's revisions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:847. Evidence: version history exists, but there is no model-written account of the revisions; lines 847 to 849 are untracked. Unbuilt feature, not a hardware item; a model is needed only to judge summary quality.
@@ -951,6 +950,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-documents-63** `documents` blocked-hardware, S: On a real touch device at 390, hold a diagram shelf tile a moment and drag it onto the picture (obj-drag hold); emulated sizes, hidden tiles and the caret menu are measured (docsverify-shelf.js). From L892 remainder.
 
 ## Plan session briefs
 
