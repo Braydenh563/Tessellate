@@ -478,6 +478,8 @@ TAIL_TOPICS.extend(
                 "right angle",
                 "orthogonal",
                 "connector shape",
+                "arrow width",
+                "arrow head size",
                 "bend",
                 "waypoint",
                 "crow's foot",

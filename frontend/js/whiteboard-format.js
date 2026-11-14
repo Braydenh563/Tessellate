@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "arrowbody", "arrowhead", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "tags", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props", "tags"],
   frame: ["pad", "stack", "collapse", "geometry", "props", "tags"],
@@ -177,6 +177,8 @@ function wbFmtValue(entry, field) {
     case "textpath": return Boolean(s?.label_path);
     //: Empty for "automatic", so the field shows its placeholder.
     case "jumpsize": return s?.jumpSize != null && s.jumpSize !== "" ? wbJumpSize(s) : "";
+    case "arrowbody": return Number(s?.arrowBody) > 0 ? Number(s.arrowBody) : "";
+    case "arrowhead": return Number(s?.arrowHead) > 0 ? Number(s.arrowHead) : "";
     case "tip": return typeof s?.tip === "string" ? s.tip : "";
     case "gapstart": return wbLinkGap(s)?.start || 0;
     case "gapend": return wbLinkGap(s)?.end || 0;
@@ -707,7 +709,7 @@ function wbFormatSync() {
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-edgeshape", "edgeshape", "edgeshape"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
-    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"], ["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"],
+    ["wb-fmt-arrowbody", "arrowbody", "arrowbody"], ["wb-fmt-arrowhead", "arrowhead", "arrowhead"], ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"], ["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
@@ -1311,6 +1313,13 @@ onSurface("board", () => {
     const shape = wbFmtState.shapeMore?.CONNECTOR_SHAPES.includes(e.target.value) ? e.target.value : "line";
     wbFmtApply("edgeshape", () => ({ shape: shape === "line" ? undefined : shape }), `Connector shape: ${wbFmtState.shapeMore.CONNECTOR_SHAPE_WORDS[shape]}.`);
   });
+  //: Arrow shape geometry (draw.io's `addArrowGeometry`): empty is the shape's own proportion, so it stores nothing.
+  for (const [id, field, key, word, max] of [["wb-fmt-arrowbody", "arrowbody", "arrowBody", "Arrow body", 200], ["wb-fmt-arrowhead", "arrowhead", "arrowHead", "Arrow head", 400]]) {
+    on(id, "change", (e) => {
+      const size = e.target.value === "" ? null : Math.max(2, Math.min(max, Math.round(Number(e.target.value) || 0)));
+      wbFmtApply(field, () => ({ [key]: size || undefined }), size ? `${word} ${size}.` : `${word} automatic.`);
+    });
+  }
   on("wb-fmt-textpath", "change", (e) => wbFmtApply("textpath", () => ({ label_path: e.target.checked || undefined }), e.target.checked ? "Label set along the line." : "Label flat again."));
   on("wb-fmt-jumps", "change", (e) => {
     const style = WB_JUMP_STYLES.includes(e.target.value) ? e.target.value : "none";

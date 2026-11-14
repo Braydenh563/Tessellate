@@ -853,7 +853,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
-| Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
+| Arrow shape geometry (width of a block arrow connector) | yes, 2026-11-14: Arrow body and Arrow head fields on a connector (`arrowBody`, `arrowHead`; `connectorProfile`, whiteboard-shape-more.js) | `addArrowGeometry` (Format.js 3972) | done | none |
 | Edit data, edit tooltip, note, link, open link | edit data yes (`edit-data`, Ctrl+M), tooltip and links yes; copy and paste data built 2026-11-12 (`wbFmtState.dataKeys`, whiteboard-format.js, Alt+Shift+B, E), carrying properties, tooltip and link 2026-11-14 | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | done (a note is a board comment, Alt+Shift+N) | none |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
