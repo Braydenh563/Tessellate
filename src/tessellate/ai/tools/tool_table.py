@@ -17,6 +17,7 @@ from tessellate.ai.tools.board_edit import _add_board_shape, _delete_board_item,
 from tessellate.ai.tools.categories import _create_category, _delete_category, _merge_categories, _rename_category
 from tessellate.ai.tools.documents import _create_document, _delete_document, _get_document, _list_documents
 from tessellate.ai.tools.archiving import ARCHIVE_SPEC
+from tessellate.ai.tools.looking_back import LOOKBACK_SPECS
 from tessellate.ai.tools.moving import _move_notes
 from tessellate.ai.tools.files import _read_file, _search_files
 from tessellate.core import deps
@@ -1162,6 +1163,7 @@ TOOLS: dict[str, ToolSpec] = {
             _pin_note,
         ),
         ARCHIVE_SPEC,
+        *LOOKBACK_SPECS,
         ToolSpec(
             "link_notes",
             "Connect a note to one or more related notes.",

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8522, frontend ids 2796, CSS sections 524, backend routes 721, backend modules 11266, test files 2925, tests 22988, plan headings 692, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8522, frontend ids 2796, CSS sections 524, backend routes 721, backend modules 11281, test files 2926, tests 22995, plan headings 692, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8522)
 
@@ -14186,7 +14186,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11266)
+## Backend modules (11281)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20189,7 +20189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `SkillError` | src/tessellate/ai/skills.py:170 |
 | `_check_placeholders` | src/tessellate/ai/skills.py:551 |
-| `_checked_folder_skill` | src/tessellate/ai/skills.py:1872 |
+| `_checked_folder_skill` | src/tessellate/ai/skills.py:1982 |
 | `_clean_inputs` | src/tessellate/ai/skills.py:525 |
 | `_clean_tools` | src/tessellate/ai/skills.py:497 |
 | `_declared_blocks` | src/tessellate/ai/skills.py:622 |
@@ -20201,25 +20201,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_verify_args` | src/tessellate/ai/skills.py:339 |
 | `ad_hoc_plan` | src/tessellate/ai/skills.py:662 |
 | `budget_caps` | src/tessellate/ai/skills.py:635 |
-| `builtins` | src/tessellate/ai/skills.py:1835 |
-| `catalog` | src/tessellate/ai/skills.py:1847 |
+| `builtins` | src/tessellate/ai/skills.py:1945 |
+| `catalog` | src/tessellate/ai/skills.py:1957 |
 | `contract_nudge` | src/tessellate/ai/skills.py:407 |
 | `fill` | src/tessellate/ai/skills.py:697 |
-| `find` | src/tessellate/ai/skills.py:1910 |
-| `folder_skills` | src/tessellate/ai/skills.py:1880 |
-| `held_back_reason` | src/tessellate/ai/skills.py:1826 |
+| `find` | src/tessellate/ai/skills.py:2020 |
+| `folder_skills` | src/tessellate/ai/skills.py:1990 |
+| `held_back_reason` | src/tessellate/ai/skills.py:1936 |
 | `input_values` | src/tessellate/ai/skills.py:724 |
 | `is_action` | src/tessellate/ai/skills.py:657 |
-| `larger_model_reason` | src/tessellate/ai/skills.py:1793 |
-| `measured_rates` | src/tessellate/ai/skills.py:1784 |
+| `larger_model_reason` | src/tessellate/ai/skills.py:1903 |
+| `measured_rates` | src/tessellate/ai/skills.py:1894 |
 | `missing_inputs` | src/tessellate/ai/skills.py:713 |
 | `normalise` | src/tessellate/ai/skills.py:566 |
 | `run_instruction` | src/tessellate/ai/skills.py:735 |
-| `small_class` | src/tessellate/ai/skills.py:1810 |
+| `small_class` | src/tessellate/ai/skills.py:1920 |
 | `state_line` | src/tessellate/ai/skills.py:461 |
 | `step_instruction` | src/tessellate/ai/skills.py:782 |
 | `step_specs` | src/tessellate/ai/skills.py:382 |
-| `stored` | src/tessellate/ai/skills.py:1842 |
+| `stored` | src/tessellate/ai/skills.py:1952 |
 | `verify_spec` | src/tessellate/ai/skills.py:274 |
 
 ### src/tessellate/ai/slash.py (15)
@@ -20751,33 +20751,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recorded` | src/tessellate/ai/tool_history.py:57 |
 | `slash` | src/tessellate/ai/tool_history.py:80 |
 
-### src/tessellate/ai/tool_say.py (96)
+### src/tessellate/ai/tool_say.py (100)
 
 | Name | File:line |
 |---|---|
 | `_archived` | src/tessellate/ai/tool_say.py:677 |
-| `_ask` | src/tessellate/ai/tool_say.py:851 |
-| `_audit` | src/tessellate/ai/tool_say.py:695 |
-| `_board_card` | src/tessellate/ai/tool_say.py:774 |
-| `_board_write` | src/tessellate/ai/tool_say.py:784 |
+| `_ask` | src/tessellate/ai/tool_say.py:875 |
+| `_audit` | src/tessellate/ai/tool_say.py:719 |
+| `_board_card` | src/tessellate/ai/tool_say.py:798 |
+| `_board_write` | src/tessellate/ai/tool_say.py:808 |
 | `_calculate` | src/tessellate/ai/tool_say.py:179 |
-| `_category` | src/tessellate/ai/tool_say.py:714 |
+| `_category` | src/tessellate/ai/tool_say.py:738 |
 | `_category_named` | src/tessellate/ai/tool_say.py:210 |
 | `_chat_history` | src/tessellate/ai/tool_say.py:515 |
 | `_chat_row` | src/tessellate/ai/tool_say.py:524 |
 | `_check` | src/tessellate/ai/tool_say.py:601 |
 | `_chips` | src/tessellate/ai/tool_say.py:111 |
-| `_compress` | src/tessellate/ai/tool_say.py:866 |
+| `_compress` | src/tessellate/ai/tool_say.py:890 |
 | `_contradictions` | src/tessellate/ai/tool_say.py:316 |
 | `_count` | src/tessellate/ai/tool_say.py:185 |
-| `_created_document` | src/tessellate/ai/tool_say.py:733 |
+| `_created_document` | src/tessellate/ai/tool_say.py:757 |
 | `_created_note` | src/tessellate/ai/tool_say.py:632 |
-| `_deleted_document` | src/tessellate/ai/tool_say.py:738 |
-| `_diagram` | src/tessellate/ai/tool_say.py:792 |
+| `_deleted_document` | src/tessellate/ai/tool_say.py:762 |
+| `_diagram` | src/tessellate/ai/tool_say.py:816 |
 | `_documents` | src/tessellate/ai/tool_say.py:391 |
 | `_due_day` | src/tessellate/ai/tool_say.py:442 |
 | `_edited_note` | src/tessellate/ai/tool_say.py:640 |
-| `_error` | src/tessellate/ai/tool_say.py:920 |
+| `_error` | src/tessellate/ai/tool_say.py:944 |
 | `_filed_lead` | src/tessellate/ai/tool_say.py:202 |
 | `_filed_where` | src/tessellate/ai/tool_say.py:268 |
 | `_files` | src/tessellate/ai/tool_say.py:530 |
@@ -20786,53 +20786,57 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_get_note` | src/tessellate/ai/tool_say.py:275 |
 | `_gist` | src/tessellate/ai/tool_say.py:77 |
 | `_help` | src/tessellate/ai/tool_say.py:461 |
-| `_learned_checked` | src/tessellate/ai/tool_say.py:702 |
+| `_learned_checked` | src/tessellate/ai/tool_say.py:726 |
 | `_library` | src/tessellate/ai/tool_say.py:590 |
-| `_linked` | src/tessellate/ai/tool_say.py:685 |
+| `_linked` | src/tessellate/ai/tool_say.py:709 |
 | `_list_notes` | src/tessellate/ai/tool_say.py:217 |
-| `_lower_first` | src/tessellate/ai/tool_say.py:813 |
-| `_map_from_note` | src/tessellate/ai/tool_say.py:749 |
-| `_map_link` | src/tessellate/ai/tool_say.py:768 |
-| `_map_node` | src/tessellate/ai/tool_say.py:763 |
+| `_listed_notes` | src/tessellate/ai/tool_say.py:685 |
+| `_lower_first` | src/tessellate/ai/tool_say.py:837 |
+| `_map_from_note` | src/tessellate/ai/tool_say.py:773 |
+| `_map_link` | src/tessellate/ai/tool_say.py:792 |
+| `_map_node` | src/tessellate/ai/tool_say.py:787 |
 | `_mindmap` | src/tessellate/ai/tool_say.py:582 |
-| `_mindmap_made` | src/tessellate/ai/tool_say.py:742 |
-| `_moved` | src/tessellate/ai/tool_say.py:755 |
+| `_mindmap_made` | src/tessellate/ai/tool_say.py:766 |
+| `_month` | src/tessellate/ai/tool_say.py:696 |
+| `_moved` | src/tessellate/ai/tool_say.py:779 |
 | `_name` | src/tessellate/ai/tool_say.py:72 |
 | `_named_counts` | src/tessellate/ai/tool_say.py:350 |
-| `_note_deleted` | src/tessellate/ai/tool_say.py:824 |
-| `_note_restored` | src/tessellate/ai/tool_say.py:828 |
+| `_note_deleted` | src/tessellate/ai/tool_say.py:848 |
+| `_note_restored` | src/tessellate/ai/tool_say.py:852 |
 | `_note_row` | src/tessellate/ai/tool_say.py:86 |
 | `_number` | src/tessellate/ai/tool_say.py:62 |
 | `_overview` | src/tessellate/ai/tool_say.py:363 |
 | `_path` | src/tessellate/ai/tool_say.py:306 |
+| `_person` | src/tessellate/ai/tool_say.py:703 |
 | `_pinned` | src/tessellate/ai/tool_say.py:668 |
-| `_placed` | src/tessellate/ai/tool_say.py:800 |
+| `_placed` | src/tessellate/ai/tool_say.py:824 |
 | `_plain` | src/tessellate/ai/tool_say.py:138 |
-| `_plan` | src/tessellate/ai/tool_say.py:856 |
-| `_preference` | src/tessellate/ai/tool_say.py:833 |
+| `_plan` | src/tessellate/ai/tool_say.py:880 |
+| `_preference` | src/tessellate/ai/tool_say.py:857 |
 | `_propose` | src/tessellate/ai/tool_say.py:608 |
 | `_quoted` | src/tessellate/ai/tool_say.py:115 |
 | `_read_file` | src/tessellate/ai/tool_say.py:543 |
 | `_read_text` | src/tessellate/ai/tool_say.py:551 |
 | `_read_url` | src/tessellate/ai/tool_say.py:622 |
 | `_related` | src/tessellate/ai/tool_say.py:296 |
-| `_reminder_done` | src/tessellate/ai/tool_say.py:818 |
-| `_reminder_set` | src/tessellate/ai/tool_say.py:805 |
+| `_reminder_done` | src/tessellate/ai/tool_say.py:842 |
+| `_reminder_set` | src/tessellate/ai/tool_say.py:829 |
 | `_reminders` | src/tessellate/ai/tool_say.py:411 |
 | `_rows_under` | src/tessellate/ai/tool_say.py:383 |
-| `_run_skill` | src/tessellate/ai/tool_say.py:862 |
-| `_screen` | src/tessellate/ai/tool_say.py:913 |
+| `_run_skill` | src/tessellate/ai/tool_say.py:886 |
+| `_screen` | src/tessellate/ai/tool_say.py:937 |
 | `_search_board` | src/tessellate/ai/tool_say.py:572 |
 | `_search_notes` | src/tessellate/ai/tool_say.py:245 |
 | `_sentence` | src/tessellate/ai/tool_say.py:146 |
 | `_similar` | src/tessellate/ai/tool_say.py:287 |
-| `_skill_deleted` | src/tessellate/ai/tool_say.py:844 |
-| `_skill_saved` | src/tessellate/ai/tool_say.py:838 |
+| `_skill_deleted` | src/tessellate/ai/tool_say.py:868 |
+| `_skill_saved` | src/tessellate/ai/tool_say.py:862 |
 | `_skills` | src/tessellate/ai/tool_say.py:451 |
+| `_stale` | src/tessellate/ai/tool_say.py:689 |
 | `_structure` | src/tessellate/ai/tool_say.py:374 |
 | `_summary` | src/tessellate/ai/tool_say.py:330 |
 | `_table` | src/tessellate/ai/tool_say.py:102 |
-| `_tag` | src/tessellate/ai/tool_say.py:726 |
+| `_tag` | src/tessellate/ai/tool_say.py:750 |
 | `_tagged` | src/tessellate/ai/tool_say.py:655 |
 | `_time` | src/tessellate/ai/tool_say.py:173 |
 | `_tool_described` | src/tessellate/ai/tool_say.py:502 |
@@ -20849,7 +20853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `link` | src/tessellate/ai/tool_say.py:66 |
 | `matched` | src/tessellate/ai/tool_say.py:231 |
 | `note_at` | src/tessellate/ai/tool_say.py:46 |
-| `say` | src/tessellate/ai/tool_say.py:943 |
+| `say` | src/tessellate/ai/tool_say.py:967 |
 | `settings_at` | src/tessellate/ai/tool_say.py:58 |
 
 ### src/tessellate/ai/toolrank.py (9)
@@ -20984,6 +20988,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_media_row` | src/tessellate/ai/tools/files.py:83 |
 | `_read_file` | src/tessellate/ai/tools/files.py:168 |
 | `_search_files` | src/tessellate/ai/tools/files.py:121 |
+
+### src/tessellate/ai/tools/looking_back.py (11)
+
+| Name | File:line |
+|---|---|
+| `_find_person` | src/tessellate/ai/tools/looking_back.py:92 |
+| `_last_touched` | src/tessellate/ai/tools/looking_back.py:30 |
+| `_linked_to` | src/tessellate/ai/tools/looking_back.py:102 |
+| `_month_figures` | src/tessellate/ai/tools/looking_back.py:73 |
+| `_month_window` | src/tessellate/ai/tools/looking_back.py:54 |
+| `_naming` | src/tessellate/ai/tools/looking_back.py:111 |
+| `_person_page` | src/tessellate/ai/tools/looking_back.py:119 |
+| `_spent` | src/tessellate/ai/tools/looking_back.py:63 |
+| `_stale_notes` | src/tessellate/ai/tools/looking_back.py:35 |
+| `_today` | src/tessellate/ai/tools/looking_back.py:26 |
+| `_visible` | src/tessellate/ai/tools/looking_back.py:22 |
 
 ### src/tessellate/ai/tools/moving.py (7)
 
@@ -21148,14 +21168,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_describe_tool` | src/tessellate/ai/tools/tool_table.py:59 |
-| `_example_value` | src/tessellate/ai/tools/tool_table.py:1478 |
-| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1458 |
-| `_list_skills` | src/tessellate/ai/tools/tool_table.py:72 |
-| `_list_tools` | src/tessellate/ai/tools/tool_table.py:42 |
-| `_save_skill` | src/tessellate/ai/tools/tool_table.py:121 |
-| `_tool_group` | src/tessellate/ai/tools/tool_table.py:33 |
-| `call_example` | src/tessellate/ai/tools/tool_table.py:1426 |
+| `_describe_tool` | src/tessellate/ai/tools/tool_table.py:60 |
+| `_example_value` | src/tessellate/ai/tools/tool_table.py:1480 |
+| `_is_plural_variant` | src/tessellate/ai/tools/tool_table.py:1460 |
+| `_list_skills` | src/tessellate/ai/tools/tool_table.py:73 |
+| `_list_tools` | src/tessellate/ai/tools/tool_table.py:43 |
+| `_save_skill` | src/tessellate/ai/tools/tool_table.py:122 |
+| `_tool_group` | src/tessellate/ai/tools/tool_table.py:34 |
+| `call_example` | src/tessellate/ai/tools/tool_table.py:1428 |
 
 ### src/tessellate/ai/tools/tool_turn.py (13)
 
@@ -28671,7 +28691,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22988)
+## Tests (22995)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30327,6 +30347,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_long_runs.py | 12 |
 | tests/test_look_mix_1108.py | 7 |
 | tests/test_look_share_1108.py | 11 |
+| tests/test_looking_back_1114.py | 7 |
 | tests/test_lower_flow_1683b.py | 3 |
 | tests/test_lower_pose_1111.py | 5 |
 | tests/test_magic_add_wording.py | 2 |
@@ -32024,7 +32045,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:602 |
+| Needs hardware | docs/roadmap/LEDGER.md:598 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
@@ -32212,7 +32233,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:759 |
+| Plan session briefs | docs/roadmap/LEDGER.md:755 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32266,25 +32287,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:775 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:859 |
+| chat | docs/roadmap/LEDGER.md:771 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:855 |
 | documents | docs/roadmap/LEDGER.md:174 |
-| documents | docs/roadmap/LEDGER.md:799 |
+| documents | docs/roadmap/LEDGER.md:795 |
 | general | docs/roadmap/LEDGER.md:548 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:763 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:871 |
+| graph | docs/roadmap/LEDGER.md:759 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:867 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
 | mindmap | docs/roadmap/LEDGER.md:190 |
-| mindmap | docs/roadmap/LEDGER.md:811 |
+| mindmap | docs/roadmap/LEDGER.md:807 |
 | timeline | docs/roadmap/LEDGER.md:310 |
-| timeline | docs/roadmap/LEDGER.md:835 |
+| timeline | docs/roadmap/LEDGER.md:831 |
 | ui-modernisation | docs/roadmap/LEDGER.md:193 |
-| ui-modernisation | docs/roadmap/LEDGER.md:823 |
+| ui-modernisation | docs/roadmap/LEDGER.md:819 |
 | whiteboard | docs/roadmap/LEDGER.md:128 |
-| whiteboard | docs/roadmap/LEDGER.md:787 |
+| whiteboard | docs/roadmap/LEDGER.md:783 |
 | world-class | docs/roadmap/LEDGER.md:312 |
-| world-class | docs/roadmap/LEDGER.md:847 |
+| world-class | docs/roadmap/LEDGER.md:843 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

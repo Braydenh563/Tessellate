@@ -1717,6 +1717,116 @@ BUILTIN_SKILLS: list[dict] = [
         "inputs": [{"name": "topic", "label": "What idea do you want to think through?"}],
         "tools": [*_READING_TOOLS, "ask_user", "create_note"],
     },
+    #: The four looking-back skills (L-chat-50 to 53). Each reads first and writes last, one note or one batch
+    #: the person ticked, so a run that stalls earlier has changed nothing.
+    {
+        "name": "Prepare for a meeting",
+        "description": "Notes on the people and the topic, open reminders, and a short agenda drafted into a new note.",
+        "when_to_use": "before a meeting, a call or a catch-up with someone",
+        "prompt": "Prepare me for a meeting with {{people}} about {{topic}}.",
+        "steps": [
+            _step(
+                "Search my notes for {{topic}} and for {{people}}, and read the ones that matter with get_note.",
+                "tool_called",
+                "search_notes",
+            ),
+            _step(
+                "Look up each person named in {{people}} with person_page, to see what my notes hold about them.",
+                "tool_optional",
+                "person_page",
+            ),
+            _step("Check my open reminders with list_reminders for anything about {{topic}} or {{people}}.", "tool_called", "list_reminders"),
+            _step(
+                "Draft a short agenda: what we last said, what is still open, and two or three things to settle. "
+                "Use only what the notes say, and name the note each point comes from.",
+                "answer_only",
+            ),
+            _step(
+                "Save the agenda with create_note, titled with the meeting and the date, and say where it is.",
+                "tool_called",
+                "create_note",
+            ),
+        ],
+        "inputs": [
+            {"name": "people", "label": "Who is it with?", "required": True},
+            {"name": "topic", "label": "What is it about?", "required": True},
+        ],
+        "tools": [*_READING_TOOLS, "person_page", "list_reminders", "create_note"],
+    },
+    {
+        "name": "Monthly look back",
+        "description": "What you wrote, spent and finished in a month, as one note with the numbers cited.",
+        "when_to_use": "at the end of a month, or when you want to see what a month came to",
+        "prompt": "Look back at {{month}}: what I wrote, spent and finished.",
+        "steps": [
+            _step(
+                "Get the month's numbers with month_figures for {{month}} (last month when I left it blank).",
+                "tool_called",
+                "month_figures",
+            ),
+            _step(
+                "Read the three or four most telling notes it names with get_note, to say what the month was about.",
+                "tool_optional",
+                "get_note",
+            ),
+            _step(
+                "Write the look back: what was written, what was spent and what was finished, each with its number "
+                "and the note ids it came from. If nothing was recorded as spent, say so in one line. Do not guess a figure.",
+                "answer_only",
+            ),
+            _step("Save it with create_note, titled with the month, and say where it is.", "tool_called", "create_note"),
+        ],
+        "inputs": [{"name": "month", "label": "Which month? (blank for last month)"}],
+        "tools": [*_READING_TOOLS, "month_figures", "create_note"],
+    },
+    {
+        "name": "Archive stale notes",
+        "description": "Lists notes you have not touched for a span you name, and archives only the ones you pick.",
+        "when_to_use": "to clear old notes out of the lists without deleting any of them",
+        "prompt": "Find notes I have not touched for {{span}} and let me choose which to archive.",
+        "steps": [
+            _step(
+                "List the notes untouched for {{span}} with stale_notes, turning the span into a number of days.",
+                "tool_called",
+                "stale_notes",
+            ),
+            _step(
+                "Show them as a numbered list with the date each was last touched, then ask which to archive and stop. "
+                "Archiving keeps a note; nothing is deleted.",
+                "answer_only",
+            ),
+            _step(
+                "Archive only the notes I named in my reply, in one archive_note call. If I named none, do nothing.",
+                "tool_optional",
+                "archive_note",
+            ),
+            _step("Say how many you archived, and that Undo in Chat brings them back.", "answer_only"),
+        ],
+        "inputs": [{"name": "span", "label": "Untouched for how long? (e.g. 3 months, 90 days)", "required": True}],
+        "tools": ["stale_notes", "get_note", "archive_note"],
+    },
+    {
+        "name": "Everything about a person",
+        "description": "Their page, the notes that name them and open reminders, gathered in one reading note.",
+        "when_to_use": "when you want all you have on one person in one place",
+        "prompt": "Gather everything my notes hold about {{person}} into one note.",
+        "steps": [
+            _step("Read {{person}}'s page with person_page.", "tool_called", "person_page"),
+            _step(
+                "Read the two or three most recent notes it names with get_note, for what was last said.",
+                "tool_optional",
+                "get_note",
+            ),
+            _step(
+                "Write it as a reading note: who they are to me, the notes that name them (with ids), the notes linked "
+                "to those, and the open reminders with their dates. Say only what the notes say.",
+                "answer_only",
+            ),
+            _step("Save it with create_note, titled with their name, and say where it is.", "tool_called", "create_note"),
+        ],
+        "inputs": [{"name": "person", "label": "Who?", "required": True}],
+        "tools": [*_READING_TOOLS, "person_page", "create_note"],
+    },
     # BACKLOG §22: "the way skills are used... it doesn't recognise that it
     # needs to use tools" was fixed at the mechanism level (this module's own
     # header), but a user still has to know that shape exists to use it, 

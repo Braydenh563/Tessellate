@@ -125,6 +125,7 @@ HELP_TOPICS: list[dict] = [
             "still run, read straight off your notes with no AI and labelled as such: Summarise my week, "
             "Daily review, Catch up on a topic, Find loose ends, Auto-tag my notes, Link related notes, "
             "Tidy suggestions, Notebook health check and Find notes worth combining. "
+            "Four of the others look back over your notebook: Prepare for a meeting, Monthly look back, Archive stale notes (it archives only the notes you pick) and Everything about a person. "
             "The others are greyed and marked (needs a model) in the Skills menu: they are unavailable while no model is connected."
         ),
         "badge": {"label": "Skills", "section": "skills"},

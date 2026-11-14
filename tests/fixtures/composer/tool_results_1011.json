@@ -2405,6 +2405,99 @@
      }
     }
    }
+  ],
+  "stale_notes": [
+   {
+    "args": {
+     "days": 90
+    },
+    "result": {
+     "days": 90,
+     "total_stale": 2,
+     "returned": 2,
+     "notes": [
+      {
+       "id": 3,
+       "title": "Old plan",
+       "last_touched": "2026-06-01"
+      },
+      {
+       "id": 4,
+       "title": "Trip ideas",
+       "last_touched": "2026-07-12"
+      }
+     ],
+     "label": "ph:archive Found 2 notes untouched for 90 days"
+    }
+   }
+  ],
+  "month_figures": [
+   {
+    "args": {
+     "month": "October"
+    },
+    "result": {
+     "period": "October",
+     "from": "2026-10-01",
+     "to": "2026-10-31",
+     "notes_written": 2,
+     "written_ids": [
+      3,
+      4
+     ],
+     "reminders_finished": 1,
+     "finished": [
+      {
+       "id": 1,
+       "text": "Send the form"
+      }
+     ],
+     "reminders_still_open_from_then": 1,
+     "spent": {
+      "text": "From your notes: Spent $45 on groceries.",
+      "source_notes": [
+       3
+      ]
+     },
+     "label": "ph:calendar Counted October: 2 written, 1 finished"
+    }
+   }
+  ],
+  "person_page": [
+   {
+    "args": {
+     "name": "Sam"
+    },
+    "result": {
+     "name": "Sam Lee",
+     "kind": "person",
+     "aliases": [
+      "Sam"
+     ],
+     "mentioned_in": [
+      {
+       "id": 3,
+       "title": "Call with Sam",
+       "written": "2026-10-05"
+      },
+      {
+       "id": 4,
+       "title": "Report",
+       "written": "2026-10-06"
+      }
+     ],
+     "mentioned_total": 2,
+     "linked_notes": [],
+     "open_reminders": [
+      {
+       "id": 2,
+       "text": "Email Sam the report",
+       "due_at": "2026-11-12T09:00:00"
+      }
+     ],
+     "label": "ph:user Read what the notes hold about Sam Lee: 2 notes"
+    }
+   }
   ]
  }
 }
