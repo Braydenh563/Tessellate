@@ -315,7 +315,10 @@
         event.stopPropagation();
         wbAudioPlay(Number(el.dataset.id), mark);
       });
-      wbMapCache.part(el, "link")?.after(mark);
+      //: After the link mark when the topic has one, else last in the body, where the link goes.
+      const link = wbMapCache.part(el, "link", false);
+      if (link) link.after(mark);
+      else el.querySelector(":scope > .wb-map-node-body")?.append(mark);
     }
     mark.hidden = !id;
     if (id) {

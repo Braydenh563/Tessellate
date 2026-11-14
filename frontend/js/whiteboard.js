@@ -11191,6 +11191,15 @@ function wbBeginTextEdit(contentEl, ownText, early = false) {
   contentEl.focus({ preventScroll: true });
 }
 
+//: An early edit (`early` above) the editor never took over: the attribute and
+//: class come off, so the topic is not left typeable with no editor behind it.
+wbBeginTextEdit.drop = (el) => {
+  if (!el?._wbPreEdit) return;
+  el._wbPreEdit = false;
+  el.removeAttribute("contenteditable");
+  el.closest(".wb-object")?.classList.remove("wb-text-editing");
+};
+
 //: **The editor's "/" and "[[" menus, in a box on the board** (the owner,
 //: 2026-10-10: "/ command menus don't appear in text boxes in the
 //: whiteboard"; "the / command menu and [[ adding notes etc doesn't work on

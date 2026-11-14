@@ -346,7 +346,7 @@ wbMapCache.make = function (node, name) {
       e.addEventListener("pointerdown", stop);
       e.addEventListener("click", (event) => { event.stopPropagation(); wbMapToggleCollapse(id()); });
       return e;
-    default:
+    case "grip":
       //: The one resize grip, on the topic's bottom right corner (INBOX 610);
       //: shown by CSS on hover and selection, so it is made by those.
       e = button({
@@ -360,6 +360,8 @@ wbMapCache.make = function (node, name) {
         wbMapStartResizeDrag(e, event, live());
       });
       return e;
+    default:
+      return null;
   }
 };
 wbMapCache.part = function (node, name, create = true) {
@@ -370,6 +372,7 @@ wbMapCache.part = function (node, name, create = true) {
   const found = host.querySelector(`:scope > .${this.cls[name]}`);
   if (found || !create) return found;
   const e = this.make(node, name);
+  if (!e) return null;
   const list = inBody ? this.order.body : this.order.card;
   for (let i = list.indexOf(name) + 1; i < list.length; i++) {
     const next = host.querySelector(`:scope > .${this.cls[list[i]]}`);
@@ -5052,6 +5055,8 @@ async function wbMapAddChild(parentId, { order = null } = {}) {
     selectWbItem("object", created.id);
     wbMapRevealTopic(created);
   } finally {
+    //: A topic the render made editable that the editor never took over (it bailed) is put back.
+    wbBeginTextEdit.drop(wbItemElement("object", created.id)?.querySelector(".wb-map-text"));
     wbRenderRelease();
     wbSyncMapEdgeHandles();
     wbAddGate.barDeferred = false;
