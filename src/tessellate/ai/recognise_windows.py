@@ -1347,6 +1347,8 @@ __all__ = [
     "_MONTH_DAY",
     "_WEEKDAY",
     "_COMPUTED",
+    "NUMBER_WORD_PATTERN",
+    "number_word_value",
 ]
 
 

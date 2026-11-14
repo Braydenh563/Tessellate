@@ -387,7 +387,9 @@ def _unknown_person(question: str, views: list[NoteView]) -> list[str]:
 
 
 #: "i want to book tickets", "book a table": book as in reserve, never the book a note is about.
-_RESERVE = re.compile(r"(?:^|\b(?:to|you|please|me|let's|lets)\s+)(book|reserve)\s+(?:me\s+)?(?:an?|some|the|two|three|four)?\s*[a-z]", re.I)
+#: One space between words: the question is said with its whitespace squeezed, and a bounded
+#: " ?" never backtracks over a run of tabs (CodeQL, polynomial regex).
+_RESERVE = re.compile(r"(?:^|\b(?:to|you|please|me|let's|lets) )(book|reserve) (?:me )?(?:(?:an?|some|the|two|three|four) )?[a-z]", re.I)
 
 
 def _reserving(question: str, terms: list[str], views: list[NoteView]) -> list[str]:

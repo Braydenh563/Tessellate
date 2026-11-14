@@ -88,3 +88,16 @@ def test_a_to_do_add_said_verb_last_adds_the_task():
         found = commands.read(said, now)
         assert found and found["intent"] == "reminder" and found["task"], said
         assert found["text"] == "Cleaning" and found["on_list"] == "cleaning" and found["asked"] == said, found
+
+
+def test_the_booking_pattern_is_linear_on_a_long_run_of_tabs():
+    """CodeQL (polynomial regex): "book\\t" then thousands of tabs backtracked over every split of the run.
+    Checked by shape, not a clock: no unbounded whitespace repeat is left to split."""
+    import re
+
+    from tessellate.ai import composer_empty
+
+    assert not re.search(r"\\s[*+]", composer_empty._RESERVE.pattern)  # noqa: SLF001
+    assert composer_empty._RESERVE.search("book\t" + "\t" * 50_000 + "!") is None  # noqa: SLF001
+    assert composer_empty._RESERVE.search("i want to book two tickets")  # noqa: SLF001
+    assert composer_empty._RESERVE.search("book a table")  # noqa: SLF001

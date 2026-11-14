@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10900, test files 2776, tests 22304, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10900, test files 2776, tests 22305, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -15840,19 +15840,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_filtered` | src/tessellate/ai/composer_empty.py:33 |
 | `_in_passing` | src/tessellate/ai/composer_empty.py:355 |
 | `_leads` | src/tessellate/ai/composer_empty.py:349 |
-| `_modifies` | src/tessellate/ai/composer_empty.py:406 |
+| `_modifies` | src/tessellate/ai/composer_empty.py:408 |
 | `_named` | src/tessellate/ai/composer_empty.py:362 |
 | `_nothing` | src/tessellate/ai/composer_empty.py:242 |
 | `_nothing_parts` | src/tessellate/ai/composer_empty.py:280 |
 | `_nothing_planned` | src/tessellate/ai/composer_empty.py:202 |
-| `_reserving` | src/tessellate/ai/composer_empty.py:393 |
+| `_reserving` | src/tessellate/ai/composer_empty.py:395 |
 | `_says` | src/tessellate/ai/composer_empty.py:308 |
 | `_unknown_person` | src/tessellate/ai/composer_empty.py:377 |
 | `_unsaid` | src/tessellate/ai/composer_empty.py:340 |
 | `_window_voice` | src/tessellate/ai/composer_empty.py:195 |
 | `empty_window` | src/tessellate/ai/composer_empty.py:211 |
 | `stray_match` | src/tessellate/ai/composer_empty.py:313 |
-| `stray_reply` | src/tessellate/ai/composer_empty.py:413 |
+| `stray_reply` | src/tessellate/ai/composer_empty.py:415 |
 | `window_said` | src/tessellate/ai/composer_empty.py:79 |
 
 ### src/tessellate/ai/composer_epoch.py (4)
@@ -19477,7 +19477,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mid_sentence` | src/tessellate/ai/recognise_windows.py:1304 |
 | `names_a_day` | src/tessellate/ai/recognise_windows.py:1163 |
 | `note_locale` | src/tessellate/ai/recognise_windows.py:996 |
-| `number_word_value` | src/tessellate/ai/recognise_windows.py:1366 |
+| `number_word_value` | src/tessellate/ai/recognise_windows.py:1368 |
 | `proper_days` | src/tessellate/ai/recognise_windows.py:1295 |
 | `says_a_recent_day` | src/tessellate/ai/recognise_windows.py:1179 |
 | `span` | src/tessellate/ai/recognise_windows.py:1098 |
@@ -28053,7 +28053,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22304)
+## Tests (22305)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28701,7 +28701,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1110.py | 7 |
 | tests/test_composer_social_1420.py | 14 |
-| tests/test_composer_stray_gate_1114.py | 7 |
+| tests/test_composer_stray_gate_1114.py | 8 |
 | tests/test_composer_streak_1029.py | 13 |
 | tests/test_composer_stress_1030.py | 15 |
 | tests/test_composer_study_1025.py | 20 |
