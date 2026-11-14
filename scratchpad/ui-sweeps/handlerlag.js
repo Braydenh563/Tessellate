@@ -11,6 +11,7 @@
 const { boot } = require('./lib.js');
 const RATE = Number(process.env.RATE || 4);
 const BAR = Number(process.env.BAR || 100);
+const PAUSE = Number(process.env.PAUSE ?? 500);
 const TABS = ['dashboard', 'notes', 'chat', 'graph', 'library', 'timeline', 'reminders'];
 
 const OBSERVE = () => {
@@ -114,7 +115,7 @@ process.on('unhandledRejection', (e) => { console.log('ERROR', e && e.message); 
   }
   for (const [sec, ev, loaf] of worstBy) note('settings keys', sec, ev, loaf);
   await page.fill('#settings-search', '').catch(() => {});
-  await page.focus('#settings-search').catch(() => {}); await settle(500); await take(); // a person pauses between the click and the first key; the row index warms while idle
+  await page.focus('#settings-search').catch(() => {}); await take(); await settle(PAUSE); // a person pauses between the click and the first key (PAUSE, 500 ms; PAUSE=0 is the first key with no pause); the row index warms while idle
   for (const k of 'dark mode') { await page.keyboard.press(k === ' ' ? 'Space' : k); await settle(80); }
   await settle(600);
   { const { ev, loaf } = await take(); note('settings keys', 'search box typing', ev.filter((e) => /key/.test(e.n)), loaf); }

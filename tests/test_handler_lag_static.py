@@ -39,3 +39,41 @@ def test_filter_settings_defers_pane_build():
     assert "setTimeout(function showFirstSettingsMatch" in body
     tail = body.split("showFirstSettingsMatch", 1)[0]
     assert "showSettingsSection(first)" not in tail
+
+
+def test_label_optics_waits_for_the_first_frame():
+    # Its probe's getBoundingClientRect was the document's first full layout, forced inside
+    # settings.js's eval (75 of 99 ms at 4x CPU); after the first frame that layout is done.
+    src = read("settings.js")
+    body = src.split("function measureLabelOptics(", 1)[1].split("\n}\n", 1)[0]
+    assert "if (!labelOptics.booted) return;" in body
+    assert not re.search(r"^measureLabelOptics\(\);", src, re.M), "a bare boot call forces layout mid-parse"
+    assert "afterFrames(() => setTimeout(function labelOpticsFirst()" in src
+
+
+def test_first_clock_paint_is_its_own_task():
+    # The page's first Intl call is about 50 ms of ICU set-up at 4x CPU; in shell-reminders.js's
+    # eval it made one 94 ms task of the two.
+    src = read("shell-reminders.js")
+    assert not re.search(r"^(startClockTicker|tickClocks)\(\);", src, re.M)
+    assert "setTimeout(function firstClockPaint()" in src
+
+
+def test_atlas_looks_build_on_first_read():
+    # Both looks built at eval were 52 of atlas.js's 86 ms eval at 4x CPU.
+    src = read("atlas.js")
+    build = src.split("function atlasBuild() {", 1)[1].split("\n}\n", 1)[0]
+    assert "Object.values(ATLAS_LOOKS)" not in build
+    assert "function atlasBuildLook(spec)" in src
+    assert "Object.defineProperty(ATLAS_LOOKS, name" in src
+    assert "function atlasWarmLook()" in src
+
+
+def test_dashboard_render_yields_between_its_parts():
+    # Greeting, menus and the widget grid in one task were 74 ms of a 119 ms boot microtask at 4x.
+    src = read("dashboard.js")
+    body = src.split("async function renderDashboard(", 1)[1].split("\n}\n", 1)[0]
+    assert body.count("await dashYield();") >= 2
+    assert body.index("renderDashboardGreeting();") < body.index("await dashYield();") < body.index("grid.replaceChildren();")
+    tail = body.split("grid.replaceChildren();", 1)[1].split("for (const name of layout.order)", 1)[0]
+    assert "await " not in tail, "the grid is rebuilt in one go, so two renders cannot interleave cards"
