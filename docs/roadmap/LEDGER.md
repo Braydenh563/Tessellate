@@ -277,7 +277,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-chat-25** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
+- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 

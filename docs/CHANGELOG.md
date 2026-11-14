@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-chat-25); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
+- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
 - Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
