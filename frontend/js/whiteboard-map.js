@@ -1153,7 +1153,7 @@ function wbMapThemeDialog() {
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
   //: One block per group, so a wide window can set them in two columns
-  //: (L-general-57: one column was 1002px in a 900px window and scrolled).
+  //: (L-ui-modernisation-61: one column was 1002px in a 900px window and scrolled).
   return WB_MAP_THEME_GROUPS.map((group) => {
     const block = document.createElement("div");
     block.className = "wb-map-theme-group";

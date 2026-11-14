@@ -139,7 +139,7 @@ const OPEN = {
     const at = await page.evaluate(async () => {
       //: Pressed on the node itself: an undragged popup stands beside its own node (INBOX 1413,
       //: `graphPopupFollowSpot`), so a press at a fixed point away from it measured the distance
-      //: to that point, not to the anchor (L-general-56: 135px).
+      //: to that point, not to the anchor (L-ui-modernisation-60: 135px).
       const s = typeof gcTab !== 'undefined' ? gcTab : null;
       const box = document.getElementById('graph-box').getBoundingClientRect();
       const c = s?.canvas?.getBoundingClientRect();

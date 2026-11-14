@@ -1,4 +1,4 @@
-"""Source text: the map theme dialog fits a 900px window (L-general-57); its height is measured in the app
+"""Source text: the map theme dialog fits a 900px window (L-ui-modernisation-61); its height is measured in the app
 (scratchpad map sweeps), and this pins the CSS that keeps it there."""
 
 from pathlib import Path
@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_groups_are_blocks_set_in_two_columns_when_wide():
-    """Source text: L-general-57, maptheme.js: the dialog's one column was
+    """Source text: L-ui-modernisation-61, maptheme.js: the dialog's one column was
     1002px tall in a 900px window and scrolled. Each group is now a block, and
     from 1100px the four blocks sit in two columns (669px measured)."""
     js = (ROOT / "frontend/js/whiteboard-map.js").read_text(encoding="utf-8")

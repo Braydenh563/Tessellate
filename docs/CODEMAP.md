@@ -29743,13 +29743,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_map_summary.py | 5 |
 | tests/test_map_template_focus_1031.py | 4 |
 | tests/test_map_templates_k15.py | 6 |
-| tests/test_map_theme_fit_l_general_57.py | 1 |
+| tests/test_map_theme_fit_l_ui_61.py | 1 |
 | tests/test_map_theme_palette.py | 13 |
 | tests/test_map_to_document.py | 3 |
 | tests/test_map_topics.py | 3 |
 | tests/test_map_two_roots_1112.py | 4 |
 | tests/test_map_undo_lint.py | 2 |
-| tests/test_map_view_menu_fold_l_general_57.py | 1 |
+| tests/test_map_view_menu_fold_l_ui_61.py | 1 |
 | tests/test_map_xmind_export.py | 2 |
 | tests/test_maps_are_not_notes.py | 10 |
 | tests/test_margin_note_1110.py | 3 |
@@ -30136,7 +30136,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_plain_errors.py | 3 |
 | tests/test_plan_hygiene.py | 8 |
 | tests/test_plural_helper.py | 3 |
-| tests/test_pointer_menu_anchor_l_general_56.py | 1 |
+| tests/test_pointer_menu_anchor_l_ui_60.py | 1 |
 | tests/test_polish5_1031.py | 5 |
 | tests/test_polish_1028b.py | 4 |
 | tests/test_popup_agent_1778.py | 3 |
@@ -31605,20 +31605,20 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:883 |
 | documents | docs/roadmap/LEDGER.md:333 |
 | documents | docs/roadmap/LEDGER.md:823 |
-| general | docs/roadmap/LEDGER.md:601 |
+| general | docs/roadmap/LEDGER.md:604 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:787 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:895 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:349 |
 | mindmap | docs/roadmap/LEDGER.md:835 |
-| timeline | docs/roadmap/LEDGER.md:363 |
+| timeline | docs/roadmap/LEDGER.md:366 |
 | timeline | docs/roadmap/LEDGER.md:859 |
 | ui-modernisation | docs/roadmap/LEDGER.md:353 |
 | ui-modernisation | docs/roadmap/LEDGER.md:847 |
 | whiteboard | docs/roadmap/LEDGER.md:286 |
 | whiteboard | docs/roadmap/LEDGER.md:811 |
-| world-class | docs/roadmap/LEDGER.md:365 |
+| world-class | docs/roadmap/LEDGER.md:368 |
 | world-class | docs/roadmap/LEDGER.md:871 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |

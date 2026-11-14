@@ -4359,7 +4359,7 @@ body.printing-doc #doc-preview p,
   flex-direction: column;
   gap: var(--space-2);
 }
-/* The whole map's four groups, each a block (L-general-57): two columns
+/* The whole map's four groups, each a block (L-ui-modernisation-61): two columns
    once the window is wide, so the dialog fits a 900px window unscrolled. */
 .wb-map-theme-group {
   display: flex;

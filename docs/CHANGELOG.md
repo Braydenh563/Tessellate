@@ -7,14 +7,15 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- LEDGER: the open rows L-general-56, 57 and 67 are now L-ui-modernisation-60, 61 and 62, because general ids clashed across parallel branches.
 - Home: the first-steps card shares the widget column's edge (3px off before); the density census gains alignment and near-miss columns (L-ui-modernisation-53).
 - Settings: the long Tools and Appearance panes measured against their index and filter (settingslong.js); they stay one pane each (L-ui-modernisation-52).
-- Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-general-67.
+- Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-ui-modernisation-62.
 - Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).
 - Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-general-47, 49 and 53 closed.
 - Settings: the "let that app add and change notes" switch and Skip silence show what the notebook holds after a reload (L-general-54).
-- Right-click menus open 4px from the pointer, not 14px: the 1px anchor is a block at the host corner (L-general-56).
+- Right-click menus open 4px from the pointer, not 14px: the 1px anchor is a block at the host corner (L-ui-modernisation-60).
 - The map's View menu is 427px, not 587px: numbering, dimming, folding, the filter, the Gantt chart and the map's make-up sit behind one Branches and reports row.
 - The map theme dialog fits a 900px window: its four groups sit in two columns from 1100px (1002px to 669px tall).
 - Windows High Contrast: a focused search field, the chat box and a Library card title show a ring again (it was a shadow, which that mode drops).
@@ -119,8 +120,8 @@ below). Versioning is `0.x` while the app stabilises.
 - OCR: RapidOCR now reads light-on-dark pages inverted and small text scaled up, as Tesseract already did (L703).
 - Ledger: hardware and release-gate rows (L-general-19, 23, 29) moved to BACKLOG's device checks; bookkeeping rows L-general-15 and 16 closed with their evidence.
 - Library reader: on a phone it is the whole screen again (the lazy .ocr-card size no longer beats the page variant), and libreadingfoot opens the first file that has a reading (L-general-50).
-- Sweeps: maplinkcue (a loose topic placed inside a 1440px window), maplayouts (the centre topic is not measured for a branch bar), mapmidpan and tour (the welcome is shown by showOnboarding, Help's rows and Start button) follow the current screens; maplinkcue, maplayouts and mapmidpan join the CI list, now 61 steady sweeps (L-general-49: mapviewmenu, maptheme, mapperf moved to L-general-57).
-- Sweeps: uitrio, asktab, noteobject, canvasconventions follow the current screens, errors.js runs as two CI entries (1440,1024 and 820,390) under 180s, and errors, asktab, noteobject, canvasconventions join the CI list, now 58 steady sweeps; a board opened from a link or chip on the first Library visit of a session is no longer covered by the boards list (L-general-53: tour, toursteps, anchorsmotion, fontmatrix moved to L-general-56).
+- Sweeps: maplinkcue (a loose topic placed inside a 1440px window), maplayouts (the centre topic is not measured for a branch bar), mapmidpan and tour (the welcome is shown by showOnboarding, Help's rows and Start button) follow the current screens; maplinkcue, maplayouts and mapmidpan join the CI list, now 61 steady sweeps (L-general-49: mapviewmenu, maptheme, mapperf moved to L-ui-modernisation-61).
+- Sweeps: uitrio, asktab, noteobject, canvasconventions follow the current screens, errors.js runs as two CI entries (1440,1024 and 820,390) under 180s, and errors, asktab, noteobject, canvasconventions join the CI list, now 58 steady sweeps; a board opened from a link or chip on the first Library visit of a session is no longer covered by the boards list (L-general-53: tour, toursteps, anchorsmotion, fontmatrix moved to L-ui-modernisation-60).
 - Touch: the top bar's icon buttons, the privacy chip, the capture bar's icons, the document dock's back button and New split, and the map's resize grip and buttons reach the 44px floor under a finger (iconfloor.js: 70 under it to 0); profilelook and iconfloor join the CI list, now 53 steady sweeps (L-general-52: perchall moved to L-general-55).
 - Sweeps: doctoolbarstate follows the strip without heading and quote buttons (Turn into owns them) and joins the CI list, now 51 steady sweeps (L-general-51).
 - MCP: VS Code uses the tool server directly through .vscode/mcp.json (docs/MCP.md, Settings help); grouping by hand, many categories, on-disk compression and an in-app browser are decided against or parked (L-general-36 to 38, 41, 42).

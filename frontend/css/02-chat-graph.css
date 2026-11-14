@@ -2474,7 +2474,7 @@ kbd {
 /* Two classes deep on purpose: `.small.icon-only` squares every icon button
    in the app at (0,2,0), and a single class loses to it, which measured as a
    menu opening 28px across and 32px below the pointer instead of at it. */
-/* The wrap and the pixel are blocks at the host's corner (L-general-56): an
+/* The wrap and the pixel are blocks at the host's corner (L-ui-modernisation-60): an
    inline-block wrap set the pixel on its line's baseline, 9px under the
    pointer, and a stronger button rule kept 4px of padding each side, so the
    menu opened 14px from the pointer (anchorsmotion.js, 1440x600). */

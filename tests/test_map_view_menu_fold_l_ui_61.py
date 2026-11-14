@@ -1,4 +1,4 @@
-"""Source text: the map's View menu keeps under its 450px ceiling (L-general-57); the height is measured in
+"""Source text: the map's View menu keeps under its 450px ceiling (L-ui-modernisation-61); the height is measured in
 the app, and this pins the folded submenu row that keeps it there."""
 
 from pathlib import Path
@@ -8,7 +8,7 @@ HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 
 
 def test_the_branch_rows_sit_behind_one_submenu_row():
-    """Source text: L-general-57, mapviewmenu.js: the map's View menu was 587px
+    """Source text: L-ui-modernisation-61, mapviewmenu.js: the map's View menu was 587px
     and 25 rows against a 450px ceiling. The seven branch and report rows fold
     into one `data-wb-submenu` row (the markup-menu fold recipe), 427px measured."""
     start = HTML.index('data-wb-submenu="ph:git-branch Branches and reports"')
