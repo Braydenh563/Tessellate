@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11363, test files 2967, tests 23154, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11364, test files 2967, tests 23154, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -14211,7 +14211,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11363)
+## Backend modules (11364)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14690,33 +14690,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `fingerprint` | src/tessellate/ai/bench.py:268 |
 | `run` | src/tessellate/ai/bench.py:363 |
 
-### src/tessellate/ai/board_acts.py (23)
+### src/tessellate/ai/board_acts.py (24)
 
 | Name | File:line |
 |---|---|
-| `_aimed` | src/tessellate/ai/board_acts.py:69 |
-| `_board_items` | src/tessellate/ai/board_acts.py:123 |
-| `_data` | src/tessellate/ai/board_acts.py:146 |
-| `_first_line` | src/tessellate/ai/board_acts.py:154 |
-| `_kind` | src/tessellate/ai/board_acts.py:104 |
-| `_map_nodes` | src/tessellate/ai/board_acts.py:159 |
-| `_name` | src/tessellate/ai/board_acts.py:52 |
-| `_node` | src/tessellate/ai/board_acts.py:73 |
-| `_pick` | src/tessellate/ai/board_acts.py:112 |
-| `_plan_diagram` | src/tessellate/ai/board_acts.py:246 |
-| `_plan_item` | src/tessellate/ai/board_acts.py:193 |
-| `_plan_library` | src/tessellate/ai/board_acts.py:182 |
-| `_plan_link` | src/tessellate/ai/board_acts.py:214 |
-| `_plan_map` | src/tessellate/ai/board_acts.py:227 |
-| `_say` | src/tessellate/ai/board_acts.py:178 |
-| `_shaped` | src/tessellate/ai/board_acts.py:56 |
-| `_step` | src/tessellate/ai/board_acts.py:174 |
-| `_titled` | src/tessellate/ai/board_acts.py:60 |
-| `_tree` | src/tessellate/ai/board_acts.py:64 |
-| `plan` | src/tessellate/ai/board_acts.py:251 |
-| `read` | src/tessellate/ai/board_acts.py:95 |
-| `run_step` | src/tessellate/ai/board_acts.py:293 |
-| `undo_for` | src/tessellate/ai/board_acts.py:277 |
+| `_aimed` | src/tessellate/ai/board_acts.py:77 |
+| `_board_items` | src/tessellate/ai/board_acts.py:131 |
+| `_data` | src/tessellate/ai/board_acts.py:154 |
+| `_first_line` | src/tessellate/ai/board_acts.py:162 |
+| `_kind` | src/tessellate/ai/board_acts.py:112 |
+| `_map_nodes` | src/tessellate/ai/board_acts.py:167 |
+| `_name` | src/tessellate/ai/board_acts.py:60 |
+| `_node` | src/tessellate/ai/board_acts.py:81 |
+| `_pick` | src/tessellate/ai/board_acts.py:120 |
+| `_plan_diagram` | src/tessellate/ai/board_acts.py:254 |
+| `_plan_item` | src/tessellate/ai/board_acts.py:201 |
+| `_plan_library` | src/tessellate/ai/board_acts.py:190 |
+| `_plan_link` | src/tessellate/ai/board_acts.py:222 |
+| `_plan_map` | src/tessellate/ai/board_acts.py:235 |
+| `_say` | src/tessellate/ai/board_acts.py:186 |
+| `_shaped` | src/tessellate/ai/board_acts.py:64 |
+| `_step` | src/tessellate/ai/board_acts.py:182 |
+| `_titled` | src/tessellate/ai/board_acts.py:68 |
+| `_tree` | src/tessellate/ai/board_acts.py:72 |
+| `plan` | src/tessellate/ai/board_acts.py:259 |
+| `read` | src/tessellate/ai/board_acts.py:103 |
+| `run_step` | src/tessellate/ai/board_acts.py:301 |
+| `undo_for` | src/tessellate/ai/board_acts.py:285 |
+| `words` | src/tessellate/ai/board_acts.py:23 |
 
 ### src/tessellate/ai/budget.py (6)
 
@@ -17319,22 +17320,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Option` | src/tessellate/ai/composer_suggest.py:103 |
-| `_app_tool` | src/tessellate/ai/composer_suggest.py:370 |
-| `_bare_kind` | src/tessellate/ai/composer_suggest.py:189 |
+| `_app_tool` | src/tessellate/ai/composer_suggest.py:372 |
+| `_bare_kind` | src/tessellate/ai/composer_suggest.py:191 |
 | `_catalogue` | src/tessellate/ai/composer_suggest.py:129 |
-| `_cosine` | src/tessellate/ai/composer_suggest.py:166 |
-| `_pick` | src/tessellate/ai/composer_suggest.py:287 |
+| `_cosine` | src/tessellate/ai/composer_suggest.py:168 |
+| `_pick` | src/tessellate/ai/composer_suggest.py:289 |
 | `_stem` | src/tessellate/ai/composer_suggest.py:110 |
 | `_tokens` | src/tessellate/ai/composer_suggest.py:117 |
-| `_unfilled` | src/tessellate/ai/composer_suggest.py:222 |
-| `_which_reply` | src/tessellate/ai/composer_suggest.py:330 |
+| `_unfilled` | src/tessellate/ai/composer_suggest.py:224 |
+| `_which_reply` | src/tessellate/ai/composer_suggest.py:332 |
 | `closest` | src/tessellate/ai/composer_suggest.py:139 |
-| `fill_slot` | src/tessellate/ai/composer_suggest.py:263 |
-| `open_ended` | src/tessellate/ai/composer_suggest.py:175 |
-| `pending_kind` | src/tessellate/ai/composer_suggest.py:252 |
-| `reference` | src/tessellate/ai/composer_suggest.py:241 |
-| `reply` | src/tessellate/ai/composer_suggest.py:344 |
-| `unknown_action` | src/tessellate/ai/composer_suggest.py:397 |
+| `fill_slot` | src/tessellate/ai/composer_suggest.py:265 |
+| `open_ended` | src/tessellate/ai/composer_suggest.py:177 |
+| `pending_kind` | src/tessellate/ai/composer_suggest.py:254 |
+| `reference` | src/tessellate/ai/composer_suggest.py:243 |
+| `reply` | src/tessellate/ai/composer_suggest.py:346 |
+| `unknown_action` | src/tessellate/ai/composer_suggest.py:399 |
 
 ### src/tessellate/ai/composer_sum.py (16)
 

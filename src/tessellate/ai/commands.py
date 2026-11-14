@@ -1327,14 +1327,14 @@ def _slipped(tidy: str, now: datetime, locale: str | None) -> dict | None:
         return read(guided, now, locale)
     #: A real word swapped for another ("oven" for "open", "last" for "list") is kept only when it makes one of the
     #: parity acts' own sentences; "oven timer" and "my last three notes" are questions, not the Clock or a list.
-    real = question_noise.guided(tidy, takes, real_to=parity_acts.words())
+    real = question_noise.guided(tidy, takes, real_to=parity_acts.words() | board_acts.words())
     parsed = read(real, now, locale) if real else None
-    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | {"untag"} else None
+    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | board_acts.INTENTS | {"untag"} else None
 
 #: Acts named by a noun the broad acts would swallow on a slip: "delete the
 #: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";
 #: "find noes similar to" is similar notes, "make a mid map" a mind map.
-_NARROW = {"delete": {"delete_skill", "delete_document"}, "find": {"similar"}, "move": {"reschedule"}, "tag": {"tag_many"}, None: {"make_map", "make_board", "similar", "board_card", "set_theme"}}
+_NARROW = {"delete": {"delete_skill", "delete_document"}, "link": {"board_link"}, "find": {"similar"}, "move": {"reschedule"}, "tag": {"tag_many"}, None: {"make_map", "make_board", "similar", "board_card", "set_theme"}}
 
 
 def _narrower(tidy: str, found: dict | None, now: datetime, locale: str | None) -> dict | None:
