@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22953, plan headings 690, app scripts 29, boot scripts 38, script files 372.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22954, plan headings 690, app scripts 29, boot scripts 38, script files 372.
 
 ## Frontend functions (8980)
 
@@ -14674,8 +14674,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/wb_items.py:82 |
 | `/note-types` | GET | `list_note_types` | src/tessellate/api/routes_properties.py:133 |
 | `/note-types` | POST | `create_note_type` | src/tessellate/api/routes_properties.py:145 |
-| `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:189 |
-| `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:167 |
+| `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:193 |
+| `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:171 |
 | `/objects` | POST | `create_object` | src/tessellate/api/wb_items.py:242 |
 | `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/wb_items.py:404 |
 | `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/wb_items.py:287 |
@@ -23984,14 +23984,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `NoteTypeIn` | src/tessellate/api/routes_properties.py:101 |
 | `NoteTypePatch` | src/tessellate/api/routes_properties.py:112 |
 | `PropertiesIn` | src/tessellate/api/routes_properties.py:55 |
-| `_existing_type` | src/tessellate/api/routes_properties.py:160 |
+| `_existing_type` | src/tessellate/api/routes_properties.py:164 |
 | `_fields` | src/tessellate/api/routes_properties.py:119 |
 | `_type_row` | src/tessellate/api/routes_properties.py:35 |
 | `create_note_type` | src/tessellate/api/routes_properties.py:146 |
-| `delete_note_type` | src/tessellate/api/routes_properties.py:190 |
+| `delete_note_type` | src/tessellate/api/routes_properties.py:194 |
 | `entry_properties` | src/tessellate/api/routes_properties.py:46 |
 | `list_note_types` | src/tessellate/api/routes_properties.py:134 |
-| `patch_note_type` | src/tessellate/api/routes_properties.py:168 |
+| `patch_note_type` | src/tessellate/api/routes_properties.py:172 |
 | `put_properties` | src/tessellate/api/routes_properties.py:62 |
 
 ### src/tessellate/api/routes_property_table.py (1)
@@ -29100,7 +29100,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22953)
+## Tests (22954)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30880,7 +30880,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_note_flow_0432.py | 28 |
 | tests/test_note_form_property_block.py | 3 |
 | tests/test_note_headings_s74.py | 3 |
-| tests/test_note_kinds_d5.py | 7 |
+| tests/test_note_kinds_d5.py | 8 |
 | tests/test_note_language_1490.py | 12 |
 | tests/test_note_link_chips.py | 2 |
 | tests/test_note_lock_toggle_1110.py | 3 |
@@ -32621,22 +32621,22 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | chat | docs/roadmap/LEDGER.md:24 |
 | chat | docs/roadmap/LEDGER.md:877 |
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:961 |
-| documents | docs/roadmap/LEDGER.md:285 |
+| documents | docs/roadmap/LEDGER.md:286 |
 | documents | docs/roadmap/LEDGER.md:901 |
 | general | docs/roadmap/LEDGER.md:655 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:865 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:973 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:297 |
+| mindmap | docs/roadmap/LEDGER.md:298 |
 | mindmap | docs/roadmap/LEDGER.md:913 |
-| timeline | docs/roadmap/LEDGER.md:417 |
+| timeline | docs/roadmap/LEDGER.md:418 |
 | timeline | docs/roadmap/LEDGER.md:937 |
-| ui-modernisation | docs/roadmap/LEDGER.md:300 |
+| ui-modernisation | docs/roadmap/LEDGER.md:301 |
 | ui-modernisation | docs/roadmap/LEDGER.md:925 |
-| whiteboard | docs/roadmap/LEDGER.md:281 |
+| whiteboard | docs/roadmap/LEDGER.md:282 |
 | whiteboard | docs/roadmap/LEDGER.md:889 |
-| world-class | docs/roadmap/LEDGER.md:419 |
+| world-class | docs/roadmap/LEDGER.md:420 |
 | world-class | docs/roadmap/LEDGER.md:949 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |

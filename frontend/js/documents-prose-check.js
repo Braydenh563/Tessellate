@@ -118,7 +118,7 @@
   /\{\+\+|\+\+\}/g,
   /\{>>[^<\n]*<<\}/g, // a change's stamp or a reviewer's comment: names and dates are not prose
   //: **Things that are not prose** (INBOX 1357, K11; measured on
-  //: `tests/grammar_fixture_1026.json`): an email address, a file path and a
+  //: `tests/fixtures/grammar/grammar_fixture_1026.json`): an email address, a file path and a
   //: file name, and a unit written after a number. Harper read `/etc/nginx/
     //: conf.d` as "config" and `uni` as a negative prefix, and called "min" and
     //: "mL" words to fix; the dictionary read the host of an address.
