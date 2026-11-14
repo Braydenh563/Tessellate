@@ -104,11 +104,7 @@ def test_what_the_pass_cannot_lower_is_named_with_its_line():
         "computed": ["lower", "class A { [k]() {} }"],
         "callspread": ["lower", "f()(...b);"],
         "default": ["lower", "function f(a = g()) {}"],
-        "asyncgen": ["lower", "async function* f() { yield 1; }"],
-        "forawait": ["lower", "async function f(xs) {\n  for await (const x of xs) {}\n}"],
-        "topawait": ["lower", "\nawait 1;"],
         "plainawait": ["lower", "async function f() { return () => await 1; }"],
-        "args": ["lower", "async function f() { return arguments.length; }"],
         "optional": ["lower", "var a = b?.c;"],
         "yieldin": ["lower", "function g() { var x = yield 1; }"],
         "arrowpattern": ["lower", "var h = ([a] = g()) => a;"],
@@ -122,11 +118,7 @@ def test_what_the_pass_cannot_lower_is_named_with_its_line():
     assert "computed or quoted names" in out["computed"]["error"]
     assert "spread in a call to something other" in out["callspread"]["error"]
     assert "default parameter values other than a plain value" in out["default"]["error"]
-    assert "async generators" in out["asyncgen"]["error"]
-    assert out["forawait"]["line"] == 2 and "for await" in out["forawait"]["error"]
-    assert out["topawait"]["line"] == 2 and "top level" in out["topawait"]["error"]
     assert "await outside an async function" in out["plainawait"]["error"]
-    assert "arguments inside an async function" in out["args"]["error"]
     assert "optional chaining" in out["optional"]["error"]
     assert "yield outside a generator" in out["yieldin"]["error"]
     assert "default parameter values other than a plain value" in out["arrowpattern"]["error"]
@@ -346,6 +338,41 @@ _CONSTRUCTS = {
         "Promise.any([Promise.reject(1), wait(3, 'any')]).then((v) => log(v));\n"
         "new Promise((_, rej) => rej('x')).catch((e) => log('c', e)).finally(() => log('f'));\n"
     ),
+    "genfinally": (
+        "function* g() { try { yield 1; yield 2; } finally { console.log('cleanup'); } }\n"
+        "const a = g();\na.next();\nconsole.log(JSON.stringify(a.return(9)), JSON.stringify(a.next()));\n"
+        "for (const v of g()) {\n  console.log(v);\n  break;\n}\n"
+        "function* h() { try { yield 1; } finally { yield 'f'; } }\n"
+        "const b = h();\nb.next();\nconsole.log(JSON.stringify([b.return(5), b.next(), b.next()]));\n"
+        "function* t() { try { yield 1; } finally { console.log('t done'); } }\n"
+        "function use() { for (const v of t()) { return v; } }\nconsole.log(use());\n"
+        "try { for (const v of t()) { throw new Error('x'); } } catch (e) { console.log(e.message); }\n"
+        "outer: for (const i of [1, 2]) { for (const v of t()) { continue outer; } }\n"
+        "for (const v of t()) console.log('plain', v);\n"
+        "const unstarted = g();\nconsole.log(JSON.stringify(unstarted.return(1)));\n"
+    ),
+    "asyncgen": (
+        "async function* ag(n) { for (let i = 0; i < n; i++) { await null; yield i; } return 'done'; }\n"
+        "async function* fin() { try { yield 1; yield 2; } finally { console.log('afin'); } }\n"
+        "(async () => {\n  const out = [];\n  for await (const v of ag(3)) out.push(v);\n  console.log(out.join(','));\n"
+        "  for await (const v of [Promise.resolve('a'), 'b']) console.log(v);\n"
+        "  for await (const v of ag(5)) { if (v === 1) break; }\n"
+        "  const it = ag(2);\n  console.log(JSON.stringify([await it.next(), await it.next(), await it.next(), await it.next()]));\n"
+        "  for await (const v of fin()) { break; }\n"
+        "  const o = { async *m() { yield 'm'; } };\n  class C { async *s() { yield 's'; } }\n"
+        "  for await (const v of o.m()) console.log(v);\n  for await (const v of new C().s()) console.log(v);\n"
+        "  try { for await (const v of (async function* () { yield 1; throw new Error('ag boom'); })()) console.log(v); } catch (e) { console.log(e.message); }\n"
+        "  console.log('end');\n})();\n"
+        "console.log('sync end');\n"
+    ),
+    "arguments": (
+        "function* g() { yield arguments.length; yield arguments[1]; }\nconsole.log([...g(1, 2, 3)].join());\n"
+        "async function f() { await 1; return arguments.length + ':' + arguments[0]; }\nf('a', 'b').then(console.log);\n"
+        "function outer() { return (async () => { await 0; return arguments[0]; })(); }\nouter('o').then(console.log);\n"
+        "const ob = { async m() { await 0; return arguments.length; }, *g() { yield arguments[0]; } };\n"
+        "ob.m(1, 2).then(console.log);\nconsole.log(ob.g('z').next().value);\n"
+        "function plain() { return arguments.length; }\nconsole.log(plain(1, 2));\n"
+    ),
     "tagged": (
         "function tag(s, ...v) { return s.join('|') + '#' + v.join(',') + '#' + s.raw.join('|'); }\n"
         "const n = 3;\n"
@@ -459,3 +486,46 @@ def test_a_breakpoint_in_a_test_body_stops_there_with_its_locals_and_the_harness
     assert all(f["name"] not in ("run", "series", "call") for f in stops[0]["stack"]), stops[0]["stack"]
     #: The harness's own names are not the program's variables.
     assert not any(v["name"] in ("describe", "expect", "it") for v in stops[0]["locals"] + stops[0].get("globals", []))
+
+
+def test_top_level_await_and_for_await_step_to_what_node_prints_as_a_module():
+    src = (
+        "const wait = (ms, v) => new Promise((res) => setTimeout(() => res(v), ms));\n"
+        "console.log('start');\n"
+        "const x = await wait(2, 3);\nconsole.log('x', x);\n"
+        "function twice(n) { return n * 2; }\n"
+        "for await (const v of [wait(1, 'a'), 'b']) console.log(v, twice(x));\n"
+        "console.log('end', typeof twice);\n"
+    )
+    lowered = _node({"m": ["lower", src]})["m"]
+    assert "error" not in lowered and lowered["code"].count("\n") >= src.count("\n"), lowered
+    out = _node({"s": ["session", src, [], [], []]})["s"]
+    stepped = [m["text"] for m in out if m["t"] == "log"]
+    real = subprocess.run(["node", "--input-type=module", "-e", src], capture_output=True, text=True, timeout=30)
+    assert real.returncode == 0, real.stderr
+    assert "\n".join(stepped) == real.stdout.rstrip("\n"), (stepped, real.stdout)
+    assert out[-1] == {"t": "done", "ended": "done"}
+
+
+def test_a_breakpoint_after_a_top_level_await_stops_on_its_line_in_the_top_level_frame():
+    src = "const p = Promise.resolve(4);\nconst x = await p;\nconst y = x + 1;\nconsole.log(y);\n"
+    out = _node({"s": ["session", src, [{"line": 3}], [], [{"cmd": "continue"}]]})["s"]
+    stops = [m for m in out if m["t"] == "stop"]
+    assert [s["line"] for s in stops] == [3]
+    assert [f["name"] for f in stops[0]["stack"]] == ["(top level)"], stops[0]["stack"]
+    assert {"name": "x", "value": "4", "type": "number"} in stops[0]["locals"]
+    assert [m["text"] for m in out if m["t"] == "log"] == ["5"]
+
+
+def test_a_resumed_generator_or_async_frame_is_named_after_its_function():
+    src = (
+        "function* gen() {\n  yield 1;\n  const a = 2;\n  yield a;\n}\n"
+        "async function work() {\n  await 0;\n  const b = 1;\n  return b;\n}\n"
+        "class K { async run() {\n  await 0;\n  return 1;\n} }\n"
+        "for (const v of gen()) console.log(v);\nwork();\nnew K().run();\n"
+    )
+    out = _node({"s": ["session", src, [{"line": 3}, {"line": 8}, {"line": 13}], [], [{"cmd": "continue"}] * 3]})["s"]
+    stops = [m for m in out if m["t"] == "stop"]
+    assert [s["line"] for s in stops] == [3, 8, 13]
+    assert [s["stack"][0]["name"] for s in stops] == ["gen", "work", "run"], [s["stack"] for s in stops]
+    assert all(f["name"] != "(anonymous)" for s in stops for f in s["stack"]), [s["stack"] for s in stops]

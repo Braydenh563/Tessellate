@@ -28,8 +28,13 @@
 // program steps the same though the names are not private while debugging.
 // Also lowered (L-documents-36, 38): generators, `async`/`await` (a body run as a
 // coroutine by the worker), tagged templates, `new X(...xs)` and an arrow
-// whose first parameter is a pattern with a default. Async generators,
-// `for await`, top-level await and `#x in o` stay named. TypeScript reaches here
+// whose first parameter is a pattern with a default. Also lowered
+// (L-documents-99): async generators and `for await` (an async generator's
+// awaits are tagged `__aw` for its driver), top-level await (the file becomes
+// the body of a coroutine, shown as the top level), `arguments` inside such
+// bodies (copied to `__arguments` first), a `finally` run when a generator is
+// returned or a `for...of` loop leaves early (a `try`/`finally` round the loop),
+// and a resumed frame named for its function. `#x in o` stays named. TypeScript reaches here
 // after sucrase has taken its types.
 
 //: The constructs the pass does not lower, by the parse tree's node name,
@@ -466,15 +471,44 @@
     if (!tokens.length) return "";
     const isAsync = tokens.some((c) => c.name === "async");
     const isGen = tokens.some((c) => c.name === "Star");
-    if (isAsync && isGen) ctx.refuse("async generators", node.from);
     for (const t of tokens) runDebugEdit(ctx.edits, t.from, t.to, "", 0);
     const block = kids[kids.length - 1];
-    const helper = isAsync ? "__async" : "__gen";
+    const helper = isAsync && isGen ? "__asyncgen" : isAsync ? "__async" : "__gen";
     if (block.name === "Block") {
       runDebugEdit(ctx.edits, block.from + 1, block.from + 1, ` return ${helper}(this, function () {`, 1);
-      runDebugEdit(ctx.edits, block.to - 1, block.to - 1, " });", 0);
+      runDebugEdit(ctx.edits, block.to - 1, block.to - 1, ` }${runDebugCoName(ctx.source, node)});`, 0);
     }
     return helper;
+  }
+
+  //: What a resumed body's frame is called: the function's own name (a method's,
+  //: or the variable an arrow is assigned to), as the worker's third argument.
+  function runDebugCoName(source, node) {
+    const find = (n) => runDebugKids(n).find((c) => c.name === "VariableDefinition" || c.name === "PropertyDefinition" || c.name === "PrivatePropertyDefinition");
+    const def = find(node) || (node.name === "ArrowFunction" && node.parent?.name === "VariableDeclaration" ? find(node.parent) : null);
+    if (!def) return "";
+    const text = source.slice(def.name === "PrivatePropertyDefinition" ? def.from + 1 : def.from, def.to);
+    return /^[A-Za-z_$][\w$]*$/.test(text) ? `, "${text}"` : "";
+  }
+
+  //: `arguments` in a body that runs as a coroutine is the wrapper's, not the
+  //: function's: the function copies its own to `__arguments` first, and the
+  //: references read that (an arrow has no `arguments` of its own either).
+  function runDebugArguments(ctx, node) {
+    let co = false;
+    let fn = runDebugEnclosing(node);
+    while (fn) {
+      const kids = runDebugKids(fn);
+      co = co || kids.some((c) => c.name === "async" || c.name === "Star");
+      if (fn.name !== "ArrowFunction") break;
+      fn = runDebugEnclosing(fn);
+    }
+    if (!fn || !co) return;
+    runDebugEdit(ctx.edits, node.from, node.to, "__arguments", 0);
+    if (ctx.argsOf.has(fn.from)) return;
+    ctx.argsOf.add(fn.from);
+    const block = runDebugKids(fn).slice(-1)[0];
+    runDebugEdit(ctx.edits, block.from + 1, block.from + 1, " var __arguments = arguments;", 0);
   }
 
   //: A class as a constructor function, its methods on the prototype:
@@ -635,7 +669,7 @@
     const edits = [];
     //: What the pass shares with its helpers: patterns and spreads it lowered,
     //: temporaries, and the line-1 helpers a lowering needs.
-    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], done: new Set(), blanks };
+    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], done: new Set(), argsOf: new Set(), tla: false, blanks };
     let depth = 0;
     let dom = false;
     //: The classes being lowered, innermost last; helpers a lowering needs on
@@ -680,8 +714,9 @@
             runDebugEdit(edits, at, at, text, rank);
           };
           if (name === "AwaitExpression") {
-            if (!tag("async")) refuse(fn ? "await outside an async function" : "await at the top level of a file", ref.from);
-            open(ref.from, "__yield(", depth);
+            if (fn && !tag("async")) refuse("await outside an async function", ref.from);
+            if (!fn) ctx.tla = true;
+            open(ref.from, fn && tag("Star") ? "__aw(" : "__yield(", depth);
             runDebugEdit(edits, ref.from, ref.from + 5, "", 1e6);
             runDebugEdit(edits, ref.to, ref.to, ")", -depth);
           } else {
@@ -699,19 +734,13 @@
                 top = top.parent;
                 up += 1;
               }
-              open(ref.from, star ? "__yieldStar(" : "__yield(", depth - up - 0.5);
+              open(ref.from, star ? (tag("async") ? "__ayieldStar(" : "__yieldStar(") : "__yield(", depth - up - 0.5);
               runDebugEdit(edits, ref.from, star ? star.to : ref.from + 5, "", 1e6);
               runDebugEdit(edits, top.to, top.to, ")", -(depth - up - 0.5));
             }
           }
         }
-        if (name === "VariableName" && text() === "arguments") {
-          const fn = runDebugEnclosing(ref.node);
-          let at = fn;
-          while (at && at.name === "ArrowFunction") at = runDebugEnclosing(at);
-          if (at && runDebugKids(at).some((c) => c.name === "async" || c.name === "Star")) refuse("arguments inside an async function or a generator", ref.from);
-        }
-        if (name === "await" && ref.node.parent?.name === "ForStatement") refuse("for await loops", ref.from);
+        if (name === "VariableName" && text() === "arguments") runDebugArguments(ctx, ref.node);
         if (name === "let" || name === "const") runDebugEdit(edits, ref.from, ref.to, "var", 0);
         if (name === "ParamList" && !ctx.done.has(ref.from)) {
           const pre = runDebugParams(ctx, ref.node);
@@ -811,8 +840,30 @@
             runDebugMark(ctx, pattern);
             pick = `var ${[runDebugHead(ctx, b, `${r}.value`), ...b.list].join(", ")};`;
           }
-          runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __iter(`, 0);
-          runDebugEdit(edits, iterable.to, ref.to, `), ${r}; !(${r} = ${it}.next()).done; )`, 0);
+          //: `for await` waits for each `next()` (an async generator's, or an array's
+          //: values); the wait is the enclosing body's own (`__aw` in an async generator).
+          const awaitKw = runDebugKids(loop).find((c) => c.name === "await");
+          const fn = runDebugEnclosing(loop);
+          const fnKids = fn ? runDebugKids(fn) : [];
+          if (awaitKw && fn && !fnKids.some((c) => c.name === "async")) refuse("for await outside an async function", awaitKw.from);
+          if (awaitKw && !fn) ctx.tla = true;
+          const wait = fnKids.some((c) => c.name === "Star") ? "__aw" : "__yield";
+          const cl = `__cl${loops}`;
+          if (awaitKw) runDebugEdit(edits, awaitKw.from, awaitKw.to, "", 0);
+          //: The iterator is closed when the loop ends early (break, return, a throw,
+          //: a `continue` of an outer loop): a `finally` round the whole statement
+          //: (and its labels), so a generator's own `finally` runs.
+          let outer = loop;
+          while (outer.parent?.name === "LabeledStatement") outer = outer.parent;
+          runDebugEdit(edits, outer.from, outer.from, "try { ", depth);
+          runDebugEdit(edits, outer.to, outer.to, awaitKw ? ` } finally { (${cl} = __aclose(${it}, ${r})) && ${wait}(${cl}); }` : ` } finally { __close(${it}, ${r}); }`, -depth + 0.5);
+          if (awaitKw) {
+            runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __aiter(`, 0);
+            runDebugEdit(edits, iterable.to, ref.to, `), ${r}, ${cl}; !(${r} = null, ${r} = ${wait}(${it}.next())).done; )`, 0);
+          } else {
+            runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __iter(`, 0);
+            runDebugEdit(edits, iterable.to, ref.to, `), ${r}; !(${r} = null, ${r} = ${it}.next()).done; )`, 0);
+          }
           if (body.name === "Block") {
             runDebugEdit(edits, body.from + 1, body.from + 1, ` ${pick}`, 0);
           } else {
@@ -858,6 +909,12 @@
       },
     });
     if (needNc) runDebugEdit(edits, 0, 0, "var __nc; ", -1e9);
+    //: A top-level await makes the file the body of a coroutine (its declarations
+    //: are then the wrapper's own, shown as the top level's).
+    if (ctx.tla) {
+      runDebugEdit(edits, 0, 0, "__tl(this, function () { ", -1e9 + 10);
+      runDebugEdit(edits, source.length, source.length, "\n});", 1e9);
+    }
     if (ctx.assignTemps.length) runDebugEdit(edits, 0, 0, `var ${ctx.assignTemps.join(", ")}; `, -1e9 + 2);
     //: Applied in one pass, front to back. At one place the ranks order them:
     //: an inner construct's closing (most negative) first, then an outer one's,
