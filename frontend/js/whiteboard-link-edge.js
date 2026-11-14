@@ -155,18 +155,28 @@
 
   //: After the delete went through: each of those ends keeps its last point and lets go of the line.
   async function afterDelete(list) {
+    await saveEnds(list, (item) => ({ [`${item.end}Point`]: { x: item.x, y: item.y }, [`${item.end}Edge`]: undefined }));
+  }
+
+  //: Writes each end's change into its connector's data, then saves them in one batch (`wbSaveMany`), so a line with
+  //: many ends hung on it is one request, not one per end.
+  async function saveEnds(list, change) {
+    const rows = [];
     for (const item of list || []) {
       const dep = wbLinkItem("sketch", item.sketchId);
-      if (dep) await wbSaveSketchProps(dep, { [`${item.end}Point`]: { x: item.x, y: item.y }, [`${item.end}Edge`]: undefined });
+      let parsed = null;
+      try { parsed = dep && JSON.parse(dep.data); } catch { parsed = null; }
+      if (!parsed) continue;
+      Object.assign(parsed, change(item));
+      dep.data = JSON.stringify(parsed);
+      rows.push({ kind: "sketch", item: dep });
     }
+    if (rows.length) await wbSaveMany(rows);
   }
 
   //: Undo of the delete: the restored connector has a new id, and the ends that hung on the old one hang on it again.
   async function reattach(list, newId) {
-    for (const item of list || []) {
-      const dep = wbLinkItem("sketch", item.sketchId);
-      if (dep) await wbSaveSketchProps(dep, { [`${item.end}Edge`]: { id: newId, t: item.t } });
-    }
+    await saveEnds(list, (item) => ({ [`${item.end}Edge`]: { id: newId, t: item.t } }));
   }
 
   //: The hover cue while an end is dragged: the connector it would attach to is lit in the accent (a wider stroke under

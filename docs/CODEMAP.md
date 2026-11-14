@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8799, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2812, tests 22672, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8800, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2812, tests 22672, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
-## Frontend functions (8799)
+## Frontend functions (8800)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -9029,26 +9029,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSideState` | frontend/js/whiteboard-library.js:51 |
 | `wbSyncSidebarKind` | frontend/js/whiteboard-library.js:137 |
 
-### frontend/js/whiteboard-link-edge.js (17)
+### frontend/js/whiteboard-link-edge.js (18)
 
 | Name | File:line |
 |---|---|
 | `afterDelete` | frontend/js/whiteboard-link-edge.js:157 |
 | `beforeDelete` | frontend/js/whiteboard-link-edge.js:143 |
 | `clamp01` | frontend/js/whiteboard-link-edge.js:26 |
-| `cue` | frontend/js/whiteboard-link-edge.js:176 |
+| `cue` | frontend/js/whiteboard-link-edge.js:186 |
 | `dependents` | frontend/js/whiteboard-link-edge.js:118 |
 | `edgeOf` | frontend/js/whiteboard-link-edge.js:30 |
 | `follow` | frontend/js/whiteboard-link-edge.js:130 |
 | `hangsOn` | frontend/js/whiteboard-link-edge.js:77 |
 | `hitAt` | frontend/js/whiteboard-link-edge.js:87 |
-| `keptRows` | frontend/js/whiteboard-link-edge.js:215 |
+| `keptRows` | frontend/js/whiteboard-link-edge.js:225 |
 | `lineD` | frontend/js/whiteboard-link-edge.js:37 |
 | `pinned` | frontend/js/whiteboard-link-edge.js:61 |
-| `place` | frontend/js/whiteboard-link-edge.js:249 |
+| `place` | frontend/js/whiteboard-link-edge.js:259 |
 | `pointOn` | frontend/js/whiteboard-link-edge.js:45 |
-| `reattach` | frontend/js/whiteboard-link-edge.js:165 |
+| `reattach` | frontend/js/whiteboard-link-edge.js:178 |
 | `round` | frontend/js/whiteboard-link-edge.js:27 |
+| `saveEnds` | frontend/js/whiteboard-link-edge.js:163 |
 | `zoomK` | frontend/js/whiteboard-link-edge.js:25 |
 
 ### frontend/js/whiteboard-map-more.js (59)

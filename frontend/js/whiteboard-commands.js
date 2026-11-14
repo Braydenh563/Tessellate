@@ -853,7 +853,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:trash", label: "Delete by dropping on the target at the foot (a topic takes its branch)", keys: ["drag"] },
     { icon: "ph:arrows-out-cardinal", label: "Nudge, further", keys: ["arrows", "Shift+arrows"] },
     { icon: "ph:arrows-out-simple", label: "Resize from the top-left corner, 1 px or further", keys: ["Ctrl+arrows", "Ctrl+Shift+arrows"] },
-    { cmd: "edit-data" }, { cmd: "copy-data" }, { cmd: "paste-data" }, { cmd: "copy-size" }, { cmd: "paste-size" }, { cmd: "swap-size" },
+    { cmd: "edit-data" }, { cmd: "copy-data" }, { cmd: "paste-data" }, { cmd: "copy-size" }, { cmd: "paste-size" },
     { cmd: "copy-image" }, { cmd: "copy-svg" }, { cmd: "clear-waypoints" }, { cmd: "turn-90" },
     { cmd: "font-bigger" }, { cmd: "font-smaller" },
     { cmd: "item-link" }, { cmd: "edit-tooltip" }, { cmd: "comment" }, { cmd: "edit-tags" },

@@ -2308,8 +2308,8 @@ MORE_TOPICS.extend([
             "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
             "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
             "an export carries the source words instead. Rich text in a shape: select a drawn shape, open Format, Label, and tick Rich text. "
-            "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, and **bold**, *italic*, `code` and "
-            "[links](https://example.com) show; links open in a new tab and only web, mail and phone addresses work. Labels you "
+            "Its words are then read as markdown, so a dash starts a list, a deeper indent nests it, two stars on each side make "
+            "bold, one star makes italic, a backtick on each side makes code, and [words](address) makes a link; links open in a new tab and only web, mail and phone addresses work. Labels you "
             "have not ticked stay plain. An SVG, PNG or PDF export draws rich words as they look: rows, bullets, bold and italic."
         ),
         "badge": {"label": "Library", "tab": "library"},

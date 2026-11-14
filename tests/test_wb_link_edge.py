@@ -41,6 +41,8 @@ const wbSaveSketchProps = async (sketch, partial) => {
   for (const k of Object.keys(parsed)) if (parsed[k] === undefined) delete parsed[k];
   sketch.data = JSON.stringify(parsed);
 };
+//: The batch save the board uses for several rows (test_board_selection_batches); the row's data is already set.
+const wbSaveMany = async (rows) => rows.length;
 const d3 = { zoomTransform: () => ({ k: 1 }) };
 var document = { getElementById: () => ({}) };
 const add = (id, data) => sketches.push({ id, data: JSON.stringify({ type: 'link-straight', ...data }) });

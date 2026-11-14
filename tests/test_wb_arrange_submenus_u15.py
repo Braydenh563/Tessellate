@@ -30,7 +30,8 @@ def test_arrange_is_six_named_submenus_holding_every_row() -> None:
     block = _arrange()
     sections = re.findall(r'<div class="wb-menu-section" data-wb-submenu="ph:([a-z-]+) ([^"]+)"', block)
     assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Layout", "Tidy and connect", "Group and lock"]
-    assert len(re.findall(r'data-wb-cmd="', block)) == 34
+    #: 35 since L-whiteboard-48 added Rack to the Layout submenu (a new row, so the count's intent moved).
+    assert len(re.findall(r'data-wb-cmd="', block)) == 35
     assert "wb-panel-group-label" not in block, "the trigger names the group; a label over it says it twice"
 
 
