@@ -110,6 +110,8 @@
     const parts = stats.composition || {};
     $("chat-context-pop-total").textContent = `${compactTokens(used)} of ${compactTokens(window)} tokens (${pct}%)`;
     $("chat-context-pop-fill").style.width = `${pct}%`;
+    //: The window's reason; older turns keep the static sentence (L-chat-179).
+    if (stats.context_reason) $("chat-context-pop-why").textContent = stats.context_reason;
     $("chat-context-pop-rows").textContent = [["notes", "Your notes and the question"], ["history", "Earlier turns"], ["tool_schemas", "Tools"], ["system", "Instructions"]]
       .filter(([key]) => parts[key])
       .map(([key, label]) => `${label}: about ${compactTokens(parts[key])}`)

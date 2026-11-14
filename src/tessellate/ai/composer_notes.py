@@ -189,8 +189,13 @@ def _item(note: dict, wanted: list[str]) -> str:
     return f"- {_day(_made(note))}, [{title}](#/notes/{note['id']}){body}"
 
 
+def _recent_text(ctx: Ctx) -> str:
+    #: A window follow-up ("what about last month") is read as the question it restates, not as the typed words (L-chat-251).
+    return " ".join(((ctx.question if ctx.follow_kind == "window" else ctx.asked or ctx.question) or "").split())
+
+
 def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
-    text = " ".join((ctx.asked or ctx.question or "").split())
+    text = _recent_text(ctx)
     found = _WROTE.match(text) or _NOTES_ON.match(text)
     any_topic = None if found else _WROTE_ANY.match(text)
     window = _window((found or any_topic).group("t"), ctx.now.date()) if (found or any_topic) and len(text) <= 160 else None
