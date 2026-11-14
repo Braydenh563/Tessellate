@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A floating desk companion no longer gets stuck stepping back and forth beside its goal at the end of a fast glide (L-ui-modernisation-140)
 - The desk companion's own naps end after a few minutes with a stretch, so it no longer sleeps 40 to 68% of an hour while the person is about (L-ui-modernisation-104)
 - The desk companion looks up, or settles with its eyes shut, every 20 to 40 seconds while it reads, writes or knits, instead of holding one picture for minutes (L-ui-modernisation-99, partly)
 - The desk companion's lower wisps and nebula streams sway further at rest, about 2.4 degrees at their tips (were 1.5), and a posed lean stays under 4 degrees (L-ui-modernisation-100)

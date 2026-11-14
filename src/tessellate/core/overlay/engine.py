@@ -2526,7 +2526,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, NapMixin, BeatsMixin, FramesMix
         pace = self._brake(now, dt) if self._yields(now, math.cos(self.heading) * 90 * scale) else self._pace(now, dist)
         if pace <= 0.0:
             return
-        self._drift_move(m, FLOAT_SPEED * scale * pace * dt)
+        self._drift_move(m, min(dist, FLOAT_SPEED * scale * pace * dt))  # never past the goal: it stepped over and back (L-ui-140)
         if abs(math.cos(self.heading)) > 0.5:
             self._face(1 if math.cos(self.heading) > 0 else -1, now)
         if wandering and now >= self.state_until:
