@@ -1701,7 +1701,7 @@ TAIL_TOPICS.extend(
                 "Contents. Search, then sort newest first, oldest first, A to Z or "
                 "biggest first, and set how many show per page. Tick a card's box "
                 "to select it: the bar that appears has Select all, Open, Restore "
-                "(for binned items), Delete and Done, and Documents and the gallery "
+                "(for binned items), More (tags, category or a property for the notes ticked), Delete and Done, and Documents and the gallery "
                 "have bars of their own. New (a whiteboard or a mind map), Map from "
                 "notes and Import outline sit on Boards & maps; Images takes "
                 "uploads of pictures and PDFs."

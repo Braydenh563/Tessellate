@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| world-class | 130 | 178 | 58 | 0 | 72 | 366 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 502 | 568 | 129 | 2 | 183 | 1199 |
+| all | 502 | 569 | 129 | 2 | 183 | 1200 |
 
 ## graph
 
@@ -699,6 +699,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
 - [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
+- [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
 
 ## general
 

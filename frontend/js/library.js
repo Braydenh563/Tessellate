@@ -1375,6 +1375,19 @@ function renderLibraryContextBars() {
   // is offering a button that cannot work.
   const allBinned = chosen.every((key) => key.startsWith("archived:"));
   $("library-bulk-restore").classList.toggle("hidden", !allBinned);
+  //: Tags, category and a property for the notes ticked (WORLD_CLASS_PLAN
+  //: decision 65, L-world-class-392): the dialogs the Notes bar opens, given
+  //: the notes' ids. Documents, chats and files carry none of the three.
+  const more = $("library-batch-more-host");
+  const notes = () => librarySelectedItems().filter((i) => i.kind === "note").map((i) => i.id);
+  if (!more.childElementCount) {
+    more.appendChild(kebabMenu([
+      { label: "ph:tag Tags…", run: () => openBulkTags(notes()), group: "edit" },
+      { label: "ph:folder-simple Move to category…", run: () => chooseNoteCategory(notes()), group: "edit" },
+      { label: "ph:list-dashes Set a property…", run: () => openBulkProperty(notes()), group: "edit" },
+    ], "More for the selected notes"));
+  }
+  more.classList.toggle("hidden", !chosen.some((key) => key.startsWith("note:")));
 }
 
 function librarySelectedItems() {
