@@ -5169,7 +5169,8 @@ function wbHistoryRestore(key) {
 
 function wbUpdateUndoRedoButtons() {
   wbHistoryFor();
-  if (typeof undoStorePut === "function" && wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default") {
+  //: Only the page board writes the stored copy: an embed of the same board would replace it with its own stack (L-whiteboard-66).
+  if (typeof undoStorePut === "function" && !wbInstances.active.container && wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default") {
     undoStorePut(`board:${wbHistoryBoard}`, undoStoreBoardValue(wbUndoStack, wbRedoStack));
   }
   const undoBtn = document.getElementById("wb-undo");

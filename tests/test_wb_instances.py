@@ -849,3 +849,34 @@ process.exit(0);
     assert out["emb"] == {"page": 2, "emb": 1}
     #: A step that was not applied changed nothing, so nothing is announced.
     assert out["refused"] == out["emb"]
+
+
+def _history_buttons_fn() -> str:
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    at = wb.index("function wbUpdateUndoRedoButtons() {")
+    return wb[at : wb.index("\n}\n", at) + 3]
+
+
+def test_only_the_page_board_writes_the_persisted_history_key():
+    """L-whiteboard-66: two live instances of one board shared `board:<id>` in the
+    undo store, each write replacing the other's stack. The page board owns that
+    key (what a reload restores); an embed's history is in memory for its life,
+    which cannot clobber the page's and leaves no key of its own to clean up."""
+    out = _run(_history_buttons_fn() + """
+const puts = [];
+function undoStorePut(key, value) { puts.push([key, value]); }
+function undoStoreBoardValue(u, r) { return { undo: u.length, redo: r.length }; }
+const wbHistoryRead = new Set(["5", "default"]);
+function wbHistoryFor() {}
+function scheduleUndoBar() {}
+const emb = I.mount(fakeEl("div", "box"), 5);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.page = puts.splice(0);
+I.activate(emb);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.embed = puts.splice(0);
+""")
+    assert [k for k, _ in out["page"]] == ["board:5"]
+    assert out["embed"] == []
