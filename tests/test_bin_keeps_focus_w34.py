@@ -47,6 +47,7 @@ const settleUndoFromToast = () => {};
 const toastAction = () => {};
 const toast = () => {};
 const GO_TO_BIN = {};
+const noteNamePlain = (text) => String(text || '');
 const window = {};
 let focusAfter = 'body';
 async function refreshEntries() {
