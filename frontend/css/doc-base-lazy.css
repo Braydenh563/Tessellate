@@ -289,4 +289,18 @@
     flex-wrap: wrap;
     overflow: visible;
   }
+
+  /* A name is written out in full on paper, and a card, a column or a day stays on one sheet. */
+  .db-day .db-open {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .db-col,
+  .db-card,
+  .db-day {
+    break-inside: avoid;
+  }
 }

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8564, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22388, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8564, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22391, plan headings 689, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8564)
 
@@ -3734,7 +3734,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `parse` | frontend/js/documents-base.js:27 |
 | `query` | frontend/js/documents-base.js:64 |
 | `queryAddress` | frontend/js/documents-base.js:156 |
-| `queryFill` | frontend/js/documents-base.js:399 |
+| `queryFill` | frontend/js/documents-base.js:402 |
 | `queryParse` | frontend/js/documents-base.js:136 |
 | `setLine` | frontend/js/documents-base.js:79 |
 
@@ -4166,13 +4166,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCodePrintNow` | frontend/js/documents-export.js:543 |
-| `docExportEscape` | frontend/js/documents-export.js:180 |
-| `docExportHtmlDocument` | frontend/js/documents-export.js:196 |
-| `docExportHtmlRun` | frontend/js/documents-export.js:369 |
-| `docExportInlineImages` | frontend/js/documents-export.js:318 |
-| `docExportPdfRun` | frontend/js/documents-export.js:558 |
-| `docPrintSetupDialog` | frontend/js/documents-export.js:426 |
+| `docCodePrintNow` | frontend/js/documents-export.js:556 |
+| `docExportEscape` | frontend/js/documents-export.js:193 |
+| `docExportHtmlDocument` | frontend/js/documents-export.js:209 |
+| `docExportHtmlRun` | frontend/js/documents-export.js:382 |
+| `docExportInlineImages` | frontend/js/documents-export.js:331 |
+| `docExportPdfRun` | frontend/js/documents-export.js:571 |
+| `docPrintSetupDialog` | frontend/js/documents-export.js:439 |
 
 ### frontend/js/documents-graph.js (12)
 
@@ -13457,7 +13457,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
 | frontend/css/diagram-lazy.css | 2785 |
-| frontend/css/doc-base-lazy.css | 292 |
+| frontend/css/doc-base-lazy.css | 306 |
 | frontend/css/doc-csv-grid-lazy.css | 182 |
 | frontend/css/doc-graph-lazy.css | 221 |
 | frontend/css/file-drop-lazy.css | 51 |
@@ -28146,7 +28146,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22388)
+## Tests (22391)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29047,7 +29047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_ai_check.py | 8 |
 | tests/test_doc_assist_no_model.py | 5 |
 | tests/test_doc_backlinks.py | 18 |
-| tests/test_doc_base.py | 9 |
+| tests/test_doc_base.py | 11 |
 | tests/test_doc_block_embed_early.py | 3 |
 | tests/test_doc_block_move.py | 2 |
 | tests/test_doc_blockrefs.py | 9 |
@@ -29153,7 +29153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_bookmarks.py | 7 |
 | tests/test_document_claim_check.py | 10 |
 | tests/test_document_diff.py | 3 |
-| tests/test_document_export_html.py | 5 |
+| tests/test_document_export_html.py | 6 |
 | tests/test_document_import.py | 12 |
 | tests/test_document_links.py | 12 |
 | tests/test_document_rephrase.py | 9 |
