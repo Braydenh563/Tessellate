@@ -1037,7 +1037,7 @@ loadReminders.overdueTriage = function (items) {
   const go = (choice) => () =>
     lazyScript("/js/reminder-edit.js")
       .then(() => loadReminders.overdueRun(choice, items))
-      .catch((e) => toast(e.message || "Couldn't load the reminder tools.", true));
+      .catch((e) => toast(e.message || "Couldn't load the reminder tools.", true, { action: ["Try again", go(choice)] }));
   return kebabMenu(
     [
       { label: "ph:sun-horizon Move all to tomorrow 9am", run: go("tomorrow"), group: "move" },

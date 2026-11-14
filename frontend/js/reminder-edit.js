@@ -212,7 +212,8 @@
       const results = await Promise.allSettled(list.map(call));
       loadReminders();
       const ok = list.filter((_, i) => results[i].status === "fulfilled");
-      if (ok.length < list.length) toast(`Couldn't change ${list.length - ok.length} of ${list.length} overdue reminders.`, true);
+      const left = list.filter((_, i) => results[i].status !== "fulfilled");
+      if (left.length) toast(`Couldn't change ${left.length} of ${list.length} overdue reminders.`, true, { action: ["Try again", () => each(left, call)] });
       return ok;
     };
     const put = (bodyOf) => (r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) });
