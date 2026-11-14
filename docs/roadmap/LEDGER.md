@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 1 | 1 | 0 | 0 | 2 |
+| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 523 | 529 | 126 | 2 | 172 | 1178 |
+| all | 523 | 528 | 126 | 2 | 172 | 1177 |
 
 ## graph
 
@@ -281,7 +281,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
-- [ ] **L-whiteboard-48** `whiteboard` open, S: Attach the original EMF to the board (media upload refuses .emf; needs a storage path). From L-whiteboard-45 follow-up. Evidence: EMF import measures the header and places a note; the bytes are not kept, as /media/upload takes only images and PDFs.
 
 ## documents
 

@@ -456,6 +456,7 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "whiteboard-convert.js:cvKeepEmf": "inverse: files the original EMF on a new note of its own; the note is an ordinary one and deleting it goes to the Recycle bin",
     "whiteboard-config.js:cfgImportText": "read: the POST only checks the file and stores nothing; what it applies goes through wbSetBackground (one Undo) and wbLibCreate (a bin call)",
     "whiteboard-convert.js:cvRun": "read: the POST only reads the file into a graph and stores nothing; the placing goes through wbImportMermaid, which is one Undo",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",

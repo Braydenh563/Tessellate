@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8792, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2810, tests 22634, plan headings 692, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8793, frontend ids 2824, CSS sections 525, backend routes 717, backend modules 10965, test files 2811, tests 22638, plan headings 692, app scripts 29, boot scripts 38, script files 323.
 
-## Frontend functions (8792)
+## Frontend functions (8793)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -8471,13 +8471,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `cfgImport` | frontend/js/whiteboard-config.js:59 |
 | `cfgImportText` | frontend/js/whiteboard-config.js:47 |
 
-### frontend/js/whiteboard-convert.js (5)
+### frontend/js/whiteboard-convert.js (6)
 
 | Name | File:line |
 |---|---|
 | `cvBase64` | frontend/js/whiteboard-convert.js:20 |
 | `cvEmf` | frontend/js/whiteboard-convert.js:42 |
-| `cvImportEmf` | frontend/js/whiteboard-convert.js:53 |
+| `cvImportEmf` | frontend/js/whiteboard-convert.js:69 |
+| `cvKeepEmf` | frontend/js/whiteboard-convert.js:57 |
 | `cvRun` | frontend/js/whiteboard-convert.js:27 |
 | `cvSniff` | frontend/js/whiteboard-convert.js:11 |
 
@@ -14031,7 +14032,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/embedding-models/{model_id}/download` | POST | `download_embedding_model` | src/tessellate/api/routes_settings_extras.py:223 |
 | `/enrol/begin` | POST | `enrol_begin` | src/tessellate/api/routes_hello.py:99 |
 | `/enrol/finish` | POST | `enrol_finish` | src/tessellate/api/routes_hello.py:142 |
-| `/entries/{entry_id}/files` | POST | `upload_file` | src/tessellate/api/routes_files.py:106 |
+| `/entries/{entry_id}/files` | POST | `upload_file` | src/tessellate/api/routes_files.py:109 |
 | `/entries/{entry_id}/meeting` | GET | `read_meeting` | src/tessellate/api/routes_meetings.py:88 |
 | `/entries/{entry_id}/meeting/append` | POST | `append_to_meeting` | src/tessellate/api/routes_meetings.py:171 |
 | `/entries/{entry_id}/meeting/remind` | POST | `remind_action` | src/tessellate/api/routes_meetings.py:133 |
@@ -14057,17 +14058,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/feature-model` | POST | `set_feature_model` | src/tessellate/api/routes_models.py:1134 |
 | `/feature-models/reset` | POST | `reset_feature_models` | src/tessellate/api/routes_models.py:1184 |
 | `/file-types` | GET | `list_file_types` | src/tessellate/api/routes_documents.py:316 |
-| `/files/exports` | GET | `list_exports` | src/tessellate/api/routes_files.py:1168 |
-| `/files/exports/{filename}` | GET | `download_export` | src/tessellate/api/routes_files.py:1206 |
-| `/files/gallery` | GET | `list_attachment_gallery` | src/tessellate/api/routes_files.py:302 |
-| `/files/open-exports-folder` | POST | `open_exports_folder` | src/tessellate/api/routes_files.py:1217 |
-| `/files/restore` | POST | `restore_file` | src/tessellate/api/routes_files.py:982 |
-| `/files/save` | POST | `save_generated_file` | src/tessellate/api/routes_files.py:1120 |
-| `/files/{attachment_id}` | DELETE | `delete_file` | src/tessellate/api/routes_files.py:945 |
-| `/files/{attachment_id}` | GET | `download_file` | src/tessellate/api/routes_files.py:199 |
-| `/files/{attachment_id}` | PUT | `rename_file` | src/tessellate/api/routes_files.py:1014 |
-| `/files/{attachment_id}/analyse` | POST | `analyse_attachment` | src/tessellate/api/routes_files.py:623 |
-| `/files/{attachment_id}/html-preview` | GET | `attached_file_html_preview` | src/tessellate/api/routes_files.py:900 |
+| `/files/exports` | GET | `list_exports` | src/tessellate/api/routes_files.py:1172 |
+| `/files/exports/{filename}` | GET | `download_export` | src/tessellate/api/routes_files.py:1210 |
+| `/files/gallery` | GET | `list_attachment_gallery` | src/tessellate/api/routes_files.py:306 |
+| `/files/open-exports-folder` | POST | `open_exports_folder` | src/tessellate/api/routes_files.py:1221 |
+| `/files/restore` | POST | `restore_file` | src/tessellate/api/routes_files.py:986 |
+| `/files/save` | POST | `save_generated_file` | src/tessellate/api/routes_files.py:1124 |
+| `/files/{attachment_id}` | DELETE | `delete_file` | src/tessellate/api/routes_files.py:949 |
+| `/files/{attachment_id}` | GET | `download_file` | src/tessellate/api/routes_files.py:202 |
+| `/files/{attachment_id}` | PUT | `rename_file` | src/tessellate/api/routes_files.py:1018 |
+| `/files/{attachment_id}/analyse` | POST | `analyse_attachment` | src/tessellate/api/routes_files.py:627 |
+| `/files/{attachment_id}/html-preview` | GET | `attached_file_html_preview` | src/tessellate/api/routes_files.py:904 |
 | `/files/{attachment_id}/ocr-clean-loops` | POST | `clean_attachment_reading_loops` | src/tessellate/api/routes_files_readings.py:638 |
 | `/files/{attachment_id}/ocr-page-read` | POST | `attachment_ocr_page_read` | src/tessellate/api/routes_files_readings.py:201 |
 | `/files/{attachment_id}/ocr-range-read` | POST | `attachment_ocr_range_read` | src/tessellate/api/routes_files_readings.py:165 |
@@ -14075,12 +14076,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/files/{attachment_id}/page-caption` | POST | `attachment_page_caption` | src/tessellate/api/routes_files_readings.py:421 |
 | `/files/{attachment_id}/page-reads` | GET | `attachment_page_reads` | src/tessellate/api/routes_files_readings.py:459 |
 | `/files/{attachment_id}/page-reads/{page}` | DELETE | `delete_attachment_page_read` | src/tessellate/api/routes_files_readings.py:516 |
-| `/files/{attachment_id}/pdf-info` | GET | `attached_file_pdf_info` | src/tessellate/api/routes_files.py:806 |
-| `/files/{attachment_id}/pdf-page/{index}` | GET | `attached_file_pdf_page` | src/tessellate/api/routes_files.py:842 |
+| `/files/{attachment_id}/pdf-info` | GET | `attached_file_pdf_info` | src/tessellate/api/routes_files.py:810 |
+| `/files/{attachment_id}/pdf-page/{index}` | GET | `attached_file_pdf_page` | src/tessellate/api/routes_files.py:846 |
 | `/files/{attachment_id}/readings/{source}` | DELETE | `delete_attachment_reading` | src/tessellate/api/routes_files_readings.py:575 |
 | `/files/{attachment_id}/region-read` | POST | `attachment_region_read` | src/tessellate/api/routes_files_readings.py:387 |
-| `/files/{attachment_id}/text` | GET | `attached_file_text` | src/tessellate/api/routes_files.py:701 |
-| `/files/{attachment_id}/text` | PUT | `save_attached_file_text` | src/tessellate/api/routes_files.py:748 |
+| `/files/{attachment_id}/text` | GET | `attached_file_text` | src/tessellate/api/routes_files.py:705 |
+| `/files/{attachment_id}/text` | PUT | `save_attached_file_text` | src/tessellate/api/routes_files.py:752 |
 | `/files/{name}` | GET | `translate_file` | src/tessellate/api/routes_translate.py:27 |
 | `/flags` | GET | `flags` | src/tessellate/api/routes_learned_audit.py:42 |
 | `/folder` | GET | `folder_status` | src/tessellate/api/routes_folder_sync.py:29 |
@@ -14178,25 +14179,25 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:447 |
 | `/maps/from-notes` | POST | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:259 |
 | `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:475 |
-| `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1458 |
+| `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1462 |
 | `/media-link` | POST | `media_link` | src/tessellate/api/routes_auth.py:1139 |
 | `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:1122 |
 | `/media/board-thumb/{board_id}` | GET | `get_thumbnail` | src/tessellate/api/wb_preview.py:948 |
-| `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1606 |
-| `/media/orphans` | DELETE | `clean_orphaned_media` | src/tessellate/api/routes_files.py:1581 |
-| `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1550 |
-| `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1727 |
-| `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1767 |
+| `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1610 |
+| `/media/orphans` | DELETE | `clean_orphaned_media` | src/tessellate/api/routes_files.py:1585 |
+| `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1554 |
+| `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1731 |
+| `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1771 |
 | `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:576 |
-| `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1895 |
-| `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1659 |
-| `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1285 |
-| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2169 |
-| `/media/{upload_id}` | DELETE | `delete_media` | src/tessellate/api/routes_files.py:1853 |
-| `/media/{upload_id}` | PUT | `rename_media` | src/tessellate/api/routes_files.py:1924 |
-| `/media/{upload_id}/caption` | POST | `caption_media` | src/tessellate/api/routes_files.py:2004 |
-| `/media/{upload_id}/library` | POST | `save_media_to_library` | src/tessellate/api/routes_files.py:1981 |
-| `/media/{upload_id}/ocr` | POST | `ocr_media` | src/tessellate/api/routes_files.py:2109 |
+| `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1899 |
+| `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1663 |
+| `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1289 |
+| `/media/{filename}` | GET | `get_media` | src/tessellate/api/routes_files.py:2173 |
+| `/media/{upload_id}` | DELETE | `delete_media` | src/tessellate/api/routes_files.py:1857 |
+| `/media/{upload_id}` | PUT | `rename_media` | src/tessellate/api/routes_files.py:1928 |
+| `/media/{upload_id}/caption` | POST | `caption_media` | src/tessellate/api/routes_files.py:2008 |
+| `/media/{upload_id}/library` | POST | `save_media_to_library` | src/tessellate/api/routes_files.py:1985 |
+| `/media/{upload_id}/ocr` | POST | `ocr_media` | src/tessellate/api/routes_files.py:2113 |
 | `/media/{upload_id}/ocr-clean-loops` | POST | `clean_media_reading_loops` | src/tessellate/api/routes_files_readings.py:664 |
 | `/media/{upload_id}/ocr-page-read` | POST | `media_ocr_page_read` | src/tessellate/api/routes_files_readings.py:218 |
 | `/media/{upload_id}/ocr-range-read` | POST | `media_ocr_range_read` | src/tessellate/api/routes_files_readings.py:183 |
@@ -22793,71 +22794,71 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AttachedFileTextOut` | src/tessellate/api/routes_files.py:670 |
-| `AttachmentAnalyseBody` | src/tessellate/api/routes_files.py:373 |
-| `AttachmentGalleryOut` | src/tessellate/api/routes_files.py:222 |
-| `AttachmentRenameBody` | src/tessellate/api/routes_files.py:1010 |
-| `CaptionBody` | src/tessellate/api/routes_files.py:1948 |
-| `FileTextIn` | src/tessellate/api/routes_files.py:742 |
-| `MediaOrphansOut` | src/tessellate/api/routes_files.py:1533 |
-| `MediaRenameBody` | src/tessellate/api/routes_files.py:1920 |
-| `MediaUploadOut` | src/tessellate/api/routes_files.py:1365 |
-| `OcrBody` | src/tessellate/api/routes_files.py:2091 |
-| `PdfInfoOut` | src/tessellate/api/routes_files.py:790 |
-| `RestoreBody` | src/tessellate/api/routes_files.py:978 |
-| `SaveFileBody` | src/tessellate/api/routes_files.py:1085 |
-| `_attachment_out` | src/tessellate/api/routes_files.py:430 |
-| `_attachment_size` | src/tessellate/api/routes_files.py:400 |
-| `_caption_with_vision` | src/tessellate/api/routes_files.py:590 |
-| `_describe_from_text` | src/tessellate/api/routes_files.py:513 |
-| `_embed_pattern` | src/tessellate/api/routes_files.py:1803 |
-| `_existing_attachment` | src/tessellate/api/routes_files.py:184 |
-| `_existing_upload` | src/tessellate/api/routes_files.py:190 |
-| `_exports_dir` | src/tessellate/api/routes_files.py:1076 |
-| `_media_size` | src/tessellate/api/routes_files.py:1651 |
-| `_media_upload_path` | src/tessellate/api/routes_files.py:1717 |
-| `_put_notes_back` | src/tessellate/api/routes_files.py:1002 |
-| `_read_locally` | src/tessellate/api/routes_files.py:482 |
-| `_read_with_vision` | src/tessellate/api/routes_files.py:607 |
-| `_readings` | src/tessellate/api/routes_files.py:1446 |
-| `_refuse_while_sealed` | src/tessellate/api/routes_files.py:175 |
-| `_store_typed_reading` | src/tessellate/api/routes_files.py:454 |
-| `_strip_embeds` | src/tessellate/api/routes_files.py:1809 |
-| `_vision_model` | src/tessellate/api/routes_files.py:576 |
-| `_within` | src/tessellate/api/routes_files.py:1107 |
-| `analyse_attachment` | src/tessellate/api/routes_files.py:624 |
-| `attached_file_html_preview` | src/tessellate/api/routes_files.py:901 |
-| `attached_file_pdf_info` | src/tessellate/api/routes_files.py:807 |
-| `attached_file_pdf_page` | src/tessellate/api/routes_files.py:843 |
-| `attached_file_text` | src/tessellate/api/routes_files.py:702 |
-| `caption_media` | src/tessellate/api/routes_files.py:2005 |
-| `clean_orphaned_media` | src/tessellate/api/routes_files.py:1582 |
-| `delete_file` | src/tessellate/api/routes_files.py:946 |
-| `delete_media` | src/tessellate/api/routes_files.py:1854 |
-| `download_export` | src/tessellate/api/routes_files.py:1207 |
-| `download_file` | src/tessellate/api/routes_files.py:200 |
-| `get_media` | src/tessellate/api/routes_files.py:2170 |
-| `list_attachment_gallery` | src/tessellate/api/routes_files.py:303 |
-| `list_exports` | src/tessellate/api/routes_files.py:1169 |
-| `list_media` | src/tessellate/api/routes_files.py:1459 |
-| `list_orphaned_media` | src/tessellate/api/routes_files.py:1551 |
-| `media_meta` | src/tessellate/api/routes_files.py:1607 |
-| `media_pdf_info` | src/tessellate/api/routes_files.py:1728 |
-| `media_pdf_page` | src/tessellate/api/routes_files.py:1768 |
-| `media_text` | src/tessellate/api/routes_files.py:1660 |
-| `ocr_media` | src/tessellate/api/routes_files.py:2110 |
-| `open_exports_folder` | src/tessellate/api/routes_files.py:1218 |
-| `rename_file` | src/tessellate/api/routes_files.py:1015 |
-| `rename_media` | src/tessellate/api/routes_files.py:1925 |
-| `restore_file` | src/tessellate/api/routes_files.py:983 |
-| `restore_media` | src/tessellate/api/routes_files.py:1896 |
-| `reveal_folder` | src/tessellate/api/routes_files.py:1239 |
-| `safe_filename` | src/tessellate/api/routes_files.py:1093 |
-| `save_attached_file_text` | src/tessellate/api/routes_files.py:749 |
-| `save_generated_file` | src/tessellate/api/routes_files.py:1121 |
-| `save_media_to_library` | src/tessellate/api/routes_files.py:1982 |
-| `upload_file` | src/tessellate/api/routes_files.py:107 |
-| `upload_media` | src/tessellate/api/routes_files.py:1286 |
+| `AttachedFileTextOut` | src/tessellate/api/routes_files.py:674 |
+| `AttachmentAnalyseBody` | src/tessellate/api/routes_files.py:377 |
+| `AttachmentGalleryOut` | src/tessellate/api/routes_files.py:226 |
+| `AttachmentRenameBody` | src/tessellate/api/routes_files.py:1014 |
+| `CaptionBody` | src/tessellate/api/routes_files.py:1952 |
+| `FileTextIn` | src/tessellate/api/routes_files.py:746 |
+| `MediaOrphansOut` | src/tessellate/api/routes_files.py:1537 |
+| `MediaRenameBody` | src/tessellate/api/routes_files.py:1924 |
+| `MediaUploadOut` | src/tessellate/api/routes_files.py:1369 |
+| `OcrBody` | src/tessellate/api/routes_files.py:2095 |
+| `PdfInfoOut` | src/tessellate/api/routes_files.py:794 |
+| `RestoreBody` | src/tessellate/api/routes_files.py:982 |
+| `SaveFileBody` | src/tessellate/api/routes_files.py:1089 |
+| `_attachment_out` | src/tessellate/api/routes_files.py:434 |
+| `_attachment_size` | src/tessellate/api/routes_files.py:404 |
+| `_caption_with_vision` | src/tessellate/api/routes_files.py:594 |
+| `_describe_from_text` | src/tessellate/api/routes_files.py:517 |
+| `_embed_pattern` | src/tessellate/api/routes_files.py:1807 |
+| `_existing_attachment` | src/tessellate/api/routes_files.py:187 |
+| `_existing_upload` | src/tessellate/api/routes_files.py:193 |
+| `_exports_dir` | src/tessellate/api/routes_files.py:1080 |
+| `_media_size` | src/tessellate/api/routes_files.py:1655 |
+| `_media_upload_path` | src/tessellate/api/routes_files.py:1721 |
+| `_put_notes_back` | src/tessellate/api/routes_files.py:1006 |
+| `_read_locally` | src/tessellate/api/routes_files.py:486 |
+| `_read_with_vision` | src/tessellate/api/routes_files.py:611 |
+| `_readings` | src/tessellate/api/routes_files.py:1450 |
+| `_refuse_while_sealed` | src/tessellate/api/routes_files.py:178 |
+| `_store_typed_reading` | src/tessellate/api/routes_files.py:458 |
+| `_strip_embeds` | src/tessellate/api/routes_files.py:1813 |
+| `_vision_model` | src/tessellate/api/routes_files.py:580 |
+| `_within` | src/tessellate/api/routes_files.py:1111 |
+| `analyse_attachment` | src/tessellate/api/routes_files.py:628 |
+| `attached_file_html_preview` | src/tessellate/api/routes_files.py:905 |
+| `attached_file_pdf_info` | src/tessellate/api/routes_files.py:811 |
+| `attached_file_pdf_page` | src/tessellate/api/routes_files.py:847 |
+| `attached_file_text` | src/tessellate/api/routes_files.py:706 |
+| `caption_media` | src/tessellate/api/routes_files.py:2009 |
+| `clean_orphaned_media` | src/tessellate/api/routes_files.py:1586 |
+| `delete_file` | src/tessellate/api/routes_files.py:950 |
+| `delete_media` | src/tessellate/api/routes_files.py:1858 |
+| `download_export` | src/tessellate/api/routes_files.py:1211 |
+| `download_file` | src/tessellate/api/routes_files.py:203 |
+| `get_media` | src/tessellate/api/routes_files.py:2174 |
+| `list_attachment_gallery` | src/tessellate/api/routes_files.py:307 |
+| `list_exports` | src/tessellate/api/routes_files.py:1173 |
+| `list_media` | src/tessellate/api/routes_files.py:1463 |
+| `list_orphaned_media` | src/tessellate/api/routes_files.py:1555 |
+| `media_meta` | src/tessellate/api/routes_files.py:1611 |
+| `media_pdf_info` | src/tessellate/api/routes_files.py:1732 |
+| `media_pdf_page` | src/tessellate/api/routes_files.py:1772 |
+| `media_text` | src/tessellate/api/routes_files.py:1664 |
+| `ocr_media` | src/tessellate/api/routes_files.py:2114 |
+| `open_exports_folder` | src/tessellate/api/routes_files.py:1222 |
+| `rename_file` | src/tessellate/api/routes_files.py:1019 |
+| `rename_media` | src/tessellate/api/routes_files.py:1929 |
+| `restore_file` | src/tessellate/api/routes_files.py:987 |
+| `restore_media` | src/tessellate/api/routes_files.py:1900 |
+| `reveal_folder` | src/tessellate/api/routes_files.py:1243 |
+| `safe_filename` | src/tessellate/api/routes_files.py:1097 |
+| `save_attached_file_text` | src/tessellate/api/routes_files.py:753 |
+| `save_generated_file` | src/tessellate/api/routes_files.py:1125 |
+| `save_media_to_library` | src/tessellate/api/routes_files.py:1986 |
+| `upload_file` | src/tessellate/api/routes_files.py:110 |
+| `upload_media` | src/tessellate/api/routes_files.py:1290 |
 
 ### src/tessellate/api/routes_files_ocr.py (43)
 
@@ -28590,7 +28591,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22634)
+## Tests (22638)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31214,6 +31215,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_edit_style.py | 2 |
 | tests/test_wb_effects.py | 16 |
 | tests/test_wb_elbow.py | 13 |
+| tests/test_wb_emf_attachment.py | 4 |
 | tests/test_wb_export_boxes.py | 10 |
 | tests/test_wb_export_builder.py | 3 |
 | tests/test_wb_export_formats.py | 7 |
@@ -31826,14 +31828,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:709 |
+| Needs hardware | docs/roadmap/LEDGER.md:708 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:702 |
+| Owner calls | docs/roadmap/LEDGER.md:701 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32014,7 +32016,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:886 |
+| Plan session briefs | docs/roadmap/LEDGER.md:885 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32070,25 +32072,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:902 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:986 |
-| documents | docs/roadmap/LEDGER.md:286 |
-| documents | docs/roadmap/LEDGER.md:926 |
-| general | docs/roadmap/LEDGER.md:661 |
+| chat | docs/roadmap/LEDGER.md:901 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:985 |
+| documents | docs/roadmap/LEDGER.md:285 |
+| documents | docs/roadmap/LEDGER.md:925 |
+| general | docs/roadmap/LEDGER.md:660 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:890 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:998 |
+| graph | docs/roadmap/LEDGER.md:889 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:997 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:302 |
-| mindmap | docs/roadmap/LEDGER.md:938 |
-| timeline | docs/roadmap/LEDGER.md:423 |
-| timeline | docs/roadmap/LEDGER.md:962 |
-| ui-modernisation | docs/roadmap/LEDGER.md:306 |
-| ui-modernisation | docs/roadmap/LEDGER.md:950 |
+| mindmap | docs/roadmap/LEDGER.md:301 |
+| mindmap | docs/roadmap/LEDGER.md:937 |
+| timeline | docs/roadmap/LEDGER.md:422 |
+| timeline | docs/roadmap/LEDGER.md:961 |
+| ui-modernisation | docs/roadmap/LEDGER.md:305 |
+| ui-modernisation | docs/roadmap/LEDGER.md:949 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:914 |
-| world-class | docs/roadmap/LEDGER.md:425 |
-| world-class | docs/roadmap/LEDGER.md:974 |
+| whiteboard | docs/roadmap/LEDGER.md:913 |
+| world-class | docs/roadmap/LEDGER.md:424 |
+| world-class | docs/roadmap/LEDGER.md:973 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |
