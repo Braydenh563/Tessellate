@@ -45,7 +45,8 @@
   //: source first; the others after it, one at a time, so each tab carries its
   //: count (what matches the words typed, or everything) and opens at once. A
   //: slow fetch that lands after the tab changed paints nothing.
-  function pickLibraryItemDialog(message, { sources = null, noUploads = false } = {}) {
+  //: `exclude`: a Set of ids to leave out of the shown rows (Move under leaves out the page and its sub-pages).
+  function pickLibraryItemDialog(message, { sources = null, noUploads = false, exclude = null } = {}) {
     const available = LIBRARY_PICK_SOURCES.filter((source) =>
       sources ? sources.includes(source.kind) : !source.optIn
     );
@@ -82,7 +83,8 @@
         const rows = await read.catch(() => null);
         if (!rows) return [];
         const list = Array.isArray(rows) ? rows : rows.documents || [];
-        cache[kind] = source.keep ? list.filter(source.keep) : list;
+        const kept = source.keep ? list.filter(source.keep) : list;
+        cache[kind] = exclude ? kept.filter((row) => !exclude.has(row.id)) : kept;
         return cache[kind];
       };
       const matching = (kind, rows, term) =>

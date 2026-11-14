@@ -113,11 +113,23 @@
     return apiJson(`/documents/${doc.id}`, { method: "PUT", body: JSON.stringify({ parent_id: parentId }) });
   }
 
+  //: The page and every page under it: what Move under must not offer (a page under its own sub-page is a loop,
+  //: which the server refuses; the picker does not list it). Read from the live list, so a sub-page made a moment ago counts.
+  async function selfAndBelow(doc) {
+    const all = await apiJson("/documents", { silent: true }).catch(() => (typeof libraryDocsAll !== "undefined" ? libraryDocsAll : []));
+    const out = new Set([doc.id]);
+    for (let grew = true; grew; ) {
+      grew = false;
+      for (const d of all) if (d.parent_id != null && out.has(d.parent_id) && !out.has(d.id)) out.add(d.id), (grew = true);
+    }
+    return out;
+  }
+
   //: The kebab's Move under: the document picker, then the move; Undo puts it back under the parent it had.
   async function moveUnder(doc, toTop = false) {
     let parentId = null;
     if (!toTop) {
-      const chosen = await pickLibraryItemDialog(`Move “${clipText(doc.title || "Untitled", 40)}” under`, { sources: ["document"] });
+      const chosen = await pickLibraryItemDialog(`Move “${clipText(doc.title || "Untitled", 40)}” under`, { sources: ["document"], exclude: await selfAndBelow(doc) });
       if (!chosen?.row) return;
       parentId = chosen.row.id;
     }
@@ -194,21 +206,29 @@
       //: After the way back ("Documents"), so the row reads as one path: Documents / Parent / this page.
       (host.querySelector("#doc-back") || host.querySelector("#doc-title")).after(trail);
     }
-    trail.replaceChildren(
-      ...parents.flatMap((p) => {
-        const link = document.createElement("button");
-        link.type = "button";
-        link.className = "ghost small doc-crumb";
-        link.textContent = p.title || "Untitled";
-        link.title = `Open “${p.title || "Untitled"}”`;
-        link.addEventListener("click", () => openDocument(p.id));
-        const sep = document.createElement("span");
-        sep.className = "doc-crumb-sep";
-        sep.setAttribute("aria-hidden", "true");
-        sep.textContent = "/";
-        return [link, sep];
-      })
-    );
+    const open = (p) => () => openDocument(p.id);
+    const links = parents.flatMap((p, i) => {
+      const link = document.createElement("button");
+      link.type = "button";
+      link.className = "ghost small doc-crumb";
+      //: Beside the title a phone has room for the nearest parent only; the others wait in the ⋯ before it.
+      if (i < parents.length - 1) link.classList.add("doc-crumb-far");
+      link.textContent = p.title || "Untitled";
+      link.title = `Open “${p.title || "Untitled"}”`;
+      link.addEventListener("click", open(p));
+      const sep = document.createElement("span");
+      sep.className = "doc-crumb-sep";
+      sep.setAttribute("aria-hidden", "true");
+      sep.textContent = "/";
+      return [link, sep];
+    });
+    //: Phone only (library-lazy.css shows it): every parent as a row, root first, so none is out of reach.
+    if (parents.length > 1) {
+      const more = kebabMenu(parents.map((p) => makeMenuItem(`ph:file-text ${clipText(p.title || "Untitled", 40)}`, `Open “${p.title || "Untitled"}”`, open(p))), "Parent pages");
+      more.classList.add("doc-crumb-more");
+      links.unshift(more);
+    }
+    trail.replaceChildren(...links);
   }
 
   document.addEventListener("doc-shown", (event) => event.detail?.id && crumbs(event.detail.id));

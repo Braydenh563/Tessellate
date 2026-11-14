@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22904, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8946, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22907, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
-## Frontend functions (8945)
+## Frontend functions (8946)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4833,22 +4833,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `packState` | frontend/js/documents-spell.js:134 |
 | `packWant` | frontend/js/documents-spell.js:160 |
 
-### frontend/js/documents-subpages.js (12)
+### frontend/js/documents-subpages.js (13)
 
 | Name | File:line |
 |---|---|
-| `chosenTitle` | frontend/js/documents-subpages.js:141 |
+| `chosenTitle` | frontend/js/documents-subpages.js:153 |
 | `create` | frontend/js/documents-subpages.js:82 |
-| `crumbs` | frontend/js/documents-subpages.js:177 |
+| `crumbs` | frontend/js/documents-subpages.js:189 |
 | `decorate` | frontend/js/documents-subpages.js:45 |
 | `keepOpened` | frontend/js/documents-subpages.js:12 |
-| `menuItems` | frontend/js/documents-subpages.js:147 |
-| `moveUnder` | frontend/js/documents-subpages.js:117 |
+| `menuItems` | frontend/js/documents-subpages.js:159 |
+| `moveUnder` | frontend/js/documents-subpages.js:129 |
 | `newSubpage` | frontend/js/documents-subpages.js:96 |
 | `order` | frontend/js/documents-subpages.js:19 |
 | `place` | frontend/js/documents-subpages.js:112 |
 | `refresh` | frontend/js/documents-subpages.js:73 |
-| `slash` | frontend/js/documents-subpages.js:158 |
+| `selfAndBelow` | frontend/js/documents-subpages.js:118 |
+| `slash` | frontend/js/documents-subpages.js:170 |
 
 ### frontend/js/documents-suggest-panel.js (29)
 
@@ -6195,8 +6196,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `libraryPickAbout` | frontend/js/library-pick.js:29 |
 | `libraryPickLabel` | frontend/js/library-pick.js:7 |
-| `pickLibraryItemDialog` | frontend/js/library-pick.js:48 |
-| `pickMediaDialog` | frontend/js/library-pick.js:197 |
+| `pickLibraryItemDialog` | frontend/js/library-pick.js:49 |
+| `pickMediaDialog` | frontend/js/library-pick.js:199 |
 | `pickerRememberedSource` | frontend/js/library-pick.js:19 |
 
 ### frontend/js/library.js (270)
@@ -13850,7 +13851,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10214 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:653 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:972 |
-| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:9989 |
+| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:10015 |
 | boot splash | frontend/css/00-tokens-shell.css:4151 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2733 |
@@ -13997,7 +13998,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, de-vibecoded (the owner: "devibecode all the ui") | frontend/css/08-consistency.css:2949 |
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:317 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6709 |
-| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:9972 |
+| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:9998 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
 | the Sources panel | frontend/css/02-chat-graph.css:4293 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:3009 |
@@ -14187,7 +14188,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 10021 |
+| frontend/css/library-lazy.css | 10047 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -28042,29 +28043,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Names` | src/tessellate/entry/sync_extras.py:74 |
-| `_canvas` | src/tessellate/entry/sync_extras.py:125 |
-| `_file_sha1` | src/tessellate/entry/sync_extras.py:228 |
-| `_find_row` | src/tessellate/entry/sync_extras.py:280 |
-| `_json` | src/tessellate/entry/sync_extras.py:159 |
-| `_line` | src/tessellate/entry/sync_extras.py:181 |
-| `_no_id` | src/tessellate/entry/sync_extras.py:177 |
-| `_portable_board` | src/tessellate/entry/sync_extras.py:189 |
-| `_rows` | src/tessellate/entry/sync_extras.py:254 |
-| `_stamp` | src/tessellate/entry/sync_extras.py:139 |
-| `_state` | src/tessellate/entry/sync_extras.py:303 |
+| `_canvas` | src/tessellate/entry/sync_extras.py:128 |
+| `_file_sha1` | src/tessellate/entry/sync_extras.py:231 |
+| `_find_row` | src/tessellate/entry/sync_extras.py:283 |
+| `_json` | src/tessellate/entry/sync_extras.py:162 |
+| `_line` | src/tessellate/entry/sync_extras.py:184 |
+| `_no_id` | src/tessellate/entry/sync_extras.py:180 |
+| `_portable_board` | src/tessellate/entry/sync_extras.py:192 |
+| `_rows` | src/tessellate/entry/sync_extras.py:257 |
+| `_stamp` | src/tessellate/entry/sync_extras.py:142 |
+| `_state` | src/tessellate/entry/sync_extras.py:306 |
 | `_still` | src/tessellate/entry/sync_extras.py:103 |
-| `board_state` | src/tessellate/entry/sync_extras.py:145 |
+| `board_state` | src/tessellate/entry/sync_extras.py:148 |
 | `digest` | src/tessellate/entry/sync_extras.py:70 |
 | `document_state` | src/tessellate/entry/sync_extras.py:115 |
-| `file_bytes` | src/tessellate/entry/sync_extras.py:312 |
-| `file_state` | src/tessellate/entry/sync_extras.py:247 |
-| `folder_canvas` | src/tessellate/entry/sync_extras.py:167 |
+| `file_bytes` | src/tessellate/entry/sync_extras.py:315 |
+| `file_state` | src/tessellate/entry/sync_extras.py:250 |
+| `folder_canvas` | src/tessellate/entry/sync_extras.py:170 |
 | `iso` | src/tessellate/entry/sync_extras.py:66 |
-| `item_hash` | src/tessellate/entry/sync_extras.py:209 |
-| `items` | src/tessellate/entry/sync_extras.py:290 |
-| `manifest` | src/tessellate/entry/sync_extras.py:271 |
+| `item_hash` | src/tessellate/entry/sync_extras.py:212 |
+| `items` | src/tessellate/entry/sync_extras.py:293 |
+| `manifest` | src/tessellate/entry/sync_extras.py:274 |
 | `mark` | src/tessellate/entry/sync_extras.py:98 |
-| `names_for` | src/tessellate/entry/sync_extras.py:267 |
+| `names_for` | src/tessellate/entry/sync_extras.py:270 |
 | `raw` | src/tessellate/entry/sync_extras.py:108 |
 | `withheld` | src/tessellate/entry/sync_extras.py:60 |
 
@@ -28072,19 +28073,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Apply` | src/tessellate/entry/sync_extras_apply.py:98 |
-| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:356 |
-| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:342 |
-| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:334 |
-| `_key` | src/tessellate/entry/sync_extras_apply.py:302 |
-| `_opened` | src/tessellate/entry/sync_extras_apply.py:75 |
-| `_plain` | src/tessellate/entry/sync_extras_apply.py:87 |
-| `_space` | src/tessellate/entry/sync_extras_apply.py:94 |
-| `_theirs_win` | src/tessellate/entry/sync_extras_apply.py:66 |
-| `_wanted` | src/tessellate/entry/sync_extras_apply.py:306 |
-| `_when` | src/tessellate/entry/sync_extras_apply.py:39 |
-| `checked` | src/tessellate/entry/sync_extras_apply.py:53 |
-| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:366 |
+| `Apply` | src/tessellate/entry/sync_extras_apply.py:99 |
+| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:381 |
+| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:367 |
+| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:359 |
+| `_key` | src/tessellate/entry/sync_extras_apply.py:327 |
+| `_opened` | src/tessellate/entry/sync_extras_apply.py:76 |
+| `_plain` | src/tessellate/entry/sync_extras_apply.py:88 |
+| `_space` | src/tessellate/entry/sync_extras_apply.py:95 |
+| `_theirs_win` | src/tessellate/entry/sync_extras_apply.py:67 |
+| `_wanted` | src/tessellate/entry/sync_extras_apply.py:331 |
+| `_when` | src/tessellate/entry/sync_extras_apply.py:40 |
+| `checked` | src/tessellate/entry/sync_extras_apply.py:54 |
+| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:391 |
 
 ### src/tessellate/entry/sync_keys.py (5)
 
@@ -29032,7 +29033,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22904)
+## Tests (22907)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30052,7 +30053,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_story.py | 10 |
-| tests/test_document_subpages.py | 8 |
+| tests/test_document_subpages.py | 10 |
 | tests/test_document_suggest_name_904.py | 5 |
 | tests/test_document_thread_model.py | 4 |
 | tests/test_document_threads.py | 23 |
@@ -31446,7 +31447,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_inbox_bounds.py | 3 |
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
-| tests/test_sync_extras.py | 11 |
+| tests/test_sync_extras.py | 12 |
 | tests/test_sync_lan.py | 15 |
 | tests/test_sync_segments.py | 11 |
 | tests/test_sync_settings_group.py | 5 |

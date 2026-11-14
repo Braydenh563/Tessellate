@@ -3167,8 +3167,10 @@ MORE_TOPICS.append({
         "Move to the top level takes it out again). In a document, type /subpage: it makes a sub-page and puts a link to it where you "
         "typed. A document with sub-pages has a small arrow before it in the list: press it to show or hide the pages "
         "under it (the list starts with them hidden, and remembers which you opened). A search shows its matches as a "
-        "flat list. At the top of a sub-page, its parents are shown after Documents: press one to open it. A page cannot "
-        "go under itself or one of its own sub-pages. Deleting a document moves its sub-pages to the bin with it, and "
+        "flat list. At the top of a sub-page, its parents are shown after Documents: press one to open it (on a phone the "
+        "nearest parent shows on a line under the title, and its ... menu lists them all). A page cannot "
+        "go under itself or one of its own sub-pages, and Move under does not list them. Sub-pages stay under their "
+        "parents when two computers sync. Deleting a document moves its sub-pages to the bin with it, and "
         "restoring it brings them back; deleting it for good leaves its sub-pages at the top level. Each move and each "
         "new sub-page can be undone."
     ),

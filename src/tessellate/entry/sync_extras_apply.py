@@ -30,6 +30,7 @@ from tessellate.core import crypto, events, sync_state
 from tessellate.core.database import Attachment, AuditLog, Document, DocumentLink, DocumentRevision, Entry, Space, impersonate_workspace
 from tessellate.entry import export_folder, manager, sync_extras, sync_keys
 from tessellate.entry.bin import purge_document
+from tessellate.repo import documents as document_repo
 from tessellate.entry.sync_segments import DAMAGED, KEY_PREFIX, SegmentError, _find, withdraw, withdraw_verdict
 
 #: How many files one pull fetches at most; the rest come at the next.
@@ -108,6 +109,28 @@ class Apply:
         #: batched: it is written before the commit, because a committed row with no mark is published
         #: as this computer's own and fetched back as a duplicate.
         self.marks: list[tuple[str, str, int | None, str]] = []
+        #: (document id, the parent's sid) for each document written this pull: the parent may land after its
+        #: child, so the links are made once every document is in (`link_parents`).
+        self.parents: list[tuple[int, str | None]] = []
+
+    def link_parents(self) -> None:
+        """Sub-pages put under their parents by sid. A parent that is not here, or a loop, leaves the page where it was."""
+        pending, self.parents = self.parents, []
+        if not pending:
+            return
+        self.names = sync_extras.names_for(self.session, self.data_dir, self.me)
+        for doc_id, sid in pending:
+            doc = self.session.get(Document, doc_id)
+            if doc is None:
+                continue
+            if sid is None:
+                doc.parent_id = None
+                continue
+            local = self.names.local("document", sid)
+            parent = self.session.get(Document, local) if local is not None else None
+            if parent is not None and not document_repo.would_cycle(self.session, doc.id, parent.id):
+                doc.parent_id = parent.id
+        self.session.commit()
 
     def flush(self) -> None:
         marks, self.marks = self.marks, []
@@ -178,6 +201,8 @@ class Apply:
         doc.file_type = str(item.get("file_type") or "md")[:20]
         doc.archived_at, doc.deleted_at = _when(item.get("archived_at")), _when(item.get("deleted_at"))
         self.session.flush()
+        parent = item.get("parent")
+        self.parents.append((doc.id, parent if isinstance(parent, str) and _SID.fullmatch(parent) else None))
         self._links(doc, item.get("notes"))
         doc.updated_at = _when(item["updated_at"])
         self.session.flush()
@@ -375,6 +400,8 @@ def pull_extras(session: Session, data_dir: Path, link: Any, me: str, both: sync
         with events.acting_as(f"sync:{peer}"), impersonate_workspace(session, ""):
             for kind in ("document", "board"):
                 _apply_kind(session, link, apply, kind, wanted[kind], report, agreed, hashes)
+                if kind == "document":
+                    apply.link_parents()
             _apply_files(session, link, apply, wanted["file"][:MAX_FILES], report)
             for sid in _gone_files(data_dir, me, peer, lines):
                 apply.remove_file(sid)

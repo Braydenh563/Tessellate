@@ -116,10 +116,13 @@ def document_state(session: Session, doc: Document, names: Names) -> dict[str, A
     words = raw(session, Document, doc.id) if doc.is_private else {
         "title": doc.title, "content": doc.content, "threads": doc.threads or ""}
     linked = session.scalars(select(DocumentLink.entry_id).where(DocumentLink.document_id == doc.id))
-    return {"kind": "document", "sid": names.of("document", doc.id), **words, "file_type": doc.file_type,
-            "space": doc.workspace_id or "default", "is_private": bool(doc.is_private),
-            "archived_at": iso(doc.archived_at), "deleted_at": iso(doc.deleted_at),
-            "notes": sorted({s for s in map(names.note, linked) if s}), "updated_at": iso(doc.updated_at) or ""}
+    state = {"kind": "document", "sid": names.of("document", doc.id), **words, "file_type": doc.file_type,
+             "space": doc.workspace_id or "default", "is_private": bool(doc.is_private),
+             "archived_at": iso(doc.archived_at), "deleted_at": iso(doc.deleted_at),
+             "notes": sorted({s for s in map(names.note, linked) if s}), "updated_at": iso(doc.updated_at) or ""}
+    if doc.parent_id is not None:  # a sub-page names its parent by sid; absent on a top-level page, so old hashes hold
+        state["parent"] = names.of("document", doc.parent_id)
+    return state
 
 
 def _canvas(session: Session, board: Entry) -> dict[str, list[dict]]:
