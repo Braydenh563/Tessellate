@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8945, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22904, plan headings 690, app scripts 29, boot scripts 38, script files 366.
+Counts: frontend functions 8952, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11016, test files 2847, tests 22904, plan headings 690, app scripts 29, boot scripts 38, script files 366.
 
-## Frontend functions (8945)
+## Frontend functions (8952)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3872,11 +3872,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `docCmTheme` | frontend/js/documents-cm-theme.js:10 |
 
-### frontend/js/documents-cm.js (1)
+### frontend/js/documents-cm.js (8)
 
 | Name | File:line |
 |---|---|
-| `docLivePlugin` | frontend/js/documents-cm.js:27 |
+| `docLiveFrontmatterPass` | frontend/js/documents-cm.js:1682 |
+| `docLivePlugin` | frontend/js/documents-cm.js:1731 |
+| `docLiveRhythmPass` | frontend/js/documents-cm.js:1588 |
+| `docLiveScanPass` | frontend/js/documents-cm.js:1188 |
+| `docLiveTablesPass` | frontend/js/documents-cm.js:1437 |
+| `docLiveTreePass` | frontend/js/documents-cm.js:749 |
+| `docLiveWidgets` | frontend/js/documents-cm.js:47 |
+| `sameOrigin` | frontend/js/documents-cm.js:22 |
 
 ### frontend/js/documents-code-format.js (10)
 
