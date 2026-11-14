@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 33 | 1 | 0 | 2 | 34 |
+| documents | 0 | 32 | 1 | 0 | 2 | 33 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 588 | 129 | 2 | 165 | 1200 |
+| all | 483 | 587 | 129 | 2 | 165 | 1199 |
 
 ## graph
 
@@ -357,7 +357,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-84** `documents` open, S: Export and print styling for the base block's board and calendar views. From L-documents-52 follow-up. Evidence: documents-export.js ~101-110 styles only .db-scroll and .db-label
 - [ ] **L-documents-85** `documents` open, S: Base table refreshes on doc-saved, and drive the Read-view board drag. From L-documents-52 follow-up. Evidence: board drag write driven in Live only; Read view drag not driven
 - [ ] **L-documents-86** `documents` open, M: Diagram Ask box and Suggestions for Gantt, pie, state, class and ER blocks. From dgm1229 agent report 2026-11-14.
-- [ ] **L-documents-87** `documents` open, M: Diagram Gantt and pie title and dateFormat editable as blocks. From dgm1229 agent report 2026-11-14.
 - [ ] **L-documents-88** `documents` open, M: Diagram templates for Gantt, pie, state, class and ER. From dgm1229 agent report 2026-11-14.
 - [ ] **L-documents-89** `documents` open, M: Diagram pan input-to-paint at 390 touch is 41 ms p95 at 4x CPU, over the 16 ms goal. From dgm1229 agent report 2026-11-14.
 

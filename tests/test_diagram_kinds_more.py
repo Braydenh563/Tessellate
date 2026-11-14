@@ -223,6 +223,46 @@ console.log(JSON.stringify(out));""")
     assert ["push", "transition", "arrow-right"] in got["state"]
 
 
+def test_gantt_and_pie_title_and_date_format_are_blocks_that_round_trip_and_edit():
+    """L-documents-87: `title` and `dateFormat` are editable blocks, byte-identical until touched."""
+    got = _run(r"""
+const out = {};
+const g = "gantt\n  title  Odd   spacing\n  dateFormat  DD-MM-YYYY\n  axisFormat %H\n  section S\n  title inside\n  T :1d\n";
+const gm = K.gantt.parse(g);
+out.gSame = K.gantt.print(gm) === g;
+out.gBlocks = []; O.walk(K.gantt, gm, (n) => { if (n.type === "p") out.gBlocks.push([n.key, K.gantt.text(n), K.gantt.words(gm, n).kind]); });
+const t = gm.free.find((n) => n.type === "p" && n.key === "title");
+O.relabel(K.gantt, gm, O.key(t), "Release plan");
+out.gEdit = K.gantt.print(gm);
+const pies = ['pie\n  "a" : 1\n', 'pie showData title Pets  adopted\n    "Dogs" : 386\n', 'pie title X\n    title Body\n    "a" : 1\n'];
+out.pSame = pies.map((s) => K.pie.print(K.pie.parse(s)) === s);
+const pm = K.pie.parse(pies[1]);
+const pt = pm.items.find((n) => n.type === "p");
+out.pBlock = [pt.key, pt.head, K.pie.text(pt)];
+O.relabel(K.pie, pm, O.key(pt), "Strays");
+out.pEdit = K.pie.print(pm);
+O.remove(K.pie, pm, O.key(pt));
+out.pGone = K.pie.print(pm);
+const em = K.pie.empty();
+const tile = K.pie.tiles.find((x) => x.type === "p");
+const place = O.spot(K.pie, em, "p", null, false);
+O.add(K.pie, em, "p", { parent: place.parent, before: place.before, fields: tile.fields });
+out.pAdd = K.pie.print(em);
+const gem = K.gantt.empty();
+const dt = K.gantt.tiles.find((x) => x.fields.key === "dateFormat");
+O.add(K.gantt, gem, "p", { parent: null, fields: dt.fields });
+out.gAdd = K.gantt.print(gem);
+console.log(JSON.stringify(out));""")
+    assert got["gSame"] and all(got["pSame"]), got
+    assert got["gBlocks"] == [["title", "Odd   spacing", "title"], ["dateFormat", "DD-MM-YYYY", "date format"]]
+    assert "  title Release plan\n  dateFormat  DD-MM-YYYY\n  axisFormat %H" in got["gEdit"] and "  title inside" in got["gEdit"]
+    assert got["pBlock"] == ["title", True, "Pets  adopted"]
+    assert got["pEdit"] == 'pie showData title Strays\n    "Dogs" : 386\n'
+    assert got["pGone"] == 'pie showData\n    "Dogs" : 386\n'
+    assert got["pAdd"].startswith("pie") and "title" in got["pAdd"].lower()
+    assert re.search(r"dateFormat \S+", got["gAdd"])
+
+
 # --- the wiring ---------------------------------------------------------------------------
 
 

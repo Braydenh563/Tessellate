@@ -2463,6 +2463,19 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "diagram-chart-kinds",
+        "keywords": (
+            "gantt blocks", "pie chart blocks", "state diagram blocks", "class diagram blocks", "er diagram blocks",
+            "gantt title", "date format", "pie title", "chart title",
+        ),
+        "body": (
+            "A Gantt chart, pie chart, state, class or ER diagram is blocks too, and the bar offers that kind's own. "
+            "On a Gantt chart and a pie chart, Title is a block of its own, and a Gantt chart's Date format is another: "
+            "press Title or Date format in the bar, then rename it like any block. The source keeps what you wrote until you change that block."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-elsewhere",
         "keywords": (
             "edit as blocks", "diagram in a document", "mermaid figure", "open as a diagram",
