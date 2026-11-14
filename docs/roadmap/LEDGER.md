@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 79 | 32 | 2 | 59 | 287 |
+| chat | 176 | 78 | 31 | 2 | 59 | 285 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 453 | 101 | 2 | 183 | 1107 |
+| all | 553 | 452 | 100 | 2 | 183 | 1105 |
 
 ## graph
 
@@ -41,7 +41,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L131** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:1083. Evidence: setAtlasMood still in atlas.js; no optimisation commit found
 - [ ] **L132** `chat` open, M: Atlas tail script-drawn 15 draws a second at rest; verify subtle animations cheap. From OPEN.md:1087; OPEN.md:1091. Evidence: atlas-life.js:542 atlasTailRest compositor rest for held states; tail still script-drawn in live acts
 - [ ] **L133** `chat` open, M: Measure learning loop past a test-sized notebook. From OPEN.md:1937. Evidence: No large-notebook measure found; O(notes) pass
-- [ ] **L134** `chat` open, M: help-popovers.js 6 unclickable triggers; two ratchets fail. From OPEN.md:3838. Evidence: Found not fixed; lanserve.py and routes_recordings.py threads
 - [ ] **L135** `chat` open, M: Atlas faces at 104/28/20 px do not read as different moods; add cue on figure. From OPEN.md:1070; OPEN.md:1088; OPEN.md:2872; OPEN.md:3764. Evidence: Needs a design/human-rater read of the face sheet; no fix commit found
 - [ ] **L136** `chat` open, M: Chest breath writes torso scale 2.5x/s; settle cost in rest and large view. From OPEN.md:1069; OPEN.md:2869; OPEN.md:1247. Evidence: atlas-life.js atlasBreathFrame still runs on the resting beat (:547); composited rewrite not found
 - [ ] **L137** `chat` open, M: Large view whole-body moves (nmb-hop) move head 2.2x faster than rest; slow them. From OPEN.md:1242; OPEN.md:3492. Evidence: Row says decision needed on slowing; nmb-hop animations unchanged (08-consistency.css:6192).
@@ -100,7 +99,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L219** `chat` partly, M: Make composer compose in Ask rather than give the note back. From INBOX.md:904 B30. Evidence: Recency fixed; note-back is OPEN O1; composer batches r4 to r9 and tests/test_composer_chips_1110.py moved many replies
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
 - [ ] **L225** `chat` partly, M: Design per-answer 'wrong' feedback (E59) and code editor tabs (D52). From OPEN.md:4505; v1028-4.md Remaining. Evidence: Thumbs/Not right store: what it teaches and consent are owner calls
-- [ ] **L227** `chat` partly, M: Label or refuse Guide answers to off-topic questions that fall back on open tab help. From OPEN.md:999. Evidence: help_chat.py:640,662 _off_topic and keyword-only matching make weather match nothing (test_help_chat.py:112); tab-fallback label not confirmed
 - [ ] **L228** `chat` partly, M: Redesign Ask at half width and make replies differ across notes. From OPEN.md:356. Evidence: 67ef381 fixed open-note reply (composer_open.py); half-width Ask redesign not built
 - [ ] **L229** `chat` partly, M: Lead 'How do I change the widgets?' with the step sentence behind 'More about'. From OPEN.md:3514. Evidence: composer.py:317 voice=='help' and chat_said.py:636 compose(voice='help') exist; lead-with-step behaviour not confirmed.
 - [ ] **L230** `chat` partly, M: Finish no-model Chat for sums, convert, date, summarise-week and reminder from words. From OPEN.md:3582. Evidence: composer.py:_early_answer answers sums; utilities.py conversions and until_subject; no-model reminder creation not confirmed
