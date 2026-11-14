@@ -55877,6 +55877,8 @@ From DOCUMENTS_PLAN section 17d (L-documents-67). The plan's earlier text: "One 
 
 1811. **Documents plan session, 2026-11-14 (decision missing, standing order 3; not the owner's words):** L-documents-81, a per-edge label position on diagram connectors. Mermaid has no syntax for it, so it would need a non-Mermaid field (a `%%` comment the app reads). **Recommendation:** no such field. A diagram's source stays plain Mermaid that any Mermaid reader draws the same; the label sits where Mermaid's layout puts it, and a user who needs it elsewhere splits the edge through a small node. **Taken 2026-11-14 (standing order 3):** not built by decision; L-documents-81 closed on this item, and the plan's 1679 gap 4 line says so.
 
+1812. **Documents plan session, 2026-11-14 (decision missing, standing order 3; not the owner's words):** L-documents-44, sub-pages on the page-tree pattern from the owner's research. Open: depth, how a child is made, what binning a parent does, how it shows in the Library. **Recommendation:** one nullable `parent_id` with a server-side cycle check; the Documents list draws the tree collapsed; a child comes from the parent's kebab or `/subpage`, which links it in the parent; a breadcrumb in the head; "Move under" in the kebab (no drag needed); binning a parent bins its subtree and restore brings it back; purging a parent lifts live children to the top; export stays one document. **Taken 2026-11-14 (standing order 3):** DOCUMENTS_PLAN D14; L-documents-44 builds it.
+
 ## Moved from the plans, 2026-11-14 (graph-counts)
 
 GRAPH_PLAN.md's last INBOX blocks, each built or closed (pointers left in the plan).

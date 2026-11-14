@@ -1049,6 +1049,15 @@ row does today.
   go to definition, the block-id model, the word list, `docMatchCase`. Making
   the open path async to move them would trade a working editor for a riskier
   one for postponed, not removed, bytes. run_sandbox.py (362 lines) stays one file.
+- D14. **Sub-pages** (L-documents-44, INBOX 1812, 2026-11-14): a document may
+  have one parent (`documents.parent_id`, nullable, no cycles, checked on the
+  server). The Library's Documents list draws the tree, collapsed by default,
+  with a disclosure per parent; a child is made from the parent's kebab menu
+  or `/subpage`, which also puts a link to it in the parent. The document head
+  shows a breadcrumb of its parents. Moving is a kebab "Move under" picker
+  (drag is not required). Binning a parent bins its subtree, and restore
+  brings the subtree back; purging a parent lifts any child still live to the
+  top level. Export of a parent stays the one document.
 
 ### Phases
 
