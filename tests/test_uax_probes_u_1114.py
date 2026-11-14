@@ -247,3 +247,33 @@ def test_u11_one_window_after_than_is_set_against_the_current_one(session):
 
 def test_u11_the_busiest_month_is_the_one_with_most_notes(session):
     assert _stat(session, "which month did I write the most") == "You wrote the most in October 2026: 36 notes."
+
+
+# --- U8: there and then carry the place and the day of the answer before -----------------------------
+
+def _frame_turn(**frame) -> list[dict]:
+    return [{"question": "where did I go on holiday", "answer": "You flew to Lisbon on 14 March 2026.", "frame": {"note_ids": [1], "subject": "holiday", **frame}}]
+
+
+def test_u8_there_is_the_place_the_answer_before_named():
+    from tessellate.ai import composer
+
+    history = _frame_turn(place="Lisbon")
+    assert composer.follow_on("what did I do there", history).question == "what did I do in Lisbon"
+    assert composer.follow_on("is there a gym", history) is None or "Lisbon" not in composer.follow_on("is there a gym", history).question
+
+
+def test_u8_then_is_the_day_the_answer_before_named():
+    from tessellate.ai import composer
+
+    history = _frame_turn(dates=["2026-03-14"])
+    assert composer.follow_on("what did I do then", history).question == "what did I do on 14 March 2026"
+    assert composer.follow_on("who was with me then", history).question == "who was with me on 14 March 2026"
+
+
+def test_u8_the_frame_of_an_answer_carries_its_place():
+    from tessellate.ai import composer_dialogue
+
+    note = {"id": 1, "content": "# Holiday\n\nWe flew to Lisbon on 14 March.", "created_at": "2026-03-20"}
+    frame = composer_dialogue.turn_frame("where did I go on holiday", {"text": "We flew to Lisbon on 14 March.", "grounding": [{"note_id": 1}]}, [note], TODAY)
+    assert frame["place"] == "Lisbon", frame

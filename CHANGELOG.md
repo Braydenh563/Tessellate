@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "what did I do there" and "what did I do then" carry the place and the day the answer before named (2026-11-14).
 - Chat stats: "compare this month with last month", "more than last month" and "which month did I write the most" give both counts or the busiest period (2026-11-14).
 - Chat: "what did my plan say last month" reads the notebook as of the end of that window, with no date picked (2026-11-14).
 - Chat stats: "how many gym notes this month" counts the notes of that topic written in the window (2026-11-14).

@@ -11,6 +11,7 @@ FRAME = {
     "note_ids": [3, 4],
     "subject": "kitchen budget",
     "person": "Sam",
+    "place": "Lisbon",
     "ask": "what is the kitchen budget",
     "dates": ["2026-11-10"],
     "items": ["tiles", "paint"],
