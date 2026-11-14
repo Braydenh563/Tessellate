@@ -53,7 +53,9 @@ def test_the_canvas_is_a_layer_of_its_own() -> None:
 
 
 def test_the_release_touches_only_what_changed() -> None:
-    match = re.search(r"^function wbApplySelectionHighlight\(", JS, re.MULTILINE)
-    body = JS[match.end():].split("\n}\n", 1)[0]
+    #: whiteboard-bar.js wraps it (L286), so it starts at its own indent and ends at the brace on that indent.
+    match = re.search(r"^( *)function wbApplySelectionHighlight\(", JS, re.MULTILINE)
+    assert match, "wbApplySelectionHighlight is gone; this lint is about its body"
+    body = JS[match.end():].split("\n" + match.group(1) + "}\n", 1)[0]
     assert 'if (!wanted.has(el)) el.classList.remove("wb-selected"' in body
     assert '.forEach((el) => el.classList.remove("wb-selected", "wb-in-group"))' not in body

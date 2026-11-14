@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI leg 1: the sub-page loop refusal is a fixed sentence at its raise; the crumb hover has its focus twin; a board window's kind class is its own literal; the shape caret's touch rule joins the board grips' coarse block; two removed sweeps leave gate.sh; the marquee lint reads the wrapped whiteboard-bar.js.
 - CodeQL: the whiteboard fixes come in as whiteboard's 93cb96da (one forward scan for PlantUML comments, the GraphML size fallback named, `__all__` re-exports, CSS through `Path`); the draft-stop test passes the manager class, not a lambda (alert 2314).
 - CI leg 2: tests follow L-documents-47 (fetch before the editor), -89 (pan reads once per press) and the resolved `data-motion` read; the moving-arrow check uses `reducedMotionWanted()`; lint and math read text through `docStr`; the Gantt menu says Set timing; the Ruff help names Settings, Packages; the diagram builder topic keeps "Cancel changes nothing." under the 1,900 budget; credits regenerated.
 - CI fixes: the Ruff extra has its install notice sentence; document save harnesses stub `document` for the query block's "doc-saved" event; the new-note test follows L-documents-48's `startNewNote(1)`; three one-off docsverify sweeps removed (scratchpad cap).

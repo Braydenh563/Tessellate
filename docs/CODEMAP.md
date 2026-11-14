@@ -3816,12 +3816,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `boardWantsEscape` | frontend/js/documents-board.js:75 |
 | `close` | frontend/js/documents-board.js:18 |
-| `fill` | frontend/js/documents-board.js:214 |
-| `mount` | frontend/js/documents-board.js:232 |
+| `fill` | frontend/js/documents-board.js:215 |
+| `mount` | frontend/js/documents-board.js:233 |
 | `picture` | frontend/js/documents-board.js:143 |
 | `show` | frontend/js/documents-board.js:45 |
 | `svgEl` | frontend/js/documents-board.js:106 |
-| `unmount` | frontend/js/documents-board.js:253 |
+| `unmount` | frontend/js/documents-board.js:254 |
 | `words` | frontend/js/documents-board.js:113 |
 
 ### frontend/js/documents-callouts.js (18)
@@ -13838,7 +13838,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1964 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4340 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2845 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9028 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9034 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4129 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2664 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
@@ -13850,7 +13850,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10214 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:653 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:972 |
-| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:9989 |
+| board rules out of the boot sheet (07-whiteboard-misc.css); the boards bundle loads this sheet. | frontend/css/library-lazy.css:9996 |
 | boot splash | frontend/css/00-tokens-shell.css:4151 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2733 |
@@ -13872,7 +13872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1988 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3787 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2840 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:9133 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:9139 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3923 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1734 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:316 |
@@ -13918,10 +13918,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:446 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9847 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:8649 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:8655 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9958 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9772 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:8645 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:8651 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9630 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9998 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:327 |
@@ -13973,7 +13973,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2494 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1962 |
 | status and foot | frontend/css/sketch-pad.css:519 |
-| sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") | frontend/css/library-lazy.css:9869 |
+| sub-pages (DOCUMENTS_PLAN D14, documents-subpages.js; DESIGN.md "A list row with rows under it") | frontend/css/library-lazy.css:9875 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3549 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
@@ -13985,7 +13985,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3189 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5350 |
 | the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2491 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8965 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8971 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2311 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2417 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2403 |
@@ -13997,7 +13997,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, de-vibecoded (the owner: "devibecode all the ui") | frontend/css/08-consistency.css:2949 |
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:317 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6709 |
-| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:9972 |
+| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/library-lazy.css:9979 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
 | the Sources panel | frontend/css/02-chat-graph.css:4293 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:3009 |
@@ -14187,7 +14187,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 10021 |
+| frontend/css/library-lazy.css | 10020 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -14239,7 +14239,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:90 |
 |  | GET | `list_categories` | src/tessellate/api/routes_categories.py:142 |
 |  | GET | `list_conversations` | src/tessellate/api/routes_conversations.py:488 |
-|  | GET | `list_documents` | src/tessellate/api/routes_documents.py:441 |
+|  | GET | `list_documents` | src/tessellate/api/routes_documents.py:438 |
 |  | GET | `list_duplicates` | src/tessellate/api/routes_duplicates.py:78 |
 |  | GET | `list_entities` | src/tessellate/api/routes_entities.py:68 |
 |  | GET | `list_entries` | src/tessellate/api/routes_entries.py:1791 |
@@ -14260,7 +14260,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:195 |
 |  | POST | `create_category` | src/tessellate/api/routes_categories.py:154 |
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:618 |
-|  | POST | `create_document` | src/tessellate/api/routes_documents.py:549 |
+|  | POST | `create_document` | src/tessellate/api/routes_documents.py:546 |
 |  | POST | `create_entry` | src/tessellate/api/routes_entries.py:943 |
 |  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:553 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:54 |
@@ -14342,7 +14342,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:408 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1058 |
 | `/check` | GET | `check_for_update` | src/tessellate/api/routes_update.py:601 |
-| `/check-syntax` | POST | `check_syntax` | src/tessellate/api/routes_documents.py:391 |
+| `/check-syntax` | POST | `check_syntax` | src/tessellate/api/routes_documents.py:388 |
 | `/choice` | POST | `update_choice` | src/tessellate/api/routes_update.py:474 |
 | `/clip` | POST | `clip` | src/tessellate/api/routes_webclip.py:62 |
 | `/clip-page` | POST | `clip_page` | src/tessellate/api/routes_webclip.py:147 |
@@ -14363,8 +14363,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/confirmed/{fact_id}` | PATCH | `edit_confirmed` | src/tessellate/api/routes_insights.py:623 |
 | `/confirmed/{fact_id}/dismiss` | POST | `dismiss_confirmed` | src/tessellate/api/routes_insights.py:662 |
 | `/confirmed/{fact_id}/restore` | POST | `restore_confirmed` | src/tessellate/api/routes_insights.py:648 |
-| `/contents` | GET | `read_contents` | src/tessellate/api/routes_documents.py:591 |
-| `/contents` | POST | `write_contents` | src/tessellate/api/routes_documents.py:615 |
+| `/contents` | GET | `read_contents` | src/tessellate/api/routes_documents.py:588 |
+| `/contents` | POST | `write_contents` | src/tessellate/api/routes_documents.py:612 |
 | `/convert` | POST | `convert_board_file` | src/tessellate/api/routes_board_convert.py:32 |
 | `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:134 |
 | `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:54 |
@@ -14434,7 +14434,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/extras/{extra_id}/uninstall` | POST | `uninstall_extra` | src/tessellate/api/routes_settings_extras.py:76 |
 | `/feature-model` | POST | `set_feature_model` | src/tessellate/api/routes_models.py:1134 |
 | `/feature-models/reset` | POST | `reset_feature_models` | src/tessellate/api/routes_models.py:1184 |
-| `/file-types` | GET | `list_file_types` | src/tessellate/api/routes_documents.py:366 |
+| `/file-types` | GET | `list_file_types` | src/tessellate/api/routes_documents.py:363 |
 | `/files/exports` | GET | `list_exports` | src/tessellate/api/routes_files.py:1172 |
 | `/files/exports/{filename}` | GET | `download_export` | src/tessellate/api/routes_files.py:1210 |
 | `/files/gallery` | GET | `list_attachment_gallery` | src/tessellate/api/routes_files.py:306 |
@@ -14501,7 +14501,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/image` | POST | `fetch_topic_image` | src/tessellate/api/routes_webclip.py:90 |
 | `/images` | GET | `list_images` | src/tessellate/api/wb_boards.py:247 |
 | `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:125 |
-| `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:664 |
+| `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:661 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:97 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:544 |
@@ -14537,7 +14537,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/last` | GET | `last` | src/tessellate/api/routes_learned_audit.py:36 |
 | `/latest` | GET | `latest` | src/tessellate/api/routes_night.py:84 |
 | `/library` | GET | `library` | src/tessellate/api/routes_library.py:1045 |
-| `/link-offers` | POST | `document_link_offers` | src/tessellate/api/routes_documents.py:414 |
+| `/link-offers` | POST | `document_link_offers` | src/tessellate/api/routes_documents.py:411 |
 | `/link-reasons/run` | POST | `tidy_link_reasons_run` | src/tessellate/api/routes_tidy.py:78 |
 | `/link-suggestions` | GET | `link_suggestions` | src/tessellate/api/routes_entries_relations.py:98 |
 | `/link-suggestions/reasons` | POST | `link_suggestion_reasons` | src/tessellate/api/routes_entries_relations.py:520 |
@@ -14618,7 +14618,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1368 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:684 |
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1721 |
-| `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:522 |
+| `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:519 |
 | `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:638 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1241 |
@@ -14853,37 +14853,37 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{conversation_id}/turns/{index}/followups` | PUT | `set_turn_followups` | src/tessellate/api/routes_conversations.py:1033 |
 | `/{conversation_id}/turns/{index}/restore` | POST | `restore_turn` | src/tessellate/api/routes_conversations.py:881 |
 | `/{conversation_id}/unarchive` | PUT | `unarchive_conversation` | src/tessellate/api/routes_conversations.py:601 |
-| `/{document_id}` | DELETE | `delete_document` | src/tessellate/api/routes_documents.py:843 |
-| `/{document_id}` | GET | `get_document` | src/tessellate/api/routes_documents.py:768 |
-| `/{document_id}` | PUT | `update_document` | src/tessellate/api/routes_documents.py:773 |
-| `/{document_id}/ai-check` | POST | `ai_check` | src/tessellate/api/routes_documents.py:1247 |
-| `/{document_id}/ai-edit` | POST | `ai_edit` | src/tessellate/api/routes_documents.py:1156 |
-| `/{document_id}/ai-edit-log` | GET | `list_ai_edits` | src/tessellate/api/routes_documents.py:1554 |
-| `/{document_id}/ai-edit-log` | POST | `record_ai_edit` | src/tessellate/api/routes_documents.py:1532 |
-| `/{document_id}/ai-edit-log/{entry_id}/revert` | POST | `revert_ai_edit` | src/tessellate/api/routes_documents.py:1563 |
-| `/{document_id}/archive` | PUT | `archive_document` | src/tessellate/api/routes_documents.py:885 |
-| `/{document_id}/backlinks` | GET | `document_backlinks` | src/tessellate/api/routes_documents.py:1000 |
-| `/{document_id}/block-uses` | GET | `document_block_uses` | src/tessellate/api/routes_documents.py:1041 |
-| `/{document_id}/bookmarks` | GET | `document_bookmarks` | src/tessellate/api/routes_documents.py:322 |
-| `/{document_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_documents.py:335 |
-| `/{document_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_documents.py:345 |
+| `/{document_id}` | DELETE | `delete_document` | src/tessellate/api/routes_documents.py:840 |
+| `/{document_id}` | GET | `get_document` | src/tessellate/api/routes_documents.py:765 |
+| `/{document_id}` | PUT | `update_document` | src/tessellate/api/routes_documents.py:770 |
+| `/{document_id}/ai-check` | POST | `ai_check` | src/tessellate/api/routes_documents.py:1244 |
+| `/{document_id}/ai-edit` | POST | `ai_edit` | src/tessellate/api/routes_documents.py:1153 |
+| `/{document_id}/ai-edit-log` | GET | `list_ai_edits` | src/tessellate/api/routes_documents.py:1551 |
+| `/{document_id}/ai-edit-log` | POST | `record_ai_edit` | src/tessellate/api/routes_documents.py:1529 |
+| `/{document_id}/ai-edit-log/{entry_id}/revert` | POST | `revert_ai_edit` | src/tessellate/api/routes_documents.py:1560 |
+| `/{document_id}/archive` | PUT | `archive_document` | src/tessellate/api/routes_documents.py:882 |
+| `/{document_id}/backlinks` | GET | `document_backlinks` | src/tessellate/api/routes_documents.py:997 |
+| `/{document_id}/block-uses` | GET | `document_block_uses` | src/tessellate/api/routes_documents.py:1038 |
+| `/{document_id}/bookmarks` | GET | `document_bookmarks` | src/tessellate/api/routes_documents.py:319 |
+| `/{document_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_documents.py:332 |
+| `/{document_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_documents.py:342 |
 | `/{document_id}/claim-check` | POST | `claim_check` | src/tessellate/api/routes_document_claims.py:211 |
-| `/{document_id}/connections` | GET | `document_connections` | src/tessellate/api/routes_documents.py:1047 |
-| `/{document_id}/export.md` | GET | `export_markdown` | src/tessellate/api/routes_documents.py:1073 |
-| `/{document_id}/export.zip` | GET | `export_bundle` | src/tessellate/api/routes_documents.py:1115 |
-| `/{document_id}/notes` | POST | `attach_note` | src/tessellate/api/routes_documents.py:913 |
-| `/{document_id}/notes/{entry_id}` | DELETE | `detach_note` | src/tessellate/api/routes_documents.py:926 |
-| `/{document_id}/purge` | DELETE | `purge_document` | src/tessellate/api/routes_documents.py:869 |
-| `/{document_id}/rephrase` | POST | `rephrase_passage` | src/tessellate/api/routes_documents.py:1292 |
-| `/{document_id}/restore` | POST | `restore_document` | src/tessellate/api/routes_documents.py:861 |
-| `/{document_id}/revisions` | GET | `document_revisions` | src/tessellate/api/routes_documents.py:1371 |
-| `/{document_id}/revisions` | POST | `name_current_version` | src/tessellate/api/routes_documents.py:1433 |
+| `/{document_id}/connections` | GET | `document_connections` | src/tessellate/api/routes_documents.py:1044 |
+| `/{document_id}/export.md` | GET | `export_markdown` | src/tessellate/api/routes_documents.py:1070 |
+| `/{document_id}/export.zip` | GET | `export_bundle` | src/tessellate/api/routes_documents.py:1112 |
+| `/{document_id}/notes` | POST | `attach_note` | src/tessellate/api/routes_documents.py:910 |
+| `/{document_id}/notes/{entry_id}` | DELETE | `detach_note` | src/tessellate/api/routes_documents.py:923 |
+| `/{document_id}/purge` | DELETE | `purge_document` | src/tessellate/api/routes_documents.py:866 |
+| `/{document_id}/rephrase` | POST | `rephrase_passage` | src/tessellate/api/routes_documents.py:1289 |
+| `/{document_id}/restore` | POST | `restore_document` | src/tessellate/api/routes_documents.py:858 |
+| `/{document_id}/revisions` | GET | `document_revisions` | src/tessellate/api/routes_documents.py:1368 |
+| `/{document_id}/revisions` | POST | `name_current_version` | src/tessellate/api/routes_documents.py:1430 |
 | `/{document_id}/revisions/summary` | POST | `revisions_summary` | src/tessellate/api/routes_document_story.py:142 |
-| `/{document_id}/revisions/{revision_id}` | GET | `document_revision` | src/tessellate/api/routes_documents.py:1411 |
-| `/{document_id}/revisions/{revision_id}` | PUT | `rename_version` | src/tessellate/api/routes_documents.py:1449 |
-| `/{document_id}/revisions/{revision_id}/restore` | POST | `restore_document_revision` | src/tessellate/api/routes_documents.py:1464 |
-| `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1326 |
-| `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:899 |
+| `/{document_id}/revisions/{revision_id}` | GET | `document_revision` | src/tessellate/api/routes_documents.py:1408 |
+| `/{document_id}/revisions/{revision_id}` | PUT | `rename_version` | src/tessellate/api/routes_documents.py:1446 |
+| `/{document_id}/revisions/{revision_id}/restore` | POST | `restore_document_revision` | src/tessellate/api/routes_documents.py:1461 |
+| `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1323 |
+| `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:896 |
 | `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:104 |
 | `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:183 |
 | `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:216 |
@@ -22881,74 +22881,74 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AiCheckBody` | src/tessellate/api/routes_documents.py:1241 |
+| `AiCheckBody` | src/tessellate/api/routes_documents.py:1238 |
 | `AiEditBody` | src/tessellate/api/routes_documents.py:126 |
-| `AttachBookmarkBody` | src/tessellate/api/routes_documents.py:318 |
-| `ContentBatch` | src/tessellate/api/routes_documents.py:583 |
-| `ContentItem` | src/tessellate/api/routes_documents.py:574 |
-| `DocumentAiEditLogBody` | src/tessellate/api/routes_documents.py:1498 |
-| `DocumentAiEditOut` | src/tessellate/api/routes_documents.py:1514 |
+| `AttachBookmarkBody` | src/tessellate/api/routes_documents.py:315 |
+| `ContentBatch` | src/tessellate/api/routes_documents.py:580 |
+| `ContentItem` | src/tessellate/api/routes_documents.py:571 |
+| `DocumentAiEditLogBody` | src/tessellate/api/routes_documents.py:1495 |
+| `DocumentAiEditOut` | src/tessellate/api/routes_documents.py:1511 |
 | `DocumentBody` | src/tessellate/api/routes_documents.py:74 |
 | `DocumentPatch` | src/tessellate/api/routes_documents.py:90 |
-| `DocumentRevisionOut` | src/tessellate/api/routes_documents.py:1353 |
-| `LinkBody` | src/tessellate/api/routes_documents.py:909 |
-| `LinkOffersBody` | src/tessellate/api/routes_documents.py:408 |
-| `RephraseBody` | src/tessellate/api/routes_documents.py:1282 |
-| `RevisionNameBody` | src/tessellate/api/routes_documents.py:1428 |
-| `SyntaxCheckBody` | src/tessellate/api/routes_documents.py:386 |
-| `_ai_edit_out` | src/tessellate/api/routes_documents.py:1522 |
-| `_backlinks` | src/tessellate/api/routes_documents.py:953 |
-| `_block_uses` | src/tessellate/api/routes_documents.py:1006 |
+| `DocumentRevisionOut` | src/tessellate/api/routes_documents.py:1350 |
+| `LinkBody` | src/tessellate/api/routes_documents.py:906 |
+| `LinkOffersBody` | src/tessellate/api/routes_documents.py:405 |
+| `RephraseBody` | src/tessellate/api/routes_documents.py:1279 |
+| `RevisionNameBody` | src/tessellate/api/routes_documents.py:1425 |
+| `SyntaxCheckBody` | src/tessellate/api/routes_documents.py:383 |
+| `_ai_edit_out` | src/tessellate/api/routes_documents.py:1519 |
+| `_backlinks` | src/tessellate/api/routes_documents.py:950 |
+| `_block_uses` | src/tessellate/api/routes_documents.py:1003 |
 | `_cover` | src/tessellate/api/routes_documents.py:218 |
-| `_document_headings` | src/tessellate/api/routes_documents.py:515 |
-| `_existing` | src/tessellate/api/routes_documents.py:314 |
+| `_document_headings` | src/tessellate/api/routes_documents.py:512 |
+| `_existing` | src/tessellate/api/routes_documents.py:311 |
 | `_full` | src/tessellate/api/routes_documents.py:265 |
-| `_linked_notes` | src/tessellate/api/routes_documents.py:295 |
-| `_parent_or_refuse` | src/tessellate/api/routes_documents.py:284 |
+| `_linked_notes` | src/tessellate/api/routes_documents.py:292 |
+| `_parent_or_refuse` | src/tessellate/api/routes_documents.py:280 |
 | `_preview` | src/tessellate/api/routes_documents.py:180 |
 | `_preview_line` | src/tessellate/api/routes_documents.py:166 |
-| `_process_committed_media` | src/tessellate/api/routes_documents.py:355 |
-| `_record_document_revision` | src/tessellate/api/routes_documents.py:835 |
-| `_refuse_unwritable` | src/tessellate/api/routes_documents.py:646 |
+| `_process_committed_media` | src/tessellate/api/routes_documents.py:352 |
+| `_record_document_revision` | src/tessellate/api/routes_documents.py:832 |
+| `_refuse_unwritable` | src/tessellate/api/routes_documents.py:643 |
 | `_summary` | src/tessellate/api/routes_documents.py:236 |
-| `ai_check` | src/tessellate/api/routes_documents.py:1248 |
-| `ai_edit` | src/tessellate/api/routes_documents.py:1157 |
-| `archive_document` | src/tessellate/api/routes_documents.py:886 |
-| `attach_bookmark` | src/tessellate/api/routes_documents.py:336 |
-| `attach_note` | src/tessellate/api/routes_documents.py:914 |
-| `check_syntax` | src/tessellate/api/routes_documents.py:392 |
-| `create_document` | src/tessellate/api/routes_documents.py:550 |
-| `delete_document` | src/tessellate/api/routes_documents.py:844 |
-| `detach_bookmark` | src/tessellate/api/routes_documents.py:346 |
-| `detach_note` | src/tessellate/api/routes_documents.py:927 |
-| `document_backlinks` | src/tessellate/api/routes_documents.py:1001 |
-| `document_block_uses` | src/tessellate/api/routes_documents.py:1042 |
-| `document_bookmarks` | src/tessellate/api/routes_documents.py:323 |
-| `document_connections` | src/tessellate/api/routes_documents.py:1048 |
-| `document_link_offers` | src/tessellate/api/routes_documents.py:415 |
-| `document_revision` | src/tessellate/api/routes_documents.py:1412 |
-| `document_revisions` | src/tessellate/api/routes_documents.py:1372 |
-| `documents_outline` | src/tessellate/api/routes_documents.py:523 |
-| `export_bundle` | src/tessellate/api/routes_documents.py:1116 |
-| `export_markdown` | src/tessellate/api/routes_documents.py:1074 |
-| `get_document` | src/tessellate/api/routes_documents.py:769 |
-| `import_document` | src/tessellate/api/routes_documents.py:665 |
-| `list_ai_edits` | src/tessellate/api/routes_documents.py:1555 |
-| `list_documents` | src/tessellate/api/routes_documents.py:442 |
-| `list_file_types` | src/tessellate/api/routes_documents.py:367 |
-| `name_current_version` | src/tessellate/api/routes_documents.py:1434 |
-| `purge_document` | src/tessellate/api/routes_documents.py:870 |
-| `read_contents` | src/tessellate/api/routes_documents.py:592 |
-| `record_ai_edit` | src/tessellate/api/routes_documents.py:1533 |
-| `rename_version` | src/tessellate/api/routes_documents.py:1450 |
-| `rephrase_passage` | src/tessellate/api/routes_documents.py:1293 |
-| `restore_document` | src/tessellate/api/routes_documents.py:862 |
-| `restore_document_revision` | src/tessellate/api/routes_documents.py:1465 |
-| `revert_ai_edit` | src/tessellate/api/routes_documents.py:1564 |
-| `suggest_document_title` | src/tessellate/api/routes_documents.py:1327 |
-| `unarchive_document` | src/tessellate/api/routes_documents.py:900 |
-| `update_document` | src/tessellate/api/routes_documents.py:774 |
-| `write_contents` | src/tessellate/api/routes_documents.py:616 |
+| `ai_check` | src/tessellate/api/routes_documents.py:1245 |
+| `ai_edit` | src/tessellate/api/routes_documents.py:1154 |
+| `archive_document` | src/tessellate/api/routes_documents.py:883 |
+| `attach_bookmark` | src/tessellate/api/routes_documents.py:333 |
+| `attach_note` | src/tessellate/api/routes_documents.py:911 |
+| `check_syntax` | src/tessellate/api/routes_documents.py:389 |
+| `create_document` | src/tessellate/api/routes_documents.py:547 |
+| `delete_document` | src/tessellate/api/routes_documents.py:841 |
+| `detach_bookmark` | src/tessellate/api/routes_documents.py:343 |
+| `detach_note` | src/tessellate/api/routes_documents.py:924 |
+| `document_backlinks` | src/tessellate/api/routes_documents.py:998 |
+| `document_block_uses` | src/tessellate/api/routes_documents.py:1039 |
+| `document_bookmarks` | src/tessellate/api/routes_documents.py:320 |
+| `document_connections` | src/tessellate/api/routes_documents.py:1045 |
+| `document_link_offers` | src/tessellate/api/routes_documents.py:412 |
+| `document_revision` | src/tessellate/api/routes_documents.py:1409 |
+| `document_revisions` | src/tessellate/api/routes_documents.py:1369 |
+| `documents_outline` | src/tessellate/api/routes_documents.py:520 |
+| `export_bundle` | src/tessellate/api/routes_documents.py:1113 |
+| `export_markdown` | src/tessellate/api/routes_documents.py:1071 |
+| `get_document` | src/tessellate/api/routes_documents.py:766 |
+| `import_document` | src/tessellate/api/routes_documents.py:662 |
+| `list_ai_edits` | src/tessellate/api/routes_documents.py:1552 |
+| `list_documents` | src/tessellate/api/routes_documents.py:439 |
+| `list_file_types` | src/tessellate/api/routes_documents.py:364 |
+| `name_current_version` | src/tessellate/api/routes_documents.py:1431 |
+| `purge_document` | src/tessellate/api/routes_documents.py:867 |
+| `read_contents` | src/tessellate/api/routes_documents.py:589 |
+| `record_ai_edit` | src/tessellate/api/routes_documents.py:1530 |
+| `rename_version` | src/tessellate/api/routes_documents.py:1447 |
+| `rephrase_passage` | src/tessellate/api/routes_documents.py:1290 |
+| `restore_document` | src/tessellate/api/routes_documents.py:859 |
+| `restore_document_revision` | src/tessellate/api/routes_documents.py:1462 |
+| `revert_ai_edit` | src/tessellate/api/routes_documents.py:1561 |
+| `suggest_document_title` | src/tessellate/api/routes_documents.py:1324 |
+| `unarchive_document` | src/tessellate/api/routes_documents.py:897 |
+| `update_document` | src/tessellate/api/routes_documents.py:771 |
+| `write_contents` | src/tessellate/api/routes_documents.py:613 |
 
 ### src/tessellate/api/routes_documents_from_notes.py (3)
 

@@ -277,10 +277,6 @@ def _full(document: Document, session: Session | None = None) -> dict:
     return body
 
 
-#: Said when a move would make a loop (D14): the person's words, not the graph's.
-CYCLE = "A page cannot go under itself or one of its own sub-pages."
-
-
 def _parent_or_refuse(session: Session, document_id: int | None, parent_id: int | None) -> int | None:
     """The parent a create or a move names, checked: it exists, is not in the
     bin, and is not the document or one of its own sub-pages."""
@@ -288,7 +284,8 @@ def _parent_or_refuse(session: Session, document_id: int | None, parent_id: int 
         return None
     DOCUMENTS.writable(session, parent_id)
     if document_id is not None and document_repo.would_cycle(session, document_id, parent_id):
-        raise HTTPException(status_code=409, detail=CYCLE)
+        #: Said when a move would make a loop (D14): the person's words, not the graph's.
+        raise HTTPException(status_code=409, detail="A page cannot go under itself or one of its own sub-pages.")
     return parent_id
 
 

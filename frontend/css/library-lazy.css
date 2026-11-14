@@ -8640,6 +8640,12 @@ input[type="color"].wb-mixed {
     margin: calc(var(--space-3) * -1);
     background-clip: padding-box;
   }
+  /* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
+     grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
+  .wb-shape-caret {
+    box-sizing: content-box;
+    padding: calc((var(--target-min) - 10px) / 2);
+  }
 }
 
 /* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
@@ -9900,7 +9906,8 @@ input[type="color"].wb-mixed {
   white-space: nowrap;
   color: var(--muted);
 }
-.doc-crumbs > .doc-crumb:hover {
+.doc-crumbs > .doc-crumb:hover,
+.doc-crumbs > .doc-crumb:is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
 }
 /* Board only, so out of the boot sheets: library-lazy.css loads with the boards bundle. */
@@ -9994,14 +10001,6 @@ input[type="color"].wb-mixed {
 }
 .wb-layer-row.is-folded .wb-layer-eye {
   opacity: 1;
-}
-/* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
-   grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
-@media (pointer: coarse) {
-  .wb-shape-caret {
-    box-sizing: content-box;
-    padding: calc((var(--target-min) - 10px) / 2);
-  }
 }
 /* K18: a saved picture's caption, one muted line under it (Show captions). Lazy: out of the boot sheet. */
 .wb-object-caption {

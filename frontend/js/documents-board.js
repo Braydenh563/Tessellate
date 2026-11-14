@@ -186,7 +186,8 @@
         }
         continue;
       }
-      const g = svgEl("g", {}, `doc-board-item doc-board-${it.kind}${it.d?.sticky ? " doc-board-sticky" : ""}`);
+      //: The kind class is its own literal (`doc-board-frame` and the rest), so tests/test_css_unused_names.py sees the family's stem.
+      const g = svgEl("g", {}, ["doc-board-item", `doc-board-${it.kind}`, it.d?.sticky ? "doc-board-sticky" : ""].filter(Boolean).join(" "));
       if (it.rot) g.setAttribute("transform", `rotate(${it.rot} ${it.x + it.w / 2} ${it.y + it.h / 2})`);
       const d = it.d || {};
       const shape = d.shape === "none" || d.shape === "underline" ? null : (SHAPES[d.shape] || ((x, y, w, h) => svgEl("rect", { x, y, width: w, height: h, rx: 8 })))(it.x, it.y, it.w, it.h);
