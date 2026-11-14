@@ -8867,6 +8867,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Position</b>: inside the shape, or above, below, left or right of it.</p>
               <p><b>Width</b>: where the words wrap, in pixels; empty follows the shape.</p>
               <p><b>Wrap words</b>: off keeps each line whole until you break it yourself.</p>
+              <p><b>Rich text</b>: reads the words as markdown, so a dash starts a list, an indent nests it, and bold, italic and links show. Links open in a new tab.</p>
               <p><b>Spacing</b>: pixels kept clear of the words at the top, right, bottom and left.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Background</span>
@@ -8886,6 +8887,7 @@ Link to another note with [[its first few words]]."></textarea>
             </label>
             <label class="wb-fmt-row" data-fmt="shapelabel" data-unit="px"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-lwidth" min="24" max="2000" step="4" placeholder="Auto" aria-label="Width the words wrap at, in pixels" title="Width the words wrap at, in pixels; empty follows the shape"></label>
             <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Wrap words</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Off keeps each line whole until you break it"><input type="checkbox" id="wb-fmt-lwrap" checked aria-label="Wrap words"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Rich text</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Read the words as markdown: lists, links, bold and italic"><input type="checkbox" id="wb-fmt-lmd" aria-label="Rich text"></label></span></div>
             <div class="wb-fmt-row" data-fmt="shapelabel" role="group" aria-label="Spacing around the words"><span class="wb-fmt-label">Spacing</span>
               <span class="wb-fmt-quad">
                 <label class="wb-fmt-num"><span class="wb-fmt-label">T</span><input type="number" id="wb-fmt-lpad0" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the top of the words, in pixels" title="Pixels kept clear at the top"></label>

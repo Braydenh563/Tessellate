@@ -20911,6 +20911,7 @@ function wbLayoutShapeLabel(groupEl) {
   if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
   wbFmtState.label?.backdrop(groupEl, label);
   wbFmtState.textMore?.mathLabel(groupEl, label, area, fontSize);
+  wbFmtState.richLabel?.paint(groupEl, label, area, fontSize);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -21198,6 +21199,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   else delete label.dataset.valign;
   label.setAttribute("text-anchor", align === "left" ? "start" : align === "right" ? "end" : "middle");
   wbFmtState.label?.paint(label, parsed);
+  wbFmtState.richLabel?.mark(label, parsed); // Rich text (whiteboard-label-rich.js)
   wbLayoutShapeLabel(groupEl);
 }
 

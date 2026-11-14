@@ -17,6 +17,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-templates.js",
     "/js/whiteboard-format.js",
     "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
+    "/js/whiteboard-label-rich.js", //: After whiteboard-label.js: rich (markdown) words in a shape label; joins `wbFmtState` and the look key lists.
     "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs the page, `prefs`, `toast` and `wbFmtState`.
     "/js/whiteboard-options.js", //: The Format panel's Board section; reads `wbSetBackground` and `onSurface` at run time only.
     "/js/whiteboard-export-more.js", //: PNG resolution and embedded board, the HTML page; pure, joins `wbFmtState` (whiteboard-format.js).

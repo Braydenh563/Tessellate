@@ -2987,6 +2987,24 @@ body.printing-doc #doc-preview p,
   line-height: 1.2;
 }
 
+/* Rich words in a shape's label (whiteboard-label-rich.js): the text box's markdown, small and tight to fit a shape. */
+.wb-label-rich {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+.wb-label-rich[data-valign="top"] { justify-content: flex-start; }
+.wb-label-rich[data-valign="bottom"] { justify-content: flex-end; }
+.wb-label-rich > * { margin: 0; }
+.wb-label-rich ul, .wb-label-rich ol { padding-left: 1.2em; text-align: left; }
+.wb-label-rich a { color: inherit; text-decoration: underline; pointer-events: auto; }
+
 /* The one-line editor over a connector sits on the line, so it takes the
    card's ground to stay readable over it. */
 .wb-shape-label-editor.wb-link-label-editor {
