@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 63 | 27 | 10 | 59 | 266 |
+| chat | 176 | 63 | 26 | 10 | 59 | 265 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 438 | 96 | 10 | 183 | 1087 |
+| all | 553 | 438 | 95 | 10 | 183 | 1086 |
 
 ## graph
 
@@ -89,7 +89,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L219** `chat` partly, M: Make composer compose in Ask rather than give the note back. From INBOX.md:904 B30. Evidence: Recency fixed; note-back is OPEN O1; composer batches r4 to r9 and tests/test_composer_chips_1110.py moved many replies
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
 - [ ] **L228** `chat` partly, M: Redesign Ask at half width and make replies differ across notes. From OPEN.md:356. Evidence: 67ef381 fixed open-note reply (composer_open.py); half-width Ask redesign not built
-- [ ] **L229** `chat` partly, M: Lead 'How do I change the widgets?' with the step sentence behind 'More about'. From OPEN.md:3514. Evidence: composer.py:317 voice=='help' and chat_said.py:636 compose(voice='help') exist; lead-with-step behaviour not confirmed. Remaining 2026-11-14: measured, the Guide's lead for this question is the Dashboard topic's first sentence (55 words, no step); `_HOW_TOP` in ai/composer_help.py makes a bare how-to take the first sentence, and the sentence with the step ("Customise arranges the page ... Widgets and Edit layout") is the fix target. composer_help.py belongs to the composer agent, so the change is left to it; the "More about" fold shape needs the owner's word. Recommendation taken 2026-11-14 (standing order 3): Built: the first-line prior goes only to an opening line short enough to lead (_opens_the_how_to); the step sentence for widgets leads, the rest stays in the answer's existing fold.
 - [ ] **L230** `chat` partly, M: Finish no-model Chat for sums, convert, date, summarise-week and reminder from words. From OPEN.md:3582. Evidence: composer.py:_early_answer answers sums; utilities.py conversions and until_subject; no-model reminder creation not confirmed
 - [ ] **L231** `chat` partly, M: Cut Atlas idle cost (670 recalcs and 130 layouts a minute). From OPEN.md:1068. Evidence: Commits 7da5ea424 (no :has on #nm-buddy), 661204da1 Atlas at rest off every bar; remaining cost not re-measured
 - [ ] **L232** `chat` partly, M: Mood blend read costs 75-280 ms per mood change; gcResize first draw 400 ms. From a31b-1103.md Found, not fixed. Evidence: Band moved under html 36ecedeb1; avatars.js:5794 settle comment; gcResize deferral refused
