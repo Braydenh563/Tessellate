@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 111 | 29 | 0 | 0 | 140 |
+| world-class | 0 | 108 | 29 | 0 | 0 | 137 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 501 | 100 | 2 | 111 | 973 |
+| all | 372 | 498 | 100 | 2 | 111 | 970 |
 
 ## graph
 
@@ -554,17 +554,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-123** `world-class` open, L: Services for entries and chat, routes thin (decision 55). From WORLD_CLASS_PLAN.md:3752. Evidence: routes_entries.py 3,013 and routes_chat.py 2,281 lines; no */service.py (26b: 'entries and chat left')
 - [ ] **L-world-class-124** `world-class` open, L: run_agent and _run_one_step as Step state machines (decision 61). From WORLD_CLASS_PLAN.md:3738. Evidence: no Step enum in ai/agent.py or ai/skill_runner.py (grep 0 hits)
 - [ ] **L-world-class-125** `world-class` open, S: Query plans at 5,000 notes and resident memory on a populated notebook. From WORLD_CLASS_PLAN.md:3769. Evidence: WORLD_CLASS_PLAN.md:3769 'Not measured: query plans at 5,000 notes'; :3766 populated notebook
-- [ ] **L-world-class-128** `world-class` open, M: Bulk edit from the selection bar on every list: tag, category, property, move, delete with the undo bar (decision 65). From WORLD_CLASS_PLAN.md:3862. Evidence: decision 65 (:3862); 27.1 Notes and Library rows
-- [ ] **L-world-class-130** `world-class` open, M: Complete exports: a board or map as SVG and PNG with its linked notes as a folder; a document as PDF (decision 66). From WORLD_CLASS_PLAN.md:3865. Evidence: decision 66 (:3865); 27.1 Export row (:3827)
 - [ ] **L-world-class-131** `world-class` open, M: Move the popups to the kind 27.2's table rules (decision 63). From WORLD_CLASS_PLAN.md:3839. Evidence: frontend/index.html: 10 of the table's sheets and panels are still <dialog> (space-create, doc-storage, quick-note, doc-history, ...)
 - [ ] **L-world-class-132** `world-class` open, M: Trust rules 1, 2 and 7 to their bars: re-run undo.js, reach.js and overlap.js and close the gaps. From WORLD_CLASS_PLAN.md:3882. Evidence: 28.1 rows 1, 2, 7 today: 5 of 25 undone, 1 destination deeper than 3, overflow 95/14/28/30/23 (:4004)
 - [ ] **L-world-class-133** `world-class` open, S: OCR workspace: the encrypted-PDF prompt and the outline panel verified (28.4 row 8). From WORLD_CLASS_PLAN.md:3956. Evidence: 28.4 row 8 (:3956) not marked built; highlights are DOCUMENTS_PLAN's
 - [ ] **L-world-class-135** `world-class` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
-- [ ] **L-world-class-170** `world-class` open, M: Miro-style reactions on map nodes, and the whiteboard half of the mc1 research. From docs/ROADMAP.md:264. Evidence: MINDMAP_PLAN 14.4; L275 holds linked symbols and layer effects only
 - [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-176** `world-class` open, L: A visual timeline drawn as a branching line with off-shoots. From IDEAS.md:114. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-177** `world-class` open, S: Settings pages cannot be reached on a narrow phone view: check every page. From IDEAS.md:115. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
@@ -767,6 +763,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-41** `world-class` open, M: Pin downloads for the other translation pairs and check a real translation per pair. From L582. Evidence: ai/translate.PAIRS names fr, de, it, pt and the reverse directions; core/extras.py carries only en-es, and the other pairs' pinned URLs and sha256 need the network and a real run Reopened 2026-11-14 (hardware audit): the pinned pair files are reachable on the Hugging Face hub, so each pair downloads and translates here.
 - [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
 - [ ] **L-world-class-391** `world-class` open, M: Background art still just over 2 ms at 4x and still makes canvas garbage. From L-world-class-111, 2026-11-14. Evidence: CPU profile, dark, 20 fps: constellation 0.46 ms at 1x and 2.26 at 4x, microbes 0.58 and 2.28, mesh 0.22 and 0.96; allocations constellation 173 to 223 KB/s (frame, bg-art.js:723), microbes 607 to 717 KB/s (step :1333, frame :1548); the dark mesh texture not re-checked
+- [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 
 ## Plan session briefs
 
