@@ -143,17 +143,26 @@ def test_a_decimal_and_an_abbreviation_do_not_end_a_sentence():
 
 
 def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollama, monkeypatch):
+    import threading
     import time
 
     from tessellate.api import routes_board_affinity
 
     doc, note, other = _setup(ai_client)
     real = fake_ollama.chat
-    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    # The model is held until after the answer: "did not wait for it" is an
+    # ordering, not a wall-clock bound (a 0.9 s bound failed at 2.97 s on a
+    # loaded CI runner, 2026-11-15, as test_speculative_retrieval's did).
+    release = threading.Event()
+    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (release.wait(30), real(*a, **k))[1])
     monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
     started = time.perf_counter()
-    got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
-    assert time.perf_counter() - started < 0.9
+    try:
+        got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
+        # Waiting for the held model would take the full 30 s.
+        assert time.perf_counter() - started < 15
+    finally:
+        release.set()
     assert got["source"] == "words" and got["reason"] == "failed"
     assert _verdicts(got)["Tomatoes need pruning"] == "supported"
 
