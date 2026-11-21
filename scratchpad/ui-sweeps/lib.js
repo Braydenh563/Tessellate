@@ -198,11 +198,17 @@ async function boot(opts={}) {
         .find((o) => /Check for updates automatically/.test(o.textContent));
       //: Not `readyState`: the card comes after the page has loaded, and a
       //: guard that stopped at load let it land over a sweep's first click.
-      if (!card) return !!(window.prefsCache && window.prefsCache.update_choice_made === true);
+      //: `prefsCache` is a lexical global (`let`), so `window.prefsCache` was always undefined: a
+      //: data dir whose choice was made waited out the whole timeout, and a fresh one gave up after
+      //: 4 s, before the card (it queues behind the first-run turns) had come: docks.js then failed
+      //: its first run on every fresh dir with "confirm-overlay intercepts pointer events" (L-general-20).
+      //: The condition is the pref itself: false means the card is coming (6 to 30 s on a fresh dir: the
+      //: first-run queue holds it behind the toasts for up to 6 s, and a loaded machine adds more), so wait.
+      if (!card) return typeof prefsCache !== 'undefined' && !!prefsCache && prefsCache.update_choice_made === true;
       const no = [...card.querySelectorAll('button')].find((b) => /Don.t check/.test(b.textContent));
       if (no) no.click();
       return true;
-    }, null, {timeout: 4000, polling: 200}).catch(() => {});
+    }, null, {timeout: 60000, polling: 100}).catch(() => {});
   }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
