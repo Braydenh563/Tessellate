@@ -33,7 +33,7 @@ def _note(session, title):
 
 
 def test_ive_booked_ticks_the_matching_task(act, session):
-    assert "ticked off" in act("I've booked the car service")
+    assert "ticked off" in act("I've booked the car service").lower()
     assert "[x] book car service" in _note(session, "Todo")
 
 

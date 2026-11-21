@@ -9,7 +9,7 @@ age is measured from the last time the thread was touched.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 from sqlalchemy import select
@@ -17,10 +17,17 @@ from sqlalchemy import select
 from tessellate.ai import autonomous
 from tessellate.core import deps
 from tessellate.core.database import Conversation
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _ago(days: int) -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+    return SUITE_NOW.replace(tzinfo=None) - timedelta(days=days)
 
 
 @pytest.fixture

@@ -241,6 +241,9 @@ INVITES = {
 }
 
 
+_JOKE_ABOUT = re.compile(r"\b(?:joke|jokes|something funny)\s+(?:about|on|regarding)\s+(.{1,30})$", re.I)
+
+
 def social_kind(message: str, intent: str = "smalltalk") -> str:
     """The kind of conversational turn `message` is: one of `SOCIAL`."""
     if intent == "about_app":
@@ -279,6 +282,9 @@ def social(
     #: (`composer_social.repair`); anywhere else it is confusion.
     kind = social_kind(message, intent).replace("repair", "confused")
     line = _social_line(message, kind, previous, last_question, voice, recent, seed)
+    if kind == "joke" and (about := _JOKE_ABOUT.search(message or "")):
+        #: A joke on a named subject is still small talk (never a notes search); say plainly there is none on it.
+        line = f"{line} I have none about {about.group(1).strip(' ?.!')}."
     if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
         line = f"{line} {invitation(message, invite, voice, seed)}"
     return line

@@ -246,8 +246,8 @@ async function openBoardsTab(page, fns = ['initWhiteboard', 'wbOpenSidebar'], ti
     if (!button.classList.contains('active')) { button.click(); return false; }
     return names.every((f) => typeof window[f] === 'function');
   }, { names: fns }, { timeout, polling: 100 });
-  // The bundle's files run one after another: \`initWhiteboard\` is there before
-  // the later files (\`wbFmtState\` in whiteboard-format.js), so wait for all of it.
+  // The bundle's files run one after another: `initWhiteboard` is there before
+  // the later files (`wbFmtState` in whiteboard-format.js), so wait for all of it.
   await page.evaluate(() => ensureModule('boards'));
 }
 

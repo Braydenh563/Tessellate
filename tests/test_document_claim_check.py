@@ -114,9 +114,10 @@ def test_front_matter_is_skipped_and_parsed_in_linear_time():
     assert _front_matter_end("---\nnever closed\n") == 0
     assert [text[a:b] for a, b in _claims(text)] == ["The river floods the valley every spring now."]
     hostile = "---\n" + "a---\n" * 50_000
-    started = time.perf_counter()
+    # CPU time: a busy runner's stall is not the reader's (see below).
+    started = time.process_time()
     _front_matter_end(hostile)
-    assert time.perf_counter() - started < 0.1
+    assert time.process_time() - started < 0.1
 
 
 def _said(text):
@@ -143,19 +144,29 @@ def test_a_decimal_and_an_abbreviation_do_not_end_a_sentence():
 
 
 def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollama, monkeypatch):
-    import time
+    import threading
 
     from tessellate.api import routes_board_affinity
 
     doc, note, other = _setup(ai_client)
     real = fake_ollama.chat
-    #: The model takes 4 s and the route's budget is 0.1 s: an answer well inside 4 s is the timeout, not the model.
-    #: (It was 1.0 s against a 0.9 s bound, which a loaded CI runner missed at 2.4 s; the claim is unchanged.)
-    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(4.0), real(*a, **k))[1])
+    # The model answers only when released, so the reply coming back while it
+    # is still held proves the request did not wait for it; no wall-clock
+    # bound, which a busy runner broke (#242).
+    asked, release = threading.Event(), threading.Event()
+
+    def held(*a, **k):  # noqa: ANN002, ANN003, ANN202
+        asked.set()
+        release.wait(30)
+        return real(*a, **k)
+
+    monkeypatch.setattr(fake_ollama, "chat", held)
     monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
-    started = time.perf_counter()
-    got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
-    assert time.perf_counter() - started < 3.0
+    try:
+        got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
+        assert asked.is_set() and not release.is_set()
+    finally:
+        release.set()
     assert got["source"] == "words" and got["reason"] == "failed"
     assert _verdicts(got)["Tomatoes need pruning"] == "supported"
 

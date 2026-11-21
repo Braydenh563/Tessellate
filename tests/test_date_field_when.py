@@ -7,6 +7,14 @@ from __future__ import annotations
 from datetime import timedelta, timezone
 
 from tessellate.core.database import utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def test_a_typed_phrase_comes_back_as_a_date_and_a_time_on_the_persons_clock(client):

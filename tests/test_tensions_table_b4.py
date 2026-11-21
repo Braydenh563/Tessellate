@@ -17,6 +17,14 @@ from sqlalchemy import select
 
 from tessellate.ai import facts, tensions
 from tessellate.core.database import AuditLog, DerivedTension, Entry, EntryLink, utcnow
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _note(client, session, text, days_ago):

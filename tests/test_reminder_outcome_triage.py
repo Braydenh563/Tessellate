@@ -12,16 +12,17 @@ from __future__ import annotations
 from datetime import timedelta
 from pathlib import Path
 
-from tessellate.core.database import utcnow
+from tests._clock import SUITE_NOW, pin_clock
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 TRIAGE = (JS / "reminder-triage.js").read_text(encoding="utf-8")
 REMINDERS = (JS / "shell-reminders.js").read_text(encoding="utf-8")
 
 
-def test_the_outcome_reaches_the_source_note_and_undo_puts_it_back(client) -> None:
+def test_the_outcome_reaches_the_source_note_and_undo_puts_it_back(client, monkeypatch) -> None:
+    pin_clock(monkeypatch, SUITE_NOW)
     note = client.post("/entries", json={"content": "Plan the launch with Sam"}).json()
-    due = (utcnow() + timedelta(hours=1)).isoformat()
+    due = (SUITE_NOW + timedelta(hours=1)).isoformat()
     reminder = client.post("/reminders", json={"text": "Call Sam", "due_at": due, "entry_id": note["id"]}).json()
     assert reminder.get("id")
     done = client.put(f"/reminders/{reminder['id']}", json={"done": True}).json()

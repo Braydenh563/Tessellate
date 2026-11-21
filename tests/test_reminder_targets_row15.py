@@ -10,8 +10,16 @@ Show in graph; the Library's note card has its twin's Remind me and Link to.
 from __future__ import annotations
 
 from tests._app_js import frontend_text
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
@@ -20,7 +28,7 @@ BOARDS = "".join(frontend_text(n) for n in ("whiteboard.js", "boards-gallery.js"
 
 
 def _soon() -> str:
-    return (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    return (SUITE_NOW + timedelta(hours=2)).isoformat()
 
 
 def test_a_reminder_can_point_at_a_document(client):

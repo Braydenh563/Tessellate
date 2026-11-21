@@ -8,10 +8,9 @@ import datetime as dt
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 11, 11, 10, 0, 0)
 
@@ -32,8 +31,7 @@ RECAP = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, day in (("# Gym routine\n\nPush, pull, legs.", 9), ("# Lecture 5\n\nProcesses and threads.", 10), ("# Errands\n\nBuy a notebook.", 11)):
         entry = manager.create_entry(session, text, "Personal")
         entry.created_at = entry.updated_at = dt.datetime(2026, 11, day, 9)
@@ -69,8 +67,7 @@ def test_whats_happening_alone_is_small_talk(ask):
 def test_a_model_is_handed_the_same_recap(ai_client, fake_ollama, session, monkeypatch, question):
     from tests.test_parity_1110 import prompt_of, stream
 
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, day in (("# Gym routine\n\nPush, pull, legs.", 9), ("# Errands\n\nBuy a notebook.", 11)):
         entry = manager.create_entry(session, text, "Personal")
         entry.created_at = entry.updated_at = dt.datetime(2026, 11, day, 9)

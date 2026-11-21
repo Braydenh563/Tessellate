@@ -13,11 +13,10 @@ import re
 
 import pytest
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 21, 10, 0, 0)
 LECTURE = (
@@ -45,8 +44,7 @@ NOTES = [
 
 @pytest.fixture
 def ask(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, when in NOTES:
         manager.create_entry(session, text, "Uni").created_at = when
     session.add(Reminder(text="Hand in the essay", due_at=dt.datetime(2026, 10, 23, 17, 0)))

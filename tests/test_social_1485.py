@@ -18,6 +18,7 @@ from tessellate.ai import intent, question_noise
 from tessellate.core import deps
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 10, 31, 15, 45)
 
@@ -41,11 +42,8 @@ _NOTES = (
 
 @pytest.fixture()
 def notebook(session, monkeypatch):
-    from tessellate.api import routes_chat
-    from tessellate.core import config
 
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text in _NOTES:
         manager.create_entry(session, text)
     session.commit()
@@ -228,11 +226,8 @@ def test_a_repair_with_nothing_better_asks_what_was_meant(client, notebook, no_w
 
 @pytest.mark.parametrize("tools", [False, True])
 def test_a_hello_links_the_last_note_and_never_puts_you_in_it(client, session, monkeypatch, tools):
-    from tessellate.api import routes_chat
-    from tessellate.core import config
 
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     entry = manager.create_entry(session, "# 考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）\n\nゴルフ")
     session.commit()
     deps.get_config().set_preference("web_search_enabled", True)
