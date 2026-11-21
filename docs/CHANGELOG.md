@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the companion's hidden lid layers no longer animate between blinks (a blink waits out the face's move), the morph prints its points from a table, and the idle CPU guard measures the full figure on every machine; idle cost is +192 ms/s against a 120 cap, still open (L-ui-modernisation-201).
 - Tour: a step rings its control only once its entrance fade ends, toasts step aside for the lit control, and the tour sweeps drive the tour through `openTour.inspect()` again; all three pass, 520 of 520 steps in tour.js (L-general-14).
 - Top bar: from 820 to 1199 the header holds the centred 44px tab strip, which had run 2px past its top and bottom (measured at 1184; now 4 to 52 in a 56px header).
 - Phone: chat's Conversations button is back (its toolbar is built on first open, after the openers were mounted), and the board tour's Notes card points at View, which opens the sidebar below 600.
