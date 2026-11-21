@@ -77,25 +77,6 @@ NOTE_COVERAGE = 0.5
 FILED_WEIGHT = 0.5
 
 
-#: Everyday words a question shares with a note by chance ("vacation days left" and a note on "Water
-#: every second day"). When they are the only words of a question any note holds, the notes do not
-#: cover it and nothing is quoted (L-chat-248: PTO, meeting and ship questions quoted a stray note).
-EVERYDAY = frozenset(
-    "day days meeting meetings ship mean flight event set sets book ticket schedule left year time vacation holiday off sign signed".split()
-)
-
-
-@functools.cache
-def _everyday_stems() -> frozenset[str]:
-    return frozenset(_stem(w) for w in EVERYDAY)
-
-
-def _only_everyday(stems: set[str], views: list[NoteView]) -> bool:
-    """A question of two words or more whose only words any note holds are everyday ones."""
-    held = {t for t in stems if any(_holds(t, v.words | v.title_words | v.filed_words) for v in views)}
-    return len(stems) >= 2 and len(held) < len(stems) and held <= _everyday_stems()
-
-
 #: Two sentences sharing this share of their words say the same thing; the
 #: second is dropped. Token Jaccard, because it needs no model.
 NEAR_DUPLICATE = 0.6
@@ -317,11 +298,10 @@ def _jaccard(a: list[str], b: list[str]) -> float:
 
 def _covering(stems: set[str], views: list[NoteView]) -> list[NoteView]:
     """The notes that hold more than `NOTE_COVERAGE` of the question's words; every note when none does
-    (a question the notes only half answer), none when the only words held are everyday ones."""
+    (a question the notes only half answer). A question met only on everyday words is
+    `composer_empty.stray_match`'s, after the choice (CHAT_PLAN item 3)."""
     if len(stems) < 2:
         return views
-    if _only_everyday(stems, views):
-        return []
     covering = [
         v for v in views
         if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
