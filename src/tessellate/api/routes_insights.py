@@ -784,7 +784,10 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    cutoff = utcnow() - timedelta(days=7)
+    # The week ends on the person's clock (`user_now`), the seam every reader
+    # shares: a raw `utcnow()` here kept the real day under a pinned clock.
+    now = user_now(deps.get_config())
+    cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't

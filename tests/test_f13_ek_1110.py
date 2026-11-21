@@ -6,9 +6,8 @@ import datetime as dt
 import pytest
 
 import tests._seed_r9_1109 as sd
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 11, 10, 9, 0, 0)
 
@@ -22,8 +21,7 @@ NOTES = [
 
 @pytest.fixture
 def chat(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, days in NOTES:
         e = manager.create_entry(session, text, "Personal")
         e.created_at = e.updated_at = NOW - dt.timedelta(days=days)

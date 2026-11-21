@@ -24,10 +24,10 @@ import pytest
 import tests._seed_1030 as seed_1030
 from tessellate.ai import composer_frame, composer_lines, composer_tone
 from tessellate.api import bounds, routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 from tests.test_composer_timing_1461 import MORE, NOTES, NOW
+from tests._clock import pin_clock
 
 
 @pytest.fixture
@@ -46,8 +46,7 @@ def ask_chat(client, session, monkeypatch):
 
 @pytest.fixture
 def uni(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for text, when in NOTES + MORE:
         entry = manager.create_entry(session, text, category_name="Courses & study", tags=["university"])
         entry.created_at = entry.updated_at = when

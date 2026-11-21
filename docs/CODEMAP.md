@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10903, test files 2776, tests 22309, plan headings 689, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2780, CSS sections 524, backend routes 712, backend modules 10903, test files 2777, tests 22313, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -13559,8 +13559,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
 | `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:976 |
-| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
-| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
+| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:952 |
+| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:879 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:549 |
 | `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:238 |
 | `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:252 |
@@ -22709,11 +22709,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_sentence_case` | src/tessellate/api/routes_insights.py:160 |
 | `_true_fact` | src/tessellate/api/routes_insights.py:232 |
 | `_written_label` | src/tessellate/api/routes_insights.py:765 |
-| `composed_week` | src/tessellate/api/routes_insights.py:869 |
+| `composed_week` | src/tessellate/api/routes_insights.py:872 |
 | `confirm_insight` | src/tessellate/api/routes_insights.py:536 |
 | `day_digest_lines` | src/tessellate/api/routes_insights.py:437 |
 | `digest_question` | src/tessellate/api/routes_insights.py:778 |
-| `digest_structure_note` | src/tessellate/api/routes_insights.py:825 |
+| `digest_structure_note` | src/tessellate/api/routes_insights.py:828 |
 | `dismiss_confirmed` | src/tessellate/api/routes_insights.py:662 |
 | `dismiss_insight` | src/tessellate/api/routes_insights.py:550 |
 | `done_insight` | src/tessellate/api/routes_insights.py:563 |
@@ -22729,8 +22729,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stats` | src/tessellate/api/routes_insights.py:39 |
 | `tag_cloud` | src/tessellate/api/routes_insights.py:673 |
 | `today_line` | src/tessellate/api/routes_insights.py:487 |
-| `weekly_digest` | src/tessellate/api/routes_insights.py:950 |
-| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:877 |
+| `weekly_digest` | src/tessellate/api/routes_insights.py:953 |
+| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:880 |
 
 ### src/tessellate/api/routes_kept_words.py (5)
 
@@ -26721,35 +26721,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_list_entries_filter` | src/tessellate/entry/manager.py:346 |
-| `_placeholder_link` | src/tessellate/entry/manager.py:997 |
-| `_shown_link` | src/tessellate/entry/manager.py:1012 |
+| `_placeholder_link` | src/tessellate/entry/manager.py:999 |
+| `_shown_link` | src/tessellate/entry/manager.py:1014 |
 | `_update_entry_fields` | src/tessellate/entry/manager.py:676 |
-| `_with_stand_ins` | src/tessellate/entry/manager.py:1007 |
-| `archive_entry` | src/tessellate/entry/manager.py:1139 |
-| `bulk_category_names` | src/tessellate/entry/manager.py:1177 |
-| `came_from_outside` | src/tessellate/entry/manager.py:1224 |
+| `_with_stand_ins` | src/tessellate/entry/manager.py:1009 |
+| `archive_entry` | src/tessellate/entry/manager.py:1141 |
+| `bulk_category_names` | src/tessellate/entry/manager.py:1179 |
+| `came_from_outside` | src/tessellate/entry/manager.py:1226 |
 | `category_label` | src/tessellate/entry/manager.py:148 |
-| `category_name_for` | src/tessellate/entry/manager.py:1169 |
+| `category_name_for` | src/tessellate/entry/manager.py:1171 |
 | `category_space` | src/tessellate/entry/manager.py:107 |
 | `count_archived_entries` | src/tessellate/entry/manager.py:557 |
 | `count_deleted_entries` | src/tessellate/entry/manager.py:534 |
 | `count_notes` | src/tessellate/entry/manager.py:437 |
 | `create_entry` | src/tessellate/entry/manager.py:277 |
-| `document_came_from_outside` | src/tessellate/entry/manager.py:1261 |
-| `documents_for_entries_bulk` | src/tessellate/entry/manager.py:952 |
-| `documents_for_entry` | src/tessellate/entry/manager.py:938 |
-| `entries_for_document` | src/tessellate/entry/manager.py:1087 |
+| `document_came_from_outside` | src/tessellate/entry/manager.py:1263 |
+| `documents_for_entries_bulk` | src/tessellate/entry/manager.py:954 |
+| `documents_for_entry` | src/tessellate/entry/manager.py:940 |
+| `entries_for_document` | src/tessellate/entry/manager.py:1089 |
 | `entry_dates` | src/tessellate/entry/manager.py:736 |
 | `entry_dates_bulk` | src/tessellate/entry/manager.py:747 |
 | `entry_id_scope` | src/tessellate/entry/manager.py:467 |
 | `entry_space` | src/tessellate/entry/manager.py:126 |
-| `entry_tags` | src/tessellate/entry/manager.py:1199 |
+| `entry_tags` | src/tessellate/entry/manager.py:1201 |
 | `get_entry` | src/tessellate/entry/manager.py:565 |
 | `get_or_create_category` | src/tessellate/entry/manager.py:156 |
-| `holds_pasted_mail` | src/tessellate/entry/manager.py:1252 |
-| `link_document` | src/tessellate/entry/manager.py:896 |
-| `links_count_bulk` | src/tessellate/entry/manager.py:1058 |
-| `links_for_entries_bulk` | src/tessellate/entry/manager.py:1016 |
+| `holds_pasted_mail` | src/tessellate/entry/manager.py:1254 |
+| `link_document` | src/tessellate/entry/manager.py:898 |
+| `links_count_bulk` | src/tessellate/entry/manager.py:1060 |
+| `links_for_entries_bulk` | src/tessellate/entry/manager.py:1018 |
 | `list_archived_entries` | src/tessellate/entry/manager.py:540 |
 | `list_deleted_entries` | src/tessellate/entry/manager.py:520 |
 | `list_entries` | src/tessellate/entry/manager.py:372 |
@@ -26758,21 +26758,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mark_edited` | src/tessellate/entry/manager.py:232 |
 | `most_accessed_entries` | src/tessellate/entry/manager.py:503 |
 | `note_filter` | src/tessellate/entry/manager.py:423 |
-| `note_is_sealed` | src/tessellate/entry/manager.py:1204 |
+| `note_is_sealed` | src/tessellate/entry/manager.py:1206 |
 | `record_dates` | src/tessellate/entry/manager.py:811 |
 | `record_filing` | src/tessellate/entry/manager.py:594 |
-| `record_revision` | src/tessellate/entry/manager.py:1292 |
+| `record_revision` | src/tessellate/entry/manager.py:1294 |
 | `reindex_properties` | src/tessellate/entry/manager.py:771 |
-| `restore_entry` | src/tessellate/entry/manager.py:1119 |
+| `restore_entry` | src/tessellate/entry/manager.py:1121 |
 | `review_queue_count` | src/tessellate/entry/manager.py:49 |
-| `revisions_for` | src/tessellate/entry/manager.py:1329 |
-| `sealed_stand_ins` | src/tessellate/entry/manager.py:975 |
+| `revisions_for` | src/tessellate/entry/manager.py:1331 |
+| `sealed_stand_ins` | src/tessellate/entry/manager.py:977 |
 | `set_category` | src/tessellate/entry/manager.py:245 |
-| `shown_tags` | src/tessellate/entry/manager.py:1214 |
-| `soft_delete_entry` | src/tessellate/entry/manager.py:1101 |
-| `tags_from_json` | src/tessellate/entry/manager.py:1188 |
-| `unarchive_entry` | src/tessellate/entry/manager.py:1156 |
-| `unlink_document` | src/tessellate/entry/manager.py:919 |
+| `shown_tags` | src/tessellate/entry/manager.py:1216 |
+| `soft_delete_entry` | src/tessellate/entry/manager.py:1103 |
+| `tags_from_json` | src/tessellate/entry/manager.py:1190 |
+| `unarchive_entry` | src/tessellate/entry/manager.py:1158 |
+| `unlink_document` | src/tessellate/entry/manager.py:921 |
 | `update_entry` | src/tessellate/entry/manager.py:625 |
 
 ### src/tessellate/entry/manager_categories.py (5)
@@ -28056,7 +28056,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22309)
+## Tests (22313)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29208,6 +29208,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_run_prefs_q25.py | 3 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
+| tests/test_fixed_clock_lint.py | 4 |
 | tests/test_fixed_day_1693.py | 4 |
 | tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
@@ -30839,7 +30840,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (689)
+## Plan headings (690)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -31457,6 +31458,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1530 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2258 |
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2772 |
+| Test clock, parked 2026-11-21 | docs/roadmap/BACKLOG.md:4439 |
 | The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4243 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:912 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:1065 |

@@ -21,11 +21,11 @@ import pytest
 
 from tessellate.ai import notebook_stats, recognise as rec
 from tessellate.ai import recognise_questions
-from tessellate.api import routes_chat
 from tessellate.core import config
 from tests.test_composer_classes_1026c import _SUMMER, _WINTER, _fill
 from tests.test_composer_classes_1357 import NOT_FOUND, NOW
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 TODAY = dt.date(2026, 10, 21)
 D = dt.date
@@ -140,8 +140,7 @@ _NOT_SOUTH_WINTER = r"Ski trip|Snow day|New year plans|Gym routine|Lecture 5|Spr
 
 @pytest.fixture
 def ask_from(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW.replace(tzinfo=dt.timezone.utc))
     _fill(session, False)
     return lambda q, locale: _ask(client, q, notes_only=True, answer_from="notes", history=[], locale=locale)["text"]

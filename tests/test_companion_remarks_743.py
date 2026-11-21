@@ -5,15 +5,15 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from tessellate.api import routes_insights
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 1, 9, 0)
 
 
 def _clock(monkeypatch) -> None:
-    monkeypatch.setattr(routes_insights, "user_now", lambda _config: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def test_a_reminder_due_today_and_a_note_from_this_day_last_year_are_remarks(client, session, monkeypatch):

@@ -20,11 +20,10 @@ from datetime import date
 import pytest
 
 from tessellate.ai import composer_plan
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 D = dt.datetime
@@ -34,8 +33,7 @@ MODES = pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
 
 @pytest.fixture
 def notebook(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def build(notes, reminders=()):
         for text, when in notes:

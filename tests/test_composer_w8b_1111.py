@@ -12,11 +12,10 @@ import pytest
 import tests._seed_bt_1109 as bt
 from tessellate.ai import composer_ahead, recognise, recognise_windows
 from tessellate.ai import recognise_questions
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests._r5_1108 import driver
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 
 @pytest.fixture
@@ -153,8 +152,7 @@ NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
 
 @pytest.fixture
 def calls(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
 
     def build(verb: str):
         for text, when in ((f"# Calls\n\n{verb} mum on 26 October. Long chat about the garden.", dt.datetime(2026, 10, 26, 9)),

@@ -20,8 +20,8 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import reading, tools
-from tessellate.api import routes_chat
 from tessellate.core.database import Reminder
+from tests._clock import pin_clock
 
 #: A fixed clock (CLAUDE.md section 8): with the real one, reminders set "in
 #: 3 days" and a minute with a 2 in it changed what the fact check read.
@@ -30,7 +30,7 @@ NOW = datetime(2026, 10, 27, 9, 30)
 
 @pytest.fixture(autouse=True)
 def _fixed_clock(monkeypatch):
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _seed(session):
