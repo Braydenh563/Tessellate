@@ -254,45 +254,6 @@ def asset_hash(path: Path) -> str | None:
     return value
 
 
-#: **The Library bundle as one script** (L-documents-83, 106). The Library
-#: bundle is 54 files in app.js's `LAZY_MODULES.library`; fetched and run one
-#: at a time they were 35 requests and 35 evaluations on the Documents cold
-#: open. `/js/library-bundle.js` is those scripts, comment-stripped as they are
-#: served, joined in the list's order. The list is read from app.js, never
-#: copied, so it cannot drift. `documents-warm.js` stays its own file: it must
-#: run before the rest has even arrived.
-LIBRARY_BUNDLE_PATH = "/js/library-bundle.js"
-_LIBRARY_ENTRY = re.compile(r'^\s*"(/js/[^"]+\.js)",', re.M)
-_library_bundle_cache: dict[str, object] = {}
-
-
-def library_bundle_files() -> list[str]:
-    """The `/js/` files of the Library bundle in load order, minus the warm file."""
-    text = (FRONTEND_DIR / "js" / "app.js").read_text(encoding="utf-8")
-    block = re.search(r"^  library: \[\n(.*?)^  \],", text, re.S | re.M)
-    names = _LIBRARY_ENTRY.findall(block.group(1)) if block else []
-    return [n for n in names if n != "/js/documents-warm.js"]
-
-
-def library_bundle() -> tuple[str, bytes, bytes]:
-    """(stamp, body, gzipped body), rebuilt only when a member file moves."""
-    names = library_bundle_files()
-    stamps = [_stamp_for(n) for n in names]
-    key = "|".join(stamps)
-    if _library_bundle_cache.get("key") != key:
-        parts = []
-        for name in names:
-            path = FRONTEND_DIR / name.lstrip("/")
-            parts.append(asset_strip.strip_for_path(name.lstrip("/"), path.read_bytes()))
-        body = b"\n".join(parts) + b"\n"
-        digest = hashlib.sha256(key.encode()).hexdigest()[:10]
-        _library_bundle_cache.update(
-            key=key,
-            value=(f"{__version__}-{digest}", body, gzip.compress(body, 9, mtime=0)),
-        )
-    return _library_bundle_cache["value"]  # type: ignore[return-value]
-
-
 #: A local URL carrying the version stamp, in the page's markup.
 _STAMPED_URL = re.compile(rb"(/[A-Za-z0-9_./-]+)\?v=" + re.escape(__version__.encode()) + rb"(?![\w.-])")
 
@@ -317,7 +278,6 @@ def asset_stamps() -> dict[str, str]:
         f"/js/{p.name}": _stamp_for(f"/js/{p.name}")
         for p in sorted((FRONTEND_DIR / "js").glob("*.js"))
     }
-    stamps[LIBRARY_BUNDLE_PATH] = library_bundle()[0]
     stamps.update(
         (f"/css/{p.name}", _stamp_for(f"/css/{p.name}"))
         for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
@@ -475,19 +435,6 @@ class RevalidatedStatic(StaticFiles):
             response = HTMLResponse(content=await run_in_threadpool(served_offline_html, path))
             response.headers["Cache-Control"] = "no-cache"
             return response
-        if path == LIBRARY_BUNDLE_PATH.lstrip("/") and scope["method"] in ("GET", "HEAD"):
-            stamp, body, packed = await run_in_threadpool(library_bundle)
-            headers = {"Vary": "Accept-Encoding"}
-            if "gzip" in Headers(scope=scope).get("accept-encoding", ""):
-                body, headers["Content-Encoding"] = packed, "gzip"
-            query = scope.get("query_string", b"")
-            stamped = "v" in parse_qs(query.decode("latin-1") if isinstance(query, bytes) else query)
-            headers["Cache-Control"] = "public, max-age=31536000, immutable" if stamped else "no-cache"
-            return Response(
-                content=body if scope["method"] == "GET" else b"",
-                headers=headers,
-                media_type="text/javascript",
-            )
         strip = self._strippable(path)
         if strip and "range" in Headers(scope=scope):
             # A stripped file is one representation, served whole: a byte

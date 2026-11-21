@@ -193,13 +193,7 @@ def test_every_asset_the_smoke_fetches_is_a_file_with_a_pinned_type():
     smoke = _smoke()
     types = smoke.static_mime_types()
     urls = smoke.asset_urls()
-    #: `/js/library-bundle.js` is a route (the Library bundle's files served as one, `library_bundle`
-    #: in api/app.py), not a file; the smoke still fetches it from the frozen server.
-    missing = [
-        url
-        for url in urls
-        if url != "/js/library-bundle.js" and not (ROOT / "frontend" / url.lstrip("/")).is_file()
-    ]
+    missing = [url for url in urls if not (ROOT / "frontend" / url.lstrip("/")).is_file()]
     assert not missing, f"named in the frontend's code but not on disk: {missing}"
     untyped = [url for url in urls if smoke.expected_type(url, types) is None]
     assert not untyped, f"no pinned type for {untyped}"
