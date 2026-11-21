@@ -80,6 +80,8 @@ CHANGE_TOOLS = frozenset({
     "rename_category",
     "save_skill",
     "audit_link_reasons",
+    #: They rename, tick, move or remove things already there (undoable), so they ask first as an edit does.
+    "edit_chats", "edit_goals",
 })
 ADD_TOOLS = frozenset({
     "create_note",

@@ -801,15 +801,14 @@ def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     if schedule := _SCHEDULE.match(text):
         return _meetings_ahead(ctx, today) if schedule.group("meet") else _due(ctx, ahead_default(today))
     win = window(text, today)
-    #: A bare "coming up" names no day: it is the one default window (Z27), though `window` reads it as seven days.
-    bare = bool(win and win[2] == "coming up")
     leftover = _subject_stems(text, win)
     kind = {k for k in leftover if k in _KIND_STEMS}
     if kind and leftover == kind and not ctx.open_ids:
         return _meetings_ahead(ctx, today) if {_KIND_OF[k] for k in kind} == {"meeting"} else _kind_due(ctx, _kind_stems(kind), today)
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
-    return _due(ctx, ahead_default(today) if bare else win or ahead_default(today))
+    #: A bare "coming up" names no day: it is the one default window (Z27), though `window` reads it as seven days.
+    return _due(ctx, ahead_default(today) if not win or win[2] == "coming up" else win)
 
 
 # --- what is left ----------------------------------------------------------------------

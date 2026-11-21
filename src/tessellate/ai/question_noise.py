@@ -533,6 +533,12 @@ def allowance(word: str) -> float:
 _HOW_NEXT = frozenset("many much often long do does did to come can should far old big".split())
 
 
+def _kept(low: str, vocabulary, english: bool) -> bool:  # noqa: ANN001
+    """A word left as typed: already known, a real word, or not letters."""
+    real = is_real_word(low) if english else low in REAL_WORDS
+    return low in vocabulary or low in VOCABULARY or real or not low.isalpha()
+
+
 def nearest(word: str, vocabulary, after: str = "", *, english: bool = True) -> str | None:  # noqa: ANN001
     """The one vocabulary word `word` is a typo of, or None: within its
     allowance, and nearer than any other by a clear margin (a tie is a
@@ -540,10 +546,7 @@ def nearest(word: str, vocabulary, after: str = "", *, english: bool = True) -> 
     word settles). `english=False` for names: the English list holds names
     too ("hanna"), so only the hand-kept real words block a name's respelling."""
     low = word.lower()
-    real = is_real_word(low) if english else low in REAL_WORDS
-    if low in vocabulary or low in VOCABULARY or real or not low.isalpha():
-        return None
-    limit = allowance(low)
+    limit = 0 if _kept(low, vocabulary, english) else allowance(low)
     if not limit:
         return None
     scored = sorted((distance(low, v), v) for v in vocabulary if abs(len(v) - len(low)) <= 2)

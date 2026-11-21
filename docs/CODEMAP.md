@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8587, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11539, test files 3030, tests 23478, plan headings 696, app scripts 32, boot scripts 41, script files 317.
+Counts: frontend functions 8587, frontend ids 2815, CSS sections 524, backend routes 734, backend modules 11540, test files 3030, tests 23478, plan headings 696, app scripts 32, boot scripts 41, script files 317.
 
 ## Frontend functions (8587)
 
@@ -5229,20 +5229,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismiss` | frontend/js/extra-notice.js:56 |
-| `dismissed` | frontend/js/extra-notice.js:55 |
-| `dismissedList` | frontend/js/extra-notice.js:50 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:150 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:109 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:228 |
-| `extraNoticeProgressText` | frontend/js/extra-notice.js:92 |
-| `extraNoticeState` | frontend/js/extra-notice.js:70 |
-| `extraNoticeUndo` | frontend/js/extra-notice.js:130 |
-| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:98 |
-| `extraRows` | frontend/js/extra-notice.js:62 |
-| `forget` | frontend/js/extra-notice.js:57 |
-| `saveDismissed` | frontend/js/extra-notice.js:54 |
-| `sleep` | frontend/js/extra-notice.js:88 |
+| `dismiss` | frontend/js/extra-notice.js:58 |
+| `dismissed` | frontend/js/extra-notice.js:57 |
+| `dismissedList` | frontend/js/extra-notice.js:52 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:152 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:111 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:230 |
+| `extraNoticeProgressText` | frontend/js/extra-notice.js:94 |
+| `extraNoticeState` | frontend/js/extra-notice.js:72 |
+| `extraNoticeUndo` | frontend/js/extra-notice.js:132 |
+| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:100 |
+| `extraRows` | frontend/js/extra-notice.js:64 |
+| `forget` | frontend/js/extra-notice.js:59 |
+| `saveDismissed` | frontend/js/extra-notice.js:56 |
+| `sleep` | frontend/js/extra-notice.js:90 |
 
 ### frontend/js/extract-preview.js (2)
 
@@ -14342,7 +14342,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11539)
+## Backend modules (11540)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16917,8 +16917,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Event` | src/tessellate/ai/composer_plan.py:128 |
 | `_add_months` | src/tessellate/ai/composer_plan.py:176 |
 | `_anchor` | src/tessellate/ai/composer_plan.py:299 |
-| `_answer_text` | src/tessellate/ai/composer_plan.py:1015 |
-| `_asks_due` | src/tessellate/ai/composer_plan.py:982 |
+| `_answer_text` | src/tessellate/ai/composer_plan.py:1014 |
+| `_asks_due` | src/tessellate/ai/composer_plan.py:981 |
 | `_bounded` | src/tessellate/ai/composer_plan.py:198 |
 | `_busiest` | src/tessellate/ai/composer_plan.py:614 |
 | `_chip_title` | src/tessellate/ai/composer_plan.py:550 |
@@ -16931,32 +16931,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_event_counting_down_to` | src/tessellate/ai/composer_plan.py:687 |
 | `_grouped` | src/tessellate/ai/composer_plan.py:465 |
 | `_habit_events` | src/tessellate/ai/composer_plan.py:495 |
-| `_has_todo_note` | src/tessellate/ai/composer_plan.py:887 |
+| `_has_todo_note` | src/tessellate/ai/composer_plan.py:886 |
 | `_item_chips` | src/tessellate/ai/composer_plan.py:537 |
 | `_kind_due` | src/tessellate/ai/composer_plan.py:767 |
 | `_kind_stems` | src/tessellate/ai/composer_plan.py:761 |
-| `_left` | src/tessellate/ai/composer_plan.py:892 |
+| `_left` | src/tessellate/ai/composer_plan.py:891 |
 | `_long` | src/tessellate/ai/composer_plan.py:168 |
 | `_meetings_ahead` | src/tessellate/ai/composer_plan.py:778 |
 | `_merge` | src/tessellate/ai/composer_plan.py:430 |
 | `_name` | src/tessellate/ai/composer_plan.py:160 |
 | `_next_reminder` | src/tessellate/ai/composer_plan.py:585 |
-| `_not_done_later` | src/tessellate/ai/composer_plan.py:849 |
+| `_not_done_later` | src/tessellate/ai/composer_plan.py:848 |
 | `_not_due` | src/tessellate/ai/composer_plan.py:370 |
-| `_not_reminded` | src/tessellate/ai/composer_plan.py:877 |
+| `_not_reminded` | src/tessellate/ai/composer_plan.py:876 |
 | `_note_days` | src/tessellate/ai/composer_plan.py:382 |
 | `_note_events_of` | src/tessellate/ai/composer_plan.py:411 |
 | `_nothing_due` | src/tessellate/ai/composer_plan.py:574 |
-| `_open_reminders` | src/tessellate/ai/composer_plan.py:866 |
-| `_open_tasks` | src/tessellate/ai/composer_plan.py:840 |
+| `_open_reminders` | src/tessellate/ai/composer_plan.py:865 |
+| `_open_tasks` | src/tessellate/ai/composer_plan.py:839 |
 | `_overdue` | src/tessellate/ai/composer_plan.py:561 |
 | `_plain` | src/tessellate/ai/composer_plan.py:306 |
 | `_plan` | src/tessellate/ai/composer_plan.py:666 |
-| `_plan_reply` | src/tessellate/ai/composer_plan.py:1037 |
+| `_plan_reply` | src/tessellate/ai/composer_plan.py:1036 |
 | `_plan_window` | src/tessellate/ai/composer_plan.py:731 |
 | `_range_words` | src/tessellate/ai/composer_plan.py:484 |
 | `_reminder_events` | src/tessellate/ai/composer_plan.py:277 |
-| `_reminder_line` | src/tessellate/ai/composer_plan.py:871 |
+| `_reminder_line` | src/tessellate/ai/composer_plan.py:870 |
 | `_sentence_case` | src/tessellate/ai/composer_plan.py:376 |
 | `_sentence_day` | src/tessellate/ai/composer_plan.py:310 |
 | `_short` | src/tessellate/ai/composer_plan.py:172 |
@@ -16971,12 +16971,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_units` | src/tessellate/ai/composer_plan.py:631 |
 | `_until` | src/tessellate/ai/composer_plan.py:701 |
 | `_until_source` | src/tessellate/ai/composer_plan.py:695 |
-| `_when_is` | src/tessellate/ai/composer_plan.py:916 |
-| `_when_reply` | src/tessellate/ai/composer_plan.py:940 |
-| `_written_from` | src/tessellate/ai/composer_plan.py:950 |
+| `_when_is` | src/tessellate/ai/composer_plan.py:915 |
+| `_when_reply` | src/tessellate/ai/composer_plan.py:939 |
+| `_written_from` | src/tessellate/ai/composer_plan.py:949 |
 | `ahead_default` | src/tessellate/ai/composer_plan.py:751 |
-| `answer` | src/tessellate/ai/composer_plan.py:999 |
-| `asks_schedule` | src/tessellate/ai/composer_plan.py:977 |
+| `answer` | src/tessellate/ai/composer_plan.py:998 |
+| `asks_schedule` | src/tessellate/ai/composer_plan.py:976 |
 | `events` | src/tessellate/ai/composer_plan.py:446 |
 | `lookback` | src/tessellate/ai/composer_plan.py:268 |
 | `note_events` | src/tessellate/ai/composer_plan.py:417 |
@@ -19783,60 +19783,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stems` | src/tessellate/ai/question_cues.py:152 |
 | `subject` | src/tessellate/ai/question_cues.py:158 |
 
-### src/tessellate/ai/question_noise.py (55)
+### src/tessellate/ai/question_noise.py (56)
 
 | Name | File:line |
 |---|---|
-| `_at_asking_place` | src/tessellate/ai/question_noise.py:873 |
-| `_context_slip` | src/tessellate/ai/question_noise.py:658 |
-| `_cosine` | src/tessellate/ai/question_noise.py:968 |
-| `_example_grams` | src/tessellate/ai/question_noise.py:978 |
-| `_is_spelt` | src/tessellate/ai/question_noise.py:789 |
-| `_join_asking` | src/tessellate/ai/question_noise.py:702 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:940 |
+| `_at_asking_place` | src/tessellate/ai/question_noise.py:876 |
+| `_context_slip` | src/tessellate/ai/question_noise.py:661 |
+| `_cosine` | src/tessellate/ai/question_noise.py:971 |
+| `_example_grams` | src/tessellate/ai/question_noise.py:981 |
+| `_is_spelt` | src/tessellate/ai/question_noise.py:792 |
+| `_join_asking` | src/tessellate/ai/question_noise.py:705 |
+| `_kept` | src/tessellate/ai/question_noise.py:536 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:943 |
 | `_phrase_table` | src/tessellate/ai/question_noise.py:382 |
 | `_rating_words` | src/tessellate/ai/question_noise.py:163 |
-| `_real_word_slips` | src/tessellate/ai/question_noise.py:677 |
-| `_repair_by_speller` | src/tessellate/ai/question_noise.py:851 |
-| `_repair_late_space` | src/tessellate/ai/question_noise.py:738 |
-| `_repair_misspelt` | src/tessellate/ai/question_noise.py:795 |
-| `_repair_slang` | src/tessellate/ai/question_noise.py:758 |
-| `_repair_token` | src/tessellate/ai/question_noise.py:711 |
-| `_report_alternative` | src/tessellate/ai/question_noise.py:766 |
-| `_run_on_reading` | src/tessellate/ai/question_noise.py:819 |
-| `_small_talk_words` | src/tessellate/ai/question_noise.py:603 |
+| `_real_word_slips` | src/tessellate/ai/question_noise.py:680 |
+| `_repair_by_speller` | src/tessellate/ai/question_noise.py:854 |
+| `_repair_late_space` | src/tessellate/ai/question_noise.py:741 |
+| `_repair_misspelt` | src/tessellate/ai/question_noise.py:798 |
+| `_repair_slang` | src/tessellate/ai/question_noise.py:761 |
+| `_repair_token` | src/tessellate/ai/question_noise.py:714 |
+| `_report_alternative` | src/tessellate/ai/question_noise.py:769 |
+| `_run_on_reading` | src/tessellate/ai/question_noise.py:822 |
+| `_small_talk_words` | src/tessellate/ai/question_noise.py:606 |
 | `_social_phrases` | src/tessellate/ai/question_noise.py:395 |
-| `_speller_may_read` | src/tessellate/ai/question_noise.py:783 |
-| `_speller_reading` | src/tessellate/ai/question_noise.py:834 |
-| `_split` | src/tessellate/ai/question_noise.py:582 |
+| `_speller_may_read` | src/tessellate/ai/question_noise.py:786 |
+| `_speller_reading` | src/tessellate/ai/question_noise.py:837 |
+| `_split` | src/tessellate/ai/question_noise.py:585 |
 | `_spoken_to_kind` | src/tessellate/ai/question_noise.py:426 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:106 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:963 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:966 |
 | `_unstretched` | src/tessellate/ai/question_noise.py:232 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:986 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:989 |
 | `_without_filler` | src/tessellate/ai/question_noise.py:298 |
-| `_word_core` | src/tessellate/ai/question_noise.py:776 |
+| `_word_core` | src/tessellate/ai/question_noise.py:779 |
 | `_word_kinds` | src/tessellate/ai/question_noise.py:415 |
 | `addressed_kind` | src/tessellate/ai/question_noise.py:370 |
 | `allowance` | src/tessellate/ai/question_noise.py:518 |
-| `alternative` | src/tessellate/ai/question_noise.py:567 |
+| `alternative` | src/tessellate/ai/question_noise.py:570 |
 | `asks_archived` | src/tessellate/ai/question_noise.py:100 |
 | `asks_how` | src/tessellate/ai/question_noise.py:405 |
 | `asks_identity` | src/tessellate/ai/question_noise.py:351 |
-| `catching_up` | src/tessellate/ai/question_noise.py:1043 |
+| `catching_up` | src/tessellate/ai/question_noise.py:1046 |
 | `destretch` | src/tessellate/ai/question_noise.py:253 |
 | `drop_filler` | src/tessellate/ai/question_noise.py:321 |
 | `filler_subject` | src/tessellate/ai/question_noise.py:292 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:993 |
-| `guided` | src/tessellate/ai/question_noise.py:917 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:996 |
+| `guided` | src/tessellate/ai/question_noise.py:920 |
 | `is_filler` | src/tessellate/ai/question_noise.py:271 |
 | `is_real_word` | src/tessellate/ai/question_noise.py:511 |
 | `media_kind` | src/tessellate/ai/question_noise.py:313 |
-| `nearest` | src/tessellate/ai/question_noise.py:536 |
+| `nearest` | src/tessellate/ai/question_noise.py:542 |
 | `new_notes_as_newest` | src/tessellate/ai/question_noise.py:139 |
-| `repair` | src/tessellate/ai/question_noise.py:624 |
-| `router_words` | src/tessellate/ai/question_noise.py:901 |
-| `slips_only` | src/tessellate/ai/question_noise.py:611 |
+| `repair` | src/tessellate/ai/question_noise.py:627 |
+| `router_words` | src/tessellate/ai/question_noise.py:904 |
+| `slips_only` | src/tessellate/ai/question_noise.py:614 |
 | `social_kind` | src/tessellate/ai/question_noise.py:436 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:148 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:191 |
@@ -21482,8 +21483,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `tool_enabled` | src/tessellate/ai/tools/tool_sets.py:353 |
-| `web_barred` | src/tessellate/ai/tools/tool_sets.py:344 |
+| `tool_enabled` | src/tessellate/ai/tools/tool_sets.py:355 |
+| `web_barred` | src/tessellate/ai/tools/tool_sets.py:346 |
 
 ### src/tessellate/ai/tools/tool_skills.py (4)
 
@@ -32645,14 +32646,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4484 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4384 |
-| Needs hardware | docs/roadmap/LEDGER.md:482 |
+| Needs hardware | docs/roadmap/LEDGER.md:477 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:478 |
+| Owner calls | docs/roadmap/LEDGER.md:473 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4273 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32834,7 +32835,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:609 |
+| Plan session briefs | docs/roadmap/LEDGER.md:604 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Real-model run: several tool calls in one reply (L-world-class-69) | docs/roadmap/BACKLOG.md:713 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2664 |
@@ -32888,26 +32889,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
-| chat | docs/roadmap/LEDGER.md:29 |
-| chat | docs/roadmap/LEDGER.md:625 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:709 |
-| documents | docs/roadmap/LEDGER.md:80 |
-| documents | docs/roadmap/LEDGER.md:649 |
-| general | docs/roadmap/LEDGER.md:448 |
-| graph | docs/roadmap/LEDGER.md:27 |
-| graph | docs/roadmap/LEDGER.md:613 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:721 |
+| chat | docs/roadmap/LEDGER.md:24 |
+| chat | docs/roadmap/LEDGER.md:620 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:704 |
+| documents | docs/roadmap/LEDGER.md:75 |
+| documents | docs/roadmap/LEDGER.md:644 |
+| general | docs/roadmap/LEDGER.md:443 |
+| graph | docs/roadmap/LEDGER.md:22 |
+| graph | docs/roadmap/LEDGER.md:608 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:716 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4393 |
-| mindmap | docs/roadmap/LEDGER.md:96 |
-| mindmap | docs/roadmap/LEDGER.md:661 |
-| timeline | docs/roadmap/LEDGER.md:216 |
-| timeline | docs/roadmap/LEDGER.md:685 |
-| ui-modernisation | docs/roadmap/LEDGER.md:99 |
-| ui-modernisation | docs/roadmap/LEDGER.md:673 |
-| whiteboard | docs/roadmap/LEDGER.md:35 |
-| whiteboard | docs/roadmap/LEDGER.md:637 |
-| world-class | docs/roadmap/LEDGER.md:218 |
-| world-class | docs/roadmap/LEDGER.md:697 |
+| mindmap | docs/roadmap/LEDGER.md:91 |
+| mindmap | docs/roadmap/LEDGER.md:656 |
+| timeline | docs/roadmap/LEDGER.md:211 |
+| timeline | docs/roadmap/LEDGER.md:680 |
+| ui-modernisation | docs/roadmap/LEDGER.md:94 |
+| ui-modernisation | docs/roadmap/LEDGER.md:668 |
+| whiteboard | docs/roadmap/LEDGER.md:30 |
+| whiteboard | docs/roadmap/LEDGER.md:632 |
+| world-class | docs/roadmap/LEDGER.md:213 |
+| world-class | docs/roadmap/LEDGER.md:692 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2834 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2885 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2992 |

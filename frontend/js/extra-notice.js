@@ -20,6 +20,8 @@
   const EXTRA_NOTICE_WHAT = {
     pdfpages: "Opening scanned PDF pages needs the PDF pages package.",
     voice: "Voice notes need the voice package.",
+    vad: "Skipping silence in recordings needs the speech detection package.",
+    "vad-model": "Skipping silence in recordings needs the speech detection model.",
     desktop: "The desktop window needs the desktop package.",
     semantic: "Search by meaning needs the meaning package.",
     documents: "Importing documents needs the documents package.",
