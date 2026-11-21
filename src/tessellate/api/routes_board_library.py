@@ -41,7 +41,6 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.downloads import attachment_headers, safe_filename
@@ -66,13 +65,12 @@ from tessellate.api.routes_whiteboard import (
 )
 from tessellate.core.events import object_state as _object_state, sketch_state as _sketch_state
 from tessellate.core import deps, events, undo_bin
+from tessellate.repo import board_library as repo_bl
 from tessellate.core.database import (
     BoardLibrary,
     BoardLibraryItem,
     BoardLibraryMark,
     Entry,
-    MediaUpload,
-    WhiteboardNode,
     WhiteboardObject,
     WhiteboardSketch,
     utcnow,
@@ -456,7 +454,7 @@ def _item_out(row: BoardLibraryItem) -> LibraryItemOut:
 
 def _yours(db: Session) -> BoardLibrary:
     """The default library, made the first time anything asks for it."""
-    row = db.scalar(select(BoardLibrary).where(BoardLibrary.kind == "yours").order_by(BoardLibrary.id))
+    row = repo_bl.yours(db)
     if row is None:
         row = BoardLibrary(name="Yours", kind="yours", sort=0)
         db.add(row)
@@ -482,21 +480,14 @@ def _name_matcher(words: list[str]):  # noqa: ANN202
 def _item_rows(db: Session, kind: str | None, library_id: int | None, favourites: bool, deleted: bool) -> list[BoardLibraryItem]:
     """The person's saved items, newest first, narrowed by the query string.
     Snippets stay out of the panel unless that kind is asked for by name."""
-    query = select(BoardLibraryItem)
-    query = query.where(BoardLibraryItem.deleted_at.is_not(None) if deleted else BoardLibraryItem.deleted_at.is_(None))
-    query = query.where(BoardLibraryItem.kind == kind if kind else BoardLibraryItem.kind != SNIPPET_KIND)
-    if library_id:
-        query = query.where(BoardLibraryItem.library_id == library_id)
-    if favourites:
-        query = query.where(BoardLibraryItem.favourite.is_(True))
-    return list(db.scalars(query.order_by(BoardLibraryItem.updated_at.desc(), BoardLibraryItem.id.desc())).all())
+    return repo_bl.items(db, kind, library_id, favourites, deleted, SNIPPET_KIND)
 
 
 def _marks_and_recent(db: Session, rows: list[BoardLibraryItem]) -> tuple[dict, list[str]]:
     """Favourite and use marks on built-ins, and the most recently used refs
     across the person's items and the built-ins together. `rows` is every
     matching item before the limit cut, so a recent item is never cut away."""
-    marked = db.scalars(select(BoardLibraryMark)).all()
+    marked = repo_bl.marks(db)
     marks = {
         m.key: {
             "favourite": bool(m.favourite),
@@ -554,7 +545,7 @@ def list_library(
     (the AI's `list_library` reads this; the panel filters on the client)."""
     yours = _yours(db)
     db.commit()
-    libraries = db.scalars(select(BoardLibrary).order_by(BoardLibrary.sort, BoardLibrary.id)).all()
+    libraries = repo_bl.libraries(db)
     rows = _item_rows(db, kind, library_id, favourites, deleted)
     words = (q or "").lower().split()
     matches = _name_matcher(words)
@@ -739,7 +730,7 @@ class LibraryBody(BaseModel):
 @router.post("/board-library/libraries", status_code=201)
 def create_library(body: LibraryBody, db: Session = Depends(get_session)) -> dict:
     _yours(db)
-    row = BoardLibrary(name=body.name.strip(), kind="custom", sort=1 + (db.scalar(select(BoardLibrary.sort).order_by(BoardLibrary.sort.desc())) or 0))
+    row = BoardLibrary(name=body.name.strip(), kind="custom", sort=repo_bl.next_sort(db))
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -765,7 +756,7 @@ def delete_library(library_id: int, with_items: bool = False, db: Session = Depe
     row = _library_or_404(db, library_id)
     if row.kind == "yours":
         raise HTTPException(status_code=409, detail="Yours is where everything you save goes; it stays.")
-    held = db.scalars(select(BoardLibraryItem).where(BoardLibraryItem.library_id == row.id)).all()
+    held = repo_bl.held_items(db, row.id)
     saved = {"library": undo_bin.row_dict(row), "with_items": with_items, "items": [undo_bin.row_dict(i) for i in held]}
     moved = 0
     if with_items:
@@ -789,13 +780,7 @@ def export_library(library_id: int | None = None, db: Session = Depends(get_sess
     """`memorymap-library-1.json`: one library and its live items."""
     library = _library_or_404(db, library_id)
     db.commit()
-    rows = db.scalars(
-        select(BoardLibraryItem).where(
-            BoardLibraryItem.library_id == library.id,
-            BoardLibraryItem.deleted_at.is_(None),
-            BoardLibraryItem.kind != SNIPPET_KIND,
-        )
-    ).all()
+    rows = repo_bl.live_items(db, library.id, SNIPPET_KIND)
     body = {
         "format": EXPORT_FORMAT,
         "version": 1,
@@ -841,10 +826,10 @@ def import_library(body: ImportBody, db: Session = Depends(get_session)) -> dict
         raise _fail("This is not a Tessellate library file.")
     if len(body.items) > 2000:
         raise _fail("A library file holds at most 2,000 items.")
-    have = {f"/media/{name}" for name in db.scalars(select(MediaUpload.filename)).all()}
+    have = {f"/media/{name}" for name in repo_bl.media_filenames(db)}
     name = str(body.library.get("name") or "Imported")[:80].strip() or "Imported"
     _yours(db)
-    library = BoardLibrary(name=name, kind="imported", sort=1 + (db.scalar(select(BoardLibrary.sort).order_by(BoardLibrary.sort.desc())) or 0))
+    library = BoardLibrary(name=name, kind="imported", sort=repo_bl.next_sort(db))
     db.add(library)
     db.flush()
     made, skipped, dropped_media = 0, 0, 0
@@ -1101,13 +1086,7 @@ def _map_has_no_centre(db: Session, board_id: int | None) -> bool:
     entry = db.get(Entry, board_id)
     if entry is None or _board_settings(entry)[0] != "map":
         return False
-    roots = db.scalar(
-        select(WhiteboardObject.id)
-        .where(WhiteboardObject.board_id == board_id, WhiteboardObject.parent_id.is_(None),
-               WhiteboardObject.kind.in_(MAP_REFERENCE_KINDS | {MAP_TOPIC_KIND}))
-        .limit(1)
-    )
-    return roots is None
+    return not repo_bl.has_board_root(db, board_id, MAP_REFERENCE_KINDS | {MAP_TOPIC_KIND})
 
 
 def _place_branch(db: Session, board_id: int | None, payload: dict, body: PlaceBody, ref: dict,
@@ -1162,14 +1141,9 @@ def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, list
     """The highest z already on the board among the drawings and cards (one
     band since decision 43: notes, boxes, pictures, tables and strokes), and
     the frames' z values, leaving out the rows just placed."""
-    here = (lambda col: col.is_(None)) if board_id is None else (lambda col: col == board_id)
-    sketch_top = db.scalar(
-        select(func.max(WhiteboardSketch.z)).where(here(WhiteboardSketch.board_id), WhiteboardSketch.id.not_in({r.id for r in made["sketches"]}))
+    sketch_top, note_top, others = repo_bl.band_tops(
+        db, board_id, {r.id for r in made["sketches"]}, {r.id for r in made["objects"]}
     )
-    note_top = db.scalar(select(func.max(WhiteboardNode.z)).where(here(WhiteboardNode.board_id)))
-    others = db.scalars(
-        select(WhiteboardObject).where(here(WhiteboardObject.board_id), WhiteboardObject.id.not_in({r.id for r in made["objects"]}))
-    ).all()
     top = max([0, sketch_top or 0, note_top or 0, *[o.z or 0 for o in others if o.kind != "frame"]])
     return top, [o.z or 0 for o in others if o.kind == "frame"]
 
