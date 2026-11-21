@@ -546,6 +546,11 @@ function renderWebPanelMenu(engine) {
     title: "Choose the engine and manage SearXNG in Settings",
     run: () => openSettingsModal("websearch"),
   });
+  items.push({
+    label: "ph:bookmark-simple Clip a page from your browser",
+    title: "Keep a page you are reading elsewhere as a note: Settings, Import & export, Web clipper",
+    run: () => openSettingsModal("data", "web-clip-box"),
+  });
   if (hasHistory) {
     items.push({
       label: "ph:clock-counter-clockwise Clear recent searches",

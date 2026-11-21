@@ -1170,7 +1170,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Import & export, Web clipper has a bookmark called Clip to "
-            "Tessellate (typing clipper in the command palette opens it). Drag it to your browser's bookmarks bar (or press Copy the "
+            "Tessellate, in three numbered steps (typing clipper in the command palette, "
+            "or the Web panel's menu, Clip a page from your browser, opens it; Try it on a sample "
+            "shows the clip window without making the bookmark first). Drag it to your browser's bookmarks bar (or press Copy the "
             "bookmark and make a bookmark with it as the address). On any page, "
             "press it: a small Tessellate window opens beside the page with its "
             "title and address, and Save as a note keeps the page's main text, or "

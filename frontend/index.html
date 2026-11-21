@@ -14348,7 +14348,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <h3 class="inline-h3">Web clipper</h3>
                 <span class="fold-help-slot" aria-hidden="true"></span>
               </div></summary>
-              <p class="muted">Drag this to your bookmarks bar, then press it on any page to keep that page as a note.</p>
+              <ol class="web-clip-steps">
+                <li>Drag the button below to your browser's bookmarks bar.</li>
+                <li>Open any page you want to keep and press the bookmark.</li>
+                <li>Check the title in the small window, then press Save as a note.</li>
+              </ol>
               <div class="help-body hidden" id="web-clip-help" role="dialog" aria-label="About the web clipper">
                 <p>
                   The bookmark opens a small Tessellate window beside the page and
@@ -14368,6 +14372,9 @@ Link to another note with [[its first few words]]."></textarea>
                 <a id="web-clip-bookmarklet" class="web-clip-bookmarklet" href="/clip.html" draggable="true"
                   title="Drag to your bookmarks bar"><i class="ph ph-bookmark-simple ph-lead" aria-hidden="true"></i> Clip to Tessellate</a>
                 <button id="web-clip-copy" class="ghost small" type="button"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy the bookmark</button>
+              </div>
+              <div class="row gap">
+                <button id="web-clip-try" class="ghost small" type="button"><i class="ph ph-play ph-lead" aria-hidden="true"></i> Try it on a sample</button>
               </div>
               <p id="web-clip-status" class="status" role="status" aria-live="polite"></p>
             </details>

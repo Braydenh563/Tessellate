@@ -30,12 +30,16 @@
 <body class="clip-page">
   <main class="clip-card" aria-labelledby="clip-heading">
     <h1 id="clip-heading" class="clip-heading">Clip to Tessellate</h1>
+    <p class="muted text-sm">A page you pressed the bookmark on lands here. Nothing is kept until you press Save.</p>
     <p id="clip-status" class="status" role="status" aria-live="polite">Waiting for the page…</p>
     <div id="clip-preview" class="clip-preview hidden">
       <label class="clip-field" for="clip-title">Title</label>
       <input id="clip-title" type="text" maxlength="300" autocomplete="off">
       <p id="clip-source" class="muted text-sm clip-source"></p>
       <p id="clip-what" class="muted text-sm"></p>
+      <label class="clip-field" for="clip-excerpt">What will be kept</label>
+      <p id="clip-excerpt" class="clip-excerpt" tabindex="0"></p>
+      <p id="clip-count" class="muted text-sm"></p>
     </div>
     <div class="row gap clip-actions">
       <button id="clip-save" type="button" disabled>Save as a note</button>
