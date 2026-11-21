@@ -225,3 +225,38 @@ console.log(JSON.stringify(out));
     assert out["readsCached"] == 1 and out["readsAfterSet"] == 2
     assert [out["a"], out["b"], out["c"], out["d"]] == [None, "1", "0", None]
 
+
+@needs_node
+def test_the_ghost_keeps_an_empty_slot_at_the_caret_while_typing_runs_on():
+    """A ghost that comes or goes splits or joins the caret's text node, and CodeMirror then puts the
+    DOM selection back with a forced layout (Selection.collapse, about 15 ms of a key at 4x CPU, 11
+    of 44 keys in the gate's Source burst). While the person keeps typing, the ghost's place stays
+    as an empty span, so only a new ghost's text changes; any other move drops it."""
+    code = (JS / "documents-code.js").read_text(encoding="utf-8")
+    start = code.index("docGhostPlugin.make = ")
+    make = code[start:code.index("\n};\n", start) + 4]
+    script = """
+const document = { createElement: () => ({ setAttribute() {}, set textContent(t) { this.t = t; } }) };
+class WidgetType {}
+const Decoration = { none: [], set: (a) => a, widget: (spec) => ({ range: (pos) => ({ pos, text: spec.widget.text, side: spec.side }) }) };
+const CM = { view: { Decoration, WidgetType, ViewPlugin: { fromClass: (cls, spec) => ({ cls, spec }) } } };
+const docGhostPlugin = {};
+""" + make + """
+let want = null;
+const P = docGhostPlugin.make(CM, (state, ghost) => (want ? ghost(want, state.selection.main.head) : null));
+const st = (head, ranges) => ({ selection: { main: { head, empty: true }, ranges: ranges || [{}] } });
+const typed = (head) => ({ state: st(head), docChanged: true, transactions: [{ isUserEvent: (e) => e === "input" }] });
+const plugin = new P.cls({ state: st(0) });
+const out = [];
+const look = () => out.push(P.spec.decorations(plugin).map((d) => [d.pos, d.text]));
+want = null; plugin.update(typed(1)); look();          // no ghost yet: nothing
+want = "ck"; plugin.update(typed(3)); look();          // a ghost
+want = null; plugin.update(typed(4)); look();          // the word ran past its rows: an empty slot
+plugin.update(typed(5)); look();                       // still typing: the slot follows the caret
+want = "wn"; plugin.update(typed(8)); look();          // a ghost again, in the slot
+want = null; plugin.update({ state: st(2), docChanged: false, selectionSet: true, transactions: [{ isUserEvent: () => false }] }); look();  // a click: gone
+plugin.update(typed(3)); look();                       // typing again without a ghost: nothing
+console.log(JSON.stringify(out));
+"""
+    out = _node(script)
+    assert out == [[], [[3, "ck"]], [[4, ""]], [[5, ""]], [[8, "wn"]], [], []]

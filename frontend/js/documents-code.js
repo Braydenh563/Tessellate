@@ -1931,15 +1931,33 @@ docGhostPlugin.make = (CM, build) => {
       return true;
     }
   }
-  const ghost = (text, pos) => (text ? Decoration.set([Decoration.widget({ widget: new Ghost(text), side: 1 }).range(pos)]) : null);
-  const decorate = (state) => build(state, ghost) || Decoration.none;
+  const at = (text, pos) => Decoration.set([Decoration.widget({ widget: new Ghost(text), side: 1 }).range(pos)]);
+  const ghost = (text, pos) => (text ? at(text, pos) : null);
+  //: **The ghost's place outlives its text while typing runs on** (L342). A ghost that comes or goes
+  //: splits or joins the caret's text node, and the engine then puts the DOM selection back with a
+  //: forced style and layout (Selection.collapse: about 15 ms of a key at 4x CPU, 11 of the 44 keys
+  //: of the typing gate's Source burst). So once a ghost has shown, its place stays as an empty span
+  //: (no width, nothing read aloud) while keys keep coming, and the next ghost only changes its
+  //: text; a caret moved any other way, or a selection, drops it.
+  const typing = (update) => update.docChanged
+    ? update.transactions.every((tr) => tr.isUserEvent("input") || tr.isUserEvent("delete"))
+    : !update.selectionSet;
+  const decorate = (plugin, state, update) => {
+    const shown = build(state, ghost);
+    const range = state.selection.main;
+    if (shown) plugin.slot = range.head;
+    else if (plugin.slot !== null && update && range.empty && state.selection.ranges.length === 1 && typing(update)) plugin.slot = range.head;
+    else plugin.slot = null;
+    return shown || (plugin.slot === null ? Decoration.none : at("", plugin.slot));
+  };
   return ViewPlugin.fromClass(
     class {
       constructor(view) {
-        this.decorations = decorate(view.state);
+        this.slot = null;
+        this.decorations = decorate(this, view.state, null);
       }
       update(update) {
-        this.decorations = decorate(update.state);
+        this.decorations = decorate(this, update.state, update);
       }
     },
     { decorations: (plugin) => plugin.decorations }
