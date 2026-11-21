@@ -598,8 +598,6 @@ async function markdownPreview(files, status) {
   return files.filter((file, at) => !skip.has(String(at)));
 }
 
-const IMPORT_MARKDOWN_BATCH = 500;
-
 async function importMarkdown(inputId = "import-md-files") {
   const input = $(inputId);
   const status = $("import-md-status");
@@ -634,6 +632,7 @@ async function importMarkdown(inputId = "import-md-files") {
   //: One request takes at most this many files (`MAX_IMPORT_FILES`; the multipart
   //: reader refuses a thousand), so a folder of thousands goes in batches and
   //: the counts are added up (L979: 5,000 files came back "did not work").
+  const IMPORT_MARKDOWN_BATCH = 500;
   const total = { imported: 0, already: 0, skipped: [], ids: [] };
   try {
     for (let at = 0; at < keep.length; at += IMPORT_MARKDOWN_BATCH) {

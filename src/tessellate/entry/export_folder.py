@@ -686,19 +686,25 @@ def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN00
         elif found is None and key in {"all", "all spaces", "everything"}:
             made[key] = None
         else:
-            if found is None:
-                taken = {sp.id for sp in session.query(Space)} | {"all", "default"}
-                base, n = paths.slug(name, 49, ascii_only=True, fallback="space"), 2
-                candidate = base
-                while candidate in taken:
-                    suffix = f"-{n}"
-                    candidate, n = f"{base[: 49 - len(suffix)]}{suffix}", n + 1
-                icon = space.get("icon") if isinstance(space.get("icon"), str) and re.fullmatch(r"ph-[a-z0-9-]{1,40}", space["icon"]) else "ph-circles-four"
-                found = Space(id=candidate, name=name, icon=icon, is_private=private)
-                session.add(found)
-                session.flush()
-            made[key] = found.id
+            made[key] = (found or _new_space(session, name, space, private)).id
     return made[key]
+
+
+def _new_space(session, name: str, space: dict, private: bool):  # noqa: ANN001, ANN202
+    """A space made for an imported note: an unused ascii id, the exported icon if it is one."""
+    from tessellate.core.database import Space
+
+    taken = {sp.id for sp in session.query(Space)} | {"all", "default"}
+    base, n = paths.slug(name, 49, ascii_only=True, fallback="space"), 2
+    candidate = base
+    while candidate in taken:
+        suffix = f"-{n}"
+        candidate, n = f"{base[: 49 - len(suffix)]}{suffix}", n + 1
+    icon = space.get("icon") if isinstance(space.get("icon"), str) and re.fullmatch(r"ph-[a-z0-9-]{1,40}", space["icon"]) else "ph-circles-four"
+    found = Space(id=candidate, name=name, icon=icon, is_private=private)
+    session.add(found)
+    session.flush()
+    return found
 
 
 def _make_entry(session, record: dict, said: list[str], spaces: dict | None = None):  # noqa: ANN001, ANN202
