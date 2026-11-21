@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Credits: frontend/vendor/PROVENANCE.json lists all 91 vendored browser files with sha256, size, version, upstream, licence and notice, written by scripts/vendor_provenance.py from THIRD_PARTY.md; a test rechecks every hash (L-general-4).
 - Packaging: LICENSE and THIRD_PARTY.md ship at the root of the Windows installer, the MSI, the Linux tarball and zip, and the Docker image (L-general-3).
 - Licence: the 3892 misspelling pairs taken from Wikipedia's list (confirmed by matching the page) live in ai/data/common_misspellings.json with their source and CC BY-SA 4.0 licence; the frozen builds now ship the whole ai/data folder, which also brings back the study glossary and skill rates they left out (L-general-25, L-general-36).
 - Housekeeping clears a near-duplicate mark that names a note no longer in the notebook, at each start and on Run now (L-general-21).

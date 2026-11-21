@@ -90,7 +90,7 @@
     },
     {
      "name": "Spelling second opinion",
-     "licence": "see spelling/LICENSE",
+     "licence": "nspell MIT, dictionaries and lists SCOWL",
      "source": "https://github.com/wooorm/nspell"
     },
     {
