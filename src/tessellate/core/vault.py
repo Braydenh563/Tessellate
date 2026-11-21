@@ -10,6 +10,7 @@ open?" without importing the API layer.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Iterator
@@ -108,20 +109,33 @@ def is_granted(token: str | None) -> bool:
     return bool(token) and _dek is not None and token in _granted
 
 
+#: Told which sessions ended (None: every one), so what a job was handed for
+#: a session goes with it (`docreader.forget_sessions`, SECURITY.md T28).
+ended_hooks: list[Callable[[list[str] | None], None]] = []
+
+
+def _ended(tokens: list[str] | None) -> None:
+    for hook in ended_hooks:
+        hook(tokens)
+
+
 def revoke(tokens) -> None:  # noqa: ANN001  # any iterable of tokens
     """These sessions are over. The key goes with the last one granted."""
     global _dek
     had = bool(_granted)
+    tokens = list(tokens)
     for token in tokens:
         _granted.discard(token)
     if had and not _granted:
         _dek = None
+    _ended(tokens)
 
 
 def revoke_all() -> None:
     """End every grant but keep the key: a password change or a re-key ends
     every other session and grants the new one straight after."""
     _granted.clear()
+    _ended(None)
 
 
 @contextmanager
@@ -165,6 +179,7 @@ def close() -> None:
     global _dek
     _dek = None
     _granted.clear()
+    _ended(None)
 
 
 def _row(session: Session) -> Vault | None:

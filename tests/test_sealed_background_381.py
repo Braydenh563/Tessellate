@@ -473,3 +473,50 @@ def test_the_token_is_in_no_log_line_event_or_stored_job(signed_in, monkeypatch,
         for table in tables:
             rows = conn.execute(text(f'SELECT * FROM "{table}"')).fetchall()  # noqa: S608  # names from the schema
             assert token not in repr(rows), table
+
+
+def test_a_job_handed_for_space_a_does_not_read_a_file_now_in_space_b(signed_in, monkeypatch):
+    """Finding 5: the token is bound to the space its file was in when it
+    was handed over."""
+    from sqlalchemy import text
+
+    from tessellate.ai import docreader
+
+    client = signed_in
+    other = client.post("/spaces", json={"name": "Other", "is_private": True})
+    assert other.status_code == 200, other.text
+    aid = _attach_held(client, monkeypatch)
+    with deps.get_db().engine.begin() as conn:
+        conn.execute(text("UPDATE attachments SET workspace_id = :s WHERE id = :i"), {"s": other.json()["id"], "i": aid})
+    _off_request(docreader.read_document_and_store, aid)
+    assert _ocr_of(aid)[0] is None
+    assert aid not in docreader._HANDED
+
+
+def test_a_handed_token_is_dropped_when_the_read_fails_and_on_lock_and_sign_out(signed_in, monkeypatch):
+    """Finding 5: a handed token never outlives its read, its door or its session."""
+    from tessellate.ai import docreader
+
+    client = signed_in
+    token = client.headers["X-Auth-Token"]
+    aid = _attach_held(client, monkeypatch)
+    assert aid in docreader._HANDED  # the upload handed it over
+
+    def broken(*args):
+        raise ValueError("a reader that falls over")
+
+    monkeypatch.setattr(docreader, "_read_private", broken)
+    _off_request(docreader.read_document_and_store, aid)
+    assert aid not in docreader._HANDED
+    _hand_over(docreader, token, aid)
+    assert aid in docreader._HANDED
+    got = client.post("/private-spaces/lock")
+    assert got.status_code == 200, got.text
+    assert docreader._HANDED == {}
+    got = client.post("/private-spaces/unlock", json={"secret": PASSWORD})
+    assert got.status_code == 200, got.text
+    _hand_over(docreader, token, aid)
+    assert aid in docreader._HANDED
+    got = client.post("/auth/lock")
+    assert got.status_code == 200, got.text
+    assert docreader._HANDED == {}

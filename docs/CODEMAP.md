@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11278, test files 2924, tests 23048, plan headings 688, app scripts 29, boot scripts 38, script files 316.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11281, test files 2924, tests 23050, plan headings 688, app scripts 29, boot scripts 38, script files 316.
 
 ## Frontend functions (8567)
 
@@ -14314,7 +14314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11278)
+## Backend modules (11281)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17687,16 +17687,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `speaker_count` | src/tessellate/ai/diarize.py:153 |
 | `voice_labels` | src/tessellate/ai/diarize.py:122 |
 
-### src/tessellate/ai/docreader.py (6)
+### src/tessellate/ai/docreader.py (8)
 
 | Name | File:line |
 |---|---|
-| `_extract` | src/tessellate/ai/docreader.py:135 |
-| `_fill_if_empty` | src/tessellate/ai/docreader.py:169 |
-| `_read_private` | src/tessellate/ai/docreader.py:148 |
-| `forget_sessions` | src/tessellate/ai/docreader.py:40 |
-| `read_document_and_store` | src/tessellate/ai/docreader.py:52 |
-| `read_in_background` | src/tessellate/ai/docreader.py:183 |
+| `_extract` | src/tessellate/ai/docreader.py:150 |
+| `_fill_if_empty` | src/tessellate/ai/docreader.py:187 |
+| `_read_and_store` | src/tessellate/ai/docreader.py:76 |
+| `_read_private` | src/tessellate/ai/docreader.py:163 |
+| `_space_of` | src/tessellate/ai/docreader.py:214 |
+| `forget_sessions` | src/tessellate/ai/docreader.py:42 |
+| `read_document_and_store` | src/tessellate/ai/docreader.py:61 |
+| `read_in_background` | src/tessellate/ai/docreader.py:201 |
 
 ### src/tessellate/ai/drafter.py (15)
 
@@ -26819,8 +26821,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_now` | src/tessellate/core/spacelock.py:38 |
-| `close_all` | src/tessellate/core/spacelock.py:97 |
-| `close_for` | src/tessellate/core/spacelock.py:92 |
+| `close_all` | src/tessellate/core/spacelock.py:103 |
+| `close_for` | src/tessellate/core/spacelock.py:96 |
 | `idle_minutes` | src/tessellate/core/spacelock.py:43 |
 | `is_open` | src/tessellate/core/spacelock.py:65 |
 | `open_for` | src/tessellate/core/spacelock.py:52 |
@@ -26954,31 +26956,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `label` | src/tessellate/core/validation_copy.py:40 |
 | `sentence` | src/tessellate/core/validation_copy.py:88 |
 
-### src/tessellate/core/vault.py (21)
+### src/tessellate/core/vault.py (22)
 
 | Name | File:line |
 |---|---|
-| `_loaded` | src/tessellate/core/vault.py:63 |
-| `_row` | src/tessellate/core/vault.py:170 |
-| `acting_for` | src/tessellate/core/vault.py:146 |
-| `close` | src/tessellate/core/vault.py:163 |
-| `create` | src/tessellate/core/vault.py:178 |
-| `exists` | src/tessellate/core/vault.py:174 |
-| `grant` | src/tessellate/core/vault.py:101 |
-| `is_granted` | src/tessellate/core/vault.py:107 |
-| `is_open` | src/tessellate/core/vault.py:68 |
-| `issue_recovery` | src/tessellate/core/vault.py:266 |
-| `key` | src/tessellate/core/vault.py:74 |
-| `open_with` | src/tessellate/core/vault.py:196 |
-| `open_with_recovery` | src/tessellate/core/vault.py:283 |
-| `recovery_created_at` | src/tessellate/core/vault.py:261 |
-| `request_scope` | src/tessellate/core/vault.py:128 |
-| `requester` | src/tessellate/core/vault.py:137 |
-| `revoke` | src/tessellate/core/vault.py:111 |
-| `revoke_all` | src/tessellate/core/vault.py:121 |
-| `rewrap` | src/tessellate/core/vault.py:230 |
-| `rewrap_with` | src/tessellate/core/vault.py:297 |
-| `set_key` | src/tessellate/core/vault.py:217 |
+| `_ended` | src/tessellate/core/vault.py:117 |
+| `_loaded` | src/tessellate/core/vault.py:64 |
+| `_row` | src/tessellate/core/vault.py:185 |
+| `acting_for` | src/tessellate/core/vault.py:160 |
+| `close` | src/tessellate/core/vault.py:177 |
+| `create` | src/tessellate/core/vault.py:193 |
+| `exists` | src/tessellate/core/vault.py:189 |
+| `grant` | src/tessellate/core/vault.py:102 |
+| `is_granted` | src/tessellate/core/vault.py:108 |
+| `is_open` | src/tessellate/core/vault.py:69 |
+| `issue_recovery` | src/tessellate/core/vault.py:281 |
+| `key` | src/tessellate/core/vault.py:75 |
+| `open_with` | src/tessellate/core/vault.py:211 |
+| `open_with_recovery` | src/tessellate/core/vault.py:298 |
+| `recovery_created_at` | src/tessellate/core/vault.py:276 |
+| `request_scope` | src/tessellate/core/vault.py:142 |
+| `requester` | src/tessellate/core/vault.py:151 |
+| `revoke` | src/tessellate/core/vault.py:122 |
+| `revoke_all` | src/tessellate/core/vault.py:134 |
+| `rewrap` | src/tessellate/core/vault.py:245 |
+| `rewrap_with` | src/tessellate/core/vault.py:312 |
+| `set_key` | src/tessellate/core/vault.py:232 |
 
 ### src/tessellate/core/webauthn.py (17)
 
@@ -28756,7 +28759,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23048)
+## Tests (23050)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31061,7 +31064,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_edge_owner.py | 2 |
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
-| tests/test_sealed_background_381.py | 17 |
+| tests/test_sealed_background_381.py | 19 |
 | tests/test_sealed_files_format.py | 18 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
