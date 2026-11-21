@@ -25,20 +25,15 @@ import json
 import re
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import cjk
 from tessellate.core.database import (
-    Attachment,
-    AuditLog,
-    Category,
     Conversation,
     Entry,
-    LIKE_ESCAPE,
     like_escape,
 )
-from tessellate.core import events, reading_bin, recordings
+from tessellate.core import reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
 from tessellate.entry.manager import shown_tags
@@ -46,6 +41,7 @@ from tessellate.entry.manager_text import extract_title, join_blocks, readable_e
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import library as library_repo
 from tessellate.repo import tags as tags_repo
 
 router = APIRouter(tags=["library"])
@@ -258,22 +254,7 @@ def _documents(session: Session, q: str = "") -> list[dict]:
 
 
 def _chats(session: Session, q: str = "") -> list[dict]:
-    stmt = select(Conversation)
-    if q:
-        # `messages` is the turns' JSON, so this also matches a key name like
-        # "role"; harmless, since every chat has one and a person searching for
-        # "role" among their chats gets them all, which is what they asked.
-        stmt = stmt.where(
-            or_(
-                Conversation.title.ilike(_like(q), escape=LIKE_ESCAPE),
-                Conversation.messages.ilike(_like(q), escape=LIKE_ESCAPE),
-            )
-        )
-    rows = session.scalars(
-        stmt
-        .order_by(Conversation.pinned.desc(), Conversation.updated_at.desc())
-        .limit(PER_KIND_LIMIT)
-    )
+    rows = library_repo.chats(session, _like(q) if q else None, PER_KIND_LIMIT)
     items = []
     for chat in rows:
         try:
@@ -314,19 +295,7 @@ def _images(session: Session) -> list[dict]:
     silently hid the PDF beside it would be lying about what it holds. The
     filter is called Files for that reason, and images are what it mostly is.
     """
-    rows = session.execute(
-        select(Attachment, Entry)
-        .join(Entry, Attachment.entry_id == Entry.id)
-        .where(
-            Entry.is_deleted == False,  # noqa: E712
-            # An attachment on a private note is as private as the note. The
-            # Library is a browsing surface and would otherwise be the one
-            # place a locked-away note's contents show up in plain sight.
-            Entry.is_private == False,  # noqa: E712
-        )
-        .order_by(Attachment.created_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.attached_files(session, PER_KIND_LIMIT)
     items = []
     for attachment, entry in rows:
         # Reported: "sketches appear in the files section in the library all
@@ -370,15 +339,7 @@ def _archive(session: Session) -> list[dict]:
     word matches would give the user two places deleted notes might be; showing
     the bin here is the same list from the surface built for finding things.
     """
-    rows = session.scalars(
-        select(Entry)
-        .where(
-            Entry.is_deleted == True,  # noqa: E712
-            Entry.is_private == False,  # noqa: E712
-        )
-        .order_by(Entry.created_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.binned_notes(session, PER_KIND_LIMIT)
     # Same reasoning as `_notes()` below: a bin card showed a sketch's
     # drawing (a real Attachment) but nothing for a pasted-image note (inline
     # markdown, no Attachment): the bin shouldn't be less consistent than
@@ -476,11 +437,7 @@ def _first_image_by_entry(session: Session, entry_ids: list[int]) -> dict[int, i
     """The first image attachment of each note, one query for the page."""
     thumb_by_entry: dict[int, int] = {}
     if entry_ids:
-        thumb_rows = session.execute(
-            select(Attachment.entry_id, Attachment.id)
-            .where(Attachment.entry_id.in_(entry_ids), Attachment.mime.like("image/%"))
-            .order_by(Attachment.created_at.asc())
-        ).all()
+        thumb_rows = library_repo.first_images(session, entry_ids)
         for owner_id, attachment_id in thumb_rows:
             thumb_by_entry.setdefault(owner_id, attachment_id)
     return thumb_by_entry
@@ -495,12 +452,7 @@ def _last_at(chat: Conversation, messages: list) -> str:
 
 def _shelved_chats(session: Session) -> list[dict]:
     items = []
-    for chat in session.scalars(
-        select(Conversation)
-        .where(Conversation.archived_at.is_not(None))
-        .order_by(Conversation.archived_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all():
+    for chat in library_repo.shelved_chats(session, PER_KIND_LIMIT):
         try:
             messages = json.loads(chat.messages)
         except (ValueError, TypeError):
@@ -569,16 +521,7 @@ def _shelved(session: Session) -> list[dict]:
     `"note"`/`"chat"`/`"document"`, since `"kind": "shelved"` alone no
     longer says which unarchive route or menu the frontend should use.
     """
-    rows = session.scalars(
-        select(Entry)
-        .where(
-            Entry.archived_at.is_not(None),
-            Entry.is_deleted == False,  # noqa: E712
-            Entry.is_private == False,  # noqa: E712
-        )
-        .order_by(Entry.archived_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.shelved_notes(session, PER_KIND_LIMIT)
     # Same reasoning as `_notes()`/`_archive()`: this shouldn't be less
     # consistent about sketch vs. pasted-image thumbnails than either.
     entry_ids = [entry.id for entry in rows]
@@ -602,15 +545,6 @@ def _shelved(session: Session) -> list[dict]:
         for doc in documents_repo.shelved(session, PER_KIND_LIMIT)
     )
     return items
-
-
-#: The rows `_notes` lists, as a where-clause, so its page and its total can
-#: never disagree about what counts as a live note.
-_LIVE_NOTE = (
-    Entry.is_deleted == False,  # noqa: E712
-    Entry.archived_at.is_(None),
-    Entry.is_draft == False,  # noqa: E712
-)
 
 
 def _note_item(entry, category: str | None, thumb_id: int | None) -> dict:  # noqa: ANN001
@@ -678,31 +612,7 @@ def _notes(session: Session, q: str = "") -> list[dict]:
     entirely would make the Library quietly disagree with the notebook's own
     total, and showing their text would defeat the encryption.
     """
-    rows = session.execute(
-        select(Entry, Category.name)
-        .outerjoin(Category, Entry.category_id == Category.id)
-        # A draft is unfinished by definition, the Notes tab's own browse
-        # list already keeps every draft out of "All notes" and every
-        # category filter (`app.js`'s `!e.is_draft` throughout) for exactly
-        # that reason. This query didn't match it: an unfinished draft was
-        # showing up as a first-class card in Library → "Everything",
-        # reported directly ("draft notes appear as regular notes in the
-        # main library section").
-        .where(*_LIVE_NOTE)
-        # A search matches before the page is cut, so it reaches a note older
-        # than the newest PER_KIND_LIMIT (INBOX 424). Never a private note:
-        # its content is ciphertext, and a match on it would say something
-        # about what the encryption is hiding.
-        .where(
-            *(
-                (Entry.is_private == False, Entry.content.ilike(_like(q), escape=LIKE_ESCAPE))  # noqa: E712
-                if q
-                else ()
-            )
-        )
-        .order_by(Entry.pinned.desc(), Entry.created_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.notes(session, _like(q) if q else None, PER_KIND_LIMIT)
     # A sketch is a note whose actual content is an Attachment, not text, the
     # caption is all `preview` had to show, which is why a sketch card in the
     # Library read as a bare title with nothing under it. One bulk query for
@@ -733,17 +643,7 @@ def _highlights(session: Session, q: str = "") -> list[dict]:
     here. One item per passage, `entry_id` pointing at its note, which is what
     pressing the card opens.
     """
-    rows = session.execute(
-        select(Entry)
-        .where(
-            *_LIVE_NOTE,
-            Entry.is_board == False,  # noqa: E712
-            Entry.is_private == False,  # noqa: E712
-            Entry.content.contains("=="),
-        )
-        .order_by(Entry.created_at.desc())
-        .limit(HIGHLIGHT_NOTES_SCANNED)
-    ).scalars()
+    rows = library_repo.notes_with_marks(session, HIGHLIGHT_NOTES_SCANNED)
     wanted = q.lower()
     items: list[dict] = []
     for entry in rows:
@@ -810,6 +710,8 @@ _ENTITY_WORDS = {
     #: A saved element, shape or template in the board library.
     "library_item": "a library item",
     "space": "a space",
+    #: A set of notes gathered by hand (routes_groups.py, L-world-class-172).
+    "group": "a group",
     "category": "a category",
     "document": "a document",
     "conversation": "a chat",
@@ -858,17 +760,7 @@ def _drafts(session: Session) -> list[dict]:
     note is in, not a different kind of object, so it belongs in the filter
     row beside Notes and Documents rather than in a tab of its own.
     """
-    rows = session.execute(
-        select(Entry, Category.name)
-        .outerjoin(Category, Entry.category_id == Category.id)
-        .where(
-            Entry.is_deleted == False,  # noqa: E712
-            Entry.archived_at.is_(None),
-            Entry.is_draft == True,  # noqa: E712
-        )
-        .order_by(Entry.created_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.drafts(session, PER_KIND_LIMIT)
 
     items = []
     for entry, category in rows:
@@ -907,42 +799,7 @@ def _activity(session: Session, q: str = "") -> list[dict]:
     space hook narrows every other read; a row about anything else is the
     notebook's and shows in every space.
     """
-    query = (
-        select(
-            AuditLog.id,
-            AuditLog.action,
-            AuditLog.entity_type,
-            AuditLog.entity_id,
-            AuditLog.detail,
-            AuditLog.created_at,
-        )
-        # The bookkeeping events (a version snapshotted before an edit, the
-        # dates re-resolved because the text changed) always accompany the
-        # edit that caused them, so a feed that shows both says everything
-        # twice and buries the half a person recognises.
-        .where(AuditLog.action.notin_(sorted(events.QUIET_ACTIONS)))
-    )
-    workspace = session.info.get("workspace_id")
-    scoped = bool((workspace and workspace != "all") or session.info.get("hidden_workspaces"))
-    if q or scoped:
-        query = query.outerjoin(
-            Entry, and_(AuditLog.entity_type == "entry", Entry.id == AuditLog.entity_id)
-        )
-    if scoped:
-        query = query.where(or_(AuditLog.entity_type != "entry", Entry.id.is_not(None)))
-    if q:
-        # A note's own events carry no sentence (its words are the note), so
-        # a row about a note matches on the note's text as well.
-        pattern = f"%{like_escape(q)}%"
-        query = query.where(
-            or_(
-                AuditLog.detail.ilike(pattern, escape=LIKE_ESCAPE),
-                Entry.content.ilike(pattern, escape=LIKE_ESCAPE),
-            )
-        )
-    rows = session.execute(
-        query.order_by(AuditLog.created_at.desc(), AuditLog.id.desc()).limit(PER_KIND_LIMIT)
-    ).all()
+    rows = library_repo.activity(session, q, PER_KIND_LIMIT)
     items = []
     for row in rows:
         word = _ACTION_WORDS.get(row.action, row.action.capitalize())
@@ -1037,17 +894,12 @@ def _totals(session: Session) -> dict[str, int]:
     """The real size of the kinds that grow past a page: live notes,
     documents and chats. Everything else stays well under PER_KIND_LIMIT in
     any notebook this app has seen, and is counted from the page as before."""
-    def count(stmt) -> int:
-        return int(session.scalar(stmt) or 0)
-
     diagrams = documents_repo.count(session, DIAGRAM_FILE_TYPE)
     return {
-        "note": count(
-            select(func.count(Entry.id)).where(*_LIVE_NOTE, Entry.is_board == False)  # noqa: E712
-        ),
+        "note": library_repo.live_note_count(session),
         "document": documents_repo.count(session) - diagrams,
         "diagram": diagrams,
-        "chat": count(select(func.count(Conversation.id))),
+        "chat": library_repo.chat_count(session),
     }
 
 

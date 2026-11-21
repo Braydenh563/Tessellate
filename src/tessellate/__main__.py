@@ -15,7 +15,7 @@ import time
 import warnings
 from pathlib import Path
 
-from tessellate.core import launch_status, startup_status
+from tessellate.core import desktop_entry, launch_status, startup_status
 from tessellate.launcher_loading import (
     _STARTUP_PHASE_PERCENT,
     _loading_html,
@@ -26,6 +26,8 @@ from tessellate.launcher_loading import (
     _LOADING_HTML,
     _recolour_loading_page,
 )
+
+desktop_entry.register(sys.modules[__name__])
 
 #: Re-exported: tests read them as `__main__._LOADING_HTML`.
 __all__ = [

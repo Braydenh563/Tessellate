@@ -151,6 +151,7 @@ from tessellate.core import (
     logbuffer,
     netbind,
     origin,
+    paths,
     passes,
     security,
     startup_status,
@@ -168,10 +169,7 @@ from tessellate.entry import manager_purge
 # alone one that happens to contain a "frontend" folder. Checked first and
 # explicitly, not inferred from a path that only looks the same in both
 # cases by coincidence.
-if getattr(sys, "frozen", False):
-    BUNDLE_ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-else:
-    BUNDLE_ROOT = Path(__file__).resolve().parents[3]
+BUNDLE_ROOT = paths.bundle_root()
 FRONTEND_DIR = BUNDLE_ROOT / "frontend"
 
 
