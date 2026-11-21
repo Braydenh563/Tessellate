@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8986, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2858, tests 22991, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8986, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2858, tests 22992, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8986)
 
@@ -85,12 +85,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chordLabel` | frontend/js/prefs.js:177 |
-| `nounCount` | frontend/js/prefs.js:202 |
-| `prefsMigrate` | frontend/js/prefs.js:125 |
+| `chordLabel` | frontend/js/prefs.js:181 |
+| `nounCount` | frontend/js/prefs.js:206 |
+| `prefsMigrate` | frontend/js/prefs.js:129 |
 | `prefsStore` | frontend/js/prefs.js:35 |
-| `shortcutHint` | frontend/js/prefs.js:188 |
-| `shortcutTitle` | frontend/js/prefs.js:195 |
+| `shortcutHint` | frontend/js/prefs.js:192 |
+| `shortcutTitle` | frontend/js/prefs.js:199 |
 
 ### frontend/js/store.js (2)
 
@@ -5282,28 +5282,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyDocGutter` | frontend/js/documents-toolbar.js:147 |
-| `applyDocToolbarCollapsed` | frontend/js/documents-toolbar.js:216 |
-| `applyDocToolbarLayoutButtons` | frontend/js/documents-toolbar.js:373 |
+| `applyDocGutter` | frontend/js/documents-toolbar.js:156 |
+| `applyDocToolbarCollapsed` | frontend/js/documents-toolbar.js:225 |
+| `applyDocToolbarLayoutButtons` | frontend/js/documents-toolbar.js:382 |
 | `applyDocToolbarMode` | frontend/js/documents-toolbar.js:44 |
-| `docGutterPref` | frontend/js/documents-toolbar.js:112 |
-| `docGutterWanted` | frontend/js/documents-toolbar.js:120 |
-| `docSyncFormatShow` | frontend/js/documents-toolbar.js:274 |
-| `docToolbarCollapsed` | frontend/js/documents-toolbar.js:198 |
-| `docToolbarLayoutSignature` | frontend/js/documents-toolbar.js:623 |
+| `docGutterPref` | frontend/js/documents-toolbar.js:113 |
+| `docGutterWanted` | frontend/js/documents-toolbar.js:129 |
+| `docSyncFormatShow` | frontend/js/documents-toolbar.js:283 |
+| `docToolbarCollapsed` | frontend/js/documents-toolbar.js:207 |
+| `docToolbarLayoutSignature` | frontend/js/documents-toolbar.js:632 |
 | `docToolbarMode` | frontend/js/documents-toolbar.js:24 |
-| `fitDocToolbarRow` | frontend/js/documents-toolbar.js:426 |
-| `fitDocToolbars` | frontend/js/documents-toolbar.js:665 |
-| `markDocToolbarSepEdges` | frontend/js/documents-toolbar.js:570 |
-| `mountDocToolbarControlsFor` | frontend/js/documents-toolbar.js:298 |
-| `setDocGutter` | frontend/js/documents-toolbar.js:135 |
-| `setDocToolbarCollapsed` | frontend/js/documents-toolbar.js:248 |
+| `fitDocToolbarRow` | frontend/js/documents-toolbar.js:435 |
+| `fitDocToolbars` | frontend/js/documents-toolbar.js:674 |
+| `markDocToolbarSepEdges` | frontend/js/documents-toolbar.js:579 |
+| `mountDocToolbarControlsFor` | frontend/js/documents-toolbar.js:307 |
+| `setDocGutter` | frontend/js/documents-toolbar.js:144 |
+| `setDocToolbarCollapsed` | frontend/js/documents-toolbar.js:257 |
 | `setDocToolbarMode` | frontend/js/documents-toolbar.js:69 |
-| `syncDocToolbarMore` | frontend/js/documents-toolbar.js:548 |
-| `toggleDocToolbar` | frontend/js/documents-toolbar.js:282 |
-| `trimDocToolbarGroup` | frontend/js/documents-toolbar.js:506 |
-| `watchDocToolbarContents` | frontend/js/documents-toolbar.js:633 |
-| `watchDocToolbarWidth` | frontend/js/documents-toolbar.js:594 |
+| `syncDocToolbarMore` | frontend/js/documents-toolbar.js:557 |
+| `toggleDocToolbar` | frontend/js/documents-toolbar.js:291 |
+| `trimDocToolbarGroup` | frontend/js/documents-toolbar.js:515 |
+| `watchDocToolbarContents` | frontend/js/documents-toolbar.js:642 |
+| `watchDocToolbarWidth` | frontend/js/documents-toolbar.js:603 |
 
 ### frontend/js/documents-undo.js (5)
 
@@ -29153,7 +29153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22991)
+## Tests (22992)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30141,7 +30141,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_type_fields.py | 2 |
 | tests/test_doc_type_picker.py | 6 |
 | tests/test_doc_typing_dx1.py | 15 |
-| tests/test_doc_typing_l342.py | 4 |
+| tests/test_doc_typing_l342.py | 5 |
 | tests/test_doc_video.py | 7 |
 | tests/test_doc_view_held.py | 6 |
 | tests/test_doc_writing_streak.py | 6 |

@@ -188,3 +188,40 @@ console.log(JSON.stringify(out));
     assert out["rebuilt"] and out["texts"] == ["qui|ck", "qui|et"]
     assert out["active2"] == [False, True]
 
+
+def _storage_listener() -> str:
+    from tests._app_js import documents_text
+
+    src = documents_text()
+    start = src.index('window.addEventListener("storage", () => {\n  prefs.writes += 1;')
+    return src[start:src.index("});", start) + 3] + "\n"
+
+
+@needs_node
+def test_the_gutter_preference_is_read_once_until_a_preference_is_written():
+    from tests._app_js import documents_text
+
+    prefs_js = (JS / "prefs.js").read_text(encoding="utf-8")
+    script = """
+const store = new Map(); let reads = 0; let onStorage = null;
+const window = { localStorage: { getItem: (k) => { reads += 1; return store.has(k) ? store.get(k) : null; },
+  setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) },
+  addEventListener: (t, f) => { if (t === "storage") onStorage = f; } };
+""" + prefs_js + "\nconst DOC_GUTTER_KEY = \"doc-gutter\";\n" + _function(documents_text(), "function docGutterPref(") + _storage_listener() + """
+const out = {};
+reads = 0; // prefs.js's own migration reads at load
+out.a = docGutterPref(); docGutterPref(); docGutterPref();
+out.readsCached = reads;
+prefs.set("doc-gutter", "1");
+out.b = docGutterPref(); docGutterPref();
+out.readsAfterSet = reads;
+store.set("doc-gutter", "0"); onStorage({ key: "doc-gutter" });
+out.c = docGutterPref();
+prefs.remove("doc-gutter");
+out.d = docGutterPref();
+console.log(JSON.stringify(out));
+"""
+    out = _node(script)
+    assert out["readsCached"] == 1 and out["readsAfterSet"] == 2
+    assert [out["a"], out["b"], out["c"], out["d"]] == [None, "1", "0", None]
+

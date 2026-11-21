@@ -109,13 +109,22 @@
   //: remembered and wins for every file.
   const DOC_GUTTER_KEY = "doc-gutter";
 
+  //: Kept until a preference is written: asked on every key, the read was 0.2 ms at 4x (L342).
   function docGutterPref() {
-    try {
-      return prefs.get(DOC_GUTTER_KEY, null); // "1", "0", or null for "follow the file type"
-    } catch {
-      return null;
+    if (docGutterPref.seen !== prefs.writes) {
+      docGutterPref.seen = prefs.writes;
+      try {
+        docGutterPref.value = prefs.get(DOC_GUTTER_KEY, null); // "1", "0", or null for "follow the file type"
+      } catch {
+        docGutterPref.value = null;
+      }
     }
+    return docGutterPref.value;
   }
+  //: Another tab's write.
+  window.addEventListener("storage", () => {
+    prefs.writes += 1;
+  });
 
   function docGutterWanted(isCode) {
     const pref = docGutterPref();
