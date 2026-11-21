@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 67 | 10 | 0 | 0 | 77 |
+| world-class | 0 | 66 | 10 | 0 | 0 | 76 |
 | general | 0 | 30 | 2 | 0 | 5 | 32 |
-| all | 372 | 452 | 81 | 2 | 112 | 905 |
+| all | 372 | 451 | 81 | 2 | 112 | 904 |
 
 ## graph
 
@@ -529,6 +529,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-625** `world-class` open, M: Run Pillow and the OCR readers (core/ocr.py, core/ocr_prep.py) in the parse sandbox child. From L-world-class-321. Evidence: core/ocr.py:479,504,741,812,888 Image.open and _rapidocr_lines run in the server; the runner core/parse_sandbox.py is built (reused child, 0.3-0.5 ms a call warm, 117 ms a cold child with pypdfium2); RapidOCR loads onnxruntime, so it needs the reused child and a memory limit measured with its model loaded
 - [ ] **L-world-class-626** `world-class` open, M: First page load adds about 260 MB resident (cache warm-up at 4,500 notes). From L609. Evidence: RSS 435 MB with no page open went to 695 MB within 30 s of opening the app in Chromium (4,500 notes, arenas capped); flat at 715 MB after; which first-hit route builds the 260 MB not found
+- [ ] **L-world-class-627** `world-class` open, S: VS Code extension: sign in by pasting a device token, and say when the computer must approve the device. From L-world-class-183. Evidence: editors/vscode/lib/client.js signs in by password only; a new device may wait for approval on the computer with no prompt in VS Code
 
 ## general
 
