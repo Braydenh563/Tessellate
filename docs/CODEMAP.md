@@ -32624,7 +32624,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | chat | docs/roadmap/LEDGER.md:24 |
 | chat | docs/roadmap/LEDGER.md:633 |
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:717 |
-| documents | docs/roadmap/LEDGER.md:78 |
+| documents | docs/roadmap/LEDGER.md:77 |
 | documents | docs/roadmap/LEDGER.md:657 |
 | general | docs/roadmap/LEDGER.md:454 |
 | graph | docs/roadmap/LEDGER.md:22 |
@@ -32637,7 +32637,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | timeline | docs/roadmap/LEDGER.md:693 |
 | ui-modernisation | docs/roadmap/LEDGER.md:97 |
 | ui-modernisation | docs/roadmap/LEDGER.md:681 |
-| whiteboard | docs/roadmap/LEDGER.md:32 |
+| whiteboard | docs/roadmap/LEDGER.md:31 |
 | whiteboard | docs/roadmap/LEDGER.md:645 |
 | world-class | docs/roadmap/LEDGER.md:216 |
 | world-class | docs/roadmap/LEDGER.md:705 |
