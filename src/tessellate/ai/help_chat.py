@@ -54,6 +54,7 @@ from tessellate.ai import AI_NAME
 from tessellate.ai import act_registry, guide_lead, help_title_keywords, help_words, presets
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
+from tessellate.ai.help_images import image_for  # the manual's few pictures (L-world-class-785)
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from tessellate.core.lazyre import lazy_compile
@@ -591,6 +592,7 @@ def help_listing() -> dict:
                     "body": topic["body"],
                     "find": " ".join(topic["keywords"]),
                     "link": topic["badge"],
+                    "image": image_for(topic_id),
                 }
             )
         groups.append({"title": title, "topics": topics})

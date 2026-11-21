@@ -94,6 +94,15 @@
   line-height: 1.5;
   max-width: 70ch;
 }
+/* A topic's picture (L-world-class-785): the file's own size is the cap, so it is never upscaled. */
+.manual-topic img.manual-picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-2) 0;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+}
 /* The topic's one line (INBOX 1612), first under its title. */
 .manual-topic p.manual-lead {
   font-weight: 500;
