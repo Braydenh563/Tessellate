@@ -9,11 +9,9 @@ pins every holder at once; these lints keep the suite on it."""
 from __future__ import annotations
 
 import ast
-import re
 from pathlib import Path
 
 TESTS = Path(__file__).resolve().parent
-_ONE_MODULE = re.compile(r"""setattr\(\s*(?:[\w.]+\s*,\s*["'](?:user_now|utcnow)["']|["'][\w.]+\.(?:user_now|utcnow)["'])""")
 #: `datetime.now()`, `date.today()`, `dt.datetime.utcnow()` and the like, as calls:
 #: a name in a docstring or a lint's pattern is not a read.
 _CLOCK_CALLS = {"now", "today", "utcnow"}
@@ -38,13 +36,44 @@ def _real_read_nodes(tree: ast.AST) -> list[tuple[int, ast.Call]]:
     return found
 
 
+def _patches_one_clock(text: str) -> bool:
+    """A `setattr(module, "user_now", ...)` or `setattr("pkg.mod.utcnow", ...)`,
+    read from the syntax tree: a regex over every test file's text cost CodeQL's
+    Analyze its 20 minutes (bisect, #248 and #249)."""
+    for node in ast.walk(ast.parse(text)):
+        func = node.func if isinstance(node, ast.Call) else None
+        name = func.id if isinstance(func, ast.Name) else func.attr if isinstance(func, ast.Attribute) else ""
+        if name != "setattr":
+            continue
+        for arg in node.args[:2]:
+            value = arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str) else ""
+            if value.rpartition(".")[2] in _APP_CLOCKS:
+                return True
+    return False
+
+
+def _imported(text: str) -> set[str]:
+    """Every module a file imports, a relative one with its leading dots."""
+    names = set()
+    for node in ast.walk(ast.parse(text)):
+        if isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            # `from tests import _seed` imports `tests._seed` as surely as
+            # `from tests._seed import x` does.
+            base = "." * node.level + (node.module or "")
+            names.add(base)
+            names.update(f"{base}.{alias.name}" if node.module else base + alias.name for alias in node.names)
+    return names
+
+
 def _real_reads(text: str) -> list[int]:
     return [line for line, _node in _real_read_nodes(ast.parse(text))]
 
 
 def test_the_clock_is_pinned_everywhere_or_not_at_all():
     """Patching `user_now` or `utcnow` on one module leaves every other holder on the real day."""
-    offenders = [path.name for path, text in _sources() if _ONE_MODULE.search(text)]
+    offenders = [path.name for path, text in _sources() if _patches_one_clock(text)]
     assert not offenders, f"pin the clock with tests._clock.pin_clock(monkeypatch, NOW): {offenders}"
 
 
@@ -74,15 +103,24 @@ def test_a_test_that_asks_the_app_clock_has_pinned_it():
     pins it; a helper module is pinned through every test file importing it."""
     sources = dict((path.stem, text) for path, text in _sources())
     pinned = {stem for stem, text in sources.items() if any(pin in text for pin in _PINS)}
+    imports = {stem: _imported(text) for stem, text in sources.items()}
     offenders = []
     for stem, text in sources.items():
         calls = _app_clock_calls(text)
         if not calls or stem in pinned:
             continue
-        users = [s for s, t in sources.items() if re.search(rf"\btests\.{stem}\b|\bfrom \.{stem}\b", t)] if stem.startswith("_") else [stem]
+        users = [s for s, names in imports.items() if {f"tests.{stem}", f".{stem}"} & names] if stem.startswith("_") else [stem]
         if not users or any(user not in pinned for user in users):
             offenders.append(f"{stem}.py:{calls[0]}")
     assert not offenders, f"pin the clock with tests._clock.pin_clock(monkeypatch, SUITE_NOW): {offenders}"
+
+
+def test_the_lint_sees_a_one_module_patch_and_an_import():
+    assert _patches_one_clock('monkeypatch.setattr(routes_chat, "user_now", f)\n')
+    assert _patches_one_clock('monkeypatch.setattr("tessellate.core.database.utcnow", f)\n')
+    assert not _patches_one_clock('monkeypatch.setattr(config, "user_name", f)\n"setattr(x, \'user_now\', f)"\n')
+    assert _imported("from tests._clock import pin_clock\nfrom ._seed import x\nimport tests._frozen_clock\nfrom tests import _app_js\n") == {
+        "tests._clock", "tests._clock.pin_clock", "._seed", "._seed.x", "tests._frozen_clock", "tests", "tests._app_js"}
 
 
 def test_the_lint_sees_an_app_clock_call():
