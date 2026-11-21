@@ -3644,21 +3644,11 @@ async function renderNotesRail() {
     return;
   }
   rail.hidden = false;
-  //: **The reading column comes first.** The rail's width is set against the
-  //: default sidebar; a sidebar dragged to its widest (24% of the window,
-  //: `applySidebarWidth`) left the list 573px at 1280 with the rail beside
-  //: it (`notesrail.js` with SIDEBAR=wide). So the rail measures the list
-  //: once it is in, in the same task and so before anything is painted, and
-  //: gives way to the note's Connections sheet when the list would be
-  //: narrower than NOTES_RAIL_MIN_READING, exactly as it does below 1280.
-  const list = $("entry-list");
-  if (list && list.getBoundingClientRect().width < NOTES_RAIL_MIN_READING) {
-    rail.hidden = true;
-    rail.dataset.cramped = "1";
-    mark(null);
-    return;
-  }
+  //: The reading column comes first: a list under NOTES_RAIL_MIN_READING (a sidebar dragged wide) takes the rail's
+  //: place for the Connections sheet (the observer in `onSurface("notes")` decides, after layout).
   delete rail.dataset.cramped;
+  //: Observing delivers the list's size at once (and again whenever the rail's width or a sidebar drag moves it).
+  renderNotesRail.ro?.observe($("entry-list"));
   const subject = $("notes-rail-subject");
   subject.textContent = entry.is_private ? "Private note" : entry.title || notePreviewText(entry.content);
   subject.title = subject.textContent;
@@ -3748,18 +3738,23 @@ onSurface("notes", () => {
       next?.focus();
     });
     notesRailWide.addEventListener("change", renderNotesRail);
-    //: A sidebar dragged wider or narrower, or collapsed, changes the room the
-    //: list has, which is what decides whether the rail fits. Observed on the
-    //: sidebar itself rather than on the window, because the window does not
-    //: change when the sidebar is dragged.
+    //: A sidebar dragged or collapsed changes the list's room, which decides whether the rail fits; the window
+    //: does not change then, so the sidebar is observed (and the list, for the rail's own width check).
     if (typeof ResizeObserver === "function" && $("sidebar")) {
       let last = 0;
-      new ResizeObserver((entries) => {
-        const w = Math.round(entries[0].contentRect.width);
-        if (w === last) return;
-        last = w;
-        scheduleNotesRail();
-      }).observe($("sidebar"));
+      renderNotesRail.ro = new ResizeObserver((entries) => {
+        for (const { target, contentRect } of entries) {
+          //: L705: read after layout.
+          if (target.id === "entry-list") {
+            if (target.getBoundingClientRect().width >= NOTES_RAIL_MIN_READING) continue;
+            const rail = $("notes-rail");
+            rail.hidden = true;
+            rail.dataset.cramped = "1";
+            window.notesRailMark?.();
+          } else if (last !== (last = Math.round(contentRect.width))) scheduleNotesRail();
+        }
+      });
+      renderNotesRail.ro.observe($("sidebar"));
     }
     syncNotesRailToggle();
 });

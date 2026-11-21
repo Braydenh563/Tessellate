@@ -216,14 +216,17 @@ async function noteRow(page, id) {
   return row;
 }
 
-async function menuItem(page, row, label) {
+async function menuItem(page, row, label, group) {
   // A list refresh (filing finishing just after capture) can close the menu
   // between opening it and the click; reopen it rather than wait out the test.
   for (let attempt = 0; attempt < 3; attempt += 1) {
     // A prefix: the card names its note after the verb ("More actions: Lisbon trip", audit 1029 N17).
     await row.locator('button[aria-label^="More actions"]').click();
     try {
-      await page.locator(".action-menu:not(.hidden)").getByText(label, { exact: true }).click({ timeout: 5000 });
+      // A row inside one of the note menu's groups (decision 64, "Share and
+      // export") sits in a flyout that opens from its group's row.
+      if (group) await page.locator(".action-menu:not(.hidden) .has-submenu").getByText(group, { exact: true }).click({ timeout: 5000 });
+      await page.locator(".action-menu:not(.hidden)").getByText(label, { exact: true }).locator("visible=true").click({ timeout: 5000 });
       return;
     } catch (err) {
       if (attempt === 2) throw err;

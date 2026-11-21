@@ -342,7 +342,7 @@ FAULTS = {
         '"Couldn\'t save that setting."': 'saving a setting failed',
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
     },
-    'shell-reminders.js': {
+    'reminder-triage.js': {
         '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',

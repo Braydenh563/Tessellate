@@ -114,6 +114,17 @@ def _py_quoted(text: str, lines: list[str]) -> list[str]:
     return _blank(lines, spans)
 
 
+#: An HTML attribute's value (`data-mode="todo"`, a title a person reads) is
+#: copy or data, the same ruling as a quoted string in code (INBOX 1810); a
+#: marker in an HTML file lives in a `<!-- comment -->`, which stays.
+_ATTR = re.compile(r'=\s*"[^"]*"')
+
+
+def _html_attrs(lines: list[str]) -> list[str]:
+    """HTML lines with every double-quoted attribute value blanked."""
+    return [_ATTR.sub(lambda m: " " * len(m.group(0)), line) for line in lines]
+
+
 #: Which plan session owns a path (anything else goes to the closing session).
 OWNERS = {
     "graph": ("docs/roadmap/GRAPH_PLAN.md", "frontend/js/graph"),
@@ -140,7 +151,12 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         except (UnicodeDecodeError, FileNotFoundError):
             continue
         lines = text.splitlines()
-        seen = _js_quoted(lines) if f.endswith(".js") else _py_quoted(text, lines) if f.endswith(".py") else lines
+        seen = (
+            _js_quoted(lines) if f.endswith(".js")
+            else _py_quoted(text, lines) if f.endswith(".py")
+            else _html_attrs(lines) if f.endswith(".html")
+            else lines
+        )
         in_done_row = f == "docs/roadmap/LEDGER.md"
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):

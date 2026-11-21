@@ -2401,7 +2401,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <span id="ask-answer-more" class="hidden"></span>
                 </span>
               </h3>
-              <!-- The questions a follow-up chain came from (INBOX 490,
+              <!-- The earlier questions a chain of next questions came from (INBOX 490,
                    `renderAskTrail`). -->
               <div id="ask-trail" class="hidden"></div>
               <!-- The app's one Thinking fold goes in here, built by
@@ -2426,7 +2426,7 @@ Link to another note with [[its first few words]]."></textarea>
                    renderer opens with `replaceChildren()`, so the related row
                    was built and deleted again on every answer that had both.
                    The components themselves are the Chat tab's
-                   (`renderRelatedElsewhere`, `chatSourcesPanel`, the follow-up
+                   (`renderRelatedElsewhere`, `chatSourcesPanel`, the next-question
                    strip), called with the same object. -->
               <div id="ask-answer-foot" class="answer-foot hidden">
                 <div id="ask-answer-related" class="hidden"></div>
@@ -2647,7 +2647,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span id="batch-category-host"></span>
               <button id="batch-tag" class="ghost small" title="Add tags to, or remove tags from, the selected notes"><i class="ph ph-tag ph-lead" aria-hidden="true"></i> Tags</button>
               <button id="batch-delete" class="ghost small"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete</button>
-              <!-- Favourite, Publish drafts, Archive (fillBatchMore). -->
+              <!-- Favourite, Publish drafts, Archive, Set a property (fillBatchMore). -->
               <span id="batch-more-host"></span>
               <button id="batch-cancel" class="ghost small">Done</button>
             </span>
@@ -4337,7 +4337,7 @@ Link to another note with [[its first few words]]."></textarea>
                  actions (Trace, Legend, Suggest links, Reset). -->
             <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
-              <p>These shape the Force layout; under Tree, Radial, Arc, Map of meaning, Treemap and Tessellation they are dimmed.</p>
+              <p>These shape the Force layout. Gravity and Spread also shape Tree and Radial, and Spread the Arc; under Map of meaning, Treemap and Tessellation they are dimmed.</p>
               <ul>
                 <li>Gravity: how hard every note is drawn toward the middle, so the map packs tighter or spreads wider.</li>
                 <li>Spread: how far apart linked notes sit.</li>
@@ -6157,7 +6157,7 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="reminders-help" aria-controls="reminders-help" aria-expanded="false"
             title="About reminders" aria-label="About reminders"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="reminders-help" role="dialog" aria-label="About reminders">
-            <p>Reminders are grouped as overdue, today and upcoming. Write one in plain words: the day, time, repeat and early alert it was read as show as chips under the box (press one to leave it as words), and Enter adds it; with no time it asks for one. A repeat can be every weekday, every 2 weeks or the last Friday of the month, and "1 day before" adds an alert ahead of the due time. Or use Quick set. The date and time fields open a month and the day's times, and read a typed day such as next friday. Notifications fire while a tab is open, even in the background, with Done and Snooze on them; the desktop app notifies with its window closed. Calendar opens the Timeline's calendar with only reminders, where one drags to another day. A reminder's menu also opens Google Calendar or Outlook with it filled in, only when you press it. More adds every open reminder to your calendar app, or imports a calendar file as reminders. Tell the chat "I need to call the dentist on Friday" and a Make this a reminder chip appears under the reply.</p>
+            <p>Reminders are grouped as overdue, today and upcoming. Triage on the Overdue heading goes through the late ones: Still matters, Drop (to the bin) or Reschedule to a day, or all of them at once, and Undo puts them back. Ticking off a reminder that came from a note asks how it went and adds the line to that note. Write one in plain words: the day, time, repeat and early alert it was read as show as chips under the box (press one to leave it as words), and Enter adds it; with no time it asks for one. A repeat can be every weekday, every 2 weeks or the last Friday of the month, and "1 day before" adds an alert ahead of the due time. Or use Quick set. The date and time fields open a month and the day's times, and read a typed day such as next friday. Notifications fire while a tab is open, even in the background, with Done and Snooze on them; the desktop app notifies with its window closed. Calendar opens the Timeline's calendar with only reminders, where one drags to another day. A reminder's menu also opens Google Calendar or Outlook with it filled in, only when you press it. More adds every open reminder to your calendar app, or imports a calendar file as reminders. Tell the chat "I need to call the dentist on Friday" and a Make this a reminder chip appears under the reply.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="reminders-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -6391,6 +6391,7 @@ Link to another note with [[its first few words]]."></textarea>
           <span class="library-contextbar-end">
             <button id="library-bulk-open" class="ghost small" type="button"><i class="ph ph-arrow-square-out ph-lead" aria-hidden="true"></i> Open</button>
             <button id="library-bulk-restore" class="ghost small hidden" type="button"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i> Restore</button>
+            <span id="library-batch-more-host"></span>
             <button id="library-bulk-delete" class="ghost small" type="button"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete</button>
             <button id="library-clear-selection" class="ghost small" type="button">Done</button>
           </span>
@@ -10744,7 +10745,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
 
-            <!-- **Outside #models-config** (WORLD_CLASS_PLAN 20, "Still open"):
+            <!-- **Outside #models-config** (WORLD_CLASS_PLAN 20, built):
                  with no model server answering, #models-config is hidden whole,
                  and an override set earlier could be neither seen nor cleared.
                  The list and its reset need only the saved settings. -->
@@ -16187,9 +16188,9 @@ Link to another note with [[its first few words]]."></textarea>
         <li><span class="shortcut-keys"><kbd>Tab</kbd></span><span>Move focus; cycles inside an open dialog</span></li>
         <li><span class="shortcut-keys"><kbd>Alt</kbd> <kbd>↑</kbd> <kbd>↓</kbd></span><span>Move the focused card one place up or down in its list</span></li>
         <li><span class="shortcut-keys"><kbd>Ctrl</kbd> <kbd>C</kbd></span><span>Copy the focused card; Ctrl+V then attaches it in the chat box or places it on a board</span></li>
-        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>d</kbd>/<kbd>n</kbd>/<kbd>c</kbd>/<kbd>g</kbd>/<kbd>l</kbd>/<kbd>i</kbd>/<kbd>r</kbd></span><span>Jump to Dashboard / Notes / Chat / Graph / Library / Timeline / Reminders</span></li>
-        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>s</kbd>/<kbd>q</kbd>/<kbd>v</kbd></span><span>Open settings / a quick sketch / record a meeting</span></li>
       </ul>
+      <!-- The "t then" rows, drawn from the chord's own tables (`renderChordShortcutRows`; L-world-class-120). -->
+      <ul class="shortcut-list" id="shortcut-list-chord"></ul>
       <h3>Tools</h3>
       <p class="muted">Small panels that open over what you are doing. Ctrl+K finds each by name.</p>
       <!-- Built from `POPUP_TOOLS` (settings-panes.js) by `renderToolShortcutList`:
@@ -16308,8 +16309,8 @@ Link to another note with [[its first few words]]."></textarea>
     <div class="card glass" id="sketch-card"></div>
   </div>
 
-  <!-- Meeting notes (§17, the backlog's own "highest-value single addition
-       still unbuilt"): a longer recording than the quick dictation button
+  <!-- Meeting notes (§17, what the backlog called its "highest-value single
+       addition", built here): a longer recording than the quick dictation button
        in the composer is built for, transcribed locally, then handed back
        for review before it becomes a note, the same "capture, then look at
        what came out" shape the sketch pad's caption step already uses.

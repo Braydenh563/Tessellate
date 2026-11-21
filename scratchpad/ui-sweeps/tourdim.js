@@ -82,7 +82,7 @@ function ok(label, pass, detail) {
       cardHidden: document.getElementById("tour-card").classList.contains("hidden"),
       //: The contract itself, read off the running source, because a browser
       //: with overlay scrollbars cannot demonstrate it by measurement.
-      sizedFromWindow: /innerWidth/.test(tourBlockPanels.toString()),
+      sizedFromWindow: /innerWidth/.test(openTour.inspect().blockPanels.toString()),
     };
   });
 
@@ -143,8 +143,12 @@ function ok(label, pass, detail) {
         const front = stack.slice(0, at).filter((el) => !el.id.startsWith("tour-"));
         if (front.length && buried.length < 5) buried.push(`${x},${y} under ${front[0].id || front[0].className}`);
         const bg = getComputedStyle(stack[at]).backgroundColor;
+        // Both notations Chromium serialises: `rgba(r, g, b, a)`, and
+        // `color(srgb r g b / a)`, which a `color-mix` (the panel's dim)
+        // computes to. Reading only the first scored the real dim as 0.
         const m = bg.match(/rgba?\(([^)]+)\)/);
-        const a = m ? (m[1].split(",")[3] === undefined ? 1 : parseFloat(m[1].split(",")[3])) : 0;
+        const c = bg.match(/^color\(srgb [^/)]+(?:\/\s*([\d.]+))?\)$/);
+        const a = m ? (m[1].split(",")[3] === undefined ? 1 : parseFloat(m[1].split(",")[3])) : c ? (c[1] === undefined ? 1 : parseFloat(c[1])) : 0;
         if (a < minAlpha) minAlpha = a;
       }
     }

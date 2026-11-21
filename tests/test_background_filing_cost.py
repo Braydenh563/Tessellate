@@ -79,7 +79,7 @@ def _seed(client, count: int) -> None:
 
 
 def _file_one(client, session, text: str) -> list[str]:
-    """Save one deferred note and run its filing job inline; returns the
+    """Save one note for background filing and run its filing job inline; returns the
     the SQL statements the job issued."""
 
     routes_entries._queue_filing, original = (lambda entry: None), routes_entries._queue_filing

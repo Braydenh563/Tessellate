@@ -1,4 +1,4 @@
-"""D28 (OPEN.md): the follow-up chips try a chip by composing its answer, so a turn that already holds
+"""D28 (OPEN.md): the next-step chips try a chip by composing its answer, so a turn that already holds
 `MAX_CHIPS` answerable chips stops trying the rest (each trial is a whole `compose`, about 5 ms on 500 notes)."""
 
 from datetime import date

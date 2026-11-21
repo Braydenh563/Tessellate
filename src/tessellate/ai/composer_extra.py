@@ -65,7 +65,7 @@ def answer(ctx: Ctx) -> Reply | None:
     opened = open_it(ctx) or start_it(ctx) or composer_switch.answer(ctx) or composer_study.open_named(ctx)
     if opened:
         return opened
-    if composer_study.match(_plain(ctx)) is not None:
+    if composer_study.match(_plain(ctx)) is not None and not composer_plan.asks_schedule(_plain(ctx)):
         return composer_study.answer(ctx)
     return composer_ages.answer(ctx) or composer_amounts.answer(ctx) or composer_follow.answer(ctx) or composer_notes.answer(ctx) or composer_reminders.answer(ctx) or composer_plan.answer(ctx) or composer_quick.answer(ctx) or composer_calc.answer(ctx) or composer_study.answer(ctx)
 

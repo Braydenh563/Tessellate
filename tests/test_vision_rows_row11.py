@@ -9,6 +9,14 @@ from pathlib import Path
 
 from tests._app_js import app_js_text
 from tests import _js_scope
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 ROOT = Path(__file__).resolve().parents[1]
 

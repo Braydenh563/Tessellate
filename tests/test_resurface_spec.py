@@ -7,6 +7,14 @@ vector and drops anything marked "never again" (a correction, I7).
 """
 
 from __future__ import annotations
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 #: Kept as a header rather than a marker: every one of these passes now
 #: (`ai/resurface.py`, `api/routes_resurface.py`), and the file stays the
@@ -15,14 +23,14 @@ BUILT = "WORLD_CLASS 15 I4: resurfacing, built 2026-09-12"
 
 
 def test_an_old_unlinked_unopened_note_outranks_a_linked_recent_one(session):
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     from tessellate.ai import resurface
     from tessellate.entry import manager
     from tessellate.entry import manager_links
 
     old = manager.create_entry(session, "interview prep notes from the spring", tags=[])
-    old.created_at = datetime.now() - timedelta(days=120)
+    old.created_at = SUITE_LOCAL - timedelta(days=120)
     fresh = manager.create_entry(session, "notes from today's standup", tags=[])
     other = manager.create_entry(session, "a note linked to today's", tags=[])
     # `create_link` is what this is called; the spec guessed a name.

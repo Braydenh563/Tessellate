@@ -18,6 +18,7 @@ import pytest
 
 from tessellate.ai import neighbours
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 
 def test_a_rare_shared_tag_makes_a_neighbour_and_a_crowded_one_does_not():
@@ -121,13 +122,12 @@ ROUTE_FLOOR_MEAN = 85
 def test_the_gold_answers_through_the_route_keep_their_floors(client, session, monkeypatch):
     from datetime import datetime
 
-    from tessellate.api import routes_chat
     from tests import _gold
 
     fixture = _gold.load()
     #: The fixture's own day, never the real clock: the route words dates and
     #: due windows from today, so a real clock moved these scores with the date.
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: datetime.fromisoformat(f"{fixture['today']}T10:00:00"))
+    pin_clock(monkeypatch, lambda: datetime.fromisoformat(f"{fixture['today']}T10:00:00"))
     for note in fixture["notes"]:
         entry = manager.create_entry(session, note["content"], note["category"], note["tags"])
         entry.created_at = datetime.fromisoformat(f"{note['date']}T10:00:00")

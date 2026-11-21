@@ -114,9 +114,9 @@ def test_front_matter_is_skipped_and_parsed_in_linear_time():
     assert _front_matter_end("---\nnever closed\n") == 0
     assert [text[a:b] for a, b in _claims(text)] == ["The river floods the valley every spring now."]
     hostile = "---\n" + "a---\n" * 50_000
-    started = time.perf_counter()
+    started = time.process_time()
     _front_matter_end(hostile)
-    assert time.perf_counter() - started < 0.1
+    assert time.process_time() - started < 0.1
 
 
 def _said(text):

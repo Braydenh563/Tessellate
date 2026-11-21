@@ -4,11 +4,18 @@ and saved once, as the rule itself, through the `Recurring` model of
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 
 from tessellate.ai import reading
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 NOW = datetime(2026, 10, 7, 10, 0)  # fixed clock for the reading
 CASES = [
@@ -24,7 +31,7 @@ def test_a_repeat_is_read_and_saved_once_as_its_rule(client, text, rule, words):
     assert got.slots["recurring"] == rule
     token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
     headers = {"X-Auth-Token": token}
-    due = (datetime.now(timezone.utc) + timedelta(days=2)).replace(tzinfo=None).isoformat()
+    due = (SUITE_NOW + timedelta(days=2)).replace(tzinfo=None).isoformat()
     made = client.post("/reminders", json={"text": got.slots["text"], "due_at": due, "recurring": got.slots["recurring"]}, headers=headers)
     assert made.status_code in (200, 201), made.text
     rows = client.get("/reminders", headers=headers).json()
