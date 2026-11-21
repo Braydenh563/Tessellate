@@ -40,6 +40,8 @@ CSS_FILES = [
     #: load order, which is what makes the concatenation above meaningful.
     CSS_DIR / "09-editor.css",
     CSS_DIR / "10-responsive.css",
+    #: The Atlas, companion and name-mark face rules moved out of 08 (L-world-class-364): the `characters` bundle's sheet.
+    CSS_DIR / "characters-lazy.css",
     #: Not linked by index.html: loaded with the Library bundle (app.js
     #: `LAZY_MODULES.library`), and so after every file above.
     CSS_DIR / "library-lazy.css",
@@ -186,3 +188,8 @@ def css_text() -> str:
     `cat`'d concatenation of CSS_FILES, to confirm.
     """
     return "".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
+
+
+def css08_text() -> str:
+    """08-consistency.css and the sheet the Atlas and companion rules moved to (L-world-class-364): one text, in load order."""
+    return (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8") + "\n" + (CSS_DIR / "characters-lazy.css").read_text(encoding="utf-8")

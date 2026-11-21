@@ -12,9 +12,10 @@ lid's own sweep, `atlasLids`) passes through the middle, and briefly.
 import math
 import re
 from pathlib import Path
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = css08_text()
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
 EYE_H = 7.4
 

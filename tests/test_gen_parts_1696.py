@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import css08_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
@@ -99,7 +100,7 @@ def test_the_sweater_has_a_ribbed_hem_and_cuffs() -> None:
 def test_a_raised_gesture_is_drawn_on_the_arm_not_the_hold_pair() -> None:
     # `.nm-figure .nmb-hold { opacity: 0 }` hides the hanging reach only; the
     # gesture is `.nmc-raised` on the right arm, which the figure rotates up.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert ".nm-figure .nmb-arm-r.nmc-raised { rotate: -115deg; }" in css
     block = _block('case "thumbsup":', "default:")
     assert 'arm.classList.add("nmc-raised")' in block
