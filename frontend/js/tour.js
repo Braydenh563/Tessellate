@@ -1548,7 +1548,7 @@
     run.step = run.step || run.steps[Math.max(0, Math.min(run.index, run.steps.length - 1))];
     run.alt = false;
     run.stranded = true;
-    document.getElementById("tour-card")?.removeAttribute("aria-busy");
+    tourBusy(run, false);
     tourRender();
     tourPosition();
     document.getElementById("tour-next")?.focus();
@@ -1627,6 +1627,31 @@
     el?.closest?.(".library-card")?.classList.add("tour-reveal");
   }
 
+  //: **A wait shows as a wait** (L-general-14). A walk that has to load a tab
+  //: (Next: Graph at 1440, measured 2.8 s) left the last step's card, title
+  //: and ring up over a page whose control had already gone: the toursteps
+  //: sweep read "Your conversations" over a 0x0 list. Past a beat, so a
+  //: same-tab step never flickers, the ring clears and Next carries the
+  //: spinner recipe (DESIGN.md, "Something is working on it").
+  const TOUR_BUSY_BEAT_MS = 200;
+  function tourBusy(run, on) {
+    const card = document.getElementById("tour-card");
+    const next = document.getElementById("tour-next");
+    clearTimeout(run.busyTimer);
+    if (!on) {
+      card?.removeAttribute("aria-busy");
+      setBusy(next, false);
+      return;
+    }
+    card?.setAttribute("aria-busy", "true");
+    run.busyTimer = setTimeout(() => {
+      if (tourRun !== run || card?.getAttribute("aria-busy") !== "true") return;
+      run.el = null;
+      tourClearSpotlight();
+      setBusy(next, true, "Opening…");
+    }, TOUR_BUSY_BEAT_MS);
+  }
+
   async function tourShow() {
     const run = tourRun;
     tourReveal(null);
@@ -1637,7 +1662,7 @@
     run.seq = (run.seq || 0) + 1;
     const seq = run.seq;
     const stale = () => tourRun !== run || run.seq !== seq;
-    document.getElementById("tour-card")?.setAttribute("aria-busy", "true");
+    tourBusy(run, true);
     while (run.index >= 0 && run.index < run.steps.length) {
       const step = run.steps[run.index];
       //: A section's `need`s are settled as the walk enters it, before its
@@ -1687,7 +1712,7 @@
           run.step = step;
           run.alt = false;
           run.stranded = true;
-          document.getElementById("tour-card")?.removeAttribute("aria-busy");
+          tourBusy(run, false);
           tourRender();
           tourPosition();
           document.getElementById("tour-next")?.focus();
@@ -1705,7 +1730,7 @@
       run.el = el;
       run.alt = alt;
       run.step = step;
-      document.getElementById("tour-card")?.removeAttribute("aria-busy");
+      tourBusy(run, false);
       tourRender();
       tourPosition();
       run.watchKey = "";
@@ -1800,6 +1825,7 @@
     if (!tourRun) return;
     const run = tourRun;
     tourRun = null;
+    tourBusy(run, false);
     tourReveal(null);
     for (const id of TOUR_LAYERS) document.getElementById(id).classList.add("hidden");
     //: The first-run queue's cue that the screen is the next surface's.

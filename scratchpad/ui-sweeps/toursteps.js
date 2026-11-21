@@ -88,6 +88,9 @@ function ok(label, pass, detail) {
           if (!next) break;
           next.click();
           await wait(650);
+          //: A card that is busy (a tab still loading) is not a step yet: it
+          //: shows Next's spinner and no ring (tourBusy). Measured once it settles.
+          for (let t = 0; t < 40 && document.getElementById("tour-card").getAttribute("aria-busy") === "true"; t += 1) await wait(200);
         }
         return out;
       }, sec);
