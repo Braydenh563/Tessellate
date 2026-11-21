@@ -7,6 +7,10 @@ Object.assign(LAZY_MODULES, {
   statusTasks: ["/js/status-tasks.js"],
   //: The Settings pane's model-status draw (status-settings.js, out of status.js; L-world-class-631). Nobody reads a return value.
   statusSettings: ["/js/status-settings.js"],
+  //: The Notes view's Ask again chips and most-used list (status-quick.js, out of status.js; L698).
+  statusQuick: ["/js/status-quick.js"],
+  //: The once-per-problem notice for a broken search engine (status-embedding.js, out of status.js; L698).
+  statusEmbedding: ["/js/status-embedding.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
   webPanel: ["/js/web-panel.js"],
   //: Tags, category and a property for the documents and files a Library selection holds (library-bulk.js).
@@ -159,6 +163,8 @@ installStandIns({
   //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
   statusTasks: ["noticeTaskTransitions"],
   statusSettings: ["renderSettings"],
+  statusQuick: ["loadRecentQuestions", "loadMostUsed"],
+  statusEmbedding: ["nudgeEmbeddingProblem"],
   notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).

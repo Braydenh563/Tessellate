@@ -1814,76 +1814,6 @@ document.addEventListener("mousedown", (event) => {
   }
 });
 
-// --- quick access: recent questions + most-used entries (Phase 5) -------------------
-
-async function loadRecentQuestions() {
-  const box = document.getElementById("recent-questions");
-  if (!box) return;
-  //: Shared with the dashboard's Recent questions widget (`cacheMs`), which
-  //: asks for the same list in the same second at boot. Any write clears it.
-  const questions = await apiJson("/chat/recent", { cacheMs: 30000 }).catch(() => []);
-  box.replaceChildren();
-  box.classList.toggle("hidden", questions.length === 0);
-  if (questions.length === 0) return;
-  const label = document.createElement("span");
-  label.className = "muted";
-  label.textContent = "Ask again:";
-  box.appendChild(label);
-  for (const question of questions) {
-    //: The clock is what says "you asked this before" (INBOX 394 a): the chip
-    //: is drawn like the suggestions beside it, so the icon carries the
-    //: difference the fill used to.
-    const short = question.length > 48 ? question.slice(0, 47) + "…" : question;
-    const again = chip(`ph:clock-counter-clockwise ${short}`, "", () => {
-      $("question").value = question;
-      askQuestion();
-    });
-    again.title = question;
-    box.appendChild(again);
-  }
-  ensureModule("askHistory").then(() => askAgainMenu(box, questions));
-}
-
-async function loadMostUsed() {
-  const box = document.getElementById("most-used-box");
-  const list = document.getElementById("most-used");
-  if (!box || !list) return;
-  const entries = await apiJson("/entries/most-accessed", { cacheMs: 30000 }).catch(() => []);
-  list.replaceChildren();
-  box.classList.toggle("hidden", entries.length === 0);
-  for (const entry of entries) {
-    const li = document.createElement("li");
-    li.title = entry.content;
-    const text = document.createElement("span");
-    // Reported directly: a clip landing mid-token (`` `code` `` cut before
-    // its closing backtick) left a stray `` ` `` sitting in the rendered
-    // text: `safeMdSlice` drops the dangling marker instead of the plain
-    // `slice(0, 25)` this used to do.
-    //
-    // Block syntax stripped first. renderInlineMarkdown is inline-only, so a
-    // note beginning "# Groceries" rendered the literal "# Groceries", the
-    // same gap the dashboard's mini-lists had, here too since this list uses
-    // the same two-function combination.
-    //: A picture's markdown is not words: cut at 25 characters it showed as a
-    //: raw `![Sketch...` (dog3-1026 row 15).
-    const flat = stripFrontmatter(entry.content)
-      .replace(/!\[[^\]\n]{0,99}\]\([^)\n]{0,999}\)/g, "")
-      .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
-      .trim() || "Picture";
-    const { text: sliced, truncated } = safeMdSlice(flat, 25);
-    renderInlineMarkdown(text, sliced, [], true);
-    if (truncated) text.appendChild(document.createTextNode("…"));
-    const count = document.createElement("span");
-    count.className = "count";
-    count.textContent = `×${entry.access_count}`;
-    //: What the number counts (blind test 2026-10-31: "x4, of what?").
-    count.title = `Opened or asked about ${entry.access_count} ${entry.access_count === 1 ? "time" : "times"}`;
-    li.append(text, count);
-    li.addEventListener("click", () => flashEntry(entry.id));
-    list.appendChild(li);
-  }
-}
-
 // --- model manager (Phase 3.5) ---------------------------------------------------
 
 let modelStatus = null; // latest /models/status payload
@@ -2558,56 +2488,9 @@ function renderAiPill() {
 }
 
 //: **A broken search engine is said where the person is, once** (owner,
-//: packaged app: "I didnt have sentence transformers installed ... I
-//: encountered errors and I saw no popup or anything to suggest that I
-//: switch to nomic-embed-text or install sentence transformers"). The fix
-//: sentence and its one-click button lived only in Settings, Models, which
-//: nobody opens to find out why search feels dull. So the first poll that
-//: carries `embedding_error` raises a toast with the way to fix it and leaves
-//: the same in the bell, keyed by the error so it is said once per problem,
-//: not once per poll.
-let embeddingNudgeSaid = "";
-
 //: An error without its closing full stops, so `${error}. Next` never reads ".." (X18).
 function withoutEndStop(text) {
   return String(text || "").trim().replace(/[.\s]+$/, "");
-}
-
-function embeddingProblemDetail(error) {
-  return `${withoutEndStop(error)}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
-}
-
-//: The toast is once per browser session (X24); the bell keeps every problem.
-//: Blocked storage falls back to `embeddingNudgeSaid`: once per page load.
-function embeddingToastDue() {
-  try {
-    if (sessionStorage.getItem("embeddingToastShown")) return false;
-    sessionStorage.setItem("embeddingToastShown", "1");
-  } catch {
-    // No storage: the in-memory once-per-problem guard above still holds.
-  }
-  return true;
-}
-
-function nudgeEmbeddingProblem() {
-  const error = modelStatus?.embedding_error;
-  if (!error || modelStatus.semantic_off || error === embeddingNudgeSaid) return;
-  embeddingNudgeSaid = error;
-  const installing = /being installed/.test(error);
-  const title = installing ? "Search by meaning is being installed" : "Search by meaning is not working";
-  const detail = installing
-    ? "Search uses keywords until it finishes. Or pick nomic-embed-text in Settings, Models."
-    : embeddingProblemDetail(error);
-  recordNotification({
-    kind: "assist",
-    title,
-    detail,
-    key: `embedding:${error}`,
-    action: { settings: "models" },
-  });
-  //: While the download question is up it already says keywords work
-  //: meanwhile: a second toast said it again, stacked over Settings (audit 1028 E40).
-  if (!installing && !modelStatus.semantic_offer && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
 }
 
 // --- the status bar (§36D) ---------------------------------------------------

@@ -23,7 +23,7 @@ from tests._css_paths import css_text
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 #: The bell's panel is notifications.js (lazy) since Brief 101a; its store stays in status.js.
-STATUS = (JS / "status.js").read_text(encoding="utf-8") + "\n" + (JS / "notifications.js").read_text(encoding="utf-8")
+STATUS = "\n".join((JS / name).read_text(encoding="utf-8") for name in ("status.js", "status-embedding.js", "notifications.js"))
 APP = app_js_text()
 CSS = css_text()
 
