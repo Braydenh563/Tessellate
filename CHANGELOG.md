@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Import: a folder of more than 1,000 files is read, not refused with "Too many files"; the import routes parse the form with their own 5,000-file cap (L-world-class-411).
+- Menus: the connection pill's menu button sits concentric with the pill's end (0px on every side), and a submenu row's words line up with every other row's (37.8 to 38.7px) (L-world-class-107).
 - The IDE shell sweep resizes the run panel by dragging its grip (`docIdeRunApply` is private since the split); `tests/test_ide_shell_sweep.py`.
 - Boot scripts back under their gzip cap after the #222 merge: the skill inputs dialog (`askSkillInputs`) moved from skills.js into the chat turn bundle, fetched on the press that needs it (about 370 bytes gzipped off boot); the board's dialog and shape-caret rules moved from 06-timeline-dialogs.css into board-lazy.css, fetched with the boards bundle (boot CSS 179,382 to under its 179,300 cap).
 - Tests: two composer date tests read the real clock (a note's written day, a snooze's "the 16th") and failed once the real date passed the 17th; both now run on their fixed day.

@@ -244,6 +244,13 @@
 .menu-item > .menu-item-words {
   display: flex;
   align-items: center;
+  /* A submenu row wraps its icon and words in this span, so the row's own
+     gap and the lead margin zeroing below never reached them: its words sat
+     0.9px left of every other row's (menu-rows.js, L-world-class-107). */
+  gap: var(--space-2);
+}
+.menu-item > .menu-item-words > .ph-lead {
+  margin-inline-end: 0;
 }
 .menu-item .ph-text {
   min-width: 0;
@@ -8473,8 +8480,10 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    of the note link border and the meatball button". Measured: a 28x24 button
    (the touch target floor widened it) in a 25px-high pill, 1px from the top,
    2.2px from the bottom and 5px from the right. With a mouse it is a round
-   button two pixels inside the pill on every side, centred; a finger keeps
-   the 28px target (the pill grows around it there). */
+   button the pill's inner height, concentric with its end: 0px from the
+   border above, below and to the right (L-world-class-107 measured 0, 0
+   and 2 with a 2px end margin, the fill off the cap's curve); a finger
+   keeps the 28px target (the pill grows around it there). */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -8485,7 +8494,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
     height: 1.5rem;
     min-width: 0;
     min-height: 0;
-    margin-inline-end: 2px;
+    margin-inline-end: 0;
   }
 }
 /* --- A note's time: the same corner on every card --- */
