@@ -1,6 +1,139 @@
 // documents-surface.js: the editing surface behind one adapter (textarea or CodeMirror), opening a document, the list, and remembering where you were.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: element -> view. Weak, because the edit form's textarea is thrown away and
+  //: rebuilt on every edit and a strong map would hold every one of them.
+  const noteSurfaceViews = new WeakMap();
+
+  //: The surface for a note editor, given its textarea or any node inside its
+  //: view. Null for anything that has not mounted, which is what keeps
+  //: `asSurface` falling back to the textarea adapter.
+  function noteSurfaceFor(box) {
+    if (!box) return null;
+    if (box instanceof HTMLTextAreaElement) {
+      const view = noteSurfaceViews.get(box);
+      return view ? cmSurface(view, noteSurfaceMeta(box)) : null;
+    }
+    if (box instanceof Node && box.nodeType === 1 && box.closest) {
+      const wrap = box.closest(".note-surface");
+      if (wrap && wrap.noteSurfaceHost) return noteSurfaceFor(wrap.noteSurfaceHost);
+    }
+    return null;
+  }
+
+  //: Built once per host and kept on the element, so `cmSurface`'s own cache
+  //: (keyed by the view) never sees two different identities for one view.
+  function noteSurfaceMeta(host) {
+    if (!host.noteSurfaceMeta) {
+      host.noteSurfaceMeta = { id: host.id, changeHandlers: [] };
+    }
+    return host.noteSurfaceMeta;
+  }
+
+  // The two modes that put #doc-preview on screen. Kept as one predicate because
+  // every "is the rendered pane showing?" decision below has to agree with every
+  // other one: the split/rendered pair is exactly the shape that goes wrong when
+  // each site spells the check out for itself.
+  function docPreviewShowing(mode = docView) {
+    return mode === "split" || mode === "rendered";
+  }
+
+  //: The one surface each instrument acts on: whichever box the caret is in.
+  //: There is one editor now, in every view, so this is almost always the
+  //: document's own surface; the check survives because the fallback textarea
+  //: is still a real box when the engine is unavailable.
+  function docActiveBox() {
+    const active = document.activeElement;
+    if (active instanceof HTMLTextAreaElement && active.id === "doc-content") {
+      return textareaSurface(active);
+    }
+    //: CodeMirror's editable is a `div`, not a textarea, so the check above
+    //: cannot see it. `asSurface` maps any node inside the view onto the
+    //: document's surface, which is what makes the caret-following instruments
+    //: (the status bar, the completion popup, the findings menu) keep working
+    //: once the engine is under them.
+    return asSurface(active) || docSurface();
+  }
+
+  //: **Where the caret is, in pixels.** The standard mirror technique: a hidden
+  //: div that copies every property that affects text layout, holds the text up
+  //: to the caret, and reports where a marker span lands. There is no API for
+  //: this: `selectionStart` is an index, and a popup has to go somewhere on
+  //: screen.
+  //:
+  //: The property list is the part that has to be right: miss `font-family` or
+  //: `padding` and the popup drifts further from the caret the further down the
+  //: document you are, which reads as a positioning bug rather than a missing
+  //: line of CSS.
+  const DOC_MIRROR_PROPS = [
+    "boxSizing", "width", "borderLeftWidth", "borderRightWidth", "borderTopWidth",
+    "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
+    "fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing",
+    "lineHeight", "textTransform", "textIndent", "whiteSpace", "wordSpacing",
+    "tabSize",
+  ];
+
+  let docMirror = null;
+
+  //: The mirror itself, over a real textarea and an offset in its value. Split
+  //: out of `docCaretPoint` because it is the *textarea's* answer to the
+  //: question: CodeMirror has `coordsAtPos` and needs none of this, so the
+  //: adapter routes each surface to whichever one is right for it.
+  function docMirrorPoint(el, pos) {
+    if (!docMirror) {
+      docMirror = document.createElement("div");
+      docMirror.className = "doc-caret-mirror";
+      document.body.appendChild(docMirror);
+    }
+    const style = getComputedStyle(el);
+    for (const prop of DOC_MIRROR_PROPS) docMirror.style[prop] = style[prop];
+    //: `pre-wrap`, always: a textarea wraps and preserves whitespace, and a
+    //: mirror that collapsed spaces would put the caret a word early on every
+    //: line that has two of them.
+    docMirror.style.whiteSpace = "pre-wrap";
+    docMirror.style.overflowWrap = "break-word";
+    docMirror.textContent = el.value.slice(0, pos);
+    const marker = document.createElement("span");
+    //: A zero-width space rather than nothing: an empty span has no box, so it
+    //: reports the wrong position at the end of a line.
+    marker.textContent = "​";
+    docMirror.appendChild(marker);
+    const boxRect = el.getBoundingClientRect();
+    const markRect = marker.getBoundingClientRect();
+    const mirrorRect = docMirror.getBoundingClientRect();
+    const lineHeight = Number.parseFloat(style.lineHeight) || 18;
+    const top = boxRect.top + (markRect.top - mirrorRect.top) - el.scrollTop;
+    return {
+      left: boxRect.left + (markRect.left - mirrorRect.left) - el.scrollLeft,
+      top,
+      bottom: top + lineHeight,
+      lineHeight,
+    };
+  }
+
+  //: State that moved here from documents.js (L-documents-118).
+  let docs = [];
+  let currentDoc = null;   // {id, title, content, ...}
+  let docDirty = false;
+  //: Which `openDocument` call is the newest (see there).
+  let docOpenSeq = 0;
+  let docView = "source";
+  //: The editing mode the Edit button returns to after Read (DOCUMENTS_PLAN
+  //: Phase 1 item 2): Live, Source or Split, whichever was last in use.
+  let lastEditView = "live";
+  //: The empty-document prompt, kept here because the two engines spell it
+  //: differently: a textarea has a `placeholder` attribute, CodeMirror has a
+  //: placeholder extension that is built from this when the view is created.
+  let docPlaceholderText = "";
+  //: While the edit-conflict prompt is up, autosave waits for its answer
+  //: rather than asking again every 1.2s of typing behind it.
+  //: **An autosave's conflict waits in the status line, not in a dialog** (audit
+  //: 1028 D9). A silent save hit the modal in the middle of a sentence, which
+  //: took the focus and sent the next keystrokes to it. Now the save stops, the
+  //: status says the document changed in another window and offers "Resolve",
+  //: and the dialog opens when asked for (or on an explicit save). `{ id,
+  //: current }`: the other window's version, for the document it is about.
+  let docConflictPending = null;
   // DOC-SURFACE-BEGIN
   // =============================================================================
   // The editing surface, behind one adapter (DOCUMENTS_PLAN Phase 2 step 2)
@@ -1013,5 +1146,80 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docBoxEl, docSetPlaceholder, docPlaceholderFor, textareaSurface, cmSurface, docSurfaceChanged, docSurface, docStr, docText, docSurfaceById, docEventFromCm, docListen, asSurface, setDocView, loadDocuments, renderDocList, showNoDocument, openDocument, docRememberPositionNow, docRememberPosition, keepDocEditLocally, forgetDocEditLocally });
+  Object.assign(window, { docPreviewShowing, noteSurfaceMeta, noteSurfaceViews, noteSurfaceFor, docActiveBox, docBoxEl, docSetPlaceholder, docPlaceholderFor, textareaSurface, cmSurface, docSurfaceChanged, docSurface, docStr, docText, docSurfaceById, docEventFromCm, docListen, asSurface, setDocView, loadDocuments, renderDocList, showNoDocument, openDocument, docRememberPositionNow, docRememberPosition, keepDocEditLocally, forgetDocEditLocally });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docs", () => docs, (value) => { docs = value; }],
+    ["currentDoc", () => currentDoc, (value) => { currentDoc = value; }],
+    ["docDirty", () => docDirty, (value) => { docDirty = value; }],
+    ["docOpenSeq", () => docOpenSeq, (value) => { docOpenSeq = value; }],
+    ["docView", () => docView, (value) => { docView = value; }],
+    ["lastEditView", () => lastEditView, (value) => { lastEditView = value; }],
+    ["docPlaceholderText", () => docPlaceholderText, (value) => { docPlaceholderText = value; }],
+    ["docConflictPending", () => docConflictPending, (value) => { docConflictPending = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  // Searching and sorting every document lives in the Library now (§36G), with
+  // the notes, chats and files beside them. This is the way there, said out loud
+  //, a list that silently stops at eight is a list that has lost your writing.
+  $("doc-browse-all").addEventListener("click", () => {
+    switchTab("library");
+    libraryKind = "document";
+    renderLibraryOverview();
+    renderLibraryFilters();
+    renderLibrary();
+  });
+
+  // Used to be an open-by-default <details> in the sidebar; its body was tall
+  // enough to push the document list down, so it is a dialog now. The Close
+  // button and Escape both close it, Close via the generic [data-close-dialog]
+  // delegation set up below, Escape for free from <dialog>.showModal().
+  $("doc-storage-toggle").addEventListener("click", () => $("doc-storage-dialog").showModal());
+
+  //: **Enter in the title starts the body** (audit 2026-10-05, UX-05), the way
+  //: Notion, Apple Notes and Obsidian behave: "Trip plan", Enter, "Day one..."
+  //: used to type on into the title and save it as one long name over an empty
+  //: body. ArrowDown at the end of the title goes there too. Not mid-IME.
+  $("doc-title").addEventListener("keydown", (event) => {
+    if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const title = event.currentTarget;
+    const atEnd = title.selectionStart === title.value.length && title.selectionEnd === title.value.length;
+    if (event.key !== "Enter" && !(event.key === "ArrowDown" && atEnd)) return;
+    event.preventDefault();
+    //: Read view (a phone opens a document in it) has no body to type in, so
+    //: Enter goes back to the editing view last used, as the Edit button does.
+    if (docView === "rendered") setDocView(lastEditView || "live");
+    if (docCmView && docCmView.dom.isConnected && docCmView.dom.offsetParent !== null) {
+      docCmView.dispatch({ selection: { anchor: 0 }, scrollIntoView: true });
+      docCmView.focus();
+      return;
+    }
+    //: Through the adapter (tests/test_doc_surface.py): the fallback box is
+    //: only reached here when CodeMirror is not on screen.
+    if (docBoxEl()?.offsetParent !== null && docBoxEl()) {
+      const surface = docSurface();
+      surface.focus();
+      surface.setSelection(0);
+    }
+  });
+
+  //: The dock's breadcrumb (INBOX 424 p): back to the Library's Documents list,
+  //: the place a document is opened from.
+  $("doc-back")?.addEventListener("click", () => {
+    const crumb = $("doc-back");
+    if (crumb.dataset.from) return openDocument(Number(crumb.dataset.from));
+    switchTab("library");
+    document.getElementById("library-subtab-docs")?.click();
+  });
+
+  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
+    // The unmodified title is stashed before syncDocFileType ever overwrites it
+    // with the "no rendered form" explanation, so switching back to a markdown
+    // document restores the real one rather than leaving the disabled text.
+    button.dataset.docTitle = button.title;
+    button.addEventListener("click", () =>
+      setDocView(button.dataset.docViewGroup === "edit" ? lastEditView : button.dataset.docView)
+    );
+  }
 })();

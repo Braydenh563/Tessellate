@@ -1,6 +1,20 @@
 // documents-suggest-panel.js: the spelling variants, the dictionary reads, and where the suggestions panel sits.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  //: Built once from the pairs above, in whichever direction the setting names.
+  //: A map rather than a scan, because this runs per word of the document.
+  let docVariantFor = null;
+  //: **The popup, and the four answers a person actually has.** Fix it, this is
+  //: a word, not this time, and, for a spelling, always correct it. Anchored
+  //: at the thing it is about, because a menu that opens somewhere else makes
+  //: you re-find the word you were looking at.
+  let docSuggestOpenFor = null;
+  //: Kept so the menu can be re-placed after it changes size, the AI wordings
+  //: arrive seconds after it opens and make it taller, and a menu that grew
+  //: downwards off the bottom of the window is a menu whose best suggestion is
+  //: unreachable.
+  let docSuggestAnchor = null;
   //: Painted once on load so the bar is not blank before the first keystroke,
   //: and again whenever a document is opened, `openDocument` calls this.
   //:
@@ -586,5 +600,18 @@
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { renderDocTools, DOC_VARIANT_LABEL, docSpellingVariant, docVariantLookup, docDictionary, docDictionaryWrite, docDictionaryAdd, docProseIgnored, docProseKey, closeDocSuggest, DOC_SUGGEST_MAX, docMatchCase, docSuggestAlternatives, docFindingLine, docFindingIsPassage, docFindingAnswerRows, docSuggestAnswers, openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docLiftToViewport, docReturnFromViewport, docPlaceFixed, placeDocSuggest, docSuggestFollowAnchor, docScheduleSuggestFollow });
+  Object.assign(window, { renderDocTools, DOC_VARIANT_LABEL, docSpellingVariant, docVariantLookup, docDictionary, docDictionaryWrite, docDictionaryAdd, docProseIgnored, docProseKey, closeDocSuggest, DOC_SUGGEST_MAX, docMatchCase, docSuggestAlternatives, docFindingLine, docFindingIsPassage, docFindingAnswerRows, docSuggestAnswers, openDocSuggest, docTranslatePassage, docAiDiscussInChat, docAiReview, docLiftToViewport, docReturnFromViewport, docPlaceFixed, placeDocSuggest, docScheduleSuggestFollow });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docVariantFor", () => docVariantFor, (value) => { docVariantFor = value; }],
+    ["docSuggestOpenFor", () => docSuggestOpenFor, (value) => { docSuggestOpenFor = value; }],
+    ["docSuggestAnchor", () => docSuggestAnchor, (value) => { docSuggestAnchor = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  window.addEventListener("resize", docSuggestFollowAnchor);
+
+  //: Capture, because the scroll that matters is the editor's own and a scroll
+  //: event does not bubble.
+  window.addEventListener("scroll", docSuggestFollowAnchor, true);
 })();

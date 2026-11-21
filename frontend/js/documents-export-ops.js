@@ -454,5 +454,50 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docExportName, docIsCodeFile, exportDocumentBundle, openDocReplace, exportDocumentDocx, exportDocumentMarkdown, DOC_EXPORT_STRIP, docExportClean, exportDocumentHtml, exportDocumentPdf, deleteDocumentWithUndo, renameDocumentWithUndo, archiveDocumentWithUndo, offerCreateUndo, offerCreatedDocsUndo, unlinkDocNoteWithUndo, docBookmarkWithUndo, docShowSaved, restoreDocVersionWithUndo, deleteCurrentDocument });
+  Object.assign(window, { docExportName, docIsCodeFile, openDocReplace, DOC_EXPORT_STRIP, docExportClean, deleteDocumentWithUndo, renameDocumentWithUndo, archiveDocumentWithUndo, offerCreateUndo, offerCreatedDocsUndo, unlinkDocNoteWithUndo, docBookmarkWithUndo, docShowSaved, restoreDocVersionWithUndo });
+
+  $("doc-connections").addEventListener("click", () => {
+    if (!currentDoc) return;
+    // Closes the ⋯ disclosure first: it is a `<details>`, so it stays open
+    // behind the dialog otherwise, and it is the same width as the dialog's
+    // own left edge.
+    $("doc-dock-menu")?.removeAttribute("open");
+    lazyScript("/js/connections.js").then(() => openConnections("documents", currentDoc.id, currentDoc.title || "This document"));
+  });
+
+  $("doc-copy-link").addEventListener("click", () => {
+    $("doc-dock-menu")?.removeAttribute("open");
+    if (currentDoc) copyObjectAddress("document", currentDoc.id);
+  });
+
+  $("doc-export-md").addEventListener("click", exportDocumentMarkdown);
+
+  $("doc-export-html").addEventListener("click", exportDocumentHtml);
+
+  $("doc-export-slides").addEventListener("click", exportDocumentHtml.slides);
+
+  //: A diagram's picture from the open page (R10): the editor's own text, so an unsaved change is in it.
+  for (const [id, how] of [["doc-export-svg", "svg"], ["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]) {
+    $(id).addEventListener("click", async () => {
+      $("doc-dock-menu")?.removeAttribute("open");
+      if (await ensureModule("diagramEmbed")) diagramModel.embed.out(how, docText(), currentDoc?.title);
+    });
+  }
+
+  $("doc-export-zip").addEventListener("click", exportDocumentBundle);
+
+  $("doc-export-docx").addEventListener("click", exportDocumentDocx);
+
+  $("doc-export-pdf").addEventListener("click", exportDocumentPdf);
+
+  $("doc-delete").addEventListener("click", deleteCurrentDocument);
+
+  $("doc-attach-bookmark").addEventListener("click", attachBookmarkToDocument);
+
+  //: **A document's headings as a new mind map** (MINDMAP_PLAN decision 35):
+  //: the map side does the work (`wbMapFromDocument`, whiteboard-map.js), from
+  //: the text as it stands in the editor, saved or not.
+  $("doc-map-headings")?.addEventListener("click", () => {
+    if (currentDoc) wbMapFromDocument(currentDoc, docText());
+  });
 })();

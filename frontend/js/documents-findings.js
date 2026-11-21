@@ -1,6 +1,8 @@
 // documents-findings.js: the three shapes a finding is drawn in: gutter, margin and the suggestions panel.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docFirstPress = null;
   // =============================================================================
   // The three shapes a finding is drawn in (DOCUMENTS_PLAN Phase 0 and Phase 2)
   // =============================================================================
@@ -713,5 +715,76 @@
   }
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docTableTab, docFindingAtOffset, docOffsetOf, docRectUsable, docFindingAnchor, docFindingOfMark, docPointerMenuOpen, docFindingAtPoint, docOpenSuggestFor, docOpenSuggestAtCaret, docOpenSuggestAtPoint, docEditorMenuAtPoint, docTableMenuAtPoint, docClipboardMenuItems, DOC_HOVER_SUGGEST_MS, docHoverSuggest, docFindingKeyBox, docFindingStep, docGoToFinding, DOC_PROSE_NARROW, docProseDockSide, applyDocProseDock, toggleDocProseDock });
+  Object.assign(window, { docTableTab, docFindingAtOffset, docOffsetOf, docRectUsable, docFindingAnchor, docPointerMenuOpen, docFindingAtPoint, docOpenSuggestFor, docOpenSuggestAtCaret, docClipboardMenuItems, docFindingKeyBox, docFindingStep, docGoToFinding, DOC_PROSE_NARROW, docProseDockSide, applyDocProseDock, toggleDocProseDock });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docFirstPress", () => docFirstPress, (value) => { docFirstPress = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  //: The table's menu goes first (`docTableMenuAtPoint`, below), and takes the
+  //: press from the caret-level suggestion: the one this listener opens on any
+  //: press in a box with something to say. A misspelt word keeps its own. One
+  //: listener, because the long-press twin below is one call (a lint counts both).
+  document.addEventListener("contextmenu", (event) => {
+    const point = { x: event.clientX, y: event.clientY };
+    if (
+      docTableMenuAtPoint(event.target, point.x, point.y) ||
+      docOpenSuggestAtPoint(event.target, point) ||
+      docEditorMenuAtPoint(event, point)
+    ) {
+      event.preventDefault();
+    }
+  });
+
+  //: The hold does not open the editor's own menu (`docEditorMenuAtPoint`): on a
+  //: phone a hold in text is how a word gets selected, with the browser's handles.
+  //: The menu answers the contextmenu event a device sends, and the phone bar and
+  //: selection bar carry Turn into.
+  if (typeof wireLongPress === "function") {
+    wireLongPress(
+      document,
+      (event, point) =>
+        docTableMenuAtPoint(event.target, point.x, point.y) ||
+        docOpenSuggestAtPoint(event.target, point),
+      { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
+    );
+  }
+
+  docListen("mouseover", (event) => {
+    const mark = event.target instanceof Element ? event.target.closest(".cm-finding") : null;
+    if (mark === docHoverSuggest.mark) return;
+    clearTimeout(docHoverSuggest.timer);
+    docHoverSuggest.mark = mark;
+    if (!mark || docFileType().previewable || !docToolsBoxFor(mark)) return;
+    const point = { x: event.clientX, y: event.clientY };
+    docHoverSuggest.timer = setTimeout(() => {
+      if (docHoverSuggest.mark !== mark || !mark.isConnected) return;
+      const finding = docFindingOfMark(mark);
+      if (!finding || docSuggestOpenFor === finding) return;
+      docOpenSuggestFor(finding, false, point);
+    }, DOC_HOVER_SUGGEST_MS);
+  });
+
+  $("doc-prose")?.addEventListener("click", () => {
+    const panel = $("doc-prose-panel");
+    const chip = $("doc-prose");
+    if (!panel || !chip) return;
+    const open = panel.classList.contains("hidden");
+    panel.classList.toggle("hidden", !open);
+    chip.setAttribute("aria-expanded", String(open));
+    if (open) renderDocProsePanel();
+    docFocusSyncProse();
+  });
+
+  $("doc-focus-prose")?.addEventListener("click", () => {
+    if (window.matchMedia(DOC_FOCUS_NARROW).matches && $("doc-prose-panel")?.classList.contains("hidden")) {
+      setDocFocusSidebar(false);
+    }
+    $("doc-prose")?.click();
+  });
+
+  window.matchMedia(DOC_PROSE_NARROW).addEventListener("change", applyDocProseDock);
+
+  applyDocProseDock();
 })();

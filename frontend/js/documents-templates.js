@@ -1,6 +1,25 @@
 // documents-templates.js: the new-document templates and the dialog that picks one.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: Data moved here from documents.js (L-documents-118).
+  // Ids `ensureDocumentExists` made since the page loaded; the only ones `docDropIfUntouched` may bin.
+  const docsMadeThisSession = new Set();
+  //: State that moved here from documents.js (L-documents-118).
+  //: **Choosing is not making** (INBOX 410, the owner: "when selecting a
+  //: template, I want to be able to confirm my template selection, not have it
+  //: instantly be made when I press it"). A row is a radio: a click chooses it
+  //: and the preview shows the page it would make; the dialog's one filled
+  //: button (Use this template), Enter on the list, or a double click makes it.
+  //: The arrows walk the rows, and the first row is chosen when the dialog
+  //: opens, so one Enter still makes a page the way one Enter did before. The
+  //: preview follows the choice and not the pointer: a pane showing the row
+  //: under the mouse while the button below would make the row that was
+  //: clicked is two answers to "what will I get". The choice lives here, not
+  //: on a row, so the Use button (wired once, beside the other document
+  //: controls) can read it.
+  let docTemplateMade = false;
+  // Guards against creating several documents from one fast burst of typing.
+  let creatingDocument = null;
   //: **Templates: a starting shape for the five documents people make most.**
   //: Plain markdown with two placeholders; the whole feature is these strings,
   //: the dialog in index.html and `createDocument(template)` below. Kept as
@@ -418,5 +437,143 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { DOC_TEMPLATES, docTemplateFill, docNextName, docDropIfUntouched, startBlankDocument, createDocument, chooseDocTemplate, useDocTemplate });
+  Object.assign(window, { DOC_TEMPLATES, docTemplateFill, docNextName, docDropIfUntouched, startBlankDocument, createDocument, docsMadeThisSession, ensureDocumentExists, openDocTemplateDialog });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docTemplateMade", () => docTemplateMade, (value) => { docTemplateMade = value; }],
+    ["creatingDocument", () => creatingDocument, (value) => { creatingDocument = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  function docTemplateListKeys(event) {
+    const rows = [...event.currentTarget.querySelectorAll(".doc-template-choice")];
+    if (!rows.length) return;
+    const index = rows.findIndex((row) => row.getAttribute("aria-checked") === "true");
+    const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+    let next = null;
+    if (step) next = rows[(index + step + rows.length) % rows.length];
+    else if (event.key === "Home") next = rows[0];
+    else if (event.key === "End") next = rows[rows.length - 1];
+    if (next) {
+      event.preventDefault();
+      chooseDocTemplate(DOC_TEMPLATES.find((t) => t.id === next.dataset.template), { focus: true });
+    } else if (event.key === "Enter") {
+      //: Enter on a focused button would fire its click, which only chooses;
+      //: on this list Enter is the confirmation, as it is on a form.
+      event.preventDefault();
+      useDocTemplate();
+    }
+  }
+
+  function openDocTemplateDialog() {
+    const dialog = $("doc-template-dialog");
+    const list = $("doc-template-list");
+    if (!dialog || !list) return;
+    docTemplateMade = false;
+    list.replaceChildren();
+    //: Writing, Planning, then Code (INBOX 788, DX30): a heading row where the group
+    //: changes, not a second list, so the arrows still walk every row.
+    let group = "";
+    for (const template of DOC_TEMPLATES) {
+      if ((template.group || "writing") !== group) {
+        group = template.group || "writing";
+        const head = document.createElement("li");
+        head.setAttribute("role", "presentation");
+        head.className = "doc-template-group muted text-xs";
+        head.textContent = { code: "Code", planning: "Planning" }[group] || "Writing";
+        list.appendChild(head);
+      }
+      const li = document.createElement("li");
+      li.setAttribute("role", "presentation");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ghost doc-template-choice";
+      button.setAttribute("role", "radio");
+      button.setAttribute("aria-checked", "false");
+      button.dataset.template = template.id;
+      const name = document.createElement("strong");
+      name.textContent = template.title;
+      const hint = document.createElement("span");
+      hint.className = "muted text-sm";
+      hint.textContent = template.hint;
+      //: The chosen row's check, the mark every menu in the app uses for
+      //: "in effect": the fill alone would be colour alone.
+      const check = document.createElement("i");
+      check.className = "ph ph-check doc-template-check";
+      check.setAttribute("aria-hidden", "true");
+      button.append(name, hint, check);
+      button.addEventListener("click", () => chooseDocTemplate(template));
+      button.addEventListener("dblclick", useDocTemplate);
+      li.appendChild(button);
+      list.appendChild(li);
+    }
+    dialog.showModal();
+    chooseDocTemplate(DOC_TEMPLATES[0], { focus: true });
+  }
+
+  //: **The page a template makes, before it is made** (DOCUMENTS_PLAN Phase 4:
+  //: templates "offered with a preview"). The gallery offered a sentence per
+  //: row ("Brief, criteria, sections, sources, timeline."), which says what a
+  //: template is about and not what it looks like. This is the filled body,
+  //: through the same `docTemplateFill` the button uses and the same
+  //: `renderMarkdown` the document's own preview uses, shrunk to a page in the
+  //: dialog's second column, so what is shown is exactly what would be created.
+  function showDocTemplatePreview(template) {
+    const pane = $("doc-template-preview");
+    if (!pane || !template) return;
+    if (pane.dataset.template === template.id) return;
+    pane.dataset.template = template.id;
+    const page = document.createElement("div");
+    page.className = "doc-template-page md";
+    const filled = docTemplateFill(template);
+    if (filled.content) {
+      //: A code template previews as the code it makes, not as prose.
+      renderMarkdown(page, template.fileType ? `\`\`\`${template.fileType}\n${filled.content}\`\`\`\n` : filled.content);
+    } else {
+      const empty = document.createElement("p");
+      empty.className = "muted doc-template-empty";
+      empty.textContent = template.hint;
+      page.appendChild(empty);
+    }
+    pane.replaceChildren(page);
+  }
+
+  async function ensureDocumentExists() {
+    if (currentDoc) return currentDoc;
+    if (creatingDocument) return creatingDocument;
+    creatingDocument = (async () => {
+      const doc = await apiJson("/documents", {
+        method: "POST",
+        body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "", file_type: docTypeState.pending || "md" }),
+      });
+      await ensureModule("library"); // the list redraw below reaches the files later in the bundle (INBOX 1530 f)
+      docTypeState.pending = null;
+      currentDoc = doc;
+      docsMadeThisSession.add(doc.id);
+      docs.unshift({ ...doc });
+      // The list gains an "Untitled" row the moment this returns, so show the
+      // same name in the title box, otherwise the document you're typing into
+      // appears to have no name while the sidebar says it has one.
+      if (!$("doc-title").value.trim()) $("doc-title").value = doc.title;
+      renderDocList();
+      $("doc-empty").classList.add("hidden");
+      return doc;
+    })();
+    try {
+      return await creatingDocument;
+    } finally {
+      creatingDocument = null;
+    }
+  }
+
+  $("doc-new").addEventListener("click", () => createDocument());
+
+  $("doc-new-template")?.addEventListener("click", openDocTemplateDialog);
+
+  //: The Diagram builder's one door (documents-mermaid.js), as a button beside New: it was a row behind New's caret, two clicks and easy to miss (INBOX 1679).
+  $("doc-new-diagram")?.addEventListener("click", () => diagramModel.door({ doc: true }));
+
+  $("doc-template-list")?.addEventListener("keydown", docTemplateListKeys);
+
+  $("doc-template-use")?.addEventListener("click", useDocTemplate);
 })();

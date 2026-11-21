@@ -1,6 +1,8 @@
 // documents-focus.js: block references, the reading modes, focus mode and the markdown toolbars' own commands.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  let docFocusOwnsFullscreen = false;
   // Block references (DOCUMENTS_PLAN Phase 4 item 2)
   // =============================================================================
   //
@@ -47,8 +49,6 @@
   //: and from `setDocView`, neither of which knows anything about printing.
 
 
-  //: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
-  const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
 
 
 
@@ -703,5 +703,118 @@
 
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docPhase2State, initMarkdownToolbars, DOC_WIDTH_KEY, applyDocWidth, toggleDocWidth, DOC_DIM_KEY, DOC_TYPEWRITER_KEY, DOC_SERIF_KEY, docReadingModes, docReadingPlugin, docTypewriterExtension, applyDocDim, applyDocTypewriter, applyDocSerif, docRememberReading, docRestoreReading, DOC_TEXT_SIZES, applyDocTypography, docTypographyNow, docStepTypography, docRestoreTypography, DOC_FOCUS_KEY, docFocusOn, setDocFocusTools, DOC_FOCUS_NARROW, setDocFocusSidebar, toggleDocFocus, docFocusSyncFullscreen, docFocusToggleFullscreen, mountDocToolbarControls });
+  Object.assign(window, { docReadingModes, docReadingPlugin, docTypewriterExtension, docFocusOn, DOC_FOCUS_NARROW, setDocFocusSidebar, toggleDocFocus });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docFocusOwnsFullscreen", () => docFocusOwnsFullscreen, (value) => { docFocusOwnsFullscreen = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  initMarkdownToolbars();
+
+  $("doc-width-toggle")?.addEventListener("click", toggleDocWidth);
+
+  $("doc-width-menu")?.addEventListener("click", toggleDocWidth);
+
+  try {
+    applyDocWidth(prefs.get(DOC_WIDTH_KEY, null) === "wide");
+  } catch {
+    applyDocWidth(false);
+  }
+
+  $("doc-dim-others")?.addEventListener("click", () =>
+    docRememberReading(DOC_DIM_KEY, !docReadingModes.dimOthers, applyDocDim)
+  );
+
+  $("doc-typewriter")?.addEventListener("click", () =>
+    docRememberReading(DOC_TYPEWRITER_KEY, !docReadingModes.typewriter, applyDocTypewriter)
+  );
+
+  $("doc-serif")?.addEventListener("click", () =>
+    docRememberReading(
+      DOC_SERIF_KEY,
+      !$("tab-documents")?.classList.contains("doc-serif"),
+      applyDocSerif
+    )
+  );
+
+  docRestoreReading();
+
+  (() => {
+    //: **Zoom** (OPEN W23 D28): one size along the list, stopping at either end. The
+    //: menu row cycles and wraps; a wheel that wrapped from the largest to the
+    //: smallest would be a jolt, so this clamps.
+    let lastAt = 0;
+    function docZoomStep(current, delta) {
+      const at = DOC_TEXT_SIZES.indexOf(current);
+      const next = Math.min(DOC_TEXT_SIZES.length - 1, Math.max(0, (at < 0 ? 1 : at) + delta));
+      return DOC_TEXT_SIZES[next];
+    }
+
+    //: Ctrl+wheel over a prose document steps the text size. A code file keeps its
+    //: own metrics (the gutter is measured from the font), and the browser's page
+    //: zoom is untouched everywhere else. Not passive: it has to stop the page zoom.
+    $("tab-documents")?.addEventListener("wheel", (event) => {
+      if (!event.ctrlKey || !event.deltaY || docIsCodeFile()) return;
+      if (!event.target.closest?.(".doc-source-wrap, #doc-preview")) return;
+      event.preventDefault();
+      //: A trackpad sends dozens of events in one flick; one step per 150 ms keeps it a step, not a leap to the end.
+      if (event.timeStamp - lastAt < 150) return;
+      const now = docTypographyNow();
+      const size = docZoomStep(now.size, event.deltaY < 0 ? 1 : -1);
+      if (size === now.size) return;
+      lastAt = event.timeStamp;
+      prefs.set("doc-text-size", size);
+      applyDocTypography(size, now.spacing);
+    }, { passive: false });
+  })();
+
+  $("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
+
+  $("doc-paste-special")?.addEventListener("click", () => docPasteSpecialMenu());
+
+  $("doc-line-spacing")?.addEventListener("click", () => docStepTypography("spacing"));
+
+  docRestoreTypography();
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) docFocusOwnsFullscreen = false;
+    docFocusSyncFullscreen();
+  });
+
+  $("doc-focus-toggle")?.addEventListener("click", () => toggleDocFocus());
+
+  $("doc-focus-exit")?.addEventListener("click", () => toggleDocFocus(false));
+
+  $("doc-focus-fullscreen")?.addEventListener("click", docFocusToggleFullscreen);
+
+  $("doc-focus-tools")?.addEventListener("click", () =>
+    setDocFocusTools(!$("tab-documents")?.classList.contains("doc-focus-tools"))
+  );
+
+  $("doc-focus-sidebar")?.addEventListener("click", () =>
+    setDocFocusSidebar(!$("tab-documents")?.classList.contains("doc-focus-sidebar"))
+  );
+
+  //: Brought back after a reload in the same session. The tab page may still
+  //: be hidden here (this file loads with the Library), which is fine: the
+  //: class waits on it, and `toggleDocFocus` only takes the caret when the
+  //: page is showing.
+  //:
+  //: **After the rest of the file has run, not in the middle of it.** Called
+  //: inline here, `docFocusFill` reached `renderDocCounts`, whose
+  //: `DOC_READING_WPM` is a `const` further down: a temporal-dead-zone error the
+  //: `catch` below swallowed, after the class was set and before Tools and the
+  //: sidebar were restored (measured: `doc-focus` came back, `doc-focus-tools`
+  //: never did, and the idle watch was never armed). A microtask runs once this
+  //: script has finished, when every `const` is initialised.
+  onDomReady(() => {
+    try {
+      if (sessionStorage.getItem(DOC_FOCUS_KEY) === "1") toggleDocFocus(true);
+    } catch {
+      // No storage, nothing to restore.
+    }
+  });
+
+  mountDocToolbarControls();
 })();

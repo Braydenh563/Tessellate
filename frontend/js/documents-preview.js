@@ -1,6 +1,30 @@
 // documents-preview.js: the Read view's render, the line numbers gutter and the caret helpers.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  //: **Where you are in the document, marked in its outline.** The owner, of
+  //: the sidebar redesign: "mostly outline". Measured before this existed:
+  //: scrolled to 70% of a 21-heading document, zero rows under `#doc-outline`
+  //: carried a current class or `aria-current`, and the outline's own scrollTop
+  //: stayed 0. A table of contents that cannot say which heading you are in is
+  //: a list of links, and it is the one thing every editor this is measured
+  //: against (Obsidian, Typora, Notion) does have.
+  //:
+  //: Kept as a flat line-and-button list rather than re-read from the DOM on
+  //: every scroll: the marking runs on a scroll event and must not walk the
+  //: document, and rebuilding the outline per scroll was the obvious wrong
+  //: answer this avoids.
+  let docOutlineRows = [];
+  //: What the rows were last drawn from; see the early return in renderDocOutline.
+  let docOutlineMarked = -1;
+  //: Which row is in the air. One number rather than a `dataTransfer` payload,
+  //: because the payload a browser hands back on `drop` is a string and the one
+  //: thing this needs is an index into the list the drag started from.
+  let docOutlineSpyFrame = 0;
+  //: Set by `renderDocPreview`, read by `docScrollAnchors`. Zero until the
+  //: preview has been drawn once, which is also when there are no stamps to
+  //: read, so the default is never used as an answer.
+  let docPreviewLineShift = 0;
   //: **The caret's line, but only while the caret is on screen.**
   //:
   //: Reported (OPEN.md, doc-sidebar.md): typing in a section below the one at
@@ -813,4 +837,11 @@
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { docWhereLine, keepOutlineRowInView, markDocOutline, scheduleDocOutlineSpy, jumpToDocLine, renderDocStorage, scheduleDocPreview, renderDocPreview, withDocPreviewShown, docGutters, syncDocGutterMetrics, watchDocGutter, renderDocGutter, mountGutterFor });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docOutlineRows", () => docOutlineRows, (value) => { docOutlineRows = value; }],
+    ["docOutlineMarked", () => docOutlineMarked, (value) => { docOutlineMarked = value; }],
+    ["docPreviewLineShift", () => docPreviewLineShift, (value) => { docPreviewLineShift = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

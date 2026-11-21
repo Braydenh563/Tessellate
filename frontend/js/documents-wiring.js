@@ -439,35 +439,7 @@
     "wb-card-editor": { size: "inline", live: true },
   };
 
-  //: element -> view. Weak, because the edit form's textarea is thrown away and
-  //: rebuilt on every edit and a strong map would hold every one of them.
-  const noteSurfaceViews = new WeakMap();
   let noteSurfaceMirroring = false;
-
-  //: The surface for a note editor, given its textarea or any node inside its
-  //: view. Null for anything that has not mounted, which is what keeps
-  //: `asSurface` falling back to the textarea adapter.
-  function noteSurfaceFor(box) {
-    if (!box) return null;
-    if (box instanceof HTMLTextAreaElement) {
-      const view = noteSurfaceViews.get(box);
-      return view ? cmSurface(view, noteSurfaceMeta(box)) : null;
-    }
-    if (box instanceof Node && box.nodeType === 1 && box.closest) {
-      const wrap = box.closest(".note-surface");
-      if (wrap && wrap.noteSurfaceHost) return noteSurfaceFor(wrap.noteSurfaceHost);
-    }
-    return null;
-  }
-
-  //: Built once per host and kept on the element, so `cmSurface`'s own cache
-  //: (keyed by the view) never sees two different identities for one view.
-  function noteSurfaceMeta(host) {
-    if (!host.noteSurfaceMeta) {
-      host.noteSurfaceMeta = { id: host.id, changeHandlers: [] };
-    }
-    return host.noteSurfaceMeta;
-  }
 
   //: What the engine gives a note box. Deliberately smaller than the document's
   //: set: no gutter, no folding, no find panel, no autosave, no typewriter.
@@ -977,5 +949,71 @@
   // NOTE-SURFACE-END
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docCodeSideFrom, docSurfaceInput, MD_RUN, MD_RUN_FONTS, mdRunParse, mdRunFormat, mdRunNode, wireMarkdownToolbar, wireMdFormatShortcuts, NOTE_SURFACES, noteSurfaceViews, noteSurfaceFor, setNoteSurfaceSource, mountNoteSurface });
+  Object.assign(window, { docCodeSideFrom, docSurfaceInput, MD_RUN, MD_RUN_FONTS, mdRunParse, mdRunFormat, mdRunNode, wireMarkdownToolbar, wireMdFormatShortcuts, NOTE_SURFACES, setNoteSurfaceSource, mountNoteSurface });
+
+  $("doc-code-snippets-open")?.addEventListener("click", () => docCodeSideFrom("snippets"));
+
+  $("doc-code-assist-open")?.addEventListener("click", () => docCodeSideFrom("assist"));
+
+  //: Registered through the adapter rather than on the element, so the same
+  //: line serves whichever engine is underneath. `mountDocEditor` says it
+  //: again for the view it builds: a handler registered on the fallback's DOM
+  //: cannot follow the document into CodeMirror.
+  docSurface().onChange(docSurfaceInput);
+
+  // The gutter is a separate element beside the textarea, so it has to be told
+  // to follow it, because a textarea's own scroll does not move its siblings.
+  // The fallback's problem only: the engine's own gutter is inside the view and
+  // scrolls with it.
+  docBoxEl().addEventListener("scroll", (event) => {
+    const gutter = $("doc-gutter");
+    if (gutter && !gutter.classList.contains("hidden")) {
+      gutter.scrollTop = event.currentTarget.scrollTop;
+    }
+  });
+
+  // The document-textarea resize gap (Priority 0 #1): dragging #doc-content's
+  // native `resize: vertical` handle shorter pins the textarea's own height,
+  // but #doc-panes, a flex item of .doc-main with `flex: 1 1 auto`, keeps
+  // growing to fill the card exactly as before, because nothing about a CSS
+  // resize tells a flex *parent* to stop growing to fit it. The freed space
+  // used to be trapped inside #doc-panes, below the now-shorter textarea and
+  // above .doc-hint: dead space in the middle of the card instead of at its
+  // bottom, where a person would expect it. There's no CSS-only fix: nothing
+  // short of a user dragging the handle can tell us the textarea's size is no
+  // longer meant to track the flex layout, so this is the one place app.js
+  // answers "did a person just resize this" with a real yes/no rather than a
+  // CSS rule guessing at it. A mousedown that ends with a different height is
+  // as close as the DOM gets to "yes", ordinary typing or a value swap on
+  // loading a different document never changes offsetHeight.
+  {
+    const box = docBoxEl();
+    let heightBeforeDrag = null;
+    box.addEventListener("mousedown", () => { heightBeforeDrag = box.offsetHeight; });
+    document.addEventListener("mouseup", () => {
+      if (heightBeforeDrag === null) return;
+      if (box.offsetHeight !== heightBeforeDrag) {
+        $("doc-panes").classList.add("doc-panes-manual");
+      }
+      heightBeforeDrag = null;
+    });
+  }
+
+  wireDocScrollSync();
+
+  //: A code document's Format: the selection when there is one, else the
+  //: whole file (`docFormatCode`). The press takes the focus from the editor,
+  //: so it is handed back: formatting is a step in the middle of typing.
+  $("doc-code-run")?.addEventListener("click", () => docRunCode());
+
+  $("doc-csv-grid")?.addEventListener("click", () => ensureModule("docCsvGrid").then(() => docViewState.csvGrid?.toggle()));
+
+  //: DOCUMENTS_PLAN 25 row 2: Run on a .py document with no Python yet is
+  //: disabled, and this line beside it is the way to the install.
+  $("doc-code-run-why")?.addEventListener("click", () => docRunOpenPythonExtra());
+
+  $("doc-code-format").addEventListener("click", async () => {
+    await docFormatCode("auto");
+    docCmView?.focus();
+  });
 })();

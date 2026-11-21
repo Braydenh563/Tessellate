@@ -7613,7 +7613,7 @@ def test_a_zoom_readout_is_a_value_field():
     assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     readout = re.compile(r"textContent = `[^`]*%`")
     frozen = {
-        "documents.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
+        "documents-instruments.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
         "settings.js": 5, "suggestions-inbox.js": 1, "whiteboard-format.js": 2,
     }
     found = {}

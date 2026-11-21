@@ -1,6 +1,11 @@
 // documents-prose-check.js: the prose check, spelling, word completion and autocorrect.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State the Phase 2 pieces share: the pending Mermaid pictures and its Live field (documents-mermaid.js), the image refocus and the print sheet.
+  const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
+  //: State that moved here from documents.js (L-documents-118).
+  let docProseFound = [];
+  let docCompleteWords = null;
   //: **"whats" is "what's" with the apostrophe left out** (the owner,
   //: 2026-10-19: "this should have been picked up as what's"). The word list
   //: keeps "what" and drops the "'s" (`docWordKnown`), so no edit of "whats"
@@ -1775,5 +1780,11 @@
   }
 
   //: The file's surface: what other files call (L335).
-  Object.assign(window, { docSpellContraction, docProseSkipMask, docProse, docProseScrolled, renderDocProse, DOC_FINDING_SKIP, docFindingKind, docProseHeader, docProseDismissed, docFocusSyncProse, renderDocProsePanel, docIgnoreLabel, docProseIgnore, docProseJump, docProseFix, docBuildVocabulary, hideDocComplete, docCompleteKeydown, docAutocorrectAt, DOC_TOOL_KEYS, docToolPref, docSaveToolPref, docToolsOnInput, docToolsBoxFor });
+  Object.assign(window, { docPhase2State, docSpellContraction, docProseSkipMask, docProse, docProseScrolled, renderDocProse, DOC_FINDING_SKIP, docFindingKind, docProseHeader, docProseDismissed, docFocusSyncProse, renderDocProsePanel, docIgnoreLabel, docProseIgnore, docProseJump, docProseFix, docBuildVocabulary, hideDocComplete, docCompleteKeydown, docAutocorrectAt, DOC_TOOL_KEYS, docToolPref, docSaveToolPref, docToolsOnInput, docToolsBoxFor });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docProseFound", () => docProseFound, (value) => { docProseFound = value; }],
+    ["docCompleteWords", () => docCompleteWords, (value) => { docCompleteWords = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

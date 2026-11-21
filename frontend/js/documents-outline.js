@@ -6,14 +6,29 @@
 // (`renderDocCrumbs`), the folds and filter the outline keeps
 // (`docOutlineFolds`, `docOutlineVisibility`) and the heading scan and section
 // range both read (`docScanHeadings`, `docSectionRange`). What stayed in
-// documents.js: the outline's own rebuild and its list, and `docOutlineState`,
-// the two values the rebuild and the trail share.
+// documents.js: the outline's own rebuild and its list. `docOutlineState`, the two
+// values the rebuild and the trail share, lives here so pieces loaded before
 //
+// documents.js can read it at load.
 // **Loaded in the Library bundle, before documents.js**, the way
 // documents-props.js is: this file's own top level declares functions and
 // constants and reads nothing from documents.js. One closure; what other files
 // call is the `Object.assign` at the foot.
 (() => {
+
+  //: State the outline and the breadcrumbs share with the rest of this file (the
+  //: outline's rebuild writes both; documents-outline.js reads and resets them).
+  //: `headings` is **the headings the outline last read.** The breadcrumb needs
+  //: them on every keystroke (`renderDocCaret` runs then, and the caret is what
+  //: the trail is about), and finding them is a scan of the whole document: on a
+  //: 20k-word file that is a 20k-element split per character typed. The outline
+  //: is rebuilt on a pause in typing, so a heading written a moment ago reaches
+  //: the trail on the same beat it reaches the outline, which is the beat a
+  //: writer is already watching. `crumbsKey` is what the row says, as one string,
+  //: so the common case (a keystroke that moves the caret inside the same
+  //: section) costs a comparison rather than a rebuild of four buttons per
+  //: character typed.
+  const docOutlineState = { headings: [], crumbsKey: "" };
   // A table of contents built from the document's own headings. Past a couple
   // of screens the scrollbar stops being a way to navigate a document.
   // =============================================================================
@@ -323,5 +338,5 @@
   }
 
   //: The file's whole surface: what documents.js and documents-cm.js call.
-  Object.assign(window, { renderDocCrumbs, docCaretLine, DOC_OUTLINE_FILTER_FROM, docOutlineFolds, docOutlineSetFolds, docOutlineFoldKey, docOutlineFilterText, docOutlineVisibility, docScanHeadings, docSectionRange });
+  Object.assign(window, { docOutlineState, renderDocCrumbs, docCaretLine, DOC_OUTLINE_FILTER_FROM, docOutlineFolds, docOutlineSetFolds, docOutlineFoldKey, docOutlineFilterText, docOutlineVisibility, docScanHeadings, docSectionRange });
 })();

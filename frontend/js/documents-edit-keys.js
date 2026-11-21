@@ -1,6 +1,26 @@
 // documents-edit-keys.js: indent, comment toggle and table keys in the plain editor.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  //: **The way out of an editor that takes the Tab key.** Owner: "on the
+  //: documents editor, I can't press tab to indent without it selecting an
+  //: element." Tab now indents in every document, prose as well as code, which
+  //: is what every writing tool does and what the report asks for; the reason
+  //: it was restricted to code files was never indentation, it was the exit:
+  //: a Tab the editor always swallows leaves a keyboard user inside it with no
+  //: way to reach the toolbar, the dock or the rest of the page.
+  //:
+  //: So the exit moves to the chord CodeMirror's own documentation recommends
+  //: for exactly this trade (its `indentWithTab` carries the same warning):
+  //: press Escape, then Tab, and the Tab is the browser's again. Escape is
+  //: already this app's "leave what you are in" key everywhere else, so it is
+  //: the one key a reader is most likely to try first, and it costs a writer
+  //: nothing because nothing else in the editor consumes a plain Tab.
+  //:
+  //: The second way out is unchanged and needs nothing learned: Shift+Tab on a
+  //: line with no indentation to remove falls through to the browser's own
+  //: focus-backwards rather than doing nothing.
+  let docTabEscapes = false;
   //: The lines a selection touches, as [firstLine, lastLine] and the character
   //: offsets that bracket them. Indent, dedent and comment-toggle all work on
   //: whole lines, and all three need exactly this.
@@ -472,4 +492,9 @@
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { docReplaceRange, docTakeTabEscape, docCanOutdent, indentDocSelection, toggleDocComment, docCodeCommentAtCaret, docTableContext, docTableDispatch, docTableGo, docTableTabStep, docTableCtrlEnter, docTableKeyMove, docTablePasteEvent });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docTabEscapes", () => docTabEscapes, (value) => { docTabEscapes = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();
