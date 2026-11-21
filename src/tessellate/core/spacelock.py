@@ -89,12 +89,20 @@ def opened(token: str | None) -> bool:
     return vault.key() is not None and is_open(token, touch=False)
 
 
+#: Told which sessions' doors shut (None: every one), as `vault.ended_hooks`.
+shut_hooks: list[Callable[[list[str] | None], None]] = []
+
+
 def close_for(token: str | None) -> None:
     with _lock:
         _opened.pop(token or "", None)
+    for hook in shut_hooks:
+        hook([token] if token else [])
 
 
 def close_all() -> None:
     """Lock, a password change, a restore: every private space shuts."""
     with _lock:
         _opened.clear()
+    for hook in shut_hooks:
+        hook(None)

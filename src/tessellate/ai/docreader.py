@@ -26,20 +26,29 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from tessellate.core import jobs, paths, sealed_files, vault
+from tessellate.core import jobs, paths, sealed_files, spacelock, vault
 
 logger = logging.getLogger("tessellate.docreader")
 
-#: Attachment id -> the session that attached it, for a private space's file
-#: (L-world-class-381, SECURITY.md T28). In memory only and taken once by the
-#: run: the persisted queue carries the id alone, so after a restart (when no
-#: key is loaded anyway) a private file waits to be read in the viewer.
-_HANDED: dict[int, str] = {}
+#: Attachment id -> the session that attached it and the space the file was
+#: in then, for a private space's file (L-world-class-381, SECURITY.md T28).
+#: In memory only, taken by the run (or dropped when it fails), and dropped
+#: when that session locks or ends: the persisted queue carries the id alone,
+#: so after a restart (when no key is loaded anyway) a private file waits to
+#: be read in the viewer.
+_HANDED: dict[int, tuple[str, str]] = {}
 
 
-def forget_sessions() -> None:
-    """A restart, for tests: no run knows who attached its file."""
-    _HANDED.clear()
+def forget_sessions(tokens: list[str] | None = None) -> None:
+    """Drop what these sessions handed over (every session's with None: a
+    restart, a lock of every space)."""
+    for aid, (token, _space) in list(_HANDED.items()):
+        if tokens is None or token in tokens:
+            _HANDED.pop(aid, None)
+
+
+vault.ended_hooks.append(forget_sessions)
+spacelock.shut_hooks.append(forget_sessions)
 
 #: What this pass does not touch. An image attachment is the vision path's
 #: job: `docview` would return nothing for it, and describing a picture from
@@ -55,14 +64,20 @@ def read_document_and_store(attachment_id: int) -> str | None:
 
     Synchronous, so a manual call and the tests can drive it without waiting
     on a thread, exactly as `caption_and_store` is split from
-    `caption_in_background`.
+    `caption_in_background`. What the session handed over goes when the run
+    ends, however it ends.
     """
+    try:
+        return _read_and_store(attachment_id, _HANDED.get(attachment_id))
+    finally:
+        _HANDED.pop(attachment_id, None)
 
+
+def _read_and_store(attachment_id: int, handed: tuple[str, str] | None) -> str | None:
     from tessellate.ai import captioning
     from tessellate.core import deps
     from tessellate.core.database import Attachment
 
-    token = _HANDED.pop(attachment_id, None)
     with deps.get_db().session() as session:
         row = session.get(Attachment, attachment_id)
         if row is None:
@@ -83,7 +98,7 @@ def read_document_and_store(attachment_id: int) -> str | None:
             logger.warning("refusing to read an attachment outside the uploads directory")
             return None
         if sealed_files.wanted(session, row.workspace_id):
-            _read_private(session, row, path, token)
+            _read_private(session, row, path, handed)
             return None
         if not sealed_files.plain_file(path):
             return None
@@ -145,13 +160,16 @@ def _extract(path: Path, filename: str | None) -> str:
         return ""
 
 
-def _read_private(session, row, path: Path, token: str | None) -> None:  # noqa: ANN001
+def _read_private(session, row, path: Path, handed: tuple[str, str] | None) -> None:  # noqa: ANN001
     """A private space's file: its text read as the session that attached it,
     only while that session has the space open, and written through the ORM
     so the sealing hook encrypts it (a bulk `update` would store it plain).
     Never described: the AI reads a private space only from a chat opened
-    inside it (SECURITY.md T10). With no session it waits for the viewer."""
-    if token is None or row.ocr_text:
+    inside it (SECURITY.md T10). With no session it waits for the viewer.
+    The session is bound to the space the file was in when it was handed
+    over: a token handed for a file of space A reads nothing of space B."""
+    token, space = handed or (None, None)
+    if token is None or space != row.workspace_id or row.ocr_text:
         return
     try:
         with sealed_files.for_background(path, token) as (copy, check):
@@ -187,6 +205,16 @@ def read_in_background(attachment_id: int) -> None:
     is anything the person who just attached a file should wait behind.
     """
     token = vault.requester()
-    if token is not None:
-        _HANDED[attachment_id] = token
+    space = _space_of(attachment_id) if token is not None else None
+    if token is not None and space is not None:
+        _HANDED[attachment_id] = (token, space)
     jobs.enqueue("document", read_document_and_store, attachment_id)
+
+
+def _space_of(attachment_id: int) -> str | None:
+    from tessellate.core import deps
+    from tessellate.core.database import Attachment
+
+    with deps.get_db().session() as session:
+        row = session.get(Attachment, attachment_id)
+        return row.workspace_id if row is not None else None

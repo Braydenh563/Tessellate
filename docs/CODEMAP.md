@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11288, test files 2926, tests 23057, plan headings 688, app scripts 29, boot scripts 38, script files 318.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11295, test files 2926, tests 23069, plan headings 688, app scripts 29, boot scripts 38, script files 318.
 
 ## Frontend functions (8567)
 
@@ -13934,7 +13934,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1795 |
 | `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1826 |
 | `/media/pdf-unlock/{filename}` | POST | `media_pdf_unlock` | src/tessellate/api/routes_files.py:1816 |
-| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:619 |
+| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:651 |
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1955 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1726 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1362 |
@@ -14026,25 +14026,25 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recent` | DELETE | `forget_recent_question` | src/tessellate/api/routes_chat_meta.py:49 |
 | `/recent` | GET | `recent_questions` | src/tessellate/api/routes_chat_meta.py:43 |
 | `/recent/restore` | POST | `remember_recent_question` | src/tessellate/api/routes_chat_meta.py:57 |
-| `/recordings` | GET | `list_recordings` | src/tessellate/api/routes_recordings.py:93 |
-| `/recordings` | POST | `create_recording` | src/tessellate/api/routes_recordings.py:141 |
-| `/recordings/recover` | POST | `recover_recordings` | src/tessellate/api/routes_recordings.py:133 |
-| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:249 |
-| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:229 |
-| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:234 |
-| `/recordings/{recording_id}/chunk` | POST | `append_chunk` | src/tessellate/api/routes_recordings.py:176 |
-| `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:211 |
-| `/recordings/{recording_id}/purge` | DELETE | `purge_recording` | src/tessellate/api/routes_recordings.py:266 |
-| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:259 |
-| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:479 |
-| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:567 |
-| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:493 |
-| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:277 |
-| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:326 |
-| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:352 |
-| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:471 |
-| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:596 |
-| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:601 |
+| `/recordings` | GET | `list_recordings` | src/tessellate/api/routes_recordings.py:94 |
+| `/recordings` | POST | `create_recording` | src/tessellate/api/routes_recordings.py:142 |
+| `/recordings/recover` | POST | `recover_recordings` | src/tessellate/api/routes_recordings.py:134 |
+| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:250 |
+| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:230 |
+| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:235 |
+| `/recordings/{recording_id}/chunk` | POST | `append_chunk` | src/tessellate/api/routes_recordings.py:177 |
+| `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:212 |
+| `/recordings/{recording_id}/purge` | DELETE | `purge_recording` | src/tessellate/api/routes_recordings.py:267 |
+| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:260 |
+| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:509 |
+| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:599 |
+| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:523 |
+| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:278 |
+| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:335 |
+| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:361 |
+| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:501 |
+| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:628 |
+| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:633 |
 | `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2245 |
 | `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:2168 |
 | `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2215 |
@@ -14324,7 +14324,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11288)
+## Backend modules (11295)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17697,16 +17697,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `speaker_count` | src/tessellate/ai/diarize.py:153 |
 | `voice_labels` | src/tessellate/ai/diarize.py:122 |
 
-### src/tessellate/ai/docreader.py (6)
+### src/tessellate/ai/docreader.py (8)
 
 | Name | File:line |
 |---|---|
-| `_extract` | src/tessellate/ai/docreader.py:135 |
-| `_fill_if_empty` | src/tessellate/ai/docreader.py:169 |
-| `_read_private` | src/tessellate/ai/docreader.py:148 |
-| `forget_sessions` | src/tessellate/ai/docreader.py:40 |
-| `read_document_and_store` | src/tessellate/ai/docreader.py:52 |
-| `read_in_background` | src/tessellate/ai/docreader.py:183 |
+| `_extract` | src/tessellate/ai/docreader.py:150 |
+| `_fill_if_empty` | src/tessellate/ai/docreader.py:187 |
+| `_read_and_store` | src/tessellate/ai/docreader.py:76 |
+| `_read_private` | src/tessellate/ai/docreader.py:163 |
+| `_space_of` | src/tessellate/ai/docreader.py:214 |
+| `forget_sessions` | src/tessellate/ai/docreader.py:42 |
+| `read_document_and_store` | src/tessellate/ai/docreader.py:61 |
+| `read_in_background` | src/tessellate/ai/docreader.py:201 |
 
 ### src/tessellate/ai/drafter.py (15)
 
@@ -23442,50 +23444,52 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `purge_binned_reading` | src/tessellate/api/routes_reading_bin.py:88 |
 | `restore_binned_reading` | src/tessellate/api/routes_reading_bin.py:70 |
 
-### src/tessellate/api/routes_recordings.py (40)
+### src/tessellate/api/routes_recordings.py (42)
 
 | Name | File:line |
 |---|---|
-| `RecordingCreate` | src/tessellate/api/routes_recordings.py:47 |
-| `RecordingFinish` | src/tessellate/api/routes_recordings.py:57 |
-| `RecordingPatch` | src/tessellate/api/routes_recordings.py:63 |
-| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:562 |
-| `_acting_for` | src/tessellate/api/routes_recordings.py:312 |
-| `_append` | src/tessellate/api/routes_recordings.py:165 |
-| `_get` | src/tessellate/api/routes_recordings.py:70 |
-| `_keep_segments` | src/tessellate/api/routes_recordings.py:420 |
-| `_keep_voice_labels` | src/tessellate/api/routes_recordings.py:539 |
-| `_label_in_background` | src/tessellate/api/routes_recordings.py:517 |
-| `_locked_away` | src/tessellate/api/routes_recordings.py:606 |
-| `_named` | src/tessellate/api/routes_recordings.py:451 |
-| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:436 |
-| `_people_at` | src/tessellate/api/routes_recordings.py:444 |
-| `_record_failure` | src/tessellate/api/routes_recordings.py:401 |
-| `_segments_of` | src/tessellate/api/routes_recordings.py:463 |
-| `_subtitles` | src/tessellate/api/routes_recordings.py:584 |
-| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:362 |
-| `_voice_labelled` | src/tessellate/api/routes_recordings.py:410 |
-| `_writable` | src/tessellate/api/routes_recordings.py:83 |
-| `append_chunk` | src/tessellate/api/routes_recordings.py:177 |
-| `bin_recording` | src/tessellate/api/routes_recordings.py:250 |
-| `create_recording` | src/tessellate/api/routes_recordings.py:142 |
-| `finish_recording` | src/tessellate/api/routes_recordings.py:212 |
-| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:494 |
-| `list_recordings` | src/tessellate/api/routes_recordings.py:94 |
-| `name_speakers` | src/tessellate/api/routes_recordings.py:480 |
-| `purge_recording` | src/tessellate/api/routes_recordings.py:267 |
-| `read_recording` | src/tessellate/api/routes_recordings.py:230 |
-| `read_transcript` | src/tessellate/api/routes_recordings.py:472 |
-| `recording_audio` | src/tessellate/api/routes_recordings.py:620 |
-| `recover_recordings` | src/tessellate/api/routes_recordings.py:134 |
-| `rename_speaker` | src/tessellate/api/routes_recordings.py:568 |
-| `restore_recording` | src/tessellate/api/routes_recordings.py:260 |
-| `start_transcription` | src/tessellate/api/routes_recordings.py:327 |
-| `stop_transcription` | src/tessellate/api/routes_recordings.py:353 |
-| `transcribe_recording` | src/tessellate/api/routes_recordings.py:278 |
-| `transcript_srt` | src/tessellate/api/routes_recordings.py:597 |
-| `transcript_vtt` | src/tessellate/api/routes_recordings.py:602 |
-| `update_recording` | src/tessellate/api/routes_recordings.py:235 |
+| `RecordingCreate` | src/tessellate/api/routes_recordings.py:48 |
+| `RecordingFinish` | src/tessellate/api/routes_recordings.py:58 |
+| `RecordingPatch` | src/tessellate/api/routes_recordings.py:64 |
+| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:594 |
+| `_acting_for` | src/tessellate/api/routes_recordings.py:318 |
+| `_append` | src/tessellate/api/routes_recordings.py:166 |
+| `_get` | src/tessellate/api/routes_recordings.py:71 |
+| `_keep_segments` | src/tessellate/api/routes_recordings.py:440 |
+| `_keep_voice_labels` | src/tessellate/api/routes_recordings.py:569 |
+| `_label_in_background` | src/tessellate/api/routes_recordings.py:547 |
+| `_locked_away` | src/tessellate/api/routes_recordings.py:638 |
+| `_named` | src/tessellate/api/routes_recordings.py:481 |
+| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:466 |
+| `_open_door` | src/tessellate/api/routes_recordings.py:436 |
+| `_people_at` | src/tessellate/api/routes_recordings.py:474 |
+| `_record_failure` | src/tessellate/api/routes_recordings.py:417 |
+| `_segments_of` | src/tessellate/api/routes_recordings.py:493 |
+| `_sentence` | src/tessellate/api/routes_recordings.py:410 |
+| `_subtitles` | src/tessellate/api/routes_recordings.py:616 |
+| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:371 |
+| `_voice_labelled` | src/tessellate/api/routes_recordings.py:426 |
+| `_writable` | src/tessellate/api/routes_recordings.py:84 |
+| `append_chunk` | src/tessellate/api/routes_recordings.py:178 |
+| `bin_recording` | src/tessellate/api/routes_recordings.py:251 |
+| `create_recording` | src/tessellate/api/routes_recordings.py:143 |
+| `finish_recording` | src/tessellate/api/routes_recordings.py:213 |
+| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:524 |
+| `list_recordings` | src/tessellate/api/routes_recordings.py:95 |
+| `name_speakers` | src/tessellate/api/routes_recordings.py:510 |
+| `purge_recording` | src/tessellate/api/routes_recordings.py:268 |
+| `read_recording` | src/tessellate/api/routes_recordings.py:231 |
+| `read_transcript` | src/tessellate/api/routes_recordings.py:502 |
+| `recording_audio` | src/tessellate/api/routes_recordings.py:652 |
+| `recover_recordings` | src/tessellate/api/routes_recordings.py:135 |
+| `rename_speaker` | src/tessellate/api/routes_recordings.py:600 |
+| `restore_recording` | src/tessellate/api/routes_recordings.py:261 |
+| `start_transcription` | src/tessellate/api/routes_recordings.py:336 |
+| `stop_transcription` | src/tessellate/api/routes_recordings.py:362 |
+| `transcribe_recording` | src/tessellate/api/routes_recordings.py:279 |
+| `transcript_srt` | src/tessellate/api/routes_recordings.py:629 |
+| `transcript_vtt` | src/tessellate/api/routes_recordings.py:634 |
+| `update_recording` | src/tessellate/api/routes_recordings.py:236 |
 
 ### src/tessellate/api/routes_relations.py (6)
 
@@ -26674,7 +26678,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `prune_now` | src/tessellate/core/running_copies.py:169 |
 | `shutdown` | src/tessellate/core/running_copies.py:196 |
 
-### src/tessellate/core/sealed_files.py (42)
+### src/tessellate/core/sealed_files.py (44)
 
 | Name | File:line |
 |---|---|
@@ -26703,10 +26707,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stream` | src/tessellate/core/sealed_files.py:243 |
 | `_tmp_root` | src/tessellate/core/sealed_files.py:457 |
 | `_unset_data_dir` | src/tessellate/core/sealed_files.py:448 |
+| `_wait` | src/tessellate/core/sealed_files.py:502 |
+| `_watch` | src/tessellate/core/sealed_files.py:511 |
 | `_whole` | src/tessellate/core/sealed_files.py:147 |
 | `_write_new_sealed` | src/tessellate/core/sealed_files.py:320 |
 | `append` | src/tessellate/core/sealed_files.py:287 |
-| `for_background` | src/tessellate/core/sealed_files.py:497 |
+| `for_background` | src/tessellate/core/sealed_files.py:526 |
 | `is_sealed` | src/tessellate/core/sealed_files.py:111 |
 | `iter_plain` | src/tessellate/core/sealed_files.py:226 |
 | `open_plain` | src/tessellate/core/sealed_files.py:206 |
@@ -26717,9 +26723,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `readable` | src/tessellate/core/sealed_files.py:469 |
 | `seal` | src/tessellate/core/sealed_files.py:426 |
 | `seal_bytes` | src/tessellate/core/sealed_files.py:201 |
-| `sweep_leftovers` | src/tessellate/core/sealed_files.py:517 |
+| `sweep_leftovers` | src/tessellate/core/sealed_files.py:561 |
 | `unseal` | src/tessellate/core/sealed_files.py:436 |
-| `wanted` | src/tessellate/core/sealed_files.py:532 |
+| `wanted` | src/tessellate/core/sealed_files.py:576 |
 
 ### src/tessellate/core/secrets_store.py (6)
 
@@ -26789,8 +26795,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_now` | src/tessellate/core/spacelock.py:38 |
-| `close_all` | src/tessellate/core/spacelock.py:97 |
-| `close_for` | src/tessellate/core/spacelock.py:92 |
+| `close_all` | src/tessellate/core/spacelock.py:103 |
+| `close_for` | src/tessellate/core/spacelock.py:96 |
 | `idle_minutes` | src/tessellate/core/spacelock.py:43 |
 | `is_open` | src/tessellate/core/spacelock.py:65 |
 | `open_for` | src/tessellate/core/spacelock.py:52 |
@@ -26924,31 +26930,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `label` | src/tessellate/core/validation_copy.py:40 |
 | `sentence` | src/tessellate/core/validation_copy.py:88 |
 
-### src/tessellate/core/vault.py (21)
+### src/tessellate/core/vault.py (22)
 
 | Name | File:line |
 |---|---|
-| `_loaded` | src/tessellate/core/vault.py:63 |
-| `_row` | src/tessellate/core/vault.py:170 |
-| `acting_for` | src/tessellate/core/vault.py:146 |
-| `close` | src/tessellate/core/vault.py:163 |
-| `create` | src/tessellate/core/vault.py:178 |
-| `exists` | src/tessellate/core/vault.py:174 |
-| `grant` | src/tessellate/core/vault.py:101 |
-| `is_granted` | src/tessellate/core/vault.py:107 |
-| `is_open` | src/tessellate/core/vault.py:68 |
-| `issue_recovery` | src/tessellate/core/vault.py:266 |
-| `key` | src/tessellate/core/vault.py:74 |
-| `open_with` | src/tessellate/core/vault.py:196 |
-| `open_with_recovery` | src/tessellate/core/vault.py:283 |
-| `recovery_created_at` | src/tessellate/core/vault.py:261 |
-| `request_scope` | src/tessellate/core/vault.py:128 |
-| `requester` | src/tessellate/core/vault.py:137 |
-| `revoke` | src/tessellate/core/vault.py:111 |
-| `revoke_all` | src/tessellate/core/vault.py:121 |
-| `rewrap` | src/tessellate/core/vault.py:230 |
-| `rewrap_with` | src/tessellate/core/vault.py:297 |
-| `set_key` | src/tessellate/core/vault.py:217 |
+| `_ended` | src/tessellate/core/vault.py:117 |
+| `_loaded` | src/tessellate/core/vault.py:64 |
+| `_row` | src/tessellate/core/vault.py:185 |
+| `acting_for` | src/tessellate/core/vault.py:160 |
+| `close` | src/tessellate/core/vault.py:177 |
+| `create` | src/tessellate/core/vault.py:193 |
+| `exists` | src/tessellate/core/vault.py:189 |
+| `grant` | src/tessellate/core/vault.py:102 |
+| `is_granted` | src/tessellate/core/vault.py:108 |
+| `is_open` | src/tessellate/core/vault.py:69 |
+| `issue_recovery` | src/tessellate/core/vault.py:281 |
+| `key` | src/tessellate/core/vault.py:75 |
+| `open_with` | src/tessellate/core/vault.py:211 |
+| `open_with_recovery` | src/tessellate/core/vault.py:298 |
+| `recovery_created_at` | src/tessellate/core/vault.py:276 |
+| `request_scope` | src/tessellate/core/vault.py:142 |
+| `requester` | src/tessellate/core/vault.py:151 |
+| `revoke` | src/tessellate/core/vault.py:122 |
+| `revoke_all` | src/tessellate/core/vault.py:134 |
+| `rewrap` | src/tessellate/core/vault.py:245 |
+| `rewrap_with` | src/tessellate/core/vault.py:312 |
+| `set_key` | src/tessellate/core/vault.py:232 |
 
 ### src/tessellate/core/webauthn.py (17)
 
@@ -28791,7 +28798,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23057)
+## Tests (23069)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31097,7 +31104,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_edge_owner.py | 2 |
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
-| tests/test_sealed_background_381.py | 7 |
+| tests/test_sealed_background_381.py | 19 |
 | tests/test_sealed_files_format.py | 18 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |

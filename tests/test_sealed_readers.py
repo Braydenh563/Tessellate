@@ -25,7 +25,7 @@ SEALED_CALL = re.compile(r"\bsealed_files\.|\bunsealed\(|\bsealed_aware\(")
 #: helper `downloads.unsealed`, 423 locked and 409 damaged), or skips a
 #: sealed file because it has no key (a background pass).
 THROUGH = {
-    "ai/docreader.py::read_document_and_store",
+    "ai/docreader.py::_read_and_store",
     "api/app.py::_sweep_sealed_leftovers",
     "api/chat_attach.py::_attached_files",
     "api/chat_attach.py::_attached_media_files",
