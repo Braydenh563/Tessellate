@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
 
@@ -383,7 +384,7 @@ def _transcribe_in_background(
                     state = "stopped"
                 else:
                     check()
-                    _keep_segments(recording_id, kept, workspace)
+                    _keep_segments(recording_id, kept, workspace, check, named=token is None)
     except RuntimeError as exc:
         logger.warning("background transcription failed: %s", exc)
         state, error = "failed", str(exc)
@@ -417,7 +418,18 @@ def _voice_labelled(kept: list[dict], path: Path, job: activity.Job) -> list[dic
     return diarize.label_audio(transcript.clean(kept), path)
 
 
-def _keep_segments(recording_id: int, segments: list[dict], workspace: str | None) -> None:
+def _open_door() -> None:
+    """An ordinary space's run: no door to look at."""
+
+
+def _keep_segments(
+    recording_id: int, segments: list[dict], workspace: str | None, check: Callable[[], None] = _open_door, *,
+    named: bool = True,
+) -> None:
+    """Write the transcript. A private space's run (`named` False) is never
+    read by the model in the background, nor is its meeting note (SECURITY.md
+    T28, T10), and `check` is asked immediately before the commit, so a lock
+    at any step before it keeps nothing (review of L-world-class-381)."""
     session = deps.get_db().session()
     if workspace:
         session.info["workspace_id"] = workspace
@@ -425,9 +437,12 @@ def _keep_segments(recording_id: int, segments: list[dict], workspace: str | Non
         row = session.query(Recording).filter(Recording.id == recording_id).first()
         if row is None:
             raise RuntimeError("That recording was deleted while it was transcribed.")
-        kept = _named_if_unlabelled(session, row, transcript.clean(segments))
+        kept = transcript.clean(segments)
+        if named:
+            kept = _named_if_unlabelled(session, row, kept)
         row.segments = transcript.dumps(kept)
         log_action(session, "transcribed", "recording", row.id)
+        check()
         session.commit()
     finally:
         session.close()
@@ -522,7 +537,7 @@ def _label_in_background(
         with sealed_files.for_background(path, token) as (audio, check):
             found = diarize.spans(audio)
             check()
-            count = _keep_voice_labels(recording_id, found, workspace)
+            count = _keep_voice_labels(recording_id, found, workspace, check)
     except RuntimeError as exc:
         logger.warning("telling the voices apart failed: %s", exc)
         state, error = "failed", str(exc)
@@ -536,8 +551,9 @@ def _label_in_background(
         recordings.end_transcription(recording_id, state, error, speakers=count)
 
 
-def _keep_voice_labels(recording_id: int, found: list, workspace: str | None) -> int:
-    """Write the voices' labels over the transcript; the number of speakers."""
+def _keep_voice_labels(recording_id: int, found: list, workspace: str | None, check: Callable[[], None] = _open_door) -> int:
+    """Write the voices' labels over the transcript; the number of speakers.
+    `check` is asked immediately before the commit, as `_keep_segments` does."""
     session = deps.get_db().session()
     if workspace:
         session.info["workspace_id"] = workspace
@@ -553,6 +569,7 @@ def _keep_voice_labels(recording_id: int, found: list, workspace: str | None) ->
         count = diarize.speaker_count(labelled)
         row.segments = transcript.dumps(labelled)
         log_action(session, "edited", "recording", row.id, f"{count} speakers labelled by voice")
+        check()
         session.commit()
         return count
     finally:

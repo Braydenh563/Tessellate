@@ -246,6 +246,52 @@ def _hand_over(docreader, token, aid):
         docreader.read_in_background(aid)
 
 
+def test_a_lock_at_the_last_step_before_the_write_keeps_nothing(signed_in, monkeypatch):
+    """Finding 1: the door is looked at immediately before the commit, not
+    only before the database step starts."""
+    from tessellate.api import routes_recordings
+
+    client = signed_in
+    _whisper(monkeypatch)
+    real = routes_recordings.log_action
+
+    def lock_then_log(*args, **kwargs):
+        spacelock.close_all()
+        return real(*args, **kwargs)
+
+    rid = _recording(client)
+    monkeypatch.setattr(routes_recordings, "log_action", lock_then_log)
+    _failed_closed(_start(client, rid), rid)
+
+
+def test_a_private_run_is_never_named_by_the_model_nor_reads_the_meeting_note(signed_in, monkeypatch):
+    """Finding 2 (SECURITY.md T28, T10): the utility model never reads a
+    private transcript in the background; an ordinary space's still is."""
+    from tessellate.api import routes_recordings
+
+    client = signed_in
+    named, read = [], []
+
+    class Running:
+        def is_running(self):
+            return True
+
+    _whisper(monkeypatch)
+    monkeypatch.setattr(routes_recordings.deps, "get_ollama", lambda: Running())
+    monkeypatch.setattr(routes_recordings.speakers, "label", lambda segs, *a, **k: named.append(len(segs)) or segs)
+    monkeypatch.setattr(routes_recordings, "_people_at", lambda *a: read.append(1) or [])
+    rid = _recording(client)
+    assert _start(client, rid)["state"] == "done"
+    assert named == [] and read == []
+    ordinary = client.post("/recordings", json={"title": "open", "mime": "audio/webm"}).json()["id"]
+    client.post(f"/recordings/{ordinary}/chunk", files={"file": ("c", WEBM, "audio/webm")}, data={"at": "0"})
+    client.post(f"/recordings/{ordinary}/finish", json={"duration_ms": 9000})
+    got = client.post(f"/recordings/{ordinary}/transcribe/start")
+    assert got.status_code == 202, got.text
+    assert recordings.wait_transcription(ordinary, 5)
+    assert named == [2]
+
+
 def _three_lines_shut_after_one(client, monkeypatch, shut):
     """A run whose space shuts (by `shut`) as the second line is heard;
     returns the lines the transcriber was asked for."""
