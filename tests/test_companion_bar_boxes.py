@@ -7,7 +7,8 @@ perchall failed 3 of 6 runs with the companion on the status bar at
 dropped only by a change inside a `.tab-page`: a sweep taken before the fill
 kept the bar without them for up to `NMB_COVERS_MAX_MS`, so a perch over them
 scored clear. The bars' controls are watched for a size change instead (a
-text update that keeps the size costs no new sweep).
+text update that keeps the size costs no new sweep). They ride the index's own
+ResizeObserver (tests/test_frontend_wake_sources.py: no new wake source).
 """
 
 from __future__ import annotations
@@ -26,9 +27,14 @@ def test_the_bars_the_boxes_read_are_the_bars_watched_for_a_size_change() -> Non
     bars = re.search(r"for \(const id of \[`tab-\$\{tab\}`, ([^\]]+)\]\)", read).group(1)
     bar_ids = re.findall(r'"([a-z-]+)"', bars)
     assert {"top-bar", "status-bar"} <= set(bar_ids)
-    start = AV.index("const barSizes = new ResizeObserver(")
-    block = AV[start : AV.index("\n  }\n", start)]
-    assert "nmb.covers = null" in block
+    start = AV.index("function nameMarkBuddyWatchBars() {")
+    block = AV[start : AV.index("\n}\n", start)]
+    assert "nameMarkBuddyIndexObserver.observe(el)" in block
+    start = AV.index("function nameMarkBuddyEdges(tab) {")
+    index = AV[start : AV.index("\n}\n", start)]
+    assert "nameMarkBuddyWatchBars()" in index
+    resized = AV[AV.index("function nameMarkBuddyIndexResized(entries) {") :][: AV[AV.index("function nameMarkBuddyIndexResized(entries) {") :].index("\n}\n")]
+    assert "nmb.covers = null" in resized
     # Every element, not only the controls the sweep keeps a box for: a control
     # moved by a word beside it growing keeps its own size (#status-nav-history).
     assert 'bar.querySelectorAll("*")' in block
@@ -39,7 +45,10 @@ def test_the_bars_the_boxes_read_are_the_bars_watched_for_a_size_change() -> Non
 def test_a_bar_change_does_not_count_as_a_view_change() -> None:
     """Only the boxes are dropped: the companion is not sent to a new place
     because a status word changed."""
-    start = AV.index("const barSizes = new ResizeObserver(")
-    callback = AV[start : AV.index("});", start)]
-    assert "nameMarkBuddyViewChanged" not in callback
-    assert "nameMarkBuddyIndexReset" not in callback
+    resized = AV[AV.index("function nameMarkBuddyIndexResized(entries) {") :][: AV[AV.index("function nameMarkBuddyIndexResized(entries) {") :].index("\n}\n")]
+    bar_part = resized[: resized.index("nmbBarSizes.set(")]
+    bar_part = bar_part[bar_part.index("continue; }"):]
+    assert "nameMarkBuddyViewChanged" not in bar_part
+    assert "nameMarkBuddyIndexReset" not in bar_part
+    # The index reset reads the page's own size, never a bar element's.
+    assert '#top-bar, #status-bar, #phone-tab-dock")) { box = e.contentRect' in resized

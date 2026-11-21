@@ -4531,8 +4531,31 @@
   //: `spotNow` 7500ms, 6905 of it forced layout). A ResizeObserver reports once as it starts observing, so
   //: the walk was dropped a frame after it was made, every time: a throw's landing walked the page again
   //: after the release's writes, 149 to 299 box reads behind one whole-page layout (spotreads1696.js).
+  //: **The window's bars are read too, so they are watched too** (L-general-44): the status bar's
+  //: Agent and Guide buttons are 0 by 0 until status.js fills them, and a sweep kept from before the
+  //: fill let the companion perch over them (perchall, 3 of 6 runs). A size change, not a mutation:
+  //: a status word rewritten at the same width needs no new sweep. Every element in a bar, not only
+  //: its controls: a control keeps its size when a word beside it grows and only moves (perchall,
+  //: #status-nav-history, 1 of 6 with the controls alone). On the index's own observer, re-armed
+  //: with it (no new wake source); a size seen before is no change, so a re-arm drops nothing.
+  const nmbBarSizes = new WeakMap();
+  function nameMarkBuddyWatchBars() {
+    for (const id of ["top-bar", "status-bar", "phone-tab-dock"]) {
+      const bar = document.getElementById(id);
+      if (!bar) continue;
+      nameMarkBuddyIndexObserver.observe(bar);
+      for (const el of bar.querySelectorAll("*")) nameMarkBuddyIndexObserver.observe(el);
+    }
+  }
   function nameMarkBuddyIndexResized(entries) {
-    const box = entries[entries.length - 1]?.contentRect;
+    let box = null;
+    for (const e of entries) {
+      if (!e.target?.closest?.("#top-bar, #status-bar, #phone-tab-dock")) { box = e.contentRect; continue; }
+      //: A window bar's element (`nameMarkBuddyWatchBars`): a new size drops the kept boxes only.
+      const key = `${Math.round(e.contentRect.width)}x${Math.round(e.contentRect.height)}`;
+      if (nmbBarSizes.has(e.target) && nmbBarSizes.get(e.target) !== key) nmb.covers = null;
+      nmbBarSizes.set(e.target, key);
+    }
     const size = box ? `${Math.round(box.width)}x${Math.round(box.height)}` : "";
     const was = nameMarkBuddyIndexSize;
     nameMarkBuddyIndexSize = size;
@@ -4655,6 +4678,7 @@
       nameMarkBuddyIndexObserver.disconnect();
       nameMarkBuddyIndexSize = null;
       nameMarkBuddyIndexObserver.observe(page);
+      nameMarkBuddyWatchBars();
     }
     return edges;
   }
@@ -7858,25 +7882,6 @@
     };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
     else watch();
-  }
-  //: **The window's bars are read too, so they are watched too** (L-general-44): the status bar's
-  //: Agent and Guide buttons are 0 by 0 until status.js fills them, and a sweep kept from before the
-  //: fill let the companion perch over them (perchall, 3 of 6 runs). A size change, not a mutation:
-  //: a status word rewritten at the same width needs no new sweep. Every element in a bar, not only
-  //: its controls: a control keeps its size when a word beside it grows and only moves (perchall,
-  //: #status-nav-history, 1 of 6 with the controls alone).
-  if (globalThis.ResizeObserver) {
-    const barSizes = new ResizeObserver(() => { nmb.covers = null; });
-    const watchBars = () => {
-      for (const id of ["top-bar", "status-bar", "phone-tab-dock"]) {
-        const bar = document.getElementById(id);
-        if (!bar) continue;
-        barSizes.observe(bar);
-        for (const el of bar.querySelectorAll("*")) barSizes.observe(el);
-      }
-    };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watchBars);
-    else watchBars();
   }
   document.addEventListener("click", (event) => {
     if (event.target?.closest?.(".tab-page [role='tab']")) setTimeout(nameMarkBuddyViewChanged, 300);
