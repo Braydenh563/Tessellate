@@ -968,7 +968,7 @@ def _with_hunks_skipped(session: Session, body: ToolExecuteBody) -> dict:
     """The card's arguments with the skipped hunks left as the text was, read
     before the card is spent, so a press that cannot be narrowed spends nothing."""
     from tessellate.core import linediff
-    from tessellate.core.database import Document
+    from tessellate.repo import documents as documents_repo
 
     if not body.skip_hunks:
         return body.arguments
@@ -976,9 +976,9 @@ def _with_hunks_skipped(session: Session, body: ToolExecuteBody) -> dict:
     content = body.arguments.get("content")
     if not body.consent_id or key is None or not isinstance(content, str):
         raise HTTPException(status_code=400, detail="Only a suggested edit on its card can skip changes.")
-    model = Document if body.name == "edit_document" else Entry
     try:
-        target = session.get(model, int(body.arguments.get(key) or 0))
+        target_id = int(body.arguments.get(key) or 0)
+        target = documents_repo.find(session, target_id) if body.name == "edit_document" else session.get(Entry, target_id)
     except (TypeError, ValueError):
         target = None
     if target is None:
