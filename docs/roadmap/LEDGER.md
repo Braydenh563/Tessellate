@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 85 | 8 | 0 | 0 | 93 |
+| world-class | 0 | 84 | 8 | 0 | 0 | 92 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 463 | 79 | 2 | 112 | 914 |
+| all | 372 | 462 | 79 | 2 | 112 | 913 |
 
 ## graph
 
@@ -523,7 +523,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-172** `world-class` open, M: Manually group notes together, separate from the main sorting. From IDEAS.md:110. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-173** `world-class` open, L: A note with more than one category. From IDEAS.md:111. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-180** `world-class` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `world-class` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-183** `world-class` open, L: A VS Code extension. From IDEAS.md:126. Evidence: IDEAS.md 'Still open' list, 2026-11-14
