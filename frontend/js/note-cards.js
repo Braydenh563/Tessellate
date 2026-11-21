@@ -467,14 +467,6 @@ async function showNoteInGraph(id, options = {}) {
   return graphShowNote(id, options);
 }
 
-//: Start a chat about one note. Named by its title in the words a person
-//: would use, so the agent's own search tools find it, rather than pasting the
-//: whole note into the box.
-function askAtlasAboutNote(entry) {
-  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
-  askAtlasAboutThing("note", name);
-}
-
 //: One door into the chat for any object: a note, a document, a board, a
 //: file. Named, so the agent's own tools find it.
 function askAtlasAboutThing(kind, name) {

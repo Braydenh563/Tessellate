@@ -5,7 +5,8 @@ hop-family duration by the scale, so the speed matches the resting figure."""
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend/css/08-consistency.css").read_text()
+#: The rules moved to atlas-lazy.css (the boot CSS budget); the intent is unchanged.
+CSS = (Path(__file__).resolve().parents[1] / "frontend/css/atlas-lazy.css").read_text()
 SCALE = 2.2
 BASE = {"hop": 0.75, "cheer": 0.65, "wave2": 0.75, "carry": 0.75}
 

@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from tessellate.ai import agent, fence, librarian
 from tessellate.ai import agent_policy
 from tessellate.ai import agent_turn
@@ -49,6 +51,15 @@ def test_the_rule_fits_the_prompt_budget():
     prose = f"{librarian.DEFAULT_PERSONA} {agent_policy.AGENT_GROUNDING} {agent_policy.TOOLS_GUIDE}"
     assert fence.FENCE_RULE in agent_policy.AGENT_GROUNDING
     assert len(prose) <= agent_policy.PROSE_BUDGET_CHARS, len(prose)
+
+
+@pytest.fixture(autouse=True)
+def _no_act_reader(monkeypatch):
+    """The fake session holds no notes, so the unrun-act reader (L114), which reads the sentence
+    against the notebook, is off here: these tests are about what parks, not the act card."""
+    from tessellate.ai import act_registry
+
+    monkeypatch.setattr(act_registry, "proposer", None)
 
 
 class _Session:

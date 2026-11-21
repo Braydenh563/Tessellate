@@ -471,6 +471,14 @@ fillEntryMenu.jump = async function (id, index, total, text) {
 };
 
 // Moved here from menus.js with the rows that call them (gzip budget, laglist-1108).
+//: Start a chat about one note. Named by its title in the words a person
+//: would use, so the agent's own search tools find it, rather than pasting the
+//: whole note into the box. Here with its only caller, not boot (the boot gzip budget).
+function askAtlasAboutNote(entry) {
+  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
+  askAtlasAboutThing("note", name);
+}
+
 async function toggleEntryPrivacy(entry) {
   const makingPrivate = !entry.is_private;
   if (makingPrivate) {

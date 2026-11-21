@@ -1,6 +1,6 @@
-"""The chat plan holds no open work of its own (the hub, 2026-11-14: "every
-unbuilt item is now a row"). The recount of CHAT_PLAN.md from its text filed
-each partly or unbuilt item as a LEDGER row, so the LEDGER counts table says 0
+"""The chat plan holds no open work of its own (the hub, 2026-11-14: every
+item left to make became a row). The recount of CHAT_PLAN.md from its text filed
+each partly made or unmade item as a LEDGER row, so the LEDGER counts table says 0
 for the plan file, and any line that still reads as open names its row.
 """
 

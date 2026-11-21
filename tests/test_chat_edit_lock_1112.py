@@ -39,7 +39,7 @@ def test_a_note_edited_after_the_card_is_not_overwritten(client):
     card = _card(client, "add buy chalk to the gym log note")
     note = card["steps"][0]["arguments"]["note_id"]
     client.put(f"/entries/{note}", json={"content": "# Gym log\n\nSquats on Monday.\n- written meanwhile"})
-    done = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": []}).json()
-    assert not done["ok"]
+    ran = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": []}).json()
+    assert not ran["ok"]
     saved = client.get(f"/entries/{note}").json()
     assert saved["content"].endswith("- written meanwhile")

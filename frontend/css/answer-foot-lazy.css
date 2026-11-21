@@ -159,3 +159,16 @@
 :where(:root[data-motion="reduced"]) .answer-foot-chip::after {
   transition: none;
 }
+
+/* A chat answer's version pager (L165) and a skill run's budget line: drawn only in a chat answer, so they ride this sheet, not boot. */
+.answer-version-pager {
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.skill-budget {
+  margin-top: 0.4rem;
+  font-size: var(--text-sm);
+}

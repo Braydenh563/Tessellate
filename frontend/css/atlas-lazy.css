@@ -1434,3 +1434,15 @@
 #nm-buddy.nmb-tip-bubbles .nmp-wand,
 #nm-buddy.nmb-tip-tinker .nmp-spanner { translate: 0 28px; }
 #nm-buddy.nmb-tip-weights :is(.nmp-dumbbell-l, .nmp-dumbbell-r) { translate: 0 20px; }
+
+/* L137 (here, not boot: the large view draws only with the characters bundle): drawn at 2.2x, nmb-hop's 14px lift travels 2.2x as far in the same
+   time, so the head moved 2.2x faster than at rest. Each duration is the rest
+   one times the scale, which gives the resting speed. */
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-hop, .nmb-act-startle, .nmb-act-carry) .nm-buddy-char { animation-duration: 1.65s; }
+.nm-viewer-figure > #nm-buddy:is(.nmb-act-cheer) .nm-buddy-char { animation-duration: 1.43s; }
+
+/* A remark from the notes is a way in to its note (composer row 1; here, not boot: a remark draws only with the characters bundle). */
+.nm-say.nm-say-source {
+  pointer-events: auto;
+  cursor: pointer;
+}

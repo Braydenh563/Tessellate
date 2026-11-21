@@ -1,6 +1,6 @@
 """X14: a bulk act's card lists the first five notes and a Show all control
 (L-chat-61). The server already sent `items` and the cap (50) and the
-"Done: 13. Not done: note 4 (it is private)." line; the card never drew them."""
+"Done: 13" line with the private note it skipped; the card never drew them."""
 
 from pathlib import Path
 

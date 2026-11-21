@@ -64,7 +64,7 @@ def test_a_long_question_is_read_in_bounded_time():
 
 
 #: L-chat-249: ten more two-turn follow-ups, each keeping the subject the first turn asked about
-#: (the first turn, the follow-up, a phrase the answer must hold, one it must not).
+#: (the first turn, the second turn, a phrase the answer must hold, one it must not).
 TWO_TURNS = [
     ("what do I know about the kitchen renovation", "how much is it", "£8,000", "Wolf Hall"),
     ("what do I know about the plumber", "when is he coming", "11 November", "Mum"),

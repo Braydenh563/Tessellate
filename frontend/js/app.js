@@ -1618,8 +1618,6 @@ const LAZY_MODULES = {
   undoKit: ["/js/undo-kit.js"],
   //: Settings, Tasks (chat-tasks.js's header).
   sharedIntake: ["/js/shared-intake.js"],
-  //: Settings, Packages: the extras, their bundles and bulk actions (INBOX 595).
-  packages: ["/js/settings-packages.js"],
   //: Settings, Search and index's embedding models (INBOX 700, embed-choices.js).
   embedChoices: ["/js/embed-choices.js"],
   //: The panel the "m" chord opens: chord-guide.js says why it is preloaded.

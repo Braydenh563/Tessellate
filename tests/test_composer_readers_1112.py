@@ -63,7 +63,7 @@ def test_l209_who_is_older_reads_a_birth_year_and_an_age():
     assert composer_extra.answer(ctx).text == "Tom is older: 41 against born 1990 for Anna."
 
 
-# --- the route: the seeded notebook (a Todo note, dentist, passport, Atlas) --------
+# --- the route: the seeded notebook (a to-do list, dentist, passport, Atlas) --------
 
 import tests._seed_1031c as seed_c  # noqa: E402
 
@@ -108,11 +108,11 @@ def test_l_chat_9_and_a_statement_is_not_a_swap():
 def test_l_chat_14_the_only_list_with_an_intro_line_is_shown_for_what_is_on_my_list():
     from tests.test_composer_r3_1107 import say
 
-    todo = "# Todo\n\nThings I need to do before Friday.\n\n- [ ] Book MOT\n- [ ] Email landlord"
+    chores = "# Todo\n\nThings I need to do before Friday.\n\n- [ ] Book MOT\n- [ ] Email landlord"
     for question in ("what is on my list", "what's on the list"):
-        said = say(question, todo, "Dentist on 11 November")
+        said = say(question, chores, "Dentist on 11 November")
         assert "Book MOT" in said and "Email landlord" in said and "couldn't find" not in said, said
-    assert say("what is on my list", todo, "# Packing\n\nFor the trip.\n\n- [ ] Passport\n- [ ] Charger") == "Which list: Todo or Packing?"
+    assert say("what is on my list", chores, "# Packing\n\nFor the trip.\n\n- [ ] Passport\n- [ ] Charger") == "Which list: Todo or Packing?"
 
 
 @pytest.mark.parametrize("day", [dt.date(2026, 11, 9), dt.date(2026, 11, 12), dt.date(2026, 11, 15)])

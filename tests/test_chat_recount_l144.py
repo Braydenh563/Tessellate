@@ -124,7 +124,8 @@ def test_composer_row1_a_remark_names_its_note_and_the_bubble_opens_it(client, s
     assert "NMB_REMARK_KEY_QUIET_MS = 20000" in remark and "now - (keyAt || 0) >= NMB_REMARK_KEY_QUIET_MS" in remark
     assert remark.index("nmb.keyAt") < remark.index("prefs.setJSON(NMB_REMARK_SAID")
     assert "flashEntry(source)" in remark and "event.stopPropagation()" in remark
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    #: The rule moved to atlas-lazy.css (the boot CSS budget); the intent is unchanged.
+    css = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
     assert re.search(r"\.nm-say\.nm-say-source \{\s*pointer-events: auto;", css)
     boot = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
     assert "remark: { cool: 3 * 60 * 60 * 1000" in boot

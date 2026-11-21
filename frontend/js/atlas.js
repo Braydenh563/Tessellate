@@ -4255,6 +4255,8 @@ else atlasDressMarks();
 //: chat heads' dressing, 60ms of the 65 at 6x CPU). The task only opens the queue; the first job is the
 //: next task, so the arrival's own timer holds the page for a few lines only.
 function charactersArrived() {
+  //: The sheet holds companion rules too (the large view's pace, a remark's press), so it comes with the bundle, Atlas drawn or not.
+  atlasSheet();
   setTimeout(function charactersArrivedTask() {
     charactersLoaded = true;
     const jobs = [...characterWaiters].map((fn) => [fn, []]);
