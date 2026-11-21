@@ -1220,6 +1220,18 @@ that grow with note count, and both are simple fixed-width-ish rows, no
 per-note table fan-out) that's **~350MB at 200,000 notes**, comfortably
 inside "a notebook nobody will ever actually finish filling."
 
+**Compressing it (L-world-class-174), and what was left alone.** Measured on a
+seeded 5,000-note notebook with 384-dimension vectors: 26.7 MB vacuumed, of
+which `embeddings` 10.3 MB, `search_index_content` 4.4, `entries` 4.1,
+`entry_revisions` 3.2. Vectors are stored as float16 (`core/packed_vector.py`,
+length says the width, so old rows and old backup bundles read unchanged):
+20.5 MB after, the embeddings table about 4.2 MB. **Note text is not
+compressed**: `entries_fts` is an external-content index that reads
+`entries.content` in place, so a compressed column would blind search, and a
+private note's text is already ciphertext, which does not compress.
+`entry_revisions.content` could be (its readers are ORM, but
+`ai/timetravel.py` searches it with SQL `LIKE`), a possible next step.
+
 **What doesn't fit this rate, and isn't bounded by it:**
 
 - **Attachments** (`data/uploads/`): arbitrary files, kept whole, with no

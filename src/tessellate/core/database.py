@@ -47,6 +47,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.attributes import flag_modified
 
+from tessellate.core.packed_vector import PackedVector
+
 
 
 @contextmanager
@@ -1225,7 +1227,7 @@ class EmbeddingRecord(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entries.id"), unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -1274,7 +1276,7 @@ class ChunkVector(Base):
     start: Mapped[int] = mapped_column(Integer)
     end: Mapped[int] = mapped_column(Integer)
     digest: Mapped[str] = mapped_column(String(32))
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
 
@@ -1300,7 +1302,7 @@ class StagedEmbedding(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     entry_id: Mapped[int] = mapped_column(Integer, unique=True)
-    embedding: Mapped[bytes] = mapped_column(LargeBinary)
+    embedding: Mapped[bytes] = mapped_column(PackedVector())
     dim: Mapped[int] = mapped_column(Integer)
     model_version: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
