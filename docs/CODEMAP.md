@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8550, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11194, test files 2914, tests 22979, plan headings 688, app scripts 29, boot scripts 38, script files 313.
+Counts: frontend functions 8554, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11194, test files 2914, tests 22979, plan headings 688, app scripts 29, boot scripts 38, script files 314.
 
-## Frontend functions (8550)
+## Frontend functions (8554)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -556,22 +556,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2366 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2369 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1076 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:531 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2465 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2415 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2468 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2418 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1575 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1106 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2074 |
+| `editedMarker` | frontend/js/sheets-selects.js:2077 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1087 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1116 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:738 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2491 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2503 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2494 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2506 |
 | `focusSelect` | frontend/js/sheets-selects.js:1179 |
 | `formatTokens` | frontend/js/sheets-selects.js:1803 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:476 |
@@ -581,16 +581,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1774 |
 | `listFilter` | frontend/js/sheets-selects.js:1317 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2293 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2296 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1879 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:625 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:337 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:568 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1384 |
-| `openConversation` | frontend/js/sheets-selects.js:2082 |
+| `openConversation` | frontend/js/sheets-selects.js:2085 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1232 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1812 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2372 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2375 |
 | `relativeTime` | frontend/js/sheets-selects.js:1822 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1683 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:549 |
@@ -603,9 +603,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1859 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2431 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2434 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2452 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2455 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1191 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:515 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:525 |
@@ -2770,6 +2770,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `regenerateFrom` | frontend/js/chat-edit.js:188 |
 | `regenerateLast` | frontend/js/chat-edit.js:262 |
 | `showCopyFallback` | frontend/js/chat-edit.js:141 |
+
+### frontend/js/chat-groups.js (4)
+
+| Name | File:line |
+|---|---|
+| `chatGroups` | frontend/js/chat-groups.js:55 |
+| `groupMenu` | frontend/js/chat-groups.js:36 |
+| `midnight` | frontend/js/chat-groups.js:14 |
+| `sectionOf` | frontend/js/chat-groups.js:18 |
 
 ### frontend/js/chat-private.js (5)
 
@@ -13469,6 +13478,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/characters-lazy.css | 3528 |
+| frontend/css/chat-groups-lazy.css | 19 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |

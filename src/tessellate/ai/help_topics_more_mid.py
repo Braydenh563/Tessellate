@@ -158,14 +158,18 @@ MID_TOPICS.extend(
             "keywords": (
                 "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
                 "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+                "group chats", "group my chats", "tidy my chats",
             ),
             "body": (
                 "The Chats list beside the chat shows your last eight saved chats. "
                 "The search box above it finds a chat by its title or by anything "
                 "said in it and lists up to 32 matches. Sort "
                 "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
-                "chat stays first. Each chat's menu renames, pins, archives or "
-                "deletes it. All in Library opens every chat, with the full search."
+                "chat stays first. The rows button beside it groups the list by "
+                "day, month or length, with Pinned always on top; your choice is "
+                "kept. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search. "
+                "Ask the agent to sort, group or pin chats, or run the Tidy my chats skill."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
