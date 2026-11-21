@@ -73,9 +73,11 @@ def test_a_picture_that_needs_nothing_is_read_as_the_file(tmp_path, fake):
     is read as before."""
     img = Image.new("L", (300, 200), 255)
     img.save(tmp_path / "big.png")
-    assert ocr_prep.prepare_for_detector(Image.open(tmp_path / "big.png")) is None
+    prepared = ocr_prep.prepare_for_detector(Image.open(tmp_path / "big.png"))
+    assert prepared is None
     reader = fake([[BOX, "BIG", 0.9]])
-    assert ocr._rapidocr_lines(tmp_path / "big.png")[0][1] == "BIG"
+    lines = ocr._rapidocr_lines(tmp_path / "big.png")
+    assert lines[0][1] == "BIG"
     assert reader.calls == [str(tmp_path / "big.png")]
 
 
@@ -98,7 +100,9 @@ def test_a_preparation_fault_reads_the_file(tmp_path, fake, monkeypatch):
         raise OSError("bad picture")
 
     monkeypatch.setattr(ocr_prep, "prepare_for_detector", broken)
-    assert ocr._rapidocr_prepared(path) is None
+    prepared = ocr._rapidocr_prepared(path)
+    assert prepared is None
     reader = fake([[BOX, "plain", 0.8]])
-    assert ocr._rapidocr_lines(path)[0][1] == "plain"
+    lines = ocr._rapidocr_lines(path)
+    assert lines[0][1] == "plain"
     assert reader.calls == [str(path)]
