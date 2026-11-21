@@ -2034,6 +2034,10 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* The meeting-prep brief under a fired reminder (L-general-11). */
+.notif-brief {
+  margin-top: var(--space-1);
+}
 .notif-meta {
   font-size: var(--text-xs);
   /* A saved file's path has no break in it, and ran under the time. */

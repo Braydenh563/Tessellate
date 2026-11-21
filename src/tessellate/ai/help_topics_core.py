@@ -170,7 +170,7 @@ HELP_TOPICS: list[dict] = [
         #: "recurring" is spelt out rather than left to the inflection rule:
         #: doubling the final consonant is exactly the kind of irregularity
         #: that rule deliberately does not guess at.
-        "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert"),
+        "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert", "meeting prep", "last notes"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
             "Done. To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
@@ -187,7 +187,9 @@ HELP_TOPICS: list[dict] = [
             'midnight" works too: Atlas passes your words and the app works '
             "out the time on your own clock. Notifications fire on the minute "
             "while a tab is open, even in the background, with Done and Snooze "
-            "on them; the desktop app notifies with its window closed. If the "
+            "on them; the desktop app notifies with its window closed. A "
+            "reminder that names a person or topic your notes know (Call Sam) "
+            "brings the last notes about it under its row in the bell. If the "
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
             "Remind me is on a note's, a document's and a board's ⋯ "

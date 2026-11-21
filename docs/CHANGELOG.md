@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders: a reminder that names a person or topic the notebook knows (an extracted name or alias, or a tag) brings its three newest notes when it fires, as Last notes rows under its bell row and the newest on the system notice, from `GET /reminders/{id}/brief` (L-general-11).
 - OCR: RapidOCR now reads a prepared picture as Tesseract does (a dark ground inverted, small text enlarged, no two-tone stretch), with its boxes put back on the original and the plain file read when preparation fails or finds nothing (L703).
 - Backlog: the Fable whole-app review (L-general-31) and the ruling on Wikipedia's misspelling pairs are owner-input items in BACKLOG.
 - Tools: `python -m tessellate tool NAME --json ARGS` (or the packaged app's `Tessellate tool`) runs one offered tool from a shell behind the MCP token, and Settings, Tools it can use gives a SKILL.md that routes a request to the right tool (L-general-8).

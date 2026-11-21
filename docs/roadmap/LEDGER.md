@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 15 | 2 | 0 | 4 | 17 |
-| all | 502 | 544 | 129 | 2 | 183 | 1175 |
+| general | 0 | 14 | 2 | 0 | 4 | 16 |
+| all | 502 | 543 | 129 | 2 | 183 | 1174 |
 
 ## graph
 
@@ -705,7 +705,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
 - [ ] **L-general-10** `general` open, S: Completing a reminder prompts for a one-line outcome appended to the source note. From ANALYSIS.md:1216. Evidence: shell-reminders.js has no outcome prompt on complete; not in any plan
-- [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
 - [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError

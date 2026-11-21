@@ -94,14 +94,14 @@ function storedNotifications() {
 // runs every thirty seconds and must not add the same fired reminder twice.
 //: Returns the row's id (null when nothing was recorded), so a toast's live
 //: action can be tied to its row (`keepToastAction`).
-function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "", reminderId = null, reminderDue = null }) {
+function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "", reminderId = null, reminderDue = null, brief = null }) {
   if (kind !== "reminder" && notificationsMuted()) return null;
   const items = storedNotifications();
   const id = key || `${kind}:${title}:${Date.now()}`;
   if (key && items.some((n) => n.id === id)) return null;
   if (key && dismissedNotificationIds().has(id)) return null;
   //: `runId` ties a "Started:" row to its run, so the ending can replace it.
-  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}), ...(reminderId ? { reminderId, reminderDue } : {}) });
+  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}), ...(reminderId ? { reminderId, reminderDue } : {}), ...(brief ? { brief } : {}) });
   if (!prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items.slice(-MAX_NOTIFICATIONS)))) {
     return null; // storage refused: the toast still shows, the row is not kept
   }
@@ -639,6 +639,14 @@ async function checkDueReminders() {
   //: The companion holds up a small bell (avatars.js).
   if (typeof nameMarkBuddyCue === "function") nameMarkBuddyCue("bell");
 
+  //: The meeting-prep brief (L-general-11): a due reminder that names a
+  //: person or topic the notebook knows brings its newest notes, looked up
+  //: now, at fire time. Three lookups at most; a private one asks nothing.
+  const briefs = await Promise.all(fresh.map((r, i) => (r.early || r.notice || i >= 3
+    ? null
+    : apiJson(`/reminders/${r.id}/brief`, { silent: true }).then((b) => (b?.notes?.length ? { subjects: b.subjects, notes: b.notes.map(({ id, title }) => ({ id, title })) } : null)).catch(() => null))));
+  fresh.forEach((r, i) => { if (briefs[i]) r.brief = briefs[i]; });
+
   // Into the centre as well as onto the screen (§36E). A toast and a system
   // notification are both moments; this is the record that outlives them, and
   // it is the difference between "I think something was due" and knowing what.
@@ -652,6 +660,7 @@ async function checkDueReminders() {
       //: Done from the bell (an early alert is not due yet, so it has none).
       reminderId: reminder.early ? null : reminder.id,
       reminderDue: reminder.due_at,
+      brief: reminder.brief || null,
     });
   }
 
