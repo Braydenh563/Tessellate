@@ -18,12 +18,14 @@ def test_a_meeting_with_my_boss_is_not_the_meeting_with_priya(client):
 def test_the_meeting_schedule_is_the_dated_items_ahead(client):
     for asked in ("share my meeting schedule with me", "go over my meeting schedule with me please", "what meetings are coming up"):
         text = _ask(client, asked)["text"]
-        assert text.startswith("No meeting is dated ahead in your notes. For the next two weeks"), (asked, text)
+        #: The lead into the two weeks rotates with the chat's seed; the window does not.
+        assert text.startswith("No meeting is dated ahead in your notes. ") and "the next two weeks" in text.split(":")[0].lower(), (asked, text)
         assert "Plumber is coming Thursday" in text and "referral" not in text, text
 
 
 def test_my_calendar_is_the_dated_items_ahead(client):
-    assert _ask(client, "show me my calendar")["text"].startswith("For the next two weeks")
+    text = _ask(client, "show me my calendar")["text"]
+    assert "the next two weeks" in text.split(":")[0].lower() and "No meeting" not in text, text
 
 
 def test_book_as_reserve_is_not_the_book_a_note_is_about(client):
