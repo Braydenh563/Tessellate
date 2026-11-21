@@ -2096,9 +2096,6 @@ button.scroll-row-arrow[hidden] {
   color: var(--on-accent);
   font-weight: 600;
 }
-:root[data-mode="dark"] .library-chip.active {
-  color: #0e1017;
-}
 .library-chip-count {
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
@@ -3592,8 +3589,6 @@ button.scroll-row-arrow[hidden] {
 #tab-bar button {
   flex: 0 0 auto;
   white-space: nowrap;
-}
-#tab-bar button {
   background: transparent;
   border: none;
   border-radius: var(--radius-md);
@@ -3639,9 +3634,6 @@ button.scroll-row-arrow[hidden] {
 #tab-bar button:not(.active):is(:focus-visible, :has(:focus-visible)) {
   color: var(--ink);
   background: var(--hover-veil);
-}
-:root[data-mode="dark"] #tab-bar button.active {
-  color: #0e1017;
 }
 /* --- the page shell (§35L) --------------------------------------------------
    Every tab used to draw its own outer gutter, and no two agreed. The side

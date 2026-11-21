@@ -13133,7 +13133,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | assistant message layout | frontend/css/05-sidebars-themes.css:4340 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2870 |
 | audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9566 |
-| back / forward through pages | frontend/css/00-tokens-shell.css:4136 |
+| back / forward through pages | frontend/css/00-tokens-shell.css:4128 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2689 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:8685 |
@@ -13144,7 +13144,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:8964 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:650 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:1011 |
-| boot splash | frontend/css/00-tokens-shell.css:4158 |
+| boot splash | frontend/css/00-tokens-shell.css:4150 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2758 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1304 |
@@ -13237,7 +13237,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:5738 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4871 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2158 |
-| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4314 |
+| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4306 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1709 |
 | page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2051 |
 | previews on the Library's document and board cards | frontend/css/library-lazy.css:2362 |
@@ -13250,7 +13250,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1815 |
 | results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1229 |
 | rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1239 |
-| rows instead of cards | frontend/css/00-tokens-shell.css:2338 |
+| rows instead of cards | frontend/css/00-tokens-shell.css:2335 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:587 |
 | saved filters | frontend/css/05-sidebars-themes.css:666 |
 | screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2742 |
@@ -13267,7 +13267,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:1730 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1980 |
 | status and foot | frontend/css/sketch-pad.css:519 |
-| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3556 |
+| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3553 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5432 |
@@ -13303,7 +13303,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:5000 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:743 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:425 |
-| the bar's three zones | frontend/css/00-tokens-shell.css:3302 |
+| the bar's three zones | frontend/css/00-tokens-shell.css:3299 |
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1055 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:4375 |
@@ -13348,7 +13348,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3692 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2841 |
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:1034 |
-| the glass card | frontend/css/00-tokens-shell.css:3829 |
+| the glass card | frontend/css/00-tokens-shell.css:3821 |
 | the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:8984 |
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2336 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3054 |
@@ -13375,7 +13375,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the overview strip | frontend/css/00-tokens-shell.css:1920 |
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4268 |
-| the page shell (§35L) | frontend/css/00-tokens-shell.css:3646 |
+| the page shell (§35L) | frontend/css/00-tokens-shell.css:3638 |
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2628 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5851 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3711 |
@@ -13390,11 +13390,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:3630 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:9387 |
 | the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5565 |
-| the spine | frontend/css/00-tokens-shell.css:2288 |
+| the spine | frontend/css/00-tokens-shell.css:2285 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:7316 |
-| the status bar (§36D) | frontend/css/00-tokens-shell.css:3220 |
+| the status bar (§36D) | frontend/css/00-tokens-shell.css:3217 |
 | the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1279 |
-| the status bar on a small phone | frontend/css/00-tokens-shell.css:3529 |
+| the status bar on a small phone | frontend/css/00-tokens-shell.css:3526 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1127 |
 | the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4232 |
@@ -13425,7 +13425,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:7287 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1949 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:963 |
-| what a wide screen is for | frontend/css/00-tokens-shell.css:3656 |
+| what a wide screen is for | frontend/css/00-tokens-shell.css:3648 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5623 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:1306 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:4622 |
@@ -13439,7 +13439,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | File | Lines |
 |---|---|
-| frontend/css/00-tokens-shell.css | 4344 |
+| frontend/css/00-tokens-shell.css | 4336 |
 | frontend/css/01-forms-settings.css | 6357 |
 | frontend/css/02-chat-graph.css | 5319 |
 | frontend/css/03-dashboard-widgets.css | 4930 |
