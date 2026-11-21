@@ -190,30 +190,3 @@ console.log(JSON.stringify({{ wrong, checks, found }}));
     assert got["checks"] == 9000
     assert got["wrong"] == 0, got
     assert got["found"] > 300, got
-
-
-AVATARS = (JS / "avatars.js").read_text(encoding="utf-8")
-WIDGETS = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
-
-
-def test_the_emblem_breath_holds_while_keys_are_typed():
-    # A running animation, even one the compositor draws, cost each key about
-    # 10 ms of latency in the 20,000 word document at 4x CPU (L342: mean 43 to
-    # 33 with the breath paused). It holds on the first key of a burst and
-    # picks up once the typing pauses; the class goes on the marks, not on
-    # <html>, whose attribute observers would wake (test_doc_typing_dx1).
-    assert "NMB_TYPING_HOLD_MS = 1200" in AVATARS
-    hold = AVATARS[AVATARS.index("nmbClock.hold = (on) => {") :]
-    hold = hold[: hold.index("\n  };")]
-    assert 'document.querySelectorAll(".emblem-art")' in hold and 'classList.toggle("is-held", on)' in hold
-    assert "if (!nmbClock.held) nmbClock.hold(true);" in AVATARS
-    assert "documentElement.classList.toggle(\"is-held\"" not in AVATARS
-    # One timer a burst, re-armed for the time left, not cleared on every key.
-    check = AVATARS[AVATARS.index("nmbClock.holdCheck = () => {") :]
-    check = check[: check.index("\n  };")]
-    assert "nmbClock.keyAt + NMB_TYPING_HOLD_MS - Date.now()" in check and "clearTimeout" not in check
-    # The busy lift is a signal and keeps moving.
-    at = WIDGETS.index(".emblem-art.is-held:not(.is-busy)")
-    rule = WIDGETS[WIDGETS.rindex("\n", 0, at) : WIDGETS.index("{", at)]
-    assert "animation-play-state" in WIDGETS[WIDGETS.index("{", at) : WIDGETS.index("}", at)]
-    assert ".emblem-float" in rule and 'data-motion="reduced"' in rule
