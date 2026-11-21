@@ -7,9 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Companion: choosing the companion in Settings while its greeting wave plays no longer drops the wave's end, so the figure stops counting as busy after 2 s instead of the next 20 to 60 s tick; idle main thread over off falls from +165 to +47ms/s for "me" and from +713 to +574 for Atlas (L-general-46).
-- CI: the UI sweeps run as four balanced jobs (about 20 minutes each, 69 sweeps), with the whole font matrix (15 shards of two cells) and errors.js in two width pairs; `gate.sh --sweeps` runs the same shards (L-general-20).
+- CI: the UI sweeps run as four balanced jobs (about 27 minutes each, 70 sweeps), with the whole font matrix (15 shards of two cells), errors.js in two width pairs and deepflows in 8 shards (each width and theme: settings, the rest); deepflows seeds its own notebook; `gate.sh --sweeps` runs the same shards (L-general-20).
 - Tour: the Library "Make something new" step points at the empty library's Create when the dock's is hidden, and the board "Notes" step is left out of a phone run, so neither drops mid-walk and renumbers the count; scratchpad/ui-sweeps/tour.js reads the tour from the DOM (L-general-14)
-- CI: the UI sweeps run as four balanced jobs (about 20 minutes each, 59 sweeps), with the whole font matrix (15 shards of two cells) and errors.js in two width pairs; `gate.sh --sweeps` runs the same shards (L-general-20).
 - Layout: in a wide font at 390px the capture notice's Install button keeps its word and the documents status bar's goal and findings labels give way before the type picker (L-general-43).
 - Boot size: the chat list and opening a chat load on first use (chat-list.js), so the boot scripts gzip to 247,568 bytes, 2,882 under the cap.
 - Maps: picking up a branch that is most of the board leaves it in place and moves the few topics and lines outside it the other way, and the drop draws the inside lines from the sizes measured at the pick-up, so the first step of a 500-topic branch drag costs 77 to 118ms of CPU, from 197 to 199; mapperf.js gates it under 160ms (L-mindmap-18).
