@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 7 | 0 | 0 | 0 | 7 |
+| chat | 0 | 6 | 0 | 0 | 0 | 6 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 369 | 69 | 0 | 125 | 764 |
+| all | 326 | 368 | 69 | 0 | 125 | 763 |
 
 ## graph
 
@@ -29,7 +29,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-135** `chat` open, M: Word list in search typo tolerance and the question-noise real-word check, measured (VC8). From WORLD_CLASS_PLAN.md:4001. Evidence: WORLD_CLASS_PLAN.md:4001; recall on the 30 misspelt queries not recorded
 - [ ] **L-world-class-180** `chat` open, M: Different ways to sort and group chats, with an agent tool and a skill to manage them. From IDEAS.md:119. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-181** `chat` open, L: Agent permission flow shown as a dialogue in chat and documents, with the edit proposed as an acceptable suggestion. From IDEAS.md:121. Evidence: IDEAS.md 'Still open' list, 2026-11-14
-- [ ] **L-world-class-420** `chat` open, M: Give the 51 Help topics the Guide cannot find by title a keyword each, then lower GUIDE_MISSES_BY_TITLE to 0. From L-world-class-114. Evidence: tests/test_ui_recipes.py GUIDE_MISSES_BY_TITLE = 51
 
 ## whiteboard
 
