@@ -424,7 +424,7 @@ MID_TOPICS.extend(
                 "sentence by sentence (Changed, Contradicts then, No longer says, "
                 "Says now); with a model on, the model judges each pair. In Ask, "
                 "the clock button answers from your notes as they were on a day "
-                "you pick, by date or by sliding back through the days, and Back to now returns to today. It also says who "
+                "you pick, by date or by sliding back through the days, and Back to now returns to today; its notes are grouped by the month each version was written. It also says who "
                 "filed the note "
                 "and how sure, and a change made by an AI tool names the model "
                 "that made it. When the same note or document is edited in two "

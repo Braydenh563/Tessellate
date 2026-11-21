@@ -889,6 +889,7 @@ def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:
         "when_phrase": prepared["when_phrase"],
         "as_of": prepared.get("as_of"),
         "as_of_revisions": prepared.get("as_of_revisions") or {},
+        "as_of_written": prepared.get("as_of_written") or {},
         "answered_by": answered_by,
         "ollama_running": t.ollama_running,
         #: The Ask box labels the answer "Composed from your notes, no AI".

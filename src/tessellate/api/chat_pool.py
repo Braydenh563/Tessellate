@@ -506,6 +506,8 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
         #: (None for a note that read the same then as now).
         "as_of": as_of.isoformat() if as_of is not None else None,
         "as_of_revisions": {str(i): then.revision_id for i, then in found.as_of_then.items()},
+        #: When each note's version then was written: Ask groups the cards by its month (H8).
+        "as_of_written": {str(i): then.since.isoformat() if then.since else None for i, then in found.as_of_then.items()},
         #: Words for each retrieved note's pictures, for the thumbnails an
         #: answer draws beside a citation (INBOX 502, `_picture_alts`).
         "picture_alts": _picture_alts(session, found.entries),

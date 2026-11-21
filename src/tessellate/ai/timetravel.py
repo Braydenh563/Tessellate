@@ -55,6 +55,9 @@ class Then:
     revision_id: int | None
     #: False when older edits may have been pruned (see the module docstring).
     exact: bool = True
+    #: When this version was written: the edit before it, or the note's
+    #: creation (an as-of answer groups its notes by this month, H8).
+    since: datetime | None = None
 
 
 def _aware(when: datetime | None) -> datetime | None:
@@ -87,8 +90,9 @@ def _then(entry: Entry, revisions: list[EntryRevision], when: datetime) -> Then 
     for index, revision in enumerate(revisions):
         if _aware(revision.created_at) > when:
             pruned = len(revisions) >= manager.MAX_REVISIONS and index == 0
-            return Then(entry, revision.content or "", revision.id, exact=not pruned)
-    return Then(entry, entry.content or "", None)
+            since = _aware(revisions[index - 1].created_at) if index else created
+            return Then(entry, revision.content or "", revision.id, exact=not pruned, since=since)
+    return Then(entry, entry.content or "", None, since=_aware(revisions[-1].created_at) if revisions else created)
 
 
 def text_as_of(session: Session, entry: Entry, when: datetime) -> Then | None:
