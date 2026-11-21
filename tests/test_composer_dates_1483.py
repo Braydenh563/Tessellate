@@ -27,7 +27,7 @@ import pytest
 
 from tessellate.ai import composer_digest, insights
 from tessellate.ai import composer_digest_sentences
-from tessellate.api import routes_chat
+from tessellate.api import chat_attach
 
 TODAY = date(2026, 10, 30)
 
@@ -227,11 +227,11 @@ class _Entry:
 @pytest.mark.parametrize("created", [dt.datetime(2026, 10, 30, 9), dt.datetime(2026, 10, 29, 9),
                                      dt.datetime(2026, 10, 20, 9), dt.datetime(2026, 7, 20, 9)])
 def test_the_model_hints_never_bracket_a_distance(created):
-    written = routes_chat._note_dates(_Entry(created), dt.UTC)
+    written = chat_attach._note_dates(_Entry(created), dt.UTC)
     assert "(" not in written and re.match(r"\w+day \d{1,2} \w+ 2026, \d\d:\d\d$", written), written
 
     class Said:
         phrase, at, precision = "today", created, "day"
 
-    worded = routes_chat._time_words([Said], TODAY)[0]
+    worded = chat_attach._time_words([Said], TODAY)[0]
     assert "(" not in worded and re.search(r"2026, (?:today|yesterday|\d+ days ago)$", worded), worded

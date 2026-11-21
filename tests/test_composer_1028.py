@@ -11,7 +11,7 @@ import re
 
 import pytest
 
-from tessellate.api import routes_chat
+from tessellate.api import chat_turn
 from tessellate.core.database import Entry
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
@@ -123,7 +123,7 @@ def test_a_missing_search_engine_is_not_loading(app_state, monkeypatch):
 
     monkeypatch.setattr(embeddings, "_package_present", lambda: False)
     monkeypatch.setattr(embeddings, "warmup_running", lambda: True)
-    assert routes_chat._meaning_loading() is False
+    assert chat_turn._meaning_loading() is False
 
 
 @pytest.mark.parametrize("question", ["what is my wifi password", "tell me about quantum chess", "who is my landlord"])

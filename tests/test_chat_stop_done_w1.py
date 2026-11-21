@@ -42,7 +42,7 @@ def test_every_answer_stream_asks_for_the_stopped_line():
     from pathlib import Path
 
     api = Path(activity.__file__).parents[1] / "api"
-    for name in ("routes_chat.py", "routes_help.py", "routes_documents.py", "routes_drafts.py"):
+    for name in ("chat_service.py", "routes_help.py", "routes_documents.py", "routes_drafts.py"):
         assert "stopped_line=activity.STOPPED_DONE" in (api / name).read_text(encoding="utf-8"), name
 
 

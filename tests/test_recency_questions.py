@@ -36,16 +36,16 @@ def test_the_prompt_dates_each_note():
     from datetime import datetime, timezone
     from types import SimpleNamespace
 
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_attach
 
     entry = SimpleNamespace(
         created_at=datetime(2026, 9, 3, 10, tzinfo=timezone.utc),
         edited_at=datetime(2026, 9, 25, 10, tzinfo=timezone.utc),
     )
-    text = routes_chat._note_dates(entry, timezone.utc)
+    text = chat_attach._note_dates(entry, timezone.utc)
     assert text == "Thursday 3 September 2026, 10:00, edited Friday 25 September 2026, 10:00"
     entry.edited_at = None
-    assert routes_chat._note_dates(entry, timezone.utc) == "Thursday 3 September 2026, 10:00"
+    assert chat_attach._note_dates(entry, timezone.utc) == "Thursday 3 September 2026, 10:00"
 
 
 def test_the_newest_is_marked_in_the_prompt():
@@ -126,7 +126,7 @@ def test_every_note_path_carries_time_words_with_their_distance():
     assert "librarian._dates_hint(note)" in agent_text()
     assert '"when": days_from_today(' in (root / "ai" / "tools" / "_common.py").read_text(encoding="utf-8")
     assert "days_from_today(d.at.date(), now.date())" in (root / "api" / "routes_insights.py").read_text(encoding="utf-8")
-    assert '"dates": _time_words(' in (root / "api" / "routes_chat.py").read_text(encoding="utf-8")
+    assert '"dates": _time_words(' in (root / "api" / "chat_service.py").read_text(encoding="utf-8")
 
 
 def test_with_no_ai_a_recency_question_lists_the_newest_notes():

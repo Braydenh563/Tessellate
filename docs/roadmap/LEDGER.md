@@ -23,7 +23,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## chat
 
-- [ ] **L-world-class-634** `chat` open, M: Move the chat turn out of routes_chat into a chat service; about 100 tests patch routes_chat.user_now, so after #241 they pin through tests/_clock.py pin_clock. From the hub 2026-11-21 (row not in world-class's LEDGER). Evidence: grep -c 'routes_chat.user_now' tests/
 
 
 ## whiteboard

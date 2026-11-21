@@ -11,7 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from tessellate.ai import personal, tools
-from tessellate.api import routes_chat
+from tessellate.api import chat_service, chat_web
 from tests._app_js import with_pieces
 
 OWN = [
@@ -49,8 +49,8 @@ def _request(question):
 @pytest.mark.parametrize(("question", "allowed"), [(q, False) for q in OWN] + [(q, True) for q in WORLD] + [("search the web for my ip address", True)])
 def test_web_allowed_sweeps_the_phrase_list(monkeypatch, question, allowed):
     config = SimpleNamespace(get_preference=lambda key, default=None: True if key == "web_search_enabled" else default)
-    monkeypatch.setattr(routes_chat.deps, "get_config", lambda: config)
-    assert routes_chat._web_allowed(_request(question)) is allowed
+    monkeypatch.setattr(chat_service.deps, "get_config", lambda: config)
+    assert chat_web._web_allowed(_request(question)) is allowed
 
 
 def test_a_first_person_question_sends_no_query(client, session, monkeypatch):
@@ -96,7 +96,7 @@ def test_pages_are_read_in_parallel_under_one_deadline(monkeypatch):
     from tessellate.search import websearch
 
 
-    monkeypatch.setattr(routes_chat, "WEB_PAGES_DEADLINE", 0.5)
+    monkeypatch.setattr(chat_service, "WEB_PAGES_DEADLINE", 0.5)
 
     def slow(url):
         time.sleep(2)
@@ -105,7 +105,7 @@ def test_pages_are_read_in_parallel_under_one_deadline(monkeypatch):
     monkeypatch.setattr(websearch, "fetch_readable_cached", slow)
     hits = [{"title": f"T{i}", "url": f"https://e.org/{i}", "snippet": f"snippet {i}"} for i in range(3)]
     started = time.monotonic()
-    pages = routes_chat._web_pages(websearch, hits)
+    pages = chat_service._web_pages(websearch, hits)
     assert time.monotonic() - started < 1.5
     assert [p["snippet"] for p in pages] == ["snippet 0", "snippet 1", "snippet 2"]
 

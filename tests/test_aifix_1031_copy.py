@@ -125,7 +125,7 @@ def test_ai17_an_arrow_key_moves_the_companion_and_the_guide_says_so():
 
 
 def test_ai10_requests_are_clipped_to_the_server_caps_before_they_go():
-    from tessellate.api import routes_chat, routes_search
+    from tessellate.api import chat_request, routes_search
 
     chat = _text("chat.js")
     #: One shared question cap (audit 1031 AI9, tests/test_warm12_1101.py): the
@@ -133,7 +133,7 @@ def test_ai10_requests_are_clipped_to_the_server_caps_before_they_go():
     cap = int(re.search(r"\}\)\)\((\d+)\);", re.search(r"const CLIP_LIMITS = .*", chat).group(0)).group(1))
     answer = int(re.search(r"followAnswer: (\d+)", chat).group(1))
     assert cap == routes_search.WarmBody.model_fields["q"].metadata[0].max_length
-    follow = routes_chat.FollowupBody.model_fields
+    follow = chat_request.FollowupBody.model_fields
     assert cap == follow["question"].metadata[0].max_length
     assert answer == follow["answer"].metadata[0].max_length
     assert 'clipFor("warm", q)' in _text("navigation.js")

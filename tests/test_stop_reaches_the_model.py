@@ -11,7 +11,7 @@ import asyncio
 import threading
 import time
 
-from tessellate.api import routes_chat
+from tessellate.api import chat_service
 from tessellate.core import activity
 
 
@@ -84,7 +84,7 @@ def test_a_cancelled_stream_sets_the_stop_flag_and_closes_the_generator():
         stop = activity.StopEvent()
 
     async def go() -> None:
-        agen = routes_chat._stop_when_gone(Req, lines())
+        agen = chat_service._stop_when_gone(Req, lines())
         assert await agen.__anext__() == "first\n"
         task = asyncio.ensure_future(agen.__anext__())
         await asyncio.sleep(0.05)

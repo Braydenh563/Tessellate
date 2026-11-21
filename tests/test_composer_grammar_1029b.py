@@ -20,7 +20,7 @@ from tessellate.ai import activity, composer, composer_compose, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_empty
 from tessellate.ai import composer_quote
-from tessellate.api import routes_chat
+from tessellate.api import chat_said
 from tessellate.entry import manager
 from tests.test_composer_frames_1029 import FAMILIES, _notes
 from tests.test_composer_route_688 import _ask
@@ -152,7 +152,7 @@ def test_a_busy_day_is_not_one_endless_bullet():
     ("what did I write about atlas today", False), ("tell me about atlas", False),
 ])
 def test_only_a_bare_day_question_drops_the_related_line(question, only_time):
-    assert routes_chat._asks_only_a_time(question) is only_time
+    assert chat_said._asks_only_a_time(question) is only_time
 
 
 @MODES

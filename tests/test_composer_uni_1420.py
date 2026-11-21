@@ -32,7 +32,7 @@ def test_a_plain_subject_still_names_the_note():
 
 
 def test_a_notes_answer_does_not_close_on_a_howto():
-    src = (ROOT / "src" / "tessellate" / "api" / "routes_chat.py").read_text(encoding="utf-8")
+    src = (ROOT / "src" / "tessellate" / "api" / "chat_service.py").read_text(encoding="utf-8")
     assert "related=not cited" in src
     aw = composer_aware.build(tab="ask", actions=[])
     assert "how do I" not in composer_aware.closing(aw, "s", related=False, asked="what have I written about uni")

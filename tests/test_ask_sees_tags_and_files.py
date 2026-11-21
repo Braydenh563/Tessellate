@@ -36,7 +36,7 @@ def test_a_caption_cannot_draw_a_fence():
 
 
 def test_the_route_sends_them(session):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_attach, chat_service
     from tessellate.core.database import Attachment
     from tessellate.entry import manager
 
@@ -46,8 +46,8 @@ def test_the_route_sends_them(session):
     att.caption = "A blue   bean drawn in pen"
     session.add(att)
     session.commit()
-    assert routes_chat._files_on(session, [entry.id]) == {entry.id: ["sketch.png (A blue bean drawn in pen)"]}  # noqa: SLF001
-    prepared = routes_chat._prepare(session, "sketches", note_ids=[entry.id])  # noqa: SLF001
+    assert chat_attach._files_on(session, [entry.id]) == {entry.id: ["sketch.png (A blue bean drawn in pen)"]}  # noqa: SLF001
+    prepared = chat_service._prepare(session, "sketches", note_ids=[entry.id])  # noqa: SLF001
     mine = next(n for n in prepared["notes"] if n["id"] == entry.id)
     assert mine["tags"] == ["sketches"]
     assert mine["files"] == ["sketch.png (A blue bean drawn in pen)"]
@@ -56,9 +56,9 @@ def test_the_route_sends_them(session):
 def test_grounding_reads_a_notes_files_too(session):
     """INBOX 604: a sentence drawn from a picture's caption is grounded in the
     note that holds the picture."""
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_attach
 
-    rows = routes_chat._grounding_candidates(  # noqa: SLF001
+    rows = chat_attach._grounding_candidates(  # noqa: SLF001
         session, [{"id": 7, "content": "whoaaahhh", "files": ["sketch.png (a blue oval face)"]}], []
     )
     assert "a blue oval face" in rows[0]["content"] and rows[0]["content"].startswith("whoaaahhh")

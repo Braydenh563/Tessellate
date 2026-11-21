@@ -19,7 +19,7 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.api import routes_chat
+from tessellate.api import chat_said, chat_turn
 from tessellate.core.database import Entry, Reminder
 from tests._clock import pin_clock
 
@@ -299,7 +299,7 @@ CHANGE_CASES = [
 
 @pytest.mark.parametrize(("question", "change"), CHANGE_CASES)
 def test_which_sentences_ask_for_a_change(question: str, change: bool) -> None:
-    assert routes_chat._asks_change(question) is change
+    assert chat_turn._asks_change(question) is change
 
 
 def _facts_prompted(fake) -> bool:
@@ -409,10 +409,10 @@ def test_a_read_said_as_an_act_is_the_engines_with_no_model(client, session, fix
 
 def test_which_statistics_are_lists() -> None:
     boards = {"kind": "boards", "text": "You have 2 boards, last changed first:\n- [Plan](#/board/1)\n- [Trip](#/board/2)", "facts": []}
-    assert routes_chat._stats_listed(boards) == [{"type": "answer", "delta": "\n\n- [Plan](#/board/1)\n- [Trip](#/board/2)"}]
+    assert chat_said._stats_listed(boards) == [{"type": "answer", "delta": "\n\n- [Plan](#/board/1)\n- [Trip](#/board/2)"}]
     worked = {"kind": "utility", "text": "The total of 12, 30, 5 is 47.\nRead as the sum of 3 numbers.", "facts": []}
     untagged = {"kind": "untagged", "text": "2 notes out of 5 have no tags.", "facts": [{"label": "untagged", "count": 2}, {"label": "total", "count": 5}]}
-    assert routes_chat._stats_listed(worked) == routes_chat._stats_listed(untagged) == []
+    assert chat_said._stats_listed(worked) == chat_said._stats_listed(untagged) == []
 
 
 def test_the_counted_list_is_one_line_with_no_model(client, session, fixed_clock) -> None:

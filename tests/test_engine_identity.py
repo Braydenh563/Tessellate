@@ -9,7 +9,7 @@ import pytest
 from tessellate.ai import composer
 from tessellate.ai import composer_smalltalk
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import routes_chat
+from tessellate.api import chat_said
 from tessellate.entry import manager
 from tests import _composer_eval
 from tests.test_composer_route_688 import _ask
@@ -82,7 +82,7 @@ def test_a_model_that_dies_before_its_first_word_leaves_the_composed_answer(ai_c
     monkeypatch.setattr(deps, "get_ollama", lambda: _Dies(fake_ollama))
     out = _ask(ai_client, "What is the Harbor launch plan?", notes_only=True, use_tools=False, answer_from="ai")
     assert "Ship Harbor to the public on the 14th of next month." in out["text"]
-    assert out["text"].endswith(routes_chat.MODEL_STOPPED_NOTE)
+    assert out["text"].endswith(chat_said.MODEL_STOPPED_NOTE)
 
 
 def test_the_eval_traces_a_help_answer():

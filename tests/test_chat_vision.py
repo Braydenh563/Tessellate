@@ -1,17 +1,17 @@
 """Vision-capable models in chat (ROADMAP.md's largest open item).
 
 Two paths, chosen per turn by whether the chat model itself declares vision
-(`routes_chat._chat_model_sees_images`):
+(`chat_request._chat_model_sees_images`):
 
 - **The chat model can see.** An attached image reaches it directly as
-  `images` on the last user message, see `routes_chat._resolve_chat_images`
+  `images` on the last user message, see `chat_request._resolve_chat_images`
   for how a `/media/upload` id becomes a data URI, and
   `ollama_client`/`openai_client`'s own `_to_*_messages` for how each
   dialect adapts that shape.
 - **It can't.** Asked for directly, replacing an earlier design that swapped
   the whole turn to a different (vision-capable) model regardless of which
   chat model the user had actually chosen: the resolved vision model
-  captions the image instead (`routes_chat._image_caption_context`,
+  captions the image instead (`chat_request._image_caption_context`,
   `captioning.caption_and_store`), and the *original* chat model answers
   using that caption folded into the question text. The chat model in
   `answered_by` never changes because of an attached image any more.
@@ -63,7 +63,7 @@ def test_a_vision_only_question_is_not_treated_as_no_matching_notes(
 ):
     """Retrieval never sees the image, so an empty search result must not
     stand in for "there's nothing to look at", the exact bug the guard in
-    `librarian.answer` (and `routes_chat.chat_stream`'s `plain_events`)
+    `librarian.answer` (and `chat_service.chat_stream`'s `plain_events`)
     exists to prevent. No vision declared on the chat model here, so this
     also exercises the caption-relay path's own version of the same guard
     (`image_context`), an explicit vision_model still has to be set for a
