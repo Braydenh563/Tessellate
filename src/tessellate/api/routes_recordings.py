@@ -28,7 +28,7 @@ from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
 from tessellate.core import activity, deps, jobs, recordings, sealed_files, spacelock, transcript, vault
-from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
+from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, SealedWriteRefused, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
 from tessellate.entry import manager_text
@@ -310,13 +310,21 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
     return {"text": " ".join(seg["text"] for seg in kept), "segments": kept}
 
 
-def _acting_for(session: Session, row: Recording) -> str | None:
+#: A space turned ordinary that kept its files private still holds sealed
+#: audio, and a run outside a private space has no session to act for.
+SEALED_OUTSIDE_PRIVATE = "This recording is kept private, so it can't be transcribed in the background."
+
+
+def _acting_for(session: Session, row: Recording, path: Path) -> str | None:
     """The session a background run on `row` acts for (L-world-class-381):
     the caller's, for a private space's recording, so the run opens the
     sealed audio and writes the sealed transcript as that session and stops
     when its private-space door shuts (`sealed_files.for_background`). None
-    for an ordinary space's recording, which needs no key."""
+    for an ordinary space's recording, which needs no key; 409 up front for
+    a sealed one there, as before the change."""
     if not sealed_files.wanted(session, row.workspace_id):
+        if sealed_files.is_sealed(path):
+            raise HTTPException(status_code=409, detail=SEALED_OUTSIDE_PRIVATE)
         return None
     token = vault.requester()
     if token is None or not spacelock.opened(token):
@@ -336,7 +344,7 @@ def start_transcription(recording_id: int, session: Session = Depends(get_sessio
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
-    token = _acting_for(session, row)
+    token = _acting_for(session, row, path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Transcribing “{name}”", stoppable=True)
     if not recordings.begin_transcription(row.id, job.id):
@@ -387,7 +395,7 @@ def _transcribe_in_background(
                     _keep_segments(recording_id, kept, workspace, check, named=token is None)
     except RuntimeError as exc:
         logger.warning("background transcription failed: %s", exc)
-        state, error = "failed", str(exc)
+        state, error = "failed", _sentence(exc)
     except Exception:  # noqa: BLE001  # a bad clip is a row that says so, never a dead thread
         logger.warning("background transcription failed", exc_info=True)
         state, error = "failed", "Couldn't transcribe that recording. Try recording it again."
@@ -397,6 +405,13 @@ def _transcribe_in_background(
         job.result = {"done": f"{words} words", "stopped": "stopped", "failed": error}[state]
         activity.finish(job)
         recordings.end_transcription(recording_id, state, error, words)
+
+
+def _sentence(exc: RuntimeError) -> str:
+    """A background run's failure line: this module's own sentence. A sealed
+    write refused because the vault locked mid-run is the locked line, never
+    the database's words (SECURITY.md T28)."""
+    return sealed_files.BACKGROUND_LOCKED_DETAIL if isinstance(exc, SealedWriteRefused) else str(exc)
 
 
 def _record_failure(job: activity.Job, state: str, error: str) -> None:
@@ -518,7 +533,7 @@ def label_speakers_by_voice(recording_id: int, session: Session = Depends(get_se
     path = recordings.path_of(row)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That recording's audio is missing.")
-    token = _acting_for(session, row)
+    token = _acting_for(session, row, path)
     name = row.title or "a recording"
     job = activity.start("transcription", f"Telling the voices apart in “{name}”", stoppable=False)
     if not recordings.begin_transcription(row.id, job.id, task="voices"):
@@ -540,7 +555,7 @@ def _label_in_background(
             count = _keep_voice_labels(recording_id, found, workspace, check)
     except RuntimeError as exc:
         logger.warning("telling the voices apart failed: %s", exc)
-        state, error = "failed", str(exc)
+        state, error = "failed", _sentence(exc)
     except Exception:  # noqa: BLE001  # a bad clip or a model that will not load is a row that says so
         logger.warning("telling the voices apart failed", exc_info=True)
         state, error = "failed", "Couldn't tell the voices apart. See Settings, Logs for why."

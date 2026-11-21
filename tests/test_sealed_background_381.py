@@ -337,6 +337,42 @@ def test_the_watcher_removes_the_plain_copy_during_a_long_step(signed_in, monkey
     _failed_closed(recordings.transcription_of(rid), rid)
 
 
+def test_a_sealed_recording_outside_a_private_space_is_refused_up_front(signed_in, monkeypatch):
+    """Finding 4: a space turned ordinary that kept its files private holds
+    sealed audio; that is a 409 before any run starts, not a 202 and then a
+    wrong "the private space locked" failure."""
+    from sqlalchemy import text
+
+    from tessellate.api import routes_recordings
+
+    client = signed_in
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    rid = _recording(client)
+    with deps.get_db().engine.begin() as conn:
+        conn.execute(text("UPDATE spaces SET is_private = 0 WHERE id = :s"), {"s": client.space["X-Workspace-ID"]})
+    got = client.post(f"/recordings/{rid}/transcribe/start", headers=client.space)
+    assert got.status_code == 409, got.text
+    assert got.json()["detail"] == routes_recordings.SEALED_OUTSIDE_PRIVATE
+    assert (recordings.transcription_of(rid) or {}).get("state") != "running"
+
+
+def test_a_sealed_write_refused_is_the_modules_own_sentence(signed_in, monkeypatch):
+    """Finding 6: the database's "cannot be written while the vault is
+    locked" never reaches the run's failure line."""
+    from tessellate.api import routes_recordings
+    from tessellate.core.database import SealedWriteRefused
+
+    client = signed_in
+    _whisper(monkeypatch)
+
+    def refused(*args, **kwargs):
+        raise SealedWriteRefused("a private row cannot be written while the vault is locked")
+
+    rid = _recording(client)
+    monkeypatch.setattr(routes_recordings, "log_action", refused)
+    _failed_closed(_start(client, rid), rid)
+
+
 def _three_lines_shut_after_one(client, monkeypatch, shut):
     """A run whose space shuts (by `shut`) as the second line is heard;
     returns the lines the transcriber was asked for."""
