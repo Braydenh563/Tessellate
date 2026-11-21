@@ -1377,7 +1377,7 @@ MORE_TOPICS: list[dict] = [
             "A private space seals everything in it with your vault password, "
             "as a private note is: its notes, documents and boards, and on disk "
             "the bytes of its recordings, library pictures and note files. Turn on "
-            "Private in New space, or in Edit space (the pencil beside a space "
+            "Private in New space, or in Edit space (Ctrl+K, Rename space, or the pencil beside a space "
             "in the picker); turning it on asks once with the count of what "
             "gets sealed. A locked private space shows its name with a lock and "
             "nothing else: its notes, documents and boards are out of search, "
@@ -2267,7 +2267,7 @@ MORE_TOPICS.extend([
             "active layer", "which layer", "layer new items go on", "layer to the front", "send layer to back", "duplicate a layer",
         ),
         "body": (
-            "The current layer, as in draw.io: in a board's sidebar, Layers, press a "
+            "The current layer, as in draw.io: in a board's sidebar, Layers (also Ctrl+K, Board layers), press a "
             "named layer's name and everything new (drawn, typed, pasted, imported "
             "or placed from the library) goes on it; the row is tinted while it is "
             "current. Press the name again, or its ⋯ menu's Stop drawing on it, "

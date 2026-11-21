@@ -530,6 +530,8 @@ const REVEAL_TARGETS = {
   // the OCR workspace's "RapidOCR, not installed" Install (INBOX 717).
   "extra-row": { settings: "extras", sel: "#extra-row-{arg}", built: "renderExtras", fallback: "settings-extras" },
   "workspace-new": { open: () => openSpaceCreate(), el: "space-create-dialog", flash: false },
+  "space-rename": { open: () => privateSpaces("edit", activeSpaceId() === SPACE_ALL ? "default" : activeSpaceId()), el: "space-edit-dialog", flash: false },
+  "board-layers": { open: async () => (await revealBoard(false)) && window.wbOpenSidebar("layers"), el: "wb-layers-tree", fallback: "wb-boards-new-menu" },
 
   // Data and control
   palette: { open: () => openPalette(), el: "palette-overlay", flash: false },

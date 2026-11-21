@@ -129,6 +129,13 @@ async function replay(page, path) {
       const w = words(last.replace(/\(.*$/, ''));
       if (!w.length) continue;
       if (/^(menu)\|/.test(r.path[r.path.length - 1])) continue;
+      // A help popover (the '?' recipe) is reached by the Guide's topic of the same name, so it is matched
+      // on its topic words alone, against every command and the Guide's own topic rows.
+      if (/help/i.test(last)) {
+        const topic = words(last.replace(/help/gi, ''));
+        if (!topic.length || cmds.some((c) => /guide|manual/.test(c) && topic.some((x) => c.includes(x)))) continue;
+        if (cmds.some((c) => topic.filter((x) => c.includes(x)).length >= Math.ceil(topic.length * 0.7))) continue;
+      }
       if (!cmds.some((c) => w.filter((x) => c.includes(x)).length >= Math.ceil(w.length * 0.7))) missing.push(r);
     }
     console.log(`DESTINATIONS WITH NO PALETTE COMMAND: ${missing.length} of ${rows.length - 1}`);

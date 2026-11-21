@@ -488,6 +488,9 @@ function paletteCommands() {
       label: "ph:folders New workspace",
       reveal: "workspace-new",
     },
+    { label: "ph:pencil-simple Rename space", reveal: "space-rename", keywords: "workspace name icon private edit", about: "Change this space's name, icon or privacy." },
+    { label: "ph:stack Board layers", reveal: "board-layers", keywords: "order front back paint sidebar", about: "The open board's layers: what sits in front, hide and lock." },
+    { label: "ph:globe Browse the web in Chat", reveal: "chat-web-search", keywords: "web search online internet turn on off", about: "Chat's Web switch: search the web here, opt-in." },
     // Filters as commands: the fastest route to "the notes I mean" without
     // remembering the operator syntax.
     ...[
