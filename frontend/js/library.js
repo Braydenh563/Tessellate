@@ -1800,7 +1800,8 @@ function ensureLibraryGridStop(grid) {
 document.addEventListener("documents-undone", () => {
   if ($("library-grid")?.offsetParent) loadLibrary();
 });
-$("library-grid").addEventListener("focusin", (event) => {
+//: `onSurface`: a bare `$` here built the whole Library page (589 elements) at the load of a Documents open.
+onSurface("library", () => $("library-grid").addEventListener("focusin", (event) => {
   const card = event.target.closest?.(".library-card");
   if (!card || card.querySelector(".card-open")?.tabIndex === 0) return;
   const grid = event.currentTarget;
@@ -1809,7 +1810,7 @@ $("library-grid").addEventListener("focusin", (event) => {
   }
   setLibraryCardStop(card, true);
   grid.dataset.stopKey = card.dataset.stopKey || "";
-});
+}));
 
 // Each kind opens where it is actually worked on. The Library finds things; it
 // is not a fifth editor.
@@ -1933,39 +1934,45 @@ function closeBinnedReader() {
   $("binned-overlay").classList.add("hidden");
 }
 
-$("binned-close").addEventListener("click", closeBinnedReader);
-$("binned-restore").addEventListener("click", async () => {
-  const id = binnedNoteId;
-  if (!id) return;
-  try {
-    await apiJson(`/entries/${id}/restore`, { method: "POST" });
-    pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
-    toast("Restored.");
-  } catch (error) {
-    toast(voiceLine("failed", { what: "restore that note", why: error.message }), true);
-    return;
-  }
-  closeBinnedReader();
-  loadLibrary();
-  loadEntries();
+onSurface("library", () => {
+  $("binned-close").addEventListener("click", closeBinnedReader);
 });
-$("binned-purge").addEventListener("click", async () => {
-  const id = binnedNoteId;
-  if (!id) return;
-  // The note is on screen and has just been read, so the dialog does not have
-  // to quote it back the way the old bin row's did: "this cannot be undone"
-  // is the whole of what is left to say.
-  if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
-  try {
-    await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
-    undoStoreClear.purged("note", id);
-    toast("Deleted for good.");
-  } catch (error) {
-    toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
-    return;
-  }
-  closeBinnedReader();
-  loadLibrary();
+onSurface("library", () => {
+  $("binned-restore").addEventListener("click", async () => {
+    const id = binnedNoteId;
+    if (!id) return;
+    try {
+      await apiJson(`/entries/${id}/restore`, { method: "POST" });
+      pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
+      toast("Restored.");
+    } catch (error) {
+      toast(voiceLine("failed", { what: "restore that note", why: error.message }), true);
+      return;
+    }
+    closeBinnedReader();
+    loadLibrary();
+    loadEntries();
+  });
+});
+onSurface("library", () => {
+  $("binned-purge").addEventListener("click", async () => {
+    const id = binnedNoteId;
+    if (!id) return;
+    // The note is on screen and has just been read, so the dialog does not have
+    // to quote it back the way the old bin row's did: "this cannot be undone"
+    // is the whole of what is left to say.
+    if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
+    try {
+      await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
+      undoStoreClear.purged("note", id);
+      toast("Deleted for good.");
+    } catch (error) {
+      toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
+      return;
+    }
+    closeBinnedReader();
+    loadLibrary();
+  });
 });
 
 // BACKLOG §22's still-open half of "take me to the thing the agent just
@@ -2013,11 +2020,11 @@ async function flashLibraryItem(kind, id) {
 // attached to it. The skill editor lives in Settings, Skills, so this opens
 // that with a blank form rather than growing a second editor that would then
 // have to be kept in step with the first.
-$("skills-add-new")?.addEventListener("click", async () => {
+onSurface("library", () => $("skills-add-new")?.addEventListener("click", async () => {
   await openSettingsModal("skills");
   stopEditingSkill();           // clears the form and resets the button label
   $("skill-name")?.focus();
-});
+}));
 
 // The Library (§4, §36F). Filter and sort are first-class here rather than an
 // afterthought, so they are wired like controls: every change re-renders from
@@ -2071,13 +2078,17 @@ async function runLibrarySearch() {
   libraryCurrentPage = 1; // a new search can move an item off whatever page it was on
   renderLibrary();
 }
-$("library-semantic-toggle").addEventListener("change", () => {
-  syncLibraryFilterButton();
-  runLibrarySearch();
+onSurface("library", () => {
+  $("library-semantic-toggle").addEventListener("change", () => {
+    syncLibraryFilterButton();
+    runLibrarySearch();
+  });
 });
-$("library-search").addEventListener("input", () => {
-  clearTimeout(librarySearchDebounceTimeout);
-  librarySearchDebounceTimeout = setTimeout(runLibrarySearch, 150);
+onSurface("library", () => {
+  $("library-search").addEventListener("input", () => {
+    clearTimeout(librarySearchDebounceTimeout);
+    librarySearchDebounceTimeout = setTimeout(runLibrarySearch, 150);
+  });
 });
 //: **The sort is remembered, as every other Library sort is** (libtl-0926):
 //: Documents (`library-docs-sort`) and Images (`LIBRARY_MEDIA_SORT_KEY`)
@@ -2090,16 +2101,20 @@ $("library-search").addEventListener("input", () => {
 //: a `change` makes it read again, which would also render a Library that
 //: has not loaded yet.
 const LIBRARY_SORT_KEY = "library-sort";
-(() => {
-  const select = $("library-sort");
-  let stored = null;
-  try { stored = prefs.get(LIBRARY_SORT_KEY, null); } catch { /* a private window */ }
-  if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
-})();
-$("library-sort").addEventListener("change", (event) => {
-  try { prefs.set(LIBRARY_SORT_KEY, event.target.value); } catch { /* a private window */ }
-  libraryCurrentPage = 1;
-  renderLibrary();
+onSurface("library", () => {
+  (() => {
+    const select = $("library-sort");
+    let stored = null;
+    try { stored = prefs.get(LIBRARY_SORT_KEY, null); } catch { /* a private window */ }
+    if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
+  })();
+});
+onSurface("library", () => {
+  $("library-sort").addEventListener("change", (event) => {
+    try { prefs.set(LIBRARY_SORT_KEY, event.target.value); } catch { /* a private window */ }
+    libraryCurrentPage = 1;
+    renderLibrary();
+  });
 });
 //: The Filter menu's button says when a filter is on (Phase 8): a menu that
 //: hides "Include bin" must not also hide that the bin is being shown.
@@ -2109,10 +2124,12 @@ function syncLibraryFilterButton() {
   summary?.classList.toggle("is-on", on);
   summary?.setAttribute("aria-pressed", String(on));
 }
-$("library-show-binned").addEventListener("change", () => {
-  libraryCurrentPage = 1;
-  syncLibraryFilterButton();
-  renderLibrary();
+onSurface("library", () => {
+  $("library-show-binned").addEventListener("change", () => {
+    libraryCurrentPage = 1;
+    syncLibraryFilterButton();
+    renderLibrary();
+  });
 });
 for (const button of document.querySelectorAll("#library-view button, #library-boards-view button")) {
   button.addEventListener("click", () => {
@@ -2126,40 +2143,44 @@ for (const button of document.querySelectorAll("#library-view button, #library-b
   });
 }
 // The bin's own control, on the bin's own screen.
-$("library-bin-empty").addEventListener("click", async () => {
-  const count = libraryCounts.archived || 0;
-  const ok = await confirmDialog(
-    `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
-      "This cannot be undone."
-  );
-  if (!ok) return;
-  //: The binned ids, asked for before they are gone, so what this device kept of
-  //: each goes with it (`undoStoreClear.purged`).
-  const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
-  try {
-    await apiJson("/recycle-bin/empty", { method: "POST" });
-    for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
-  } catch (e) {
-    // Was unconditional before: a failed request still showed "The bin is
-    // empty." right under its own error toast, one saying it worked and one
-    // saying it didn't, for the same click.
-    toast(e.message, true);
-    return;
-  }
-  toast("The bin is empty.");
-  loadLibrary();
-  loadEntries();
+onSurface("library", () => {
+  $("library-bin-empty").addEventListener("click", async () => {
+    const count = libraryCounts.archived || 0;
+    const ok = await confirmDialog(
+      `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
+        "This cannot be undone."
+    );
+    if (!ok) return;
+    //: The binned ids, asked for before they are gone, so what this device kept of
+    //: each goes with it (`undoStoreClear.purged`).
+    const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
+    try {
+      await apiJson("/recycle-bin/empty", { method: "POST" });
+      for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
+    } catch (e) {
+      // Was unconditional before: a failed request still showed "The bin is
+      // empty." right under its own error toast, one saying it worked and one
+      // saying it didn't, for the same click.
+      toast(e.message, true);
+      return;
+    }
+    toast("The bin is empty.");
+    loadLibrary();
+    loadEntries();
+  });
 });
 
 // The activity log as a file. A download needs the auth header, so the bytes
 // are fetched and handed to saveFile, the way every other export is.
-$("library-activity-export").addEventListener("click", async () => {
-  try {
-    const response = await api("/audit/export.csv");
-    await saveFile("tessellate-activity.csv", await response.blob());
-  } catch (e) {
-    toast(e.message, true);
-  }
+onSurface("library", () => {
+  $("library-activity-export").addEventListener("click", async () => {
+    try {
+      const response = await api("/audit/export.csv");
+      await saveFile("tessellate-activity.csv", await response.blob());
+    } catch (e) {
+      toast(e.message, true);
+    }
+  });
 });
 
 // --- bulk actions -------------------------------------------------------------
@@ -2167,123 +2188,133 @@ $("library-activity-export").addEventListener("click", async () => {
 // doing one thing to nine things. Every one of these confirms with a *count*,
 // because "delete 9 items" is the sentence that stops a mistake and "are you
 // sure?" is the one that doesn't.
-$("library-clear-selection").addEventListener("click", () => {
-  librarySelection = new Set();
-  renderLibrary();
+onSurface("library", () => {
+  $("library-clear-selection").addEventListener("click", () => {
+    librarySelection = new Set();
+    renderLibrary();
+  });
 });
-$("library-bulk-open").addEventListener("click", () => {
-  const chosen = librarySelectedItems();
-  if (!chosen.length) return;
-  // One thing opens; several would be several tab switches ending wherever the
-  // last one landed, so the honest answer is to open the first and say so.
-  if (chosen.length > 1) toast(`Opening the first of ${chosen.length}.`);
-  openLibraryItem(chosen[0]);
+onSurface("library", () => {
+  $("library-bulk-open").addEventListener("click", () => {
+    const chosen = librarySelectedItems();
+    if (!chosen.length) return;
+    // One thing opens; several would be several tab switches ending wherever the
+    // last one landed, so the honest answer is to open the first and say so.
+    if (chosen.length > 1) toast(`Opening the first of ${chosen.length}.`);
+    openLibraryItem(chosen[0]);
+  });
 });
-$("library-bulk-restore").addEventListener("click", async () => {
-  const chosen = librarySelectedItems().filter((i) => i.kind === "archived");
-  if (!chosen.length) return;
-  // Was `.catch(() => {})` then an unconditional "Restored N notes." for
-  // every item *attempted*: a per-item 404/500 was silently swallowed and
-  // still counted as a success. Track real outcomes instead.
-  let restored = 0;
-  const back = [];
-  for (const item of chosen) {
-    try {
-      await apiJson(binRoutes(item).restore, { method: "POST" });
-      restored++;
-      if (item.subtype !== "reading") back.push(item);
-    } catch {
-      // counted below
-    }
-  }
-  if (back.length) {
-    pushRoutePairUndo(
-      `Restored ${nounCount(back.length, "item")} from the bin`,
-      back.map((item) => [binRoutes(item).bin, "DELETE"]),
-      back.map((item) => [binRoutes(item).restore, "POST"]),
-      () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
-    );
-  }
-  if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
-  const failed = chosen.length - restored;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
-  loadLibrary();
-  loadEntries();
-  loadReminders();
-});
-$("library-bulk-delete").addEventListener("click", async () => {
-  const chosen = librarySelectedItems();
-  if (!chosen.length) return;
-  // Binned notes are destroyed; everything else is deleted the way its own
-  // menu deletes it. Saying which is which in the confirmation matters, 
-  // "delete" means recoverable for a note and permanent for one already binned.
-  const permanent = chosen.filter((i) => i.kind === "archived").length;
-  const ok = await confirmDialog(
-    `Delete ${nounCount(chosen.length, "item")}?\n\n` +
-      (permanent
-        ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
-        : "Notes and documents go to the bin; chats are deleted for good.")
-  );
-  if (!ok) return;
-  // Same fix as library-bulk-restore just above: a per-item failure used to
-  // be swallowed by `.catch(() => {})` and still counted toward the
-  // unconditional "Deleted N items." toast. Track what actually succeeded.
-  let deleted = 0;
-  //: What each recoverable delete needs to come back (INBOX 898): a note or a
-  //: document its bin's restore, a chat the row its DELETE answered with.
-  const comeBack = [];
-  for (const item of chosen) {
-    const route =
-      item.kind === "archived"
-        ? [binRoutes(item).purge, "DELETE"]
-        : item.kind === "note"
-          ? [`/entries/${item.id}`, "DELETE"]
-          : item.kind === "document" || item.kind === "diagram"
-            ? [`/documents/${item.id}`, "DELETE"]
-            : item.kind === "chat"
-              ? [`/conversations/${item.id}`, "DELETE"]
-              : item.kind === "file"
-                ? [`/files/${item.id}`, "DELETE"]
-                : null;
-    if (!route) continue;
-    try {
-      const answer = await apiJson(route[0], { method: route[1] });
-      deleted++;
-      if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
-      if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
-      else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
-      else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
-    } catch {
-      // counted below
-    }
-  }
-  if (comeBack.length) {
-    const live = comeBack.map((c) => ({ ...c }));
-    pushUndo(
-      `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
-      async () => {
-        for (const c of live) {
-          if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
-          else await apiJson(c.back[0], { method: c.back[1] });
-        }
-        await Promise.all([loadLibrary(), loadEntries()]);
-      },
-      async () => {
-        for (const c of live) {
-          const answer = await apiJson(c.route[0], { method: c.route[1] });
-          if (c.chat && answer?.restore) c.chat = answer.restore;
-        }
-        await Promise.all([loadLibrary(), loadEntries()]);
+onSurface("library", () => {
+  $("library-bulk-restore").addEventListener("click", async () => {
+    const chosen = librarySelectedItems().filter((i) => i.kind === "archived");
+    if (!chosen.length) return;
+    // Was `.catch(() => {})` then an unconditional "Restored N notes." for
+    // every item *attempted*: a per-item 404/500 was silently swallowed and
+    // still counted as a success. Track real outcomes instead.
+    let restored = 0;
+    const back = [];
+    for (const item of chosen) {
+      try {
+        await apiJson(binRoutes(item).restore, { method: "POST" });
+        restored++;
+        if (item.subtype !== "reading") back.push(item);
+      } catch {
+        // counted below
       }
-    );
-  }
-  if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
-  const failed = chosen.length - deleted;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
-  loadLibrary();
-  loadEntries();
+    }
+    if (back.length) {
+      pushRoutePairUndo(
+        `Restored ${nounCount(back.length, "item")} from the bin`,
+        back.map((item) => [binRoutes(item).bin, "DELETE"]),
+        back.map((item) => [binRoutes(item).restore, "POST"]),
+        () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
+      );
+    }
+    if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
+    const failed = chosen.length - restored;
+    if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
+    loadLibrary();
+    loadEntries();
+    loadReminders();
+  });
 });
-$("library-refresh").addEventListener("click", loadLibrary);
+onSurface("library", () => {
+  $("library-bulk-delete").addEventListener("click", async () => {
+    const chosen = librarySelectedItems();
+    if (!chosen.length) return;
+    // Binned notes are destroyed; everything else is deleted the way its own
+    // menu deletes it. Saying which is which in the confirmation matters, 
+    // "delete" means recoverable for a note and permanent for one already binned.
+    const permanent = chosen.filter((i) => i.kind === "archived").length;
+    const ok = await confirmDialog(
+      `Delete ${nounCount(chosen.length, "item")}?\n\n` +
+        (permanent
+          ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
+          : "Notes and documents go to the bin; chats are deleted for good.")
+    );
+    if (!ok) return;
+    // Same fix as library-bulk-restore just above: a per-item failure used to
+    // be swallowed by `.catch(() => {})` and still counted toward the
+    // unconditional "Deleted N items." toast. Track what actually succeeded.
+    let deleted = 0;
+    //: What each recoverable delete needs to come back (INBOX 898): a note or a
+    //: document its bin's restore, a chat the row its DELETE answered with.
+    const comeBack = [];
+    for (const item of chosen) {
+      const route =
+        item.kind === "archived"
+          ? [binRoutes(item).purge, "DELETE"]
+          : item.kind === "note"
+            ? [`/entries/${item.id}`, "DELETE"]
+            : item.kind === "document" || item.kind === "diagram"
+              ? [`/documents/${item.id}`, "DELETE"]
+              : item.kind === "chat"
+                ? [`/conversations/${item.id}`, "DELETE"]
+                : item.kind === "file"
+                  ? [`/files/${item.id}`, "DELETE"]
+                  : null;
+      if (!route) continue;
+      try {
+        const answer = await apiJson(route[0], { method: route[1] });
+        deleted++;
+        if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
+        if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
+        else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
+        else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
+      } catch {
+        // counted below
+      }
+    }
+    if (comeBack.length) {
+      const live = comeBack.map((c) => ({ ...c }));
+      pushUndo(
+        `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
+        async () => {
+          for (const c of live) {
+            if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
+            else await apiJson(c.back[0], { method: c.back[1] });
+          }
+          await Promise.all([loadLibrary(), loadEntries()]);
+        },
+        async () => {
+          for (const c of live) {
+            const answer = await apiJson(c.route[0], { method: c.route[1] });
+            if (c.chat && answer?.restore) c.chat = answer.restore;
+          }
+          await Promise.all([loadLibrary(), loadEntries()]);
+        }
+      );
+    }
+    if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
+    const failed = chosen.length - deleted;
+    if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
+    loadLibrary();
+    loadEntries();
+  });
+});
+onSurface("library", () => {
+  $("library-refresh").addEventListener("click", loadLibrary);
+});
 
 // **The "All" tab's create button, matched to whichever filter chip is
 // active.** Reported directly: it always said "+ New document" and made a
@@ -2579,7 +2610,7 @@ function updateLibraryCreateButton() {
     btn.onclick = openLibraryCreatePicker;
   }
 }
-updateLibraryCreateButton();
+onSurface("library", updateLibraryCreateButton);
 
 // ======================= SKILLS DASHBOARD TAB =======================
 
@@ -2995,7 +3026,7 @@ function renderSkillCards(query = "") {
   empty.append(title, hint, action);
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const sort = $("skills-sort");
   if (sort) {
     sort.value = skillSort();
@@ -3013,7 +3044,7 @@ onDomReady(() => {
     skillKindFilter = event.target.value;
     renderSkillCards($("skills-search")?.value || "");
   });
-});
+}));
 
 async function renderSkillsDashboard() {
   const container = document.getElementById("skills-dashboard-list");
@@ -3160,11 +3191,13 @@ async function renderSkillsDashboard() {
 //: `#skills-logs-collapse` no longer exists in the markup; nothing here
 //: reaches for it any more.
 
-$("skills-logs-clear")?.addEventListener("click", async () => {
-  const ok = await confirmDialog("Clear the skill run log? This can't be undone.");
-  if (!ok) return;
-  await apiJson("/audit?entity_type=skill", { method: "DELETE" }).catch((e) => toast(e.message, true));
-  renderSkillLogs();
+onSurface("library", () => {
+  $("skills-logs-clear")?.addEventListener("click", async () => {
+    const ok = await confirmDialog("Clear the skill run log? This can't be undone.");
+    if (!ok) return;
+    await apiJson("/audit?entity_type=skill", { method: "DELETE" }).catch((e) => toast(e.message, true));
+    renderSkillLogs();
+  });
 });
 
 async function renderSkillLogs() {
@@ -3424,7 +3457,7 @@ function renderLibraryDocsPropertyFilter(docs) {
   select.classList.toggle("hidden", counts.size === 0);
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-docs-property");
   if (!select) return;
   select.addEventListener("change", () => {
@@ -3434,7 +3467,7 @@ onDomReady(() => {
     libraryDocsCurrentPage = 1;
     renderLibraryDocuments();
   });
-});
+}));
 
 const LIBRARY_DOC_SORT_KEY = "library-docs-sort";
 
@@ -3443,7 +3476,7 @@ function libraryDocSort() {
   return LIBRARY_DOC_SORTS[stored] ? stored : "newest";
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-docs-sort");
   if (!select) return;
   select.value = libraryDocSort();
@@ -3454,7 +3487,7 @@ onDomReady(() => {
     libraryDocsCurrentPage = 1;
     renderLibraryDocuments();
   });
-});
+}));
 
 //: Each file is its own request, so one that cannot be read does not take the
 //: others with it, and says so by name. The headers are written out in full:
@@ -3914,42 +3947,46 @@ function syncLibraryDocsSelectbar() {
   count.textContent = `${n} selected`;
 }
 
-$("library-docs-clear-selection")?.addEventListener("click", () => {
-  libraryDocsSelection.clear();
-  renderLibraryDocuments();
+onSurface("library", () => {
+  $("library-docs-clear-selection")?.addEventListener("click", () => {
+    libraryDocsSelection.clear();
+    renderLibraryDocuments();
+  });
 });
 
-$("library-docs-bulk-delete")?.addEventListener("click", async () => {
-  const ids = [...libraryDocsSelection];
-  if (!ids.length) return;
-  const ok = await confirmDialog(
-    `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
-  );
-  if (!ok) return;
-  let deleted = 0;
-  const gone = [];
-  for (const id of ids) {
-    try {
-      await apiJson(`/documents/${id}`, { method: "DELETE" });
-      deleted++;
-      gone.push(id);
-    } catch {
-      // counted below, same as the "All" view's own bulk delete
-    }
-  }
-  if (gone.length) {
-    pushRoutePairUndo(
-      `Deleted ${nounCount(gone.length, "document")}`,
-      gone.map((id) => [`/documents/${id}/restore`, "POST"]),
-      gone.map((id) => [`/documents/${id}`, "DELETE"]),
-      () => renderLibraryDocuments()
+onSurface("library", () => {
+  $("library-docs-bulk-delete")?.addEventListener("click", async () => {
+    const ids = [...libraryDocsSelection];
+    if (!ids.length) return;
+    const ok = await confirmDialog(
+      `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
     );
-  }
-  libraryDocsSelection.clear();
-  if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
-  const failed = ids.length - deleted;
-  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
-  renderLibraryDocuments();
+    if (!ok) return;
+    let deleted = 0;
+    const gone = [];
+    for (const id of ids) {
+      try {
+        await apiJson(`/documents/${id}`, { method: "DELETE" });
+        deleted++;
+        gone.push(id);
+      } catch {
+        // counted below, same as the "All" view's own bulk delete
+      }
+    }
+    if (gone.length) {
+      pushRoutePairUndo(
+        `Deleted ${nounCount(gone.length, "document")}`,
+        gone.map((id) => [`/documents/${id}/restore`, "POST"]),
+        gone.map((id) => [`/documents/${id}`, "DELETE"]),
+        () => renderLibraryDocuments()
+      );
+    }
+    libraryDocsSelection.clear();
+    if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
+    const failed = ids.length - deleted;
+    if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
+    renderLibraryDocuments();
+  });
 });
 
 // Every `/media/upload` has ever produced: note-inline images, document
@@ -4118,7 +4155,7 @@ function setLibraryMediaView(mode) {
   applyLibraryMediaView();
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   document
     .getElementById("library-media-view-preview")
     ?.addEventListener("click", () => setLibraryMediaView("preview"));
@@ -4126,7 +4163,7 @@ onDomReady(() => {
     .getElementById("library-media-view-type")
     ?.addEventListener("click", () => setLibraryMediaView("type"));
   applyLibraryMediaView();
-});
+}));
 
 //: Which of the two media sub-tabs is showing. Not persisted: it is a place
 //: in the Library, and the sub-tab strip already says which one you are on.
@@ -9156,7 +9193,7 @@ function libraryMediaSort() {
 //: task you are in the middle of, and a filter that silently persisted across
 //: sessions is how a Library comes back next week apparently missing half its
 //: files. Same reasoning the notes list uses for its own transient filters.
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("library-media-sort");
   if (select) {
     select.value = libraryMediaSort();
@@ -9180,7 +9217,7 @@ onDomReady(() => {
     libraryImageOriginsOn = next;
     filterLibraryImagesGallery();
   });
-});
+}));
 
 //: **Where a picture came from: the sketch pad, or anywhere else.** Asked for
 //: directly (2026-09-23): filter the Images sub-tab by sketches and uploaded
@@ -10832,7 +10869,7 @@ function filterLibraryImagesGallery() {
 // this split registers its top-level listeners as bare statements instead
 // (safe because every <script> here loads after body content), but there
 // was no reason to change that shape while moving it.
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const librarySubtabs = document.getElementById("library-subtabs");
   const LIBRARY_SECTION_FRESH_MS = 5000;
   const librarySectionShownAt = {};
@@ -11184,7 +11221,7 @@ onDomReady(() => {
     clearTimeout(contentsFilterTimer);
     contentsFilterTimer = setTimeout(renderContents, 150);
   });
-});
+}));
 
 // --- Multi-select for Boards, Links and Contents (asked for directly: "in
 // many of the library subtabs… there is no way to multi select") ----------
@@ -11401,7 +11438,7 @@ async function bulkDeleteLibraryBoards() {
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   // The bar goes right above the grid it governs, same placement the
   // Documents/Files sub-tabs' own bars have in index.html.
   const boardsGrid = document.getElementById("library-boards-grid");
@@ -11450,7 +11487,7 @@ onDomReady(() => {
   //: your place, not for bulk-editing. Nothing could reach the bar any more,
   //: and a set of actions for a selection that can never be made is worse
   //: than none.
-});
+}));
 
 // --- Links (§30): a bookmark shelf for websites, alongside the notes and
 // documents already linkable to each other via [[wiki links]] ------------
@@ -12000,7 +12037,7 @@ function bookmarkSort() {
   return BOOKMARK_SORTS[stored] ? stored : "newest";
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const select = document.getElementById("bookmark-sort");
   if (!select) return;
   select.value = bookmarkSort();
@@ -12008,7 +12045,7 @@ onDomReady(() => {
     prefs.set(BOOKMARK_SORT_KEY, select.value);
     filterBookmarks();
   });
-});
+}));
 
 function filterBookmarks() {
   const list = $("bookmark-list");
@@ -13198,7 +13235,7 @@ function contentsTreeKeys(event) {
   }
 }
 
-onDomReady(() => {
+onDomReady(() => onSurface("library", () => {
   const tree = $("contents-outline");
   if (!tree) return;
   tree.addEventListener("keydown", contentsTreeKeys);
@@ -13214,7 +13251,7 @@ onDomReady(() => {
   });
   $("contents-expand")?.addEventListener("click", () => contentsSetAll(true));
   $("contents-collapse")?.addEventListener("click", () => contentsSetAll(false));
-});
+}));
 
 // Moved from app.js (its gzip cap): the Library's Activity cards are its one caller.
 // `confirmDialog`'s other missing sibling: show a whole piece of text with

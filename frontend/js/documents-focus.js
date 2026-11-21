@@ -58,10 +58,13 @@
 
 
   function initMarkdownToolbars() {
-    for (const bar of document.querySelectorAll("[data-md-target], #doc-toolbar")) {
+    for (const bar of document.querySelectorAll("[data-md-target]:not(#tab-notes *), #doc-toolbar")) {
       wireMarkdownToolbar(bar);
     }
-    wireMdFormatShortcuts("entry-content");
+    onSurface("notes", () => {
+      for (const bar of document.querySelectorAll("#tab-notes [data-md-target]")) wireMarkdownToolbar(bar);
+      wireMdFormatShortcuts("entry-content");
+    });
   }
 
 
@@ -694,8 +697,16 @@
       toggleDocToolbar();
     });
     // The capture box gets its gutter here, once, with the strip that toggles it.
-    mountGutterFor($("entry-content"));
-    for (const bar of document.querySelectorAll(".doc-toolbar")) mountDocToolbarControlsFor(bar);
+    //: The Notes strips are wired when that page is built, not before: a bare `$` here built it (1,092 elements) in a Documents open.
+    onSurface("notes", () => {
+      mountGutterFor($("entry-content"));
+      for (const bar of document.querySelectorAll("#tab-notes .doc-toolbar")) {
+        mountDocToolbarControlsFor(bar);
+        applyDocToolbarLayoutButtons(bar);
+        applyDocToolbarCollapsed(docToolbarCollapsed(), bar);
+      }
+    });
+    for (const bar of document.querySelectorAll(".doc-toolbar:not(#tab-notes *)")) mountDocToolbarControlsFor(bar);
     applyDocToolbarLayoutButtons();
     applyDocToolbarCollapsed(docToolbarCollapsed());
   }
