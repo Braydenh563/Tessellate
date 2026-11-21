@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents (L342): the word list keeps its rows when a key leaves the same words offered and only moves the lit row, where it rebuilt six rows and their listeners on every key (0.4 ms at 4x CPU in a 20,000 word document); a kept row takes the match and box of the latest key (test_doc_typing_l342.py).
 - Typing gate (L342): the 50 ms budget is on net page work, each key's main-thread time less the median of 24 idle windows taken in the same run with the same probe calls at the same 4x throttle (no constant); raw and net are both logged, and an idle window of 15 ms or more fails the gate (hub ruling, test_typegate_cpu.py).
 - Ledger (L342, L-documents-26): the typing gate's numbers after three cuts, what was found (the getMetrics floor, the emblem ticking on the main thread in headless Chromium, where CodeMirror's extra time goes) and the Next.
 - Documents (L342): moving the outline's mark writes only the row that loses it and the row that gains it, where it cleared every row (1,176 in a 20,000 word document, a style invalidation each on the pause after typing); the mark is the same.

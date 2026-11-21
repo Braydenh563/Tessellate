@@ -124,3 +124,67 @@ console.log(JSON.stringify({ writes, marked, aria, at: docOutlineMarked }));
     )
     got = _node(script)
     assert got == {"writes": 4, "marked": [250], "aria": [250], "at": 25}
+
+
+_FAKE_DOM = """
+let made = 0, writes = 0;
+class El {
+  constructor(tag) { this.tag = tag; this.children = []; this.dataset = {}; this.attrs = {}; this.cls = new Set(); this.textContent = "";
+    this.classList = { add: (c) => this.cls.add(c), remove: (c) => this.cls.delete(c), contains: (c) => this.cls.has(c),
+      toggle: (c, on) => { writes += 1; on ? this.cls.add(c) : this.cls.delete(c); } }; made += 1; }
+  setAttribute(k, v) { writes += 1; this.attrs[k] = v; }
+  appendChild(c) { this.children.push(c); return c; }
+  append(...c) { this.children.push(...c); }
+  replaceChildren() { this.children = []; }
+  addEventListener(t, f) { this["on" + t] = f; }
+}
+const document = { createElement: (t) => new El(t) };
+const list = new El("ul");
+const $ = () => list;
+let docCompleteMatches = [], docCompleteBox = null, docCompleteIndex = 0, rows = [], applied = [];
+const hideDocComplete = () => { docCompleteMatches = []; };
+const editorMenuState = { open: false };
+const docCompleteRowsAt = () => rows;
+const docFillAt = () => null;
+const docLiftToViewport = () => {}, docPlaceFixed = () => {};
+const docCompletePlace = () => ({ left: 0, top: 0 });
+const applyDocComplete = (box, match) => applied.push([box.id, match.word]);
+"""
+
+
+@needs_node
+def test_the_word_list_keeps_its_rows_when_the_words_are_the_same():
+    from tests._app_js import documents_text
+
+    src = documents_text()
+    script = _FAKE_DOM + _function(src, "function renderDocComplete(") + """
+const box = { kind: "textarea", id: 1 };
+const out = {};
+rows = [{ word: "quick", typed: 2 }, { word: "quiet", typed: 2 }, { word: "quill", typed: 2 }];
+renderDocComplete(box);
+const first = list.children.slice();
+out.built = made;
+docCompleteIndex = 1;
+const box2 = { kind: "textarea", id: 2 };
+renderDocComplete(box2);
+out.same = list.children.every((li, i) => li === first[i]);
+out.afterSame = made;
+out.active = list.children.map((li) => li.cls.has("active"));
+out.aria = list.children.map((li) => li.attrs["aria-selected"]);
+list.children[2].onmousedown({ preventDefault() {} });
+out.applied = applied;
+rows = [{ word: "quick", typed: 3 }, { word: "quiet", typed: 3 }];
+renderDocComplete(box2);
+out.rebuilt = list.children[0] !== first[0];
+out.texts = list.children.map((li) => li.children.map((c) => c.textContent).join("|"));
+out.active2 = list.children.map((li) => li.cls.has("active"));
+console.log(JSON.stringify(out));
+"""
+    out = _node(script)
+    assert out["same"] and out["afterSame"] == out["built"]
+    assert out["active"] == [False, True, False] and out["aria"] == ["false", "true", "false"]
+    # A kept row offers what is shown now, in the box of the latest key.
+    assert out["applied"] == [[2, "quill"]]
+    assert out["rebuilt"] and out["texts"] == ["qui|ck", "qui|et"]
+    assert out["active2"] == [False, True]
+

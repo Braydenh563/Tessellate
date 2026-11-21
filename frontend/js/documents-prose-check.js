@@ -1493,47 +1493,64 @@
 
     docCompleteBox = box;
     docCompleteIndex = Math.min(docCompleteIndex, docCompleteMatches.length - 1);
-    list.replaceChildren();
-    docCompleteMatches.forEach((match, index) => {
-      const li = document.createElement("li");
-      li.setAttribute("role", "option");
-      li.setAttribute("aria-selected", String(index === docCompleteIndex));
-      li.classList.toggle("active", index === docCompleteIndex);
-      if (match.fill) {
-        //: The trigger in full strength, what it writes quieter: the same two
-        //: inks a word row uses for typed and suggested. A shortcode leads with
-        //: its glyph, which is the picker.
-        li.classList.add("doc-complete-fill");
-        if (match.fill.glyph) {
-          const glyph = document.createElement("span");
-          glyph.className = "doc-complete-glyph";
-          glyph.textContent = match.fill.glyph;
-          li.appendChild(glyph);
-        }
-        const head = document.createElement("b");
-        head.textContent = match.fill.label;
-        li.appendChild(head);
-        if (match.fill.detail) {
-          const detail = document.createElement("span");
-          detail.className = "doc-complete-detail";
-          detail.textContent = match.fill.detail;
-          li.appendChild(detail);
-        }
-      } else {
-        const head = document.createElement("b");
-        head.textContent = match.word.slice(0, match.typed);
-        const rest = document.createElement("span");
-        rest.textContent = match.word.slice(match.typed);
-        li.append(head, rest);
-      }
-      li.addEventListener("mousedown", (event) => {
-        //: mousedown, not click: the textarea must not lose focus first, or the
-        //: selection this writes into is gone by the time it runs.
-        event.preventDefault();
-        applyDocComplete(box, match);
+    //: **The rows are rebuilt only when they say something else** (L342): a key that keeps the same
+    //: words (most keys in a word already typed past its rows' prefix, and every arrow) moves only the
+    //: lit row, where it rebuilt six rows and their listeners a key (0.4 ms at 4x CPU). The rows'
+    //: listeners read the current match by index, so a kept row takes what is offered now.
+    const rowsKey = docCompleteMatches.map((m) => (m.fill
+      ? ["f", m.fill.glyph || "", m.fill.label, m.fill.detail || ""]
+      : ["w", m.word, m.typed]).join("\u0000")).join("\u0001");
+    if (list.dataset.rows === rowsKey && list.children.length === docCompleteMatches.length) {
+      [...list.children].forEach((li, index) => {
+        const on = index === docCompleteIndex;
+        if (li.classList.contains("active") === on) return;
+        li.setAttribute("aria-selected", String(on));
+        li.classList.toggle("active", on);
       });
-      list.appendChild(li);
-    });
+    } else {
+      list.dataset.rows = rowsKey;
+      list.replaceChildren();
+      docCompleteMatches.forEach((match, index) => {
+        const li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", String(index === docCompleteIndex));
+        li.classList.toggle("active", index === docCompleteIndex);
+        if (match.fill) {
+          //: The trigger in full strength, what it writes quieter: the same two
+          //: inks a word row uses for typed and suggested. A shortcode leads with
+          //: its glyph, which is the picker.
+          li.classList.add("doc-complete-fill");
+          if (match.fill.glyph) {
+            const glyph = document.createElement("span");
+            glyph.className = "doc-complete-glyph";
+            glyph.textContent = match.fill.glyph;
+            li.appendChild(glyph);
+          }
+          const head = document.createElement("b");
+          head.textContent = match.fill.label;
+          li.appendChild(head);
+          if (match.fill.detail) {
+            const detail = document.createElement("span");
+            detail.className = "doc-complete-detail";
+            detail.textContent = match.fill.detail;
+            li.appendChild(detail);
+          }
+        } else {
+          const head = document.createElement("b");
+          head.textContent = match.word.slice(0, match.typed);
+          const rest = document.createElement("span");
+          rest.textContent = match.word.slice(match.typed);
+          li.append(head, rest);
+        }
+        li.addEventListener("mousedown", (event) => {
+          //: mousedown, not click: the textarea must not lose focus first, or the
+          //: selection this writes into is gone by the time it runs.
+          event.preventDefault();
+          applyDocComplete(docCompleteBox || box, docCompleteMatches[index]);
+        });
+        list.appendChild(li);
+      });
+    }
     //: The ghost after the caret, on the engine only: the chosen row's rest, as
     //: the code side draws it (`.cm-ghostText`).
     if (box.kind === "codemirror" && typeof docProseGhostSet === "function") {
