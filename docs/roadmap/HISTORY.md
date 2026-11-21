@@ -56572,6 +56572,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories Built: tests/test_note_memberships.py::test_manage_categories_counts_the_also_in_notes_too
 - [x] **L-world-class-693** `world-class` open, S: Find box and server search understand group:. From L-world-class-172. Evidence: group: filters only client-side in the Notes box Built: tests/test_note_memberships.py::test_the_search_understands_group_names
 - [x] **L-world-class-692** `world-class` open, S: Folder import restores a note's groups and extra categories from its sidecar. From L-world-class-172/173. Evidence: folder-export sidecar exports groups and also_in but import ignores them Built: tests/test_folder_roundtrip.py::test_a_sidecars_groups_and_extra_categories_come_back
 - [x] **L-world-class-174** `world-class` open, M: Compress notes and data on disk. From IDEAS.md:112. Evidence: IDEAS.md 'Still open' list, 2026-11-14 Built: 31bc0dda0, tests/test_packed_vectors.py; 26.7 to 20.5 MB on 5,000 notes

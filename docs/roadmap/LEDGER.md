@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 84 | 8 | 0 | 0 | 92 |
+| world-class | 0 | 83 | 8 | 0 | 0 | 91 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 462 | 79 | 2 | 112 | 913 |
+| all | 372 | 461 | 79 | 2 | 112 | 912 |
 
 ## graph
 
@@ -542,7 +542,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-690** `world-class` open, S: Cap the parse child's memory on Windows with a job object (JOB_OBJECT_LIMIT_PROCESS_MEMORY), as RLIMIT_AS does on Linux. From L-world-class-321. Evidence: src/tessellate/core/parse_guard.py _limit_memory: RLIMIT_AS on POSIX only; on Windows a crafted file can still allocate without bound in the child (the child dies, not the server, but the machine can page)
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
 - [ ] **L-world-class-660** `world-class` open, M: Chats: group-by control, agent tool and skill to manage chat order (rest of L-world-class-180). From L-world-class-180. Evidence: Sorts exist (#chat-sidebar-sort: recent, most turns, most tokens, A-Z; sortConversations in sheets-selects.js:1859). Not built: a group-by (day, project, pinned), an agent tool to sort, group and pin chats, and the skill.
-- [ ] **L-world-class-694** `world-class` open, S: Manage categories counts notes that are also in a category. From L-world-class-173. Evidence: Manage categories counts only primary categories
 - [ ] **L-world-class-695** `world-class` open, S: Agent tool note summaries include a note's extra categories. From L-world-class-173. Evidence: ai/tools _common note summaries near lines 282 and 324 omit also_in
 - [ ] **L-world-class-696** `world-class` open, M: Compress revision text once time travel stops searching it with LIKE. From L-world-class-174. Evidence: entry_revisions.content 3.2 MB at 5,000 notes; ai/timetravel.py searches it with SQL LIKE
 

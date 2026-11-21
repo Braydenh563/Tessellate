@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Manage categories counts also-in notes (L-world-class-694): a note also put in a category counts there as well as in its own, as the list filtered by that category shows it (`manager_categories.all_categories`); tests/test_note_memberships.py.
 Search understands `group:` (L-world-class-693): `group:"Trip plan"` in the finder and `/search` keeps the notes in every group named, as the Notes box already did (`query._take_groups`, `engine._by_group`); tests/test_note_memberships.py.
 - Folder import keeps groups and extra categories (L-world-class-692): a note's sidecar `groups` and `also_in` are put back on import (`export_folder._make_entry`), so a folder round trip no longer drops them; tests/test_folder_roundtrip.py.
 - Smaller notebook on disk (L-world-class-174): embeddings (and paragraph and staged vectors) are stored as float16 and read back as float32, so no reader changed (`core/packed_vector.py`, migration b5d2e8a1c7f3 with a downgrade); a seeded 5,000-note notebook with 384-dimension vectors went 26,693,632 to 20,533,248 bytes (23%) after the nightly VACUUM, the embeddings table 10.3 to about 4.2 MB, top-10 overlap 0.97 or better; note text stays as it is, since the full-text index reads it in place.

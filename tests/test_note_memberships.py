@@ -149,6 +149,14 @@ def test_the_search_understands_group_names(client, session):
     assert hits("invoice") == {a, b}
 
 
+def test_manage_categories_counts_the_also_in_notes_too(client):
+    a = _note(client, "invoice for pasta", "Recipes")
+    _note(client, "invoice for tickets", "Travel")
+    client.put(f"/entries/{a}/also-in", json={"categories": ["Travel"]})
+    counts = {c["name"]: c["count"] for c in client.get("/categories").json()}
+    assert counts["Travel"] == 2 and counts["Recipes"] == 1
+
+
 def test_merging_a_category_carries_the_also_in_notes_along(client):
     a = _note(client, "x", "Recipes")
     client.put(f"/entries/{a}/also-in", json={"categories": ["Cooking"]})
