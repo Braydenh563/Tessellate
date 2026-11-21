@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 2 | 0 | 0 | 0 | 2 |
+| whiteboard | 0 | 3 | 0 | 0 | 0 | 3 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 178 | 58 | 0 | 72 | 366 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 472 | 521 | 125 | 2 | 173 | 1118 |
+| all | 472 | 522 | 125 | 2 | 173 | 1119 |
 
 ## graph
 
@@ -659,6 +659,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
 - [ ] **L-world-class-412** `whiteboard` open, M: Bring 39 stale sweep scripts up to date (private or lazy names, output paths, timeouts, exit codes). From L554 run, 2026-11-21. Evidence: SP r3 logs: nameMarkBuddyTick/Wander/Obstacles/Choose/Pet/KeepUp/Stride, NMB_SLEEP_MS, emblemSeed are closure-private or gone; tourRun, tourContext, pickNotesDialog, wbPresentSteps, gcCurvedLinks are lazy-bundle names called before their bundle; EISDIR or undefined path in computeddump, libtlscroll, companionsmooth, wrapzoom-docs; null element in graphcoldlayout, stripground; timeouts in toolpop, wbaudit, exportcolours, unsavedback, wbrail; exit 1 with no FAIL line in companionacts, companionemotes, companiongaze, napgait, perchtext, peekdown, thinkingwords, toggles681, viewerclash Progress 2026-11-21 (commits 112fa046e, 93fb48b0f): private names through `nmb.sweep`, `openTour.sweep`, `wbStartPresenting.sweep`, `renderGraphCanvas.sweep` (no new globals); lib.js `newBoard` for 20 board sweeps; emblem, computeddump, stripground, wrapzoom-docs, graphcoldlayout, unsavedback, search1005-lazy, companionstack, thinkingwords, exportcolours repointed; FAIL lines on 7 measure exits. Rerun passes: atlas619-eyes, atlasbarhit, companionchat, companioncollapse, companionentry, companionscroll, computeddump, stripground, toolpop, wbaudit, wbshapetext, viewersleep. Left: unsavedback (confirm not shown), wblock (wbFmtState private), throwfates (companionThrowSeed private), companionpin (null element), companioneyes and perchloss (180s timeouts), wander (exit 1, no FAIL line).
 - [ ] **L-world-class-413** `whiteboard` open, L: Triage the 17 sweeps whose FAIL lines may be real bugs: reproduce each, fix or retire its stated check. From L554 run, 2026-11-21. Evidence: SP r3 logs: mapmorezoom (More box 42 to 56px off the drawn wedge), toolgrid (448.72px), verify1011 (206, 210, 218, 192/238), laptopfold (1093: 3 whole cards for 4), anchorsmotion (graph surface 99 to 205px from its anchor), connlabel (button not shown), companionmenulow (keyboard menu 40px gap), viewerpose (arm 131 degrees at 300ms), iphone1011 (notes foot 752), ux1005-tabstops, chatheads, profilelook, clickarm, companiontabswitch, atlasaura, atlasmoodfx, atlasmo1005-viewerlife (bare FAIL) Added 2026-11-21 from the 412 reruns (scripts now current, checks fail on measures): companionreact, companioninteract, companionsleeptab (pokes wake,wake,pout for wake,pout,grumpy), locomotion (far walk 29.7px a frame over 14; panel end 1211px off), perchall (16 window-bar perches while a panel is free), graphcoldlayout (physics not dimmed in tree), wbframes (a rotate grip on a frame), wbrail (panel radius and padding differ), companionsmooth, libtlscroll, and the seven measure exits (companionacts, companionemotes, companiongaze, napgait, perchtext, peekdown 32px frame jump, viewerclash gap -302). Fixed: toolpop (shape kind menu clipped in the phone Tools sheet; test_wb_shape_menu_sheet_412).
+- [ ] **L-world-class-634** `whiteboard` open, L: Split whiteboard.js and whiteboard-map.js into smaller files, holding CODEMAP, index.html's script order, app_js_text and the complexity ratchets. From the hub, 2026-11-21 (world-class retags it on its branch). Evidence: after 412 and 413.
 
 ## general
 
