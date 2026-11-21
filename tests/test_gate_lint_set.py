@@ -32,7 +32,7 @@ def test_every_sweep_the_sweeps_mode_names_exists():
     import re
 
     text = (ROOT / "scripts" / "gate.sh").read_text(encoding="utf-8")
-    names = re.search(r"for s in ([a-z0-9 ]+); do step", text)
+    names = re.search(r"for s in ([a-z0-9 -]+); do step", text)
     assert names, "gate.sh has no sweep list"
     missing = [n for n in names.group(1).split() if not (ROOT / "scratchpad" / "ui-sweeps" / f"{n}.js").is_file()]
     assert not missing, f"scripts/gate.sh --sweeps names sweeps that do not exist: {missing}"

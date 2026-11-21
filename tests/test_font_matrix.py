@@ -42,7 +42,19 @@ def test_errors_and_lib_take_a_font_and_errors_checks_text_fit():
 
 def test_the_gate_runs_the_matrix():
     gate = (ROOT / "scripts/gate.sh").read_text(encoding="utf-8")
-    assert re.search(r"for s in errors fontmatrix ", gate)
+    # errors.js and fontmatrix.js are the engines; the gate runs their shards,
+    # each inside the sweep time limit (errors by width pair, the matrix by
+    # CELLS_PER_SHARD cells), so every cell is still checked.
+    listed = re.search(r"for s in ([^;]*?) docks ", gate).group(1).split()
+    assert "errors-wide" in listed and "errors-narrow" in listed
+    html = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+    fonts = re.findall(r'<option value="([a-z0-9-]+)"', html.split('id="font-seg"')[1].split("</select>")[0])
+    per_shard = int(re.search(r"CELLS_PER_SHARD = (\d+)", (SWEEPS / "fontmatrix.js").read_text(encoding="utf-8")).group(1))
+    cells = len(fonts) * 2 * 3
+    want = [f"fontmatrix-{n}" for n in range(1, -(-cells // per_shard) + 1)]
+    assert [s for s in listed if s.startswith("fontmatrix-")] == want
+    for name in want + ["errors-wide", "errors-narrow"]:
+        assert (SWEEPS / f"{name}.js").is_file(), name
 
 
 def _css(name: str) -> str:
