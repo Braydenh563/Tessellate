@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 0 | 1 | 0 | 0 | 0 | 1 |
+| mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 502 | 565 | 129 | 2 | 183 | 1196 |
+| all | 502 | 564 | 129 | 2 | 183 | 1195 |
 
 ## graph
 
@@ -341,7 +341,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 
 ## mindmap
-- [ ] **L-mindmap-16** `mindmap` open, L: Closing core: every open_scan hit in the core scope built, reworded as history, or moved to BACKLOG with its device check. From hub 2026-11-14 22:13Z, closing scope. Evidence: open_scan (no --plan) lists 129 hits in src (not ai/ or chat), start.sh, .github, .claude, INBOX, HANDOVER, tests (not composer/chat)
 
 ## ui-modernisation
 

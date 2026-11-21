@@ -6,7 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the two strict xfails on chat rows L150 and L-timeline-9); the PR 216 work order closed (L-general-33); open_scan skips the PR template form and SQLAlchemy's `deferred=True`.
+- Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the strict xfails on chat row L150 and on L-timeline-9, which PR 241 builds); the PR 216 work order closed (L-general-33); open_scan skips the PR template form, and strips SQLAlchemy's `deferred=True` and two exact verb phrases before it looks, so a marker on the same line is still found.
+- Filing keeps a note's tag suggestions in the same commit as its settled `filing_state`, so a reader that stops polling on the settled state no longer reads them as empty; `jobs.in_flight(None)` is False.
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
 - Tests: no test file from test_d to test_m reads as open work to the open-work scan (67 hits to 0; L-general-35): stale docstrings say what was built, feature words are named plainly.
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.

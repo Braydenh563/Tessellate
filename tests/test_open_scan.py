@@ -35,6 +35,23 @@ def test_a_pr_forms_boxes_and_an_api_keyword_are_not_work():
     assert not open_scan.API_WORD.search("# deferred to a later PR")
 
 
+def test_an_exception_strips_its_phrase_not_the_line(tmp_path, monkeypatch):
+    """PR 242 review: a marker trailing an excepted phrase on one line is
+    still a hit; the phrase alone is not."""
+    py = tmp_path / "src" / "x.py"
+    py.parent.mkdir(parents=True)
+    py.write_text(
+        "icon = mapped_column(Text, deferred=True)\n"
+        "icon = mapped_column(Text, deferred=True)  # TODO drop it\n"
+        "# the pass below must still open it, or note that it could not\n"
+        "# the Run button had left open: an opt-in\n"
+        "# this is still open\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(open_scan, "ROOT", tmp_path)
+    assert [row for _f, row, _t in open_scan.hits(["src/x.py"])] == [2, 5]
+
+
 def test_every_plan_session_owns_its_plan_file():
     for plan, owned in open_scan.OWNERS.items():
         assert any(o.startswith("docs/roadmap/") and o.endswith("_PLAN.md") for o in owned), plan

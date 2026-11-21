@@ -54,7 +54,7 @@ def _could_name_a_file(column):
     (the performance pass, 2026-10-03). SQLite's LIKE folds ASCII case, so
     this keeps a superset of what the regex reads. Ciphertext is kept too: a
     private note's stored text is `mmenc1:...`, which says nothing until it is
-    opened, and the pass below must open it anyway, or note that it could not.
+    opened, and the pass below must still open it, or note that it could not.
     """
     from tessellate.core import crypto
 

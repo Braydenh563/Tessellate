@@ -507,7 +507,7 @@ run_with_timeout() {
 # of the tool's own retry/traceback text. Anything that does NOT match this
 # (a real dependency conflict, a corrupt requirements.txt, disk full) falls
 # through to printing the tool's actual error, on purpose - CLAUDE.md is
-# explicit that swallowing a genuine failure behind "offline?" costs the
+# explicit that swallowing a genuine failure behind "offline?" costs
 # a later reader an hour finding out it wasn't.
 is_network_error() {
   grep -qiE \
