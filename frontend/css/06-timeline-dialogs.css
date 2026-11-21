@@ -3190,50 +3190,6 @@
   min-height: 0;
   /* Fix flex overflow */
 }
-.wb-card {
-  position: absolute;
-  width: 250px;
-  min-height: 100px;
-  padding: 1rem;
-  /* **An opaque base under the card tint, and measured before it was
-     changed.** Every other card in this app sits on the app's own page
-     background, so `--card`'s translucency (the Appearance → transparency
-     slider, 0.55 alpha at its default) only ever mixes with a colour the
-     theme controls. A board card does not: it floats over whatever the
-     person picked in the board's own background-colour picker, over a board
-     background *image*, and over other cards.
-     Measured, not eyeballed. With the board set to a light cream
-     (#fff8d0 through the shipped picker) a card's interior sampled
-     (112, 111, 99) out of the raw screenshot, against `--ink`
-     rgb(240, 242, 245) that is a 4.51:1 contrast ratio, and against a plain
-     white board it computes to (112, 114, 117) = **4.29:1, which fails
-     WCAG AA for normal text**. The card's own text became unreadable
-     because of a colour set somewhere else entirely, CLAUDE.md's "a value
-     that is invalid where it is used, not where it is set".
-     Card-over-card was measured too and is *not* a problem: two translucent
-     dark cards overlapping sampled (57, 59, 57) against (112, 111, 99)
-     solo, and over the default dark board the difference between overlap
-     and no overlap was 2 units, invisible. So this is not "translucency is
-     bad", it is "a board card must occlude what is under it".
-     The fix keeps the person's transparency preference as a *tint* and puts
-     it over an opaque base, rather than dropping the preference: the first
-     background layer is `--card` painted as a solid-colour gradient (a
-     colour cannot be a non-final background layer), composited over
-     `--modal-bg-opaque`, the token this codebase already added for exactly
-     this failure ("an opaque chip with a real border, so what is behind it
-     cannot change whether it can be seen"). Dark theme composites to about
-     rgb(27, 30, 42), which is 14:1 against `--ink`. */
-  background: linear-gradient(var(--card), var(--card)), var(--modal-bg-opaque);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--glass-shadow);
-  cursor: grab;
-  user-select: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  /* Disable pointer events on children so drag events fire on the card itself */
-}
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id
    /entry.thumb_url/entry.attachments at all: libraryCard() (library.js) and

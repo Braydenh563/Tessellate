@@ -3946,9 +3946,6 @@ span > .chip {
 .doc-sidebar {
   container: doc-sidebar / inline-size;
 }
-.doc-sidebar .doc-head-more {
-  display: none;
-}
 /* The Outline tab's "This document" head (the owner, 2026-11-11: "the ? tooltip isnt aligned to the left or
    right and is cut off at the top"). The collapse toggle sits in the tab strip above this tab, so the head
    needs no lane for it: the ? ends the row (it floated 38px short of the right edge), and the head starts a
@@ -3964,9 +3961,6 @@ span > .chip {
   }
   #doc-sidebar-list .doc-head-tools > :is(.graph-help-toggle, #doc-new-template, #doc-new-diagram) {
     display: none;
-  }
-  .doc-sidebar .doc-head-more {
-    display: inline-flex;
   }
 }
 
@@ -5619,22 +5613,6 @@ input.doc-title-input::placeholder {
   min-width: 0;
   gap: var(--space-2);
   padding-inline: var(--space-3);
-}
-
-/* How many of this source are attached, on its own tab, so the other four
-   tabs' picks are visible from this one. */
-.note-picker-tab-count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  line-height: 1;
 }
 
 /* At a phone's width five labels fill the strip, so it stays one row (the

@@ -2425,46 +2425,6 @@ button.scroll-row-arrow[hidden] {
   display: flex;
   flex-direction: column;
 }
-.library-image-tile > .library-image-frame {
-  /* **The picture does not grow with the row** (INBOX 174, the owner: "when
-     I extend the text in image cards, the images of other ones extend").
-     The earlier rule let the frame take a row-mate's extra height up to
-     16rem, so opening one card's caption stretched every picture beside it
-     (measured 144px to 229px). A thumbnail is one size; the room a taller
-     neighbour leaves goes under the card's own text, which is what a grid
-     of cards has always done. */
-  flex: 0 0 auto;
-  height: 9rem;
-  min-height: 9rem;
-  /* **A ceiling, because one open card must not inflate the row.** Measured:
-     with every fold open the row stood 660px and the two cards whose folds
-     held nothing grew 583px pictures, which is a portrait poster of a
-     thumbnail. The cap is about one and a quarter tile widths, above the
-     67px the full-to-empty variance actually needs (144px against 211.2px on
-     the seeded gallery) and well under a row driven by an open neighbour.
-     Past it the leftover is a gap under the card's last line, which is
-     exactly what every card carried before this change; the difference is
-     that it now takes one opened card in the row to produce it instead of
-     nothing at all. */
-  max-height: 9rem;
-}
-/* **The focus ring on the card's own action** (INBOX 164). The thumbnail is the
-   control that opens the picture, and it is the control a keyboard now reaches
-   (`role="button"`, `tabindex="0"`, set in library.js, where the reasons are):
-   a control that takes focus and shows nothing is reachable and still unusable.
-   Drawn *inside* the picture with a negative offset rather than around it. The
-   frame clips (`overflow: hidden`, for the rounded top corners), so a ring on
-   the outside of an element that fills the frame at `inset: 0` is clipped away
-   entirely, which is the same class of bug as a value that is invalid where it
-   is used: the declaration applies, and nothing appears. The second, white ring
-   is the one that survives a dark photograph, the same pairing the selection
-   tick on these cards already uses for the same reason. */
-.library-image-frame > img:focus-visible,
-.library-image-frame > .library-file-thumb:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -4px;
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.65);
-}
 /* A scrim, not a bar: a solid strip would be a second surface on the card,
    and the picture behind the name is worth keeping. Built from --scrim, the
    token the command palette's dim already uses, mixed towards black so it
@@ -2481,41 +2441,6 @@ button.scroll-row-arrow[hidden] {
    3.6:1 against white and under AA for text this size. Held at full strength
    for the bottom two thirds (which is the whole padded text band) it
    measures dark enough to clear it, and the fade still hides the edge. */
-/* **And the fade is gone, because a scrim that fades is a different band on
-   every picture.** Reported on 2026-09-13, the third report on these cards:
-   "the filename band sits on a grey strip across the bottom of the picture on
-   some cards and over open sky on others, depending on the image". Both of
-   those were this one rule. Over a dark photograph the ramp disappears into
-   the picture and the name looks like it is floating on the sky; over a light
-   one the same ramp reads as a grey strip someone has laid across the bottom.
-   The band is doing its job in both cases and looking like two different
-   components while it does it, which on a wall of twenty thumbnails is the
-   thing the eye actually picks up.
-   One flat, near-opaque ground instead, so the band is the same shape, the
-   same tone and the same height on every card whatever is behind it. It is
-   still built from `--scrim` mixed towards black for the contrast reason
-   below, just held at one value from top edge to bottom instead of ramping
-   through the text. */
-.library-image-frame figcaption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: var(--space-2) var(--space-3);
-  color: #fff;
-  background: color-mix(in srgb, var(--scrim) 45%, #000 55%);
-}
-.library-image-frame figcaption:hover,
-.library-image-frame figcaption:is(:focus-visible, :has(:focus-visible)) {
-  color: #fff;
-  text-decoration: underline;
-}
-/* Renaming in place: the input is over the scrim, so it carries its own
-   legible ground rather than white-on-photograph. */
-.library-image-frame .library-image-rename-input {
-  color: #fff;
-  border-bottom-color: #fff;
-}
 /* A vision model's own description of the image, below the filename, 
    deliberately not <figcaption> (that already names the filename above;
    this is metadata about what's IN the picture, not what it's called).
@@ -2528,42 +2453,6 @@ button.scroll-row-arrow[hidden] {
    `.library-image-caption-clamped` is present, and whiteboard.js toggles it
    off/on with a "Show more"/"Show less" button for a caption long enough to
    need one. */
-
-/* A transcription has no length limit and a grid row is as tall as its
-   tallest card, so one opened reading of a dense page would otherwise set the
-   height of every card beside it. It scrolls at about a card's worth instead.
-   Images only: a Files row is full width and stands on its own. */
-/* **18rem was still enough to double the row.** Reported on 2026-09-13:
-   "opening 'Text' on one card grows it well past its neighbours, so the row's
-   cards are 260px and 620px side by side". 18rem is 288px of transcription on
-   top of a 260px card, and the grid gives every card in the row the tallest
-   one's height. 11rem keeps enough of the reading visible to tell whether it
-   is the page you wanted (about six lines) and scrolls the rest, which is what
-   the fold is for; the whole transcription is one click away in the reader. */
-.library-image-card-fold > .library-image-reading-body {
-  max-height: 11rem;
-  overflow-y: auto;
-}
-.library-image-field-label::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 0.3rem;
-  height: 0.3rem;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent) 70%, transparent);
-}
-.library-image-provenance.hidden {
-  display: none;
-}
-/* **An opened caption grows the card by a bounded amount** (INBOX 174, with
-   the fixed picture above): "Show more" used to let a long caption take the
-   row to 411px and every card beside it with it. Up to about six lines
-   show; a longer caption scrolls inside its own box, so a row-mate is
-   never more than that much taller than its own text needs. */
-.library-image-caption:not(.library-image-caption-clamped) {
-  max-height: 9.6rem;
-  overflow-y: auto;
-}
 
 /* --- a card that opens does not inflate the six beside it -----------------
    UI_MODERNISATION_PLAN.md Phase 11 (the INBOX 164 block's leftover), measured
@@ -2606,58 +2495,6 @@ button.scroll-row-arrow[hidden] {
   transition: none;
 }
 
-.library-image-caption-input {
-  width: 100%;
-  min-width: 0;
-  min-height: 3rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-  resize: none;
-}
-/* Tesseract's own reading of text in the image (core/ocr.py): same
-   always-visible, click-to-edit shape as .library-image-caption, asked for
-   directly ("allow the user to access, view, and edit OCR extracted
-   text"). */
-/* **Expanded means readable, not endless.** Reported of the Files sub-tab:
-   the card is the wrong shape for long OCR text. A photo's reading is a line
-   or two; a *document*'s is the whole document, and "Show more" on that turns
-   one tile into a page of unformatted text with every other file pushed off
-   screen. Past a screenful it scrolls inside itself instead, the same answer
-   `.tool-chip-result` already gives the same problem one tab over. The clamped
-   state is unaffected: `max-height` only bites once the text is longer than
-   the box, which is exactly the case being fixed. */
-.library-image-ocr {
-  margin: 0;
-  padding: 0 0 var(--space-3);
-  white-space: pre-wrap;
-  cursor: text;
-  overflow-wrap: anywhere;
-  max-height: 18rem;
-  overflow-y: auto;
-}
-.library-image-ocr-input {
-  width: 100%;
-  min-width: 0;
-  min-height: 3rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-  resize: none;
-}
-.library-image-vision-ocr.hidden {
-  display: none;
-}
 @media (max-width: 599.98px) {
   .library-grid {
     gap: var(--space-4);

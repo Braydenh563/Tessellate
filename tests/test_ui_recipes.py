@@ -5964,8 +5964,8 @@ def test_file_reading_text_fits_up_to_a_page():
     m = re.search(r"\.library-file-reading-text \{([^}]*)\}", css)
     #: INBOX 827 L1: the owner's reading column is up to half the window (was 55vh).
     assert m and "max-height: min(28rem, 50vh)" in m.group(1)
-    shell = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text()
-    assert re.search(r"\.library-image-card-fold > \.library-image-reading-body \{\s*max-height: 11rem", shell)
+    # 11rem written as a token calc (L-ui-modernisation-51): --control-h-lg is 2rem, so 5.5 of them.
+    assert re.search(r"\.library-image-card-fold > \.library-image-reading-body \{\s*max-height: calc\(var\(--control-h-lg\) \* 5\.5\)", css)
 #: DESIGN.md, "A control that acts on the computer Tessellate runs on". Every
 #: static control that reaches a `this_computer_only` route or a this-computer
 #: preference (routes_settings `_THIS_COMPUTER_PREFERENCES`).

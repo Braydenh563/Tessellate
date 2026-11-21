@@ -3609,16 +3609,6 @@ mark.lightbox-hit {
   opacity: 1;
 }
 
-@media (hover: hover) {
-  .bookmark-row > .bookmark-actions {
-    opacity: 0;
-    transition: opacity var(--ui-fast) var(--ease-out);
-  }
-  .bookmark-row:is(:hover, :focus-within) > .bookmark-actions,
-  .bookmark-row > .bookmark-actions:has([aria-expanded="true"]) {
-    opacity: 1;
-  }
-}
 /* Someone who asked for less motion still gets the full-strength panel on
    hover: only the fade between the two states goes. */
 :where(:root[data-motion="reduced"]) .graph-minimap > * {

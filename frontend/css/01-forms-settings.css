@@ -2419,20 +2419,6 @@ button:not(.ghost) > .spinner {
   background: var(--surface-2);
   border-color: var(--divider);
 }
-/* The mark: the same idea as the Timeline's kind marker, at the size a
-   `--row-h` row gives it. Tinted rather than filled, because it is a label for
-   what the row is, not a control. */
-.bookmark-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-size: var(--text-md);
-}
 /* The title is the row, and a row is not a paragraph with a hyperlink in it:
    at rest it is body ink at the one control label size, and the underline and
    the accent arrive with the pointer. Measured before: an underlined 16px
@@ -2499,29 +2485,6 @@ button:not(.ghost) > .spinner {
 /* A button, because folding is an action. Sticky, so the group you are
    reading keeps saying which group it is: the card's own ground under the
    glass strip (the recipe `.library-subtabs` uses, on the glass-off list). */
-.contents-heading {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: var(--space-3);
-  width: 100%;
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: var(--radius-md);
-  box-shadow: none;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: 600;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  /* Bare at rest, opaque only while stuck (07-whiteboard-misc.css, INBOX 1489). */
-  background: none;
-}
 
 .contents-caret {
   flex: 0 0 auto;
