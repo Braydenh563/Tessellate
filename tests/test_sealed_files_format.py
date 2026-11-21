@@ -212,3 +212,59 @@ def test_a_partial_frame_left_by_a_crash_mid_append_still_reads(keyed, tmp_path)
     assert sealed_files.read(path) == b"saved audio"
     assert sealed_files.plain_size(path) == len(b"saved audio")
     assert sealed_files.read_range(path, 2, 7) == b"ved au"
+
+
+def test_an_append_under_a_wrong_key_fails_before_writing(keyed, tmp_path, monkeypatch):
+    """The old last frame is opened first: a wrong key or a damaged frame is
+    SealedDamaged and the file is left byte for byte as it was."""
+    path = tmp_path / "a.bin"
+    sealed_files.append(path, b"one ", sealed=True)
+    before = path.read_bytes()
+    monkeypatch.setattr(sealed_files, "_key", lambda: b"\x07" * 32)
+    with pytest.raises(sealed_files.SealedDamaged):
+        sealed_files.append(path, b"two", sealed=True)
+    assert path.read_bytes() == before
+
+
+def test_the_temp_root_is_refused_until_deps_sets_the_data_dir(monkeypatch):
+    """The default must not quietly use the working folder for plain copies."""
+    monkeypatch.setattr(sealed_files, "data_dir_source", sealed_files._unset_data_dir)
+    with pytest.raises(RuntimeError):
+        sealed_files._tmp_root()
+
+
+def test_a_replace_held_by_another_handle_is_tried_again_then_refused(keyed, tmp_path, monkeypatch):
+    """Windows: an open download blocks `os.replace` with PermissionError until
+    it closes. A short hold is waited out; a long one fails with no temp left."""
+    path = tmp_path / "a.bin"
+    path.write_bytes(b"plain")
+    real, held = os.replace, [2]
+    monkeypatch.setattr(sealed_files, "_pause", lambda _s: None)
+
+    def busy(src, dst):  # noqa: ANN001, ANN202
+        if held[0]:
+            held[0] -= 1
+            raise PermissionError("in use")
+        return real(src, dst)
+
+    monkeypatch.setattr(sealed_files.os, "replace", busy)
+    assert sealed_files.seal(path) and sealed_files.read(path) == b"plain"
+    held[0] = 10**6
+    with pytest.raises(PermissionError):
+        sealed_files.unseal(path)
+    assert sealed_files.is_sealed(path) and not list(tmp_path.glob(".seal-*"))
+
+
+def test_a_write_back_over_a_file_that_changed_meanwhile_is_refused(keyed, tmp_path):
+    """`readable(write=True)`: an append while the copy was open would be lost
+    under the copy, so the write-back raises SealedChanged and keeps both."""
+    path = tmp_path / "a.bin"
+    sealed_files.append(path, b"one ", sealed=True)
+    with pytest.raises(sealed_files.SealedChanged):
+        with sealed_files.readable(path, write=True) as copy:
+            copy.write_bytes(b"edited")
+            sealed_files.append(path, b"two", sealed=True)
+    assert sealed_files.read(path) == b"one two"
+    with sealed_files.readable(path, write=True) as copy:
+        copy.write_bytes(b"edited")
+    assert sealed_files.read(path) == b"edited"

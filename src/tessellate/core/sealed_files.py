@@ -37,6 +37,7 @@ import shutil
 import struct
 import tempfile
 import threading
+import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -71,12 +72,17 @@ class SealedDamaged(SealedError):
     """The file is sealed but does not open with this key, or was cut or changed."""
 
 
+class SealedChanged(SealedError):
+    """The file changed while a temp copy of it was open for writing."""
+
+
 class LooksSealed(ValueError):
     """A plain file may not start the way a sealed one does."""
 
 
 LOCKED_DETAIL = "This private space is locked. Unlock it first."
 DAMAGED_DETAIL = "This file is damaged or does not open with this key."
+CHANGED_DETAIL = "This file changed while it was open. Try again."
 LOOKS_SEALED_DETAIL = "This file starts the way a sealed file does, so it can't be stored."
 
 _locks: dict[str, threading.RLock] = {}
@@ -340,6 +346,10 @@ def _append_sealed(path: Path, data: bytes) -> None:
         if not data:
             _remember(path, fh, (count, end, last_offset, last_length))
             return
+        #: The old last frame opened before anything is written: a wrong key
+        #: or a damaged frame fails here (SealedDamaged), not after new frames
+        #: under another key have gone on the end.
+        old_last = _open_frame(AESGCM(key), fh, count - 1, last_offset, last_length, False) if count else b""
         blob = _encrypt(key, data, count)
         try:
             fh.seek(end)
@@ -349,21 +359,16 @@ def _append_sealed(path: Path, data: bytes) -> None:
             fh.truncate(end)
             raise
         if count:
-            _reseal_not_final(key, fh, count - 1, last_offset, last_length)
+            _reseal_not_final(key, fh, count - 1, last_offset, old_last)
         tail = _last_body(data)
         added = -(-len(data) // FRAME)
         _remember(path, fh, (count + added, end + len(blob), end + len(blob) - _NONCE - tail, tail))
 
 
-def _reseal_not_final(key: bytes, fh, index: int, offset: int, length: int) -> None:  # noqa: ANN001
-    """The old last frame, written again in place (same length) as a middle one."""
+def _reseal_not_final(key: bytes, fh, index: int, offset: int, plain: bytes) -> None:  # noqa: ANN001
+    """The old last frame (`plain`, opened before the append), written again
+    in place (same length) as a middle one."""
     aead = AESGCM(key)
-    fh.seek(offset)
-    nonce, body = fh.read(_NONCE), fh.read(length)
-    try:
-        plain = aead.decrypt(nonce, body, _aad(index, True))
-    except InvalidTag:
-        return
     fresh = os.urandom(_NONCE)
     fh.seek(offset)
     fh.write(fresh + aead.encrypt(fresh, plain, _aad(index, False)))
@@ -383,6 +388,24 @@ def _fsync_folder(folder: Path) -> None:
         os.close(fd)
 
 
+#: Windows refuses `os.replace` over a file another handle holds open (a
+#: download streaming it, a virus scanner), as PermissionError; it clears
+#: when that handle closes, so the replace is tried again for about 2 s.
+_REPLACE_TRIES = 40
+_pause = time.sleep
+
+
+def _replace(tmp: str, path: Path) -> None:
+    for attempt in range(_REPLACE_TRIES):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == _REPLACE_TRIES - 1:
+                raise
+            _pause(0.05)
+
+
 def _rewrite(path: Path, contents: bytes) -> None:
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".seal-", suffix=".tmp")
     try:
@@ -390,7 +413,7 @@ def _rewrite(path: Path, contents: bytes) -> None:
             out.write(contents)
             out.flush()
             os.fsync(out.fileno())
-        os.replace(tmp, path)
+        _replace(tmp, path)
         _fsync_folder(path.parent)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
@@ -421,13 +444,24 @@ def unseal(path: Path) -> bool:
 
 #: Set by `deps` (as `board_thumbs.data_dir_source` is), so this module never
 #: imports `deps` and stays out of its import cycle.
-data_dir_source: Callable[[], Path] = lambda: Path(".")  # noqa: E731
+def _unset_data_dir() -> Path:
+    raise RuntimeError("sealed_files.data_dir_source not set")
+
+
+#: Never the working folder: plain copies of private files go only under the
+#: data folder, so an unset source is an error, not a guess.
+data_dir_source: Callable[[], Path] = _unset_data_dir
 
 
 def _tmp_root() -> Path:
     root = data_dir_source() / "tmp"
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     return root
+
+
+def _stamp(path: Path) -> tuple[int, int]:
+    info = os.stat(path)
+    return info.st_size, info.st_mtime_ns
 
 
 @contextmanager
@@ -440,7 +474,8 @@ def readable(path: Path, *, write: bool = False) -> Iterator[Path]:
     if not is_sealed(path):
         yield path
         return
-    plain = read(path)
+    with _lock_for(path):
+        plain, seen = read(path), _stamp(path)
     folder = tempfile.mkdtemp(prefix=OPEN_PREFIX, dir=_tmp_root())
     try:
         copy = Path(folder) / path.name
@@ -448,6 +483,10 @@ def readable(path: Path, *, write: bool = False) -> Iterator[Path]:
         yield copy
         if write and copy.read_bytes() != plain:
             with _lock_for(path):
+                #: An append (a recording's next chunk) since the read would
+                #: be lost under the copy, so the write-back is refused.
+                if _stamp(path) != seen:
+                    raise SealedChanged(CHANGED_DETAIL)
                 _rewrite(path, seal_bytes(copy.read_bytes()))
     finally:
         shutil.rmtree(folder, ignore_errors=True)

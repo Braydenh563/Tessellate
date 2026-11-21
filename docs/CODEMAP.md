@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11095, test files 2878, tests 22746, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8513, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2878, tests 22752, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8513)
 
@@ -14191,7 +14191,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11095)
+## Backend modules (11099)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21480,12 +21480,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_ascii_fallback` | src/tessellate/api/downloads.py:25 |
-| `_span` | src/tessellate/api/downloads.py:47 |
+| `_span` | src/tessellate/api/downloads.py:51 |
 | `attachment_headers` | src/tessellate/api/downloads.py:34 |
 | `safe_filename` | src/tessellate/api/downloads.py:18 |
-| `sealed_aware` | src/tessellate/api/downloads.py:92 |
-| `sealed_http` | src/tessellate/api/downloads.py:66 |
-| `unsealed` | src/tessellate/api/downloads.py:78 |
+| `sealed_aware` | src/tessellate/api/downloads.py:98 |
+| `sealed_http` | src/tessellate/api/downloads.py:70 |
+| `unsealed` | src/tessellate/api/downloads.py:84 |
 
 ### src/tessellate/api/edit_conflicts.py (8)
 
@@ -24901,11 +24901,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_edits_after` | src/tessellate/core/events_redo.py:28 |
-| `_redo` | src/tessellate/core/events_redo.py:115 |
-| `_redo_fields` | src/tessellate/core/events_redo.py:52 |
-| `_redo_status` | src/tessellate/core/events_redo.py:59 |
-| `_redo_taken` | src/tessellate/core/events_redo.py:82 |
-| `redo` | src/tessellate/core/events_redo.py:97 |
+| `_redo` | src/tessellate/core/events_redo.py:116 |
+| `_redo_fields` | src/tessellate/core/events_redo.py:53 |
+| `_redo_status` | src/tessellate/core/events_redo.py:60 |
+| `_redo_taken` | src/tessellate/core/events_redo.py:83 |
+| `redo` | src/tessellate/core/events_redo.py:98 |
 
 ### src/tessellate/core/extra_downloads.py (23)
 
@@ -25167,32 +25167,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `JobStopped` | src/tessellate/core/jobs.py:251 |
 | `Pool` | src/tessellate/core/jobs.py:376 |
 | `_cpu_width` | src/tessellate/core/jobs.py:69 |
-| `_resolve` | src/tessellate/core/jobs.py:970 |
-| `_seat` | src/tessellate/core/jobs.py:802 |
-| `_seated` | src/tessellate/core/jobs.py:812 |
+| `_resolve` | src/tessellate/core/jobs.py:976 |
+| `_seat` | src/tessellate/core/jobs.py:808 |
+| `_seated` | src/tessellate/core/jobs.py:818 |
 | `_start_heartbeat` | src/tessellate/core/jobs.py:197 |
-| `_unseat` | src/tessellate/core/jobs.py:807 |
-| `cancel_kind` | src/tessellate/core/jobs.py:975 |
+| `_unseat` | src/tessellate/core/jobs.py:813 |
+| `cancel_kind` | src/tessellate/core/jobs.py:981 |
 | `check_stop` | src/tessellate/core/jobs.py:263 |
-| `enqueue` | src/tessellate/core/jobs.py:1027 |
-| `forget` | src/tessellate/core/jobs.py:1054 |
-| `future` | src/tessellate/core/jobs.py:877 |
-| `in_flight` | src/tessellate/core/jobs.py:1042 |
-| `join_threads` | src/tessellate/core/jobs.py:917 |
+| `enqueue` | src/tessellate/core/jobs.py:1033 |
+| `forget` | src/tessellate/core/jobs.py:1060 |
+| `future` | src/tessellate/core/jobs.py:883 |
+| `in_flight` | src/tessellate/core/jobs.py:1048 |
+| `join_threads` | src/tessellate/core/jobs.py:923 |
 | `label_for` | src/tessellate/core/jobs.py:237 |
-| `pending` | src/tessellate/core/jobs.py:1038 |
-| `pool` | src/tessellate/core/jobs.py:1013 |
-| `reading` | src/tessellate/core/jobs.py:818 |
-| `readings` | src/tessellate/core/jobs.py:831 |
-| `resubmit` | src/tessellate/core/jobs.py:1050 |
-| `resume` | src/tessellate/core/jobs.py:1062 |
-| `shutdown` | src/tessellate/core/jobs.py:1085 |
-| `stop_all` | src/tessellate/core/jobs.py:991 |
+| `pending` | src/tessellate/core/jobs.py:1044 |
+| `pool` | src/tessellate/core/jobs.py:1019 |
+| `reading` | src/tessellate/core/jobs.py:824 |
+| `readings` | src/tessellate/core/jobs.py:837 |
+| `resubmit` | src/tessellate/core/jobs.py:1056 |
+| `resume` | src/tessellate/core/jobs.py:1068 |
+| `shutdown` | src/tessellate/core/jobs.py:1091 |
+| `stop_all` | src/tessellate/core/jobs.py:997 |
 | `stop_requested` | src/tessellate/core/jobs.py:256 |
-| `stop_running` | src/tessellate/core/jobs.py:1074 |
-| `stop_threads` | src/tessellate/core/jobs.py:903 |
-| `thread` | src/tessellate/core/jobs.py:861 |
-| `threads` | src/tessellate/core/jobs.py:893 |
+| `stop_running` | src/tessellate/core/jobs.py:1080 |
+| `stop_threads` | src/tessellate/core/jobs.py:909 |
+| `thread` | src/tessellate/core/jobs.py:867 |
+| `threads` | src/tessellate/core/jobs.py:899 |
 
 ### src/tessellate/core/jobstore.py (36)
 
@@ -26410,47 +26410,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `prune_now` | src/tessellate/core/running_copies.py:169 |
 | `shutdown` | src/tessellate/core/running_copies.py:196 |
 
-### src/tessellate/core/sealed_files.py (37)
+### src/tessellate/core/sealed_files.py (41)
 
 | Name | File:line |
 |---|---|
-| `LooksSealed` | src/tessellate/core/sealed_files.py:74 |
-| `SealedDamaged` | src/tessellate/core/sealed_files.py:70 |
-| `SealedError` | src/tessellate/core/sealed_files.py:62 |
-| `SealedLocked` | src/tessellate/core/sealed_files.py:66 |
-| `_aad` | src/tessellate/core/sealed_files.py:122 |
-| `_append_sealed` | src/tessellate/core/sealed_files.py:331 |
-| `_encrypt` | src/tessellate/core/sealed_files.py:169 |
-| `_frames` | src/tessellate/core/sealed_files.py:126 |
-| `_fsync_folder` | src/tessellate/core/sealed_files.py:373 |
-| `_key` | src/tessellate/core/sealed_files.py:95 |
-| `_last_body` | src/tessellate/core/sealed_files.py:326 |
-| `_layout` | src/tessellate/core/sealed_files.py:151 |
-| `_lock_for` | src/tessellate/core/sealed_files.py:88 |
-| `_open_frame` | src/tessellate/core/sealed_files.py:181 |
-| `_open_snapshot_last` | src/tessellate/core/sealed_files.py:224 |
-| `_remember` | src/tessellate/core/sealed_files.py:164 |
-| `_reseal_not_final` | src/tessellate/core/sealed_files.py:358 |
-| `_rewrite` | src/tessellate/core/sealed_files.py:386 |
-| `_size` | src/tessellate/core/sealed_files.py:303 |
-| `_stream` | src/tessellate/core/sealed_files.py:236 |
-| `_tmp_root` | src/tessellate/core/sealed_files.py:427 |
-| `_whole` | src/tessellate/core/sealed_files.py:140 |
-| `_write_new_sealed` | src/tessellate/core/sealed_files.py:313 |
-| `append` | src/tessellate/core/sealed_files.py:280 |
-| `is_sealed` | src/tessellate/core/sealed_files.py:104 |
-| `iter_plain` | src/tessellate/core/sealed_files.py:219 |
-| `open_plain` | src/tessellate/core/sealed_files.py:199 |
-| `plain_file` | src/tessellate/core/sealed_files.py:117 |
-| `plain_size` | src/tessellate/core/sealed_files.py:261 |
-| `read` | src/tessellate/core/sealed_files.py:252 |
-| `read_range` | src/tessellate/core/sealed_files.py:269 |
-| `readable` | src/tessellate/core/sealed_files.py:434 |
-| `seal` | src/tessellate/core/sealed_files.py:402 |
-| `seal_bytes` | src/tessellate/core/sealed_files.py:194 |
-| `sweep_leftovers` | src/tessellate/core/sealed_files.py:456 |
-| `unseal` | src/tessellate/core/sealed_files.py:412 |
-| `wanted` | src/tessellate/core/sealed_files.py:471 |
+| `LooksSealed` | src/tessellate/core/sealed_files.py:79 |
+| `SealedChanged` | src/tessellate/core/sealed_files.py:75 |
+| `SealedDamaged` | src/tessellate/core/sealed_files.py:71 |
+| `SealedError` | src/tessellate/core/sealed_files.py:63 |
+| `SealedLocked` | src/tessellate/core/sealed_files.py:67 |
+| `_aad` | src/tessellate/core/sealed_files.py:128 |
+| `_append_sealed` | src/tessellate/core/sealed_files.py:337 |
+| `_encrypt` | src/tessellate/core/sealed_files.py:175 |
+| `_frames` | src/tessellate/core/sealed_files.py:132 |
+| `_fsync_folder` | src/tessellate/core/sealed_files.py:378 |
+| `_key` | src/tessellate/core/sealed_files.py:101 |
+| `_last_body` | src/tessellate/core/sealed_files.py:332 |
+| `_layout` | src/tessellate/core/sealed_files.py:157 |
+| `_lock_for` | src/tessellate/core/sealed_files.py:94 |
+| `_open_frame` | src/tessellate/core/sealed_files.py:187 |
+| `_open_snapshot_last` | src/tessellate/core/sealed_files.py:230 |
+| `_remember` | src/tessellate/core/sealed_files.py:170 |
+| `_replace` | src/tessellate/core/sealed_files.py:398 |
+| `_reseal_not_final` | src/tessellate/core/sealed_files.py:368 |
+| `_rewrite` | src/tessellate/core/sealed_files.py:409 |
+| `_size` | src/tessellate/core/sealed_files.py:309 |
+| `_stamp` | src/tessellate/core/sealed_files.py:462 |
+| `_stream` | src/tessellate/core/sealed_files.py:242 |
+| `_tmp_root` | src/tessellate/core/sealed_files.py:456 |
+| `_unset_data_dir` | src/tessellate/core/sealed_files.py:447 |
+| `_whole` | src/tessellate/core/sealed_files.py:146 |
+| `_write_new_sealed` | src/tessellate/core/sealed_files.py:319 |
+| `append` | src/tessellate/core/sealed_files.py:286 |
+| `is_sealed` | src/tessellate/core/sealed_files.py:110 |
+| `iter_plain` | src/tessellate/core/sealed_files.py:225 |
+| `open_plain` | src/tessellate/core/sealed_files.py:205 |
+| `plain_file` | src/tessellate/core/sealed_files.py:123 |
+| `plain_size` | src/tessellate/core/sealed_files.py:267 |
+| `read` | src/tessellate/core/sealed_files.py:258 |
+| `read_range` | src/tessellate/core/sealed_files.py:275 |
+| `readable` | src/tessellate/core/sealed_files.py:468 |
+| `seal` | src/tessellate/core/sealed_files.py:425 |
+| `seal_bytes` | src/tessellate/core/sealed_files.py:200 |
+| `sweep_leftovers` | src/tessellate/core/sealed_files.py:495 |
+| `unseal` | src/tessellate/core/sealed_files.py:435 |
+| `wanted` | src/tessellate/core/sealed_files.py:510 |
 
 ### src/tessellate/core/secrets_store.py (6)
 
@@ -28385,7 +28389,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22746)
+## Tests (22752)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29830,7 +29834,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_job_backpressure.py | 2 |
 | tests/test_job_notices_z4.py | 3 |
 | tests/test_job_runs.py | 50 |
-| tests/test_job_stop_handlers.py | 4 |
+| tests/test_job_stop_handlers.py | 5 |
 | tests/test_job_type.py | 9 |
 | tests/test_jobruns_no_raw_exceptions.py | 1 |
 | tests/test_jobs_durable_kinds.py | 14 |
@@ -30481,7 +30485,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_private_note_no_ai_offer.py | 2 |
 | tests/test_private_notes.py | 24 |
 | tests/test_private_scrub.py | 3 |
-| tests/test_private_space_files.py | 14 |
+| tests/test_private_space_files.py | 15 |
 | tests/test_private_spaces.py | 21 |
 | tests/test_private_spaces_round2.py | 13 |
 | tests/test_private_spaces_ui.py | 13 |
@@ -30654,7 +30658,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_edge_owner.py | 2 |
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
-| tests/test_sealed_files_format.py | 14 |
+| tests/test_sealed_files_format.py | 18 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
 | tests/test_search_box.py | 23 |

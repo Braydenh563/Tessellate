@@ -31,6 +31,7 @@ def _edits_after(session: Session, rows: list[AuditLog]) -> dict[int, int]:
         return {}
     later = session.execute(
         select(AuditLog.id, AuditLog.entity_type, AuditLog.entity_id, AuditLog.action, AuditLog.payload).where(
+            AuditLog.entity_type.in_({row.entity_type for row in rows}),
             AuditLog.entity_id.in_({row.entity_id for row in rows}),
             AuditLog.id > min(row.id for row in rows),
             AuditLog.action.notin_(sorted(QUIET_ACTIONS)),

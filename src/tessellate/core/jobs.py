@@ -530,6 +530,20 @@ class Pool:
                     return True
         return False
 
+    def _running_one(self, kind: str, name: str, durable_id: int | None) -> Job | str:
+        """The running job a stop points at, or the sentence for why none."""
+        with self._lock:
+            found = [
+                j for j in self._running.values()
+                if (durable_id is not None and j.durable_id == durable_id)
+                or (durable_id is None and j.kind == kind and (not name or j.name == name))
+            ]
+        #: No name and no id matches any job of the kind: stopping the first
+        #: of several would stop one the caller never pointed at.
+        if len(found) > 1 and durable_id is None and not name:
+            return "More than one is running; stop it from its own row."
+        return found[0] if found else "It had already finished."
+
     def stop_running(self, kind: str, name: str = "", durable_id: int | None = None) -> tuple[bool, str]:
         """Ask a running job to stop at its next safe step (B2, L-world-class-66).
         Matched by its `jobs` row, or by kind and name as the panel knows it.
@@ -537,17 +551,9 @@ class Pool:
         the kind's own stopper where it has one (a pass's flag, a pull's
         cancel). Nothing is killed: a thread cannot be stopped safely, and
         the work writes to a notebook someone cares about."""
-        with self._lock:
-            job = next(
-                (
-                    j for j in self._running.values()
-                    if (durable_id is not None and j.durable_id == durable_id)
-                    or (durable_id is None and j.kind == kind and (not name or j.name == name))
-                ),
-                None,
-            )
-        if job is None:
-            return False, "It had already finished."
+        job = self._running_one(kind, name, durable_id)
+        if not isinstance(job, Job):
+            return False, job
         if job.kind in ONE_STEP_KINDS:
             return False, "It is one short step with nothing to stop between; it finishes in a moment."
         job.stop()
