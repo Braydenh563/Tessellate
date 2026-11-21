@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Opening the equation editor no longer reads layout on its first draw, and the palette groups below the fold are not laid out until they come near: the script's load task fell from 294 to 138 ms and its forced layout from 362 to 279 ms (4x CPU, median of 7, same run; L702).
 - Review fixes: a board past 16 MB exports as a folder (uploads, not JSON); a batch act that fails partway keeps Undo for the notes changed and counts the rest; bulk property Undo restores only its key; a missing note menu row is skipped; the pie drops non-positive rows itself.
 - Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.
 - Library: the selection bar's More menu sets tags, a category or a property on the notes ticked, with the Notes bar's own dialogs and Undo (L-world-class-392).

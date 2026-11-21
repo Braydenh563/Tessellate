@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 502 | 570 | 129 | 2 | 183 | 1201 |
+| general | 0 | 35 | 2 | 0 | 4 | 37 |
+| all | 502 | 569 | 129 | 2 | 183 | 1200 |
 
 ## graph
 
@@ -704,7 +704,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
 - [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
 - [ ] **L705** `general` open, M: Remove remaining forced layouts inside the tab flip (timelineScrollToToday, startArt, renderNotesRail). From agent-remaining/lag-1029.md. Evidence: Still forced inside the flip: `timelineScrollToToday` (timeline.js:2431, 43 ms at 4x), `startArt` > `currentAccentHex` (
