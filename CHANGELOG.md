@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Menus: menus.js at 1440 ends with 0 findings. Escape closes a list opened inside a dock menu first (Logs More), focus back on its opener; ArrowDown walks past a flyout row (dashboard Customise, a document's More) and a nested ⋯ (board View); the board's two-column View menu walks its switches and closes on Escape; the zoom list parts Fit from its values and is as wide as them; the Ask box's Answer length list is filled without opening Chat; board group rows keep the icon column
 - Menus: a dock menu's switch row is a menu row (Logs' More, the Timeline's Options): 34.5px tall, 12.8px inset, icon on the buttons' column and its switch at the row's end; Settings no longer pins its menu buttons to 32px. menus.js measures a row's leftmost mark, not its first in the DOM; two tests read the board caret's rule from board-lazy.css, where it moved.
 - Import: a folder of more than 1,000 files is read, not refused with "Too many files"; the import routes parse the form with their own 5,000-file cap (L-world-class-411).
 - Menus: the connection pill's menu button sits concentric with the pill's end (0px on every side), and a submenu row's words line up with every other row's (37.8 to 38.7px) (L-world-class-107).
