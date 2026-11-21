@@ -355,10 +355,10 @@ def test_the_end_emoticon_strip_is_linear_on_many_tabs() -> None:
     from tessellate.ai import composer_frame
 
     title = "Uni is done" + "\t" * 50_000 + "x"
-    started = time.perf_counter()
+    started = time.process_time()
     assert composer_frame.strip_end_emoticon(title) == title
     assert composer_frame.strip_end_emoticon("\t" * 50_000) == "\t" * 50_000
-    assert time.perf_counter() - started < 0.5
+    assert time.process_time() - started < 0.5
     assert composer_frame.strip_end_emoticon("Uni is done :)  ") == "Uni is done"
     assert composer_frame.strip_end_emoticon("Trains <3") == "Trains"
     assert composer_frame.strip_end_emoticon("Trains") == "Trains"
