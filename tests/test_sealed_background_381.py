@@ -520,3 +520,127 @@ def test_a_handed_token_is_dropped_when_the_read_fails_and_on_lock_and_sign_out(
     got = client.post("/auth/lock")
     assert got.status_code == 200, got.text
     assert docreader._HANDED == {}
+
+
+# The review of merge 188e06179: each test below names its finding.
+
+
+def test_a_lock_between_the_voices_and_the_commit_writes_no_labels(signed_in, monkeypatch):
+    """`_keep_voice_labels` asks the door immediately before its commit: a
+    lock that lands after the run's own check (here, while the labels are
+    worked out) keeps the transcript as it was."""
+    from tessellate.ai import diarize
+
+    client = signed_in
+    _whisper(monkeypatch)
+    rid = _recording(client)
+    _start(client, rid)
+    before = _raw_segments(rid)
+    assert before not in (None, "", "[]")
+    monkeypatch.setattr(diarize, "available", lambda: True)
+    monkeypatch.setattr(diarize, "spans", lambda audio: [])
+
+    def lock_then_label(segments, found):
+        spacelock.close_all()
+        return ["Speaker A"] * len(segments)
+
+    monkeypatch.setattr(diarize, "voice_labels", lock_then_label)
+    run = _start(client, rid, "speakers/voice")
+    assert run["state"] == "failed" and run["error"] == sealed_files.BACKGROUND_LOCKED_DETAIL
+    assert _raw_segments(rid) == before
+    assert _left_in_tmp() == []
+
+
+def test_a_step_that_fails_after_the_watcher_removed_the_copy_shows_the_locked_line(signed_in, monkeypatch):
+    """The door shut, the watcher removed the plain copy, and the step then
+    died of the missing file: the person reads the locked sentence, not the
+    step's own error."""
+    import queue
+
+    client = signed_in
+    looked, ticks = queue.Queue(), threading.Semaphore(0)
+
+    def tick(done, seconds):
+        looked.put(seconds)
+        ticks.acquire()
+        return done.is_set()
+
+    def dies_after_the_lock(path, model_size="base"):
+        looked.get(timeout=5)
+        spacelock.close_all()
+        ticks.release()
+        looked.get(timeout=5)  # the look that saw the door shut has finished
+        assert _left_in_tmp() == []
+        ticks.release()
+        raise ValueError("the decoder could not open the file")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(sealed_files, "watch_wait", tick)
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    monkeypatch.setattr(voice, "iter_segments", dies_after_the_lock)
+    rid = _recording(client)
+    run = _start(client, rid)
+    _failed_closed(run, rid)
+
+
+def test_any_other_runtime_error_is_a_fixed_sentence_and_only_logged(signed_in, monkeypatch, caplog):
+    """A RuntimeError from the model (not this module's, nor the speech
+    module's own sentence) never reaches the person: a fixed line, the text
+    in the log."""
+    client = signed_in
+
+    def falls_over(path, model_size="base"):
+        raise RuntimeError("CUDA error: /home/me/.cache/whisper/model.bin")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    monkeypatch.setattr(voice, "iter_segments", falls_over)
+    rid = _recording(client)
+    run = _start(client, rid)
+    assert run["state"] == "failed"
+    assert run["error"] == "Couldn't transcribe that recording. Try recording it again."
+    assert "CUDA" not in str(run)
+    assert "CUDA error" in caplog.text
+
+
+def test_a_door_shut_during_the_refresh_keeps_no_text(signed_in, monkeypatch):
+    """The door is asked immediately before the commit, after the refresh."""
+    from sqlalchemy.orm import Session
+
+    from tessellate.ai import docreader
+
+    client = signed_in
+    aid = _attach_held(client, monkeypatch)
+    real = Session.refresh
+
+    def lock_then_refresh(self, *args, **kwargs):
+        spacelock.close_all()
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(Session, "refresh", lock_then_refresh)
+    _off_request(docreader.read_document_and_store, aid)
+    assert _ocr_of(aid)[0] is None
+    assert _left_in_tmp() == []
+
+
+def test_the_idle_timeout_drops_the_tokens_a_read_was_handed(signed_in, monkeypatch):
+    """Idle is a door shutting like a lock: the handed token goes with it."""
+    from tessellate.ai import docreader
+
+    client = signed_in
+    token = client.headers["X-Auth-Token"]
+    clock = [1000.0]
+    monkeypatch.setattr(spacelock, "_now", lambda: clock[0])
+    spacelock.open_for(token)
+    aid = _attach_held(client, monkeypatch)
+    assert aid in docreader._HANDED
+    clock[0] += spacelock.idle_minutes() * 60 + 1
+    assert spacelock.is_open(token) is False
+    assert docreader._HANDED == {}
+    # The same through the sweep `open_for` makes of stale sessions.
+    spacelock.open_for(token)
+    _hand_over(docreader, token, aid)
+    assert aid in docreader._HANDED
+    clock[0] += spacelock.idle_minutes() * 60 + 1
+    spacelock.open_for("another-session")
+    assert docreader._HANDED == {}

@@ -395,10 +395,10 @@ def _transcribe_in_background(
                     _keep_segments(recording_id, kept, workspace, check, named=token is None)
     except RuntimeError as exc:
         logger.warning("background transcription failed: %s", exc)
-        state, error = "failed", _sentence(exc)
+        state, error = "failed", _sentence(exc, TRANSCRIBE_FAILED)
     except Exception:  # noqa: BLE001  # a bad clip is a row that says so, never a dead thread
         logger.warning("background transcription failed", exc_info=True)
-        state, error = "failed", "Couldn't transcribe that recording. Try recording it again."
+        state, error = "failed", TRANSCRIBE_FAILED
     finally:
         words = sum(len(seg["text"].split()) for seg in kept) if state == "done" else 0
         _record_failure(job, state, error)
@@ -407,18 +407,33 @@ def _transcribe_in_background(
         recordings.end_transcription(recording_id, state, error, words)
 
 
-def _sentence(exc: RuntimeError) -> str:
-    """A background run's failure line: this module's own sentence. A sealed
-    write refused because the vault locked mid-run is the locked line, never
-    the database's words (SECURITY.md T28)."""
-    return sealed_files.BACKGROUND_LOCKED_DETAIL if isinstance(exc, SealedWriteRefused) else str(exc)
+class RunFailed(RuntimeError):
+    """A background run's own failure, worded for the person."""
+
+
+TRANSCRIBE_FAILED = "Couldn't transcribe that recording. Try recording it again."
+VOICES_FAILED = "Couldn't tell the voices apart. See Settings, Logs for why."
+
+
+def _sentence(exc: RuntimeError, fallback: str) -> str:
+    """A background run's failure line. Only a sentence written for the
+    person is shown: this module's `RunFailed`, the speech module's
+    `SpeechError`, a sealed-file error. A sealed write refused because the
+    vault locked mid-run is the locked line, never the database's words
+    (SECURITY.md T28). Any other RuntimeError (a model's, a library's) is the
+    fixed `fallback`; its text is in the log where it is caught."""
+    if isinstance(exc, SealedWriteRefused):
+        return sealed_files.BACKGROUND_LOCKED_DETAIL
+    if isinstance(exc, (RunFailed, voice.SpeechError, sealed_files.SealedError)):
+        return str(exc)
+    return fallback
 
 
 def _record_failure(job: activity.Job, state: str, error: str) -> None:
     """The run's last-run line for a background job that ended "failed".
-    `error` is always one of this module's own sentences (a RuntimeError
-    raised here, or a fixed line for anything else, whose exception is logged
-    where it is caught), never an exception's text."""
+    `error` comes from `_sentence` or is one of the two fixed lines above, so
+    it is never an arbitrary exception's text (that is logged where it is
+    caught)."""
     if job.run is not None and state == "failed":
         job.run.fail(error)
 
@@ -451,7 +466,7 @@ def _keep_segments(
     try:
         row = session.query(Recording).filter(Recording.id == recording_id).first()
         if row is None:
-            raise RuntimeError("That recording was deleted while it was transcribed.")
+            raise RunFailed("That recording was deleted while it was transcribed.")
         kept = transcript.clean(segments)
         if named:
             kept = _named_if_unlabelled(session, row, kept)
@@ -555,10 +570,10 @@ def _label_in_background(
             count = _keep_voice_labels(recording_id, found, workspace, check)
     except RuntimeError as exc:
         logger.warning("telling the voices apart failed: %s", exc)
-        state, error = "failed", _sentence(exc)
+        state, error = "failed", _sentence(exc, VOICES_FAILED)
     except Exception:  # noqa: BLE001  # a bad clip or a model that will not load is a row that says so
         logger.warning("telling the voices apart failed", exc_info=True)
-        state, error = "failed", "Couldn't tell the voices apart. See Settings, Logs for why."
+        state, error = "failed", VOICES_FAILED
     finally:
         _record_failure(job, state, error)
         job.result = {"done": f"{count} speakers", "failed": error}[state]
@@ -575,7 +590,7 @@ def _keep_voice_labels(recording_id: int, found: list, workspace: str | None, ch
     try:
         row = session.query(Recording).filter(Recording.id == recording_id).first()
         if row is None:
-            raise RuntimeError("That recording was deleted while its voices were told apart.")
+            raise RunFailed("That recording was deleted while its voices were told apart.")
         segments = transcript.loads(row.segments)
         labels = diarize.voice_labels(segments, found)
         if labels is None:

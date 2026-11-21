@@ -77,7 +77,7 @@ def test_a_failure_says_why_and_a_second_start_is_refused_while_running(client, 
 
     def broken(path, model_size="base"):
         hold.wait(5)
-        raise RuntimeError("Couldn't load the speech model.")
+        raise voice.SpeechError("Couldn't load the speech model.")
         yield  # pragma: no cover
 
     monkeypatch.setattr(voice, "iter_segments", broken)
