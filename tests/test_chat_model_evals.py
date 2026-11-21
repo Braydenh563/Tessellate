@@ -197,3 +197,30 @@ def test_the_link_reason_audit_can_be_undone_with_a_real_model(notebook):  # noq
         left = session.query(EntryLink).filter(EntryLink.reason == manager_links.AUTO_REASON_TEXT, EntryLink.reason_confidence == 0.8).count()
         print(f"  undo: put back {back.get('restored')}, {left} links carry the old reason again", flush=True)
         assert back["restored"] == done["updated"] and left == len(written)
+
+
+def test_a_real_models_tags_are_kept_only_when_the_note_has_their_words(notebook):  # noqa: F811
+    """L840: tests/test_tag_grounding.py fakes the model that answered 'study, university' to any note; here it is real."""
+    import json
+
+    from tessellate.api import routes_entries
+    from tessellate.core import deps
+    from tessellate.entry import manager
+    from tests.test_tag_grounding import LECTURES, UNRELATED
+
+    asked = kept_study = 0
+    with deps.get_db().session() as session:
+        for text in LECTURES:
+            manager.create_entry(session, text, category_name="Uni", tags=["study", "university"])
+        session.commit()
+        for text in UNRELATED:
+            entry = manager.create_entry(session, text, category_name="Misc")
+            session.commit()
+            started = time.monotonic()
+            routes_entries._keep_suggestions(session, entry, "llm")
+            kept = json.loads(entry.suggested_tags or "[]")
+            asked += 1
+            kept_study += bool({"study", "university"} & set(kept))
+            print(f"  {text[:40]!r}: kept {kept} in {time.monotonic() - started:.0f}s", flush=True)
+    print(f"\n  tag grounding: {kept_study} of {asked} unrelated notes were offered study or university after the grounding rule", flush=True)
+    assert kept_study == 0
