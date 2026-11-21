@@ -9433,7 +9433,13 @@ input[type="file"] {
    climb out of the card it sits in, and the card *after* it paints over the
    open list: measured on Reminders: the Quick set menu opened under the
    list card and nothing in it could be clicked. */
-.card:has(details.dock-menu[open]) {
+/* Not the document's card (L342): a `:has()` over a descendant walks the
+   card's whole subtree, the editor included, and marks every node in it, so
+   each keystroke's write inside the editor re-checked the rule and restyled
+   the card and `.doc-layout` (about 2 ms a key at 4x CPU). Its one such
+   menu, #doc-view-menu, sets the class from its toggle (documents-file-kind.js). */
+.card:not(.doc-main):has(details.dock-menu[open]),
+.card.doc-main.doc-view-menu-open {
   position: relative;
   z-index: 30;
 }

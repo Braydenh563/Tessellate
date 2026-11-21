@@ -260,3 +260,79 @@ console.log(JSON.stringify(out));
 """
     out = _node(script)
     assert out == [[], [[3, "ck"]], [[4, ""]], [[5, ""]], [[8, "wn"]], [], []]
+
+
+@needs_node
+def test_the_undo_pair_writes_disabled_only_when_it_changes():
+    from tests._app_js import app_js_text
+
+    text = app_js_text()
+    start = text.index("function paintUndoDoor(button, verb, surface, stack) {")
+    block = text[start : text.index("\n}\n", start) + 3]
+    script = (
+        "function paintStatusItem() {}\n"
+        + block
+        + """
+let writes = 0, value = true;
+const button = { id: "status-redo", get disabled() { return value; }, set disabled(v) { writes += 1; value = v; } };
+const doc = (can) => ({ where: "document", canRedo: () => can });
+for (let i = 0; i < 40; i += 1) paintUndoDoor(button, "redo", doc(false), []);
+for (let i = 0; i < 40; i += 1) paintUndoDoor(button, "redo", null, []);
+const idle = writes;
+paintUndoDoor(button, "redo", doc(true), []);
+paintUndoDoor(button, "redo", doc(true), []);
+const lit = value;
+paintUndoDoor(button, "redo", null, [{ label: "a step" }]);
+paintUndoDoor(button, "redo", null, []);
+console.log(JSON.stringify({ idle, writes, lit, after: value }));
+"""
+    )
+    got = _node(script)
+    assert got == {"idle": 0, "writes": 2, "lit": False, "after": True}
+
+
+def test_the_document_card_is_not_a_has_subject_over_the_editor():
+    """`.card:has(details.dock-menu[open])` walked the document card's whole subtree, the
+    editor included, so each keystroke's write in the editor re-checked it and restyled the
+    card and `.doc-layout`. The document's card takes the state from a class its one such
+    menu sets, and the class covers the same cards: #doc-view-menu is the only
+    `details.dock-menu` in `.doc-main`, and no documents script makes another."""
+    import re
+
+    from tests._app_js import documents_text
+
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".card:has(details.dock-menu[open])" not in re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    assert ".card:not(.doc-main):has(details.dock-menu[open]),\n.card.doc-main.doc-view-menu-open {" in css
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    main = html[html.index('<section class="card doc-main">') :]
+    depth, end = 0, 0
+    for m in re.finditer(r"<(/?)section\b", main):
+        depth += -1 if m.group(1) else 1
+        if depth == 0:
+            end = m.end()
+            break
+    tags = re.findall(r"<details\b[^>]*>", main[:end])
+    menus = [t for t in tags if "dock-menu" in (re.findall(r'class="([^"]*)"', t) or [""])[0].split()]
+    assert len(menus) == 1 and 'id="doc-view-menu"' in menus[0]
+    docs = documents_text()
+    assert not re.search(r"""["'\s]dock-menu["'\s]""", docs.replace("doc-dock-menu", ""))
+    assert 'viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open))' in docs
+
+
+def test_the_grammar_worker_sends_spelling_lints_as_spans_only():
+    # The page drops Harper's spelling lints and reads only their span (LanguageTool's overlap
+    # test), so the worker sends nothing else of them: the whole lints were 359 kB per answer.
+    import re
+
+    worker = (ROOT / "frontend" / "js" / "harper-worker.js").read_text(encoding="utf-8")
+    assert "bare.has(kept.kind) ? { start: kept.start, end: kept.end, kind: kept.kind } : kept" in worker
+    assert "const bare = new Set(Array.isArray(event.data.bare) ? event.data.bare : []);" in worker
+    text = (ROOT / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
+    assert "bare: [...DOC_GRAMMAR_SKIP_KINDS] });" in text
+    assert 'const DOC_GRAMMAR_SKIP_KINDS = new Set(["Spelling"]);' in text
+    findings = text[text.index("function docGrammarFindings(") :]
+    findings = findings[: findings.index("\n}\n")]
+    assert re.search(r"if \(DOC_GRAMMAR_SKIP_KINDS\.has\(lint\.kind\)\) continue;", findings)
+    # Nothing reads a spelling lint's words before that skip.
+    assert findings.index("DOC_GRAMMAR_SKIP_KINDS") < findings.index("lint.message")
