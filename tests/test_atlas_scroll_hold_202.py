@@ -1,4 +1,6 @@
-"""L-ui-modernisation-202: Atlas's loops are held while the page scrolls.
+"""Source text: the hold is lifted from the script text and run in node's vm, as the unit suite has no browser to scroll; the browser numbers are in companioncpu.js.
+
+L-ui-modernisation-202: Atlas's loops are held while the page scrolls.
 
 companioncpu.js (RUNS=5, full figure, no throttle) put each scroll step at 10 to 11 ms more with Atlas shown: every
 scroll frame restyled the figure's running loops (shimmer, skirt, nebula drift, rings, orbiters) and the morph's

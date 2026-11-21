@@ -243,4 +243,5 @@ def test_the_dress_tick_steps_the_companion_chest_and_lets_it_go():
     assert run.count("atlasBreathFrame.pace(box, false);") == 2
     # Each live tick: the companion only (the large view is the one thing on screen and runs it free).
     assert 'atlasBreathFrame.pace(box, !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure"));' in run
-    assert run.index("M.draw(t, m.clock, m.gain, m.ang)") < run.index("atlasBreathFrame.pace(box, !!box")
+    # The tick draws (through `M.pass`, which draws only what has moved, L-ui-modernisation-202) before it paces.
+    assert run.index("M.pass(m, ") < run.index("atlasBreathFrame.pace(box, !!box")

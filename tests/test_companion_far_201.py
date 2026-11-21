@@ -1,4 +1,6 @@
-"""L-ui-modernisation-201: the companion is hit-tested only while the mouse is near it.
+"""Source text: the pointer check is lifted from the script text and run in node's vm, and the CSS rule is read as text, as the unit suite has no browser to hit-test.
+
+L-ui-modernisation-201: the companion is hit-tested only while the mouse is near it.
 
 After every frame that lays out, Blink hit-tests the page at the pointer (hover and the cursor), and a wheel hit-tests
 its target; over the companion's hundred layers each test cost. cpuab A/B (RUNS=3, pointer still over the page):
