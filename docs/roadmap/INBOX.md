@@ -35,7 +35,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1831. **UI modernisation session, 2026-11-14 (L-ui-modernisation-97, how to verify; recommendation taken):** the map's zoom and pan worst frames fail only as wall time on a loaded runner (CPU per task is under budget). Load is not something touch or input emulation can remove, so the row is verified by re-running mapperf.js when no other agent or server runs on this machine (load under 2 on four cores), three runs, medians; if it still fails then, it is an app fault and is fixed. Built under L-ui-modernisation-97.
 ## Placed (last 20, newest first)
 - 2026-11-12: L-ui-modernisation-64 (group notes by hand): recommendation taken under standing order 3, not built: a hand-made group is a tag (or a space, or Favourites), the sidebar's tags and `tag:` filter are the grouped view, and section headings in the windowed, threaded list would be a second ordering beside the sort.
 - 2026-11-12: L-ui-modernisation-65 (more than one category): recommendation taken, not built: a category stays single (filing picks one, the graph and the dashboard pie colour by one); tags are the many-labels mechanism.
