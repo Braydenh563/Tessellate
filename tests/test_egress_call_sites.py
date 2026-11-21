@@ -24,7 +24,6 @@ _NAMED = re.compile(r"egress\.(purpose|labelled)")
 #: Outbound code that does not name a purpose today. Remove a line when its
 #: file gains one; never add a line for new code.
 UNNAMED = {
-    "ai/provider_http.py",
     "ai/ollama_client.py",
     "ai/captions.py",
     "ai/openai_client.py",

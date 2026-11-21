@@ -218,6 +218,7 @@ def _searxng_target(
     return url, {**PRIVACY_HEADERS, "Host": host_header}
 
 
+@egress.labelled("Checking that the search engine answers")
 def probe_searxng(base_url: str) -> bool:
     """True if a SearXNG instance answers JSON search at this URL.
 

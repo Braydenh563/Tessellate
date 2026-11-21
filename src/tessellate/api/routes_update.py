@@ -240,6 +240,7 @@ def _open(url: str):
     return response
 
 
+@egress.labelled("Fetching an update's signature")
 def _fetch_signature(url: str | None) -> bytes | None:
     """The detached signature (a few dozen bytes), or None when the release has
     none or it cannot be fetched: either way a pinned key refuses the update."""
