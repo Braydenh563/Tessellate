@@ -12,7 +12,6 @@ the list is read, marked recovered so the app says so once.
 
 from __future__ import annotations
 
-import json
 import logging
 import re
 from collections.abc import Callable
@@ -21,20 +20,20 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
 from tessellate.core import activity, deps, jobs, recordings, sealed_files, spacelock, transcript, vault
-from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, SealedWriteRefused, like_escape, utcnow
+from tessellate.core.database import Entry, Recording, SealedWriteRefused, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
 from tessellate.entry import manager_text
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
 from tessellate.repo import content as content_repo
+from tessellate.repo import recordings as recordings_repo
 
 router = APIRouter(tags=["recordings"])
 #: `<audio src>` sends the media cookie, never the X-Auth-Token header, so
@@ -71,9 +70,9 @@ class RecordingPatch(BaseModel):
 def _get(session: Session, recording_id: int, binned: bool = False) -> Recording:
     if binned:
         with other_bin.including_binned(session):
-            row = session.get(Recording, recording_id)
+            row = recordings_repo.find(session, recording_id)
     else:
-        row = session.get(Recording, recording_id)
+        row = recordings_repo.find(session, recording_id)
         if row is not None and row.deleted_at is not None:
             row = None
     if row is None:
@@ -108,19 +107,8 @@ def list_recordings(
     alone)."""
     offset = paging.start(cursor, offset)
     recovered = recordings.recover_stale(session)
-    query = session.query(Recording).filter(Recording.state == "saved")
     needle = " ".join(q.split())
-    if needle:
-        # The transcript is stored as JSON, so a quote in the words is `\"` there.
-        stored = json.dumps(needle, ensure_ascii=False)[1:-1]
-        query = query.filter(
-            or_(
-                Recording.title.ilike(f"%{like_escape(needle)}%", escape=LIKE_ESCAPE),
-                Recording.segments.ilike(f"%{like_escape(stored)}%", escape=LIKE_ESCAPE),
-            )
-        )
-    total = query.count()
-    rows = query.order_by(Recording.created_at.desc()).offset(offset).limit(limit).all()
+    rows, total = recordings_repo.page(session, needle, offset, limit)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     announced = [recordings.as_dict(row) for row in recovered]
@@ -156,8 +144,7 @@ def create_recording(body: RecordingCreate, session: Session = Depends(get_sessi
         derived=body.derived,
         state="recording",
     )
-    session.add(row)
-    session.flush()
+    recordings_repo.add(session, row)
     log_action(session, "created", "recording", row.id, detail=mime)
     session.commit()
     return recordings.as_dict(row)
@@ -465,7 +452,7 @@ def _keep_segments(
     if workspace:
         session.info["workspace_id"] = workspace
     try:
-        row = session.query(Recording).filter(Recording.id == recording_id).first()
+        row = recordings_repo.find_by_query(session, recording_id)
         if row is None:
             raise RunFailed("That recording was deleted while it was transcribed.")
         kept = transcript.clean(segments)
@@ -589,7 +576,7 @@ def _keep_voice_labels(recording_id: int, found: list, workspace: str | None, ch
     if workspace:
         session.info["workspace_id"] = workspace
     try:
-        row = session.query(Recording).filter(Recording.id == recording_id).first()
+        row = recordings_repo.find_by_query(session, recording_id)
         if row is None:
             raise RunFailed("That recording was deleted while its voices were told apart.")
         segments = transcript.loads(row.segments)
@@ -658,9 +645,7 @@ def _locked_away(session: Session, recording_id: int) -> bool:
     sealed = session.info.get("sealed_workspaces")
     if not sealed:
         return False
-    space = session.execute(
-        text("SELECT workspace_id FROM recordings WHERE id = :id AND deleted_at IS NULL"), {"id": recording_id}
-    ).scalar()
+    space = recordings_repo.space_of(session, recording_id)
     return space in sealed
 
 

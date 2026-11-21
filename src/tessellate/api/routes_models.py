@@ -437,16 +437,10 @@ def _embedding_coverage(session: Session) -> dict:
     """How many live notes search by meaning can find, out of how many there
     are: the "how well" half of INBOX 431 (3). Two counts on the poll that
     already runs; the space filter applies as it does to every query."""
-    from sqlalchemy import func, select
+    from tessellate.repo import graph_layers
 
-    from tessellate.core.database import EmbeddingRecord, Entry
-
-    live = (Entry.is_deleted == False) & (Entry.is_draft == False)  # noqa: E712
-    total = session.scalar(select(func.count(Entry.id)).where(live)) or 0
-    indexed = session.scalar(
-        select(func.count(EmbeddingRecord.id)).join(Entry, Entry.id == EmbeddingRecord.entry_id).where(live)
-    ) or 0
-    return {"indexed": int(indexed), "total": int(total)}
+    indexed, total = graph_layers.embedding_coverage(session)
+    return {"indexed": indexed, "total": total}
 
 
 def _tools_engine() -> str | None:

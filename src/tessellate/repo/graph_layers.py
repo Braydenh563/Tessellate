@@ -107,3 +107,14 @@ def note_types_of(session: Session, node_ids: set[int]) -> dict[int, str]:
         if entry_id in node_ids and value:
             type_of.setdefault(entry_id, canonical.get(value.casefold(), value))
     return type_of
+
+
+def embedding_coverage(session: Session) -> tuple[int, int]:
+    """(live notes with a stored vector, live notes): how many search by
+    meaning can find. Drafts and binned notes count in neither."""
+    live = (Entry.is_deleted == False) & (Entry.is_draft == False)  # noqa: E712
+    total = session.scalar(select(func.count(Entry.id)).where(live)) or 0
+    indexed = session.scalar(
+        select(func.count(EmbeddingRecord.id)).join(Entry, Entry.id == EmbeddingRecord.entry_id).where(live)
+    ) or 0
+    return int(indexed), int(total)
