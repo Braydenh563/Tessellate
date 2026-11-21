@@ -97,13 +97,13 @@ def test_windows_job_uploads_the_exe():
 
 
 def test_the_msi_is_off_and_the_upload_step_does_not_expect_one():
-    """The MSI build is `if: false` for now (2026-09-21): WiX Toolset v7
+    """The MSI build is off for now (2026-09-21): WiX Toolset v7
     refuses to build at all without accepting the Open Source Maintenance
     Fee EULA (WIX7015), and a failed step in this job took the working .exe
     upload down with it, since the upload step never runs after one.
 
     This is deliberately "the .msi glob is absent", not "the .msi steps are
-    gone": the build steps stay in the file with `if: false` and a comment
+    gone": the build steps stay in the file behind an unset switch and a comment
     naming the two real fixes, so re-enabling one of them is a one-line
     change rather than writing the job back from scratch.
     """
@@ -111,8 +111,10 @@ def test_the_msi_is_off_and_the_upload_step_does_not_expect_one():
     msi_step = job[
         job.index("Build the .msi installer") : job.index("Upload installers to the release")
     ]
-    assert "if: false" in msi_step, (
-        "the .msi build step should be disabled (if: false) until WIX7015 "
+    #: Off unless the repository variable is set, since a constant `if: false`
+    #: fails actionlint (L-general-2's workflow lint); the intent is unchanged.
+    assert "if: vars.TESSELLATE_MSI == 'on'" in msi_step, (
+        "the .msi build step should be off by default (TESSELLATE_MSI unset) until WIX7015 "
         "is resolved, not deleted or silently re-enabled"
     )
     upload = job[job.index("Upload installers to the release") :]
@@ -341,7 +343,7 @@ def _release_notes(changelog_dir: Path, version: str, tmp_path: Path) -> str:
     subprocess.run(
         ["bash", "-c", script],
         cwd=changelog_dir,
-        env={"GITHUB_OUTPUT": str(output), "GITHUB_REPOSITORY": "o/r", "PATH": "/usr/bin:/bin"},
+        env={"GITHUB_OUTPUT": str(output), "GITHUB_REPOSITORY": "o/r", "PATH": "/usr/bin:/bin", "VERSION": version},
         check=True,
     )
     lines = output.read_text(encoding="utf-8").splitlines()

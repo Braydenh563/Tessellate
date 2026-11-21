@@ -229,17 +229,19 @@ jobs:
       # (WIX7015, https://wixtoolset.org/osmf/), which stopped this release
       # cold and, worse, took the .exe upload down with it below, since a
       # failed step ends the job before "Upload installers" ever runs. The
-      # owner: comment the MSI out so the .exe still ships. `if: false` on
-      # both WiX steps rather than deleting them, since the fix is either
+      # owner: comment the MSI out so the .exe still ships. Both WiX steps
+      # run only when the repository variable TESSELLATE_MSI is `on` (unset:
+      # off; a constant `if: false` fails actionlint), rather than deleting
+      # them, since the fix is either
       # accepting the EULA (a decision, not a workaround) or pinning an
       # older WiX release that predates it, and the commands are exactly
       # what a future session needs to re-enable one of those.
       - name: Install WiX
-        if: false
+        if: vars.TESSELLATE_MSI == 'on'
         run: dotnet tool install --global wix
 
       - name: Build the .msi installer (WiX)
-        if: false
+        if: vars.TESSELLATE_MSI == 'on'
         shell: pwsh
         env:
           TESSELLATE_VERSION: ${{ needs.resolve-version.outputs.version }}
