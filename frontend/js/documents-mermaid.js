@@ -558,11 +558,11 @@
     }
     //: The fences once per text (DX1): a caret move rescanned the whole document.
     const blocksOf = new WeakMap();
-    const build = (state) => {
+    const build = (state, tr) => {
       let blocks = blocksOf.get(state.doc);
       if (!blocks) {
-        const text = docStr(state.doc);
-        blocks = text.includes("```mermaid") || /```[ \t]+mermaid/.test(text) ? docMermaidBlocks(text) : [];
+        //: An edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+        blocks = docStr.lacks(state, /```[ \t]*mermaid/, tr) ? [] : docMermaidBlocks(docStr(state.doc));
         blocksOf.set(state.doc, blocks);
       }
       if (!blocks.length) return Decoration.none;
@@ -582,7 +582,7 @@
     };
     docPhase2State.mermaidFieldCache = StateField.define({
       create: (state) => build(state),
-      update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state) : value),
+      update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state, tr) : value),
       provide: (field) => EditorView.decorations.from(field),
     });
     return docPhase2State.mermaidFieldCache;

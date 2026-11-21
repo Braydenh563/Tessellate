@@ -740,6 +740,10 @@
         : "Headings you write appear here, and each one jumps to its place in the document.";
     }
     docOutlineRows = [];
+    //: Built off the page and put in once (L-documents-26): the pass over a 20k-word document's
+    //: 1,176 headings measured 23.6 ms appending each row to the live list and 16 ms through one
+    //: fragment (median of nine, load 3.5 to 4). The `:has()` invalidations stay (about 3,500 a pass).
+    const rows = document.createDocumentFragment();
     headings.forEach((heading, index) => {
       const li = document.createElement("li");
       li.className = `outline-h${heading.level} outline-row`;
@@ -860,13 +864,14 @@
         }
       });
       li.appendChild(button);
-      list.appendChild(li);
+      rows.appendChild(li);
       //: `row` as well as `button`, because the scroll-spy has to know whether
       //: the heading it wants to mark is on screen at all: a fold or a filter
       //: can hide the row the caret is in, and marking a hidden row is a mark
       //: nobody sees followed by a scroll to nothing.
       docOutlineRows.push({ line: heading.line, button, row: li });
     });
+    list.appendChild(rows);
     //: The rows are new elements, so whatever was marked a moment ago is gone
     //: with them. Marked again here rather than waiting for the next scroll:
     //: the outline is rebuilt on a pause in typing, and a table of contents
