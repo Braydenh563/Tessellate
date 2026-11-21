@@ -153,9 +153,10 @@ a = Analysis(
         # The About panel's release notes, read from the bundle root when
         # frozen (api/app.py `/changelog`); the Windows spec says more.
         (str(REPO_ROOT / "CHANGELOG.md"), "."),
-        # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
-        # beside the module, so it goes where the module's package is.
-        (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),
+        # The JSON the ai package reads from beside its modules (the taxonomy
+        # pack, skill rates, study terms, common misspellings): the whole folder,
+        # since naming only taxonomy/ left the study glossary out of the build.
+        (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data"), "tessellate/ai/data"),
         # The Run sandbox's pages, workers and Python runner (api/run_sandbox.py
         # reads them at import from beside the module).
         (str(REPO_ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets"), "tessellate/api/run_sandbox_assets"),

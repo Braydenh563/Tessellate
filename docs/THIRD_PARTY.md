@@ -96,11 +96,17 @@ labels engine `sherpa-onnx` (Apache-2.0, on ONNX Runtime, MIT), read by
   under the project's licence. Its original vocabulary is kept in
   `tests/fixtures/taxonomy/original_taxonomy.json`, and its tests in
   `tests/test_taxonomy_pack.py` (WORLD_CLASS_PLAN 23, decision 1).
-- `ai/question_noise.py`'s misspelling table (the block added 2026-10-10)
-  appears to be drawn from Wikipedia's "Lists of common misspellings", which
-  is CC BY-SA 4.0. Its origin is not recorded in the commit that added it;
-  until it is confirmed or replaced, it is credited here as that list.
+- `ai/data/common_misspellings.json`: 3892 misspelling pairs from Wikipedia's
+  "Lists of common misspellings/For machines", by the Wikipedia contributors,
+  CC BY-SA 4.0. Confirmed 2026-11-21 (L-general-25): 3892 of the 3974 pairs
+  added on 2026-10-10 match that page exactly; the other 82 (slang, keyboard
+  slips) stay in `ai/question_noise.py`. Changes: lower-cased, one correction
+  per misspelling, real words and keys with a space left out. CC BY-SA 4.0 is
+  one-way compatible with GPLv3 (Creative Commons' compatibility list), which
+  AGPLv3 section 13 lets this project combine with; the file keeps its own
+  source and licence so it can be replaced alone.
   https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings
+  https://creativecommons.org/licenses/by-sa/4.0/
 
 ## Elsewhere in the repository
 
