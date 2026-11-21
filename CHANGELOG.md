@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot and stylesheet recounts (L531, L533): cold, warm and phone-width boots measured (first paint 264, 226 and 219 ms; 678, 22 and 612 KB); decisions 9 to 17 recounted from the stylesheets, and the colour and hover ratchets lowered to the count (189 to 156, 7 to 6).
 - Cold first opens (L-world-class-40): re-measured idle, the first document open from the Library (median 286 and 265 ms) now matches the second (211 and 240), so nothing is parsed on the press; closed.
 - Budgets (L540): browser figures re-measured on an idle machine and the caps tightened (first paint 1070 to 460 ms, first interaction 6960 to 3060, list 210 to 110, search 50 to 40, document 540 to 180); the server shares keep their loaded caps; the budgets sweep now waits for the update-check question.
 - Library and graph search (L628): "notes about the harbor" drops the request words and a slip ("harbr") still finds the notes; the notebook's own words, never the Settings synonyms.
