@@ -9,7 +9,7 @@ reads each note's answer once.
 
 from __future__ import annotations
 
-from tessellate.api import routes_entries
+from tessellate.entry import tag_reasons
 
 LONG = "# Plan\n\n" + " ".join(f"word{i}" for i in range(400))
 
@@ -66,12 +66,12 @@ def test_a_meeting_is_sent_whole_because_its_card_reads_the_sections(client):
 
 
 def test_tag_reasons_are_remembered_per_text():
-    routes_entries._cached_reasons.cache_clear()
-    first = routes_entries._tag_reasons("I went running and squats today", ["running"])
-    again = routes_entries._tag_reasons("I went running and squats today", ["running"])
+    tag_reasons._cached_reasons.cache_clear()
+    first = tag_reasons.reasons("I went running and squats today", ["running"])
+    again = tag_reasons.reasons("I went running and squats today", ["running"])
     assert first == again
-    assert routes_entries._cached_reasons.cache_info().hits == 1
-    assert routes_entries._tag_reasons("", ["running"]) == {}
+    assert tag_reasons._cached_reasons.cache_info().hits == 1
+    assert tag_reasons.reasons("", ["running"]) == {}
 
 
 def test_a_preview_row_counts_the_headings_of_the_whole_text_outside_code_fences(client):

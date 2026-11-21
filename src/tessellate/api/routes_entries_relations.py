@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import backend_hint, learning, librarian, links, relations
 from tessellate.ai import tensions as tensions_module
-from tessellate.api.routes_entries import _existing_entry, _preview, _to_out
+from tessellate.api.entry_out import to_out
+from tessellate.api.routes_entries import _existing_entry
 from tessellate.api.schemas import (
     EntryOut,
 )
@@ -172,8 +173,8 @@ def _suggestion_row(session: Session, candidate, candidates: dict) -> dict:  # n
     return {
         "source_id": a,
         "target_id": b,
-        "source_preview": _preview(candidates[a].content),
-        "target_preview": _preview(candidates[b].content),
+        "source_preview": manager_text.preview(candidates[a].content),
+        "target_preview": manager_text.preview(candidates[b].content),
         "similarity": round(candidate.similarity, 2) if candidate.similarity is not None else None,
         "confidence": round(candidate.confidence, 2),
         "signals": signals,
@@ -661,7 +662,7 @@ def related_entries(entry_id: int, session: Session = Depends(get_session)) -> l
         if not other.is_private and other.id not in linked and bool(other.is_draft) == bool(entry.is_draft)
     }
     ordered = [found[other_id] for other_id in wanted if other_id in found]
-    return _with_reasons(session, entry.id, [_to_out(session, e) for e in ordered[:3]])
+    return _with_reasons(session, entry.id, [to_out(session, e) for e in ordered[:3]])
 
 
 def _with_reasons(session: Session, entry_id: int, rows: list[EntryOut]) -> list[EntryOut]:

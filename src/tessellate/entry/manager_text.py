@@ -387,3 +387,16 @@ def wiki_plain(text: str) -> str:
     """Some text with each `[[link]]` replaced by the words it draws, bidi
     controls dropped (it builds previews)."""
     return WIKI_LINK.sub(lambda match: wiki_shown(match.group(1)), strip_bidi(text))
+
+
+def preview(text: str, length: int = 60) -> str:
+    """A short, readable version of a note for link chips and lists.
+
+    The [[link]] syntax is scaffolding rather than content, so a preview shows
+    the words without the brackets, seeing "[[bread proving]]" on a link chip
+    that already means "linked to bread proving" is just noise.
+    """
+    from tessellate.entry.properties import strip as strip_properties
+
+    plain = strip_inline_markdown(wiki_plain(strip_properties(text or "").lstrip()))
+    return plain if len(plain) <= length else plain[: length - 1] + "…"

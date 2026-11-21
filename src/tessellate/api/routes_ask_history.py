@@ -99,7 +99,7 @@ def get_ask_turn(turn_id: int, session: Session = Depends(get_session)) -> dict:
     back turn should not resurrect binned content or leak a note that has
     since been marked private.
     """
-    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
+    from tessellate.api.entry_out import to_out_bulk  # avoids a route-module cycle
 
     turn = deps.get_or_404(session, AskTurn, turn_id, "That question is not in your history.")
     ids = json.loads(turn.raw_result_ids or "[]")
@@ -115,7 +115,7 @@ def get_ask_turn(turn_id: int, session: Session = Depends(get_session)) -> dict:
     return {
         **_summary(turn),
         "answer": turn.answer,
-        "raw_results": [r.model_dump(mode="json") for r in _to_out_bulk(session, entries)],
+        "raw_results": [r.model_dump(mode="json") for r in to_out_bulk(session, entries)],
         "omitted_results": len(ids) - len(entries),
         # Same badge data the live answer had, older rows saved before this
         # field existed fall back to "no explanation" rather than an error.

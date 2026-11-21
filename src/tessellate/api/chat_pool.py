@@ -478,12 +478,12 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
 
 
 def _raw_results(session: Session, found: _Found) -> list:
-    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
+    from tessellate.api.entry_out import to_out_bulk  # avoids a route-module cycle
 
     rows = []
-    #: In a fixed number of queries: one `_to_out` per note was five queries
+    #: In a fixed number of queries: one `to_out` per note was five queries
     #: each, 120 for a 24-note answer (2026-11-02).
-    for entry, out in zip(found.entries, _to_out_bulk(session, list(found.entries)), strict=True):
+    for entry, out in zip(found.entries, to_out_bulk(session, list(found.entries)), strict=True):
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)

@@ -41,9 +41,9 @@ def test_numbers_and_dates_roll_up(client):
 
 
 def test_a_rollup_covers_every_match_not_only_the_drawn_rows(client, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.entry import listing
 
-    monkeypatch.setattr(routes_entries, "QUERY_ROWS_MAX", 2)
+    monkeypatch.setattr(listing, "QUERY_ROWS_MAX", 2)
     for cost in (1, 2, 3, 4):
         _note(client, f"---\ntype: Bill\ncost: {cost}\n---\n# Bill {cost}")
     body = _query(client, "type:bill")

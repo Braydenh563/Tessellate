@@ -16,16 +16,14 @@ from tessellate.ai import janitor, librarian
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.routes_entries import (
     _existing_entry,
-    _preview,
-    _tag_reasons,
-    _to_out,
 )
+from tessellate.api.entry_out import to_out
 from tessellate.core import deps, jobruns
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.entry import manager_links
-from tessellate.entry import manager_text, tag_suggestions
+from tessellate.entry import manager_text, tag_reasons, tag_suggestions
 from tessellate.search import search_manager
 
 logger = logging.getLogger("tessellate.api.entries")
@@ -74,11 +72,11 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     suggested_links = _reevaluate_links(session, entry)
 
     return {
-        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
+        "entry": to_out(session, entry, filed_by=filed_by).model_dump(),
         "recategorised_to": recategorised_to,
         "suggested_categories": _other_categories(session, entry),
         "suggested_tags": suggested_tags,
-        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
+        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else tag_reasons.reasons(entry.content or "", suggested_tags),
         "suggested_links": suggested_links,
     }
 
@@ -148,7 +146,7 @@ def _reevaluate_links(session: Session, entry) -> list[dict]:  # noqa: ANN001
             if other.id == entry.id or other.id in already or score < 0.4:
                 continue
             suggested_links.append(
-                {"id": other.id, "preview": _preview(other.content), "similarity": round(score, 2)}
+                {"id": other.id, "preview": manager_text.preview(other.content), "similarity": round(score, 2)}
             )
             if len(suggested_links) >= 4:
                 break

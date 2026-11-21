@@ -74,7 +74,7 @@ HANDS_ON = {
     "api/routes_conversations.py::_process_committed_media": "media_process skips a sealed file",
     "api/routes_documents.py::_process_committed_media": "media_process skips a sealed file",
     "api/routes_documents.py::export_bundle": "docexport.bundle reads through sealed_files",
-    "api/routes_entries.py::_process_committed_media": "media_process skips a sealed file",
+    "entry/capture.py::process_committed_media": "media_process skips a sealed file",
     "api/routes_files.py::_media_upload_path": "its callers open the path with unsealed",
     "api/routes_files.py::save_media_to_library": "media_process skips a sealed file",
     "api/routes_import.py::export_notebook_folder": "export_folder writes sealed files through sealed_files",

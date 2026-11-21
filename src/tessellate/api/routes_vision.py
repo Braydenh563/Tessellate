@@ -119,7 +119,7 @@ def most_opened(
     session: Session = Depends(get_session),
 ) -> list[dict]:
     """The notes opened most in the last `days` days, with how often."""
-    from tessellate.api.routes_entries import _to_out_bulk
+    from tessellate.api.entry_out import to_out_bulk
 
     since = (utcnow().date() - timedelta(days=days - 1)).isoformat()
     opened = func.sum(EntryOpen.count).label("opened")
@@ -135,7 +135,7 @@ def most_opened(
     entries = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(list(counts))))}
     ordered = [entries[i] for i in counts if i in entries]
     out = []
-    for item in _to_out_bulk(session, ordered):
+    for item in to_out_bulk(session, ordered):
         data = item.model_dump(mode="json")
         data["opened"] = counts.get(item.id, 0)
         out.append(data)

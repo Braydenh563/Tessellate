@@ -8,6 +8,7 @@ warm at 5,000. Counted, not timed: a miss is a call of `_reasons_for`."""
 from __future__ import annotations
 
 from tessellate.api import routes_entries
+from tessellate.entry import tag_reasons
 
 
 def test_a_full_page_read_twice_computes_each_note_once(monkeypatch):
@@ -17,28 +18,28 @@ def test_a_full_page_read_twice_computes_each_note_once(monkeypatch):
         calls["n"] += 1
         return tuple((tag, f"in {content}") for tag in tags)
 
-    monkeypatch.setattr(routes_entries, "_reasons_for", counted)
-    routes_entries._cached_reasons.cache_clear()
+    monkeypatch.setattr(tag_reasons, "_reasons_for", counted)
+    tag_reasons._cached_reasons.cache_clear()
     page = routes_entries.ENTRIES_PAGE_SIZE_MAX
     for _load in range(2):
         for i in range(page):
-            assert routes_entries._tag_reasons(f"Note {i} on running", ["running"]) == {"running": f"in Note {i} on running"}
+            assert tag_reasons.reasons(f"Note {i} on running", ["running"]) == {"running": f"in Note {i} on running"}
     assert calls["n"] == page
-    info = routes_entries._cached_reasons.cache_info()
+    info = tag_reasons._cached_reasons.cache_info()
     assert (info.hits, info.misses) == (page, page)
 
 
 def test_the_cache_is_bigger_than_a_page_and_light_per_row():
-    assert routes_entries.REASONS_CACHE_ROWS > routes_entries.ENTRIES_PAGE_SIZE_MAX
-    routes_entries._cached_reasons.cache_clear()
-    routes_entries._cached_reasons("x" * 19_000, ("a",))
-    (key,) = routes_entries._cached_reasons._rows
+    assert tag_reasons.REASONS_CACHE_ROWS > routes_entries.ENTRIES_PAGE_SIZE_MAX
+    tag_reasons._cached_reasons.cache_clear()
+    tag_reasons._cached_reasons("x" * 19_000, ("a",))
+    (key,) = tag_reasons._cached_reasons._rows
     assert len(key[0]) == 16  # a digest, not the 19,000-character text
 
 
 def test_the_oldest_row_goes_first_when_full(monkeypatch):
-    monkeypatch.setattr(routes_entries, "_reasons_for", lambda content, tags: ())
-    cache = routes_entries._ReasonsCache(2)
+    monkeypatch.setattr(tag_reasons, "_reasons_for", lambda content, tags: ())
+    cache = tag_reasons._ReasonsCache(2)
     for text in ("a", "b", "a", "c"):
         cache(text, ("t",))
     assert cache.cache_info().currsize == 2

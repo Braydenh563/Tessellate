@@ -10,14 +10,14 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from tessellate.api import routes_entries
+from tessellate.api import entry_out
 from tessellate.entry import filing_background
 
 
 def _crashing_client(monkeypatch):
     from tessellate.api.app import create_app
 
-    real = routes_entries._to_out
+    real = entry_out.to_out
     state = {"armed": True}
 
     def to_out(*args, **kwargs):
@@ -26,7 +26,7 @@ def _crashing_client(monkeypatch):
             raise RuntimeError("server died after the commit")
         return real(*args, **kwargs)
 
-    monkeypatch.setattr(routes_entries, "_to_out", to_out)
+    monkeypatch.setattr(entry_out, "to_out", to_out)
     return TestClient(create_app(), raise_server_exceptions=False)
 
 
