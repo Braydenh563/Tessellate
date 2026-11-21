@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Private spaces in the background, the watcher (L-world-class-381 review): during one long step (a long whisper segment, telling the voices apart) a watcher looks at the session's door every 2 seconds and, once it shuts, removes the plain copy at once and fails the run closed (`sealed_files.for_background`, `WATCH_SECONDS`, SECURITY.md T28 states the bound); tests/test_sealed_background_381.py.
 - Private spaces in the background, naming and the last write (L-world-class-381 review): a private run is never named by the utility model nor reads its meeting note, and the session's door is asked immediately before the transcript or the voice labels are committed, so a lock during the last step keeps nothing (`routes_recordings._keep_segments`, SECURITY.md T28); tests/test_sealed_background_381.py.
 - Private spaces in the background, review tests (L-world-class-381): a lock, a sign-out and the idle timeout mid-run each stop the transcriber at the next line and keep nothing; a document locked mid-read keeps no text; the session's token is in no log line, table row or queued job; tests/test_sealed_background_381.py.
 Agent note summaries name a note's extra categories (L-world-class-695): `_note_summary` adds `also_in` only when a note has one (`list_notes` and its kin fetch them in one query); tests/test_note_memberships.py.

@@ -292,6 +292,51 @@ def test_a_private_run_is_never_named_by_the_model_nor_reads_the_meeting_note(si
     assert named == [2]
 
 
+def test_the_watcher_removes_the_plain_copy_during_a_long_step(signed_in, monkeypatch):
+    """Finding 3: a lock in the middle of one long step (a long whisper
+    segment) removes the plain copy at the watcher's next look, without the
+    step ending, and the run fails closed. Each look is a tick the test
+    gives, never a real sleep."""
+    import queue
+
+    client = signed_in
+    looked, ticks = queue.Queue(), threading.Semaphore(0)
+    in_step, go_on, seen = threading.Event(), threading.Event(), []
+
+    def tick(done, seconds):
+        looked.put(seconds)
+        ticks.acquire()
+        return done.is_set()
+
+    def long_segment(path, model_size="base"):
+        in_step.set()
+        go_on.wait(5)
+        seen.append(_left_in_tmp())
+        yield SEGMENTS[0]
+
+    monkeypatch.setattr(sealed_files, "watch_wait", tick)
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    monkeypatch.setattr(voice, "iter_segments", long_segment)
+    rid = _recording(client)
+    got = client.post(f"/recordings/{rid}/transcribe/start", headers=client.space)
+    assert got.status_code == 202, got.text
+    assert in_step.wait(5)
+    assert looked.get(timeout=5) == sealed_files.WATCH_SECONDS
+    assert len(_left_in_tmp()) == 1
+    ticks.release()  # a look while the space is open: the copy stays
+    looked.get(timeout=5)
+    assert len(_left_in_tmp()) == 1
+    spacelock.close_all()
+    ticks.release()
+    looked.get(timeout=5)  # the look that saw the door shut has finished
+    assert _left_in_tmp() == []
+    go_on.set()
+    assert recordings.wait_transcription(rid, 5)
+    ticks.release()  # the watcher's last wait sees the block has ended
+    assert seen == [[]]
+    _failed_closed(recordings.transcription_of(rid), rid)
+
+
 def _three_lines_shut_after_one(client, monkeypatch, shut):
     """A run whose space shuts (by `shut`) as the second line is heard;
     returns the lines the transcriber was asked for."""

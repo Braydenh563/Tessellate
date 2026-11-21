@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11275, test files 2924, tests 23045, plan headings 688, app scripts 29, boot scripts 38, script files 316.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 741, backend modules 11277, test files 2924, tests 23046, plan headings 688, app scripts 29, boot scripts 38, script files 316.
 
 ## Frontend functions (8567)
 
@@ -14314,7 +14314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11275)
+## Backend modules (11277)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26701,7 +26701,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `prune_now` | src/tessellate/core/running_copies.py:169 |
 | `shutdown` | src/tessellate/core/running_copies.py:196 |
 
-### src/tessellate/core/sealed_files.py (42)
+### src/tessellate/core/sealed_files.py (44)
 
 | Name | File:line |
 |---|---|
@@ -26730,10 +26730,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stream` | src/tessellate/core/sealed_files.py:243 |
 | `_tmp_root` | src/tessellate/core/sealed_files.py:457 |
 | `_unset_data_dir` | src/tessellate/core/sealed_files.py:448 |
+| `_wait` | src/tessellate/core/sealed_files.py:502 |
+| `_watch` | src/tessellate/core/sealed_files.py:511 |
 | `_whole` | src/tessellate/core/sealed_files.py:147 |
 | `_write_new_sealed` | src/tessellate/core/sealed_files.py:320 |
 | `append` | src/tessellate/core/sealed_files.py:287 |
-| `for_background` | src/tessellate/core/sealed_files.py:497 |
+| `for_background` | src/tessellate/core/sealed_files.py:526 |
 | `is_sealed` | src/tessellate/core/sealed_files.py:111 |
 | `iter_plain` | src/tessellate/core/sealed_files.py:226 |
 | `open_plain` | src/tessellate/core/sealed_files.py:206 |
@@ -26744,9 +26746,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `readable` | src/tessellate/core/sealed_files.py:469 |
 | `seal` | src/tessellate/core/sealed_files.py:426 |
 | `seal_bytes` | src/tessellate/core/sealed_files.py:201 |
-| `sweep_leftovers` | src/tessellate/core/sealed_files.py:517 |
+| `sweep_leftovers` | src/tessellate/core/sealed_files.py:561 |
 | `unseal` | src/tessellate/core/sealed_files.py:436 |
-| `wanted` | src/tessellate/core/sealed_files.py:532 |
+| `wanted` | src/tessellate/core/sealed_files.py:576 |
 
 ### src/tessellate/core/secrets_store.py (6)
 
@@ -28753,7 +28755,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23045)
+## Tests (23046)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31058,7 +31060,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_edge_owner.py | 2 |
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
-| tests/test_sealed_background_381.py | 14 |
+| tests/test_sealed_background_381.py | 15 |
 | tests/test_sealed_files_format.py | 18 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
