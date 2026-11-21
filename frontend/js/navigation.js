@@ -1545,10 +1545,19 @@ document.addEventListener(
     if (event.key !== "Escape") return;
     const open = document.querySelector(DETAILS_MENU_OPEN);
     if (!open) return;
+    //: A list drawn over the menu (a select in it, opened with the arrows) is the innermost layer and owns this Escape.
+    //: With the focus inside it, its own handler closes it; with the focus still on the select's button, it is closed
+    //: here and the menu stays for the next Escape. Closing the menu first left the list standing at <body> with
+    //: nothing under it, and letting the key through closed the Settings window (L-general-71).
+    const list = document.querySelector(".action-menu:not(.hidden)");
+    if (list?.contains(event.target)) return;
+    if (list) closeActionMenus();
+    else {
+      open.open = false;
+      open.querySelector("summary")?.focus();
+    }
     event.preventDefault();
     event.stopPropagation();
-    open.open = false;
-    open.querySelector("summary")?.focus();
   },
   true
 );

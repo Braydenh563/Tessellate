@@ -59,7 +59,8 @@ function findOpeners(scopeSel) {
     'details:has(> .doc-dock-menu-list) > summary',
     'details.dock-menu > summary',
     'details.doc-toolbar-menu > summary',
-    '.select-opener',
+    //: A date or time field's opener holds a dialog (the month pop, a help-popover), not a menu: aria-haspopup="dialog".
+    '.select-opener:not([aria-haspopup="dialog"])',
     '[data-wb-menu-toggle]',
   ].join(',');
   for (const root of roots) {
@@ -130,7 +131,11 @@ function measure(opIdx) {
   const isSheet = !!menu.closest('.sheet, [class*="sheet"]');
   const role = menu.getAttribute('role') || '';
   const mr = menu.getBoundingClientRect();
-  const or = opener ? opener.getBoundingClientRect() : null;
+  //: A tool's list lifts itself clear of the options bar that opens above its button (whiteboard.js
+  //: `wbLiftMenuOffOptionsBar`, INBOX 823): the bar is between them by design, so the bar is what it opens from.
+  const bar = document.getElementById('wb-context');
+  const lifted = menu.style.translate && bar && bar.checkVisibility && bar.checkVisibility() ? bar : null;
+  const or = lifted ? lifted.getBoundingClientRect() : opener ? opener.getBoundingClientRect() : null;
   //: **Command rows**, the things a menu is a list of. A labelled select or a
   //: segmented control inside a dock menu is a form row with its own shape,
   //: so it answers to the section-label rule below, not to the row rules.
@@ -141,7 +146,8 @@ function measure(opIdx) {
   rows = rows.filter((r) => !rows.some((o) => o !== r && o.contains(r)));
   rows = rows.filter((r) => r.getBoundingClientRect().height < 120 && r.getBoundingClientRect().width > menuW * 0.4);
   const iconOf = (r) => {
-    const i = r.querySelector('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]');
+    //: The icon first, then a box: a switch row may write its input before its icon and draw it last.
+    const i = r.querySelector('i.ph, svg, img, .swatch, [class*="dot"]') || r.querySelector('input[type="checkbox"], input[type="radio"]');
     if (!i || !visible(i)) return null;
     const rr = r.getBoundingClientRect();
     const ir = i.getBoundingClientRect();
@@ -187,7 +193,11 @@ function measure(opIdx) {
   //: stand on the column the command rows' icons stand on.
   const heads = [...menu.querySelectorAll('.dock-menu-label, .wb-panel-group-label, .select-group-label, .menu-group-label, .wb-menu-row > span:first-child, .dock-menu-section > .select-shell > .select-opener, .dock-menu-section > .segmented-control')]
     .filter(visible).map((h) => {
-      const t = h.matches('.select-opener, .segmented-control') ? { x: h.getBoundingClientRect().left, text: '[' + (h.getAttribute('aria-label') || h.className.split(' ')[0]).slice(0, 18) + ']' } : textStart(h);
+      //: A switch row's label span leads with its icon: the column it stands on
+      //: is the icon's (like a command row's), not where its words start.
+      const lead = h.matches('.wb-menu-row > span:first-child') && h.querySelector(':scope > i.ph:first-child');
+      const t = h.matches('.select-opener, .segmented-control') ? { x: h.getBoundingClientRect().left, text: '[' + (h.getAttribute('aria-label') || h.className.split(' ')[0]).slice(0, 18) + ']' }
+        : lead ? { x: lead.getBoundingClientRect().left, text: (h.textContent || '').trim().slice(0, 24) } : textStart(h);
       return t ? { text: t.text, x: r1(t.x), left: Math.round(h.getBoundingClientRect().left) } : null;
     }).filter(Boolean);
   const seps = [...menu.querySelectorAll('[role="separator"], .menu-sep, hr, .doc-dock-menu-sep, [class*="-sep"], [class*="divider"]')]
@@ -226,6 +236,7 @@ function measure(opIdx) {
     inset,
     role, isSheet, cls: menu.className.toString().slice(0, 60), id: menu.id,
     box: { l: Math.round(mr.left), t: Math.round(mr.top), r: Math.round(mr.right), b: Math.round(mr.bottom), w: Math.round(mr.width), h: Math.round(mr.height) },
+    lifted: !!lifted,
     op: or ? { l: Math.round(or.left), t: Math.round(or.top), r: Math.round(or.right), b: Math.round(or.bottom) } : null,
     natural: Math.round(natural), vw: innerWidth, vh: innerHeight,
     overflowX: menu.scrollWidth > menu.clientWidth + 1 && getComputedStyle(menu).overflowX !== 'visible',
@@ -245,7 +256,10 @@ function judge(m) {
   const clipped = rows.filter((r) => r.clipped).map((r) => r.text);
   if (clipped.length) f.push(`clipped labels: ${JSON.stringify(clipped.slice(0, 4))}`);
   if (m.overflowX) f.push('menu scrolls sideways');
-  if (!m.isSheet && m.natural > 0 && m.box.w > 2 * m.natural + 8) f.push(`too wide: ${m.box.w}px for ${m.natural}px of content`);
+  //: A select's list is as wide as its button (`.select-menu { min-width: 100% }`, the platform's own rule), so a
+  //: full-width field on a phone owns a list that wide: the button's width is part of what it holds.
+  const floor = m.cls.includes('select-menu') && m.op ? Math.max(m.natural, m.op.r - m.op.l) : m.natural;
+  if (!m.isSheet && m.natural > 0 && m.box.w > 2 * floor + 8) f.push(`too wide: ${m.box.w}px for ${m.natural}px of content`);
   const single = rows.filter((r) => !r.multi && !r.tall);
   const hs = [...new Set(single.map((r) => r.h))];
   if (hs.length > 1 && Math.max(...hs) - Math.min(...hs) > 1) {
@@ -307,7 +321,7 @@ function judge(m) {
       const side = b.l >= o.r - 2 ? b.l - o.r : b.r <= o.l + 2 ? o.l - b.r : null;
       if (side !== null && side > 8) f.push(`${side}px beside its opener`);
       if (side === null) f.push('covers its opener');
-    } else {
+    } else if (!m.lifted) {
       const aligned = Math.abs(b.l - o.l) <= 8 || Math.abs(b.r - o.r) <= 8 || (b.l <= o.l && b.r >= o.r);
       if (!aligned) f.push(`not lined up with its opener: menu ${b.l}-${b.r}, opener ${o.l}-${o.r}`);
     }
@@ -401,6 +415,12 @@ async function sweepSurface(page, where, scope, out, restore) {
       await page.waitForTimeout(100);
       const moved = await page.evaluate(() => document.activeElement !== window.__mmFocus && !document.activeElement.matches('body'));
       if (!moved) f.push('a second ArrowDown does not walk the menu');
+    }
+    //: A list the second ArrowDown opened (a select in a dock menu) is the innermost layer: the first Escape closes
+    //: it, and the menu's own Escape is the one measured.
+    if (op.kind === 'details' && await page.evaluate(() => [...document.querySelectorAll('.select-menu')].some((e) => !e.hasAttribute('data-mm-was') && e.checkVisibility && e.checkVisibility({ visibilityProperty: true })))) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
     }
     await page.keyboard.press('Escape');
     await page.waitForTimeout(200);

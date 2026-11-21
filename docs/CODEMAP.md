@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 741, backend modules 11307, test files 2942, tests 23111, plan headings 689, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 741, backend modules 11307, test files 2943, tests 23118, plan headings 689, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8565)
 
@@ -409,50 +409,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:55 |
-| `aiWritingTrace` | frontend/js/chat.js:1072 |
-| `applyCompression` | frontend/js/chat.js:955 |
+| `aiWritingTrace` | frontend/js/chat.js:1075 |
+| `applyCompression` | frontend/js/chat.js:958 |
 | `atlasSuggestion` | frontend/js/chat.js:202 |
-| `batteryModeOn` | frontend/js/chat.js:997 |
+| `batteryModeOn` | frontend/js/chat.js:1000 |
 | `bodyTextWithCitations` | frontend/js/chat.js:87 |
 | `chatEmptySettle` | frontend/js/chat.js:223 |
-| `chatTranscriptText` | frontend/js/chat.js:886 |
+| `chatTranscriptText` | frontend/js/chat.js:889 |
 | `clearChatEmptyState` | frontend/js/chat.js:352 |
 | `clipFor` | frontend/js/chat.js:61 |
 | `compactTokens` | frontend/js/chat.js:101 |
-| `compressChatContext` | frontend/js/chat.js:915 |
-| `compressSizeText` | frontend/js/chat.js:936 |
+| `compressChatContext` | frontend/js/chat.js:918 |
+| `compressSizeText` | frontend/js/chat.js:939 |
 | `copyToClipboard` | frontend/js/chat.js:152 |
 | `copyViaTextarea` | frontend/js/chat.js:112 |
-| `fillPersonaMark` | frontend/js/chat.js:689 |
+| `fillPersonaMark` | frontend/js/chat.js:692 |
 | `flashCopied` | frontend/js/chat.js:134 |
 | `loadResponseModes` | frontend/js/chat.js:638 |
-| `mountChatActionsMenu` | frontend/js/chat.js:830 |
-| `personaOptions` | frontend/js/chat.js:706 |
-| `progressMotionWanted` | frontend/js/chat.js:1024 |
-| `progressPhaseText` | frontend/js/chat.js:1268 |
+| `mountChatActionsMenu` | frontend/js/chat.js:833 |
+| `personaOptions` | frontend/js/chat.js:709 |
+| `progressMotionWanted` | frontend/js/chat.js:1027 |
+| `progressPhaseText` | frontend/js/chat.js:1271 |
 | `regenerateFromBubble` | frontend/js/chat.js:190 |
 | `regenerateLastAnswer` | frontend/js/chat.js:195 |
-| `renderChatContextMeter` | frontend/js/chat.js:784 |
+| `renderChatContextMeter` | frontend/js/chat.js:787 |
 | `renderChatEmptyState` | frontend/js/chat.js:233 |
-| `renderChatTurnCount` | frontend/js/chat.js:810 |
-| `renderChatUsage` | frontend/js/chat.js:767 |
-| `renderCompressionState` | frontend/js/chat.js:968 |
+| `renderChatTurnCount` | frontend/js/chat.js:813 |
+| `renderChatUsage` | frontend/js/chat.js:770 |
+| `renderCompressionState` | frontend/js/chat.js:971 |
 | `renderModelContextBox` | frontend/js/chat.js:496 |
 | `renderModelHealthNote` | frontend/js/chat.js:600 |
 | `renderModelSpec` | frontend/js/chat.js:528 |
 | `renderWebPageAttachment` | frontend/js/chat.js:450 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1186 |
-| `setResponseMode` | frontend/js/chat.js:667 |
-| `showCompressReview` | frontend/js/chat.js:943 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1214 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1236 |
-| `togglePersonaPrompt` | frontend/js/chat.js:759 |
-| `typingDots` | frontend/js/chat.js:1290 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1189 |
+| `setResponseMode` | frontend/js/chat.js:670 |
+| `showCompressReview` | frontend/js/chat.js:946 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1217 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1239 |
+| `togglePersonaPrompt` | frontend/js/chat.js:762 |
+| `typingDots` | frontend/js/chat.js:1293 |
 | `webPageMarkdown` | frontend/js/chat.js:417 |
 | `webRequestEnd` | frontend/js/chat.js:397 |
 | `webRequestStart` | frontend/js/chat.js:388 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1121 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1154 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1124 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1157 |
 
 ### frontend/js/chat-agent.js (40)
 
@@ -763,26 +763,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2490 |
-| `activeNotesSection` | frontend/js/navigation.js:2317 |
+| `aboveDockFab` | frontend/js/navigation.js:2499 |
+| `activeNotesSection` | frontend/js/navigation.js:2326 |
 | `arrowNavTarget` | frontend/js/navigation.js:219 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1846 |
-| `chatMidStream` | frontend/js/navigation.js:1778 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1855 |
+| `chatMidStream` | frontend/js/navigation.js:1787 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:922 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1808 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2623 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1817 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2632 |
 | `entryLabel` | frontend/js/navigation.js:1020 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2584 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2593 |
 | `goToTabHistory` | frontend/js/navigation.js:1111 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1757 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1766 |
 | `hideClosedDockMenuLists` | frontend/js/navigation.js:1522 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2380 |
-| `initScrollTopButton` | frontend/js/navigation.js:2643 |
-| `insideClosedDetails` | frontend/js/navigation.js:1576 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2389 |
+| `initScrollTopButton` | frontend/js/navigation.js:2652 |
+| `insideClosedDetails` | frontend/js/navigation.js:1585 |
 | `loadSurface` | frontend/js/navigation.js:1318 |
-| `measureSpacingPx` | frontend/js/navigation.js:2614 |
-| `menuOfOpener` | frontend/js/navigation.js:1598 |
-| `menuRowsOf` | frontend/js/navigation.js:1583 |
+| `measureSpacingPx` | frontend/js/navigation.js:2623 |
+| `menuOfOpener` | frontend/js/navigation.js:1607 |
+| `menuRowsOf` | frontend/js/navigation.js:1592 |
 | `mermaidSoon` | frontend/js/navigation.js:384 |
 | `openHistoryEntry` | frontend/js/navigation.js:1171 |
 | `openNavHistoryMenu` | frontend/js/navigation.js:942 |
@@ -790,35 +790,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:332 |
 | `paintTabHistory` | frontend/js/navigation.js:969 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1389 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2499 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2508 |
 | `recordTabVisit` | frontend/js/navigation.js:1057 |
-| `recordingLive` | frontend/js/navigation.js:1785 |
+| `recordingLive` | frontend/js/navigation.js:1794 |
 | `renderMarkdown` | frontend/js/navigation.js:393 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2278 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2297 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2287 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2306 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1158 |
 | `revealTab` | frontend/js/navigation.js:829 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:139 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2466 |
-| `scrollingPage` | frontend/js/navigation.js:2419 |
-| `showNotesSection` | frontend/js/navigation.js:2322 |
-| `spacingPx` | frontend/js/navigation.js:2607 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2475 |
+| `scrollingPage` | frontend/js/navigation.js:2428 |
+| `showNotesSection` | frontend/js/navigation.js:2331 |
+| `spacingPx` | frontend/js/navigation.js:2616 |
 | `stepTabHistory` | frontend/js/navigation.js:1101 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2224 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2233 |
 | `surfaceRecovered` | frontend/js/navigation.js:1296 |
-| `switchTab` | frontend/js/navigation.js:1895 |
-| `syncScrollLock` | frontend/js/navigation.js:2785 |
+| `switchTab` | frontend/js/navigation.js:1904 |
+| `syncScrollLock` | frontend/js/navigation.js:2794 |
 | `tabLabel` | frontend/js/navigation.js:1008 |
-| `tabPlaceholder` | frontend/js/navigation.js:2160 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2141 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2151 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2130 |
-| `usageCount` | frontend/js/navigation.js:1856 |
-| `usageFeatureName` | frontend/js/navigation.js:1852 |
-| `usageFlush` | frontend/js/navigation.js:1860 |
+| `tabPlaceholder` | frontend/js/navigation.js:2169 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2150 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2160 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2139 |
+| `usageCount` | frontend/js/navigation.js:1865 |
+| `usageFeatureName` | frontend/js/navigation.js:1861 |
+| `usageFlush` | frontend/js/navigation.js:1869 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1451 |
 | `wireLongPress` | frontend/js/navigation.js:25 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2803 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2812 |
 
 ### frontend/js/router.js (12)
 
@@ -8392,8 +8392,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `leave` | frontend/js/value-field.js:76 |
 | `paint` | frontend/js/value-field.js:51 |
 | `presets` | frontend/js/value-field.js:106 |
-| `rangeField` | frontend/js/value-field.js:154 |
-| `readoutOf` | frontend/js/value-field.js:148 |
+| `rangeField` | frontend/js/value-field.js:158 |
+| `readoutOf` | frontend/js/value-field.js:152 |
 | `size` | frontend/js/value-field.js:46 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
@@ -28767,7 +28767,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23111)
+## Tests (23118)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30516,6 +30516,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_mention_link_names.py | 4 |
 | tests/test_mentions_1487.py | 5 |
 | tests/test_menu_keyboard.py | 8 |
+| tests/test_menu_remainder_l71.py | 7 |
 | tests/test_menu_toggles.py | 4 |
 | tests/test_menu_window_fit.py | 3 |
 | tests/test_menus_close_others.py | 3 |
