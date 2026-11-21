@@ -20,7 +20,10 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => revealTab('notes'));
   await page.evaluate(() => typeof loadEntries === 'function' && loadEntries()).catch(() => {});
   await page.waitForTimeout(3000);
-  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reacted = ''; nameMarkBuddyAct(''); });
+  // The habit reactions (read, yawn) need the companion's mind, which arrives with its lazy menu file.
+  await page.evaluate(() => ensureModule('companionMenu'));
+  await page.waitForFunction(() => !!nmb.mind, null, { timeout: 8000 }).catch(() => {});
+  const reset = () => page.evaluate(() => { nmb.reactAt = 0; nmb.reactCool = {}; nmb.reactLog = []; nmb.reacted = ''; nameMarkBuddyAct(''); });
   const reacted = () => page.evaluate(() => nmb.reacted || '');
   const openNote = async (id) => {
     const found = await page.evaluate((i) => {
@@ -104,19 +107,26 @@ const { boot } = require('./lib.js');
   if (streak.first !== 'streak' || streak.again) fails.push(`streak: ${JSON.stringify(streak)}`);
   // Night: a tick yawns.
   await reset();
+  // The streak's cheer before it is still on: let the companion settle (its tick passes a moving or reacting one by).
+  await page.waitForTimeout(4000);
   const night = await page.evaluate(() => {
+    // Its own mind may have sent it out for a while by now (nmb-away): the night tick is not asked of an absent companion.
+    const buddy = document.getElementById('nm-buddy');
+    nmb.away = false; nmb.absent = false; buddy.classList.remove('nmb-away');
     const orig = Date.prototype.getHours;
     Date.prototype.getHours = function () { return 23; };
-    try { nmb.lastInput = Date.now(); nmb.sweep.nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
+    // A tick can be spent on the companion's own mind (a stroll, an errand) before the night check: up to six.
+    try { for (let i = 0; i < 6 && !nmb.reacted; i += 1) { nmb.lastInput = Date.now(); nmb.sweep.nameMarkBuddyTick(true); } } finally { Date.prototype.getHours = orig; }
     return { kind: nmb.reacted || '', act: nmb.act };
   });
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);
   // Reduce motion: nothing.
   await reset();
   const still = await page.evaluate(() => {
-    document.documentElement.dataset.motion = 'reduced';
+    // The companion reads MOTION.cause (theme-boot.js), not the attribute.
+    MOTION.apply('off');
     const r = ['read', 'graph', 'streak', 'yawn', 'private', 'toast'].map((k) => nameMarkBuddyReact(k));
-    delete document.documentElement.dataset.motion;
+    MOTION.apply('follow');
     return r.some(Boolean);
   });
   if (still) fails.push('a reaction under Reduce motion');

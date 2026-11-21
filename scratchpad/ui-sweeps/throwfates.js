@@ -35,7 +35,7 @@ async function pass(buddyKind, reduced) {
   // The ledge to climb: the highest one at least 300px under the bar.
   const ledge = world.ledges.filter((l) => l.y > world.top + 40).sort((a, b) => a.y - b.y)[0];
   const configs = {
-    hang: { x: 700, y: 520, vx: 0.2, vy: -3.6 },
+    hang: { x: 700, y: Math.round(world.top + 150), vx: 0.2, vy: -1.3 },
     climb: ledge ? { x: Math.round((ledge.left + ledge.right) / 2), y: Math.min(world.floor - 10, ledge.y + 84 + 260), vx: 0.05, vy: -2.4 } : null,
     splat: { x: world.right - 420, y: 280, vx: 3.4, vy: -0.4 },
     wrap: { x: world.right - 420, y: 280, vx: 4.4, vy: -0.5 },

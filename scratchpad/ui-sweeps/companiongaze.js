@@ -42,21 +42,25 @@ const KIND = process.env.KIND || 'atlas';
   const rows = [];
   for (const side of [1, -1]) {
     for (const d of [20, 60, 150, 400]) {
-      await page.mouse.move(head[0] + side * d - side * 12, head[1], { steps: 2 });
+      // A fast move that lands inside 400px is a loud one (speed over 1800 and dist under 400) the companion holds its eye on, so the far case approaches from beyond 400.
+      await page.mouse.move(head[0] + side * d + (d === 400 ? side * 12 : -side * 12), head[1], { steps: 2 });
       await page.mouse.move(head[0] + side * d, head[1], { steps: 3 });
-      await page.waitForTimeout(d === 400 ? 3200 : 500);
+      await page.waitForTimeout(d === 400 ? 4500 : 500);
       rows.push({ d: side * d, ...(await read()) });
     }
   }
   // A slow pass across its head.
   await page.mouse.move(head[0] - 90, head[1] - 20);
   await page.waitForTimeout(400);
-  await page.evaluate(() => { window.__gz = []; const buddy = document.getElementById('nm-buddy'); new MutationObserver(() => window.__gz.push(buddy.style.getPropertyValue('--nmb-ex'))).observe(buddy, { attributes: true, attributeFilter: ['style'] }); });
+  // Atlas's gaze is its iris shift, the face's is `--nmb-ex`: sampled each step, both.
+  const seen = new Set();
   for (let i = 0; i <= 30; i += 1) {
     await page.mouse.move(head[0] - 90 + i * 6, head[1] - 20);
     await page.waitForTimeout(33);
+    const r = await read();
+    seen.add(`${r.ex}|${r.eyes}`);
   }
-  const changes = await page.evaluate(() => new Set(window.__gz).size);
+  const changes = seen.size;
   // Asleep, the pointer held close.
   await page.mouse.move(head[0] + 300, head[1] - 200);
   await page.evaluate(() => { const b = document.getElementById('nm-buddy'); nameMarkBuddyAct(''); b.classList.add('nmb-sleep'); });
@@ -71,8 +75,10 @@ const KIND = process.env.KIND || 'atlas';
   await browser.close();
   // Within reach it looks the pointer's way; at 400px it has let go and
   // drifted back to looking ahead.
-  const wrong = rows.filter((r) => (Math.abs(r.d) >= 60 && Math.abs(r.d) < 400 && Math.sign(r.ex) !== Math.sign(r.d)) || (Math.abs(r.d) === 400 && r.attend));
+  // Atlas looks with its irises (`eyes`), not `--nmb-ex`, which stays 0 for it; the release after a far pointer is a random 1.2 to 2.4s (avatars.js, dist > 220), so 400px waits 4.5s.
+  const wrong = rows.filter((r) => (Math.abs(r.d) >= 60 && Math.abs(r.d) < 400 && Math.sign(r.ex || parseFloat(r.eyes) || 0) !== Math.sign(r.d)) || (Math.abs(r.d) === 400 && r.attend));
   // One line the lane runners count (they read FAIL, not the exit code alone).
+  if (wrong.length) console.log('wrong', JSON.stringify(wrong));
   console.log((wrong.length || changes < 5 || woke.asleep) ? 'FAIL companiongaze: a measure above is out of bounds' : 'PASS companiongaze');
   process.exit(wrong.length || changes < 5 || woke.asleep ? 1 : 0);
 })();

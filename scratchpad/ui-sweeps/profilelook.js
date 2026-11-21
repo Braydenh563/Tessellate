@@ -13,7 +13,8 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(800);
   await page.evaluate(() => {
     prefsCache.avatar_style = { hand: 'middlefinger', hair: 'bob', mood: 'happy' };
-    nameMarkOwn = null;
+    // The cached own style is private to avatars.js now (a global assignment here changed nothing): set it the way Settings does.
+    setOwnNameMarkStyle(prefsCache.avatar_style);
   });
   await page.evaluate(() => { const d = document.getElementById('profile-look')?.closest('details'); if (d) d.open = true; mountProfileLook(); });
   await page.waitForTimeout(300);

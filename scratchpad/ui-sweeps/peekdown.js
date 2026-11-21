@@ -50,7 +50,15 @@ const KIND = process.env.KIND || 'atlas';
     const down = log.filter((f) => f.phase === 'down');
     const hold = down.filter((f) => f.t > 2400);
     let jump = 0;
-    for (let i = 1; i < log.length; i += 1) jump = Math.max(jump, Math.abs(log[i].shown - log[i - 1].shown));
+    // The change per 16.7ms frame, not per sample: a loaded machine stalls a frame to 47ms (and fires the next
+    // one 2ms later), and the per-sample step then reads the same smooth rise as 24px. Each sample is compared with
+    // the last one at least 33ms older (two frames), and its change scaled to one frame.
+    for (let i = 1; i < log.length; i += 1) {
+      let j = i - 1;
+      while (j > 0 && log[i].t - log[j].t < 33) j -= 1;
+      const dt = Math.max(33, log[i].t - log[j].t);
+      jump = Math.max(jump, Math.round((Math.abs(log[i].shown - log[j].shown) * 16.7) / dt));
+    }
     const end = log[log.length - 1];
     return { full: Math.round(full), barBottom: Math.round(bar.bottom), peekShown: Math.max(...hold.map((f) => f.shown)), minHidden: Math.min(...down.map((f) => f.shown)), endShown: end.shown, endClip: end.clip, holdClip: hold.every((f) => f.clip), maxFrameJump: jump, act: nmb.act };
   });
