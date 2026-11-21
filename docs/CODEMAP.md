@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8539, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2893, tests 22866, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8541, frontend ids 2803, CSS sections 527, backend routes 728, backend modules 11150, test files 2894, tests 22870, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8539)
+## Frontend functions (8541)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2566,48 +2566,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `spaceDeleteNeedsName` | frontend/js/batch-space.js:95 |
 | `spaceDeleteSubmit` | frontend/js/batch-space.js:152 |
 
-### frontend/js/bg-art.js (38)
+### frontend/js/bg-art.js (40)
 
 | Name | File:line |
 |---|---|
-| `bgArtApplyPause` | frontend/js/bg-art.js:2363 |
-| `bgArtCalm` | frontend/js/bg-art.js:2320 |
-| `bgArtCovered` | frontend/js/bg-art.js:2438 |
-| `bgArtFrameRate` | frontend/js/bg-art.js:2324 |
-| `bgArtFreeze` | frontend/js/bg-art.js:2388 |
-| `bgArtGenome` | frontend/js/bg-art.js:340 |
-| `bgArtHalt` | frontend/js/bg-art.js:2486 |
-| `bgArtMountStill` | frontend/js/bg-art.js:2532 |
-| `bgArtPreview` | frontend/js/bg-art.js:2742 |
-| `bgArtRetire` | frontend/js/bg-art.js:2476 |
-| `bgArtRun` | frontend/js/bg-art.js:2548 |
-| `bgArtSeedOf` | frontend/js/bg-art.js:364 |
-| `bgArtSeedStale` | frontend/js/bg-art.js:2268 |
-| `bgArtSeedText` | frontend/js/bg-art.js:401 |
-| `bgArtShouldFreeze` | frontend/js/bg-art.js:2298 |
-| `bgArtSpeciesName` | frontend/js/bg-art.js:389 |
-| `bgArtStrainCount` | frontend/js/bg-art.js:395 |
-| `bgArtStrains` | frontend/js/bg-art.js:373 |
-| `bgArtSurface` | frontend/js/bg-art.js:2341 |
-| `bgArtThaw` | frontend/js/bg-art.js:2423 |
-| `bgArtTier` | frontend/js/bg-art.js:2731 |
-| `bgArtWatch` | frontend/js/bg-art.js:2458 |
+| `bgAlpha` | frontend/js/bg-art.js:355 |
+| `bgArtApplyPause` | frontend/js/bg-art.js:2416 |
+| `bgArtCalm` | frontend/js/bg-art.js:2369 |
+| `bgArtCovered` | frontend/js/bg-art.js:2491 |
+| `bgArtFrameRate` | frontend/js/bg-art.js:2373 |
+| `bgArtFreeze` | frontend/js/bg-art.js:2441 |
+| `bgArtGenome` | frontend/js/bg-art.js:367 |
+| `bgArtHalt` | frontend/js/bg-art.js:2539 |
+| `bgArtMountStill` | frontend/js/bg-art.js:2585 |
+| `bgArtPreview` | frontend/js/bg-art.js:2795 |
+| `bgArtRetire` | frontend/js/bg-art.js:2529 |
+| `bgArtRun` | frontend/js/bg-art.js:2601 |
+| `bgArtSeedOf` | frontend/js/bg-art.js:391 |
+| `bgArtSeedStale` | frontend/js/bg-art.js:2317 |
+| `bgArtSeedText` | frontend/js/bg-art.js:428 |
+| `bgArtShouldFreeze` | frontend/js/bg-art.js:2347 |
+| `bgArtSpeciesName` | frontend/js/bg-art.js:416 |
+| `bgArtStrainCount` | frontend/js/bg-art.js:422 |
+| `bgArtStrains` | frontend/js/bg-art.js:400 |
+| `bgArtSurface` | frontend/js/bg-art.js:2390 |
+| `bgArtThaw` | frontend/js/bg-art.js:2476 |
+| `bgArtTier` | frontend/js/bg-art.js:2784 |
+| `bgArtWatch` | frontend/js/bg-art.js:2511 |
 | `bgCapRgb` | frontend/js/bg-art.js:75 |
-| `bgClamp` | frontend/js/bg-art.js:282 |
-| `bgColourHue` | frontend/js/bg-art.js:230 |
-| `bgFbmRow` | frontend/js/bg-art.js:154 |
+| `bgClamp` | frontend/js/bg-art.js:300 |
+| `bgColourHue` | frontend/js/bg-art.js:248 |
+| `bgFbmRow` | frontend/js/bg-art.js:172 |
 | `bgFlow` | frontend/js/bg-art.js:118 |
-| `bgGlowSprite` | frontend/js/bg-art.js:270 |
-| `bgGrid` | frontend/js/bg-art.js:301 |
-| `bgHash2` | frontend/js/bg-art.js:133 |
-| `bgHslToRgb` | frontend/js/bg-art.js:209 |
+| `bgFlowFill` | frontend/js/bg-art.js:133 |
+| `bgGlowSprite` | frontend/js/bg-art.js:288 |
+| `bgGrid` | frontend/js/bg-art.js:319 |
+| `bgHash2` | frontend/js/bg-art.js:151 |
+| `bgHslToRgb` | frontend/js/bg-art.js:227 |
 | `bgHsla` | frontend/js/bg-art.js:98 |
-| `bgLattice` | frontend/js/bg-art.js:142 |
-| `bgP5Rgba` | frontend/js/bg-art.js:189 |
-| `bgRand` | frontend/js/bg-art.js:179 |
-| `bgRandom` | frontend/js/bg-art.js:287 |
-| `bgSprite` | frontend/js/bg-art.js:257 |
-| `bgTurnBack` | frontend/js/bg-art.js:174 |
+| `bgLattice` | frontend/js/bg-art.js:160 |
+| `bgP5Rgba` | frontend/js/bg-art.js:207 |
+| `bgRand` | frontend/js/bg-art.js:197 |
+| `bgRandom` | frontend/js/bg-art.js:305 |
+| `bgSprite` | frontend/js/bg-art.js:275 |
+| `bgTurnBack` | frontend/js/bg-art.js:192 |
 
 ### frontend/js/board-embed.js (1)
 
@@ -28502,7 +28504,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22866)
+## Tests (22870)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28689,6 +28691,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_before_setting_q25.py | 5 |
 | tests/test_bench_spec.py | 7 |
 | tests/test_bg_art_1436.py | 8 |
+| tests/test_bg_art_garbage_391.py | 4 |
 | tests/test_bg_art_styles.py | 25 |
 | tests/test_bgtasks.py | 23 |
 | tests/test_bidi_controls_n20.py | 2 |
@@ -31817,14 +31820,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:594 |
+| Needs hardware | docs/roadmap/LEDGER.md:595 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:587 |
+| Owner calls | docs/roadmap/LEDGER.md:588 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32062,7 +32065,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:823 |
 | documents | docs/roadmap/LEDGER.md:327 |
 | documents | docs/roadmap/LEDGER.md:763 |
-| general | docs/roadmap/LEDGER.md:547 |
+| general | docs/roadmap/LEDGER.md:548 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:727 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:835 |

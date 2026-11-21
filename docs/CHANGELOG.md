@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Background art makes far less canvas garbage: constellation 47 to 5 KB/s, microbes 367 to 95 KB/s (medians of 5, 4x CPU), by whole-number path points in a quarter-pixel space, a table of opacities, flow values in runs and bodies named by index (L-world-class-391).
 - The companion's calm pause (20 s without input) is held by Web Animations instead of a root class: 250 ms to 31 ms at 4x CPU (median of 5), the rules for off-screen and hidden windows unchanged (L-world-class-390).
 - Lock: nothing is sent to the server after Lock until you sign in again; six dashboard and chat loaders used to fire and fail behind the lock screen (L529).
 - Command palette: "new" lists the create commands first (a row is ranked on its name without its icon token), and the Notes tab's category list is drawn when the tab is opened after notes loaded behind another tab (L499).
