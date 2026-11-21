@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 1 | 0 | 0 | 0 | 1 |
+| chat | 0 | 0 | 0 | 0 | 0 | 0 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,13 +17,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 363 | 69 | 0 | 125 | 758 |
+| all | 326 | 362 | 69 | 0 | 125 | 757 |
 
 ## graph
 
 ## chat
 
-- [ ] **L-documents-41** `chat` open, M: Agent document edit as insert/delete marks inside the open document editor, accept or reject per hunk there. From L-world-class-181 follow-up. Evidence: the chat card's suggestion (tool-consent.js) covers an agent edit; an open document editor shows no marks
 
 
 ## whiteboard
