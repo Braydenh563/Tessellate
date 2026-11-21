@@ -1486,7 +1486,7 @@ function wbDrawOutSnap(sx, sy, x, y, event) {
 //: the two are never confused at a glance), and "spacing" (equal gaps).
 //: Overridable per the direct ask ("colours should be alterable"); the
 //: picker lives in the whiteboard's own shape-menu dropdown rather than a
-//: new top menu bar, see HISTORY.md for why that redesign is deferred.
+//: new top menu bar, see HISTORY.md for why that redesign was not taken.
 //: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
 //: each passes 3:1 on the canvas in light and dark); only a colour the owner
 //: picked is written here, and it wins over the class.
@@ -21726,11 +21726,9 @@ function wbLinkNearestT(d, p) {
 //: function a single shape's handles already use, so a group resize and a
 //: shape resize cannot drift apart (shift-to-square included).
 //:
-//: No rotate handle. Rotating a group means rotating each item about the
-//: group's centre, which for a card means a rotation *and* a move, and for a
-//: sketch means baking a rotation into a path that is already rotated. It is
-//: a real feature, not a line of code, and an unbuilt one is better absent
-//: than drawn and inert.
+//: The group's rotate point is drawn with its handles ("And a rotate point
+//: above the box", below): each item turns about the group's centre, a
+//: rotation *and* a move for a card, a baked path for a sketch.
 function wbMultiSelectionEntries() {
   const entries = [];
   for (const key of wbMultiSelection) {

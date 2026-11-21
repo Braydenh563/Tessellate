@@ -10431,8 +10431,8 @@ header#top-bar {
    tab and drops the other six, citing the HIG's own tab-bar guidance, because a
    bar that says where you are is worth more than a bar that names everywhere you
    could go. The same shape, at the other end of the scale, costs one rule and no
-   copy decision (the "Dashboard" to "Home" question the note above defers is
-   still deferred, and still the better answer).
+   copy decision (the "Dashboard" to "Home" question the note above raises
+   stays as it is, and is still the better answer).
    The selected tab takes its own content width and the other six share what is
    left. Measured after, at 320, 360 and 390: the strip fits on one row with no
    sideways scroll at all three, and the caption on the selected tab is whole. */
