@@ -1391,7 +1391,9 @@
   //: close, unless it opened again.
   function hideDocComplete() {
     const list = $("doc-complete-list");
-    list?.classList.add("hidden");
+    //: Written only on a change (L342): a key with no rows calls this, and `classList` writes the
+    //: attribute even when the class is already there.
+    if (list && !list.classList.contains("hidden")) list.classList.add("hidden");
     clearTimeout(hideDocComplete.home);
     hideDocComplete.home = setTimeout(() => {
       if (list?.classList.contains("hidden")) docReturnFromViewport(list);
@@ -1577,7 +1579,7 @@
     //: viewport coordinates too, so a blurred ancestor moves it exactly as it moved the word menu.
     clearTimeout(hideDocComplete.home);
     docLiftToViewport(list);
-    list.classList.remove("hidden");
+    if (list.classList.contains("hidden")) list.classList.remove("hidden");
     if (!view) {
       const at = docCompletePlace(box, list);
       docPlaceFixed(list, at.left, at.top);

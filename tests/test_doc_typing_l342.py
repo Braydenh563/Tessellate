@@ -409,3 +409,46 @@ def test_a_heading_edit_with_a_contents_block_in_view_rebuilds():
     assert got["bad"] == [] and got["patched"] == 0, got
     para = _live_patch_harness(text, list("ab"), text.index("word2"))
     assert para["bad"] == [] and para["patched"] == 2, para
+
+
+@needs_node
+def test_the_word_list_and_the_block_grip_write_their_class_only_on_a_change():
+    """`classList.add` and `remove` write the attribute even when nothing changes (the spec's
+    update steps), so each key restyled `#doc-complete-list`, `doc-block-handle` and
+    `doc-block-drop` for a class they already had."""
+    from tests._app_js import documents_text
+
+    src = documents_text()
+    fake = _FAKE_DOM.replace(
+        "add: (c) => this.cls.add(c), remove: (c) => this.cls.delete(c)",
+        "add: (c) => { writes += 1; this.cls.add(c); }, remove: (c) => { writes += 1; this.cls.delete(c); }",
+    ).replace("const hideDocComplete = () => { docCompleteMatches = []; };\n", "const docReturnFromViewport = () => {};\n")
+    script = fake + _function(src, "function hideDocComplete(") + _function(src, "function renderDocComplete(") + """
+const box = { kind: "textarea", id: 1, selection: () => ({ from: 0 }) };
+const out = {};
+list.cls.add("hidden");
+writes = 0;
+hideDocComplete(); hideDocComplete();
+out.hiddenTwice = writes;
+rows = [{ word: "quick", typed: 2 }];
+renderDocComplete(box);
+const opened = writes;
+renderDocComplete(box);
+out.shownAgain = writes - opened;
+out.shown = !list.cls.has("hidden");
+writes = 0;
+rows = [];
+renderDocComplete(box); renderDocComplete(box);
+out.closedTwice = writes;
+out.hidden = list.cls.has("hidden");
+console.log(JSON.stringify(out));
+process.exit(0);
+"""
+    out = _node(script)
+    assert out["hiddenTwice"] == 0 and out["shownAgain"] == 0 and out["shown"], out
+    assert out["closedTwice"] == 1 and out["hidden"], out
+    grip = (JS / "documents-live-table.js").read_text(encoding="utf-8")
+    assert 'if (!this.el.classList.contains("hidden")) this.el.classList.add("hidden");' in grip
+    assert 'if (!this.mark.classList.contains("hidden")) this.mark.classList.add("hidden");' in grip
+    assert 'if (this.el.classList.contains("is-dragging")) this.el.classList.remove("is-dragging");' in grip
+
