@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8507, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10917, test files 2796, tests 22385, plan headings 692, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8507, frontend ids 2782, CSS sections 524, backend routes 713, backend modules 10916, test files 2796, tests 22386, plan headings 692, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8507)
 
@@ -14145,7 +14145,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10917)
+## Backend modules (10916)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24134,15 +24134,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `has` | src/tessellate/core/cjk.py:30 |
 | `word_count` | src/tessellate/core/cjk.py:35 |
 
-### src/tessellate/core/clock.py (5)
+### src/tessellate/core/clock.py (4)
 
 | Name | File:line |
 |---|---|
-| `_now` | src/tessellate/core/clock.py:35 |
+| `_now` | src/tessellate/core/clock.py:22 |
 | `today` | src/tessellate/core/clock.py:17 |
-| `utc` | src/tessellate/core/clock.py:41 |
-| `wall` | src/tessellate/core/clock.py:47 |
-| `wire` | src/tessellate/core/clock.py:28 |
+| `utc` | src/tessellate/core/clock.py:34 |
+| `wall` | src/tessellate/core/clock.py:40 |
 
 ### src/tessellate/core/companion_events.py (8)
 
@@ -24167,17 +24166,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ConfigManager` | src/tessellate/core/config.py:372 |
-| `_adopt_old_db` | src/tessellate/core/config.py:251 |
-| `_default_data_dir` | src/tessellate/core/config.py:276 |
-| `_owner_only` | src/tessellate/core/config.py:332 |
-| `days_from_today` | src/tessellate/core/config.py:533 |
-| `default_preferences` | src/tessellate/core/config.py:349 |
-| `loaded_user_now` | src/tessellate/core/config.py:565 |
-| `on_users_clock` | src/tessellate/core/config.py:590 |
-| `resolved_data_dir` | src/tessellate/core/config.py:313 |
-| `user_now` | src/tessellate/core/config.py:574 |
-| `week_first_day` | src/tessellate/core/config.py:549 |
+| `ConfigManager` | src/tessellate/core/config.py:371 |
+| `_adopt_old_db` | src/tessellate/core/config.py:250 |
+| `_default_data_dir` | src/tessellate/core/config.py:275 |
+| `_owner_only` | src/tessellate/core/config.py:331 |
+| `days_from_today` | src/tessellate/core/config.py:532 |
+| `default_preferences` | src/tessellate/core/config.py:348 |
+| `loaded_user_now` | src/tessellate/core/config.py:564 |
+| `on_users_clock` | src/tessellate/core/config.py:589 |
+| `resolved_data_dir` | src/tessellate/core/config.py:312 |
+| `user_now` | src/tessellate/core/config.py:573 |
+| `week_first_day` | src/tessellate/core/config.py:548 |
 
 ### src/tessellate/core/crypto.py (11)
 
@@ -28096,7 +28095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22385)
+## Tests (22386)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29255,7 +29254,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_run_prefs_q25.py | 3 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
-| tests/test_fixed_clock_lint.py | 8 |
+| tests/test_fixed_clock_lint.py | 9 |
 | tests/test_fixed_day_1693.py | 2 |
 | tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |

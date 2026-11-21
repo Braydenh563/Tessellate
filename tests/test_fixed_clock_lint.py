@@ -152,3 +152,35 @@ def test_a_row_made_under_a_pinned_clock_is_stamped_with_it(monkeypatch, session
     session.commit()
     assert entry.created_at.replace(tzinfo=timezone.utc) == when
     assert clock.today() == when.date()
+
+
+def _module_level(nodes):
+    """Statements run at import: a function's or class's own imports bind a local."""
+    for node in nodes:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            yield node
+            yield from _module_level(ast.iter_child_nodes(node))
+
+
+def _clock_holders() -> set[tuple[str, str]]:
+    root = TESTS.parent
+    found = set()
+    for path in [*(root / "src").rglob("*.py"), *TESTS.rglob("*.py")]:
+        parts = path.relative_to(root / "src" if path.is_relative_to(root / "src") else root).with_suffix("").parts
+        name = ".".join(parts[:-1] if parts[-1] == "__init__" else parts)
+        for node in _module_level(ast.parse(path.read_text(encoding="utf-8")).body):
+            if isinstance(node, ast.ImportFrom) and node.level == 0:
+                found |= {(name, a.name) for a in node.names if a.name in {"user_now", "utcnow"} and a.asname is None}
+    return found
+
+
+def test_the_pin_lists_every_module_that_holds_a_clock_by_name():
+    """`pin_clock` patches the fixed `HOLDERS` pairs, so a new `from ... import
+    user_now` (or `utcnow`) at a module's top must be listed, and a listed one
+    that no longer imports it must go."""
+    from tests._clock import HOLDERS
+
+    found = _clock_holders()
+    assert len(HOLDERS) == len(set(HOLDERS))
+    assert not found - set(HOLDERS), f"add to tests/_clock.HOLDERS: {sorted(found - set(HOLDERS))}"
+    assert not set(HOLDERS) - found, f"drop from tests/_clock.HOLDERS: {sorted(set(HOLDERS) - found)}"

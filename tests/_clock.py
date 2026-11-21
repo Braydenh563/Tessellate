@@ -24,6 +24,85 @@ SUITE_NOW = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
 #: The same instant as this machine's naive wall time (what `datetime.now()` gave).
 SUITE_LOCAL = SUITE_NOW.astimezone().replace(tzinfo=None)
 
+#: Every module holding `user_now` or `utcnow` by name (a module-level `from
+#: ... import`), written out: the pin is this fixed set of pairs, not a sweep
+#: of `sys.modules` with computed names (that sweep cost CodeQL's points-to
+#: three times its run). `tests/test_fixed_clock_lint.py` fails when a module
+#: imports either name and is missing here, or is listed and no longer does.
+HOLDERS: tuple[tuple[str, str], ...] = (
+    ("tessellate.ai.autonomous", "utcnow"),
+    ("tessellate.ai.composer", "user_now"),
+    ("tessellate.ai.entities", "utcnow"),
+    ("tessellate.ai.facts", "utcnow"),
+    ("tessellate.ai.learned_audit_run", "utcnow"),
+    ("tessellate.ai.notebook_stats", "utcnow"),
+    ("tessellate.ai.questions", "utcnow"),
+    ("tessellate.ai.stats_ask", "utcnow"),
+    ("tessellate.ai.tools._common", "user_now"),
+    ("tessellate.api.chat_said", "user_now"),
+    ("tessellate.api.chat_turn", "user_now"),
+    ("tessellate.api.routes_board_library", "utcnow"),
+    ("tessellate.api.routes_chat", "user_now"),
+    ("tessellate.api.routes_code_snippets", "utcnow"),
+    ("tessellate.api.routes_conversations", "utcnow"),
+    ("tessellate.api.routes_documents", "user_now"),
+    ("tessellate.api.routes_documents", "utcnow"),
+    ("tessellate.api.routes_editor", "user_now"),
+    ("tessellate.api.routes_entries", "utcnow"),
+    ("tessellate.api.routes_insights", "user_now"),
+    ("tessellate.api.routes_insights", "utcnow"),
+    ("tessellate.api.routes_learned", "utcnow"),
+    ("tessellate.api.routes_meetings", "utcnow"),
+    ("tessellate.api.routes_read", "utcnow"),
+    ("tessellate.api.routes_recordings", "utcnow"),
+    ("tessellate.api.routes_reminders", "utcnow"),
+    ("tessellate.api.routes_settings", "utcnow"),
+    ("tessellate.api.routes_settings_transfer", "utcnow"),
+    ("tessellate.api.routes_statistics", "user_now"),
+    ("tessellate.api.routes_timeline", "utcnow"),
+    ("tessellate.api.routes_vision", "utcnow"),
+    ("tessellate.api.routes_webclip", "user_now"),
+    ("tessellate.core.events", "utcnow"),
+    ("tessellate.core.reading_bin", "utcnow"),
+    ("tessellate.core.recordings", "utcnow"),
+    ("tessellate.core.vault", "utcnow"),
+    ("tessellate.entry.bin", "utcnow"),
+    ("tessellate.entry.folder_sync", "utcnow"),
+    ("tessellate.entry.manager", "utcnow"),
+    ("tessellate.entry.manager_purge", "utcnow"),
+    ("tessellate.entry.manager_wiki", "utcnow"),
+    ("tessellate.entry.opens", "utcnow"),
+    ("tessellate.entry.tidy", "utcnow"),
+    ("tessellate.repo.bookmarks", "utcnow"),
+    ("tessellate.repo.documents", "utcnow"),
+    ("tessellate.repo.reminders", "utcnow"),
+    ("tessellate.search.webstore", "utcnow"),
+    ("tests.test_date_field_when", "utcnow"),
+    ("tests.test_digest_structure", "utcnow"),
+    ("tests.test_document_revisions", "utcnow"),
+    ("tests.test_engine_dialogue", "user_now"),
+    ("tests.test_engine_plan", "user_now"),
+    ("tests.test_import_bin_clock", "utcnow"),
+    ("tests.test_insight_verdicts", "user_now"),
+    ("tests.test_insights_api", "utcnow"),
+    ("tests.test_night_pairs", "utcnow"),
+    ("tests.test_pair_passes_paths", "utcnow"),
+    ("tests.test_properties_never_in_previews", "utcnow"),
+    ("tests.test_query_plans", "utcnow"),
+    ("tests.test_questions_own", "utcnow"),
+    ("tests.test_questions_spec", "utcnow"),
+    ("tests.test_recordings", "utcnow"),
+    ("tests.test_recycle_bin", "utcnow"),
+    ("tests.test_reminder_scoped_token", "utcnow"),
+    ("tests.test_staleness", "utcnow"),
+    ("tests.test_tensions_derive_paths", "utcnow"),
+    ("tests.test_tensions_table_b4", "utcnow"),
+    ("tests.test_timeline", "utcnow"),
+    ("tests.test_timeline_query_count", "utcnow"),
+    ("tests.test_undo_bin", "utcnow"),
+    ("tests.test_web_store_1111", "utcnow"),
+)
+
 _REAL_USER_NOW = config.user_now
 _REAL_UTCNOW = database.utcnow
 
@@ -52,14 +131,12 @@ def pin_clock(monkeypatch, now: datetime | Callable[[], datetime]) -> None:  # n
     monkeypatch.setattr(config, "user_now", user)
     monkeypatch.setattr(database, "utcnow", utc)
     monkeypatch.setattr(clock, "today", lambda: moment().date())
-    # Every module, the tests' own too: a test that imported `utcnow` by name
+    # Every holder, the tests' own too: a test that imported `utcnow` by name
     # and calls it reads the pinned clock like the app does.
-    # A clock pinned earlier in the same test (an autouse fixture) is replaced.
-    for module in list(sys.modules.values()):
-        held = getattr(module, "__dict__", {})
-        for attr, real, fake in (("user_now", _REAL_USER_NOW, user), ("utcnow", _REAL_UTCNOW, utc)):
-            if held.get(attr) is real or getattr(held.get(attr), "pinned", False) is True:
-                monkeypatch.setattr(module, attr, fake)
+    fakes = {"user_now": user, "utcnow": utc}
+    for name, attr in HOLDERS:
+        if (module := sys.modules.get(name)) is not None:
+            monkeypatch.setattr(module, attr, fakes[attr])
 
 
 def unpin_late_imports() -> None:
@@ -67,8 +144,8 @@ def unpin_late_imports() -> None:
     pinned (an app module, or a test file collected late): its `from ...
     import user_now` took the pinned function, which monkeypatch never set
     and so never undoes (`conftest._unpin_clock`)."""
-    for module in list(sys.modules.values()):
-        held = getattr(module, "__dict__", {})
-        for attr, real in (("user_now", _REAL_USER_NOW), ("utcnow", _REAL_UTCNOW)):
-            if getattr(held.get(attr), "pinned", False) is True:
-                setattr(module, attr, real)
+    reals = {"user_now": _REAL_USER_NOW, "utcnow": _REAL_UTCNOW}
+    for name, attr in HOLDERS:
+        module = sys.modules.get(name)
+        if module is not None and getattr(getattr(module, attr, None), "pinned", False) is True:
+            setattr(module, attr, reals[attr])

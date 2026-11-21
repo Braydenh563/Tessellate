@@ -19,7 +19,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from tessellate.core import clock as _clock
 from tessellate.core import secrets_store
 from tessellate.core.atomic_io import atomic_write_json
 
@@ -603,7 +602,3 @@ def on_users_clock(config: "ConfigManager | None", instant: datetime, server: tz
             )
     return instant.astimezone(server)
 
-
-# `clock.utc()` and `clock.wall()` read the person's clock through this, by
-# name, so a pinned `user_now` answers for them too.
-_clock.wire(lambda: user_now(None))

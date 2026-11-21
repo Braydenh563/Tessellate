@@ -10,7 +10,7 @@ Eight call sites read `date.today()` for themselves, so a test that pinned
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import sys
 from datetime import date, datetime, timezone
 
 
@@ -19,23 +19,16 @@ def today() -> date:
     return date.today()
 
 
-#: The person's clock, wired by `config` when it loads (`wire`): `clock`
-#: imports nothing of the app, so the many modules below `config` that read
-#: the time through it close no import cycle (`tests/test_import_module_cycles.py`).
-_user_now: Callable[[], datetime] | None = None
-
-
-def wire(user_now: Callable[[], datetime]) -> None:
-    """`config` hands over its `user_now` reader (looked up by name each
-    call, so a test's pinned clock answers here too)."""
-    global _user_now
-    _user_now = user_now
-
-
 def _now() -> datetime:
-    """The person's clock; before `config` has loaded (a worker process that
-    never imports it) the zone is this machine's, so the instant is enough."""
-    return _user_now() if _user_now is not None else datetime.now(timezone.utc)
+    """The person's clock: `config.user_now`, looked up by name each call so a
+    test's pinned clock answers here too. Through `sys.modules`, not an
+    import: `clock` imports nothing of the app, so the many modules below
+    `config` that read the time through it close no import cycle
+    (`tests/test_import_module_cycles.py`). Before `config` has loaded (a
+    worker process that never imports it) the zone is this machine's, so the
+    instant is enough."""
+    config = sys.modules.get("tessellate.core.config")
+    return config.user_now(None) if config is not None else datetime.now(timezone.utc)
 
 
 def utc() -> datetime:
