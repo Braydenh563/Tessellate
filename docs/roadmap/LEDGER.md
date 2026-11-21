@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
-| mindmap | 0 | 1 | 0 | 0 | 0 | 1 |
+| mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 12 | 0 | 0 | 4 | 12 |
-| all | 502 | 542 | 127 | 2 | 183 | 1171 |
+| all | 502 | 543 | 127 | 2 | 183 | 1172 |
 
 ## graph
 
@@ -341,7 +341,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 
 ## mindmap
-- [ ] **L-mindmap-17** `mindmap` open, L: Map drag and zoom are over their CPU budgets at every size: translate the dragged branch as a layer, move edges by transform, so mapperf.js passes. From agent B, L-general-20 mapperf (CPU measure). Evidence: mapperf.js now measures per-input-step main-thread CPU (CDP ThreadTime). At 50/200/500 topics: drag median 33/92/247ms (budget 17), worst zoom frame 62/132/477ms (budget 50), branch drag with 300 links 40 to 93ms at 50 topics (budget: not double). Profile of a 200-topic branch drag: 1.3s of 2.7s is forced style recalc (wbEdgePanTick getBoundingClientRect flushes it), ribbons rebuilt per move (wbMapRibbonD + wbMapSmoothThrough, 27ms a step) though both ends moved by the same delta. Fix is to translate the dragged branch as one layer and to translate, not rebuild, edges whose ends move together.
+- [ ] **L-mindmap-18** `mindmap` open, M: Map branch pick-up: the first step of a 500-topic branch drag costs 400 to 770ms of CPU; cut the layer open and origin capture. From L-mindmap-17 (agent F). Evidence: mapperf.js twice on fresh data dirs (39/39): drag worst 416 and 571ms at 500 topics, branch worst 556 to 771ms; every other step of those drags is 7 to 15ms. The pick-up step is wbMapBranchDragOrigin plus wbMapDragLayer.open (edge and link sort, moving every member element); not gated by mapperf.
+- [ ] **L-mindmap-19** `mindmap` open, S: Map grammar repaint is quadratic: index the objects by id once per pass. From L-mindmap-17 (agent F). Evidence: wbGrammarRepaint (whiteboard-map-more.js:745) does a find over wbState.objects per drawn topic, 500 x 500 at 500 topics, 20 to 43ms of self time in each pass after a board opens; profiled with a CDP sampling profile.
 
 ## ui-modernisation
 
