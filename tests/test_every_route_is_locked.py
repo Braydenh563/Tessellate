@@ -118,6 +118,11 @@ OPEN = {
     # minutes, one use, never the token (tests/test_origin_handoff.py).
     "/origin-handoff/put",
     "/origin-handoff/take",
+    #: The tool server over HTTP (api/routes_mcp.py, INBOX 1860): an outside
+    #: MCP client has no session; the route refuses anything without a live
+    #: per-client token (401) and another device unless LAN mode is on (403)
+    #: before it reads the body (tests/test_mcp_http.py).
+    "/mcp",
 }
 
 #: Prefixes, for the same reason, where the path carries a file name.
