@@ -55,6 +55,9 @@ def _breath(depth: float) -> tuple:
 
 
 #: The prop acts: name -> (spec, activity, base weight).
+#: The L178 acts' hour weight (see the note in PROP_ACTS).
+L178_WEIGHT = 0.15
+
 PROP_ACTS: dict[str, tuple[Spec, bh.Activity, float]] = {
     "read_book": (
         Spec("book", 0.5, 4, "focus", (0.12, 0.66)),
@@ -119,44 +122,45 @@ PROP_ACTS: dict[str, tuple[Spec, bh.Activity, float]] = {
         2,
     ),
     #: L178: the catalogue's idle acts with a prop (`act.cloud_pillow` and the rest; the hour weights are the catalogue's;
-    #: each at 0.25: the Mind's freshness term lifts a rare act to most hours (facepalm 12 of 12 against the table's 4), so at 1
+    #: each at L178_WEIGHT: the Mind's freshness term lifts a rare act to most hours (facepalm 12 of 12 against the table's 4), so at 1
     #: these eleven put 5.0 more distinct acts an hour on the desk than the table (1.5 at 0.25), and at 0.5 the seed-1
-    #: walk hour drew 540 wakes a minute against the 500 bar (475 at 0.25; tests/test_overlay_rest_1670.py).
+    #: walk hour drew 540 wakes a minute against the 500 bar (475 at 0.25; tests/test_overlay_rest_1670.py). At 0.25, after the
+    #: L152 spell weighting merged, seed-2 walk drew 514 and three fidgets; at 0.15 every seed is 310 to 468 and at most one.
     "cloud_pillow": (
         Spec("cloud", 0.4, 2, "content", (0.0, 0.82), under=True),
         _act("land", (15.0, 60.0), ((0, 1, 1, 0), (0.12, 1.04, 0.9, 0.03), (0.9, 1.04, 0.9, 0.03), (1, 1, 1, 0)), (("rest", -0.4),), "sleepy"),
-        0.25,
+        L178_WEIGHT,
     ),
     "paper_plane": (
         Spec("plane", 2.0, 4, "happy", (0.2, 0.42)),
         _act("wave", (3.0, 6.0), ((0, 1, 1, 0), (0.3, 1, 1.02, -0.03), (0.55, 1, 1.03, 0.06), (1, 1, 1, 0)), (("play", -0.3), ("novelty", -0.1)), "happy"),
-        0.25,
+        L178_WEIGHT,
     ),
     "conduct": (
         Spec("baton", 3.0, 4, "content", (0.22, 0.4)),
         _act("wave", (4.0, 7.0), ((0, 1, 1, 0), (0.25, 1, 1.01, 0.04), (0.5, 1, 1.01, -0.04), (0.75, 1, 1.01, 0.04), (1, 1, 1, 0)), (("play", -0.2),), "happy"),
-        0.25,
+        L178_WEIGHT,
     ),
     "sketch_view": (
         Spec("sketch", 1.0, 4, "focus", (0.12, 0.68)),
         _act("sit", (15.0, 60.0), ((0, 1, 1, 0), (0.1, 1, 0.97, 0.05), (0.5, 1, 0.99, -0.02), (0.9, 1, 0.97, 0.05), (1, 1, 1, 0)), (("curiosity", -0.3),), "curious"),
-        0.25,
+        L178_WEIGHT,
     ),
     "kneel_look": (
         Spec("speck", 2.0, 4, "curious", (0.18, 0.96)),
         _act("land", (3.0, 8.0), ((0, 1, 1, 0), (0.2, 1.02, 0.86, 0.08), (0.8, 1.02, 0.86, 0.08), (1, 1, 1, 0)), (("curiosity", -0.25),), "curious"),
-        0.25,
+        L178_WEIGHT,
     ),
     "lean_on_edge": (
         Spec("ledge", 0.2, 2, "content", (-0.3, 0.56), under=True),
         _act("stand", (8.0, 30.0), ((0, 1, 1, 0), (0.15, 1, 0.99, -0.12), (0.9, 1, 0.99, -0.12), (1, 1, 1, 0)), (("rest", -0.15),), "bored"),
-        0.25,
+        L178_WEIGHT,
     ),
     #: The app's `chair` (catalogue `act.chair`): a small chair pulled up and sat in, the tail round its leg.
     "chair": (
         Spec("chair", 0.25, 2, "content", (0.0, 0.66), under=True),
         _act("sit", (20.0, 40.0), ((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.9, 1, 0.98, 0.02), (1, 1, 1, 0)), (("rest", -0.3),), "sleepy"),
-        0.25,
+        L178_WEIGHT,
     ),
 }
 #: Acts with no prop that the app has and the desk had not.
@@ -191,10 +195,10 @@ PLAIN_ACTS: dict[str, tuple[bh.Activity, float, str]] = {
     "daydream": (_act("sit", (10.0, 20.0), ((0, 1, 1, 0), (0.2, 1, 0.98, 0.02), (1, 1, 0.98, 0.02)), (("rest", -0.2),), "sleepy"), 2, "sleepy"),
     "puzzle": (_act("look", (5.0, 9.0), ((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.55, 0.98, 0.99, 0.04), (1, 1, 1, 0)), (("curiosity", -0.2),), "curious"), 2, "focus"),
     #: L178: the catalogue's idle acts without a prop: a turn after the tail, a long stretch, a walk with the arms out, a float face up.
-    "tail_chase": (_act("stand", (2.0, 4.0), ((0, 1, 1, 0), (0.2, -1, 1, 0.08), (0.45, 1, 1, -0.08), (0.7, -1, 1, 0.08), (1, 1, 1, 0)), (("play", -0.3),), "happy"), 0.25, "happy"),
-    "tail_stretch": (_act("stand", (2.0, 3.5), ((0, 1, 1, 0), (0.35, 0.97, 1.05, -0.05), (0.7, 0.97, 1.05, -0.05), (1, 1, 1, 0)), (("rest", -0.1),), "sleepy"), 0.25, "content"),
-    "balance_walk": (_act("wave", (4.0, 8.0), ((0, 1, 1, 0), (0.2, 1, 1, 0.07), (0.4, 1, 1, -0.07), (0.6, 1, 1, 0.06), (0.8, 1, 1, -0.06), (1, 1, 1, 0)), (("play", -0.2),), "proud"), 0.25, "focus"),
-    "stargaze_awake": (_act("look", (10.0, 40.0), ((0, 1, 1, 0), (0.15, 1.03, 0.95, -0.1), (0.9, 1.03, 0.95, -0.1), (1, 1, 1, 0)), (("curiosity", -0.2), ("rest", -0.1)), "curious"), 0.25, "content"),
+    "tail_chase": (_act("stand", (2.0, 4.0), ((0, 1, 1, 0), (0.2, -1, 1, 0.08), (0.45, 1, 1, -0.08), (0.7, -1, 1, 0.08), (1, 1, 1, 0)), (("play", -0.3),), "happy"), L178_WEIGHT, "happy"),
+    "tail_stretch": (_act("stand", (2.0, 3.5), ((0, 1, 1, 0), (0.35, 0.97, 1.05, -0.05), (0.7, 0.97, 1.05, -0.05), (1, 1, 1, 0)), (("rest", -0.1),), "sleepy"), L178_WEIGHT, "content"),
+    "balance_walk": (_act("wave", (4.0, 8.0), ((0, 1, 1, 0), (0.2, 1, 1, 0.07), (0.4, 1, 1, -0.07), (0.6, 1, 1, 0.06), (0.8, 1, 1, -0.06), (1, 1, 1, 0)), (("play", -0.2),), "proud"), L178_WEIGHT, "focus"),
+    "stargaze_awake": (_act("look", (10.0, 40.0), ((0, 1, 1, 0), (0.15, 1.03, 0.95, -0.1), (0.9, 1.03, 0.95, -0.1), (1, 1, 1, 0)), (("curiosity", -0.2), ("rest", -0.1)), "curious"), L178_WEIGHT, "content"),
 }
 #: What the menu says it is doing during a prop, spell or plain act (INBOX 1718 b: a figure holding a gridded panel
 #: gave no hint it was reading a map). Acts not listed read as their own name, spaces for underscores.
