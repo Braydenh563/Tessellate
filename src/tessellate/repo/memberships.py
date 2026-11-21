@@ -10,7 +10,7 @@ A repository flushes and never commits (`repo/__init__.py`).
 
 from __future__ import annotations
 
-from sqlalchemy import and_, delete, func, or_, select
+from sqlalchemy import and_, delete, func, literal, or_, select, union_all
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Category, Entry, EntryCategory, NoteGroup, NoteGroupMember
@@ -95,6 +95,34 @@ def groups_bulk(session: Session, ids: list[int]) -> dict[int, list[str]]:
     return found
 
 
+def bulk(session: Session, entries: list[Entry]) -> tuple[dict[int, list[str]], dict[int, list[str]]]:
+    """`(also_in_bulk, groups_bulk)` in one statement, for a list page
+    (`/entries` has a statement budget, tests/test_perf_budget.py)."""
+    ids = [e.id for e in entries if e.id]
+    if not ids:
+        return {}, {}
+    primary = {e.id: e.category_id for e in entries}
+    also = (
+        select(literal("c").label("kind"), EntryCategory.entry_id, Category.id.label("ref"), Category.name)
+        .join(Category, Category.id == EntryCategory.category_id)
+        .where(EntryCategory.entry_id.in_(ids))
+    )
+    grouped = (
+        select(literal("g").label("kind"), NoteGroupMember.entry_id, NoteGroup.id.label("ref"), NoteGroup.name)
+        .join(NoteGroup, NoteGroup.id == NoteGroupMember.group_id)
+        .where(NoteGroupMember.entry_id.in_(ids))
+    )
+    both = union_all(also, grouped).subquery()
+    also_in: dict[int, list[str]] = {}
+    groups: dict[int, list[str]] = {}
+    for kind, entry_id, ref, name in session.execute(select(both).order_by(both.c.name)):
+        if kind == "g":
+            groups.setdefault(entry_id, []).append(name)
+        elif ref != primary.get(entry_id):
+            also_in.setdefault(entry_id, []).append(name)
+    return also_in, groups
+
+
 def for_one(session: Session, entry: Entry) -> tuple[list[str], list[str]]:
     """`(also_in, groups)` of one note, for the routes that return a single one."""
     return also_in_bulk(session, [entry]).get(entry.id, []), groups_bulk(session, [entry.id]).get(entry.id, [])
@@ -139,7 +167,7 @@ def find_group(session: Session, group_id: int) -> NoteGroup:
     return group
 
 
-def list_groups(session: Session) -> list[dict]:
+def list_groups(session: Session, limit: int | None = None) -> list[dict]:
     """Every group with how many live notes it holds, by name."""
     counts = dict(
         session.execute(
@@ -149,7 +177,7 @@ def list_groups(session: Session) -> list[dict]:
             .group_by(NoteGroupMember.group_id)
         ).all()
     )
-    rows = session.scalars(select(NoteGroup).order_by(NoteGroup.name))
+    rows = session.scalars(select(NoteGroup).order_by(NoteGroup.name).limit(limit))
     return [{"id": g.id, "name": g.name, "count": counts.get(g.id, 0)} for g in rows]
 
 

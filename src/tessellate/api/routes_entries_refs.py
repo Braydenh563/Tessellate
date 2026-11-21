@@ -21,15 +21,13 @@ from tessellate.core.database import (
 )
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_text
+from tessellate.entry.service import REFERENCE_SOURCES_MAX
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.repo import documents as documents_repo
 
 
-#: How many candidate sources a references scan will read, and how many rows
-#: it will answer with. The same two caps `routes_documents._backlinks` uses,
-#: and for the same reason: the scan is a LIKE over the notes and documents
-#: tables, which is fine at any notebook size and is not free at every one.
-REFERENCE_SOURCES_MAX = 400
+#: How many rows a references scan answers with; how many sources it reads is
+#: `REFERENCE_SOURCES_MAX`, kept beside the wiki-link reader in entry/service.py.
 REFERENCE_ROWS_MAX = 60
 
 

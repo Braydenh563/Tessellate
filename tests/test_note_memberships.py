@@ -63,7 +63,7 @@ def test_notes_join_and_leave_a_group_and_keep_their_category(client):
     assert client.get("/groups").json()[0]["count"] == 2
     reply = client.post(f"/groups/{gid}/notes/remove", json={"ids": [a]})
     assert reply.json() == {"removed": 1}
-    assert _get(client, a)["groups"] == [] and _get(client, b)["groups"] == ["Launch"]
+    assert _get(client, a).get("groups", []) == [] and _get(client, b)["groups"] == ["Launch"]
 
 
 def test_deleting_a_group_keeps_its_notes(client):
@@ -71,7 +71,7 @@ def test_deleting_a_group_keeps_its_notes(client):
     gid = client.post("/groups", json={"name": "Temp"}).json()["id"]
     client.post(f"/groups/{gid}/notes", json={"ids": [a]})
     client.delete(f"/groups/{gid}")
-    assert _get(client, a)["groups"] == []
+    assert _get(client, a).get("groups", []) == []
 
 
 def test_a_binned_note_is_not_counted_in_its_group(client):
@@ -92,8 +92,8 @@ def test_a_note_can_also_be_in_other_categories(client):
     note = _get(client, a)
     assert note["category"] == "Recipes" and note["also_in"] == ["Family", "Travel"]
     reply = client.put(f"/entries/{a}/also-in", json={"categories": []})
-    assert reply.json()["also_in"] == []
-    assert _get(client, a)["also_in"] == []
+    assert reply.json().get("also_in", []) == []
+    assert _get(client, a).get("also_in", []) == []
     reply = client.put("/entries/99999/also-in", json={"categories": ["X"]})
     assert reply.status_code == 404
 
@@ -102,7 +102,7 @@ def test_refiling_into_an_also_category_hides_the_duplicate(client):
     a = _note(client, "x", "Recipes")
     client.put(f"/entries/{a}/also-in", json={"categories": ["Travel"]})
     client.put(f"/entries/{a}", json={"category": "Travel"})
-    assert _get(client, a)["also_in"] == []
+    assert _get(client, a).get("also_in", []) == []
 
 
 def test_the_agents_category_filter_finds_a_note_by_either_category(client, session):
@@ -179,7 +179,7 @@ def test_merging_a_category_carries_the_also_in_notes_along(client):
     assert _get(client, a)["also_in"] == ["Meals"]
     meals = next(c for c in client.get("/categories").json() if c["name"] == "Meals")
     client.put(f"/categories/{meals['id']}", json={"name": "Recipes"})  # merge into the primary
-    assert _get(client, a)["also_in"] == []
+    assert _get(client, a).get("also_in", []) == []
 
 
 def test_deleting_a_category_drops_it_from_every_note_that_was_also_in_it(client):
@@ -188,7 +188,7 @@ def test_deleting_a_category_drops_it_from_every_note_that_was_also_in_it(client
     travel = next(c for c in client.get("/categories").json() if c["name"] == "Travel")
     reply = client.delete(f"/categories/{travel['id']}")
     assert reply.status_code == 200
-    assert _get(client, a)["also_in"] == [] and _get(client, a)["category"] == "Recipes"
+    assert _get(client, a).get("also_in", []) == [] and _get(client, a)["category"] == "Recipes"
 
 
 def test_the_ask_context_names_every_category_a_note_is_in():

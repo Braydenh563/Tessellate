@@ -8,7 +8,7 @@ own routes later), and read back on every note as `groups` and `also_in`.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -36,8 +36,11 @@ class AlsoInBody(BaseModel):
 
 
 @router.get("/groups")
-def list_groups(session: Session = Depends(get_session)) -> list[dict]:
-    return memberships.list_groups(session)
+def list_groups(
+    limit: int = Query(default=500, ge=1, le=2000), session: Session = Depends(get_session)
+) -> list[dict]:
+    """The groups by name; a person makes each by hand, so 500 is every one in practice (tests/test_list_limits.py)."""
+    return memberships.list_groups(session, limit=limit)
 
 
 @router.post("/groups", status_code=201)
