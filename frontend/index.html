@@ -1326,7 +1326,7 @@
     </sheet-host>
   <!-- Replace in every document (DOCUMENTS_PLAN 24 row 9): VS Code's
        replace across files, as one undo step. Rows by `renderDocReplace`. -->
-  <dialog id="doc-replace-dialog" class="card space-dialog doc-ai-history-dialog doc-replace-dialog" aria-labelledby="doc-replace-title">
+  <sheet-host id="doc-replace-dialog" class="space-dialog doc-ai-history-dialog doc-replace-dialog" hidden>
     <!-- Built when the dialog first opens (`surfaceBuild("docReplace")` in docReplaceOpen, documents-replace.js). -->
     <script type="text/x-surface" data-surface="docReplace">
     <div class="dialog-head">
@@ -1352,9 +1352,9 @@
       <button type="button" class="accent small" id="doc-replace-run" disabled>Replace all</button>
     </div>
     </script>
-  </dialog>
+  </sheet-host>
 
-  <dialog id="doc-stats-dialog" class="card space-dialog">
+  <sheet-host id="doc-stats-dialog" class="space-dialog" hidden>
     <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-chart-bar pop-glyph" aria-hidden="true"></i>Document statistics</h2>
       <span class="dialog-head-actions">
@@ -1363,7 +1363,7 @@
     </div>
     <p class="muted" id="doc-stats-scope">The whole document</p>
     <dl class="doc-stats-list" id="doc-stats-list"></dl>
-  </dialog>
+  </sheet-host>
 
   <sheet-host id="doc-word-goal-dialog" class="space-dialog" hidden>
     <div class="dialog-head">

@@ -8109,10 +8109,9 @@ POPUP_KINDS = {
     "doc-word-goal-dialog": "sheet",
     "doc-dictionary-dialog": "sheet",
     "dash-widgets-dialog": "sheet",
+    "doc-replace-dialog": "sheet",
+    "doc-stats-dialog": "sheet",
 }
-#: Two dialogs the table does not rule (added after it was written): LEDGER L-world-class-421.
-#: May only fall.
-UNRULED_DIALOGS = {"doc-replace-dialog", "doc-stats-dialog"}
 
 
 def test_each_popup_is_the_kind_the_table_rules() -> None:
@@ -8120,7 +8119,7 @@ def test_each_popup_is_the_kind_the_table_rules() -> None:
     markup = re.sub(r"<!--.*?-->", "", html, flags=re.S)
     native = set(re.findall(r'<dialog\b[^>]*\bid="([^"]+)"', markup))
     hosts = dict(re.findall(r'<sheet-host\b[^>]*\bid="([^"]+)"([^>]*)>', markup))
-    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"} | UNRULED_DIALOGS, (
+    assert native == {i for i, kind in POPUP_KINDS.items() if kind == "dialog"}, (
         f"a popup is a native <dialog> only when it must interrupt: {sorted(native)}"
     )
     assert set(hosts) == {i for i, kind in POPUP_KINDS.items() if kind != "dialog"}, sorted(hosts)
