@@ -7049,6 +7049,11 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-2);
   min-width: 0;
 }
+/* Rows are 36px with their own inset, so the 4px between them was 40px a row:
+   eleven rows came to 452px, two over the 450px ceiling. */
+.wb-menu-two-col .wb-menu-section {
+  gap: 0;
+}
 @media (min-width: 820px) {
   .wb-board-menu .wb-menu-item[data-wb-click="wb-fullscreen"] {
     display: none;

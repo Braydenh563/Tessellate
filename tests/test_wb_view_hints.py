@@ -62,3 +62,19 @@ def test_the_menu_rows_the_rule_and_the_bundle_agree():
     assert "#library-view-whiteboard.wb-hide-ports #wb-anchor-hints" in rule and "display: none;" in rule and "!important" not in rule
     assert "/js/whiteboard-hints.js" in frontend_text("lazy-entries.js")
     assert _js_scope.is_wrapped(script_file_text("whiteboard-hints.js")) and _js_scope.global_names(script_file_text("whiteboard-hints.js")) == set()
+
+
+def test_the_map_view_menu_leaves_out_rows_a_map_can_never_use():
+    """A map has no arrow grips, no join dots and no Format panel, so the View menu's rows for them are board-only
+    (the mapviewmenu sweep holds a map's menu to 450px; 587px measured with them)."""
+    html = frontend_text("index.html")
+    menu = html[html.index('id="wb-view-menu"') : html.index('id="wb-bg-image-input"')]
+    for needle in ('data-wb-cmd="format-panel"', 'id="wb-view-grips"', 'id="wb-view-ports"'):
+        at = menu.index(needle)
+        tag = menu[menu.rindex("<", 0, at) : menu.index(">", at)]
+        if "<input" in tag:
+            tag = menu[menu.rindex("<label", 0, at) : at]
+        assert 'data-wb-surface="board"' in tag, needle
+    css = frontend_text("css/07-whiteboard-misc.css")
+    rule = css[css.index(".wb-menu-two-col .wb-menu-section") :]
+    assert "gap: 0;" in rule[: rule.index("}")]
