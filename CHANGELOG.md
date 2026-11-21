@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents and files carry tags, a category and properties (L-world-class-393): three additive columns on documents and media_uploads (migration a3d7c1e9b5f4), read and written through /library/meta (bulk, restore for one Undo), so the Library bars of decision 65 have something to write.
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.
 - Dashboard fill (L701): each widget now starts its fill in its own task (`dashYield` before `render`, not a microtask) and the grid skeleton follows by the grid's own ResizeObserver instead of an 80 ms timer that read `grid.offsetTop` mid-fill; 4x CPU, 500 notes, median of 5: dashboard.js forced layout 53 to 16 ms, worst dashboard.js script 73 to 42 ms (100-125 before on busy runs), runs with a script over 50 ms 4 of 5 to 1 of 5; 1x: forced 16 to 0 ms. Pinned by `tests/test_dash_fill_tasks.py`. Still over 50 ms: the grid-sizing rAF callbacks (L-world-class-620).

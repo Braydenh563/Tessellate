@@ -1807,6 +1807,13 @@ class Document(Base, WorkspaceMixin):
     #: In the recycle bin since then (WORLD_CLASS_PLAN 5 item 10); null is live.
     #: Hidden from every read by `_hide_binned`; a purge is the hard delete.
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
@@ -2358,6 +2365,13 @@ class MediaUpload(Base, WorkspaceMixin):
     #: Library row, no search hit, no caption or reading job, until the person
     #: chooses Save to Library (`POST /media/{id}/library`), which clears this.
     board_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: What a person files it under, as a note's own are (WORLD_CLASS_PLAN
+    #: decision 65, L-world-class-393): tags a JSON string array, the category
+    #: by id, properties a JSON object of name to text. Additive: "[]", null and
+    #: "{}" are what every older row reads, and the selection bars write them.
+    tags: Mapped[str] = mapped_column(Text, default="[]", server_default=sql_text("'[]'"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), default=None)
+    properties: Mapped[str] = mapped_column(Text, default="{}", server_default=sql_text("'{}'"))
 
 
 class JobRun(Base):
