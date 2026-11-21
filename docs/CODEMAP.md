@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:261 |
-| `charactersLost` | frontend/js/lazy-entries.js:270 |
-| `emblemHead` | frontend/js/lazy-entries.js:278 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:307 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:340 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:301 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:328 |
-| `onDomReady` | frontend/js/lazy-entries.js:351 |
-| `plainHead` | frontend/js/lazy-entries.js:284 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:292 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:363 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:382 |
+| `afterCharacters` | frontend/js/lazy-entries.js:262 |
+| `charactersLost` | frontend/js/lazy-entries.js:271 |
+| `emblemHead` | frontend/js/lazy-entries.js:279 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:308 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:341 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:302 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:329 |
+| `onDomReady` | frontend/js/lazy-entries.js:352 |
+| `plainHead` | frontend/js/lazy-entries.js:285 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:293 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:364 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:383 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -623,59 +623,58 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
-### frontend/js/skills.js (49)
+### frontend/js/skills.js (48)
 
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
-| `askSkillInputs` | frontend/js/skills.js:217 |
-| `batchArchive` | frontend/js/skills.js:1108 |
-| `batchDelete` | frontend/js/skills.js:1152 |
-| `batchEach` | frontend/js/skills.js:1063 |
-| `batchExport` | frontend/js/skills.js:1146 |
-| `batchFavourite` | frontend/js/skills.js:1102 |
-| `batchMove` | frontend/js/skills.js:1041 |
-| `batchNoun` | frontend/js/skills.js:1098 |
-| `batchPublish` | frontend/js/skills.js:1119 |
-| `batchPut` | frontend/js/skills.js:1094 |
-| `batchSelection` | frontend/js/skills.js:1035 |
-| `batchTag` | frontend/js/skills.js:1055 |
-| `blobToBase64` | frontend/js/skills.js:841 |
-| `buildSkillsPanel` | frontend/js/skills.js:428 |
+| `batchArchive` | frontend/js/skills.js:1052 |
+| `batchDelete` | frontend/js/skills.js:1096 |
+| `batchEach` | frontend/js/skills.js:1007 |
+| `batchExport` | frontend/js/skills.js:1090 |
+| `batchFavourite` | frontend/js/skills.js:1046 |
+| `batchMove` | frontend/js/skills.js:985 |
+| `batchNoun` | frontend/js/skills.js:1042 |
+| `batchPublish` | frontend/js/skills.js:1063 |
+| `batchPut` | frontend/js/skills.js:1038 |
+| `batchSelection` | frontend/js/skills.js:979 |
+| `batchTag` | frontend/js/skills.js:999 |
+| `blobToBase64` | frontend/js/skills.js:785 |
+| `buildSkillsPanel` | frontend/js/skills.js:372 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:790 |
-| `downloadBlob` | frontend/js/skills.js:878 |
-| `downloadFromApi` | frontend/js/skills.js:857 |
-| `downloadJson` | frontend/js/skills.js:756 |
-| `enterSelectMode` | frontend/js/skills.js:1005 |
-| `exitSelectMode` | frontend/js/skills.js:1023 |
-| `fillBatchCategories` | frontend/js/skills.js:978 |
-| `fillBatchMore` | frontend/js/skills.js:1125 |
-| `fillSkillSelect` | frontend/js/skills.js:373 |
-| `healthFacts` | frontend/js/skills.js:780 |
+| `desktopShell` | frontend/js/skills.js:734 |
+| `downloadBlob` | frontend/js/skills.js:822 |
+| `downloadFromApi` | frontend/js/skills.js:801 |
+| `downloadJson` | frontend/js/skills.js:700 |
+| `enterSelectMode` | frontend/js/skills.js:949 |
+| `exitSelectMode` | frontend/js/skills.js:967 |
+| `fillBatchCategories` | frontend/js/skills.js:922 |
+| `fillBatchMore` | frontend/js/skills.js:1069 |
+| `fillSkillSelect` | frontend/js/skills.js:317 |
+| `healthFacts` | frontend/js/skills.js:724 |
 | `inputsToText` | frontend/js/skills.js:45 |
-| `loadChatSkills` | frontend/js/skills.js:299 |
+| `loadChatSkills` | frontend/js/skills.js:243 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:615 |
-| `markOtherDevice` | frontend/js/skills.js:806 |
-| `onOtherDevice` | frontend/js/skills.js:823 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:831 |
-| `renderChatNudge` | frontend/js/skills.js:658 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:559 |
+| `markOtherDevice` | frontend/js/skills.js:750 |
+| `onOtherDevice` | frontend/js/skills.js:767 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:775 |
+| `renderChatNudge` | frontend/js/skills.js:602 |
 | `renderSkillToolPicker` | frontend/js/skills.js:84 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `resetChatNudge` | frontend/js/skills.js:726 |
+| `resetChatNudge` | frontend/js/skills.js:670 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:894 |
-| `saveSkillList` | frontend/js/skills.js:744 |
+| `saveFile` | frontend/js/skills.js:838 |
+| `saveSkillList` | frontend/js/skills.js:688 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:625 |
-| `skillPacePill` | frontend/js/skills.js:513 |
-| `skillSummary` | frontend/js/skills.js:731 |
+| `skillMatchingDraft` | frontend/js/skills.js:569 |
+| `skillPacePill` | frontend/js/skills.js:457 |
+| `skillSummary` | frontend/js/skills.js:675 |
 | `startEditingSkill` | frontend/js/skills.js:51 |
-| `startSkill` | frontend/js/skills.js:167 |
+| `startSkill` | frontend/js/skills.js:168 |
 | `stopEditingSkill` | frontend/js/skills.js:69 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:954 |
+| `updateBatchCount` | frontend/js/skills.js:898 |
 
 ### frontend/js/shell-reminders.js (49)
 
@@ -2815,13 +2814,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `placeChatTime` | frontend/js/chat-time.js:59 |
 | `stampChatTimes` | frontend/js/chat-time.js:83 |
 
-### frontend/js/chat-turn.js (26)
+### frontend/js/chat-turn.js (27)
 
 | Name | File:line |
 |---|---|
 | `addBubble` | frontend/js/chat-turn.js:2508 |
 | `agentTimeline` | frontend/js/chat-turn.js:1331 |
 | `appendRunResumeControls` | frontend/js/chat-turn.js:2402 |
+| `askSkillInputs` | frontend/js/chat-turn.js:2968 |
 | `assistantMessageActions` | frontend/js/chat-turn.js:2607 |
 | `chatAttachmentStrip` | frontend/js/chat-turn.js:2277 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
@@ -13439,7 +13439,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10097 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10594 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8491 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3538 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3476 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10822 |
 | A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10732 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2866 |
@@ -13574,7 +13574,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:392 |
 | Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2157 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/08-consistency.css:4827 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3331 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3269 |
 | WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2392 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:404 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:925 |
@@ -13799,7 +13799,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, de-vibecoded (the owner: "devibecode all the ui") | frontend/css/08-consistency.css:2945 |
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:319 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6724 |
-| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/06-timeline-dialogs.css:3796 |
+| the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") | frontend/css/board-lazy.css:44 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
 | the Sources panel | frontend/css/02-chat-graph.css:4293 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:3005 |
@@ -13848,7 +13848,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the documents editor | frontend/css/library-lazy.css:3564 |
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2257 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:5189 |
-| the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2657 |
+| the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/board-lazy.css:6 |
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4490 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1069 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8973 |
@@ -13915,7 +13915,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7886 |
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3153 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10788 |
-| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2812 |
+| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2774 |
 | the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4454 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3570 |
@@ -13953,7 +13953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 4948 |
 | frontend/css/04-chat-dock-appearance.css | 6639 |
 | frontend/css/05-sidebars-themes.css | 6217 |
-| frontend/css/06-timeline-dialogs.css | 3828 |
+| frontend/css/06-timeline-dialogs.css | 3750 |
 | frontend/css/07-whiteboard-misc.css | 12060 |
 | frontend/css/08-consistency.css | 11081 |
 | frontend/css/09-editor.css | 1143 |
@@ -13963,6 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
 | frontend/css/atlas-lazy.css | 1228 |
+| frontend/css/board-lazy.css | 84 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |

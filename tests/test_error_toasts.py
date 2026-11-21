@@ -60,6 +60,8 @@ EXPECTED = {
         '"Tick the notes to move first."',
     ],
     'chat-turn.js': [
+        # Moved with `askSkillInputs` from skills.js (the boot gzip cap); the same toast.
+        '`“${skill.name}” needs ${item.label || item.name}.`',
         '"The model returned nothing that time. Try again."',
     ],
     'chat.js': [
@@ -165,7 +167,6 @@ EXPECTED = {
         '"Microphone access was blocked, allow it in your browser."',
     ],
     'skills.js': [
-        '`“${skill.name}” needs ${item.label || item.name}.`',
         '"Tick some notes first."',
     ],
     'suggestions-inbox.js': [

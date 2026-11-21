@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot scripts back under their gzip cap after the #222 merge: the skill inputs dialog (`askSkillInputs`) moved from skills.js into the chat turn bundle, fetched on the press that needs it (about 370 bytes gzipped off boot); the board's dialog and shape-caret rules moved from 06-timeline-dialogs.css into board-lazy.css, fetched with the boards bundle (boot CSS 179,382 to under its 179,300 cap).
 - Tests: two composer date tests read the real clock (a note's written day, a snooze's "the 16th") and failed once the real date passed the 17th; both now run on their fixed day.
 - Boards: deleting a board for good also forgets its embeds' undo histories on this device (L-whiteboard-77).
 - Boards: a frame binding saved past the write check (a bad property name, a list value, `tags`) is ignored instead of written to notes (L-whiteboard-71).

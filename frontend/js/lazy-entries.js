@@ -7,6 +7,7 @@ Object.assign(LAZY_MODULES, {
   //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
     ...LAZY_MODULES.library,
+    "/css/board-lazy.css", //: The board dialogs' rules (export, shape libraries), out of the boot CSS.
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-undo.js", //: Before whiteboard-map.js: the undo stacks (`wbStacks`) and the gesture recorder.
     "/js/whiteboard-map.js",
