@@ -7870,7 +7870,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .nm-atlas[data-atlas-mood="thinking"] {
   --atl-tail: -4deg; --atl-star: 1;
   --atl-bl-y: -2.2px; --atl-br-y: -0.4px; --atl-bl-r: -8deg; --atl-br-r: 4deg; --atl-lid: 0;
-  --atl-px: -1.8px; --atl-py: -2.2px; --atl-ps: 0.92;
+  --atl-px: -0.8px; --atl-py: -0.9px; --atl-ps: 0.92;
   --atl-m-smile: 0; --atl-m-hmm: 1; --atl-cheek: 0.2;
   --atl-tilt: 6deg; --atl-fx-dots: 1;
 }
