@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- MCP over HTTP: a link can be scoped to categories or tags (reads, search, graph tools and writes stay inside), a remote client such as claude.ai can sign in with OAuth 2.1 (PKCE, dynamic registration, metadata, approval in Settings on this computer), and the Docker compose file lets the host's own port count as this computer (L-world-class-560).
 - Docs: BACKLOG §11's perf leftovers record the 2026-11-21 re-measure at 4x (Settings pane switch floor about 130ms, first Intl call, api() json continuations, the first nameMark draw).
 - Boot: the companion's looks warm in slices (the build is a generator, one part per task, the getter finishing any rest), so `atlasWarmLook` falls from a 37 to 88 ms task (median 64) to 23 to 26 ms at 4x CPU.
 - Optional pip extras are installed within a version range, and embedding model weights are pinned to a Hub commit and a sha256, a mismatch refused and deleted.

@@ -20,7 +20,7 @@ import secrets
 import threading
 import time
 
-from tessellate.core import deps
+from tessellate.core import deps, mcp_scope
 
 PREF = "mcp_clients"
 #: Every token starts with this, so a pasted one is recognisable (and a secret
@@ -68,6 +68,8 @@ def public(row: dict) -> dict:
         "id": row["id"],
         "name": row.get("name", ""),
         "writes": bool(row.get("writes")),
+        "scope": mcp_scope.clean(row.get("scope")),
+        "kind": row.get("kind") or "token",
         "created_at": row.get("created_at"),
         "last_used": row.get("last_used"),
         "calls": int(row.get("calls") or 0),
@@ -86,14 +88,18 @@ class TooMany(Exception):
     """Already `MAX_CLIENTS` tokens: revoke one first."""
 
 
-def create(name: str, *, writes: bool) -> tuple[dict, str]:
-    """A new client and its token, which is never stored or shown again."""
+def create(name: str, *, writes: bool, scope: dict | None = None, extra: dict | None = None) -> tuple[dict, str]:
+    """A new client and its token, which is never stored or shown again.
+    `scope` limits the notes it reaches (core/mcp_scope.py); `extra` is the
+    OAuth grant's own fields (core/mcp_oauth.py)."""
     token = TOKEN_PREFIX + secrets.token_urlsafe(32)
     row = {
+        **(extra or {}),
         "id": secrets.token_hex(6),
         "name": clean_name(name),
         "hash": _hash(token),
         "writes": bool(writes),
+        "scope": mcp_scope.clean(scope),
         "created_at": _now(),
         "last_used": None,
         "calls": 0,
@@ -151,3 +157,35 @@ def note_use(client_id: str) -> None:
                 row["calls"] = int(row.get("calls") or 0) + 1
                 row["last_used"] = _now()
         _save(rows)
+
+
+def set_refresh(client_id: str, refresh_hash: str) -> None:
+    """An OAuth grant's refresh token (core/mcp_oauth.py), kept as its hash."""
+    with _lock:
+        rows = _all_rows()
+        for row in rows:
+            if row["id"] == client_id:
+                row["refresh_hash"] = refresh_hash
+        _save(rows)
+
+
+def match_refresh(offered_hash: str) -> dict | None:
+    """The live grant whose refresh token hashes to `offered_hash`. Every row is compared."""
+    found = None
+    for row in _rows():
+        if row.get("refresh_hash") and hmac.compare_digest(offered_hash, str(row["refresh_hash"])):
+            found = row
+    return found
+
+
+def rotate(client_id: str, refresh_hash: str) -> str | None:
+    """A new access token and refresh hash for a live grant; the old pair stops at once."""
+    token = TOKEN_PREFIX + secrets.token_urlsafe(32)
+    with _lock:
+        rows = _all_rows()
+        hit = [row for row in rows if row["id"] == client_id and not row.get("revoked_at")]
+        if not hit:
+            return None
+        hit[0].update(hash=_hash(token), refresh_hash=refresh_hash)
+        _save(rows)
+    return token
