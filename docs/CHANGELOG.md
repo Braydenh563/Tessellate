@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Palette rows for Rename space, Board layers and Browse the web in Chat (L-world-class-673): `app-features.js` rows reaching new `space-rename` and `board-layers` reveal targets and the existing Web switch; the Guide topics name them; `reach.js` matches a help popover to its topic by the topic's own words.
 Ctrl+Z on a just-added mind map topic takes it away (L-world-class-672): the topic's editor keeps the chord only once a letter is typed (`whiteboard-map.js` keydown); tests/test_mindmap_fresh_topic_undo_l672.py.
 Boot long tasks measured and attributed (L-world-class-364, L-world-class-354): 4x trace, UpdateLayoutTree 945 ms total over five runs, 1x longest task under 50 ms in 4 of 5 runs, the style-only tasks traced to the first stylesheet build and the dashboard's first full draw; the owner-browser check is a BACKLOG row.
 Split notes-list.js and status.js into lazy pieces (L-world-class-631): `notes-wire.js` (the list's keyboard walk, shift-click range, connections rail listeners, wiki-rename offer) and `status-settings.js` (`renderSettings`), reached by stand-ins in lazy-entries.js with no boot tag; notes-list.js 3,787 to 3,622 lines, status.js 3,246 to 3,086, caps lowered to match.

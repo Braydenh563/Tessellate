@@ -1876,14 +1876,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCatalog` | frontend/js/app-features.js:11 |
 | `featureCommandRows` | frontend/js/app-features.js:226 |
 | `notificationsUnreadSaid` | frontend/js/app-features.js:300 |
-| `paletteAbouts` | frontend/js/app-features.js:663 |
+| `paletteAbouts` | frontend/js/app-features.js:666 |
 | `paletteCommands` | frontend/js/app-features.js:307 |
-| `paletteRowParts` | frontend/js/app-features.js:674 |
+| `paletteRowParts` | frontend/js/app-features.js:677 |
 | `popupToolMaths` | frontend/js/app-features.js:257 |
-| `quickAccessCurrent` | frontend/js/app-features.js:627 |
-| `quickAccessItems` | frontend/js/app-features.js:618 |
-| `quickCatalogue` | frontend/js/app-features.js:596 |
-| `renderQuickLinks` | frontend/js/app-features.js:632 |
+| `quickAccessCurrent` | frontend/js/app-features.js:630 |
+| `quickAccessItems` | frontend/js/app-features.js:621 |
+| `quickCatalogue` | frontend/js/app-features.js:599 |
+| `renderQuickLinks` | frontend/js/app-features.js:635 |
 | `renderToolShortcutList` | frontend/js/app-features.js:273 |
 
 ### frontend/js/app-import.js (6)
@@ -7261,25 +7261,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildShortcutList` | frontend/js/reveal-targets.js:725 |
-| `flashRevealed` | frontend/js/reveal-targets.js:870 |
-| `foldedText` | frontend/js/reveal-targets.js:641 |
-| `markNotePassage` | frontend/js/reveal-targets.js:670 |
-| `notePassageFor` | frontend/js/reveal-targets.js:627 |
-| `openShortcuts` | frontend/js/reveal-targets.js:783 |
-| `packagesNoticeOpen` | frontend/js/reveal-targets.js:705 |
-| `packagesNoticeTarget` | frontend/js/reveal-targets.js:691 |
-| `passageRange` | frontend/js/reveal-targets.js:656 |
-| `renderShortcutList` | frontend/js/reveal-targets.js:713 |
+| `buildShortcutList` | frontend/js/reveal-targets.js:727 |
+| `flashRevealed` | frontend/js/reveal-targets.js:872 |
+| `foldedText` | frontend/js/reveal-targets.js:643 |
+| `markNotePassage` | frontend/js/reveal-targets.js:672 |
+| `notePassageFor` | frontend/js/reveal-targets.js:629 |
+| `openShortcuts` | frontend/js/reveal-targets.js:785 |
+| `packagesNoticeOpen` | frontend/js/reveal-targets.js:707 |
+| `packagesNoticeTarget` | frontend/js/reveal-targets.js:693 |
+| `passageRange` | frontend/js/reveal-targets.js:658 |
+| `renderShortcutList` | frontend/js/reveal-targets.js:715 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
-| `revealBoardsGallery` | frontend/js/reveal-targets.js:544 |
+| `revealBoardsGallery` | frontend/js/reveal-targets.js:546 |
 | `revealDashWidget` | frontend/js/reveal-targets.js:174 |
 | `revealDetails` | frontend/js/reveal-targets.js:65 |
 | `revealDocument` | frontend/js/reveal-targets.js:145 |
 | `revealEntryMenu` | frontend/js/reveal-targets.js:82 |
-| `revealFeature` | frontend/js/reveal-targets.js:557 |
+| `revealFeature` | frontend/js/reveal-targets.js:559 |
 | `revealGraphOptions` | frontend/js/reveal-targets.js:135 |
-| `revealLibrarySub` | frontend/js/reveal-targets.js:553 |
+| `revealLibrarySub` | frontend/js/reveal-targets.js:555 |
 | `revealQuery` | frontend/js/reveal-targets.js:72 |
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
