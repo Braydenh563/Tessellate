@@ -6,6 +6,7 @@
 //     node scratchpad/ui-sweeps/deepflows.js            # every flow, 4 runs
 //   ... ONLY=note,graph WIDTHS=1440 THEMES=light node scratchpad/ui-sweeps/deepflows.js
 //   ... SKIP=settings node scratchpad/ui-sweeps/deepflows.js   # settings is the slow one
+//   ... SHARD=3 node scratchpad/ui-sweeps/deepflows.js        # one of the 8 CI shards
 //
 // It seeds the notebook first with deepflows-seed.js, once per data dir
 // (about 40 notes, four private, properties, [[links]] and [[A|B]], tags, two
@@ -47,6 +48,15 @@
 const fs = require('fs');
 const { boot, OUT, BASE } = require('./lib.js');
 
+//: SHARD=n (1 to 8) runs one width x theme and one half of it: the settings flow
+//: (127s at 1440) or every other flow (144s). Whole, a width x theme takes 265 to
+//: 299s, against the sweep limit of 300s (scripts/ci_sweeps.sh); stable.txt lists
+//: every shard, so CI and `gate.sh --sweeps` run every flow at every size.
+if (process.env.SHARD) {
+  const n = Number(process.env.SHARD) - 1;
+  const [w, th] = [['1440', 'light'], ['1440', 'dark'], ['390', 'light'], ['390', 'dark']][Math.floor(n / 2)];
+  Object.assign(process.env, { WIDTHS: w, THEMES: th }, n % 2 ? { SKIP: 'settings' } : { ONLY: 'settings' });
+}
 const WIDTHS = (process.env.WIDTHS || '1440,390').split(',').map(Number);
 const THEMES = (process.env.THEMES || 'light,dark').split(',');
 const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
@@ -176,6 +186,7 @@ async function main() {
         stepAt = '';
         const where = `${name} @${width} ${theme}`;
         let problem = null;
+        const began = Date.now();
         try {
           await flows[name](env);
           await env.overflow('end');
@@ -189,7 +200,7 @@ async function main() {
           try { await page.screenshot({ path: `${OUT}/deepflows-${name}-${width}-${theme}.png` }); } catch (e) { /* page gone */ }
         }
         table.push({ where, ok: !failed });
-        console.log(`${failed ? 'FAIL' : 'PASS'} ${where}${problem ? `  -> ${problem}` : ''}`);
+        console.log(`${failed ? 'FAIL' : 'PASS'} ${where} ${Math.round((Date.now() - began) / 1000)}s${problem ? `  -> ${problem}` : ''}`);
         for (const e of errs) {
           console.log(`       ${e}`);
           if (!findings.has(e)) findings.set(e, []);

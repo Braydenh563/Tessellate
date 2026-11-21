@@ -64,7 +64,8 @@ def test_a_long_sweep_runs_as_shards_each_well_under_the_timeout() -> None:
     `|` in a line's env token splits it into runs of their own, each under
     its own 300s timeout; `--plan` prints the runs without starting a server.
     The font matrix runs whole: one SHARD per CELLS_PER_SHARD cells, so every
-    font, theme and width is checked in CI."""
+    font, theme and width is checked in CI. deepflows too: a width x theme took
+    265 to 299s whole, so each is two shards (the settings flow, the rest)."""
     runs = _plan()
     errors = [r for r in runs if r[0] == "errors"]
     assert [r[1:] for r in errors] == [["WIDTHS=1440,1024"], ["WIDTHS=820,390"]]
@@ -75,9 +76,12 @@ def test_a_long_sweep_runs_as_shards_each_well_under_the_timeout() -> None:
     cells = len(fonts) * 2 * 3  # fonts x light, dark x 1440, 1024, 390
     shards = [r[1:] for r in runs if r[0] == "fontmatrix"]
     assert shards == [[f"SHARD={n}"] for n in range(1, -(-cells // per_shard) + 1)]
-    assert [r[0] for r in runs if r[0] not in ("errors", "fontmatrix")] == [
-        n for n in _stable() if n not in ("errors", "fontmatrix")
-    ]
+    flows = (SWEEPS / "deepflows.js").read_text(encoding="utf-8")
+    sizes = re.search(r"const \[w, th\] = \[(.*?)\]\[Math", flows).group(1)
+    halves = len(sizes.split("], [")) * 2  # each width x theme: settings, the rest
+    assert [r[1:] for r in runs if r[0] == "deepflows"] == [[f"SHARD={n}"] for n in range(1, halves + 1)]
+    sharded = ("errors", "fontmatrix", "deepflows")
+    assert [r[0] for r in runs if r[0] not in sharded] == [n for n in _stable() if n not in sharded]
     for name, secs in _seconds().items():
         assert secs <= 240, name  # seconds per run
 
