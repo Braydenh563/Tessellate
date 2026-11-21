@@ -10977,6 +10977,12 @@ header#top-bar button.space-switcher-btn:focus-visible {
   min-height: var(--control-h-body);
   margin: 0;
 }
+/* A finger gets the touch floor on the row's icons and its input, so the row stays one strip (iconfloor.js: 44 wide, 36 tall at 1024 touch). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .capture-bar-row :is(.capture-bar-input, .capture-bar-icon) {
+    min-height: max(var(--control-h-body), var(--target-min));
+  }
+}
 .capture-bar-row .capture-bar-input {
   flex: 1 1 auto;
   min-width: 0;

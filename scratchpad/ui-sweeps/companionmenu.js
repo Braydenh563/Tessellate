@@ -8,17 +8,29 @@
 // Env: KIND (atlas), THEME. Exits 1 on a menu outside the window or away
 // from the companion.
 const { boot } = require('./lib.js');
-const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x844@3').split(',');
+const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x844@3').split(',').filter(Boolean);
 (async () => {
   const fails = [];
   let count = 0;
   for (const size of SIZES) {
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
-    const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
-    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    const { browser, page } = await boot({ timerFns: true, viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr || 1), ...(w < 600 ? { isMobile: true, hasTouch: true } : {}) });
+    await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
+    // What a missed click saw, for its failure line: the page's contextmenu events and every menu close, with times.
+    await page.evaluate(() => {
+      window.__menuCloses = [];
+      window.__ctx = [];
+      const orig = window.closeActionMenus;
+      window.closeActionMenus = function (...a) {
+        window.__menuCloses.push(`${Math.round(performance.now())} ${new Error().stack.split('\n').slice(2, 4).map((l) => l.trim().split(' ')[1]).join('<')}`);
+        if (window.__menuCloses.length > 6) window.__menuCloses.shift();
+        return orig.apply(this, a);
+      };
+      for (const t of ['pointerdown', 'pointerup', 'contextmenu']) document.addEventListener(t, (e) => { window.__ctx.push(`${Math.round(performance.now())} ${t}${e.button != null ? e.button : ''} ${e.target.tagName}.${String(e.target.className).slice(0, 20)}`); if (window.__ctx.length > 8) window.__ctx.shift(); }, true);
+    });
     const spots = await page.evaluate(() => {
       const W = innerWidth; const H = innerHeight;
       return [[4, 60], [W - 68, 60], [4, H - 130], [W - 68, H - 130], [Math.round(W / 2 - 32), Math.round(H / 2 - 46)], [W - 68, Math.round(H / 2)], [Math.round(W / 2), H - 130]];
@@ -39,13 +51,30 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
         if (how === 'right-click') await page.mouse.click(face.x, face.y, { button: 'right' });
         else { await page.focus('#nm-buddy .nm-buddy-face'); await page.keyboard.press('Shift+F10'); }
         await page.waitForTimeout(260);
-        const m = await page.evaluate(() => {
+        const m = await page.evaluate(async () => {
+          // Measure a settled box: the menu is placed at open and once more a frame later, so a loaded machine can
+          // still be mid-settle at 260ms. Wait for the menu and face boxes to stop changing (never for a gap).
+          const box = () => { const e = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); const q = nmb.menu && nmb.menu.isConnected ? nmb.menu.getBoundingClientRect() : null; return [e.left, e.top, q && q.left, q && q.top].map((v) => Math.round(v || 0)).join(); };
+          let last = box(); let still = 0;
+          for (let i = 0; i < 40 && still < 3; i += 1) { await new Promise((r) => setTimeout(r, 50)); const now = box(); still = now === last ? still + 1 : 0; last = now; }
           const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
           const menu = nmb.menu && nmb.menu.isConnected && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;
           return { W: innerWidth, H: innerHeight, face: [f.left, f.top, f.right, f.bottom].map(Math.round), menu: menu ? [menu.left, menu.top, menu.right, menu.bottom].map(Math.round) : null, focusIn: !!(nmb.menu && nmb.menu.contains(document.activeElement)) };
         });
         const tag = `${size} at ${x},${y} by ${how}`;
-        if (!m.menu) { fails.push(`${tag}: no menu`); continue; }
+        if (!m.menu) {
+          // What the click met, so a miss names its cause (the figure ghosted, a panel over it, or moved on).
+          const why = await page.evaluate(([fx, fy]) => {
+            const b = document.getElementById('nm-buddy');
+            const f = b.querySelector('.nm-buddy-face');
+            const r = f.getBoundingClientRect();
+            const e = document.elementFromPoint(fx, fy);
+            const a = document.activeElement;
+            return { clicked: [Math.round(fx), Math.round(fy)], face: [r.left, r.top, r.width, r.height].map(Math.round), top: e && `${e.tagName}.${String(e.className).slice(0, 30)}#${e.id}`, cls: b.className, pe: `${getComputedStyle(b).pointerEvents}/${getComputedStyle(f).pointerEvents}`, op: getComputedStyle(b).opacity, act: a && `${a.tagName}.${String(a.className).slice(0, 30)}#${a.id}`, closes: window.__menuCloses, ctx: window.__ctx, now: Math.round(performance.now()) };
+          }, [face.x, face.y]);
+          fails.push(`${tag}: no menu ${JSON.stringify(why)}`);
+          continue;
+        }
         const [ml, mt, mr, mb] = m.menu;
         const [fl, ft, fr, fb] = m.face;
         const inside = ml >= 7 && mt >= 7 && mr <= m.W - 7 && mb <= m.H - 7;
@@ -77,9 +106,12 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
         const before = [nmb.x, nmb.y];
         if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
         nmb.lastInput = Date.now();
-        nameMarkBuddyTick();
-        nameMarkBuddyBeat();
-        nameMarkBuddyCheck();
+        nameMarkBuddySchedule(); clearTimeout(nmb.timer); nmb.timer = 0;
+        nameMarkBuddyQueuePlace(); clearTimeout(nmb.placeTimer); nmb.placeTimer = 0;
+        // Private to avatars.js (one closure): boot's timerFns kept the callbacks the two calls above armed.
+        window.__timerFns.nameMarkBuddyTick(true);
+        window.__timerFns.nameMarkBuddyBeat();
+        queueNameMarkBuddyCheck();
         await new Promise((r) => setTimeout(r, 2500));
         const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
         const m = nmb.menu && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;
@@ -104,8 +136,8 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
   for (const size of HARD) {
     const [wh, dpr] = size.split('@');
     const [w, h] = wh.split('x').map(Number);
-    const { browser, page } = await boot({ viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
-    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+    const { browser, page } = await boot({ timerFns: true, viewport: { width: w, height: h }, deviceScaleFactor: Number(dpr), hasTouch: true });
+    await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
     await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.theme = 'dark'; });
     await page.evaluate(() => revealTab('dashboard'));
     await page.waitForTimeout(3000);
@@ -120,7 +152,7 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       };
     });
     // On a dashboard panel that scrolls, the page scrolled a little.
-    const ride = async () => page.evaluate(() => {
+    const ride = async () => page.evaluate(async () => {
       const page = document.getElementById('tab-dashboard');
       page.scrollTop = 0;
       const panel = [...page.querySelectorAll('.card, .dash-widget, .dash-quicklinks')].find((el) => { const r = el.getBoundingClientRect(); return r.width > 250 && r.top > 250 && r.top < innerHeight - 250; });
@@ -129,8 +161,23 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       nameMarkBuddyIndexReset();
       const landed = nameMarkBuddyDrop(Math.round(r.left + 140), Math.round(r.top - 80));
       nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), landed, true);
-      page.scrollTop = 60;
+      // The beat is a real timeout the drop armed: `placeTimer = 1` alone leaves it running, and it took the
+      // companion off its panel to a window bar about a second on, before the menu was opened (L-general-40).
       clearTimeout(nmb.timer);
+      clearTimeout(nmb.placeTimer);
+      nmb.placeTimer = 1;
+      page.scrollTop = 0;
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+      page.scrollTop = 60;
+      // Until the scroll has ended: a menu opened while one is still under way is closed by it (menus.js
+      // closeActionMenusOnScroll), which is the page doing what it does, not the companion's menu.
+      await new Promise((res) => {
+        const t = setTimeout(res, 1200);
+        page.addEventListener('scrollend', () => { clearTimeout(t); res(); }, { once: true });
+      });
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+      clearTimeout(nmb.timer);
+      clearTimeout(nmb.placeTimer);
       nmb.placeTimer = 1;
       return { riding: !!nmb.ride };
     });
@@ -172,6 +219,9 @@ const SIZES = (process.env.SIZES || '1440x900@1,1024x700@1.25,800x600@1.5,390x84
       await ride();
       await page.evaluate(([ddx, ddy]) => { nmb.placeTimer = 0; nameMarkBuddyMoveTo(document.getElementById('nm-buddy'), { kind: 'air', pose: 'float', x: nmb.x + ddx, y: nmb.y + ddy }, false); }, [dx, dy]);
       await page.waitForTimeout(tag === 'mid-walk' ? 180 : 60);
+      // Held where it is: a figure still moving between reading its box and the click lands the click
+      // on the page behind it (1 run in 6 at 1440x900@1.25), which is the sweep's aim, not the menu's.
+      await page.evaluate(() => nmb.anim?.pause?.());
       p = await faceAt();
       await page.mouse.click(p[0], p[1], { button: 'right' });
       await measure(`right-click ${tag}`);

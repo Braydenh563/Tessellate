@@ -30,8 +30,16 @@ const BUSY = Number(process.env.BUSY || 12);
     await page.evaluate(async (n) => {
       for (let i = 0; i < n; i += 1) await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: `Smooth probe note ${i}. A line of words so the card has a body to it, and a second sentence for height.` }) });
     }, 16 - have);
+    // The app polls for changes made elsewhere and re-renders the list when it finds them (/entries/changes, about
+    // every 10s): notes this run just made would replace the stamped card mid-measure on a fresh data dir. Load the
+    // page again, so it has them from the start and there is nothing for the poll to find.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', 'testpassword123'); await page.click('#lock-submit'); }
+    await page.waitForFunction(() => typeof revealTab === 'function' && typeof ensureModule === 'function', null, { timeout: 20000 });
+    await page.waitForTimeout(1500);
   }
-  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(async () => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'notes');
   await page.waitForTimeout(3000);
@@ -74,10 +82,12 @@ const BUSY = Number(process.env.BUSY || 12);
   for (let i = 0; i < 40; i += 1) { await page.mouse.wheel(0, -(8 + (i % 9))); await page.waitForTimeout(16); }
   await page.waitForTimeout(300);
   current = 'smooth';
-  await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: 260, behavior: 'smooth' }); });
-  await page.waitForTimeout(900);
-  await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: -260, behavior: 'smooth' }); });
-  await page.waitForTimeout(900);
+  for (let rep = 0; rep < 3; rep += 1) {
+    await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: 260, behavior: 'smooth' }); });
+    await page.waitForTimeout(900);
+    await page.evaluate(() => { const c = document.querySelector('[data-probe-card]'); let s = c.parentElement; while (s && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement; (s || document.scrollingElement).scrollBy({ top: -260, behavior: 'smooth' }); });
+    await page.waitForTimeout(900);
+  }
   current = 'flick';
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, 40); await page.waitForTimeout(16); }
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, -40); await page.waitForTimeout(16); }

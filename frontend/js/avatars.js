@@ -4072,7 +4072,7 @@
   function nameMarkBuddyAttention() {
     const boxes = [];
     const el = document.activeElement;
-    if (el && el !== document.body && !el.closest("#nm-buddy, .nm-viewer")) {
+    if (el && el !== document.body && !el.closest("#nm-buddy, .nm-viewer, .pointer-menu-host")) {
       const box = nameMarkBuddyShown(el);
       if (box && box.width * box.height <= NMB_FOCUS_AREA) boxes.push(box);
     }
@@ -5759,7 +5759,7 @@
     nmbFollow.until = Math.max(nmbFollow.until, performance.now() + ms);
     if (!nmbFollow.frame && !nmbFollow.timer) nameMarkBuddyFollowFrame.ask();
   }
-  //: **The follow loop looks in a task after a drawn frame, never in a frame callback** (INBOX 1766, the owner's lag
+  //: **At rest, the follow loop looks in a task after a drawn frame, not in a frame callback** (INBOX 1766, the owner's lag
   //: log on a documents page: `nameMarkBuddyKeepUp 110ms (forced layout 109ms)`). A frame callback runs after every
   //: writer since the last draw and its first box read paid for all of it. The turn asks for a frame (`stage` "raf"),
   //: and that frame's callback only hands over to a timer (`stage` "task"), which runs once the frame has drawn: the
@@ -5768,6 +5768,14 @@
   nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk() {
     nmbFollow.stage = "raf";
     nmbFollow.frame = requestAnimationFrame(function nameMarkBuddyFollowTurn() {
+      //: **While its panel moves, the look is in the frame** (L-general-37, companionscroll.js): a card moved by a
+      //: transform animation is drawn with that frame's value, and a look in the task after it paints the
+      //: companion one frame behind (7.6px at the end of a 0.6s return against a 2px budget). Every read
+      //: (`nameMarkBuddyFollowFrame`'s animation question, the box) comes before its first write.
+      if (nmbFollow.moving) {
+        nameMarkBuddyFollowFrame(performance.now());
+        return;
+      }
       nmbFollow.stage = "task";
       nmbFollow.frame = setTimeout(function nameMarkBuddyFollowTask() {
         nameMarkBuddyFollowFrame(performance.now());
@@ -5814,7 +5822,9 @@
       //: transition starts with an event (`nmbFollow.animAt`), so with none in the last 2.5 s and
       //: the panel not already moving, there is nothing for it to find. **Before the frame writes**
       //: (INBOX 1591): the follow below moves the buddy, and a read after that settled style twice.
-      if (now - nmbFollow.movingAt > 120) {
+      //: **Just after a start event it asks at every look** (L-general-37): a transform transition is
+      //: `pending` for its first frame or two, so one answer of "no" (cached 120ms) let the loop nap while the card moved.
+      if (now - nmbFollow.movingAt > 120 || (!nmbFollow.moving && now - nmbFollow.animAt < NMB_START_MS)) {
         nmbFollow.movingAt = now;
         nmbFollow.moving = !!nmb.glue && (nmbFollow.moving || now - nmbFollow.animAt < 2500) && nameMarkBuddyPanelMoving(nmb.glue.el);
       }
@@ -5865,6 +5875,7 @@
   //: every panel beside it). An endless one on an ancestor is followed while
   //: it runs, since the panel really does move every frame; an endless one
   //: elsewhere (a spinner, a shimmer) is not, so an idle page stays idle.
+  const NMB_START_MS = 300;
   const NMB_PLACES = /^(transform|translate|scale|rotate|offset|inset|top|left|right|bottom|margin|padding|width|height|min-|max-|flex|grid|gap|border-width|font-size|all)/;
   const NMB_LAYOUT = /^(inset|top|left|right|bottom|margin|padding|width|height|min-|max-|flex|grid|gap|border-width|font-size|all)/;
   function nameMarkBuddyAnimProps(anim) {
@@ -5889,7 +5900,7 @@
     if (!el?.isConnected || typeof document.getAnimations !== "function") return false;
     const at = performance.now();
     const pm = nmbFollow.pm;
-    if (pm.el === el && at - pm.at < 120 && pm.at >= nmbFollow.animAt) return pm.val;
+    if (pm.el === el && at - pm.at < 120 && pm.at >= nmbFollow.animAt && (pm.val || at - nmbFollow.animAt >= NMB_START_MS)) return pm.val;
     pm.el = el;
     pm.at = at;
     pm.val = false;
@@ -9560,7 +9571,8 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    else if (String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
+    //: A list row holds the first 300 characters (`content_truncated`), so its length says nothing: the server's word count does (about six characters a word).
+    else if ((entry.content_truncated ? (entry.word_count || 0) * 6 : String(entry.content || "").length) > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
@@ -11365,11 +11377,26 @@
         drag = null;
         face.dataset.dragged = "1";
         nameMarkBuddyMenu(buddy, at);
+        held = true;
       }, 550);
     });
+    //: The menu opens under the finger, and the click that comes with the lift would land on its first row
+    //: (run, then closed). That one click is swallowed, for a moment after the lift.
+    let held = false;
+    const swallow = (event) => {
+      if (nmb.menu?.contains(event.target)) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    };
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
       face.addEventListener(type, () => {
         if (type !== "pointermove" || (drag && drag.moved)) clearTimeout(hold);
+        if (type === "pointerup" && held) {
+          held = false;
+          document.addEventListener("click", swallow, { capture: true, once: true });
+          setTimeout(() => document.removeEventListener("click", swallow, true), 600);
+        }
       });
     }
     //: The one-place and four-corner choices this replaces: a place kept for
@@ -11598,5 +11625,8 @@
   // pull-grab:end
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: The placement's own measures, read-only, for `scratchpad/ui-sweeps/perchall.js` (what a perch covers, what is
+  //: free). On `nmb` and not in the list below: this closure's global names are a ratchet (test_global_scope_ratchet).
+  nmb.measure = { shape: nameMarkBuddyShape, obstacles: nameMarkBuddyObstacles, perches: nameMarkBuddyPerches, hits: nameMarkBuddyHits, covers: nameMarkBuddyCovers, wordsUnder: nameMarkBuddyWordsUnder };
   Object.assign(window, { NAME_MARK_BUDDY_ACTS, NMB_ACTIVITIES, NMB_BLEND_IN_MS, NMB_EXPR_NEAR, NMB_FACELESS_ACTS, NMB_FEET, NMB_GRIP, NMB_GUTTER, NMB_H, NMB_HEAD, NMB_LAND_NEAR, NMB_LIMB_MOVES, NMB_LOUD_ACTS, NMB_LOUD_GAP_MS, NMB_MOTION_WHY, NMB_REACTIONS, NMB_SEAT, NMB_SIZES, NMB_THROW, NMB_W, PROFILE_LOOK_PARTS, atlasMark, characterFor, characterRendererFor, dropAnimations, isAtlasSeed, nameCharacterFigure, nameMark, nameMarkBuddyAct, nameMarkBuddyActOff, nameMarkBuddyActions, nameMarkBuddyActivitiesOff, nameMarkBuddyAim, nameMarkBuddyAloft, nameMarkBuddyAsleep, nameMarkBuddyBehindCover, nameMarkBuddyBlend, nameMarkBuddyBurst, nameMarkBuddyCalmAllows, nameMarkBuddyCanvasZoom, nameMarkBuddyCue, nameMarkBuddyCustom, nameMarkBuddyCustomReset, nameMarkBuddyDrop, nameMarkBuddyEnter, nameMarkBuddyExpress, nameMarkBuddyGone, nameMarkBuddyHasAtlas, nameMarkBuddyHint, nameMarkBuddyIndexReset, nameMarkBuddyKeepSpots, nameMarkBuddyLandNear, nameMarkBuddyLedges, nameMarkBuddyLieRoom, nameMarkBuddyLimbs, nameMarkBuddyMade, nameMarkBuddyMeasureOnce, nameMarkBuddyMenuOpen, nameMarkBuddyMotion, nameMarkBuddyMotionApply, nameMarkBuddyMoveTo, nameMarkBuddyNoTravel, nameMarkBuddyNoteOpened, nameMarkBuddyPut, nameMarkBuddyQueuePlace, nameMarkBuddyReact, nameMarkBuddyRelease, nameMarkBuddyRide, nameMarkBuddyScaleSaved, nameMarkBuddySchedule, nameMarkBuddyScrollAgo, nameMarkBuddySetSize, nameMarkBuddyShowy, nameMarkBuddySizeSelect, nameMarkBuddySound, nameMarkBuddySpotFor, nameMarkBuddySpots, nameMarkBuddyStill, nameMarkBuddyStreak, nameMarkBuddySway, nameMarkBuddyTab, nameMarkBuddyTabChanged, nameMarkBuddyTakeSurfaces, nameMarkBuddyTempo, nameMarkBuddyTilt, nameMarkBuddyToggles, nameMarkBuddyTravel, nameMarkBuddyWake, nameMarkBuddyWatch, nameMarkBuddyWay, nameMarkBuddyWorld, nameMarkIdleAct, nameMarkIdleQuiet, nameMarkIdleWake, nameMarkLine, nameMarkLive, nameMarkNextSerial, nameMarkOwnFor, nameMarkReact, nameMarkSay, nameMarkTitle, nameMood, nmb, nmbFollow, nmbTempo, nmbTickArm, ownNameMarkStyle, placeNameMarkBuddy, queueNameMarkBuddyCheck, registerCharacter, setOwnNameMarkStyle, syncNameMarkBuddy, watchNameMark });
 })();

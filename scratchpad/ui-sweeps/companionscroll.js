@@ -25,8 +25,16 @@ const SHOT = process.env.SHOT || '';
         await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: `Scroll probe note ${i}. A line of words so the card has a body to it, and a second sentence for height.` }) });
       }
     }, 16 - have);
+    // The app polls for changes made elsewhere (/entries/changes, about every 10s) and re-renders the list when it
+    // finds them: notes this run just made would replace the card the buddy is glued to mid-run on a fresh data dir
+    // (a 390px jump when it was lost). Load the page again, so it has them from the start.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', 'testpassword123'); await page.click('#lock-submit'); }
+    await page.waitForFunction(() => typeof revealTab === 'function' && typeof ensureModule === 'function', null, { timeout: 20000 });
+    await page.waitForTimeout(1500);
   }
-  await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { await ensureModule('settingsControls'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
   await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
   await page.evaluate((t) => revealTab(t), process.env.TAB || 'notes');
   await page.waitForTimeout(1000);
@@ -129,9 +137,10 @@ const SHOT = process.env.SHOT || '';
   });
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, -120); await page.waitForTimeout(30); }
   await page.waitForTimeout(2500);
-  const awayBack = await page.evaluate((n) => ({ moves: window.__moves.length - n, outOfSight: !!nmb.outOfSight }), awayFrom);
-  // A long scroll that takes the card out of sight and leaves it there:
-  // on its own beat, once the page is still, it comes to a perch in sight.
+  const awayBack = await page.evaluate((n) => ({ moves: window.__moves.length - n, outOfSight: !!nmb.outOfSight, riding: !!(nmb.ride && nmb.glue) }), awayFrom);
+  // A long scroll that takes the card out of sight and leaves it there: it
+  // stays with its panel and is not re-placed (INBOX 1673, standing: a move
+  // nobody sees was a poof; the beat is owed and taken when it is seen).
   for (let i = 0; i < 12; i += 1) { await page.mouse.wheel(0, 120); await page.waitForTimeout(30); }
   await page.waitForTimeout(5500);
   const gone = await page.evaluate((n) => ({ moves: window.__moves.length - n, outOfSight: !!nmb.outOfSight }), awayFrom);
@@ -185,7 +194,7 @@ const SHOT = process.env.SHOT || '';
   await browser.close();
   // Riding (a ScrollTimeline): out of sight with its panel, still there
   // when it comes back, and in sight again on its own beat if it does not.
-  const rideBad = away.riding && (away.outOfSight !== away.shouldBeOut || awayBack.moves !== 0 || awayBack.outOfSight || gone.outOfSight || (away.shouldBeOut && gone.moves < 1));
+  const rideBad = away.riding && (away.outOfSight !== away.shouldBeOut || awayBack.moves !== 0 || awayBack.outOfSight || (away.shouldBeOut && awayBack.riding && (!gone.outOfSight || gone.moves !== 0)));
   const bad = summary.poofMs > 420 || summary.glueErrorPx > 2 || summary.maxJumpPx > 45 || summary.minOpacity < 1 || rideBad;
   console.log(bad ? 'FAIL' : 'PASS');
   process.exitCode = bad ? 1 : 0;

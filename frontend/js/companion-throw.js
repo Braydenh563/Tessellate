@@ -888,7 +888,7 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { companionThrowPlan, nameMarkBuddyThrow });
+  Object.assign(window, { companionThrowPlan, companionThrowSeed, nameMarkBuddyThrow });
   //: avatars.js asks for this on a carried panel's shake, the way it asks `nmb.travelPlay` (the file is lazy).
   nmb.shakenOff = nameMarkBuddyShaken;
 })();

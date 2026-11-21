@@ -13,7 +13,9 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(800);
   await page.evaluate(() => {
     prefsCache.avatar_style = { hand: 'middlefinger', hair: 'bob', mood: 'happy' };
-    nameMarkOwn = null;
+    // As the Settings load does with a saved look (settings-prefs.js): nameMarkOwn is private to avatars.js, so
+    // assigning it here only made a stray global and left the draft the load had set (empty).
+    setOwnNameMarkStyle(prefsCache.avatar_style);
   });
   await page.evaluate(() => { const d = document.getElementById('profile-look')?.closest('details'); if (d) d.open = true; mountProfileLook(); });
   await page.waitForTimeout(300);

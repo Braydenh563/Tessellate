@@ -2122,6 +2122,7 @@
    (its name is on `aria-label` and `title`). */
 #top-bar .header-cluster > .privacy-chip {
   gap: var(--space-1);
+  min-height: var(--target-min);
   padding-inline: var(--space-2);
   color: var(--muted);
   font-size: var(--text-md);
@@ -2136,7 +2137,7 @@
     display: none;
   }
   #top-bar .header-cluster > .privacy-chip {
-    width: var(--header-control-h);
+    width: max(var(--header-control-h), var(--target-min));
     padding-inline: 0;
     justify-content: center;
   }

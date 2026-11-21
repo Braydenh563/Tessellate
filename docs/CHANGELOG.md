@@ -20,6 +20,13 @@ below). Versioning is `0.x` while the app stabilises.
 - Map View menu: 587px to 431px (Format panel, Connection arrows and Connection points are board-only rows, the stats row sits with the panels, rows no longer carry a 4px gap) (L-general-20).
 - Map fishbone: a tall fishbone's ribs no longer cross a topic box (main topics sit against the spine, causes stack from that edge, rib slant is capped); board menu row wrappers carry their ARIA roles (L-general-20).
 - Phone and lazy surfaces: the Library reader fills the screen again (its desktop size no longer beats the phone page); the slash hint, the sidebar openers, the sidebar toggles and the floating New note and New document buttons are set up when Notes, Chat, Documents and the Library are first built.
+- Sweeps: companioninteract's toss is one flight (the sweep seeds the throw's rolls through the exported companionThrowSeed) and is sent with its own clock, so a loaded machine no longer reads it as a drop; companionmenu names what a missed click saw.
+- Sweeps: companionscroll no longer expects a figure that left its panel in sight to stay out of sight (INBOX 1673), companionsmooth loads the page again after making its notes (the change poll replaced its probe card on a fresh data dir), and companioninteract lets go straight after its last move (a loaded machine's round trip read as a slow drop).
+- Companion: while a panel moves, the follow loop reads its place in the frame (reads before writes) and asks about a just-started transition at every look, so a panel eased by a transform no longer outruns it (companionscroll sweep: glue error 6.2px to 0.5px; L-general-37).
+- Sweeps: perchall no longer counts a Library tab's own dock or card as a free perch: a resting companion keeps to the window's perches by the INBOX 1674 decision (L-general-41).
+- Companion: a long-press that opens its menu no longer presses the menu's first row when the finger lifts, and the focus left on a menu's one-pixel anchor no longer makes it ghost itself (companionmenu sweep, L-general-40).
+- Touch: under a coarse pointer or a narrow window, the icon-only header buttons, privacy chip, capture-bar buttons and the board's new-board menu keep a 44px target (desktop sizes unchanged).
+- Companion: a long note whose list row is clipped still makes it put its reading glasses on (it counts the server's words, not the clipped text).
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.
