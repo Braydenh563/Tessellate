@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.core import clock
 from tessellate.entry import properties as note_properties
 
 MEETING_TYPE = "Meeting"
@@ -429,13 +430,12 @@ def find_items(source: str, people: list[str] | None = None, now=None) -> dict: 
     by rules alone, in the shape `ai/meeting_summary.parse_reply` returns,
     so the sheet, the citations and `as_lines` treat both alike. `quote` is
     the sentence as written; each item is in the notes word for word."""
-    from datetime import datetime
 
     names = {str(p).lstrip("@").split(" ")[0].lower() for p in people or [] if p}
     found: dict[str, list[dict]] = {"decisions": [], "actions": []}
     seen: set[str] = set()
     for line in _sentences(source):
-        read = _read_line(line, now or datetime.now(), names)
+        read = _read_line(line, now or clock.wall(), names)
         key = line.lower()
         if read is None or key in seen:
             continue

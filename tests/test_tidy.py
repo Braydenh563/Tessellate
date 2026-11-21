@@ -10,12 +10,20 @@ without a database, then each review end to end through `/tidy`.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 from tessellate.core import deps, events
 from tessellate.core.database import Entry, EntryLink, Reminder
 from tessellate.entry import manager, tidy
+import pytest
+from tests._clock import SUITE_LOCAL, SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 # --- the pure rules -------------------------------------------------------------
 
@@ -314,9 +322,9 @@ def test_dismissing_in_an_unknown_review_is_a_404(client):
 
 
 def test_stale_reminders_are_marked_done_with_undo(client, session):
-    old = Reminder(text="Renew passport", due_at=datetime.now() - timedelta(days=40))
-    recent = Reminder(text="Water plants", due_at=datetime.now() - timedelta(days=2))
-    repeating = Reminder(text="Bins", due_at=datetime.now() - timedelta(days=40), recurring="weekly")
+    old = Reminder(text="Renew passport", due_at=SUITE_LOCAL - timedelta(days=40))
+    recent = Reminder(text="Water plants", due_at=SUITE_LOCAL - timedelta(days=2))
+    repeating = Reminder(text="Bins", due_at=SUITE_LOCAL - timedelta(days=40), recurring="weekly")
     session.add_all([old, recent, repeating])
     session.commit()
     rows = _review(client, "stale-reminders")["rows"]
@@ -356,7 +364,7 @@ def test_automatic_rules_are_off_by_default_and_run_after_filing(client, session
     assert refused.status_code == 400
     switched = client.put("/tidy/auto", json={"key": "stale-reminders", "on": True}).json()
     assert switched["auto"] is True
-    session.add(Reminder(text="Renew passport", due_at=datetime.now() - timedelta(days=40)))
+    session.add(Reminder(text="Renew passport", due_at=SUITE_LOCAL - timedelta(days=40)))
     session.commit()
 
     ran = tidy.run_automatic(deps.get_db().session(), force=True)

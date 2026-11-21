@@ -1,8 +1,7 @@
 """A fixed "now" for the reminder tests, injected through the modules' own seams.
 
-`routes_reminders` reads the clock as `utcnow()` and `datetime.now(...)`, and
-`reminder_notifier` as `datetime.now(...)`; neither takes a `now` argument on
-the route path, so the module-level names are swapped for the test's duration.
+Both the reminder routes and the notifier read the app's one UTC clock
+(`database.utcnow`), so `pin_clock` pins them with everything else.
 """
 
 from __future__ import annotations
@@ -14,19 +13,11 @@ from datetime import datetime, timezone
 FIXED_NOW = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
 
 
-class FrozenDatetime(datetime):
-    @classmethod
-    def now(cls, tz=None):  # noqa: ANN001
-        return FIXED_NOW.astimezone(tz) if tz is not None else FIXED_NOW.astimezone().replace(tzinfo=None)
+def freeze_reminder_clock(monkeypatch, *, notifier: bool = False) -> datetime:  # noqa: ARG001
+    """The suite's one pinned clock at FIXED_NOW (`tests/_clock.pin_clock`): the
+    reminder routes read `utcnow` and the notifier reads it through `_utcnow`,
+    so one pin covers both (`notifier` is kept for the callers that name it)."""
+    from tests._clock import pin_clock
 
-
-def freeze_reminder_clock(monkeypatch, *, notifier: bool = False) -> datetime:
-    from tessellate.api import routes_reminders
-
-    monkeypatch.setattr(routes_reminders, "utcnow", lambda: FIXED_NOW)
-    monkeypatch.setattr(routes_reminders, "datetime", FrozenDatetime)
-    if notifier:
-        from tessellate.core import reminder_notifier
-
-        monkeypatch.setattr(reminder_notifier, "datetime", FrozenDatetime)
+    pin_clock(monkeypatch, FIXED_NOW)
     return FIXED_NOW

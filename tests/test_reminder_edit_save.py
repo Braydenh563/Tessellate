@@ -11,9 +11,17 @@ fields.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from tests._app_js import JS_DIR
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def _iso(moment: datetime) -> str:
@@ -21,7 +29,7 @@ def _iso(moment: datetime) -> str:
 
 
 def _overdue(client, **extra) -> dict:
-    due = datetime.now(timezone.utc) - timedelta(days=11)
+    due = SUITE_NOW - timedelta(days=11)
     body = {"text": "Do my tax return", "due_at": _iso(due), "restore": True, **extra}
     response = client.post("/reminders", json=body)
     assert response.status_code == 201, response.text
@@ -50,10 +58,10 @@ def test_a_repeating_overdue_reminder_saves_with_its_own_past_time(client):
 
 def test_an_overdue_reminder_saves_with_a_new_future_time(client):
     made = _overdue(client)
-    new = datetime.now(timezone.utc) + timedelta(days=4)
+    new = SUITE_NOW + timedelta(days=4)
     response = client.put(f"/reminders/{made['id']}", json={"due_at": _iso(new)})
     assert response.status_code == 200
-    assert datetime.fromisoformat(response.json()["due_at"]) > datetime.now(timezone.utc)
+    assert datetime.fromisoformat(response.json()["due_at"]) > SUITE_NOW
 
 
 def test_a_different_past_time_is_still_refused_with_the_reason(client):

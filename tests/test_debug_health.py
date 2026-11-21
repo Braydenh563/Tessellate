@@ -18,6 +18,14 @@ import time
 from tessellate import __version__
 from tessellate.core import deps, logbuffer, taskhistory
 from tessellate.entry import manager
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def test_shape_on_an_empty_notebook(client):

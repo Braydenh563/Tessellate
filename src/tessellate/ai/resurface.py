@@ -32,12 +32,13 @@ feature has in other tools:
 from __future__ import annotations
 
 import hashlib
-from datetime import date, datetime, timezone
+from datetime import date, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.core import jobruns
 from tessellate.core.database import Entry, EntryLink, NoteScore
 
@@ -117,7 +118,7 @@ def compute_scores(session: Session) -> int:
 
     if not runner_enabled("resurfacing"):
         return 0
-    now = datetime.now(timezone.utc)
+    now = clock.utc()
     entries = session.scalars(
         select(Entry).where(
             Entry.is_deleted.is_(False),
@@ -199,7 +200,7 @@ def ensure_fresh(session: Session, max_age_hours: float = MAX_AGE_HOURS) -> bool
     if newest is not None:
         if newest.tzinfo is None:
             newest = newest.replace(tzinfo=timezone.utc)
-        age = (datetime.now(timezone.utc) - newest).total_seconds() / 3600.0
+        age = (clock.utc() - newest).total_seconds() / 3600.0
         if age < max_age_hours:
             return False
     compute_scores(session)
@@ -286,7 +287,7 @@ def for_day(session: Session, day: date | None = None, limit: int = DAILY) -> li
     pool = ranked(session, limit=max(limit * 4, 12))
     if len(pool) <= limit:
         return pool
-    day = day or datetime.now(timezone.utc).date()
+    day = day or clock.utc().date()
     # The day's own number, not a hash of it. A hash distributes nicely and
     # says nothing about *consecutive* days: two dates in a row can land on
     # the same offset, and then "different tomorrow" is true on average and

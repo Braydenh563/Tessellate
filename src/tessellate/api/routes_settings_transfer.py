@@ -22,6 +22,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate import __version__
 from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
 from tessellate.core.database import Entry, utcnow
@@ -307,7 +308,7 @@ def _exported_created(values: list[str] | None):
         return None
     if parsed.tzinfo is not None:
         parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
-    return parsed if parsed <= datetime.now(timezone.utc).replace(tzinfo=None) else None
+    return parsed if parsed <= clock.utc().replace(tzinfo=None) else None
 
 
 def _keep_exported_state(session: Session, entry, meta: dict) -> None:

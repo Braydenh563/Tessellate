@@ -21,6 +21,7 @@ import pytest
 
 from tessellate.api import routes_chat
 from tessellate.core.database import Entry, Reminder
+from tests._clock import pin_clock
 
 #: A fixed clock (CLAUDE.md section 8), Tuesday 27 October 2026, 9:30.
 NOW = datetime(2026, 10, 27, 9, 30)
@@ -29,7 +30,7 @@ DUE = (("call mum", datetime(2026, 10, 28, 9, 0)), ("pay rent", datetime(2026, 1
 
 @pytest.fixture()
 def fixed_clock(monkeypatch):
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 def _seed(session, reminders: bool = True) -> None:
@@ -225,7 +226,7 @@ AT_14_02 = datetime(2026, 10, 27, 14, 2)
 
 @pytest.mark.parametrize("prose", ["You have two reminders.", "You have 2 reminders, the next at 14:02."])
 def test_a_2_in_the_clock_does_not_excuse_two_reminders(ai_client, fake_ollama, session, monkeypatch, prose):
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: AT_14_02)
+    pin_clock(monkeypatch, AT_14_02)
     _seed(session)
     fake_ollama.librarian_reply = prose
     events, answer = _stream(ai_client, "What is due?", True)

@@ -788,7 +788,7 @@ def _digest_notes(session: Session) -> list[dict]:
     #: on the server's own clock the two disagreed about which week it was,
     #: and "Nothing was saved" stood in for a week that had notes.
     now = user_now(deps.get_config())
-    cutoff = (now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now) - timedelta(days=7)
+    cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
