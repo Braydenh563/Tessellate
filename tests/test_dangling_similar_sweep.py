@@ -31,7 +31,16 @@ def test_housekeeping_runs_the_sweep_at_start_and_on_run_now():
     from tessellate.api import app
 
     assert passes._clear_dangling_similar in passes.MAINTENANCE_STEPS
-    assert app._clear_dangling_similar is passes._clear_dangling_similar
+    #: A wrapper since CodeQL's unused-global finding on the alias: calling the
+    #: start-up step runs the sweep in `passes` (the intent: start-up sweeps).
+    called = []
+    original = passes._clear_dangling_similar
+    passes._clear_dangling_similar = lambda: called.append(1)
+    try:
+        app._clear_dangling_similar()
+    finally:
+        passes._clear_dangling_similar = original
+    assert called == [1]
     import inspect
 
     assert '"_clear_dangling_similar"' in inspect.getsource(app._startup_maintenance)

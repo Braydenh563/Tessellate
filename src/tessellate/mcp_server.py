@@ -517,8 +517,10 @@ def skill_snippet(command: list[str], env: dict[str, str]) -> str:
     lines = [
         "---",
         "name: tessellate-notebook",
-        "description: Read and search the person's Tessellate notebook (their notes, reminders and documents). "
-        "Use when they ask what they wrote, saved or planned, or to find a note.",
+        (
+            "description: Read and search the person's Tessellate notebook (their notes, reminders and documents). "
+            "Use when they ask what they wrote, saved or planned, or to find a note."
+        ),
         "---",
         "",
         "Run one tool and read its JSON result:",

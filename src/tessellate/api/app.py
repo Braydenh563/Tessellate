@@ -673,7 +673,12 @@ def _compact_step() -> None:
 
 passes.register_housekeeping("purge-bin", _purge_step)
 passes.register_housekeeping("compact-history", _compact_step)
-_clear_dangling_similar = passes._clear_dangling_similar
+
+
+#: A function, not an alias, so the start-up table's name resolves to a def here
+#: and `passes` can be stood in for in a test (as with the two steps above).
+def _clear_dangling_similar() -> None:
+    passes._clear_dangling_similar()
 
 
 def _install_pending_extras() -> None:
