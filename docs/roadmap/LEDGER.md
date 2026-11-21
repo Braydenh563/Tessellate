@@ -15,8 +15,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 63 | 10 | 0 | 0 | 73 |
-| general | 0 | 32 | 2 | 0 | 5 | 34 |
+| world-class | 0 | 62 | 10 | 0 | 0 | 72 |
+| general | 0 | 33 | 2 | 0 | 5 | 35 |
 | all | 372 | 450 | 81 | 2 | 112 | 903 |
 
 ## graph
@@ -527,7 +527,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-626** `world-class` open, M: First page load adds about 260 MB resident (cache warm-up at 4,500 notes). From L609. Evidence: RSS 435 MB with no page open went to 695 MB within 30 s of opening the app in Chromium (4,500 notes, arenas capped); flat at 715 MB after; which first-hit route builds the 260 MB not found
 - [ ] **L-world-class-627** `world-class` open, S: VS Code extension: sign in by pasting a device token, and say when the computer must approve the device. From L-world-class-183. Evidence: editors/vscode/lib/client.js signs in by password only; a new device may wait for approval on the computer with no prompt in VS Code
 - [ ] **L-world-class-628** `world-class` open, M: Translation: one optional download per language pair, so en-es users do not fetch 209 MB, and check en-fr quality. From L-world-class-41. Evidence: core/extras.py translate extra went 27 MB to 209 MB download (286 MB on disk) and its version moved to 0.4.9-pairs-1, so an en-es install downloads all eight pairs again; en-fr rendered 'is on Tuesday' as 'aura eu le mardi'
-- [ ] **L-world-class-630** `world-class` open, S: Real-model check: does a local model pick browser_open, browser_follow and browser_find well. From agent s, L-world-class-182. Evidence: tests/test_browser_tools.py fake transport only; scratchpad/llama-dev.sh serve then pytest -m evals
 
 ## general
 
@@ -565,6 +564,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-61** `general` open, M: Find what lays out 10 times a second while the companion idles (tempo steps on SVG). From agent E, L707 probe. Evidence: avatars.js nameMarkBuddyTempo: Atlas idle on the dashboard at 4x, 1093x614: 12 to 16 layouts per 1.2 s with the companion on, 0 with it off (MODE probe, 3 runs)
 - [ ] **L-general-63** `general` open, S: Build docker/Dockerfile and run docker/compose.yaml on a machine with a daemon: image offline, /mcp and the OAuth metadata answer the host through the published loopback port (TESSELLATE_PUBLISHED_ON_LOOPBACK); the agent's container had a CLI and no daemon. From L-world-class-560 leftover.
 - [ ] **L-general-64** `general` open, S: Sign in from a real remote client such as claude.ai through a tunnel and approve in Settings; only TestClient tests and scratchpad/ui-sweeps/mcp-scope-560.js (light, 1440) ran. From L-world-class-560 leftover.
+- [ ] **L-general-65** `general` open, M: A tool_call block that does not parse is shown to the person as raw markup: strip it from the answer and say the model tried a tool it could not name. From L-world-class-630 eval, 2026-11-21. Evidence: tests/test_browser_tools_evals.py on Qwen 2.5 1.5B q4 (llama-cpp-python, native template): 0 of 5 browser picks after the doubled-brace fix; case 4 wrote <tool_call>{{"name": "browser_back", "arguments": {"}}} which no parser can read, and the raw block reached the answer text because _ToolTextGate flushes held text when nothing parses
 
 ## Owner calls
 

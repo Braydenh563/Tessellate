@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat agent: a small model's tool call written with a doubled opening brace is still run; a real-model check of the browser tools is in `pytest -m evals` (L-world-class-630).
 - Top bar: one row again from 820 to 879px; it had wrapped to two rows (100px) after the Local chip joined it (L-world-class-106).
 - Settings, Account: the private-by-default and mute-except-reminders switches show what is saved again; opening the pane threw before.
 - Command palette: a browser tool run by the palette's agent opens its page in the Web panel, as in Chat (L-world-class-629).

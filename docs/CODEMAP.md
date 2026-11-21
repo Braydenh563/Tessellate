@@ -32289,7 +32289,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:802 |
 | documents | docs/roadmap/LEDGER.md:327 |
 | documents | docs/roadmap/LEDGER.md:742 |
-| general | docs/roadmap/LEDGER.md:532 |
+| general | docs/roadmap/LEDGER.md:531 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:706 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:814 |
