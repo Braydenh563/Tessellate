@@ -545,11 +545,9 @@ def _answer_voice() -> str:
     """The voice an answer with no model is said in (CHAT_PLAN decision 72),
     the `composer_voice` preference: "natural" (Warm and concise, the
     default), "professional" (Neutral), "playful" or "plain"."""
-    try:
-        value = deps.get_config().get_preference("composer_voice", "natural")
-    except Exception:  # noqa: BLE001  # no preference is the default voice
-        return "natural"
-    return value if value in ("natural", "professional", "playful", "plain") else "natural"
+    from tessellate.ai import needle_provider
+
+    return value if (value := needle_provider.voice_now()) in ("natural", "professional", "playful", "plain") else "natural"
 
 
 def _chat_voice(req: _StreamRequest) -> str:
@@ -582,6 +580,7 @@ def _meaning_off() -> bool:
             return False
         return not embedding_service._package_present() and type(backend).embed_text is embedding_service.EmbeddingService.embed_text
     except Exception:  # noqa: BLE001  # no backend is a state, not an error
+        logging.getLogger(__name__).debug("_meaning_off: no backend is a state, not an error", exc_info=True)
         return False
 
 
@@ -593,6 +592,7 @@ def _composer_embed():  # noqa: ANN202
         embeddings = deps.get_embeddings()
         return embeddings.embed_many if embeddings is not None and embeddings.is_ready() else None
     except Exception:  # noqa: BLE001  # no backend is a state, not an error
+        logging.getLogger(__name__).debug("_composer_embed: no backend is a state, not an error", exc_info=True)
         return None
 
 

@@ -150,6 +150,7 @@ def pid_alive(pid: int) -> bool:
             finally:
                 kernel32.CloseHandle(handle)
         except Exception:  # noqa: BLE001 - a failed probe reads as "not alive"
+            logging.getLogger(__name__).debug("pid_alive: a failed probe reads as 'not alive'", exc_info=True)
             return False
     try:
         os.kill(pid, 0)
@@ -426,5 +427,6 @@ def focus() -> bool:
     try:
         _focus_handler()
     except Exception:  # noqa: BLE001 - a failed focus must not fail the request
+        logging.getLogger(__name__).debug("focus: a failed focus must not fail the request", exc_info=True)
         return False
     return True

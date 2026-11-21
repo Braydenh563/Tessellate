@@ -1271,6 +1271,7 @@ def _in_use(repo: str) -> bool:
     try:
         return bool(_in_use_check(repo))
     except Exception:  # noqa: BLE001  # no app (a script): nothing is in use
+        logger.debug("_in_use: no app (a script): nothing is in use", exc_info=True)
         return False
 
 

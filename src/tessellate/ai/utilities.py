@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import logging
 import re
 
 from tessellate.core.lazyre import lazy_compile
@@ -644,6 +645,7 @@ def _zone_cities() -> dict[str, str]:
     try:
         zones = available_timezones()
     except Exception:  # noqa: BLE001  # no zone database: only the table's places are read
+        logging.getLogger(__name__).debug("_zone_cities: no zone database: only the table's places are read", exc_info=True)
         return {}
     return {z.rsplit("/", 1)[-1].replace("_", " ").lower(): z for z in sorted(zones) if "/" in z}
 
@@ -810,6 +812,7 @@ def web_on() -> bool:
     try:
         return bool(config and config.get_preference("web_search_enabled", False))
     except Exception:  # noqa: BLE001  # no readable setting yet: off
+        logging.getLogger(__name__).debug("web_on: no readable setting yet: off", exc_info=True)
         return False
 
 

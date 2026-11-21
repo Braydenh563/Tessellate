@@ -25,6 +25,7 @@ each of these proposes or counts, and a person decides.
 from __future__ import annotations
 
 import difflib
+import logging
 import re
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
@@ -177,6 +178,7 @@ def _meaning_alike(names: list[str]) -> dict[tuple[int, int], float]:
             return {}
         vectors = embeddings.embed_many(names)
     except Exception:  # noqa: BLE001 - names alone still propose
+        logging.getLogger(__name__).debug("_meaning_alike: names alone still propose", exc_info=True)
         return {}
     #: Here, not at the top: importing the app must not load numpy before a
     #: request needs it (tests/test_lazy_heavy_imports.py).

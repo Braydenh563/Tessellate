@@ -157,6 +157,7 @@ def _notebook_has_notes(session_factory) -> bool:  # noqa: ANN001
         finally:
             session.close()
     except Exception:  # noqa: BLE001  # see the docstring
+        logger.debug("_notebook_has_notes: see the docstring", exc_info=True)
         return True
 
 
@@ -351,6 +352,7 @@ def _backfill_missing(service, session_factory, limit: int, run) -> int:  # noqa
     try:
         session = session_factory()
     except Exception:  # noqa: BLE001  # startup helper, never fatal
+        logger.debug("_backfill_missing: startup helper, never fatal", exc_info=True)
         run.fail("Could not open the database.")
         return 0
     try:

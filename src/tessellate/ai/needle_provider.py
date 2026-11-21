@@ -56,6 +56,7 @@ from __future__ import annotations
 
 import ctypes
 import json
+import logging
 import os
 import sys
 import threading
@@ -131,6 +132,7 @@ class _Engine:
         try:
             raw = lib.needle_last_error()
         except Exception:  # noqa: BLE001  # the reason is a courtesy
+            logging.getLogger(__name__).debug("_error: the reason is a courtesy", exc_info=True)
             return "no reason given"
         if isinstance(raw, bytes):
             return raw.decode("utf-8", "replace") or "no reason given"
@@ -333,6 +335,7 @@ def voice_now() -> str:
 
         return str(deps.get_config().get_preference("composer_voice", "natural"))
     except Exception:  # noqa: BLE001  # no config in a bare test or a fresh process
+        logging.getLogger(__name__).debug("voice_now: no config in a bare test or a fresh process", exc_info=True)
         return "natural"
 
 

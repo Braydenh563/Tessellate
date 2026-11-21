@@ -332,3 +332,25 @@ def test_read_again_and_a_document_bundle_see_a_sealed_picture_plain(signed_in, 
     client.post("/private-spaces/lock")
     got = client.post(f"/media/{up.json()['id']}/ocr", json={}, headers=_h(space))
     assert got.status_code in (404, 423) and seen == [png]
+
+
+def test_an_open_ended_range_on_a_sealed_file_answers_one_bounded_span(signed_in, monkeypatch):
+    """`bytes=0-` (what `<audio>` sends first) must not decrypt the whole file
+    into memory: the 206 is cut to MAX_SPAN and Content-Range says so."""
+    from tessellate.api import downloads
+
+    client = signed_in
+    space = _space(client)
+    _unlock(client)
+    big = (b"0123456789abcdef" * (sealed_files.FRAME // 8))[: sealed_files.FRAME * 2]
+    _nid, aid = _attach(client, space, body=big, name="long.txt")
+    monkeypatch.setattr(downloads, "MAX_SPAN", 1000)
+    opened = []
+    real = sealed_files._open_frame
+    monkeypatch.setattr(sealed_files, "_open_frame", lambda *a, **k: opened.append(a[2]) or real(*a, **k))
+    got = client.get(f"/files/{aid}", headers={**_h(space), "Range": "bytes=0-"})
+    assert got.status_code == 206 and got.content == big[:1000]
+    assert got.headers["content-range"] == f"bytes 0-999/{len(big)}"
+    assert set(opened) <= {0, 1}  # the span's frame and the size check's last, never all
+    got = client.get(f"/files/{aid}", headers={**_h(space), "Range": f"bytes=10-{len(big) - 1}"})
+    assert got.status_code == 206 and got.content == big[10:1010]

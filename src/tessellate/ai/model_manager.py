@@ -946,6 +946,7 @@ def _is_app_pair(db: object, embeddings: object) -> bool:
     try:
         return db is APP_GETTERS["db"]() and embeddings is APP_GETTERS["embeddings"]()
     except Exception:  # noqa: BLE001  # no app state: a script or a test
+        logging.getLogger(__name__).debug("_is_app_pair: no app state: a script or a test", exc_info=True)
         return False
 
 
@@ -1102,6 +1103,7 @@ def _is_app_client(client: object) -> bool:
     try:
         return client is APP_GETTERS["ollama"]()
     except Exception:  # noqa: BLE001  # no app state: a script or a test
+        logging.getLogger(__name__).debug("_is_app_client: no app state: a script or a test", exc_info=True)
         return False
 
 

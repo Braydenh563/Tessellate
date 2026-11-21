@@ -16,6 +16,7 @@ the app can do.
 
 from __future__ import annotations
 
+import logging
 import re
 from urllib.parse import urlparse
 
@@ -117,6 +118,7 @@ def can_start_here() -> bool:
     try:
         return can_start(*websearch.settings_from(deps.get_config()))
     except Exception:  # noqa: BLE001  # an unreadable setting is no address
+        logging.getLogger(__name__).debug("can_start_here: an unreadable setting is no address", exc_info=True)
         return False
 
 

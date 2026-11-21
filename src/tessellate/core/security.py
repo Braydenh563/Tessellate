@@ -19,6 +19,7 @@ The two cover different halves and neither substitutes for the other.
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 from base64 import b64encode
 from pathlib import Path
@@ -325,6 +326,7 @@ def _notebook_has_password() -> bool:
     try:
         return bool(has_password())
     except Exception:  # noqa: BLE001  # any failure means "do not serve the network"
+        logging.getLogger(__name__).debug("_notebook_has_password: any failure means 'do not serve the network'", exc_info=True)
         return False
 
 
