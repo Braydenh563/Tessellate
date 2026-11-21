@@ -725,8 +725,8 @@
   }
   //: **Held while the page scrolls** (L-ui-modernisation-202): every scroll frame restyled the figure's running loops
   //: (companioncpu.js: 10 to 11 ms a wheel step more with Atlas shown). A wheel or a touch drag pauses every loop that
-  //: never ends (`pause()`: each keeps its phase, so nothing jumps) and the morph draws nothing; `scrollend`, or `quiet`
-  //: ms with no scroll where it never fires, plays back the ones the hold paused and no other. A scroll with no wheel
+  //: never ends (`pause()`: each keeps its phase, so nothing jumps) and the morph draws nothing. After `quiet` ms
+  //: with no scroll since the last `scrollend` (or input, where it never fires) it plays back the ones it paused and no other. A scroll with no wheel
   //: or touch (the chat following a streamed answer) holds nothing. Collected a task after the input, so a loop the
   //: rest's wake plays (`atlasTailCalm.rest.wake`) is held too. `atlasRigFrame.held` is the rig's copy (atlas-motion.js loads alone too).
   atlasTailCalm.scroll = { on: false, held: null, timer: 0, quiet: 200 };
@@ -755,7 +755,14 @@
   for (const type of typeof document.addEventListener === "function" ? ["wheel", "touchmove", "scroll", "scrollend"] : []) {
     document.addEventListener(type, () => {
       const s = atlasTailCalm.scroll;
-      if (type === "scrollend") return s.on && s.end();
+      //: Not at once: a discrete wheel ends a scroll at every step (companioncpu.js: 66 in 72 steps), and ending the hold
+      //: there paused and played every loop again on each one; the quiet spell ends it, re-armed here.
+      if (type === "scrollend") {
+        if (!s.on) return;
+        clearTimeout(s.timer);
+        s.timer = setTimeout(s.end, s.quiet);
+        return;
+      }
       if (type === "scroll") return s.on && s.start();
       setTimeout(s.start, 0);
     }, { passive: true, capture: true });

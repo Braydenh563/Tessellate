@@ -92,6 +92,7 @@ advance(50); fire("scroll"); advance(50); fire("scroll");
 const wokeHeld = woke.length;
 const rigHeld = atlasRigFrame.held;
 fire("scrollend");
+advance(atlasTailCalm.scroll.quiet + 1);
 process.stdout.write(JSON.stringify({{ before, held, on, after: {_states()}, off: atlasTailCalm.scroll.on, wokeHeld, woke, rigHeld, rigAfter: atlasRigFrame.held }}));
 """
     )
@@ -147,12 +148,32 @@ advance(1000); shown = true;
 fire("wheel"); advance(1); fire("wheel"); advance(1); fire("scroll");
 const once = {_states()}.shimmer;
 fire("scrollend");
+advance(atlasTailCalm.scroll.quiet + 1);
 process.stdout.write(JSON.stringify({{ none, once, after: {_states()}.shimmer }}));
 """
     )
     assert got["none"] is False
     assert got["once"] == "paused:pause"
     assert got["after"] == "running:pause,play"
+
+
+@needs_node
+def test_a_scrollend_between_wheel_steps_keeps_the_hold() -> None:
+    """Chromium ends a scroll after each discrete wheel step (companioncpu.js: 66 scrollends in 72 steps), so a
+    scrollend that ended the hold at once paused and played every loop again on each step; it waits out the quiet spell."""
+    got = _run(
+        f"""
+const quiet = atlasTailCalm.scroll.quiet;
+fire("wheel"); advance(1);
+for (let i = 0; i < 10; i += 1) {{ fire("scroll"); advance(5); fire("scrollend"); advance(quiet - 60); fire("wheel"); advance(1); }}
+const still = {_states()}.shimmer;
+const wokeHeld = woke.length;
+fire("scroll"); fire("scrollend"); advance(quiet + 1);
+process.stdout.write(JSON.stringify({{ still, wokeHeld, after: {_states()}.shimmer, on: atlasTailCalm.scroll.on, woke: woke.length }}));
+"""
+    )
+    assert got["still"] == "paused:pause" and got["wokeHeld"] == 0
+    assert got["after"] == "running:pause,play" and got["on"] is False and got["woke"] == 1
 
 
 def test_the_listeners_are_passive_captures_and_pause_keeps_the_phase() -> None:
