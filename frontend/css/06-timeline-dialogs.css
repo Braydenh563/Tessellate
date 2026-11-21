@@ -3003,6 +3003,13 @@
   top: 0;
   transform: none;
 }
+/* In a phone's Tools sheet the kind menu opens below its button: above it,
+   the sheet card's overflow cut it off and a tap on Line fell through to the
+   overlay (toolpop.js at 390: menu top 267, card top 299). */
+.sheet-card .wb-shape-menu {
+  bottom: auto;
+  top: calc(100% + 0.5rem);
+}
 /* The properties drawer's own layout rules lived here until Phase 2 of
    WHITEBOARD_PLAN replaced that drawer with the context bar: the panel header,
    the label-and-control row grid, the arrange toolbar's three named rows and
