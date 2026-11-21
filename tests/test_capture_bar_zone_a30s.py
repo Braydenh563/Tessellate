@@ -61,9 +61,9 @@ def test_the_row_controls_are_pinned_to_the_body_control_height():
 def test_the_note_todo_seg_left_the_bar_and_to_do_is_an_icon_that_opens_the_card_in_that_mode():
     bar = _bar()
     assert "capture-bar-modes" not in bar and 'class="seg' not in bar
-    todo = re.search(r"<button[^>]*id=\"capture-bar-todo\"[^>]*>", bar).group(0)
-    assert 'data-mode="todo"' in todo and "capture-bar-icon" in todo and "icon-only" in todo
-    assert 'aria-label="' in todo and 'title="' in todo
+    todo_btn = re.search(r"<button[^>]*id=\"capture-bar-todo\"[^>]*>", bar).group(0)
+    assert 'data-mode="todo"' in todo_btn and "capture-bar-icon" in todo_btn and "icon-only" in todo_btn
+    assert 'aria-label="' in todo_btn and 'title="' in todo_btn
     assert 'id="capture-bar-picture"' in bar and "capture-bar-icon" in re.search(r"<button[^>]*id=\"capture-bar-picture\"[^>]*>", bar).group(0)
     show = CARD[CARD.index("function showCaptureCard(") :]
     assert 'from?.closest?.(".capture-bar-todo")' in show[: show.index("\nfunction ")]

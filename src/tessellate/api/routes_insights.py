@@ -805,10 +805,11 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    #: The person's clock, as the composed week reads it (`composed_week`): on the server's clock
-    #: the "nothing this week" check and the week it guards could disagree.
-    clock = user_now(deps.get_config())
-    cutoff = (clock.astimezone(timezone.utc).replace(tzinfo=None) if clock.tzinfo else clock) - timedelta(days=7)
+    #: The user's clock, as the review it gates (`review_digest.week`) reads:
+    #: on the server's own clock the two disagreed about which week it was,
+    #: and "Nothing was saved" stood in for a week that had notes.
+    now = user_now(deps.get_config())
+    cutoff = (now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
     # private note's `content` column is ciphertext at rest, sending it here
     # put encrypted bytes in the model's prompt (and, since the model doesn't
@@ -829,7 +830,6 @@ def _digest_notes(session: Session) -> list[dict]:
         )
     )
     category_names = manager.bulk_category_names(session, entries)
-    now = clock
     zone = now.tzinfo
     time_words = manager.entry_dates_bulk(session, [e.id for e in entries])
     return [

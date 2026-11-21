@@ -1486,7 +1486,7 @@ function wbDrawOutSnap(sx, sy, x, y, event) {
 //: the two are never confused at a glance), and "spacing" (equal gaps).
 //: Overridable per the direct ask ("colours should be alterable"); the
 //: picker lives in the whiteboard's own shape-menu dropdown rather than a
-//: new top menu bar, see HISTORY.md for why that redesign is deferred.
+//: new top menu bar, see HISTORY.md for why that redesign was not taken.
 //: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
 //: each passes 3:1 on the canvas in light and dark); only a colour the owner
 //: picked is written here, and it wins over the class.
@@ -14990,6 +14990,33 @@ const WB_EXPORT_FORMATS = [
     run: () => wbExportDrawio(),
   },
   {
+    //: **A folder with its notes** (WORLD_CLASS_PLAN decision 66,
+    //: L-world-class-130): one zip holding the picture as SVG and PNG and
+    //: every note on the board (or in the selection) as Markdown, the files
+    //: the Notes selection's Export writes. Inline so the shared scope does
+    //: not grow; the server only packs what the browser drew.
+    value: "folder", label: "Folder with notes", scopes: ["selection", "whole"], picture: true,
+    note: "A zip: the picture as SVG and PNG, with every note on it as Markdown.",
+    run: async function wbExportBoardFolder(scope) {
+      const { scale, transparent } = wbExportPngPrefs();
+      const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
+      const png = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png").catch(() => null);
+      const keys = scope === "selection" ? wbSelectedKeys() : null;
+      const ids = [...new Set(wbState.nodes.filter((n) => n.entry_id && (!keys || keys.has(wbMultiKey("node", n.id)))).map((n) => n.entry_id))];
+      const name = wbBoardTitleForExport() || "Board";
+      //: Uploads, not JSON: a board with its pictures inlined passes the
+      //: 16 MB JSON cap, and an upload keeps the large one.
+      const form = new FormData();
+      form.append("name", name);
+      form.append("ids", ids.join(","));
+      form.append("svg", new Blob([await wbInlineSvgImages(svg)], { type: "image/svg+xml" }), "board.svg");
+      if (png) form.append("png", png, "board.png");
+      const response = await api("/export/board-folder", { method: "POST", body: form });
+      await saveFile(wbExportFileName(scope, "zip"), await response.blob());
+      toast(`Board exported as a folder with ${nounCount(ids.length, "note")}.`);
+    },
+  },
+  {
     value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
     note: "Opens Print: choose “Save as PDF” as the destination.",
     run: (scope) => wbExportPdf(scope),
@@ -21699,11 +21726,9 @@ function wbLinkNearestT(d, p) {
 //: function a single shape's handles already use, so a group resize and a
 //: shape resize cannot drift apart (shift-to-square included).
 //:
-//: No rotate handle. Rotating a group means rotating each item about the
-//: group's centre, which for a card means a rotation *and* a move, and for a
-//: sketch means baking a rotation into a path that is already rotated. It is
-//: a real feature, not a line of code, and an unbuilt one is better absent
-//: than drawn and inert.
+//: The group's rotate point is drawn with its handles ("And a rotate point
+//: above the box", below): each item turns about the group's centre, a
+//: rotation *and* a move for a card, a baked path for a sketch.
 function wbMultiSelectionEntries() {
   const entries = [];
   for (const key of wbMultiSelection) {

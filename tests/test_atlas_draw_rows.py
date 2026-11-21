@@ -164,7 +164,7 @@ def test_every_endless_atlas_loop_holds_at_rest_l742():
     """L742 (owner: motion still pauses at rest): `.atl-lw-wisps`, `-wisps-back` and the two glints loop
     forever (atl-wisp-drift) but were missing from the is-calm hold, so her wisps drifted on at rest."""
     css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
-    hold = re.search(r":root\.is-calm :is\((.*?)\) \{ animation-play-state: paused !important; \}", css, re.S).group(1)
+    hold = re.search(r"\.atl-figure-box\.is-calm :is\((.*?)\) \{ animation-play-state: paused !important; \}", css, re.S).group(1)
     looped = set(re.findall(r"& :is\(([^)]*)\) \{ animation: atl-wisp-drift", css)[0].replace(" ", "").split(","))
     looped |= {".atl-lw-wisps"}
     for sel in looped:

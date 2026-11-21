@@ -3016,8 +3016,8 @@ async function forkFromBubble(bubble) {
 
 // Manual (step-through) mode's pause card: a text box to add what the agent
 // missed or answer a question it raised, and a Continue button, the answer
-// to "a manual mode" asked for directly, and the single most-requested
-// requested thing on the roadmap when it was built. `onContinue(note)` gets whatever was typed,
+// to "a manual mode" asked for directly, once the most-requested item on
+// the roadmap. `onContinue(note)` gets whatever was typed,
 // or an empty string if nothing was.
 function manualPauseControls({ onContinue }) {
   const row = document.createElement("div");

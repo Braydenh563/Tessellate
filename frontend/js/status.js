@@ -1054,9 +1054,14 @@ function toastYield(target = document.activeElement) {
   //: In a dialog a timed toast steps aside too: the pointer resting on it
   //: holds its timer, so the last import's Undo sat on the next preview's
   //: Import for as long as the press was tried (E2E import, 2026-11-01).
+  //: And the guided tour's lit control (L-general-14): focus is on the step
+  //: card's Next, so the control the step points at was not counted, and at
+  //: 1440 a toast sat on Chat's mode switch and gear for their whole steps.
+  const spot = $("tour-spot");
+  const lit = spot && !spot.classList.contains("hidden") ? spot.getBoundingClientRect() : null;
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return (!wide && meets(b, focused)) || ((area?.role == "dialog" || !el.toastTimer) && work.some((r) => meets(b, r)));
+    return (!wide && meets(b, focused)) || (lit && meets(b, lit)) || ((area?.role == "dialog" || !el.toastTimer) && work.some((r) => meets(b, r)));
   }));
 }
 document.addEventListener("focusin", (e) => toastYield(e.target));
@@ -3095,7 +3100,7 @@ function renderSettings() {
   if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
   //: Always, not only while a backend answers: the rows come from saved
   //: settings, and a person with the server down still needs to see and clear
-  //: an override (WORLD_CLASS_PLAN 20, "Still open").
+  //: an override (WORLD_CLASS_PLAN 20, built).
   renderFeatureModels(status);
   settingsReadouts.smallModel?.();
   if (status.ollama_running) {

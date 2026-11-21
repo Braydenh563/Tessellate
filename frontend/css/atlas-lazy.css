@@ -375,7 +375,7 @@
     & .atl-lw-pose-neb-front { animation: atl-lw-drift 15.3s ease-in-out -3.1s infinite alternate; }
   }
 }
-:root.is-calm .atl-lw-pose > .atl-lw-drift-box,
+.atl-figure-box.is-calm .atl-lw-pose > .atl-lw-drift-box,
 :root[data-atlas-lite] .atl-figure-box .atl-lw-pose > .atl-lw-drift-box,
 #nm-buddy.nmb-away .atl-lw-pose > .atl-lw-drift-box,
 #nm-buddy.nm-buddy-dragging .atl-lw-pose > .atl-lw-drift-box,

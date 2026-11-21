@@ -708,6 +708,8 @@ document.addEventListener("keydown", (e) => {
       //: Ctrl+/ and Ctrl+K (INBOX 402, 1559): the documents editor answers them
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
+      //: Ctrl+F likewise: a note's edit box opens its own find (L-world-class-127).
+      if (id === "find" && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
         if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();
@@ -1003,7 +1005,7 @@ function maybeShowOnboarding() {
   });
 }
 
-//: The third door into the tour, and it was the one left open (the owner,
+//: The third door into the tour, and it was the one missing the guard (the owner,
 //: 2026-09-21: "the take the tour again button in the about settings page
 //: isnt disabled"). Same flag, same words as the replay strip's buttons.
 //: **After the page has loaded, not now.** `TOUR_ENABLED` is a `const` in
@@ -1766,7 +1768,7 @@ onSurface("notes", () => {
     if (!box.draftTimer) return;
     clearTimeout(box.draftTimer);
     box.draftTimer = 0;
-    //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
+    //: Whitespace alone is not a draft (INBOX 431, second pass: the box came
     //: back holding three blank lines after a reload, which hid the empty
     //: placeholder). Newlines left behind by a removed image or a stray Enter
     //: must not be kept and restored as if they were writing.

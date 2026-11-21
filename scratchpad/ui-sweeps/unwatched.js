@@ -9,7 +9,7 @@
 //
 // Checks per panel: closed before the answer, one notification is recorded
 // with a panel action and a toast carries "Open"; pressing it reopens the
-// panel scrolled to that answer; asked with the panel left open, nothing is
+// panel scrolled to that answer; asked with the panel kept open, nothing is
 // recorded. Exit 1 on any failure.
 //
 //   BASE=http://127.0.0.1:8791 node scratchpad/ui-sweeps/unwatched.js
@@ -52,7 +52,7 @@ const {boot} = require('./lib.js');
   console.log('agent reopened', JSON.stringify(agentBack));
   if (!agentBack.open || !agentBack.found || !agentBack.inView) fails.push('agent: did not reopen on the answer');
 
-  // --- the popup agent, left open: nothing is posted ----------------------
+  // --- the popup agent, kept open: nothing is posted ----------------------
   await page.evaluate(() => { localStorage.setItem(NOTIFICATIONS_KEY, '[]'); cmdPaletteAsk('And again?'); });
   await page.waitForTimeout(2600);
   got = await notes();
@@ -85,7 +85,7 @@ const {boot} = require('./lib.js');
   console.log('guide reopened', JSON.stringify(guideBack));
   if (!guideBack.open || !guideBack.found || !guideBack.inView) fails.push('guide: did not reopen on the answer');
 
-  // --- Atlas, left open --------------------------------------------------------
+  // --- Atlas, kept open --------------------------------------------------------
   await page.evaluate(() => { localStorage.setItem(NOTIFICATIONS_KEY, '[]'); submitHelpChatQuestion('And a tree?'); });
   await page.waitForTimeout(2600);
   got = await notes();

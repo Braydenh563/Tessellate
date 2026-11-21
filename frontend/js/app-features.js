@@ -155,6 +155,7 @@ function featureCatalog() {
       { name: "Rediscover", desc: "Three faded notes a day, with the reason each one surfaced.", reveal: "widget-rediscover" },
       { name: "Loose ends", desc: "How much of the notebook is connected, and the oldest notes that are not.", reveal: "widget-orphans" },
       { name: "Unfinished", desc: "Notes with checklist items still waiting to be ticked.", reveal: "widget-unfinished" },
+      { name: "Category mix", desc: "What share of your notes each category holds, as a pie.", reveal: "widget-mix" },
       { name: "Writing pace", desc: "How many words you have written each day this fortnight.", reveal: "widget-pace" },
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
@@ -403,7 +404,7 @@ function paletteCommands() {
       // started from a file you had already found, which is no answer to "I
       // want to read something". `openPageReader` (library.js) opens it on what
       // you were last reading, else your newest readable file; the decision and
-      // what was deliberately not built is in UI_MODERNISATION_PLAN.md, "how
+      // what was deliberately left out is in UI_MODERNISATION_PLAN.md, "how
       // the page reader is reached".
       //: "OCR" in the words (the owner, 2026-10-10: searching "ocr" in the
       //: palette, Find anything and Quick access's list found nothing).
@@ -590,7 +591,7 @@ function quickCatalogue(only = null) {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
-    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are skipped (5 to 19 ms at 4x
     //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
     if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);

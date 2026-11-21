@@ -133,7 +133,7 @@ function editorSurfaceFor(box) {
 //: Fetch the bundle that carries the surface adapters, once, and pick the
 //: interrupted work back up when it lands.
 //:
-//: `retry` is what makes a fast typist's first "/" still open a menu: the
+//: `retry` is what makes a fast typist's first "/" open a menu all the same: the
 //: keystroke that found no adapter is replayed against the surface once there
 //: is one, so the menu opens a moment late rather than not at all. Without it
 //: the first "/" of a session would always be the one that did nothing, which
@@ -303,7 +303,7 @@ const CALLOUT_KINDS = {
   note: { icon: "ph:note", label: "Note", about: "A point worth setting apart" },
   abstract: { icon: "ph:clipboard-text", label: "Summary", about: "The short version, up front", aliases: ["summary", "tldr"] },
   info: { icon: "ph:info", label: "Info", about: "Background the reader may need" },
-  todo: { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
+  "todo": { icon: "ph:check-square", label: "To do", about: "Something still to be done" },
   tip: { icon: "ph:lightbulb", label: "Tip", about: "A better way to do it", aliases: ["hint", "important"] },
   success: { icon: "ph:check-circle", label: "Success", about: "What worked, or what is done", aliases: ["check", "done"] },
   question: { icon: "ph:question", label: "Question", about: "An open question", aliases: ["help", "faq"] },
@@ -386,7 +386,7 @@ function editorFuzzyRank(rows, query) {
 }
 //: What an empty callout body says until something is written in it.
 function calloutHint(kind) {
-  const own = { todo: "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
+  const own = { "todo": "Write the task", toggle: "Write what folds away", success: "Write what worked", failure: "Write what failed" };
   const meta = CALLOUT_KINDS[kind];
   return own[kind] || `Write the ${meta ? meta.label.toLowerCase() : "note"}`;
 }
@@ -540,7 +540,7 @@ function editorApplyAction(textarea, action) {
       .map((line) => (line.startsWith(action.line) ? line : action.line + line))
       .join("\n");
     //: An empty line has nothing to select: the caret goes after the
-    //: marker, so "/todo" then typing writes the item (measured on a board
+    //: marker, so the to-do slash item then typing writes the item (measured on a board
     //: text box, 2026-10-10: the selected "- [ ] " was typed over).
     editorSplice(textarea, lineStart, Math.max(lineEnd, end), prefixed, {
       from: target.trim() ? 0 : prefixed.length,
@@ -1274,7 +1274,7 @@ function editorCloseMenu(reason = "") {
   editorMenuState.items = [];
   $("editor-menu")?.classList.add("hidden");
   editorHomeMenu(null);
-  //: **A code fence is never left open.** The language step starts from a
+  //: **A code fence is never left unclosed.** The language step starts from a
   //: written "```", and an unclosed fence turns the rest of the page into
   //: code in every view. Closed any way but by choosing (Escape, a click
   //: elsewhere), the block is finished with whatever language was typed.
@@ -1392,7 +1392,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to ask again about Atlas pr]]` in the note (audit 1029 N19).
         .slice(0, 120),
     }))
     .filter((item) => item.value);
@@ -1918,7 +1918,7 @@ document.addEventListener(
       //: the bundle lands after the first focus: a "/" typed in that gap
       //: opened the menu on the textarea, and every key after the mount came
       //: from the engine and was ignored here (measured: Tab wrote two
-      //: spaces into the note with the menu still open). Same id, same box:
+      //: spaces into the note with the menu still showing). Same id, same box:
       //: the menu follows it.
       if (!surface || !editorMenuState.textarea || !surface.id || surface.id !== editorMenuState.textarea.id) return;
       editorMenuState.textarea = surface;
