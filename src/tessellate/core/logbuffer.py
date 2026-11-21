@@ -7,13 +7,13 @@ only: nothing is written to disk, in keeping with the privacy posture.
 
 from __future__ import annotations
 
+from tessellate.core import clock
 import itertools
 import logging
 import re
 import threading
 from urllib.parse import unquote_plus
 from collections import deque
-from datetime import datetime, timezone
 
 MAX_RECORDS = 500
 
@@ -137,7 +137,7 @@ class BufferHandler(logging.Handler):
             _records.append(
                 {
                     "seq": _assign_seq(),
-                    "time": datetime.now(timezone.utc).isoformat(),
+                    "time": clock.utc().isoformat(),
                     "level": record.levelname,
                     "logger": record.name,
                     "message": sanitise(message),

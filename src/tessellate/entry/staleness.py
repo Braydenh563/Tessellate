@@ -14,11 +14,12 @@ which is the same cost `duplicates.py` weighs against a wrongly-matched pair.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.core import clock
 from tessellate.core.database import Entry, EntryLink
 
 #: A note untouched for less than this is just quiet, not forgotten.
@@ -48,7 +49,7 @@ def find_stale_orphaned_notes(
     go through `_require_note`/`manager.update_entry` the same as any other
     write to a private note.
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff = clock.utc() - timedelta(days=days)
     entries = list(
         session.scalars(
             select(Entry).where(

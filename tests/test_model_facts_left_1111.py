@@ -14,8 +14,8 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import fact_check, librarian
-from tessellate.api import routes_chat
 from tessellate.core.database import Document
+from tests._clock import pin_clock
 
 #: A fixed clock (CLAUDE.md section 8), Wednesday 11 November 2026, 12:00.
 NOW = datetime(2026, 11, 11, 12, 0)
@@ -23,7 +23,7 @@ NOW = datetime(2026, 11, 11, 12, 0)
 
 @pytest.fixture(autouse=True)
 def _fixed_clock(monkeypatch):
-    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
+    pin_clock(monkeypatch, NOW)
 
 
 # --- Row 15: the hours the facts state ------------------------------------------------------------------------

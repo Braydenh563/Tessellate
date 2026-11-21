@@ -17,6 +17,13 @@ from sqlalchemy import text
 
 from tessellate.ai import autonomous
 from tessellate.core import deps, taskhistory
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 @pytest.fixture(autouse=True)

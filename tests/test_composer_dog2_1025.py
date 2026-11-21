@@ -11,6 +11,7 @@ import pytest
 from tessellate.core.database import Reminder
 from tests.test_composer_four_1025 import NOW, ask  # noqa: F401
 from tests.test_composer_route_688 import _ask
+from tests._clock import pin_clock
 
 
 def _turn(ask, history, q):
@@ -85,10 +86,7 @@ def test_whats_left_lists_open_items_and_reminders(ask, q):
 
 
 def test_whats_left_with_nothing_open(client, session, monkeypatch):
-    from tessellate.api import routes_chat
-    from tessellate.core import config
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     said = _ask(client, "what's left to do", notes_only=True, answer_from="notes", history=[])["text"]
     #: The "left_none" lines rotate (composer_lines.py); any of them says nothing is open.
     assert "general knowledge" not in said

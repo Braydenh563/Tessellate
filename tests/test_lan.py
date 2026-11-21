@@ -30,6 +30,13 @@ from tessellate.api.this_computer import REFUSAL
 from tessellate.core import egress, lancert, lanlive, lanserve, lantrust, netbind, netid, origin, vault
 from tests._app_js import app_js_text
 from tests._js_scope import unwrapped
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 # The Windows firewall line: Settings, Other devices shows the one-line netsh command when the switch is on, for the private profile only.
@@ -1677,7 +1684,7 @@ def test_an_unreadable_one_is_replaced(tmp_path):
 @pytest.mark.usefixtures("_no_live_listener")
 def test_one_close_to_expiring_is_replaced(tmp_path, monkeypatch):
     info = lancert.ensure(tmp_path, NAMES)
-    later = dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=lancert.VALID_DAYS - 10)
+    later = SUITE_NOW + dt.timedelta(days=lancert.VALID_DAYS - 10)
     monkeypatch.setattr(lancert, "_now", lambda: later)
     assert lancert.ensure(tmp_path, NAMES).fingerprint != info.fingerprint
 

@@ -4,6 +4,14 @@ reminder row on the notes' row recipe."""
 from __future__ import annotations
 
 from pathlib import Path
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 JS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "shell-reminders.js").read_text(encoding="utf-8")
 
@@ -24,11 +32,11 @@ def test_the_reminder_row_is_the_notes_row_recipe():
 def test_a_snooze_has_an_undo_that_may_restore_a_past_time(client):
     """Undo of a snooze puts back the old time, usually already past (an
     overdue reminder is the one snoozed), so `restore` skips the past-date rule."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import timedelta
 
-    soon = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    soon = (SUITE_NOW + timedelta(hours=1)).isoformat()
     made = client.post("/reminders", json={"text": "x", "due_at": soon}).json()
-    past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    past = (SUITE_NOW - timedelta(days=1)).isoformat()
     assert client.put(f"/reminders/{made['id']}", json={"due_at": past}).status_code == 422
     restored = client.put(f"/reminders/{made['id']}", json={"due_at": past, "restore": True})
     assert restored.status_code == 200

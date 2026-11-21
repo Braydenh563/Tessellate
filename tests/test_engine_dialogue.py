@@ -14,6 +14,14 @@ from tessellate.core.config import user_now
 from tessellate.entry import manager
 from tests import _composer_eval
 from tests.test_composer_route_688 import _ask
+import pytest
+from tests._clock import SUITE_NOW, pin_clock
+
+
+@pytest.fixture(autouse=True)
+def _suite_clock(monkeypatch):
+    """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
+    pin_clock(monkeypatch, SUITE_NOW)
 
 
 def test_a_twenty_turn_conversation_opens_more_ways_and_repeats_no_joiner():

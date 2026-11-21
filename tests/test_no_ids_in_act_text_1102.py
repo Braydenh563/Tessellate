@@ -11,8 +11,8 @@ import re
 import pytest
 
 from tessellate.ai import acts, commands
-from tessellate.core import config
 from tessellate.entry import manager
+from tests._clock import pin_clock
 
 NOW = dt.datetime(2026, 10, 28, 10, 0, 0)
 ID = re.compile(r"(?<![\w&])#\d+\b|\b(?:note|reminder) #\d+")
@@ -46,7 +46,7 @@ ASKS = [
 
 @pytest.mark.parametrize("ask", ASKS)
 def test_no_card_line_or_item_shows_a_note_id(session, monkeypatch, ask):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     _seed(session)
     parsed = acts.parse(ask, NOW)
     assert parsed is not None, ask
@@ -55,7 +55,7 @@ def test_no_card_line_or_item_shows_a_note_id(session, monkeypatch, ask):
 
 
 def test_a_card_item_is_the_note_title(session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     a, _b = _seed(session)
     planned = acts.preview(session, acts.parse("pin my dentist note", NOW))
     assert planned["card"]["items"] == ["Dentist"]

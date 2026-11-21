@@ -6,10 +6,9 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-from tessellate.api import routes_chat
-from tessellate.core import config
 from tessellate.entry import manager
 from tests._seed_r2_1107 import TODAY, raw
+from tests._clock import pin_clock
 
 NOW = datetime(2026, 11, 7, 12, 0)
 
@@ -29,8 +28,7 @@ EXTRA = [
 
 
 def driver(client, session, monkeypatch):
-    monkeypatch.setattr(config, "user_now", lambda _c: NOW)
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    pin_clock(monkeypatch, NOW)
     for title, body, ago in [*raw, *EXTRA]:
         entry = manager.create_entry(session, f"# {title}\n\n{body}" if body != title else title, category_name="Uncategorised")
         entry.created_at = entry.updated_at = datetime.fromordinal(TODAY.toordinal() - ago).replace(hour=10)
