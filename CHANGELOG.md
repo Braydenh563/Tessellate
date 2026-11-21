@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Typing gate (L342, L-documents-26): `scratchpad/ui-sweeps/typegate.js` reads the gate from main-thread CPU (CDP Performance.getMetrics TaskDuration and ScriptDuration a key, long tasks from a trace) so a busy box does not move it; budgets p95 under 50 ms a key and no long task over 50 ms at 4x on 20,000 words, both views, pinned by `tests/test_typegate_cpu.py`.
 - Documents (L-documents-83): a Documents open no longer builds the Notes (1,092 elements) and Library (589) pages while they are hidden: `switchTab` asks `getElementById` for the card to forget, and the load-time wiring of library.js, boards-gallery.js and documents-focus.js that named their ids with `$` runs from `onSurface` instead (`tests/test_surface_templates.py` now reads those files).
 - Notes and the split view (L342): a note box and the code editor's second view draw their own selection layer only for a selection kept without the focus, as the document editor does (one shared `docCmParts.drawSelectionWhenNeeded`); caret and selection colours measured equal to the drawn ones in both themes.
 - Documents (L-documents-106): a resize grip no longer reads its panel box when it is set up (the observer reports the width before the first paint); the Documents cold open lost one forced layout of the whole page, 88 to 49 ms of layout in the trace (load 5).
