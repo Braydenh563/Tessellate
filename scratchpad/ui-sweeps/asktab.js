@@ -175,11 +175,20 @@ function waitForFake() {
       raw_results: mine, search_mode: 'hybrid', connected_ids: [], match_info: {},
       answered_by: 'fake-answerer', ollama_running: true,
     });
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // The row is drawn as chips and then turned into the Matching records card
+    // once the reply-kit module has loaded (`replyRecordCards`, INBOX 1735), so
+    // the real state is the settled one: waited for, never raced.
+    const settle = Date.now() + 8000;
+    while (Date.now() < settle && !document.querySelector(`#raw-results li.record-card[data-id="${mine[0].id}"]`)) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
     const li = document.querySelector(`#raw-results li[data-id="${mine[0].id}"]`);
     if (!li) return { ok: false, why: 'no row rendered for the attached note' };
-    const links = li.querySelector('.entry-links');
-    const meta = li.querySelector('.entry-meta');
+    const card = li.classList.contains('record-card');
+    // Card: the facts line is the badge row, and what sits above it (the
+    // excerpt, Show more or the "N links" row) is what it must keep a gap from.
+    const meta = card ? li.querySelector('.record-meta') : li.querySelector('.entry-meta');
+    const links = card ? meta && meta.previousElementSibling : li.querySelector('.entry-links');
     const gap = links && meta
       ? Math.round((meta.getBoundingClientRect().top - links.getBoundingClientRect().bottom) * 10) / 10
       : null;
@@ -214,7 +223,7 @@ function waitForFake() {
 
     const liBox = li.getBoundingClientRect();
     // A chip folded into "+N" is [hidden], not a badge that failed to draw.
-    const chips = [...li.querySelectorAll('.entry-meta > .chip:not([hidden]), .entry-meta .chip:not([hidden])')].map((c) => {
+    const chips = [...li.querySelectorAll(card ? '.record-meta > *' : '.entry-meta > .chip:not([hidden]), .entry-meta .chip:not([hidden])')].map((c) => {
       const r = c.getBoundingClientRect();
       return {
         text: c.textContent.replace(/\s+/g, ' ').trim(),
@@ -227,7 +236,11 @@ function waitForFake() {
     // A tag folded into "+N" is still on the card (its menu lists it).
     const folded = [...li.querySelectorAll('.entry-meta [data-tag][hidden]')].map((c) => c.dataset.tag);
     const shown = chips.map((c) => c.text).concat(folded).join(' | ');
-    const missing = want.filter((label) => !shown.includes(String(label)));
+    // The card says category, date, score and mentions only (DESIGN, the
+    // Matching records card: "never an empty slot or a lone icon"); tags and
+    // the AI score are not part of it, so only what the card carries is owed.
+    const owed = card ? [entry.category] : want;
+    const missing = owed.filter((label) => !shown.includes(String(label)));
     // A lane that scrolls is a lane that hides: the same measurement for the
     // meta row itself, since a chip inside an overflowing box has a rect on
     // the page whether or not it is in view.
@@ -264,7 +277,9 @@ function waitForFake() {
   // The same note, in the Ask column, chip for chip against Browse.
   const askSame = await page.evaluate((id) => {
     const li = document.querySelector(`#raw-results li[data-id="${id}"]`);
-    return li ? [...li.querySelectorAll('.entry-meta .chip:not([hidden])')]
+    // The Ask card says its facts as words in `.record-meta` (INBOX 1735,
+    // DESIGN: category, date, score, each only when it exists), not as chips.
+    return li ? [...li.querySelectorAll('.entry-meta .chip:not([hidden]), .record-meta .record-cat')]
       .map((c) => c.textContent.replace(/\s+/g, ' ').trim()) : null;
   }, seeded.ids[2]);
   console.log(`297 ask row    (the same note):        ${JSON.stringify(askSame)}`);
@@ -274,7 +289,9 @@ function waitForFake() {
       .map((c) => c.text));
     // "Add tags" (a control in Browse) is "No tags yet" in Ask, where the row is read-only.
     const same = (t) => (t === 'Add tags' ? 'No tags yet' : t);
-    const lost = browse.filter((b) => !askSame.map(same).includes(same(b)) && !actionOnly.has(b));
+    // "Add tags" is an empty-slot control; the Ask card never draws an empty
+    // slot (DESIGN: "never an empty slot"), so it has no counterpart there.
+    const lost = browse.filter((b) => !askSame.map(same).includes(same(b)) && !actionOnly.has(b) && b !== 'Add tags');
     numbers.badgesInBrowse = browse.length;
     numbers.badgesInAsk = askSame.length;
     numbers.badgesLostInAsk = lost;
@@ -295,10 +312,12 @@ function waitForFake() {
     const at = await page.evaluate((id) => {
       const li = document.querySelector(`#raw-results li[data-id="${id}"]`);
       if (!li) return null;
-      const meta = li.querySelector('.entry-meta');
-      const links = li.querySelector('.entry-links');
+      // The settled Matching records card: its facts line is the badge row.
+      const card = li.classList.contains('record-card');
+      const meta = li.querySelector(card ? '.record-meta' : '.entry-meta');
+      const links = card ? meta && meta.previousElementSibling : li.querySelector('.entry-links');
       const box = li.getBoundingClientRect();
-      const chips = [...li.querySelectorAll('.entry-meta .chip:not([hidden])')];
+      const chips = [...li.querySelectorAll(card ? '.record-meta > *' : '.entry-meta .chip:not([hidden])')];
       const cut = chips.filter((c) => {
         const r = c.getBoundingClientRect();
         return r.width < 1 || r.right > box.right + 1 || r.left < box.left - 1;
@@ -377,7 +396,11 @@ function waitForFake() {
 
   await page.waitForFunction(() => {
     const a = document.getElementById('ai-answer');
-    return a && a.textContent.trim().length > 20 && !a.classList.contains('is-streaming');
+    // Done = the turn's own exit showed Copy; text alone is true while the
+    // "searching" label is up, before the first token.
+    const copy = document.getElementById('copy-btn');
+    return a && a.textContent.trim().length > 20 && !a.classList.contains('is-streaming')
+      && copy && !copy.classList.contains('hidden');
   }, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(2500);
 
@@ -423,7 +446,14 @@ function waitForFake() {
       // reserved: the row's own text must start to the right of the mark, not
       // under it.
       const body = li.querySelector('.entry-title, .entry-content');
-      const br = body ? body.getBoundingClientRect() : null;
+      // The content box: a row reserves the mark's strip as padding-right (the
+      // text stops before it), so the border box always reaches under the mark.
+      let br = null;
+      if (body) {
+        const b = body.getBoundingClientRect();
+        const cs = getComputedStyle(body);
+        br = { left: b.left + parseFloat(cs.paddingLeft), right: b.right - parseFloat(cs.paddingRight) };
+      }
       return {
         pos: i + 1,
         id: li.dataset.id,
