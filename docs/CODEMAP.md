@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8540, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11388, test files 2986, tests 23252, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8541, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11388, test files 2986, tests 23252, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
-## Frontend functions (8540)
+## Frontend functions (8541)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3009,7 +3009,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `repaintOwnFace` | frontend/js/companion-settings.js:43 |
 | `syncProfileLook` | frontend/js/companion-settings.js:168 |
 
-### frontend/js/companion-throw.js (27)
+### frontend/js/companion-throw.js (28)
 
 | Name | File:line |
 |---|---|
@@ -3017,29 +3017,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `companionThrowArrive` | frontend/js/companion-throw.js:134 |
 | `companionThrowAt` | frontend/js/companion-throw.js:283 |
 | `companionThrowAtTime` | frontend/js/companion-throw.js:418 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:714 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:706 |
 | `companionThrowDown` | frontend/js/companion-throw.js:255 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:683 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:675 |
 | `companionThrowHold` | frontend/js/companion-throw.js:275 |
 | `companionThrowLedges` | frontend/js/companion-throw.js:101 |
 | `companionThrowLift` | frontend/js/companion-throw.js:363 |
-| `companionThrowMiffed` | frontend/js/companion-throw.js:893 |
+| `companionThrowMiffed` | frontend/js/companion-throw.js:897 |
 | `companionThrowPick` | frontend/js/companion-throw.js:328 |
 | `companionThrowPlan` | frontend/js/companion-throw.js:376 |
 | `companionThrowRng` | frontend/js/companion-throw.js:62 |
 | `companionThrowSettle` | frontend/js/companion-throw.js:299 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:732 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:736 |
 | `companionThrowSide` | frontend/js/companion-throw.js:165 |
 | `companionThrowSlide` | frontend/js/companion-throw.js:206 |
 | `companionThrowStep` | frontend/js/companion-throw.js:79 |
+| `companionThrowTipOver` | frontend/js/companion-throw.js:724 |
 | `companionThrowUp` | frontend/js/companion-throw.js:226 |
 | `companionThrowWrapOn` | frontend/js/companion-throw.js:188 |
-| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:764 |
-| `nameMarkBuddyShaken` | frontend/js/companion-throw.js:873 |
+| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:768 |
+| `nameMarkBuddyShaken` | frontend/js/companion-throw.js:877 |
 | `nameMarkBuddyThrow` | frontend/js/companion-throw.js:551 |
-| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:745 |
-| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:848 |
-| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:837 |
+| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:749 |
+| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:852 |
+| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:841 |
 
 ### frontend/js/companion-travel.js (7)
 

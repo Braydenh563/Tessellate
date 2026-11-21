@@ -37,7 +37,9 @@ def test_the_app_and_the_desk_drop_the_same_props() -> None:
 def test_it_is_armed_when_grabbed_and_laid_down_when_it_lands_and_not_without_motion() -> None:
     halt = AV[AV.index("function nameMarkBuddyHalt(buddy)") :][:300]
     assert "NMB_TIP_ACTS.includes(nmb.act)" in halt and "nmb.tipAct = nmb.act" in halt
-    land = TH[TH.index("const land = () => {") :][:1300]
-    tip = land
+    land = TH[TH.index("const land = () => {") :][:900]
+    assert "companionThrowTipOver(buddy)" in land
+    #: Its own function: the frame step sets no timer (test_companion_physics_cost).
+    tip = land = TH[TH.index("function companionThrowTipOver(buddy)") :][:600]
     assert "nmb.tipAct" in land and "15000" in land and "nameMarkBuddyStill()" in land, "a pick-up with no throw, or no motion, leaves nothing lying"
     assert "setTimeout(" in tip and "classList.remove(`nmb-tip-${tipAct}`)" in tip and "NMB_THROW.tip" in tip
