@@ -17,10 +17,11 @@ than hidden:
   searched today either, so neither is read here;
 * edits coalesced into one revision (a burst of typing) are one step.
 
-**No model, no new table** (the spec's "Data: no new table"): the claims of
+**No new table** (the spec's "Data: no new table"): the claims of
 then-and-now are the note's sentences (`grounding.split_sentences`), paired
-by shared distinctive words; a model's judgement over the pairs is the
-spec's optional second half and is not built. Retrieval as of a date takes
+by shared distinctive words; with a model on, the model judges each pair
+(same, changed, contradicts, unrelated: `model_judge`), and with none, or an
+unusable reply, the word rule stands as it always did. Retrieval as of a date takes
 its candidates from the engine (today's notes) and from revisions whose
 text matches the question, then ranks the then-texts by the same words.
 """
@@ -177,20 +178,80 @@ def _overlap(a: str, b: str) -> float:
     return len(left & right) / len(left | right)
 
 
-def then_and_now(then_text: str, now_text: str) -> dict:
-    """The claims of `then_text` against those of `now_text`.
+#: With a model judging, any shared distinctive word makes a pair worth
+#: asking about: the model, not the word count, says whether it is one claim.
+JUDGE_CANDIDATE_AT = 0.0
+#: One call per comparison, so a long note asks about its first pairs only.
+JUDGE_PAIRS_MAX = 12
+#: A claim longer than this is clipped in the prompt (a sentence, not a page).
+JUDGE_CLAIM_CHARS = 300
+#: The judge's fixed text is resent on every comparison: kept small.
+JUDGE_PROMPT_CHARS = 420
+JUDGE_PROMPT = (
+    "Each numbered pair is one note's claim THEN and a claim it makes NOW. "
+    "Judge each pair with one word: same (the same claim, reworded), changed "
+    "(the claim was revised), contradicts (now says the opposite), or unrelated "
+    '(different subjects). Reply with JSON only, like {"1": "changed", "2": "same"}.'
+)
+JUDGEMENTS = ("same", "changed", "contradicts", "unrelated")
 
-    `changed` lists one row per difference, by index into `then` and `now`:
-    `revised` (a then-claim whose closest now-claim shares enough words and
-    is not the same sentence), `dropped` (a then-claim with no partner) and
-    `new` (a now-claim nothing then became). A claim said the same way in
-    both is not a change and is not listed."""
-    then, now = claims(then_text), claims(now_text)
-    changed: list[dict] = []
+
+def parse_judgement(reply: str, count: int) -> list[str | None] | None:
+    """The model's verdict per pair, by number, or None when the reply is not
+    a JSON object at all. A word outside `JUDGEMENTS` is None for that pair,
+    which keeps the word rule for it."""
+    from tessellate.ai.provider import loads_lenient
+
+    try:
+        data = loads_lenient(reply or "")
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(data, dict) or not data:
+        return None
+    out: list[str | None] = []
+    for k in range(1, count + 1):
+        word = str(data.get(str(k), "")).strip().lower()
+        out.append(word if word in JUDGEMENTS else None)
+    return out
+
+
+def model_judge(ollama, model_manager):  # noqa: ANN001, ANN201
+    """A judge over claim pairs through the running provider, and its model's
+    name; (None, None) when no model is on or a question is in flight (the
+    answer the person waits on goes first, as follow-ups yield to it)."""
+    from tessellate.ai.ollama_client import OllamaError
+    from tessellate.core import model_gate
+
+    if ollama is None or not ollama.is_running() or model_gate.busy():
+        return None, None
+    model = model_manager.utility_model()
+
+    def judge(pairs: list[tuple[str, str]]) -> list[str | None] | None:
+        lines = [f"{k}. THEN: {a}\n   NOW: {b}" for k, (a, b) in enumerate(pairs, start=1)]
+        try:
+            reply = ollama.chat(
+                model,
+                [{"role": "system", "content": JUDGE_PROMPT}, {"role": "user", "content": "\n".join(lines)}],
+                mode="quick",
+            )
+        except OllamaError:
+            return None
+        return parse_judgement(reply.get("content") or "", len(pairs))
+
+    return judge, model
+
+
+def _pairs(then: list[str], now: list[str], floor: float, strict: bool) -> tuple[list[tuple[int, int, float]], set[int], set[int]]:
+    """Each then-claim's closest unused now-claim, as (then, now, overlap),
+    for the pairs at `floor` or over (over it when not `strict`); the
+    now-claims taken; and the then-claims said word for word in both."""
+    pairs: list[tuple[int, int, float]] = []
     used: set[int] = set()
+    same_then: set[int] = set()
     for i, sentence in enumerate(then):
         if sentence in now:
             used.add(now.index(sentence))
+            same_then.add(i)
             continue
         best, score = None, 0.0
         for j, other in enumerate(now):
@@ -199,15 +260,71 @@ def then_and_now(then_text: str, now_text: str) -> dict:
             value = _overlap(sentence, other)
             if value > score:
                 best, score = j, value
-        if best is not None and score >= REVISED_AT:
+        if best is not None and (score >= floor if strict else score > floor):
             used.add(best)
-            changed.append({"kind": "revised", "then": i, "now": best})
+            pairs.append((i, best, score))
+    return pairs, used, same_then
+
+
+def _verdicts(then: list[str], now: list[str], pairs: list, judge) -> list[str | None] | None:  # noqa: ANN001
+    asked = pairs[:JUDGE_PAIRS_MAX]
+    if not judge or not asked:
+        return None
+    return judge([(then[i][:JUDGE_CLAIM_CHARS], now[j][:JUDGE_CLAIM_CHARS]) for i, j, _ in asked])
+
+
+def then_and_now(then_text: str, now_text: str, judge=None, judged_by: str | None = None) -> dict:  # noqa: ANN001
+    """The claims of `then_text` against those of `now_text`.
+
+    `changed` lists one row per difference, by index into `then` and `now`:
+    `revised` (a then-claim whose closest now-claim is that claim changed),
+    `dropped` (a then-claim with no partner) and `new` (a now-claim nothing
+    then became). A claim said the same way in both is not a change and is
+    not listed.
+
+    With `judge` (a model, `model_judge`), the pairs sharing any word go to
+    it: `same` is no change, `changed` or `contradicts` is revised and says
+    which (`judgement`), `unrelated` is one dropped and one new. A pair it
+    gave no usable word for, and every pair when its reply is unusable, keeps
+    the word rule (`REVISED_AT`), so no model and a failed model read alike."""
+    then, now = claims(then_text), claims(now_text)
+    floor, strict = (JUDGE_CANDIDATE_AT, False) if judge else (REVISED_AT, True)
+    pairs, used, same_then = _pairs(then, now, floor, strict)
+    verdicts = _verdicts(then, now, pairs, judge)
+    paired = _settle(pairs, verdicts, used)
+    changed = _changes(then, now, paired, same_then, used)
+    judged = judged_by if verdicts and any(v is not None for v in verdicts) else None
+    return {"then": then, "now": now, "changed": changed, "judged_by": judged}
+
+
+def _settle(pairs: list, verdicts: list | None, used: set[int]) -> dict[int, tuple[int, str | None]]:
+    """Each kept pair's now-claim and verdict, by then-claim; a pair judged
+    unrelated, or under the word rule's bar with no verdict, frees its
+    now-claim to be new."""
+    paired: dict[int, tuple[int, str | None]] = {}
+    for k, (i, j, score) in enumerate(pairs):
+        verdict = verdicts[k] if verdicts and k < len(verdicts) else None
+        if verdict == "unrelated" or (verdict is None and score < REVISED_AT):
+            used.discard(j)
         else:
+            paired[i] = (j, verdict)
+    return paired
+
+
+def _changes(then: list[str], now: list[str], paired: dict, same_then: set[int], used: set[int]) -> list[dict]:
+    changed: list[dict] = []
+    for i in range(len(then)):
+        if i in same_then:
+            continue
+        j, verdict = paired.get(i, (None, None))
+        if j is None:
             changed.append({"kind": "dropped", "then": i, "now": None})
+        elif verdict != "same":
+            changed.append({"kind": "revised", "then": i, "now": j} | ({"judgement": verdict} if verdict else {}))
     for j, sentence in enumerate(now):
         if j not in used and sentence not in then:
             changed.append({"kind": "new", "then": None, "now": j})
-    return {"then": then, "now": now, "changed": changed}
+    return changed
 
 
 def stored_claims(session: Session, entry_ids: list[int]) -> dict[tuple[int, str], object]:
