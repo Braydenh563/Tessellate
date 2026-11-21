@@ -58,6 +58,6 @@ def test_who_wrote_a_work_a_note_names_by_author(client, session, monkeypatch):
 def test_a_long_question_is_read_in_bounded_time():
     out = type("O", (), {"lines": [], "parts": [], "grounding": []})()
     for q in ("who wrote " + "a " * 25_000, "who wrote" + " " * 50_000 + "it", "who wrote " + "x" * 50_000):
-        start = time.perf_counter()
+        start = time.process_time()
         composer_credit.answer(out, q, [])
-        assert time.perf_counter() - start < 0.5
+        assert time.process_time() - start < 0.5

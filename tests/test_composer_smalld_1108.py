@@ -126,10 +126,10 @@ def test_sum_words_leave_note_questions_alone(q):
 def test_sum_words_are_linear_on_long_input():
     import time
 
-    start = time.perf_counter()
+    start = time.process_time()
     for q in ("round " + "1" * 20000, "log " + " " * 20000 + "5", "(" * 20000, "2" + "(2" * 10000, "pow " + "9 " * 10000):
         composer_sums.answer(ctx(q))
-    assert time.perf_counter() - start < 1.0
+    assert time.process_time() - start < 1.0
 
 
 # --- 3: T6 leftovers on pasted text -----------------------------------------------------------
@@ -192,11 +192,11 @@ def test_epoch_leaves_other_questions_alone(q):
 def test_text_and_epoch_readers_are_linear_on_long_input():
     import time
 
-    start = time.perf_counter()
+    start = time.process_time()
     for q in ("join lines with commas:" + "a\n" * 9000, "split on commas: " + "a," * 9000, "count characters: " + "a " * 9000, "unix time of " + "1 " * 40, "epoch " + "9" * 5000 + " to date",
               "split " + "the " * 5000 + "note", "unix time of" + " " * 5000 + "x"):
         composer_extra.answer(ctx(q))
-    assert time.perf_counter() - start < 1.0
+    assert time.process_time() - start < 1.0
 
 
 # --- 1: rows the plan still lists as open, asked in the plan's own phrasing ------------------
