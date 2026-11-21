@@ -7537,6 +7537,23 @@
     if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
   };
   nmbClock.setCalm(false);
+  //: L342: while keys are typed the marks' breath holds where it is and picks
+  //: up once the typing pauses. A running animation, even one the compositor
+  //: draws, cost each key about 10 ms of latency in a 20,000 word document at
+  //: 4x CPU (mean 43 to 33 ms with it paused). The class goes on the marks,
+  //: not on <html>, whose attribute observers would wake (DX1).
+  const NMB_TYPING_HOLD_MS = 1200;
+  nmbClock.hold = (on) => {
+    nmbClock.held = on;
+    for (const art of document.querySelectorAll(".emblem-art")) art.classList.toggle("is-held", on);
+    if (on) nmbClock.holdTimer = setTimeout(nmbClock.holdCheck, NMB_TYPING_HOLD_MS);
+  };
+  //: One timer a burst, re-armed for the time left rather than reset each key.
+  nmbClock.holdCheck = () => {
+    const left = nmbClock.keyAt + NMB_TYPING_HOLD_MS - Date.now();
+    if (left > 0) nmbClock.holdTimer = setTimeout(nmbClock.holdCheck, left);
+    else nmbClock.hold(false);
+  };
   function nmbTickArm(ms) {
     clearTimeout(nmbClock.timer);
     nmbClock.timer = document.hidden ? 0 : setTimeout(nmbTick, ms);
@@ -7547,6 +7564,10 @@
       if (type !== "resize") {
         nmbClock.setCalm(false);
         nmbClock.inputAt = Date.now();
+        if (type === "keydown") {
+          nmbClock.keyAt = nmbClock.inputAt;
+          if (!nmbClock.held) nmbClock.hold(true);
+        }
         //: Only when it is on (DX1): `remove` writes the attribute even when the
         //: class is absent, so every key woke each observer of `<html>` (the
         //: diagrams' theme redraw ran 13 times in 60 keys, a style read each).

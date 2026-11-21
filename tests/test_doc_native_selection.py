@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import documents_text
+from tests._app_js import documents_text, frontend_text
 
 DOCS = documents_text()
 
@@ -23,15 +23,34 @@ def _extensions() -> str:
     return DOCS[start : DOCS.index("\nfunction ", start + 10)]
 
 
+def _when_needed() -> str:
+    start = DOCS.index("drawSelectionWhenNeeded(CM, part) {")
+    return DOCS[start : DOCS.index("\n    },", start)]
+
+
 def test_draw_selection_is_a_compartment_not_always_on():
     ext = _extensions()
     assert "docCmParts.select = new CM.state.Compartment();" in ext
-    assert "docCmParts.select.of([])" in ext, "the editor starts on the native caret and selection"
+    assert "docCmParts.drawSelectionWhenNeeded(CM, docCmParts.select)" in ext
+    assert "part.of([])" in _when_needed(), "the editor starts on the native caret and selection"
     assert not re.search(r"^\s*CM\.view\.drawSelection\(\),", ext, re.M), "drawSelection is always on again"
 
 
+def test_the_note_box_and_the_split_view_draw_it_the_same_way():
+    # The notes editor and the IDE's second view had drawSelection always on,
+    # the same per-key measure and redraw the document editor shed (L342).
+    for name, start, end in (
+        ("documents-wiring.js", "function noteSurfaceExtensions(CM, host, options) {", "noteSurfaceName(host) }),"),
+        ("documents-ide.js", "const state = CM.state.EditorState.create({", "const view = new CM.view.EditorView({"),
+    ):
+        src = frontend_text(name)
+        body = src[src.index(start) : src.index(end, src.index(start))]
+        assert "CM.view.drawSelection()" not in body, name
+        assert "docCmParts.drawSelectionWhenNeeded(CM, new CM.state.Compartment())" in body, name
+
+
 def test_it_draws_for_several_ranges_or_a_selection_kept_without_focus():
-    ext = _extensions()
+    ext = _when_needed()
     want = re.search(r"const drawWanted = \(sel, focused\) => ([^;]+);", ext)
     assert want, "the rule for when the selection is drawn"
     assert "sel.ranges.length > 1" in want.group(1) and "!focused && !sel.main.empty" in want.group(1)
