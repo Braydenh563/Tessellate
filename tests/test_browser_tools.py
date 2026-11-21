@@ -7,7 +7,6 @@ here is a fake; nothing touches the network.
 
 from __future__ import annotations
 
-
 import pytest
 
 from tessellate.ai import agent_policy, fence, tools
@@ -218,3 +217,13 @@ def test_the_panel_opens_the_page_the_tool_asked_for():
 
     source = app_js_text()
     assert "event.panel_url" in source and "openWebReader(event.panel_url)" in source
+
+
+def test_the_palette_agent_opens_the_same_page_in_the_web_panel():
+    """L-world-class-629: the palette's agent drew web cards for read_url and
+    web_search only, so a browser tool run from it moved no panel."""
+    from tests._app_js import JS_DIR
+
+    source = (JS_DIR / "palette.js").read_text(encoding="utf-8")
+    on_tool = source[source.index("drawAnswerPanels(stepsHolder, panels, spot)") :][:600]
+    assert "openWebReader(event.panel_url)" in on_tool and 'event.tool !== "browser_read"' in on_tool

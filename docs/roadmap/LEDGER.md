@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 64 | 10 | 0 | 0 | 74 |
+| world-class | 0 | 63 | 10 | 0 | 0 | 73 |
 | general | 0 | 32 | 2 | 0 | 5 | 34 |
-| all | 372 | 451 | 81 | 2 | 112 | 904 |
+| all | 372 | 450 | 81 | 2 | 112 | 903 |
 
 ## graph
 
@@ -527,7 +527,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-626** `world-class` open, M: First page load adds about 260 MB resident (cache warm-up at 4,500 notes). From L609. Evidence: RSS 435 MB with no page open went to 695 MB within 30 s of opening the app in Chromium (4,500 notes, arenas capped); flat at 715 MB after; which first-hit route builds the 260 MB not found
 - [ ] **L-world-class-627** `world-class` open, S: VS Code extension: sign in by pasting a device token, and say when the computer must approve the device. From L-world-class-183. Evidence: editors/vscode/lib/client.js signs in by password only; a new device may wait for approval on the computer with no prompt in VS Code
 - [ ] **L-world-class-628** `world-class` open, M: Translation: one optional download per language pair, so en-es users do not fetch 209 MB, and check en-fr quality. From L-world-class-41. Evidence: core/extras.py translate extra went 27 MB to 209 MB download (286 MB on disk) and its version moved to 0.4.9-pairs-1, so an en-es install downloads all eight pairs again; en-fr rendered 'is on Tuesday' as 'aura eu le mardi'
-- [ ] **L-world-class-629** `world-class` open, S: Palette agent: open the Web panel for browser tool events too. From agent s, L-world-class-182. Evidence: frontend/js/palette.js:1397 handles read_url and web_search events only; a browser_* tool run from the palette's agent does not open the Web panel
 - [ ] **L-world-class-630** `world-class` open, S: Real-model check: does a local model pick browser_open, browser_follow and browser_find well. From agent s, L-world-class-182. Evidence: tests/test_browser_tools.py fake transport only; scratchpad/llama-dev.sh serve then pytest -m evals
 
 ## general
