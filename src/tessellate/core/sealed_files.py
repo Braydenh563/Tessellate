@@ -84,6 +84,7 @@ LOCKED_DETAIL = "This private space is locked. Unlock it first."
 DAMAGED_DETAIL = "This file is damaged or does not open with this key."
 CHANGED_DETAIL = "This file changed while it was open. Try again."
 LOOKS_SEALED_DETAIL = "This file starts the way a sealed file does, so it can't be stored."
+BACKGROUND_LOCKED_DETAIL = "The private space locked before this finished. Open it and start again."
 
 _locks: dict[str, threading.RLock] = {}
 _locks_guard = threading.Lock()
@@ -490,6 +491,27 @@ def readable(path: Path, *, write: bool = False) -> Iterator[Path]:
                 _rewrite(path, seal_bytes(copy.read_bytes()))
     finally:
         shutil.rmtree(folder, ignore_errors=True)
+
+
+@contextmanager
+def for_background(path: Path, token: str | None) -> Iterator[tuple[Path, Callable[[], None]]]:
+    """A background job's way into a private space's file (L-world-class-381,
+    SECURITY.md T28): `readable`, run as the session `token` that started the
+    job (`vault.acting_for`), and `check`, which raises `SealedLocked` once
+    that session's private-space door has shut (lock, idle, sign-out). The
+    job calls `check` between steps and before it writes, so it never reads
+    or writes past the session; the plain copy goes when the block ends,
+    which a raised `check` ends. With no token: plain background work."""
+    from tessellate.core import spacelock, vault
+
+    def check() -> None:
+        if token is not None and not spacelock.opened(token):
+            raise SealedLocked(BACKGROUND_LOCKED_DETAIL)
+
+    with vault.acting_for(token):
+        check()
+        with readable(path) as copy:
+            yield Path(copy), check
 
 
 def sweep_leftovers(data_dir: Path, folders: tuple[Path, ...] = ()) -> int:

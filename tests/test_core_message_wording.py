@@ -62,8 +62,7 @@ class Source:
 
 SOURCES: tuple[Source, ...] = (
     Source("entry/private_space.py", consts=("MOVE_OUT_TO_SHARE",)),
-    Source("core/sealed_files.py", consts=("LOCKED_DETAIL", "DAMAGED_DETAIL", "LOOKS_SEALED_DETAIL", "CHANGED_DETAIL")),
-    Source("api/routes_recordings.py", consts=("SEALED_IN_BACKGROUND",)),
+    Source("core/sealed_files.py", consts=("LOCKED_DETAIL", "DAMAGED_DETAIL", "LOOKS_SEALED_DETAIL", "CHANGED_DETAIL", "BACKGROUND_LOCKED_DETAIL")),
     Source("core/backup.py", raises=("FileNotFoundError", "ValueError"), functions=("restore_backup",)),
     Source("core/syntaxcheck.py", raises=("ValueError",), functions=("check",)),
     Source("ai/insights.py", raises=("ValueError",), functions=("confirm", "dismiss")),
@@ -382,7 +381,6 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_files.py", "sealed_files.LOOKS_SEALED_DETAIL"): "core/sealed_files.py LOOKS_SEALED_DETAIL, checked in SOURCES (L-world-class-52)",
     ("routes_recordings.py", "sealed_files.LOCKED_DETAIL"): "core/sealed_files.py LOCKED_DETAIL, checked in SOURCES (L-world-class-52)",
     ("routes_recordings.py", "sealed_files.LOOKS_SEALED_DETAIL"): "core/sealed_files.py LOOKS_SEALED_DETAIL, checked in SOURCES (L-world-class-52)",
-    ("routes_recordings.py", "SEALED_IN_BACKGROUND"): "a constant in routes_recordings.py, checked in SOURCES (L-world-class-52)",
     # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
     ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
 }

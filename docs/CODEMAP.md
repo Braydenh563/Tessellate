@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8550, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11171, test files 2909, tests 22947, plan headings 688, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8550, frontend ids 2805, CSS sections 528, backend routes 729, backend modules 11178, test files 2910, tests 22954, plan headings 688, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8550)
 
@@ -13875,7 +13875,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1588 |
 | `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1766 |
 | `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1807 |
-| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:600 |
+| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:619 |
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1936 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1697 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1333 |
@@ -13977,15 +13977,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:211 |
 | `/recordings/{recording_id}/purge` | DELETE | `purge_recording` | src/tessellate/api/routes_recordings.py:266 |
 | `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:259 |
-| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:471 |
-| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:548 |
-| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:485 |
+| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:479 |
+| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:567 |
+| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:493 |
 | `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:277 |
-| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:322 |
-| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:348 |
-| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:463 |
-| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:577 |
-| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:582 |
+| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:326 |
+| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:352 |
+| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:471 |
+| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:596 |
+| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:601 |
 | `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2245 |
 | `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:2168 |
 | `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2215 |
@@ -14264,7 +14264,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11171)
+## Backend modules (11178)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17637,13 +17637,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `speaker_count` | src/tessellate/ai/diarize.py:153 |
 | `voice_labels` | src/tessellate/ai/diarize.py:122 |
 
-### src/tessellate/ai/docreader.py (3)
+### src/tessellate/ai/docreader.py (6)
 
 | Name | File:line |
 |---|---|
-| `_fill_if_empty` | src/tessellate/ai/docreader.py:129 |
-| `read_document_and_store` | src/tessellate/ai/docreader.py:41 |
-| `read_in_background` | src/tessellate/ai/docreader.py:143 |
+| `_extract` | src/tessellate/ai/docreader.py:135 |
+| `_fill_if_empty` | src/tessellate/ai/docreader.py:169 |
+| `_read_private` | src/tessellate/ai/docreader.py:148 |
+| `forget_sessions` | src/tessellate/ai/docreader.py:40 |
+| `read_document_and_store` | src/tessellate/ai/docreader.py:52 |
+| `read_in_background` | src/tessellate/ai/docreader.py:183 |
 
 ### src/tessellate/ai/drafter.py (15)
 
@@ -23372,48 +23375,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `purge_binned_reading` | src/tessellate/api/routes_reading_bin.py:88 |
 | `restore_binned_reading` | src/tessellate/api/routes_reading_bin.py:70 |
 
-### src/tessellate/api/routes_recordings.py (39)
+### src/tessellate/api/routes_recordings.py (40)
 
 | Name | File:line |
 |---|---|
 | `RecordingCreate` | src/tessellate/api/routes_recordings.py:47 |
 | `RecordingFinish` | src/tessellate/api/routes_recordings.py:57 |
 | `RecordingPatch` | src/tessellate/api/routes_recordings.py:63 |
-| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:543 |
+| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:562 |
+| `_acting_for` | src/tessellate/api/routes_recordings.py:312 |
 | `_append` | src/tessellate/api/routes_recordings.py:165 |
 | `_get` | src/tessellate/api/routes_recordings.py:70 |
-| `_keep_segments` | src/tessellate/api/routes_recordings.py:412 |
-| `_label_in_background` | src/tessellate/api/routes_recordings.py:509 |
-| `_locked_away` | src/tessellate/api/routes_recordings.py:587 |
-| `_named` | src/tessellate/api/routes_recordings.py:443 |
-| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:428 |
-| `_people_at` | src/tessellate/api/routes_recordings.py:436 |
-| `_record_failure` | src/tessellate/api/routes_recordings.py:393 |
-| `_refuse_sealed_in_background` | src/tessellate/api/routes_recordings.py:317 |
-| `_segments_of` | src/tessellate/api/routes_recordings.py:455 |
-| `_subtitles` | src/tessellate/api/routes_recordings.py:565 |
-| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:358 |
-| `_voice_labelled` | src/tessellate/api/routes_recordings.py:402 |
+| `_keep_segments` | src/tessellate/api/routes_recordings.py:420 |
+| `_keep_voice_labels` | src/tessellate/api/routes_recordings.py:539 |
+| `_label_in_background` | src/tessellate/api/routes_recordings.py:517 |
+| `_locked_away` | src/tessellate/api/routes_recordings.py:606 |
+| `_named` | src/tessellate/api/routes_recordings.py:451 |
+| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:436 |
+| `_people_at` | src/tessellate/api/routes_recordings.py:444 |
+| `_record_failure` | src/tessellate/api/routes_recordings.py:401 |
+| `_segments_of` | src/tessellate/api/routes_recordings.py:463 |
+| `_subtitles` | src/tessellate/api/routes_recordings.py:584 |
+| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:362 |
+| `_voice_labelled` | src/tessellate/api/routes_recordings.py:410 |
 | `_writable` | src/tessellate/api/routes_recordings.py:83 |
 | `append_chunk` | src/tessellate/api/routes_recordings.py:177 |
 | `bin_recording` | src/tessellate/api/routes_recordings.py:250 |
 | `create_recording` | src/tessellate/api/routes_recordings.py:142 |
 | `finish_recording` | src/tessellate/api/routes_recordings.py:212 |
-| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:486 |
+| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:494 |
 | `list_recordings` | src/tessellate/api/routes_recordings.py:94 |
-| `name_speakers` | src/tessellate/api/routes_recordings.py:472 |
+| `name_speakers` | src/tessellate/api/routes_recordings.py:480 |
 | `purge_recording` | src/tessellate/api/routes_recordings.py:267 |
 | `read_recording` | src/tessellate/api/routes_recordings.py:230 |
-| `read_transcript` | src/tessellate/api/routes_recordings.py:464 |
-| `recording_audio` | src/tessellate/api/routes_recordings.py:601 |
+| `read_transcript` | src/tessellate/api/routes_recordings.py:472 |
+| `recording_audio` | src/tessellate/api/routes_recordings.py:620 |
 | `recover_recordings` | src/tessellate/api/routes_recordings.py:134 |
-| `rename_speaker` | src/tessellate/api/routes_recordings.py:549 |
+| `rename_speaker` | src/tessellate/api/routes_recordings.py:568 |
 | `restore_recording` | src/tessellate/api/routes_recordings.py:260 |
-| `start_transcription` | src/tessellate/api/routes_recordings.py:323 |
-| `stop_transcription` | src/tessellate/api/routes_recordings.py:349 |
+| `start_transcription` | src/tessellate/api/routes_recordings.py:327 |
+| `stop_transcription` | src/tessellate/api/routes_recordings.py:353 |
 | `transcribe_recording` | src/tessellate/api/routes_recordings.py:278 |
-| `transcript_srt` | src/tessellate/api/routes_recordings.py:578 |
-| `transcript_vtt` | src/tessellate/api/routes_recordings.py:583 |
+| `transcript_srt` | src/tessellate/api/routes_recordings.py:597 |
+| `transcript_vtt` | src/tessellate/api/routes_recordings.py:602 |
 | `update_recording` | src/tessellate/api/routes_recordings.py:235 |
 
 ### src/tessellate/api/routes_relations.py (6)
@@ -26562,7 +26566,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `prune_now` | src/tessellate/core/running_copies.py:169 |
 | `shutdown` | src/tessellate/core/running_copies.py:196 |
 
-### src/tessellate/core/sealed_files.py (41)
+### src/tessellate/core/sealed_files.py (42)
 
 | Name | File:line |
 |---|---|
@@ -26571,42 +26575,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `SealedDamaged` | src/tessellate/core/sealed_files.py:71 |
 | `SealedError` | src/tessellate/core/sealed_files.py:63 |
 | `SealedLocked` | src/tessellate/core/sealed_files.py:67 |
-| `_aad` | src/tessellate/core/sealed_files.py:128 |
-| `_append_sealed` | src/tessellate/core/sealed_files.py:337 |
-| `_encrypt` | src/tessellate/core/sealed_files.py:175 |
-| `_frames` | src/tessellate/core/sealed_files.py:132 |
-| `_fsync_folder` | src/tessellate/core/sealed_files.py:378 |
-| `_key` | src/tessellate/core/sealed_files.py:101 |
-| `_last_body` | src/tessellate/core/sealed_files.py:332 |
-| `_layout` | src/tessellate/core/sealed_files.py:157 |
-| `_lock_for` | src/tessellate/core/sealed_files.py:94 |
-| `_open_frame` | src/tessellate/core/sealed_files.py:187 |
-| `_open_snapshot_last` | src/tessellate/core/sealed_files.py:230 |
-| `_remember` | src/tessellate/core/sealed_files.py:170 |
-| `_replace` | src/tessellate/core/sealed_files.py:398 |
-| `_reseal_not_final` | src/tessellate/core/sealed_files.py:368 |
-| `_rewrite` | src/tessellate/core/sealed_files.py:409 |
-| `_size` | src/tessellate/core/sealed_files.py:309 |
-| `_stamp` | src/tessellate/core/sealed_files.py:462 |
-| `_stream` | src/tessellate/core/sealed_files.py:242 |
-| `_tmp_root` | src/tessellate/core/sealed_files.py:456 |
-| `_unset_data_dir` | src/tessellate/core/sealed_files.py:447 |
-| `_whole` | src/tessellate/core/sealed_files.py:146 |
-| `_write_new_sealed` | src/tessellate/core/sealed_files.py:319 |
-| `append` | src/tessellate/core/sealed_files.py:286 |
-| `is_sealed` | src/tessellate/core/sealed_files.py:110 |
-| `iter_plain` | src/tessellate/core/sealed_files.py:225 |
-| `open_plain` | src/tessellate/core/sealed_files.py:205 |
-| `plain_file` | src/tessellate/core/sealed_files.py:123 |
-| `plain_size` | src/tessellate/core/sealed_files.py:267 |
-| `read` | src/tessellate/core/sealed_files.py:258 |
-| `read_range` | src/tessellate/core/sealed_files.py:275 |
-| `readable` | src/tessellate/core/sealed_files.py:468 |
-| `seal` | src/tessellate/core/sealed_files.py:425 |
-| `seal_bytes` | src/tessellate/core/sealed_files.py:200 |
-| `sweep_leftovers` | src/tessellate/core/sealed_files.py:495 |
-| `unseal` | src/tessellate/core/sealed_files.py:435 |
-| `wanted` | src/tessellate/core/sealed_files.py:510 |
+| `_aad` | src/tessellate/core/sealed_files.py:129 |
+| `_append_sealed` | src/tessellate/core/sealed_files.py:338 |
+| `_encrypt` | src/tessellate/core/sealed_files.py:176 |
+| `_frames` | src/tessellate/core/sealed_files.py:133 |
+| `_fsync_folder` | src/tessellate/core/sealed_files.py:379 |
+| `_key` | src/tessellate/core/sealed_files.py:102 |
+| `_last_body` | src/tessellate/core/sealed_files.py:333 |
+| `_layout` | src/tessellate/core/sealed_files.py:158 |
+| `_lock_for` | src/tessellate/core/sealed_files.py:95 |
+| `_open_frame` | src/tessellate/core/sealed_files.py:188 |
+| `_open_snapshot_last` | src/tessellate/core/sealed_files.py:231 |
+| `_remember` | src/tessellate/core/sealed_files.py:171 |
+| `_replace` | src/tessellate/core/sealed_files.py:399 |
+| `_reseal_not_final` | src/tessellate/core/sealed_files.py:369 |
+| `_rewrite` | src/tessellate/core/sealed_files.py:410 |
+| `_size` | src/tessellate/core/sealed_files.py:310 |
+| `_stamp` | src/tessellate/core/sealed_files.py:463 |
+| `_stream` | src/tessellate/core/sealed_files.py:243 |
+| `_tmp_root` | src/tessellate/core/sealed_files.py:457 |
+| `_unset_data_dir` | src/tessellate/core/sealed_files.py:448 |
+| `_whole` | src/tessellate/core/sealed_files.py:147 |
+| `_write_new_sealed` | src/tessellate/core/sealed_files.py:320 |
+| `append` | src/tessellate/core/sealed_files.py:287 |
+| `for_background` | src/tessellate/core/sealed_files.py:497 |
+| `is_sealed` | src/tessellate/core/sealed_files.py:111 |
+| `iter_plain` | src/tessellate/core/sealed_files.py:226 |
+| `open_plain` | src/tessellate/core/sealed_files.py:206 |
+| `plain_file` | src/tessellate/core/sealed_files.py:124 |
+| `plain_size` | src/tessellate/core/sealed_files.py:268 |
+| `read` | src/tessellate/core/sealed_files.py:259 |
+| `read_range` | src/tessellate/core/sealed_files.py:276 |
+| `readable` | src/tessellate/core/sealed_files.py:469 |
+| `seal` | src/tessellate/core/sealed_files.py:426 |
+| `seal_bytes` | src/tessellate/core/sealed_files.py:201 |
+| `sweep_leftovers` | src/tessellate/core/sealed_files.py:517 |
+| `unseal` | src/tessellate/core/sealed_files.py:436 |
+| `wanted` | src/tessellate/core/sealed_files.py:532 |
 
 ### src/tessellate/core/secrets_store.py (6)
 
@@ -26811,29 +26816,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `label` | src/tessellate/core/validation_copy.py:40 |
 | `sentence` | src/tessellate/core/validation_copy.py:88 |
 
-### src/tessellate/core/vault.py (19)
+### src/tessellate/core/vault.py (21)
 
 | Name | File:line |
 |---|---|
 | `_loaded` | src/tessellate/core/vault.py:63 |
-| `_row` | src/tessellate/core/vault.py:144 |
-| `close` | src/tessellate/core/vault.py:137 |
-| `create` | src/tessellate/core/vault.py:152 |
-| `exists` | src/tessellate/core/vault.py:148 |
+| `_row` | src/tessellate/core/vault.py:170 |
+| `acting_for` | src/tessellate/core/vault.py:146 |
+| `close` | src/tessellate/core/vault.py:163 |
+| `create` | src/tessellate/core/vault.py:178 |
+| `exists` | src/tessellate/core/vault.py:174 |
 | `grant` | src/tessellate/core/vault.py:101 |
 | `is_granted` | src/tessellate/core/vault.py:107 |
 | `is_open` | src/tessellate/core/vault.py:68 |
-| `issue_recovery` | src/tessellate/core/vault.py:240 |
+| `issue_recovery` | src/tessellate/core/vault.py:266 |
 | `key` | src/tessellate/core/vault.py:74 |
-| `open_with` | src/tessellate/core/vault.py:170 |
-| `open_with_recovery` | src/tessellate/core/vault.py:257 |
-| `recovery_created_at` | src/tessellate/core/vault.py:235 |
+| `open_with` | src/tessellate/core/vault.py:196 |
+| `open_with_recovery` | src/tessellate/core/vault.py:283 |
+| `recovery_created_at` | src/tessellate/core/vault.py:261 |
 | `request_scope` | src/tessellate/core/vault.py:128 |
+| `requester` | src/tessellate/core/vault.py:137 |
 | `revoke` | src/tessellate/core/vault.py:111 |
 | `revoke_all` | src/tessellate/core/vault.py:121 |
-| `rewrap` | src/tessellate/core/vault.py:204 |
-| `rewrap_with` | src/tessellate/core/vault.py:271 |
-| `set_key` | src/tessellate/core/vault.py:191 |
+| `rewrap` | src/tessellate/core/vault.py:230 |
+| `rewrap_with` | src/tessellate/core/vault.py:297 |
+| `set_key` | src/tessellate/core/vault.py:217 |
 
 ### src/tessellate/core/webauthn.py (17)
 
@@ -28559,7 +28566,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22947)
+## Tests (22954)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30852,6 +30859,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_edge_owner.py | 2 |
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
+| tests/test_sealed_background_381.py | 7 |
 | tests/test_sealed_files_format.py | 18 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
@@ -31892,14 +31900,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4493 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:592 |
+| Needs hardware | docs/roadmap/LEDGER.md:593 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:585 |
+| Owner calls | docs/roadmap/LEDGER.md:586 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32080,7 +32088,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:720 |
+| Plan session briefs | docs/roadmap/LEDGER.md:721 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32134,25 +32142,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:736 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:820 |
+| chat | docs/roadmap/LEDGER.md:737 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:821 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:760 |
-| general | docs/roadmap/LEDGER.md:557 |
+| documents | docs/roadmap/LEDGER.md:761 |
+| general | docs/roadmap/LEDGER.md:558 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:724 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:832 |
+| graph | docs/roadmap/LEDGER.md:725 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:833 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:772 |
+| mindmap | docs/roadmap/LEDGER.md:773 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:796 |
+| timeline | docs/roadmap/LEDGER.md:797 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:784 |
+| ui-modernisation | docs/roadmap/LEDGER.md:785 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:748 |
+| whiteboard | docs/roadmap/LEDGER.md:749 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:808 |
+| world-class | docs/roadmap/LEDGER.md:809 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
