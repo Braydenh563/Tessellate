@@ -58,3 +58,15 @@ def test_api_hands_a_warmed_read_to_its_caller_once():
     assert "!options?.method && warm[path]?.()" in WARM  # a write is never answered from the warm map
     assert "delete warm[path]" in WARM and "4000" in WARM  # taken once, and dropped when nobody took it
     assert "Object.assign(" in WARM and "real)" in WARM  # api's own properties (epoch, retries, upload) stay
+
+
+# L-documents-83: the sweep judges the 800 ms budget on main-thread CPU, not wall time.
+SWEEP = (Path(__file__).resolve().parent.parent / "scratchpad" / "ui-sweeps" / "docscold47.js").read_text()
+
+
+def test_the_cold_sweep_reads_main_thread_cpu_and_pins_the_budget():
+    assert "const BUDGET_MS = 800;" in SWEEP
+    assert "Performance.getMetrics" in SWEEP
+    for metric in ("TaskDuration", "ScriptDuration", "RecalcStyleDuration", "LayoutDuration"):
+        assert metric in SWEEP, metric
+    assert "c.task < BUDGET_MS" in SWEEP  # the verdict is on CPU; wall time is printed beside it
