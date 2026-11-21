@@ -131,3 +131,37 @@ def test_the_strip_says_the_journal_streak():
     body = _function(TIMELINE, "async function renderTimelineDayStrip(")
     assert "/entries/daily?through=${today}&days=366" in body
     assert 'nounCount(days, "day")} in a row' in body and "days >= 2" in body
+
+
+def test_walking_the_strip_never_asks_the_streak_again():
+    """Review 5907787263: every strip render asked for 366 days. The streak is
+    kept per today and asked again only on a new day or a timeline load
+    (`fresh`), run here in node against a counting `apiJson`."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    body = _function(TIMELINE, "async function renderTimelineDayStrip(")
+    keep = body[body.index("  if (fresh ||") : body.index("  }\n", body.index("  if (fresh ||")) + 4]
+    script = """
+const timelineRenders = { streak: null };
+const asked = [];
+function apiJson(url) { asked.push(url); return Promise.resolve({ streak: 3 }); }
+function strip(today, fresh) {
+""" + keep + """}
+strip("2026-11-21", false);
+strip("2026-11-21", false);
+strip("2026-11-21", false);
+const walked = asked.length;
+strip("2026-11-21", true);
+const loaded = asked.length;
+strip("2026-11-22", false);
+console.log(JSON.stringify({ walked, loaded, day: asked.length }));
+"""
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    assert json.loads(out.stdout) == {"walked": 1, "loaded": 2, "day": 3}
+    assert "renderTimelineDayStrip({ fresh: true })" in _function(TIMELINE, "async function renderTimeline(")

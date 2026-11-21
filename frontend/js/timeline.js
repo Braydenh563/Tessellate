@@ -526,7 +526,10 @@ const TIMELINE_FIRST = 100;
 //: the render a page is being fetched for (0: none); a page in flight for a
 //: superseded range must not stop the new range asking for its own. `total`:
 //: how many rows the whole range holds (the first page's `total`), null until it lands.
-const timelineRenders = { n: 0, pagingFor: 0, total: null };
+//: `streak`: the strip's streak ask, kept per today (review 5907787263): walking the
+//: strip asked for 366 days on every step. Asked again on a new day or a timeline
+//: load (`fresh`), which is how a note written elsewhere reaches it.
+const timelineRenders = { n: 0, pagingFor: 0, total: null, streak: null };
 // Counts per day for the whole range (not just the loaded pages), which is
 // what the scrubber draws.
 let timelineDensity = {};
@@ -622,7 +625,7 @@ async function renderTimeline() {
     setTimeout(() => {
       //: The strip, the recall row and the row gap's 0.3s ease all move Today.
       drawTimelineScrubber();
-      renderTimelineDayStrip();
+      renderTimelineDayStrip({ fresh: true });
       setTimeout(timelineScrollToToday, 700);
       //: **The two reads nobody is waiting for come after the first screen**
       //: (perf 1031 row 53: seven requests on open, the second page of rows and
@@ -1292,18 +1295,22 @@ function timelineDayLabel(key, has) {
   return { long, label: `${long}, ${has ? "has a page" : "no page yet"}` };
 }
 
-async function renderTimelineDayStrip() {
+async function renderTimelineDayStrip({ fresh = false } = {}) {
   const host = $("timeline-daystrip-days");
   if (!host) return;
   const today = timelineBucketKey(new Date(), "day");
   if (!timelineStripEnd || timelineStripEnd > today) timelineStripEnd = today;
   const end = timelineStripEnd;
   const first = timelineDayShift(end, 1 - TIMELINE_STRIP_DAYS);
+  if (fresh || timelineRenders.streak?.today !== today) {
+    const asked = apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null);
+    timelineRenders.streak = { today, asked };
+  }
   //: The streak is asked through today over the endpoint's whole window, so a
   //: run longer than the strip's seven days is not cut to seven.
   const [hasPage, journal] = await Promise.all([
     timelineDayPages(first, end),
-    apiJson(`/entries/daily?through=${today}&days=366`, { silent: true }).catch(() => null),
+    timelineRenders.streak.asked,
   ]);
   //: Stale answer: the person walked on while this was in flight.
   if (end !== timelineStripEnd) return;

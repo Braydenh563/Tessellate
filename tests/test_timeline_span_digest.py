@@ -272,3 +272,45 @@ def test_a_new_note_in_the_span_asks_again(book, ai_client, fake_ollama):
     fake_ollama.librarian_reply = "Second review."
     assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Second review."
     assert len(fake_ollama.chat_calls) == asked + 1
+
+
+def test_an_edited_note_or_a_new_day_asks_again(book, ai_client, fake_ollama, monkeypatch):
+    """Review 5907787263: the key holds what the span's notes say and today, so
+    an edit inside the span, or the prompt's "today" moving on, is read again."""
+    span = {"start": "2026-10-01", "end": "2026-10-31"}
+    fake_ollama.librarian_reply = "First review."
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "First review."
+    asked = len(fake_ollama.chat_calls)
+    from tessellate.core.database import Entry
+
+    lisbon = book.query(Entry).filter(Entry.content.like("# Lisbon%")).one()
+    lisbon.content += "\n\nBooked the hotel in Alfama."
+    book.commit()
+    fake_ollama.librarian_reply = "Edited review."
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Edited review."
+    assert len(fake_ollama.chat_calls) == asked + 1
+    monkeypatch.setattr(config, "user_now", lambda _c: NOW + dt.timedelta(days=1))
+    fake_ollama.librarian_reply = "Next day review."
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Next day review."
+    assert len(fake_ollama.chat_calls) == asked + 2
+
+
+def test_a_call_that_lands_unread_leaves_the_flights_and_is_kept(book, ai_client, fake_ollama, monkeypatch):
+    """Review 5907787263: a call past its deadline that nobody opens again was
+    never taken off `_SPAN_FLIGHTS`. It leaves when it lands, its review kept.
+    No clock: the call is a Future the test settles."""
+    from concurrent.futures import Future
+
+    from tessellate.api import routes_timeline
+    from tessellate.core import jobs
+
+    held: Future = Future()
+    monkeypatch.setattr(jobs, "future", lambda *_a: held)
+    monkeypatch.setattr(routes_timeline, "SPAN_MODEL_TIMEOUT", 0)
+    span = {"start": "2026-10-01", "end": "2026-10-31"}
+    assert ai_client.get("/timeline/digest", params=span).json()["composed"] is True
+    assert len(routes_timeline._SPAN_FLIGHTS) == 1  # noqa: SLF001
+    held.set_result("Landed late.")
+    assert routes_timeline._SPAN_FLIGHTS == {}  # noqa: SLF001
+    assert list(routes_timeline._SPAN_SAID.values()) == ["Landed late."]  # noqa: SLF001
+    assert ai_client.get("/timeline/digest", params=span).json()["text"] == "Landed late."
