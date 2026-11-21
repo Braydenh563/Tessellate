@@ -2396,6 +2396,15 @@ function docProseGhostPlugin(CM) {
   if (docProseGhostCache) return docProseGhostCache;
   docProseGhostEffect = CM.state.StateEffect.define();
   docProseGhostCache = docGhostPlugin.make(CM, (state, ghost) => {
+    //: When the text changed, the ghost is worked out here, in the key's own update
+    //: (`docToolsOnInput.ghostAt`, L342); `docProseGhostSet` then finds it the same and dispatches
+    //: nothing.
+    if (state.doc !== docProseGhostPlugin.doc) {
+      const fresh = docProseGhostPlugin.doc !== undefined;
+      docProseGhostPlugin.doc = state.doc;
+      const at = window.docToolsOnInput?.ghostAt;
+      if (fresh && at) docProseGhost = at(state);
+    }
     const g = docProseGhost;
     const range = state.selection.main;
     if (!g || !range.empty || range.head !== g.pos || g.pos > state.doc.length) return null;

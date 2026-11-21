@@ -190,3 +190,106 @@ console.log(JSON.stringify({{ wrong, checks, found }}));
     assert got["checks"] == 9000
     assert got["wrong"] == 0, got
     assert got["found"] > 300, got
+
+
+PROSE_CHECK = (JS / "documents-prose-check.js").read_text(encoding="utf-8")
+
+
+def test_the_completion_scan_stops_at_the_rows_it_shows():
+    body = _function(PROSE_CHECK, "  function docCompleteRowsAt(", "  ")
+    assert "docCompleteMatchWords(docCompleteWords, at.fragment, DOC_COMPLETE_MAX)" in body
+    assert ".toLowerCase().startsWith" not in body
+    assert ".toLowerCase().startsWith" not in _function(PROSE_CHECK, "  function renderDocComplete(", "  ")
+    scan = _function(PROSE_CHECK, "  function docCompleteMatchWords(", "  ")
+    assert ">= max) break;" in scan and "entry[2] ??" in scan
+    # One bucket by the first three letters, not every word in the document.
+    assert "docCompleteIndexOf(words).get(needle.slice(0, DOC_COMPLETE_MIN))" in scan
+
+
+def test_the_vocabulary_is_rebuilt_in_the_idle_after_a_pause():
+    body = _function(DOCS, "function docToolsOnInput(", "")
+    assert "requestIdleCallback(() => { if (!docCompleteWords) docBuildVocabulary(); docCompleteIndexOf(docCompleteWords); })" in body
+
+
+@needs_node
+def test_the_bounded_completion_scan_matches_the_old_filter():
+    """The word list is asked on every typed key; the bounded scan must offer
+    the same six rows in the same order as filtering the whole vocabulary. A
+    seeded run of 2,000 vocabularies and fragments."""
+    scan = _function(PROSE_CHECK, "  function docCompleteMatchWords(", "  ")
+    index = _function(PROSE_CHECK, "  function docCompleteIndexOf(", "  ")
+    script = f"""
+const DOC_COMPLETE_MIN = 3;
+{index}
+{scan}
+const old = (words, fragment, max) => {{
+  const needle = fragment.toLowerCase();
+  return words.filter(([w]) => w.toLowerCase().startsWith(needle) && w.toLowerCase() !== needle)
+    .slice(0, max).map(([word]) => ({{ word, typed: fragment.length }}));
+}};
+let seed = 7;
+const rnd = (n) => {{ seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; }};
+const letters = "abAB'-";
+const word = () => {{ let w = ""; const n = 1 + rnd(6); for (let k = 0; k < n; k += 1) w += letters[rnd(letters.length)]; return w; }};
+let wrong = 0, found = 0;
+for (let i = 0; i < 2000; i += 1) {{
+  const words = [];
+  for (let k = 0, n = rnd(60); k < n; k += 1) words.push([word(), rnd(9)]);
+  const fragment = word();
+  const max = 1 + rnd(8);
+  const a = JSON.stringify(docCompleteMatchWords(words, fragment, max));
+  const b = JSON.stringify(old(words, fragment, max));
+  if (a !== b) wrong += 1;
+  if (b !== "[]") found += 1;
+  // Asked twice (the lowercase kept on the entry): the same answer.
+  if (JSON.stringify(docCompleteMatchWords(words, fragment, max)) !== b) wrong += 1;
+}}
+console.log(JSON.stringify({{ wrong, found }}));
+"""
+    res = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
+    got = json.loads(res.stdout)
+    assert got["wrong"] == 0, got
+    assert got["found"] > 300, got
+
+
+def test_the_completion_list_is_placed_in_the_engines_measure_not_in_the_key():
+    """Its size and the caret point are layout reads: inside the engine's update
+    they forced the page's style and layout on every key that showed the list.
+    Read in the engine's own measure pass (no new frame loop of this file's)."""
+    render = _function(PROSE_CHECK, "  function renderDocComplete(", "  ")
+    assert "offsetWidth" not in render and "docCaretPoint(" not in render
+    assert "requestAnimationFrame(" not in render
+    assert "view.requestMeasure({" in render and 'key: "doc-complete-place"' in render
+    assert "docCompletePlace(docCompleteBox, list)" in render
+    assert "write: (at) => at && docPlaceFixed(list, at.left, at.top)" in render
+    place = _function(PROSE_CHECK, "  function docCompletePlace(", "  ")
+    assert "docCaretPoint(box)" in place and "list.offsetWidth" in place
+
+
+def test_the_completion_list_goes_home_on_a_pause_not_on_each_key():
+    """A move in or out of `.doc-main` restyled the card's subtree through its
+    `:has()` rules; the list is hidden at once and moved back after a pause."""
+    hide = _function(PROSE_CHECK, "  function hideDocComplete(", "  ")
+    assert 'list?.classList.add("hidden");' in hide
+    assert "hideDocComplete.home = setTimeout(" in hide
+    assert 'if (list?.classList.contains("hidden")) docReturnFromViewport(list);' in hide
+    render = _function(PROSE_CHECK, "  function renderDocComplete(", "  ")
+    assert render.index("clearTimeout(hideDocComplete.home);") < render.index("docLiftToViewport(list);")
+
+
+PROSE = (JS / "documents-prose.js").read_text(encoding="utf-8")
+
+
+def test_the_ghost_is_drawn_in_the_keys_own_transaction():
+    """Set from the update listener, the ghost took a second transaction on each
+    key that showed rows; the plugin now works it out when the text changes, and
+    the list's own call finds it the same."""
+    plugin = _function(PROSE, "function docProseGhostPlugin(", "")
+    assert "state.doc !== docProseGhostPlugin.doc" in plugin
+    assert "window.docToolsOnInput?.ghostAt" in plugin and "docProseGhost = at(state)" in plugin
+    ghost = _function(PROSE_CHECK, "  function docCompleteGhostAt(", "  ")
+    assert "docCompleteRowsAt(box, docFillAt(box))" in ghost and "Math.min(docCompleteIndex, rows.length - 1)" in ghost
+    render = _function(PROSE_CHECK, "  function renderDocComplete(", "  ")
+    assert "docCompleteMatches = docCompleteRowsAt(box, docFillAt(box));" in render
+    assert "docProseGhostSet(caret, ghost);" in render, "the slow path stays for arrow keys"
+    assert "docToolsOnInput.ghostAt = docCompleteGhostAt;" in PROSE_CHECK
