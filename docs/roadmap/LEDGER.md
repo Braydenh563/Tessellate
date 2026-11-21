@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 74 | 10 | 0 | 0 | 84 |
-| general | 0 | 31 | 2 | 0 | 5 | 33 |
-| all | 372 | 460 | 81 | 2 | 112 | 913 |
+| general | 0 | 30 | 2 | 0 | 5 | 32 |
+| all | 372 | 459 | 81 | 2 | 112 | 912 |
 
 ## graph
 
@@ -540,7 +540,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
 - [ ] **L-general-1** `general` open, S: Decode NAT64 (64:ff9b::/96) addresses to their embedded IPv4 in the SSRF address test. From ANALYSIS.md:4350. Evidence: grep -ri 'ff9b|nat64' src returns nothing; core/security.py:942 relies on `not address.is_global`, which reports NAT64 of 169.254.169.254 and 127.0.0.1 as global on Python 3.13
 - [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
 - [ ] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text
