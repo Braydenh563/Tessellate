@@ -590,6 +590,11 @@ function wbSyncMoreMenu(menu) {
     row.classList.toggle("menu-item-unavailable", !applies);
     row.setAttribute("aria-disabled", applies ? "false" : "true");
   }
+  //: A group shows while one of its rows does (and the filter keeps it).
+  for (const group of menu.querySelectorAll(":scope > .menu-group")) {
+    const live = [...group.querySelectorAll("[data-wb-cmd]")].some((row) => !row.hidden);
+    group.hidden = !live || group.classList.contains("list-filter-miss");
+  }
   let shown = false;
   let rule = null;
   for (const child of menu.children) {
@@ -646,23 +651,60 @@ function wbSyncMoreMapRows(menu, map) {
   }
 }
 
+//: **The Arrange commands in the sheet are the desktop menu's five submenus**
+//: (CHAT_PLAN U15, L-chat-24): the same names, in the same order, as the
+//: `data-wb-submenu` sections of `#wb-arrange-menu` (`tests/test_wb_more_groups.py`
+//: holds the two together). The sheet listed them flat. Rendered by
+//: `kebabMenu`'s `items` rows, which is `buildMenuGroupButton`, a nested
+//: level with a back row in the phone's sheet. Arrange commands the desktop
+//: menu does not carry stay flat where the table puts them.
+const WB_ARRANGE_GROUPS = [
+  { label: "ph:stack Order", ids: ["order-forward", "order-backward", "order-front", "order-back"] },
+  { label: "ph:align-left Align", ids: ["align-left", "align-hcenter", "align-right", "align-top", "align-vcenter", "align-bottom"] },
+  { label: "ph:columns Distribute, size and flip", ids: ["distribute-h", "distribute-v", "same-width", "same-height", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v"] },
+  { label: "ph:tree-structure Tidy and connect", ids: ["tidy-down", "tidy-right", "join-chain", "join-fan", "measure", "parallel-edges"] },
+  { label: "ph:link Group and lock", ids: ["group", "ungroup", "lock", "unlock-all"] },
+];
+
+//: The sheet's rows in order: each command once, the five groups standing
+//: where the first grouped command falls.
+function wbMoreMenuItems() {
+  const grouped = new Set(WB_ARRANGE_GROUPS.flatMap((group) => group.ids));
+  const item = (command) => ({
+    id: command.id,
+    label: `${command.icon} ${command.label}`,
+    title: command.keys ? `${command.label} (${command.keys})` : command.label,
+    group: command.group,
+    run: () => wbRunCommand(command.id),
+  });
+  const items = [];
+  let placed = false;
+  for (const command of WB_COMMANDS) {
+    if (!grouped.has(command.id)) {
+      items.push(item(command));
+      continue;
+    }
+    if (placed) continue;
+    placed = true;
+    for (const group of WB_ARRANGE_GROUPS) {
+      items.push({ label: group.label, group: "Arrange", items: group.ids.map((id) => item(WB_COMMAND_BY_ID.get(id))) });
+    }
+  }
+  return items;
+}
+
 function wbInitMoreMenu() {
   const bar = document.querySelector("#wb-topbar .wb-topbar-right");
   if (!bar || document.getElementById("wb-more-toggle") || typeof kebabMenu !== "function") return;
-  const wrap = kebabMenu(
-    WB_COMMANDS.map((command) => ({
-      label: `${command.icon} ${command.label}`,
-      title: command.keys ? `${command.label} (${command.keys})` : command.label,
-      group: command.group,
-      run: () => wbRunCommand(command.id),
-    })),
-    "More board commands"
-  );
+  const items = wbMoreMenuItems();
+  const wrap = kebabMenu(items, "More board commands");
   wrap.classList.add("wb-more-wrap");
   const menu = wrap.querySelector(".action-menu");
   menu.id = "wb-more-menu";
-  menu.querySelectorAll(".menu-item").forEach((row, i) => {
-    row.dataset.wbCmd = WB_COMMANDS[i].id;
+  //: DOM order is emission order: a group's rows sit right after its trigger.
+  const emitted = items.flatMap((entry) => entry.items || [entry]).map((entry) => entry.id);
+  menu.querySelectorAll(".menu-item:not(.has-submenu)").forEach((row, i) => {
+    row.dataset.wbCmd = emitted[i];
   });
   const opener = wrap.querySelector(".kebab-opener");
   opener.id = "wb-more-toggle";
@@ -674,7 +716,7 @@ function wbInitMoreMenu() {
   //: attribute the sync also writes. A separator means nothing in a list that
   //: is being narrowed, so they hide while there is a query and the sync
   //: puts them back when it clears.
-  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" });
+  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item, :scope > .menu-group" });
   const sync = () => {
     filter.refresh();
     if (filter.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;
