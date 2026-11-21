@@ -317,7 +317,13 @@
           library: "library-view-whiteboard",
           wb: "board",
           title: "Notes on a board",
-          text: "Notes opens your notebook beside the board, so you can drag any note on as a card.",
+          //: The button reads Sidebar now (shapes, icons, frames, notes, layers).
+          text: "Sidebar opens your notes beside the board, so you can drag any note on as a card.",
+          //: Below 600 the Sidebar button is gone and View's sidebar switch is
+          //: the way in (WHITEBOARD_PLAN decision 39); without this the card was
+          //: dropped mid-section on a phone (4 planned, 3 shown at 390x844).
+          or: '#wb-topbar [aria-controls="wb-view-menu"]',
+          orText: "On a small screen View opens the sidebar, so you can drag any note on as a card.",
         },
         {
           target: "#wb-back-to-boards",
