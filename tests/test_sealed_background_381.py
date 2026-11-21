@@ -216,3 +216,133 @@ def test_a_closed_space_stops_the_read(signed_in, monkeypatch):
     client.post("/private-spaces/lock")
     _off_request(docreader.read_document_and_store, aid)
     assert _ocr_of(aid)[0] is None
+
+
+# The review of 43ff8e597: each test below names the finding it holds.
+
+
+def _start(client, rid, path="transcribe/start"):
+    started = client.post(f"/recordings/{rid}/{path}", headers=client.space)
+    assert started.status_code == 202, started.text
+    assert recordings.wait_transcription(rid, 5)
+    return recordings.transcription_of(rid)
+
+
+def _failed_closed(run, rid):
+    assert run["state"] == "failed", run
+    assert run.get("error") == sealed_files.BACKGROUND_LOCKED_DETAIL
+    assert _raw_segments(rid) in (None, "", "[]")
+    assert _left_in_tmp() == []
+
+
+def _whisper(monkeypatch, segments=SEGMENTS):
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    monkeypatch.setattr(voice, "iter_segments", lambda path, model_size="base": iter(segments))
+
+
+def _hand_over(docreader, token, aid):
+    """`read_in_background` as the upload route calls it: inside a request."""
+    with vault.request_scope(token):
+        docreader.read_in_background(aid)
+
+
+def _three_lines_shut_after_one(client, monkeypatch, shut):
+    """A run whose space shuts (by `shut`) as the second line is heard;
+    returns the lines the transcriber was asked for."""
+    pulled = []
+
+    def three(path, model_size="base"):
+        for n in range(3):
+            pulled.append(n)
+            if n == 1:
+                shut()
+            yield {"start": n * 1000, "end": n * 1000 + 900, "text": f"line {n}"}
+
+    monkeypatch.setattr(voice, "whisper_available", lambda: True)
+    monkeypatch.setattr(voice, "iter_segments", three)
+    rid = _recording(client)
+    return rid, _start(client, rid), pulled
+
+
+def test_the_per_segment_check_stops_the_transcriber_at_the_next_line(signed_in, monkeypatch):
+    """Finding 7: without the `check()` in the segment loop the transcriber
+    would be asked for every line after the lock."""
+    rid, run, pulled = _three_lines_shut_after_one(signed_in, monkeypatch, spacelock.close_all)
+    assert pulled == [0, 1]
+    _failed_closed(run, rid)
+
+
+def test_signing_out_mid_run_fails_it_closed(signed_in, monkeypatch):
+    client = signed_in
+    token = client.headers["X-Auth-Token"]
+
+    def sign_out():
+        got = client.post("/auth/lock")
+        assert got.status_code == 200, got.text
+        assert not vault.is_granted(token)
+
+    rid, run, pulled = _three_lines_shut_after_one(client, monkeypatch, sign_out)
+    assert pulled == [0, 1]
+    _failed_closed(run, rid)
+
+
+def test_the_idle_timeout_mid_run_fails_it_closed(signed_in, monkeypatch):
+    """A fixed clock that steps past the idle window as the second line is heard."""
+    clock = [1000.0]
+    monkeypatch.setattr(spacelock, "_now", lambda: clock[0])
+    spacelock.open_for(signed_in.headers["X-Auth-Token"])
+
+    def idle():
+        clock[0] += spacelock.idle_minutes() * 60 + 1
+
+    rid, run, pulled = _three_lines_shut_after_one(signed_in, monkeypatch, idle)
+    assert pulled == [0, 1]
+    _failed_closed(run, rid)
+
+
+def test_a_document_locked_mid_read_keeps_no_text(signed_in, monkeypatch):
+    from tessellate.ai import docreader
+
+    client = signed_in
+    aid = _attach_held(client, monkeypatch)
+    real = docreader._extract
+
+    def lock_while_reading(path, filename):
+        text = real(path, filename)
+        assert "boathouse" in text
+        spacelock.close_all()
+        return text
+
+    monkeypatch.setattr(docreader, "_extract", lock_while_reading)
+    _off_request(docreader.read_document_and_store, aid)
+    assert _ocr_of(aid)[0] is None
+    assert _left_in_tmp() == []
+
+
+def test_the_token_is_in_no_log_line_event_or_stored_job(signed_in, monkeypatch, caplog):
+    import logging
+
+    from sqlalchemy import inspect, text
+
+    from tessellate.ai import docreader
+
+    client = signed_in
+    token = client.headers["X-Auth-Token"]
+    queued = []
+    caplog.set_level(logging.DEBUG)
+    _whisper(monkeypatch)
+    rid = _recording(client)
+    assert _start(client, rid)["state"] == "done"
+    aid = _attach_held(client, monkeypatch)
+    monkeypatch.setattr(docreader.jobs, "enqueue", lambda *a, **k: queued.append((a, k)) or 0)
+    _hand_over(docreader, token, aid)
+    assert queued and token not in repr(queued)
+    _off_request(docreader.read_document_and_store, aid)
+    assert caplog.records and all(token not in record.getMessage() for record in caplog.records)
+    engine = deps.get_db().engine
+    tables = inspect(engine).get_table_names()
+    assert {"audit_log", "jobs"} <= set(tables), tables
+    with engine.connect() as conn:
+        for table in tables:
+            rows = conn.execute(text(f'SELECT * FROM "{table}"')).fetchall()  # noqa: S608  # names from the schema
+            assert token not in repr(rows), table
