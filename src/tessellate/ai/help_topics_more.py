@@ -100,8 +100,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
-            "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a blanket nap, watering a plant and a puzzle, "
             "a bowl of dinner, bubbles from a wand and knitting a strand of starlight, each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
@@ -112,9 +111,9 @@ MORE_TOPICS: list[dict] = [
             "What it does on its own; Quieter keeps "
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
-            "a hard throw into the top bar bonks it before it falls, and a long way across the page is sometimes a ride on a "
+            "a hard throw into the top bar bonks it before it falls, throw it while it holds something (a cup, a rod, a journal) and the thing lies tipped over beside it for a moment, and a long way across the page is sometimes a ride on a "
             "cloud or in a bubble. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
-            "dinner and knitting to the evening, and the loud ones hold off at night. A long way for Atlas is sometimes a ride on a gust of motes that curls a spiral when it sets off and settles in a small eddy; on the desktop its floating trips do the same. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) keep to their hours, last a few minutes and come likelier in a mood that suits them, as on the desktop. A long way is sometimes a ride on a gust of motes, as on the desktop. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -1722,12 +1721,12 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
             "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom) and sleeps "
-            "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies out of sight), "
-            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
+            "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies off), "
+            "hangs from the top and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
             "then pulls itself up, swings down or lets go with a start (one hand, on a long hang). Sometimes it climbs onto the top of a window, "
-            "dangles its legs over the edge, rides it when you move it and hops off "
+            "dangles its legs, peers down at the corner, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"

@@ -288,6 +288,8 @@ YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 IDLE_NAMES = tuple(ACTIVITIES)
 #: How much likelier a perch-only act is on a window's top than its catalogue weight says (it is the only place it can happen).
 PERCH_ACT_BOOST = 5.0
+#: L177: on a window top, peering down over its edge and corner is what a visitor does first: `peek_down` is this much likelier there.
+PERCH_PEER_BOOST = 4.0
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
 BASE_WEIGHT = {
     "breathe": 9, "shift_weight": 8, "look_around": 8, "slow_blink": 8, "tail_flick": 7, "nod": 3, "shrug": 3,
@@ -464,6 +466,13 @@ def utility(considerations: list[float]) -> float:
     return out
 
 
+def _perch_boost(name: str, act: Activity, where: str) -> float:
+    """How much likelier an act is on a window top than its catalogue weight says: a perch-only one, and the peer down over the edge."""
+    if act.where == "perch":
+        return PERCH_ACT_BOOST
+    return PERCH_PEER_BOOST if where == "perch" and name == "peek_down" else 1.0
+
+
 class Mind:
     """Needs, mood and what it did lately."""
 
@@ -536,7 +545,7 @@ class Mind:
             if now - self.done.get(name, -1e9) < NO_REPEAT and name not in MICRO:
                 continue  # quiet micro things may recur (not back to back); the rest wait their turn
             #: on a window top the perch-only acts (legs over its edge) are the point of being there: a visit is short
-            out.append((name, self._weight(name, act, mood, hour, now) * (PERCH_ACT_BOOST if act.where == "perch" else 1.0)))
+            out.append((name, self._weight(name, act, mood, hour, now) * _perch_boost(name, act, where)))
         return out
 
     def _when(self, name: str, hour: int) -> float:

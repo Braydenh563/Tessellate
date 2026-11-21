@@ -1237,3 +1237,33 @@
 .nm-atlas .atl-ds-fold { opacity: 0.85; }
 .nm-atlas :is(.nmp-note, .nmp-gear, .nmp-piece) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.5; }
 .nm-atlas :is(.nmp-snack, .nmp-napz) { transform-box: fill-box; transform-origin: 50% 50%; scale: 1.3; }
+
+/* L145: a thrown companion drops what it holds. For `NMB_THROW.tip` after it lands, the prop of the act it was grabbed in lies on its
+   side at the feet (companionThrowTip, companion-throw.js; the desk's `props.TIP_PROPS`). The slot turns about its middle and
+   drops by the `translate` of its own rule below (figure units, measured on the running app), the arms at rest so it is not carried. */
+#nm-buddy.nmb-tip-tea .atl-figure .nmp-cup,
+#nm-buddy.nmb-tip-snack .atl-figure .nmp-snack,
+#nm-buddy.nmb-tip-fish .atl-figure .nmp-rod,
+#nm-buddy.nmb-tip-journal .atl-figure :is(.nmp-diary, .nmp-pen),
+#nm-buddy.nmb-tip-plant .atl-figure .nmp-can,
+#nm-buddy.nmb-tip-dinner .atl-figure :is(.nmp-bowl, .nmp-spoon),
+#nm-buddy.nmb-tip-bubbles .atl-figure .nmp-wand,
+#nm-buddy.nmb-tip-weights .atl-figure :is(.nmp-dumbbell-l, .nmp-dumbbell-r),
+#nm-buddy.nmb-tip-tinker .atl-figure .nmp-spanner {
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  rotate: 80deg;
+}
+/* How far each one drops to rest on the feet line: its own height from where the hand holds it (measured, a unit is a px at 1x). */
+#nm-buddy.nmb-tip-tea .nmp-cup { translate: 0 24px; }
+#nm-buddy.nmb-tip-snack .nmp-snack { translate: 0 19px; }
+#nm-buddy.nmb-tip-fish .nmp-rod { translate: 0 17px; }
+#nm-buddy.nmb-tip-journal .nmp-diary { translate: 0 15px; }
+#nm-buddy.nmb-tip-journal .nmp-pen { translate: 0 27px; }
+#nm-buddy.nmb-tip-plant .nmp-can { translate: 0 19px; }
+#nm-buddy.nmb-tip-dinner .nmp-bowl { translate: 0 26px; }
+#nm-buddy.nmb-tip-dinner .nmp-spoon,
+#nm-buddy.nmb-tip-bubbles .nmp-wand,
+#nm-buddy.nmb-tip-tinker .nmp-spanner { translate: 0 28px; }
+#nm-buddy.nmb-tip-weights :is(.nmp-dumbbell-l, .nmp-dumbbell-r) { translate: 0 20px; }

@@ -3303,6 +3303,37 @@
     tinker: { ms: 4000, w: 1.5, cool: 120000, poses: ["stand", "sit"], atlas: true, desk: true },
     dust: { ms: 1250, w: 1, cool: 90000, poses: ["stand"], atlas: true, desk: true },
   });
+  //: **Presence spells in the app** (L152 A4, the desk's `presence.SPELLS`, `tests/test_presence_spells_app_l152.py` holds the
+  //: two together): the quiet long ones (tea, a journal, fishing, the stars, a blanket nap, knitting, a plant) suit an hour
+  //: span, last a few minutes within a range and are likelier in their moods (x1.6), as on the desk. `spell` is the desk's name
+  //: for it, `hours` is [from, to) wrapping midnight, `sec` the least and most seconds. The app's `read` stays its short look
+  //: at a book; the desk's reading spell has no counterpart here.
+  const NMB_SPELLS = {
+    tea: { spell: "tea", hours: [5, 12], sec: [120, 270], moods: ["sleepy", "content"] },
+    journal: { spell: "doodle", hours: [10, 20], sec: [120, 360], moods: ["curious", "happy"] },
+    fish: { spell: "fish", hours: [16, 22], sec: [180, 480], moods: ["sleepy", "bored"] },
+    stars: { spell: "stars", hours: [19, 4], sec: [150, 420], moods: ["curious", "sleepy"] },
+    blanket: { spell: "doze", hours: [21, 6], sec: [180, 480], moods: ["sleepy"] },
+    knit: { spell: "knit", hours: [17, 22], sec: [120, 300], moods: ["content", "curious"] },
+    plant: { spell: "plant", hours: [0, 24], sec: [100, 220], moods: ["happy", "proud"] },
+  };
+  //: The weight factor a spell has at this hour and mood: 0 out of its hours, 1.6 in one of its moods, else 1.
+  function nameMarkBuddySpellFactor(act, hour, mood) {
+    const sp = NMB_SPELLS[act];
+    if (!sp) return 1;
+    const [from, to] = sp.hours;
+    const inside = from < to ? hour >= from && hour < to : hour >= from || hour < to;
+    return !inside ? 0 : sp.moods.includes(mood) ? 1.6 : 1;
+  }
+  //: How long this one lasts (ms), anywhere in the spell's range.
+  function nameMarkBuddySpellMs(act, roll = Math.random()) {
+    const [lo, hi] = NMB_SPELLS[act].sec;
+    return Math.round((lo + (hi - lo) * roll) * 1000);
+  }
+  //: **A thrown companion drops what it holds** (L145, the desk's `extras.GRABBED`, `props.TIP_PROPS`): the acts whose prop is in
+  //: its hands. Grabbed in one of them, the prop lies tipped over beside it for `NMB_THROW.tip` once it has landed
+  //: (`companionThrowTip`, companion-throw.js; `nmb-tip-<act>` in atlas-lazy.css), then goes.
+  const NMB_TIP_ACTS = ["tea", "snack", "fish", "journal", "plant", "dinner", "bubbles", "weights", "tinker"];
   //: **More ways to be somewhere** (INBOX 1681, the owner: "positions like how
   //: atlas and regular companions look sitting or crouching down, lying down,
   //: floating, walking, gliding, lounging, climbing, hanging, resting"). Each is
@@ -7018,7 +7049,7 @@
   //: nearest place to where it stopped (`nameMarkBuddyThrowLand`). px and ms.
   const NMB_TOSS_SPEED = 0.6;
   //: `max` is the fastest it is ever drawn: 2.3 px/ms is 38px a 60 Hz frame, under the 40 that reads as a jump (INBOX 1305; it was 4.5, 75px).
-  const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200 };
+  const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200, tip: 2400 };
   const NMB_PET_MS = 1100;
 
   //: The speed it is let go at, px per ms, from `samples` ([x, y, ms], oldest
@@ -8598,6 +8629,7 @@
     const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";
     if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";
     const spec = NAME_MARK_BUDDY_ACTS[act];
+    if (!ms && NMB_SPELLS[act]) ms = nameMarkBuddySpellMs(act);
     if (act === "glance") nameMarkBuddyAim(nmb.pointer);
     if (act === "look" || act === "nap") nameMarkBuddyRelease();
     if (act === "turn" || act === "glance") {
@@ -8933,6 +8965,10 @@
 
   //: Stops whatever it is doing, at once and without a follow-on: grabbed.
   function nameMarkBuddyHalt(buddy) {
+    if (NMB_TIP_ACTS.includes(nmb.act)) {
+      nmb.tipAct = nmb.act;
+      nmb.tipAt = Date.now();
+    }
     if (nmb.act) buddy.classList.remove(`nmb-act-${nmb.act}`);
     nmb.act = "";
     nmb.afterLand = false;
@@ -9136,7 +9172,7 @@
       if ((nmb.cool[act] || 0) > now || act === nmb.lastAct) continue;
       if (nameMarkBuddyActOff(act, off)) continue;
       if (!calm && NMB_LOUD_ACTS.includes(act)) continue;
-      let w = spec.w;
+      let w = spec.w * nameMarkBuddySpellFactor(act, hour, nmb.cat.state.mood);
       if (act === "yawn") w = idle > NMB_YAWN_MS ? 4 : night ? 2 : 0;
       //: At night a nap still wants a quiet half minute, and none just after it was woken (it nodded off again at once).
       if (act === "nap") w = idle > 90 * 1000 ? 3 : night && idle > 30 * 1000 && now >= (nmb.awakeUntil || 0) ? 1 : 0;

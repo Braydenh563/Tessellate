@@ -27,7 +27,12 @@ FETCH_S = 6.0
 #: The room a prop gets round the figure, as a share of its drawn height: a fishing line, a plant, a sky of stars.
 ROOM = 0.18
 #: The size of each step of a fetch (index into `faces.LEVELS`-like steps: 1 small, 2 most, 3 whole).
-SIZES = (0.0, 0.5, 0.85, 1.0)
+SIZES = (0.0, 0.5, 0.85, 1.0, 1.0, 0.6)
+#: L145: a size of `TIPPED` is the prop lying on its side at the figure's feet (a hand-held one a grab knocked out of its hands);
+#: `TIPPED + 1` is the same shrinking away.
+TIPPED = 4
+TIP_PROPS = frozenset({"book", "rod", "map", "lantern", "dumbbell", "cup", "journal", "bowl", "wand", "knit", "plant"})
+TIP_ANGLE = 80.0
 
 
 class Spec(NamedTuple):
@@ -251,6 +256,12 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
         "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
         "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
     }[name](g, ax, ay, u, d, phase)
+    if size >= TIPPED and name in TIP_PROPS:
+        # over on its side, set down on the floor line: turned about its own anchor, then dropped to the feet
+        layer = layer.rotate(-TIP_ANGLE * d, resample=Image.Resampling.BICUBIC, center=(ax, ay))
+        lying = layer.getchannel("A").getbbox()
+        if lying is not None:
+            layer = layer.transform(layer.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1, -((b + m) * S - lying[3])), resample=Image.Resampling.BICUBIC)
     whole = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     whole.paste(Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa"), (m, m))
     layer = layer.resize((cw, ch), Image.Resampling.LANCZOS)
