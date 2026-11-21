@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 50 | 5 | 0 | 0 | 55 |
+| world-class | 0 | 49 | 5 | 0 | 0 | 54 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 440 | 77 | 2 | 112 | 889 |
+| all | 372 | 439 | 77 | 2 | 112 | 888 |
 
 ## graph
 
@@ -470,7 +470,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
-- [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
 - [ ] **L559** `chat` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
 - [ ] **L560** `chat` open, M: Resolve INBOX 1301 which still holds D1 to D6. From OPEN.md:3881. Evidence: Other agents' items remain in INBOX
 - [ ] **L563** `chat` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
@@ -486,7 +485,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L634** `whiteboard` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
-- [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block The chat.js split is L-world-class-770 (chat, hub 2026-11-21).
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
@@ -518,10 +516,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-691** `world-class` open, M: Install each pip extra from a hashed lock (--require-hashes), without moving a base package. From SECURITY.md, Threat model T23 (L-world-class-320). Evidence: core/extras.py _run_install hands pip names plus EXTRA_BOUNDS constraints, no --require-hashes. A hash lock needs every transitive dependency pinned per platform and Python (uv pip compile --universal --generate-hashes against requirements.txt's constraints), and pinning base packages that requirements.txt only ranges would let an extra install move numpy or tokenizers under the running app. Check: a lock per extra whose base-package pins equal the installed versions, pip install --require-hashes --no-deps from it in a scratch venv and in the frozen --target build.
 - [ ] **L-world-class-670** `world-class` open, M: Seal a private space's files as they are written by a background thread, an import and the live-caption spool. From L-world-class-381. Evidence: tests/test_sealed_readers.py PLAIN_WRITES: recording_make.save_generated, export_folder.write and _write_attachments, routes_import.import_app, captions.begin write a private space's file plain until the next unlock seals it; deleting a private space into an ordinary one carries the sealed bytes as they are
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
-- [ ] **L-world-class-710** `world-class` open, M: Full depth-4 reach crawl in light and dark after the 673 palette rows. From reach.js depth-4 crawl. Evidence: scratchpad/ui-sweeps/reach.js; depth 3 timed out at 40 min (L-world-class-673)
 - [ ] **L-world-class-760** `world-class` open, L: Lazy-load the Settings markup out of index.html. From L638 (FE audit leftover, lazy Settings markup). Evidence: frontend/index.html:10251 settings-modal onward is about 369 KB of the 1.23 MB page, parsed at boot; 49 tests name settings-modal; its text-of-record (FE-10) is gone from the repo, so this is built only if the owner asks (L639 splits index.html)
 - [ ] **L-world-class-820** `world-class` open, L: Move the remaining route modules' queries into src/tessellate/repo/ and lower the caps with each. From batch CB, L-world-class-790. Evidence: tests/test_repo_boundaries.py ROUTE_QUERIES_CAP 172, ORM_CALLS_CAP 557; routes_graph.py 32 (graph perf owns it), routes_board_library.py 13, routes_settings.py 12, routes_conversations.py 11, routes_vision.py 9, routes_insights.py 9
 - [ ] **L-world-class-821** `world-class` open, M: Break the last import_module cycle group (14 modules) by making core.deps build its AI services through registered factories. From batch CB, L-world-class-791. Evidence: tests/test_import_module_cycles.py MAX_LARGEST_GROUP 14, MAX_GROUPS 1; the 14 run through core.deps (it builds ModelManager, EmbeddingService, OllamaClient, OpenAICompatClient and imports ai.model_manager and ai.voice), entry.manager, search.engine, ai.provider; invert deps to ai with a factory registry that api/app registers
+- [ ] **L-world-class-780** `world-class` open, S: Rule 2 (three clicks): four panel sub-views sit at depth 4, give the Chat activity panel and the Images Running view a palette command or a door at depth 3. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js light run: 4 destinations at depth 4 (Chat > More actions > Activity and past runs > Running, History, More activity actions; Library > Documents > Images > Running); dark adds Notes > Writing room > More ways to save > Keep it in Drafts, Notes > Manage categories > Show the notes > Running, Chat > Guide > More actions > Every help topic, Settings > What it learned > More for this fact > Correct what this says)
+- [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 
 ## general
 
