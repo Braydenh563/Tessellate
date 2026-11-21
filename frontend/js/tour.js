@@ -1293,6 +1293,24 @@
   //: of those boxes points at where the control was a frame ago. Answers the
   //: resolved `{ el, alt }` (see `tourResolve`) whether or not it got there;
   //: the caller decides what an element that never settled costs.
+  //: **The ring waits for the control to be painted** (L-general-14,
+  //: toursteps at 1440: "Moving around" lit `#graph-zoom` while `#graph-card`
+  //: was at opacity 0.37 in its 180ms entrance, so the first frame ringed an
+  //: empty square). Opacity multiplies down the tree, so every ancestor's
+  //: running opacity animation is awaited, bounded so a looping one cannot
+  //: hold the step.
+  const TOUR_FADE_MAX_MS = 400;
+  async function tourFadedIn(el) {
+    const fades = [];
+    for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+      for (const a of n.getAnimations ? n.getAnimations() : []) {
+        if (a.playState === "running" && (a.transitionProperty === "opacity" || a.animationName)) fades.push(a.finished.catch(() => null));
+      }
+    }
+    if (!fades.length) return;
+    await Promise.race([Promise.all(fades), new Promise((r) => setTimeout(r, TOUR_FADE_MAX_MS))]);
+  }
+
   async function tourWaitForTarget(step) {
     const navigated = Boolean(step.tab || step.notes || step.settings);
     const deadline = Date.now() + (navigated ? TOUR_WAIT_MS : TOUR_SETTLE_MS);
@@ -1305,7 +1323,10 @@
       if (tourVisible(found.el)) {
         const box = found.el.getBoundingClientRect();
         const key = [box.left, box.top, box.width, box.height].map(Math.round).join(",");
-        if (key === last) return found;
+        if (key === last) {
+          await tourFadedIn(found.el);
+          return found;
+        }
         last = key;
       } else {
         last = "";

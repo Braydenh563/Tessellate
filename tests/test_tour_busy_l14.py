@@ -57,3 +57,39 @@ def test_toasts_step_aside_for_the_lit_control_not_only_for_focus() -> None:
     shown = _body("tourShow")
     assert shown.index('getElementById("tour-next").focus();') < shown.index("toastYield();")
     assert "toastYield();" in _body("tourClose")
+
+
+def _faded_in_src() -> str:
+    start = TOUR.index("const TOUR_FADE_MAX_MS")
+    return TOUR[start : TOUR.index("\n}\n", TOUR.index("async function tourFadedIn(")) + 3]
+
+
+def test_a_step_rings_its_control_only_once_its_entrance_fade_ends() -> None:
+    """toursteps at 1440: "Moving around" ringed `#graph-zoom` while `#graph-card` read 0.37."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    assert "await tourFadedIn(found.el);" in TOUR[TOUR.index("async function tourWaitForTarget(") :]
+    script = _faded_in_src() + """
+const anim = (ms) => ({ playState: "running", transitionProperty: "opacity",
+  finished: ms == null ? new Promise(() => {}) : new Promise((r) => setTimeout(r, ms)) });
+const tree = (a) => { const root = { parentElement: null }; const doc = { getAnimations: () => [a] , parentElement: root };
+  globalThis.document = { documentElement: root }; return { getAnimations: () => [], parentElement: doc }; };
+(async () => {
+  const out = {};
+  let t = Date.now(); await tourFadedIn(tree(anim(150))); out.fade = Date.now() - t;
+  t = Date.now(); await tourFadedIn(tree(anim(null))); out.loop = Date.now() - t;
+  t = Date.now(); await tourFadedIn(tree({ playState: "finished", transitionProperty: "opacity", finished: Promise.resolve() })); out.none = Date.now() - t;
+  console.log(JSON.stringify(out));
+})();
+"""
+    res = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=20, check=True).stdout)
+    assert res["fade"] >= 140, res  # waits out an ancestor's fade
+    assert 380 <= res["loop"] < 700, res  # a looping animation cannot hold the step
+    assert res["none"] < 50, res  # nothing running, no wait
