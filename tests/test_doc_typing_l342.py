@@ -336,3 +336,76 @@ def test_the_grammar_worker_sends_spelling_lints_as_spans_only():
     assert re.search(r"if \(DOC_GRAMMAR_SKIP_KINDS\.has\(lint\.kind\)\) continue;", findings)
     # Nothing reads a spelling lint's words before that skip.
     assert findings.index("DOC_GRAMMAR_SKIP_KINDS") < findings.index("lint.message")
+
+
+def _live_patch_harness(text: str, keys: list, at: int) -> dict:
+    """Keys typed at `at` in Live: how many the plugin patched, and where the patched set
+    differs from a fresh plugin's on the same state (the dx1 harness, one place)."""
+    import re
+
+    from tests import test_doc_typing_dx1 as dx1
+
+    helpers = "\n".join(dx1._function(dx1.DOCS, h) for h in ("function docLiveSpanTouched(", "function docLiveRevealSame("))
+    anchor = re.search(r"^docLiveSpanTouched\.anchorIn = .*$", dx1.DOCS, re.M).group(0)
+    fence = "function docPairInput() {}\n" + PROSE[PROSE.index("docPairInput.fenceParts = ") :].split("\n};\n")[0] + "\n};"
+    helpers = fence + "\n" + dx1._function((JS / "markdown.js").read_text(encoding="utf-8"), "function mdMathBlockFrom(") + "\n" + helpers
+    stubs = dx1._STUBS.replace("function mdTocEntries() { return []; }", "function mdTocEntries(t) { return [...t.matchAll(/^#+ (.*)$/gm)].map((m) => ({ text: m[1], level: 1 })); }")
+    return dx1._node(
+        dx1._LOAD
+        + 'vm.runInContext(read("js/documents-props.js"), ctx);\n'
+        + f"vm.runInContext({json.dumps(helpers + chr(10) + anchor + stubs)}, ctx);\n"
+        + 'vm.runInContext(read("js/documents-cm.js"), ctx);\n'
+        + f"ctx.DOC = {json.dumps(text)}; ctx.KEYS = {json.dumps(keys)}; ctx.AT = {at};\n"
+        + """
+const out = vm.runInContext(`(() => {
+  const CM = CM6, P = docLivePlugin(CM);
+  const md = CM.markdown.markdown({ base: CM.markdown.markdownLanguage });
+  const dom = { closest: () => ({}), querySelector: () => null };
+  const viewOf = (state) => ({ state, hasFocus: true, visibleRanges: [{ from: 0, to: state.doc.length }], viewport: { from: 0, to: state.doc.length }, dom, contentDOM: dom });
+  const snap = (set) => { const o = []; for (const it = set.iter(); it.value; it.next()) o.push([it.from, it.to, it.value]); return o; };
+  const same = (a, b) => a.length === b.length && a.every(([f, t, v]) => b.some(([f2, t2, v2]) => f2 === f && t2 === t && (v2 === v || v2.eq(v))));
+  let state = CM.state.EditorState.create({ doc: DOC, extensions: [md], selection: { anchor: AT } });
+  const inst = P.create(viewOf(state));
+  let patched = 0, at = AT;
+  const bad = [];
+  const pt = inst.patch;
+  inst.patch = function (u) { const r = pt.call(this, u); if (r) patched += 1; return r; };
+  for (const k of KEYS) {
+    const tr = state.update({ changes: { from: at, insert: k }, selection: { anchor: at + k.length } });
+    at += k.length;
+    inst.update({ startState: state, state: tr.state, changes: tr.changes, transactions: [tr], docChanged: true, selectionSet: true, viewportChanged: true, focusChanged: false, view: viewOf(tr.state) });
+    state = tr.state;
+    if (!same(snap(inst.decorations), snap(P.create(viewOf(state)).decorations))) bad.push(k);
+  }
+  return { patched, bad };
+})()`, ctx);
+console.log(JSON.stringify(out));
+"""
+    )
+
+
+_HEAD_DOC = "# Big document\n\n\n\n## Section 0\n\nword1 word2 word3\n\n\n# Other\n\nlast words\n"
+
+
+@needs_node
+def test_keys_at_a_headings_start_patch_the_live_set_and_match_a_rebuild():
+    """The gate types at Ctrl+Home, before the H1's `#`: each of those keys rebuilt every visible
+    line (the patch took paragraphs only). Now the heading's lines are patched, the line turning
+    into a paragraph included, and the set equals a full rebuild after every key."""
+    keys = list(" the quick")
+    got = _live_patch_harness(_HEAD_DOC, keys, 0)
+    assert got["bad"] == [], got
+    assert got["patched"] == len(keys), got
+    inside = _live_patch_harness(_HEAD_DOC, list("ab #"), _HEAD_DOC.index("Section"))
+    assert inside["bad"] == [] and inside["patched"] == 4, inside
+    level = _live_patch_harness(_HEAD_DOC, ["#", "x", " "], _HEAD_DOC.index("# Other"))
+    assert level["bad"] == [], level
+
+
+@needs_node
+def test_a_heading_edit_with_a_contents_block_in_view_rebuilds():
+    text = "[TOC]\n\n" + _HEAD_DOC
+    got = _live_patch_harness(text, list("ab"), text.index("Section"))
+    assert got["bad"] == [] and got["patched"] == 0, got
+    para = _live_patch_harness(text, list("ab"), text.index("word2"))
+    assert para["bad"] == [] and para["patched"] == 2, para
