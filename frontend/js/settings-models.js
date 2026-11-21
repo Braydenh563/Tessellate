@@ -161,6 +161,22 @@
       span.title = "An estimate for a normal conversation length.";
       facts.push(span);
     }
+    //: The licence the Hub card states (INBOX 1851): a re-upload is not assumed open.
+    if (model.licence) {
+      const span = document.createElement("span");
+      if (model.licence_url) {
+        const link = document.createElement("a");
+        link.href = model.licence_url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = `${model.licence} licence`;
+        link.title = "Open the model card, where the licence is stated.";
+        span.appendChild(link);
+      } else {
+        span.textContent = `${model.licence} licence`;
+      }
+      facts.push(span);
+    }
     const line = document.createElement("p");
     line.className = "library-file-meta model-card-facts";
     facts.forEach((fact, i) => {

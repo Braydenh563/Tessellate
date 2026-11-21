@@ -122,10 +122,17 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
         # download for close to the same answers. `hf.co/…` because neither is
         # in Ollama's curated library, the same shape the vision and ocr
         # groups already use for that situation, and the UD-Q4_K_XL tag is
-        # Unsloth's own dynamic quant rather than a plain Q4.
+        # Unsloth's own dynamic quant rather than a plain Q4. `licence` and
+        # `licence_url` (INBOX 1851): the card prints the licence the Hub model
+        # card states (read 2026-11-21: Apache-2.0 for Gemma 4 and Qwen3-VL), so
+        # nobody has to trust that a re-upload is open. EmbeddingGemma is the
+        # opposite case and is not offered as a GGUF here: even unsloth's copy
+        # is `license:gemma`, so it stays behind Google's terms (core/embedmodels.py).
         {"name": "hf.co/unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL", "size": "~4.0 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/gemma-4-E2B-it-qat-GGUF",
          "purpose": "MoE, quantisation-aware 4-bit: e2b answers at roughly half the download"},
         {"name": "hf.co/unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "size": "~5.3 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/gemma-4-E4B-it-qat-GGUF",
          "purpose": "MoE, quantisation-aware 4-bit: e4b answers at roughly half the download"},
         # `label`: what the card prints. The pull tag stays "gemma4:26b" (the
         # model is the 26B-A4B one: 26B of weights, about 4B active per word).
@@ -196,6 +203,7 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
         {"name": "hf.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF:Q8_0", "size": "~1.8 GB",
          "purpose": "Layout, tables, formulas, charts. Strong on structured pages"},
         {"name": "hf.co/unsloth/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M", "size": "~2.5 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/Qwen3-VL-4B-Instruct-GGUF",
          "purpose": "Reads documents and answers about them, a VLM as well as a reader"},
         {"name": "hf.co/ggml-org/DeepSeek-OCR-GGUF:Q8_0", "size": "~3.6 GB",
          "purpose": "The most accurate on dense and handwritten pages. Needs ~8 GB", "ram_gb": 8},
