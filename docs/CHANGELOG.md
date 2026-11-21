@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Notes list's rows no longer use `content-visibility`: scrolling 500 notes at 4x CPU, layout took 216 to 262 ms without it against 478 to 575 ms with it (L-general-34).
 - The companion's look at the pointer (L706) was measured at 4x CPU: a write is 0.4 to 1.1 ms, and the style flush after it is the same as with no write at all, so the 109 ms row is closed with a pin that keeps the write off the companion itself.
 - Tab flips lay out less (L705, 4x CPU, medians): the timeline's scroll to today takes 1 forced layout instead of 2, the notes rail's width check runs after layout (15.5 ms forced to 0), and the dashboard's constellation starts at its last width instead of reading it (17.6 ms to 2.9 ms).
 - Opening the equation editor no longer reads layout on its first draw, and the palette groups below the fold are not laid out until they come near: the script's load task fell from 294 to 138 ms and its forced layout from 362 to 279 ms (4x CPU, median of 7, same run; L702).
