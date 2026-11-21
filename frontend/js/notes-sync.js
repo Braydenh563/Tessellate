@@ -15,7 +15,7 @@
 //: under the person's cursor. `seen` drops an id already refreshed at the
 //: same `updated_at` (the server's stamp overlaps by two seconds).
 const NOTE_CHANGES_MS = 15_000;
-const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false, quiet: 0 };
+const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false, quiet: 0, again: false };
 async function followNoteChanges() {
   clearTimeout(noteChanges.timer);
   if (document.hidden) return;
@@ -43,6 +43,10 @@ async function followNoteChanges() {
     /* offline or locked: the next tick asks again */
   } finally {
     noteChanges.busy = false;
+    if (noteChanges.again) {
+      noteChanges.again = false;
+      followNoteChanges();
+    }
   }
 }
 document.addEventListener("visibilitychange", () => {
@@ -50,3 +54,20 @@ document.addEventListener("visibilitychange", () => {
   followNoteChanges();
 });
 followNoteChanges();
+
+//: **Another window of this notebook wrote a note** (LEDGER L585). The writing window posts a tick on a
+//: BroadcastChannel once the server has answered (`api()` fires `notebook-written`); this one asks
+//: `/entries/changes` at once instead of at its next 15 s tick, so a created, edited, binned or moved note shows
+//: here within about a second. The note being edited here stays untouched: its Save still meets the
+//: edit-conflict prompt. Lock and theme already ride `storage` (settings-wiring.js, ai-tools.js), the space
+//: switch too (spaces-find.js): a prefs write is a storage event, which a channel would only repeat.
+if (window.BroadcastChannel) {
+  const noteChannel = new BroadcastChannel("memorymap-notes");
+  document.addEventListener("notebook-written", () => noteChannel.postMessage(activeSpaceId()));
+  noteChannel.onmessage = (event) => {
+    if (event.data !== activeSpaceId()) return; // a write in another space moves nothing in this list
+    noteChanges.quiet = 0;
+    //: A tick during an answer in flight is asked again when it lands, not dropped.
+    noteChanges.busy ? (noteChanges.again = true) : followNoteChanges();
+  };
+}

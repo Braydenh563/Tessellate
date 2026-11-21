@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11397, test files 2941, tests 23144, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11397, test files 2942, tests 23149, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -38,49 +38,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `$` | frontend/js/app.js:160 |
 | `activeSpaceId` | frontend/js/app.js:353 |
 | `api` | frontend/js/app.js:358 |
-| `apiJson` | frontend/js/app.js:566 |
-| `apiPagedList` | frontend/js/app.js:522 |
-| `askPasswordPrompt` | frontend/js/app.js:683 |
-| `askPdfPassword` | frontend/js/app.js:707 |
+| `apiJson` | frontend/js/app.js:568 |
+| `apiPagedList` | frontend/js/app.js:524 |
+| `askPasswordPrompt` | frontend/js/app.js:685 |
+| `askPdfPassword` | frontend/js/app.js:709 |
 | `authToken` | frontend/js/app.js:166 |
-| `chip` | frontend/js/app.js:1215 |
-| `chipWords` | frontend/js/app.js:1210 |
-| `clearApiCache` | frontend/js/app.js:562 |
-| `confirmDialog` | frontend/js/app.js:1298 |
-| `confirmVerb` | frontend/js/app.js:1289 |
-| `ensureModule` | frontend/js/app.js:1767 |
-| `enterWithoutPassword` | frontend/js/app.js:641 |
+| `chip` | frontend/js/app.js:1217 |
+| `chipWords` | frontend/js/app.js:1212 |
+| `clearApiCache` | frontend/js/app.js:564 |
+| `confirmDialog` | frontend/js/app.js:1300 |
+| `confirmVerb` | frontend/js/app.js:1291 |
+| `ensureModule` | frontend/js/app.js:1769 |
+| `enterWithoutPassword` | frontend/js/app.js:643 |
 | `hide` | frontend/js/app.js:162 |
-| `hideBootSplash` | frontend/js/app.js:868 |
-| `initAuth` | frontend/js/app.js:881 |
-| `installStandIns` | frontend/js/app.js:1945 |
-| `lazyAssetStamp` | frontend/js/app.js:1724 |
-| `lazyScript` | frontend/js/app.js:1746 |
-| `lockFieldForPin` | frontend/js/app.js:777 |
-| `lockNow` | frontend/js/app.js:840 |
+| `hideBootSplash` | frontend/js/app.js:870 |
+| `initAuth` | frontend/js/app.js:883 |
+| `installStandIns` | frontend/js/app.js:1947 |
+| `lazyAssetStamp` | frontend/js/app.js:1726 |
+| `lazyScript` | frontend/js/app.js:1748 |
+| `lockFieldForPin` | frontend/js/app.js:779 |
+| `lockNow` | frontend/js/app.js:842 |
 | `mediaSrc` | frontend/js/app.js:233 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1791 |
-| `promptDialog` | frontend/js/app.js:1402 |
-| `purgeLockedContent` | frontend/js/app.js:819 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1793 |
+| `promptDialog` | frontend/js/app.js:1404 |
+| `purgeLockedContent` | frontend/js/app.js:821 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1093 |
+| `refreshActiveTab` | frontend/js/app.js:1095 |
 | `refuseStagedUrls` | frontend/js/app.js:226 |
 | `replaceMissingMedia` | frontend/js/app.js:281 |
-| `resumeWithoutPassword` | frontend/js/app.js:651 |
-| `setBusy` | frontend/js/app.js:1252 |
-| `setLabel` | frontend/js/app.js:1160 |
-| `settingsModalOpen` | frontend/js/app.js:1204 |
-| `settleLockPrompt` | frontend/js/app.js:662 |
+| `resumeWithoutPassword` | frontend/js/app.js:653 |
+| `setBusy` | frontend/js/app.js:1254 |
+| `setLabel` | frontend/js/app.js:1162 |
+| `settingsModalOpen` | frontend/js/app.js:1206 |
+| `settleLockPrompt` | frontend/js/app.js:664 |
 | `show` | frontend/js/app.js:161 |
-| `showLockScreen` | frontend/js/app.js:725 |
-| `smallButton` | frontend/js/app.js:1530 |
-| `spinnerEl` | frontend/js/app.js:1244 |
-| `stagePrimary` | frontend/js/app.js:1238 |
+| `showLockScreen` | frontend/js/app.js:727 |
+| `smallButton` | frontend/js/app.js:1532 |
+| `spinnerEl` | frontend/js/app.js:1246 |
+| `stagePrimary` | frontend/js/app.js:1240 |
 | `stagedImageByUrl` | frontend/js/app.js:194 |
-| `startApp` | frontend/js/app.js:930 |
-| `startWithoutPassword` | frontend/js/app.js:626 |
-| `whenScriptsLoaded` | frontend/js/app.js:1705 |
-| `wireBackdropClose` | frontend/js/app.js:1518 |
+| `startApp` | frontend/js/app.js:932 |
+| `startWithoutPassword` | frontend/js/app.js:628 |
+| `whenScriptsLoaded` | frontend/js/app.js:1707 |
+| `wireBackdropClose` | frontend/js/app.js:1520 |
 
 ### frontend/js/prefs.js (7)
 
@@ -28982,7 +28982,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23144)
+## Tests (23149)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30853,6 +30853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notes_filter_day_words_p16.py | 2 |
 | tests/test_notes_filter_on_s83.py | 1 |
 | tests/test_notes_last_card_open.py | 2 |
+| tests/test_notes_live_sync_l585.py | 5 |
 | tests/test_notes_menu_1518.py | 4 |
 | tests/test_notes_or_web_1696s.py | 11 |
 | tests/test_notes_rail.py | 7 |
@@ -32347,14 +32348,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4494 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:558 |
+| Needs hardware | docs/roadmap/LEDGER.md:557 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:551 |
+| Owner calls | docs/roadmap/LEDGER.md:550 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32535,7 +32536,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:685 |
+| Plan session briefs | docs/roadmap/LEDGER.md:684 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32589,25 +32590,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:701 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:785 |
+| chat | docs/roadmap/LEDGER.md:700 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:784 |
 | documents | docs/roadmap/LEDGER.md:326 |
-| documents | docs/roadmap/LEDGER.md:725 |
-| general | docs/roadmap/LEDGER.md:523 |
+| documents | docs/roadmap/LEDGER.md:724 |
+| general | docs/roadmap/LEDGER.md:522 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:689 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:797 |
+| graph | docs/roadmap/LEDGER.md:688 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:796 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:342 |
-| mindmap | docs/roadmap/LEDGER.md:737 |
+| mindmap | docs/roadmap/LEDGER.md:736 |
 | timeline | docs/roadmap/LEDGER.md:461 |
-| timeline | docs/roadmap/LEDGER.md:761 |
+| timeline | docs/roadmap/LEDGER.md:760 |
 | ui-modernisation | docs/roadmap/LEDGER.md:345 |
-| ui-modernisation | docs/roadmap/LEDGER.md:749 |
+| ui-modernisation | docs/roadmap/LEDGER.md:748 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:713 |
+| whiteboard | docs/roadmap/LEDGER.md:712 |
 | world-class | docs/roadmap/LEDGER.md:463 |
-| world-class | docs/roadmap/LEDGER.md:773 |
+| world-class | docs/roadmap/LEDGER.md:772 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
