@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8519, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11104, test files 2885, tests 22792, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8522, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11113, test files 2886, tests 22801, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8519)
+## Frontend functions (8522)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5100,23 +5100,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderEmbedChoices` | frontend/js/embed-choices.js:25 |
 | `renderEmbedLegacy` | frontend/js/embed-choices.js:281 |
 
-### frontend/js/entity-page.js (13)
+### frontend/js/entity-page.js (16)
 
 | Name | File:line |
 |---|---|
-| `entityDateRow` | frontend/js/entity-page.js:193 |
-| `entityIcon` | frontend/js/entity-page.js:15 |
-| `entityMentionRow` | frontend/js/entity-page.js:131 |
-| `entityMenuItems` | frontend/js/entity-page.js:217 |
-| `entityMonthRow` | frontend/js/entity-page.js:177 |
-| `entityNoteButton` | frontend/js/entity-page.js:147 |
-| `entityOpenRow` | frontend/js/entity-page.js:170 |
-| `entitySave` | frontend/js/entity-page.js:205 |
-| `entitySection` | frontend/js/entity-page.js:114 |
-| `entityWhen` | frontend/js/entity-page.js:22 |
-| `openEntitiesSheet` | frontend/js/entity-page.js:255 |
-| `openEntityPage` | frontend/js/entity-page.js:62 |
-| `toastEntityMerge` | frontend/js/entity-page.js:34 |
+| `entityChangeRow` | frontend/js/entity-page.js:203 |
+| `entityClaimRow` | frontend/js/entity-page.js:195 |
+| `entityDateRow` | frontend/js/entity-page.js:227 |
+| `entityFoundBy` | frontend/js/entity-page.js:30 |
+| `entityIcon` | frontend/js/entity-page.js:16 |
+| `entityMentionRow` | frontend/js/entity-page.js:146 |
+| `entityMenuItems` | frontend/js/entity-page.js:251 |
+| `entityMonthRow` | frontend/js/entity-page.js:211 |
+| `entityNoteButton` | frontend/js/entity-page.js:162 |
+| `entityOpenRow` | frontend/js/entity-page.js:186 |
+| `entitySave` | frontend/js/entity-page.js:239 |
+| `entitySection` | frontend/js/entity-page.js:129 |
+| `entityWhen` | frontend/js/entity-page.js:23 |
+| `openEntitiesSheet` | frontend/js/entity-page.js:289 |
+| `openEntityPage` | frontend/js/entity-page.js:72 |
+| `toastEntityMerge` | frontend/js/entity-page.js:44 |
 
 ### frontend/js/entry-card.js (12)
 
@@ -13838,7 +13841,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
-| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:308 |
+| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:380 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1756 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat_meta.py:132 |
@@ -14130,8 +14133,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1225 |
 | `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:840 |
 | `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:96 |
-| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:263 |
-| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:296 |
+| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:335 |
+| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:368 |
 | `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2420 |
 | `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2147 |
 | `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2327 |
@@ -14148,8 +14151,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/filing` | POST | `decide_filing` | src/tessellate/api/routes_entries.py:1311 |
 | `/{entry_id}/filing/stop` | POST | `stop_filing_one` | src/tessellate/api/routes_entries.py:1292 |
 | `/{entry_id}/generate-title` | POST | `generate_entry_title` | src/tessellate/api/routes_entries.py:2637 |
-| `/{entry_id}/history` | GET | `entry_history` | src/tessellate/api/routes_entries_history.py:117 |
-| `/{entry_id}/history/{revision_id}/restore` | POST | `restore_revision` | src/tessellate/api/routes_entries_history.py:264 |
+| `/{entry_id}/history` | GET | `entry_history` | src/tessellate/api/routes_entries_history.py:111 |
+| `/{entry_id}/history/{revision_id}/restore` | POST | `restore_revision` | src/tessellate/api/routes_entries_history.py:258 |
 | `/{entry_id}/links` | POST | `create_link` | src/tessellate/api/routes_entries_links.py:85 |
 | `/{entry_id}/links/{link_id}` | DELETE | `delete_link` | src/tessellate/api/routes_entries_links.py:115 |
 | `/{entry_id}/links/{link_id}` | PATCH | `patch_link` | src/tessellate/api/routes_entries_links.py:125 |
@@ -14163,10 +14166,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/related` | GET | `related_entries` | src/tessellate/api/routes_entries_relations.py:631 |
 | `/{entry_id}/remove-title` | POST | `remove_entry_title` | src/tessellate/api/routes_entries.py:2700 |
 | `/{entry_id}/restore` | POST | `restore_entry` | src/tessellate/api/routes_entries.py:2441 |
-| `/{entry_id}/restore/{event_id}` | POST | `restore_event` | src/tessellate/api/routes_entries_history.py:200 |
+| `/{entry_id}/restore/{event_id}` | POST | `restore_event` | src/tessellate/api/routes_entries_history.py:194 |
 | `/{entry_id}/suggested-tags` | POST | `answer_suggested_tags` | src/tessellate/api/routes_entries.py:1599 |
 | `/{entry_id}/then-and-now` | GET | `then_and_now` | src/tessellate/api/routes_entries_history.py:45 |
-| `/{entry_id}/then-and-now` | POST | `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:104 |
+| `/{entry_id}/then-and-now` | POST | `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:98 |
 | `/{entry_id}/unarchive` | POST | `unarchive_entry` | src/tessellate/api/routes_entries.py:2459 |
 | `/{entry_id}/wiki-rename` | POST | `wiki_rename` | src/tessellate/api/routes_entries.py:2406 |
 | `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:421 |
@@ -14197,7 +14200,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11104)
+## Backend modules (11113)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17655,16 +17658,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `MergeUndoError` | src/tessellate/ai/entities.py:251 |
-| `_entity_state` | src/tessellate/ai/entities.py:202 |
+| `MergeUndoError` | src/tessellate/ai/entities.py:252 |
+| `_entity_state` | src/tessellate/ai/entities.py:203 |
 | `_find_or_create_entity` | src/tessellate/ai/entities.py:118 |
-| `_survivor` | src/tessellate/ai/entities.py:153 |
-| `extract_entities_pass` | src/tessellate/ai/entities.py:314 |
-| `merge_entities` | src/tessellate/ai/entities.py:163 |
-| `merge_with_undo` | src/tessellate/ai/entities.py:212 |
+| `_survivor` | src/tessellate/ai/entities.py:154 |
+| `extract_entities_pass` | src/tessellate/ai/entities.py:315 |
+| `merge_entities` | src/tessellate/ai/entities.py:164 |
+| `merge_with_undo` | src/tessellate/ai/entities.py:213 |
 | `suggest_entities` | src/tessellate/ai/entities.py:108 |
 | `suggest_entities_with_kinds` | src/tessellate/ai/entities.py:62 |
-| `undo_merge` | src/tessellate/ai/entities.py:260 |
+| `undo_merge` | src/tessellate/ai/entities.py:261 |
 
 ### src/tessellate/ai/extractive.py (4)
 
@@ -20323,23 +20326,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `refresh` | src/tessellate/ai/tensions.py:606 |
 | `sources_version` | src/tessellate/ai/tensions.py:347 |
 
-### src/tessellate/ai/timetravel.py (13)
+### src/tessellate/ai/timetravel.py (17)
 
 | Name | File:line |
 |---|---|
-| `Then` | src/tessellate/ai/timetravel.py:41 |
-| `_aware` | src/tessellate/ai/timetravel.py:52 |
-| `_overlap` | src/tessellate/ai/timetravel.py:172 |
-| `_revisions` | src/tessellate/ai/timetravel.py:58 |
-| `_terms` | src/tessellate/ai/timetravel.py:93 |
-| `_then` | src/tessellate/ai/timetravel.py:73 |
-| `claims` | src/tessellate/ai/timetravel.py:166 |
-| `day_words` | src/tessellate/ai/timetravel.py:148 |
-| `end_of_day` | src/tessellate/ai/timetravel.py:140 |
-| `revision_candidates` | src/tessellate/ai/timetravel.py:99 |
-| `rewind` | src/tessellate/ai/timetravel.py:117 |
-| `text_as_of` | src/tessellate/ai/timetravel.py:86 |
-| `then_and_now` | src/tessellate/ai/timetravel.py:179 |
+| `Then` | src/tessellate/ai/timetravel.py:42 |
+| `_aware` | src/tessellate/ai/timetravel.py:53 |
+| `_overlap` | src/tessellate/ai/timetravel.py:173 |
+| `_revisions` | src/tessellate/ai/timetravel.py:59 |
+| `_terms` | src/tessellate/ai/timetravel.py:94 |
+| `_then` | src/tessellate/ai/timetravel.py:74 |
+| `_version_changes` | src/tessellate/ai/timetravel.py:241 |
+| `changes_over_time` | src/tessellate/ai/timetravel.py:252 |
+| `claim_span` | src/tessellate/ai/timetravel.py:227 |
+| `claims` | src/tessellate/ai/timetravel.py:167 |
+| `day_words` | src/tessellate/ai/timetravel.py:149 |
+| `end_of_day` | src/tessellate/ai/timetravel.py:141 |
+| `revision_candidates` | src/tessellate/ai/timetravel.py:100 |
+| `rewind` | src/tessellate/ai/timetravel.py:118 |
+| `stored_claims` | src/tessellate/ai/timetravel.py:213 |
+| `text_as_of` | src/tessellate/ai/timetravel.py:87 |
+| `then_and_now` | src/tessellate/ai/timetravel.py:180 |
 
 ### src/tessellate/ai/tool_fallback.py (1)
 
@@ -22275,26 +22282,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ReadBody` | src/tessellate/api/routes_editor.py:23 |
 | `read` | src/tessellate/api/routes_editor.py:35 |
 
-### src/tessellate/api/routes_entities.py (16)
+### src/tessellate/api/routes_entities.py (21)
 
 | Name | File:line |
 |---|---|
-| `EntityPatch` | src/tessellate/api/routes_entities.py:257 |
-| `MergeInto` | src/tessellate/api/routes_entities.py:292 |
+| `EntityPatch` | src/tessellate/api/routes_entities.py:329 |
+| `MergeInto` | src/tessellate/api/routes_entities.py:364 |
+| `_changes` | src/tessellate/api/routes_entities.py:278 |
+| `_claim_row` | src/tessellate/api/routes_entities.py:238 |
+| `_claims` | src/tessellate/api/routes_entities.py:254 |
+| `_found_by` | src/tessellate/api/routes_entities.py:232 |
 | `_hit` | src/tessellate/api/routes_entities.py:83 |
-| `_linked_notes` | src/tessellate/api/routes_entities.py:218 |
+| `_linked_notes` | src/tessellate/api/routes_entities.py:290 |
 | `_live` | src/tessellate/api/routes_entities.py:56 |
-| `_names_line` | src/tessellate/api/routes_entities.py:169 |
-| `_open_items` | src/tessellate/api/routes_entities.py:178 |
+| `_names_line` | src/tessellate/api/routes_entities.py:172 |
+| `_open_items` | src/tessellate/api/routes_entities.py:181 |
+| `_prose` | src/tessellate/api/routes_entities.py:226 |
 | `_row` | src/tessellate/api/routes_entities.py:46 |
-| `_timeline` | src/tessellate/api/routes_entities.py:201 |
+| `_timeline` | src/tessellate/api/routes_entities.py:204 |
 | `_visible_ids` | src/tessellate/api/routes_entities.py:42 |
 | `entity_page` | src/tessellate/api/routes_entities.py:97 |
 | `list_entities` | src/tessellate/api/routes_entities.py:69 |
-| `merge_into` | src/tessellate/api/routes_entities.py:297 |
-| `names_in_note` | src/tessellate/api/routes_entities.py:238 |
-| `patch_entity` | src/tessellate/api/routes_entities.py:264 |
-| `undo_merge_route` | src/tessellate/api/routes_entities.py:309 |
+| `merge_into` | src/tessellate/api/routes_entities.py:369 |
+| `names_in_note` | src/tessellate/api/routes_entities.py:310 |
+| `patch_entity` | src/tessellate/api/routes_entities.py:336 |
+| `undo_merge_route` | src/tessellate/api/routes_entities.py:381 |
 
 ### src/tessellate/api/routes_entries.py (121)
 
@@ -22426,14 +22438,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ThenTextBody` | src/tessellate/api/routes_entries_history.py:99 |
+| `ThenTextBody` | src/tessellate/api/routes_entries_history.py:93 |
 | `claims_as_of` | src/tessellate/api/routes_entries_history.py:66 |
-| `entry_history` | src/tessellate/api/routes_entries_history.py:118 |
+| `entry_history` | src/tessellate/api/routes_entries_history.py:112 |
 | `entry_references` | src/tessellate/api/routes_entries_history.py:38 |
-| `restore_event` | src/tessellate/api/routes_entries_history.py:201 |
-| `restore_revision` | src/tessellate/api/routes_entries_history.py:265 |
+| `restore_event` | src/tessellate/api/routes_entries_history.py:195 |
+| `restore_revision` | src/tessellate/api/routes_entries_history.py:259 |
 | `then_and_now` | src/tessellate/api/routes_entries_history.py:46 |
-| `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:105 |
+| `then_and_now_of_text` | src/tessellate/api/routes_entries_history.py:99 |
 
 ### src/tessellate/api/routes_entries_links.py (6)
 
@@ -24379,61 +24391,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AskTurn` | src/tessellate/core/database.py:1345 |
-| `Attachment` | src/tessellate/core/database.py:1267 |
-| `AuditLog` | src/tessellate/core/database.py:2457 |
+| `AskTurn` | src/tessellate/core/database.py:1349 |
+| `Attachment` | src/tessellate/core/database.py:1271 |
+| `AuditLog` | src/tessellate/core/database.py:2461 |
 | `Base` | src/tessellate/core/database.py:143 |
-| `BinnedReading` | src/tessellate/core/database.py:1975 |
-| `BoardLibrary` | src/tessellate/core/database.py:2223 |
-| `BoardLibraryItem` | src/tessellate/core/database.py:2241 |
-| `BoardLibraryMark` | src/tessellate/core/database.py:2265 |
-| `Bookmark` | src/tessellate/core/database.py:1395 |
+| `BinnedReading` | src/tessellate/core/database.py:1979 |
+| `BoardLibrary` | src/tessellate/core/database.py:2227 |
+| `BoardLibraryItem` | src/tessellate/core/database.py:2245 |
+| `BoardLibraryMark` | src/tessellate/core/database.py:2269 |
+| `Bookmark` | src/tessellate/core/database.py:1399 |
 | `Category` | src/tessellate/core/database.py:490 |
-| `ChunkVector` | src/tessellate/core/database.py:1192 |
-| `Conversation` | src/tessellate/core/database.py:1309 |
+| `ChunkVector` | src/tessellate/core/database.py:1196 |
+| `Conversation` | src/tessellate/core/database.py:1313 |
 | `DateTime` | src/tessellate/core/database.py:105 |
-| `DerivedFact` | src/tessellate/core/database.py:1562 |
-| `DerivedTension` | src/tessellate/core/database.py:1628 |
-| `Document` | src/tessellate/core/database.py:1764 |
-| `DocumentAiEdit` | src/tessellate/core/database.py:1833 |
-| `DocumentBookmark` | src/tessellate/core/database.py:1469 |
-| `DocumentLink` | src/tessellate/core/database.py:1810 |
-| `DocumentRevision` | src/tessellate/core/database.py:2059 |
-| `DurableJob` | src/tessellate/core/database.py:2386 |
-| `EmbeddingRecord` | src/tessellate/core/database.py:1177 |
+| `DerivedFact` | src/tessellate/core/database.py:1566 |
+| `DerivedTension` | src/tessellate/core/database.py:1632 |
+| `Document` | src/tessellate/core/database.py:1768 |
+| `DocumentAiEdit` | src/tessellate/core/database.py:1837 |
+| `DocumentBookmark` | src/tessellate/core/database.py:1473 |
+| `DocumentLink` | src/tessellate/core/database.py:1814 |
+| `DocumentRevision` | src/tessellate/core/database.py:2063 |
+| `DurableJob` | src/tessellate/core/database.py:2390 |
+| `EmbeddingRecord` | src/tessellate/core/database.py:1181 |
 | `Entity` | src/tessellate/core/database.py:763 |
-| `EntityMention` | src/tessellate/core/database.py:803 |
+| `EntityMention` | src/tessellate/core/database.py:807 |
 | `Entry` | src/tessellate/core/database.py:525 |
-| `EntryBookmark` | src/tessellate/core/database.py:1449 |
-| `EntryDate` | src/tessellate/core/database.py:1739 |
-| `EntryLink` | src/tessellate/core/database.py:1003 |
-| `EntryOpen` | src/tessellate/core/database.py:1718 |
-| `EntryProperty` | src/tessellate/core/database.py:1075 |
-| `EntryRevision` | src/tessellate/core/database.py:1700 |
-| `JobRun` | src/tessellate/core/database.py:2359 |
-| `LinkProps` | src/tessellate/core/database.py:877 |
-| `LinkReason` | src/tessellate/core/database.py:828 |
-| `MediaUpload` | src/tessellate/core/database.py:2277 |
-| `NightRun` | src/tessellate/core/database.py:1671 |
-| `NoteScore` | src/tessellate/core/database.py:1532 |
-| `NoteType` | src/tessellate/core/database.py:1097 |
-| `PageRead` | src/tessellate/core/database.py:1873 |
-| `Recording` | src/tessellate/core/database.py:2008 |
-| `RelationType` | src/tessellate/core/database.py:1057 |
-| `Reminder` | src/tessellate/core/database.py:1485 |
-| `SealMe` | src/tessellate/core/database.py:913 |
-| `SealedText` | src/tessellate/core/database.py:923 |
-| `SealedTitle` | src/tessellate/core/database.py:964 |
-| `SealedWriteRefused` | src/tessellate/core/database.py:918 |
+| `EntryBookmark` | src/tessellate/core/database.py:1453 |
+| `EntryDate` | src/tessellate/core/database.py:1743 |
+| `EntryLink` | src/tessellate/core/database.py:1007 |
+| `EntryOpen` | src/tessellate/core/database.py:1722 |
+| `EntryProperty` | src/tessellate/core/database.py:1079 |
+| `EntryRevision` | src/tessellate/core/database.py:1704 |
+| `JobRun` | src/tessellate/core/database.py:2363 |
+| `LinkProps` | src/tessellate/core/database.py:881 |
+| `LinkReason` | src/tessellate/core/database.py:832 |
+| `MediaUpload` | src/tessellate/core/database.py:2281 |
+| `NightRun` | src/tessellate/core/database.py:1675 |
+| `NoteScore` | src/tessellate/core/database.py:1536 |
+| `NoteType` | src/tessellate/core/database.py:1101 |
+| `PageRead` | src/tessellate/core/database.py:1877 |
+| `Recording` | src/tessellate/core/database.py:2012 |
+| `RelationType` | src/tessellate/core/database.py:1061 |
+| `Reminder` | src/tessellate/core/database.py:1489 |
+| `SealMe` | src/tessellate/core/database.py:917 |
+| `SealedText` | src/tessellate/core/database.py:927 |
+| `SealedTitle` | src/tessellate/core/database.py:968 |
+| `SealedWriteRefused` | src/tessellate/core/database.py:922 |
 | `Space` | src/tessellate/core/database.py:146 |
-| `StagedEmbedding` | src/tessellate/core/database.py:1240 |
+| `StagedEmbedding` | src/tessellate/core/database.py:1244 |
 | `User` | src/tessellate/core/database.py:439 |
-| `UserPreference` | src/tessellate/core/database.py:2429 |
+| `UserPreference` | src/tessellate/core/database.py:2433 |
 | `Vault` | src/tessellate/core/database.py:466 |
 | `WebPage` | src/tessellate/core/database.py:450 |
-| `WhiteboardNode` | src/tessellate/core/database.py:2101 |
-| `WhiteboardObject` | src/tessellate/core/database.py:2160 |
-| `WhiteboardSketch` | src/tessellate/core/database.py:2143 |
+| `WhiteboardNode` | src/tessellate/core/database.py:2105 |
+| `WhiteboardObject` | src/tessellate/core/database.py:2164 |
+| `WhiteboardSketch` | src/tessellate/core/database.py:2147 |
 | `WorkspaceMixin` | src/tessellate/core/database.py:171 |
 | `_add_workspace_filter` | src/tessellate/core/database.py:194 |
 | `_already_sealed` | src/tessellate/core/database.py:326 |
@@ -24442,18 +24454,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_hide_binned` | src/tessellate/core/database.py:248 |
 | `_joined_space` | src/tessellate/core/database.py:386 |
 | `_note_private_space_joins` | src/tessellate/core/database.py:394 |
-| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:988 |
+| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:992 |
 | `_private_space_ids` | src/tessellate/core/database.py:277 |
 | `_seal_private_space_joins` | src/tessellate/core/database.py:426 |
 | `_seal_private_writes` | src/tessellate/core/database.py:360 |
 | `_sealed_owner_private` | src/tessellate/core/database.py:312 |
 | `_set_workspace` | src/tessellate/core/database.py:371 |
-| `_stamp_done_at` | src/tessellate/core/database.py:1525 |
+| `_stamp_done_at` | src/tessellate/core/database.py:1529 |
 | `_stamp_edited_at` | src/tessellate/core/database.py:293 |
 | `impersonate_workspace` | src/tessellate/core/database.py:53 |
 | `like_escape` | src/tessellate/core/database.py:77 |
-| `link_strength` | src/tessellate/core/database.py:1154 |
-| `plain_reason` | src/tessellate/core/database.py:820 |
+| `link_strength` | src/tessellate/core/database.py:1158 |
+| `plain_reason` | src/tessellate/core/database.py:824 |
 | `seal_row` | src/tessellate/core/database.py:333 |
 | `unseal_row` | src/tessellate/core/database.py:349 |
 | `utcnow` | src/tessellate/core/database.py:66 |
@@ -28405,7 +28417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22792)
+## Tests (22801)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29494,6 +29506,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_engine_web.py | 5 |
 | tests/test_entities.py | 7 |
 | tests/test_entities_kg5.py | 8 |
+| tests/test_entity_claims_b4.py | 9 |
 | tests/test_entity_merge_undo.py | 3 |
 | tests/test_entity_page_private.py | 2 |
 | tests/test_entity_pages_b4.py | 7 |
@@ -31712,14 +31725,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4387 |
-| Needs hardware | docs/roadmap/LEDGER.md:608 |
+| Needs hardware | docs/roadmap/LEDGER.md:607 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:601 |
+| Owner calls | docs/roadmap/LEDGER.md:600 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4260 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31899,7 +31912,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:738 |
+| Plan session briefs | docs/roadmap/LEDGER.md:737 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2636 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31953,25 +31966,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:754 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:838 |
+| chat | docs/roadmap/LEDGER.md:753 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:837 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:778 |
-| general | docs/roadmap/LEDGER.md:561 |
+| documents | docs/roadmap/LEDGER.md:777 |
+| general | docs/roadmap/LEDGER.md:560 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:742 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:850 |
+| graph | docs/roadmap/LEDGER.md:741 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:849 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4396 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:790 |
+| mindmap | docs/roadmap/LEDGER.md:789 |
 | timeline | docs/roadmap/LEDGER.md:463 |
-| timeline | docs/roadmap/LEDGER.md:814 |
+| timeline | docs/roadmap/LEDGER.md:813 |
 | ui-modernisation | docs/roadmap/LEDGER.md:346 |
-| ui-modernisation | docs/roadmap/LEDGER.md:802 |
+| ui-modernisation | docs/roadmap/LEDGER.md:801 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:766 |
+| whiteboard | docs/roadmap/LEDGER.md:765 |
 | world-class | docs/roadmap/LEDGER.md:465 |
-| world-class | docs/roadmap/LEDGER.md:826 |
+| world-class | docs/roadmap/LEDGER.md:825 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2806 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2857 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2964 |

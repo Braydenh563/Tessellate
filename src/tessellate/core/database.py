@@ -793,6 +793,10 @@ class Entity(Base):
     #: Set on the entity a merge emptied: its mentions moved to this id. The
     #: row stays so an old name resolves; nothing lists it (it has no mentions).
     merged_into: Mapped[int | None] = mapped_column(Integer, default=None)
+    #: WORLD_CLASS_PLAN B4's stamp: the model that first found the name, with
+    #: `created_at` the when. Null on every entity from before the column,
+    #: whose finder was never kept; the page then says only when.
+    model: Mapped[str | None] = mapped_column(String(80), default=None)
 
 
 #: The kinds an entity can be (GRAPH_PLAN KG5). Closed, like LINK_TYPES: the
