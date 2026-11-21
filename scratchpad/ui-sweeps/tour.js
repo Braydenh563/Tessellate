@@ -315,20 +315,24 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
       const about = document.getElementById("about-take-tour");
+      const startBtn = document.getElementById("tour-start-btn");
       return {
         enabled: typeof TOUR_ENABLED !== "undefined" && TOUR_ENABLED,
         replay: replay.length,
         replayDisabled: replay.filter((b) => b.disabled).length,
         about: Boolean(about),
         aboutDisabled: Boolean(about && about.disabled),
+        start: Boolean(startBtn && !startBtn.disabled),
       };
     });
     console.log(`${label} doors: ${JSON.stringify(doors)}`);
     check(doors.enabled, `${label} TOUR_ENABLED is on`);
     const sectionCount = await page.evaluate(() => openTour.inspect().sections.length);
     check(
-      doors.replay === sectionCount + 1 && doors.replayDisabled === 0,
-      `${label} the ${sectionCount + 1} replay buttons are live (${doors.replay})`
+      //: One row per section; the whole-tour button is `#tour-start-btn`, in
+      //: the row above the list since INBOX 804, checked on its own below.
+      doors.replay === sectionCount && doors.replayDisabled === 0 && doors.start,
+      `${label} the ${sectionCount} section rows and Start the tour are live (${doors.replay}, start ${doors.start})`
     );
     check(doors.about && !doors.aboutDisabled, `${label} About's take-the-tour button is live`);
 

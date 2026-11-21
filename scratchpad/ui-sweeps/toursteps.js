@@ -81,7 +81,9 @@ function ok(label, pass, detail) {
               for (let n = el; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || "1");
               const r = el.getBoundingClientRect();
               const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-              return { o: Math.round(o * 100) / 100, hit: Boolean(hit && (el.contains(hit) || hit.contains(el))), w: Math.round(r.width), h: Math.round(r.height) };
+              //: What is in front, named, so a miss says what covered it.
+              const by = hit ? (hit.closest("[id]")?.id || hit.className || hit.tagName) : "nothing";
+              return { o: Math.round(o * 100) / 100, hit: Boolean(hit && (el.contains(hit) || hit.contains(el))), by, w: Math.round(r.width), h: Math.round(r.height) };
             })(),
           });
           const next = document.getElementById("tour-next");
@@ -104,7 +106,7 @@ function ok(label, pass, detail) {
         if (!r.lit) faults.push(`${tag}: nothing lit`);
         if (r.scrolls) faults.push(`${tag}: card scrolls, the text does not fit`);
         if (r.target && r.target.o < 0.5) faults.push(`${tag}: target faded (opacity ${r.target.o})`);
-        if (r.target && !r.target.hit) faults.push(`${tag}: target is not what is drawn at its centre`);
+        if (r.target && !r.target.hit) faults.push(`${tag}: target is not what is drawn at its centre (${r.target.by} is)`);
         if (r.target && (r.target.w < 4 || r.target.h < 4)) faults.push(`${tag}: target is empty (${r.target.w}x${r.target.h})`);
       }
     }
