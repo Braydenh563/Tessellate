@@ -567,59 +567,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2377 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1092 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2360 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1075 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
-| `applyWebPanelWidth` | frontend/js/sheets-selects.js:547 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2476 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2426 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1586 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1122 |
+| `applyWebPanelWidth` | frontend/js/sheets-selects.js:530 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2459 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2409 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1569 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1105 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2085 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1103 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1132 |
-| `enhanceSelect` | frontend/js/sheets-selects.js:754 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2502 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2514 |
-| `focusSelect` | frontend/js/sheets-selects.js:1195 |
-| `formatTokens` | frontend/js/sheets-selects.js:1814 |
-| `initResizableSidebars` | frontend/js/sheets-selects.js:492 |
+| `editedMarker` | frontend/js/sheets-selects.js:2068 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1086 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1115 |
+| `enhanceSelect` | frontend/js/sheets-selects.js:737 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2485 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2497 |
+| `focusSelect` | frontend/js/sheets-selects.js:1178 |
+| `formatTokens` | frontend/js/sheets-selects.js:1797 |
+| `initResizableSidebars` | frontend/js/sheets-selects.js:475 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:278 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1490 |
-| `labelledMenu` | frontend/js/sheets-selects.js:661 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1473 |
+| `labelledMenu` | frontend/js/sheets-selects.js:644 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1785 |
-| `listFilter` | frontend/js/sheets-selects.js:1328 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2304 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1890 |
-| `makeMenuItem` | frontend/js/sheets-selects.js:641 |
-| `makeSidebarResizable` | frontend/js/sheets-selects.js:353 |
-| `makeWebPanelResizable` | frontend/js/sheets-selects.js:584 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1395 |
-| `openConversation` | frontend/js/sheets-selects.js:2093 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1243 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1823 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2383 |
-| `relativeTime` | frontend/js/sheets-selects.js:1833 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1694 |
-| `resetWebPanelWidth` | frontend/js/sheets-selects.js:565 |
-| `rowActions` | frontend/js/sheets-selects.js:1303 |
-| `selectFaceText` | frontend/js/sheets-selects.js:745 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1768 |
+| `listFilter` | frontend/js/sheets-selects.js:1311 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2287 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1873 |
+| `makeMenuItem` | frontend/js/sheets-selects.js:624 |
+| `makeSidebarResizable` | frontend/js/sheets-selects.js:336 |
+| `makeWebPanelResizable` | frontend/js/sheets-selects.js:567 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1378 |
+| `openConversation` | frontend/js/sheets-selects.js:2076 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1226 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1806 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2366 |
+| `relativeTime` | frontend/js/sheets-selects.js:1816 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1677 |
+| `resetWebPanelWidth` | frontend/js/sheets-selects.js:548 |
+| `rowActions` | frontend/js/sheets-selects.js:1286 |
+| `selectFaceText` | frontend/js/sheets-selects.js:728 |
 | `setSidebarSheet` | frontend/js/sheets-selects.js:209 |
-| `shortModelName` | frontend/js/sheets-selects.js:1740 |
+| `shortModelName` | frontend/js/sheets-selects.js:1723 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1870 |
+| `sortConversations` | frontend/js/sheets-selects.js:1853 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2442 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2425 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2463 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1207 |
-| `webPanelIsNarrow` | frontend/js/sheets-selects.js:531 |
-| `webPanelMaxWidth` | frontend/js/sheets-selects.js:541 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2446 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1190 |
+| `webPanelIsNarrow` | frontend/js/sheets-selects.js:514 |
+| `webPanelMaxWidth` | frontend/js/sheets-selects.js:524 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
 ### frontend/js/skills.js (49)
@@ -847,7 +847,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerPaintTitle` | frontend/js/router.js:166 |
 | `routerRestore` | frontend/js/router.js:245 |
 
-### frontend/js/settings-panes.js (30)
+### frontend/js/settings-panes.js (28)
 
 | Name | File:line |
 |---|---|
@@ -871,10 +871,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:770 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:786 |
 | `nudgeZoom` | frontend/js/settings-panes.js:889 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1010 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:987 |
-| `paletteKeys` | frontend/js/settings-panes.js:996 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1021 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1003 |
+| `paletteRowParts` | frontend/js/settings-panes.js:985 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `reportTimezone` | frontend/js/settings-panes.js:541 |
 | `savePrefs` | frontend/js/settings-panes.js:663 |
@@ -1890,19 +1888,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `verificationRow` | frontend/js/answer-kit.js:2901 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1646 |
 
-### frontend/js/app-features.js (9)
+### frontend/js/app-features.js (11)
 
 | Name | File:line |
 |---|---|
-| `featureCatalog` | frontend/js/app-features.js:11 |
-| `featureCommandRows` | frontend/js/app-features.js:226 |
-| `paletteCommands` | frontend/js/app-features.js:299 |
-| `popupToolMaths` | frontend/js/app-features.js:257 |
-| `quickAccessCurrent` | frontend/js/app-features.js:612 |
-| `quickAccessItems` | frontend/js/app-features.js:603 |
-| `quickCatalogue` | frontend/js/app-features.js:581 |
-| `renderQuickLinks` | frontend/js/app-features.js:617 |
-| `renderToolShortcutList` | frontend/js/app-features.js:273 |
+| `featureCatalog` | frontend/js/app-features.js:45 |
+| `featureCommandRows` | frontend/js/app-features.js:260 |
+| `paletteAbouts` | frontend/js/app-features.js:30 |
+| `paletteCommands` | frontend/js/app-features.js:333 |
+| `paletteKeys` | frontend/js/app-features.js:16 |
+| `popupToolMaths` | frontend/js/app-features.js:291 |
+| `quickAccessCurrent` | frontend/js/app-features.js:646 |
+| `quickAccessItems` | frontend/js/app-features.js:637 |
+| `quickCatalogue` | frontend/js/app-features.js:615 |
+| `renderQuickLinks` | frontend/js/app-features.js:651 |
+| `renderToolShortcutList` | frontend/js/app-features.js:307 |
 
 ### frontend/js/app-import.js (6)
 
@@ -5320,36 +5320,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmApplySpellcheck` | frontend/js/documents-view.js:474 |
-| `docCmChanged` | frontend/js/documents-view.js:864 |
-| `docCmDrawFor` | frontend/js/documents-view.js:777 |
-| `docCmExtensions` | frontend/js/documents-view.js:334 |
-| `docCmGutter` | frontend/js/documents-view.js:900 |
-| `docCmKeymap` | frontend/js/documents-view.js:166 |
-| `docCmLanguageEffects` | frontend/js/documents-view.js:871 |
-| `docCmRepaintFindings` | frontend/js/documents-view.js:650 |
-| `docCmSpellcheck` | frontend/js/documents-view.js:463 |
-| `docCmSyncFileType` | frontend/js/documents-view.js:810 |
-| `docCmSyncGutter` | frontend/js/documents-view.js:886 |
-| `docCmSyncLanguage` | frontend/js/documents-view.js:845 |
-| `docCmUpdate` | frontend/js/documents-view.js:486 |
-| `docCmViewLanguage` | frontend/js/documents-view.js:835 |
-| `docFenceGutterOn` | frontend/js/documents-view.js:882 |
-| `docFindingsPlugin` | frontend/js/documents-view.js:592 |
-| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:743 |
-| `docIdeCall` | frontend/js/documents-view.js:317 |
-| `docLineClipboardEvent` | frontend/js/documents-view.js:951 |
-| `docLineClipboardExtension` | frontend/js/documents-view.js:978 |
-| `docLineClipboardRange` | frontend/js/documents-view.js:939 |
-| `docLinePasteEvent` | frontend/js/documents-view.js:964 |
-| `docProseChord` | frontend/js/documents-view.js:148 |
-| `docRedoChord` | frontend/js/documents-view.js:109 |
-| `docTableCellClick` | frontend/js/documents-view.js:279 |
-| `docToggleCodeDraw` | frontend/js/documents-view.js:786 |
-| `docWatchAppearance` | frontend/js/documents-view.js:761 |
-| `ensureDocEditor` | frontend/js/documents-view.js:702 |
-| `mountDocEditor` | frontend/js/documents-view.js:672 |
-| `noteSurfaceGutter` | frontend/js/documents-view.js:994 |
+| `docCmApplySpellcheck` | frontend/js/documents-view.js:492 |
+| `docCmChanged` | frontend/js/documents-view.js:882 |
+| `docCmDrawFor` | frontend/js/documents-view.js:795 |
+| `docCmExtensions` | frontend/js/documents-view.js:352 |
+| `docCmGutter` | frontend/js/documents-view.js:918 |
+| `docCmKeymap` | frontend/js/documents-view.js:184 |
+| `docCmLanguageEffects` | frontend/js/documents-view.js:889 |
+| `docCmRepaintFindings` | frontend/js/documents-view.js:668 |
+| `docCmSpellcheck` | frontend/js/documents-view.js:481 |
+| `docCmSyncFileType` | frontend/js/documents-view.js:828 |
+| `docCmSyncGutter` | frontend/js/documents-view.js:904 |
+| `docCmSyncLanguage` | frontend/js/documents-view.js:863 |
+| `docCmUpdate` | frontend/js/documents-view.js:504 |
+| `docCmViewLanguage` | frontend/js/documents-view.js:853 |
+| `docFenceGutterOn` | frontend/js/documents-view.js:900 |
+| `docFindingsPlugin` | frontend/js/documents-view.js:610 |
+| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:761 |
+| `docIdeCall` | frontend/js/documents-view.js:335 |
+| `docLineClipboardEvent` | frontend/js/documents-view.js:969 |
+| `docLineClipboardExtension` | frontend/js/documents-view.js:996 |
+| `docLineClipboardRange` | frontend/js/documents-view.js:957 |
+| `docLinePasteEvent` | frontend/js/documents-view.js:982 |
+| `docProseChord` | frontend/js/documents-view.js:166 |
+| `docRedoChord` | frontend/js/documents-view.js:127 |
+| `docTableCellClick` | frontend/js/documents-view.js:297 |
+| `docToggleCodeDraw` | frontend/js/documents-view.js:804 |
+| `docWatchAppearance` | frontend/js/documents-view.js:779 |
+| `ensureDocEditor` | frontend/js/documents-view.js:720 |
+| `mountDocEditor` | frontend/js/documents-view.js:690 |
+| `noteSurfaceGutter` | frontend/js/documents-view.js:1012 |
 
 ### frontend/js/documents-warm.js (2)
 

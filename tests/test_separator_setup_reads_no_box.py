@@ -7,7 +7,7 @@ SRC = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "sheets-sele
 
 def _body() -> str:
     start = SRC.index("function trackSeparatorValue(")
-    return SRC[start : SRC.index("trackSeparatorValue.drag =", start)]
+    return SRC[start : SRC.index("function makeSidebarResizable(", start)]
 
 
 def test_setup_reads_no_box_when_an_observer_exists() -> None:

@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 import pytest
+
+from tests._app_js import documents_text
 from tests._clock import SUITE_NOW, pin_clock
 
 
@@ -20,8 +22,6 @@ def _suite_clock(monkeypatch):
     """Data here is built from SUITE_NOW, and the app reads the same pinned clock."""
     pin_clock(monkeypatch, SUITE_NOW)
 
-
-from tests._app_js import documents_text
 
 
 def _soon() -> str:

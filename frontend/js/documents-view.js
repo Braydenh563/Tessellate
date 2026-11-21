@@ -13,6 +13,24 @@
 //: bulleted and task lists. Where Shift+7 types "/" (German, Spanish, Italian, the Nordic layouts)
 //: CodeMirror sees a character, drops Shift for it and runs Mod-/ (toggle comment) first, so the
 //: line was wrapped in an HTML comment. `event.code` names the key whatever it types.
+//: One grip drag (the diagram split, the prose panel, the code run panel):
+//: `move` takes each pointermove, `after` runs once on release. A property of
+//: the function, so the shared scope gains no name. Here, not in sheets-selects.js: only
+//: Documents grips use it, and the boot scripts have no room (test_static_compression.py).
+trackSeparatorValue.drag = (move, after) => {
+  document.body.classList.add("resizing-sidebar");
+  const stop = () => {
+    document.body.classList.remove("resizing-sidebar");
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", stop);
+    window.removeEventListener("pointercancel", stop);
+    after?.();
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", stop);
+  window.addEventListener("pointercancel", stop);
+};
+
 //: State that moved here from documents.js (L-documents-118).
 //: The CodeMirror view once it exists, null before the bundle has loaded and
 //: null for good if it fails to. Read by `docSurface()` on every call, so the

@@ -141,7 +141,7 @@ def test_the_shared_grip_drag_is_defined_and_reads_no_box() -> None:
     """L335 folded three drag loops into `trackSeparatorValue.drag` and left it
     undefined: every grip drag threw on press. The helper exists, cleans up on
     release and cancel, and reads no box itself."""
-    sheets = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    sheets = (JS / "documents-view.js").read_text(encoding="utf-8")
     drag = _code(_block(sheets, "trackSeparatorValue.drag = (move, after) =>"))
     assert not READS.search(drag)
     for kind in ("pointermove", "pointerup", "pointercancel"):
