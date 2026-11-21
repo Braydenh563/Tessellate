@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: the UI sweeps run as four balanced jobs (about 19 minutes each), with the whole font matrix (15 shards of two cells) and errors.js in two width pairs; `gate.sh --sweeps` runs the same shards (L-general-20).
 - Layout: in a wide font at 390px the capture notice's Install button keeps its word and the documents status bar's goal and findings labels give way before the type picker (L-general-43).
 - Boot size: the chat list and opening a chat load on first use (chat-list.js), so the boot scripts gzip to 247,568 bytes, 2,882 under the cap.
 - Notes: a clipped or imported note's source chip now says its kind in its tooltip and label (Clipped from URL, Imported from file); extracted-from-document and transcribed-from-audio are not recorded on the note, so they have no chip (L-general-13).
@@ -18,6 +19,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Map look dialog: the four groups run in two columns on a wide screen, 1002px to 676px tall, so it no longer scrolls at 1440x900 (L-general-20).
 - Map View menu: 587px to 431px (Format panel, Connection arrows and Connection points are board-only rows, the stats row sits with the panels, rows no longer carry a 4px gap) (L-general-20).
 - Map fishbone: a tall fishbone's ribs no longer cross a topic box (main topics sit against the spine, causes stack from that edge, rib slant is capped); board menu row wrappers carry their ARIA roles (L-general-20).
+- Phone and lazy surfaces: the Library reader fills the screen again (its desktop size no longer beats the phone page); the slash hint, the sidebar openers, the sidebar toggles and the floating New note and New document buttons are set up when Notes, Chat, Documents and the Library are first built.
 - Release workflow: contents are read-only by default; only the three jobs that write the Release may write (zizmor).
 - CodeQL: an explicit description string in the MCP skill snippet, the start-up sweep step as a function, OCR test calls out of their asserts.
 - CLAUDE.md and WORKING.md give the measured test count, 52,983.

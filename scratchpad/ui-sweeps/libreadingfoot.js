@@ -16,7 +16,8 @@
 //   BASE=http://127.0.0.1:8991 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     NODE_PATH=/opt/node22/lib/node_modules SCRATCH=/tmp/claude-0 \
 //     timeout 115 node libreadingfoot.js
-const { boot } = require('./lib.js');
+const { boot, seedLibtextIfEmpty } = require('./lib.js');
+
 
 let failures = 0;
 const check = (label, ok, detail) => {
@@ -65,6 +66,7 @@ async function openLibrary(page, subtab) {
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 950 } });
+  await seedLibtextIfEmpty(page);
 
   // --- (3) the Files sub-tab's reading block ------------------------------
   await openLibrary(page, 'file');

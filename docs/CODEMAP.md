@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8500, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10904, test files 2785, tests 22362, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8500, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10904, test files 2788, tests 22370, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8500)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:133 |
+| `onSurface` | frontend/js/settings-body.js:135 |
 | `surfaceBuild` | frontend/js/settings-body.js:97 |
-| `surfaceFind` | frontend/js/settings-body.js:121 |
+| `surfaceFind` | frontend/js/settings-body.js:123 |
 
 ### frontend/js/app.js (45)
 
@@ -1070,66 +1070,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1810 |
-| `clearAppCache` | frontend/js/phone-shell.js:2289 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1118 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1974 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1963 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1250 |
-| `dockChatTools` | frontend/js/phone-shell.js:1308 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1816 |
+| `clearAppCache` | frontend/js/phone-shell.js:2295 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:1124 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1980 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1969 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1256 |
+| `dockChatTools` | frontend/js/phone-shell.js:1314 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:808 |
-| `dockShown` | frontend/js/phone-shell.js:2053 |
+| `dockShown` | frontend/js/phone-shell.js:2059 |
 | `dockTabBar` | frontend/js/phone-shell.js:647 |
-| `dockTight` | frontend/js/phone-shell.js:2060 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1046 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1802 |
+| `dockTight` | frontend/js/phone-shell.js:2066 |
+| `dropRepeatedTitle` | frontend/js/phone-shell.js:1052 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1808 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:132 |
-| `fitDock` | frontend/js/phone-shell.js:2180 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1900 |
+| `fitDock` | frontend/js/phone-shell.js:2186 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1906 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2126 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2071 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2018 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1986 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2304 |
+| `foldDockActions` | frontend/js/phone-shell.js:2132 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2077 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2024 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1992 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2310 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:678 |
-| `initDockFolding` | frontend/js/phone-shell.js:2193 |
+| `initDockFolding` | frontend/js/phone-shell.js:2199 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1723 |
-| `initNotePage` | frontend/js/phone-shell.js:1123 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1729 |
+| `initNotePage` | frontend/js/phone-shell.js:1129 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1210 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1363 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1216 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1369 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:722 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:844 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1926 |
-| `initRowSwipe` | frontend/js/phone-shell.js:942 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1932 |
+| `initRowSwipe` | frontend/js/phone-shell.js:948 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:878 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:2006 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1174 |
-| `openNotePage` | frontend/js/phone-shell.js:1056 |
-| `openSheet` | frontend/js/phone-shell.js:1403 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1676 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1641 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1229 |
-| `quitApp` | frontend/js/phone-shell.js:2256 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1104 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:2012 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:1180 |
+| `openNotePage` | frontend/js/phone-shell.js:1062 |
+| `openSheet` | frontend/js/phone-shell.js:1409 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1682 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1647 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1235 |
+| `quitApp` | frontend/js/phone-shell.js:2262 |
+| `refreshNotePage` | frontend/js/phone-shell.js:1110 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `renderExportsList` | frontend/js/phone-shell.js:2315 |
-| `sheetRow` | frontend/js/phone-shell.js:1615 |
+| `renderExportsList` | frontend/js/phone-shell.js:2321 |
+| `sheetRow` | frontend/js/phone-shell.js:1621 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1685 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1650 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1691 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1656 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2351 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2357 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 
@@ -13009,7 +13009,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/08-consistency.css:2594 |
 | a label that lost its capitals keeps its rank | frontend/css/08-consistency.css:4430 |
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:4535 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7904 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7906 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3722 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8753 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5670 |
@@ -13036,7 +13036,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1964 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4340 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2845 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8831 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8833 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4129 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2664 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
@@ -13069,7 +13069,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1988 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3773 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2840 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8936 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8938 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3779 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1734 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:316 |
@@ -13115,10 +13115,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:446 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9849 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:8452 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:8454 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9960 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9774 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:8448 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:8450 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9632 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:10000 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:327 |
@@ -13181,7 +13181,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3211 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5372 |
 | the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2491 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8768 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8770 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2311 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2417 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2399 |
@@ -13209,9 +13209,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1055 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5161 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:8348 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:8350 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2172 |
-| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:7540 |
+| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:7542 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4353 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9939 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2590 |
@@ -13225,7 +13225,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5337 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7260 |
-| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7573 |
+| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7575 |
 | the dashboard and the labels, de-vibecoded | frontend/css/08-consistency.css:3067 |
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10632 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10610 |
@@ -13245,7 +13245,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4496 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1069 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8979 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:8389 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:8391 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3828 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3784 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2933 |
@@ -13382,7 +13382,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 9593 |
+| frontend/css/library-lazy.css | 9595 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -28083,7 +28083,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22362)
+## Tests (22370)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28425,7 +28425,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chunk_vectors.py | 11 |
 | tests/test_ci_shards.py | 5 |
 | tests/test_ci_supply_chain.py | 3 |
-| tests/test_ci_sweeps.py | 3 |
+| tests/test_ci_sweeps.py | 5 |
 | tests/test_citation_after_heading.py | 1 |
 | tests/test_citation_order_1029.py | 7 |
 | tests/test_cjk_search.py | 6 |
@@ -29116,6 +29116,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_edit_conflicts_ui.py | 3 |
 | tests/test_edit_embeds_off_request.py | 3 |
 | tests/test_edit_form_survives_redraw.py | 1 |
+| tests/test_editor_hint_lazy_surfaces.py | 2 |
 | tests/test_egress_call_sites.py | 2 |
 | tests/test_egress_ledger_writes.py | 7 |
 | tests/test_egress_purposes.py | 9 |
@@ -29900,6 +29901,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ocr_prep_1568.py | 26 |
 | tests/test_ocr_rapidocr.py | 9 |
 | tests/test_ocr_rapidocr_prep.py | 5 |
+| tests/test_ocr_reader_page_css.py | 1 |
 | tests/test_ocr_reader_split.py | 4 |
 | tests/test_ocr_readers.py | 4 |
 | tests/test_ocr_reading_bin.py | 5 |
@@ -30081,6 +30083,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_phone_note_page_edit.py | 3 |
 | tests/test_phone_notes_audit.py | 8 |
 | tests/test_phone_select_mode_tap.py | 2 |
+| tests/test_phone_sidebar_openers_lazy.py | 3 |
 | tests/test_phone_topbar_edge.py | 1 |
 | tests/test_phone_touch.py | 8 |
 | tests/test_phrase_filters.py | 5 |
@@ -31293,13 +31296,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4410 |
-| Needs hardware | docs/roadmap/LEDGER.md:722 |
+| Needs hardware | docs/roadmap/LEDGER.md:721 |
 | Next up | docs/ROADMAP.md:238 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:715 |
+| Owner calls | docs/roadmap/LEDGER.md:714 |
 | Owner input from the general rows (2026-11-21) | docs/roadmap/BACKLOG.md:4480 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4283 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
@@ -31481,7 +31484,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:910 |
+| Plan session briefs | docs/roadmap/LEDGER.md:909 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2659 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31535,25 +31538,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:926 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1010 |
+| chat | docs/roadmap/LEDGER.md:925 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1009 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:950 |
+| documents | docs/roadmap/LEDGER.md:949 |
 | general | docs/roadmap/LEDGER.md:701 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:914 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1022 |
+| graph | docs/roadmap/LEDGER.md:913 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1021 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4419 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:962 |
+| mindmap | docs/roadmap/LEDGER.md:961 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:986 |
+| timeline | docs/roadmap/LEDGER.md:985 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:974 |
+| ui-modernisation | docs/roadmap/LEDGER.md:973 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:938 |
+| whiteboard | docs/roadmap/LEDGER.md:937 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:998 |
+| world-class | docs/roadmap/LEDGER.md:997 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2829 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2880 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2987 |

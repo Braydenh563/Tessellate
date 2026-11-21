@@ -55,6 +55,9 @@ const DOC = ["# A page to type on", "", "The first line of text, which is the on
 
   const read = () =>
     page.evaluate(() => {
+      //: The chat surface is built lazily (settings-body.js `surfaceBuild`, warmed 3 s after
+      //: boot at the earliest), so `.chat-dock` is not in the page until something builds it.
+      surfaceBuild("chat");
       const css = getComputedStyle(document.documentElement);
       const bar = document.querySelector(".thumb-bar");
       //: By id, not by class. `.doc-toolbar` also matches `#note-toolbar`,

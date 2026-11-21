@@ -128,7 +128,10 @@ def _sentences_from_prompt(prompt: str) -> list[str]:
             continue
         text = rest.strip()
         text = re.sub(r"^\[[^\]]*\]\s*", "", text)          # [General]
-        text = re.sub(r"^\((?:[^)]*)\)\s*", "", text).strip()  # (similarity: 0.56)
+        #: Every leading "(...)" group: the header now carries several, as in
+        #: `(written Saturday ...) (matched: boots) (tags: gear; files: a.pdf)`.
+        while text.startswith("(") and ")" in text:
+            text = text[text.index(")") + 1 :].lstrip()
         if len(text.split()) < 6:
             continue
         first = re.split(r"(?<=[.!?])\s", text)[0]

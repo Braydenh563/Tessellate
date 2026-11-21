@@ -379,7 +379,16 @@ if [ "$SWEEPS" = 1 ]; then
   # dochighlight, spinnershape, featuremodels, btnrows, answersupport, listenerrounds)
   # outlived their files in the sweep cleanup and failed this mode for good;
   # `tests/test_gate_lint_set.py` keeps the list and the folder in step.
-  for s in errors fontmatrix docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily doccodecopy docfallback doctabs dockeyboard doctoolbarstate mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue calheadalign; do step "sweep-$s" node "scratchpad/ui-sweeps/$s.js"; done
+  # Each run as stable.txt shards it (errors by widths, fontmatrix by SHARD), so
+  # no run is past the 300s a sweep gets in CI; an empty env is one plain run.
+  step_sweep() {
+    local s="$1" env
+    while read -r env; do
+      # shellcheck disable=SC2086  # env is VAR=value words by design
+      step "sweep-$s${env:+-${env// /-}}" env $env node "scratchpad/ui-sweeps/$s.js" < /dev/null
+    done < <(bash scripts/ci_sweeps.sh --runs "$s")
+  }
+  for s in errors fontmatrix docks contrast touch leaks keyboard diskspace vibecheck vibefail graphminimap wbgroupguides phonehead phonesidebar phonecapture phoneswipe phonenotepage phoneshare phonedocs phonereminders graphphone wbphone draftreadonly wbexportimage ctrlwheelzoom libreadingfoot libreader hoveronly wbtopbar820 docdaily doccodecopy docfallback doctabs dockeyboard doctoolbarstate mindmapcurve wbtopbar spinners tagoffer imagecardfoot asktab mapperf maptwokinds mapmidpan tourdim toursteps slashicons uitrio animcost noteobject mapdoors maplayouts maptheme canvasconventions mapviewmenu companionscroll companionbeats companionperf companionsmooth companionmenu companionlife profilelook companionpin perchall iconfloor companionreact companioninteract libtlscroll wbshapetext maplinkcue calheadalign; do step_sweep "$s"; done
 else
   skipped+=("sweeps (--sweeps, needs BASE)")
 fi

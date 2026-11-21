@@ -3,7 +3,7 @@
 # its seconds on the second pass (per run), then any env for it; a `|` value runs once
 # per value (scripts/ci_sweeps.sh). A sweep that turns flaky comes off with its reason.
 errors 185s WIDTHS=1440,1024|820,390
-fontmatrix 190s THEMES=light WIDTHS=1440,390 FONTS=system|serif|mono|arial|readable
+fontmatrix 190s SHARD=1|2|3|4|5|6|7|8|9|10|11|12|13|14|15
 contrast 32s
 leaks 28s
 keyboard 19s

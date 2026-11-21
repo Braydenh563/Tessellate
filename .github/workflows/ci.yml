@@ -212,9 +212,15 @@ jobs:
     # before this they ran only through a local `gate.sh --sweeps`. The list is
     # scratchpad/ui-sweeps/stable.txt; scripts/ci_sweeps.sh says how a sweep
     # gets on it and comes off it.
-    name: UI sweeps (stable list)
+    # Over an hour of runs in all, so four jobs each run a share balanced by
+    # the list's seconds (SLICE in scripts/ci_sweeps.sh).
+    name: UI sweeps (stable list, ${{ matrix.slice }} of 4)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -250,12 +256,13 @@ jobs:
       - name: Run the sweeps
         env:
           SWEEP_LOGS: ${{ runner.temp }}/sweeps
+          SLICE: ${{ matrix.slice }}/4
         run: VENV="$pythonLocation" bash scripts/ci_sweeps.sh
 
       - name: Upload the sweep logs on failure
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: ui-sweep-logs
+          name: ui-sweep-logs-${{ matrix.slice }}
           path: ${{ runner.temp }}/sweeps/
           retention-days: 7

@@ -229,6 +229,15 @@ async function boot(opts={}) {
   }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
   await page.waitForTimeout(800);
+  //: **Search by meaning asks once too** (semantic-notice.js): the first save
+  //: that wants the missing package raises a sticky toast, which sat over the
+  //: bottom controls of whatever a sweep measured (touch: nine "covered"
+  //: findings, landing mid-run, so it cannot be dismissed at boot). Answered
+  //: "No thanks" up front, with the same preference write the toast makes, so
+  //: it is never asked; SEMANTIC_ASK=1 leaves it for a sweep that measures it.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null));
+  }
   //: `signIn` says which way it came in: 'lock' or 'app' (sign-in off).
   return {browser, ctx, page, OUT, signIn: way};
 }
@@ -295,4 +304,25 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
-module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};
+// A fresh library holds nothing to measure, so a sweep about the Library's readings seeds
+// it itself: the uploads through seed-libtext.js, then the readings (a caption, a vision
+// reading, fourteen page reads a file) straight into the database with seed-libtext.py,
+// which needs the data dir (DATA, or TESSELLATE_DATA_DIR when that is what served it).
+// Only when the library is empty, so a second run on the same dir adds nothing.
+async function seedLibtextIfEmpty(page) {
+  const path = require('path');
+  const { execFileSync } = require('child_process');
+  const rows = await page.evaluate(async () => {
+    const r = await apiJson('/media');
+    return (Array.isArray(r) ? r : r.items || r.media || r.files || []).length;
+  });
+  if (rows) return false;
+  const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
+  if (!DATA) throw new Error('empty library and no DATA (the data dir) to seed the readings into');
+  execFileSync('node', [path.join(__dirname, 'seed-libtext.js')], {stdio: 'inherit', env: process.env});
+  execFileSync(path.join(__dirname, '..', '..', '.venv', 'bin', 'python'),
+    [path.join(__dirname, 'seed-libtext.py'), path.join(DATA, 'tessellate.db')], {stdio: 'inherit'});
+  return true;
+}
+
+module.exports = {boot, quietFirstRun, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, seedLibtextIfEmpty};
