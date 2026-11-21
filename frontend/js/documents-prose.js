@@ -100,7 +100,7 @@ async function docGrammarWhy() {
 //: `early` is given Harper's lints the moment they are in, before LanguageTool
 //: (which may be starting Java, 12.3 s cold) has answered.
 function docGrammarAsk(text, early) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [], bare: [...DOC_GRAMMAR_SKIP_KINDS] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => {
     if (early && lints !== null) early(lints);

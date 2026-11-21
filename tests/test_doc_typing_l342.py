@@ -318,3 +318,21 @@ def test_the_document_card_is_not_a_has_subject_over_the_editor():
     docs = documents_text()
     assert not re.search(r"""["'\s]dock-menu["'\s]""", docs.replace("doc-dock-menu", ""))
     assert 'viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open))' in docs
+
+
+def test_the_grammar_worker_sends_spelling_lints_as_spans_only():
+    # The page drops Harper's spelling lints and reads only their span (LanguageTool's overlap
+    # test), so the worker sends nothing else of them: the whole lints were 359 kB per answer.
+    import re
+
+    worker = (ROOT / "frontend" / "js" / "harper-worker.js").read_text(encoding="utf-8")
+    assert "bare.has(kept.kind) ? { start: kept.start, end: kept.end, kind: kept.kind } : kept" in worker
+    assert "const bare = new Set(Array.isArray(event.data.bare) ? event.data.bare : []);" in worker
+    text = (ROOT / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
+    assert "bare: [...DOC_GRAMMAR_SKIP_KINDS] });" in text
+    assert 'const DOC_GRAMMAR_SKIP_KINDS = new Set(["Spelling"]);' in text
+    findings = text[text.index("function docGrammarFindings(") :]
+    findings = findings[: findings.index("\n}\n")]
+    assert re.search(r"if \(DOC_GRAMMAR_SKIP_KINDS\.has\(lint\.kind\)\) continue;", findings)
+    # Nothing reads a spelling lint's words before that skip.
+    assert findings.index("DOC_GRAMMAR_SKIP_KINDS") < findings.index("lint.message")
