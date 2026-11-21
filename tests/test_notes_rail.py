@@ -24,7 +24,7 @@ from tests._css_paths import CSS_DIR
 
 ROOT = Path(__file__).resolve().parent.parent
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-LIST_JS = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")
+LIST_JS = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "notes-wire.js").read_text(encoding="utf-8")
 CONNECTIONS_JS = (ROOT / "frontend" / "js" / "connections.js").read_text(encoding="utf-8")
 CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))
 
@@ -109,7 +109,7 @@ def test_opening_a_cards_menu_does_not_open_the_rail_under_it():
     been: at 1440x600, 118px between the menu and its opener, the menu over
     the rail. A menu is acting on a note, not choosing one to read: only focus
     on the row itself, or a control that is not a menu's, selects it."""
-    wire = LIST_JS[LIST_JS.index('const rail = $("notes-rail");') :]
+    wire = LIST_JS[LIST_JS.index("function wireNotesRail") :]
     focus = wire[wire.index('list.addEventListener("focusin"') :]
     focus = focus[: focus.index("\n  });\n")]
     assert ".menu-wrap" in focus and ".action-menu" in focus, "a card's menu opening still selects the note for the rail"
