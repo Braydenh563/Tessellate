@@ -5,7 +5,8 @@
 //   BASE=http://127.0.0.1:8801 node scratchpad/ui-sweeps/deepflows-seed.js
 //
 // Sets the password first when the data dir is new (`/auth/setup` answers with
-// the token), otherwise unlocks. Run it once per data dir.
+// the token), otherwise unlocks. deepflows.js runs it first; a notebook that
+// already has the seeded board is left alone, so a second run adds nothing.
 const BASE = process.env.BASE || 'http://127.0.0.1:8801';
 const PW = 'testpassword123';
 
@@ -35,10 +36,14 @@ const PW = 'testpassword123';
   const titles = ['Alpha project', 'Beta review', 'Gamma ideas', 'Delta budget', 'Epsilon travel',
     'Zeta recipes', 'Eta reading', 'Theta fitness', 'Iota garden', 'Kappa finance'];
   const made = [];
-  const have = await j('/entries/count', 'GET', null, t);
-  const skip = process.env.SKIP_NOTES || (JSON.stringify(have).match(/\d+/) || [0])[0] > 0;
-  if (skip) { console.log('notes already there, skipping the note loop'); }
-  for (let i = 0; i < (skip ? 0 : 40); i++) {
+  //: The CI data dir is shared by every sweep in a slice, so other notes are
+  //: no sign of this seed: its board is.
+  const boards = await j('/whiteboard/boards', 'GET', null, t);
+  if ((Array.isArray(boards) ? boards : []).some((b) => b.title === 'Launch plan')) {
+    console.log('deepflows seed already there');
+    return;
+  }
+  for (let i = 0; i < 40; i++) {
     const name = i < titles.length ? titles[i] : `Plain note ${i}`;
     let content = `# ${name}\n\nBody text for ${name}, about topic ${i % 5}. Remember to follow up.`;
     if (i >= 1 && i < 12) content += `\n\nSee also [[${titles[i - 1]}]] and [[${titles[(i + 3) % 10]}|a friendly alias]].`;
@@ -49,7 +54,7 @@ const PW = 'testpassword123';
     if (i >= 36) await post(`/entries/${e.id}/privacy`, { private: true });
   }
   // A few explicit links so the graph has edges whatever the filer did.
-  for (let i = 0; i < (made.length ? 8 : 0); i++) {
+  for (let i = 0; i < 8; i++) {
     try { await post(`/entries/${made[i].id}/links`, { target_id: made[i + 10].id, reason: 'seeded' }); } catch (e) { /* already linked */ }
   }
   await post('/documents', { title: 'Design system notes', content: '# Design system notes\n\nSurface tiers and the button ramp.\n\n## Rows\n\nTwo gaps.' });

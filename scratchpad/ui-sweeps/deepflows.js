@@ -7,7 +7,7 @@
 //   ... ONLY=note,graph WIDTHS=1440 THEMES=light node scratchpad/ui-sweeps/deepflows.js
 //   ... SKIP=settings node scratchpad/ui-sweeps/deepflows.js   # settings is the slow one
 //
-// Seed the data dir first: `node scratchpad/ui-sweeps/deepflows-seed.js`
+// It seeds the notebook first with deepflows-seed.js, once per data dir
 // (about 40 notes, four private, properties, [[links]] and [[A|B]], tags, two
 // documents, a board, a mind map, reminders). The flows are in
 // deepflows-flows.js, one function each:
@@ -45,7 +45,7 @@
 // must clean up: `reset()` runs between flows and closes everything.
 // Exit code is the number of failures.
 const fs = require('fs');
-const { boot, OUT } = require('./lib.js');
+const { boot, OUT, BASE } = require('./lib.js');
 
 const WIDTHS = (process.env.WIDTHS || '1440,390').split(',').map(Number);
 const THEMES = (process.env.THEMES || 'light,dark').split(',');
@@ -98,6 +98,8 @@ function overflowProbe() {
 
 async function main() {
   const flows = require('./deepflows-flows.js');
+  require('child_process').execFileSync('node', [require('path').join(__dirname, 'deepflows-seed.js')],
+    { stdio: 'inherit', env: { ...process.env, BASE } });
   const names = Object.keys(flows).filter((n) => (!ONLY.length || ONLY.includes(n)) && !SKIP.includes(n));
   const table = [];
   let failures = 0;
