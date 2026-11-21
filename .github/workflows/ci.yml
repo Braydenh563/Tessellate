@@ -134,6 +134,7 @@ jobs:
             tests/test_ocr_model.py \
             tests/test_ocr_page.py \
             tests/test_ocr_pdf_regions.py \
+            tests/test_ocr_prep_1568.py \
             tests/test_ocr_regions.py \
             tests/test_page_captions.py
 
