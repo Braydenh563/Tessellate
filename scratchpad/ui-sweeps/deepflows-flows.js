@@ -84,6 +84,22 @@ async function rowMenu(env, id, label, group = null) {
   await env.wait(500);
 }
 
+//: The list re-renders after a write (a new link, a save), which replaces the
+//: row's element; acting on it mid-render detaches it. Wait until the same
+//: element has stood for 300ms before scrolling to it.
+async function settledRow(env, id) {
+  const sel = rowSel(id);
+  await env.page.waitForFunction((s) => {
+    const el = document.querySelector(s);
+    const w = window.__dfSettle || (window.__dfSettle = {});
+    const now = performance.now();
+    if (!el) { w[s] = null; return false; }
+    if (!w[s] || w[s].el !== el) { w[s] = { el, at: now }; return false; }
+    return now - w[s].at >= 300;
+  }, sel, { timeout: 5000, polling: 100 });
+  return env.page.locator(sel);
+}
+
 //: Make a row's actions reachable. Desktop: click the card. Phone: the tap
 //: opens the note as a page, whose actions are in the thumb bar.
 async function openRow(env, id) {
@@ -92,13 +108,13 @@ async function openRow(env, id) {
     const open = await env.page.$('.sheet-overlay[data-sheet="note"] .sheet-title, .sheet-overlay[data-sheet="note"] h2');
     if (open && !(await env.page.locator('.sheet-overlay[data-sheet="note"] .note-page-list > li').first().getAttribute('data-id').then((v) => v === String(id), () => false))) await closeNotePage(env);
     if (await env.page.$('.sheet-overlay[data-sheet="note"] .note-page-bar')) return;
-    const li = env.page.locator(rowSel(id));
+    const li = await settledRow(env, id);
     await li.scrollIntoViewIfNeeded();
     await li.locator('.entry-content').first().tap({ position: { x: 20, y: 8 } });
     await env.page.waitForSelector('.sheet-overlay[data-sheet="note"] .note-page-bar', { timeout: 4000 });
     return;
   }
-  const li = env.page.locator(rowSel(id));
+  const li = await settledRow(env, id);
   await li.scrollIntoViewIfNeeded();
   if (!(await li.locator('button[aria-label^="More actions"]').first().isVisible().catch(() => false))) {
     await li.locator('.entry-content').first().click({ position: { x: 20, y: 8 } });
