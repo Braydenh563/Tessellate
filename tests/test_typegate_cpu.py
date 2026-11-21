@@ -1,12 +1,17 @@
 """The typing gate (L342, L-documents-26) as a load-robust CPU measure.
 
 Wall-clock event durations on a shared box move with other work, so the owner
-ruled the gate is read from main-thread CPU: CDP Performance.getMetrics
-TaskDuration and ScriptDuration deltas per keystroke, and long tasks from a
-trace. The budgets are p95 under 50 ms a key and no long task over 50 ms, on a
-20,000 word document at 4x CPU throttle, in the Live and Source views. This
-pins the sweep and its numbers so a later edit cannot quietly relax them; the
-run itself needs a browser and a server (`scripts/gate.sh --sweeps`).
+ruled the gate is read from main-thread CPU, and the hub ruled which number:
+CDP Performance.getMetrics ThreadTime deltas per keystroke, and long tasks by
+thread CPU (a trace's `tdur`). Not TaskDuration: it counts the waits inside a
+task as well as the work, and in a headless browser those are compositor idle
+waits (a cold open read ThreadTime 365 ms against TaskDuration 968), so it
+moves with the box's load the way wall time does. TaskDuration and
+ScriptDuration are printed beside it. The budgets are p95 under 50 ms a key
+and no long task over 50 ms, on a 20,000 word document at 4x CPU throttle, in
+the Live and Source views. This pins the sweep and its numbers so a later edit
+cannot quietly relax them; the live run needs a browser and a served app
+(TESSELLATE_TYPEGATE_BASE).
 """
 
 import os
@@ -40,8 +45,9 @@ def test_budgets_are_as_ruled():
 
 def test_reads_cpu_not_wall_clock():
     src = _src()
-    for needle in ("Performance.enable", "Performance.getMetrics", '"TaskDuration"',
-                   '"ScriptDuration"', "Tracing.start", "Emulation.setCPUThrottlingRate"):
+    for needle in ("Performance.enable", "Performance.getMetrics", '"ThreadTime"', '"TaskDuration"',
+                   '"ScriptDuration"', "Tracing.start", "Emulation.setCPUThrottlingRate",
+                   "e.tdur ?? e.dur"):
         assert needle in src, needle
     # Both views are gated by default.
     assert re.search(r'VIEWS \|\| "live,source"', src)
@@ -51,7 +57,7 @@ def test_fails_the_run_when_the_gate_is_missed():
     src = _src()
     assert "process.exitCode = 1" in src
     # The verdict uses the budgets, not literals that could drift from them.
-    assert "p95 < P95_BUDGET_MS" in src and "> LONG_TASK_BUDGET_MS" in src
+    assert "cpu.thread.p95 < P95_BUDGET_MS" in src and "cpu(e) > LONG_TASK_BUDGET_MS" in src
 
 
 def test_node_parses_the_sweep():

@@ -1,9 +1,9 @@
 // L342 typing gate, read from main-thread CPU so a busy box does not move it (owner ruling
 // 2026-11-21): a 20,000 word document at 4x CPU, typed at the top, in Live then Source.
-// Per key: CDP Performance.getMetrics TaskDuration and ScriptDuration deltas over the key's
+// Per key: CDP Performance.getMetrics ThreadTime, TaskDuration and ScriptDuration deltas over the key's
 // window (keydown to the frame after it); idle windows of the same shape give the floor (the
 // probe itself and the emblem's breath). Then the same burst under a trace: long tasks (main
-// thread RunTask over 50 ms). Gate: task p95 under 50 ms a key and no long task over 50 ms in
+// thread RunTask over 50 ms of thread CPU). Gate: ThreadTime p95 under 50 ms a key and no long task in
 // both views; a miss sets the exit code.
 //
 //   BASE=http://127.0.0.1:8871 node scratchpad/ui-sweeps/typegate.js
@@ -13,6 +13,7 @@
 //   PROFILE=1         a sampled CPU profile of the burst: self ms a key by function (top 30)
 //   PROFOUT=f         keep that profile as f.<view>.cpuprofile (inclusive times, callers)
 //   BUSYOUT=f.json    keep the burst trace (style, layout, recalcs a key are printed anyway)
+//   TRACECATS=...     more trace categories, e.g. disabled-by-default-devtools.timeline.invalidationTracking
 //   EXP_CSS="..."     an adopted sheet before typing (the CSP refuses a <style>): A/B a rule
 //   BARE=1            the floor instead: a blank page with the app's CodeMirror bundle, the same
 //                     document, line wrapping and markdown (MODE=wrap,md,sel adds drawSelection,
@@ -33,7 +34,10 @@ const settle = (page) => page.evaluate(() => new Promise((r) => requestAnimation
 const metrics = async (cdp) => {
   const m = {};
   for (const x of (await cdp.send("Performance.getMetrics")).metrics) m[x.name] = x.value;
-  return [m["TaskDuration"] * 1000, m["ScriptDuration"] * 1000];
+  //: The gate reads ThreadTime, the main thread's own CPU (hub ruling 2026-11-21): TaskDuration
+  //: also holds the waits inside a task, and headless those are compositor idle waits (a cold
+  //: open read ThreadTime 365 against TaskDuration 968 ms). Both are printed.
+  return [m["TaskDuration"] * 1000, m["ScriptDuration"] * 1000, (m["ThreadTime"] || 0) * 1000];
 };
 const stats = (xs) => {
   const s = xs.slice().sort((a, b) => a - b);
@@ -42,26 +46,33 @@ const stats = (xs) => {
 };
 
 async function keyWindow(page, cdp, ch) {
-  const [t0, s0] = await metrics(cdp);
+  const [t0, s0, c0] = await metrics(cdp);
   if (ch) await page.keyboard.type(ch);
   await settle(page);
-  const [t1, s1] = await metrics(cdp);
-  return [t1 - t0, s1 - s0];
+  const [t1, s1, c1] = await metrics(cdp);
+  return [t1 - t0, s1 - s0, c1 - c0];
 }
 
 async function cpuPerKey(page, cdp) {
   await cdp.send("Performance.enable", { timeDomain: "threadTicks" }).catch(() => cdp.send("Performance.enable"));
   const idle = [];
-  for (let i = 0; i < 12; i += 1) idle.push((await keyWindow(page, cdp, ""))[0]);
+  const idleThread = [];
+  for (let i = 0; i < 12; i += 1) {
+    const [t, , c] = await keyWindow(page, cdp, "");
+    idle.push(t);
+    idleThread.push(c);
+  }
   const task = [];
   const script = [];
+  const thread = [];
   for (const ch of PHRASE) {
-    const [t, s] = await keyWindow(page, cdp, ch);
+    const [t, s, c] = await keyWindow(page, cdp, ch);
     task.push(t);
     script.push(s);
+    thread.push(c);
   }
   await cdp.send("Performance.disable");
-  return { task: stats(task), script: stats(script), idle: stats(idle) };
+  return { task: stats(task), script: stats(script), thread: stats(thread), idle: stats(idle), idleThread: stats(idleThread) };
 }
 
 function traceSummary(ev) {
@@ -71,9 +82,12 @@ function traceSummary(ev) {
   const sum = (n) => r1(on.filter((e) => e.name === n).reduce((a, e) => a + (e.tdur ?? e.dur ?? 0), 0) / KEYS / 1000);
   const cnt = (n) => r1(on.filter((e) => e.name === n).length / KEYS);
   const tasks = on.filter((e) => e.name === "ThreadControllerImpl::RunTask" || e.name === "RunTask");
-  const long = tasks.filter((e) => e.dur / 1000 > LONG_TASK_BUDGET_MS);
+  //: Long by thread CPU (tdur), the gate's measure; by wall (dur) printed beside it.
+  const cpu = (e) => (e.tdur ?? e.dur) / 1000;
+  const long = tasks.filter((e) => cpu(e) > LONG_TASK_BUDGET_MS);
   return {
-    longTasks: long.length, longMax: r1(Math.max(0, ...tasks.map((e) => e.dur / 1000))),
+    longTasks: long.length, longMax: r1(Math.max(0, ...tasks.map(cpu))),
+    longWall: tasks.filter((e) => e.dur / 1000 > LONG_TASK_BUDGET_MS).length, longWallMax: r1(Math.max(0, ...tasks.map((e) => e.dur / 1000))),
     perKey: { style: sum("UpdateLayoutTree"), recalcs: cnt("UpdateLayoutTree"), layout: sum("Layout"), layouts: cnt("Layout"), layerize: sum("Layerize"), prePaint: sum("PrePaint"), paint: sum("Paint"), script: sum("FunctionCall") },
   };
 }
@@ -82,7 +96,7 @@ async function traced(page, cdp) {
   const ev = [];
   const on = (d) => ev.push(...d.value);
   cdp.on("Tracing.dataCollected", on);
-  await cdp.send("Tracing.start", { categories: "toplevel,devtools.timeline", transferMode: "ReportEvents" });
+  await cdp.send("Tracing.start", { categories: "toplevel,devtools.timeline" + (process.env.TRACECATS ? "," + process.env.TRACECATS : ""), transferMode: "ReportEvents" });
   await page.keyboard.type(PHRASE, { delay: 40 });
   await settle(page);
   await cdp.send("Tracing.end");
@@ -119,10 +133,10 @@ async function burst(page, cdp, label, target) {
   const tr = await traced(page, cdp);
   await page.waitForTimeout(1200);
   const prof = process.env.PROFILE ? await profiled(page, cdp) : null;
-  const pass = cpu.task.p95 < P95_BUDGET_MS && tr.longTasks === 0;
-  console.log(label, JSON.stringify({ taskMsPerKey: cpu.task, scriptMsPerKey: cpu.script, idleWindowMs: cpu.idle, longTasks: tr.longTasks, longMax: tr.longMax, perKey: tr.perKey }));
+  const pass = cpu.thread.p95 < P95_BUDGET_MS && tr.longTasks === 0;
+  console.log(label, JSON.stringify({ taskMsPerKey: cpu.task, scriptMsPerKey: cpu.script, threadMsPerKey: cpu.thread, idleWindowMs: cpu.idle, idleThreadMs: cpu.idleThread, longTasks: tr.longTasks, longMax: tr.longMax, longWall: tr.longWall, longWallMax: tr.longWallMax, perKey: tr.perKey }));
   if (prof) for (const [k, ms] of prof) console.log("  self", ms, k);
-  console.log("GATE", label, pass ? "pass" : "miss", "task p95", cpu.task.p95, "<", P95_BUDGET_MS, "long tasks over", LONG_TASK_BUDGET_MS, ":", tr.longTasks);
+  console.log("GATE", label, pass ? "pass" : "miss", "thread p95", cpu.thread.p95, "<", P95_BUDGET_MS, "(task p95", cpu.task.p95 + ") long tasks by thread CPU over", LONG_TASK_BUDGET_MS, ":", tr.longTasks);
   if (!pass) process.exitCode = 1;
 }
 
