@@ -2540,6 +2540,45 @@
      "label": "ph:file-text Edited the document “Launch checklist”"
     }
    }
+  ],
+  "edit_goals": [
+   {
+    "args": {
+     "action": "tick",
+     "goal": "Packing",
+     "item": "passport"
+    },
+    "result": {
+     "id": 3,
+     "item": 9,
+     "done": true,
+     "label": "ph:check-square Ticked off “passport” on “Packing”"
+    }
+   }
+  ],
+  "list_goals": [
+   {
+    "args": {},
+    "result": {
+     "goals": [
+      {
+       "id": 3,
+       "title": "Packing",
+       "kind": "list",
+       "target": "",
+       "progress": "1/2",
+       "items": [
+        "x passport",
+        "- charger"
+       ]
+      }
+     ],
+     "counts": {
+      "goal": 0,
+      "list": 1
+     }
+    }
+   }
   ]
  }
 }

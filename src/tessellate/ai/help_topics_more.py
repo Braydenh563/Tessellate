@@ -490,6 +490,26 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Notes", "tab": "notes"},
     },
     {
+        "id": "goals-lists",
+        "keywords": (
+            "goals", "my goals", "lists", "my lists", "goals and lists", "checklist", "shopping list",
+            "packing list", "to do list", "progress bar", "target day", "make a goal", "new goal",
+            "new list", "tick off", "cross off", "how far am i", "finish a goal",
+        ),
+        "body": (
+            "Notes, Goals holds your goals and lists, a card each. A goal has steps you tick "
+            "off, a progress bar and an optional target day; a list is for shopping, packing "
+            "or anything you cross off. New goal and New list in the bar add one; the add "
+            "line at the foot of a card adds a step, the box ticks it and the cross removes "
+            "it. A card's menu renames it, sets the target day, finishes or reopens it, or "
+            "deletes it with Undo. The bar picks All, Goals, Lists or Finished, with a count "
+            "on each. Chat does the same in words: make a goal called Learn Spanish, add "
+            "milk to the shopping list, tick milk, how far am I on my goals. Asking what "
+            "your goals are also reads notes tagged or titled goal."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
         "id": "general-settings",
         "keywords": (
             "smart quotes", "link offers", "offer links", "auto clear",
@@ -1765,6 +1785,7 @@ MORE_TOPICS.extend(MID_TOPICS)
 #: order. An entry with no meta is laid out from its id and body alone.
 TOPIC_META: dict[str, dict] = {
     "open-questions": {"title": "Open questions", "path": "Notes tab, Questions"},
+    "goals-lists": {"title": "Goals and lists", "path": "Notes tab, Goals"},
     "make-a-diagram": {"title": "Making a diagram", "path": "Library tab, Create"},
     "capture": {"title": "Capturing a note", "path": "Notes tab", "steps": (
         "Open the Notes tab (t then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
@@ -2010,7 +2031,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Asking Atlas", (
         "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "chat-acts-boards", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
-        "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
+        "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions", "goals-lists",
     )),
     ("Documents and code", (
         "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "chart-maker", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",

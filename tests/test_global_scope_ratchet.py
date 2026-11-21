@@ -86,7 +86,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 Q34 (offline studio, natural voice): studio.js wrapped whole, two exports (openStudio, speakNatural); sync-folder.js, one (openFolderSync). Measured 8,457.
 #: 2026-11-11 D24 scope-wrap-1111b: avatars.js (113 exports) and graph-canvas.js (21) wrapped whole; the tests read them through `unwrapped`, and the shared readers in `tests/_app_js.py` unwrap every file. Measured 7,878.
 #: 2026-11-11 D24 scope-wrap-1111b, second group: meetings.js, bg-art.js, settings-controls.js, settings-find.js, settings-models.js, atlas-life.js, companion-menu.js and companion-throw.js wrapped whole. Measured 7,406.
-GLOBAL_NAMES_CAP = 7406
+#: 2026-11-21 Brief 98 (goals-view.js, a lazy module wrapped whole): one export, `openGoalsView`, which its stand-in and the Goals sub-tab call. Measured 7,407.
+GLOBAL_NAMES_CAP = 7407
 
 
 @functools.lru_cache(maxsize=None)

@@ -30,6 +30,8 @@ from tessellate.core import chat_view, deps
 from tessellate.core.database import (
     AuditLog,
     Conversation,
+    Goal,
+    GoalItem,
     Document,
     Entry,
     EntryLink,
@@ -259,6 +261,22 @@ def _chats_edited(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _goals_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The goal it names is there (or gone, for a delete), with the tick or finish it says."""
+    goal = _row(session, Goal, result.get("id"))
+    if result.get("deleted"):
+        return f"goal {result.get('id')} is still there" if goal is not None else None
+    if goal is None:
+        return f"goal {result.get('id')} is not there"
+    if "item" in result:
+        item = _row(session, GoalItem, result["item"])
+        if item is None or (item.done_at is not None) != bool(result.get("done")):
+            return f"line {result['item']} is not {'ticked' if result.get('done') else 'unticked'}"
+    elif "done" in result and (goal.done_at is not None) != bool(result["done"]):
+        return f"goal {goal.id} is not {'finished' if result['done'] else 'open'}"
+    return None
+
+
 #: The write tools `contracts.py` does not cover, each with the read that
 #: proves its result. A tool in both would be checked twice; the lint keeps
 #: the two tables apart.
@@ -284,6 +302,7 @@ VERIFIERS: dict[str, Verifier] = {
     "check_learned": _learned_checked,
     "archive_note": _archive_state,
     "edit_chats": _chats_edited,
+    "edit_goals": _goals_edited,
     "save_skill": _skill_saved,
     "delete_skill": _skill_deleted,
 }

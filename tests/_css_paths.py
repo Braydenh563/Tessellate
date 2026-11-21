@@ -95,6 +95,8 @@ CSS_FILES = [
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).
     CSS_DIR / "questions-lazy.css",
+    #: The Notes tab's Goals view (goals-view.js loads it, Brief 98).
+    CSS_DIR / "goals-lazy.css",
     #: The voice-note recorder and Library, Recordings (meetings.js, Brief 80).
     CSS_DIR / "meetings-lazy.css",
     #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).

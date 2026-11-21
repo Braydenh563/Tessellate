@@ -1584,6 +1584,8 @@
             aria-controls="ask" tabindex="-1">Ask</button>
           <button role="tab" data-section="questions" aria-selected="false"
             aria-controls="questions" tabindex="-1">Questions</button>
+          <button role="tab" data-section="goals" aria-selected="false"
+            aria-controls="goals" tabindex="-1">Goals</button>
         </div>
 
         <!-- Capture: the start of the core loop -->
@@ -2493,6 +2495,45 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="muted questions-lead" id="questions-lead"></p>
           <ul class="dash-list questions-list" id="questions-list" aria-labelledby="questions-heading"></ul>
           <button type="button" class="ghost small questions-more hidden" id="questions-more">Show more</button>
+        </section>
+
+        <!-- Goals and lists (Brief 98): a card each, with its progress and
+             items; `initGoalsView` in goals-view.js, over `/goals`. -->
+        <section class="card hidden" id="goals" aria-labelledby="goals-heading">
+          <div class="dock" data-dock-name="goals" data-dock-more="goals-more-menu" role="toolbar" aria-label="Goals controls">
+            <div class="dock-identity">
+              <h2 id="goals-heading">Goals</h2>
+            </div>
+            <div class="dock-arrange">
+              <select id="goals-show" aria-label="Which goals to show" title="Which goals to show">
+                <option value="" data-label="All">All</option>
+                <option value="goal" data-label="Goals">Goals</option>
+                <option value="list" data-label="Lists">Lists</option>
+                <option value="done" data-label="Finished">Finished</option>
+              </select>
+            </div>
+            <div class="dock-actions">
+              <button id="goals-new-goal" class="ghost small" type="button"
+                title="Add a goal with steps and a progress bar"><i class="ph ph-target ph-lead" aria-hidden="true"></i> New goal</button>
+              <button id="goals-new-list" class="ghost small" type="button" data-fold-narrow
+                title="Add a list to cross things off"><i class="ph ph-list-checks ph-lead" aria-hidden="true"></i> <span class="dock-word">New list</span></button>
+              <button type="button" id="goals-help-toggle" class="icon-only ghost small graph-help-toggle"
+                data-help-for="goals-help-body" aria-controls="goals-help-body"
+                aria-expanded="false" title="What is this?" aria-label="What is this?">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="help-body hidden" id="goals-help-body" role="dialog" aria-label="What is this?">
+            <p>A goal has steps you tick off, a progress bar and an optional
+              target day; a list is for shopping, packing or anything you
+              cross off. Add a line at the foot of a card, tick it, or remove
+              it with the cross. The menu renames, sets the target day,
+              finishes or deletes, and a delete offers Undo.</p>
+            <p>Ask Chat to do the same: "make a goal called Learn Spanish",
+              "add milk to the shopping list", "how far am I on my goals".</p>
+          </div>
+          <ul class="goals-list" id="goals-list" aria-labelledby="goals-heading"></ul>
         </section>
 
         <!-- Browse: everything you've saved -->

@@ -429,6 +429,8 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
      #: categories already are (INBOX 1357, class B).
      r"|" + _listing("reminders?|tasks|to-?dos|to do list|todo list")),
     ("complete_reminder", r"\bmark\b.*\breminder\b.*\bdone\b|\btick off\b.*\breminder\b"),
+    ("list_goals", r"\bhow (?:far|am i)\b.*\bmy (?:goals?|lists?)\b|\bprogress (?:on|of|with) my (?:goals?|lists?)\b|\bgoals (?:and|&) lists\b"),
+    ("edit_goals", r"\b(?:make|create|start) (?:me )?an? (?:new )?(?:goal|list) (?:called|named)\b|\bto the .+ goal\b|\b(?:finish|delete|reopen) the .+ (?:goal|list)\b"),
     ("list_documents", r"^(?:list|show)(?: me)? (?:all )?my documents[?.]?$|" + _listing("documents|docs")),
     ("list_skills", r"\b(?:list|show) (?:me )?(?:all )?my skills\b|\bwhat skills\b|" + _listing("skills")),
     ("run_skill", r"\brun the .+ skill\b"),

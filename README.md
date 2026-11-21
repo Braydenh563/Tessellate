@@ -163,7 +163,9 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 80 tools to search, link, organise and act on
+- Goals keeps your goals and lists as cards with a progress bar and items you
+  tick off; Chat can make, tick and finish them too.
+- In Agent mode the assistant has 82 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
@@ -452,6 +454,8 @@ questions and answers, and the app says so in one line.
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
+| Speech detection, engine (onnxruntime) | Finds where speech is in a recording, on this computer; the Speech detection bundle installs it with its model in one click |
+| Speech detection, model (Silero VAD) | The small model that tells speech from silence; a pinned 2.3 MB download kept in the data folder; works offline |
 | Natural voice, voice (LJ Speech) | The public-domain US English voice the engine speaks with; a pinned 64 MB download kept in the data folder; works offline |
 
 ## Privacy

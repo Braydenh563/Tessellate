@@ -228,7 +228,7 @@ def _pin_note(session: Session, args: dict) -> dict:
 LINK_TYPE_DESCRIPTION_CHARS = 420
 
 _LINK_TYPE_LEAD = (
-    "Optional: note_id <kind> the other note. One of: "
+    "note_id <kind> the other note. One of: "
 )
 _LINK_TYPE_TAIL = ". Omit when unsure."
 

@@ -1,0 +1,77 @@
+/* The Notes tab's Goals view (Brief 98), loaded by goals-view.js on its first
+   show: a card per goal or list, its progress bar, items and add line. */
+.goals-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goal-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.goal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.goal-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.goal-facts {
+  margin: 0;
+}
+
+.goal-bar {
+  width: 100%;
+  height: var(--space-2);
+  accent-color: var(--accent);
+}
+
+.goal-items {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.goal-item label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.goal-item input:checked + .goal-item-text {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.goal-item-text {
+  overflow-wrap: anywhere;
+}
+
+.goal-add input {
+  width: 100%;
+}

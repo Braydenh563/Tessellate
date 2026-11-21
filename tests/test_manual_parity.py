@@ -52,6 +52,7 @@ MANUAL = {
     "complete_reminder": ("shell-reminders.js", "before, { done: checkbox.checked });", "Reminders, the tick box"),
     "rename_tag": ("tag-manager.js", '"/tags/rename",', "Manage tags, Rename"),
     "delete_tag": ("tag-manager.js", '"/tags/delete", { names }', "Manage tags, Remove from all notes"),
+    "edit_goals": ("goals-view.js", 'send(`/${goal.id}/items`, "POST", { text })', "Notes, Goals, the add line on a card"),
     "edit_chats": ("chat-order.js", "async function chatViewChange(change) {", "Chats list, the sort and group button"),
     "save_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Save"),
     "delete_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Delete"),

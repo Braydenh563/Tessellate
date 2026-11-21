@@ -493,6 +493,7 @@ function paletteCommands() {
     //: UX-08: places Ctrl+K could not reach (tests/test_palette_synonyms.py).
     { label: "ph:trash Open the bin", reveal: "library-bin", keywords: "bin trash deleted binned restore recover", about: "Everything you threw away, in the Library, ready to restore." },
     { label: "ph:question Questions your notes ask", reveal: "notes-questions", keywords: "questions open questions", about: "The open questions found in your notes." },
+    { label: "ph:target Goals and lists", reveal: "notes-goals", keywords: "goals lists checklist shopping packing progress", about: "Goals with steps and progress, and lists you tick off." },
     { label: "ph:chat-text Ask your notes", reveal: "notes-ask", keywords: "ask question answer search my notes", about: "An answer quoted from your own notes, with or without a model." },
     //: The Guide had no row: "guide" found the tour (CHAT_PLAN 9 row 3).
     { label: "ph:question Ask the Guide", reveal: "atlas-help", keywords: "guide help how do i how does where is question", about: "Ask how anything in the app works; it answers from the app's own help." },

@@ -14,7 +14,7 @@
 // boot opens after the unlock (`routerRestore`, app.js).
 
 const ROUTE_TABS = { dashboard: "dashboard", notes: "notes", chat: "chat", docs: "documents", library: "library", graph: "graph", timeline: "timeline", reminders: "reminders", settings: "settings", Manual: "Manual", Statistics: "Statistics" };
-const ROUTE_NOTES_SECTIONS = ["capture", "writing-room", "ask", "questions"];
+const ROUTE_NOTES_SECTIONS = ["capture", "writing-room", "ask", "questions", "goals"];
 //: The Library's sub-tabs by the word the address uses. Images and Files are
 //: one view (`library-view-media`) in two kinds, so their sections carry the
 //: kind; "All" is the view whose id kept the old name, documents.
