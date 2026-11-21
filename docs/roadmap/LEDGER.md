@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 89 | 13 | 0 | 0 | 102 |
+| world-class | 0 | 90 | 12 | 0 | 0 | 102 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 479 | 84 | 2 | 111 | 935 |
+| all | 372 | 480 | 83 | 2 | 111 | 935 |
 ## chat
 
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found.
@@ -501,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
-- [ ] **L701** `world-class` partly, L: 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms not fixed. From ledger-1112 I8.
 - [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.
 - [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
 - [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
@@ -549,6 +548,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
+- [ ] **L-world-class-620** `world-class` open, M: Grid-sizing callbacks over 50 ms: read card heights from ResizeObserver entries instead of getBoundingClientRect after the fills dirty layout. From frontend/js/dashboard.js watchDashWidgets rAF and settle afterFrames callbacks. Evidence: sizeDashWidgets 49-307 ms at 4x, 500 notes (forced layout of the filled grid; LoAF user-callback)
 
 ## general
 

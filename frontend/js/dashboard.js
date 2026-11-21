@@ -878,6 +878,7 @@ function watchDashWidgets() {
   dashResizeObserver?.disconnect();
   let queued = false;
   dashResizeObserver = new ResizeObserver(() => {
+    dashResizeObserver.follow?.();
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => {
@@ -1720,6 +1721,7 @@ function renderFirstStepsLazy() {
 //: synchronous renderer cannot break the dashboard loop.
 const WIDGET_STALL_MS = 20000;
 
+
 function mountWidgetBody(widget, body) {
   const failed = (message) => {
     if (!body.isConnected) return;
@@ -1756,7 +1758,9 @@ function mountWidgetBody(widget, body) {
     clearTimeout(stall);
     unskeleton();
   };
-  const drawn = Promise.resolve()
+  //: Each widget's fill starts in its own task (L701): behind a microtask, every render queued in a loop slice ran
+  //: in that slice's continuation (56 ms at 4x on 500 notes).
+  const drawn = mountWidgetBody.yield()
     .then(() => widget.render(body))
     .then(done)
     .catch(() => { done(); failed("Couldn't load this widget."); });
@@ -1768,6 +1772,10 @@ function mountWidgetBody(widget, body) {
   }, WIDGET_STALL_MS);
   return drawn;
 }
+
+//: A task boundary: `scheduler.yield` where the browser has it (the continuation runs ahead of other queued
+//: tasks), else a 0 ms timer. A property, not a global, to hold the shared-scope name count (the grid loop uses it too).
+mountWidgetBody.yield = () => (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
 
 //: **Back on the dashboard, the last picture stays** (INBOX 602, the owner:
 //: "every time I go off the dashboard and go back on it, it is empty for a
@@ -1816,9 +1824,7 @@ async function renderDashboard({ refresh = false } = {}) {
   //: The catalogue (app-features.js) loads beside the preferences, for Quick access.
   lazyScript("/js/app-features.js");
   await loadPreferences().catch(() => null);
-  //: A task boundary: `scheduler.yield` where the browser has it (the
-  //: continuation runs ahead of other queued tasks), else a 0 ms timer.
-  const dashYield = () => (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
+  const dashYield = mountWidgetBody.yield;
   renderDashboardGreeting();
   //: Three tasks, not one (L-world-class-354): the greeting, the menus and
   //: the grid were 74 ms of one 119 ms boot microtask at 4x CPU. The grid
@@ -2070,22 +2076,31 @@ function dashFillingSkeleton(grid, count) {
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
   //: By `translate`, which the compositor moves without a layout: writing
   //: `top` here counted as 0.077 of layout shift at boot.
-  //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
-  //: filling in had left the layout dirty, and each read laid the page out.
-  const follow = () => {
-    if (!outline.isConnected) return;
-    afterFrames(() => setTimeout(function dashSkeletonFollowTask() {
-      if (!outline.isConnected) return;
+  //: Followed by the grid's own ResizeObserver (`watchDashWidgets`, which also watches what sits above the grid
+  //: while the outline is up; L701): its callback runs after the frame's layout, so reading `grid.offsetTop` there
+  //: forces nothing. The 80 ms timer read it while the widgets filling in had dirtied the layout, 36 to 44 ms a
+  //: read at 4x CPU on 500 notes (INBOX 1419 moved it after a paint; not enough).
+  //: The skeleton's follow hangs off the observer (`follow`, and `above` for what it watches), so a new grid drops it.
+  const ro = dashResizeObserver;
+  if (ro) {
+    ro.follow = () => {
+      if (!outline.isConnected) return void (ro.follow = null);
       outline.style.translate = `0 ${grid.offsetTop - top0}px`;
-      setTimeout(follow, 80);
-    }, 0), 1);
-  };
-  setTimeout(follow, 80);
+    };
+    ro.above = [];
+    for (let el = grid.previousElementSibling; el; el = el.previousElementSibling) ro.above.push(el);
+    for (const el of ro.above) ro.observe(el);
+  }
   return outline;
 }
 
 function dashFillingSkeletonDone(outline) {
   if (!outline) return;
+  if (dashResizeObserver) {
+    dashResizeObserver.follow = null;
+    for (const el of dashResizeObserver.above || []) dashResizeObserver.unobserve(el);
+    dashResizeObserver.above = [];
+  }
   outline.style.opacity = "0";
   setTimeout(() => outline.remove(), 260);
 }

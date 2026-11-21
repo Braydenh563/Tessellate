@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard fill (L701): each widget now starts its fill in its own task (`dashYield` before `render`, not a microtask) and the grid skeleton follows by the grid's own ResizeObserver instead of an 80 ms timer that read `grid.offsetTop` mid-fill; 4x CPU, 500 notes, median of 5: dashboard.js forced layout 53 to 16 ms, worst dashboard.js script 73 to 42 ms (100-125 before on busy runs), runs with a script over 50 ms 4 of 5 to 1 of 5; 1x: forced 16 to 0 ms. Pinned by `tests/test_dash_fill_tasks.py`. Still over 50 ms: the grid-sizing rAF callbacks (L-world-class-620).
 - MCP links: Revoke and Make a link now carry Undo; a revoked token's row is kept an hour so Undo brings the same token back (L687, no undo exemption).
 - A History row from the fading-scores route says you started it, and a lint keeps every route run named with its origin.
 - Two ratchets after the merges: Help topics released on leaving Help are marked by an empty list, not a hand-set aria-busy (the spinner recipe), and the size caps for composer_tables.py and question_noise.py fall to their new sizes.
