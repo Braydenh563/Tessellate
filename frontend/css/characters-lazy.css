@@ -1244,6 +1244,13 @@
    line on it, the closed eye's line once it is down. */
 .nm-atlas .atl-lid-edge { fill: none; stroke: var(--atl-line); stroke-width: 1.1; stroke-linecap: round; }
 
+/* Unseen but for a blink (L-ui-modernisation-201): the lids' `rotate` as the
+   head attends ran on the main thread every frame, at opacity 0. Hidden, they
+   take each new place at once; blinking, they ease as before (and a blink
+   waits out the face's own move, atlas-motion.js `atlasBlink.settling`). */
+#nm-buddy:not(.nmb-act-hide) .nm-atlas.atl-layer-lids:not(.atl-blinking, .atl-blinking-slow),
+#nm-buddy:not(.nmb-act-hide) .nm-atlas.atl-layer-lids:not(.atl-blinking, .atl-blinking-slow) * { transition: none; }
+
 .nm-atlas.atl-layer-lids:not(.atl-layer-lidf).atl-blinking { animation: atl-blink-f3 320ms linear; }
 
 .nm-atlas.atl-layer-lids:not(.atl-layer-lidf).atl-blinking-slow { animation: atl-blink-slow-f3 1420ms linear; }

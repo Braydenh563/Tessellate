@@ -123,3 +123,61 @@ def test_the_wisps_drift_box_holds_each_drawing_and_moves_with_its_loops() -> No
     # Paused wherever the drawing's own loops were: lite, away, carried, off and hidden.
     pause = re.search(r"((?:[^{}]*\.atl-lw-drift,?\s*)+)\{ animation-play-state: paused !important; \}", lazy)
     assert pause and pause.group(1).count(".atl-lw-drift") == 5
+
+
+# --- L-ui-modernisation-201: the lids' layers, unseen but for a blink -------------------------
+
+MOTION = unwrapped((ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
+LIDS_STILL = (
+    "#nm-buddy:not(.nmb-act-hide) .nm-atlas.atl-layer-lids:not(.atl-blinking, .atl-blinking-slow),\n"
+    "#nm-buddy:not(.nmb-act-hide) .nm-atlas.atl-layer-lids:not(.atl-blinking, .atl-blinking-slow) * { transition: none; }"
+)
+
+
+def test_the_hidden_lids_take_each_new_place_at_once() -> None:
+    """The three lid layers sit at opacity 0 but for a blink (and the hide act,
+    which shows them), and their `rotate` transition as the head attends ran on
+    the main thread at every vsync, unseen: a knockout of it took the pinned
+    full figure from 185 to 134 ms/s. Unseen, they snap; blinking, they ease as
+    before. No `!important` (test_style_scale's ratchet): the id outranks the
+    layer's own `transition: rotate`."""
+    assert LIDS_STILL in CSS["characters-lazy.css"]
+
+
+@needs_node
+def test_a_blink_waits_out_the_face_moving_under_it() -> None:
+    """Snapped lids are where the face is going, so a blink waits while a
+    transition moves the face's eyes and not the lids (`atlasBlink.settling`):
+    the remaining ms, plus a frame. One that moves both (a box round the two) or
+    neither (an iris, a leg) does not hold it."""
+    start = MOTION.index("atlasBlink.settling = (")
+    src = (
+        "class CSSTransition { constructor(target, end, at, state = 'running') { this.effect = { target, getComputedTiming: () => ({ endTime: end, localTime: at }) }; this.playState = state; } }\n"
+        "class CSSAnimation {}\n"
+        "const atlasBlink = () => {};\n"
+        + MOTION[start : MOTION.index("\n};\n", start) + 4]
+        + r"""
+const node = (name, kids = []) => ({ name, kids, contains(o) { return o === this || this.kids.some((k) => k.contains(o)); } });
+const eye = node("eye"), iris = node("iris");
+const head = node("head", [eye, iris]);
+const lids = node("lids");
+const breathe = node("breathe", [head, lids]);
+const box = { anims: [], querySelector: (s) => (s.includes("atl-eye") ? eye : s.includes("lids") ? lids : null), getAnimations() { return this.anims; } };
+const out = {};
+out.none = atlasBlink.settling(box);
+box.anims = [new CSSTransition(head, 240, 100)];
+out.head = atlasBlink.settling(box);
+box.anims = [new CSSTransition(breathe, 240, 100), new CSSTransition(iris, 180, 0), new CSSTransition(head, 240, 240, "finished")];
+out.shared = atlasBlink.settling(box);
+box.anims = [Object.assign(new CSSAnimation(), { playState: "running", effect: { target: head } })];
+out.loop = atlasBlink.settling(box);
+process.stdout.write(JSON.stringify(out));
+"""
+    )
+    assert _node(src) == {"none": 0, "head": 156, "shared": 0, "loop": 0}
+
+
+def test_a_held_blink_tries_again_no_more_than_three_times() -> None:
+    fn = _block(MOTION, "function atlasBlink(")
+    assert "const wait = waited < 3 ? atlasBlink.settling(box) : 0;" in fn
+    assert "atlasBlink(box, slow, waited + 1)" in fn

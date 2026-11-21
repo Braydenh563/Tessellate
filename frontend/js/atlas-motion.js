@@ -8,15 +8,36 @@
 //: later frame lies over an earlier one and its skin covers the earlier
 //: lid's edge, so the frames stack as the lid comes down. Strokes never
 //: change width.
-function atlasBlink(box, slow = false) {
+function atlasBlink(box, slow = false, waited = 0) {
   const roots = box.querySelectorAll(".atl-layer-lids");
   if (!roots.length) return;
+  //: Unseen, the lids take each new place at once (their transitions off, the CSS, L-ui-modernisation-201), so a blink
+  //: first waits out the face's own move under them (a turn of the head, under 300ms), at most three times.
+  const wait = waited < 3 ? atlasBlink.settling(box) : 0;
+  if (wait) {
+    setTimeout(() => atlasBlinkMay(box) && atlasBlink(box, slow, waited + 1), wait);
+    return;
+  }
   const cls = slow ? "atl-blinking-slow" : "atl-blinking";
   for (const el of roots) el.classList.add(cls);
   setTimeout(() => {
     for (const el of roots) el.classList.remove(cls);
   }, slow ? 1460 : 360);
 }
+//: The ms until no transition moves the face's eyes and not its lids (a box round both moves the two alike), and a frame.
+atlasBlink.settling = (box) => {
+  const eye = box.querySelector(".atl-layer-body .atl-eye");
+  const lids = box.querySelector(".atl-layer-lids");
+  if (!eye || !lids || typeof CSSTransition !== "function") return 0;
+  let left = 0;
+  for (const a of box.getAnimations({ subtree: true })) {
+    const t = a.effect?.target;
+    if (!(a instanceof CSSTransition) || a.playState !== "running" || !t?.contains(eye) || t.contains(lids)) continue;
+    const c = a.effect.getComputedTiming();
+    left = Math.max(left, c.endTime - c.localTime);
+  }
+  return left > 0 ? Math.ceil(left) + 16 : 0;
+};
 
 //: **When the figures blink.** One clock for every layered figure on the
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes

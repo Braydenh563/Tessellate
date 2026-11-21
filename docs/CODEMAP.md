@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2792, CSS sections 529, backend routes 714, backend modules 10916, test files 2886, tests 22641, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8509, frontend ids 2792, CSS sections 529, backend routes 714, backend modules 10916, test files 2886, tests 22644, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8509)
 
@@ -2113,23 +2113,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `atlasBlink` | frontend/js/atlas-motion.js:11 |
-| `atlasBlinkMay` | frontend/js/atlas-motion.js:30 |
-| `atlasBlinkStart` | frontend/js/atlas-motion.js:111 |
-| `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
-| `atlasLowerState` | frontend/js/atlas-motion.js:147 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:176 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:225 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:184 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:541 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:276 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:241 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:301 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:321 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:486 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:378 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:392 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:455 |
-| `atlasTossState` | frontend/js/atlas-motion.js:400 |
+| `atlasBlinkMay` | frontend/js/atlas-motion.js:51 |
+| `atlasBlinkStart` | frontend/js/atlas-motion.js:132 |
+| `atlasBlinkTick` | frontend/js/atlas-motion.js:69 |
+| `atlasLowerState` | frontend/js/atlas-motion.js:168 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:197 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:246 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:205 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:562 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:297 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:262 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:322 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:342 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:507 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:399 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:413 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:476 |
+| `atlasTossState` | frontend/js/atlas-motion.js:421 |
 
 ### frontend/js/atlas.js (97)
 
@@ -12852,7 +12852,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:19189 |
 | A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:19045 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2859 |
-| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2681 |
+| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2688 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/07-whiteboard-misc.css:15745 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/05-sidebars-themes.css:5727 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:7209 |
@@ -13378,7 +13378,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/atlas-lazy.css | 1228 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 207 |
-| frontend/css/characters-lazy.css | 3107 |
+| frontend/css/characters-lazy.css | 3114 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
@@ -28133,7 +28133,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22641)
+## Tests (22644)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28248,7 +28248,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_fem_1696.py | 4 |
 | tests/test_atlas_frame_reads.py | 10 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
-| tests/test_atlas_idle_frames_95.py | 4 |
+| tests/test_atlas_idle_frames_95.py | 7 |
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_masc_1607.py | 7 |
