@@ -115,7 +115,7 @@ def test_the_client_follows_changes_while_visible():
     start = source.index("function followNoteChanges")
     body = source[start:start + 2500]
     assert "/entries/changes" in body
-    assert "editingId" in body
+    assert 'appState.get("note")' in body
     assert 'addEventListener("visibilitychange"' in source[start - 2000:start + 4000]
 
 

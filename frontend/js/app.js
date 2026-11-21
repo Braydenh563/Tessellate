@@ -128,7 +128,6 @@ let draftsOnly = false;
 // meaning (a group you can go to). The same note is in both readings.
 let favouritesOnly = false;
 let linkSource = null; // entry id waiting for its link partner
-let editingId = null; // entry id currently in inline-edit mode
 //: Set by the "No tags yet" chip: the next edit form for this id opens with
 //: its tags field focused. Read and cleared by renderEditForm.
 let focusTagsAfterRender = null;

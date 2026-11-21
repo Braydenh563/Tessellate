@@ -226,11 +226,11 @@ function renderInlineAction(entry) {
 //: (filing event, change poll, late refresh) built the form again: a bare textarea whose
 //: editor mounts only on a focus nobody gave it, a click on it losing its target. The
 //: form's row is kept here and handed back, unless the redraw is a fresh open (a focus
-//: request pending) or the form was closed since (`editingId` moved).
+//: request pending) or the form was closed since (the note slice (`appState.get("note")`) moved).
 
 function entryItem(entry, options = {}) {
   if (entryItem.live?.dataset.id == entry.id) {
-    if (editingId !== entry.id) entryItem.live = null;
+    if (appState.get("note") !== entry.id) entryItem.live = null;
     else if (options.actions && focusBodyAfterRender !== entry.id && focusTagsAfterRender !== entry.id
       && (!entryItem.live.isConnected || entryItem.live.parentElement.id === "entry-list")) return entryItem.live;
   }
@@ -253,7 +253,7 @@ function entryItem(entry, options = {}) {
   // class does nothing in card view, where every note is already this shape.
   if (expandedRows.has(entry.id)) li.classList.add("row-expanded");
 
-  if (editingId === entry.id && options.actions) {
+  if (appState.get("note") === entry.id && options.actions) {
     //: **Placeholders while the form's own file arrives** (qa-1005). Before
     //: app.js's preload, or on a slow disk, `renderEditForm` is the lazy
     //: stand-in, which answers with a promise and draws later: the card fell

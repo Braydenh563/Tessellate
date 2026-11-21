@@ -577,7 +577,7 @@ const CARD_KINDS = {
       smallButton("ph:pencil-simple Edit", "Open this note with the editor on", () => {
         //: The same two steps the note list's own Edit does, in the order that
         //: works from here: `flashEntry` switches tab and re-renders, and
-        //: `editingId` is what that render reads to open the editor. Set it
+        //: the note slice (`appState.get("note")`) is what that render reads to open the editor. Set it
         //: first and the jump would clear it.
         flashEntry(item.id);
         openNoteEditor(item.id);
@@ -1008,7 +1008,7 @@ function pushDraftUndo() {
   );
   draftUndoStack.push(point);
   if (draftUndoStack.length > MAX_DRAFT_UNDO) draftUndoStack.shift();
-  updateDraftUndoButton();
+  paintDraftStepBack();
 }
 
 function putDraftBack(point) {
@@ -1018,11 +1018,11 @@ function putDraftBack(point) {
   foldedThoughts = "";
   $("draft-text").value = point.draft;
   updateDraftCount();
-  updateDraftUndoButton();
+  paintDraftStepBack();
   saveDraftLocally();
 }
 
-function updateDraftUndoButton() {
+function paintDraftStepBack() {
   const button = $("draft-undo");
   // `draftController` as well as the stack: the undo point for a pass is
   // pushed at its first token, not before the call, so without this the

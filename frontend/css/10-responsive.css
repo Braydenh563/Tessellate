@@ -525,9 +525,6 @@ header#top-bar[data-scrolled="1"],
   #tab-documents {
     --sidebar-toggle-size: 2.75rem;
   }
-  #tab-documents #doc-view-seg button {
-    min-height: calc(2.75rem - 0.5rem);
-  }
 }
 /* **The segment grows with its buttons, not past them** (INBOX 568, the
    owner: "the document editor edit/read pill is overflowing at the bottom
@@ -2380,12 +2377,6 @@ sheet-host[hidden] {
     flex: 1 1 0;
     min-width: 0;
   }
-  /* The dock recipe's bar (L-world-class-351) keeps one step of inset on a
-     phone, not its desktop three and four: measured at 390, its padding took
-     the title from 85px to 57 and the row from 44 to 62. */
-  #tab-documents .dock.doc-dock {
-    padding: var(--space-1);
-  }
   #tab-documents .doc-back-label,
   #tab-documents .doc-ai-label,
   #tab-documents .doc-dock-status,
@@ -2413,8 +2404,15 @@ sheet-host[hidden] {
   #tab-documents .doc-view-cluster {
     gap: var(--space-1);
   }
+  /* Edit and Read are targets like the back and kebab beside them (measured
+     37.1x36 against 44x44): the well drops its padding so 44 fits inside it. */
+  #tab-documents #doc-view-seg {
+    padding: 0;
+  }
   #tab-documents #doc-view-seg > button {
     padding-inline: var(--space-1) var(--space-2);
+    min-height: var(--target-min);
+    min-width: var(--target-min);
   }
   #tab-documents .doc-statusbar {
     overflow: hidden;

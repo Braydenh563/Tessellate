@@ -42,6 +42,10 @@ def attachment_headers(name: str, disposition: str = "attachment") -> dict[str, 
 
 
 _RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
+#: The most plain bytes one sealed 206 holds. `<audio>` opens with `bytes=0-`;
+#: answering that whole would decrypt the file into memory, so the span is cut
+#: and Content-Range says where it stopped (RFC 9110 lets a client ask again).
+MAX_SPAN = 4 * 1024 * 1024
 
 
 def _span(request_range: str | None, total: int) -> tuple[int, int] | None | bool:
@@ -64,13 +68,15 @@ def _span(request_range: str | None, total: int) -> tuple[int, int] | None | boo
 
 
 def sealed_http(exc: Exception):  # noqa: ANN201
-    """A sealed file this caller cannot read: 423 while locked, 409 when damaged."""
+    """A sealed file this caller cannot read: 423 while locked, 409 when damaged or changed."""
     from fastapi import HTTPException
 
     from tessellate.core import sealed_files
 
     if isinstance(exc, sealed_files.SealedLocked):
         return HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
+    if isinstance(exc, sealed_files.SealedChanged):
+        return HTTPException(status_code=409, detail=sealed_files.CHANGED_DETAIL)
     return HTTPException(status_code=409, detail=sealed_files.DAMAGED_DETAIL)
 
 
@@ -118,7 +124,7 @@ def sealed_aware(path, media_type=None, headers=None, filename=None, request_ran
             return StreamingResponse(body, media_type=media_type, headers={**headers, "Content-Length": str(total)})
         if span is False:
             return Response(status_code=416, headers={**headers, "Content-Range": f"bytes */{total}"})
-        start, end = span
+        start, end = span[0], min(span[1], span[0] + MAX_SPAN - 1)
         headers["Content-Range"] = f"bytes {start}-{end}/{total}"
         return Response(sealed_files.read_range(path, start, end), status_code=206, media_type=media_type, headers=headers)
     except sealed_files.SealedError as exc:

@@ -1773,6 +1773,7 @@ def runner_enabled(name: str) -> bool:
 
         return enabled(deps.get_config(), name)
     except Exception:  # noqa: BLE001  # no app state: nothing has been switched off
+        logger.debug("runner_enabled: no app state: nothing has been switched off", exc_info=True)
         return True
 
 

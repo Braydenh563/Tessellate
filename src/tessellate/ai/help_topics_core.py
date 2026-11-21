@@ -161,7 +161,8 @@ HELP_TOPICS: list[dict] = [
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
             "beside its note and follows it as you pan and zoom; drag its title to "
             "put it somewhere else and it stays there until you close it. A hub's lines "
-            "run straight and faint until you point at it."
+            "run straight and faint until you point at it. The corner strip zooms out, "
+            "in and fits; Ctrl+Plus (or Ctrl+=) zooms in, Ctrl+- out and Ctrl+0 fits."
         ),
         "badge": {"label": "Graph", "tab": "graph"},
     },

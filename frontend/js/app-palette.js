@@ -971,7 +971,7 @@
   function paletteNotesInHand() {
     if (selectMode && selectedIds.size) return [...selectedIds];
     const row = overlayReturnFocus?.closest?.("#entry-list li[data-id]");
-    const id = notePageOpenId || editingId || Number(row?.dataset.id);
+    const id = notePageOpenId || appState.get("note") || Number(row?.dataset.id);
     return id ? [Number(id)] : [];
   }
 

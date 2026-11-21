@@ -844,6 +844,7 @@ renderSavedFinds();
 //: surface is built lazily, so the field is wired when it appears (or now, if it already has).
 //: A statement, not a named function: the shared scope is capped (test_global_scope_ratchet).
 onSurface("notes", () => {
+  renderSavedFinds(); // the sidebar list is built with the surface, after this file may have run (L-world-class-160)
   const box = document.getElementById("sidebar-find");
   if (!box || box.dataset.wired) return;
   box.dataset.wired = "1";
