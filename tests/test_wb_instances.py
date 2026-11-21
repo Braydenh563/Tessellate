@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests._app_js import frontend_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 SRC = (JS / "whiteboard-instances.js").read_text(encoding="utf-8")
@@ -611,7 +613,7 @@ def test_no_board_file_looks_up_a_layer_or_an_item_document_wide():
         if hits:
             found[path.name] = hits
     assert found == {}, found
-    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")  # the board's code, the pieces moved out of it included (L634)
     assert 'd3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))' in wb
     assert "d3.select(wbInstances.query(layer))" in wb
 
@@ -654,8 +656,8 @@ process.stdout.write(JSON.stringify(wbInvZoomRules().split("\\n")));
 
 
 def _wb_functions(*names: str) -> str:
-    """whiteboard.js's own text for each named top-level function or const."""
-    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    """whiteboard.js's own text for each named top-level function or const, the pieces moved out of it included (L634)."""
+    wb = frontend_text("whiteboard.js")
     parts = []
     for name in names:
         at = re.search(rf"^(?:async function|function|const) {name}\b", wb, re.M).start()

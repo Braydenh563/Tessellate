@@ -20,6 +20,10 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
+    "/js/whiteboard-boards.js", //: After whiteboard.js, before the files that follow it: the board list, loading, renaming and new boards; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-handles.js", //: After whiteboard.js, before the files that follow it: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-items.js", //: After whiteboard.js, before the files that follow it: painting, fitting, saving and deleting items; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-drag.js", //: After whiteboard.js, before the files that follow it: the link index and dragging; wrapped, names whiteboard.js at run time only (L634).
     "/js/whiteboard-instances.js", //: After whiteboard.js: board state per instance (an embed's own state, selection, undo and zoom); wrapped, reads whiteboard.js's `wbZoom` at load.
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.

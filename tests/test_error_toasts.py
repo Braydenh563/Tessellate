@@ -327,9 +327,15 @@ FAULTS = {
     'whiteboard-undo.js': {
         'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
     },
-    'whiteboard.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+    #: Moved with the board list, item saves and the drag out of whiteboard.js (L634).
+    'whiteboard-boards.js': {
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
+    },
+    'whiteboard-items.js': {
+        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+    },
+    'whiteboard-drag.js': {
+        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
     },
 }
 

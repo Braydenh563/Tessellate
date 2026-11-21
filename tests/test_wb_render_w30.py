@@ -168,7 +168,9 @@ def test_a_boards_connector_batch_measures_only_the_objects_its_ends_are_on():
 
 
 def test_an_objects_z_index_is_kept_on_its_element_not_read_back_from_style():
-    body = script_file_text("whiteboard.js")[script_file_text("whiteboard.js").index("function renderWbObjects(") :]
+    #: renderWbObjects and what followed it moved to whiteboard-items.js and whiteboard-drag.js (L634).
+    items = script_file_text("whiteboard-items.js")
+    body = items[items.index("function renderWbObjects(") :] + script_file_text("whiteboard-drag.js")
     assert "if (this._wbRank !== rank) {" in body and "this.style.zIndex = String(rank);" in body
     #: The only writers of an object's z-index are the enter and this pass; a new one must go through the cache.
     assert body.count(".style.zIndex") == 1
