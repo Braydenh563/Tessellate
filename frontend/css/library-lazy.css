@@ -10716,3 +10716,342 @@ input[type="color"].wb-mixed {
   background: var(--surface-3);
 }
 
+/* --- the node radial, moved from 07-whiteboard-misc.css (L-world-class-364): it draws only on a map, which arrives
+   with this bundle. It was the last `.wb-map-*` block in 07 and nothing later in the boot files competes with its
+   selectors, so the later source position changes no winner. --- */
+/* --- the node radial (MINDMAP_PLAN.md §12.1 item 3) -------------------------
+   The actions for a topic, in a ring around it: Coggle's idiom and the point
+   of the whole section, the controls appear on the thing you picked.
+   **One ring, cut into sectors: a pie menu, not buttons on a band** (the
+   owner, 2026-09-24: "the radial buttons are still clearly separate, I want
+   them to be part of the radial, not just buttons sitting ontop of it"). The
+   ring used to be a band with six tiles laid on it, and a tile on a band
+   reads as a button on a tray however well it is fitted (INBOX 410 fitted
+   them: every tile inside the band, evenly spaced, and still six things).
+   Now each action *is* a sector of the ring: a button the size of the whole
+   ring, clipped to its own wedge by a `clip-path: path()` that
+   `wbFitMapRadialBand` writes from the ring's measured inner and outer
+   radius. Clipping also clips hit-testing, so a sector takes the pointer
+   exactly where it is drawn and the hole takes none. The band under them
+   (`::before`) shows through a 1.5px gap between neighbours and a 1px rim,
+   which is what draws the hairline dividers: one surface, cut. The ring's
+   own boundary is a stronger line round both rims (`--wb-radial-edge`),
+   because a hairline that quiet is not an edge a canvas can see.
+   **The hole shows the node.** The ring is centred on the topic and
+   `wbSizeMapRadial` sets its inner radius from the topic's own box (half its
+   diagonal plus a little), so the topic is inside the hole, whole, rather
+   than under a band that covered its ends (the band's hole was 56px on a
+   200px topic).
+   **Placed with `left`/`top`, never `translate`.** The app's press cue is
+   `translate` plus `scale` (01-forms-settings.css, pinned by
+   tests/test_ui_recipes.py). A sector is a square the size of the ring,
+   centred on it, so the cue's scale presses the sector a hair towards the
+   middle of the ring, which is the right feel for a pie; placing it with
+   `translate` would throw it back to the ring's centre on every press. */
+.wb-map-radial {
+  /* How thick the ring is: an icon over one line of word, with room. The two
+     edges below are the frame before `wbSizeMapRadial` writes the measured
+     ones (the link ring keeps them: it opens at the pointer, not round a
+     topic). */
+  --wb-radial-band: 4.5rem;
+  --wb-radial-inner: 2.75rem;
+  --wb-radial-outer: calc(var(--wb-radial-inner) + var(--wb-radial-band));
+  /* The ring's boundary, outer and inner: the line that says where the
+     control is, so it owes 3:1 against the canvas (WCAG 1.4.11), which the
+     dividers' 16% ground does not reach (1.39:1 light, 1.58:1 dark,
+     measured). The same ink-into-surface mix as that ground, one step to
+     where every palette clears 3:1 with room: across all eleven palettes,
+     55% measured 3.52 to 4.11:1 light and 5.12 to 5.68:1 dark, where 50%
+     fell to 3.07:1 on parchment. `--muted` would pass too, at 5.6 to 8.5:1,
+     which is a heavier line than a boundary needs. */
+  --wb-radial-edge: color-mix(in srgb, var(--ink) 55%, var(--modal-bg-opaque));
+  position: absolute;
+  z-index: 23;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+/* The ring's own ground, which is also the colour of every divider: an
+   annulus in one element (a thick border with a 50% radius, the hole exactly
+   where the node is), one step towards the ink from the sectors' surface so
+   the 1.5px gaps between them read as hairlines. Opaque, never `--card`
+   (measured, `--card` is 0.55 alpha: a band in it was two levels off the
+   canvas and no ground at all, INBOX 191). */
+.wb-map-radial::before {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--wb-radial-outer) * 2);
+  height: calc(var(--wb-radial-outer) * 2);
+  margin-left: calc(var(--wb-radial-outer) * -1);
+  margin-top: calc(var(--wb-radial-outer) * -1);
+  border: calc(var(--wb-radial-outer) - var(--wb-radial-inner)) solid
+    color-mix(in srgb, var(--ink) 16%, var(--modal-bg-opaque));
+  border-radius: 50%;
+  /* The edge is two 1px circles, drawn as shadows so the dividers keep the
+     band's quiet colour: the spread one just outside the outer rim, the
+     inset one just inside the hole (an inset shadow paints the padding box,
+     which on an annulus is the hole). The sectors are clipped to the band,
+     so neither line is ever under one. */
+  box-shadow:
+    0 0 0 1px var(--wb-radial-edge),
+    inset 0 0 0 1px var(--wb-radial-edge),
+    var(--shadow-md);
+  pointer-events: none;
+}
+/* **A sector.** The whole ring's square, centred on the ring, cut to its
+   wedge by the clip path `wbFitMapRadialBand` writes. Every property a
+   button recipe would otherwise bring (the tonal fill, the hairline, the
+   radius, the small button's height and padding) is set here, because the
+   slot is also `.ghost.small` and a sector with a pill's radius or a 32px
+   min-height is a different shape from the one it is clipped to. Written as
+   two classes so it outranks `.ghost.small`. */
+.wb-map-radial .wb-map-radial-slot {
+  /* The face's point before the fit writes the real one: the middle. */
+  --wb-sector-x: 50%;
+  --wb-sector-y: 50%;
+  position: absolute;
+  left: calc(var(--wb-radial-outer) * -1);
+  top: calc(var(--wb-radial-outer) * -1);
+  display: block;
+  width: calc(var(--wb-radial-outer) * 2);
+  height: calc(var(--wb-radial-outer) * 2);
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--modal-bg-opaque);
+  box-shadow: none;
+  color: var(--ink);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background var(--motion-base) var(--ease-out), color var(--motion-base) var(--ease-out);
+}
+/* The icon and the word, at the sector's middle: `--wb-sector-x` and
+   `--wb-sector-y` are that point in the sector's own square, written with
+   its clip path. A fixed box centred on it by half its own size, because the
+   point is the whole placement and a percentage of an auto box is not. */
+.wb-map-radial-face {
+  position: absolute;
+  left: calc(var(--wb-sector-x) - 2.625rem);
+  top: calc(var(--wb-sector-y) - 1.375rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 5.25rem;
+  height: 2.75rem;
+  pointer-events: none;
+}
+/* The pointer's sector, and the keyboard's, filled: the one this click or
+   this Enter will run. Opaque, mixed on the surface, so the band under it
+   cannot tint it. */
+@media (hover: hover) {
+  .wb-map-radial .wb-map-radial-slot:hover {
+    background: color-mix(in srgb, var(--accent) 16%, var(--modal-bg-opaque));
+    color: var(--accent-text);
+  }
+}
+.wb-map-radial .wb-map-radial-slot:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque));
+  color: var(--accent-text);
+}
+/* A sector with nothing to do (Fold on a leaf) stays where it is, so the
+   ring is the same ring on every topic, and says so by fading its face and
+   flattening its ground. */
+.wb-map-radial .wb-map-radial-slot[disabled] {
+  pointer-events: none;
+  background: color-mix(in srgb, var(--ink) 4%, var(--modal-bg-opaque));
+}
+.wb-map-radial-slot[disabled] .wb-map-radial-face {
+  opacity: 0.38;
+}
+/* **The word, drawn, not hovered for** (MINDMAP_PLAN §12.5, INBOX 200). The
+   caption under the ring still carries the long sentence and the keys; this
+   is the name, at rest, in the sector. */
+.wb-map-radial-name {
+  max-width: 100%;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+  overflow: hidden;
+}
+.wb-map-radial-face i {
+  flex-shrink: 0;
+  font-size: var(--text-h3);
+}
+/* **The ring says what its sectors do** (INBOX 180). The sector under the
+   pointer or the focus, in one line under the ring, where it cannot cover
+   the node or the ring; at rest, the keys. `display: none` while empty,
+   which also keeps it out of the ring's measured overhang. */
+.wb-map-radial-caption {
+  position: absolute;
+  left: 50%;
+  /* The caption's *top* edge, a gap below the ring's outer edge (INBOX 410),
+     rather than its centre: it is one line or two depending on the sector,
+     and centring it on a fixed point put its top edge over the ring as soon
+     as it wrapped. */
+  top: calc(50% + var(--wb-radial-outer) + var(--space-2));
+  transform: translateX(-50%);
+  /* `max-content` first, then the cap. The ring is a zero-width point, so an
+     absolutely positioned child shrinks to fit *that* (measured: 60px wide,
+     one word per line); the intrinsic width has to be asked for. */
+  width: max-content;
+  max-width: min(20rem, 60vw);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg-opaque);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  pointer-events: none;
+}
+.wb-map-radial-caption:empty {
+  display: none;
+}
+/* Alt held: the two add sectors are the two remove sectors, so they say so,
+   in the app's own danger colour on the sector itself: a gesture that
+   deletes a branch must not look like the one that grows it. */
+.wb-map-radial .wb-map-radial-slot.wb-map-radial-danger {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, var(--modal-bg-opaque));
+}
+@media (hover: hover) {
+  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:hover,
+  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:is(:focus-visible, :has(:focus-visible)) {
+    background: color-mix(in srgb, var(--error) 20%, var(--modal-bg-opaque));
+  }
+}
+/* What the line into a topic says (§12.1 items 3 and 4). Drawn in the edge
+   layer, which takes no pointer events, so the label is a caption rather than
+   a control: it is edited from the radial that put it there. Stroked in the
+   canvas colour under the fill (`paint-order`) so it stays readable where it
+   crosses its own line. */
+.wb-map-edge-label {
+  fill: var(--ink);
+  stroke: var(--card);
+  stroke-width: 3;
+  paint-order: stroke;
+  font-size: var(--text-xs);
+  text-anchor: middle;
+  pointer-events: none;
+}
+/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
+.wb-map-edge-label.wb-map-edge-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
+/* What the strip sets, drawn on the node. Weight and slant sit on the text
+   rather than on the node so a node's icon and its count badge keep their own
+   weight; alignment is the text's own, which is the only thing on the node
+   that can be anywhere but the leading edge. */
+.wb-map-node.wb-map-bold .wb-map-text {
+  font-weight: 700;
+}
+.wb-map-node.wb-map-italic .wb-map-text {
+  font-style: italic;
+}
+.wb-map-node[data-align="center"] .wb-map-text {
+  text-align: center;
+}
+.wb-map-node[data-align="right"] .wb-map-text {
+  text-align: right;
+}
+.wb-map-node[data-align="left"] .wb-map-text {
+  text-align: left;
+}
+/* The note itself, in the help popover's shell (`.help-popover`): one plain
+   text box the width of the popover, and one quiet line under it. */
+.help-popover.wb-map-note-peek {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+/* On a core topic's full colour and on a filled topic's tint the muted ink
+   is not a quiet grey any more: measured, 4.39:1 on the blue branch's tint in
+   light. The label's own ink there, which the fill was chosen to keep legible;
+   the smaller size keeps it second to the name. */
+.wb-map-core .wb-map-number,
+.wb-map-filled .wb-map-number {
+  color: inherit;
+}
+.wb-map-progress.wb-map-progress-complete {
+  color: var(--ok);
+}
+/* On a core topic's colour and a filled topic's tint, the label's ink, for
+   the reason given for the number above: the muted grey there is the same
+   4.39:1 on the blue tint, and the success green is a second hue on a hue.
+   Complete still reads, from the count itself ("5/5"). */
+.wb-map-core .wb-map-progress,
+.wb-map-filled .wb-map-progress,
+.wb-map-core .wb-map-progress.wb-map-progress-complete,
+.wb-map-filled .wb-map-progress.wb-map-progress-complete {
+  color: inherit;
+}
+
+/* A pinned node keeps the place it was dragged to when the map is tidied
+   (`wbMapPinOnDrag`). Stated on the node, quietly, because "why did Tidy
+   move everything except this one" is otherwise unanswerable from the screen. */
+.wb-map-pinned {
+  border-style: dashed;
+}
+/* **The pin dashes the box, never the bar** (INBOX 569, the owner: "it says
+   the edge bar is solid even though it is dashed"). The rule above, one class
+   and later in the file, beat the bar's own `border-left: 4px solid`, so a
+   dragged topic's Solid bar was drawn dashed while the Shape menu said Solid
+   (measured: 44% of the bar's pixels were gaps). The bar's side keeps what
+   the Edge bar chooses; the hairline sides carry the pin's dash, including
+   the left edge on a downward map and on a mirrored topic, which the bar's
+   own rules set solid. `mmdoc1005-spinebar.js` checks every combination. */
+.wb-map-node.wb-map-pinned:not([data-spine]):not(.wb-map-node-mirrored) {
+  border-left-style: solid;
+}
+.wb-map-down .wb-map-node.wb-map-pinned:not([data-shape="none"]),
+.wb-map-node.wb-map-pinned.wb-map-node-mirrored:not([data-shape="none"]) {
+  border-left-style: dashed;
+}
+/* The arrowhead takes the branch's own colour: `context-stroke` is what
+   makes one marker serve every colour without a marker per branch. */
+#wb-map-arrow path {
+  fill: context-stroke;
+}
+/* The map line's waypoint grip (`.wb-map-edge-handle`, base and hover) moved to library-lazy.css beside its end grips, for the boot budget. */
+/* A cross-link is the edge `parent_id` cannot express: a connection between
+   two branches. Dashed, which is the systems-map convention every serious
+   mindmapper uses to say "related, but not part of the tree" (MINDMAP_PLAN.md
+   §5 item 9). The tree edges above stay solid so the difference is readable
+   without a legend.
+   **And it is the map's own ink, not the pen's** (MINDMAP_PLAN §13c, the
+   owner: "there are two types of connections"). A link sketch carries the
+   colour the rail's ink well held when it was drawn, which on a map is a
+   colour with no meaning: it is the *pen's* colour, and the branches around
+   it are coloured by the palette, so a cross-link drawn while the ink was red
+   read as a branch in red. Two kinds of line that can be given each other's
+   look are two kinds nobody can tell apart, which is exactly the report. The
+   attribute stays on the row (an ordinary board still draws it, and a map
+   turned back into a board gets it back); on a map this rule wins, because a
+   CSS declaration beats the presentation attribute the renderer writes. */
+/* **Superseded 2026-09-23 by the owner** (MINDMAP_PLAN decisions): "these
+   links I drew using the cross-link tools are different from the ones between
+   the other mind map nodes ... I want them to be the same". The half of the
+   above that stands is "the map's own ink, not the pen's": a cross-link now
+   takes the branch's colour, shape, weight and taper from the renderer
+   (`wbMapCrossLinkLook` in whiteboard.js), so this rule only has to stop
+   the stroke width and paint the attributes carry from being overridden,
+   and it no longer dashes or mutes the line. */
+.sketch-group.wb-map-crosslink .sketch-path {
+  opacity: 1;
+}

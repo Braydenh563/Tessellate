@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot CSS (L-world-class-364, third pass): the node radial block (336 lines, 15,446 bytes of `.wb-map-*` rules) moved from 07-whiteboard-misc.css to library-lazy.css, loaded with the boards bundle; it was the last `.wb-map-*` block nothing later in the boot files competes with, so no winner changes. 07 is 491,735 to 476,283 bytes; the other map blocks stay (the strip menu ties with 08's `.wb-board-menu` hover rules).
 - Dashboard sizing (L-world-class-620): the grid observer sizes in its own callback from the entries' border-box heights (no frame hop, no rect read for a card it has reported); 4x CPU, 500 notes, median of 5: layouts over the fill 47 to 44, layout time 258 to 210 ms (worst-script timing too noisy to claim).
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.

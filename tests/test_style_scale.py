@@ -787,13 +787,14 @@ def test_the_nested_surfaces_are_concentric():
 #: 2026-11-03: the m guide's rules moved from 08 to chord-guide-lazy.css (the
 #: boot CSS cap, unslop 1103): its three keycap heights moved, 46 to 43 and 0 to 3.
 #: 2026-11-21 (L-world-class-364): the Atlas and companion rules went from 08 to characters-lazy.css; 08 is 43 to 23, the new file 20. The total did not move.
+#: 2026-11-21 (L-world-class-364): the node radial block went from 07 to library-lazy.css: 07 is 40 to 39, the new home 25 to 26. The total did not move.
 #: 2026-11-14 (L-world-class-350): three of the whiteboard blocks went from 07 to library-lazy.css (22 to 25) and one
 #: of the run list to agent-runs-lazy.css; 07 is 44 to 40. The total did not move.
 LITERAL_HEIGHTS = {
     "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 19,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 40, "08-consistency.css": 23, "09-editor.css": 6, "10-responsive.css": 6,
-    "library-lazy.css": 25, "agent-runs-lazy.css": 1, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
+    "07-whiteboard-misc.css": 39, "08-consistency.css": 23, "09-editor.css": 6, "10-responsive.css": 6,
+    "library-lazy.css": 26, "agent-runs-lazy.css": 1, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
     "inbox-lazy.css": 1, "chord-guide-lazy.css": 3, "characters-lazy.css": 20,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
