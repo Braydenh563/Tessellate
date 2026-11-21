@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8518, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2882, tests 22771, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8518, frontend ids 2790, CSS sections 527, backend routes 721, backend modules 11099, test files 2883, tests 22776, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8518)
 
@@ -28394,7 +28394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22771)
+## Tests (22776)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30158,6 +30158,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_neighbours_1018.py | 9 |
 | tests/test_nested_interactive.py | 12 |
 | tests/test_nested_surfaces_1489.py | 5 |
+| tests/test_never_lose.py | 5 |
 | tests/test_new_document_opens_new.py | 9 |
 | tests/test_new_note_called_1102.py | 3 |
 | tests/test_new_notes_recency_1102.py | 5 |
