@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 193 | 59 | 2 | 59 | 428 |
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
 | general | 0 | 4 | 0 | 0 | 5 | 4 |
-| all | 502 | 540 | 127 | 2 | 184 | 1169 |
+| all | 502 | 539 | 126 | 2 | 184 | 1167 |
 
 ## graph
 
@@ -249,7 +249,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-6** `chat` open, S: 'which is oldest, Shopping or Todo' answers with the Shopping checklist line, not a date comparison. From composerA 2026-11-12.
 - [ ] **L-chat-7** `chat` open, S: Companion stretches (app and desk) when a long writing run ends. From Brief 88 N9; review 2026-11-12. Evidence: companion-menu.js:713 typing_burst plays a nod after 30 s, not a stretch after a minute
 - [ ] **L-chat-8** `chat` open, M: Contradiction answer: wire supersede.py in or record that the insights reader replaces it; the PAR1 imperative remainder. From ledger-1112 PAR1; review 2026-11-12. Evidence: chat_extra.py:57 contradiction asks reach the insights contrast reader; supersede.py feeds composer_select and composer_digest only; composer_suggest.py:52 _IMPERATIVE unchanged
-- [ ] **L-chat-9** `chat` partly, M: "and the dentist" after "when is the passport renewal" keeps the when ask, live and in a reopened chat. From ledger-1112 O4 (L239); review 2026-11-12. Evidence: composer_dialogue.py _swap_reading drops an "and X" with no "?", so it falls to a topic dump with dates=[]; two strict-xfail route tests in tests/test_composer_pa_1112.py
 - [ ] **L737** `chat` open, S: Decide whether plain Ask answers from notes by default at 3B and below (decision 75). From INBOX.md:1779. Evidence: Decision 75 kept for PR 216; figures in CHAT_PLAN 'Open from Phase 6' for the owner to overrule Owner decided 2026-11-12: A Settings choice (Add a setting to pick who answers Ask; default stays the model). Build: Settings, Models gains a choice of who answers plain Ask (model or notes answerer), default the model; help, Guide topic and manual parity move with it.
 - [ ] **L716** `chat` open, M: Decide model on/off disagreement on money and checklist answers (F6). From OPEN.md:4314. Evidence: Ledger owner call; needs a real model to compare. Owner decided 2026-11-12: Check on a small model (Run a few money and checklist questions on the small downloaded model (llama-dev.sh, your decision 11), then close). Build: run scratchpad/llama-dev.sh serve, ask 5 money and 5 checklist questions in Chat model on and off, compare figures, record in CHAT_PLAN.
 - [ ] **L725** `chat` open, M: Decide whether Guide answers stay verbatim topic chunks without a model (E33). From OPEN.md:4208. Evidence: Ledger marks owner call; Guide without model returns chunks by design. Owner decided 2026-11-12: Lead with the click path (First line like 'Settings, Models, Suggested downloads', then one sentence from the help; still offline). Build: help_chat.py offline path: add a click-path lead per topic from help_topics_*, one sentence after; update tests/test_manual_parity.py.
@@ -266,7 +265,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L728** `chat` open, S: Decide the other 13 verbs, confirm card, undo, no-model Agent mode and web search tool (decision 38). From OPEN.md:1060. Evidence: Row note: W34 owner-call tracked in the plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep as decided. Build: tests only: extend tests/test_engine_phase6_spec.py for decision 38's verbs, confirm card, undo and the web search tool.
 - [ ] **L730** `chat` open, S: Decide map/document/web-page sources and a scrollable web source list (decision 37). From OPEN.md:1613. Evidence: Row tagged W34 owner-call (tracked in the plans) Owner decided 2026-11-12: Keep and build. Build: spec tests for decision 37 source kinds; scrollable web source list in the answer bubble (frontend/js/chat-turn.js, answer-kit.js).
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
-- [ ] **L-chat-10** `chat` open, S: Stop a quotation from skipping a sentence inside its own marks (round 1 D8). From open-work sweep 2026-11-12, tests/test_composer_r1_dates_1107.py:65. Evidence: This strict xfail is an unbuilt spec. CHANGELOG line 915 says it is "still open, pinned by a strict xfail". No LEDGER row or CHAT_PLAN item names it. L91 covers gluing whole notes with commas and elli
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder
 - [ ] **L-chat-14** `chat` open, M: Answer what is on my list when the only list has an intro line. From open-work sweep 2026-11-12, .claude/work-order.md:25. Evidence: These boxes are unchecked and their only mentions are in HISTORY session notes, with no LEDGER row or plan item. P6, P7 and P9 are only partly covered by L176. Build status is unverified, so each need
 - [ ] **L-chat-15** `chat` open, S: Show one empty state in Notes Ask when no model is set. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:33. Evidence: index.html:2335 still has "Ask your own notes a question" beside the no-model state; no fix found in code and no tracking row

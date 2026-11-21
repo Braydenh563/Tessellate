@@ -15,7 +15,7 @@ from tessellate.ai import (
     composer_brief,
     composer_frame,
     composer_likeness,
-    composer_overview,
+    composer_overview, composer_quote,
     composer_read,
     composer_slots, composer_stale,
     composer_story,
@@ -853,7 +853,7 @@ def _named_pronoun(body: str, view) -> str:  # noqa: ANN001
 
 def _bodies_of(held: list[Fact], label: str) -> tuple[list[str], str]:
     """A line's distinct sentences, and the pinned note ending it, if any."""
-    bodies = list(dict.fromkeys(_said_body(f, label) for f in held))
+    bodies = list(dict.fromkeys(composer_quote.gap_before(held, i) + _said_body(f, label) for i, f in enumerate(held)))
     #: A line made of pinned sentences says so once, at its end (B32).
     pins = [m.group(0) for b in bodies for m in [_PINNED.search(b)] if m]
     return [_PINNED.sub("", b) for b in bodies], (pins[-1] if pins else "")
@@ -1434,11 +1434,12 @@ def _is_fragment(body: str) -> bool:
 
 
 def _join(bodies: list[str], sentences: bool = False) -> str:
-    """A line's bodies as one line. Woven into an overview (`sentences`),
-    two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
+    """A line's bodies as one line; woven (`sentences`), two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
     out = bodies[0] if bodies else ""
     for body in bodies[1:]:
-        if sentences and _is_fragment(body):
+        if body.startswith("… "):
+            out = out.rstrip(" .;") + " " + body
+        elif sentences and _is_fragment(body):
             #: "slicing everything but it was fun", "straighter this time":
             #: no subject of its own, so it rides on the sentence before.
             out += ", " + body
@@ -1451,8 +1452,7 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
         elif body.lower().startswith("going to "):
             out += ", and you're " + body
         elif out.rstrip().endswith(("?", "!")) or _a_sentence(out) or _a_sentence(body):
-            #: "That's fascinating; What drew you to it?; you've always ..."
-            #: ran sentences together (INBOX 1420): a sentence ends.
+            #: "That's fascinating; What drew you to it?; ..." ran sentences together (INBOX 1420).
             out = out.rstrip() + ("" if out.rstrip().endswith(("?", "!", ".")) else ".") + " " + body[:1].upper() + body[1:]
         else:
             out += "; " + body
