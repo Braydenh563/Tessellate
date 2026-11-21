@@ -4611,20 +4611,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-spacer {
   flex: 1 1 auto;
 }
-/* The goal and findings labels give way before the type picker does
-   (L-general-43: mono at 390 needed 373px of 330); the titles say the rest. */
-#doc-word-goal,
-#doc-prose {
-  flex: 0 1 auto;
-  min-width: 0;
-}
-#doc-goal-label,
-#doc-prose-count {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .doc-statusbar-button {
   display: inline-flex;
   align-items: center;

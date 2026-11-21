@@ -173,8 +173,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert", "meeting prep", "last notes"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. To add, make or set a reminder, go to the top of the Reminders tab: type it in plain words on the "
-            'Magic add line and press the sparkle (hedges such as "probably '
+            "Done. To add one, type it in plain words on the Magic add line at the top "
+            'of the tab and press the sparkle (hedges such as "probably '
             'around 7pm" are read as the time, and a place like "when I get '
             'home" is left out of the title), or fill in Remind me to, the '
             "date and the time, then Add. Overdue has Triage: keep, drop or reschedule each, or all at once "
@@ -182,26 +182,26 @@ HELP_TOPICS: list[dict] = [
             "(Skip adds nothing). Set a priority, snooze, edit inline, or make one recurring: "
             '"every weekday", "every 2 weeks", "the last Friday of the month", '
             'with an early alert such as "1 day before". '
-            "The date and time fields open a month and the day's times, and "
+            "The date and time fields open a calendar and "
             'read a typed day such as "next friday". '
-            'You can also just say "call mum tomorrow evening" in a note and '
-            'let the AI schedule it. In the chat, "remind me two hours before '
+            'Or write "call mum tomorrow evening" in a note and '
+            'the AI schedules it. In the chat, "remind me two hours before '
             'midnight" works too: Atlas passes your words and the app works '
             "out the time on your own clock. Notifications fire on the minute "
-            "while a tab is open, even in the background, with Done and Snooze "
-            "on them; the desktop app notifies with its window closed. A "
-            "reminder that names a person or topic your notes know (Call Sam) "
-            "brings the last notes about it under its row in the bell. If the "
+            "while a tab is open, even in the background, with Done and Snooze; "
+            "the desktop app notifies with its window closed. A "
+            "reminder naming a person or topic in your notes (Call Sam) "
+            "shows their last notes under its row in the bell. If the "
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
             "Remind me is on a note's, a document's and a board's ⋯ "
             "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about. "
             "Select words in a note and Set a reminder in the selection menu "
-            "reads a reminder out of them, linked to that note. When you tell "
+            "reads a reminder out of them, linked to that note. Tell "
             'the chat you need to do something on a day ("I need to call the '
-            'dentist on Friday"), a Make this a reminder chip appears under '
+            'dentist on Friday") and a Make this a reminder chip appears under '
             "the reply; nothing is made until you press it, and a question or "
-            "something already done gets no chip."
+            "something already done gets none."
         ),
         "badge": {"label": "Reminders", "tab": "reminders"},
     },

@@ -4551,14 +4551,6 @@ span > .chip {
   font-size: var(--text-base);
 }
 
-/* A goal that's set says so with the accent, the same way the chat dock's
-   own toggles do (`.chat-tool-group>button[aria-pressed="true"]` above). */
-#doc-word-goal[aria-pressed="true"] {
-  background-color: var(--accent-surface);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
-
 /* --- the code editor: gutter + monospace ------------------------------------ */
 
 /* The textarea and its line-number gutter, as one unit. #doc-panes lays out

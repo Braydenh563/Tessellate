@@ -75,7 +75,7 @@ def test_the_map_view_menu_leaves_out_rows_a_map_can_never_use():
         if "<input" in tag:
             tag = menu[menu.rindex("<label", 0, at) : at]
         assert 'data-wb-surface="board"' in tag, needle
-    css = frontend_text("css/07-whiteboard-misc.css")
+    css = frontend_text("css/library-lazy.css")  # the board's bundle, out of the boot budget
     rule = css[css.index(".wb-menu-two-col .wb-menu-section") :]
     assert "gap: 0;" in rule[: rule.index("}")]
 

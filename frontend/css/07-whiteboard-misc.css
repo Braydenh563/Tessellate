@@ -803,8 +803,7 @@
    A map's tree line has nothing measured on it, so it is simply not
    displayed. */
 #wb-html-layer > .wb-object,
-#wb-html-layer > .wb-card,
-.wb-map-drag-layer > .wb-object {
+#wb-html-layer > .wb-card {
   contain-intrinsic-size: auto 250px auto 44px;
 }
 /* **The Notes list's rows do not lock either** (L-general-34; they did, INBOX 400).
@@ -1984,13 +1983,6 @@ body.scroll-top-visible .skills-split > .tab-main {
    this they stacked vertically and every card sat below the canvas. */
 .wb-svg-layer,
 .wb-html-layer {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-/* A dragged branch, carried as one (`wbMapDragLayer.open`, L-mindmap-17): at
-   the layer's own origin, so its topics' transforms mean what they meant. */
-.wb-map-drag-layer {
   position: absolute;
   left: 0;
   top: 0;
@@ -7045,11 +7037,6 @@ button.connection-row:is(:hover, :focus-visible) {
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
-}
-/* Rows are 36px with their own inset, so the 4px between them was 40px a row:
-   eleven rows came to 452px, two over the 450px ceiling. */
-.wb-menu-two-col .wb-menu-section {
-  gap: 0;
 }
 @media (min-width: 820px) {
   .wb-board-menu .wb-menu-item[data-wb-click="wb-fullscreen"] {

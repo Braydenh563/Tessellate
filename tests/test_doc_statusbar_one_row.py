@@ -37,8 +37,10 @@ def test_the_goal_and_findings_labels_give_way_before_the_type_picker():
     of 330 (goal 104, findings 133, type 90), and the type picker ended at 397
     of a 390 window, past the strip's clip. The two labels shrink with an
     ellipsis (their titles say the rest), so the picker keeps its place.
-    A CSS rule, because the fit is measured by fontmatrix.js in a browser."""
-    base = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    A CSS rule, because the fit is measured by fontmatrix.js in a browser.
+    It lives in library-lazy.css (the documents editor's bundle), out of the
+    boot budget."""
+    base = (CSS / "library-lazy.css").read_text(encoding="utf-8")
     buttons = _rule(base, "#doc-word-goal,\n#doc-prose")
     assert "flex: 0 1 auto" in buttons and "min-width: 0" in buttons
     labels = _rule(base, "#doc-goal-label,\n#doc-prose-count")

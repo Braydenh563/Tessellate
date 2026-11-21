@@ -9607,3 +9607,43 @@ input[type="color"].wb-mixed {
   flex-wrap: wrap;
   gap: var(--space-1);
 }
+
+/* A dragged branch, carried as one (`wbMapDragLayer.open`, L-mindmap-17): at
+   the layer's own origin, so its topics' transforms mean what they meant. */
+.wb-map-drag-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.wb-map-drag-layer > .wb-object {
+  contain-intrinsic-size: auto 250px auto 44px;
+}
+
+/* The goal and findings labels give way before the type picker does
+   (L-general-43: mono at 390 needed 373px of 330); the titles say the rest. */
+#doc-word-goal,
+#doc-prose {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+#doc-goal-label,
+#doc-prose-count {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rows are 36px with their own inset, so the 4px between them was 40px a row:
+   eleven rows came to 452px, two over the 450px ceiling. */
+.wb-menu-two-col .wb-menu-section {
+  gap: 0;
+}
+
+/* A goal that's set says so with the accent, the same way the chat dock's
+   own toggles do (`.chat-tool-group>button[aria-pressed="true"]` in 04-chat-dock-appearance.css). */
+#doc-word-goal[aria-pressed="true"] {
+  background-color: var(--accent-surface);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
