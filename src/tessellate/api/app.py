@@ -491,13 +491,15 @@ class RevalidatedStatic(StaticFiles):
     _gzip_cache: dict[str, tuple[int, int, bytes]] = {}
 
     #: **Comments are stripped from what is served** (audit 2026-10-05, FE-01):
-    #: the app's own `js/*.js` and `css/*.css` (and `index.html`, above), never
+    #: the app's own `js/*.js`, `css/*.css` and `surfaces/*.html` (and `index.html`, above), never
     #: `vendor/`, never the files on disk. See `asset_strip.py` for why and how.
     @staticmethod
     def _strippable(path: str) -> bool:
         path = path.replace("\\", "/")
-        return (path.startswith("js/") and path.endswith(".js")) or (
-            path.startswith("css/") and path.endswith(".css")
+        return (
+            (path.startswith("js/") and path.endswith(".js"))
+            or (path.startswith("css/") and path.endswith(".css"))
+            or (path.startswith("surfaces/") and path.endswith(".html"))
         )
 
     async def _precompressed(self, response, scope, strip: bool = False):
