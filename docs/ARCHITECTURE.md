@@ -62,6 +62,15 @@ These are the constraints that shaped every decision. When in doubt, they win.
    instead of executing silently.
 7. **Tests are fast and fully offline.** Every AI call is faked in `tests/`, so
    the suite needs no GPU, no models, and no network.
+8. **Routes hold no queries; repositories do (L625).** `src/tessellate/repo/<resource>.py`
+   is the one place a resource's tables are read and written: plain functions
+   taking the request's `Session` first, which flush and never commit (the
+   route owns the transaction), with errors named `NotFound`, `Invalid`,
+   `Conflict` (the rules are in `repo/__init__.py`). A query a route needs
+   moves to its resource's module, or to the module of the table it reads.
+   `tests/test_repo_boundaries.py` holds two ratchets that only fall: every
+   ORM call under `api/`, and `session.query`, `select(` and `session.execute`
+   in `api/routes_*.py` (230 before the first moves, 215 after).
 
 ## 3. The big picture
 

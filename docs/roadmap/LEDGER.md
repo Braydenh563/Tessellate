@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 56 | 7 | 0 | 0 | 63 |
+| world-class | 0 | 57 | 6 | 0 | 0 | 63 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 447 | 79 | 2 | 112 | 898 |
+| all | 372 | 448 | 78 | 2 | 112 | 898 |
 
 ## graph
 
@@ -483,7 +483,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
-- [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
 - [ ] **L627** `chat` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
 - [ ] **L629** `chat` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
@@ -494,7 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
-- [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L691** `chat` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734 not split. From ledger-1112 P8. The chat.js split is L-world-class-770 (chat, hub 2026-11-21).
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
@@ -528,6 +526,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-671** `world-class` open, M: Read a private space's library pictures (Tesseract) in the background. From L-world-class-381. Evidence: core/media_process.py:110 skips a sealed picture; ocr, captioning and vision_ocr take a path on their own threads; the AI reads a private space only from a chat inside it (SECURITY.md T10), so only Tesseract may borrow the session (sealed_files.for_background)
 - [ ] **L-world-class-710** `world-class` open, M: Full depth-4 reach crawl in light and dark after the 673 palette rows. From reach.js depth-4 crawl. Evidence: scratchpad/ui-sweeps/reach.js; depth 3 timed out at 40 min (L-world-class-673)
 - [ ] **L-world-class-760** `world-class` open, L: Lazy-load the Settings markup out of index.html. From L638 (FE audit leftover, lazy Settings markup). Evidence: frontend/index.html:10251 settings-modal onward is about 369 KB of the 1.23 MB page, parsed at boot; 49 tests name settings-modal; its text-of-record (FE-10) is gone from the repo, so this is built only if the owner asks (L639 splits index.html)
+- [ ] **L-world-class-790** `world-class` open, L: Move the rest of the route modules' queries into src/tessellate/repo/ and lower ROUTE_QUERIES_CAP with each. From L625. Evidence: tests/test_repo_boundaries.py ROUTE_QUERIES_CAP 215; routes_graph.py 32, routes_spaces.py 21, routes_library.py 18, routes_board_library.py 13
+- [ ] **L-world-class-791** `world-class` open, M: Break the import_module cycle groups (two left, the largest 14 modules) by inverting edges with a registry. From L688 (ARCH-10). Evidence: tests/test_import_module_cycles.py MAX_LARGEST_GROUP 14, MAX_GROUPS 2; the 14 run through core.deps, entry.manager, search.engine, ai.provider
 
 ## general
 
