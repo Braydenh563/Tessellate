@@ -1412,7 +1412,7 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
 //: The size beside what is being drawn or resized ("120 x 80", E4), in the
 //: guides' own group so it goes when they do; a constant screen size.
 function wbShowSizeReadout(box) {
-  const group = document.getElementById("wb-align-guides");
+  const group = wbAlignGuideGroup(false);
   const container = wbInstances.container();
   if (!group || !container) return;
   const k = d3.zoomTransform(container).k || 1;
@@ -1506,18 +1506,26 @@ function wbAlignGuideColor(kind) {
 //: line also gets its length as a label at a constant screen size (Figma's
 //: distance badges), so an equal-gap guide says what the gap is.
 const WB_BADGE_CLEAR_PX = 22;
+//: The active board's own guides group, found in its overlay layer and marked by a class, not a document id: an embed's
+//: guides and the page board's are two groups (L-whiteboard-73). `make` draws one when there is none.
+function wbAlignGuideGroup(make) {
+  const zoomGroup = wbInstances.layer("wb-overlay-zoom-group") || wbInstances.layer("wb-zoom-group");
+  if (!zoomGroup) return null;
+  let group = zoomGroup.querySelector(":scope > .wb-align-guides");
+  if (!group && make) {
+    group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("class", "wb-align-guides");
+    group.setAttribute("pointer-events", "none");
+    zoomGroup.appendChild(group);
+  }
+  return group;
+}
 function wbShowAlignmentGuides(lines) {
   //: The overlay layer, above the cards in DOM order: in `#wb-zoom-group` (the base SVG) a guide ran
   //: under every note card it lined up with (owner, 2026-11-10, INBOX 1725). Same pan and zoom.
   const zoomGroup = wbInstances.layer("wb-overlay-zoom-group") || wbInstances.layer("wb-zoom-group");
   if (!zoomGroup) return;
-  let group = document.getElementById("wb-align-guides");
-  if (!group) {
-    group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("id", "wb-align-guides");
-    group.setAttribute("pointer-events", "none");
-    zoomGroup.appendChild(group);
-  }
+  const group = wbAlignGuideGroup(true);
   group.replaceChildren();
   wbMeasuring(false);
   if (!lines.length) return;
@@ -1566,7 +1574,7 @@ function wbShowAlignmentGuides(lines) {
 }
 
 function wbClearAlignmentGuides() {
-  document.getElementById("wb-align-guides")?.remove();
+  wbAlignGuideGroup(false)?.remove();
   wbMeasuring(false);
 }
 

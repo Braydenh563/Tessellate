@@ -53,12 +53,41 @@
     });
   }
 
+  //: **An embed's history across a reload** (L-whiteboard-70): `suffix` names the embed to its host (a document id, say), so
+  //: the stored key is the board's plus `:embed:<suffix>`. Read once on mount; nothing is written before that read lands,
+  //: and a step taken meanwhile wins over the stored one, as for the page board.
+  function wbEmbedHistoryRestore(inst, suffix) {
+    inst.undoKey = `board:${inst.boardId ?? "default"}:embed:${suffix}`;
+    inst.historyRead = false;
+    if (typeof undoStoreGet !== "function") {
+      inst.historyRead = true;
+      return Promise.resolve();
+    }
+    return undoStoreGet(inst.undoKey).then((stored) => {
+      inst.historyRead = true;
+      if (inst.destroyed || !stored) return;
+      const live = wbInstances.active === inst;
+      if ((live ? wbUndoStack : inst.undoStack).length || (live ? wbRedoStack : inst.redoStack).length) return;
+      const undo = Array.isArray(stored.undo) ? stored.undo : [];
+      const redo = Array.isArray(stored.redo) ? stored.redo : [];
+      if (live) {
+        wbUndoStack = undo;
+        wbRedoStack = redo;
+        wbUpdateUndoRedoButtons();
+      } else {
+        inst.undoStack = undo;
+        inst.redoStack = redo;
+      }
+    });
+  }
+
   function wbUpdateUndoRedoButtons() {
     wbHistoryFor();
-    //: Only the page board writes the stored copy: an embed of the same board would replace it with its own stack (L-whiteboard-66).
-    if (typeof undoStorePut === "function" && !wbInstances.active.container && wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default") {
-      undoStorePut(`board:${wbHistoryBoard}`, undoStoreBoardValue(wbUndoStack, wbRedoStack));
-    }
+    //: The page board writes `board:<id>`; an embed of the same board would replace it with its own stack, so it writes under its
+    //: own key (`wbEmbedHistoryRestore`) once that has been read, and an embed given no key keeps nothing (L-whiteboard-66, 70).
+    const live = wbInstances.active;
+    const storeKey = !live.container ? (wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== "default" ? `board:${wbHistoryBoard}` : null) : (live.historyRead ? live.undoKey : null);
+    if (typeof undoStorePut === "function" && storeKey) undoStorePut(storeKey, undoStoreBoardValue(wbUndoStack, wbRedoStack));
     const undoBtn = document.getElementById("wb-undo");
     const redoBtn = document.getElementById("wb-redo");
     if (undoBtn) undoBtn.disabled = wbUndoStack.length === 0;
@@ -306,5 +335,5 @@
     set historyBoard(key) { wbHistoryBoard = key; },
   };
   //: The file's surface: what other files call (L-whiteboard-52).
-  Object.assign(window, { wbHistoryFor, wbUpdateUndoRedoButtons, wbDropUndoEntry, wbDeleteFailed, wbRemapUndoIds, wbHistoryInFlight, wbBoardRows, wbBoardSettings, wbRecordGesture, wbPushUndo });
+  Object.assign(window, { wbEmbedHistoryRestore, wbHistoryFor, wbUpdateUndoRedoButtons, wbDropUndoEntry, wbDeleteFailed, wbRemapUndoIds, wbHistoryInFlight, wbBoardRows, wbBoardSettings, wbRecordGesture, wbPushUndo });
 })();

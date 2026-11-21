@@ -1021,7 +1021,8 @@ def test_only_the_page_board_writes_the_persisted_history_key():
     """L-whiteboard-66: two live instances of one board shared `board:<id>` in the
     undo store, each write replacing the other's stack. The page board owns that
     key (what a reload restores); an embed's history is in memory for its life,
-    which cannot clobber the page's and leaves no key of its own to clean up."""
+    which cannot clobber the page's; an embed given a `historyKey` has its own key
+    (L-whiteboard-70, next test), and one given none writes nothing."""
     out = _run(_history_buttons_fn() + """
 const puts = [];
 function undoStorePut(key, value) { puts.push([key, value]); }
@@ -1040,6 +1041,103 @@ out.embed = puts.splice(0);
 """)
     assert [k for k, _ in out["page"]] == ["board:5"]
     assert out["embed"] == []
+
+
+def _embed_history_fn() -> str:
+    wb = (JS / "whiteboard-undo.js").read_text(encoding="utf-8")
+    at = wb.index("  function wbEmbedHistoryRestore(")
+    return wb[at : wb.index("\n  }\n", at) + 5]
+
+
+def test_an_embed_keeps_its_undo_history_under_its_own_key_and_reads_it_back():
+    """L-whiteboard-70: an embed made with a `historyKey` writes `board:<id>:embed:<key>`
+    once that key has been read, never the page's `board:<id>`; a remount reads its
+    own stack back, and a step taken before the read lands wins over the stored one."""
+    out = _run(_history_buttons_fn() + _embed_history_fn() + """
+const puts = [];
+const stored = { "board:5:embed:doc9": { undo: [{ action: "create", kind: "object", id: 77 }], redo: [] } };
+let release;
+const gate = new Promise((r) => { release = r; });
+function undoStorePut(key, value) { puts.push([key, value]); }
+function undoStoreGet(key) { return gate.then(() => JSON.parse(JSON.stringify(stored[key]))); }
+function undoStoreBoardValue(u, r) { return { undo: u.length, redo: r.length }; }
+const wbHistoryRead = new Set(["5", "default"]);
+function wbHistoryFor() {}
+function scheduleUndoBar() {}
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+const pending = wbEmbedHistoryRestore(emb, "doc9");
+out.key = emb.undoKey;
+I.activate(emb);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.beforeRead = puts.splice(0);
+release();
+await pending;
+out.restored = { live: wbUndoStack.map((e) => e.id), puts: puts.splice(0) };
+wbUndoStack.push({ action: "create", kind: "object", id: 78 });
+wbUpdateUndoRedoButtons();
+out.after = puts.splice(0);
+I.activate(I.page);
+wbHistoryBoard = "5";
+wbUpdateUndoRedoButtons();
+out.page = puts.splice(0).map(([k]) => k);
+//: A second mount, backgrounded, takes the stored stack into itself; a mount that already has a step keeps it.
+const idle = I.mount(fakeEl("div", "box2"), 5);
+await wbEmbedHistoryRestore(idle, "doc9");
+out.idle = idle.undoStack.map((e) => e.id);
+const busy = I.mount(fakeEl("div", "box3"), 5);
+busy.undoStack = [{ action: "create", kind: "object", id: 1 }];
+await wbEmbedHistoryRestore(busy, "doc9");
+out.busy = busy.undoStack.map((e) => e.id);
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["key"] == "board:5:embed:doc9"
+    assert out["beforeRead"] == []
+    assert out["restored"]["live"] == [77]
+    assert [k for k, _ in out["restored"]["puts"]] == ["board:5:embed:doc9"]
+    assert out["after"] == [["board:5:embed:doc9", {"undo": 2, "redo": 0}]]
+    assert out["page"] == ["board:5"]
+    assert out["idle"] == [77] and out["busy"] == [1]
+
+
+def test_each_instance_draws_its_alignment_guides_in_its_own_group():
+    """L-whiteboard-73: the guides group was found by the document id `wb-align-guides`, so an
+    embed's lines were drawn into (and cleared from) the page board's group. It is a class in
+    the active board's overlay layer now: two boards, two groups."""
+    fns = _wb_functions("WB_BADGE_CLEAR_PX", "wbAlignGuideGroup", "wbShowAlignmentGuides", "wbClearAlignmentGuides")
+    out = _run(fns + """
+const zoomOf = (name) => {
+  const z = fakeEl("g", name);
+  z.querySelector = (sel) => z.children.find((c) => c.attrs.class === /[.]([a-z-]+)$/.exec(sel)[1]) || null;
+  z.appendChild = z.append;
+  return z;
+};
+const pageZoom = zoomOf("pz"), embZoom = zoomOf("ez");
+I.layer = (id) => (I.active === I.page ? pageZoom : embZoom);
+I.container = () => null;
+let measuring = 0;
+function wbMeasuring() { measuring++; }
+function wbAlignGuideColor() { return null; }
+const makeNS = document.createElementNS;
+document.createElementNS = (ns, tag) => Object.assign(makeNS(ns, tag), { replaceChildren() { this.children = []; }, appendChild(c) { this.append(c); } });
+const emb = I.mount(fakeEl("div", "box"), 5);
+const line = { x1: 0, y1: 0, x2: 10, y2: 0 };
+wbShowAlignmentGuides([line]);
+I.activate(emb);
+wbShowAlignmentGuides([line, line]);
+out.both = [pageZoom.children.length, embZoom.children.length];
+out.counts = [pageZoom.children[0].children.length, embZoom.children[0].children.length];
+out.distinct = pageZoom.children[0] !== embZoom.children[0];
+out.hasId = "id" in pageZoom.children[0].attrs || "id" in embZoom.children[0].attrs;
+wbClearAlignmentGuides();
+out.afterClear = [pageZoom.children.length, embZoom.children.length];
+""")
+    assert out["both"] == [1, 1] and out["counts"] == [1, 2] and out["distinct"] and not out["hasId"]
+    #: Clearing the embed's guides left the page board's alone.
+    assert out["afterClear"] == [1, 0]
 
 
 def test_a_failed_save_many_reloads_the_board_that_is_not_live():

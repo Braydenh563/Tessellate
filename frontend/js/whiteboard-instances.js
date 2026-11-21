@@ -336,6 +336,8 @@
     inst.destroyed = false;
     //: The title is looked up after the mount, so a slow list never holds the board back; "Board" stays until it lands.
     if (!opts.title) embedTitle(boardId).then((title) => { if (title && !inst.destroyed) box.setAttribute("aria-label", title); });
+    //: `opts.historyKey` names this embed to its host, so its undo history is kept under its own key (L-whiteboard-70).
+    if (opts.historyKey != null) wbEmbedHistoryRestore(inst, opts.historyKey);
 
     async function reloadEmbed() {
       const url = boardId ? `/whiteboard/?board_id=${boardId}` : "/whiteboard/";

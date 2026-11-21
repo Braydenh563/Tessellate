@@ -35,9 +35,13 @@ def test_it_keeps_a_hundred_steps_on_this_device():
 def test_a_board_writes_only_after_its_stored_history_was_read():
     """Otherwise an open quicker than the read would store an empty history
     over the real one."""
-    update = WB[WB.index("function wbUpdateUndoRedoButtons()"):][:600]
+    update = WB[WB.index("function wbUpdateUndoRedoButtons()"):][:900]
     assert "wbHistoryRead.has(wbHistoryBoard)" in update
-    assert "undoStorePut(`board:${wbHistoryBoard}`" in update
+    #: The key is picked first since L-whiteboard-70 (the page board's, or an embed's own),
+    #: each only once its stored copy was read; the write uses that key alone.
+    assert "wbHistoryRead.has(wbHistoryBoard) && wbHistoryBoard !== \"default\" ? `board:${wbHistoryBoard}` : null" in update
+    assert "live.historyRead ? live.undoKey : null" in update
+    assert "storeKey) undoStorePut(storeKey," in update
 
 
 def test_a_document_history_comes_back_only_over_its_own_text():
