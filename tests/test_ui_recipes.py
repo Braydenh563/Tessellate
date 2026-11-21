@@ -4168,7 +4168,8 @@ def test_an_assistant_head_asks_one_function_for_its_face() -> None:
     assert "paintAssistantAvatar(holder, 20)" in chat[chat.index("function paintAssistantHeads") :][:200]
     #: `assistantHeadRow` moved to help-chat.js (lazy) with its only callers (Brief 101a).
     assert "paintAssistantAvatar(avatar, 20)" in js["help-chat.js"][js["help-chat.js"].index("function assistantHeadRow") :][:600]
-    assert "paintAssistantHeads()" in js["navigation.js"], "a section change fills the static heads"
+    #: The section just shown, not every section (L603): a hidden one fills its own when shown.
+    assert "paintAssistantHeads($(wanted) || document)" in js["navigation.js"], "a section change fills the static heads"
     guide = js["help-chat.js"]
     assert guide.count("assistantHeadRow(GUIDE_NAME)") == 4, "a guide row, its pending row, the streamed one and the revealed one each open with the head"
     #: The setting: a default, a control, a live repaint and a reset.

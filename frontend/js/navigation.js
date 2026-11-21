@@ -890,7 +890,7 @@ function revealTab(name) {
   //: At the frame, before it paints (INBOX 1530 c): its reads came straight
   //: after the class flips above and laid the new page out inside the click
   //: (14 to 47 ms of `openDoc`), which `openDocument` then dirtied again.
-  requestAnimationFrame(autoGrowVisible);
+  requestAnimationFrame(() => autoGrowVisible());
 }
 
 // --- back / forward through the pages you have visited ----------------------
@@ -2361,15 +2361,15 @@ function showNotesSection(name, { focus = false } = {}) {
   }
   prefs.set(NOTES_SECTION_STORE, wanted);
   //: Ask's answer and the draft carry static assistant heads (INBOX 471).
-  paintAssistantHeads();
+  paintAssistantHeads($(wanted) || document);
   //: The connections rail belongs to the list (notes-list.js): it leaves with
   //: Browse and comes back with it.
   scheduleNotesRail();
   // A textarea measured while its section is display:none reports
   // scrollHeight 0, so autoGrow collapsed the capture box to its minimum and
   // it only sprang open once clicked (user-reported). Re-measure now that the
-  // section is actually visible.
-  autoGrowVisible();
+  // section is actually visible. Only the section just shown changed.
+  autoGrowVisible($(wanted) || document);
 }
 
 function initNotesSubtabs() {

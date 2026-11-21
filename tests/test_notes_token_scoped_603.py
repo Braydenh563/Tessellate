@@ -58,3 +58,20 @@ def test_the_dashboard_outline_is_hidden_not_taken_out_of_body():
     body = _fn(frontend_text("dashboard.js"), "dashFillingSkeletonDone")
     assert "outline.remove()" not in body
     assert 'outline.style.display = "none"' in body
+
+
+def test_a_section_shown_measures_and_paints_only_itself():
+    """Boxes and heads in hidden sections forced a layout and painted faces nobody saw:
+    5 to 11 and 12ms of the first Notes press. Each section does its own when shown."""
+    body = _fn(app_js_text(), "showNotesSection")
+    assert "autoGrowVisible($(wanted) || document)" in body
+    assert "paintAssistantHeads($(wanted) || document)" in body
+    assert "function autoGrowVisible(root = document)" in app_js_text()
+
+
+def test_the_notes_surface_is_parsed_first_in_idle_time():
+    """The Notes press is the first interaction; parsing its surface inside the press was
+    most of a 55 to 124ms click."""
+    js = frontend_text("settings-body.js")
+    warm = js[js.index("  warm() {") :][:900]
+    assert warm.index('name === "notes"') < warm.index('name === "settings"')

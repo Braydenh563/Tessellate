@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8548, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11200, test files 2906, tests 22937, plan headings 685, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8548, frontend ids 2804, CSS sections 527, backend routes 730, backend modules 11200, test files 2906, tests 22939, plan headings 685, app scripts 29, boot scripts 38, script files 310.
 
 ## Frontend functions (8548)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:200 |
-| `surfaceBuild` | frontend/js/settings-body.js:163 |
-| `surfaceFind` | frontend/js/settings-body.js:188 |
+| `onSurface` | frontend/js/settings-body.js:202 |
+| `surfaceBuild` | frontend/js/settings-body.js:165 |
+| `surfaceFind` | frontend/js/settings-body.js:190 |
 
 ### frontend/js/app.js (45)
 
@@ -459,44 +459,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `assistantAvatar` | frontend/js/chat-agent.js:360 |
-| `cardTextPreview` | frontend/js/chat-agent.js:686 |
-| `changeDiff` | frontend/js/chat-agent.js:493 |
-| `changeRow` | frontend/js/chat-agent.js:404 |
+| `cardTextPreview` | frontend/js/chat-agent.js:688 |
+| `changeDiff` | frontend/js/chat-agent.js:495 |
+| `changeRow` | frontend/js/chat-agent.js:406 |
 | `chatHeadIsAtlas` | frontend/js/chat-agent.js:334 |
 | `chatHeadKey` | frontend/js/chat-agent.js:339 |
 | `chatPositions` | frontend/js/chat-agent.js:99 |
-| `clearDraftTarget` | frontend/js/chat-agent.js:952 |
-| `draftTranslateKind` | frontend/js/chat-agent.js:848 |
+| `clearDraftTarget` | frontend/js/chat-agent.js:954 |
+| `draftTranslateKind` | frontend/js/chat-agent.js:850 |
 | `dropChatBubble` | frontend/js/chat-agent.js:283 |
 | `followBottom` | frontend/js/chat-agent.js:39 |
 | `followReleased` | frontend/js/chat-agent.js:28 |
-| `isImageCardUrl` | frontend/js/chat-agent.js:678 |
+| `isImageCardUrl` | frontend/js/chat-agent.js:680 |
 | `keepAtBottom` | frontend/js/chat-agent.js:123 |
 | `nestedTakesWheelUp` | frontend/js/chat-agent.js:33 |
 | `noteChatPosition` | frontend/js/chat-agent.js:104 |
 | `notebookCard` | frontend/js/chat-agent.js:219 |
 | `paintAssistantAvatar` | frontend/js/chat-agent.js:380 |
-| `paintAssistantHeads` | frontend/js/chat-agent.js:394 |
-| `paintDraftStepBack` | frontend/js/chat-agent.js:1028 |
+| `paintAssistantHeads` | frontend/js/chat-agent.js:396 |
+| `paintDraftStepBack` | frontend/js/chat-agent.js:1030 |
 | `paintUserMarks` | frontend/js/chat-agent.js:257 |
-| `paneWordCount` | frontend/js/chat-agent.js:968 |
-| `pushDraftUndo` | frontend/js/chat-agent.js:992 |
-| `putDraftBack` | frontend/js/chat-agent.js:1017 |
-| `rememberDraftVersion` | frontend/js/chat-agent.js:919 |
-| `renderDraftSources` | frontend/js/chat-agent.js:858 |
-| `renderDraftTarget` | frontend/js/chat-agent.js:939 |
-| `renderDraftVersions` | frontend/js/chat-agent.js:890 |
+| `paneWordCount` | frontend/js/chat-agent.js:970 |
+| `pushDraftUndo` | frontend/js/chat-agent.js:994 |
+| `putDraftBack` | frontend/js/chat-agent.js:1019 |
+| `rememberDraftVersion` | frontend/js/chat-agent.js:921 |
+| `renderDraftSources` | frontend/js/chat-agent.js:860 |
+| `renderDraftTarget` | frontend/js/chat-agent.js:941 |
+| `renderDraftVersions` | frontend/js/chat-agent.js:892 |
 | `repaintAssistantAvatars` | frontend/js/chat-agent.js:387 |
-| `restoreDraftLocally` | frontend/js/chat-agent.js:817 |
-| `saveDraftLocally` | frontend/js/chat-agent.js:795 |
-| `setDraftStatus` | frontend/js/chat-agent.js:960 |
-| `showWaiting` | frontend/js/chat-agent.js:698 |
-| `sourceHost` | frontend/js/chat-agent.js:763 |
+| `restoreDraftLocally` | frontend/js/chat-agent.js:819 |
+| `saveDraftLocally` | frontend/js/chat-agent.js:797 |
+| `setDraftStatus` | frontend/js/chat-agent.js:962 |
+| `showWaiting` | frontend/js/chat-agent.js:700 |
+| `sourceHost` | frontend/js/chat-agent.js:765 |
 | `syncChatJumpLatest` | frontend/js/chat-agent.js:145 |
 | `thinkingFold` | frontend/js/chat-agent.js:289 |
 | `thinkingFoldIn` | frontend/js/chat-agent.js:309 |
 | `thinkingPaint` | frontend/js/chat-agent.js:303 |
-| `updateDraftCount` | frontend/js/chat-agent.js:974 |
+| `updateDraftCount` | frontend/js/chat-agent.js:976 |
 | `userMarkSeed` | frontend/js/chat-agent.js:246 |
 
 ### frontend/js/chat-attach.js (50)
@@ -845,30 +845,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowInputs` | frontend/js/settings-panes.js:188 |
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
-| `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:923 |
-| `chatDockReleaseRing` | frontend/js/settings-panes.js:351 |
-| `chatDockSuppressRing` | frontend/js/settings-panes.js:332 |
-| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:625 |
-| `currentZoom` | frontend/js/settings-panes.js:824 |
-| `downloadExport` | frontend/js/settings-panes.js:798 |
-| `fitChatEmpty` | frontend/js/settings-panes.js:290 |
-| `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:870 |
-| `initAutoGrow` | frontend/js/settings-panes.js:453 |
-| `initComposerResize` | frontend/js/settings-panes.js:367 |
-| `loadPreferences` | frontend/js/settings-panes.js:600 |
-| `markPrefsDirty` | frontend/js/settings-panes.js:773 |
-| `markPrefsSaved` | frontend/js/settings-panes.js:789 |
-| `nudgeZoom` | frontend/js/settings-panes.js:891 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:989 |
-| `paletteKeys` | frontend/js/settings-panes.js:998 |
-| `refitComposer` | frontend/js/settings-panes.js:269 |
-| `reportTimezone` | frontend/js/settings-panes.js:544 |
-| `savePrefs` | frontend/js/settings-panes.js:666 |
-| `setPreference` | frontend/js/settings-panes.js:648 |
-| `setZoom` | frontend/js/settings-panes.js:828 |
-| `watchOverlays` | frontend/js/settings-panes.js:465 |
+| `autoGrowVisible` | frontend/js/settings-panes.js:203 |
+| `catalogueRun` | frontend/js/settings-panes.js:925 |
+| `chatDockReleaseRing` | frontend/js/settings-panes.js:353 |
+| `chatDockSuppressRing` | frontend/js/settings-panes.js:334 |
+| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:627 |
+| `currentZoom` | frontend/js/settings-panes.js:826 |
+| `downloadExport` | frontend/js/settings-panes.js:800 |
+| `fitChatEmpty` | frontend/js/settings-panes.js:292 |
+| `fitComposerToDock` | frontend/js/settings-panes.js:246 |
+| `hud` | frontend/js/settings-panes.js:872 |
+| `initAutoGrow` | frontend/js/settings-panes.js:455 |
+| `initComposerResize` | frontend/js/settings-panes.js:369 |
+| `loadPreferences` | frontend/js/settings-panes.js:602 |
+| `markPrefsDirty` | frontend/js/settings-panes.js:775 |
+| `markPrefsSaved` | frontend/js/settings-panes.js:791 |
+| `nudgeZoom` | frontend/js/settings-panes.js:893 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:991 |
+| `paletteKeys` | frontend/js/settings-panes.js:1000 |
+| `refitComposer` | frontend/js/settings-panes.js:271 |
+| `reportTimezone` | frontend/js/settings-panes.js:546 |
+| `savePrefs` | frontend/js/settings-panes.js:668 |
+| `setPreference` | frontend/js/settings-panes.js:650 |
+| `setZoom` | frontend/js/settings-panes.js:830 |
+| `watchOverlays` | frontend/js/settings-panes.js:467 |
 
 ### frontend/js/media.js (9)
 
@@ -28594,7 +28594,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22937)
+## Tests (22939)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30453,7 +30453,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notes_sidebar_find_l592.py | 2 |
 | tests/test_notes_sidebar_owed_l499.py | 2 |
 | tests/test_notes_spy_after_frame_1111.py | 1 |
-| tests/test_notes_token_scoped_603.py | 5 |
+| tests/test_notes_token_scoped_603.py | 7 |
 | tests/test_notesui_1103.py | 4 |
 | tests/test_notif_blocked_help.py | 4 |
 | tests/test_notif_dismiss.py | 4 |
