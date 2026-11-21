@@ -826,18 +826,25 @@ function entryItem(entry, options = {}) {
     meta.appendChild(mark);
   }
 
-  // Where a web-reader clipping came from (BACKLOG §65's "source as
-  // metadata"). Opens the real page, the note's own body already has the
-  // same link inline, this is the at-a-glance version.
-  if (entry.source_url) {
-    const sourceChip = chip(
-      `ph:globe ${entry.source_title || entry.source_url}`,
-      "tag",
-      () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer")
-    );
-    sourceChip.title = `Open the source: ${entry.source_url}`;
-    meta.appendChild(sourceChip);
+  //: L-general-13: where the note came from, in words, when the note records
+  //: it: `source_url` (clipped from a URL) and `source_path` (imported from a
+  //: file). "Extracted from a document" and "transcribed from audio" are not
+  //: recorded on the note, so they get no chip. Nested, not global: the
+  //: shared-scope cap has no room for a name.
+  function provenanceChip(entry, kind) {
+    if (kind === "url" ? !entry.source_url : !entry.source_path) return null;
+    const url = kind === "url";
+    const found = url
+      ? chip(`ph:globe ${entry.source_title || entry.source_url}`, "tag", () => window.open(safeHref(entry.source_url), "_blank", "noopener,noreferrer"))
+      : chip(`ph:file-md ${entry.source_path.split("/").pop()}`, "source-path");
+    found.dataset.provenance = kind;
+    const said = url ? `Clipped from URL: ${entry.source_url}. Open the source` : `Imported from file: ${entry.source_path}`;
+    found.title = said;
+    found.setAttribute("aria-label", said);
+    return found;
   }
+  const clipChip = provenanceChip(entry, "url");
+  if (clipChip) meta.appendChild(clipChip);
 
   // What this note's own "tomorrow" meant on the day it was written (§10A).
   // A chip rather than a mark inside the text: `renderNoteText` already
@@ -1019,9 +1026,7 @@ function entryItem(entry, options = {}) {
   //: **Where an imported note came from**: the file name its `[[links]]`
   //: use. A chip, because the importer must not rewrite the file.
   if (entry.source_path) {
-    const fileChip = chip(`ph:file-md ${entry.source_path.split("/").pop()}`, "source-path");
-    fileChip.title = `Imported from ${entry.source_path}`;
-    meta.insertBefore(fileChip, date);
+    meta.insertBefore(provenanceChip(entry, "file"), date);
   }
   li.appendChild(meta);
   noteMetaFit.observe(meta);

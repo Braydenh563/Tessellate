@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 12 | 0 | 0 | 4 | 12 |
-| all | 502 | 542 | 127 | 2 | 183 | 1171 |
+| general | 0 | 10 | 0 | 0 | 4 | 10 |
+| all | 502 | 540 | 127 | 2 | 183 | 1169 |
 
 ## graph
 
@@ -705,12 +705,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
-- [ ] **L-general-10** `general` open, S: Completing a reminder prompts for a one-line outcome appended to the source note. From ANALYSIS.md:1216. Evidence: shell-reminders.js has no outcome prompt on complete; not in any plan
-- [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
-- [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
+- [ ] **L-general-42** `general` open, M: Record and chip two more note sources: extracted from document, transcribed from audio. From L-general-13. Evidence: entry has no column for extracted-from-document or transcribed-from-audio (routes_entries.py:2938 extract_commit, routes_meetings.py:52 create_meeting record none); provenance chip covers source_url and source_path only
 
 ## Owner calls
 

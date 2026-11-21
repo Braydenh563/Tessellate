@@ -2900,6 +2900,12 @@ button.answer-figure-open {
   letter-spacing: 0;
 }
 
+.reminder-group-head > button {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .reminder-group-head.group-overdue,
 .reminder-group-head.group-overdue .group-count {
   color: var(--warn);
