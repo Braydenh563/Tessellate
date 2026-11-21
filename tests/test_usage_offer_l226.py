@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from tessellate.core import usage
+from tessellate.core import clock, usage
 
 TODAY = date(2026, 11, 14)
 KNOWN = ["tab:graph", "tab:timeline", "tab:notes", "cmd:new-note", "cmd:open-settings"]
@@ -49,13 +49,13 @@ def test_the_route_offers_and_clear_forgets_it(client) -> None:
     from tessellate.core import deps
 
     data = deps.get_config().data_dir
-    usage.record(data, ["tab:notes"], today=date.today() - timedelta(days=200))
+    usage.record(data, ["tab:notes"], today=clock.today() - timedelta(days=200))
     usage.record(data, ["tab:notes"])
     first = client.get("/usage/offer", params={"known": KNOWN}).json()
     assert first["name"] in {"tab:graph", "tab:timeline", "cmd:new-note", "cmd:open-settings"}
     again = client.get("/usage/offer", params={"known": KNOWN}).json()
     assert again["name"] is None
     client.delete("/usage")
-    usage.record(data, ["tab:notes"], today=date.today() - timedelta(days=200))
+    usage.record(data, ["tab:notes"], today=clock.today() - timedelta(days=200))
     after = client.get("/usage/offer", params={"known": KNOWN}).json()
     assert after["name"] is not None

@@ -94,6 +94,15 @@ def test_execute_tool_refuses_before_the_handler(session):
 from tessellate.ai import act_registry as agent_act_registry  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _no_act_reader(monkeypatch):
+    """The fake session holds no notes, so the unrun-act reader (L114), which reads the sentence
+    against the notebook, is off here: these tests are about the re-prompt, not the act card."""
+    from tessellate.ai import act_registry
+
+    monkeypatch.setattr(act_registry, "proposer", None)
+
+
 class _Session:
     def rollback(self):
         return None
