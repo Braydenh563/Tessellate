@@ -274,6 +274,14 @@
 
 #nm-buddy:is([data-pose="stand"], [data-pose="sit"]) .nmb-size-grip { pointer-events: auto; }
 
+/* A mouse far from the companion takes it out of hit testing (avatars.js,
+   nameMarkBuddyPointer.away; L-ui-modernisation-201): the grip and the
+   standing or sitting handle included, which turn pointer events back on. */
+#nm-buddy[data-nmb-far],
+#nm-buddy[data-nmb-far] *,
+#nm-buddy[data-nmb-far]:is([data-pose]) .nmb-size-grip,
+#nm-buddy[data-nmb-far]:is([data-pose]) .nm-buddy-face::after { pointer-events: none; }
+
 #nm-buddy .nm-buddy-face:active { cursor: grabbing; }
 
 /* **Its focus is a glow and a ring round the figure, not a box** (the owner, 2026-10-11: a blue
