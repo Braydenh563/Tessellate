@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 65 | 10 | 0 | 0 | 75 |
-| general | 0 | 30 | 2 | 0 | 5 | 32 |
-| all | 372 | 450 | 81 | 2 | 112 | 903 |
+| world-class | 0 | 64 | 10 | 0 | 0 | 74 |
+| general | 0 | 32 | 2 | 0 | 5 | 34 |
+| all | 372 | 451 | 81 | 2 | 112 | 904 |
 
 ## graph
 
@@ -525,7 +525,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-420** `world-class` open, M: Give the 51 Help topics the Guide cannot find by title a keyword each, then lower GUIDE_MISSES_BY_TITLE to 0. From L-world-class-114. Evidence: tests/test_ui_recipes.py GUIDE_MISSES_BY_TITLE = 51
 - [ ] **L-world-class-421** `world-class` open, S: Rule the Replace and Statistics dialogs into 27.2's table (sheet or dialog) and empty UNRULED_DIALOGS. From L-world-class-131. Evidence: doc-replace-dialog and doc-stats-dialog are native dialogs the 27.2 table does not rule (UNRULED_DIALOGS in tests/test_ui_recipes.py)
 - [ ] **L-world-class-411** `world-class` open, S: Folder import over 1,000 files hits the Starlette multipart cap. From L-world-class-119. Evidence: Starlette's multipart parser caps a request at 1,000 files, so a folder import of 5,000 notes sent as separate parts is refused; the zip path works (103 commits for 5,000).
-- [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-625** `world-class` open, M: Run Pillow and the OCR readers (core/ocr.py, core/ocr_prep.py) in the parse sandbox child. From L-world-class-321. Evidence: core/ocr.py:479,504,741,812,888 Image.open and _rapidocr_lines run in the server; the runner core/parse_sandbox.py is built (reused child, 0.3-0.5 ms a call warm, 117 ms a cold child with pypdfium2); RapidOCR loads onnxruntime, so it needs the reused child and a memory limit measured with its model loaded
 - [ ] **L-world-class-626** `world-class` open, M: First page load adds about 260 MB resident (cache warm-up at 4,500 notes). From L609. Evidence: RSS 435 MB with no page open went to 695 MB within 30 s of opening the app in Chromium (4,500 notes, arenas capped); flat at 715 MB after; which first-hit route builds the 260 MB not found
 - [ ] **L-world-class-627** `world-class` open, S: VS Code extension: sign in by pasting a device token, and say when the computer must approve the device. From L-world-class-183. Evidence: editors/vscode/lib/client.js signs in by password only; a new device may wait for approval on the computer with no prompt in VS Code
@@ -565,6 +564,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 - [ ] **L-general-60** `general` open, L: Split the render-blocking shell CSS so the first frame waits only for the lock screen's and the shell's rules. From L-world-class-280, 2026-11-21. Evidence: First paint is the sum of the stylesheets and the boot scripts, not the HTML: served variants, 9 cold loads each on a loaded 4-core box, FCP median full 400, no boot scripts 256, no stylesheets 208, neither 132; templates stripped (868 to 109 KB) 312 vs 312; nine stylesheets dropped 324 vs 268 (noise). Selector matching 29.6 ms over 1,647 selectors with no hotspot (top: .entry-meta.note-meta > .chip.tag + :is(...) 1.3 ms; :has total 2.1 ms). Boot scripts as ordered dynamic scripts: FCP 392 to 332, lock usable 899 vs 868, so no gain where it counts. The lever left is splitting the 2.5 MB of shell CSS so only the lock screen's and the shell's rules block the first frame.
 - [ ] **L-general-61** `general` open, M: Find what lays out 10 times a second while the companion idles (tempo steps on SVG). From agent E, L707 probe. Evidence: avatars.js nameMarkBuddyTempo: Atlas idle on the dashboard at 4x, 1093x614: 12 to 16 layouts per 1.2 s with the companion on, 0 with it off (MODE probe, 3 runs)
+- [ ] **L-general-63** `general` open, S: Build docker/Dockerfile and run docker/compose.yaml on a machine with a daemon: image offline, /mcp and the OAuth metadata answer the host through the published loopback port (TESSELLATE_PUBLISHED_ON_LOOPBACK); the agent's container had a CLI and no daemon. From L-world-class-560 leftover.
+- [ ] **L-general-64** `general` open, S: Sign in from a real remote client such as claude.ai through a tunnel and approve in Settings; only TestClient tests and scratchpad/ui-sweeps/mcp-scope-560.js (light, 1440) ran. From L-world-class-560 leftover.
 
 ## Owner calls
 
