@@ -69,3 +69,11 @@ def test_l705_art_sketch_starts_without_a_layout_read():
     assert "clientWidth" not in setup
     assert "artLastWidth" in setup
     assert "artLastWidth = next" in text
+
+
+def test_l706_the_look_is_never_written_on_the_companion_itself():
+    """A write on `#nm-buddy` restyled its 647 descendants (109 ms at 4x); on the readers it is 0.4 to 1.1 ms."""
+    text = (JS / "avatars.js").read_text()
+    assert not re.search(r'buddy\.style\.setProperty\("--nmb-(ex|ey|hx)"', text)
+    assert "nameMarkBuddyAim.set = (buddy, name, value) => {" in text
+    assert re.search(r'@property --nmb-ex \{ syntax: "<number>"; inherits: false;', (CSS / "08-consistency.css").read_text())
