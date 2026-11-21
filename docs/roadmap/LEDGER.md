@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| world-class | 130 | 176 | 57 | 0 | 72 | 363 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 326 | 363 | 69 | 0 | 125 | 758 |
+| all | 326 | 362 | 68 | 0 | 125 | 756 |
 
 ## graph
 
@@ -341,7 +341,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L626** `world-class` open, L: Apply the tag: filter before the 200 keyword candidates cut in search/engine.py. From OPEN.md:867; OPEN.md:3738. Evidence: search/engine.py:1339-1345 filters rows after retrieval
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
 - [ ] **L628** `world-class` open, L: Put Library and graph filter boxes on the meaning layer. From OPEN.md:871. Evidence: They use /read/filter and search engine; meaning layer not wired
-- [ ] **L629** `world-class` open, L: Build the goals and lists surface (Brief 98). From SESSION_BRIEFS.md:323. Evidence: No /goals route in src/tessellate/api and no Goals entry; only the document word goal
 - [ ] **L630** `world-class` open, L: Re-run ocrflow.js against new .ocr-engine host and #ocr-more dock-menu section. From OPEN.md:838; OPEN.md:3534. Evidence: ocrflow.js:29,41 vs index.html:9732 hidden dock-menu section; not re-run
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
@@ -400,7 +399,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L689** `world-class` partly, L: Make filing against a never-answering model non-serial for a 20-note burst. From OPEN.md:1715. Evidence: Commit c26b090b4/902ffcbcc: late answer replaces stand-in, wait is a preference; serial burst of 20 not shown fixed
 - [ ] **L690** `world-class` partly, L: Release the DB session on bare POST /entries while waiting on the model. From OPEN.md:1716. Evidence: UI paths send defer_filing (capture-ask.js:666,770; ask-compose.js:571); routes_entries.py:828 bare POST /entries still waits holding the session
-- [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added
 - [ ] **L694** `world-class` partly, L: Make Settings switches and choices undoable with Ctrl+Z (most write functions lack pushUndo). From OPEN.md:1774; OPEN.md:3690. Evidence: pushUndo now appears 8 times across settings*.js (was 1); 48 write functions not all covered
