@@ -743,6 +743,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard-history.js:build": "board: board snapshot list, the board's version history",
     "whiteboard-history.js:wbSnapshotRow": "board: board snapshot list, the board's version history",
     "whiteboard-map.js:wbMapSummariseBranch": "read: asks the model for a summary",
+    "whiteboard.js:wbExportBoardFolder": "job: a board export the person asked for, built on the server and saved as a download; it writes and deletes nothing",
     "whiteboard.js:uploadToLibrary": "job: a board export saved to the Library as a picture; the Library's Delete (with Undo) removes it",
     "whiteboard.js:wbCreateCopies": "board: low-level board create; its callers push wbPushUndo",
     "whiteboard.js:wbPaintStickyDates": "read: reads dates out of sticky text",

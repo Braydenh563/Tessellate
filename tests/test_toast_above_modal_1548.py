@@ -40,7 +40,7 @@ def _yields(buttons: list[dict], toast: list[int]) -> bool:
         const toastEl = { toastTimer: 1, getBoundingClientRect: () => rect(cfg.toast) };
         const box = { id: "toast-box", children: [toastEl], contains: () => false, classList: {
           remove: (c) => classes.delete(c), toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
-        const $ = () => box;
+        const $ = (id) => (id === "toast-box" ? box : null);
         const document = { body: {}, activeElement: null };
         const innerWidth = 1440, innerHeight = 900;
         const area = {

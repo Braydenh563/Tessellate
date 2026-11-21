@@ -35,7 +35,9 @@ NOTES = [
 def ask(client, session, monkeypatch):
     pin_clock(monkeypatch, NOW)
     for content in NOTES:
-        manager.create_entry(session, content)
+        entry = manager.create_entry(session, content, dates=False, commit=False)
+        entry.created_at = NOW
+        manager.record_dates(session, entry, now=NOW)
     session.commit()
 
     def go(question: str) -> str:

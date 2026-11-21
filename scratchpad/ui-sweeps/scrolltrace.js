@@ -51,6 +51,12 @@ function summarise(json) {
     if (!/CrRendererMain|Raster|TileWorker|Compositor/.test(t)) continue;
     all[e.name] = (all[e.name] || 0) + e.dur / 1000;
   }
+  //: Layouts on the main thread, for a layouts-a-second figure (L-general-34: a row locking and unlocking as it
+  //: crosses the edge of a window was a layout a frame).
+  let layouts = 0;
+  for (const e of events) {
+    if (e.name === 'Layout' && e.ph === 'X' && /CrRendererMain/.test(threads[`${e.pid}:${e.tid}`] || '')) layouts += 1;
+  }
   const stages = Object.fromEntries(STAGES.filter((k) => all[k]).map((k) => [k, +all[k].toFixed(1)]));
   //: Where the raster work lands depends on how the browser runs (in the
   //: renderer's tile workers, or out of process in the GPU process), so the
@@ -73,11 +79,16 @@ function summarise(json) {
       : `${e.name}:${d.type || d.id || ''}`;
     calls[where] = (calls[where] || 0) + e.dur / 1000;
   }
-  return { stages, rasterBy: top(rasterBy, 4), main: top(main, 4), calls: top(calls, +(process.env.TOPN || 8)), frames };
+  return { layouts, stages, rasterBy: top(rasterBy, 4), main: top(main, 4), calls: top(calls, +(process.env.TOPN || 8)), frames };
 }
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: W, height: H } });
+  //: CPU=4 throttles the page as the lag rows' figures were taken (CDP Emulation.setCPUThrottlingRate).
+  if (Number(process.env.CPU) > 1) {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU) });
+  }
   const tab = SCENE.startsWith('typing-doc') ? 'documents' : SCENE.startsWith('library') || SCENE === 'open-library' ? 'dashboard' : 'notes';
   await page.evaluate((t) => switchTab(t), tab);
   await page.waitForTimeout(2000);
@@ -153,7 +164,8 @@ function summarise(json) {
   if (process.env.COMPACT) {
     const raster = (s.rasterBy.find((x) => x.includes('/RasterTask ')) || 'RasterTask 0').split(' ').pop();
     const st = s.stages;
-    console.log(`${SCENE} ${W}x${H} raster ${raster} commit ${st.Commit || 0} paint ${st.Paint || 0} layout ${st.Layout || 0} style ${st.UpdateLayoutTree || 0} script ${((st.FunctionCall || 0) + (st.FireAnimationFrame || 0)).toFixed(1)} frames ${s.frames}`);
+    const rows = await page.evaluate(() => document.querySelectorAll('#entry-list > li').length);
+    console.log(`${SCENE} ${W}x${H} rows ${rows} layouts ${s.layouts} (${(s.layouts / (wall / 1000)).toFixed(1)}/s) raster ${raster} commit ${st.Commit || 0} paint ${st.Paint || 0} layout ${st.Layout || 0} style ${st.UpdateLayoutTree || 0} script ${((st.FunctionCall || 0) + (st.FireAnimationFrame || 0)).toFixed(1)} frames ${s.frames}`);
   } else {
     console.log(JSON.stringify({ scene: SCENE, window: `${W}x${H}`, wallMs: wall, ...s }, null, 1));
   }

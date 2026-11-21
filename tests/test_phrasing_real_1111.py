@@ -53,9 +53,8 @@ def _judge(kind: str, text: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _fixed_now(monkeypatch):
-    pin_clock(monkeypatch, NOW)
-    #: The root too: the utilities, search and the chat request read `config.user_now`, so a
-    #: note dated the real today ("21 November") read as today's on that day (2026-11-21).
+    #: Every clock in every module (tests/_clock.py): on 2026-11-21 the
+    #: date filter read the real day, the fixture's "21 November".
     pin_clock(monkeypatch, NOW)
 
 

@@ -62,7 +62,7 @@ def test_d8_a_weekday_in_a_note_is_not_turned_into_today(notebook):
     assert "Sunday: call Mum" in said, said
 
 
-@pytest.mark.xfail(strict=True, reason="round 1 D8 open: _join glues non-adjacent sentences inside one quotation (composer_digest_lines._line_of)")
+@pytest.mark.xfail(strict=True, reason="round 1 D8 open: _join glues non-adjacent sentences inside one quotation (composer_digest_lines._line_of; LEDGER L-chat-10)")
 def test_d8_a_quotation_does_not_skip_a_sentence_inside_the_marks(notebook):
     note = "# Books\n\nCurrently reading Piranesi by Susanna Clarke. Next: The Dispossessed. Finished Dune in September."
     #: The second note is about books too ("Book club" is the noun); "book a table" is the verb and no longer counts (W7b B10).

@@ -1,4 +1,4 @@
-"""W8B (2026-11-11): the four composer date rows W8 left open (docs/roadmap/agent-remaining/w8-1110.md, "Found, not fixed").
+"""W8B (2026-11-11): the four composer date rows W8 left unfixed (docs/roadmap/agent-remaining/w8-1110.md, "Found, not fixed").
 Each is fixed as a class and has sibling phrasings. Clocks fixed: the bt seed is Monday 9 November 2026, the r5 seed
 Saturday 7 November 2026, the calls notebook Thursday 29 October 2026."""
 

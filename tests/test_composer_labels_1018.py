@@ -1,4 +1,4 @@
-"""INBOX 1301 D5 follow-up: a label that only opens a sentence is said as prose.
+"""INBOX 1301 D5, second pass: a label that only opens a sentence is said as prose.
 
 List rows (a time, a page title, a capability group) keep their bold label."""
 from __future__ import annotations

@@ -1,7 +1,7 @@
-"""A task added "to my todo" is a checklist line on the note called that, run at
+"""A task added to the list note named for tasks is a checklist line on the note called that, run at
 once with Undo, not a reminder that asks for a time (composer-r7 R3-33); with no
 such note one is offered. "tick the first one" counts from the list the last
-answer showed. Seed: `tests/_seed_1031c.py` (a note called Todo)."""
+answer showed. Seed: `tests/_seed_1031c.py` (the task list note)."""
 
 from __future__ import annotations
 

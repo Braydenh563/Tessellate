@@ -784,8 +784,9 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    # The week ends on the person's clock (`user_now`), the seam every reader
-    # shares: a raw `utcnow()` here kept the real day under a pinned clock.
+    #: The user's clock, as the review it gates (`review_digest.week`) reads:
+    #: on the server's own clock the two disagreed about which week it was,
+    #: and "Nothing was saved" stood in for a week that had notes.
     now = user_now(deps.get_config())
     cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a

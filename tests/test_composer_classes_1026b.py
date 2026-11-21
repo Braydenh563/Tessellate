@@ -2,7 +2,7 @@
 
 Same notebook and fixed clock as `test_composer_classes_1357.py` (Wednesday
 21 October 2026, 10:00); each class has several phrasings the owner did not
-report. A failing case is a strict xfail in `OPEN`. No model runs."""
+report. Every class passes. No model runs."""
 
 from __future__ import annotations
 
@@ -105,7 +105,6 @@ R_WINDOWS = [
     ("what did I do this weekend", r"Essay draft", r"Gym routine|Lecture 5"),
 ]
 
-OPEN: set[str] = set()
 
 
 def _cases():
@@ -122,7 +121,7 @@ def _cases():
 
 
 CASES = [
-    pytest.param(c, q, m, n, id=f"{c}-{q}", marks=([pytest.mark.xfail(strict=True)] if f"{c}-{q}" in OPEN else []))
+    pytest.param(c, q, m, n, id=f"{c}-{q}")
     for c, q, m, n in _cases()
 ]
 

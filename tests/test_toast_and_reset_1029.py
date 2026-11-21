@@ -36,7 +36,7 @@ def _yields(focused: dict, toast: dict, window: dict) -> bool:
         const toastEl = { toastTimer: 1, getBoundingClientRect: () => rect(cfg.toast) };
         const box = { id: "toast-box", children: [toastEl], contains: () => false, classList: {
           remove: (c) => classes.delete(c), toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
-        const $ = () => box;
+        const $ = (id) => (id === "toast-box" ? box : null);
         const document = { body: {}, activeElement: null };
         const innerWidth = cfg.window[0], innerHeight = cfg.window[1];
         const target = { closest: () => null, getBoundingClientRect: () => rect(cfg.focused) };
