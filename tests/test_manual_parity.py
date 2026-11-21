@@ -44,6 +44,7 @@ MANUAL = {
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
+    "restore_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
     "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),

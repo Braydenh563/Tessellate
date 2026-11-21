@@ -15,7 +15,7 @@ from tessellate.ai.provider import set_write_tools
 # it but never called a write tool" safety net, and by the skill list to say
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
-    "audit_link_reasons",
+    "audit_link_reasons", "restore_link_reasons",
     "check_learned",
     "create_note",
     "edit_note",
@@ -101,7 +101,7 @@ ADD_TOOLS = frozenset({
     "map_from_note",
     "add_map_node",
     "link_map_nodes",
-    "restore_board_item",
+    "restore_board_item", "restore_link_reasons",
     "add_board_shape",
     "place_library_item",
     "create_category",

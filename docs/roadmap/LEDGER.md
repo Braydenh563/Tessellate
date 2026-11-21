@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 28 | 3 | 0 | 0 | 31 |
+| chat | 0 | 29 | 3 | 0 | 0 | 32 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 399 | 72 | 0 | 124 | 797 |
+| all | 326 | 400 | 72 | 0 | 124 | 798 |
 
 ## graph
 

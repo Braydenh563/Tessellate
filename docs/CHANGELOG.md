@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: the link-reason audit has an Undo (L-chat-258): `audit_link_reasons` writes each link's old reason and confidence into its audit-log row and hands back `restore_link_reasons`, which puts the batch back and leaves any reason edited since alone; tested offline with a fake model.
 - Skills: a skill step whose contract is a tool call (`tool_called`, `notes_changed`) asks a small model for that call on its first round (`run_agent(must_call=)`), because Qwen2.5-1.5B wrote "I ran audit_link_reasons" in prose three attempts running and the step stalled (L250); the typo and slang set grows from 85 to 119 questions with `btwn`, `betw` and `b/w` read as between (L160); the real-model evals print their numbers (L827 to L829, L837, L-chat-23).
 - CI: the digest's empty-week check reads the person's clock, as the week it guards does; two tool-offer tests and the real-phrasing fixture pin their clocks and readers (PR 230).
 - Companions made from your own figure (L185): walks, runs after a crouch, a window climb, sits, lying down and a slow 24-picture breath (3.65 s) all draw only pictures the page captures, checked over 6 seeds of far legs and 300 s sweeps at three hours; what the app's others lack (perch pictures, in-app spells) is in the backlog.

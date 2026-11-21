@@ -749,6 +749,17 @@
     }
    }
   ],
+  "restore_link_reasons": [
+   {
+    "args": {
+     "log_id": 1
+    },
+    "result": {
+     "restored": 2,
+     "message": "Put back 2 link reasons."
+    }
+   }
+  ],
   "create_category": [
    {
     "args": {

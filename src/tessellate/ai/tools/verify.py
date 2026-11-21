@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import deps
 from tessellate.core.database import (
+    AuditLog,
     Document,
     Entry,
     EntryLink,
@@ -183,6 +184,15 @@ def _links_audited(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _links_restored(session: Session, args: dict, result: dict) -> str | None:
+    restored = result.get("restored")
+    row = session.get(AuditLog, int(args.get("log_id") or 0))
+    held = len((row.payload or {}).get("links") or []) if row is not None and row.action == "audited" else 0
+    if not isinstance(restored, int) or restored < 0 or restored > held:
+        return f"it claims {restored} put back and that audit held {held}"
+    return None
+
+
 def _learned_checked(session: Session, args: dict, result: dict) -> str | None:
     from tessellate.ai import learned_audit_run
 
@@ -244,6 +254,7 @@ VERIFIERS: dict[str, Verifier] = {
     "delete_board_item": _item_removed,
     "place_library_item": _library_placed,
     "audit_link_reasons": _links_audited,
+    "restore_link_reasons": _links_restored,
     "check_learned": _learned_checked,
     "archive_note": _archive_state,
     "save_skill": _skill_saved,

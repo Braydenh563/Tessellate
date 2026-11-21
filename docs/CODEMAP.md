@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8542, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11395, test files 2992, tests 23278, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8542, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11399, test files 2991, tests 23280, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
 ## Frontend functions (8542)
 
@@ -14227,7 +14227,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11395)
+## Backend modules (11399)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14854,8 +14854,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_flat` | src/tessellate/ai/cards.py:81 |
 | `_note_item` | src/tessellate/ai/cards.py:102 |
 | `_reminder_item` | src/tessellate/ai/cards.py:183 |
-| `_rows` | src/tessellate/ai/cards.py:368 |
-| `result_cards` | src/tessellate/ai/cards.py:375 |
+| `_rows` | src/tessellate/ai/cards.py:369 |
+| `result_cards` | src/tessellate/ai/cards.py:376 |
 
 ### src/tessellate/ai/chunks.py (4)
 
@@ -18885,13 +18885,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `span` | src/tessellate/ai/library_acts.py:158 |
 | `with_readbacks` | src/tessellate/ai/library_acts.py:229 |
 
-### src/tessellate/ai/links.py (3)
+### src/tessellate/ai/links.py (4)
 
 | Name | File:line |
 |---|---|
 | `_clean_reason` | src/tessellate/ai/links.py:90 |
 | `_is_vague_reason` | src/tessellate/ai/links.py:81 |
-| `audit_vague_links` | src/tessellate/ai/links.py:98 |
+| `audit_vague_links` | src/tessellate/ai/links.py:118 |
+| `restore_link_reasons` | src/tessellate/ai/links.py:98 |
 
 ### src/tessellate/ai/list_pool.py (15)
 
@@ -20892,33 +20893,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recorded` | src/tessellate/ai/tool_history.py:57 |
 | `slash` | src/tessellate/ai/tool_history.py:80 |
 
-### src/tessellate/ai/tool_say.py (103)
+### src/tessellate/ai/tool_say.py (104)
 
 | Name | File:line |
 |---|---|
 | `_archived` | src/tessellate/ai/tool_say.py:692 |
-| `_ask` | src/tessellate/ai/tool_say.py:890 |
+| `_ask` | src/tessellate/ai/tool_say.py:897 |
 | `_audit` | src/tessellate/ai/tool_say.py:734 |
-| `_board_card` | src/tessellate/ai/tool_say.py:813 |
-| `_board_write` | src/tessellate/ai/tool_say.py:823 |
+| `_audit_restored` | src/tessellate/ai/tool_say.py:741 |
+| `_board_card` | src/tessellate/ai/tool_say.py:820 |
+| `_board_write` | src/tessellate/ai/tool_say.py:830 |
 | `_calculate` | src/tessellate/ai/tool_say.py:179 |
-| `_category` | src/tessellate/ai/tool_say.py:753 |
+| `_category` | src/tessellate/ai/tool_say.py:760 |
 | `_category_named` | src/tessellate/ai/tool_say.py:210 |
 | `_chat_history` | src/tessellate/ai/tool_say.py:530 |
 | `_chat_row` | src/tessellate/ai/tool_say.py:539 |
 | `_check` | src/tessellate/ai/tool_say.py:616 |
 | `_chips` | src/tessellate/ai/tool_say.py:111 |
-| `_compress` | src/tessellate/ai/tool_say.py:905 |
+| `_compress` | src/tessellate/ai/tool_say.py:912 |
 | `_contradictions` | src/tessellate/ai/tool_say.py:316 |
 | `_count` | src/tessellate/ai/tool_say.py:185 |
-| `_created_document` | src/tessellate/ai/tool_say.py:772 |
+| `_created_document` | src/tessellate/ai/tool_say.py:779 |
 | `_created_note` | src/tessellate/ai/tool_say.py:647 |
-| `_deleted_document` | src/tessellate/ai/tool_say.py:777 |
-| `_diagram` | src/tessellate/ai/tool_say.py:831 |
+| `_deleted_document` | src/tessellate/ai/tool_say.py:784 |
+| `_diagram` | src/tessellate/ai/tool_say.py:838 |
 | `_documents` | src/tessellate/ai/tool_say.py:406 |
 | `_due_day` | src/tessellate/ai/tool_say.py:457 |
 | `_edited_note` | src/tessellate/ai/tool_say.py:655 |
-| `_error` | src/tessellate/ai/tool_say.py:959 |
+| `_error` | src/tessellate/ai/tool_say.py:966 |
 | `_filed_lead` | src/tessellate/ai/tool_say.py:202 |
 | `_filed_where` | src/tessellate/ai/tool_say.py:268 |
 | `_files` | src/tessellate/ai/tool_say.py:545 |
@@ -20927,59 +20929,59 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_get_note` | src/tessellate/ai/tool_say.py:275 |
 | `_gist` | src/tessellate/ai/tool_say.py:77 |
 | `_help` | src/tessellate/ai/tool_say.py:476 |
-| `_learned_checked` | src/tessellate/ai/tool_say.py:741 |
+| `_learned_checked` | src/tessellate/ai/tool_say.py:748 |
 | `_library` | src/tessellate/ai/tool_say.py:605 |
 | `_linked` | src/tessellate/ai/tool_say.py:724 |
 | `_list_notes` | src/tessellate/ai/tool_say.py:217 |
 | `_list_notes_said` | src/tessellate/ai/tool_say.py:402 |
 | `_list_notes_table` | src/tessellate/ai/tool_say.py:391 |
 | `_listed_notes` | src/tessellate/ai/tool_say.py:700 |
-| `_lower_first` | src/tessellate/ai/tool_say.py:852 |
-| `_map_from_note` | src/tessellate/ai/tool_say.py:788 |
-| `_map_link` | src/tessellate/ai/tool_say.py:807 |
-| `_map_node` | src/tessellate/ai/tool_say.py:802 |
+| `_lower_first` | src/tessellate/ai/tool_say.py:859 |
+| `_map_from_note` | src/tessellate/ai/tool_say.py:795 |
+| `_map_link` | src/tessellate/ai/tool_say.py:814 |
+| `_map_node` | src/tessellate/ai/tool_say.py:809 |
 | `_mindmap` | src/tessellate/ai/tool_say.py:597 |
-| `_mindmap_made` | src/tessellate/ai/tool_say.py:781 |
+| `_mindmap_made` | src/tessellate/ai/tool_say.py:788 |
 | `_month` | src/tessellate/ai/tool_say.py:711 |
-| `_moved` | src/tessellate/ai/tool_say.py:794 |
+| `_moved` | src/tessellate/ai/tool_say.py:801 |
 | `_name` | src/tessellate/ai/tool_say.py:72 |
 | `_named_counts` | src/tessellate/ai/tool_say.py:350 |
-| `_note_deleted` | src/tessellate/ai/tool_say.py:863 |
-| `_note_restored` | src/tessellate/ai/tool_say.py:867 |
+| `_note_deleted` | src/tessellate/ai/tool_say.py:870 |
+| `_note_restored` | src/tessellate/ai/tool_say.py:874 |
 | `_note_row` | src/tessellate/ai/tool_say.py:86 |
 | `_number` | src/tessellate/ai/tool_say.py:62 |
 | `_overview` | src/tessellate/ai/tool_say.py:363 |
 | `_path` | src/tessellate/ai/tool_say.py:306 |
 | `_person` | src/tessellate/ai/tool_say.py:718 |
 | `_pinned` | src/tessellate/ai/tool_say.py:683 |
-| `_placed` | src/tessellate/ai/tool_say.py:839 |
+| `_placed` | src/tessellate/ai/tool_say.py:846 |
 | `_plain` | src/tessellate/ai/tool_say.py:138 |
-| `_plan` | src/tessellate/ai/tool_say.py:895 |
-| `_preference` | src/tessellate/ai/tool_say.py:872 |
+| `_plan` | src/tessellate/ai/tool_say.py:902 |
+| `_preference` | src/tessellate/ai/tool_say.py:879 |
 | `_propose` | src/tessellate/ai/tool_say.py:623 |
 | `_quoted` | src/tessellate/ai/tool_say.py:115 |
 | `_read_file` | src/tessellate/ai/tool_say.py:558 |
 | `_read_text` | src/tessellate/ai/tool_say.py:566 |
 | `_read_url` | src/tessellate/ai/tool_say.py:637 |
 | `_related` | src/tessellate/ai/tool_say.py:296 |
-| `_reminder_done` | src/tessellate/ai/tool_say.py:857 |
-| `_reminder_set` | src/tessellate/ai/tool_say.py:844 |
+| `_reminder_done` | src/tessellate/ai/tool_say.py:864 |
+| `_reminder_set` | src/tessellate/ai/tool_say.py:851 |
 | `_reminders` | src/tessellate/ai/tool_say.py:426 |
 | `_rows_under` | src/tessellate/ai/tool_say.py:383 |
-| `_run_skill` | src/tessellate/ai/tool_say.py:901 |
-| `_screen` | src/tessellate/ai/tool_say.py:952 |
+| `_run_skill` | src/tessellate/ai/tool_say.py:908 |
+| `_screen` | src/tessellate/ai/tool_say.py:959 |
 | `_search_board` | src/tessellate/ai/tool_say.py:587 |
 | `_search_notes` | src/tessellate/ai/tool_say.py:245 |
 | `_sentence` | src/tessellate/ai/tool_say.py:146 |
 | `_similar` | src/tessellate/ai/tool_say.py:287 |
-| `_skill_deleted` | src/tessellate/ai/tool_say.py:883 |
-| `_skill_saved` | src/tessellate/ai/tool_say.py:877 |
+| `_skill_deleted` | src/tessellate/ai/tool_say.py:890 |
+| `_skill_saved` | src/tessellate/ai/tool_say.py:884 |
 | `_skills` | src/tessellate/ai/tool_say.py:466 |
 | `_stale` | src/tessellate/ai/tool_say.py:704 |
 | `_structure` | src/tessellate/ai/tool_say.py:374 |
 | `_summary` | src/tessellate/ai/tool_say.py:330 |
 | `_table` | src/tessellate/ai/tool_say.py:102 |
-| `_tag` | src/tessellate/ai/tool_say.py:765 |
+| `_tag` | src/tessellate/ai/tool_say.py:772 |
 | `_tagged` | src/tessellate/ai/tool_say.py:670 |
 | `_time` | src/tessellate/ai/tool_say.py:173 |
 | `_tool_described` | src/tessellate/ai/tool_say.py:517 |
@@ -20993,11 +20995,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `board_at` | src/tessellate/ai/tool_say.py:54 |
 | `count_word_of` | src/tessellate/ai/tool_say.py:387 |
 | `document_at` | src/tessellate/ai/tool_say.py:50 |
-| `form_args` | src/tessellate/ai/tool_say.py:982 |
+| `form_args` | src/tessellate/ai/tool_say.py:989 |
 | `link` | src/tessellate/ai/tool_say.py:66 |
 | `matched` | src/tessellate/ai/tool_say.py:231 |
 | `note_at` | src/tessellate/ai/tool_say.py:46 |
-| `say` | src/tessellate/ai/tool_say.py:987 |
+| `say` | src/tessellate/ai/tool_say.py:994 |
 | `settings_at` | src/tessellate/ai/tool_say.py:58 |
 
 ### src/tessellate/ai/toolrank.py (9)
@@ -21200,13 +21202,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `handoff_event` | src/tessellate/ai/tools/tool_handoff.py:116 |
 | `validate_run_skill` | src/tessellate/ai/tools/tool_handoff.py:20 |
 
-### src/tessellate/ai/tools/tool_learn.py (4)
+### src/tessellate/ai/tools/tool_learn.py (5)
 
 | Name | File:line |
 |---|---|
 | `_audit_link_reasons` | src/tessellate/ai/tools/tool_learn.py:105 |
-| `_check_learned` | src/tessellate/ai/tools/tool_learn.py:124 |
-| `_find_contradictions` | src/tessellate/ai/tools/tool_learn.py:145 |
+| `_check_learned` | src/tessellate/ai/tools/tool_learn.py:144 |
+| `_find_contradictions` | src/tessellate/ai/tools/tool_learn.py:165 |
+| `_restore_link_reasons` | src/tessellate/ai/tools/tool_learn.py:129 |
 | `_save_user_preference` | src/tessellate/ai/tools/tool_learn.py:26 |
 
 ### src/tessellate/ai/tools/tool_list_page.py (4)
@@ -21378,33 +21381,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `board_note_binned` | src/tessellate/ai/tools/undo_inverses.py:27 |
 | `skill_restore` | src/tessellate/ai/tools/undo_inverses.py:9 |
 
-### src/tessellate/ai/tools/verify.py (23)
+### src/tessellate/ai/tools/verify.py (24)
 
 | Name | File:line |
 |---|---|
-| `_archive_state` | src/tessellate/ai/tools/verify.py:215 |
-| `_card_placed` | src/tessellate/ai/tools/verify.py:85 |
-| `_diagram_placed` | src/tessellate/ai/tools/verify.py:98 |
-| `_document_created` | src/tessellate/ai/tools/verify.py:69 |
-| `_document_deleted` | src/tessellate/ai/tools/verify.py:78 |
-| `_item` | src/tessellate/ai/tools/verify.py:132 |
-| `_item_moved` | src/tessellate/ai/tools/verify.py:143 |
-| `_item_present` | src/tessellate/ai/tools/verify.py:137 |
-| `_item_removed` | src/tessellate/ai/tools/verify.py:160 |
-| `_learned_checked` | src/tessellate/ai/tools/verify.py:186 |
-| `_library_placed` | src/tessellate/ai/tools/verify.py:166 |
-| `_link_drawn` | src/tessellate/ai/tools/verify.py:94 |
-| `_links_audited` | src/tessellate/ai/tools/verify.py:176 |
-| `_map_from_note_made` | src/tessellate/ai/tools/verify.py:116 |
-| `_map_node_added` | src/tessellate/ai/tools/verify.py:125 |
-| `_mindmap_created` | src/tessellate/ai/tools/verify.py:105 |
-| `_missing` | src/tessellate/ai/tools/verify.py:61 |
-| `_row` | src/tessellate/ai/tools/verify.py:54 |
-| `_skill_deleted` | src/tessellate/ai/tools/verify.py:209 |
-| `_skill_names` | src/tessellate/ai/tools/verify.py:198 |
-| `_skill_saved` | src/tessellate/ai/tools/verify.py:203 |
-| `check` | src/tessellate/ai/tools/verify.py:259 |
-| `has_verifier` | src/tessellate/ai/tools/verify.py:254 |
+| `_archive_state` | src/tessellate/ai/tools/verify.py:225 |
+| `_card_placed` | src/tessellate/ai/tools/verify.py:86 |
+| `_diagram_placed` | src/tessellate/ai/tools/verify.py:99 |
+| `_document_created` | src/tessellate/ai/tools/verify.py:70 |
+| `_document_deleted` | src/tessellate/ai/tools/verify.py:79 |
+| `_item` | src/tessellate/ai/tools/verify.py:133 |
+| `_item_moved` | src/tessellate/ai/tools/verify.py:144 |
+| `_item_present` | src/tessellate/ai/tools/verify.py:138 |
+| `_item_removed` | src/tessellate/ai/tools/verify.py:161 |
+| `_learned_checked` | src/tessellate/ai/tools/verify.py:196 |
+| `_library_placed` | src/tessellate/ai/tools/verify.py:167 |
+| `_link_drawn` | src/tessellate/ai/tools/verify.py:95 |
+| `_links_audited` | src/tessellate/ai/tools/verify.py:177 |
+| `_links_restored` | src/tessellate/ai/tools/verify.py:187 |
+| `_map_from_note_made` | src/tessellate/ai/tools/verify.py:117 |
+| `_map_node_added` | src/tessellate/ai/tools/verify.py:126 |
+| `_mindmap_created` | src/tessellate/ai/tools/verify.py:106 |
+| `_missing` | src/tessellate/ai/tools/verify.py:62 |
+| `_row` | src/tessellate/ai/tools/verify.py:55 |
+| `_skill_deleted` | src/tessellate/ai/tools/verify.py:219 |
+| `_skill_names` | src/tessellate/ai/tools/verify.py:208 |
+| `_skill_saved` | src/tessellate/ai/tools/verify.py:213 |
+| `check` | src/tessellate/ai/tools/verify.py:270 |
+| `has_verifier` | src/tessellate/ai/tools/verify.py:265 |
 
 ### src/tessellate/ai/tools/whiteboard.py (30)
 
@@ -28876,7 +28880,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23278)
+## Tests (23280)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29236,7 +29240,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_maps_l112.py | 2 |
 | tests/test_chat_measures_l219.py | 3 |
 | tests/test_chat_metadata.py | 10 |
-| tests/test_chat_model_evals.py | 6 |
+| tests/test_chat_model_evals.py | 7 |
 | tests/test_chat_new_chat_row.py | 2 |
 | tests/test_chat_no_model_tools_l110.py | 2 |
 | tests/test_chat_no_model_utilities_l230.py | 2 |
@@ -30533,7 +30537,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_line_gutter_look.py | 7 |
 | tests/test_link_all_sure.py | 4 |
 | tests/test_link_offers.py | 16 |
-| tests/test_link_reasons.py | 40 |
+| tests/test_link_reasons.py | 42 |
 | tests/test_link_schemes_controls.py | 4 |
 | tests/test_link_suggestion_quality.py | 3 |
 | tests/test_link_two_way.py | 5 |
@@ -31873,7 +31877,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
-| tests/test_zz_probe.py | 1 |
 
 ## Plan headings (692)
 

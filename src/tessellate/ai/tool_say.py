@@ -738,6 +738,13 @@ def _audit(result: dict, args: dict) -> Said:
     return f"Rewrote the reasons on {count_noun(n, 'link')} to say why the notes connect.", "", _chips(("Open the graph", GRAPH))
 
 
+def _audit_restored(result: dict, args: dict) -> Said:
+    n = int(result.get("restored") or 0)
+    if not n:
+        return "Nothing to put back: those reasons were edited since.", "", ()
+    return f"Put back the old reasons on {count_noun(n, 'link')}.", "", _chips(("Open the graph", GRAPH))
+
+
 def _learned_checked(result: dict, args: dict) -> Said:
     retired, flagged = int(result.get("retired") or 0), int(result.get("flagged") or 0)
     chips = _chips(("Open What it learned", settings_at("learned")))
@@ -924,7 +931,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "add_whiteboard_card": _board_card, "add_whiteboard_link": _board_write("Linked the two cards"),
     "add_board_shape": _board_write("Drew the shape"), "edit_board_item": _board_write("Changed it"),
     "move_board_item": _board_write("Moved it"), "delete_board_item": _board_write("Took it off the board"),
-    "restore_board_item": _board_write("Put it back on the board"), "generate_diagram": _diagram,
+    "restore_board_item": _board_write("Put it back on the board"), "restore_link_reasons": _audit_restored, "generate_diagram": _diagram,
     "place_library_item": _placed, "set_reminder": _reminder_set, "complete_reminder": _reminder_done,
     "delete_note": _note_deleted, "restore_note": _note_restored, "save_user_preference": _preference,
     "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,

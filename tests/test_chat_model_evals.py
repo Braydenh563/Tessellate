@@ -171,3 +171,29 @@ def test_a_model_plans_calculates_proposes_and_asks_without_a_dead_end(notebook)
     print(f"  calculate: {sum('calculate' in r['tools'] for r in rows[2:4])}/2 called calculate, {sum(r['words'] for r in rows[2:4])}/2 ended in words")
     print(f"  propose_act: {sum('propose_act' in r['tools'] or bool(r['cards']) for r in rows[4:5])}/1 ended in a card")
     print(f"  ask_user: {sum('ask_user' in r['tools'] for r in rows[5:])}/2 called ask_user, drawn with one option: {sum(1 for r in rows[5:] for n in r['asks'] if n < 2)}")
+
+
+def test_the_link_reason_audit_can_be_undone_with_a_real_model(notebook):  # noqa: F811
+    """L-chat-258: a real model rewrites the vague reasons, then the undo puts every old one back."""
+    from tessellate.ai import tools
+    from tessellate.core import deps
+    from tessellate.core.database import Entry, EntryLink
+    from tessellate.entry import manager_links
+
+    with deps.get_db().session() as session:
+        ids = [e.id for e in session.query(Entry).order_by(Entry.id).limit(5)]
+        for a, b in zip(ids, ids[1:]):
+            session.add(EntryLink(source_entry_id=a, target_entry_id=b, reason=manager_links.AUTO_REASON_TEXT, reason_confidence=0.8))
+        session.commit()
+        started = time.monotonic()
+        done = tools.execute_tool(session, "audit_link_reasons", {"limit": 4})
+        took = time.monotonic() - started
+        written = [r for (r,) in session.query(EntryLink.reason).all()]
+        print(f"\n  audit: rewrote {done.get('updated')} of {len(written)} in {took:.0f}s; reasons {written}", flush=True)
+        if not done.get("updated"):
+            assert "undo" not in done  # only vague replies, so there is nothing to put back
+            return
+        back = tools.execute_tool(session, done["undo"]["tool"], done["undo"]["arguments"])
+        left = session.query(EntryLink).filter(EntryLink.reason == manager_links.AUTO_REASON_TEXT, EntryLink.reason_confidence == 0.8).count()
+        print(f"  undo: put back {back.get('restored')}, {left} links carry the old reason again", flush=True)
+        assert back["restored"] == done["updated"] and left == len(written)

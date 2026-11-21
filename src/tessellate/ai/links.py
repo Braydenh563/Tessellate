@@ -16,7 +16,7 @@ import logging
 from sqlalchemy import select
 
 from tessellate.ai import librarian, model_manager, ollama_client
-from tessellate.core.database import Entry, EntryLink, plain_reason
+from tessellate.core.database import AuditLog, Entry, EntryLink, plain_reason
 from tessellate.entry import manager
 from tessellate.entry import manager_links
 
@@ -95,8 +95,29 @@ def _clean_reason(raw: str) -> str:
     return reason[:MAX_REASON_CHARS].strip()
 
 
+def restore_link_reasons(session, log_id: int) -> int:
+    """Put back the reasons one `audit_vague_links` batch wrote (its log row's payload holds the old ones).
+
+    A link whose reason has changed since (a person edited it) is left alone, so the undo never
+    overwrites newer work. Returns how many links went back."""
+    row = session.get(AuditLog, int(log_id))
+    items = ((row.payload or {}).get("links") or []) if row is not None and row.action == "audited" else []
+    restored = 0
+    for item in items:
+        link = session.get(EntryLink, item.get("id"))
+        if link is None or link.reason != item.get("now"):
+            continue
+        link.reason, link.reason_confidence = item.get("reason"), item.get("confidence")
+        restored += 1
+    if restored:
+        manager.log_action(session, "restored", "entry", detail=f"put back {restored} link reason(s)")
+        session.commit()
+    return restored
+
+
 def audit_vague_links(
-    session, model: model_manager.ModelManager, ollama: ollama_client.OllamaClient, limit: int = 50
+    session, model: model_manager.ModelManager, ollama: ollama_client.OllamaClient, limit: int = 50,
+    batch: dict | None = None,
 ) -> int:
     """Rewrite up to `limit` vague-or-guessed link reasons with a specific
     one, using the AI. Returns how many were actually rewritten.
@@ -114,6 +135,11 @@ def audit_vague_links(
     `manager.apply_audited_reason` for why a per-link commit and log row
     (what `manager.set_link_reason` does, correctly, for a human editing one
     link by hand) would be wrong here.
+
+    The log row's payload keeps each rewritten link's old reason and confidence
+    beside the new reason, so `restore_link_reasons` can put the batch back
+    (L-chat-258); a caller that wants that row's id passes a `batch` dict and
+    reads `batch["log_id"]`.
     """
     stmt = (
         select(EntryLink)
@@ -128,6 +154,7 @@ def audit_vague_links(
         return 0
 
     updated_count = 0
+    rewritten: list[dict] = []
 
     for link in links:
         if _failed_attempts.get(link.id, 0) >= MAX_ATTEMPTS_PER_PROCESS:
@@ -169,7 +196,9 @@ def audit_vague_links(
             )
             continue
 
+        before = {"id": link.id, "reason": link.reason, "confidence": link.reason_confidence}
         manager_links.apply_audited_reason(link, reason)
+        rewritten.append({**before, "now": link.reason})
         updated_count += 1
         # A link that got a usable reason no longer matches the WHERE clause
         # above (its reason_confidence is cleared and its reason is no
@@ -178,9 +207,11 @@ def audit_vague_links(
         _failed_attempts.pop(link.id, None)
 
     if updated_count:
-        manager.log_action(
-            session, "audited", "entry", detail=f"audited {updated_count} link reason(s)"
+        row = manager.log_action(
+            session, "audited", "entry", detail=f"audited {updated_count} link reason(s)", payload={"links": rewritten}
         )
         session.commit()
+        if batch is not None and row is not None:
+            batch["log_id"] = row.id
 
     return updated_count

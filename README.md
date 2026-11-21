@@ -163,7 +163,7 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 77 tools to search, link, organise and act on
+- In Agent mode the assistant has 78 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.

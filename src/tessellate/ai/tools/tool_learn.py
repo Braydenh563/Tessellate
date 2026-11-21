@@ -8,7 +8,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 from sqlalchemy.orm import Session
-from tessellate.ai.tools._common import ToolError
+from tessellate.ai.tools._common import ToolError, ToolSpec
 from tessellate.core import deps, private_turn
 from tessellate.ai import memory
 from sqlalchemy import select
@@ -118,8 +118,28 @@ def _audit_link_reasons(session: Session, args: dict) -> dict:
     from tessellate.ai import links
 
     limit = int(args.get("limit", 50))
-    updated = links.audit_vague_links(session, deps.get_model_manager(), deps.get_ollama(), limit)
-    return {"updated": updated, "message": f"Successfully audited and rewrote {updated} link reasons."}
+    batch: dict = {}
+    updated = links.audit_vague_links(session, deps.get_model_manager(), deps.get_ollama(), limit, batch)
+    result = {"updated": updated, "message": f"Successfully audited and rewrote {updated} link reasons."}
+    if batch.get("log_id"):
+        result["undo"] = {"tool": "restore_link_reasons", "arguments": {"log_id": batch["log_id"]}}
+    return result
+
+
+def _restore_link_reasons(session: Session, args: dict) -> dict:
+    """The undo `audit_link_reasons` hands back: its batch's old reasons, from the audit-log row it wrote."""
+    from tessellate.ai import links
+
+    restored = links.restore_link_reasons(session, int(args.get("log_id") or 0))
+    return {"restored": restored, "message": f"Put back {restored} link reasons."}
+
+
+RESTORE_LINK_REASONS = ToolSpec(
+    "restore_link_reasons",
+    "Put back link reasons an audit rewrote. Pass the log_id its undo gave; only for undoing an audit.",
+    {"type": "object", "properties": {"log_id": {"type": "integer", "description": "The undo's log id"}}, "required": ["log_id"]},
+    _restore_link_reasons,
+)
 
 def _check_learned(session: Session, args: dict) -> dict:
     """Check what it learned (decision 68, `ai/learned_audit_run.py`): re-read
