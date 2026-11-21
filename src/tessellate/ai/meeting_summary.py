@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import re
 
+from tessellate.ai import presets
+
 #: The longest stretch of the note sent: a meeting of an hour transcribed is
 #: about 9,000 words, and a small model's context has to hold the
 #: instructions beside it.
@@ -162,5 +164,6 @@ def summarise(source: str, model_manager, ollama) -> dict:  # noqa: ANN001
     reply = ollama.chat(
         model_manager.utility_model(),
         [{"role": "system", "content": SYSTEM}, {"role": "user", "content": text}],
+        mode=presets.BACKGROUND_MODE,
     )
     return parse_reply(reply.get("content", ""), text)

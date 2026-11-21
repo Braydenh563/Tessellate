@@ -18,8 +18,8 @@ from tessellate.ai import presets
 AI = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "ai"
 
 #: How many short-output utility-model calls each file makes in the preset.
-#: `drafter.py`'s second call writes the whole draft, `meeting_summary.py`
-#: writes a summary: both keep the mode they had. `facts.py` (the night pass's
+#: `drafter.py`'s second call writes the whole draft and keeps the mode it had;
+#: `meeting_summary.py` asks for the preset too (L-chat-237). `facts.py` (the night pass's
 #: numbers, the tension judge) and `margin.py` (one judging word) answer in a
 #: word or a list of numbers, so they ask for it too (L-chat-237).
 SITES = {
@@ -28,6 +28,7 @@ SITES = {
     "entities.py": 1,
     "facts.py": 2,
     "margin.py": 1,
+    "meeting_summary.py": 1,
     "passive_capture.py": 1,
     "reminder_parser.py": 1,
     "skill_runner.py": 1,
