@@ -81,6 +81,8 @@
     code: null,
     //: The empty page's words, which follow the file type (`docPlaceholderFor`).
     placeholder: null,
+    //: `drawSelection`, held only for several ranges or an unfocused selection (L342).
+    select: null,
     //: **PHP is its own file, fetched on the first .php open** (L-documents-63): the grammar is 28 KB gzipped and
     //: only this one file type wants it, so `php.min.js` extends the bundle's `CM6` the way `vim.min.js` does
     //: (called from `docCmViewLanguage`). Until it lands the file is plain text; then the memo is cleared and the

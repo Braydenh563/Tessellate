@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2854, tests 22967, plan headings 690, app scripts 29, boot scripts 38, script files 381.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 528, backend routes 720, backend modules 11019, test files 2855, tests 22970, plan headings 690, app scripts 29, boot scripts 38, script files 381.
 
 ## Frontend functions (8980)
 
@@ -3876,18 +3876,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmHighlight` | frontend/js/documents-cm-load.js:333 |
-| `docCmLanguageFor` | frontend/js/documents-cm-load.js:104 |
-| `docCmSearchCount` | frontend/js/documents-cm-load.js:273 |
-| `docCmViewShown` | frontend/js/documents-cm-load.js:461 |
-| `docHistoryPersist` | frontend/js/documents-cm-load.js:445 |
-| `docHistoryRestore` | frontend/js/documents-cm-load.js:429 |
-| `docListGuides` | frontend/js/documents-cm-load.js:244 |
+| `docCmHighlight` | frontend/js/documents-cm-load.js:335 |
+| `docCmLanguageFor` | frontend/js/documents-cm-load.js:106 |
+| `docCmSearchCount` | frontend/js/documents-cm-load.js:275 |
+| `docCmViewShown` | frontend/js/documents-cm-load.js:463 |
+| `docHistoryPersist` | frontend/js/documents-cm-load.js:447 |
+| `docHistoryRestore` | frontend/js/documents-cm-load.js:431 |
+| `docListGuides` | frontend/js/documents-cm-load.js:246 |
 | `docRedo` | frontend/js/documents-cm-load.js:4 |
-| `docResetDocument` | frontend/js/documents-cm-load.js:388 |
-| `docSearchCountText` | frontend/js/documents-cm-load.js:265 |
-| `docTableGridRules` | frontend/js/documents-cm-load.js:185 |
-| `docWatchLock` | frontend/js/documents-cm-load.js:465 |
+| `docResetDocument` | frontend/js/documents-cm-load.js:390 |
+| `docSearchCountText` | frontend/js/documents-cm-load.js:267 |
+| `docTableGridRules` | frontend/js/documents-cm-load.js:187 |
+| `docWatchLock` | frontend/js/documents-cm-load.js:467 |
 | `loadCodeMirror` | frontend/js/documents-cm-load.js:35 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:18 |
 
@@ -5301,36 +5301,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmApplySpellcheck` | frontend/js/documents-view.js:380 |
-| `docCmChanged` | frontend/js/documents-view.js:770 |
-| `docCmDrawFor` | frontend/js/documents-view.js:683 |
+| `docCmApplySpellcheck` | frontend/js/documents-view.js:400 |
+| `docCmChanged` | frontend/js/documents-view.js:790 |
+| `docCmDrawFor` | frontend/js/documents-view.js:703 |
 | `docCmExtensions` | frontend/js/documents-view.js:241 |
-| `docCmGutter` | frontend/js/documents-view.js:806 |
+| `docCmGutter` | frontend/js/documents-view.js:826 |
 | `docCmKeymap` | frontend/js/documents-view.js:73 |
-| `docCmLanguageEffects` | frontend/js/documents-view.js:777 |
-| `docCmRepaintFindings` | frontend/js/documents-view.js:556 |
-| `docCmSpellcheck` | frontend/js/documents-view.js:369 |
-| `docCmSyncFileType` | frontend/js/documents-view.js:716 |
-| `docCmSyncGutter` | frontend/js/documents-view.js:792 |
-| `docCmSyncLanguage` | frontend/js/documents-view.js:751 |
-| `docCmUpdate` | frontend/js/documents-view.js:392 |
-| `docCmViewLanguage` | frontend/js/documents-view.js:741 |
-| `docFenceGutterOn` | frontend/js/documents-view.js:788 |
-| `docFindingsPlugin` | frontend/js/documents-view.js:498 |
-| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:649 |
+| `docCmLanguageEffects` | frontend/js/documents-view.js:797 |
+| `docCmRepaintFindings` | frontend/js/documents-view.js:576 |
+| `docCmSpellcheck` | frontend/js/documents-view.js:389 |
+| `docCmSyncFileType` | frontend/js/documents-view.js:736 |
+| `docCmSyncGutter` | frontend/js/documents-view.js:812 |
+| `docCmSyncLanguage` | frontend/js/documents-view.js:771 |
+| `docCmUpdate` | frontend/js/documents-view.js:412 |
+| `docCmViewLanguage` | frontend/js/documents-view.js:761 |
+| `docFenceGutterOn` | frontend/js/documents-view.js:808 |
+| `docFindingsPlugin` | frontend/js/documents-view.js:518 |
+| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:669 |
 | `docIdeCall` | frontend/js/documents-view.js:224 |
-| `docLineClipboardEvent` | frontend/js/documents-view.js:857 |
-| `docLineClipboardExtension` | frontend/js/documents-view.js:884 |
-| `docLineClipboardRange` | frontend/js/documents-view.js:845 |
-| `docLinePasteEvent` | frontend/js/documents-view.js:870 |
+| `docLineClipboardEvent` | frontend/js/documents-view.js:877 |
+| `docLineClipboardExtension` | frontend/js/documents-view.js:904 |
+| `docLineClipboardRange` | frontend/js/documents-view.js:865 |
+| `docLinePasteEvent` | frontend/js/documents-view.js:890 |
 | `docProseChord` | frontend/js/documents-view.js:55 |
 | `docRedoChord` | frontend/js/documents-view.js:16 |
 | `docTableCellClick` | frontend/js/documents-view.js:186 |
-| `docToggleCodeDraw` | frontend/js/documents-view.js:692 |
-| `docWatchAppearance` | frontend/js/documents-view.js:667 |
-| `ensureDocEditor` | frontend/js/documents-view.js:608 |
-| `mountDocEditor` | frontend/js/documents-view.js:578 |
-| `noteSurfaceGutter` | frontend/js/documents-view.js:900 |
+| `docToggleCodeDraw` | frontend/js/documents-view.js:712 |
+| `docWatchAppearance` | frontend/js/documents-view.js:687 |
+| `ensureDocEditor` | frontend/js/documents-view.js:628 |
+| `mountDocEditor` | frontend/js/documents-view.js:598 |
+| `noteSurfaceGutter` | frontend/js/documents-view.js:920 |
 
 ### frontend/js/documents-warm.js (2)
 
@@ -29147,7 +29147,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22967)
+## Tests (22970)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30095,6 +30095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_lists_1696.py | 10 |
 | tests/test_doc_long.py | 5 |
 | tests/test_doc_math.py | 3 |
+| tests/test_doc_native_selection.py | 3 |
 | tests/test_doc_new_draft_1110.py | 5 |
 | tests/test_doc_open_layout_1530.py | 6 |
 | tests/test_doc_outline_reuse.py | 2 |
