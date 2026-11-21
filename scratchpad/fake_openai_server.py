@@ -106,6 +106,14 @@ BREAK_TOOL_CHOICE = bool(os.environ.get("FAKE_BREAK_TOOL_CHOICE"))
 STREAM_DELAY_MS = int(os.environ.get("FAKE_STREAM_DELAY_MS") or 0)
 STREAM_PIECES = 8
 
+#: A thinking model (`FAKE_THINK`): this text streams first as `reasoning_content`
+#: pieces, the field DeepSeek-R1-style servers use, before any answer text.
+THINK = os.environ.get("FAKE_THINK") or ""
+
+#: What the last stream did, for a test that asks "did the app stop reading?":
+#: pieces written, and whether a write found the client gone.
+STREAM_LOG = {"pieces": 0, "gone": False}
+
 
 def _pick_tools(tools: list[dict], count: int) -> list[tuple[str, dict]]:
     """`count` distinct tools out of what the request offered, the preferred
@@ -226,8 +234,12 @@ class Handler(BaseHTTPRequestHandler):
     def _sse_send(self, payload: dict | str) -> None:
         line = payload if isinstance(payload, str) else json.dumps(payload)
         chunk = f"data: {line}\n\n".encode()
-        self.wfile.write(b"%x\r\n" % len(chunk) + chunk + b"\r\n")
-        self.wfile.flush()
+        try:
+            self.wfile.write(b"%x\r\n" % len(chunk) + chunk + b"\r\n")
+            self.wfile.flush()
+        except OSError:
+            STREAM_LOG["gone"] = True
+            raise
 
     def _sse_close(self) -> None:
         self._sse_send("[DONE]")
@@ -444,10 +456,18 @@ class Handler(BaseHTTPRequestHandler):
                 pieces = [ANSWER[i : i + size] for i in range(0, len(ANSWER), size)]
             else:
                 pieces = [ANSWER[:40], ANSWER[40:]]
+            STREAM_LOG.update(pieces=0, gone=False)
+            if THINK:
+                third = max(1, -(-len(THINK) // 3))
+                for i in range(0, len(THINK), third):
+                    if STREAM_DELAY_MS:
+                        time.sleep(STREAM_DELAY_MS / 1000)
+                    self._sse_send(frame({"reasoning_content": THINK[i : i + third]}))
             for piece in pieces:
                 if STREAM_DELAY_MS:
                     time.sleep(STREAM_DELAY_MS / 1000)
                 self._sse_send(frame({"content": piece}))
+                STREAM_LOG["pieces"] += 1
             self._sse_send(frame({}, finish="stop"))
         self._sse_close()
 

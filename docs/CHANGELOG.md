@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Writing desk: Stop mid-pass and the thinking stream are tested on a real socket (`tests/test_writing_desk_stop.py`: a stopped pass settles in under 1.2s, the model request is closed, the thinking arrives before and apart from the draft) and driven in the app on the stand-in (Stop settled in 118 and 220ms) and on llama-cpp-python with Qwen2.5-1.5B (68ms) and Qwen3-0.6B (110ms, thinking shown, draft untouched); `scratchpad/fake_openai_server.py` gained `FAKE_THINK` and a stream log (L-world-class-65).
 - Notes: on a long notebook the first Notes press lands only the first 240 row placeholders and the rest join in idle chunks (5,000 notes: click to first row 459 to 213ms of main thread, style 139 to 66ms).
 
 - A VS Code extension (`editors/vscode/`, L-world-class-183): sign in to the local server, save a selection or a typed note, search notes and insert a link or the text, and open a note read only. No build step, no telemetry, talks to this computer only; a node test runs its API client against a fake server and `tests/test_vscode_extension.py` fails if a route it calls is renamed. Not run inside VS Code here.
