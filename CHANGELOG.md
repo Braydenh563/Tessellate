@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings group heads, the nav row you are in and the manual jump are weight 600 (650 resolved to Bold 700 in a static-weight font and drew a step heavier than the card titles: 600 and 650 side by side at 1366x768, now all 600); the 600-to-1099 toast sits 16px from the right edge like the desktop (was 7px at 1093x614); the model menu pin no longer says `ph-fill` (the vendored Phosphor has one weight) and a lint holds both (L-world-class-105).
 - Replace in every document and Document statistics are sheets (`<sheet-host>`), not native dialogs; `UNRULED_DIALOGS` is gone and the two are rows of `POPUP_KINDS` (L-world-class-421; at 1440x900 both lift into `.modal-overlay > .card` and Escape closes).
 - Atlas: the corner figure's tail, lower body and eyes rest while a dialog covers it (200 to 1 attribute writes a second with Settings open) and wake when it closes.
 - Brief 101c first-run rows verified built (L660): Setup's picked packages install on first launch as a background job with progress and Stop (`api/app.py:680`), and the filing warm-up only loads an installed model (`ai/janitor.py:832`); the real-installer and real-Ollama check is in BACKLOG.

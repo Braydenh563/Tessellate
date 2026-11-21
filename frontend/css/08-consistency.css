@@ -5291,7 +5291,9 @@ body .chip.item-label,
   body:not([data-tab=chat]) #toast-box {
     top: auto;
     left: auto;
-    right: var(--space-4);
+    /* The desktop's own 1rem, not a density step: at 1093x614 (compact) the
+       toast sat 7px from the edge against 16px at 1366 (L-world-class-105). */
+    right: 1rem;
     bottom: calc(var(--status-bar-h) + var(--space-3));
     align-items: flex-end;
   }

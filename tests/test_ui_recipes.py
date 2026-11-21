@@ -3964,7 +3964,7 @@ def test_a_settings_pane_lists_its_groups_in_the_sidebar() -> None:
     link = _css_block("#settings-nav .settings-nav-group")
     assert "background: transparent" in link and "box-shadow: none" in link
     current = _css_block('#settings-nav .settings-nav-group[aria-current="location"]')
-    assert "var(--accent)" in current and "font-weight: 650" in current
+    assert "var(--accent)" in current and "font-weight: 600" in current
     assert "--accent-surface" not in current and "background" not in current
     code = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "scrollIntoView" not in re.sub(r"//.*", "", code), "scroll the pane's own scrollTop"
@@ -8148,3 +8148,16 @@ def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it(
     every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
     assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
     assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
+
+
+def test_no_stylesheet_declares_the_weight_650() -> None:
+    """A font with static weights (Segoe UI and most system faces) has no 650 and
+    resolves it to Bold 700, so a head set at 650 drew a step heavier than the 600
+    the recipes name (DESIGN.md, `.card h2`). Group heads, nav rows and titles are
+    600; measured at 1366x768 the Settings heads were 600 and 650 side by side
+    (L-world-class-105)."""
+    hits = []
+    for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
+        css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
+    assert not hits, f"declare 600, not 650: {hits}"

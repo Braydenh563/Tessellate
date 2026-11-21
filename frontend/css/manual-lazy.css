@@ -59,7 +59,7 @@
 .manual-jump[aria-current="location"] {
   box-shadow: inset 2px 0 0 var(--accent);
   color: var(--ink);
-  font-weight: 650;
+  font-weight: 600;
 }
 /* Positioned, so a topic's `offsetTop` is measured from here (the jumps). */
 .manual-topics {
