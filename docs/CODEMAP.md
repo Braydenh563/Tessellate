@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8550, frontend ids 2805, CSS sections 527, backend routes 729, backend modules 11171, test files 2909, tests 22946, plan headings 688, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8550, frontend ids 2805, CSS sections 527, backend routes 729, backend modules 11171, test files 2910, tests 22947, plan headings 688, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8550)
 
@@ -28558,7 +28558,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22946)
+## Tests (22947)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30660,6 +30660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_pr189_security.py | 7 |
 | tests/test_preferences_api.py | 27 |
 | tests/test_preferences_roundtrip.py | 5 |
+| tests/test_prefs_fills_readers.py | 1 |
 | tests/test_prefs_module.py | 6 |
 | tests/test_prefs_pending_save_survives_pane_switch.py | 3 |
 | tests/test_prefs_writes_ratchet.py | 2 |
