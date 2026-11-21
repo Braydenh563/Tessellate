@@ -547,3 +547,17 @@ def test_log_noise_filter_drops_windows_proactor_chatter():
     log_filter = logbuffer.NoiseFilter()
     assert log_filter.filter(noise) is False
     assert log_filter.filter(real) is True
+
+
+def test_a_draw_reuses_the_rows_it_already_built():
+    # L607: 113 draws of the list cost 5,046 ms under load because each rebuilt up to 200 rows.
+    source = _settings_js()
+    assert "const logNodeCache = new WeakMap();" in source
+    list_body = source[source.index("function renderLogList()") : source.index("function logTerminalParts(")]
+    assert 'cachedLogNode(record, "row", sig, logRow)' in list_body
+    assert "list.appendChild(logRow(" not in list_body
+    term_body = source[source.index("function renderLogTerminal()") : source.index("function renderActiveLogView()")]
+    assert 'cachedLogNode(record, "line", sig, logTerminalRow)' in term_body
+    # A row's look depends on the source filter (the tag) and the clock setting, so both key the cache.
+    sig_body = source[source.index("function logRowSignature()") : source.index("function cachedLogNode(")]
+    assert 'log-source' in sig_body and "clockOptions()" in sig_body

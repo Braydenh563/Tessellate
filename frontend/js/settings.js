@@ -828,6 +828,26 @@ function logMatchesFilters(record) {
   );
 }
 
+//: A row is built once per record, not once per draw (L607): under load the stream feeds ~80
+//: records a second and the list redrew four times a second, each draw rebuilding up to 200
+//: rows (`toLocaleTimeString`, a button and its icon each): 113 draws cost 5,046 ms, 45 ms
+//: each, 18% of the main thread. A WeakMap, so a record that leaves the buffer takes its
+//: nodes with it. The signature is what a row's look depends on beyond the record: the
+//: source tag shows only in the merged view, and the clock format is a setting.
+const logNodeCache = new WeakMap();
+function logRowSignature() {
+  return `${$("log-source").value}|${JSON.stringify(clockOptions())}`;
+}
+function cachedLogNode(record, kind, sig, build) {
+  let slot = logNodeCache.get(record);
+  if (!slot) logNodeCache.set(record, (slot = {}));
+  const hit = slot[kind];
+  if (hit && hit.sig === sig) return hit.node;
+  const node = build(record);
+  slot[kind] = { sig, node };
+  return node;
+}
+
 function logRow(record) {
   const li = document.createElement("li");
   const rank = logLevelRank(record.level);
@@ -983,7 +1003,8 @@ function renderLogList() {
   // bottom of whatever happened to be painted, not to the newest line. Making
   // this incremental would mean inverting the window, which is a different
   // mechanism built to fix a cost that is already capped.
-  for (const record of visible.slice(-cap)) list.appendChild(logRow(record));
+  const sig = logRowSignature();
+  for (const record of visible.slice(-cap)) list.appendChild(cachedLogNode(record, "row", sig, logRow));
 
   renderLogSharedUI(visible.length);
   if (shouldStick) scrollLogToBottom();
@@ -1034,11 +1055,13 @@ function renderLogTerminal() {
   const shouldStick = $("log-follow").checked && logFollowPinned;
   const visible = logRecords.filter(logMatchesFilters);
 
-  el.replaceChildren();
+  const sig = logRowSignature();
+  const nodes = [];
   for (const record of visible) {
-    el.appendChild(logTerminalRow(record));
-    if (record.trace) el.appendChild(logTerminalTraceRow(record));
+    nodes.push(cachedLogNode(record, "line", sig, logTerminalRow));
+    if (record.trace) nodes.push(cachedLogNode(record, "trace", sig, logTerminalTraceRow));
   }
+  el.replaceChildren(...nodes);
 
   renderLogSharedUI(visible.length);
   if (shouldStick) scrollLogToBottom();
