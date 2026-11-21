@@ -104,3 +104,79 @@ def test_the_server_survives_a_document_that_hangs_and_says_why(client, monkeypa
     assert response.status_code == 422
     assert response.json()["detail"].startswith("Reading that file was stopped because it took too long")
     assert client.get("/entries?limit=1").status_code == 200
+
+
+class _FakeKernel32:
+    """Stands in for `ctypes.WinDLL("kernel32")`: records each call."""
+
+    def __init__(self, fail=None):
+        self.calls = []
+        self.fail = fail
+        self.CreateJobObjectW = self._call("CreateJobObjectW", 77)
+        self.GetCurrentProcess = self._call("GetCurrentProcess", 5)
+        self.SetInformationJobObject = self._call("SetInformationJobObject", 1)
+        self.AssignProcessToJobObject = self._call("AssignProcessToJobObject", 1)
+
+    def _call(self, name, result):
+        def call(*args):
+            self.calls.append((name, args))
+            return 0 if self.fail == name else result
+
+        return call
+
+
+def _fake_ctypes(kernel):
+    import types
+
+    class Structure:
+        def __init__(self):
+            for name, kind in self._fields_:
+                setattr(self, name, kind() if isinstance(kind, type) and issubclass(kind, Structure) else 0)
+
+    return types.SimpleNamespace(
+        Structure=Structure,
+        c_int64=int, c_uint32=int, c_uint64=int, c_size_t=int,
+        c_void_p=lambda value=None: ("handle", value),
+        WinDLL=lambda name, use_last_error=False: kernel,
+        byref=lambda obj: obj,
+        sizeof=lambda obj: 144,
+    )
+
+
+def test_windows_caps_the_child_with_a_job_object(monkeypatch):
+    kernel = _FakeKernel32()
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setitem(sys.modules, "ctypes", _fake_ctypes(kernel))
+    monkeypatch.setattr(parse_guard, "_job_handle", None)
+    parse_guard._limit_memory(123456)
+    calls = dict(kernel.calls)
+    assert set(calls) == {"CreateJobObjectW", "GetCurrentProcess", "SetInformationJobObject", "AssignProcessToJobObject"}
+    assert kernel.calls[-1][0] == "AssignProcessToJobObject"
+    set_call = calls["SetInformationJobObject"]
+    assert set_call[1] == parse_guard.JOB_OBJECT_EXTENDED_LIMIT_INFORMATION
+    info = set_call[2]
+    assert info.BasicLimitInformation.LimitFlags == parse_guard.JOB_OBJECT_LIMIT_PROCESS_MEMORY == 0x100
+    assert info.ProcessMemoryLimit == 123456
+    assert calls["AssignProcessToJobObject"][0] == ("handle", 77)
+    assert parse_guard._job_handle == 77
+
+
+@pytest.mark.parametrize("failing", ["CreateJobObjectW", "SetInformationJobObject", "AssignProcessToJobObject"])
+def test_a_failed_windows_cap_is_logged_and_the_reader_still_runs(monkeypatch, failing):
+    kernel = _FakeKernel32(fail=failing)
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setitem(sys.modules, "ctypes", _fake_ctypes(kernel))
+    monkeypatch.setattr(parse_guard, "_job_handle", None)
+    parse_guard._limit_memory(1)  # must not raise
+    assert parse_guard._job_handle is None
+
+
+def test_posix_still_caps_with_rlimit_as_not_a_job_object(monkeypatch):
+    import types
+
+    seen = []
+    fake = types.SimpleNamespace(RLIMIT_AS=9, setrlimit=lambda which, pair: seen.append((which, pair)))
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setitem(sys.modules, "resource", fake)
+    parse_guard._limit_memory(4096)
+    assert seen == [(9, (4096, 4096))]

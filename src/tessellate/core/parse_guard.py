@@ -37,6 +37,7 @@ import logging
 import multiprocessing
 import os
 import pickle
+import sys
 import threading
 from collections.abc import Callable
 from typing import Any
@@ -72,7 +73,19 @@ def enabled() -> bool:
     return os.environ.get("TESSELLATE_PARSE_INLINE", "").strip().lower() not in ("1", "true", "yes")
 
 
+#: Win32: `LimitFlags` bit for a per-process commit cap, and the
+#: `SetInformationJobObject` class that carries it.
+JOB_OBJECT_LIMIT_PROCESS_MEMORY = 0x100
+JOB_OBJECT_EXTENDED_LIMIT_INFORMATION = 9
+
+#: Kept for the life of the child: the cap belongs to the job object.
+_job_handle: Any = None
+
+
 def _limit_memory(limit: int) -> None:
+    if sys.platform == "win32":
+        _limit_memory_windows(limit)
+        return
     try:
         import resource  # noqa: PLC0415  # POSIX only
     except ImportError:
@@ -80,6 +93,63 @@ def _limit_memory(limit: int) -> None:
     try:
         resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
     except (ValueError, OSError):
+        logger.info("couldn't cap the parse child's memory", exc_info=True)
+
+
+def _limit_memory_windows(limit: int) -> None:
+    """Windows has no RLIMIT_AS: the child puts itself in a job object with a
+    per-process memory limit, so an allocation past it fails as a
+    MemoryError, as on POSIX. Best effort, like the POSIX cap."""
+    global _job_handle
+    try:
+        import ctypes  # noqa: PLC0415  # the Windows build only
+
+        class BasicLimits(ctypes.Structure):
+            _fields_ = [
+                ("PerProcessUserTimeLimit", ctypes.c_int64),
+                ("PerJobUserTimeLimit", ctypes.c_int64),
+                ("LimitFlags", ctypes.c_uint32),
+                ("MinimumWorkingSetSize", ctypes.c_size_t),
+                ("MaximumWorkingSetSize", ctypes.c_size_t),
+                ("ActiveProcessLimit", ctypes.c_uint32),
+                ("Affinity", ctypes.c_size_t),
+                ("PriorityClass", ctypes.c_uint32),
+                ("SchedulingClass", ctypes.c_uint32),
+            ]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_uint64) for name in (
+                "ReadOperationCount", "WriteOperationCount", "OtherOperationCount",
+                "ReadTransferCount", "WriteTransferCount", "OtherTransferCount",
+            )]
+
+        class ExtendedLimits(ctypes.Structure):
+            _fields_ = [
+                ("BasicLimitInformation", BasicLimits),
+                ("IoInfo", IoCounters),
+                ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t),
+                ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateJobObjectW.restype = ctypes.c_void_p
+        kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+        job = kernel32.CreateJobObjectW(None, None)
+        if not job:
+            raise OSError("CreateJobObjectW failed")
+        info = ExtendedLimits()
+        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_PROCESS_MEMORY
+        info.ProcessMemoryLimit = limit
+        if not kernel32.SetInformationJobObject(
+            ctypes.c_void_p(job), JOB_OBJECT_EXTENDED_LIMIT_INFORMATION, ctypes.byref(info), ctypes.sizeof(info)
+        ):
+            raise OSError("SetInformationJobObject failed")
+        if not kernel32.AssignProcessToJobObject(ctypes.c_void_p(job), ctypes.c_void_p(kernel32.GetCurrentProcess())):
+            raise OSError("AssignProcessToJobObject failed")
+        _job_handle = job
+    except Exception:  # noqa: BLE001  # a missing cap must not stop the reader
         logger.info("couldn't cap the parse child's memory", exc_info=True)
 
 
