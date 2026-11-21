@@ -204,7 +204,7 @@ flows.private = async (env) => {
   const made = await fixtureNote(env, `Private flow ${env.STAMP}${env.width}${env.theme} secret text`);
   await showNotesList(env);
   env.at('Make private');
-  await rowMenu(env, made.id, 'Make private');
+  await rowMenu(env, made.id, 'Make private', 'Share and export'); // the share group holds who reads it (L-world-class-129)
   await confirmYes(env);
   await env.wait(800);
   let now = await env.js(async (id) => (await apiJson(`/entries/${id}`)).is_private, made.id);
@@ -214,7 +214,7 @@ flows.private = async (env) => {
   if (!chip) throw new Error('the row has no private chip');
   await env.overflow('a private row');
   env.at('Make readable');
-  await rowMenu(env, made.id, 'Make readable');
+  await rowMenu(env, made.id, 'Make readable', 'Share and export');
   await env.wait(900);
   now = await env.js(async (id) => (await apiJson(`/entries/${id}`)).is_private, made.id);
   if (now) throw new Error('note is still private after Make readable');

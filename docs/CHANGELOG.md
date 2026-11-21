@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: deepflows finds Make private and Make readable under Share and export (the grouped note menu), and the library readings are seeded until their own files are there, so uitrio after libreader in one CI job still has its Files box.
 - Companion: Motion at rest is Still when idle by default, so Atlas (and every companion) rests two seconds after your last move; idle main thread over off falls from +340 to +563ms/s to +22 to +73 (companionperf). Alive on mains power only is the opt-in, and unplugging stills it in the same event (`chargingchange`); the setting has its own help. Switching the companion looks at once whether the new figure covers a control, so Atlas no longer walks off the status bar's Navigation history 7.7 s later (part of L-general-47).
 - Companion: choosing the companion in Settings while its greeting wave plays no longer drops the wave's end, so the figure stops counting as busy after 2 s instead of the next 20 to 60 s tick; idle main thread over off falls from +165 to +47ms/s for "me" and from +713 to +574 for Atlas (L-general-46).
 - CI: the UI sweeps run as four balanced jobs (about 27 minutes each, 70 sweeps), with the whole font matrix (15 shards of two cells), errors.js in two width pairs and deepflows in 8 shards (each width and theme: settings, the rest); deepflows seeds its own notebook; `gate.sh --sweeps` runs the same shards (L-general-20).

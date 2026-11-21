@@ -325,9 +325,13 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
 async function seedLibtextIfEmpty(page) {
   const path = require('path');
   const { execFileSync } = require('child_process');
+  //: Seeded once its own files are there, not merely any file: in CI the
+  //: sweeps of one job share a data dir, and an earlier sweep's upload left
+  //: the library non-empty with no reading, so uitrio's Files box was missing.
   const rows = await page.evaluate(async () => {
     const r = await apiJson('/media');
-    return (Array.isArray(r) ? r : r.items || r.media || r.files || []).length;
+    const items = Array.isArray(r) ? r : r.items || r.media || r.files || [];
+    return items.filter((m) => /rates-handbook\.pdf|price-board\.png/.test(JSON.stringify(m))).length;
   });
   if (rows) return false;
   const DATA = process.env.DATA || process.env.TESSELLATE_DATA_DIR;
