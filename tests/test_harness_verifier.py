@@ -429,10 +429,9 @@ def test_a_category_with_no_corrections_adds_nothing_to_the_prompt(app_state, se
 
 
 def _refile_as(monkeypatch, category: str, method: str) -> None:
-    from tessellate.api import routes_entries
-
+    from tessellate.entry import assist
     monkeypatch.setattr(
-        routes_entries.janitor, "categorise", lambda *a, **k: (category, 81, method)
+        assist.janitor, "categorise", lambda *a, **k: (category, 81, method)
     )
 
 

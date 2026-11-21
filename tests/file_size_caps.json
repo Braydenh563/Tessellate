@@ -128,7 +128,7 @@
  "src/tessellate/api/routes_chat.py": 2712,
  "src/tessellate/api/routes_conversations.py": 1434,
  "src/tessellate/api/routes_documents.py": 1624,
- "src/tessellate/api/routes_entries.py": 1429,
+ "src/tessellate/api/routes_entries.py": 1273,
  "src/tessellate/api/routes_files.py": 2497,
  "src/tessellate/api/routes_files_ocr.py": 1514,
  "src/tessellate/api/routes_graph.py": 2210,
