@@ -3137,13 +3137,14 @@ button.answer-figure-open {
   animation-delay: 1.6s;
 }
 
-/* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
+/* Off screen (`watchEmblemVisibility`), while keys are typed (`nmbClock.hold`, `.is-held`, L342) or two minutes idle
+   (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-float,
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow-breathe,
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-rise,
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-cell-c,
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow {
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .emblem-art.is-held:not(.is-busy), .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-float,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .emblem-art.is-held:not(.is-busy), .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow-breathe,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .emblem-art.is-held:not(.is-busy), .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-rise,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .emblem-art.is-held:not(.is-busy), .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-cell-c,
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .emblem-art.is-held:not(.is-busy), .is-idle .emblem-art:not(.is-busy)):not(.is-still) .emblem-shadow {
   animation-play-state: paused;
 }
 
