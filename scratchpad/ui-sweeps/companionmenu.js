@@ -51,7 +51,12 @@ const SIZES = (process.env.SIZES ?? '1440x900@1,1024x700@1.25,800x600@1.5,390x84
         if (how === 'right-click') await page.mouse.click(face.x, face.y, { button: 'right' });
         else { await page.focus('#nm-buddy .nm-buddy-face'); await page.keyboard.press('Shift+F10'); }
         await page.waitForTimeout(260);
-        const m = await page.evaluate(() => {
+        const m = await page.evaluate(async () => {
+          // Measure a settled box: the menu is placed at open and once more a frame later, so a loaded machine can
+          // still be mid-settle at 260ms. Wait for the menu and face boxes to stop changing (never for a gap).
+          const box = () => { const e = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); const q = nmb.menu && nmb.menu.isConnected ? nmb.menu.getBoundingClientRect() : null; return [e.left, e.top, q && q.left, q && q.top].map((v) => Math.round(v || 0)).join(); };
+          let last = box(); let still = 0;
+          for (let i = 0; i < 40 && still < 3; i += 1) { await new Promise((r) => setTimeout(r, 50)); const now = box(); still = now === last ? still + 1 : 0; last = now; }
           const f = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect();
           const menu = nmb.menu && nmb.menu.isConnected && !nmb.menu.classList.contains('hidden') ? nmb.menu.getBoundingClientRect() : null;
           return { W: innerWidth, H: innerHeight, face: [f.left, f.top, f.right, f.bottom].map(Math.round), menu: menu ? [menu.left, menu.top, menu.right, menu.bottom].map(Math.round) : null, focusIn: !!(nmb.menu && nmb.menu.contains(document.activeElement)) };
