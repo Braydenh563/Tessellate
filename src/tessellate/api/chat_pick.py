@@ -23,14 +23,33 @@ _BARE = re.compile(r"^\s*(\d+)\s*\.?\s*$")
 RULE = (
     "You choose between readings of a question about someone's notes. "
     "Reply with the number of the one reading that fits best, and nothing else. "
-    "If you cannot tell which fits, reply with the word none."
+    "The earlier turns of the conversation come first; use them to tell what the question means. "
+    "If you cannot tell which fits, or the question could mean more than one, reply with the word none."
 )
 
+#: How much of the dialogue the model sees (L-chat-275): the last turns, each side cut short,
+#: so a small model's window holds it and a long answer cannot bury the readings.
+TURNS = 3
+CUT = 160
 
-def messages(question: str, readings: list[dict]) -> list[dict]:
-    """The one constrained question the model is asked: the readings by number and label only."""
+
+def _dialogue(history: list | None) -> str:
+    """The last few turns as plain lines, or "" with none."""
+    lines = []
+    for turn in (history or [])[-TURNS:]:
+        for who, key in (("Person", "question"), ("Reply", "answer")):
+            text = " ".join(str((turn or {}).get(key) or "").split())[:CUT]
+            if text:
+                lines.append(f"{who}: {text}")
+    return "\n".join(lines)
+
+
+def messages(question: str, readings: list[dict], history: list | None = None) -> list[dict]:
+    """The one constrained question the model is asked: the readings by number and label only, after the recent dialogue."""
     listed = "\n".join(f"{r['n']}. {r['label']}" for r in readings)
-    return [{"role": "system", "content": RULE}, {"role": "user", "content": f"Question: {question}\n\nReadings:\n{listed}"}]
+    said = _dialogue(history)
+    before = f"Conversation so far:\n{said}\n\n" if said else ""
+    return [{"role": "system", "content": RULE}, {"role": "user", "content": f"{before}Question: {question}\n\nReadings:\n{listed}"}]
 
 
 def choice(reply: str, readings: list[dict]) -> int | None:
@@ -40,12 +59,12 @@ def choice(reply: str, readings: list[dict]) -> int | None:
     return next((r["note_id"] for r in readings if r["n"] == wanted), None)
 
 
-def pick(question: str, readings: list[dict], chat: Callable[[list[dict]], str]) -> int | None:
+def pick(question: str, readings: list[dict], chat: Callable[[list[dict]], str], history: list | None = None) -> int | None:
     """The note id the model chose among `readings`, or None (ask the person)."""
     if len(readings) < 2:
         return None
     try:
-        return choice(chat(messages(question, readings)) or "", readings)
+        return choice(chat(messages(question, readings, history)) or "", readings)
     except Exception as exc:  # noqa: BLE001  # a model that fails is a model that did not choose
         _log.info("reading pick skipped, the engine's own reading stands: %s", exc)
         return None
@@ -58,6 +77,6 @@ def settle(req: object, result: dict, pool: list, recompose: Callable[[list], di
     if len(readings) < 2 or ollama is None or not ollama.is_running():
         return result
     model = manager.served_chat_model(ollama)
-    chosen = pick(str(getattr(req, "question", "")), readings, lambda msgs: str(ollama.chat(model, msgs).get("content") or ""))
+    chosen = pick(str(getattr(req, "question", "")), readings, lambda msgs: str(ollama.chat(model, msgs).get("content") or ""), getattr(req, "history", None))
     only = [n for n in pool if str(n.get("source_id", n.get("id"))) == str(chosen)] if chosen is not None else []
     return recompose(only) if only else result

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat model calls (L-chat-237, 274, 275): the meeting summary runs in the background preset like every short utility call (pinned per file by a test); a model's wrong write call for a sentence the registry reads exactly ("Make a board called Launch") parks the registry's card instead of the model's; the reading pick sees the last three turns and answers none on an ambiguous question, which asks the person. Checked on a fake transport only.
 - CI: the digest's empty-week check reads the person's clock, as the week it guards does; two tool-offer tests and the real-phrasing fixture pin their clocks and readers (PR 230).
 - Companions made from your own figure (L185): walks, runs after a crouch, a window climb, sits, lying down and a slow 24-picture breath (3.65 s) all draw only pictures the page captures, checked over 6 seeds of far legs and 300 s sweeps at three hours; what the app's others lack (perch pictures, in-app spells) is in the backlog.
 - Companion inspections (L177): the desktop companion peers down over the edge and corner of a window it sits on four times as often as before (0.9% to 3.6% of its picks on a top), and the clock trip, the follow to the cursor and the side climb are pinned by tests.
