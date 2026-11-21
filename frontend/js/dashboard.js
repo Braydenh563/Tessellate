@@ -1843,6 +1843,8 @@ async function renderDashboard({ refresh = false } = {}) {
     return;
   }
   grid.dataset.shape = shape;
+  //: The render that last emptied the grid owns it: an older one that wakes from a yield in the widget loop stops there.
+  const gen = (renderDashboard.gen = (renderDashboard.gen || 0) + 1);
   grid.replaceChildren();
   //: Unseen while its widgets draw and their spans settle, then faded in
   //: whole (`dashSettled` below; `.dash-filling`, 08-consistency.css).
@@ -1862,10 +1864,18 @@ async function renderDashboard({ refresh = false } = {}) {
   //: 349px of nothing under the steps, and Quick capture is the first thing to do.
   const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;
 
+  //: A task boundary every DASH_SLICE_MS of widgets (L-world-class-363: the loop was one 85 ms task at 4x CPU).
+  const DASH_SLICE_MS = 12;
+  let sliceStart = performance.now();
   for (const name of layout.order) {
     const hidden = layout.hidden.includes(name);
     if (hidden && !dashEditMode) continue;
     if (bare && name !== "capture") continue;
+    if (performance.now() - sliceStart > DASH_SLICE_MS) {
+      await dashYield();
+      if (gen !== renderDashboard.gen) return;
+      sliceStart = performance.now();
+    }
 
     const widget = DASH_WIDGETS[name];
     const isWide = layout.wide.includes(name);

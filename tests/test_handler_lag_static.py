@@ -144,3 +144,16 @@ def test_dashboard_menus_yield_one_task_each():
     src = read("dashboard.js")
     menus = "renderQuickLinks(); await dashYield(); renderDashMore(); await dashYield(); wireDashDensity(); await dashYield(); renderFirstStepsLazy(); await dashYield();"
     assert menus in " ".join(src.split())
+
+
+def test_dashboard_grid_yields_between_widgets_and_a_newer_render_wins():
+    # After the four menus, the widget loop was still one task: 85 ms median at 4x (L-world-class-363).
+    src = read("dashboard.js")
+    body = src.split("async function renderDashboard(", 1)[1].split("\n}\n", 1)[0]
+    assert "const gen = (renderDashboard.gen = (renderDashboard.gen || 0) + 1);" in body
+    loop = body.split("for (const name of layout.order) {", 1)[1].split("grid.appendChild(card);", 1)[0]
+    flat = " ".join(loop.split())
+    assert "if (performance.now() - sliceStart > DASH_SLICE_MS) { await dashYield(); if (gen !== renderDashboard.gen) return; sliceStart = performance.now(); }" in flat
+    # The check comes before anything is appended, so a stale render adds no card to the newer grid.
+    assert flat.index("await dashYield();") < flat.index("document.createElement")
+
