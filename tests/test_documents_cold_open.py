@@ -65,6 +65,12 @@ SWEEP = (Path(__file__).resolve().parent.parent / "scratchpad" / "ui-sweeps" / "
 
 
 def test_the_cold_sweep_reads_main_thread_cpu_and_pins_the_budget():
+    """The verdict is main-thread CPU (CDP ThreadTime), hub ruling 2026-11-21.
+
+    TaskDuration is printed but not judged: in a headless box it counts the main
+    thread's idle waits on the compositor (tasks of 130 to 200 ms holding 2 to 4 ms
+    of CPU), so it tracks the machine's load, not the page's work.
+    """
     assert "const BUDGET_MS = 800;" in SWEEP
     assert "Performance.getMetrics" in SWEEP
     for metric in ("ThreadTime", "TaskDuration", "ScriptDuration", "RecalcStyleDuration", "LayoutDuration"):
