@@ -140,14 +140,15 @@ function measure(opIdx) {
     && !(e.closest('.select-menu') && !menu.matches('.select-menu')));
   rows = rows.filter((r) => !rows.some((o) => o !== r && o.contains(r)));
   rows = rows.filter((r) => r.getBoundingClientRect().height < 120 && r.getBoundingClientRect().width > menuW * 0.4);
+  //: The leftmost mark in the row's first half, not the first in the DOM: a switch row's switch comes
+  //: first in its markup but is drawn at the end (`order: 1`), and taking it hid the icon before the words.
   const iconOf = (r) => {
-    const i = r.querySelector('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]');
-    if (!i || !visible(i)) return null;
     const rr = r.getBoundingClientRect();
-    const ir = i.getBoundingClientRect();
-    // a trailing mark (a chevron, a check at the end) is not the icon column
-    if (ir.left - rr.left > rr.width / 2) return null;
-    return ir;
+    const marks = [...r.querySelectorAll('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]')]
+      .filter(visible).map((i) => i.getBoundingClientRect())
+      // a trailing mark (a chevron, a check at the end) is not the icon column
+      .filter((ir) => ir.left - rr.left <= rr.width / 2);
+    return marks.length ? marks.reduce((a, b) => (b.left < a.left ? b : a)) : null;
   };
   const textStart = (r) => {
     const tw = document.createTreeWalker(r, NodeFilter.SHOW_TEXT, {

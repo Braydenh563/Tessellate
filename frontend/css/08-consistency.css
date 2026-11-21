@@ -60,7 +60,11 @@
    (0,1,1) and to `.wb-board-menu button` (0,1,1) - both of which are real
    rules doing a real job elsewhere in their own file. Pairing the shell
    class with the row class makes every declaration here 0,2,0, which wins
-   without any `!important` and without touching the rules it outranks. */
+   without any `!important` and without touching the rules it outranks.
+   A dock menu's switch row (`.dock-menu-check`) is a row too: on its own
+   padding it stood at 34.9px with an 8px inset in Logs and 33.2px in the
+   Timeline's Options, against 34.5px and 12.8px for the buttons beside it
+   (world-class menus.js at 1440). */
 :is(
   .action-menu,
   .select-menu,
@@ -75,7 +79,8 @@
   .library-image-menu-item,
   .action-menu-item,
   .wb-menu-item,
-  .select-option
+  .select-option,
+  .dock-menu-check
 ) {
   display: flex;
   align-items: center;
@@ -112,6 +117,13 @@
   text-align: left;
   cursor: pointer;
 }
+/* Its switch keeps the row's end, as a `.doc-dock-menu-check` switch does,
+   so its icon and words start on the buttons' columns: led by the switch,
+   Logs' labels began 34.5px in, the buttons' 21.7px (menus.js at 1440). */
+:is(.doc-dock-menu-list, .action-menu) .dock-menu-check > input[type="checkbox"] {
+  order: 1;
+  margin-inline-start: auto;
+}
 /* Under a finger the row's floor is the finger's (DESIGN.md, "Hit targets"):
    measured at 390 in a touch context, the reminders' Quick set rows stood at
    36px, the control height above, under the 44px every `button.small` beside
@@ -131,7 +143,8 @@
     .library-image-menu-item,
     .action-menu-item,
     .wb-menu-item,
-    .select-option
+    .select-option,
+    .dock-menu-check
   ) {
     min-height: var(--target-min);
   }
@@ -8823,7 +8836,11 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
 :is(.action-menu, .doc-dock-menu-list)
-  .menu-item > span:first-child > .ph:first-child {
+  .menu-item > span:first-child > .ph:first-child,
+:is(.action-menu, .doc-dock-menu-list) .dock-menu-check > .ph-lead {
+  /* A switch row's icon follows its input in the markup (drawn at the end),
+     so it is not a first child: at its own 15.6px its words began 3.9px left
+     of the buttons' (menus.js at 1440, Logs and Timeline). */
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
      where a width means nothing until the box is a block of its own. */
