@@ -28,6 +28,12 @@ function chatPinUndo(id, pinned) {
   offerUndo(pinned ? "Pinned a chat" : "Unpinned a chat", pinned ? "Pinned." : "Unpinned.", pin(!pinned), pin(pinned));
 }
 
+//: Filing a chat in a folder, or out of one (`folder` "" is no folder).
+function chatFolderUndo(id, before, after) {
+  const file = (folder) => chatRepaint(() => chatPut(`${id}/folder`, { folder }));
+  offerUndo(after ? `Moved a chat to “${after}”` : "Took a chat out of its folder", after ? `Moved to “${after}”.` : "Out of its folder.", file(before), file(after));
+}
+
 function chatArchiveUndo(id, title) {
   offerUndo(`Archived “${title}”`, "Archived. Find it in Library, Archived.", chatRepaint(() => chatPut(`${id}/unarchive`)), chatRepaint(() => chatPut(`${id}/archive`)));
 }

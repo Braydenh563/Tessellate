@@ -165,7 +165,7 @@ MID_TOPICS.extend(
                 "said in it. The sort and group button beside it sorts by Recent, "
                 "Oldest, Name or Most messages, groups by day, week or folder, and "
                 "keeps pinned chats first; the choice is kept. Each chat's menu "
-                "renames, pins, archives or deletes it. A folder is set by sentence only. In "
+                "renames, pins, files it in a folder (Move to folder), archives or deletes it. In "
                 "Chat, say sort my chats by name, group my chats by "
                 "week, rename the chat about Paris to Trip plans, pin the chat "
                 "about Paris or move the chat about Paris to the folder Trips; "

@@ -1994,6 +1994,11 @@ async function loadConversationList() {
       })
     );
     items.push(
+      makeMenuItem("ph:folder Move to folder", "File this chat in a folder", async () => {
+        if (await lazyScript("/js/chat-order.js")) ChatOrder.move(conversation);
+      })
+    );
+    items.push(
       makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
         //: Asked for, so answered directly: the activity notice below obeys
         //: "AI activity: panel only", and with that set the click showed

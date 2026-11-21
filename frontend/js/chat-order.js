@@ -141,6 +141,31 @@
     slot.replaceChildren(menu);
   }
 
+  //: Filing a chat: the folders already in use, "No folder", and what is typed as a new one, in the app's picker. Undo files it back where it was.
+  async function chatMoveToFolder(conversation) {
+    const all = await apiJson("/conversations").catch(() => []);
+    const used = [...new Set(all.map((c) => c.folder).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const chosen = await new Promise((resolve) => {
+      const shell = pickerDialog({ title: "Move to folder", placeholder: "Find a folder or type a new one…", searchLabel: "Find a folder or type a new one" });
+      const box = pickerListbox(shell, "Folders");
+      const paint = () => {
+        const text = shell.search.value.trim().slice(0, 60);
+        const needle = text.toLowerCase();
+        const items = used.filter((f) => !needle || f.toLowerCase().includes(needle)).map((f) => ({ icon: "ph:folder", label: f, about: f === conversation.folder ? "Where it is now" : "", value: { folder: f } }));
+        if (!needle && conversation.folder) items.push({ icon: "ph:folder-dashed", label: "No folder", about: "Take it out of its folder", value: { folder: "" } });
+        if (text && !used.some((f) => f.toLowerCase() === needle)) items.unshift({ icon: "ph:folder-plus", label: `New folder “${text}”`, about: "", value: { folder: text } });
+        box.fill(items, needle, { icon: "ph:folder", title: "No folders yet", text: "Type a name to make the first one." });
+      };
+      shell.search.addEventListener("input", paint);
+      paint();
+      shell.open(resolve);
+    });
+    if (!chosen || chosen.folder === (conversation.folder || "")) return;
+    chatWriteRecord("chatFolderUndo", conversation.id, conversation.folder || "", chosen.folder);
+    await apiJson(`/conversations/${conversation.id}/folder`, { method: "PUT", body: JSON.stringify({ folder: chosen.folder }) });
+    loadConversationList();
+  }
+
   //: The file's whole surface: what the sidebar's list load calls.
-  window.ChatOrder = { load: chatViewLoad, limit: chatListLimit, rows: chatListRows, groupRow: chatGroupRow, mount: chatViewMount };
+  window.ChatOrder = { load: chatViewLoad, limit: chatListLimit, rows: chatListRows, groupRow: chatGroupRow, mount: chatViewMount, move: chatMoveToFolder };
 })();

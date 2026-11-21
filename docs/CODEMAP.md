@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8561, frontend ids 2807, CSS sections 524, backend routes 727, backend modules 11431, test files 3013, tests 23375, plan headings 696, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8563, frontend ids 2807, CSS sections 524, backend routes 727, backend modules 11431, test files 3013, tests 23375, plan headings 696, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8561)
+## Frontend functions (8563)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -567,21 +567,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2346 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2351 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1073 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:528 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2445 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2395 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2450 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2400 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1567 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1103 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2048 |
+| `editedMarker` | frontend/js/sheets-selects.js:2053 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1084 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1113 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:735 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2471 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2476 |
 | `focusSelect` | frontend/js/sheets-selects.js:1176 |
 | `formatTokens` | frontend/js/sheets-selects.js:1795 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
@@ -591,16 +591,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1766 |
 | `listFilter` | frontend/js/sheets-selects.js:1309 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2273 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2278 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1845 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:622 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:334 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:565 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1376 |
-| `openConversation` | frontend/js/sheets-selects.js:2056 |
+| `openConversation` | frontend/js/sheets-selects.js:2061 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1224 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1804 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2352 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2357 |
 | `relativeTime` | frontend/js/sheets-selects.js:1814 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1675 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:546 |
@@ -612,9 +612,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2411 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2416 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2432 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2437 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1188 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:512 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
@@ -2820,7 +2820,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatGhostRest` | frontend/js/chat-ghost.js:25 |
 | `openChatGhost` | frontend/js/chat-ghost.js:87 |
 
-### frontend/js/chat-order.js (9)
+### frontend/js/chat-order.js (10)
 
 | Name | File:line |
 |---|---|
@@ -2828,6 +2828,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatGroupRow` | frontend/js/chat-order.js:106 |
 | `chatListLimit` | frontend/js/chat-order.js:38 |
 | `chatListRows` | frontend/js/chat-order.js:91 |
+| `chatMoveToFolder` | frontend/js/chat-order.js:145 |
 | `chatViewChange` | frontend/js/chat-order.js:115 |
 | `chatViewLoad` | frontend/js/chat-order.js:28 |
 | `chatViewMount` | frontend/js/chat-order.js:128 |
@@ -2901,20 +2902,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startChatTimer` | frontend/js/chat-turn.js:2277 |
 | `stopChatTimer` | frontend/js/chat-turn.js:2286 |
 
-### frontend/js/chat-undo.js (10)
+### frontend/js/chat-undo.js (11)
 
 | Name | File:line |
 |---|---|
-| `chatArchiveUndo` | frontend/js/chat-undo.js:31 |
-| `chatDocumentUndo` | frontend/js/chat-undo.js:49 |
-| `chatEditUndo` | frontend/js/chat-undo.js:86 |
-| `chatForkUndo` | frontend/js/chat-undo.js:37 |
-| `chatHistoryTyped` | frontend/js/chat-undo.js:129 |
+| `chatArchiveUndo` | frontend/js/chat-undo.js:37 |
+| `chatDocumentUndo` | frontend/js/chat-undo.js:55 |
+| `chatEditUndo` | frontend/js/chat-undo.js:92 |
+| `chatFolderUndo` | frontend/js/chat-undo.js:32 |
+| `chatForkUndo` | frontend/js/chat-undo.js:43 |
+| `chatHistoryTyped` | frontend/js/chat-undo.js:135 |
 | `chatPinUndo` | frontend/js/chat-undo.js:26 |
 | `chatPut` | frontend/js/chat-undo.js:13 |
 | `chatRepaint` | frontend/js/chat-undo.js:6 |
 | `chatTitleUndo` | frontend/js/chat-undo.js:18 |
-| `chatTurnUndo` | frontend/js/chat-undo.js:60 |
+| `chatTurnUndo` | frontend/js/chat-undo.js:66 |
 
 ### frontend/js/chip-menus.js (3)
 
@@ -32412,14 +32414,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4481 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4381 |
-| Needs hardware | docs/roadmap/LEDGER.md:487 |
+| Needs hardware | docs/roadmap/LEDGER.md:486 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:483 |
+| Owner calls | docs/roadmap/LEDGER.md:482 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4270 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32601,7 +32603,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:617 |
+| Plan session briefs | docs/roadmap/LEDGER.md:616 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Real-model run: several tool calls in one reply (L-world-class-69) | docs/roadmap/BACKLOG.md:713 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2661 |
@@ -32656,25 +32658,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:633 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:717 |
-| documents | docs/roadmap/LEDGER.md:78 |
-| documents | docs/roadmap/LEDGER.md:657 |
-| general | docs/roadmap/LEDGER.md:454 |
+| chat | docs/roadmap/LEDGER.md:632 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:716 |
+| documents | docs/roadmap/LEDGER.md:77 |
+| documents | docs/roadmap/LEDGER.md:656 |
+| general | docs/roadmap/LEDGER.md:453 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:621 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:729 |
+| graph | docs/roadmap/LEDGER.md:620 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:728 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4390 |
-| mindmap | docs/roadmap/LEDGER.md:94 |
-| mindmap | docs/roadmap/LEDGER.md:669 |
-| timeline | docs/roadmap/LEDGER.md:214 |
-| timeline | docs/roadmap/LEDGER.md:693 |
-| ui-modernisation | docs/roadmap/LEDGER.md:97 |
-| ui-modernisation | docs/roadmap/LEDGER.md:681 |
-| whiteboard | docs/roadmap/LEDGER.md:32 |
-| whiteboard | docs/roadmap/LEDGER.md:645 |
-| world-class | docs/roadmap/LEDGER.md:216 |
-| world-class | docs/roadmap/LEDGER.md:705 |
+| mindmap | docs/roadmap/LEDGER.md:93 |
+| mindmap | docs/roadmap/LEDGER.md:668 |
+| timeline | docs/roadmap/LEDGER.md:213 |
+| timeline | docs/roadmap/LEDGER.md:692 |
+| ui-modernisation | docs/roadmap/LEDGER.md:96 |
+| ui-modernisation | docs/roadmap/LEDGER.md:680 |
+| whiteboard | docs/roadmap/LEDGER.md:31 |
+| whiteboard | docs/roadmap/LEDGER.md:644 |
+| world-class | docs/roadmap/LEDGER.md:215 |
+| world-class | docs/roadmap/LEDGER.md:704 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2831 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2882 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2989 |
