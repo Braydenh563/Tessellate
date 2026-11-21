@@ -153,6 +153,10 @@ a = Analysis(
         # The About panel's release notes, read from the bundle root when
         # frozen (api/app.py `/changelog`); the Windows spec says more.
         (str(REPO_ROOT / "CHANGELOG.md"), "."),
+        # The licence and third-party notices, at the bundle root, so the
+        # installer, the MSI and the Linux tarball and zip carry them (L-general-3).
+        (str(REPO_ROOT / "LICENSE"), "."),
+        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
         # The JSON the ai package reads from beside its modules (the taxonomy
         # pack, skill rates, study terms, common misspellings): the whole folder,
         # since naming only taxonomy/ left the study glossary out of the build.

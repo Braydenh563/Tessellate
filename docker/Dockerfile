@@ -25,6 +25,9 @@ COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
 COPY alembic.ini ./
+# The licence and the third-party notices go with every copy (L-general-3).
+COPY LICENSE ./
+COPY docs/THIRD_PARTY.md ./
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim

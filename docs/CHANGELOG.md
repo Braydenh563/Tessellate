@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Packaging: LICENSE and THIRD_PARTY.md ship at the root of the Windows installer, the MSI, the Linux tarball and zip, and the Docker image (L-general-3).
 - Licence: the 3892 misspelling pairs taken from Wikipedia's list (confirmed by matching the page) live in ai/data/common_misspellings.json with their source and CC BY-SA 4.0 licence; the frozen builds now ship the whole ai/data folder, which also brings back the study glossary and skill rates they left out (L-general-25, L-general-36).
 - Housekeeping clears a near-duplicate mark that names a note no longer in the notebook, at each start and on Run now (L-general-21).
 - Docker: the image has a HEALTHCHECK on /health and carries its source commit; the ignore file moved to docker/Dockerfile.dockerignore, the one BuildKit reads (the old one was never read, so data/ went into the build context); hadolint runs in CI (L-general-5).

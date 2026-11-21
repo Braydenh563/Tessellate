@@ -67,3 +67,17 @@ def test_the_dockerfile_is_linted_in_ci():
     lint = (ROOT / ".github" / "workflows" / "workflow-lint.yml").read_text(encoding="utf-8")
     assert re.search(r"hadolint-bin==\d", lint) and "hadolint --failure-threshold error docker/Dockerfile" in lint
     assert '"docker/**"' in lint
+
+
+def test_every_build_carries_the_licence_and_notices():
+    """L-general-3: AGPL and the vendored licences go with every copy. The
+    installer, the MSI and the Linux archives all take the PyInstaller bundle
+    root (installer.iss `dist\\Tessellate\\*`, installer.wxs `DistDir\\**`)."""
+    assert "COPY LICENSE ./" in DOCKERFILE and "COPY docs/THIRD_PARTY.md ./" in DOCKERFILE
+    for spec in ("linux", "windows"):
+        text = (ROOT / "packaging" / spec / "tessellate.spec").read_text(encoding="utf-8")
+        assert '(str(REPO_ROOT / "LICENSE"), "."),' in text, spec
+        assert '(str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),' in text, spec
+    iss = (ROOT / "packaging" / "windows" / "installer.iss").read_text(encoding="utf-8")
+    wxs = (ROOT / "packaging" / "windows" / "installer.wxs").read_text(encoding="utf-8")
+    assert 'Source: "..\\..\\dist\\Tessellate\\*"' in iss and '<Files Include="$(var.DistDir)\\**" />' in wxs
