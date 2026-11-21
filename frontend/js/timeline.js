@@ -1633,20 +1633,20 @@ function timelineRowElement(row, density) {
 
   // A row that continues another says so and goes there (decision 5's one
   // surviving thread affordance). Only where there is room to say it.
-  if (density === "full" && row.parentId) {
-    const parent = timelineById.get(row.parentId);
-    if (parent) {
-      const link = document.createElement("button");
-      link.type = "button";
-      link.className = "ghost small timeline-row-thread";
-      setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
-      link.title = `Continues “${parent.title}”`;
-      link.addEventListener("click", (event) => {
-        event.stopPropagation();
-        focusTimelineRow(parent.key);
-      });
-      main.appendChild(link);
-    }
+  //: A continuing row branches off the spine (L-world-class-176); the map is keyed "note:5".
+  const parent = row.parentId ? timelineById.get(`note:${row.parentId}`) : null;
+  if (parent) li.dataset.branch = "1";
+  if (density === "full" && parent) {
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "ghost small timeline-row-thread";
+    setLabel(link, `ph:arrow-bend-up-left ${parent.title}`);
+    link.title = `Continues “${parent.title}”`;
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusTimelineRow(parent.key);
+    });
+    main.appendChild(link);
   }
 
   li.addEventListener("click", (event) => {
@@ -2450,17 +2450,18 @@ function timelineScrollToToday() {
   const today = timelineBucketKey(new Date(), feed.dataset.scale || "day");
   const section = feed.querySelector(`.timeline-bucket[data-bucket="${today}"]`) || feed.firstElementChild;
   const box = $("timeline-scroll");
-  //: **Today is the top row on open; the days ahead are above it, reached by
-  //: scrolling up** (INBOX 1300 C39). A feed shorter than its window cannot
-  //: scroll that far (measured: Today 316px down with scrollTop stuck at
-  //: 105), so the missing distance is added as space under the feed. Rows
-  //: below Today change height as they are scrolled past, hence the loop.
+  //: Today is the top row on open, the days ahead above it (INBOX 1300 C39). A feed shorter than its window
+  //: cannot scroll that far, so the missing distance is space under the feed; rows below Today change height
+  //: as they are scrolled past, hence the second read.
   const gap = () => section.getBoundingClientRect().top - box.getBoundingClientRect().top;
   if (section) {
-    feed.style.paddingBottom = "0px";
+    //: One layout, not two (L705): room for Today to reach the top goes under the feed first (`innerHeight`
+    //: needs no layout), so the one read after it is the only layout; a scroll invalidates none.
+    const room = window.innerHeight;
+    feed.style.paddingBottom = `${room}px`;
     box.scrollTop += gap();
-    feed.style.paddingBottom = `${Math.max(0, gap())}px`;
     box.scrollTop += gap();
+    feed.style.paddingBottom = `${Math.max(0, Math.min(room, box.scrollTop + box.clientHeight - (box.scrollHeight - room)))}px`;
   }
   return section;
 }

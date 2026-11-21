@@ -1906,11 +1906,15 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
 def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
     # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
     css = css08_text()
-    rule = css[css.index(":root.is-calm") :]
+    # L-world-class-126 moved the class from <html> to each figure (a whole-page restyle at
+    # rest); the intent, the same loops held after the same 20 s, is unchanged.
+    rule = css[css.index(".atl-figure-box.is-calm") :]
     rule = rule[: rule.index("{")]
     assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
-    assert "animation-play-state: paused" in css[css.index(":root.is-calm") :]
-    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV and 'toggle("is-calm", on)' in AV
+    assert "animation-play-state: paused" in css[css.index(".atl-figure-box.is-calm") :]
+    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV
+    assert 'querySelectorAll(".atl-figure-box")) box.classList.toggle("is-calm", on)' in AV
+    assert 'document.documentElement.classList.toggle("is-calm"' not in AV
     assert '"pointermove"' in AV
 
 

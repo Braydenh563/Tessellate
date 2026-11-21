@@ -36,8 +36,14 @@ NOTES = [
 def ask(client, session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    # Written on NOW, not on the day the suite runs: a note's own "on the
+    # 17th" is read against the day it was written, so a real-clock
+    # `created_at` made it 17 December once the 17th of November had passed
+    # (CI red on 2026-11-21). Same order as an import (`dates=False`).
     for content in NOTES:
-        manager.create_entry(session, content)
+        entry = manager.create_entry(session, content, dates=False, commit=False)
+        entry.created_at = NOW
+        manager.record_dates(session, entry, now=NOW)
     session.commit()
 
     def go(question: str) -> str:

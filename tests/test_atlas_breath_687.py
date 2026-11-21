@@ -143,8 +143,9 @@ process.stdout.write(JSON.stringify({ early, late: box.atlasTorsos.map((t) => t.
 
 def test_it_rides_the_tail_loop_which_knows_the_motion_gates():
     frame = _fn("atlasTailFrame")
-    # And behind the lock (`data-atlas-hidden`, Brief 34 decision 7).
-    assert "const live = atlasMotionOK(box) && !box.classList.contains(\"atl-off\") && !document.hidden && !document.documentElement.hasAttribute(\"data-atlas-hidden\");" in frame
+    # And behind the lock (`data-atlas-hidden`, Brief 34 decision 7), and behind a dialog over the
+    # corner (`atlasCornerCovered`, INBOX 1587: the gates grew, the intent is unchanged).
+    assert "const live = atlasMotionOK(box) && !box.classList.contains(\"atl-off\") && !document.hidden && !document.documentElement.hasAttribute(\"data-atlas-hidden\") && !atlasCornerCovered(box);" in frame
     # Called before the loop skips its odd frames, so a still figure is put
     # back at rest by the one frame the loop draws then.
     assert frame.index("atlasBreathFrame(box, live);") < frame.index("if (live && tail.tick % 2 && tail.drawn && !tail.calm)")

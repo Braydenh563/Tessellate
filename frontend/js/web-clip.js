@@ -56,7 +56,8 @@
       t: "A sample page",
       s: "This is a sample. On a real page the window shows the page's main text, or only what you had selected, and Save as a note keeps it with its address.",
     };
-    const opened = window.open(`/clip.html#${encodeURIComponent(JSON.stringify(sample))}`, "memorymap-clip", "width=560,height=520");
+    //: The clip window is a static page, not a locked route, opened by its full address as the bookmarklet does.
+    const opened = window.open(`${location.origin}/clip.html#${encodeURIComponent(JSON.stringify(sample))}`, "memorymap-clip", "width=560,height=520");
     $("web-clip-status").textContent = opened
       ? "This is the window the bookmark opens. Close it when you have looked."
       : "Your browser blocked the window. Allow pop-ups for this address, then try again.";
@@ -327,7 +328,7 @@
     button.title = kept ? "In your bookmarks" : "Keep this link in your bookmarks";
   }
 
-  //: **A follow-up about the page the last turn read** (the owner, 2026-10-10:
+  //: **A next question about the page the last turn read** (the owner, 2026-10-10:
   //: "I tried to ask for more info from the retrieved website in the previous
   //: prompt and it just straight up ignored me"). A turn keeps only its
   //: question and answer for the next one, so the page's text was gone: the

@@ -51,7 +51,7 @@ def test_the_named_writes_say_when_they_fail():
         "settings-data.js": "/backups/${item.name}",
         "ask-history.js": "/ask-history/${id}`, { method: \"DELETE\" })",
         "suggestions-inbox.js": "/entries/tensions/accept",
-        "reminder-edit.js": "/reminders/${r.id}`, { method: \"DELETE\" })",
+        "reminder-triage.js": "/reminders/${r.id}`, { method: \"DELETE\" })",
     }
     for file, url in named.items():
         code = strip_js(unwrapped((JS / file).read_text(encoding="utf-8")))

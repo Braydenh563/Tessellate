@@ -365,9 +365,7 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
 
 ---
 
-## 6. OpenAI-compatible backends: **done**
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+## 6. OpenAI-compatible backends: **done**; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ## 7. Desktop packaging
 
@@ -1815,9 +1813,7 @@ before testing), so this is about what it covers, not whether it exists.
 
 ---
 
-## 28. In-app help: an AI that knows the docs, built
-
-Built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md. Kept for its number.
+## 28. In-app help: an AI that knows the docs, built as `ai/help_chat.py` and the Guide; the detail is in HISTORY.md, kept for its number
 
 ---
 
@@ -2055,14 +2051,9 @@ resolution note in [HISTORY.md](HISTORY.md).
 link-reasoning judgement against a real model, this sandbox has no Ollama, so
 only the fake-transport tests exercise it.
 
-## 63. Ship a starter skills library, DONE, this claim was stale
+## 63. Ship a starter skills library, DONE, this claim was stale; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
-
-## 64. Documents editor: built, moved to HISTORY.md
-
-The slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`)
-both exist; the rest of the pass lives in DOCUMENTS_PLAN.md. Kept for its number.
+## 64. Documents editor: built, moved to HISTORY.md; the slash menu (`editor.js`) and focus mode (`toggleDocFocus`, `#doc-focus-bar`) exist, the rest lives in DOCUMENTS_PLAN.md
 
 ## 65. Highlight/web-clip capture
 
@@ -2750,9 +2741,7 @@ Reported live across several messages. The lightbox half is **partly built**
 (see HANDOVER.md); the upload half is **logged, not built**, and is the
 larger piece.
 
-### What was built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### What was built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### Still open: the upload split, and what it collides with
 
@@ -3422,13 +3411,9 @@ that proved each one** (not a reading of the source), the twelve-item
 competitor gap analysis triaged against what this app already has, and a
 brainstormed list of what is missing that nobody has asked for yet.
 
-### 109.1 Fixed, and how each was actually proven
+### 109.1 Fixed, and how each was actually proven; built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"), kept for its number
 
-Built: the measured bug round moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)"). Kept for its number.
-
-### 109.2 Text highlighting: built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 109.2 Text highlighting: built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 109.3 The competitor gap analysis, triaged
 
@@ -3502,9 +3487,7 @@ Genuinely open, ranked by value-per-effort:
 
 ## §110: the toolbar round: formatting in Notes, and five more measured bugs
 
-### 110.1 Built
-
-Built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"). Kept for its number.
+### 110.1 Built; built: the detail moved to [HISTORY.md](HISTORY.md) ("Retired from the live files, 2026-09-07"), kept for its number
 
 ### 110.2 The five bugs, and the measurement that found each
 
@@ -4497,3 +4480,18 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
 - **L667, a real SearXNG install through the package notice.** The notice, the failure toast and the notice coming back were verified live on :9020 (Install, 503 "Couldn't download SearXNG", notice restored in under 1 s), but the from-source install could not finish here: github.com's archive host answers 403 through the sandbox proxy and the Docker daemon is not running. Check on a machine with github.com: in a fresh data folder press Install on the web search notice, wait for Settings, Web search to say running, ask a web question, then press Undo and see it stop.
 - **L660, first-run checks that need a real Windows installer and real Ollama (2026-11-21): Setup's optional-package pick installs on first launch with progress and Stop; the janitor warms only an installed model.** Built and tested on fake transports (`packaging/windows/installer.iss:391` writes `pending-extras.txt`, `api/app.py:680` `_install_pending_extras`, `ai/janitor.py:832` `warm_filing_model`; `tests/test_extras.py`, `tests/test_janitor_warm.py`). Check on real hardware: run the built Windows Setup with two packages ticked, open the app, and see the bell task show bytes and percent with a working Stop; then, on a fresh Ollama holding only a non-default chat model, check the log says the filing model warmed and never "llama3.2 failed".
+
+## Placed from IDEAS.md, 2026-11-14
+
+- **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
+- **Grouping saved chats, with an agent tool and a skill** (IDEAS.md). Sorting is built (`#chat-sidebar-sort`, pinned first). **Next:** a `group` column on conversations, a group filter in the chat sidebar, an agent tool that sets it, and a skill that tidies chats into groups. **Check:** a test that a conversation moved by the tool shows under its group after a reload.
+
+## From the general plan's frontend rows, 2026-11-21
+
+- **Provenance for extracted notes** (L-general-37, found building L-general-13). A note saved by `/extract/commit` (routes_entries.py `extract_commit`) records nothing about where its text came from, so it gets no provenance chip. **Why it waits:** no column can say "extracted from document X" without a migration. `source_path` would mark the note as outside text for the agent's injection guard (`manager.came_from_outside`), which is wrong for the person's own document. **Next:** a nullable `origin_document_id` on entries (migration, full suite), set by `extract_commit` when `source_document_id` is given, read by `entry/provenance.py` as kind `document` with "Extracted from <title>". **Check:** `tests/test_note_provenance.py` gains a case where a note committed with `source_document_id` returns `source_kind == "document"`, and a hand-typed note still returns none.
+
+## Lag rows measured and not removable, 2026-11-21
+
+- **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
+- **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
+- **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).

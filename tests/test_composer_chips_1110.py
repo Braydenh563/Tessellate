@@ -188,7 +188,7 @@ def test_a_chip_that_acts_only_proposes(client, session):
 
 
 def test_the_day_before_chip_names_what_it_is_for(client, session):
-    """The chip says "about Dentist"; the follow-up must not ask what the reminder is for."""
+    """The chip says "about Dentist"; the next turn must not ask what the reminder is for."""
     seed.seed(session)
     got = _ask(client, "when is my dentist appointment")
     chip = next(c for c in got["chips"] if c.startswith("Remind me"))

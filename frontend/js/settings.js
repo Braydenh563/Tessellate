@@ -479,7 +479,7 @@ let changelogLoaded = false;
 //: The fetch stays eager, because its answer decides whether the control is
 //: shown at all: a packaged build may not ship the file, and offering a
 //: disclosure that opens onto nothing is worse than not offering one. Only
-//: the render is deferred, since that is the expensive half.
+//: the render waits, since that is the expensive half.
 //:
 //: `toggle` rather than `click`: a `<details>` can also be opened by the
 //: keyboard, by find-in-page, and programmatically, and `toggle` is the one

@@ -574,10 +574,21 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     //: Kept in sight in its own row; `scrollIntoView` would scroll the pane as well.
     if (on && (on.offsetLeft < jump.scrollLeft || on.offsetLeft + on.offsetWidth > jump.scrollLeft + jump.clientWidth)) jump.scrollLeft = on.offsetLeft - 8;
   };
+  const markFirst = () => {
+    const first = jump.firstChild;
+    if (!first) return;
+    first.classList.add("active");
+    first.setAttribute("aria-current", "true");
+  };
   //: A scroll event is already one per frame; 17 rects are read.
   scroller?.addEventListener("scroll", mark, { passive: true });
+  //: The first draw reads no layout (lag log: `mark` forced a 202ms layout at 4x, the pane's whole first layout, inside the
+  //: script's onload): nothing is scrolled yet, so the first group is the one in view and no height needs keeping.
+  let drawn = false;
   const draw = () => {
-    const before = scroller?.scrollHeight || 0;
+    const again = drawn;
+    drawn = true;
+    const before = again ? scroller?.scrollHeight || 0 : 0;
     mathEditorPalette(list, search.querySelector("input").value);
     jump.replaceChildren(
       ...[...list.querySelectorAll(".math-editor-group")].map((head) => {
@@ -590,6 +601,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
       })
     );
     band.hidden = !jump.children.length;
+    if (!again) return markFirst();
     mark();
     //: A row arriving above (a pin) must not move what is being looked at.
     if (scroller?.scrollTop > 0) scroller.scrollTop += scroller.scrollHeight - before;

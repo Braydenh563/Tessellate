@@ -4,7 +4,7 @@
 // inline citations, the evidence view and the citation peek, the answer's
 // figures and foot, the sources panel (`chatSourcesFrom`, `chatSourcesPanel`),
 // the tool, change and plan cards, the chat bubble's meta line and actions,
-// the follow-up strip and the chat's position keeping, and the small helpers
+// the next-question strip and the chat's position keeping, and the small helpers
 // only these call.
 //
 // Every caller is in a lazy file whose bundle lists this one first (chat-turn.js,
@@ -2815,7 +2815,7 @@ function buildFollowupStrip(bubble, picks) {
   chatScrollToEnd();
 }
 
-// --- where a follow-up came from (INBOX 490: "hyperlinked bread crumbs") ----
+// --- where a next question came from (INBOX 490: "hyperlinked bread crumbs") ----
 // A chip's question keeps the one it was offered under (`followup_of` on the
 // turn, words not an index, which a deleted turn would shift); its bubble
 // links the chain back, a press scrolling to that question and lighting it.

@@ -136,13 +136,15 @@ def test_a_notification_gets_202_and_no_body(client):
     assert reply.status_code == 202 and reply.content == b""
 
 
-def test_initialize_answers_the_protocol_and_names_the_client(client):
+def test_initialize_answers_the_protocol_and_names_the_client(client, monkeypatch):
+    from tessellate import mcp_server
+
+    #: Another test's stdio `initialize` may have named it in this process; start from none.
+    monkeypatch.setitem(mcp_server._client, "name", "")
     made = _made(client, "Desk Claude")
     reply = _post(client, made["token"], _rpc("initialize", protocolVersion="2025-06-18", clientInfo={"name": "x"}))
     assert reply.status_code == 200
     assert reply.json()["result"]["protocolVersion"] == "2025-06-18"
-    from tessellate import mcp_server
-
     assert mcp_server._client["name"] == "", "an HTTP client never renames the stdio one"
 
 

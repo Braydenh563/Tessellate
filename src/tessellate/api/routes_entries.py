@@ -75,6 +75,7 @@ from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
+from tessellate.entry import provenance
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
 from tessellate.repo import content as content_repo
@@ -113,6 +114,7 @@ def _to_out(
     documents: list | None = None,
     links: list | None = None,
     attachments: list | None = None,
+    transcribed: bool | None = None,
 ) -> EntryOut:
     # Decrypted here if private and the vault is open, every read of a
     # note's text goes through this one helper.
@@ -131,6 +133,12 @@ def _to_out(
     resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
         manager_purge.attachments_for(session, entry) if attachments is None else attachments
+    )
+    #: Where the note came from (`entry/provenance.py`); the audio check is one query unless a list pre-fetched it.
+    source_kind, source_label = provenance.source_kind(
+        getattr(entry, "source_url", None),
+        getattr(entry, "source_path", None),
+        bool(provenance.transcribed_ids(session, [entry.id])) if transcribed is None and entry.id else bool(transcribed),
     )
     return EntryOut(
         id=entry.id,
@@ -165,6 +173,8 @@ def _to_out(
         source_url=getattr(entry, "source_url", None),
         source_title=getattr(entry, "source_title", None),
         source_path=getattr(entry, "source_path", "") or "",
+        source_kind=source_kind,
+        source_label=source_label,
         is_board=bool(getattr(entry, "is_board", False)),
         board_kind=getattr(entry, "board_kind", None),
         map_topic=bool(getattr(entry, "map_topic", False)),
@@ -389,6 +399,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     documents_by_id = manager.documents_for_entries_bulk(session, ids)
     links_by_id = manager.links_for_entries_bulk(session, ids)
     attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
+    heard = provenance.transcribed_ids(session, ids)
     return [
         _to_out(
             session,
@@ -398,6 +409,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
             documents=documents_by_id.get(e.id, []),
             links=links_by_id.get(e.id, []),
             attachments=attachments_by_id.get(e.id, []),
+            transcribed=e.id in heard,
         )
         for e in entries
     ]

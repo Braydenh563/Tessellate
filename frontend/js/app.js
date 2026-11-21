@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the
@@ -1379,7 +1379,7 @@ function confirmDialog(message, options = {}) {
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
 //: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
-function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
+function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null, cancelLabel = "Cancel" } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
@@ -1477,7 +1477,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const row = document.createElement("div");
     row.className = "row confirm-actions";
     row.append(
-      smallButton("Cancel", "Cancel", () => close("")),
+      smallButton(cancelLabel, cancelLabel, () => close("")),
       smallButton(confirmLabel, confirmLabel, () => input.reportValidity() && close(input.value.trim()), false)
     );
     card.append(head, input);
@@ -1883,7 +1883,7 @@ const LAZY_ENTRY_POINTS = {
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder", "noteRecording"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn"],
   categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
-  tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
+  tagManager: ["openTagsSheet", "openBulkTags", "openBulkProperty", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],

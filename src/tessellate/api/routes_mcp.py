@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
@@ -113,8 +113,10 @@ class NewClient(BaseModel):
 
 
 @router.get("/mcp-clients")
-def list_clients() -> dict:
-    return {"clients": mcp_clients.listing()}
+def list_clients(response: Response, limit: int = Query(default=mcp_clients.MAX_CLIENTS, ge=1, le=mcp_clients.MAX_CLIENTS)) -> dict:
+    rows = mcp_clients.listing()
+    response.headers["X-Total-Count"] = str(len(rows))
+    return {"clients": rows[:limit]}
 
 
 @router.post("/mcp-clients")

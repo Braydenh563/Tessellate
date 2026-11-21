@@ -30,7 +30,9 @@ def test_the_notes_strip_token_has_no_read_of_its_own_before_the_observer():
 
 def test_the_dashboard_outline_follows_the_grid_after_a_paint():
     body = _body(frontend_text("dashboard.js"), "function dashFillingSkeleton(")
-    assert "afterFrames(() => setTimeout(" in body
+    # L701 moved the read from a timer after a paint into the grid's ResizeObserver, which runs
+    # after the frame's layout: still read where it forces nothing, the intent of 1419.
+    assert "ro.follow = () =>" in body and "setTimeout(" not in body
     assert "grid.offsetTop - top0" in body
 
 
