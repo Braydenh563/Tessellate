@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8539, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11391, test files 2983, tests 23239, plan headings 692, app scripts 29, boot scripts 38, script files 308.
+Counts: frontend functions 8539, frontend ids 2805, CSS sections 524, backend routes 723, backend modules 11391, test files 2984, tests 23242, plan headings 692, app scripts 29, boot scripts 38, script files 308.
 
 ## Frontend functions (8539)
 
@@ -28864,7 +28864,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23239)
+## Tests (23242)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29329,6 +29329,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_inappdive_1107.py | 9 |
 | tests/test_companion_land_1402.py | 8 |
 | tests/test_companion_landing_1683k.py | 4 |
+| tests/test_companion_life_l181.py | 3 |
 | tests/test_companion_live_1114.py | 6 |
 | tests/test_companion_lively_1107.py | 6 |
 | tests/test_companion_menu_bars_1111.py | 6 |

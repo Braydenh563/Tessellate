@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: L181's definition of done is a test: at least 55 distinct desk acts a seeded hour (least 45), eight ways of getting about across the rest hours and 15 chains over five moods (63.5, 52, ten and 17 on the head).
 - Atlas: laughing's end eases back with "What it does" off too; the hand-over asks only whether motion is still, 3.21 px in one frame to 0.48 (L184).
 - Atlas: the lower body takes a faint stipple of stars in both looks, one pattern tile under `.atl-lw-lower` that moves with its morph, no loop of its own (L742).
 - Companion: ten new idle acts on both companions from the one catalogue (a cloud for a pillow, a paper plane, conducting, a sketch, a kneel to a sprout, leaning on the edge, a tail chase, a tail stretch, a balance, a float on its back), each weighted by the hour; the desk gains the chair too (L178).
