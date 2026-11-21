@@ -51,7 +51,7 @@ SLANG: dict[str, str] = {
     "yall": "you all", "y'all": "you all", "da": "the", "teh": "the", "dat": "that", "dis": "this",
     "cn": "can", "hv": "have", "hav": "have", "shld": "should", "shud": "should", "cld": "could",
     "cud": "could", "wld": "would", "wud": "would", "mny": "many", "meny": "many", "mch": "much",
-    "mor": "more", "lng": "long", "oftn": "often", "wy": "why", "btwn": "between", "betw": "between",
+    "mor": "more", "lng": "long", "oftn": "often", "wy": "why", "btwn": "between", "betw": "between", "b/w": "between",
     "shw": "show", "kno": "know", "knw": "know", "ne": "any", "evry": "every", "abt": "about", "bout": "about", "abour": "about", "b4": "before", "w/": "with",
     "w/o": "without", "thru": "through", "tho": "though", "altho": "although", "bc": "because",
     "b/c": "because", "cuz": "because", "coz": "because", "cos": "because", "bcuz": "because",

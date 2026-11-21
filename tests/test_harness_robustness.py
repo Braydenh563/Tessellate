@@ -403,6 +403,32 @@ def test_an_imperative_on_a_small_model_requires_a_first_call(monkeypatch, app_s
     assert "tool_choice" not in sent[1], "only the first round"
 
 
+def test_a_skill_step_that_must_call_a_tool_requires_the_first_call(monkeypatch, app_state, openai_client, capture_post):
+    """L250: on Qwen2.5-1.5B "Run the audit_link_reasons tool" came back as "I ran the function with
+    limit 12" in prose, no call, three attempts in a row. A step whose contract is a tool call (`must_call`)
+    now asks for it on the first round, as an imperative does; an ordinary skill turn still does not."""
+    from tests.fakes_http import FakeResponse, sse
+
+    def run(**extra):
+        capture_post.sent.clear()
+        capture_post.queue.clear()
+        capture_post.queue.extend([
+            FakeResponse(lines=sse({"choices": [{"delta": {"tool_calls": [
+                {"index": 0, "id": "a", "function": {"name": "audit_link_reasons", "arguments": "{}"}}
+            ]}}]})),
+            FakeResponse(lines=sse({"choices": [{"delta": {"content": "Done."}}]})),
+        ])
+        monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {"updated": 2})
+        list(agent.run_agent(_Session(), "Run the audit_link_reasons tool.", [], _SmallModels(), openai_client,
+                             allowed_tools=["audit_link_reasons"], **extra))
+        return [request["json"] for request in capture_post.sent]
+
+    sent = run(must_call=True)
+    assert sent[0].get("tool_choice") == "required"
+    assert "tool_choice" not in sent[1], "only the first round"
+    assert "tool_choice" not in run()[0]
+
+
 def test_a_question_is_never_forced_into_a_call(monkeypatch, app_state, openai_client, capture_post):
     for question in ("How many notes do I have?", "can you pin it?", "What did I write about milk"):
         capture_post.sent.clear()

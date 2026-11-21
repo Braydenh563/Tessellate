@@ -339,6 +339,142 @@
   {
    "question": "wat did i say abt the sourdogh",
    "expect": "what"
+  },
+  {
+   "question": "wehn is my pasport due",
+   "expect": "when"
+  },
+  {
+   "question": "wen does the boiler get serviced",
+   "expect": "when"
+  },
+  {
+   "question": "whn r the trains booked for",
+   "expect": "when"
+  },
+  {
+   "question": "when's da dentist tho",
+   "expect": "when"
+  },
+  {
+   "question": "yo when is the gym thing",
+   "expect": "when"
+  },
+  {
+   "question": "pls tell me when my lease ends",
+   "expect": "when"
+  },
+  {
+   "question": "wen is sams party",
+   "expect": "when"
+  },
+  {
+   "question": "hw many testers signed up",
+   "expect": "count"
+  },
+  {
+   "question": "howmuch is the trip budget",
+   "expect": "count"
+  },
+  {
+   "question": "how mch did the boiler cost",
+   "expect": "count"
+  },
+  {
+   "question": "hw many tims have i fed the starter",
+   "expect": "count"
+  },
+  {
+   "question": "whrere is the spare key",
+   "expect": "where"
+  },
+  {
+   "question": "wher is the lisbon hotel",
+   "expect": "where"
+  },
+  {
+   "question": "yo where's the spare key at",
+   "expect": "where"
+  },
+  {
+   "question": "where did i park lol",
+   "expect": "where"
+  },
+  {
+   "question": "hu asked for the api",
+   "expect": "who"
+  },
+  {
+   "question": "whos the dentist",
+   "expect": "who"
+  },
+  {
+   "question": "who tf asked for the public api",
+   "expect": "who"
+  },
+  {
+   "question": "whats the latest on harbour",
+   "expect": "status"
+  },
+  {
+   "question": "hows the sync rewrite goin",
+   "expect": "status"
+  },
+  {
+   "question": "any news on the lease",
+   "expect": "status"
+  },
+  {
+   "question": "y is the list so slow",
+   "expect": "explain"
+  },
+  {
+   "question": "wy was the build broken",
+   "expect": "explain"
+  },
+  {
+   "question": "whyyy is the list slow",
+   "expect": "explain"
+  },
+  {
+   "question": "how come the list is slow",
+   "expect": "explain"
+  },
+  {
+   "question": "why did the sync break lol",
+   "expect": "explain"
+  },
+  {
+   "question": "wat is the harbor launch plan",
+   "expect": "what"
+  },
+  {
+   "question": "whut did i say about sourdough",
+   "expect": "what"
+  },
+  {
+   "question": "tell me abt the sourdough starter",
+   "expect": "what"
+  },
+  {
+   "question": "remind me what the boiler guy said",
+   "expect": "what"
+  },
+  {
+   "question": "lisbon vs porto which is cheaper",
+   "expect": "compare"
+  },
+  {
+   "question": "difference b/w the two plans",
+   "expect": "compare"
+  },
+  {
+   "question": "is the dentist on thursday",
+   "expect": "yesno"
+  },
+  {
+   "question": "did i book the trains",
+   "expect": "yesno"
   }
  ],
  "social": [

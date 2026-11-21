@@ -132,3 +132,95 @@ def test_a_models_correct_date_phrasing_is_kept_by_the_fact_check(app_state):
         kept += ok
         print(f"  {'kept' if ok else 'REFUSED'}: {prose.strip()[:100]!r}", flush=True)
     print(f"\n  date wording: {kept}/{len(DATES)} kept")
+
+
+#: (sentence, the handover or tool that is the right move): L827 plans, L828 propose_act and a read tool, L829 ask_user.
+TOOL_TURNS = [
+    ("First tag the dentist note health, then pin the plumber note, then remind me on Friday to call the plumber", "plan"),
+    ("Do three things: pin the Snowdon note, tag the plumber note urgent, and make a note called Shopping", "plan"),
+    ("What is 15% of 240?", "calculate"),
+    ("How much is 18 times 42?", "calculate"),
+    ("Remind me on Friday to call mum", "act"),
+    ("I want to file my note under Work. Ask me which category, the only choice is Work.", "ask"),
+    ("Ask me whether to continue. The only option is Yes.", "ask"),
+]
+
+
+def test_a_model_plans_calculates_proposes_and_asks_without_a_dead_end(notebook):  # noqa: F811
+    """L827 (a plan the previews can read), L828 (propose_act and Calculate), L829 (a one-option ask is never drawn):
+    asserted is that every turn ends in words or a card and no ask card has fewer than two options."""
+    rows = []
+    for sentence, wanted in TOOL_TURNS:
+        started = time.monotonic()
+        events = _turn(notebook, sentence)
+        calls = _calls(events)
+        plan = next((e for e in events if e.get("type") == "run_plan"), None)
+        asks = [e for e in events if e.get("type") == "ask"]
+        words = (_answer(events) or " ".join(str(e.get("text", "")) for e in events if e.get("type") == "answer_final")).strip()
+        row = {
+            "q": sentence[:48], "wanted": wanted, "tools": [c["tool"] for c in calls], "failed": [c["tool"] for c in calls if not c.get("ok")],
+            "plan_steps": len(plan["steps"]) if plan else 0,
+            "plan_previewed": sum(bool(w) for w in plan["writes"]) if plan else 0,
+            "asks": [len(a.get("options") or []) for a in asks], "cards": len(_cards(events)), "words": bool(words), "s": round(time.monotonic() - started, 1),
+        }
+        rows.append(row)
+        print(" ", row, flush=True)
+        assert words or _cards(events) or plan or asks, f"{sentence!r} ended in nothing"
+        assert all(n >= 2 for n in row["asks"]), f"{sentence!r} drew an ask with one option"
+    print(f"\n  plan: {sum(r['plan_steps'] > 0 for r in rows[:2])}/2 sentences made a plan, previewed steps {[(r['plan_previewed'], r['plan_steps']) for r in rows[:2]]}")
+    print(f"  calculate: {sum('calculate' in r['tools'] for r in rows[2:4])}/2 called calculate, {sum(r['words'] for r in rows[2:4])}/2 ended in words")
+    print(f"  propose_act: {sum('propose_act' in r['tools'] or bool(r['cards']) for r in rows[4:5])}/1 ended in a card")
+    print(f"  ask_user: {sum('ask_user' in r['tools'] for r in rows[5:])}/2 called ask_user, drawn with one option: {sum(1 for r in rows[5:] for n in r['asks'] if n < 2)}")
+
+
+def test_the_link_reason_audit_can_be_undone_with_a_real_model(notebook):  # noqa: F811
+    """L-chat-258: a real model rewrites the vague reasons, then the undo puts every old one back."""
+    from tessellate.ai import tools
+    from tessellate.core import deps
+    from tessellate.core.database import Entry, EntryLink
+    from tessellate.entry import manager_links
+
+    with deps.get_db().session() as session:
+        ids = [e.id for e in session.query(Entry).order_by(Entry.id).limit(5)]
+        for a, b in zip(ids, ids[1:]):
+            session.add(EntryLink(source_entry_id=a, target_entry_id=b, reason=manager_links.AUTO_REASON_TEXT, reason_confidence=0.8))
+        session.commit()
+        started = time.monotonic()
+        done = tools.execute_tool(session, "audit_link_reasons", {"limit": 4})
+        took = time.monotonic() - started
+        written = [r for (r,) in session.query(EntryLink.reason).all()]
+        print(f"\n  audit: rewrote {done.get('updated')} of {len(written)} in {took:.0f}s; reasons {written}", flush=True)
+        if not done.get("updated"):
+            assert "undo" not in done  # only vague replies, so there is nothing to put back
+            return
+        back = tools.execute_tool(session, done["undo"]["tool"], done["undo"]["arguments"])
+        left = session.query(EntryLink).filter(EntryLink.reason == manager_links.AUTO_REASON_TEXT, EntryLink.reason_confidence == 0.8).count()
+        print(f"  undo: put back {back.get('restored')}, {left} links carry the old reason again", flush=True)
+        assert back["restored"] == done["updated"] and left == len(written)
+
+
+def test_a_real_models_tags_are_kept_only_when_the_note_has_their_words(notebook):  # noqa: F811
+    """L840: tests/test_tag_grounding.py fakes the model that answered 'study, university' to any note; here it is real."""
+    import json
+
+    from tessellate.api import routes_entries
+    from tessellate.core import deps
+    from tessellate.entry import manager
+    from tests.test_tag_grounding import LECTURES, UNRELATED
+
+    asked = kept_study = 0
+    with deps.get_db().session() as session:
+        for text in LECTURES:
+            manager.create_entry(session, text, category_name="Uni", tags=["study", "university"])
+        session.commit()
+        for text in UNRELATED:
+            entry = manager.create_entry(session, text, category_name="Misc")
+            session.commit()
+            started = time.monotonic()
+            routes_entries._keep_suggestions(session, entry, "llm")
+            kept = json.loads(entry.suggested_tags or "[]")
+            asked += 1
+            kept_study += bool({"study", "university"} & set(kept))
+            print(f"  {text[:40]!r}: kept {kept} in {time.monotonic() - started:.0f}s", flush=True)
+    print(f"\n  tag grounding: {kept_study} of {asked} unrelated notes were offered study or university after the grounding rule", flush=True)
+    assert kept_study == 0

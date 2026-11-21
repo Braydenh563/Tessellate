@@ -58,4 +58,5 @@ def test_a_small_models_shown_certainty_never_reads_100_and_tracks_its_hit_rate(
     assert max(r[1] for r in rows) < 100
     hit_rate = 100 * sum(r[0] for r in filed) / len(filed)
     mean_shown = sum(r[1] for r in filed) / len(filed)
+    print(f"\n  filing: {len(filed)} of {len(rows)} filed by the model, hit rate {hit_rate:.0f}%, mean shown {mean_shown:.0f}%, max shown {max(r[1] for r in rows)}")
     assert mean_shown - hit_rate <= MAX_OVERCLAIM, f"shown {mean_shown:.0f}% for a {hit_rate:.0f}% hit rate"
