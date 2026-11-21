@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: CONTRIBUTING.md says replace, do not layer (CLAUDE.md section 8) in place of additive only, and states 22,000+ tests (22,296 test functions by grep, 52,937 collected items with parameters); the deep-audit skill briefs from and writes LEDGER rows, not ranked files (L-general-26, L-general-27).
+- Docs: ARCHITECTURE.md no longer says documents have no revisions, that the packaged app has no stdio MCP, that the .msi ships, or that assets cannot be cached immutable (each checked against the code); RELEASING.md names the pyproject version test, fastembed as the optional engine, and ROADMAP's milestone table as the 1.0 criteria (L-general-22, L-general-24).
+- Docs: SECURITY.md has a Known gaps list, and CONTRIBUTING.md a 30-day dependency-age floor that dependabot.yml now enforces with a cooldown (L-general-7).
 - Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the strict xfails on chat row L150 and on L-timeline-9, which PR 241 builds); the PR 216 work order closed (L-general-33); open_scan skips the PR template form, and strips SQLAlchemy's `deferred=True` and two exact verb phrases before it looks, so a marker on the same line is still found.
 - Filing keeps a note's tag suggestions in the same commit as its settled `filing_state`, so a reader that stops polling on the settled state no longer reads them as empty; `jobs.in_flight(None)` is False.
 - Tests: the kept-suggestions wait covers the whole filing job (`jobs.in_flight`), not only `filing_state`, which settles before the tag suggestions are kept (the py3.11 leg 1 failure on caa9ad94).
