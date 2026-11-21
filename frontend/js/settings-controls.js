@@ -2337,6 +2337,63 @@
     const text = JSON.stringify({ mcpServers: { tessellate: mcp.config } }, null, 2);
     pre.textContent = text;
     copy.onclick = () => copyToClipboard(text, copy);
+    renderMcpClients();
+  }
+
+  //: The apps given a link (INBOX 1860, routes_mcp.py): one row each with when it was
+  //: last used and Revoke (`rowActions`); Make a link shows the token once.
+  async function renderMcpClients() {
+    const list = $("mcp-client-list");
+    if (!list) return;
+    $("mcp-client-create").onclick = makeMcpLink;
+    const { clients = [] } = await apiJson("/mcp-clients").catch(() => ({}));
+    list.replaceChildren(...clients.map(mcpClientRow));
+  }
+
+  async function makeMcpLink() {
+    const field = $("mcp-client-name");
+    try {
+      const made = await apiJson("/mcp-clients", {
+        method: "POST",
+        body: JSON.stringify({ name: field.value.trim() || "An app", writes: $("mcp-client-writes").checked }),
+      });
+      const text = JSON.stringify({ mcpServers: { tessellate: { type: "http", url: `${location.origin}/mcp`, headers: { Authorization: `Bearer ${made.token}` } } } }, null, 2);
+      $("mcp-client-snippet").textContent = text;
+      $("mcp-client-copy").onclick = () => copyToClipboard(text, $("mcp-client-copy"));
+      $("mcp-client-made").classList.remove("hidden");
+      field.value = "";
+      renderMcpClients();
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+
+  function mcpClientRow(client) {
+    const li = document.createElement("li");
+    const row = document.createElement("div");
+    row.className = "entry-meta";
+    const name = document.createElement("strong");
+    name.textContent = client.name;
+    const facts = document.createElement("span");
+    facts.className = "muted";
+    const used = client.last_used ? `last used ${relativeTime(new Date(client.last_used * 1000).toISOString())}` : "not used yet";
+    facts.textContent = `${client.writes ? "Reads and changes notes" : "Reads only"}, ${used}`;
+    const actions = rowActions([{
+      label: "Revoke",
+      title: "Stop this app's link working",
+      danger: true,
+      run: () => revokeMcpLink(client),
+    }], `${client.name} link actions`);
+    row.append(name, facts, actions);
+    li.append(row);
+    return li;
+  }
+
+  async function revokeMcpLink(client) {
+    if (!(await confirmDialog(`Revoke ${client.name}'s link? That app stops reading the notebook at once.`))) return;
+    await apiJson(`/mcp-clients/${encodeURIComponent(client.id)}`, { method: "DELETE" }).catch((error) => toast(error.message, true));
+    $("mcp-client-made").classList.add("hidden");
+    renderMcpClients();
   }
 
   //: The network pane's state line and certificate facts, lazy with the listeners that
