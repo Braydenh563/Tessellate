@@ -101,7 +101,9 @@ const PHONE = process.env.PHONE === '1';
   let opened = null;
   if (card && card.objects.length) {
     await page.click(`#entry-list li[data-id="${ids.note}"] .board-embed:not(.board-embed-gone)`);
-    await page.waitForTimeout(1800);
+    //: Until the board is the open one: the boards bundle is fetched on this press, and how long that takes
+    //: is the machine's (a fixed 1.8 s left `opened` null on a fresh data dir).
+    await page.waitForFunction(() => window.currentBoardId != null, null, { timeout: 20000 }).catch(() => {});
     opened = await page.evaluate(() => window.currentBoardId ?? null);
     console.log('opened', opened, 'wanted', ids.board);
     await page.evaluate(() => switchTab('notes'));

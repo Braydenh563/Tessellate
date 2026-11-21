@@ -14,6 +14,7 @@
 //   BASE=http://127.0.0.1:8971 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     NODE_PATH=/opt/node22/lib/node_modules node scratchpad/ui-sweeps/graphphone.js
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { quietFirstRun } = require('./lib.js');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTH = Number(process.env.WIDTH || 390);
@@ -44,6 +45,7 @@ async function touch(cdp, type, points) {
       localStorage.setItem('tourDone', '1');
     } catch (e) {}
   });
+  await quietFirstRun(ctx);
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 160)));
