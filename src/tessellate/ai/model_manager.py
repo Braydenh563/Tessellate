@@ -166,7 +166,9 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
     # never offered in the first place.
     "vision": [
         {"name": "moondream", "size": "~1.7 GB", "purpose": "Tiny and fast: the one to try on modest hardware"},
-        {"name": "hf.co/LiquidAI/LFM2.5-VL-1.6B-GGUF", "size": "~1.6 GB", "purpose": "Liquid's small vision model, not in Ollama's own library, pulled from its publisher's Hub repo instead"},
+        {"name": "hf.co/LiquidAI/LFM2.5-VL-1.6B-GGUF", "size": "~1.6 GB",
+         "licence": "LFM Open License v1.0", "licence_url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/blob/main/LICENSE",
+         "terms_url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/blob/main/LICENSE", "purpose": "Liquid's small vision model, not in Ollama's own library, pulled from its publisher's Hub repo instead"},
         {"name": "qwen3-vl:2b", "size": "~1.9 GB", "purpose": "Smallest of the Qwen-VL line"},
         {"name": "qwen2.5vl:3b", "size": "~2.2 GB", "purpose": "A fallback for the 2B/4B Qwen3-VL entries either side of it, if either is ever pulled from Ollama's library and not this catalogue"},
         {"name": "qwen3-vl:4b", "size": "~3.3 GB", "purpose": "A step up from the 2B"},
@@ -198,14 +200,19 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
     # core/docview.py's scanned-page path wants, and picking moondream for it
     # gets a description of a page instead of the page.
     "ocr": [
+        # Hub licences read 2026-11-21 (INBOX 1852): the ggml-org GGUF repos declare none, so
+        # the card links the base model that does (GLM-OCR and DeepSeek-OCR are MIT).
         {"name": "hf.co/ggml-org/GLM-OCR-GGUF:Q8_0", "size": "~1.4 GB",
+         "licence": "MIT", "licence_url": "https://huggingface.co/zai-org/GLM-OCR",
          "purpose": "Best size-to-accuracy here. Tables and layout, 8 languages, start with this one"},
         {"name": "hf.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF:Q8_0", "size": "~1.8 GB",
+         "licence": "Apache-2.0", "licence_url": "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF",
          "purpose": "Layout, tables, formulas, charts. Strong on structured pages"},
         {"name": "hf.co/unsloth/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M", "size": "~2.5 GB",
          "licence": "Apache-2.0", "licence_url": "https://huggingface.co/unsloth/Qwen3-VL-4B-Instruct-GGUF",
          "purpose": "Reads documents and answers about them, a VLM as well as a reader"},
         {"name": "hf.co/ggml-org/DeepSeek-OCR-GGUF:Q8_0", "size": "~3.6 GB",
+         "licence": "MIT", "licence_url": "https://huggingface.co/deepseek-ai/DeepSeek-OCR",
          "purpose": "The most accurate on dense and handwritten pages. Needs ~8 GB", "ram_gb": 8},
     ],
 }
