@@ -65,7 +65,7 @@ def schedule(kind: str) -> str:
         "backup": "Once a day, at the first start of the day.",
         "resurface": "Once a day, the first time fading notes are shown.",
         "embeddings-backfill": "At each start, once search by meaning is ready.",
-        "maintenance": "At each start: the bin's auto-clear and the edit history's tidy.",
+        "maintenance": "At each start: the bin's auto-clear, the edit history's tidy and clearing near-duplicate marks to deleted notes.",
     }.get(kind, "")
 
 
@@ -186,8 +186,41 @@ def _compact_history() -> None:
     _run_housekeeping("compact-history")
 
 
+def clear_dangling_similar(session) -> int:  # noqa: ANN001
+    """Clear `filing_similar_id` where the note it names is gone (purged from
+    the bin, or lost to a restore). Not a foreign key, so nothing else does
+    (ARCHITECTURE.md, L-general-21); the panel already hides a dangling one,
+    so this keeps the column honest for exports and the MCP server. Returns
+    how many were cleared."""
+    from sqlalchemy import select, update
+
+    from tessellate.core.database import Entry
+
+    live = select(Entry.id)
+    cleared = session.execute(
+        update(Entry)
+        .where(Entry.filing_similar_id.is_not(None), Entry.filing_similar_id.not_in(live))
+        .values(filing_similar_id=None)
+        .execution_options(synchronize_session=False)
+    ).rowcount
+    session.commit()
+    return int(cleared or 0)
+
+
+def _clear_dangling_similar() -> None:
+    from tessellate.core import deps
+
+    session = deps.get_db().session()
+    try:
+        cleared = clear_dangling_similar(session)
+    finally:
+        session.close()
+    if cleared:
+        logger.info("cleared %s near-duplicate marks that named a deleted note", cleared)
+
+
 #: Housekeeping's steps, in order; Stop is honoured between them.
-MAINTENANCE_STEPS: tuple[Callable[[], None], ...] = (_purge_bin, _compact_history)
+MAINTENANCE_STEPS: tuple[Callable[[], None], ...] = (_purge_bin, _compact_history, _clear_dangling_similar)
 
 
 def _maintenance() -> None:
@@ -195,8 +228,8 @@ def _maintenance() -> None:
 
     with jobruns.job_run("maintenance") as run:
         done = 0
-        names = ("Clear expired notes from the bin", "Tidy the edit history")
-        run.plan(list(names))
+        names = ("Clear expired notes from the bin", "Tidy the edit history", "Clear near-duplicate marks to deleted notes")
+        run.plan(list(names[: len(MAINTENANCE_STEPS)]))
         for step in MAINTENANCE_STEPS:
             if stop_requested("maintenance"):
                 run.cancel(f"stopped after {done} of {len(MAINTENANCE_STEPS)} steps")
@@ -206,7 +239,7 @@ def _maintenance() -> None:
             step()
             done += 1
             run.step(done)
-        run.result = "bin cleared of expired notes, edit history tidied"
+        run.result = "bin cleared of expired notes, edit history tidied, stale near-duplicate marks cleared"
 
 
 #: kind -> the function a Run now queues. A dict so a test can stand in.

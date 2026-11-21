@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
-| general | 0 | 31 | 2 | 0 | 4 | 33 |
-| all | 502 | 560 | 129 | 2 | 183 | 1191 |
+| general | 0 | 30 | 2 | 0 | 4 | 32 |
+| all | 502 | 559 | 129 | 2 | 183 | 1190 |
 
 ## graph
 
@@ -720,7 +720,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-17** `general` open, S: Correct stale frontend comments that call built features unbuilt or deferred. From open-work sweep 2026-11-12, frontend/js/whiteboard-map.js:7028. Evidence: Not open work in itself: the topic image is built (whiteboard-map.js:7868-7934, MINDMAP_PLAN.md:328-335). But several frontend comments still state built things are unbuilt or deferred and would read 
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
-- [ ] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked.
 - [ ] **L-general-22** `general` open, S: Correct stale ARCHITECTURE claims on document revisions, MCP, the MSI and immutable caching. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1068. Evidence: Several stale claims in this file contradict the code and need a doc fix. :1068: DocumentRevision exists (database.py:2019, repo/documents.py:313). :1804: the packaged app has no stdio MCP, but `Tesse
 - [ ] **L-general-24** `general` open, S: Correct stale RELEASING lines on the version check, torch and the 1.0 criterion. From open-work sweep 2026-11-12, docs/RELEASING.md:79. Evidence: This doc has three stale lines. :79: tests/test_version_agreement.py already checks pyproject. :158: says torch and sentence-transformers are an optional post-install, but they were replaced by fastem
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.

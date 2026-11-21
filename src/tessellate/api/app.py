@@ -673,6 +673,7 @@ def _compact_step() -> None:
 
 passes.register_housekeeping("purge-bin", _purge_step)
 passes.register_housekeeping("compact-history", _compact_step)
+_clear_dangling_similar = passes._clear_dangling_similar
 
 
 def _install_pending_extras() -> None:
@@ -727,6 +728,7 @@ def _startup_maintenance() -> None:
             ("_check_data_folder", "Check the data folder"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
+            ("_clear_dangling_similar", "Clear near-duplicate marks to deleted notes"),
             ("_backup_if_due", "Back up if today's is due"),
             ("_choose_chat_model_if_missing", "Choose a chat model you have"),
             ("_install_pending_extras", "Install the packages picked in Setup"),

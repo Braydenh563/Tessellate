@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Housekeeping clears a near-duplicate mark that names a note no longer in the notebook, at each start and on Run now (L-general-21).
 - Docker: the image has a HEALTHCHECK on /health and carries its source commit; the ignore file moved to docker/Dockerfile.dockerignore, the one BuildKit reads (the old one was never read, so data/ went into the build context); hadolint runs in CI (L-general-5).
 - About: Settings names the commit, start time and data folder (with whether it can be written) of the copy that answers, from /health on this computer only; a phone or another device gets none of it (L-general-6).
 - CI: every action is pinned to a commit SHA with its tag beside it (36 lines), every checkout sets persist-credentials false, the release notes step reads the version through env, and a Workflow lint workflow runs pinned actionlint and zizmor on workflow changes (L-general-2; zizmor and actionlint not run locally).
