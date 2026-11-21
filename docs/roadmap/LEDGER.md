@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 32 | 2 | 0 | 4 | 34 |
-| all | 502 | 566 | 129 | 2 | 183 | 1197 |
+| general | 0 | 31 | 2 | 0 | 4 | 33 |
+| all | 502 | 565 | 129 | 2 | 183 | 1196 |
 
 ## graph
 
@@ -705,7 +705,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## general
 
 - [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
-- [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
 - [ ] **L-general-1** `general` open, S: Decode NAT64 (64:ff9b::/96) addresses to their embedded IPv4 in the SSRF address test. From ANALYSIS.md:4350. Evidence: grep -ri 'ff9b|nat64' src returns nothing; core/security.py:942 relies on `not address.is_global`, which reports NAT64 of 169.254.169.254 and 127.0.0.1 as global on Python 3.13
 - [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
